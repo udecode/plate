@@ -1,11 +1,36 @@
-import { createBaseEditor } from '@platejs/core';
-import type { Selection, Value } from '@platejs/plite';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { schema, type Selection, type Value } from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
 import type { TLinkElement } from '@platejs/utils';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 import { LinkRules } from './LinkRules';
+
+const BaseCodeBlockPlugin = createBasePlugin({
+  key: 'codeBlock',
+  node: {
+    element: {
+      content: schema.content.type('codeLine', {
+        default: { type: 'codeLine' },
+        min: 1,
+      }),
+      groups: ['block'],
+    },
+    type: 'code_block',
+  },
+  plugins: [
+    createBasePlugin({
+      key: 'codeLine',
+      node: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        type: 'code_line',
+      },
+    }),
+  ],
+});
 
 const createAutolinkRules = () => [
   LinkRules.autolink({ variant: 'break' }),
@@ -27,6 +52,7 @@ const createEditor = ({
 }) =>
   createBaseEditor({
     plugins: [
+      BaseCodeBlockPlugin,
       BaseLinkPlugin.configure({
         inputRules: inputRules ?? createAutolinkRules(),
         options,
@@ -53,6 +79,7 @@ describe('LinkRules', () => {
   it('autolinks a pasted URL', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -70,6 +97,7 @@ describe('LinkRules', () => {
   it('ignores unrelated code blocks when autolinking a pasted URL', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 4, path: [1, 0] },
         focus: { offset: 4, path: [1, 0] },
       },
@@ -94,9 +122,10 @@ describe('LinkRules', () => {
 
   it('keeps selected text by default and can replace it with the URL', () => {
     const selection = {
+      kind: 'text',
       anchor: { offset: 6, path: [0, 0] },
       focus: { offset: 14, path: [0, 0] },
-    };
+    } satisfies Selection;
     const value = [{ children: [{ text: 'start selected' }], type: 'p' }];
     const keepEditor = createEditor({ selection, value });
     const replaceEditor = createEditor({
@@ -117,6 +146,7 @@ describe('LinkRules', () => {
   it('keeps pasted URLs literal inside markdown link source', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 10, path: [0, 0] },
         focus: { offset: 10, path: [0, 0] },
       },
@@ -133,6 +163,7 @@ describe('LinkRules', () => {
     const text = 'visit https://example.com';
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: text.length, path: [0, 0] },
         focus: { offset: text.length, path: [0, 0] },
       },
@@ -156,6 +187,7 @@ describe('LinkRules', () => {
           url === 'example' ? 'https://example.com' : undefined,
       },
       selection: {
+        kind: 'text',
         anchor: { offset: text.length, path: [0, 0] },
         focus: { offset: text.length, path: [0, 0] },
       },
@@ -174,6 +206,7 @@ describe('LinkRules', () => {
     const text = 'https://example.com';
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: text.length, path: [0, 0] },
         focus: { offset: text.length, path: [0, 0] },
       },
@@ -190,6 +223,7 @@ describe('LinkRules', () => {
     const text = '[Example](https://example.com';
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: text.length, path: [0, 0] },
         focus: { offset: text.length, path: [0, 0] },
       },
@@ -208,17 +242,20 @@ describe('LinkRules', () => {
     const text = '[Example](https://example.com';
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: text.length, path: [1, 0] },
         focus: { offset: text.length, path: [1, 0] },
       },
       value: [
         {
           children: [
+            { text: '' },
             {
               children: [{ text: 'existing' }],
               type: 'a',
               url: 'https://existing.example.com',
             },
+            { text: '' },
           ],
           type: 'p',
         },
@@ -243,17 +280,20 @@ describe('LinkRules', () => {
     const createLinkEditor = (text: string) =>
       createEditor({
         selection: {
-          anchor: { offset: 0, path: [0, 0, 0] },
-          focus: { offset: text.length, path: [0, 0, 0] },
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 1, 0] },
+          focus: { offset: text.length, path: [0, 1, 0] },
         },
         value: [
           {
             children: [
+              { text: '' },
               {
                 children: [{ text }],
                 type: 'a',
                 url: 'https://example.com',
               },
+              { text: '' },
             ],
             type: 'p',
           },

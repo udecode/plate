@@ -4,6 +4,12 @@ import type { PlateEditor } from '@platejs/core/react';
 import { jsxt } from '@platejs/test-utils';
 import { createPlateEditor } from '@platejs/core/react';
 
+import {
+  TestDivPlugin,
+  TestTableCellPlugin,
+  TestTablePlugin,
+  TestTableRowPlugin,
+} from '../../../__tests__/testPlugins';
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 import { shiftSelection } from './shiftSelection';
 
@@ -128,7 +134,7 @@ describe('shiftSelection', () => {
   describe('Nested structure', () => {
     beforeEach(() => {
       editor = createPlateEditor({
-        plugins: [BlockSelectionPlugin],
+        plugins: [BlockSelectionPlugin, TestDivPlugin],
         value: [
           {
             id: 'parent1',
@@ -254,7 +260,12 @@ describe('shiftSelection', () => {
   describe('Complex columns or table-like structure', () => {
     beforeEach(() => {
       editor = createPlateEditor({
-        plugins: [BlockSelectionPlugin],
+        plugins: [
+          BlockSelectionPlugin,
+          TestTablePlugin,
+          TestTableRowPlugin,
+          TestTableCellPlugin,
+        ],
         value: [
           {
             id: 'table1',

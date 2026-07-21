@@ -53,10 +53,10 @@ const inlineRange = reverse
   ? { anchor: pointTarget, focus: pointCurrent }
   : { anchor: pointCurrent, focus: pointTarget };
 
-const str = editor.api.string(inlineRange);
-const hasInlineNode = editor.api.some({
+const str = tx.text.string(inlineRange);
+const hasInlineNode = tx.nodes.some({
   at: inlineRange,
-  match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
+  match: (node) => ElementApi.isElement(node) && tx.schema.isInline(node),
 });
 
 if (str.length === 0 && !hasInlineNode) break;
@@ -65,13 +65,10 @@ if (str.length === 0 && !hasInlineNode) break;
 Then special-case inline void deletion so it behaves like one semantic unit instead of a character loop:
 
 ```ts
-const inlineVoidEntry = editor.api.void({
-  at: pointNext,
-  mode: 'highest',
-});
+const inlineVoidEntry = getInlineEntryAt(pointNext);
 
-if (inlineVoidEntry && editor.api.isInline(inlineVoidEntry[0])) {
-  editor.tf.setNodes(
+if (inlineVoidEntry && tx.schema.isVoid(inlineVoidEntry[0])) {
+  tx.nodes.set(
     {
       [getSuggestionKey(id)]: { createdAt, id, type: 'remove', userId },
       suggestion: true,
@@ -79,10 +76,10 @@ if (inlineVoidEntry && editor.api.isInline(inlineVoidEntry[0])) {
     { at: inlineVoidEntry[1] }
   );
 
-  const beforeInlineVoid = editor.api.before(pointNext);
+  const beforeInlineVoid = tx.points.before(pointNext);
 
   if (beforeInlineVoid) {
-    editor.tf.select(beforeInlineVoid);
+    tx.selection.set(beforeInlineVoid);
   }
 
   break;
@@ -94,13 +91,13 @@ For expanded selections, continue the delete loop after marking the inline void 
 When deleting backward, keep walking from the inline void's left edge:
 
 ```ts
-const beforeInlineElement = editor.api.before(inlineEntry[1]);
+const beforeInlineElement = tx.points.before(inlineEntry[1]);
 const targetIsInsideInlineElement =
   PathApi.equals(inlineEntry[1], pointTarget.path) ||
   PathApi.isAncestor(inlineEntry[1], pointTarget.path);
 
 if (beforeInlineElement) {
-  editor.tf.select(beforeInlineElement);
+  tx.selection.set(beforeInlineElement);
 
   if (!targetIsInsideInlineElement) {
     continue;
@@ -113,10 +110,10 @@ break;
 When deleting forward, advance past the inline void instead of reselecting its left edge:
 
 ```ts
-const afterInlineElement = editor.api.after(inlineEntry[1]);
+const afterInlineElement = tx.points.after(inlineEntry[1]);
 
 if (afterInlineElement) {
-  editor.tf.select(afterInlineElement);
+  tx.selection.set(afterInlineElement);
 
   if (!PointApi.equals(afterInlineElement, pointTarget)) {
     continue;
@@ -128,12 +125,12 @@ Also teach `findSuggestionProps` to reuse remove metadata from adjacent inline s
 
 ```ts
 const getInlineElementEntry = (point: Point) =>
-  editor.api.above<TElement>({
+  state.nodes.above<Element>({
     at: point,
     match: (node) =>
       ElementApi.isElement(node) &&
-      editor.api.isInline(node) &&
-      !!api.suggestion.nodeId(node),
+      state.schema.isInline(node) &&
+      !!api.nodeId(node),
   });
 ```
 
@@ -143,10 +140,10 @@ For paragraph-boundary deletes, keep the cross-block suggestion shape aligned wi
 
 ```ts
 const isPreviousBlockVoid =
-  editor.api.isVoid(previousAboveNode[0]) &&
-  !editor.api.isInline(previousAboveNode[0]);
+  tx.schema.isVoid(previousAboveNode[0]) &&
+  !tx.schema.isInline(previousAboveNode[0]);
 
-editor.tf.setNodes(
+tx.nodes.set(
   {
     [KEYS.suggestion]: {
       id,
@@ -171,15 +168,15 @@ Add regression coverage with a mention-shaped inline void in:
 
 Mention nodes are inline voids, so the delete range around them can be semantically deletable even when its string representation is empty.
 
-Links still passed before the fix because their inline text made `editor.api.string(range)` non-empty. Mentions failed because the same range contained an inline node but no string content.
+Links still passed before the fix because their inline text made `tx.text.string(range)` non-empty. Mentions failed because the same range contained an inline node but no string content.
 
 By checking for inline nodes before bailing out, the delete path no longer skips string-empty inline voids like mentions.
 
-By then treating the inline void as a single deletion target, the transform avoids a second loop iteration that would otherwise spill remove marks into neighboring text nodes. Selecting `editor.api.before(pointNext)` places the cursor exactly at the mention's left edge.
+By then treating the inline void as a single deletion target, the transform avoids a second loop iteration that would otherwise spill remove marks into neighboring text nodes. Selecting `tx.points.before(inlineEntry[1])` places the cursor exactly at the mention's left edge.
 
 Expanded selection deletes need one extra rule: stopping after the inline void is only correct when the original delete target lives inside that inline element. When the original selection started farther left, the transform must keep walking after marking the inline void so the remaining selected text becomes part of the same remove suggestion and the cursor collapses back to the true selection start.
 
-The same ownership rule applies in the forward direction. If the loop reselects the inline void's left edge while the real target is farther right, the next iteration finds the same inline void again and never makes progress. Advancing to `editor.api.after(inlineEntry[1])` breaks that cycle and lets replace-selection flows finish.
+The same ownership rule applies in the forward direction. If the loop reselects the inline void's left edge while the real target is farther right, the next iteration finds the same inline void again and never makes progress. Advancing to `tx.points.after(inlineEntry[1])` breaks that cycle and lets replace-selection flows finish.
 
 By reusing adjacent inline suggestion metadata in `findSuggestionProps`, the next backspace keeps extending the same remove suggestion instead of starting a new discussion card for the neighboring text.
 
@@ -201,7 +198,7 @@ pnpm lint:fix
 
 ## Prevention
 
-- Do not use `editor.api.string(range)` as the only proxy for deletability when inline void or markable void nodes are involved
+- Do not use `tx.text.string(range)` as the only proxy for deletability when inline void or markable void nodes are involved
 - When delete behavior differs between links and mentions, compare both the string content and the node shapes in the range
 - When an inline void should delete as one semantic unit, stop the character loop after marking that node
 - When an expanded selection crosses an inline void, only stop after marking that node if the original target point is inside the inline void subtree

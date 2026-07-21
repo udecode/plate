@@ -1,12 +1,17 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findInlineSuggestionNode } from './findSuggestionNode';
 
+const BoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
+});
+
 describe('findInlineSuggestionNode', () => {
   it('returns the first inline suggestion text node', () => {
     const editor = createBaseEditor({
-      plugins: [BaseSuggestionPlugin],
+      plugins: [BaseSuggestionPlugin, BoldPlugin],
       value: [
         {
           type: 'p',
@@ -32,7 +37,7 @@ describe('findInlineSuggestionNode', () => {
 
   it('respects additional match filters', () => {
     const editor = createBaseEditor({
-      plugins: [BaseSuggestionPlugin],
+      plugins: [BaseSuggestionPlugin, BoldPlugin],
       value: [
         {
           type: 'p',

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import type { Element } from '@platejs/plite';
+import { property, schema, target, type Element } from '@platejs/plite';
 import { render } from '@testing-library/react';
 
 import { createBasePlugin } from '../../lib';
@@ -20,6 +20,17 @@ const createValue = () =>
       type: 'p',
     },
   ] as any;
+
+const MarkerPlugin = createBasePlugin({
+  key: 'marker',
+  schema: {
+    properties: [
+      schema.elementProperty('marker', property.string(), {
+        target: target.type('p'),
+      }),
+    ],
+  },
+});
 
 const renderPlugin = (editor: ReturnType<typeof createPlateEditor>) => {
   const element = editor.read.children()[0] as any;
@@ -46,7 +57,7 @@ const renderPlugin = (editor: ReturnType<typeof createPlateEditor>) => {
 describe('pluginRenderElement', () => {
   it('renders the default paragraph element with the paragraph plugin class', () => {
     const editor = createPlateEditor({
-      plugins: [],
+      plugins: [MarkerPlugin],
       value: createValue(),
     });
 
@@ -60,10 +71,11 @@ describe('pluginRenderElement', () => {
   it('keeps element context available for custom node components', () => {
     const editor = createPlateEditor({
       plugins: [
+        MarkerPlugin,
         createBasePlugin({
           key: 'p',
           node: {
-            isElement: true,
+            element: { groups: ['block'] },
             type: 'p',
           },
           render: {
@@ -107,7 +119,7 @@ describe('pluginRenderElement', () => {
         },
       });
     const editor = createPlateEditor({
-      plugins: [WrapperPlugin],
+      plugins: [MarkerPlugin, WrapperPlugin],
       value: createValue(),
     });
 
@@ -122,8 +134,7 @@ describe('pluginRenderElement', () => {
         createBasePlugin({
           key: 'hr',
           node: {
-            isElement: true,
-            isVoid: true,
+            element: { groups: ['block'], void: 'block' },
             type: 'hr',
           },
           render: {

@@ -5,8 +5,9 @@ import {
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
+import { editorCommands, schema } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseEquationPlugin } from './BaseEquationPlugin';
 import { BaseInlineEquationPlugin } from './BaseInlineEquationPlugin';
@@ -16,7 +17,27 @@ jsxt;
 
 const CodeBlockPlugin = createBasePlugin({
   key: KEYS.codeBlock,
-  node: { isElement: true },
+  node: {
+    element: {
+      content: schema.content.type(NODES.codeLine, {
+        default: { type: NODES.codeLine },
+        min: 1,
+      }),
+      groups: ['block'],
+    },
+    type: NODES.codeBlock,
+  },
+  plugins: [
+    createBasePlugin({
+      key: KEYS.codeLine,
+      node: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        type: NODES.codeLine,
+      },
+    }),
+  ],
 });
 
 describe('math input rules', () => {
@@ -59,7 +80,7 @@ describe('math input rules', () => {
 
     const editor = createEditor(input);
 
-    editor.update((tx) => tx.text.insert('$'));
+    editor.update.text.insert('$');
 
     expect(editor.read.value().children).toEqual([
       {
@@ -68,7 +89,7 @@ describe('math input rules', () => {
           {
             children: [{ text: '' }],
             texExpression: 'x',
-            type: KEYS.inlineEquation,
+            type: NODES.inlineEquation,
           },
           { text: '' },
         ],
@@ -94,7 +115,7 @@ describe('math input rules', () => {
 
     editor.update((tx) => {
       tx.selection.set(end);
-      tx.break.insert();
+      tx.command(editorCommands.insertBreak, {});
     });
 
     expect(editor.read.value().children).toMatchObject([
@@ -121,10 +142,11 @@ describe('math input rules', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       });
-      tx.text.insert('$');
+      tx.command(editorCommands.insertText, { text: '$' });
     });
 
     expect(editor.read.value().children).toMatchObject([
@@ -149,7 +171,7 @@ describe('math input rules', () => {
 
     const editor = createEditor(input, { withCodeBlock: true });
 
-    editor.update((tx) => tx.text.insert('$'));
+    editor.update.text.insert('$');
 
     expect(editor.read.value().children).toEqual(
       (
@@ -177,7 +199,7 @@ describe('math input rules', () => {
 
     const editor = createEditor(input, { withCodeBlock: true });
 
-    editor.update((tx) => tx.text.insert('$'));
+    editor.update.text.insert('$');
 
     expect(editor.read.value().children[1]).toEqual({
       children: [
@@ -185,7 +207,7 @@ describe('math input rules', () => {
         {
           children: [{ text: '' }],
           texExpression: 'x',
-          type: KEYS.inlineEquation,
+          type: NODES.inlineEquation,
         },
         { text: '' },
       ],
@@ -210,7 +232,7 @@ describe('math input rules', () => {
       }),
     });
 
-    editor.update((tx) => tx.text.insert('$'));
+    editor.update.text.insert('$');
 
     expect(editor.read.value().children).toEqual(
       (

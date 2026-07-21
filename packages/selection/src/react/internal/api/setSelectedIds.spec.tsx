@@ -1,12 +1,22 @@
 import { type BaseEditor, createBaseEditor } from '@platejs/core';
 
+import {
+  TestTableCellPlugin,
+  TestTablePlugin,
+  TestTableRowPlugin,
+} from '../../../__tests__/testPlugins';
 import * as domUtils from '../../../lib';
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 import { addSelectedRow, setSelectedIds } from './setSelectedIds';
 
 const createTestEditor = () =>
   createBaseEditor({
-    plugins: [BlockSelectionPlugin],
+    plugins: [
+      BlockSelectionPlugin,
+      TestTablePlugin,
+      TestTableRowPlugin,
+      TestTableCellPlugin,
+    ],
     value: [
       {
         id: 'existing',
@@ -14,14 +24,40 @@ const createTestEditor = () =>
         type: 'p',
       },
       {
-        id: 'row-1',
-        children: [{ text: 'Row 1' }],
-        type: 'tr',
-      },
-      {
-        id: 'row-2',
-        children: [{ text: 'Row 2' }],
-        type: 'tr',
+        id: 'table',
+        children: [
+          {
+            id: 'row-1',
+            children: [
+              {
+                children: [
+                  {
+                    children: [{ text: 'Row 1' }],
+                    type: 'p',
+                  },
+                ],
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+          {
+            id: 'row-2',
+            children: [
+              {
+                children: [
+                  {
+                    children: [{ text: 'Row 2' }],
+                    type: 'p',
+                  },
+                ],
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+        ],
+        type: 'table',
       },
     ],
   });

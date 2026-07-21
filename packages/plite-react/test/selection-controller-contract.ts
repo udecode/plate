@@ -31,8 +31,47 @@ import {
   shouldForceModelOwnedTextInput,
   shouldImportChangedExpandedDOMSelection,
   shouldSuppressCollapsedSelectionMoveDOMRange,
-  syncEditableDOMSelectionToEditor,
+  syncEditableDOMSelectionToEditor as syncRuntimeDOMSelectionToEditor,
 } from '../src/editable/selection-controller';
+import {
+  EditableDOMRuntime,
+  findMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+} from '../src/editable/editable-dom-runtime';
+
+const testRuntimes = new Set<EditableDOMRuntime>();
+const syncEditableDOMSelectionToEditor = (
+  options: Parameters<typeof syncRuntimeDOMSelectionToEditor>[0]
+) => {
+  const root =
+    options.editorElement ??
+    EDITOR_TO_ELEMENT.get(options.editor) ??
+    (() => {
+      try {
+        return ReactEditor.assertDOMNode(options.editor, options.editor);
+      } catch {
+        return null;
+      }
+    })();
+  const mountedRuntime = root
+    ? findMountedEditableDOMRuntime(root)
+    : getMountedEditableDOMRuntime(options.editor);
+
+  if (!mountedRuntime) {
+    const runtime = new EditableDOMRuntime({ editor: options.editor });
+
+    if (root instanceof HTMLDivElement) runtime.setRoot(root);
+    runtime.connect();
+    testRuntimes.add(runtime);
+  }
+
+  return syncRuntimeDOMSelectionToEditor(options);
+};
+
+afterEach(() => {
+  for (const runtime of testRuntimes) runtime.destroy();
+  testRuntimes.clear();
+});
 import { ReactEditor } from '../src/plugin/react-editor';
 import { createReactEditor } from '../src/plugin/with-react';
 import { createPliteProjectionGraph } from '../src/projection-graph';
@@ -73,10 +112,12 @@ test('selection import executes only for import-dom policy', () => {
 
 test('model-owned text input guard rejects stale native collapsed ranges', () => {
   const modelSelection = {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 8 },
     focus: { path: [0, 0], offset: 8 },
   };
   const staleRange = {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 0 },
   };
@@ -138,8 +179,35 @@ test('model-owned text input guard rejects stale native collapsed ranges', () =>
       modelOwnedTextInputGuard: 1,
       modelSelection,
       range: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 9 },
         focus: { path: [0, 0], offset: 9 },
+      },
+      selectionSource: 'model-owned',
+    })
+  ).toBe(false);
+  expect(
+    isStaleModelOwnedTextInputDOMRange({
+      activeIntent: 'text-insert',
+      modelOwnedTextInputGuard: 0,
+      modelSelection,
+      range: {
+        kind: 'text',
+        anchor: { path: [12, 0], offset: 4 },
+        focus: { path: [12, 0], offset: 4 },
+      },
+      selectionSource: 'model-owned',
+    })
+  ).toBe(true);
+  expect(
+    isStaleModelOwnedTextInputDOMRange({
+      activeIntent: 'native-selection-move',
+      modelOwnedTextInputGuard: 1,
+      modelSelection,
+      range: {
+        kind: 'text',
+        anchor: { path: [12, 0], offset: 4 },
+        focus: { path: [12, 0], offset: 4 },
       },
       selectionSource: 'model-owned',
     })
@@ -224,6 +292,7 @@ test('failed DOM selection export clears the updating guard', () => {
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -287,6 +356,7 @@ test('view selection export clears stale native selection ranges', () => {
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'model selection' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'model selection'.length },
     },
@@ -296,6 +366,7 @@ test('view selection export clears stale native selection ranges', () => {
     createPliteViewSelection(
       createPliteProjectionGraph([{ path: [0], root: 'main' }]),
       {
+        kind: 'text',
         anchor: { point: { path: [0, 0], offset: 0 } },
         focus: { point: { path: [0, 0], offset: 'model selection'.length } },
       }
@@ -345,6 +416,7 @@ test('model selection export is owned by the matching root view only', () => {
 
   childEditor.update((tx) => {
     tx.selection.set({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -380,6 +452,7 @@ test('model selection export preserves preferred collapsed DOM point', () => {
   const secondLine = document.createTextNode('second line');
   const domSelection = document.getSelection();
   const selection = {
+    kind: 'text',
     anchor: { path: [0, 0], offset: firstLine.textContent!.length },
     focus: { path: [0, 0], offset: firstLine.textContent!.length },
   };
@@ -414,6 +487,12 @@ test('model selection export preserves preferred collapsed DOM point', () => {
 
     return fallbackRange;
   });
+
+  const runtime = new EditableDOMRuntime({ editor });
+
+  runtime.setRoot(editorElement);
+  runtime.connect();
+  testRuntimes.add(runtime);
 
   writeCollapsedModelSelectionDOMPreference(editor, selection, {
     node: secondLine,
@@ -550,10 +629,12 @@ test('changed expanded DOM selection can override stale programmatic origin', ()
   expect(
     shouldImportChangedExpandedDOMSelection({
       currentSelection: {
+        kind: 'text',
         anchor: { path: [0, 1], offset: 8 },
         focus: { path: [0, 1], offset: 8 },
       },
       nextSelection: {
+        kind: 'text',
         anchor: { path: [0, 1], offset: 0 },
         focus: { path: [0, 1], offset: 8 },
       },
@@ -564,6 +645,7 @@ test('changed expanded DOM selection can override stale programmatic origin', ()
 
 test('changed expanded DOM import ignores same, collapsed, and repair ranges', () => {
   const currentSelection = {
+    kind: 'text',
     anchor: { path: [0, 1], offset: 8 },
     focus: { path: [0, 1], offset: 8 },
   };
@@ -579,6 +661,7 @@ test('changed expanded DOM import ignores same, collapsed, and repair ranges', (
     shouldImportChangedExpandedDOMSelection({
       currentSelection,
       nextSelection: {
+        kind: 'text',
         anchor: { path: [0, 1], offset: 7 },
         focus: { path: [0, 1], offset: 7 },
       },
@@ -589,6 +672,7 @@ test('changed expanded DOM import ignores same, collapsed, and repair ranges', (
     shouldImportChangedExpandedDOMSelection({
       currentSelection,
       nextSelection: {
+        kind: 'text',
         anchor: { path: [0, 1], offset: 0 },
         focus: { path: [0, 1], offset: 8 },
       },
@@ -599,6 +683,7 @@ test('changed expanded DOM import ignores same, collapsed, and repair ranges', (
 
 test('selection-move guard allows native collapse inside expanded selection', () => {
   const currentSelection = {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 8 },
     focus: { path: [0, 0], offset: 16 },
   };
@@ -608,6 +693,7 @@ test('selection-move guard allows native collapse inside expanded selection', ()
       activeIntent: 'native-selection-move',
       currentSelection,
       nextSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 12 },
         focus: { path: [0, 0], offset: 12 },
       },
@@ -618,6 +704,7 @@ test('selection-move guard allows native collapse inside expanded selection', ()
       activeIntent: 'native-selection-move',
       currentSelection,
       nextSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 20 },
         focus: { path: [0, 0], offset: 20 },
       },
@@ -628,6 +715,7 @@ test('selection-move guard allows native collapse inside expanded selection', ()
       activeIntent: 'text-insert',
       currentSelection,
       nextSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 20 },
         focus: { path: [0, 0], offset: 20 },
       },
@@ -763,6 +851,7 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -819,6 +908,7 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
 
     expect(resolvePliteRange).not.toHaveBeenCalled();
     expect(editorGetSelection(editor)).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -860,6 +950,7 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -904,6 +995,7 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
 
     expect(resolvePliteRange).not.toHaveBeenCalled();
     expect(editorGetSelection(editor)).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -943,6 +1035,7 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -993,6 +1086,7 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
 
     expect(resolvePliteRange).not.toHaveBeenCalled();
     expect(editorGetSelection(editor)).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -1108,14 +1202,17 @@ test('native selectionchange clears its origin after import handling', () => {
 
 test('pending native repair selectionchange policy suppresses stale same-path offsets and allows deliberate selections', () => {
   const samePendingPathSelection = {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   };
   const otherPathClickSelection = {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   };
   const samePathExpandedSelection = {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 2 },
   };
@@ -1149,6 +1246,7 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       },
@@ -1156,6 +1254,7 @@ test('pending native repair selectionchange policy suppresses stale same-path of
       pendingNativeTextInputRepairOffset: 6,
       pendingNativeTextInputRepairPathKey: '0,0',
       range: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       },
@@ -1166,12 +1265,14 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
+        kind: 'text',
         anchor: { path: [2500, 0], offset: 1 },
         focus: { path: [2500, 0], offset: 1 },
       },
       domSelectionTextBacked: false,
       pendingNativeTextInputRepairPathKey: '0,0',
       range: {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       },
@@ -1182,12 +1283,14 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
+        kind: 'text',
         anchor: { path: [2500, 0], offset: 1 },
         focus: { path: [2500, 0], offset: 1 },
       },
       domSelectionTextBacked: false,
       pendingNativeTextInputRepairPathKey: '0,0',
       range: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1198,6 +1301,7 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       },
@@ -1205,6 +1309,7 @@ test('pending native repair selectionchange policy suppresses stale same-path of
       pendingNativeTextInputRepairOffset: 8,
       pendingNativeTextInputRepairPathKey: '0,0',
       range: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 8 },
         focus: { path: [0, 0], offset: 8 },
       },
@@ -1215,11 +1320,13 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       },
       pendingNativeTextInputRepairPathKey: null,
       range: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       },
@@ -1230,11 +1337,13 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       },
       pendingNativeTextInputRepairPathKey: null,
       range: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1245,11 +1354,13 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       },
       pendingNativeTextInputRepairPathKey: null,
       range: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 8 },
         focus: { path: [0, 0], offset: 8 },
       },
@@ -1260,12 +1371,14 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
+        kind: 'text',
         anchor: { path: [2500, 0], offset: 1 },
         focus: { path: [2500, 0], offset: 1 },
       },
       domSelectionTextBacked: false,
       pendingNativeTextInputRepairPathKey: null,
       range: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1377,6 +1490,7 @@ test('native insertText preserves explicit model-owned input guards', () => {
     'internal-control',
     'model-command',
     'partial-dom-backed',
+    'repair-induced',
   ] as const) {
     const inputController = createEditableInputController({
       preferModelSelectionForInputRef: { current: true },

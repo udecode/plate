@@ -14,6 +14,7 @@ export const test = (editor) => {
   const point = { path: [0, 0], offset: 2 };
 
   return editorIsEdge(editor, point, {
+    kind: 'text',
     anchor: point,
     focus: { path: [0, 0], offset: 3 },
   });

@@ -25,4 +25,3 @@ Plite pressure:
 Keep Plite's hybrid DOM strategy, but make scroll/viewport stability a named
 contract and add future metrics for scroll anchor drift, viewport settle frames,
 and precise-versus-estimated coordinate behavior.
-

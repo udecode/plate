@@ -14,6 +14,7 @@ describe('getMentionOnSelectItem', () => {
     const editor = createBaseEditor({
       plugins: [MentionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
@@ -34,6 +35,7 @@ describe('getMentionOnSelectItem', () => {
     });
     expect(children[2]).toEqual({ text: ' ' });
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 2] },
       focus: { offset: 1, path: [0, 2] },
     });
@@ -46,6 +48,7 @@ describe('getMentionOnSelectItem', () => {
     const editor = createBaseEditor({
       plugins: [MentionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },

@@ -55,8 +55,9 @@ describe('getTopTableCell', () => {
   it('returns undefined if the current cell is in the first row', () => {
     const editor = createEditorInstance(input);
     editor.update.selection.set({
-      anchor: { offset: 0, path: [0, 0, 0] },
-      focus: { offset: 0, path: [0, 0, 0] },
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 0, 0, 0] },
     });
     const cellAbove = getTopTableCell(editor, {
       at: editor.read.selection()!.anchor.path,

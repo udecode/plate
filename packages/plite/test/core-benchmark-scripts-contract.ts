@@ -379,14 +379,20 @@ describe('core benchmark scripts contract', () => {
     const benchmarkTargetCommands = readBenchmarkTargetCommands();
 
     const missingFiles = coreBenchmarkFiles.filter((file) => {
-      const expectedCommand = `bun benchmarks/slate-v2/donor/core/current/${file}`;
+      const expectedCommand = `benchmarks/slate-v2/donor/core/current/${file}`;
 
       return !benchmarkTargetCommands.some((command) =>
         command.includes(expectedCommand)
       );
     });
+    const commandsWithoutSourceAliases = benchmarkTargetCommands.filter(
+      (command) =>
+        command.includes('benchmarks/slate-v2/donor/core/current/') &&
+        !command.includes('--preload ./config/plite-source-aliases.ts')
+    );
 
     assert.deepEqual(missingFiles, []);
+    assert.deepEqual(commandsWithoutSourceAliases, []);
   });
 
   it('samples retained history heap after a post-run GC pass', () => {
@@ -573,13 +579,13 @@ describe('core benchmark scripts contract', () => {
     );
     assert.match(
       source,
-      /artifactPath: browserTraceLatestArtifactPath,\s*command: 'bun run bench:react:huge-document:browser-trace:local'/
+      /artifactPath: browserTraceLatestArtifactPath,\s*command:\s*'bun benchmarks\/slate-v2\/donor\/browser\/react\/huge-document-browser-trace\.mjs'/
     );
     assert.match(
       source,
-      /SLATE_BROWSER_TRACE_SURFACES:\s*'stagedActiveDOMGroup,stagedContentVisibility'/
+      /PLITE_BROWSER_TRACE_SURFACES:\s*'stagedActiveDOMGroup,stagedContentVisibility'/
     );
-    assert.match(source, /SLATE_BROWSER_TRACE_SURFACES:\s*'virtualized'/);
+    assert.match(source, /PLITE_BROWSER_TRACE_SURFACES:\s*'virtualized'/);
     assert.match(source, /react-huge-document-staged-diagnostic-trace/);
     assert.match(source, /stagedDiagnosticBurstToPaintPerOpP95Ms/);
     assert.match(
@@ -817,7 +823,7 @@ describe('core benchmark scripts contract', () => {
     );
   });
 
-  it('keeps huge-document burst typing normalized per operation', () => {
+  it('keeps huge-document burst typing normalized per intent', () => {
     const source = readFileSync(hugeDocumentBrowserTracePath, 'utf8');
 
     assert.match(
@@ -925,18 +931,18 @@ describe('core benchmark scripts contract', () => {
     );
     assert.match(source, /\$\{prefix\}_root_mousedown_apply_selection_p95_ms/);
     assert.match(source, /\$\{prefix\}_click_mouse_up_p95_ms/);
-    assert.match(source, /SLATE_BROWSER_TRACE_SELECT_ALL_DELETE/);
-    assert.match(source, /SLATE_BROWSER_TRACE_SELECT_ALL_DELETE_ALLOW_FAILURE/);
-    assert.match(source, /SLATE_BROWSER_TRACE_AFTER_DELETE_TEXT/);
-    assert.match(source, /SLATE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE/);
-    assert.match(source, /SLATE_BROWSER_TRACE_RUN_LABEL/);
+    assert.match(source, /PLITE_BROWSER_TRACE_SELECT_ALL_DELETE/);
+    assert.match(source, /PLITE_BROWSER_TRACE_SELECT_ALL_DELETE_ALLOW_FAILURE/);
+    assert.match(source, /PLITE_BROWSER_TRACE_AFTER_DELETE_TEXT/);
+    assert.match(source, /PLITE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE/);
+    assert.match(source, /PLITE_BROWSER_TRACE_RUN_LABEL/);
     assert.match(source, /runStartedAt/);
     assert.match(source, /selectAllDeleteSurfaceState/);
     assert.match(source, /surfaceState: selectAllDeleteSurfaceState/);
     assert.match(source, /effectiveStrategy: sample\.effectiveStrategy/);
     assert.match(source, /mountedTopLevelCount: sample\.mountedTopLevelCount/);
     assert.match(source, /timerEvents: \[\]/);
-    assert.match(source, /slateTraceTimerCallback/);
+    assert.match(source, /pliteTraceTimerCallback/);
     assert.match(source, /summarizeTimerEvents/);
     assert.match(source, /timerDurationMs/);
     assert.match(source, /timerEventCount/);
@@ -1072,11 +1078,11 @@ describe('core benchmark scripts contract', () => {
     );
     assert.match(
       source,
-      /root\.__slateBrowserHandle\?\.importDOMSelection\?\.\(\)/
+      /root\.__pliteBrowserHandle\?\.importDOMSelection\?\.\(\)/
     );
     assert.match(
       source,
-      /root\?\.__slateBrowserHandle\?\.getSelection\?\.\(\)/
+      /root\?\.__pliteBrowserHandle\?\.getSelection\?\.\(\)/
     );
     assert.match(source, /pathMatches\(anchorPath\)/);
     assert.match(source, /handleSelection\?\.anchor\?\.offset === offset/);

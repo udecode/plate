@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import { history } from '@platejs/plite-history';
 
 import {
+  ContentSlice,
   createEditorRuntime,
   createEditorView,
   type Descendant,
@@ -11,27 +12,21 @@ import {
   defineEditorExtension,
   type EditorUpdateTransaction,
   NodeApi,
-  type Operation,
+  SelectionApi,
 } from '@platejs/plite';
-import { getDirtyPathsForRoot } from '../src/core/update-dirty-paths';
 import {
   above as editorAbove,
-  bookmark as editorBookmark,
   deleteBackward as editorDeleteBackward,
   getExtensionRegistry as editorGetExtensionRegistry,
   getLastCommit as editorGetLastCommit,
-  getEditorLiveNode,
   insertText as editorInsertText,
   isEditor as editorIsEditor,
-  pathRef as editorPathRef,
-  pointRef as editorPointRef,
-  rangeRef as editorRangeRef,
   replace as editorReplaceBase,
   reset as editorResetBase,
   string as editorString,
   setEditorTargetRuntime,
-  withOperationRootChildren,
 } from '@platejs/plite/internal';
+import { createRangeAnchor } from './support/anchor';
 
 type LegacySnapshotInput = Omit<
   Parameters<typeof editorReplaceBase>[1],
@@ -66,45 +61,11 @@ describe('editor runtime/view contract', () => {
     const runtime = createEditorRuntime({
       initialValue: [paragraph('body')],
     });
+    const primaryRoot: string = 'main';
 
     assert.throws(
-      () => createEditorView(runtime, { root: 'main' }),
+      () => createEditorView(runtime, { root: primaryRoot }),
       /Omit root to target the primary document/
-    );
-  });
-
-  it('keeps matching root views scoped when reading operation children', () => {
-    const runtime = createEditorRuntime({
-      initialValue: {
-        children: [paragraph('body')],
-        roots: { header: [paragraph('header')] },
-      },
-    });
-    const headerEditor = createEditorView(runtime, { root: 'header' });
-    const operation = {
-      newProperties: null,
-      properties: {
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
-      },
-      root: 'header',
-      type: 'set_selection',
-    } satisfies Operation;
-
-    withOperationRootChildren(headerEditor, operation, () => {
-      assert.equal(
-        NodeApi.string(getEditorLiveNode(headerEditor, [0])!),
-        'header'
-      );
-    });
-
-    headerEditor.update((tx) => {
-      tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
-    });
-
-    assert.equal(
-      NodeApi.string(getEditorLiveNode(headerEditor, [0])!),
-      'header!'
     );
   });
 
@@ -128,6 +89,7 @@ describe('editor runtime/view contract', () => {
     editorReplace(headerEditor, {
       children: [paragraph('replaced header')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 8 },
         focus: { path: [0, 0], offset: 8 },
       },
@@ -143,6 +105,7 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       headerEditor.read((state) => state.selection()),
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 8, root: 'header' },
         focus: { path: [0, 0], offset: 8, root: 'header' },
       }
@@ -191,7 +154,7 @@ describe('editor runtime/view contract', () => {
     assert.equal(headerEditor.runtime, runtime);
     assert.equal(
       mainEditor.read((state) => state.view.root()),
-      'main'
+      undefined
     );
     assert.equal(
       headerEditor.read((state) => state.view.root()),
@@ -237,8 +200,8 @@ describe('editor runtime/view contract', () => {
       mainEditor.read((state) => state.value())
     );
     assert.equal(
-      editorGetLastCommit(runtime.editor)?.operations[0]?.root,
-      'header'
+      editorGetLastCommit(runtime.editor)?.changed.has('text', 'header'),
+      true
     );
   });
 
@@ -268,6 +231,100 @@ describe('editor runtime/view contract', () => {
       viewRegistry.capabilities.get('clipboard.insertData')?.length,
       1
     );
+  });
+
+  it('binds dynamically installed extensions to the invoking root view', () => {
+    const commitEditors: string[] = [];
+    const baseExtension = defineEditorExtension({
+      name: 'base-bound-extension',
+      onCommit({ editor }) {
+        commitEditors.push(`base:${editor.read.view.root()}`);
+      },
+    });
+    const runtime = createEditorRuntime({
+      extensions: [baseExtension] as const,
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const headerEditor = createEditorView(runtime, { root: 'header' });
+    let activationEditor: unknown;
+    let activationRoot: unknown;
+    let apiFactoryRoot: unknown;
+    let cleanupReason: unknown;
+    let nodeChangeEditor: unknown;
+    let textChangeEditor: unknown;
+    let transactionChangeEditor: unknown;
+    let txEditor: unknown;
+    const headerExtension = defineEditorExtension({
+      activate(editor, context) {
+        activationEditor = editor;
+        activationRoot = context.root;
+        context.onCleanup(({ reason }) => {
+          cleanupReason = reason;
+        });
+      },
+      api(_editor, context) {
+        apiFactoryRoot = context.root;
+
+        return {};
+      },
+      name: 'header-bound-extension',
+      onCommit({ editor }) {
+        commitEditors.push(`header:${editor.read.view.root()}`);
+      },
+      onNodeChange({ editor }) {
+        nodeChangeEditor = editor;
+      },
+      onTextChange({ editor }) {
+        textChangeEditor = editor;
+      },
+      onTransactionChange({ editor }) {
+        transactionChangeEditor = editor;
+      },
+      state: {
+        hostState(_state, editor) {
+          return editor;
+        },
+      },
+      tx: {
+        hostTx(_tx, editor) {
+          txEditor = editor;
+
+          return editor.read.view.root();
+        },
+      },
+    });
+
+    const cleanup = headerEditor.extend(headerExtension);
+
+    assert.equal(activationEditor, headerEditor);
+    assert.equal(activationRoot, 'header');
+    assert.equal(apiFactoryRoot, 'header');
+    assert.equal(
+      headerEditor.read(
+        (state) => (state as unknown as { hostState: unknown }).hostState
+      ),
+      headerEditor
+    );
+
+    commitEditors.length = 0;
+    headerEditor.update((tx) => {
+      assert.equal((tx as unknown as { hostTx: unknown }).hostTx, 'header');
+      tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
+      tx.nodes.insert(paragraph('next'), { at: [1] });
+    });
+
+    assert.deepEqual(commitEditors, ['base:undefined', 'header:header']);
+    assert.equal(nodeChangeEditor, headerEditor);
+    assert.equal(textChangeEditor, headerEditor);
+    assert.equal(transactionChangeEditor, headerEditor);
+    assert.equal(txEditor, headerEditor);
+
+    cleanup();
+
+    assert.equal(cleanupReason, 'remove');
   });
 
   it('does not materialize missing roots for no-op or failed view updates', () => {
@@ -370,16 +427,10 @@ describe('editor runtime/view contract', () => {
         defineEditorExtension({
           name: 'move-selection-on-commit',
           onCommit({ commit, editor }) {
-            if (
-              commit.operations.some(
-                (operation) =>
-                  operation.type === 'insert_text' &&
-                  'text' in operation &&
-                  operation.text === '!'
-              )
-            ) {
+            if (commit.changed.has('text')) {
               editor.update((tx: EditorUpdateTransaction) => {
                 tx.selection.set({
+                  kind: 'text',
                   anchor: { path: [0, 0], offset: 0, root: 'header' },
                   focus: { path: [0, 0], offset: 0, root: 'header' },
                 });
@@ -402,6 +453,7 @@ describe('editor runtime/view contract', () => {
       });
 
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'body'.length },
         focus: { path: [0, 0], offset: 'body'.length },
       });
@@ -409,6 +461,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(snapshotSelection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'body!'.length },
       focus: { path: [0, 0], offset: 'body!'.length },
     });
@@ -457,6 +510,7 @@ describe('editor runtime/view contract', () => {
       },
     });
     const headerRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0, root: 'header' },
       focus: { path: [0, 0], offset: 6, root: 'header' },
     };
@@ -501,6 +555,7 @@ describe('editor runtime/view contract', () => {
 
     runtime.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2, root: 'header' },
         focus: { path: [0, 0], offset: 2, root: 'header' },
       });
@@ -536,12 +591,14 @@ describe('editor runtime/view contract', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       });
     });
     runtime.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -550,6 +607,7 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       runtime.read((state) => state.selection()),
       {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       }
@@ -576,6 +634,7 @@ describe('editor runtime/view contract', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -611,6 +670,7 @@ describe('editor runtime/view contract', () => {
     assert.throws(() => {
       runtime.read((state) =>
         state.text.string({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0, root: 'header' },
           focus: { path: [0, 0], offset: 6, root: 'footer' },
         })
@@ -621,6 +681,7 @@ describe('editor runtime/view contract', () => {
   it('reads initial selection through its declared root view', () => {
     const runtime = createEditorRuntime({
       initialSelection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 6, root: 'header' },
         focus: { path: [0, 0], offset: 6, root: 'header' },
       },
@@ -635,6 +696,7 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       headerEditor.read((state) => state.selection()),
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6, root: 'header' },
         focus: { path: [0, 0], offset: 6, root: 'header' },
       }
@@ -657,6 +719,7 @@ describe('editor runtime/view contract', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       });
@@ -684,22 +747,24 @@ describe('editor runtime/view contract', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       });
       tx.marks.add('bold', true);
     });
 
+    const mainSelection = mainEditor.read(
+      (state) => state.runtime.snapshot().selection
+    );
+
+    assert.equal(SelectionApi.isText(mainSelection), true);
     assert.deepEqual(
-      mainEditor.read((state) => state.runtime.snapshot().marks),
+      SelectionApi.isText(mainSelection) ? mainSelection.marks : null,
       { bold: true }
     );
     assert.equal(
       headerEditor.read((state) => state.runtime.snapshot().selection),
-      null
-    );
-    assert.equal(
-      headerEditor.read((state) => state.runtime.snapshot().marks),
       null
     );
   });
@@ -716,6 +781,7 @@ describe('editor runtime/view contract', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       });
@@ -729,6 +795,7 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       runtime.read((state) => state.selection()),
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       }
@@ -750,6 +817,52 @@ describe('editor runtime/view contract', () => {
     );
   });
 
+  it('does not reuse a sibling-root selection for slice replacement', () => {
+    const runtime = createEditorRuntime({
+      initialValue: {
+        children: [paragraph('body')] as Element[],
+        roots: { header: [paragraph('header')] as Element[] },
+      },
+    });
+    const headerEditor = createEditorView(runtime, { root: 'header' });
+    const mainEditor = createEditorView(runtime);
+    const slice = ContentSlice.closed([{ text: '!' }]);
+    let callbackFragment = true;
+    let callbackSlice = true;
+    let commits = 0;
+
+    mainEditor.update((tx) => {
+      tx.selection.set({
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      });
+    });
+    const unsubscribe = runtime.subscribeCommit(() => commits++);
+
+    assert.equal(
+      headerEditor.read((state) => state.selection()),
+      null
+    );
+    assert.equal(
+      headerEditor.read((state) => state.slice.fit(slice)),
+      false
+    );
+    assert.equal(headerEditor.update.slice.replace(slice), false);
+    assert.equal(headerEditor.update.fragment.replace([{ text: '!' }]), false);
+    headerEditor.update((tx) => {
+      callbackSlice = tx.slice.replace(slice);
+      callbackFragment = tx.fragment.replace([{ text: '!' }]);
+    });
+    unsubscribe();
+
+    assert.equal(callbackSlice, false);
+    assert.equal(callbackFragment, false);
+    assert.equal(commits, 0);
+    assert.deepEqual(runtime.editor.read.children(), [paragraph('body')]);
+    assert.deepEqual(runtime.editor.read.root('header'), [paragraph('header')]);
+  });
+
   it('keeps implicit view node mutations from using sibling-root selections', () => {
     const runtime = createEditorRuntime({
       initialValue: {
@@ -762,6 +875,7 @@ describe('editor runtime/view contract', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -791,7 +905,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('keeps batched view node insert dirty paths on the invoking root', () => {
+  it('keeps changed-range node inserts on the invoking root', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('m1')],
@@ -799,15 +913,10 @@ describe('editor runtime/view contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    let mainDirtyInside: unknown;
-
     headerEditor.update((tx) => {
       tx.nodes.insert([paragraph('h2'), paragraph('h3')], { at: [1] });
-      mainDirtyInside = getDirtyPathsForRoot(runtime.editor, 'main');
     });
 
-    assert.deepEqual(mainDirtyInside, []);
-    assert.deepEqual(getDirtyPathsForRoot(runtime.editor, 'main'), []);
     assert.deepEqual(
       runtime.read((state) => state.value()),
       {
@@ -815,11 +924,9 @@ describe('editor runtime/view contract', () => {
         roots: { header: [paragraph('h1'), paragraph('h2'), paragraph('h3')] },
       }
     );
-    assert.deepEqual(
-      editorGetLastCommit(runtime.editor)?.operations.map(
-        (operation) => operation.root
-      ),
-      ['header', 'header']
+    assert.equal(
+      editorGetLastCommit(runtime.editor)?.changed.has('structure', 'header'),
+      true
     );
   });
 
@@ -846,13 +953,14 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       runtime.read((state) => state.selection()),
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 7, root: 'header' },
         focus: { path: [0, 0], offset: 7, root: 'header' },
       }
     );
     assert.equal(
-      editorGetLastCommit(runtime.editor)?.operations.at(-1)?.root,
-      'header'
+      editorGetLastCommit(runtime.editor)?.changed.has('text', 'header'),
+      true
     );
   });
 
@@ -876,7 +984,7 @@ describe('editor runtime/view contract', () => {
     });
   });
 
-  it('rolls back imported operations in non-main roots', () => {
+  it('discards changes in non-main roots when the transaction aborts', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('main')],
@@ -886,15 +994,9 @@ describe('editor runtime/view contract', () => {
 
     assert.throws(() => {
       runtime.update((tx) => {
-        tx.operations.replay([
-          {
-            offset: 6,
-            path: [0, 0],
-            root: 'header',
-            text: '!',
-            type: 'insert_text',
-          },
-        ]);
+        tx.text.insert('!', {
+          at: { path: [0, 0], offset: 6, root: 'header' },
+        });
         throw new Error('boom');
       });
     }, /boom/);
@@ -908,7 +1010,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('keeps base runtime subscriptions on the base snapshot for rooted replay', () => {
+  it('keeps base runtime subscriptions on the base snapshot for rooted changes', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('body')],
@@ -916,31 +1018,25 @@ describe('editor runtime/view contract', () => {
       },
     });
     let listenerText: string | undefined;
-    let listenerOperationRoot: string | undefined;
+    let changedHeader = false;
     const unsubscribe = runtime.subscribe((snapshot, change) => {
       listenerText = (
         snapshot.children[0] as Element & {
           children: [{ text: string }];
         }
       ).children[0].text;
-      listenerOperationRoot = change?.operations[0]?.root;
+      changedHeader = change?.changed.has('text', 'header') ?? false;
     });
 
     runtime.update((tx) => {
-      tx.operations.replay([
-        {
-          offset: 6,
-          path: [0, 0],
-          root: 'header',
-          text: '!',
-          type: 'insert_text',
-        },
-      ]);
+      tx.text.insert('!', {
+        at: { path: [0, 0], offset: 6, root: 'header' },
+      });
     });
     unsubscribe();
 
     assert.equal(listenerText, 'body');
-    assert.equal(listenerOperationRoot, 'header');
+    assert.equal(changedHeader, true);
     assert.deepEqual(
       runtime.read((state) => state.runtime.snapshot().children),
       [paragraph('body')]
@@ -986,7 +1082,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('keeps path refs scoped to their owning root', () => {
+  it('keeps path anchors scoped to their owning root', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('first'), paragraph('second')],
@@ -994,21 +1090,24 @@ describe('editor runtime/view contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const mainRef = editorPathRef(runtime.editor, [1]);
-    const headerRef = editorPathRef(
-      headerEditor as unknown as typeof runtime.editor,
-      [0]
-    );
+    const mainAnchor = runtime.editor.anchor([1], {
+      association: 'forward',
+      deletion: 'drop',
+    });
+    const headerAnchor = headerEditor.anchor([0], {
+      association: 'forward',
+      deletion: 'drop',
+    });
 
     headerEditor.update((tx) => {
       tx.nodes.insert(paragraph('inserted'), { at: [0] });
     });
 
-    assert.deepEqual(mainRef.current, [1]);
-    assert.deepEqual(headerRef.current, [1]);
+    assert.deepEqual(mainAnchor.resolve(), [1]);
+    assert.deepEqual(headerAnchor.resolve(), [1]);
 
-    mainRef.unref();
-    headerRef.unref();
+    mainAnchor.release();
+    headerAnchor.release();
   });
 
   it('normalizes writes in the invoking view root', () => {
@@ -1063,7 +1162,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('defaults rootless path refs to the invoking view root during updates', () => {
+  it('defaults rootless path anchors to the invoking view root during updates', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('main'), paragraph('other')],
@@ -1071,16 +1170,19 @@ describe('editor runtime/view contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    let refPath: unknown = null;
+    let anchorPath: unknown = null;
 
     headerEditor.update((tx) => {
-      const ref = editorPathRef(runtime.editor, [1]);
+      const anchor = headerEditor.anchor([1], {
+        association: 'forward',
+        deletion: 'drop',
+      });
 
       tx.nodes.remove({ at: [0] });
-      refPath = ref.unref();
+      anchorPath = anchor.release();
     });
 
-    assert.deepEqual(refPath, [0]);
+    assert.deepEqual(anchorPath, [0]);
     assert.deepEqual(
       runtime.read((state) => state.value()),
       {
@@ -1090,7 +1192,18 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('defaults rootless point and range refs to the invoking view root during updates', () => {
+  it('defaults rootless point and range anchors to the invoking view root during updates', () => {
+    const mainSource = createEditorRuntime({
+      initialValue: [paragraph('main'), paragraph('other')],
+    });
+
+    mainSource.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+    });
+    const mainChange = mainSource.read((state) => state.lastCommit()?.changes);
+
+    assert(mainChange);
+
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('main'), paragraph('other')],
@@ -1102,30 +1215,23 @@ describe('editor runtime/view contract', () => {
     let range: unknown = null;
 
     headerEditor.update((tx) => {
-      const pointRef = editorPointRef(runtime.editor, {
-        path: [1, 0],
-        offset: 0,
-      });
-      const rangeRef = editorRangeRef(runtime.editor, {
-        anchor: { path: [1, 0], offset: 0 },
-        focus: { path: [1, 0], offset: 3 },
-      });
-
-      assert.equal(Object.hasOwn(pointRef, 'root'), false);
-      assert.equal(Object.hasOwn(rangeRef, 'root'), false);
+      const pointAnchor = headerEditor.anchor(
+        { path: [1, 0], offset: 0 },
+        { association: 'forward', deletion: 'nearest' }
+      );
+      const rangeAnchor = headerEditor.anchor(
+        {
+          kind: 'text',
+          anchor: { path: [1, 0], offset: 0 },
+          focus: { path: [1, 0], offset: 3 },
+        },
+        { association: 'inward', deletion: 'nearest' }
+      );
 
       tx.nodes.remove({ at: [0] });
-      tx.operations.replay([
-        {
-          offset: 0,
-          path: [0, 0],
-          root: 'main',
-          text: '!',
-          type: 'insert_text',
-        },
-      ]);
-      point = pointRef.unref();
-      range = rangeRef.unref();
+      tx.changes.apply(mainChange);
+      point = pointAnchor.release();
+      range = rangeAnchor.release();
     });
 
     assert.deepEqual(point, { path: [0, 0], offset: 0 });
@@ -1139,7 +1245,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('defaults rootless bookmarks to the invoking view root during reads', () => {
+  it('defaults rootless anchors to the invoking view root during reads', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('body')],
@@ -1148,11 +1254,13 @@ describe('editor runtime/view contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
-    const bookmark = headerEditor.read((state) =>
-      state.ranges.bookmark({
+    const anchor = headerEditor.anchor(
+      {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
-      })
+      },
+      { association: 'inward', deletion: 'drop' }
     );
 
     headerEditor.update((tx) => {
@@ -1166,7 +1274,7 @@ describe('editor runtime/view contract', () => {
       });
     });
 
-    const range = bookmark.unref();
+    const range = anchor.release();
 
     assert.deepEqual(range, {
       anchor: { path: [0, 0], offset: 7 },
@@ -1182,7 +1290,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('defaults rootless static bookmarks to the invoking view root', () => {
+  it('supports view-default and explicit-root anchors', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('body')],
@@ -1191,17 +1299,20 @@ describe('editor runtime/view contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
-    const viewBookmark = editorBookmark(headerEditor, {
+    const viewAnchor = createRangeAnchor(headerEditor, {
       anchor: { path: [0, 0], offset: 6 },
       focus: { path: [0, 0], offset: 6 },
     });
-    let activeRootBookmark: ReturnType<typeof editorBookmark> | null = null;
-
-    headerEditor.update((tx) => {
-      activeRootBookmark = editorBookmark(runtime.editor, {
+    const explicitRootAnchor = runtime.editor.anchor(
+      {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
-      });
+      },
+      { association: 'inward', deletion: 'drop', root: 'header' }
+    );
+
+    headerEditor.update((tx) => {
       tx.text.insert('!', {
         at: { path: [0, 0], offset: 6 },
       });
@@ -1212,11 +1323,11 @@ describe('editor runtime/view contract', () => {
       });
     });
 
-    assert.deepEqual(viewBookmark.unref(), {
+    assert.deepEqual(viewAnchor.release(), {
       anchor: { path: [0, 0], offset: 7 },
       focus: { path: [0, 0], offset: 7 },
     });
-    assert.deepEqual(activeRootBookmark!.unref(), {
+    assert.deepEqual(explicitRootAnchor.release(), {
       anchor: { path: [0, 0], offset: 7 },
       focus: { path: [0, 0], offset: 7 },
     });
@@ -1240,6 +1351,7 @@ describe('editor runtime/view contract', () => {
 
     runtime.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -1284,6 +1396,7 @@ describe('editor runtime/view contract', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [1, 0], offset: 1 },
       });
@@ -1316,6 +1429,7 @@ describe('editor runtime/view contract', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 2 },
       });
@@ -1340,6 +1454,7 @@ describe('editor runtime/view contract', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1361,6 +1476,7 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       headerEditor.read((state) => state.selection()),
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 5, root: 'header' },
         focus: { path: [0, 0], offset: 5, root: 'header' },
       }
@@ -1378,12 +1494,14 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
     const mainSelection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     };
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
@@ -1441,13 +1559,6 @@ describe('editor runtime/view contract', () => {
       headerEditor.read((state) => state.selection()),
       null
     );
-    assert.equal(
-      editorGetLastCommit(runtime.editor)?.operations.some(
-        (operation) =>
-          operation.type === 'set_selection' && operation.root === 'header'
-      ),
-      false
-    );
   });
 
   it("preserves the focused root selection when redoing another root's batch", () => {
@@ -1461,17 +1572,20 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
     const mainSelection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     };
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
       tx.text.insert('!');
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1530,6 +1644,7 @@ describe('editor runtime/view contract', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1555,7 +1670,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('applies main-root replay operations while inside a non-main view update', () => {
+  it('applies main-root history changes while inside a non-main view update', () => {
     const runtime = createEditorRuntime({
       extensions: [history()] as const,
       initialValue: {
@@ -1568,6 +1683,7 @@ describe('editor runtime/view contract', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -1589,7 +1705,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('replays exported primary commit operations against the primary document inside root views', () => {
+  it('applies exported canonical changes to the primary document inside root views', () => {
     const source = createEditorRuntime({
       initialValue: {
         children: [paragraph('body')],
@@ -1598,26 +1714,11 @@ describe('editor runtime/view contract', () => {
     });
 
     source.update((tx) => {
-      tx.operations.replay([
-        {
-          offset: 4,
-          path: [0, 0],
-          text: '!',
-          type: 'insert_text',
-        },
-      ]);
+      tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
     });
 
-    const operations = editorGetLastCommit(source.editor)?.operations;
-    assert.deepEqual(operations, [
-      {
-        offset: 4,
-        path: [0, 0],
-        text: '!',
-        type: 'insert_text',
-      },
-    ]);
-    assert(operations);
+    const changes = editorGetLastCommit(source.editor)?.changes;
+    assert(changes);
 
     const target = createEditorRuntime({
       initialValue: {
@@ -1628,7 +1729,7 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(target, { root: 'header' });
 
     headerEditor.update((tx) => {
-      tx.operations.replay(operations);
+      tx.changes.apply(changes);
     });
 
     assert.deepEqual(
@@ -1638,17 +1739,10 @@ describe('editor runtime/view contract', () => {
         roots: { header: [paragraph('header')] },
       }
     );
-    assert.deepEqual(editorGetLastCommit(target.editor)?.operations, [
-      {
-        offset: 4,
-        path: [0, 0],
-        text: '!',
-        type: 'insert_text',
-      },
-    ]);
+    assert.equal(editorGetLastCommit(target.editor)?.changed.has('text'), true);
   });
 
-  it('preserves nested non-main root replay operations inside another root update', () => {
+  it('preserves nested non-main root changes inside another root update', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('body')],
@@ -1658,15 +1752,9 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
 
     headerEditor.update((tx) => {
-      tx.operations.replay([
-        {
-          offset: 6,
-          path: [0, 0],
-          root: 'footer',
-          text: '!',
-          type: 'insert_text',
-        },
-      ]);
+      tx.text.insert('!', {
+        at: { path: [0, 0], offset: 6, root: 'footer' },
+      });
     });
 
     assert.deepEqual(
@@ -1679,16 +1767,13 @@ describe('editor runtime/view contract', () => {
         },
       }
     );
-    assert.deepEqual(editorGetLastCommit(runtime.editor)?.operations.at(-1), {
-      offset: 6,
-      path: [0, 0],
-      root: 'footer',
-      text: '!',
-      type: 'insert_text',
-    });
+    assert.equal(
+      editorGetLastCommit(runtime.editor)?.changed.has('text', 'footer'),
+      true
+    );
   });
 
-  it('reports replay dirtiness from the operation root inside sibling view updates', () => {
+  it('reports dirtiness from the changed root inside sibling view updates', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('body')],
@@ -1705,19 +1790,13 @@ describe('editor runtime/view contract', () => {
     );
     let nodeImpactRuntimeIds: readonly string[] | null | undefined;
     const unsubscribe = runtime.subscribe((_snapshot, change) => {
-      nodeImpactRuntimeIds = change?.nodeImpactRuntimeIds;
+      nodeImpactRuntimeIds = change?.changed.runtimeIdsAll('node');
     });
 
     headerEditor.update((tx) => {
-      tx.operations.replay([
-        {
-          offset: 6,
-          path: [0, 0],
-          root: 'footer',
-          text: '!',
-          type: 'insert_text',
-        },
-      ]);
+      tx.text.insert('!', {
+        at: { path: [0, 0], offset: 6, root: 'footer' },
+      });
     });
     unsubscribe();
 
@@ -1726,9 +1805,13 @@ describe('editor runtime/view contract', () => {
     assert.ok(nodeImpactRuntimeIds);
     assert.equal(nodeImpactRuntimeIds.includes(footerTextId), true);
     assert.equal(nodeImpactRuntimeIds.includes(headerTextId), false);
+    assert.deepEqual(
+      editorGetLastCommit(runtime.editor)?.changed.runtimeIds('node'),
+      []
+    );
   });
 
-  it('uses unknown runtime impact for mixed-root replay commits', () => {
+  it('reports exact runtime impact for mixed-root commits', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('body')],
@@ -1736,32 +1819,33 @@ describe('editor runtime/view contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
+    const footerEditor = createEditorView(runtime, { root: 'footer' });
+    const footerTextId = footerEditor.read((state) =>
+      state.runtime.idAt([0, 0])
+    );
+    const headerTextId = headerEditor.read((state) =>
+      state.runtime.idAt([0, 0])
+    );
     let nodeImpactRuntimeIds: readonly string[] | null | undefined;
     const unsubscribe = runtime.subscribe((_snapshot, change) => {
-      nodeImpactRuntimeIds = change?.nodeImpactRuntimeIds;
+      nodeImpactRuntimeIds = change?.changed.runtimeIdsAll('node');
     });
 
     headerEditor.update((tx) => {
-      tx.operations.replay([
-        {
-          offset: 6,
-          path: [0, 0],
-          root: 'footer',
-          text: '!',
-          type: 'insert_text',
-        },
-        {
-          offset: 6,
-          path: [0, 0],
-          root: 'header',
-          text: '!',
-          type: 'insert_text',
-        },
-      ]);
+      tx.text.insert('!', {
+        at: { path: [0, 0], offset: 6, root: 'footer' },
+      });
+      tx.text.insert('!', {
+        at: { path: [0, 0], offset: 6, root: 'header' },
+      });
     });
     unsubscribe();
 
-    assert.equal(nodeImpactRuntimeIds, null);
+    assert.ok(footerTextId);
+    assert.ok(headerTextId);
+    assert.ok(nodeImpactRuntimeIds);
+    assert.equal(nodeImpactRuntimeIds.includes(footerTextId), true);
+    assert.equal(nodeImpactRuntimeIds.includes(headerTextId), true);
   });
 
   it('reads selection changes made inside a root-bound view transaction', () => {
@@ -1777,6 +1861,7 @@ describe('editor runtime/view contract', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -1785,6 +1870,7 @@ describe('editor runtime/view contract', () => {
     headerEditor.update((tx) => {
       assert.equal(tx.selection(), null);
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
@@ -1792,6 +1878,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(selectionAfterSet, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 6, root: 'header' },
       focus: { path: [0, 0], offset: 6, root: 'header' },
     });
@@ -1809,6 +1896,7 @@ describe('editor runtime/view contract', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1816,6 +1904,7 @@ describe('editor runtime/view contract', () => {
     headerEditor.update((tx) => {
       assert.equal(tx.selection(), null);
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1832,6 +1921,7 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       headerEditor.read((state) => state.selection()),
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1, root: 'header' },
         focus: { path: [0, 0], offset: 1, root: 'header' },
       }
@@ -1883,6 +1973,7 @@ describe('editor runtime/view contract', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
@@ -1918,6 +2009,7 @@ describe('editor runtime/view contract', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
@@ -1953,6 +2045,7 @@ describe('editor runtime/view contract', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
@@ -1989,11 +2082,13 @@ describe('editor runtime/view contract', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
       tx.text.delete({
         at: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -2006,19 +2101,11 @@ describe('editor runtime/view contract', () => {
       runtime.read((state) => state.root('header')),
       [paragraph('')]
     );
-    assert.deepEqual(
-      runtime
-        .read((state) => state.lastCommit()?.operations ?? [])
-        .filter((operation) => operation.type !== 'set_selection'),
-      [
-        {
-          offset: 0,
-          path: [0, 0],
-          root: 'header',
-          text: 'h',
-          type: 'remove_text',
-        },
-      ]
+    assert.equal(
+      runtime.read((state) =>
+        state.lastCommit()?.changed.has('text', 'header')
+      ),
+      true
     );
   });
 
@@ -2132,6 +2219,7 @@ describe('editor runtime/view contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [0, 0], offset: 0, root: 'header' },
           focus: { path: [0, 0], offset: 4, root: 'header' },
         };

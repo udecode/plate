@@ -1,13 +1,23 @@
 /** @jsx jsxt */
 
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { schema } from '@platejs/plite';
 
-import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
+
+const BaseBlockquotePlugin = createBasePlugin({
+  key: 'blockquote',
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+  },
+});
 
 const testInsertText = (
   input: any,
@@ -15,7 +25,7 @@ const testInsertText = (
   listConfig: Parameters<typeof BaseListPlugin.configure>[0] = {}
 ) => {
   const editor = createBaseEditor({
-    plugins: [BaseListPlugin.configure(listConfig), BaseLinkPlugin],
+    plugins: [BaseBlockquotePlugin, BaseListPlugin.configure(listConfig)],
     selection: input.selection,
     value: input.children,
   });
@@ -51,166 +61,6 @@ const testDeleteForward = (input: any, expected: any) => {
 
 describe('withList', () => {
   describe('normalizeList', () => {
-    describe('when there is no lic in li', () => {
-      it('insert lic', () => {
-        const input = (
-          <editor>
-            <hul>
-              <hli>
-                hell
-                <cursor /> <ha>link</ha>
-                <htext />
-              </hli>
-            </hul>
-          </editor>
-        ) as TestEditor;
-
-        const expected = (
-          <editor>
-            <hul>
-              <hli>
-                <hlic>
-                  hello <ha>link</ha>
-                  <htext />
-                </hlic>
-              </hli>
-            </hul>
-          </editor>
-        ) as TestEditor;
-
-        testInsertText(input, expected);
-      });
-    });
-
-    describe('when li > p > children', () => {
-      it('normalizes li > p children to li > lic > children', () => {
-        const input = (
-          <editor>
-            <hul>
-              <hli>
-                <hp>
-                  hell
-                  <cursor />
-                </hp>
-              </hli>
-            </hul>
-          </editor>
-        ) as TestEditor;
-
-        const expected = (
-          <editor>
-            <hul>
-              <hli>
-                <hlic>hello</hlic>
-              </hli>
-            </hul>
-          </editor>
-        ) as TestEditor;
-
-        testInsertText(input, expected);
-      });
-    });
-
-    describe('when li > lic > p > children', () => {
-      it('normalizes li > lic > p children to li > lic > children', () => {
-        const input = (
-          <editor>
-            <hul>
-              <hli>
-                <hlic>
-                  <hp>
-                    hell
-                    <cursor />
-                  </hp>
-                </hlic>
-              </hli>
-            </hul>
-          </editor>
-        ) as TestEditor;
-
-        const expected = (
-          <editor>
-            <hul>
-              <hli>
-                <hlic>hello</hlic>
-              </hli>
-            </hul>
-          </editor>
-        ) as TestEditor;
-
-        testInsertText(input, expected);
-      });
-    });
-
-    describe('when li > lic > block > block > children', () => {
-      it('unwraps nested blocks into li > lic > children', () => {
-        const input = (
-          <editor>
-            <hul>
-              <hli>
-                <hlic>
-                  <element>
-                    <hp>
-                      hell
-                      <cursor />
-                    </hp>
-                  </element>
-                </hlic>
-              </hli>
-            </hul>
-          </editor>
-        ) as TestEditor;
-
-        const expected = (
-          <editor>
-            <hul>
-              <hli>
-                <hlic>hello</hlic>
-              </hli>
-            </hul>
-          </editor>
-        ) as TestEditor;
-
-        testInsertText(input, expected);
-      });
-    });
-
-    describe('when li > lic > many block > block > children', () => {
-      it('merges multiple blocks into li > lic > children', () => {
-        const input = (
-          <editor>
-            <hul>
-              <hli>
-                <hlic>
-                  <element>
-                    <hp>
-                      hell
-                      <cursor />
-                    </hp>
-                  </element>
-                  <element>
-                    <hp> world</hp>
-                  </element>
-                </hlic>
-              </hli>
-            </hul>
-          </editor>
-        ) as TestEditor;
-
-        const expected = (
-          <editor>
-            <hul>
-              <hli>
-                <hlic>hello world</hlic>
-              </hli>
-            </hul>
-          </editor>
-        ) as TestEditor;
-
-        testInsertText(input, expected);
-      });
-    });
-
     describe('when li > block, with block in validLiChildrenTypes', () => {
       it('keep the block untouched', () => {
         const input = (

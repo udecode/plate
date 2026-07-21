@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { createBasePlugin } from '@platejs/core';
+import { ContentSlice, editorCommands, property, schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { jsxt } from '@platejs/test-utils';
 import { createBaseEditor } from '@platejs/core';
@@ -18,17 +19,68 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 
 const MentionPlugin = createBasePlugin({
   key: KEYS.mention,
-  node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+      properties: {
+        key: property.string(),
+        value: property.string(),
+      },
+      void: 'markable-inline',
+    },
+  },
 });
 
 const DatePlugin = createBasePlugin({
   key: KEYS.date,
-  node: { isElement: true, isInline: true, isSelectable: false, isVoid: true },
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: {
+        date: property.string(),
+      },
+      selectable: false,
+      void: 'inline',
+    },
+  },
 });
 
 const TocPlugin = createBasePlugin({
   key: KEYS.toc,
-  node: { isElement: true, isVoid: true },
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+      void: 'block',
+    },
+  },
+});
+
+const BlockquotePlugin = createBasePlugin({
+  key: KEYS.blockquote,
+  node: {
+    element: {
+      content: schema.content.group('block'),
+      groups: ['block'],
+    },
+  },
+});
+
+const SlashInputPlugin = createBasePlugin({
+  key: 'slashInput',
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+    type: 'slash_input',
+  },
+});
+
+const MetadataMarkPlugin = createBasePlugin({
+  key: 'metadata',
+  node: { mark: { value: property.json() } },
 });
 
 const testSuggestionData = {
@@ -39,6 +91,61 @@ const testSuggestionData = {
 };
 
 describe('withSuggestion', () => {
+  it.each([
+    ['collapsed', 1],
+    ['expanded', 2],
+  ] as const)('preserves open slice boundaries for a %s selection', (_, focus) => {
+    const editor = createBaseEditor({
+      plugins: [suggestionPlugin],
+      selection: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: focus, path: [0, 0] },
+        kind: 'text',
+      },
+      value: [{ children: [{ text: 'abc' }], type: 'p' }],
+    });
+    const slice = ContentSlice.fromJSON({
+      content: [{ children: [{ text: 'X' }], type: 'p' }],
+      openEnd: 1,
+      openStart: 1,
+    });
+
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+    editor.update.slice.replace(slice);
+
+    expect(editor.read.children()).toHaveLength(1);
+    expect(editor.read.text.string([])).toBe('aXbc');
+  });
+
+  it('toggles structurally equal JSON marks as active values', () => {
+    const editor = createBaseEditor({
+      plugins: [suggestionPlugin, MetadataMarkPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+        kind: 'text',
+      },
+      value: [
+        {
+          children: [{ metadata: { ids: ['one'] }, text: 'test' }],
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+    editor.update.marks.toggle('metadata', { ids: ['one'] });
+
+    const node = editor.read.children()[0].children[0] as any;
+    const data = getInlineSuggestionData(node);
+
+    expect(node.metadata).toBeUndefined();
+    expect(data).toMatchObject({
+      properties: { metadata: { ids: ['one'] } },
+      type: 'update',
+    });
+  });
+
   describe('insertText', () => {
     describe('when editor.plugin(SuggestionPlugin).getOptions().isSuggesting is not defined', () => {
       it('does not add marks', () => {
@@ -128,9 +235,9 @@ describe('withSuggestion', () => {
           editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
           editor.update((tx) => {
-            tx.text.insert('a');
+            tx.command(editorCommands.insertText, { text: 'a' });
             tx.selection.set({ path: [1, 0], offset: 0 });
-            tx.text.insert('b');
+            tx.command(editorCommands.insertText, { text: 'b' });
           });
 
           const [firstBlock, secondBlock] = editor.read.children();
@@ -774,6 +881,7 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).getOptions().isSu
       userId: 'testId',
     });
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -1113,7 +1221,7 @@ describe('insertBreak when editor.plugin(SuggestionPlugin).getOptions().isSugges
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BlockquotePlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -1172,7 +1280,7 @@ describe('insertNodes when editor.plugin(SuggestionPlugin).getOptions().isSugges
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, SlashInputPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -1229,7 +1337,7 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).getOptions().isSugges
 
   it('bypasses suggestions when removing slash_input nodes', () => {
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, SlashInputPlugin],
       value: [
         {
           children: [{ text: 'one' }],

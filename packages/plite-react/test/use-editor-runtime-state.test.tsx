@@ -68,6 +68,7 @@ describe('useEditorRuntimeState', () => {
 
     await waitFor(() => {
       expect(result.current).toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       });

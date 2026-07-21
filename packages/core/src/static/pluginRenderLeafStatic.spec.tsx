@@ -11,7 +11,7 @@ describe('pluginRenderLeafStatic', () => {
   const HighlightPlugin = createBasePlugin({
     key: 'highlight',
     node: {
-      isLeaf: true,
+      mark: true,
       leafProps: {
         className: 'highlight-leaf',
         'data-tone': 'warm',

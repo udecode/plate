@@ -135,15 +135,14 @@ Current fixed issue claims:
   normalizers reach fixpoint.
 - Fixes #5972: Backspace from an empty editable inline in the inlines example
   removes the inline without deleting the preceding character.
-- Fixes #5977: Custom operation-like records no longer break editor detection
-  or DOM path lookup, and unknown operation replay fails before the record
-  enters the operation log.
-- Fixes #5412: `insertFragment(..., { at })` writes at the supplied target
-  instead of ambient selection.
-- Fixes #5429: `insertFragment` into an empty text block leaves selection after
+- Fixes #5977: Editor detection and DOM path lookup ignore unrelated record
+  shapes, and malformed canonical change JSON fails before editor mutation.
+- Fixes #5412: Fitted slice replacement with an explicit `at` writes at that
+  target instead of ambient selection.
+- Fixes #5429: Replacing an empty text block with a slice leaves selection after
   the inserted content.
-- Fixes #5089: Rich multi-block fragment paste into the middle of a paragraph
-  preserves block separation instead of flattening into the current paragraph.
+- Fixes #5089: Rich multi-block slice replacement in the middle of a paragraph
+  preserves block separation.
 - Fixes #4806: Selected inline void copy, paste, and cut work through the
   native browser clipboard path with model-owned caret repair.
 - Fixes #5080: `state.nodes.entries({ reverse: true })` returns the exact reverse
@@ -281,9 +280,9 @@ Accepted current shape:
 - Extensions use named `editor`, `state`, and `tx` groups.
 - `EditorCommit` is the post-commit truth object for subscribers and integration
   layers.
-- Collaboration/Yjs-style adapters use deterministic operation replay, typed
-  commit metadata, bookmarks, and local runtime targets; raw Plite does not grow
-  adapter-shaped public namespaces.
+- Collaboration adapters lower canonical `DocumentChange` values into their
+  transport and import remote events as canonical changes. Typed commit metadata,
+  anchors, and local runtime targets stay separate from adapter-specific APIs.
 - The public `Editor.*` static method namespace is not the v2 teaching or
   extension surface.
 - Public data helper values use `*Api` names such as `NodeApi`, `ElementApi`,
@@ -357,13 +356,14 @@ Open debt:
   policy into collapsed Backspace and direct `mergeNodes`; split-specific
   closure remains unclaimed. #5972 is fixed by core delete target planning and
   the inlines example browser proof. #5977 is fixed by internal editor
-  detection proof, DOM path lookup proof, and fail-closed unknown replay.
+  detection proof, DOM path lookup proof, and fail-closed canonical change
+  decoding.
   #3964/#3973/#4357/#3499 are fixed by core/history package regression proof.
   #4195/#3841/#5629/#4648 remain
   related/non-claim rows without exact browser or punctuation-policy proof.
-  #5412/#5429 are fixed by core `insertFragment` package proof for explicit
-  target insertion and empty-block caret placement. #5089 is fixed by package
-  and DOM clipboard proof for middle-paragraph multi-block fragment insertion.
+  #5412/#5429 are fixed by fitted slice replacement proof for explicit target
+  insertion and empty-block caret placement. #5089 is fixed by package and DOM
+  clipboard proof for middle-paragraph multi-block slice replacement.
   #5080 is fixed by core package proof for exact reverse matched traversal.
   #5684/#5028/#3885 remain related or non-claim rows.
 - Improves #5811: Custom normalization oscillation fails deterministically with a
@@ -371,9 +371,6 @@ Open debt:
 - Improves #1654: Existing `isIsolating` policy blocks collapsed Backspace and
   direct `mergeNodes` across protected containers; split-specific closure remains
   unclaimed.
-- Improves #5558: `Operation` exposes concrete built-in operation subtype guards
-  with runtime and TypeScript narrowing proof.
-
 Proof references:
 
 - `docs/plite/references/architecture-contract.md`
@@ -497,21 +494,20 @@ Accepted current shape:
   HTML/image paste behavior runs through typed clipboard ingress authoring.
 - Foreign or malformed internal fragment payloads must fail closed and fall
   back to safe import behavior.
-- Rich Plite fragment insertion preserves the receiving text-block type when a
-  single text-block fragment replaces selected target text, including marked
-  text, inline children, and full-document single-block replacement.
+- Fitted slice replacement preserves the receiving text-block type when a
+  single text-block slice replaces selected target text, including marked text,
+  inline children, and full-document single-block replacement.
 - Rich multi-block fragment paste into the middle of a paragraph preserves
   block separation instead of flattening into the current paragraph.
 - Whole top-level block replacement keeps structural fragments as sibling units
-  and applies them as one model operation when the selection exactly covers the
-  target block slice.
+  and applies them as one canonical document change when the selection exactly
+  covers the target block slice.
 - Whole top-level block fragment extraction slices the selected root child
   range directly, so copying or cutting two blocks from a huge document does
   not walk and remove every unselected sibling from a pseudo-root.
-- Collaboration import replays `replace_children` through
-  `tx.operations.replay(...)`; CRDT/Yjs-style adapters lower it at their own
-  boundary if their transport cannot represent child-window replacement
-  atomically.
+- Collaboration import translates child-window replacements into canonical
+  incremental changes; CRDT/Yjs adapters preserve atomic replacement at their
+  transport boundary.
 - Selected inline void export must not assume block-void spacer DOM. Browser
   clipboard proof keeps deterministic HTML/text payloads, embeds the Plite
   fragment, avoids FEFF and neighboring text leakage, pastes into an external
@@ -528,20 +524,20 @@ Accepted current shape:
 
 Performance status:
 
-- Improves #5945: 10,000-line plaintext paste runs through one logical
-  `replace_children` operation in the issue-size benchmark. Exact
+- Improves #5945: 10,000-line plaintext paste runs through one fitted slice
+  replacement and one canonical change in the issue-size benchmark. Exact
   `Fixes #5945` closure still needs a 10,000-line browser artifact for the
   plaintext example flow.
 - Improves #4056: the issue-size benchmark now covers populated-editor large
   copy and large middle paste. The latest run reports `49.35ms` for copying
   10,000 populated blocks and `235.22ms` for pasting 10,000 plaintext lines
-  into a 10,000-block populated editor with one logical operation. Exact
+  into a 10,000-block populated editor through one canonical change. Exact
   `Fixes #4056` closure still needs the historical browser repro.
-- Improves #5992: the 50,000-block two-node cut benchmark now lowers exact
-  whole-child range delete to one `replace_children` operation. The latest
+- Improves #5992: the 50,000-block two-node cut benchmark lowers exact
+  whole-child range deletion to one canonical child-window change. The latest
   issue-size run reports warm edit p50 `9.95ms`, warm copy-plus-delete p50
-  `8.62ms`, and operation count `1`; the cold snapshot row remains visible at
-  p50 `171.91ms`. Browser stress covers a 5,000-block huge-document cut row.
+  `8.62ms`; the cold snapshot row remains visible at p50 `171.91ms`. Browser
+  stress covers a 5,000-block huge-document cut row.
   Exact `Fixes #5992` closure still needs maintainer acceptance that the
   benchmark plus browser stress matches the original repro.
 
@@ -580,7 +576,7 @@ Accepted current shape:
 
 - React owns provider/hooks/primitives/editable behavior, not core editor truth.
 - React reads from editor snapshots and commit-local dirty data.
-- Selector hooks expose editor-typed operations and commit facts, including
+- Selector hooks expose editor-typed state and commit facts, including
   `EditorSelectorOptions<TEditor>` for `useEditorSelector`.
 - `decorate` stays the simple transient range API.
 - `decorationSources` and `createDecorationSource` are the scalable path for
@@ -689,125 +685,78 @@ Proof references:
 
 Affected:
 
+- `packages/plite/src/core/command-definition.ts`
+- `packages/plite/src/core/command-registry.ts`
+- `packages/plite/src/core/editor-commands.ts`
 - `packages/plite/src/core/editor-extension.ts`
-- `packages/plite/src/core/transform-middleware.ts`
-- `packages/plite/src/create-editor.ts`
+- `packages/plite/src/core/query-middleware.ts`
 - `packages/plite/src/interfaces/editor.ts`
-- `packages/plite/test/extension-methods-contract.ts`
-- `packages/plite/test/generic-extension-namespace-contract.ts`
-- `packages/plite-react/src/editable/editable-input-rules.ts`
-- `packages/plite-react/src/editable/runtime-root-engine.ts`
-- `packages/plite-react/src/index.ts`
-- `packages/plite-react/src/components/editable.tsx`
-- `packages/plite-react/src/components/editable-text-blocks.tsx`
-- `apps/www/src/app/(app)/examples/plite/_examples/check-lists.tsx`
-- `apps/www/src/app/(app)/examples/plite/_examples/markdown-shortcuts.tsx`
-- `apps/www/src/app/(app)/examples/plite/_examples/inlines.tsx`
-- `docs/plans/2026-05-04-plite-legacy-example-dx-ralplan.md`
-- `docs/plans/2026-05-13-plite-editable-input-rule-ownership-ralplan.md`
+- `packages/plite-react/src/editable/mutation-controller.ts`
+- `packages/plite/test/command-spec.test.ts`
+- `packages/plite/test/extension-configuration.test.ts`
+- `packages/plite-react/test/mutation-command-dispatch-contract.test.ts`
 
 Current implemented shape:
 
-- `slate` extension registration accepts transform middleware for every public
-  mutating editor transform in `EditorTransformApi` except engine controls.
-- Covered transform families: marks, text/delete/fragment/break insertion,
-  node transforms, and selection transforms.
-- Explicitly excluded from transform middleware: `bookmark`, `normalize`,
-  and `setNormalizing`.
-- Transform middleware runs through keyed internal command registration and
-  defaults through the transform registry without exposing public command slots.
-- `next()` forwards current args unchanged, and `next(overrides)` shallow-merges
-  explicit overrides such as `next({ text: normalizedText })`.
-- Handling is expressed by not calling `next()`, matching Plite's old
-  `withX(editor)` override feel without monkeypatching editor methods.
-- Internal default forwarding skips nested public transform middleware so aliases
-  like `deleteBackward -> delete` do not double-fire extension hooks.
-- Plite React does not expose `EditableInputRule*`, `editableInputRules(...)`,
-  `EDITABLE_INPUT_RULE_CAPABILITY`, or an `Editable inputRules` prop.
-- Keep `onDOMBeforeInput` as the public raw native escape hatch. Public
-  `onCommand` / `EditableCommand*` is cut; native-format behavior that Plite
-  owns stays internal/runtime-owned and covered by focused contracts.
-- Checklist Backspace uses `transforms.deleteBackward(...)`.
-- Markdown typed shortcuts and inline URL typed insertion use
-  `transforms.insertText(...)` where the behavior is model-owned.
-- Direct command registry helpers stay out of the primary public package; command
-  middleware is substrate, while public examples teach transform middleware.
-- Keep rich semantic input-rule families in Plate, not raw Plite.
-- Public extension `commands` fields remain rejected; direct
-  `Editor.registerCommand(...)` stays the low-level substrate and advanced
-  escape hatch, while normal examples teach transform middleware.
-
-Accepted current source shape:
-
-- Transform middleware covers writes only. It is not the full no-regression
-  answer for old overrideable editor methods.
+- `editorCommands` exposes typed definitions for semantic document actions.
+- Extension `commands` register pure handlers that receive committed `state`
+  and a typed command value.
+- A handler returns `false` or an immutable `TransactionSpec`; it cannot mutate
+  live editor state while evaluating.
+- `next()` delegates once to the next handler or built-in implementation.
+  `next(command)` delegates with an explicit replacement command, and
+  `next.after(prefix)` composes a transaction-spec prefix before delegation.
+- Browser input, DOM clipboard ingress, direct update helpers, and
+  programmatic command execution use the same command definitions.
+- Built-in command families cover marks, text, delete, fragment deletion,
+  break insertion, node transforms, selection, and fitted slice replacement.
+- `onDOMBeforeInput` remains the raw native-event escape hatch for one
+  `Editable`; reusable model behavior belongs in a command handler.
+- Rich product input-rule families remain Plate-owned and lower to Plite
+  commands and transaction specs.
 - Grouped `extension.queries` covers accepted pure read methods across
   `fragment`, `marks`, `nodes`, `points`, `ranges`, and `text`, including
-  static/read parity for the pure read keys that do not naturally fit the
-  previous grouped state view: `nodes.path`, `nodes.elementReadOnly`,
-  `nodes.shouldMergeNodesRemovePrevNode`, and `points.positions`.
+  static/read parity for keys such as `nodes.path`,
+  `nodes.elementReadOnly`, and `points.positions`.
 - Query middleware is keyed by group/method, supports `next(overrides)`,
   preserves generator reads during default delegation, rejects double `next()`,
   and prevents `editor.update` from starting inside query middleware.
-- `normalizers.editor` is the typed ordered middleware lane for editor-root and
-  value-level normalization.
-- `normalizers.node` is the typed ordered middleware lane for non-root node
-  normalization, with `next(overrides)`, built-in fallback delegation, cleanup,
-  extension-local registration ids, scoped normalizer `tx`, and double-next
-  proof.
-- Scoped normalizer `tx` exposes model repair APIs and `value()`, but not
-  recursive normalization controls, operation replay, or whole-value
-  replacement.
-- Operation and commit extension slots answer old `apply` and `onChange`
-  pressure. The accepted author-facing naming target is `operations.apply` for
-  operation-level hooks, `onCommit` for post-transaction observers, and `setup`
-  for extension-local runtime installation.
-- Refs, raw snapshots, runtime ids, lifecycle controls, and engine controls stay
-  out of extension override middleware.
-- Proof source:
-  `docs/plans/2026-05-13-plite-editable-input-rule-ownership-ralplan.md`
-  Section `Full Editor Method Override Coverage Ralplan - 2026-05-16`.
+- Deterministic structural repair belongs in extension `corrections` over
+  canonical changed ranges.
+- `onTransactionChange` receives canonical incremental changes with the active
+  transaction, `onCommit` observes publication, and `activate` owns
+  extension-local runtime resources.
+- Refs, raw snapshots, runtime IDs, and lifecycle controls remain engine-owned.
 
 Why it belongs in the PR:
 
 - The examples should teach first-class editor behavior composition instead of
   copying per-component keydown branches.
 - Model behavior should not be authored through browser `inputType` strings.
-- The core command registry already routes delete and insert-text commands
-  through deterministic middleware, which covers DOM, keyboard fallback, and
-  programmatic command paths better than a React beforeinput rule registry.
-- Transform middleware gives that same one-path runtime proof while preserving
-  the Plite-close `withX(editor)` override feel for public examples.
-- The `next()` contract keeps the common case tiny while still allowing
-  middleware to normalize args before delegating.
+- Pure command evaluation keeps browser, programmatic, history, and test paths
+  on one base-checked transaction boundary.
+- Explicit delegation keeps priority composition predictable without method
+  replacement or a second mutation truth.
 
 Not claimed:
 
 - A full extension keyboard shortcut system.
 - A replacement for every app-owned `onKeyDown` escape hatch.
-- Legacy command-slot compatibility.
-- Legacy method-slot monkeypatch compatibility. The claim is v2 capability
-  parity through first-class extension surfaces, not restoring mutable editor
-  method fields.
 - A new fixed or improved issue claim for the adjacent input-runtime issues or
-  `#3557`; the insert-node/fragment extension pressure is related proof, not an
-  exact upstream repro closure.
+  `#3557`; extension pressure is related proof, not an exact upstream repro
+  closure.
 
 Proof references:
 
-- `packages/plite/src/core/editor-extension.ts`
-- `packages/plite/src/core/transform-middleware.ts`
-- `packages/plite/src/core/query-middleware.ts`
-- `packages/plite/src/core/normalize-node.ts`
-- `packages/plite/src/create-editor.ts`
-- `packages/plite/src/interfaces/editor.ts`
 - `packages/plite/src/core/command-registry.ts`
-- `packages/plite/src/editor/delete-backward.ts`
+- `packages/plite/src/core/editor-commands.ts`
+- `packages/plite/src/core/editor-extension.ts`
+- `packages/plite/src/core/query-middleware.ts`
+- `packages/plite/src/interfaces/editor.ts`
+- `packages/plite/test/command-spec.test.ts`
+- `packages/plite/test/extension-configuration.test.ts`
 - `packages/plite/test/query-extension-contract.ts`
-- `packages/plite/test/normalization-contract.ts`
-- `packages/plite/test/apply-onchange-hard-cut-contract.ts`
-- `packages/plite/test/extension-methods-contract.ts`
-- `packages/plite/test/generic-extension-namespace-contract.ts`
+- `packages/plite-react/test/mutation-command-dispatch-contract.test.ts`
 - `packages/plite/test/transaction-contract.ts`
 - `packages/plite/test/transforms-contract.ts`
 - `packages/plite/test/public-surface-contract.ts`

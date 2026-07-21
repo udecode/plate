@@ -1,4 +1,4 @@
-import { createBaseEditor, getEditorPlugin } from '@platejs/core';
+import { createBaseEditor, prepareParserPluginContext } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { DocxPlugin } from './DocxPlugin';
@@ -6,7 +6,13 @@ import { cleanDocx } from './docx-cleaner/cleanDocx';
 
 describe('DocxPlugin', () => {
   const editor = createBaseEditor({ plugins: [DocxPlugin] });
-  const context = getEditorPlugin(editor, DocxPlugin);
+  const createContext = prepareParserPluginContext(editor, DocxPlugin);
+  const context = editor.read((state) => createContext(state));
+  const source = (dataTransfer: DataTransfer) => ({
+    files: dataTransfer.files,
+    getData: (format: string) => dataTransfer.getData(format),
+    types: [...dataTransfer.types],
+  });
 
   it('routes html transformData through cleanDocx with rtf input', () => {
     const transformData =
@@ -23,8 +29,8 @@ describe('DocxPlugin', () => {
       transformData({
         ...context,
         data: html,
-        dataTransfer,
-        mimeType: 'text/html',
+        format: 'text/html',
+        source: source(dataTransfer),
       })
     ).toBe(cleanDocx(html, '{\\rtf1}'));
   });
@@ -77,8 +83,8 @@ describe('DocxPlugin', () => {
       query({
         ...context,
         data: '',
-        dataTransfer,
-        mimeType: 'text/html',
+        format: 'text/html',
+        source: source(dataTransfer),
       })
     ).toBe(false);
 
@@ -88,8 +94,8 @@ describe('DocxPlugin', () => {
       query({
         ...context,
         data: '',
-        dataTransfer,
-        mimeType: 'text/html',
+        format: 'text/html',
+        source: source(dataTransfer),
       })
     ).toBe(true);
   });

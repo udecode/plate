@@ -42,7 +42,7 @@
   ],
   "scripts": {
     "brl": "echo 'No barrels to generate'",
-    "build": "tsdown --config ./tsdown.config.mts --log-level warn && tsc -p tsconfig.build.json",
+    "build": "node ../../tooling/scripts/build-plite-package.mjs",
     "clean": "rimraf dist lib",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",

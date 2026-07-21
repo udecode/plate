@@ -11,6 +11,7 @@ const createListEditor = (offset?: number) =>
       offset === undefined
         ? null
         : {
+            kind: 'text',
             anchor: { offset, path: [0, 0, 0] },
             focus: { offset, path: [0, 0, 0] },
           },

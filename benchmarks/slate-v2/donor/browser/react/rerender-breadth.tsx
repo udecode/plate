@@ -13,34 +13,37 @@ import React, {
   useSyncExternalStore,
 } from 'react';
 import type {
-  Bookmark,
+  Anchor,
   createEditor,
   Descendant,
   EditorSnapshot,
   Range,
   RuntimeId,
-} from '../../../../../packages/slate/src/index.ts';
-import { Editor } from '../../../../../packages/slate/src/internal/index.ts';
+} from '../../../../../packages/plite/src/index.ts';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '../../../../../packages/plite/src/internal/index.ts';
 import {
   createReactEditor,
   Editable,
   EditableElement,
-  Slate,
-  type SlateAnnotation,
-  type SlateAnnotationStore,
-  type SlateProjectionStore,
-  type SlateWidget,
-  type SlateWidgetStore,
-  useEditor as useSlate,
-  useSlateAnnotationStore,
-  useSlateAnnotations,
-  useSlateProjectionEntries,
-  useEditorSelection as useSlateSelection,
-  useEditorSelector as useSlateSelector,
-  useSlateWidgetStore,
-  useSlateWidgets,
-} from '../../../../../packages/slate-react/src/index.ts';
-import { createSlateProjectionStore } from '../../../../../packages/slate-react/src/projection-store.ts';
+  Plite,
+  type PliteAnnotation,
+  type PliteAnnotationStore,
+  type PliteProjectionStore,
+  type PliteWidget,
+  type PliteWidgetStore,
+  useEditor,
+  useEditorSelection,
+  useEditorSelector,
+  usePliteAnnotationStore,
+  usePliteAnnotations,
+  usePliteProjectionEntries,
+  usePliteWidgetStore,
+  usePliteWidgets,
+} from '../../../../../packages/plite-react/src/index.ts';
+import { createPliteProjectionStore } from '../../../../../packages/plite-react/src/projection-store.ts';
 import {
   cloneCounts,
   deltaCounts,
@@ -51,7 +54,7 @@ import {
 
 const select = (editor: ReturnType<typeof createEditor>, target: Range) => {
   editor.update((tx) => {
-    tx.selection.set(target);
+    tx.selection.set({ ...target, kind: 'text' });
   });
 };
 
@@ -80,7 +83,7 @@ void React;
 const EMPTY_PROJECTIONS = Object.freeze([]) as readonly unknown[];
 
 const getProjectionMetricCounts = (
-  store: Pick<SlateProjectionStore<unknown>, 'getMetrics'> | null | undefined
+  store: Pick<PliteProjectionStore<unknown>, 'getMetrics'> | null | undefined
 ) => {
   const metrics =
     store && typeof store.getMetrics === 'function' ? store.getMetrics() : null;
@@ -282,9 +285,9 @@ const formatRange = (range: Range | null) =>
       )}:${range.focus.offset}`
     : 'none';
 
-const BroadSlateSlice = memo(
+const BroadEditorSlice = memo(
   ({ counts }: { counts: Record<string, number> }) => {
-    useSlate();
+    useEditor();
     increment(counts, 'broad');
     return <span id="broad-subscriber">broad</span>;
   }
@@ -292,7 +295,7 @@ const BroadSlateSlice = memo(
 
 const SelectionSlice = memo(
   ({ counts }: { counts: Record<string, number> }) => {
-    const selection = useSlateSelection();
+    const selection = useEditorSelection();
     increment(counts, 'selection');
     return (
       <span id="selection-subscriber">
@@ -312,8 +315,8 @@ const TopLevelBlockSlice = memo(
     index: number;
     slot: string;
   }) => {
-    const value = useSlateSelector((editor) =>
-      getTopLevelBlockText(Editor.getSnapshot(editor), index)
+    const value = useEditorSelector((editor) =>
+      getTopLevelBlockText(editorGetSnapshot(editor), index)
     );
     increment(counts, slot);
     return <span>{value}</span>;
@@ -330,7 +333,7 @@ const ProjectionSlice = memo(
     runtimeId: RuntimeId | null;
     slot: string;
   }) => {
-    const projections = useSlateProjectionEntries<{ highlight?: boolean }>(
+    const projections = usePliteProjectionEntries<{ highlight?: boolean }>(
       runtimeId
     );
 
@@ -350,7 +353,7 @@ const StoreProjectionSlice = memo(
     counts: Record<string, number>;
     runtimeId: RuntimeId | null;
     slot: string;
-    store: SlateProjectionStore<{
+    store: PliteProjectionStore<{
       highlight?: boolean;
       source?: string;
     }>;
@@ -377,12 +380,12 @@ const SelectionBreadthApp = ({
   counts: Record<string, number>;
   editor: ReturnType<typeof createEditor>;
 }) => (
-  <Slate editor={editor}>
-    <BroadSlateSlice counts={counts} />
+  <Plite editor={editor}>
+    <BroadEditorSlice counts={counts} />
     <SelectionSlice counts={counts} />
     <TopLevelBlockSlice counts={counts} index={0} slot="leftBlock" />
     <TopLevelBlockSlice counts={counts} index={1} slot="rightBlock" />
-  </Slate>
+  </Plite>
 );
 
 const LeafRenderMarker = ({
@@ -424,10 +427,10 @@ const assertSingleElementHosts = (
   expectedCount: number
 ) => {
   const elementHosts = Array.from(
-    container.querySelectorAll<HTMLElement>('[data-slate-node="element"]')
+    container.querySelectorAll<HTMLElement>('[data-plite-node="element"]')
   );
   const runtimeIds = elementHosts.map(
-    (elementHost) => elementHost.dataset.slateRuntimeId
+    (elementHost) => elementHost.dataset.pliteRuntimeId
   );
 
   assert.equal(
@@ -455,7 +458,7 @@ const ManyLeafApp = ({
   editor: ReturnType<typeof createEditor>;
   leafCounts: Record<string, number>;
 }) => (
-  <Slate editor={editor}>
+  <Plite editor={editor}>
     <Editable
       renderElement={({ children, element }) => (
         <ElementRenderMarker
@@ -474,7 +477,7 @@ const ManyLeafApp = ({
         </LeafRenderMarker>
       )}
     />
-  </Slate>
+  </Plite>
 );
 
 const DeepAncestorApp = ({
@@ -486,7 +489,7 @@ const DeepAncestorApp = ({
   elementCounts: Record<string, number>;
   leafCounts: Record<string, number>;
 }) => (
-  <Slate editor={editor}>
+  <Plite editor={editor}>
     <Editable
       renderElement={({ children, element, isInline }) => (
         <ElementRenderMarker
@@ -509,7 +512,7 @@ const DeepAncestorApp = ({
         </LeafRenderMarker>
       )}
     />
-  </Slate>
+  </Plite>
 );
 
 const DecorationSourceToggleApp = ({
@@ -520,7 +523,7 @@ const DecorationSourceToggleApp = ({
   counts: Record<string, number>;
   editor: ReturnType<typeof createEditor>;
   onProjectionStore?: (
-    store: SlateProjectionStore<{ highlight?: boolean }>
+    store: PliteProjectionStore<{ highlight?: boolean }>
   ) => void;
 }) => {
   const [active, setActive] = useState(false);
@@ -528,7 +531,7 @@ const DecorationSourceToggleApp = ({
   activeRef.current = active;
   const projectionStore = useMemo(
     () =>
-      createSlateProjectionStore(
+      createPliteProjectionStore(
         editor,
         (snapshot) =>
           activeRef.current ? deriveDecorationToggleRanges(snapshot) : [],
@@ -556,7 +559,7 @@ const DecorationSourceToggleApp = ({
   }, [active, projectionStore]);
 
   return (
-    <Slate decorationSources={[projectionStore]} editor={editor}>
+    <Plite decorationSources={[projectionStore]} editor={editor}>
       <button
         id="overlay-toggle"
         onClick={() => {
@@ -567,7 +570,7 @@ const DecorationSourceToggleApp = ({
         {active ? 'on' : 'off'}
       </button>
       <DecorationSourceToggleSlices counts={counts} />
-    </Slate>
+    </Plite>
   );
 };
 
@@ -576,11 +579,11 @@ const DecorationSourceToggleSlices = ({
 }: {
   counts: Record<string, number>;
 }) => {
-  const leftLeafId = useSlateSelector(
-    (editor) => Editor.getSnapshot(editor).index.pathToId['0.0'] ?? null
+  const leftLeafId = useEditorSelector(
+    (editor) => editorGetSnapshot(editor).index.idAt([0, 0]) ?? null
   );
-  const rightLeafId = useSlateSelector(
-    (editor) => Editor.getSnapshot(editor).index.pathToId['1.0'] ?? null
+  const rightLeafId = useEditorSelector(
+    (editor) => editorGetSnapshot(editor).index.idAt([1, 0]) ?? null
   );
 
   return (
@@ -601,17 +604,17 @@ const DecorationSourceToggleSlices = ({
   );
 };
 
-type HiddenPanelAnnotation = SlateAnnotation<{
+type HiddenPanelAnnotation = PliteAnnotation<{
   label: string;
 }>;
 
-type AnnotationBreadthAnnotation = SlateAnnotation<{
+type AnnotationBreadthAnnotation = PliteAnnotation<{
   kind: string;
   label: string;
   tone: string;
 }>;
 
-type AnnotationBreadthWidget = SlateWidget<
+type AnnotationBreadthWidget = PliteWidget<
   {
     label: string;
   },
@@ -631,8 +634,8 @@ const HiddenPanelSidebar = ({
   counts: Record<string, number>;
   editor: ReturnType<typeof createEditor>;
 }) => {
-  const store = useSlateAnnotationStore(editor, annotations);
-  const snapshot = useSlateAnnotations(store);
+  const store = usePliteAnnotationStore(editor, annotations);
+  const snapshot = usePliteAnnotations(store);
   const [localCount, setLocalCount] = useState(0);
   const firstAnnotation = snapshot.allIds[0]
     ? (snapshot.byId.get(snapshot.allIds[0]) ?? null)
@@ -672,7 +675,7 @@ const HiddenPanelActivityApp = ({
   const [hidden, setHidden] = useState(false);
 
   return (
-    <Slate editor={editor}>
+    <Plite editor={editor}>
       <button
         id="toggle-activity"
         onClick={() => {
@@ -691,7 +694,7 @@ const HiddenPanelActivityApp = ({
           editor={editor}
         />
       </Activity>
-    </Slate>
+    </Plite>
   );
 };
 
@@ -703,7 +706,7 @@ const AnnotationProjectionSlice = memo(
     counts: Record<string, number>;
     runtimeId: RuntimeId | null;
   }) => {
-    useSlateProjectionEntries<{
+    usePliteProjectionEntries<{
       annotationId: string;
       kind: string;
       tone?: string;
@@ -715,7 +718,7 @@ const AnnotationProjectionSlice = memo(
 
 const AnnotationSidebarSlice = memo(
   ({ counts }: { counts: Record<string, number> }) => {
-    useSlateAnnotations();
+    usePliteAnnotations();
     increment(counts, 'annotationSidebar');
     return <span id="annotation-sidebar">sidebar</span>;
   }
@@ -728,7 +731,7 @@ const AnnotationWidgetSlice = memo(
   }: {
     counts: Record<string, number>;
     widgetStore: ReturnType<
-      typeof useSlateWidgetStore<
+      typeof usePliteWidgetStore<
         {
           label: string;
         },
@@ -740,7 +743,7 @@ const AnnotationWidgetSlice = memo(
       >
     >;
   }) => {
-    useSlateWidgets(widgetStore);
+    usePliteWidgets(widgetStore);
     increment(counts, 'annotationWidget');
     return <span id="annotation-widget">widget</span>;
   }
@@ -752,7 +755,7 @@ const AnnotationWidgetBreadthSlices = ({
 }: {
   counts: Record<string, number>;
   widgetStore: ReturnType<
-    typeof useSlateWidgetStore<
+    typeof usePliteWidgetStore<
       {
         label: string;
       },
@@ -764,8 +767,8 @@ const AnnotationWidgetBreadthSlices = ({
     >
   >;
 }) => {
-  const leftLeafId = useSlateSelector(
-    (editor) => Editor.getSnapshot(editor).index.pathToId['0.0'] ?? null
+  const leftLeafId = useEditorSelector(
+    (editor) => editorGetSnapshot(editor).index.idAt([0, 0]) ?? null
   );
 
   return (
@@ -794,12 +797,12 @@ const AnnotationWidgetBreadthApp = ({
   counts: Record<string, number>;
   editor: ReturnType<typeof createEditor>;
   onStores?: (stores: {
-    annotationStore: SlateAnnotationStore<{
+    annotationStore: PliteAnnotationStore<{
       kind: string;
       label: string;
       tone: string;
     }>;
-    widgetStore: SlateWidgetStore<
+    widgetStore: PliteWidgetStore<
       {
         label: string;
       },
@@ -812,8 +815,8 @@ const AnnotationWidgetBreadthApp = ({
   }) => void;
   widgets: readonly AnnotationBreadthWidget[];
 }) => {
-  const annotationStore = useSlateAnnotationStore(editor, annotations);
-  const widgetStore = useSlateWidgetStore(editor, widgets, annotationStore);
+  const annotationStore = usePliteAnnotationStore(editor, annotations);
+  const widgetStore = usePliteWidgetStore(editor, widgets, annotationStore);
 
   useEffect(() => {
     onStores?.({
@@ -823,12 +826,12 @@ const AnnotationWidgetBreadthApp = ({
   }, [annotationStore, onStores, widgetStore]);
 
   return (
-    <Slate annotationStore={annotationStore} editor={editor}>
+    <Plite annotationStore={annotationStore} editor={editor}>
       <AnnotationWidgetBreadthSlices
         counts={counts}
         widgetStore={widgetStore}
       />
-    </Slate>
+    </Plite>
   );
 };
 
@@ -843,22 +846,22 @@ const SourceScopedInvalidationApp = ({
 }: {
   counts: Record<string, number>;
   editor: ReturnType<typeof createEditor>;
-  externalStore: SlateProjectionStore<{
+  externalStore: PliteProjectionStore<{
     highlight?: boolean;
     source?: string;
   }>;
   leftLeafId: RuntimeId | null;
   rightLeafId: RuntimeId | null;
-  selectionStore: SlateProjectionStore<{
+  selectionStore: PliteProjectionStore<{
     highlight?: boolean;
     source?: string;
   }>;
-  textStore: SlateProjectionStore<{
+  textStore: PliteProjectionStore<{
     highlight?: boolean;
     source?: string;
   }>;
 }) => (
-  <Slate editor={editor}>
+  <Plite editor={editor}>
     <StoreProjectionSlice
       counts={counts}
       runtimeId={leftLeafId}
@@ -895,7 +898,7 @@ const SourceScopedInvalidationApp = ({
       slot="externalRight"
       store={externalStore}
     />
-  </Slate>
+  </Plite>
 );
 
 const measureLane = async (run: () => Promise<Record<string, number>>) => {
@@ -917,11 +920,12 @@ const measureSelectionBreadth = async () =>
     const editor = createReactEditor();
     const counts: Record<string, number> = {};
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createSelectionChildren(),
       selection: {
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
+        kind: 'text',
       },
     });
 
@@ -964,11 +968,12 @@ const measureManyLeafBreadth = async () =>
     const leafCounts: Record<string, number> = {};
     const targetLeafKey = `leaf-${targetLeafIndex}`;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createManyLeafChildren(leafCount),
       selection: {
         anchor: { path: [0, targetLeafIndex], offset: 0 },
         focus: { path: [0, targetLeafIndex], offset: 0 },
+        kind: 'text',
       },
     });
 
@@ -998,7 +1003,7 @@ const measureManyLeafBreadth = async () =>
     );
 
     assert.equal(
-      typeof Editor.getSnapshot(editor).children[0],
+      typeof editorGetSnapshot(editor).children[0],
       'object',
       'many-leaf lane lost the paragraph root'
     );
@@ -1027,11 +1032,12 @@ const measureDeepAncestorBreadth = async () =>
     const { ancestorKeys, children, deepTextPath } =
       createNestedDepthChildren(nestedDepth);
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: {
         anchor: { path: deepTextPath, offset: 0 },
         focus: { path: deepTextPath, offset: 0 },
+        kind: 'text',
       },
     });
 
@@ -1081,11 +1087,11 @@ const measureDecorationSourceToggleBreadth = async () =>
   measureLane(async () => {
     const editor = createReactEditor();
     const counts: Record<string, number> = {};
-    let projectionStore: SlateProjectionStore<{
+    let projectionStore: PliteProjectionStore<{
       highlight?: boolean;
     }> | null = null;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createDecorationToggleChildren(),
       selection: null,
     });
@@ -1140,15 +1146,18 @@ const measureHiddenPanelActivity = async () =>
     const editor = createReactEditor();
     const counts: Record<string, number> = {};
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createSelectionChildren(),
       selection: null,
     });
 
-    const bookmark: Bookmark = Editor.bookmark(editor, {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 5 },
-    });
+    const bookmark: Anchor<Range> = editor.anchor(
+      {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 5 },
+      },
+      { deletion: 'drop' }
+    );
     const annotations = [
       {
         anchor: bookmark,
@@ -1223,7 +1232,7 @@ const measureHiddenPanelActivity = async () =>
       'none';
 
     await mounted.dispose();
-    bookmark.unref();
+    bookmark.release();
 
     return {
       hiddenEditMs,
@@ -1240,12 +1249,12 @@ const measureAnnotationWidgetBreadth = async () =>
   measureLane(async () => {
     const editor = createReactEditor();
     const counts: Record<string, number> = {};
-    let annotationStore: SlateAnnotationStore<{
+    let annotationStore: PliteAnnotationStore<{
       kind: string;
       label: string;
       tone: string;
     }> | null = null;
-    let widgetStore: SlateWidgetStore<
+    let widgetStore: PliteWidgetStore<
       {
         label: string;
       },
@@ -1256,15 +1265,18 @@ const measureAnnotationWidgetBreadth = async () =>
       }
     > | null = null;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createSelectionChildren(),
       selection: null,
     });
 
-    const bookmark = Editor.bookmark(editor, {
-      anchor: { path: [0, 0], offset: 1 },
-      focus: { path: [0, 0], offset: 4 },
-    });
+    const bookmark = editor.anchor(
+      {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 4 },
+      },
+      { deletion: 'drop' }
+    );
     const annotations = [
       {
         anchor: bookmark,
@@ -1319,7 +1331,7 @@ const measureAnnotationWidgetBreadth = async () =>
     const annotationMetrics = annotationStore?.getMetrics();
 
     await mounted.dispose();
-    bookmark.unref();
+    bookmark.release();
 
     return {
       annotationProjectionRenders: delta.annotationProjection ?? 0,
@@ -1344,18 +1356,19 @@ const measureSourceScopedInvalidation = async () =>
     const counts: Record<string, number> = {};
     const externalActiveRef = { current: false };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createSourceInvalidationChildren(),
       selection: {
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
+        kind: 'text',
       },
     });
 
-    const snapshot = Editor.getSnapshot(editor);
-    const leftLeafId = snapshot.index.pathToId['0.0'] ?? null;
-    const rightLeafId = snapshot.index.pathToId['1.0'] ?? null;
-    const selectionStore = createSlateProjectionStore(
+    const snapshot = editorGetSnapshot(editor);
+    const leftLeafId = snapshot.index.idAt([0, 0]) ?? null;
+    const rightLeafId = snapshot.index.idAt([1, 0]) ?? null;
+    const selectionStore = createPliteProjectionStore(
       editor,
       deriveSelectionRanges,
       {
@@ -1363,11 +1376,11 @@ const measureSourceScopedInvalidation = async () =>
         sourceId: 'selection-source',
       }
     );
-    const textStore = createSlateProjectionStore(editor, deriveTextTailRanges, {
+    const textStore = createPliteProjectionStore(editor, deriveTextTailRanges, {
       dirtiness: 'text',
       sourceId: 'text-source',
     });
-    const externalStore = createSlateProjectionStore(
+    const externalStore = createPliteProjectionStore(
       editor,
       () => deriveExternalRanges(externalActiveRef.current),
       {
@@ -1504,7 +1517,7 @@ const main = async () => {
       selectionOps,
       targetLeafIndex,
     },
-    lane: 'slate-react-rerender-breadth',
+    lane: 'plite-react-rerender-breadth',
     selectionBreadth: await measureSelectionBreadth(),
     manyLeafBreadth: await measureManyLeafBreadth(),
     deepAncestorBreadth: await measureDeepAncestorBreadth(),

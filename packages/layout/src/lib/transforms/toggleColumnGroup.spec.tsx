@@ -24,6 +24,7 @@ describe('toggleColumnGroup', () => {
   it('wraps the selected block in a column group', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -42,6 +43,7 @@ describe('toggleColumnGroup', () => {
   it('updates an existing column group', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0, 0] },
       },
@@ -82,6 +84,7 @@ describe('toggleColumnGroup', () => {
   it('merges content when reducing an existing group', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 1, 0, 0] },
         focus: { offset: 0, path: [0, 1, 0, 0] },
       },

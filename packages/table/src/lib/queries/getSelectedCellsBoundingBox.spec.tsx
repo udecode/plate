@@ -109,13 +109,17 @@ describe('getSelectedCellsBoundingBox', () => {
       ])
     ).toEqual({ maxCol: 2, maxRow: 2, minCol: 0, minRow: 0 });
 
-    editor.update.nodes.set<TTableCellElement>(
-      { colSpan: 2, rowSpan: 2 },
-      { at: [0, 1, 1] }
-    );
+    const spanningCell = {
+      ...getCell(editor, [0, 1, 1]),
+      colSpan: 2,
+      rowSpan: 2,
+    };
 
-    expect(
-      getSelectedCellsBoundingBox(editor, [getCell(editor, [0, 1, 1])])
-    ).toEqual({ maxCol: 2, maxRow: 2, minCol: 1, minRow: 1 });
+    expect(getSelectedCellsBoundingBox(editor, [spanningCell])).toEqual({
+      maxCol: 2,
+      maxRow: 2,
+      minCol: 1,
+      minRow: 1,
+    });
   });
 });

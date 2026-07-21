@@ -2,9 +2,14 @@
 
 import React from 'react';
 
-import { defineEditorExtension, type Value } from '@platejs/plite';
+import {
+  defineEditorExtension,
+  property,
+  schema,
+  type Value,
+} from '@platejs/plite';
 
-import { act, render, renderHook } from '@testing-library/react';
+import { act, render, renderHook, waitFor } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
 
 import type { PlatePlugins } from '../plugin';
@@ -286,26 +291,27 @@ describe('Plate', () => {
         }).extendExtension(
           defineEditorExtension({
             name: 'test:path-normalizer',
-            normalizers: {
-              node({ entry, next, tx }) {
-                const [node, path] = entry;
+            corrections: [
+              {
+                event: 'content',
+                correct({ entry, tx }) {
+                  const [node, path] = entry;
 
-                if (path.length && node.path !== path) {
-                  fn();
-                  tx.nodes.set({ path }, { at: path });
-                  return;
-                }
-
-                next();
+                  if (path.length && node.path !== path) {
+                    fn();
+                    tx.nodes.set({ path }, { at: path });
+                    return;
+                  }
+                },
               },
-            },
+            ],
           })
         ),
       ];
 
       const editor = createPlateEditor({
         plugins,
-        value: [{ children: [{ text: '' }] }] as any,
+        value: [{ children: [{ text: '' }], type: 'p' }],
       });
 
       render(
@@ -317,7 +323,7 @@ describe('Plate', () => {
       expect(fn).not.toHaveBeenCalled();
 
       expect(editor.read.children()).not.toStrictEqual([
-        { children: [{ text: '' }], path: [0] },
+        { children: [{ text: '' }], path: [0], type: 'p' },
       ]);
     });
   });
@@ -332,7 +338,10 @@ describe('Plate', () => {
         }),
       ];
 
-      const editor = createPlateEditor({ plugins, value: [{} as any] });
+      const editor = createPlateEditor({
+        plugins,
+        value: [{ children: [{ text: '' }], type: 'p' }],
+      });
 
       expect(() =>
         render(
@@ -402,7 +411,10 @@ describe('Plate', () => {
           dangerouslyAllowAttributes: dangerouslyAllowAttributes
             ? ['data-my-paragraph-attribute']
             : undefined,
-          isElement: true,
+          element: {
+            groups: ['block'],
+            properties: { attributes: property.json() },
+          },
         },
       });
 
@@ -414,7 +426,10 @@ describe('Plate', () => {
           dangerouslyAllowAttributes: dangerouslyAllowAttributes
             ? ['data-my-bold-attribute']
             : undefined,
-          isLeaf: true,
+          mark: true,
+        },
+        schema: {
+          properties: [schema.textProperty('attributes', property.json())],
         },
       });
 
@@ -498,7 +513,7 @@ describe('Plate', () => {
   });
 
   describe('when rendering unknown element type', () => {
-    it('does not crash when encountering an element with an unknown type', () => {
+    it('uses the renderer fallback for a schema-declared element type', () => {
       const initialValueWithUnknownType: Value = [
         {
           id: '1',
@@ -507,28 +522,42 @@ describe('Plate', () => {
               text: 'This content is of an unknown type and should not crash the editor.',
             },
           ],
-          type: 'unknown-element-type', // This type has no corresponding plugin
+          type: 'unknown-element-type',
         },
       ];
 
+      const UnknownElementSchemaPlugin = createBasePlugin({
+        key: 'unknown-element-schema',
+        schema: {
+          elements: {
+            'unknown-element-type': {
+              groups: ['block'],
+            },
+          },
+        },
+      });
+
       const editor = createPlateEditor({
+        plugins: [UnknownElementSchemaPlugin],
         value: initialValueWithUnknownType,
       });
 
-      // This assertion will fail if the bug exists, as render() will throw.
-      // If the bug is fixed, render() should not throw.
-      expect(() => {
-        render(
-          <Plate editor={editor}>
-            <PlateContent />
-          </Plate>
-        );
-      }).not.toThrow();
+      const { getByText } = render(
+        <Plate editor={editor}>
+          <PlateContent />
+        </Plate>
+      );
+
+      expect(
+        getByText(
+          'This content is of an unknown type and should not crash the editor.'
+        )
+      ).toBeInTheDocument();
     });
   });
 
   describe('async value', () => {
-    it('waits for an async value before rendering and calls onReady', async () => {
+    it('publishes an async value and calls onReady', async () => {
       const asyncValue: Value = [
         {
           children: [{ text: 'Async loaded content' }],
@@ -537,15 +566,14 @@ describe('Plate', () => {
       ];
 
       const onReadyMock = mock();
+      let resolveValue!: (value: Value) => void;
+      const valuePromise = new Promise<Value>((resolve) => {
+        resolveValue = resolve;
+      });
 
       const AsyncEditor = () => {
         const editor = usePlateEditor({
-          value: () =>
-            new Promise<Value>((resolve) => {
-              setTimeout(() => {
-                resolve(asyncValue);
-              }, 0);
-            }),
+          value: () => valuePromise,
           onReady: onReadyMock,
         });
 
@@ -556,20 +584,24 @@ describe('Plate', () => {
         );
       };
 
-      const { getByTestId, queryByTestId, rerender } = render(<AsyncEditor />);
+      const { getByTestId } = render(<AsyncEditor />);
 
-      // PlateContent should not be rendered initially (returns null)
-      (expect(queryByTestId('plate-content')) as any).not.toBeInTheDocument();
+      (expect(getByTestId('plate-content')) as any).toBeInTheDocument();
+      expect(getByTestId('plate-content')).not.toHaveTextContent(
+        'Async loaded content'
+      );
       expect(onReadyMock).not.toHaveBeenCalled();
 
-      // Wait for async value to resolve and trigger a rerender
       await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        rerender(<AsyncEditor />);
+        resolveValue(asyncValue);
+        await valuePromise;
       });
 
-      // Now PlateContent should be rendered and onReady should have been called
-      (expect(getByTestId('plate-content')) as any).toBeInTheDocument();
+      await waitFor(() => {
+        expect(getByTestId('plate-content')).toHaveTextContent(
+          'Async loaded content'
+        );
+      });
       expect(onReadyMock).toHaveBeenCalledWith({
         editor: expect.any(Object),
         isAsync: true,

@@ -1,51 +1,40 @@
 ---
-date: 2026-04-18
+date: 2026-07-20
 topic: plite-normalization-reference
 status: active
 ---
 
 # Normalization Reference
 
-## Purpose
+## Canonical publication
 
-Single live reference for the current normalization posture.
+Every successful update publishes one canonical document value. Primitive
+writes may create temporary draft shapes, but transaction finalization builds
+their canonical `DocumentChange` before the commit becomes visible.
 
-## Current Read
+Canonical construction:
 
-- keep the default-vs-explicit normalization contract closed
-- do not reopen broad default live coercion casually
-- the current contract is intentionally narrower than old Plite
-- promoting explicit-only cleanup into ordinary commit behavior is a real
-  public contract change
+- merges adjacent text leaves with equal registered properties;
+- removes redundant empty leaves while preserving inline caret spacers;
+- enforces root and element content defaults from the compiled schema;
+- maps selection and runtime identity through the construction change.
 
-## Contract Summary
+An externally supplied `DocumentChange` must already produce canonical editor
+representation. Invalid or noncanonical direct changes fail atomically.
 
-Default live behavior keeps only the invariants needed for correctness.
+## Corrections
 
-Heavier cleanup stays on explicit or app-owned seams:
+Extensions register structural corrections by event. The transaction seeds an
+event-indexed worklist from classified changed paths, composes each correction
+into the active change, and runs to a deterministic fixed point. Cycle
+diagnostics identify the repeated target transition.
 
-- `Editor.normalize()`
-- load / replace / reset
-- import / paste ingestion
-- app-owned custom `normalizeNode(...)`
+There is no per-operation dirty-path loop and no second post-publication
+normalization pass.
 
-## Phase Boundary Read
+## Explicit maintenance
 
-The engine still has one normalization phase before publish.
-
-That means:
-
-- publish is not a second normalization tier
-- commit canonicalization does not exist yet
-- promoting explicit-only cleanup would change committed snapshots
-
-## Promotion Read
-
-If normalization work reopens later, the first credible promotion candidate is:
-
-- explicit adjacent-text cleanup / merge
-
-Not first:
-
-- broad inline-container flattening
-- broad always-on live coercion
+`editor.update.value.repair()` runs installed corrections across every document
+root in one history-skipped maintenance update. Use it for imported raw data or
+rules installed after data already exists. Ordinary editor writes rely on
+canonical construction plus the changed-range correction worklist.

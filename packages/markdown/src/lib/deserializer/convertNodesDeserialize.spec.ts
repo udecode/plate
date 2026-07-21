@@ -1,7 +1,10 @@
 import type { MdHeading, MdRootContent } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';
 
-import { createTestEditor } from '../__tests__/createTestEditor';
+import {
+  createTestEditor,
+  getTestMarkdownRuntime,
+} from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';
 import {
   buildSlateNode,
@@ -42,7 +45,7 @@ describe('convertNodesDeserialize', () => {
   ];
 
   const baseOptions: DeserializeMdOptions = {
-    editor,
+    runtime: getTestMarkdownRuntime(editor),
     rules: defaultRules,
   };
 

@@ -1,13 +1,13 @@
-import { readFileSync } from 'node:fs';
 import { act, render, renderHook, waitFor } from '@testing-library/react';
 import _ from 'lodash';
-import { Component, type ReactNode, useLayoutEffect } from 'react';
 import {
-  type EditorCommit,
-  type Operation,
-  type RuntimeId,
-  TextApi,
-} from '@platejs/plite';
+  Component,
+  type ReactNode,
+  startTransition,
+  Suspense,
+  useLayoutEffect,
+} from 'react';
+import { type EditorCommit, type RuntimeId, TextApi } from '@platejs/plite';
 import {
   getLastCommit as editorGetLastCommit,
   getPathByRuntimeId as editorGetPathByRuntimeId,
@@ -40,6 +40,7 @@ import {
   useMountedNodeRenderSelector,
   useMountedTextRenderSelector,
 } from '../src/hooks/use-node-selector';
+import { useGenericSelector } from '../src/hooks/use-generic-selector';
 import { createPliteReactRenderCounter } from '../src/render-profiler';
 
 const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
@@ -68,19 +69,6 @@ class SelectorErrorBoundary extends Component<
 }
 
 describe('plite-react provider hooks contract', () => {
-  test('providers read operation counts without cloning operation payloads', () => {
-    const pliteSource = readFileSync('src/components/plite.tsx', 'utf8');
-    const runtimeSource = readFileSync(
-      'src/hooks/use-plite-runtime.tsx',
-      'utf8'
-    );
-
-    expect(pliteSource).toContain('getOperationCount(editor)');
-    expect(runtimeSource).toContain('getOperationCount(runtime.editor)');
-    expect(pliteSource).not.toContain('value.operations().length');
-    expect(runtimeSource).not.toContain('value.operations().length');
-  });
-
   test('usePliteEditor creates a React editor with initialized value', () => {
     const { result } = renderHook(() =>
       usePliteEditor({
@@ -91,7 +79,6 @@ describe('plite-react provider hooks contract', () => {
     expect(result.current.read((state) => state.value())).toEqual({
       children: initialValue,
     });
-    expect(result.current.read((state) => state.operations())).toEqual([]);
     expect(result.current.read((state) => state.lastCommit())).toBe(null);
   });
 
@@ -133,6 +120,7 @@ describe('plite-react provider hooks contract', () => {
 
   test('Editable maxLength overrides the runtime limit while mounted', () => {
     const selection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -214,7 +202,7 @@ describe('plite-react provider hooks contract', () => {
     expect(onChange).toHaveBeenCalledWith(
       [{ type: 'block', children: [{ text: 'test!' }] }],
       expect.objectContaining({
-        operations: [expect.objectContaining({ type: 'insert_text' })],
+        commit: expect.anything(),
         valueChanged: true,
       })
     );
@@ -222,10 +210,11 @@ describe('plite-react provider hooks contract', () => {
       [{ type: 'block', children: [{ text: 'test!' }] }],
       expect.objectContaining({ valueChanged: true })
     );
+    const publishedChange = onChange.mock.calls.at(-1)?.[1];
+
+    expect(publishedChange?.commit.changed.has('text')).toBe(true);
     expect(
-      shouldUpdate.mock.calls.some(([, change]) =>
-        change?.operations.some((operation) => operation.type === 'insert_text')
-      )
+      shouldUpdate.mock.calls.some(([change]) => change?.changed.has('text'))
     ).toBe(true);
   });
 
@@ -265,6 +254,101 @@ describe('plite-react provider hooks contract', () => {
     expect(callback1).toBeCalledTimes(3);
     expect(callback2).toBeCalledTimes(1);
     expect(firstResult).toBe(result.current);
+  });
+
+  test('abandoned renders do not replace the committed generic selector', () => {
+    let source = 'test';
+    let updateSelector = () => {
+      throw new Error('selector is not committed');
+    };
+    const committedSelector = jest.fn(() => source);
+    const abandonedSelector = jest.fn(() => `abandoned:${source}`);
+    const preserveCommittedValue = (previous: string | null) =>
+      previous !== null;
+    const firstRenderValues: string[] = [];
+    const suspended = new Promise<never>(() => {});
+
+    const Selector = ({ abandoned }: { abandoned: boolean }) => {
+      const [value, update] = useGenericSelector(
+        abandoned ? abandonedSelector : committedSelector,
+        preserveCommittedValue
+      );
+
+      firstRenderValues.push(value);
+      useLayoutEffect(() => {
+        updateSelector = update;
+      }, [update]);
+      if (abandoned) throw suspended;
+
+      return <span data-testid="selector-value">{value}</span>;
+    };
+    const tree = (abandoned: boolean) => (
+      <Suspense fallback={<span>loading</span>}>
+        <Selector abandoned={abandoned} />
+      </Suspense>
+    );
+    const rendered = render(tree(false));
+
+    expect(firstRenderValues[0]).toBe('test');
+    expect(rendered.getByTestId('selector-value')).toHaveTextContent('test');
+
+    act(() => {
+      startTransition(() => {
+        rendered.rerender(tree(true));
+      });
+    });
+
+    expect(abandonedSelector).toBeCalledTimes(1);
+
+    act(() => {
+      source = 'test!';
+      updateSelector();
+    });
+
+    expect(abandonedSelector).toBeCalledTimes(1);
+    expect(committedSelector).toBeCalledTimes(2);
+    expect(rendered.getByTestId('selector-value')).toHaveTextContent('test');
+  });
+
+  test('abandoned provider renders keep committed change callbacks', () => {
+    const committedEditor = createReactEditor({ initialValue });
+    const abandonedEditor = createReactEditor({ initialValue });
+    const committedOnChange = jest.fn();
+    const abandonedOnChange = jest.fn();
+    const suspended = new Promise<never>(() => {});
+
+    const MaybeSuspend = ({ abandoned }: { abandoned: boolean }) => {
+      if (abandoned) throw suspended;
+
+      return null;
+    };
+    const tree = (abandoned: boolean) => (
+      <Suspense fallback={<span>loading</span>}>
+        <Plite
+          editor={abandoned ? abandonedEditor : committedEditor}
+          onChange={abandoned ? abandonedOnChange : committedOnChange}
+        >
+          <MaybeSuspend abandoned={abandoned} />
+          <Editable />
+        </Plite>
+      </Suspense>
+    );
+    const rendered = render(tree(false));
+
+    act(() => {
+      startTransition(() => {
+        rendered.rerender(tree(true));
+      });
+    });
+
+    act(() => {
+      committedEditor.update((tx) => {
+        tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+      });
+    });
+
+    expect(committedOnChange).toBeCalledTimes(1);
+    expect(abandonedOnChange).not.toBeCalled();
   });
 
   test('useEditorSelector replays subscription errors during render with context', async () => {
@@ -326,13 +410,15 @@ describe('plite-react provider hooks contract', () => {
     }
   });
 
-  test('useEditorSelector passes commit operations into selector updates', async () => {
+  test('useEditorSelector reads the latest canonical commit from the editor', async () => {
     const editor = createReactEditor({ initialValue });
-    const seenOperations: (readonly Operation[] | undefined)[] = [];
-    const selector = jest.fn((_editor, operations?: readonly Operation[]) => {
-      seenOperations.push(operations);
+    const seenEditors: (typeof editor)[] = [];
+    const selector = jest.fn((nextEditor: typeof editor) => {
+      seenEditors.push(nextEditor);
 
-      return operations?.map((operation) => operation.type).join(',') ?? 'idle';
+      return nextEditor.read((state) =>
+        state.lastCommit()?.changed.has('text') ? 'text' : 'idle'
+      );
     });
 
     const { result } = renderHook(
@@ -355,20 +441,16 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(result.current).toBe('insert_text');
-    expect(seenOperations.at(-1)?.map((operation) => operation.type)).toEqual([
-      'insert_text',
-    ]);
+    expect(result.current).toBe('text');
+    expect(seenEditors.every((seenEditor) => seenEditor === editor)).toBe(true);
   });
 
-  test('deferred useEditorSelector passes commit operations into selector updates', async () => {
+  test('deferred useEditorSelector coalesces to the latest canonical commit', async () => {
     const editor = createReactEditor({ initialValue });
-    const seenOperations: (readonly Operation[] | undefined)[] = [];
-    const selector = jest.fn((_editor, operations?: readonly Operation[]) => {
-      seenOperations.push(operations);
-
-      return operations?.map((operation) => operation.type).join(',') ?? 'idle';
-    });
+    const selector = jest.fn(
+      (nextEditor: typeof editor) =>
+        nextEditor.read((state) => state.lastCommit()?.version) ?? 0
+    );
 
     const { result } = renderHook(
       () =>
@@ -385,7 +467,7 @@ describe('plite-react provider hooks contract', () => {
       }
     );
 
-    expect(result.current).toBe('idle');
+    expect(result.current).toBe(0);
 
     await act(async () => {
       editor.update((tx) => {
@@ -396,18 +478,15 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(result.current).toBe('insert_text,insert_text');
-    expect(seenOperations.at(-1)?.map((operation) => operation.type)).toEqual([
-      'insert_text',
-      'insert_text',
-    ]);
+    expect(result.current).toBe(editorGetLastCommit(editor)?.version);
+    expect(selector).toBeCalledTimes(3);
   });
 
   test('deferred useEditorSelector cancels queued updates on unmount', async () => {
     const editor = createReactEditor({ initialValue });
     const selector = jest.fn(
-      (_editor, operations?: readonly Operation[]) =>
-        operations?.map((operation) => operation.type).join(',') ?? 'idle'
+      (nextEditor: typeof editor) =>
+        nextEditor.read((state) => state.lastCommit()?.version) ?? 0
     );
 
     const rendered = renderHook(
@@ -425,7 +504,7 @@ describe('plite-react provider hooks contract', () => {
       }
     );
 
-    expect(rendered.result.current).toBe('idle');
+    expect(rendered.result.current).toBe(0);
     expect(selector).toBeCalledTimes(2);
 
     act(() => {
@@ -501,13 +580,10 @@ describe('plite-react provider hooks contract', () => {
       ],
     });
 
-    const targetRuntimeId = editorGetSnapshot(editor).index.pathToId['1.0'];
+    const targetRuntimeId = editorGetSnapshot(editor).index.idAt([1, 0]);
     const selector = jest.fn(() => editorGetLastCommit(editor)?.version ?? 0);
-    const shouldUpdate = jest.fn(
-      (_operations?: readonly Operation[], change?: EditorCommit) =>
-        Boolean(
-          change?.selectionImpactRuntimeIds?.includes(targetRuntimeId ?? '')
-        )
+    const shouldUpdate = jest.fn((change?: EditorCommit) =>
+      Boolean(change?.changed.hasRuntime(targetRuntimeId ?? '', 'selection'))
     );
     const initialVersion = editorGetLastCommit(editor)?.version ?? 0;
 
@@ -558,8 +634,8 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const blockRuntimeId = snapshot.index.pathToId['0'];
-    const textRuntimeId = snapshot.index.pathToId['0.0'];
+    const blockRuntimeId = snapshot.index.idAt([0]);
+    const textRuntimeId = snapshot.index.idAt([0, 0]);
     const selector = jest.fn((state) => state.selection());
     const seenChanges: EditorCommit[] = [];
     const shouldUpdate = jest.fn((change?: EditorCommit) => {
@@ -594,17 +670,16 @@ describe('plite-react provider hooks contract', () => {
     expect(shouldUpdate).toBeCalled();
     expect(selector).toBeCalledTimes(2);
     expect(result.current).toBe(null);
-    expect(seenChanges.at(-1)?.dirtyTextRuntimeIds).toEqual([textRuntimeId]);
-    expect(seenChanges.at(-1)?.dirtyElementRuntimeIds).toEqual([
-      blockRuntimeId,
+    expect(seenChanges.at(-1)?.changed.runtimeIds('text')).toEqual([
+      textRuntimeId,
     ]);
-    expect(seenChanges.at(-1)?.dirtyTopLevelRuntimeIds).toEqual([
+    expect(seenChanges.at(-1)?.changed.runtimeIds('node')).toEqual([
       blockRuntimeId,
+      textRuntimeId,
     ]);
-    expect(seenChanges.at(-1)?.dirtyTopLevelRanges).toEqual([[0, 0]]);
-    expect(seenChanges.at(-1)?.rootRuntimeIdsChanged).toBe(false);
-    expect(seenChanges.at(-1)?.topLevelOrderChanged).toBe(false);
-    expect(seenChanges.at(-1)?.fullDocumentChanged).toBe(false);
+    expect(seenChanges.at(-1)?.changed.topLevelRanges()).toEqual([[0, 0]]);
+    expect(seenChanges.at(-1)?.changed.has('root-order')).toBe(false);
+    expect(seenChanges.at(-1)?.changed.has('replace')).toBe(false);
 
     await act(async () => {
       editor.update((tx) => {
@@ -614,6 +689,7 @@ describe('plite-react provider hooks contract', () => {
 
     expect(selector).toBeCalledTimes(3);
     expect(result.current).toEqual({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     });
@@ -631,8 +707,8 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const blockRuntimeId = snapshot.index.pathToId['0'];
-    const textRuntimeId = snapshot.index.pathToId['0.0'];
+    const blockRuntimeId = snapshot.index.idAt([0]);
+    const textRuntimeId = snapshot.index.idAt([0, 0]);
 
     if (!blockRuntimeId || !textRuntimeId) {
       throw new Error('Expected runtime ids for selector contract');
@@ -701,8 +777,8 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstBlockRuntimeId = snapshot.index.pathToId['0'];
-    const secondTextRuntimeId = snapshot.index.pathToId['1.0'];
+    const firstBlockRuntimeId = snapshot.index.idAt([0]);
+    const secondTextRuntimeId = snapshot.index.idAt([1, 0]);
 
     if (!firstBlockRuntimeId || !secondTextRuntimeId) {
       throw new Error('Expected runtime ids for listener fanout contract');
@@ -829,7 +905,7 @@ describe('plite-react provider hooks contract', () => {
       editorInsertBreak(editor);
     });
 
-    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.changed.has('root-order')).toBe(true);
     expect(result.current).toBe('Hello ');
   });
 
@@ -875,7 +951,7 @@ describe('plite-react provider hooks contract', () => {
       editorInsertBreak(editor);
     });
 
-    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.changed.has('root-order')).toBe(true);
     expect(result.current).toBe('2');
   });
 
@@ -917,7 +993,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.changed.has('root-order')).toBe(true);
     expect(result.current).toBe('0');
   });
 
@@ -967,7 +1043,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.changed.has('root-order')).toBe(true);
     expect(result.current).toBe('1');
   });
 
@@ -1023,7 +1099,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.changed.has('root-order')).toBe(true);
     expect(result.current).toBe(1);
   });
 
@@ -1073,7 +1149,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.changed.has('root-order')).toBe(true);
     expect(result.current).toBe('0.0');
   });
 
@@ -1126,7 +1202,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.changed.has('root-order')).toBe(true);
     expect(result.current).toBe(2);
   });
 
@@ -1480,7 +1556,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.changed.has('root-order')).toBe(true);
     expect(result.current).toBe('2');
   });
 
@@ -1508,6 +1584,7 @@ describe('plite-react provider hooks contract', () => {
           tx.value.replace({
             children: [{ type: 'block', children: [{ text: 'replacement' }] }],
             selection: {
+              kind: 'text',
               anchor: { path: [0, 0], offset: 11 },
               focus: { path: [0, 0], offset: 11 },
             },
@@ -1543,8 +1620,8 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const blockRuntimeId = snapshot.index.pathToId['0'];
-    const textRuntimeId = snapshot.index.pathToId['0.0'];
+    const blockRuntimeId = snapshot.index.idAt([0]);
+    const textRuntimeId = snapshot.index.idAt([0, 0]);
 
     if (!blockRuntimeId || !textRuntimeId) {
       throw new Error('Expected runtime ids for mounted selector contract');
@@ -1641,7 +1718,7 @@ describe('plite-react provider hooks contract', () => {
       selection: null,
     });
 
-    const textRuntimeId = editorGetSnapshot(editor).index.pathToId['0.0'];
+    const textRuntimeId = editorGetSnapshot(editor).index.idAt([0, 0]);
 
     if (!textRuntimeId) {
       throw new Error('Expected text runtime id for mounted selector contract');
@@ -1754,6 +1831,7 @@ describe('plite-react provider hooks contract', () => {
         children: [{ text: `block ${index}` }],
       })),
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1773,13 +1851,16 @@ describe('plite-react provider hooks contract', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [50, 0], offset: 0 },
           focus: { path: [199, 0], offset: 'block 199'.length },
         });
       });
     });
 
-    expect(editorGetLastCommit(editor)?.selectionImpactRuntimeIds).toBe(null);
+    expect(
+      editorGetLastCommit(editor)?.changed.runtimeIds('selection').length
+    ).toBe(302);
     expect(result.current).toBe(50);
   });
 
@@ -1814,6 +1895,7 @@ describe('plite-react provider hooks contract', () => {
       editor.update((tx) => {
         tx.text.delete({
           at: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 1 },
           },
@@ -1855,6 +1937,7 @@ describe('plite-react provider hooks contract', () => {
       editor.update((tx) => {
         tx.text.delete({
           at: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 1 },
           },

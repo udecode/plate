@@ -8,9 +8,10 @@ import {
   BaseParagraphPlugin,
   createBaseEditor,
   createBasePlugin,
+  NodeIdPlugin,
 } from '@platejs/core';
 import { MarkdownPlugin } from '@platejs/markdown';
-import { type Element, type ElementEntry } from '@platejs/plite';
+import { type Element, type ElementEntry, schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 jsxt;
@@ -52,20 +53,52 @@ afterAll(() => {
   mock.restore();
 });
 
-const element = (key: string, isContainer = false) =>
-  createBasePlugin({
-    key,
-    node: { isContainer, isElement: true },
-  });
+const TableFixturePlugin = createBasePlugin({
+  key: KEYS.table,
+  node: {
+    element: {
+      content: schema.content.type(KEYS.tr),
+      groups: ['block'],
+    },
+  },
+});
+
+const TableRowFixturePlugin = createBasePlugin({
+  key: KEYS.tr,
+  node: {
+    element: {
+      content: schema.content.types([KEYS.td, KEYS.th]),
+    },
+  },
+});
+
+const TableCellFixturePlugin = createBasePlugin({
+  key: KEYS.td,
+  node: {
+    element: {
+      content: schema.content.group('block'),
+    },
+  },
+});
+
+const TableHeaderCellFixturePlugin = createBasePlugin({
+  key: KEYS.th,
+  node: {
+    element: {
+      content: schema.content.group('block'),
+    },
+  },
+});
 
 const createTestEditor = (input: TestEditor) =>
   createBaseEditor({
     plugins: [
       BaseParagraphPlugin,
-      element(KEYS.table, true),
-      element(KEYS.tr),
-      element(KEYS.td),
-      element(KEYS.th),
+      NodeIdPlugin,
+      TableFixturePlugin,
+      TableRowFixturePlugin,
+      TableCellFixturePlugin,
+      TableHeaderCellFixturePlugin,
       MarkdownPlugin,
     ],
     selection: input.selection,

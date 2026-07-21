@@ -51,11 +51,7 @@ describe('useExcalidrawElement', () => {
           path: () => [0],
         },
       },
-      update: (
-        run: (tx: { nodes: { set: typeof setNodes } }) => void
-      ): void => {
-        run({ nodes: { set: setNodes } });
-      },
+      update: { nodes: { set: setNodes } },
     });
     useEditorReadOnlyMock.mockReturnValue(false);
 

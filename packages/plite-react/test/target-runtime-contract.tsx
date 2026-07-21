@@ -17,6 +17,7 @@ const initialValue = [
 ];
 
 const fallbackSelection: Range = {
+  kind: 'text',
   anchor: { path: [0, 0], offset: 0 },
   focus: { path: [0, 0], offset: 3 },
 };
@@ -80,6 +81,7 @@ test('target runtime imports the current DOM selection for implicit editor comma
   });
 
   expect(target).toEqual({
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 3 },
   });
@@ -116,6 +118,7 @@ test('Editable target runtime routes implicit block commands to the current DOM 
     { type: 'heading-one', children: [{ text: 'two' }] },
   ]);
   expect(editorGetSelection(editor)).toEqual({
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 3 },
   });

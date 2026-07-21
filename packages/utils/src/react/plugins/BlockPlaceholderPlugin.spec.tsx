@@ -5,16 +5,41 @@ import React from 'react';
 import { createBasePlugin } from '@platejs/core';
 import {
   createPlateEditor,
+  ParagraphPlugin,
   PlateTest,
   type PlateEditor,
 } from '@platejs/core/react';
-import type { Element, Value } from '@platejs/plite';
+import {
+  type Element,
+  property,
+  schema,
+  target,
+  type TextSelection,
+  type Value,
+} from '@platejs/plite';
 import { render, waitFor } from '@testing-library/react';
 
 import {
   BlockPlaceholderPlugin,
   type BlockPlaceholderConfig,
 } from './BlockPlaceholderPlugin';
+
+const BlockPlaceholderFixtureSchemaPlugin = createBasePlugin({
+  key: 'blockPlaceholderFixtureSchema',
+  schema: {
+    properties: [
+      schema.elementProperty('indent', property.number(), {
+        target: target.type('p'),
+      }),
+      schema.elementProperty('listStyleType', property.string(), {
+        target: target.type('p'),
+      }),
+    ],
+  },
+});
+const ParagraphWithComponentPlugin = ParagraphPlugin.withComponent(
+  ({ attributes, children }) => <div {...attributes}>{children}</div>
+);
 
 const renderPlaceholderEditor = (
   editor: PlateEditor,
@@ -37,14 +62,13 @@ const createEditor = (options?: {
   placeholders?: Record<string, string>;
   query?: BlockPlaceholderConfig['options']['query'];
   readOnly?: boolean;
-  selection?: {
-    anchor: { offset: number; path: number[] };
-    focus: { offset: number; path: number[] };
-  };
+  selection?: TextSelection;
   value?: Value;
 }) =>
   createPlateEditor({
     plugins: [
+      BlockPlaceholderFixtureSchemaPlugin,
+      ParagraphWithComponentPlugin,
       BlockPlaceholderPlugin.configure({
         options: {
           ...(options?.className !== undefined
@@ -59,6 +83,7 @@ const createEditor = (options?: {
     ],
     nodeId: options?.nodeId,
     selection: options?.selection ?? {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
@@ -71,7 +96,10 @@ const createEditor = (options?: {
 const getPlaceholder = <TEditor extends PlateEditor>(
   editor: TEditor,
   node: Element
-) => editor.plugin(BlockPlaceholderPlugin).getOption('placeholder', node);
+) =>
+  editor
+    .plugin(BlockPlaceholderPlugin)
+    .getOption('placeholder', editor.read.nodes.path(node));
 
 const getEditorElement = <TEditor extends PlateEditor>(
   editor: TEditor,
@@ -167,15 +195,25 @@ describe('BlockPlaceholderPlugin', () => {
   it('honors custom node metadata rules for pristine empty blocks', async () => {
     const CustomMetadataPlugin = createBasePlugin({
       key: 'customMetadata',
-    }).extend({
-      node: {
-        isMetadataProp: ({ key }) => key === 'data-test-id',
+      schema: {
+        properties: [
+          schema.elementProperty(
+            'data-test-id',
+            property.string({ significant: false }),
+            { target: target.type('p') }
+          ),
+        ],
       },
     });
 
     const editor = createPlateEditor({
-      plugins: [BlockPlaceholderPlugin, CustomMetadataPlugin],
+      plugins: [
+        BlockPlaceholderPlugin,
+        CustomMetadataPlugin,
+        ParagraphWithComponentPlugin,
+      ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -219,6 +257,7 @@ describe('BlockPlaceholderPlugin', () => {
   it('clears the target when the selection is expanded', async () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [1, 0] },
       },

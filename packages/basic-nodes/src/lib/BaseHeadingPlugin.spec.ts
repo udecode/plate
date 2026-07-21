@@ -24,7 +24,10 @@ describe('BaseHeadingPlugin', () => {
       KEYS.heading.forEach((level, index) => {
         const plugin = headingPlugin.plugins[index]!;
         expect(plugin.key).toBe(level);
-        expect(plugin.node.isElement).toBe(true);
+        expect(plugin.node.element).toBeDefined();
+        expect(editor.read.schema.isElementTypeInGroup(level, 'block')).toBe(
+          true
+        );
         expect(plugin.parsers.html.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);
@@ -77,7 +80,13 @@ describe('BaseHeadingPlugin', () => {
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
 
       headingPlugin.plugins.forEach((plugin, index) => {
-        expect(plugin.node.isElement).toBe(true);
+        expect(plugin.node.element).toBeDefined();
+        expect(
+          editor.read.schema.createAndFill(plugin.node.type)
+        ).toMatchObject({
+          children: [{ text: '' }],
+          type: plugin.node.type,
+        });
         expect(plugin.handlers?.onKeyDown).not.toBeDefined();
         expect(plugin.parsers.html.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
@@ -90,6 +99,7 @@ describe('BaseHeadingPlugin', () => {
     const h1 = createBaseEditor({
       plugins: [BaseH1Plugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -98,6 +108,7 @@ describe('BaseHeadingPlugin', () => {
     const h2 = createBaseEditor({
       plugins: [BaseH2Plugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -106,6 +117,7 @@ describe('BaseHeadingPlugin', () => {
     const h3 = createBaseEditor({
       plugins: [BaseH3Plugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -114,6 +126,7 @@ describe('BaseHeadingPlugin', () => {
     const h4 = createBaseEditor({
       plugins: [BaseH4Plugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -122,6 +135,7 @@ describe('BaseHeadingPlugin', () => {
     const h5 = createBaseEditor({
       plugins: [BaseH5Plugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -130,6 +144,7 @@ describe('BaseHeadingPlugin', () => {
     const h6 = createBaseEditor({
       plugins: [BaseH6Plugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },

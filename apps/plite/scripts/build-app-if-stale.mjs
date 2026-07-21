@@ -1,78 +1,54 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const appRoot = path.resolve(__dirname, '..');
-const repoRoot = path.resolve(appRoot, '../..');
+import {
+  appBuildEntries,
+  appRoot,
+  createBuildManifest,
+  hashEntries,
+  isBuildManifestFresh,
+  repoRoot,
+  snapshotEnvironmentByPrefix,
+} from './plite-proof-inputs.mjs';
+import { runBoundedProcess } from '../../../tooling/scripts/run-bounded-process.mjs';
 
-const plitePackageNames = [
-  'browser',
-  'plite',
-  'plite-dom',
-  'plite-history',
-  'plite-hyperscript',
-  'plite-layout',
-  'plite-react',
-  'yjs',
-];
+const registryPath = path.join(
+  repoRoot,
+  'apps/www/src/app/(app)/examples/plite/plite-example-registry.ts'
+);
+const registrySource = fs.readFileSync(registryPath, 'utf8');
+const definitionsSource = registrySource.match(
+  /export const EXAMPLE_NAMES_AND_PATHS = \[(?<definitions>[\s\S]*?)\] as const/
+)?.groups?.definitions;
 
-const sourceEntries = [
-  path.join(appRoot, 'src'),
-  path.join(appRoot, 'next.config.ts'),
-  path.join(appRoot, 'package.json'),
-  path.join(appRoot, 'tsconfig.json'),
-  path.join(repoRoot, 'apps/www/src/app/(app)/examples/plite'),
-  path.join(repoRoot, 'apps/www/src/components/ui'),
-  path.join(repoRoot, 'apps/www/src/components/preview-dev-overlay-styles.tsx'),
-  path.join(repoRoot, 'apps/www/src/lib/utils.ts'),
-  path.join(repoRoot, 'apps/www/src/utils/cn.ts'),
-  ...plitePackageNames.flatMap((packageName) => {
-    const packageRoot = path.join(repoRoot, 'packages', packageName);
+if (!definitionsSource) {
+  throw new Error('Cannot read Plite example definitions');
+}
 
-    return [
-      path.join(packageRoot, 'src'),
-      path.join(packageRoot, 'package.json'),
-    ];
-  }),
-].filter((entryPath) => fs.existsSync(entryPath));
+const examplePaths = [...definitionsSource.matchAll(/\['[^']+', '([^']+)'\]/g)]
+  .map((match) => match[1])
+  .filter(Boolean);
+
+if (examplePaths.length === 0) {
+  throw new Error('Plite example registry is empty');
+}
 
 const requiredOutputs = [
   path.join(appRoot, 'out/index.html'),
-  path.join(appRoot, 'out/examples/plite/richtext.html'),
-  path.join(appRoot, 'out/examples/plite/plaintext.html'),
-  path.join(appRoot, 'out/examples/plite/huge-document.html'),
+  path.join(appRoot, 'out/examples/plite.html'),
+  ...examplePaths.map((examplePath) =>
+    path.join(appRoot, `out/examples/plite/${examplePath}.html`)
+  ),
 ];
+const manifestPath = path.join(appRoot, 'out/.plite-proof-build.json');
+const manifestVersion = 4;
+const outputRoot = path.join(appRoot, 'out');
 
-const latestMtimeMs = (entryPath) => {
-  const stat = fs.statSync(entryPath);
-
-  if (!stat.isDirectory()) return stat.mtimeMs;
-
-  let latest = stat.mtimeMs;
-
-  for (const entry of fs.readdirSync(entryPath, { withFileTypes: true })) {
-    if (
-      entry.name === '.next' ||
-      entry.name === 'dist' ||
-      entry.name === 'node_modules' ||
-      entry.name === 'out' ||
-      entry.name === 'test-results'
-    ) {
-      continue;
-    }
-
-    latest = Math.max(latest, latestMtimeMs(path.join(entryPath, entry.name)));
-  }
-
-  return latest;
-};
-
-const outputsAreFresh = () => {
-  if (process.env.PLITE_PROOF_FORCE_BUILD === '1') {
+const outputsAreFresh = ({ environment, inputDigest }) => {
+  if (environment.PLITE_PROOF_FORCE_BUILD === '1') {
     return false;
   }
 
@@ -80,23 +56,70 @@ const outputsAreFresh = () => {
     return false;
   }
 
-  const latestSourceMtime = Math.max(...sourceEntries.map(latestMtimeMs));
-  const oldestOutputMtime = Math.min(
-    ...requiredOutputs.map((outputPath) => fs.statSync(outputPath).mtimeMs)
-  );
-
-  return oldestOutputMtime >= latestSourceMtime;
+  return isBuildManifestFresh({
+    inputDigest,
+    manifestPath,
+    outputRoot,
+    version: manifestVersion,
+  });
 };
 
-if (outputsAreFresh()) {
-  console.log('plite proof app export is fresh');
-  process.exit(0);
+export const buildAppIfStale = async ({
+  environment = process.env,
+  onProcessEnd,
+  onProcessStart,
+  timeoutMs = Number(
+    environment.PLITE_BROWSER_BUILD_SETUP_TIMEOUT_MS ?? 600_000
+  ),
+} = {}) => {
+  const buildEnvironment = snapshotEnvironmentByPrefix(
+    'NEXT_PUBLIC_PLITE_YJS_',
+    environment
+  );
+  const inputDigest = hashEntries(appBuildEntries, [
+    'plite-proof-app-v4',
+    JSON.stringify(buildEnvironment),
+  ]);
+
+  if (outputsAreFresh({ environment, inputDigest })) {
+    console.log('plite proof app export is fresh');
+    return 0;
+  }
+
+  const result = await runBoundedProcess({
+    args: ['build'],
+    command: 'pnpm',
+    cwd: appRoot,
+    env: environment,
+    onProcessEnd,
+    onProcessStart,
+    timeoutMs,
+  });
+
+  if (result.status === 0) {
+    const manifest = createBuildManifest({
+      inputDigest,
+      manifestPath,
+      outputRoot,
+      version: manifestVersion,
+    });
+
+    fs.writeFileSync(
+      manifestPath,
+      `${JSON.stringify(
+        {
+          ...manifest,
+          environmentKeys: Object.keys(buildEnvironment),
+        },
+        null,
+        2
+      )}\n`
+    );
+  }
+
+  return result.status;
+};
+
+if (path.resolve(process.argv[1] ?? '') === fileURLToPath(import.meta.url)) {
+  process.exit(await buildAppIfStale());
 }
-
-const result = spawnSync('pnpm', ['build'], {
-  cwd: appRoot,
-  shell: true,
-  stdio: 'inherit',
-});
-
-process.exit(result.status ?? 1);

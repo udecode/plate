@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@platejs/test-utils';
+import type { MdParagraph } from '@platejs/markdown';
 
 import { serializeMd } from '../../../../../../packages/markdown/src/lib/serializer/serializeMd';
 import { wrapWithBlockId } from '../../../../../../packages/markdown/src/lib/serializer/wrapWithBlockId';
@@ -13,7 +14,7 @@ const editor = createTestEditor();
 describe('wrapWithBlockId', () => {
   describe('unit tests', () => {
     it('wrap a node with block element and ID attribute', () => {
-      const mdastNode = {
+      const mdastNode: MdParagraph = {
         children: [{ type: 'text', value: 'Hello world' }],
         type: 'paragraph',
       };
@@ -38,7 +39,7 @@ describe('wrapWithBlockId', () => {
     });
 
     it('convert numeric IDs to strings', () => {
-      const mdastNode = {
+      const mdastNode: MdParagraph = {
         children: [{ type: 'text', value: 'Test' }],
         type: 'paragraph',
       };

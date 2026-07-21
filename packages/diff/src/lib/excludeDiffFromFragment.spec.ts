@@ -12,12 +12,12 @@ describe('excludeDiffFromFragment', () => {
         children: [
           {
             diff: { insert: true },
-            diffOperation: 'insert',
+            diffIntent: 'insert',
             text: 'child',
           },
         ],
         diff: { remove: true },
-        diffOperation: 'remove',
+        diffIntent: 'remove',
         type: 'p',
       },
     ] as any;
@@ -28,23 +28,21 @@ describe('excludeDiffFromFragment', () => {
       {
         children: [
           {
-            diff: undefined,
-            diffOperation: undefined,
             text: 'child',
           },
         ],
-        diff: undefined,
-        diffOperation: undefined,
         type: 'p',
       },
     ]);
+    expect(JSON.parse(JSON.stringify(fragment))).toEqual(fragment);
     expect(original[0].diff).toEqual({ remove: true });
-    expect(original[0].children[0].diffOperation).toBe('insert');
+    expect(original[0].children[0].diffIntent).toBe('insert');
   });
 
   it('removes diff metadata through the fragment query extension', () => {
     const editor = createEditor<Value>({
       initialSelection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
@@ -53,7 +51,7 @@ describe('excludeDiffFromFragment', () => {
           children: [
             {
               diff: { insert: true },
-              diffOperation: 'insert',
+              diffIntent: 'insert',
               text: 'child',
             },
           ],
@@ -68,8 +66,6 @@ describe('excludeDiffFromFragment', () => {
       {
         children: [
           {
-            diff: undefined,
-            diffOperation: undefined,
             text: 'child',
           },
         ],

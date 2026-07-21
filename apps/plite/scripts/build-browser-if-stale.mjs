@@ -1,18 +1,18 @@
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(__dirname, '../../..');
-const browserRoot = path.join(repoRoot, 'packages/browser');
+import {
+  browserBuildEntries,
+  createBuildManifest,
+  hashEntries,
+  isBuildManifestFresh,
+  repoRoot,
+  snapshotEnvironment,
+} from './plite-proof-inputs.mjs';
+import { runBoundedProcess } from '../../../tooling/scripts/run-bounded-process.mjs';
 
-const sourceEntries = [
-  path.join(browserRoot, 'src'),
-  path.join(browserRoot, 'package.json'),
-  path.join(browserRoot, 'tsconfig.json'),
-  path.join(browserRoot, 'tsdown.config.mts'),
-];
+const browserRoot = path.join(repoRoot, 'packages/browser');
 
 const requiredOutputs = [
   'core/index.js',
@@ -24,45 +24,70 @@ const requiredOutputs = [
   'transports/index.js',
   'transports/index.d.ts',
 ].map((outputPath) => path.join(browserRoot, 'dist', outputPath));
+const manifestPath = path.join(browserRoot, 'dist/.plite-browser-build.json');
+const manifestVersion = 4;
+const outputRoot = path.join(browserRoot, 'dist');
 
-const latestMtimeMs = (entryPath) => {
-  const stat = fs.statSync(entryPath);
-
-  if (!stat.isDirectory()) return stat.mtimeMs;
-
-  let latest = stat.mtimeMs;
-
-  for (const entry of fs.readdirSync(entryPath, { withFileTypes: true })) {
-    if (entry.name === 'dist' || entry.name === 'node_modules') continue;
-
-    latest = Math.max(latest, latestMtimeMs(path.join(entryPath, entry.name)));
-  }
-
-  return latest;
-};
-
-const outputsAreFresh = () => {
+const outputsAreFresh = ({ inputDigest }) => {
   if (requiredOutputs.some((outputPath) => !fs.existsSync(outputPath))) {
     return false;
   }
 
-  const latestSourceMtime = Math.max(...sourceEntries.map(latestMtimeMs));
-  const oldestOutputMtime = Math.min(
-    ...requiredOutputs.map((outputPath) => fs.statSync(outputPath).mtimeMs)
-  );
-
-  return oldestOutputMtime >= latestSourceMtime;
+  return isBuildManifestFresh({
+    inputDigest,
+    manifestPath,
+    outputRoot,
+    version: manifestVersion,
+  });
 };
 
-if (outputsAreFresh()) {
-  console.log('@platejs/browser dist is fresh');
-  process.exit(0);
+export const buildBrowserIfStale = async ({
+  environment = process.env,
+  timeoutMs = Number(environment.PLITE_BROWSER_BUILD_TIMEOUT_MS ?? 600_000),
+} = {}) => {
+  const buildEnvironment = snapshotEnvironment(['CI'], environment);
+  const inputDigest = hashEntries(browserBuildEntries, [
+    'plite-browser-build-v4',
+    JSON.stringify(buildEnvironment),
+  ]);
+
+  if (outputsAreFresh({ inputDigest })) {
+    console.log('@platejs/browser dist is fresh');
+    return 0;
+  }
+
+  const result = await runBoundedProcess({
+    args: ['--filter', '@platejs/browser', 'build'],
+    command: 'pnpm',
+    cwd: repoRoot,
+    env: environment,
+    timeoutMs,
+  });
+
+  if (result.status === 0) {
+    const manifest = createBuildManifest({
+      inputDigest,
+      manifestPath,
+      outputRoot,
+      version: manifestVersion,
+    });
+
+    fs.writeFileSync(
+      manifestPath,
+      `${JSON.stringify(
+        {
+          ...manifest,
+          environmentKeys: Object.keys(buildEnvironment),
+        },
+        null,
+        2
+      )}\n`
+    );
+  }
+
+  return result.status;
+};
+
+if (path.resolve(process.argv[1] ?? '') === fileURLToPath(import.meta.url)) {
+  process.exit(await buildBrowserIfStale());
 }
-
-const result = spawnSync('pnpm', ['--filter', '@platejs/browser', 'build'], {
-  cwd: repoRoot,
-  shell: true,
-  stdio: 'inherit',
-});
-
-process.exit(result.status ?? 1);

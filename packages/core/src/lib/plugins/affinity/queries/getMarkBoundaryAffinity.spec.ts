@@ -1,11 +1,23 @@
-import type { EditorMarks, Selection } from '@platejs/plite';
+import { property, type EditorMarks, type Selection } from '@platejs/plite';
 
 import { createBaseEditor } from '../../../editor';
+import { createBasePlugin } from '../../../plugin';
 import { getMarkBoundaryAffinity } from './getMarkBoundaryAffinity';
 
 const value = [{ children: [{ text: 'ab' }], type: 'p' }];
+const MarkPlugins = [
+  createBasePlugin({
+    key: 'bold',
+    node: { mark: true },
+  }),
+  createBasePlugin({
+    key: 'color',
+    node: { mark: { value: property.string() } },
+  }),
+];
 
 const collapsedSelection = (offset: number): Selection => ({
+  kind: 'text',
   anchor: { offset, path: [0, 0] },
   focus: { offset, path: [0, 0] },
 });
@@ -17,7 +29,11 @@ const createEditor = ({
   marks: EditorMarks | null;
   selection: Selection;
 }) => {
-  const editor = createBaseEditor({ selection, value });
+  const editor = createBaseEditor({
+    plugins: MarkPlugins,
+    selection,
+    value,
+  });
 
   editor.update.marks.set(marks);
 

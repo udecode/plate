@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
+import { TextIndentPlugin } from '@platejs/basic-styles/react';
 import { BasicBlocksPlugin } from '@platejs/basic-nodes/react';
 import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
@@ -9,6 +10,7 @@ import { IndentPlugin } from '@platejs/indent/react';
 import { JuicePlugin } from '@platejs/juice';
 import { LineHeightPlugin } from '@platejs/basic-styles/react';
 import { LinkPlugin } from '@platejs/link/react';
+import { BaseListPlugin } from '@platejs/list';
 import { ImagePlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { jsx } from '@platejs/test-utils';
@@ -21,9 +23,9 @@ import type { BasePlugin } from '../../../../../../packages/core/src/lib/plugin'
 // biome-ignore lint/suspicious/noUnusedExpressions: test
 jsx;
 
-const injectConfig = {
-  inject: {
-    targetPlugins: ['p', 'h1', 'h2', 'h3'],
+const targetPluginConfig = {
+  options: {
+    targetPluginKeys: ['p', 'h1', 'h2', 'h3'],
   },
 };
 
@@ -67,9 +69,11 @@ export const testDocxDeserializer = ({
         BasicBlocksPlugin,
         BasicMarksPlugin,
         TablePlugin,
-        LineHeightPlugin.extend(() => injectConfig),
-        TextAlignPlugin.extend(() => injectConfig),
-        IndentPlugin.extend(() => injectConfig),
+        LineHeightPlugin.configure(targetPluginConfig),
+        TextAlignPlugin.configure(targetPluginConfig),
+        TextIndentPlugin.configure(targetPluginConfig),
+        IndentPlugin.configure(targetPluginConfig),
+        BaseListPlugin.configure(targetPluginConfig),
         DocxPlugin,
         JuicePlugin,
       ],

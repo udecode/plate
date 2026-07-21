@@ -10,4 +10,3 @@ Decision:
 Do not spend this packet cloning the larger VS Code editor internals. CodeMirror
 already supplied the architecture invariants needed to produce a concrete
 Plite-native proof action.
-

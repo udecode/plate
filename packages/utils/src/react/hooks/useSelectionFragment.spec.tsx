@@ -25,6 +25,7 @@ describe('useSelectionFragment', () => {
   it('returns the selected fragment with container unwrap types', () => {
     const editor = createPlateEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
@@ -42,6 +43,7 @@ describe('useSelectionFragment', () => {
   it('derives a shared property from the selected fragment', () => {
     const editor = createPlateEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },

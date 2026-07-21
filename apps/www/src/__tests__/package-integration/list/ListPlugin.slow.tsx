@@ -21,9 +21,9 @@ import { BaseListPlugin } from '../../../../../../packages/list/src/lib/BaseList
 
 jsxt;
 
-const injectConfig = {
-  inject: {
-    targetPlugins: ['p', 'h1', 'h2', 'h3'],
+const targetPluginConfig = {
+  options: {
+    targetPluginKeys: ['p', 'h1', 'h2', 'h3'],
   },
 };
 
@@ -57,10 +57,10 @@ describe('when insertData disc and decimal from gdocs', () => {
         BasicBlocksPlugin as BasePluginInput,
         BasicMarksPlugin as BasePluginInput,
         TablePlugin as BasePluginInput,
-        LineHeightPlugin.extend(injectConfig) as BasePluginInput,
-        TextAlignPlugin.extend(injectConfig) as BasePluginInput,
-        IndentPlugin.extend(injectConfig) as BasePluginInput,
-        BaseListPlugin,
+        LineHeightPlugin.configure(targetPluginConfig) as BasePluginInput,
+        TextAlignPlugin.configure(targetPluginConfig) as BasePluginInput,
+        IndentPlugin.configure(targetPluginConfig) as BasePluginInput,
+        BaseListPlugin.configure(targetPluginConfig),
         DocxPlugin,
         JuicePlugin,
       ],
@@ -148,10 +148,10 @@ describe('when insertData with nested ul inside li', () => {
         BasicBlocksPlugin,
         BasicMarksPlugin,
         TablePlugin,
-        LineHeightPlugin.extend(injectConfig),
-        TextAlignPlugin.extend(injectConfig),
-        IndentPlugin.extend(injectConfig),
-        BaseListPlugin,
+        LineHeightPlugin.configure(targetPluginConfig),
+        TextAlignPlugin.configure(targetPluginConfig),
+        IndentPlugin.configure(targetPluginConfig),
+        BaseListPlugin.configure(targetPluginConfig),
         DocxPlugin,
         JuicePlugin,
       ],

@@ -1,8 +1,8 @@
 import {
   createEditor,
   defineEditorExtension,
+  type DocumentChange,
   type Editor,
-  type Operation,
   type ValueOf,
 } from '@platejs/plite';
 
@@ -26,29 +26,30 @@ const initialValue: CustomValue = [
 
 const extension = defineEditorExtension<CustomEditor>()({
   name: 'generic-extension',
-  operations: {
-    apply(context) {
-      const operation: Operation<CustomValue> = context.operation;
-      const value: Readonly<ValueOf<typeof context.editor>> =
-        context.editor.read((state) => state.children());
+  onTransactionChange(context) {
+    const change: DocumentChange = context.change;
+    const changedPaths = context.changed.paths();
+    const changedRanges = context.changed.topLevelRanges();
+    const textChanged = context.changed.has('text');
+    const value: Readonly<ValueOf<typeof context.editor>> = context.editor.read(
+      (state) => state.children()
+    );
 
-      context.next(operation);
-      void value;
-    },
+    void change;
+    void changedPaths;
+    void changedRanges;
+    void textChanged;
+    void value;
   },
   onCommit({ commit, snapshot }) {
-    const operation: Operation<CustomValue> | undefined = commit.operations[0];
+    const change: DocumentChange = commit.changes;
+    const changedPaths = commit.changed.paths();
     const children: CustomValue = snapshot.children;
 
-    void operation;
+    void change;
+    void changedPaths;
     void children;
   },
-});
-
-defineEditorExtension<CustomEditor>()({
-  name: 'bad-operation-middlewares',
-  // @ts-expect-error extension authors use operations.apply
-  operationMiddlewares: [() => {}],
 });
 
 defineEditorExtension<CustomEditor>()({
@@ -59,7 +60,7 @@ defineEditorExtension<CustomEditor>()({
 
 defineEditorExtension<CustomEditor>()({
   name: 'bad-register',
-  // @ts-expect-error extension authors use setup
+  // @ts-expect-error extension authors use declarative slots or activate
   register() {},
 });
 

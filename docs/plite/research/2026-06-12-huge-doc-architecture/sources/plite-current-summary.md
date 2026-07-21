@@ -25,4 +25,3 @@ Promoted change:
 Add `huge-document-virtualized-scroll-stability` to `plite-browser` first-party
 operation families so the proof is discoverable by the supervisor instead of
 being buried as route-local Playwright logic.
-

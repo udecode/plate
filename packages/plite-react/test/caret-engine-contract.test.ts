@@ -1,6 +1,7 @@
 import { replace as editorReplace } from '@platejs/plite/internal';
 
 import { applyEditableCaretMovement } from '../src/editable/caret-engine';
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { createReactEditor } from '../src/plugin/with-react';
 
 const createKeyDownEvent = (key: string) =>
@@ -27,13 +28,16 @@ test('caret movement preserves core move_selection commit metadata', () => {
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
   });
 
   const selection = editor.read((state) => state.selection());
+  const runtime = new EditableDOMRuntime({ editor });
   const result = applyEditableCaretMovement({
+    domPhaseScheduler: runtime.domPhaseScheduler,
     domStrategyRuntime: null,
     editor,
     event: createKeyDownEvent('ArrowRight'),
@@ -43,6 +47,7 @@ test('caret movement preserves core move_selection commit metadata', () => {
 
   expect(result.handled).toBe(true);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
@@ -50,4 +55,5 @@ test('caret movement preserves core move_selection commit metadata', () => {
     origin: 'command',
     type: 'move_selection',
   });
+  runtime.destroy();
 });

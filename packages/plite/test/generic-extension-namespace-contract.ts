@@ -1,8 +1,8 @@
 import {
   createEditor,
   defineEditorExtension,
+  editorCommands,
   type Editor,
-  type EditorPublicTransformMiddlewareKey,
 } from '@platejs/plite';
 
 type CustomText = {
@@ -28,54 +28,6 @@ type CustomEditor = Editor<CustomValue>;
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: 'paragraph' }] },
 ];
-
-type AssertNever<T extends never> = T;
-
-const acceptedTransformMiddlewareKeys = [
-  'addMark',
-  'collapse',
-  'delete',
-  'deleteBackward',
-  'deleteForward',
-  'deleteFragment',
-  'deselect',
-  'insertBreak',
-  'insertFragment',
-  'insertNode',
-  'insertNodes',
-  'insertSoftBreak',
-  'insertText',
-  'liftNodes',
-  'mergeNodes',
-  'move',
-  'moveNodes',
-  'replaceChildren',
-  'removeMark',
-  'removeNodes',
-  'select',
-  'setNodes',
-  'setPoint',
-  'setSelection',
-  'splitNodes',
-  'toggleMark',
-  'unsetNodes',
-  'unwrapNodes',
-  'wrapNodes',
-] as const satisfies readonly EditorPublicTransformMiddlewareKey[];
-
-type AcceptedTransformMiddlewareKey =
-  (typeof acceptedTransformMiddlewareKeys)[number];
-type MissingTransformMiddlewareKey = Exclude<
-  EditorPublicTransformMiddlewareKey,
-  AcceptedTransformMiddlewareKey
->;
-type ExtraTransformMiddlewareKey = Exclude<
-  AcceptedTransformMiddlewareKey,
-  EditorPublicTransformMiddlewareKey
->;
-type _NoMissingTransformMiddlewareKey =
-  AssertNever<MissingTransformMiddlewareKey>;
-type _NoExtraTransformMiddlewareKey = AssertNever<ExtraTransformMiddlewareKey>;
 
 const extension = defineEditorExtension<CustomEditor>()({
   name: 'generic-namespace',
@@ -139,66 +91,72 @@ const extension = defineEditorExtension<CustomEditor>()({
   },
 });
 
+type RuntimeMode = {
+  get: () => 'cell' | 'text';
+  set: (value: 'cell' | 'text') => void;
+};
+
+const runtimeModes = new WeakMap<Editor, RuntimeMode>();
+const getRuntimeMode = (editor: Editor) => {
+  const mode = runtimeModes.get(editor);
+
+  if (!mode) throw new Error('Runtime extension is not active.');
+
+  return mode;
+};
+
 const runtimeExtension = defineEditorExtension({
+  activate(editor, context) {
+    let currentMode: 'cell' | 'text' = context.options.initialMode;
+    const signal: AbortSignal = context.signal;
+    const mode: RuntimeMode = {
+      get: () => currentMode,
+      set: (value) => {
+        currentMode = value;
+      },
+    };
+
+    runtimeModes.set(editor, mode);
+    context.onCleanup(() => {
+      if (runtimeModes.get(editor) === mode) runtimeModes.delete(editor);
+    });
+    void signal;
+  },
   name: 'runtime-generic-namespace',
   options: {
     initialMode: 'text' as const,
   },
-  setup(context) {
-    const initialMode: 'text' = context.options.initialMode;
-    const signal: AbortSignal = context.signal;
-    const mode = context.runtimeState<'text' | 'cell'>(initialMode);
+  state: {
+    table(state, editor) {
+      const mode = getRuntimeMode(editor);
 
-    void signal;
-
-    return {
-      cleanup() {
-        mode.set('text');
-      },
-      state: {
-        table(state) {
-          return {
-            isInTable: () => mode.get() === 'cell' && state.nodes.hasPath([0]),
-            rowCount: () => state.children().length,
-          };
-        },
-      },
-      tx: {
-        table(tx) {
-          return {
-            insertRow() {
-              mode.set('cell');
-              tx.nodes.insert({
-                type: 'paragraph',
-                children: [{ text: 'row' }],
-              } satisfies ParagraphElement);
-            },
-            rowCount: () => tx.children().length,
-          };
-        },
-      },
-    };
+      return {
+        isInTable: () => mode.get() === 'cell' && state.nodes.hasPath([0]),
+        rowCount: () => state.children().length,
+      };
+    },
   },
-});
+  tx: {
+    table(tx, editor) {
+      const mode = getRuntimeMode(editor);
 
-defineEditorExtension({
-  name: 'bad-runtime-command-namespace',
-  // @ts-expect-error setup output does not expose public command slots
-  setup() {
-    return {
-      commands: [
-        {
-          handler: () => false,
-          type: 'insert_text',
+      return {
+        insertRow() {
+          mode.set('cell');
+          tx.nodes.insert({
+            type: 'paragraph',
+            children: [{ text: 'row' }],
+          } satisfies ParagraphElement);
         },
-      ],
-    };
+        rowCount: () => tx.children().length,
+      };
+    },
   },
 });
 
 defineEditorExtension({
   name: 'bad-register-slot',
-  // @ts-expect-error extension lifecycle uses setup
+  // @ts-expect-error extension registration is declarative
   register() {
     return {};
   },
@@ -206,19 +164,18 @@ defineEditorExtension({
 
 defineEditorExtension<CustomEditor>()({
   name: 'bad-command-namespace',
-  // @ts-expect-error raw Plite extensions do not expose public command slots
   commands: [
+    // @ts-expect-error command registrations come from typed command handles
     {
       handler: () => false,
-      type: 'insert_text',
     },
   ],
 });
 
 defineEditorExtension<CustomEditor>()({
   name: 'bad-engine-transform',
+  // @ts-expect-error Plite extensions expose pure commands, not transforms
   transforms: {
-    // @ts-expect-error engine controls are not transform middleware keys
     normalize() {},
   },
 });
@@ -247,67 +204,57 @@ defineEditorExtension<CustomEditor>()({
       },
     },
   },
-  transforms: {
-    insertText(context) {
-      context.tx.selection();
+  commands: [
+    editorCommands.insertText.handle((context, next) => {
+      context.state.selection();
+      context.command.text;
 
-      // @ts-expect-error transform middleware gets tx, not separate state
-      context.state;
+      // @ts-expect-error pure command handlers do not receive a live tx
+      context.tx;
 
-      return context.next({ text: context.text });
-    },
-  },
+      return next({ ...context.command, text: context.command.text });
+    }),
+  ],
 });
 
 defineEditorExtension<CustomEditor>()({
-  name: 'normalizer-node-typing',
-  normalizers: {
-    editor(context) {
-      const value: CustomValue = context.tx.value().children;
+  name: 'correction-typing',
+  corrections: [
+    {
+      event: 'content',
+      correct({ entry, tx }) {
+        const value: CustomValue = tx.value().children;
 
-      // @ts-expect-error editor normalizers do not expose node entries
-      context.entry;
-      // @ts-expect-error normalizer tx cannot replace the whole value
-      context.tx.value.replace({
-        children: value,
-        marks: null,
-        selection: null,
-      });
+        tx.schema.isInline(entry[0]);
+        tx.nodes.insert({
+          type: 'paragraph',
+          children: [{ text: entry[1].join('.') }],
+        } satisfies ParagraphElement);
 
-      context.next();
+        // @ts-expect-error correction tx cannot recursively normalize
+        tx.normalize();
+        // @ts-expect-error correction tx cannot replace the whole value
+        tx.value.replace({ children: value, selection: null });
+      },
     },
-    node({ entry, next, tx }) {
-      const value: CustomValue = tx.value().children;
-
-      tx.nodes.insert({
-        type: 'paragraph',
-        children: [{ text: entry[1].join('.') }],
-      } satisfies ParagraphElement);
-
-      // @ts-expect-error normalizer tx cannot recursively normalize
-      tx.normalize();
-      // @ts-expect-error normalizer tx cannot replay arbitrary operations
-      tx.operations.replay([]);
-      // @ts-expect-error normalizer tx cannot replace the whole value
-      tx.value.replace({ children: value, marks: null, selection: null });
-
-      next();
-    },
-  },
+  ],
 });
 
 defineEditorExtension<CustomEditor>()({
-  name: 'bad-top-level-normalize-node',
-  // @ts-expect-error extensions use normalizers.node, not a top-level normalizeNode slot
-  normalizeNode() {},
+  name: 'bad-legacy-normalizers-slot',
+  // @ts-expect-error extensions use declarative corrections
+  normalizers: {},
 });
 
 defineEditorExtension<CustomEditor>()({
-  name: 'bad-arbitrary-normalizer-key',
-  normalizers: {
-    // @ts-expect-error normalizers only exposes typed public lanes
-    root() {},
-  },
+  name: 'bad-correction-event',
+  corrections: [
+    {
+      // @ts-expect-error corrections only expose declared events
+      event: 'root',
+      correct() {},
+    },
+  ],
 });
 
 const editor = createEditor({ extensions: [extension] as const, initialValue });

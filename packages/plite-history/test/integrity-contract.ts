@@ -3,16 +3,22 @@ import { describe, it } from 'node:test';
 
 import type {
   Descendant,
+  Range,
   Selection,
   Editor as EditorType,
 } from '@platejs/plite';
-import { createEditor } from '@platejs/plite';
+import {
+  createEditor,
+  defineEditorExtension,
+  editorCommands,
+  SelectionApi,
+} from '@platejs/plite';
 import {
   addMark as editorAddMark,
   getLastCommit as editorGetLastCommit,
   getRuntimeId as editorGetRuntimeId,
   getSnapshot as editorGetSnapshot,
-  registerCommand as editorRegisterCommand,
+  move as editorMove,
   replace as editorReplace,
   subscribe as editorSubscribe,
 } from '@platejs/plite/internal';
@@ -38,12 +44,14 @@ const undo = (editor: EditorType) => {
 const replace = (
   editor: EditorType,
   children: Descendant[],
-  selection: Selection = null
+  selection: Range | Selection = null
 ) => {
   editorReplace(editor, {
     children: structuredClone(children),
-    selection: structuredClone(selection),
-    marks: null,
+    selection:
+      selection && !SelectionApi.isSelection(selection)
+        ? SelectionApi.text(structuredClone(selection))
+        : structuredClone(selection),
   });
 };
 
@@ -69,6 +77,7 @@ describe('plite-history integrity contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -81,7 +90,6 @@ describe('plite-history integrity contract', () => {
     });
 
     assert.equal(getHistory(editor).undos.length, 1);
-    assert.equal(getHistory(editor).undos[0]?.operations.length, 2);
     assert.deepEqual(
       getHistory(editor).undos[0]?.selectionBefore,
       before.selection
@@ -96,6 +104,7 @@ describe('plite-history integrity contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -110,8 +119,6 @@ describe('plite-history integrity contract', () => {
     });
 
     assert.equal(getHistory(editor).undos.length, 2);
-    assert.equal(getHistory(editor).undos[0]?.operations.length, 1);
-    assert.equal(getHistory(editor).undos[1]?.operations.length, 2);
 
     undo(editor);
     assert.equal(getText(editor), 'onea');
@@ -124,6 +131,7 @@ describe('plite-history integrity contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -150,6 +158,7 @@ describe('plite-history integrity contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -162,35 +171,25 @@ describe('plite-history integrity contract', () => {
     assert.equal(getHistory(editor).undos.length, 0);
   });
 
-  it('does not save selection-only command commits to history', () => {
+  it('does not save direct selection-only commits to history', () => {
     const editor = historyTestEditor();
-    const seenCommands: string[] = [];
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
 
-    const unsubscribe = editorRegisterCommand(
-      editor,
-      'set_selection',
-      (context, next) => {
-        seenCommands.push(context.command.type);
-        return next();
-      }
-    );
-
     write(editor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       });
     });
-    unsubscribe();
 
-    assert.deepEqual(seenCommands, ['set_selection']);
     assert.equal(getHistory(editor).undos.length, 0);
-    assert.deepEqual(editorGetLastCommit(editor)?.classes, ['selection']);
+    assert.equal(editorGetLastCommit(editor)?.changed.has('selection'), true);
   });
 
   it('does not save movement command commits to history', () => {
@@ -198,27 +197,31 @@ describe('plite-history integrity contract', () => {
     const seenCommands: string[] = [];
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
 
-    const unsubscribe = editorRegisterCommand(
-      editor,
-      'move_selection',
-      (context, next) => {
-        seenCommands.push(context.command.type);
-        return next();
-      }
+    const unsubscribe = editor.extend(
+      defineEditorExtension({
+        commands: [
+          editorCommands.move.handle((context, next) => {
+            seenCommands.push(context.command.type);
+            return next();
+          }),
+        ],
+        name: 'test-move-command',
+      })
     );
 
-    write(editor, (tx) => {
-      tx.selection.move();
-    });
+    editorMove(editor);
+    const movementCommit = editorGetLastCommit(editor);
+
     unsubscribe();
 
     assert.deepEqual(seenCommands, ['move_selection']);
     assert.equal(getHistory(editor).undos.length, 0);
-    assert.deepEqual(editorGetLastCommit(editor)?.classes, ['selection']);
+    assert.equal(movementCommit?.changed.has('selection'), true);
   });
 
   it('does not save collapsed mark command commits to history', () => {
@@ -226,31 +229,38 @@ describe('plite-history integrity contract', () => {
     const seenCommands: string[] = [];
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribe = editorRegisterCommand(
-      editor,
-      'add_mark',
-      (context, next) => {
-        seenCommands.push(context.command.type);
-        return next();
-      }
+    const unsubscribe = editor.extend(
+      defineEditorExtension({
+        commands: [
+          editorCommands.addMark.handle((context, next) => {
+            seenCommands.push(context.command.type);
+            return next();
+          }),
+        ],
+        name: 'test-add-mark-command',
+      })
     );
 
     editorAddMark(editor, 'bold', true);
+    const markCommit = editorGetLastCommit(editor);
+
     unsubscribe();
 
     assert.deepEqual(seenCommands, ['add_mark']);
     assert.equal(getHistory(editor).undos.length, 0);
-    assert.deepEqual(editorGetLastCommit(editor)?.classes, ['mark']);
+    assert.equal(markCommit?.changed.has('marks'), true);
   });
 
   it('tx.history.undo moves the current undo batch onto the redo stack', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -265,12 +275,6 @@ describe('plite-history integrity contract', () => {
 
     assert.equal(getHistory(editor).undos.length, 0);
     assert.equal(getHistory(editor).redos.length, 1);
-    assert.deepEqual(
-      getHistory(editor).redos[0]?.operations.map(
-        (operation) => operation.type
-      ),
-      ['insert_text']
-    );
   });
 
   it('captures committed batches before subscriber reentry mutates the editor again', () => {
@@ -288,50 +292,24 @@ describe('plite-history integrity contract', () => {
         .length ?? 0) as number;
 
       editor.update((tx) => {
-        tx.operations.replay([
-          {
-            type: 'insert_text',
-            path: [0, 0],
-            offset,
-            text: '!',
-          },
-        ]);
+        tx.text.insert('!', { at: { path: [0, 0], offset } });
       });
     });
 
     editor.update((tx) => {
-      tx.operations.replay([
-        {
-          type: 'insert_text',
-          path: [0, 0],
-          offset: 3,
-          text: 'a',
-        },
-      ]);
+      tx.text.insert('a', { at: { path: [0, 0], offset: 3 } });
     });
     unsubscribe();
 
     assert.equal(getHistory(editor).undos.length, 1);
-    assert.deepEqual(getHistory(editor).undos[0]?.operations, [
-      {
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 3,
-        text: 'a',
-      },
-      {
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 4,
-        text: '!',
-      },
-    ]);
+    assert.equal(getText(editor), 'onea!');
   });
 
   it('exposes insertText transaction commit data to history', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -356,33 +334,19 @@ describe('plite-history integrity contract', () => {
 
     const commit = commits[0]!;
     assert.equal(editorGetLastCommit(editor), commit);
-    assert.deepEqual(commit.classes, ['text']);
+    assert.equal(commit.changed.has('text'), true);
     assert.equal(commit.previousVersion, 1);
     assert.equal(commit.version, 2);
-    assert.equal(commit.textChanged, true);
-    assert.equal(commit.structureChanged, false);
-    assert.equal(commit.childrenChanged, true);
+    assert.equal(commit.changed.has('structure'), false);
+    assert.equal(commit.changed.has('document'), true);
     assert.equal(commit.selectionChanged, true);
-    assert.deepEqual(commit.operations, [
-      {
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 3,
-        text: '!',
-      },
-    ]);
     assert.deepEqual(commit.selectionBefore, selectionBefore);
     assert.deepEqual(
       commit.selectionAfter,
       editorGetSnapshot(editor).selection
     );
-    assert.deepEqual(commit.dirty.paths, [[], [0], [0, 0]]);
-    assert.deepEqual(commit.dirty.runtimeIds, [textRuntimeId]);
-    assert.deepEqual(commit.touchedRuntimeIds, [textRuntimeId]);
-    assert.deepEqual(
-      getHistory(editor).undos[0]?.operations,
-      commit.operations
-    );
+    assert.deepEqual(commit.changed.runtimeIds('text'), [textRuntimeId]);
+    assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
     assert.deepEqual(
       getHistory(editor).undos[0]?.selectionBefore,
       selectionBefore

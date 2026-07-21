@@ -12,7 +12,7 @@ describe('pluginRenderTextStatic', () => {
     key: 'comment',
     node: {
       isDecoration: false,
-      isLeaf: true,
+      mark: true,
       textProps: {
         className: 'comment-text',
         'data-tone': 'warm',

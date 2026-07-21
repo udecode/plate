@@ -1,36 +1,31 @@
 import { render, renderHook } from '@testing-library/react';
 import { EDITOR_TO_FORCE_RENDER } from '@platejs/plite-dom/internal';
 
-import {
-  createEditableInputController,
-  createEditableInputControllerState,
-} from '../src/editable/input-controller';
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { useRuntimeRepairEngine } from '../src/editable/runtime-repair-engine';
 import type { ReactRuntimeEditor } from '../src/plugin/react-editor';
 import { createReactEditor } from '../src/plugin/with-react';
 
-const createInputController = () =>
-  createEditableInputController({
-    preferModelSelectionForInputRef: { current: false },
-    state: createEditableInputControllerState(),
-  });
+const createRuntime = (editor: ReactRuntimeEditor) =>
+  new EditableDOMRuntime({ editor });
 
-const renderRepairEngine = (editor: ReactRuntimeEditor) =>
-  renderHook(() =>
+const renderRepairEngine = (editor: ReactRuntimeEditor) => {
+  const runtime = createRuntime(editor);
+
+  return renderHook(() =>
     useRuntimeRepairEngine({
-      editor,
-      inputController: createInputController(),
+      runtime,
       scrollSelectionIntoView: vi.fn(),
       syncDOMSelectionToEditor: vi.fn(),
     })
   );
+};
 
 test('repair engine registers force render only after commit and cleans up on unmount', () => {
   const editor = createReactEditor();
   const ThrowingHarness = () => {
     useRuntimeRepairEngine({
-      editor,
-      inputController: createInputController(),
+      runtime: createRuntime(editor),
       scrollSelectionIntoView: vi.fn(),
       syncDOMSelectionToEditor: vi.fn(),
     });

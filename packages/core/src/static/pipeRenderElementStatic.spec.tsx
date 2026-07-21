@@ -13,7 +13,7 @@ describe('pipeRenderElementStatic', () => {
   it('uses the element plugin renderer before the fallback renderElement prop', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { isElement: true, type: 'p' },
+      node: { element: { groups: ['block'] }, type: 'p' },
       render: { as: 'article' },
     });
     const renderElement = mock(() => <mark data-kind="fallback" />);

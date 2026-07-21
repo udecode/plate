@@ -2,13 +2,12 @@
 "@platejs/diff": major
 ---
 
-Fix replacement diffs so inserted and deleted text markers stay on the correct text ranges.
+Keep inserted and deleted replacement markers on their exact text ranges.
 
-Replace the `withGetFragmentExcludeDiff` editor override with
-`createExcludeDiffFragmentExtension` and expose `excludeDiffFromFragment` for
-direct fragment cleanup.
+Use `createExcludeDiffFragmentExtension` to exclude diff markers from copied
+fragments and `excludeDiffFromFragment` for direct fragment cleanup.
 
-**Migration:** Install the extension through a Plate plugin:
+Install the extension through a Plate plugin:
 
 ```tsx
 createBasePlugin({ key: 'diff' }).extendExtension(

@@ -157,26 +157,9 @@ const focusNonEditorSentinel = async (page: Page) => {
     .not.toBe('huge-document-editor');
 };
 
-const getBrowserUndoHotkey = async (editor: PliteBrowserEditorHarness) =>
-  editor.root
-    .page()
-    .evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta+Z' : 'Control+Z'
-    );
-
-const getBrowserRedoHotkey = async (editor: PliteBrowserEditorHarness) =>
-  editor.root
-    .page()
-    .evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta+Shift+Z' : 'Control+Shift+Z'
-    );
-
-const getBrowserSelectAllHotkey = async (editor: PliteBrowserEditorHarness) =>
-  editor.root
-    .page()
-    .evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta+A' : 'Control+A'
-    );
+const BROWSER_UNDO_HOTKEY = 'ControlOrMeta+Z';
+const BROWSER_REDO_HOTKEY = 'ControlOrMeta+Shift+Z';
+const BROWSER_SELECT_ALL_HOTKEY = 'ControlOrMeta+A';
 
 const pressKeyboardWithTiming = async (
   page: Page,
@@ -591,6 +574,7 @@ const selectTextBlockOffsetDOM = async (
     { timeoutMs: hugeDocumentReadyTimeout }
   );
   await editor.assert.selection({
+    kind: 'text',
     anchor: { offset, path: [blockIndex, 0] },
     focus: { offset, path: [blockIndex, 0] },
   });
@@ -610,13 +594,19 @@ const openSmallHugeDocument = async (
     ready: { editor: 'visible' },
   });
 
-test.describe('huge document example', () => {
+test.describe('huge document example', {
+  annotation: {
+    description: 'heavy',
+    type: 'plite-browser-profile',
+  },
+}, () => {
   test('renders huge document without child-count chunking', async ({
     page,
   }) => {
     await openExample(page, 'plite/huge-document', {
       ready: {
         editor: 'visible',
+        timeoutMs: hugeDocumentReadyTimeout,
       },
     });
     await expect(page.getByLabel('Blocks')).toHaveValue('10000');
@@ -786,17 +776,19 @@ test.describe('huge document example', () => {
       .poll(() => getTextBlockText(editor, blockIndex))
       .toBe(expectedTypedText);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { offset: offset + typeText.length, path: [blockIndex, 0] },
       focus: { offset: offset + typeText.length, path: [blockIndex, 0] },
     });
     await editor.assert.caretVisibleInScrollableParent();
 
-    await page.keyboard.press(await getBrowserUndoHotkey(editor));
+    await page.keyboard.press(BROWSER_UNDO_HOTKEY);
 
     await expect
       .poll(() => getTextBlockText(editor, blockIndex))
       .toBe(beforeText);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { offset, path: [blockIndex, 0] },
       focus: { offset, path: [blockIndex, 0] },
     });
@@ -816,6 +808,7 @@ test.describe('huge document example', () => {
         firstBlock: beforeText.slice(0, offset),
         secondBlock: splitText + beforeText.slice(offset),
         selection: {
+          kind: 'text',
           anchor: { offset: splitText.length, path: [blockIndex + 1, 0] },
           focus: { offset: splitText.length, path: [blockIndex + 1, 0] },
         },
@@ -880,6 +873,7 @@ test.describe('huge document example', () => {
     }
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [5000, 0], offset: 3 },
       focus: { path: [5000, 0], offset: 3 },
     });
@@ -1012,11 +1006,12 @@ test.describe('huge document example', () => {
 
       const selectAllMs = await pressKeyboardWithTiming(
         page,
-        await getBrowserSelectAllHotkey(editor),
+        BROWSER_SELECT_ALL_HOTKEY,
         8000
       );
 
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: {
           path: [beforeBoundary.length - 1, 0],
@@ -1036,6 +1031,7 @@ test.describe('huge document example', () => {
         }))
         .toEqual({
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 0 },
           },
@@ -1053,17 +1049,19 @@ test.describe('huge document example', () => {
         }))
         .toEqual({
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: typeText.length },
             focus: { path: [0, 0], offset: typeText.length },
           },
           texts: [typeText],
         });
 
-      const undoHotkey = await getBrowserUndoHotkey(editor);
+      const undoHotkey = BROWSER_UNDO_HOTKEY;
       const undoTypeMs = await pressKeyboardWithTiming(page, undoHotkey, 8000);
 
       await expect.poll(() => editor.get.modelBlockTexts()).toEqual(['']);
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1088,6 +1086,7 @@ test.describe('huge document example', () => {
         .toEqual({
           ...beforeBoundary,
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: {
               path: [beforeBoundary.length - 1, 0],
@@ -1369,11 +1368,12 @@ test.describe('huge document example', () => {
 
     const selectAllMs = await pressKeyboardWithTiming(
       page,
-      await getBrowserSelectAllHotkey(editor),
+      BROWSER_SELECT_ALL_HOTKEY,
       10_000
     );
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: {
         path: [beforeBoundary.length - 1, 0],
@@ -1402,6 +1402,7 @@ test.describe('huge document example', () => {
       }))
       .toEqual({
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -1417,13 +1418,14 @@ test.describe('huge document example', () => {
       }))
       .toEqual({
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 'after delete'.length },
           focus: { path: [0, 0], offset: 'after delete'.length },
         },
         texts: ['after delete'],
       });
 
-    const undoHotkey = await getBrowserUndoHotkey(editor);
+    const undoHotkey = BROWSER_UNDO_HOTKEY;
     const undoTypeMs = await pressKeyboardWithTiming(page, undoHotkey, 5000);
 
     await expect.poll(() => editor.get.modelBlockTexts()).toEqual(['']);
@@ -1448,6 +1450,7 @@ test.describe('huge document example', () => {
       .toEqual({
         ...beforeBoundary,
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: {
             path: [beforeBoundary.length - 1, 0],
@@ -1462,6 +1465,7 @@ test.describe('huge document example', () => {
       .poll(() => editor.get.modelBlockTexts())
       .toEqual(['staged paste replacement']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'staged paste replacement'.length },
       focus: { path: [0, 0], offset: 'staged paste replacement'.length },
     });
@@ -1564,6 +1568,7 @@ test.describe('huge document example', () => {
 
     await editor.selection.selectAll();
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: {
         path: [beforeModelBlockTexts.length - 1, 0],
@@ -1577,11 +1582,12 @@ test.describe('huge document example', () => {
       .poll(() => editor.get.blockTexts())
       .toEqual(['auto partial-dom replacement']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'auto partial-dom replacement'.length },
       focus: { path: [0, 0], offset: 'auto partial-dom replacement'.length },
     });
 
-    await page.keyboard.press(await getBrowserUndoHotkey(editor));
+    await page.keyboard.press(BROWSER_UNDO_HOTKEY);
 
     await expect
       .poll(async () => {
@@ -1599,6 +1605,7 @@ test.describe('huge document example', () => {
         length: beforeModelBlockTexts.length,
       });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: {
         path: [beforeModelBlockTexts.length - 1, 0],
@@ -1647,6 +1654,7 @@ test.describe('huge document example', () => {
 
     await editor.selection.selectAll();
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: {
         path: [beforeBoundary.length - 1, 0],
@@ -1660,11 +1668,12 @@ test.describe('huge document example', () => {
       .poll(() => editor.get.blockTexts())
       .toEqual(['20k partial-dom replacement']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: '20k partial-dom replacement'.length },
       focus: { path: [0, 0], offset: '20k partial-dom replacement'.length },
     });
 
-    await page.keyboard.press(await getBrowserUndoHotkey(editor));
+    await page.keyboard.press(BROWSER_UNDO_HOTKEY);
 
     await expect
       .poll(async () => {
@@ -1681,6 +1690,7 @@ test.describe('huge document example', () => {
       .toEqual({
         ...beforeBoundary,
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: {
             path: [beforeBoundary.length - 1, 0],
@@ -1734,6 +1744,7 @@ test.describe('huge document example', () => {
       .poll(() => getTextBlockText(editor, blockIndex))
       .toBe(expectedText);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { offset: offset + typeText.length, path: [blockIndex, 0] },
       focus: { offset: offset + typeText.length, path: [blockIndex, 0] },
     });
@@ -1741,18 +1752,20 @@ test.describe('huge document example', () => {
 
     await page.keyboard.press('ArrowLeft');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { offset: offset + typeText.length - 1, path: [blockIndex, 0] },
       focus: { offset: offset + typeText.length - 1, path: [blockIndex, 0] },
     });
 
     await page.keyboard.press('ArrowRight');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { offset: offset + typeText.length, path: [blockIndex, 0] },
       focus: { offset: offset + typeText.length, path: [blockIndex, 0] },
     });
 
-    const undoHotkey = await getBrowserUndoHotkey(editor);
-    const redoHotkey = await getBrowserRedoHotkey(editor);
+    const undoHotkey = BROWSER_UNDO_HOTKEY;
+    const redoHotkey = BROWSER_REDO_HOTKEY;
 
     await page.keyboard.press(undoHotkey);
 
@@ -1760,6 +1773,7 @@ test.describe('huge document example', () => {
       .poll(() => getTextBlockText(editor, blockIndex))
       .toBe(beforeText);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { offset, path: [blockIndex, 0] },
       focus: { offset, path: [blockIndex, 0] },
     });
@@ -1770,6 +1784,7 @@ test.describe('huge document example', () => {
       .poll(() => getTextBlockText(editor, blockIndex))
       .toBe(expectedText);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { offset: offset + typeText.length, path: [blockIndex, 0] },
       focus: { offset: offset + typeText.length, path: [blockIndex, 0] },
     });
@@ -1843,11 +1858,12 @@ test.describe('huge document example', () => {
 
     const selectAllMs = await pressKeyboardWithTiming(
       page,
-      await getBrowserSelectAllHotkey(editor),
+      BROWSER_SELECT_ALL_HOTKEY,
       10_000
     );
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: {
         path: [beforeBoundary.length - 1, 0],
@@ -1874,6 +1890,7 @@ test.describe('huge document example', () => {
       }))
       .toEqual({
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -1891,19 +1908,21 @@ test.describe('huge document example', () => {
       }))
       .toEqual({
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: typeText.length },
           focus: { path: [0, 0], offset: typeText.length },
         },
         texts: [typeText],
       });
 
-    const undoHotkey = await getBrowserUndoHotkey(editor);
-    const redoHotkey = await getBrowserRedoHotkey(editor);
+    const undoHotkey = BROWSER_UNDO_HOTKEY;
+    const redoHotkey = BROWSER_REDO_HOTKEY;
 
     await page.keyboard.press(undoHotkey);
 
     await expect.poll(() => editor.get.modelBlockTexts()).toEqual(['']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1912,6 +1931,7 @@ test.describe('huge document example', () => {
 
     await expect.poll(() => editor.get.modelBlockTexts()).toEqual([typeText]);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: typeText.length },
       focus: { path: [0, 0], offset: typeText.length },
     });
@@ -1939,6 +1959,7 @@ test.describe('huge document example', () => {
       .toEqual({
         ...beforeBoundary,
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: {
             path: [beforeBoundary.length - 1, 0],
@@ -1956,6 +1977,7 @@ test.describe('huge document example', () => {
       }))
       .toEqual({
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -1999,14 +2021,16 @@ test.describe('huge document example', () => {
       .poll(() => editor.get.blockTexts())
       .toEqual(['huge paste replacement']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'huge paste replacement'.length },
       focus: { path: [0, 0], offset: 'huge paste replacement'.length },
     });
 
-    await page.keyboard.press(await getBrowserUndoHotkey(editor));
+    await page.keyboard.press(BROWSER_UNDO_HOTKEY);
 
     await expect.poll(() => editor.get.blockTexts()).toEqual(beforeBlockTexts);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: {
         path: [beforeBlockTexts.length - 1, 0],
@@ -2076,7 +2100,7 @@ test.describe('huge document example', () => {
       text: expectedText,
     });
 
-    await page.keyboard.press(await getBrowserUndoHotkey(editor));
+    await page.keyboard.press(BROWSER_UNDO_HOTKEY);
 
     await expect
       .poll(() => getTextBlockText(editor, blockIndex))
@@ -2107,6 +2131,7 @@ test.describe('huge document example', () => {
         firstBlock: expectedFirstBlock,
         secondBlock: expectedSecondBlock,
         selection: {
+          kind: 'text',
           anchor: { offset: secondText.length, path: [blockIndex + 1, 0] },
           focus: { offset: secondText.length, path: [blockIndex + 1, 0] },
         },
@@ -2493,6 +2518,7 @@ test.describe('huge document example', () => {
         middle: expectedMiddleText,
         nearby: beforeNearbyText,
         selection: {
+          kind: 'text',
           anchor: {
             offset: offset + typeText.length,
             path: [middleBlockIndex, 0],
@@ -2551,6 +2577,7 @@ test.describe('huge document example', () => {
       }))
       .toEqual({
         selection: {
+          kind: 'text',
           anchor: { offset: offset + typeText.length, path: [blockIndex, 0] },
           focus: { offset: offset + typeText.length, path: [blockIndex, 0] },
         },
@@ -2576,6 +2603,7 @@ test.describe('huge document example', () => {
         firstBlock: expectedFirstBlock,
         secondBlock: expectedSecondBlock,
         selection: {
+          kind: 'text',
           anchor: { offset: splitText.length, path: [blockIndex + 1, 0] },
           focus: { offset: splitText.length, path: [blockIndex + 1, 0] },
         },
@@ -2635,6 +2663,7 @@ test.describe('huge document example', () => {
         firstBlock: expectedFirstBlock,
         secondBlock: expectedSecondBlock,
         selection: {
+          kind: 'text',
           anchor: { offset: secondText.length, path: [blockIndex + 1, 0] },
           focus: { offset: secondText.length, path: [blockIndex + 1, 0] },
         },
@@ -2820,9 +2849,18 @@ test.describe('huge document example', () => {
     expect(proof.visibleRows.length).toBeGreaterThan(0);
     expect(proof.visibleRows.some((row) => row.index > 10)).toBe(true);
 
-    await editor.root.evaluate((element: HTMLElement) => {
-      element.style.direction = 'rtl';
+    await page.addStyleTag({
+      content: '#huge-document-editor { direction: rtl; }',
     });
+    await expect
+      .poll(() =>
+        editor.root.evaluate(
+          (element: HTMLElement) =>
+            element.ownerDocument.defaultView?.getComputedStyle(element)
+              .direction
+        )
+      )
+      .toBe('rtl');
     await waitForEditorAnimationFrames(editor, 2);
     const leftProof = await waitForVirtualizedScrollbarDragBufferProof(
       editor,
@@ -3298,6 +3336,7 @@ test.describe('huge document example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [lastBlockIndex, 0], offset: expectedOffset },
         focus: { path: [lastBlockIndex, 0], offset: expectedOffset },
       });
@@ -3307,6 +3346,7 @@ test.describe('huge document example', () => {
     expectedOffset += firstText.length;
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [lastBlockIndex, 0], offset: expectedOffset },
       focus: { path: [lastBlockIndex, 0], offset: expectedOffset },
     });
@@ -3317,6 +3357,7 @@ test.describe('huge document example', () => {
     expectedOffset += secondText.length;
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [lastBlockIndex, 0], offset: expectedOffset },
       focus: { path: [lastBlockIndex, 0], offset: expectedOffset },
     });
@@ -3327,10 +3368,11 @@ test.describe('huge document example', () => {
     expect(nextBlockTexts[lastBlockIndex]).toContain(secondText);
     expect(nextBlockTexts[0]).not.toContain(secondText);
 
-    await page.keyboard.press(await getBrowserUndoHotkey(editor));
+    await page.keyboard.press(BROWSER_UNDO_HOTKEY);
     await page.waitForTimeout(250);
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: {
         path: [lastBlockIndex, 0],
         offset: blockTexts[lastBlockIndex]!.length,
@@ -3345,6 +3387,7 @@ test.describe('huge document example', () => {
     await page.keyboard.type(' third-scroll');
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: {
         path: [lastBlockIndex, 0],
         offset: blockTexts[lastBlockIndex]!.length + ' third-scroll'.length,

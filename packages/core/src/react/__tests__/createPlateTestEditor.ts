@@ -1,5 +1,5 @@
 import type { Value } from '@platejs/plite';
-import { applyOperation } from '@platejs/plite/internal';
+import { subscribeCommit } from '@platejs/plite/internal';
 
 import { act, fireEvent, render } from '@testing-library/react';
 import { parseHotkey } from 'is-hotkey';
@@ -101,14 +101,10 @@ export const createPlateTestEditor = async <
   });
 
   if (debug) {
-    const apply = (operation: Parameters<typeof applyOperation>[1]) =>
-      applyOperation(editor, operation);
-
-    (editor as unknown as { apply: typeof apply }).apply = (operation) => {
+    subscribeCommit(editor, (commit) => {
       // eslint-disable-next-line no-console
-      console.log('OPERATION APPLIED', JSON.stringify(operation, null, 2));
-      apply(operation);
-    };
+      console.log('EDITOR COMMIT', JSON.stringify(commit, null, 2));
+    });
   }
 
   const triggerKeyboardEvent = async (hotkey: string) =>

@@ -1,6 +1,7 @@
 ---
 title: Plite React history hotkeys must repair DOM after model undo
 date: 2026-04-21
+status: superseded
 last_updated: 2026-05-13
 category: ui-bugs
 module: plite slate-react
@@ -20,6 +21,10 @@ tags: [plite, slate-react, history, undo, redo, dom-repair, richtext, internal-c
 ---
 
 # Plite React history hotkeys must repair DOM after model undo
+
+> **Superseded architecture record.** This article predates
+> `EditableDOMRuntime` and canonical commit queries. Current history applies
+> `DocumentChange` batches and schedules DOM repair through the unified runtime.
 
 ## Problem
 

@@ -75,6 +75,7 @@ test.describe('code highlighting', () => {
       "Here's one containing a single paragraph block with some text in it:";
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: paragraphText.length },
     });
@@ -95,6 +96,7 @@ test.describe('code highlighting', () => {
       '// Add the initial value.'
     );
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0, 0], offset: 0 },
       focus: { path: [0, 0, 0], offset: paragraphText.length },
     });
@@ -112,10 +114,14 @@ test.describe('code highlighting', () => {
     const paragraphText =
       "Here's one containing a single paragraph block with some text in it:";
     const modifier = await editor.root.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta'
+        : 'Control'
     );
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: paragraphText.length },
     });
@@ -130,6 +136,7 @@ test.describe('code highlighting', () => {
     ).toHaveValue('html');
     await expect(editor.locator.block([0, 0])).toHaveText(paragraphText);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0, 0], offset: 0 },
       focus: { path: [0, 0, 0], offset: paragraphText.length },
     });
@@ -157,6 +164,7 @@ test.describe('code highlighting', () => {
       ' the initial value.'
     );
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 1, 0], offset: 0 },
       focus: { path: [1, 1, 0], offset: 0 },
     });
@@ -183,6 +191,7 @@ test.describe('code highlighting', () => {
     await expect(editor.locator.block([1, 0])).toHaveText(firstLine);
     await expect(editor.locator.block([1, 1])).toHaveText('');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 1, 0], offset: 0 },
       focus: { path: [1, 1, 0], offset: 0 },
     });
@@ -219,6 +228,7 @@ test.describe('code highlighting', () => {
       runtimeErrors.assertNone();
       await expect(editor.locator.block([1, 19])).toHaveCount(0);
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 18, 0], offset: lastLine.length },
         focus: { path: [1, 18, 0], offset: lastLine.length },
       });
@@ -256,6 +266,7 @@ test.describe('code highlighting', () => {
     await editor.insertBreak();
     await editor.insertText(after);
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: code.length },
     });
@@ -272,6 +283,7 @@ test.describe('code highlighting', () => {
     await editor.press('ArrowDown');
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 0], offset: code.length },
       focus: { path: [1, 0, 0], offset: code.length },
     });
@@ -284,6 +296,7 @@ test.describe('code highlighting', () => {
     await editor.press('ArrowDown');
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [2, 0], offset: after.length },
       focus: { path: [2, 0], offset: after.length },
     });
@@ -312,6 +325,7 @@ test.describe('code highlighting', () => {
       '//   Add the initial value.'
     );
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 0], offset: 5 },
       focus: { path: [1, 0, 0], offset: 5 },
     });
@@ -328,6 +342,7 @@ test.describe('code highlighting', () => {
     });
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [1, 0, 0], offset: 1 },
       focus: { path: [1, 1, 0], offset: 1 },
     });
@@ -342,6 +357,7 @@ test.describe('code highlighting', () => {
     );
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [1, 0, 0], offset: 3 },
       focus: { path: [1, 1, 0], offset: 3 },
     });
@@ -373,6 +389,7 @@ test.describe('code highlighting', () => {
     await editor.press('ArrowUp');
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 0], offset: 3 },
       focus: { path: [1, 0, 0], offset: 3 },
     });
@@ -420,6 +437,7 @@ test.describe('code highlighting', () => {
 
     try {
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [1, 13, 0], offset: 2 },
         focus: { path: [1, 17, 0], offset: 3 },
       });
@@ -458,6 +476,7 @@ test.describe('code highlighting', () => {
 
     try {
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [1, 17, 0], offset: 0 },
         focus: { path: [2, 0], offset: 'If you are using'.length },
       });
@@ -579,7 +598,10 @@ test.describe('code highlighting', () => {
 
     await page.keyboard.press(
       await editor.root.evaluate(() =>
-        /Mac OS X/.test(navigator.userAgent) ? 'Meta+Z' : 'Control+Z'
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        /Mac OS X/.test(navigator.userAgent)
+          ? 'Meta+Z'
+          : 'Control+Z'
       )
     );
 
@@ -587,6 +609,7 @@ test.describe('code highlighting', () => {
       'If you are using TypeScript'
     );
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [2, 0], offset: selectionStart },
       focus: { path: [2, 0], offset: selectionEnd },
     });
@@ -609,6 +632,7 @@ test.describe('code highlighting', () => {
     });
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [1, 0, 0], offset: 3 },
       focus: { path: [1, 0, 0], offset: 6 },
     });

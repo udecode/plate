@@ -2,9 +2,11 @@
 
 import { createBaseEditor } from '@platejs/core';
 
+import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import type { Element } from '@platejs/plite';
 
+import { BaseListPlugin } from '../BaseListPlugin';
 import { getSiblingListStyleType } from './getSiblingListStyleType';
 
 jsxt;
@@ -30,6 +32,7 @@ describe('getSiblingListStyleType', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
+      plugins: [BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -60,6 +63,7 @@ describe('getSiblingListStyleType', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
+      plugins: [BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });

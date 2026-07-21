@@ -123,7 +123,7 @@ Current source owners:
 Live probe from `/Users/zbeyens/git/plite`:
 
 ```bash
-bun -e 'import { createEditor } from "./packages/plite/src"; import { Editor } from "./packages/plite/src/internal"; const editor=createEditor(); Editor.replace(editor,{children:[{type:"paragraph",children:[{text:"before after"}]}], selection:{anchor:{path:[0,0],offset:7}, focus:{path:[0,0],offset:7}}, marks:null}); Editor.insertFragment(editor,[{type:"paragraph",children:[{text:"one"}]},{type:"paragraph",children:[{text:"two"}]}]); console.log(JSON.stringify(Editor.getSnapshot(editor)));'
+bun -e 'import { createEditor } from "./packages/plite/src"; import { Editor } from "./packages/plite/src/internal"; const editor=createEditor(); Editor.replace(editor,{children:[{type:"paragraph",children:[{text:"before after"}]}], selection:{kind:"text", anchor:{path:[0,0],offset:7}, focus:{path:[0,0],offset:7}}}); Editor.insertFragment(editor,[{type:"paragraph",children:[{text:"one"}]},{type:"paragraph",children:[{text:"two"}]}]); console.log(JSON.stringify(Editor.getSnapshot(editor)));'
 ```
 
 Observed model:

@@ -67,7 +67,6 @@ mock.module('platejs/react', () => ({
   usePluginOption: usePluginOptionMock,
   useEditorReadOnly: useReadOnlyMock,
   useElementSelected: useSelectedMock,
-  usePath: () => [0],
 }));
 
 mock.module('@platejs/math/react', () => ({

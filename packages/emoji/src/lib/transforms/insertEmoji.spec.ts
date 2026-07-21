@@ -1,8 +1,24 @@
 import type { Emoji } from '@emoji-mart/data';
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property, schema } from '@platejs/plite';
 
 import { BaseEmojiPlugin } from '../BaseEmojiPlugin';
 import { insertEmoji } from './insertEmoji';
+
+const EmojiChipPlugin = createBasePlugin({
+  key: 'emoji-chip',
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+  },
+});
+
+const EmojiIdPlugin = createBasePlugin({
+  key: 'emojiId',
+  node: { mark: { value: property.string() } },
+});
 
 describe('insertEmoji', () => {
   const fireEmoji: Emoji = {
@@ -17,6 +33,7 @@ describe('insertEmoji', () => {
     const editor = createBaseEditor({
       plugins: [BaseEmojiPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
@@ -36,6 +53,7 @@ describe('insertEmoji', () => {
   it('uses the configured createEmojiNode override', () => {
     const editor = createBaseEditor({
       plugins: [
+        EmojiChipPlugin,
         BaseEmojiPlugin.configure({
           options: {
             createEmojiNode: (emoji) => ({
@@ -46,6 +64,7 @@ describe('insertEmoji', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -74,6 +93,7 @@ describe('insertEmoji', () => {
   it('preserves custom properties on text emoji nodes', () => {
     const editor = createBaseEditor({
       plugins: [
+        EmojiIdPlugin,
         BaseEmojiPlugin.configure({
           options: {
             createEmojiNode: (emoji) => ({
@@ -84,6 +104,7 @@ describe('insertEmoji', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },

@@ -6,7 +6,7 @@ import { removeAINodes } from './removeAINodes';
 describe('removeAINodes', () => {
   it('removes only text nodes marked with ai', () => {
     const editor = createBaseEditor({
-      plugins: [BaseParagraphPlugin],
+      plugins: [BaseParagraphPlugin, BaseAIPlugin],
       value: [
         {
           type: 'p',
@@ -27,7 +27,7 @@ describe('removeAINodes', () => {
 
   it('removes only the explicit matching target', () => {
     const editor = createBaseEditor({
-      plugins: [BaseParagraphPlugin],
+      plugins: [BaseParagraphPlugin, BaseAIPlugin],
       value: [
         { type: 'p', children: [{ ai: true, text: 'one' }] },
         { type: 'p', children: [{ ai: true, text: 'two' }] },

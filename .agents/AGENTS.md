@@ -176,17 +176,22 @@ Browser usage:
 
 ### Plite packages in Plate repo
 
-- `pnpm check:plite` is the normal daily Plite lane. It covers Plite package
-  typecheck/tests, browser package tests, and full Chromium browser proof
-  through `apps/plite`.
+- `pnpm check:plite:dev` is the normal iteration lane. It maps uncommitted
+  inputs to affected source-first package typechecks/tests and runs runner
+  contracts or Chromium smoke only when those owners are affected. Set
+  `PLITE_CHECK_BASE=<ref>` for a committed range or CI diff.
+- `pnpm check:plite` is the strict handoff lane. It covers every Plite-family
+  package typecheck/test, proof-runner contracts, and full Chromium browser
+  proof through `apps/plite`.
 - Use `pnpm --filter plite test:plite-browser:chromium <file-or--grep>`
   for focused changed browser rows. `apps/plite` must import Plite
   examples from `apps/www`; never maintain a second example source tree.
 - Use `pnpm check:plite:browser-matrix` for closure-only app browser proof:
   Chromium, Firefox, mobile viewport, and WebKit on Darwin.
-- Do not put WebKit, mobile, transplant parity, docs-v2 audits, benchmark
-  target audits, www typecheck, or the full browser matrix in the daily Plite
-  loop; they are explicit closure or release gates.
+- Do not put full Chromium, WebKit, mobile, transplant parity, docs-v2 audits,
+  benchmark target audits, www typecheck, or the full browser matrix in the
+  affected development loop; they are explicit handoff, closure, or release
+  gates.
 - Pair browser proof with package proof when making release-quality Plite
   behavior claims.
 - Use `bun test:mobile-device-proof:raw` only on a machine/device lane that can provide real Appium Android/iOS proof artifacts. Do not let semantic mobile handles or Playwright mobile viewport rows satisfy raw-device claims.

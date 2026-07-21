@@ -12,40 +12,40 @@ import {
 } from '../../shared/stats.mjs';
 
 const siteOutRoot = fileURLToPath(
-  new URL('../../../../site/out', import.meta.url)
+  new URL('../../../../../apps/plite/out', import.meta.url)
 );
-const blocks = Number(process.env.SLATE_BROWSER_TRACE_BLOCKS || 5000);
-const iterations = Number(process.env.SLATE_BROWSER_TRACE_ITERATIONS || 3);
-const typeOps = Number(process.env.SLATE_BROWSER_TRACE_TYPE_OPS || 10);
-const port = Number(process.env.SLATE_BROWSER_TRACE_PORT || 0);
+const blocks = Number(process.env.PLITE_BROWSER_TRACE_BLOCKS || 5000);
+const iterations = Number(process.env.PLITE_BROWSER_TRACE_ITERATIONS || 3);
+const typeOps = Number(process.env.PLITE_BROWSER_TRACE_TYPE_OPS || 10);
+const port = Number(process.env.PLITE_BROWSER_TRACE_PORT || 0);
 const nativeSurfaceTimeoutMs = Number(
-  process.env.SLATE_BROWSER_TRACE_NATIVE_TIMEOUT_MS || 10_000
+  process.env.PLITE_BROWSER_TRACE_NATIVE_TIMEOUT_MS || 10_000
 );
 const materializationTimeoutMs = Number(
-  process.env.SLATE_BROWSER_TRACE_MATERIALIZATION_TIMEOUT_MS || 15_000
+  process.env.PLITE_BROWSER_TRACE_MATERIALIZATION_TIMEOUT_MS || 15_000
 );
-const headless = process.env.SLATE_BROWSER_TRACE_HEADLESS !== '0';
-const skipBuild = process.env.SLATE_BROWSER_TRACE_SKIP_BUILD === '1';
+const headless = process.env.PLITE_BROWSER_TRACE_HEADLESS !== '0';
+const skipBuild = process.env.PLITE_BROWSER_TRACE_SKIP_BUILD === '1';
 const selectAllDeleteEnabled =
-  process.env.SLATE_BROWSER_TRACE_SELECT_ALL_DELETE === '1';
+  process.env.PLITE_BROWSER_TRACE_SELECT_ALL_DELETE === '1';
 const selectAllDeleteAllowFailure =
-  process.env.SLATE_BROWSER_TRACE_SELECT_ALL_DELETE_ALLOW_FAILURE === '1';
+  process.env.PLITE_BROWSER_TRACE_SELECT_ALL_DELETE_ALLOW_FAILURE === '1';
 const selectAllDeleteTypeText =
-  process.env.SLATE_BROWSER_TRACE_AFTER_DELETE_TEXT || 'after 200k delete';
+  process.env.PLITE_BROWSER_TRACE_AFTER_DELETE_TEXT || 'after 200k delete';
 const selectAllDeleteInputMode =
-  process.env.SLATE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE || 'type';
+  process.env.PLITE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE || 'type';
 const selectAllDeleteInputModes = new Set(['insertText', 'type']);
-const runLabel = process.env.SLATE_BROWSER_TRACE_RUN_LABEL || '';
+const runLabel = process.env.PLITE_BROWSER_TRACE_RUN_LABEL || '';
 const runStartedAt = new Date().toISOString();
 
 if (!selectAllDeleteInputModes.has(selectAllDeleteInputMode)) {
   throw new Error(
-    `Unsupported SLATE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE=${JSON.stringify(selectAllDeleteInputMode)}`
+    `Unsupported PLITE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE=${JSON.stringify(selectAllDeleteInputMode)}`
   );
 }
 const selectedSurfaces = new Set(
   (
-    process.env.SLATE_BROWSER_TRACE_SURFACES ||
+    process.env.PLITE_BROWSER_TRACE_SURFACES ||
     'defaultAuto,stagedActiveDOMGroup'
   )
     .split(',')
@@ -99,27 +99,27 @@ const surfaces = [
   {
     key: 'defaultAuto',
     label: 'v2 auto',
-    path: `/examples/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=auto`,
+    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=auto`,
   },
   {
     key: 'stagedActiveDOMGroup',
     label: 'v2 staged active DOM group',
-    path: `/examples/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=staged`,
+    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=staged`,
   },
   {
     key: 'stagedDefault',
     label: 'v2 staged default',
-    path: `/examples/huge-document?blocks=${blocks}&strict=false&strategy=staged`,
+    path: `/examples/plite/huge-document?blocks=${blocks}&strict=false&strategy=staged`,
   },
   {
     key: 'stagedContentVisibility',
     label: 'v2 staged content-visibility',
-    path: `/examples/huge-document?blocks=${blocks}&content_visibility=element&strict=false&strategy=staged`,
+    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=element&strict=false&strategy=staged`,
   },
   {
     key: 'virtualized',
     label: 'v2 virtualized',
-    path: `/examples/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=virtualized&threshold=1&overscan=2&editor_height=600`,
+    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=virtualized&threshold=1&overscan=2&editor_height=600`,
   },
 ].filter((surface) => selectedSurfaces.has(surface.key));
 
@@ -195,7 +195,7 @@ const buildSite = async () => {
   }
 
   await new Promise((resolve, reject) => {
-    const child = spawn('bun', ['run', 'build:next'], {
+    const child = spawn('pnpm', ['--filter', 'plite', 'build'], {
       stdio: 'inherit',
     });
 
@@ -206,7 +206,7 @@ const buildSite = async () => {
         return;
       }
 
-      reject(new Error(`bun run build:next exited with code ${code}`));
+      reject(new Error(`pnpm --filter plite build exited with code ${code}`));
     });
   });
 };
@@ -215,8 +215,8 @@ const installTraceObserver = async (page) => {
   await page.evaluate(() => {
     const target = globalThis;
 
-    if (target.__SLATE_BROWSER_TRACE_OBSERVER__) {
-      target.__SLATE_BROWSER_TRACE__?.reset?.();
+    if (target.__PLITE_BROWSER_TRACE_OBSERVER__) {
+      target.__PLITE_BROWSER_TRACE__?.reset?.();
       return;
     }
 
@@ -250,9 +250,9 @@ const installTraceObserver = async (page) => {
       },
     };
 
-    target.__SLATE_BROWSER_TRACE__ = trace;
-    target.__SLATE_BROWSER_TRACE_OBSERVER__ = true;
-    target.__SLATE_REACT_RENDER_PROFILER__ = {
+    target.__PLITE_BROWSER_TRACE__ = trace;
+    target.__PLITE_BROWSER_TRACE_OBSERVER__ = true;
+    target.__PLITE_REACT_RENDER_PROFILER__ = {
       record(event) {
         trace.profilerEvents.push(event);
       },
@@ -278,7 +278,7 @@ const installTraceObserver = async (page) => {
         const timerDelay = Number(delay) || 0;
 
         return originalSetTimeout(
-          function slateTraceTimerCallback(...timerArgs) {
+          function pliteTraceTimerCallback(...timerArgs) {
             const startedAt = performance.now();
 
             try {
@@ -309,7 +309,7 @@ const installTraceObserver = async (page) => {
             ? event.target.parentElement
             : null;
       const targetTextHost =
-        targetElement?.closest?.('[data-slate-node="text"]') ?? null;
+        targetElement?.closest?.('[data-plite-node="text"]') ?? null;
       const selection = document.getSelection();
       const anchorElement =
         selection?.anchorNode instanceof Element
@@ -318,20 +318,20 @@ const installTraceObserver = async (page) => {
             ? selection.anchorNode.parentElement
             : null;
       const anchorTextHost =
-        anchorElement?.closest?.('[data-slate-node="text"]') ?? null;
-      const root = targetElement?.closest?.('[data-slate-editor="true"]');
-      const handle = root?.__slateBrowserHandle ?? null;
+        anchorElement?.closest?.('[data-plite-node="text"]') ?? null;
+      const root = targetElement?.closest?.('[data-plite-editor="true"]');
+      const handle = root?.__pliteBrowserHandle ?? null;
 
       return {
         anchorOffset: selection?.anchorOffset ?? null,
-        anchorPath: anchorTextHost?.getAttribute('data-slate-path') ?? null,
+        anchorPath: anchorTextHost?.getAttribute('data-plite-path') ?? null,
         anchorText: anchorTextHost?.textContent?.replace(/\uFEFF/g, '') ?? null,
         handleSelection: handle?.getSelection?.() ?? null,
         inputState: handle?.getInputState?.() ?? null,
-        targetPath: targetTextHost?.getAttribute('data-slate-path') ?? null,
-        targetSync: targetTextHost?.getAttribute('data-slate-dom-sync') ?? null,
+        targetPath: targetTextHost?.getAttribute('data-plite-path') ?? null,
+        targetSync: targetTextHost?.getAttribute('data-plite-dom-sync') ?? null,
         targetSyncReason:
-          targetTextHost?.getAttribute('data-slate-dom-sync-reason') ?? null,
+          targetTextHost?.getAttribute('data-plite-dom-sync-reason') ?? null,
         targetText: targetTextHost?.textContent?.replace(/\uFEFF/g, '') ?? null,
       };
     };
@@ -484,8 +484,8 @@ const installTraceObserver = async (page) => {
 const waitForEditorReady = async (page) => {
   await page.waitForFunction(
     () => {
-      const root = document.querySelector('[data-slate-editor="true"]');
-      return !!root?.__slateBrowserHandle?.selectRange;
+      const root = document.querySelector('[data-plite-editor="true"]');
+      return !!root?.__pliteBrowserHandle?.selectRange;
     },
     undefined,
     { timeout: 30_000 }
@@ -498,7 +498,7 @@ const waitForNativeSurface = async (page) => {
   await page
     .waitForFunction(
       ({ expectedBlocks }) => {
-        const root = document.querySelector('[data-slate-editor="true"]');
+        const root = document.querySelector('[data-plite-editor="true"]');
 
         if (!root) {
           return false;
@@ -529,7 +529,7 @@ const waitForNativeSurface = async (page) => {
         }
 
         return (
-          root.querySelectorAll('[data-slate-node="text"]').length >=
+          root.querySelectorAll('[data-plite-node="text"]').length >=
           expectedBlocks
         );
       },
@@ -543,7 +543,7 @@ const waitForNativeSurface = async (page) => {
   const domTags = await getMemoryAndDomTags(page);
   const state = await page.evaluate(
     ({ expectedBlocks }) => {
-      const root = document.querySelector('[data-slate-editor="true"]');
+      const root = document.querySelector('[data-plite-editor="true"]');
       const readText = (testId) =>
         document.querySelector(`[data-test-id="${testId}"]`)?.textContent ??
         null;
@@ -554,7 +554,7 @@ const waitForNativeSurface = async (page) => {
       };
       const effectiveStrategy = readText('huge-document-effective-strategy');
       const editorTextNodeCount =
-        root?.querySelectorAll('[data-slate-node="text"]').length ?? 0;
+        root?.querySelectorAll('[data-plite-node="text"]').length ?? 0;
       const bounded =
         effectiveStrategy === 'partial-dom' ||
         effectiveStrategy === 'virtualized' ||
@@ -592,45 +592,45 @@ const waitForNativeSurface = async (page) => {
 
 const resetTrace = async (page) => {
   await page.evaluate(() => {
-    globalThis.__SLATE_BROWSER_TRACE__?.reset?.();
+    globalThis.__PLITE_BROWSER_TRACE__?.reset?.();
   });
 };
 
 const getTraceSnapshot = async (page) =>
-  page.evaluate(() => globalThis.__SLATE_BROWSER_TRACE__?.snapshot?.() ?? null);
+  page.evaluate(() => globalThis.__PLITE_BROWSER_TRACE__?.snapshot?.() ?? null);
 
 const getLaneDiagnostics = async (page, lane, beforeTypeState) =>
   page.evaluate(
     ({ beforeTypeState, index }) => {
-      const root = document.querySelector('[data-slate-editor="true"]');
+      const root = document.querySelector('[data-plite-editor="true"]');
       const activeElement = document.activeElement;
       const domSelection = document.getSelection();
       const traceSnapshot =
-        globalThis.__SLATE_BROWSER_TRACE__?.snapshot?.() ?? null;
+        globalThis.__PLITE_BROWSER_TRACE__?.snapshot?.() ?? null;
       const truncateText = (value) =>
         typeof value === 'string' && value.length > 160
           ? `${value.slice(0, 157)}...`
           : value;
-      const compactOperation = (operation) => ({
-        newProperties: operation.newProperties ?? undefined,
-        offset: operation.offset ?? undefined,
-        path: operation.path ?? undefined,
-        properties: operation.properties ?? undefined,
-        root: operation.root ?? undefined,
-        text: truncateText(operation.text),
-        type: operation.type,
+      const compactIntent = (intent) => ({
+        newProperties: intent.newProperties ?? undefined,
+        offset: intent.offset ?? undefined,
+        path: intent.path ?? undefined,
+        properties: intent.properties ?? undefined,
+        root: intent.root ?? undefined,
+        text: truncateText(intent.text),
+        type: intent.type,
       });
       const compactKernelTraceEntry = (entry) => ({
         command: entry.command ?? null,
         eventFamily: entry.eventFamily ?? null,
         intent: entry.intent ?? null,
-        lastOperations: Array.isArray(entry.operations)
-          ? entry.operations.slice(-5).map(compactOperation)
+        lastIntents: Array.isArray(entry.intents)
+          ? entry.intents.slice(-5).map(compactIntent)
           : [],
         movement: entry.movement ?? null,
         nativeAllowed: entry.nativeAllowed ?? null,
-        operationsCount: Array.isArray(entry.operations)
-          ? entry.operations.length
+        intentsCount: Array.isArray(entry.intents)
+          ? entry.intents.length
           : 0,
         ownership: entry.ownership ?? null,
         repairPolicy: entry.repairPolicy ?? null,
@@ -650,12 +650,12 @@ const getLaneDiagnostics = async (page, lane, beforeTypeState) =>
       });
       const block = root
         ?.querySelector(
-          `[data-slate-node="text"][data-slate-path="${index},0"]`
+          `[data-plite-node="text"][data-plite-path="${index},0"]`
         )
-        ?.closest('[data-slate-node="element"]');
+        ?.closest('[data-plite-node="element"]');
       const selectedText =
         domSelection?.anchorNode?.parentElement?.closest(
-          '[data-slate-node="element"]'
+          '[data-plite-node="element"]'
         )?.textContent ?? null;
 
       return {
@@ -664,21 +664,21 @@ const getLaneDiagnostics = async (page, lane, beforeTypeState) =>
         domAnchorText: domSelection?.anchorNode?.textContent ?? null,
         domSelectionText: selectedText?.replace(/\uFEFF/g, '') ?? null,
         beforeInputTrace:
-          root?.__slateBrowserHandle
+          root?.__pliteBrowserHandle
             ?.getKernelTrace?.()
             .filter?.((entry) => entry.eventFamily === 'beforeinput')
             .slice(-8)
             .map(compactKernelTraceEntry) ?? null,
         beforeTypeState,
-        handleSelection: root?.__slateBrowserHandle?.getSelection?.() ?? null,
-        inputState: root?.__slateBrowserHandle?.getInputState?.() ?? null,
+        handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
+        inputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
         beforeInputEvents:
           traceSnapshot?.beforeInputEvents?.slice(-12).map(compactDOMEvent) ??
           null,
         inputEvents:
           traceSnapshot?.inputEvents?.slice(-12).map(compactDOMEvent) ?? null,
         kernelTrace:
-          root?.__slateBrowserHandle
+          root?.__pliteBrowserHandle
             ?.getKernelTrace?.()
             .slice(-12)
             .map(compactKernelTraceEntry) ?? null,
@@ -972,19 +972,19 @@ const summarizeLongTaskAttributionTotals = (entries) => {
 
 const readBlockText = async (page, blockIndex) =>
   page.evaluate((index) => {
-    const root = document.querySelector('[data-slate-editor="true"]');
+    const root = document.querySelector('[data-plite-editor="true"]');
     const textElement = root?.querySelector(
-      `[data-slate-node="text"][data-slate-path="${index},0"]`
+      `[data-plite-node="text"][data-plite-path="${index},0"]`
     );
-    const block = textElement?.closest('[data-slate-node="element"]');
+    const block = textElement?.closest('[data-plite-node="element"]');
 
     return (block ?? textElement)?.textContent?.replace(/\uFEFF/g, '') ?? null;
   }, blockIndex);
 
 const readModelBlockText = async (page, blockIndex) =>
   page.evaluate((index) => {
-    const root = document.querySelector('[data-slate-editor="true"]');
-    const getBlockText = root?.__slateBrowserHandle?.getBlockText;
+    const root = document.querySelector('[data-plite-editor="true"]');
+    const getBlockText = root?.__pliteBrowserHandle?.getBlockText;
 
     return typeof getBlockText === 'function' ? getBlockText(index) : null;
   }, blockIndex);
@@ -998,8 +998,8 @@ const waitForModelBlockText = async (
   await page
     .waitForFunction(
       ({ expectedText, index }) => {
-        const root = document.querySelector('[data-slate-editor="true"]');
-        const getBlockText = root?.__slateBrowserHandle?.getBlockText;
+        const root = document.querySelector('[data-plite-editor="true"]');
+        const getBlockText = root?.__pliteBrowserHandle?.getBlockText;
 
         return (
           typeof getBlockText === 'function' &&
@@ -1045,8 +1045,8 @@ const waitForSelection = async (page, expected, context, timeout = 10_000) => {
           left.offset === right.offset &&
           left.path.length === right.path.length &&
           left.path.every((part, index) => part === right.path[index]);
-        const root = document.querySelector('[data-slate-editor="true"]');
-        const selection = root?.__slateBrowserHandle?.getSelection?.() ?? null;
+        const root = document.querySelector('[data-plite-editor="true"]');
+        const selection = root?.__pliteBrowserHandle?.getSelection?.() ?? null;
 
         return (
           !!selection &&
@@ -1059,9 +1059,9 @@ const waitForSelection = async (page, expected, context, timeout = 10_000) => {
     )
     .catch(async (error) => {
       const selection = await page.evaluate(() => {
-        const root = document.querySelector('[data-slate-editor="true"]');
+        const root = document.querySelector('[data-plite-editor="true"]');
 
-        return root?.__slateBrowserHandle?.getSelection?.() ?? null;
+        return root?.__pliteBrowserHandle?.getSelection?.() ?? null;
       });
 
       throw new Error(
@@ -1078,8 +1078,8 @@ const waitForCollapsedEmptyDocument = async (
   await page
     .waitForFunction(
       () => {
-        const root = document.querySelector('[data-slate-editor="true"]');
-        const handle = root?.__slateBrowserHandle;
+        const root = document.querySelector('[data-plite-editor="true"]');
+        const handle = root?.__pliteBrowserHandle;
         const selection = handle?.getSelection?.() ?? null;
 
         return (
@@ -1098,8 +1098,8 @@ const waitForCollapsedEmptyDocument = async (
     )
     .catch(async (error) => {
       const diagnostics = await page.evaluate(() => {
-        const root = document.querySelector('[data-slate-editor="true"]');
-        const handle = root?.__slateBrowserHandle;
+        const root = document.querySelector('[data-plite-editor="true"]');
+        const handle = root?.__pliteBrowserHandle;
 
         return {
           first: handle?.getBlockText?.(0) ?? null,
@@ -1123,8 +1123,8 @@ const waitForDocumentBoundaryRestore = async (
   await page
     .waitForFunction(
       ({ expected }) => {
-        const root = document.querySelector('[data-slate-editor="true"]');
-        const handle = root?.__slateBrowserHandle;
+        const root = document.querySelector('[data-plite-editor="true"]');
+        const handle = root?.__pliteBrowserHandle;
         const selection = handle?.getSelection?.() ?? null;
 
         return (
@@ -1143,8 +1143,8 @@ const waitForDocumentBoundaryRestore = async (
     )
     .catch(async (error) => {
       const diagnostics = await page.evaluate((lastIndex) => {
-        const root = document.querySelector('[data-slate-editor="true"]');
-        const handle = root?.__slateBrowserHandle;
+        const root = document.querySelector('[data-plite-editor="true"]');
+        const handle = root?.__pliteBrowserHandle;
 
         return {
           first: handle?.getBlockText?.(0) ?? null,
@@ -1161,28 +1161,28 @@ const waitForDocumentBoundaryRestore = async (
 
 const readDocumentBoundaryDiagnostics = async (page, lastIndex) =>
   page.evaluate((lastIndex) => {
-    const root = document.querySelector('[data-slate-editor="true"]');
-    const handle = root?.__slateBrowserHandle;
+    const root = document.querySelector('[data-plite-editor="true"]');
+    const handle = root?.__pliteBrowserHandle;
     const truncateText = (value) =>
       typeof value === 'string' && value.length > 160
         ? `${value.slice(0, 157)}...`
         : value;
-    const compactOperation = (operation) => ({
-      offset: operation?.offset ?? undefined,
-      path: operation?.path ?? undefined,
-      root: operation?.root ?? undefined,
-      text: truncateText(operation?.text),
-      type: operation?.type,
+    const compactIntent = (intent) => ({
+      offset: intent?.offset ?? undefined,
+      path: intent?.path ?? undefined,
+      root: intent?.root ?? undefined,
+      text: truncateText(intent?.text),
+      type: intent?.type,
     });
     const compactKernelTraceEntry = (entry) => ({
       command: entry.command ?? null,
       eventFamily: entry.eventFamily ?? null,
       intent: entry.intent ?? null,
-      lastOperations: Array.isArray(entry.operations)
-        ? entry.operations.slice(-3).map(compactOperation)
+      lastIntents: Array.isArray(entry.intents)
+        ? entry.intents.slice(-3).map(compactIntent)
         : [],
-      operationsCount: Array.isArray(entry.operations)
-        ? entry.operations.length
+      intentsCount: Array.isArray(entry.intents)
+        ? entry.intents.length
         : 0,
       ownership: entry.ownership ?? null,
       selectionAfter: entry.selectionAfter ?? null,
@@ -1194,23 +1194,23 @@ const readDocumentBoundaryDiagnostics = async (page, lastIndex) =>
       targetOwner: entry.targetOwner ?? null,
     });
     const compactHistoryBatch = (batch) => {
-      const operations = Array.isArray(batch?.operations)
-        ? batch.operations
+      const intents = Array.isArray(batch?.intents)
+        ? batch.intents
         : [];
-      const operationTypes = {};
+      const intentTypes = {};
 
-      for (const operation of operations) {
-        operationTypes[operation?.type] =
-          (operationTypes[operation?.type] ?? 0) + 1;
+      for (const intent of intents) {
+        intentTypes[intent?.type] =
+          (intentTypes[intent?.type] ?? 0) + 1;
       }
 
       return {
-        firstOperation: operations[0] ?? null,
-        lastOperation: operations.at(-1) ?? null,
-        operationCount: operations.length,
-        operationTypes,
+        effectCount: batch?.effectCount ?? 0,
+        firstIntent: intents[0] ?? null,
+        intentCount: intents.length,
+        intentTypes,
+        lastIntent: intents.at(-1) ?? null,
         selectionBefore: batch?.selectionBefore ?? null,
-        statePatchCount: batch?.statePatchCount ?? 0,
       };
     };
     const compactHistory = (history) =>
@@ -1258,11 +1258,11 @@ const measureHandleUndoRestore = async (page, expected, context) => {
   const startedAt = await page.evaluate(() => performance.now());
 
   await page.evaluate(() => {
-    const root = document.querySelector('[data-slate-editor="true"]');
-    const handle = root?.__slateBrowserHandle;
+    const root = document.querySelector('[data-plite-editor="true"]');
+    const handle = root?.__pliteBrowserHandle;
 
     if (!handle?.undo) {
-      throw new Error('Missing Slate browser undo handle');
+      throw new Error('Missing Plite browser undo handle');
     }
 
     handle.undo();
@@ -1508,16 +1508,16 @@ const measureSelectAllDeleteFlow = async (page, surfaceKey) => {
 
 const getMemoryAndDomTags = async (page) =>
   page.evaluate(() => {
-    const root = document.querySelector('[data-slate-editor="true"]');
+    const root = document.querySelector('[data-plite-editor="true"]');
     const performanceMemory =
       'memory' in performance ? performance.memory : null;
 
     return {
       domNodeCount: document.querySelectorAll('*').length,
       editorElementCount:
-        root?.querySelectorAll('[data-slate-node="element"]').length ?? 0,
+        root?.querySelectorAll('[data-plite-node="element"]').length ?? 0,
       editorTextNodeCount:
-        root?.querySelectorAll('[data-slate-node="text"]').length ?? 0,
+        root?.querySelectorAll('[data-plite-node="text"]').length ?? 0,
       jsHeapUsedMB:
         performanceMemory &&
         typeof performanceMemory.usedJSHeapSize === 'number'
@@ -1528,7 +1528,7 @@ const getMemoryAndDomTags = async (page) =>
 
 const getScrollParentSnapshot = async (page) =>
   page.evaluate(() => {
-    const root = document.querySelector('[data-slate-editor="true"]');
+    const root = document.querySelector('[data-plite-editor="true"]');
     const scrollParent = root
       ? Array.from(document.querySelectorAll('*')).find(
           (element) =>
@@ -1551,20 +1551,20 @@ const getScrollParentSnapshot = async (page) =>
 const requestCollapsedSelection = async (page, blockIndex, offset) =>
   page.evaluate(
     ({ index, offset }) => {
-      const root = document.querySelector('[data-slate-editor="true"]');
+      const root = document.querySelector('[data-plite-editor="true"]');
 
       if (!(root instanceof HTMLElement)) {
-        throw new Error('Missing Slate editor root');
+        throw new Error('Missing Plite editor root');
       }
 
-      const handle = root.__slateBrowserHandle;
+      const handle = root.__pliteBrowserHandle;
       const selection = {
         anchor: { path: [index, 0], offset },
         focus: { path: [index, 0], offset },
       };
 
       if (!handle?.selectRange) {
-        throw new Error('Missing Slate browser selectRange handle');
+        throw new Error('Missing Plite browser selectRange handle');
       }
 
       handle.selectRange(selection);
@@ -1575,9 +1575,9 @@ const requestCollapsedSelection = async (page, blockIndex, offset) =>
 
 const getMaterializationDiagnostics = async (page, blockIndex) =>
   page.evaluate((index) => {
-    const root = document.querySelector('[data-slate-editor="true"]');
+    const root = document.querySelector('[data-plite-editor="true"]');
     const virtualizer = root?.querySelector(
-      '[data-slate-dom-strategy-virtualizer="true"]'
+      '[data-plite-dom-strategy-virtualizer="true"]'
     );
     const scrollParent = root
       ? Array.from(document.querySelectorAll('*')).find(
@@ -1588,21 +1588,21 @@ const getMaterializationDiagnostics = async (page, blockIndex) =>
         )
       : null;
     const textElements = Array.from(
-      root?.querySelectorAll('[data-slate-node="text"]') ?? []
+      root?.querySelectorAll('[data-plite-node="text"]') ?? []
     );
 
     return {
       exactPathExists: !!root?.querySelector(
-        `[data-slate-node="text"][data-slate-path="${index},0"]`
+        `[data-plite-node="text"][data-plite-path="${index},0"]`
       ),
-      handleInputState: root?.__slateBrowserHandle?.getInputState?.() ?? null,
-      handleSelection: root?.__slateBrowserHandle?.getSelection?.() ?? null,
-      hasHandle: !!root?.__slateBrowserHandle,
+      handleInputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
+      handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
+      hasHandle: !!root?.__pliteBrowserHandle,
       hasScrollPathIntoView:
-        typeof root?.__slateBrowserHandle?.scrollPathIntoView === 'function',
+        typeof root?.__pliteBrowserHandle?.scrollPathIntoView === 'function',
       mountedTextPaths: textElements
         .slice(0, 20)
-        .map((element) => element.getAttribute('data-slate-path')),
+        .map((element) => element.getAttribute('data-plite-path')),
       requestedIndex: index,
       rootTextCount: textElements.length,
       scrollParent:
@@ -1627,13 +1627,13 @@ const waitForMaterializedText = async (page, blockIndex, context) => {
 
   while (Date.now() - start <= materializationTimeoutMs) {
     const materialized = await page.evaluate((index) => {
-      const root = document.querySelector('[data-slate-editor="true"]');
+      const root = document.querySelector('[data-plite-editor="true"]');
       const isMaterialized = !!root?.querySelector(
-        `[data-slate-node="text"][data-slate-path="${index},0"]`
+        `[data-plite-node="text"][data-plite-path="${index},0"]`
       );
 
       if (!isMaterialized) {
-        root?.__slateBrowserHandle?.scrollPathIntoView?.([index, 0], 'center');
+        root?.__pliteBrowserHandle?.scrollPathIntoView?.([index, 0], 'center');
       }
 
       return isMaterialized;
@@ -1670,14 +1670,14 @@ const waitForMaterializedText = async (page, blockIndex, context) => {
 const syncDOMSelection = async (page, blockIndex, offset) =>
   page.evaluate(
     ({ index, offset }) => {
-      const root = document.querySelector('[data-slate-editor="true"]');
+      const root = document.querySelector('[data-plite-editor="true"]');
 
       if (!(root instanceof HTMLElement)) {
-        throw new Error('Missing Slate editor root');
+        throw new Error('Missing Plite editor root');
       }
 
       const textElement = root.querySelector(
-        `[data-slate-node="text"][data-slate-path="${index},0"]`
+        `[data-plite-node="text"][data-plite-path="${index},0"]`
       );
 
       if (!textElement) {
@@ -1703,7 +1703,7 @@ const syncDOMSelection = async (page, blockIndex, offset) =>
       domSelection?.removeAllRanges();
       domSelection?.addRange(range);
       document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-      root.__slateBrowserHandle?.importDOMSelection?.();
+      root.__pliteBrowserHandle?.importDOMSelection?.();
     },
     { index: blockIndex, offset }
   );
@@ -1711,15 +1711,15 @@ const syncDOMSelection = async (page, blockIndex, offset) =>
 const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
   page.evaluate(
     ({ index, offset }) => {
-      const root = document.querySelector('[data-slate-editor="true"]');
+      const root = document.querySelector('[data-plite-editor="true"]');
       const selection = document.getSelection();
       const textElements = Array.from(
-        root?.querySelectorAll('[data-slate-node="text"]') ?? []
+        root?.querySelectorAll('[data-plite-node="text"]') ?? []
       );
       const getClosestTextElement = (node) =>
         node instanceof Element
-          ? node.closest('[data-slate-node="text"]')
-          : node?.parentElement?.closest('[data-slate-node="text"]');
+          ? node.closest('[data-plite-node="text"]')
+          : node?.parentElement?.closest('[data-plite-node="text"]');
       const anchorTextElement = getClosestTextElement(selection?.anchorNode);
       const focusTextElement = getClosestTextElement(selection?.focusNode);
       const activeElement = document.activeElement;
@@ -1732,7 +1732,7 @@ const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
           )
         : null;
       const targetElement = root?.querySelector(
-        `[data-slate-node="text"][data-slate-path="${index},0"]`
+        `[data-plite-node="text"][data-plite-path="${index},0"]`
       );
 
       return {
@@ -1741,23 +1741,23 @@ const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
             ? {
                 ariaLabel: activeElement.getAttribute('aria-label'),
                 contentEditable: activeElement.contentEditable,
-                dataSlateEditor:
-                  activeElement.getAttribute('data-slate-editor'),
+                dataPliteEditor:
+                  activeElement.getAttribute('data-plite-editor'),
                 tagName: activeElement.tagName,
               }
             : null,
         anchorOffset: selection?.anchorOffset ?? null,
         anchorTextPath:
-          anchorTextElement?.getAttribute('data-slate-path') ?? null,
+          anchorTextElement?.getAttribute('data-plite-path') ?? null,
         exactPathExists: !!targetElement,
         focusOffset: selection?.focusOffset ?? null,
         focusTextPath:
-          focusTextElement?.getAttribute('data-slate-path') ?? null,
-        handleInputState: root?.__slateBrowserHandle?.getInputState?.() ?? null,
-        handleSelection: root?.__slateBrowserHandle?.getSelection?.() ?? null,
+          focusTextElement?.getAttribute('data-plite-path') ?? null,
+        handleInputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
+        handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
         mountedTextPaths: textElements
           .slice(0, 30)
-          .map((element) => element.getAttribute('data-slate-path')),
+          .map((element) => element.getAttribute('data-plite-path')),
         nativeText: selection?.toString() ?? null,
         requestedOffset: offset,
         requestedPath: `${index},0`,
@@ -1794,15 +1794,15 @@ const waitForDOMSelectionPath = async (
   await page
     .waitForFunction(
       ({ index, offset }) => {
-        const root = document.querySelector('[data-slate-editor="true"]');
+        const root = document.querySelector('[data-plite-editor="true"]');
         const selection = document.getSelection();
         const textElement = selection?.anchorNode?.parentElement?.closest(
-          '[data-slate-node="text"]'
+          '[data-plite-node="text"]'
         );
         const handleSelection =
-          root?.__slateBrowserHandle?.getSelection?.() ?? null;
+          root?.__pliteBrowserHandle?.getSelection?.() ?? null;
         const inputState =
-          root?.__slateBrowserHandle?.getInputState?.() ?? null;
+          root?.__pliteBrowserHandle?.getInputState?.() ?? null;
         const anchorPath = handleSelection?.anchor?.path ?? null;
         const focusPath = handleSelection?.focus?.path ?? null;
         const pathMatches = (path) =>
@@ -1819,7 +1819,7 @@ const waitForDOMSelectionPath = async (
           inputState?.modelSelectionPreference?.reason === 'repair-induced';
 
         return (
-          textElement?.getAttribute('data-slate-path') === `${index},0` &&
+          textElement?.getAttribute('data-plite-path') === `${index},0` &&
           selection?.anchorOffset === offset &&
           selection?.focusOffset === offset &&
           pathMatches(anchorPath) &&
@@ -1896,9 +1896,9 @@ const selectCollapsed = async (page, blockIndex, offset, context) => {
 const clickMaterializedBlock = async (page, blockIndex, context) => {
   await waitForMaterializedText(page, blockIndex, context);
   const point = await page.evaluate((index) => {
-    const root = document.querySelector('[data-slate-editor="true"]');
+    const root = document.querySelector('[data-plite-editor="true"]');
     const textElement = root?.querySelector(
-      `[data-slate-node="text"][data-slate-path="${index},0"]`
+      `[data-plite-node="text"][data-plite-path="${index},0"]`
     );
 
     if (!(textElement instanceof HTMLElement)) {
@@ -1913,9 +1913,9 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
     };
   }, blockIndex);
   const beforeSelection = await page.evaluate(() => {
-    const root = document.querySelector('[data-slate-editor="true"]');
+    const root = document.querySelector('[data-plite-editor="true"]');
 
-    return root?.__slateBrowserHandle?.getSelection?.() ?? null;
+    return root?.__pliteBrowserHandle?.getSelection?.() ?? null;
   });
   const clickStart = await page.evaluate(() => performance.now());
 
@@ -1925,7 +1925,7 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
   await page.mouse.down();
   const clickDownTime = await page.evaluate(() => performance.now());
   const mouseDownEvent = await page.evaluate(() => {
-    const events = globalThis.__SLATE_BROWSER_TRACE__?.mouseDownEvents ?? [];
+    const events = globalThis.__PLITE_BROWSER_TRACE__?.mouseDownEvents ?? [];
     const event = events.at(-1) ?? null;
 
     return event
@@ -1955,8 +1955,8 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
           !!right &&
           pointsEqual(left.anchor, right.anchor) &&
           pointsEqual(left.focus, right.focus);
-        const root = document.querySelector('[data-slate-editor="true"]');
-        const selection = root?.__slateBrowserHandle?.getSelection?.() ?? null;
+        const root = document.querySelector('[data-plite-editor="true"]');
+        const selection = root?.__pliteBrowserHandle?.getSelection?.() ?? null;
 
         return (
           selection?.anchor.path[0] === index &&
@@ -2042,9 +2042,9 @@ const measureInteraction = async (page, lane, context) => {
   });
   const beforeText = await readBlockText(page, lane.blockIndex);
   const beforeTypeState = await page.evaluate((index) => {
-    const root = document.querySelector('[data-slate-editor="true"]');
+    const root = document.querySelector('[data-plite-editor="true"]');
     const textHost = root?.querySelector(
-      `[data-slate-node="text"][data-slate-path="${index},0"]`
+      `[data-plite-node="text"][data-plite-path="${index},0"]`
     );
     const selection = document.getSelection();
     const anchorElement =
@@ -2053,17 +2053,17 @@ const measureInteraction = async (page, lane, context) => {
         : selection?.anchorNode instanceof Text
           ? selection.anchorNode.parentElement
           : null;
-    const anchorTextHost = anchorElement?.closest?.('[data-slate-node="text"]');
+    const anchorTextHost = anchorElement?.closest?.('[data-plite-node="text"]');
 
     return {
       anchorOffset: selection?.anchorOffset ?? null,
-      anchorPath: anchorTextHost?.getAttribute('data-slate-path') ?? null,
-      handleSelection: root?.__slateBrowserHandle?.getSelection?.() ?? null,
-      inputState: root?.__slateBrowserHandle?.getInputState?.() ?? null,
-      textHostPath: textHost?.getAttribute('data-slate-path') ?? null,
-      textHostSync: textHost?.getAttribute('data-slate-dom-sync') ?? null,
+      anchorPath: anchorTextHost?.getAttribute('data-plite-path') ?? null,
+      handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
+      inputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
+      textHostPath: textHost?.getAttribute('data-plite-path') ?? null,
+      textHostSync: textHost?.getAttribute('data-plite-dom-sync') ?? null,
       textHostSyncReason:
-        textHost?.getAttribute('data-slate-dom-sync-reason') ?? null,
+        textHost?.getAttribute('data-plite-dom-sync-reason') ?? null,
       textHostText: textHost?.textContent?.replace(/\uFEFF/g, '') ?? null,
     };
   }, lane.blockIndex);
@@ -2088,11 +2088,11 @@ const measureInteraction = async (page, lane, context) => {
   await page
     .waitForFunction(
       ({ expectedText, index }) => {
-        const root = document.querySelector('[data-slate-editor="true"]');
+        const root = document.querySelector('[data-plite-editor="true"]');
         const textElement = root?.querySelector(
-          `[data-slate-node="text"][data-slate-path="${index},0"]`
+          `[data-plite-node="text"][data-plite-path="${index},0"]`
         );
-        const block = textElement?.closest('[data-slate-node="element"]');
+        const block = textElement?.closest('[data-plite-node="element"]');
         const text =
           (block ?? textElement)?.textContent?.replace(/\uFEFF/g, '') ?? '';
 
@@ -2421,7 +2421,7 @@ const measureSurface = async ({ browser, baseUrl, surface }) => {
 
 const run = async () => {
   if (surfaces.length === 0) {
-    throw new Error('SLATE_BROWSER_TRACE_SURFACES selected no known surfaces');
+    throw new Error('PLITE_BROWSER_TRACE_SURFACES selected no known surfaces');
   }
 
   await buildSite();

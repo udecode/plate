@@ -12,7 +12,7 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'test',
     },
     render: {
@@ -52,7 +52,7 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'test',
     },
     render: {
@@ -92,7 +92,7 @@ it('renders simple directional-affinity leaves without PlateLeaf fallback', () =
   const testPlugin = createBasePlugin({
     key: 'test',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'test',
     },
     render: {
@@ -129,7 +129,7 @@ it('renders boundary spacers only for the active hard-affinity edge', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'test',
     },
     render: {
@@ -144,6 +144,7 @@ it('renders boundary spacers only for the active hard-affinity edge', () => {
   const editor = createPlateEditor({
     plugins: [testPlugin],
     selection: {
+      kind: 'text',
       anchor: { offset: 12, path: [0, 0] },
       focus: { offset: 12, path: [0, 0] },
     } as any,

@@ -1,13 +1,16 @@
-import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { type Selection, type Value, KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
+import { BaseBasicBlocksKit } from './plugins/basic-blocks-base-kit';
+import { BaseListKit } from './plugins/list-base-kit';
+import { BaseToggleKit } from './plugins/toggle-base-kit';
 import { insertBlock, setBlockType } from './transforms';
 
 const createEditor = ({
   selection = {
+    kind: 'text',
     anchor: { offset: 2, path: [1, 0] },
     focus: { offset: 2, path: [1, 0] },
   },
@@ -20,7 +23,13 @@ const createEditor = ({
   value: Value;
 }> = {}) =>
   createPlateEditor({
-    plugins: [BaseBlockquotePlugin, CodeBlockPlugin, SuggestionPlugin],
+    plugins: [
+      ...BaseBasicBlocksKit,
+      ...BaseListKit,
+      ...BaseToggleKit,
+      CodeBlockPlugin,
+      SuggestionPlugin,
+    ],
     selection,
     value,
   });
@@ -39,6 +48,7 @@ describe('editor block transforms', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 2, path: [1, 0, 0] },
       focus: { offset: 2, path: [1, 0, 0] },
     });
@@ -57,6 +67,7 @@ describe('editor block transforms', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 2, path: [1, 0, 0] },
       focus: { offset: 2, path: [1, 0, 0] },
     });
@@ -65,6 +76,7 @@ describe('editor block transforms', () => {
   it('does not nest a blockquote inside an active blockquote', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0, 0] },
         focus: { offset: 2, path: [0, 0, 0] },
       },
@@ -116,6 +128,7 @@ describe('editor block transforms', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [2, 0, 0] },
       focus: { offset: 0, path: [2, 0, 0] },
     });
@@ -124,6 +137,7 @@ describe('editor block transforms', () => {
   it('selects the inserted blockquote when replacing an empty current block', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -143,6 +157,7 @@ describe('editor block transforms', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -151,6 +166,7 @@ describe('editor block transforms', () => {
   it('inserts a block and removes the empty source in one commit', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -173,6 +189,7 @@ describe('editor block transforms', () => {
   it('keeps a code block converted in place from an empty paragraph', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },

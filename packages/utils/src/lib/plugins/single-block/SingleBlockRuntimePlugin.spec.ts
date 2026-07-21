@@ -8,6 +8,7 @@ describe('single-block runtime plugins', () => {
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -35,6 +36,7 @@ describe('single-block runtime plugins', () => {
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
@@ -50,10 +52,8 @@ describe('single-block runtime plugins', () => {
       { children: [{ text: 'firstsecondthird' }], type: 'p' },
     ]);
 
-    editor.update((tx) => {
-      tx.break.insert();
-      tx.break.insertSoft();
-    });
+    editor.update.break.insert();
+    editor.update.break.insertSoft();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'firstsecondthird' }], type: 'p' },

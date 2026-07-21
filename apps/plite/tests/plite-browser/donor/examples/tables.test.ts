@@ -53,6 +53,7 @@ test.describe('table example', () => {
     await expect(editor.root.locator('table')).toHaveCount(1);
     await expect(editor.root.locator('table')).toContainText('# of Feet');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 1, 0, 0], offset: 0 },
       focus: { path: [1, 1, 0, 0], offset: 0 },
     });
@@ -69,6 +70,7 @@ test.describe('table example', () => {
     await expect(editor.root.locator('table')).toHaveCount(1);
     await expect(editor.root.locator('table')).toContainText('Human');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 1, 0], offset: 5 },
       focus: { path: [1, 0, 1, 0], offset: 5 },
     });
@@ -97,6 +99,7 @@ test.describe('table example', () => {
       )
       .toEqual([4, 4, 4]);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 2, 3, 0], offset: 1 },
       focus: { path: [1, 2, 3, 0], offset: 1 },
     });
@@ -114,12 +117,14 @@ test.describe('table example', () => {
       (await editor.root.locator('p').last().textContent()) ?? '';
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: trailingParagraph.length },
     });
     await editor.root.press('Backspace');
     await editor.selection.collapse({ path: [1, 2, 3, 0], offset: 1 });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 2, 3, 0], offset: 1 },
       focus: { path: [1, 2, 3, 0], offset: 1 },
     });
@@ -129,6 +134,7 @@ test.describe('table example', () => {
     await page.waitForTimeout(150);
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 2, 3, 0], offset: 1 },
       focus: { path: [1, 2, 3, 0], offset: 1 },
     });
@@ -137,6 +143,7 @@ test.describe('table example', () => {
 
     expect(proof.focusOwner.kind).toBe('editor');
     expect(proof.selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 2, 3, 0], offset: 1 },
       focus: { path: [1, 2, 3, 0], offset: 1 },
     });
@@ -149,6 +156,7 @@ test.describe('table example', () => {
     await expect(editor.root.locator('td').last()).toHaveText('9X');
     await expect(editor.root.locator('p')).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 2, 3, 0], offset: 2 },
       focus: { path: [1, 2, 3, 0], offset: 2 },
     });
@@ -168,6 +176,7 @@ test.describe('table example', () => {
       .poll(async () => (await editor.get.selectedText()).replace(/\n+$/g, ''))
       .toBe('9');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 2, 3, 0], offset: 0 },
       focus: { path: [1, 2, 3, 0], offset: 1 },
     });
@@ -195,6 +204,7 @@ test.describe('table example', () => {
 
     await expect.poll(() => editor.get.selectedText()).toBe('Human');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 1, 0], offset: 0 },
       focus: { path: [1, 0, 1, 0], offset: 'Human'.length },
     });
@@ -254,6 +264,7 @@ test.describe('table example', () => {
     await expect(editor.root.locator('table')).toHaveCount(1);
     await expect(editor.root.locator('table')).toContainText('Human');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 1, 0], offset: 2 },
       focus: { path: [1, 0, 1, 0], offset: 2 },
     });
@@ -269,6 +280,7 @@ test.describe('table example', () => {
 
     await expect(editor.root.locator('table')).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 0, 0], offset: 0 },
       focus: { path: [1, 0, 0, 0], offset: 0 },
     });
@@ -276,6 +288,7 @@ test.describe('table example', () => {
     await editor.root.type('X');
     await expect(editor.root.locator('td').first()).toHaveText('X');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 0, 0], offset: 1 },
       focus: { path: [1, 0, 0, 0], offset: 1 },
     });
@@ -296,6 +309,7 @@ test.describe('table example', () => {
       await expect(editor.root.locator('table')).toHaveCount(1);
       await expect(editor.root.locator('td').first()).toHaveText('Pasted');
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 0, 0, 0], offset: 'Pasted'.length },
         focus: { path: [1, 0, 0, 0], offset: 'Pasted'.length },
       });
@@ -350,6 +364,7 @@ test.describe('table example', () => {
         )
         .toEqual(['', 'HumanNew 1', 'New 2', 'Dog', 'Cat']);
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 0, 2, 0], offset: 'New 2'.length },
         focus: { path: [1, 0, 2, 0], offset: 'New 2'.length },
       });
@@ -368,6 +383,7 @@ test.describe('table example', () => {
 
     await editor.root.locator('td').first().click();
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 0, 0], offset: 0 },
       focus: { path: [1, 0, 0, 0], offset: 0 },
     });
@@ -375,6 +391,7 @@ test.describe('table example', () => {
     await editor.root.press('ArrowRight');
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 1, 0], offset: 0 },
       focus: { path: [1, 0, 1, 0], offset: 0 },
     });
@@ -382,6 +399,7 @@ test.describe('table example', () => {
     const proof = await takePliteBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 0, 1, 0], offset: 0 },
       focus: { path: [1, 0, 1, 0], offset: 0 },
     });
@@ -407,6 +425,7 @@ test.describe('table example', () => {
     await editor.root.press('ArrowLeft');
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 0, 0], offset: 0 },
       focus: { path: [1, 0, 0, 0], offset: 0 },
     });
@@ -414,6 +433,7 @@ test.describe('table example', () => {
     const proof = await takePliteBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 0, 0, 0], offset: 0 },
       focus: { path: [1, 0, 0, 0], offset: 0 },
     });
@@ -442,12 +462,14 @@ test.describe('table example', () => {
     await editor.selection.collapse({ path: [1, 0, 1, 0], offset: 0 });
     await editor.root.press('Tab');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 2, 0], offset: 0 },
       focus: { path: [1, 0, 2, 0], offset: 0 },
     });
 
     await editor.root.press('Shift+Tab');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0, 1, 0], offset: 0 },
       focus: { path: [1, 0, 1, 0], offset: 0 },
     });

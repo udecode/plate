@@ -93,13 +93,22 @@ Bad patterns:
 
 - subscribing to raw selection when you only need a derived boolean
 - subscribing to state only used inside a callback
+- calling `usePath()` in every repeated node when only an event callback needs
+  the path
 - re-reading large editor data on every cursor move for a tiny visual affordance
 
 Prefer:
 
 - package/controller selectors that return stable booleans or small slices
 - `useEditorSelector` with the smallest honest output
+- resolving a node path lazily from its stable element/runtime identity inside
+  the interaction that needs it
 - local derived booleans instead of raw state objects
+
+React context dependencies count as subscriptions for repeated-unit budgeting
+when provider values change with editor state. `usePath()` reads element
+context, so path shifts can invalidate its consumers even though it does not
+create a Jotai store subscription.
 
 ---
 

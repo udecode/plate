@@ -649,7 +649,7 @@ const state = useEditorPluginOption(editor, plugin, 'state');
 ### `ElementStatePlugin`
 在 Plite 之上扩展 Plate 编辑器行为。
 
-`ElementStatePlugin` 提供 `editor.api.isElementStateEmpty(element)`。它检查元素自身的属性状态，而不是文本内容。默认只忽略 `type` 和插件通过 `node.isMetadataProp` 声明为空的属性；任何其他属性都表示该元素带有状态。`NodeIdPlugin` 使用 `node.isMetadataProp` 处理配置的 NodeId 键。
+`ElementStatePlugin` 提供 `editor.api.isElementStateEmpty(element)`。它检查元素自身的属性状态，而不是文本内容。默认只忽略 `type` 和通过 `significant: false` 声明的已编译元素属性；任何其他属性都表示该元素带有状态。`NodeIdPlugin` 将配置的 NodeId 属性声明为非显著属性。
 
 ```tsx
 editor.api.isElementStateEmpty({
@@ -665,8 +665,14 @@ editor.api.isElementStateEmpty({
 
 const CustomMetadataPlugin = createBasePlugin({
   key: 'customMetadata',
-  node: {
-    isMetadataProp: ({ key }) => key === 'customId',
+  schema: {
+    properties: [
+      schema.elementProperty(
+        'customId',
+        property.string({ significant: false }),
+        { target: target.group('block') }
+      ),
+    ],
   },
 });
 ```
@@ -685,9 +691,6 @@ const CustomMetadataPlugin = createBasePlugin({
 
 ### `HtmlPlugin`
 启用 HTML 序列化和反序列化。
-
-### `AstPlugin`
-处理编辑器的抽象语法树(AST)操作。
 
 ### `ParagraphPlugin`
 提供段落格式化功能。

@@ -7,6 +7,7 @@ describe('withImageEmbed', () => {
     const editor = createBaseEditor({
       plugins: [BaseImagePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },

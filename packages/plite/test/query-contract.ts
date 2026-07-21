@@ -40,13 +40,16 @@ import {
   unhangRange as editorUnhangRange,
 } from '@platejs/plite/internal';
 import {
-  createEditor,
+  createEditor as createPliteEditor,
   type Descendant,
   type Element,
-  type EditorElementSpec,
+  defineEditorSchema,
+  element,
   type Node,
   NodeApi,
   PathApi,
+  property,
+  schema,
 } from '@platejs/plite';
 
 type LegacySnapshotInput = Omit<
@@ -70,46 +73,74 @@ const editorReplaceTrusted = (
   });
 };
 
-let extensionIndex = 0;
+const QueryContractSchema = defineEditorSchema({
+  elements: {
+    block: element({}),
+    'block-mention': element({ void: 'block' }),
+    'bulleted-list': element({}),
+    chip: element({ inline: true }),
+    'editable-embed': element({ void: 'editable-island' }),
+    element: element({}),
+    inline: element({ inline: true }),
+    link: element({ inline: true }),
+    'list-item': element({}),
+    'markable-inline': element({ void: 'markable-inline' }),
+    nested: element({ inline: true }),
+    'non-selectable-block': element({ selectable: false }),
+    'non-selectable-inline': element({ inline: true, selectable: false }),
+    'non-selectable-inline-void': element({
+      inline: true,
+      selectable: false,
+      void: 'inline',
+    }),
+    'numbered-list': element({}),
+    paragraph: element({}),
+    quote: element({}),
+    section: element({}),
+    table: element({}),
+    'table-cell': element({}),
+    'table-row': element({}),
+    target: element({}),
+    token: element({ atom: true }),
+    video: element({ void: 'block' }),
+    'void-block': element({ void: 'block' }),
+    'void-element': element({ void: 'block' }),
+    'void-inline': element({ inline: true, void: 'inline' }),
+    'void-paragraph': element({ void: 'block' }),
+  },
+  id: 'query-contract',
+  properties: [schema.textProperty('segment', property.boolean())],
+  root: schema.root({
+    content: schema.content.types([
+      'block',
+      'block-mention',
+      'bulleted-list',
+      'editable-embed',
+      'element',
+      'list-item',
+      'non-selectable-block',
+      'numbered-list',
+      'paragraph',
+      'quote',
+      'section',
+      'table',
+      'target',
+      'token',
+      'video',
+      'void-block',
+      'void-element',
+      'void-paragraph',
+    ]),
+  }),
+  unknown: 'preserve',
+  version: 1,
+});
 
-const defineElement = (
-  editor: ReturnType<typeof createEditor>,
-  spec: EditorElementSpec
-) => {
-  editor.extend({
-    name: `query-contract-element-${extensionIndex++}`,
-    elements: [spec],
-  });
-};
-
-const defineVoidFlag = (editor: ReturnType<typeof createEditor>) => {
-  defineElement(editor, {
-    type: 'void-flag',
-    match: (element) =>
-      Boolean((element as { type?: string }).type) &&
-      Boolean((element as { void?: boolean }).void),
-    void: 'block',
-  });
-};
-
-const defineInlineVoidFlag = (editor: ReturnType<typeof createEditor>) => {
-  defineElement(editor, {
-    type: 'inline-void-flag',
-    match: (element) =>
-      element.type === 'inline' &&
-      Boolean((element as { void?: boolean }).void),
-    void: 'inline',
-  });
-};
-
-const defineNonSelectableFlag = (editor: ReturnType<typeof createEditor>) => {
-  defineElement(editor, {
-    type: 'non-selectable-flag',
-    match: (element) =>
-      Boolean((element as { nonSelectable?: boolean }).nonSelectable),
-    selectable: false,
-  });
-};
+const createEditor = ((options = {}) =>
+  createPliteEditor({
+    ...options,
+    extensions: [QueryContractSchema],
+  })) as typeof createPliteEditor;
 
 const getStart = (
   editor: ReturnType<typeof createEditor>,
@@ -183,22 +214,12 @@ const createElementSplitChildren = (): Element[] => [
 
 const createVoidBlockPairChildren = (): Element[] => [
   {
-    type: 'paragraph',
-    void: true,
+    type: 'void-paragraph',
     children: [{ text: 'one' }],
   } as Element,
   {
-    type: 'paragraph',
-    void: true,
+    type: 'void-paragraph',
     children: [{ text: 'two' }],
-  } as Element,
-];
-
-const createVoidSplitChildren = (): Element[] => [
-  {
-    type: 'paragraph',
-    void: true,
-    children: [{ text: 'one' }, { text: 'two' }],
   } as Element,
 ];
 
@@ -223,8 +244,7 @@ const createNonSelectableBlockChildren = (): Element[] => [
     children: [{ text: 'one' }],
   },
   {
-    type: 'paragraph',
-    nonSelectable: true,
+    type: 'non-selectable-block',
     children: [{ text: 'two' }],
   } as Element,
   {
@@ -235,8 +255,7 @@ const createNonSelectableBlockChildren = (): Element[] => [
 
 const createLeadingNonSelectableBlockChildren = (): Element[] => [
   {
-    type: 'paragraph',
-    nonSelectable: true,
+    type: 'non-selectable-block',
     children: [{ text: 'two' }],
   } as Element,
   {
@@ -251,8 +270,7 @@ const createTrailingNonSelectableBlockChildren = (): Element[] => [
     children: [{ text: 'one' }],
   },
   {
-    type: 'paragraph',
-    nonSelectable: true,
+    type: 'non-selectable-block',
     children: [{ text: 'two' }],
   } as Element,
 ];
@@ -263,8 +281,7 @@ const createNonSelectableInlineChildren = (): Element[] => [
     children: [
       { text: 'one' },
       {
-        type: 'inline',
-        nonSelectable: true,
+        type: 'non-selectable-inline',
         children: [{ text: 'two' }],
       },
       { text: 'three' },
@@ -277,8 +294,7 @@ const createLeadingNonSelectableInlineChildren = (): Element[] => [
     type: 'paragraph',
     children: [
       {
-        type: 'inline',
-        nonSelectable: true,
+        type: 'non-selectable-inline',
         children: [{ text: 'two' }],
       },
       { text: 'three' },
@@ -292,8 +308,7 @@ const createTrailingNonSelectableInlineChildren = (): Element[] => [
     children: [
       { text: 'one' },
       {
-        type: 'inline',
-        nonSelectable: true,
+        type: 'non-selectable-inline',
         children: [{ text: 'two' }],
       },
     ],
@@ -306,9 +321,7 @@ const createNonSelectableInlineVoidChildren = (): Element[] => [
     children: [
       { text: 'one' },
       {
-        type: 'inline',
-        void: true,
-        nonSelectable: true,
+        type: 'non-selectable-inline-void',
         children: [{ text: '' }],
       },
       { text: 'three' },
@@ -383,8 +396,7 @@ const createNestedInlineChildren = (): Element[] => [
 
 const createVoidBlockChildren = (): Element[] => [
   {
-    type: 'block',
-    void: true,
+    type: 'void-block',
     children: [{ text: 'one' }, { text: 'two' }],
   } as Element,
 ];
@@ -395,8 +407,7 @@ const createVoidInlineChildren = (): Element[] => [
     children: [
       { text: 'one' },
       {
-        type: 'inline',
-        void: true,
+        type: 'void-inline',
         children: [{ text: 'two' }],
       },
       { text: 'three' },
@@ -410,9 +421,7 @@ const createMarkableVoidChildren = (): Element[] => [
     children: [
       { text: 'word' },
       {
-        type: 'inline',
-        void: true,
-        markable: true,
+        type: 'markable-inline',
         children: [{ text: '', bold: true }],
       },
       { text: '' },
@@ -422,7 +431,6 @@ const createMarkableVoidChildren = (): Element[] => [
 
 it('above exposes the current traversal API', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'link', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -444,10 +452,10 @@ it('above exposes the current traversal API', () => {
       } as Descendant,
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 1, 0], offset: 1 },
       focus: { path: [0, 0, 1, 0], offset: 1 },
     },
-    marks: null,
   });
 
   assert.deepEqual(editorAbove(editor, { at: [0, 0, 1, 0] }), [
@@ -497,7 +505,6 @@ it('mirrors the legacy above/block-lowest.tsx oracle row', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -535,7 +542,6 @@ it('mirrors the legacy above/block-highest.tsx oracle row', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -564,7 +570,6 @@ it('mirrors the legacy above/block-highest.tsx oracle row', () => {
 
 it('mirrors the legacy above/inline.tsx oracle row', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'inline', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -581,7 +586,6 @@ it('mirrors the legacy above/inline.tsx oracle row', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -618,7 +622,6 @@ it('mirrors the legacy above/point.tsx oracle row', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -658,7 +661,6 @@ it('mirrors the legacy above/potential-parent.tsx oracle row', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -709,7 +711,6 @@ it('mirrors the legacy above/range.tsx oracle row', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -753,7 +754,6 @@ it('mirrors the legacy edges/end/start/path/point/node/parent/range oracle rows'
   editorReplace(editor, {
     children: createSingleBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorEdges(editor, [0]), [
@@ -860,7 +860,6 @@ it('mirrors the legacy edges/end/start/path/point/node/parent/range oracle rows'
   editorReplace(editor, {
     children: createTwoBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   const spanningRange = {
@@ -914,7 +913,6 @@ it('mirrors the legacy edges/end/start/path/point/node/parent/range oracle rows'
 
 it('resolves element path edges to nested text points', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'link', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -931,7 +929,6 @@ it('resolves element path edges to nested text points', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorRange(editor, [0]), {
@@ -964,26 +961,19 @@ it('resolves element path edges to nested text points', () => {
 
 it('mirrors the legacy string oracle rows', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'inline', inline: true });
-  defineElement(editor, {
-    type: 'void-flag',
-    match: (element) => Boolean((element as { void?: boolean }).void),
-    void: 'block',
-  });
 
   editorReplaceTrusted(editor, {
     children: [
       {
         type: 'block',
-        children: [{ text: 'one' }, { text: 'two' }],
+        children: [{ text: 'one' }, { segment: true, text: 'two' }],
       } as Descendant,
       {
         type: 'block',
-        children: [{ text: 'three' }, { text: 'four' }],
+        children: [{ text: 'three' }, { segment: true, text: 'four' }],
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.equal(editorString(editor, [0, 0]), 'one');
@@ -993,7 +983,6 @@ it('mirrors the legacy string oracle rows', () => {
   editorReplace(editor, {
     children: createInlineBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.equal(editorString(editor, [0, 1]), 'two');
@@ -1001,7 +990,6 @@ it('mirrors the legacy string oracle rows', () => {
   editorReplace(editor, {
     children: createVoidBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.equal(editorString(editor, [0]), '');
@@ -1010,17 +998,10 @@ it('mirrors the legacy string oracle rows', () => {
 
 it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'inline', inline: true });
-  defineElement(editor, {
-    type: 'void-flag',
-    match: (element) => Boolean((element as { void?: boolean }).void),
-    void: 'block',
-  });
 
   editorReplace(editor, {
     children: createNestedBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   const nestedBlock = getNodeEntry(editor, [0])![0] as Element & {
@@ -1033,10 +1014,10 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
   editorReplace(editor, {
     children: createSingleBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   const block = getNodeEntry(editor, [0])![0] as Element & {
@@ -1065,7 +1046,6 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
   editorReplace(editor, {
     children: createInlineBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   const inline = getNodeEntry(editor, [0, 1])![0] as Element & {
@@ -1087,7 +1067,6 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
   editorReplace(editor, {
     children: createNestedInlineChildren(),
     selection: null,
-    marks: null,
   });
 
   const nestedInline = getNodeEntry(editor, [0, 1])![0] as Element & {
@@ -1100,7 +1079,6 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
   editorReplace(editor, {
     children: createVoidBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   const voidBlock = getNodeEntry(editor, [0])![0] as Element & {
@@ -1112,7 +1090,6 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
   editorReplace(editor, {
     children: createVoidInlineChildren(),
     selection: null,
-    marks: null,
   });
 
   const voidInline = getNodeEntry(editor, [0, 1])![0] as Element & {
@@ -1124,12 +1101,6 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
 
 it('mirrors the legacy mark-read oracle rows', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'inline', inline: true });
-  defineElement(editor, {
-    type: 'void-flag',
-    match: (element) => Boolean((element as { void?: boolean }).void),
-    void: 'block',
-  });
 
   editorReplace(editor, {
     children: [
@@ -1147,10 +1118,10 @@ it('mirrors the legacy mark-read oracle rows', () => {
       } as Descendant,
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 6 },
       focus: { path: [0, 1], offset: 4 },
     },
-    marks: null,
   });
 
   assert.deepEqual(getMarks(editor), { bold: true });
@@ -1171,10 +1142,10 @@ it('mirrors the legacy mark-read oracle rows', () => {
       } as Descendant,
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   assert.deepEqual(getMarks(editor), { bold: true });
@@ -1195,10 +1166,10 @@ it('mirrors the legacy mark-read oracle rows', () => {
       } as Descendant,
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1], offset: 17 },
       focus: { path: [0, 1], offset: 17 },
     },
-    marks: null,
   });
 
   assert.deepEqual(getMarks(editor), { bold: true });
@@ -1206,17 +1177,11 @@ it('mirrors the legacy mark-read oracle rows', () => {
   editorReplace(editor, {
     children: createMarkableVoidChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 0 },
     },
-    marks: null,
   });
-  defineElement(editor, {
-    type: 'markable-flag',
-    match: (element) => Boolean((element as { markable?: boolean }).markable),
-    void: 'markable-inline',
-  });
-
   assert.deepEqual(getMarks(editor), { bold: true });
 
   editorReplace(editor, {
@@ -1226,16 +1191,12 @@ it('mirrors the legacy mark-read oracle rows', () => {
         children: [
           { text: 'word' },
           {
-            type: 'inline',
-            void: true,
-            markable: true,
+            type: 'markable-inline',
             children: [{ text: '', bold: true }],
           },
           { text: 'bold', bold: true },
           {
-            type: 'inline',
-            void: true,
-            markable: true,
+            type: 'markable-inline',
             children: [{ text: '', bold: true, italic: true }],
           },
           { text: 'bold italic', bold: true, italic: true },
@@ -1244,10 +1205,10 @@ it('mirrors the legacy mark-read oracle rows', () => {
       } as Descendant,
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 4], offset: 11 },
     },
-    marks: null,
   });
 
   assert.deepEqual(getMarks(editor), { bold: true });
@@ -1255,7 +1216,6 @@ it('mirrors the legacy mark-read oracle rows', () => {
 
 it('positions exposes the current point-iteration API across offset, character, word, and block units', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'link', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -1276,7 +1236,6 @@ it('positions exposes the current point-iteration API across offset, character, 
       },
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(Array.from(editorPositions(editor, { at: [0] })), [
@@ -1357,10 +1316,10 @@ it('positions returns no points for stale range endpoints but still rejects inva
       },
     ],
     selection: null,
-    marks: null,
   });
 
   const staleRange = {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 3 },
   };
@@ -1383,7 +1342,6 @@ it('positions returns no points for stale range endpoints but still rejects inva
 
 it('mirrors the legacy positions/path/inline.tsx oracle row', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'inline', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -1400,7 +1358,6 @@ it('mirrors the legacy positions/path/inline.tsx oracle row', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(Array.from(editorPositions(editor, { at: [0, 1] })), [
@@ -1413,7 +1370,6 @@ it('mirrors the legacy positions/path/inline.tsx oracle row', () => {
 
 it('mirrors the legacy positions/all/inline-fragmentation.tsx oracle row', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'inline', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -1430,7 +1386,6 @@ it('mirrors the legacy positions/all/inline-fragmentation.tsx oracle row', () =>
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(Array.from(editorPositions(editor, { at: [] })), [
@@ -1458,7 +1413,6 @@ it('unhangRange exposes the current hanging-range API', () => {
       },
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -1498,6 +1452,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     },
@@ -1515,6 +1470,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     },
@@ -1532,6 +1488,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 6 },
       focus: { path: [0, 2], offset: 0 },
     },
@@ -1542,9 +1499,6 @@ const unhangOracleCases = [
   },
   {
     name: 'mirrors the legacy unhangRange/block-hanging-over-void.tsx oracle row',
-    configure: (editor: ReturnType<typeof createEditor>) => {
-      defineElement(editor, { type: 'block', void: 'block' });
-    },
     children: [
       {
         type: 'paragraph',
@@ -1555,7 +1509,7 @@ const unhangOracleCases = [
         children: [{ text: 'This is the second paragraph' }],
       },
       {
-        type: 'block',
+        type: 'void-block',
         children: [{ text: 'This void paragraph gets skipped over' }],
       } as Descendant,
       {
@@ -1564,6 +1518,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [3, 0], offset: 0 },
     },
@@ -1574,9 +1529,6 @@ const unhangOracleCases = [
   },
   {
     name: 'mirrors the legacy unhangRange/block-hanging-over-void-with-voids-option.tsx oracle row',
-    configure: (editor: ReturnType<typeof createEditor>) => {
-      defineElement(editor, { type: 'block', void: 'block' });
-    },
     options: { voids: true },
     children: [
       {
@@ -1588,7 +1540,7 @@ const unhangOracleCases = [
         children: [{ text: 'This is the second paragraph' }],
       },
       {
-        type: 'block',
+        type: 'void-block',
         children: [{ text: '' }],
       } as Descendant,
       {
@@ -1597,6 +1549,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [3, 0], offset: 0 },
     },
@@ -1607,9 +1560,6 @@ const unhangOracleCases = [
   },
   {
     name: 'mirrors the legacy unhangRange/block-hanging-over-non-empty-void-with-voids-option.tsx oracle row',
-    configure: (editor: ReturnType<typeof createEditor>) => {
-      defineElement(editor, { type: 'block', void: 'block' });
-    },
     options: { voids: true },
     children: [
       {
@@ -1621,7 +1571,7 @@ const unhangOracleCases = [
         children: [{ text: 'This is the second paragraph' }],
       },
       {
-        type: 'block',
+        type: 'void-block',
         children: [{ text: 'This is the third paragraph' }],
       } as Descendant,
       {
@@ -1630,6 +1580,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [3, 0], offset: 0 },
     },
@@ -1640,10 +1591,6 @@ const unhangOracleCases = [
   },
   {
     name: 'mirrors the legacy unhangRange/inline-at-end.tsx oracle row',
-    configure: (editor: ReturnType<typeof createEditor>) => {
-      defineElement(editor, { type: 'inline', inline: true });
-      defineInlineVoidFlag(editor);
-    },
     options: { voids: true },
     children: [
       {
@@ -1651,8 +1598,7 @@ const unhangOracleCases = [
         children: [
           { text: 'This is a first paragraph' },
           {
-            type: 'inline',
-            void: true,
+            type: 'void-inline',
             children: [{ text: '' }],
           },
           { text: '' },
@@ -1664,6 +1610,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     },
@@ -1674,10 +1621,6 @@ const unhangOracleCases = [
   },
   {
     name: 'mirrors the legacy unhangRange/multi-block-inline-at-end.tsx oracle row',
-    configure: (editor: ReturnType<typeof createEditor>) => {
-      defineElement(editor, { type: 'inline', inline: true });
-      defineInlineVoidFlag(editor);
-    },
     options: { voids: true },
     children: [
       {
@@ -1685,8 +1628,7 @@ const unhangOracleCases = [
         children: [
           { text: 'This is the first paragraph' },
           {
-            type: 'inline',
-            void: true,
+            type: 'void-inline',
             children: [{ text: '' }],
           },
           { text: '' },
@@ -1697,8 +1639,7 @@ const unhangOracleCases = [
         children: [
           { text: 'This is the second paragraph' },
           {
-            type: 'inline',
-            void: true,
+            type: 'void-inline',
             children: [{ text: '' }],
           },
           { text: '' },
@@ -1710,6 +1651,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [2, 0], offset: 0 },
     },
@@ -1720,10 +1662,6 @@ const unhangOracleCases = [
   },
   {
     name: 'mirrors the legacy unhangRange/not-hanging-inline-at-end.tsx oracle row',
-    configure: (editor: ReturnType<typeof createEditor>) => {
-      defineElement(editor, { type: 'inline', inline: true });
-      defineInlineVoidFlag(editor);
-    },
     options: { voids: true },
     children: [
       {
@@ -1731,8 +1669,7 @@ const unhangOracleCases = [
         children: [
           { text: 'This is the first paragraph' },
           {
-            type: 'inline',
-            void: true,
+            type: 'void-inline',
             children: [{ text: '' }],
           },
           { text: '' },
@@ -1744,6 +1681,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 2], offset: 0 },
     },
@@ -1754,10 +1692,6 @@ const unhangOracleCases = [
   },
   {
     name: 'mirrors the legacy unhangRange/not-hanging-multi-block-inline-at-end.tsx oracle row',
-    configure: (editor: ReturnType<typeof createEditor>) => {
-      defineElement(editor, { type: 'inline', inline: true });
-      defineInlineVoidFlag(editor);
-    },
     options: { voids: true },
     children: [
       {
@@ -1765,8 +1699,7 @@ const unhangOracleCases = [
         children: [
           { text: 'This is the first paragraph' },
           {
-            type: 'inline',
-            void: true,
+            type: 'void-inline',
             children: [{ text: '' }],
           },
           { text: '' },
@@ -1777,8 +1710,7 @@ const unhangOracleCases = [
         children: [
           { text: 'This is the second paragraph' },
           {
-            type: 'inline',
-            void: true,
+            type: 'void-inline',
             children: [{ text: '' }],
           },
           { text: '' },
@@ -1790,6 +1722,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
     },
@@ -1800,10 +1733,6 @@ const unhangOracleCases = [
   },
   {
     name: 'mirrors the legacy unhangRange/inline-range-normal.tsx oracle row',
-    configure: (editor: ReturnType<typeof createEditor>) => {
-      defineElement(editor, { type: 'inline', inline: true });
-      defineInlineVoidFlag(editor);
-    },
     children: [
       {
         type: 'paragraph',
@@ -1814,8 +1743,7 @@ const unhangOracleCases = [
         children: [
           { text: 'Some text before ' },
           {
-            type: 'inline',
-            void: true,
+            type: 'void-inline',
             children: [{ text: '' }],
           },
           { text: '' },
@@ -1827,6 +1755,7 @@ const unhangOracleCases = [
       },
     ] as Element[],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 1, 0], offset: 0 },
     },
@@ -1840,12 +1769,10 @@ const unhangOracleCases = [
 for (const testCase of unhangOracleCases) {
   it(testCase.name, () => {
     const editor = createEditor();
-    testCase.configure?.(editor);
 
     editorReplace(editor, {
       children: testCase.children,
       selection: null,
-      marks: null,
     });
 
     assert.deepEqual(
@@ -1889,7 +1816,6 @@ it('nodes supports pass and universal on the current traversal contract', () => 
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -1979,7 +1905,6 @@ it('state node query helpers keep lazy traversal and early-exit first-match chec
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   const entries = editor.read((state) =>
@@ -2054,7 +1979,6 @@ it('state node query helpers keep lazy traversal and early-exit first-match chec
 
 it('nodes covers sibling and range traversal for nested inline documents', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'link', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -2079,7 +2003,6 @@ it('nodes covers sibling and range traversal for nested inline documents', () =>
       },
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -2106,6 +2029,7 @@ it('nodes covers sibling and range traversal for nested inline documents', () =>
   );
 
   const partialRange = {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [1, 0], offset: 2 },
   };
@@ -2143,7 +2067,11 @@ it('nodes expose ancestry, sibling order, and common ancestor relationships', ()
     children: [
       {
         type: 'paragraph',
-        children: [{ text: 'foo' }, { text: 'bar' }, { text: 'baz' }],
+        children: [
+          { text: 'foo' },
+          { segment: true, text: 'bar' },
+          { text: 'baz' },
+        ],
       },
       {
         type: 'paragraph',
@@ -2151,7 +2079,6 @@ it('nodes expose ancestry, sibling order, and common ancestor relationships', ()
       },
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -2168,7 +2095,11 @@ it('nodes expose ancestry, sibling order, and common ancestor relationships', ()
   assert.deepEqual(NodeApi.common(editor, [0, 0], [0, 2]), [
     {
       type: 'paragraph',
-      children: [{ text: 'foo' }, { text: 'bar' }, { text: 'baz' }],
+      children: [
+        { text: 'foo' },
+        { segment: true, text: 'bar' },
+        { text: 'baz' },
+      ],
     },
     [0],
   ]);
@@ -2254,7 +2185,6 @@ it('resolves nested list ancestry and terminal list-item paths', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   const isType = (path: number[], type: string) => {
@@ -2304,15 +2234,14 @@ it('nodes exposes nested text leaves and text content for element queries', () =
         children: [
           { text: 'Foo' },
           {
-            type: 'block',
-            children: [{ text: 'Bar' }, { text: 'Baz' }],
+            type: 'inline',
+            children: [{ text: 'Bar' }, { segment: true, text: 'Baz' }],
           },
           { text: 'Qux' },
         ],
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -2355,7 +2284,6 @@ it('nodes reverse returns the exact inverse of forward matches', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   const match = (node: Node) =>
@@ -2378,13 +2306,11 @@ it('nodes reverse returns the exact inverse of forward matches', () => {
 
 it('positions exposes selectable voids atomically and enters void content only when enabled', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'mention', void: 'block' });
-  defineElement(editor, { type: 'chip', inline: true });
 
   editorReplace(editor, {
     children: [
       {
-        type: 'mention',
+        type: 'block-mention',
         children: [
           { text: 'one' },
           {
@@ -2396,7 +2322,6 @@ it('positions exposes selectable voids atomically and enters void content only w
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(Array.from(editorPositions(editor, { at: [] })), [
@@ -2425,8 +2350,6 @@ it('positions exposes selectable voids atomically and enters void content only w
 
 it('positions uses element spec atom and editable-island policies', () => {
   const editor = createEditor();
-  defineElement(editor, { atom: true, type: 'token' });
-  defineElement(editor, { type: 'editable-embed', void: 'editable-island' });
 
   editorReplace(editor, {
     children: [
@@ -2440,7 +2363,6 @@ it('positions uses element spec atom and editable-island policies', () => {
       },
     ] as Element[],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(Array.from(editorPositions(editor, { at: [0] })), [
@@ -2465,12 +2387,10 @@ it('positions uses element spec atom and editable-island policies', () => {
 
 it('moves from a text block into a selectable block void before the following block', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'video', void: 'block' });
 
   editorReplace(editor, {
     children: createSelectableVoidBetweenBlocksChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorAfter(editor, { path: [0, 0], offset: 3 }), {
@@ -2490,6 +2410,7 @@ it('moves from a text block into a selectable block void before the following bl
     editorMove(editor);
   });
   assert.deepEqual(editorGetSelection(editor), {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -2498,6 +2419,7 @@ it('moves from a text block into a selectable block void before the following bl
     editorMove(editor);
   });
   assert.deepEqual(editorGetSelection(editor), {
+    kind: 'text',
     anchor: { path: [2, 0], offset: 0 },
     focus: { path: [2, 0], offset: 0 },
   });
@@ -2505,7 +2427,6 @@ it('moves from a text block into a selectable block void before the following bl
 
 it('Editor exposes a narrowed static read/query layer for the current public surface', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'link', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -2531,7 +2452,6 @@ it('Editor exposes a narrowed static read/query layer for the current public sur
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   const paragraph = getNodeEntry(editor, [0])![0] as Element & {
@@ -2543,10 +2463,12 @@ it('Editor exposes a narrowed static read/query layer for the current public sur
     type: string;
   };
   const sameBlockRange = {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 1 },
     focus: { path: [0, 2], offset: 2 },
   };
   const spanningRange = {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 1 },
     focus: { path: [1, 0, 0], offset: 2 },
   };
@@ -2645,13 +2567,12 @@ it('Editor exposes a narrowed static read/query layer for the current public sur
   assert.equal(editorIsEdge(editor, { path: [0, 2], offset: 6 }, [0]), true);
 });
 
-it('Editor static read/query helpers see the live draft tree inside an outer transaction', () => {
+it('transaction queries see the live draft while ambient reads stay committed', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   let observed:
@@ -2664,8 +2585,7 @@ it('Editor static read/query helpers see the live draft tree inside an outer tra
     | undefined;
 
   editor.update((tx) => {
-    editorInsertNodes(
-      editor,
+    tx.nodes.insert(
       {
         type: 'paragraph',
         children: [{ text: 'zero' }],
@@ -2674,11 +2594,13 @@ it('Editor static read/query helpers see the live draft tree inside an outer tra
     );
 
     observed = {
-      firstString: editorString(editor, [0]),
-      insertedPathExists: editorHasPath(editor, [2]),
-      shiftedNodeString: editorString(editor, [2]),
-      lastPoint: getEnd(editor, [2])!,
+      firstString: tx.text.string([0]),
+      insertedPathExists: tx.nodes.hasPath([2]),
+      shiftedNodeString: tx.text.string([2]),
+      lastPoint: tx.points.end([2])!,
     };
+
+    assert.equal(editor.read.text.string([0]), 'alpha');
   });
 
   assert.deepEqual(observed, {
@@ -2695,7 +2617,6 @@ it('supports editorAfter across supported top-level block boundaries', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorAfter(editor, { path: [0, 0], offset: 5 }), {
@@ -2715,7 +2636,6 @@ it('mirrors the legacy editorLevels/success.tsx oracle row', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(Array.from(editorLevels(editor, { at: [0, 0] })), [
@@ -2742,7 +2662,6 @@ it('mirrors the legacy editorLevels/reverse.tsx oracle row', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -2773,7 +2692,6 @@ it('mirrors the legacy editorLevels/match.tsx oracle row', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -2799,26 +2717,22 @@ it('mirrors the legacy editorLevels/match.tsx oracle row', () => {
 
 it('mirrors the legacy editorLevels/voids-false.tsx oracle row', () => {
   const editor = createEditor();
-  defineVoidFlag(editor);
 
   editorReplace(editor, {
     children: [
       {
-        type: 'element',
-        void: true,
+        type: 'void-element',
         children: [{ text: '' }],
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(Array.from(editorLevels(editor, { at: [0, 0] })), [
     [getNodeEntry(editor, [])![0], []],
     [
       {
-        type: 'element',
-        void: true,
+        type: 'void-element',
         children: [{ text: '' }],
       },
       [0],
@@ -2828,18 +2742,15 @@ it('mirrors the legacy editorLevels/voids-false.tsx oracle row', () => {
 
 it('mirrors the legacy editorLevels/voids-true.tsx oracle row', () => {
   const editor = createEditor();
-  defineVoidFlag(editor);
 
   editorReplace(editor, {
     children: [
       {
-        type: 'element',
-        void: true,
+        type: 'void-element',
         children: [{ text: '' }],
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -2848,8 +2759,7 @@ it('mirrors the legacy editorLevels/voids-true.tsx oracle row', () => {
       [getNodeEntry(editor, [])![0], []],
       [
         {
-          type: 'element',
-          void: true,
+          type: 'void-element',
           children: [{ text: '' }],
         },
         [0],
@@ -2865,7 +2775,6 @@ it('mirrors the legacy editorNext/default.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorNext(editor, { at: [0] }), [
@@ -2883,7 +2792,6 @@ it('returns undefined when editorNext is called from the root path', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.equal(editorNext(editor, { at: [] }), undefined);
@@ -2899,7 +2807,6 @@ it('mirrors the legacy editorNext/block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -2923,7 +2830,6 @@ it('mirrors the legacy editorNext/text.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -2941,7 +2847,6 @@ it('mirrors the legacy editorPrevious/default.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorPrevious(editor, { at: [1] }), [
@@ -2959,7 +2864,6 @@ it('returns undefined when getting the previous node from the root path', () => 
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.equal(editorPrevious(editor, { at: [] }), undefined);
@@ -2975,7 +2879,6 @@ it('mirrors the legacy editorPrevious/block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -2999,7 +2902,6 @@ it('mirrors the legacy editorPrevious/text.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -3017,7 +2919,6 @@ it('supports editorBefore across supported top-level block boundaries', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorBefore(editor, { path: [1, 0], offset: 0 }), {
@@ -3032,7 +2933,6 @@ it('supports editorAfter across top-level block boundaries inside an outer trans
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   let point: { path: readonly number[]; offset: number } | undefined;
@@ -3061,7 +2961,6 @@ it('supports move helper calls across supported top-level block boundaries', () 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -3075,6 +2974,7 @@ it('supports move helper calls across supported top-level block boundaries', () 
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -3086,7 +2986,6 @@ it('supports editorAfter and editorBefore with top-level block paths', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorAfter(editor, [0]), {
@@ -3105,7 +3004,6 @@ it('mirrors the legacy editorBefore/path.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorBefore(editor, [1, 0]), {
@@ -3120,7 +3018,6 @@ it('mirrors the legacy editorAfter/path.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorAfter(editor, [0, 0]), {
@@ -3135,7 +3032,6 @@ it('mirrors the legacy editorBefore/point.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren().slice(0, 1),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorBefore(editor, { path: [0, 0], offset: 1 }), {
@@ -3150,7 +3046,6 @@ it('mirrors the legacy editorAfter/point.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren().slice(0, 1),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorAfter(editor, { path: [0, 0], offset: 1 }), {
@@ -3165,7 +3060,6 @@ it('supports editorAfter and editorBefore with supported mixed-inline descendant
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorAfter(editor, [0, 1]), {
@@ -3184,7 +3078,6 @@ it('supports editorAfter with a top-level block path inside an outer transaction
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   let point: { path: readonly number[]; offset: number } | undefined;
@@ -3213,7 +3106,6 @@ it('supports editorAfter on a point within the current text node', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorAfter(editor, { path: [0, 0], offset: 1 }), {
@@ -3228,7 +3120,6 @@ it('supports editorBefore and editorAfter on a range by using the start/end edge
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -3253,7 +3144,6 @@ it('mirrors the legacy editorBefore/range.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -3271,7 +3161,6 @@ it('mirrors the legacy editorAfter/range.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -3289,7 +3178,6 @@ it('returns undefined when editorBefore or editorAfter hits the document boundar
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.equal(editorBefore(editor, { path: [0, 0], offset: 0 }), undefined);
@@ -3302,7 +3190,6 @@ it('mirrors the legacy editorBefore/start.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.equal(editorBefore(editor, [0, 0]), undefined);
@@ -3314,7 +3201,6 @@ it('mirrors the legacy editorAfter/end.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.equal(editorAfter(editor, [1, 0]), undefined);
@@ -3326,7 +3212,6 @@ it('supports editorAfter inside an outer transaction using the live draft tree',
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   let point: { path: readonly number[]; offset: number } | undefined;
@@ -3347,7 +3232,6 @@ it('supports editorAfter across mixed-inline sibling text leaves in one block', 
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorAfter(editor, { path: [0, 0], offset: 6 }), {
@@ -3362,7 +3246,6 @@ it('supports editorBefore across mixed-inline sibling text leaves in one block',
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorBefore(editor, { path: [0, 2], offset: 0 }), {
@@ -3375,12 +3258,10 @@ it('supports editorAfter across mixed-inline siblings inside an outer transactio
 
 it('supports editorBefore and editorAfter with voids: true on path and point locations', () => {
   const editor = createEditor();
-  defineVoidFlag(editor);
 
   editorReplace(editor, {
     children: createVoidBlockPairChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorBefore(editor, [1, 0], { voids: true }), {
@@ -3405,12 +3286,15 @@ it('supports editorBefore and editorAfter with voids: true on path and point loc
 
 it('supports editorBefore and editorAfter with voids: true on range and split-void paths', () => {
   const editor = createEditor();
-  defineVoidFlag(editor);
 
   editorReplaceTrusted(editor, {
-    children: createVoidSplitChildren(),
+    children: [
+      {
+        type: 'void-paragraph',
+        children: [{ text: 'one' }, { segment: true, text: 'two' }],
+      } as Element,
+    ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorAfter(editor, [0, 0], { voids: true }), {
@@ -3443,12 +3327,10 @@ it('supports editorBefore and editorAfter with voids: true on range and split-vo
 
 it('supports editorBefore and editorAfter by skipping non-selectable blocks', () => {
   const editor = createEditor();
-  defineNonSelectableFlag(editor);
 
   editorReplace(editor, {
     children: createNonSelectableBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorBefore(editor, { path: [2, 0], offset: 0 }), {
@@ -3463,7 +3345,6 @@ it('supports editorBefore and editorAfter by skipping non-selectable blocks', ()
   editorReplace(editor, {
     children: createLeadingNonSelectableBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.equal(editorBefore(editor, { path: [1, 0], offset: 0 }), undefined);
@@ -3471,7 +3352,6 @@ it('supports editorBefore and editorAfter by skipping non-selectable blocks', ()
   editorReplace(editor, {
     children: createTrailingNonSelectableBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.equal(editorAfter(editor, { path: [0, 0], offset: 3 }), undefined);
@@ -3479,13 +3359,10 @@ it('supports editorBefore and editorAfter by skipping non-selectable blocks', ()
 
 it('supports editorBefore and editorAfter by skipping non-selectable inline descendants', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'inline', inline: true });
-  defineNonSelectableFlag(editor);
 
   editorReplace(editor, {
     children: createNonSelectableInlineChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorBefore(editor, { path: [0, 2], offset: 0 }), {
@@ -3500,7 +3377,6 @@ it('supports editorBefore and editorAfter by skipping non-selectable inline desc
   editorReplace(editor, {
     children: createLeadingNonSelectableInlineChildren(),
     selection: null,
-    marks: null,
   });
 
   let point: { path: readonly number[]; offset: number } | undefined;
@@ -3509,7 +3385,6 @@ it('supports editorBefore and editorAfter by skipping non-selectable inline desc
     editorReplace(editor, {
       children: createLeadingNonSelectableInlineChildren(),
       selection: null,
-      marks: null,
     });
     point = editorBefore(editor, { path: [0, 1], offset: 0 });
   });
@@ -3519,31 +3394,25 @@ it('supports editorBefore and editorAfter by skipping non-selectable inline desc
   editorReplace(editor, {
     children: createTrailingNonSelectableInlineChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
     editorReplace(editor, {
       children: createTrailingNonSelectableInlineChildren(),
       selection: null,
-      marks: null,
     });
     point = editorAfter(editor, { path: [0, 0], offset: 3 });
   });
 
-  assert.equal(point, undefined);
+  assert.deepEqual(point, { path: [0, 2], offset: 0 });
 });
 
 it('supports editorAfter by skipping non-selectable inline void descendants', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'inline', inline: true });
-  defineVoidFlag(editor);
-  defineNonSelectableFlag(editor);
 
   editorReplace(editor, {
     children: createNonSelectableInlineVoidChildren(),
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorAfter(editor, { path: [0, 0], offset: 3 }), {
@@ -3554,8 +3423,6 @@ it('supports editorAfter by skipping non-selectable inline void descendants', ()
 
 it('supports character movement around inline voids as atomic boundaries', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'inline', inline: true });
-  defineVoidFlag(editor);
 
   editorReplace(editor, {
     children: [
@@ -3564,14 +3431,12 @@ it('supports character movement around inline voids as atomic boundaries', () =>
         children: [
           { text: 'one' },
           {
-            type: 'inline',
-            void: true,
+            type: 'void-inline',
             children: [{ text: '' }],
           },
           { text: 'two' },
           {
-            type: 'inline',
-            void: true,
+            type: 'void-inline',
             children: [{ text: '' }],
           },
           { text: '!' },
@@ -3579,7 +3444,6 @@ it('supports character movement around inline voids as atomic boundaries', () =>
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -3627,7 +3491,6 @@ it('supports editorBefore and editorAfter unit-based traversal', () => {
       },
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(
@@ -3669,7 +3532,6 @@ it('supports editorAfter character traversal across nested text-block boundaries
       },
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(

@@ -66,6 +66,7 @@ describe('usePliteRootChrome', () => {
 
     expect(document.activeElement).toBe(screen.getByLabelText('Header editor'));
     expect(headerEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { offset: 6, path: [0, 0], root: 'header' },
       focus: { offset: 6, path: [0, 0], root: 'header' },
     });
@@ -77,6 +78,7 @@ describe('usePliteRootChrome', () => {
 
     expect(document.activeElement).toBe(screen.getByLabelText('Header editor'));
     expect(headerEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { offset: 6, path: [0, 0], root: 'header' },
       focus: { offset: 6, path: [0, 0], root: 'header' },
     });
@@ -325,6 +327,7 @@ describe('usePliteRootChrome', () => {
       { path: [0], root: 'main' },
     ]);
     const staleSelection = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: { point: { path: [0, 0], root: 'header', offset: 1 } },
       focus: { point: { path: [0, 0], offset: 1 } },
     });

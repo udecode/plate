@@ -184,6 +184,16 @@ describe('@platejs/yjs package config contract', () => {
     assert.deepEqual(plateYjsReactAlias, ['../../packages/yjs/src/react']);
   });
 
+  it('typechecks Plate adapters against Core source instead of stale build output', () => {
+    const tsconfig = readTsConfigJson('../tsconfig.json');
+    const paths = tsconfig.compilerOptions?.paths;
+
+    assert.deepEqual(paths?.['@platejs/core'], ['../core/src/index.ts']);
+    assert.deepEqual(paths?.['@platejs/core/react'], [
+      '../core/src/react/index.ts',
+    ]);
+  });
+
   it('keeps provider integrations supplied by applications', () => {
     const yjsPackage = readPackageJson('../package.json');
     const sections = [

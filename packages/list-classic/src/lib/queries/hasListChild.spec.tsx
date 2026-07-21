@@ -1,12 +1,17 @@
 /** @jsx jsxt */
 
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, NodeIdPlugin } from '@platejs/core';
 
 import { jsxt } from '@platejs/test-utils';
 
+import { BaseListPlugin } from '../BaseListPlugin';
 import { hasListChild } from './hasListChild';
 
 jsxt;
+
+const SchemaOnlyNodeIdPlugin = NodeIdPlugin.configure({
+  options: { initialValueIds: false, match: () => false },
+});
 
 it.each([
   {
@@ -15,16 +20,16 @@ it.each([
       <editor>
         <hul>
           <hli id="2">
-            <hp>2</hp>
+            <hlic>2</hlic>
             <hul>
               <hli>
-                <hp>21</hp>
+                <hlic>21</hlic>
               </hli>
               <hli>
-                <hp>
+                <hlic>
                   22
                   <cursor />
-                </hp>
+                </hlic>
               </hli>
             </hul>
           </hli>
@@ -39,7 +44,7 @@ it.each([
       <editor>
         <hul>
           <hli id="2">
-            <hp>2</hp>
+            <hlic>2</hlic>
           </hli>
         </hul>
       </editor>
@@ -48,6 +53,7 @@ it.each([
   },
 ])('$title', ({ expected, input }) => {
   const editor = createBaseEditor({
+    plugins: [SchemaOnlyNodeIdPlugin, BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });

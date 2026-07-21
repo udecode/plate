@@ -1,9 +1,12 @@
 import { Buffer } from 'node:buffer';
 import { performance } from 'node:perf_hooks';
 
-import { createEditor } from '../../../../../packages/slate/src/index.ts';
-import { Editor } from '../../../../../packages/slate/src/internal/index.ts';
-import { history } from '../../../../../packages/slate-history/src/index.ts';
+import { createEditor } from '../../../../../packages/plite/src/index.ts';
+import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
+import {
+  History,
+  history,
+} from '../../../../../packages/plite-history/src/index.ts';
 import {
   round,
   summarize,
@@ -11,19 +14,19 @@ import {
 } from '../../shared/stats.mjs';
 
 const iterations = Number.parseInt(
-  process.env.SLATE_HISTORY_RETAINED_MEMORY_ITERATIONS ?? '3',
+  process.env.PLITE_HISTORY_RETAINED_MEMORY_ITERATIONS ?? '3',
   10
 );
 const existingBlocks = Number.parseInt(
-  process.env.SLATE_HISTORY_RETAINED_MEMORY_EXISTING_BLOCKS ?? '5000',
+  process.env.PLITE_HISTORY_RETAINED_MEMORY_EXISTING_BLOCKS ?? '5000',
   10
 );
 const replacementBlocks = Number.parseInt(
-  process.env.SLATE_HISTORY_RETAINED_MEMORY_REPLACEMENT_BLOCKS ?? '5000',
+  process.env.PLITE_HISTORY_RETAINED_MEMORY_REPLACEMENT_BLOCKS ?? '5000',
   10
 );
 const textBytes = Number.parseInt(
-  process.env.SLATE_HISTORY_RETAINED_MEMORY_TEXT_BYTES ?? '96',
+  process.env.PLITE_HISTORY_RETAINED_MEMORY_TEXT_BYTES ?? '96',
   10
 );
 
@@ -68,7 +71,6 @@ const createHistoryEditor = (children, selection) => {
 
   Editor.replace(editor, {
     children,
-    marks: null,
     selection,
   });
 
@@ -82,37 +84,72 @@ const fullDocumentSelection = (children) => {
   return {
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [lastIndex, 0], offset: lastText.length },
+    kind: 'text',
   };
 };
 
-const getHistoryShape = (editor, operationsBefore) => {
-  const operations = Editor.getOperations(editor).slice(operationsBefore);
-  const historyState = editor.read((state) => state.history.get());
+const getHistoryShape = (editor) => {
+  const historyState = editor.read((state) => state.history());
   const undoBatch = historyState.undos.at(-1);
-  const historyBytes = byteLength(historyState);
-  const undoBytes = byteLength(historyState.undos);
-  const redoBytes = byteLength(historyState.redos);
-  const operationBytes = byteLength(undoBatch?.operations ?? []);
+  const serializeStart = performance.now();
+  const serialized = History.toJSON(editor);
+  const serializationMs = performance.now() - serializeStart;
+  const restored = createEditor({
+    extensions: [history()],
+    initialValue: editor.read.value(),
+  });
+  const reloadStart = performance.now();
+
+  const decoded = History.fromJSON(
+    restored,
+    JSON.parse(JSON.stringify(serialized))
+  );
+  restored.update((tx) => tx.history.restore(decoded));
+  const reloadMs = performance.now() - reloadStart;
+  const restoredHistory = restored.read.history();
+  const historyBytes = byteLength(serialized);
+  const undoBytes = byteLength(serialized.undos);
+  const redoBytes = byteLength(serialized.redos);
+  const changeBytes = byteLength(undoBatch?.change.toJSON() ?? null);
+  const serializedUndoBatch = serialized.undos.at(-1);
+  const effectBytes = byteLength(serializedUndoBatch?.effects ?? []);
   const selectionBeforeBytes = byteLength(undoBatch?.selectionBefore ?? null);
+  const selectionAfterBytes = byteLength(undoBatch?.selectionAfter ?? null);
 
   return {
     historyEntryCount: historyState.undos.length,
+    historyReloadMs: round(reloadMs),
+    historySerializationMs: round(serializationMs),
     redoEntryCount: historyState.redos.length,
-    operationCount: operations.length,
-    retainedBatchOperationCount: undoBatch?.operations.length ?? 0,
-    retainedOperationTypes: undoBatch?.operations.map((op) => op.type) ?? [],
+    restoredHistoryEntryCount: restoredHistory.undos.length,
+    retainedBatchChangeCount: undoBatch ? 1 : 0,
+    retainedBatchEffectCount: undoBatch?.effects.length ?? 0,
+    retainedChangeRoots: undoBatch
+      ? [...undoBatch.change.changes.keys()].sort()
+      : [],
+    retainedEffectKeys: undoBatch?.effects.map((effect) => effect.type.key) ?? [],
     retainedPayloadTags: [
       'history.undos',
-      'operations',
+      'change',
+      'effects',
+      'selectionAfter',
       'selectionBefore',
+      'versionedHistoryJson',
       'process.heapUsed',
     ],
+    serializedEffectCount: serialized.undos.reduce(
+      (count, batch) => count + batch.effects.length,
+      0
+    ),
+    serializedVersion: serialized.version,
     retainedBytes: {
+      changeJsonBytes: changeBytes,
+      effectJsonBytes: effectBytes,
       historyJsonBytes: historyBytes,
-      undoJsonBytes: undoBytes,
       redoJsonBytes: redoBytes,
-      operationJsonBytes: operationBytes,
+      selectionAfterJsonBytes: selectionAfterBytes,
       selectionBeforeJsonBytes: selectionBeforeBytes,
+      undoJsonBytes: undoBytes,
     },
   };
 };
@@ -182,20 +219,27 @@ const measureFullDocumentReplace = () =>
         children,
         fullDocumentSelection(children)
       );
-      const operationsBefore = Editor.getOperations(editor).length;
 
-      return { editor, operationsBefore, replacement };
+      return {
+        editor,
+        inputPayloadBytes: byteLength({ children, replacement }),
+        replacement,
+      };
     },
-    ({ editor, operationsBefore, replacement }) => {
+    ({ editor, inputPayloadBytes, replacement }) => {
       editor.update((tx) => {
-        tx.fragment.insert(replacement);
+        tx.fragment.replace(replacement);
       });
 
-      const shape = getHistoryShape(editor, operationsBefore);
+      const shape = getHistoryShape(editor);
 
-      if (shape.historyEntryCount !== 1 || shape.operationCount !== 1) {
+      if (
+        shape.historyEntryCount !== 1 ||
+        shape.restoredHistoryEntryCount !== 1 ||
+        shape.serializedVersion !== 2
+      ) {
         throw new Error(
-          `Expected one retained history entry with one operation, got ${JSON.stringify(
+          `Expected one retained and reloaded versioned history entry, got ${JSON.stringify(
             shape
           )}`
         );
@@ -204,6 +248,9 @@ const measureFullDocumentReplace = () =>
       return {
         ...shape,
         existingBlocks,
+        historyJsonToInputRatio:
+          shape.retainedBytes.historyJsonBytes / inputPayloadBytes,
+        inputPayloadBytes,
         nextBlocks: Editor.getChildren(editor).length,
         replacementBlocks,
       };
@@ -221,21 +268,28 @@ const measureRangeDelete = () =>
           path: [existingBlocks - 2, 0],
           offset: children[existingBlocks - 2].children[0].text.length,
         },
+        kind: 'text',
       });
-      const operationsBefore = Editor.getOperations(editor).length;
 
-      return { editor, operationsBefore };
+      return { editor };
     },
-    ({ editor, operationsBefore }) => {
+    ({ editor }) => {
+      const inputPayloadBytes = byteLength({
+        children: editor.read.children(),
+      });
       editor.update((tx) => {
         tx.text.delete();
       });
 
-      const shape = getHistoryShape(editor, operationsBefore);
+      const shape = getHistoryShape(editor);
 
-      if (shape.historyEntryCount !== 1 || shape.operationCount !== 1) {
+      if (
+        shape.historyEntryCount !== 1 ||
+        shape.restoredHistoryEntryCount !== 1 ||
+        shape.serializedVersion !== 2
+      ) {
         throw new Error(
-          `Expected one retained history entry with one operation, got ${JSON.stringify(
+          `Expected one retained and reloaded versioned history entry, got ${JSON.stringify(
             shape
           )}`
         );
@@ -244,6 +298,9 @@ const measureRangeDelete = () =>
       return {
         ...shape,
         deletedBlockPressure: existingBlocks - 1,
+        historyJsonToInputRatio:
+          shape.retainedBytes.historyJsonBytes / inputPayloadBytes,
+        inputPayloadBytes,
         nextBlocks: Editor.getChildren(editor).length,
       };
     }
@@ -251,29 +308,61 @@ const measureRangeDelete = () =>
 
 const editorSafeChildren = (children) => structuredClone(children);
 
+const lanes = {
+  fullDocumentReplaceChildren: measureFullDocumentReplace(),
+  rangeDeleteReplaceChildren: measureRangeDelete(),
+};
+const maximumHistoryJsonToInputRatio = Math.max(
+  ...Object.values(lanes).map(
+    (lane) => lane.metadata.historyJsonToInputRatio
+  )
+);
+const gcAvailable = Object.values(lanes).every(
+  (lane) => lane.metadata.gcAvailable
+);
+const thresholdPolicy = {
+  gcRequired: true,
+  maximumHistoryJsonToInputRatio: 2.25,
+  restoredEntryRequired: true,
+};
 const result = {
-  benchmark: 'slate-history-retained-memory',
+  benchmark: 'plite-history-retained-memory',
   issuePressure: {
     '#3752': 'retained history payload and memory pressure',
   },
-  artifactVersion: 1,
-  thresholdPolicy: {
-    mode: 'calibration-only',
-    releaseGate: false,
-    repeatRunsRequiredBeforeEnforcement: 3,
-  },
+  artifactVersion: 3,
+  gcAvailable,
+  maximumHistoryJsonToInputRatio,
+  thresholdPolicy,
   config: {
     existingBlocks,
     replacementBlocks,
     textBytes,
     iterations,
   },
-  lanes: {
-    fullDocumentReplaceChildren: measureFullDocumentReplace(),
-    rangeDeleteReplaceChildren: measureRangeDelete(),
-  },
+  lanes,
 };
 
-await writeBenchmarkArtifact('tmp/slate-history-retained-memory.json', result);
+await writeBenchmarkArtifact(
+  'tmp/slate-history-retained-memory-benchmark.json',
+  result
+);
 
 console.log(JSON.stringify(result, null, 2));
+console.log(
+  `METRIC plite_history_retained_memory_json_ratio=${maximumHistoryJsonToInputRatio}`
+);
+console.log(
+  `METRIC plite_history_retained_memory_gc_available=${gcAvailable ? 1 : 0}`
+);
+
+if (
+  process.env.PLITE_HISTORY_RETAINED_MEMORY_STRICT === '1' &&
+  (!gcAvailable ||
+    maximumHistoryJsonToInputRatio >
+      thresholdPolicy.maximumHistoryJsonToInputRatio)
+) {
+  throw new Error(
+    `Retained History missed its gate: gc=${gcAvailable} serialized/input=${maximumHistoryJsonToInputRatio.toFixed(2)}x.`
+  );
+}

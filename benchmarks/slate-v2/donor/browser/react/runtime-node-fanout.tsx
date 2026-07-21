@@ -1,13 +1,13 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 
 import React, { act } from 'react';
-import type { Descendant } from '../../../../../packages/slate/src/index.ts';
+import type { Descendant } from '../../../../../packages/plite/src/index.ts';
 import {
   createReactEditor,
   Editable,
-  Slate,
-} from '../../../../../packages/slate-react/src/index.ts';
-import { createSlateReactRenderCounter } from '../../../../../packages/slate-react/src/render-profiler.ts';
+  Plite,
+} from '../../../../../packages/plite-react/src/index.ts';
+import { createPliteReactRenderCounter } from '../../../../../packages/plite-react/src/render-profiler.ts';
 import {
   mountApp,
   round,
@@ -35,17 +35,17 @@ const getCount = (byKey: Record<string, number>, key: string) =>
 
 const runScenario = async (scenario: ScenarioId, iteration: number) => {
   const editor = createReactEditor({ initialValue: createValue(blockCount) });
-  const counter = createSlateReactRenderCounter();
-  const previousProfiler = globalThis.__SLATE_REACT_RENDER_PROFILER__;
+  const counter = createPliteReactRenderCounter();
+  const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
   let mounted: Awaited<ReturnType<typeof mountApp>> | null = null;
 
-  globalThis.__SLATE_REACT_RENDER_PROFILER__ = counter.profiler;
+  globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
 
   try {
     mounted = await mountApp(
-      <Slate editor={editor}>
+      <Plite editor={editor}>
         <Editable data-testid={`runtime-node-fanout-${scenario}`} />
-      </Slate>
+      </Plite>
     );
 
     counter.reset();
@@ -87,6 +87,7 @@ const runScenario = async (scenario: ScenarioId, iteration: number) => {
           selection: {
             anchor: { path: [0, 0], offset: 13 },
             focus: { path: [0, 0], offset: 13 },
+            kind: 'text',
           },
         });
       });
@@ -115,7 +116,7 @@ const runScenario = async (scenario: ScenarioId, iteration: number) => {
     };
   } finally {
     await mounted?.dispose();
-    globalThis.__SLATE_REACT_RENDER_PROFILER__ = previousProfiler;
+    globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
   }
 };
 
@@ -198,19 +199,19 @@ console.log(
   `runtime-node fanout: local=${localRootOrderFanoutCount} fullReplace=${fullReplaceFanoutCount} violation=${fanoutViolationCount} samples=${samples.length}`
 );
 console.log(
-  `METRIC slate_react_runtime_node_fanout_count=${fanoutViolationCount}`
+  `METRIC plite_react_runtime_node_fanout_count=${fanoutViolationCount}`
 );
 console.log(
-  `METRIC slate_react_runtime_node_local_root_order_fanout_count=${localRootOrderFanoutCount}`
+  `METRIC plite_react_runtime_node_local_root_order_fanout_count=${localRootOrderFanoutCount}`
 );
 console.log(
-  `METRIC slate_react_runtime_node_full_replace_fanout_count=${fullReplaceFanoutCount}`
+  `METRIC plite_react_runtime_node_full_replace_fanout_count=${fullReplaceFanoutCount}`
 );
 console.log(
-  `METRIC slate_react_runtime_node_notify_count=${maxRuntimeNodeNotify}`
+  `METRIC plite_react_runtime_node_notify_count=${maxRuntimeNodeNotify}`
 );
-console.log(`METRIC slate_react_runtime_node_render_count=${maxRenderTotal}`);
+console.log(`METRIC plite_react_runtime_node_render_count=${maxRenderTotal}`);
 console.log(
-  `METRIC slate_react_runtime_node_max_elapsed_ms=${round(maxElapsedMs)}`
+  `METRIC plite_react_runtime_node_max_elapsed_ms=${round(maxElapsedMs)}`
 );
 console.log(`wrote ${outputPath}`);

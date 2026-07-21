@@ -5,6 +5,14 @@ import type { PlateEditor } from '@platejs/core/react';
 import { jsxt } from '@platejs/test-utils';
 import { createPlateEditor } from '@platejs/core/react';
 
+import {
+  TestColumnGroupPlugin,
+  TestColumnPlugin,
+  TestDivPlugin,
+  TestTableCellPlugin,
+  TestTablePlugin,
+  TestTableRowPlugin,
+} from '../../../__tests__/testPlugins';
 import * as domUtils from '../../../lib';
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 import { moveSelection } from './moveSelection';
@@ -176,7 +184,7 @@ describe('moveSelection', () => {
   describe('when pressing arrow up with nested blocks', () => {
     it('select parent block if no previous sibling exists', () => {
       editor = createPlateEditor({
-        plugins: [BlockSelectionPlugin],
+        plugins: [BlockSelectionPlugin, TestDivPlugin],
         value: [
           {
             id: 'parent1',
@@ -192,7 +200,7 @@ describe('moveSelection', () => {
                 type: 'p',
               },
             ],
-            type: 'p',
+            type: 'div',
           },
         ],
       });
@@ -242,7 +250,12 @@ describe('moveSelection', () => {
   describe('when pressing arrow down with nested blocks', () => {
     beforeEach(() => {
       editor = createPlateEditor({
-        plugins: [BlockSelectionPlugin],
+        plugins: [
+          BlockSelectionPlugin,
+          TestTablePlugin,
+          TestTableRowPlugin,
+          TestTableCellPlugin,
+        ],
         value: [
           {
             id: 'table1',
@@ -382,7 +395,12 @@ describe('moveSelection', () => {
   describe('when pressing arrow up with complex nested blocks', () => {
     beforeEach(() => {
       editor = createPlateEditor({
-        plugins: [BlockSelectionPlugin],
+        plugins: [
+          BlockSelectionPlugin,
+          TestDivPlugin,
+          TestColumnGroupPlugin,
+          TestColumnPlugin,
+        ],
         value: [
           {
             id: 'block1',

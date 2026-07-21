@@ -609,9 +609,7 @@ const summarizeKernelTrace = (trace) =>
     eventFamily: entry.eventFamily ?? null,
     intent: entry.intent ?? null,
     movement: entry.movement ?? null,
-    operationsCount: Array.isArray(entry.operations)
-      ? entry.operations.length
-      : 0,
+    intentsCount: Array.isArray(entry.intents) ? entry.intents.length : 0,
     ownership: entry.ownership ?? null,
     repairPolicy: entry.repairPolicy ?? null,
     selectionAfter: entry.selectionAfter ?? null,

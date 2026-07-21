@@ -14,6 +14,8 @@ import {
   getPlitePageLayoutGeometry,
   getPlitePageLayoutProjection,
   paginatePlitePageLayoutBlocks,
+  plitePageBreakSnapshotCodec,
+  plitePageSettingsCodec,
   pretextPageLayoutEngine,
   type PlitePageBreakSnapshot,
   type PlitePageLayoutSnapshot,
@@ -72,7 +74,7 @@ const pageSettings = defineStateField<PlitePageSettings>({
   collab: 'shared',
   history: 'push',
   initial: () => ({ margins: 96, preset: 'a4' }),
-  persist: true,
+  persist: plitePageSettingsCodec,
 });
 
 const expectedPliteLayoutRuntimeRootExports = [
@@ -89,6 +91,8 @@ const expectedPliteLayoutRuntimeRootExports = [
   'getPlitePagePresetSize',
   'normalizePlitePageSettings',
   'paginatePlitePageLayoutBlocks',
+  'plitePageBreakSnapshotCodec',
+  'plitePageSettingsCodec',
   'pretextPageLayoutEngine',
 ];
 
@@ -418,6 +422,7 @@ describe('createPlitePageLayout', () => {
   it('projects collapsed rich-inline whitespace at style boundaries', () => {
     Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: [
         {
           type: 'paragraph',
@@ -430,6 +435,7 @@ describe('createPlitePageLayout', () => {
       page: pageSettings,
     }));
     const rects = layout.projectRange({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 6 },
     });
@@ -464,6 +470,7 @@ describe('createPlitePageLayout', () => {
 
   it('rejects explicit public main roots in layout options', () => {
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: [
         {
           type: 'paragraph',
@@ -483,6 +490,7 @@ describe('createPlitePageLayout', () => {
 
   it('rejects explicit public main roots in layout projection options', () => {
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: [
         {
           type: 'paragraph',
@@ -498,6 +506,7 @@ describe('createPlitePageLayout', () => {
     expect(() =>
       layout.projectRange(
         {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 7 },
         },
@@ -506,6 +515,7 @@ describe('createPlitePageLayout', () => {
     ).toThrow(/Omit root to target the primary document/);
     expect(() =>
       layout.projectRange({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0, root: 'main' },
         focus: { path: [0, 0], offset: 7 },
       })
@@ -582,7 +592,10 @@ describe('createPlitePageLayout', () => {
           },
         ],
         meta: {
-          [pageSettings.key]: { margins: 72, preset: 'letter' },
+          [pageSettings.key]: pageSettings.serialize({
+            margins: 72,
+            preset: 'letter',
+          }),
         },
       },
     });
@@ -613,7 +626,7 @@ describe('createPlitePageLayout', () => {
       history: 'skip',
       initial: () => null,
       invertPatch: (_patch, previous) => previous,
-      persist: true,
+      persist: plitePageBreakSnapshotCodec,
     });
     const editor = createEditor({
       extensions: [pageBreaks],
@@ -793,6 +806,7 @@ describe('createPlitePageLayout', () => {
     const headerText = 'Header '.repeat(160);
     const mainText = 'Main '.repeat(12);
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: {
         children: [
           {
@@ -821,24 +835,28 @@ describe('createPlitePageLayout', () => {
     expect(layout.getSnapshot().blocks[0]!.text).toBe(headerText);
     expect(
       layout.projectRange({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 6 },
       }).length
     ).toBeGreaterThan(0);
     expect(
       layout.projectRange({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0, root: 'header' },
         focus: { path: [0, 0], offset: 6, root: 'header' },
       }).length
     ).toBeGreaterThan(0);
     expect(
       layout.projectRange({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0, root: 'footer' },
         focus: { path: [0, 0], offset: 4, root: 'footer' },
       })
     ).toEqual([]);
     expect(
       layout.projectRange({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0, root: 'header' },
         focus: { path: [0, 0], offset: 4, root: 'footer' },
       })
@@ -850,6 +868,7 @@ describe('createPlitePageLayout', () => {
   it('projects ranges through the requested page geometry', () => {
     const text = 'Long '.repeat(6000);
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: [
         {
           type: 'paragraph',
@@ -867,6 +886,7 @@ describe('createPlitePageLayout', () => {
 
     const singleRects = layout.projectRange(
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: text.length },
       },
@@ -874,6 +894,7 @@ describe('createPlitePageLayout', () => {
     );
     const spreadRects = layout.projectRange(
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: text.length },
       },
@@ -899,6 +920,7 @@ describe('createPlitePageLayout', () => {
 
   it('projects only the requested partial range and collapsed caret', () => {
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: [
         {
           type: 'paragraph',
@@ -912,10 +934,12 @@ describe('createPlitePageLayout', () => {
     }));
 
     const partialRects = layout.projectRange({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 5 },
     });
     const caretRects = layout.projectRange({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     });
@@ -939,6 +963,7 @@ describe('createPlitePageLayout', () => {
 
   it('projects spanning ranges without leaking unrelated blocks', () => {
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: [
         {
           type: 'paragraph',
@@ -959,6 +984,7 @@ describe('createPlitePageLayout', () => {
       page: pageSettings,
     }));
     const rects = layout.projectRange({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 6 },
       focus: { path: [1, 0], offset: 6 },
     });
@@ -972,6 +998,7 @@ describe('createPlitePageLayout', () => {
 
   it('extracts leaf runs with block offsets and projects placed runs on lines', () => {
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: [
         {
           type: 'paragraph',
@@ -1055,6 +1082,7 @@ describe('createPlitePageLayout', () => {
 
   it('extracts block-local boxes for structured Markdown nodes', () => {
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: [
         {
           type: 'code-block',
@@ -1172,6 +1200,7 @@ describe('createPlitePageLayout', () => {
 
   it('lets providers own media and BFC-like box sizing without a product TableKit', () => {
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: [
         {
           type: 'image',
@@ -1451,7 +1480,7 @@ describe('createPlitePageLayout', () => {
       history: 'skip',
       initial: () => null,
       invertPatch: (_patch, previous) => previous,
-      persist: true,
+      persist: plitePageBreakSnapshotCodec,
     });
     const rows = Array.from({ length: 4 }, (_, rowIndex) => ({
       type: 'table-row',
@@ -1768,6 +1797,7 @@ describe('getPlitePageLayoutProjection', () => {
 
   it('builds per-text decorations from projected layout runs', () => {
     const editor = createEditor({
+      extensions: [pageSettings],
       initialValue: [
         {
           type: 'paragraph',

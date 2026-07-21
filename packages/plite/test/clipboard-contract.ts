@@ -1,18 +1,19 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
-  getOperations as editorGetOperations,
+  getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
-  insertFragment as editorInsertFragment,
   replace as editorReplace,
 } from '@platejs/plite/internal';
 import { history } from '@platejs/plite-history';
 
 import {
+  ContentSlice,
   createEditor,
   type Descendant,
   type Element,
   defineEditorExtension,
+  type TextInsertFragmentOptions,
 } from '@platejs/plite';
 import { extendTestSchema } from './support/schema';
 
@@ -26,6 +27,22 @@ const createChildren = (): Element[] => [
     children: [{ text: 'beta' }],
   },
 ];
+
+const replaceSlice = (
+  editor: ReturnType<typeof createEditor>,
+  content: readonly Descendant[],
+  options?: TextInsertFragmentOptions
+) =>
+  editor.update((tx) => {
+    tx.fragment.replace(content, options);
+  });
+
+const createOpenSlice = (content: readonly Descendant[], depth = 1) =>
+  ContentSlice.fromJSON({
+    content,
+    openEnd: depth,
+    openStart: depth,
+  });
 
 const createDataTransfer = (getData: DataTransfer['getData']) =>
   ({ getData }) as unknown as DataTransfer;
@@ -159,10 +176,10 @@ describe('plite clipboard contract', () => {
     editorReplace(editor, {
       children: createChildren(),
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
       },
-      marks: null,
     });
 
     assert.deepEqual(
@@ -187,10 +204,10 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 1], offset: 4 },
       },
-      marks: null,
     });
 
     const fragment = editor.read((state) => state.fragment());
@@ -215,7 +232,7 @@ describe('plite clipboard contract', () => {
 
   it('extracts a mixed inline fragment from a single top-level block selection', () => {
     const editor = createEditor();
-    extendTestSchema(editor, { type: 'chip', inline: true });
+    extendTestSchema(editor, { chip: { inline: true } });
 
     editorReplace(editor, {
       children: [
@@ -232,10 +249,10 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 2], offset: 3 },
       },
-      marks: null,
     });
 
     assert.deepEqual(
@@ -266,10 +283,10 @@ describe('plite clipboard contract', () => {
     editorReplace(editor, {
       children,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [10, 0], offset: 0 },
         focus: { path: [11, 0], offset: 'block-11'.length },
       },
-      marks: null,
     });
 
     assert.deepEqual(
@@ -307,10 +324,10 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0, 0], offset: 0 },
         focus: { path: [0, 1, 0], offset: 'two'.length },
       },
-      marks: null,
     });
 
     assert.deepEqual(
@@ -361,29 +378,33 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 2, 0], offset: 3 },
         focus: { path: [1, 0], offset: 'Some text.'.length },
       },
-      marks: null,
     });
 
-    const fragment = editor.read((state) => state.fragment());
+    const slice = editor.read((state) => state.slice.get());
 
-    assert.deepEqual(fragment, [
-      {
-        type: 'bulleted-list',
-        children: [
-          {
-            type: 'list-item',
-            children: [{ text: 'ee' }],
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Some text.' }],
-      },
-    ]);
+    assert.deepEqual(slice, {
+      content: [
+        {
+          type: 'bulleted-list',
+          children: [
+            {
+              type: 'list-item',
+              children: [{ text: 'ee' }],
+            },
+          ],
+        },
+        {
+          type: 'paragraph',
+          children: [{ text: 'Some text.' }],
+        },
+      ],
+      openEnd: 1,
+      openStart: 2,
+    });
 
     editorReplace(editor, {
       children: [
@@ -393,14 +414,14 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert(fragment);
+      tx.slice.replace(slice);
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -421,6 +442,7 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'Some text.'.length },
       focus: { path: [1, 0], offset: 'Some text.'.length },
     });
@@ -473,14 +495,20 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 1, 0], offset: 0 },
         focus: { path: [0, 1, 0], offset: 0 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert(fragment);
+      tx.slice.replace(
+        ContentSlice.fromJSON({
+          content: fragment,
+          openEnd: 0,
+          openStart: 2,
+        })
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -522,6 +550,7 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'Some text.'.length },
       focus: { path: [1, 0], offset: 'Some text.'.length },
     });
@@ -566,14 +595,20 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 2, 0], offset: 'three'.length },
         focus: { path: [0, 2, 0], offset: 'three'.length },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert(fragment);
+      tx.slice.replace(
+        ContentSlice.fromJSON({
+          content: fragment,
+          openEnd: 0,
+          openStart: 2,
+        })
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -606,6 +641,7 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'Some text.'.length },
       focus: { path: [1, 0], offset: 'Some text.'.length },
     });
@@ -639,10 +675,10 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 'before'.length },
         focus: { path: [2, 0], offset: 0 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -658,6 +694,7 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'before'.length },
       focus: { path: [0, 0], offset: 'before'.length },
     });
@@ -669,25 +706,24 @@ describe('plite clipboard contract', () => {
     editorReplace(editor, {
       children: createChildren(),
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
-      marks: null,
     });
 
     const before = editorGetSnapshot(editor);
 
     editor.update((tx) => {
-      tx.fragment.insert([]);
+      tx.slice.replace(ContentSlice.closed([]));
     });
 
     const after = editorGetSnapshot(editor);
 
     assert.equal(after, before);
-    assert.equal(editorGetOperations(editor).length, 0);
   });
 
-  it('records full-document fragment replacement as one undoable operation', () => {
+  it('records full-document fragment replacement as one undoable change', () => {
     const editor = createEditor({ extensions: [history()] as const });
     const children = createChildren();
     const replacement: Element[] = [
@@ -704,29 +740,30 @@ describe('plite clipboard contract', () => {
     editorReplace(editor, {
       children,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 'beta'.length },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert(replacement);
+      tx.slice.replace(ContentSlice.closed(replacement));
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, replacement);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'two'.length },
       focus: { path: [1, 0], offset: 'two'.length },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
     assert.equal(
       editor.read((state) => state.history.undos().length),
       1
     );
     assert.equal(
-      editor.read((state) => state.history.undos()[0]?.operations.length),
-      1
+      editor.read((state) => state.history.undos()[0]?.change.empty),
+      false
     );
 
     editor.update((tx) => {
@@ -735,6 +772,7 @@ describe('plite clipboard contract', () => {
 
     assert.deepEqual(editorGetSnapshot(editor).children, children);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 'beta'.length },
     });
@@ -746,19 +784,21 @@ describe('plite clipboard contract', () => {
     editorReplace(editor, {
       children: createChildren(),
       selection: {
+        kind: 'text' as const,
         anchor: { path: [1, 0], offset: 2 },
         focus: { path: [1, 0], offset: 2 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ text: 'alpha' }],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'alpha' }],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -774,10 +814,11 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 7 },
       focus: { path: [1, 0], offset: 7 },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
   it('preserves block separation for a multi-block fragment inserted in the middle of a text block', () => {
@@ -791,22 +832,26 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 'before '.length },
         focus: { path: [0, 0], offset: 'before '.length },
       },
-      marks: null,
     });
 
-    editorInsertFragment(editor, [
-      {
-        type: 'paragraph',
-        children: [{ text: 'one' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'two' }],
-      },
-    ]);
+    editor.update((tx) => {
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'one' }],
+          },
+          {
+            type: 'paragraph',
+            children: [{ text: 'two' }],
+          },
+        ])
+      );
+    });
 
     const snapshot = editorGetSnapshot(editor);
 
@@ -821,39 +866,41 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'two'.length },
       focus: { path: [1, 0], offset: 'two'.length },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
-  it('insertFragment inserts at an explicit target instead of the current selection', () => {
+  it('slice replacement inserts at an explicit target instead of the current selection', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
       children: createChildren(),
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
-      marks: null,
     });
 
-    editorInsertFragment(
-      editor,
-      [
+    editor.update((tx) => {
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'X' }],
+          },
+        ]),
         {
-          type: 'paragraph',
-          children: [{ text: 'X' }],
-        },
-      ],
-      {
-        at: {
-          anchor: { path: [1, 0], offset: 2 },
-          focus: { path: [1, 0], offset: 2 },
-        },
-      }
-    );
+          at: {
+            anchor: { path: [1, 0], offset: 2 },
+            focus: { path: [1, 0], offset: 2 },
+          },
+        }
+      );
+    });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
       {
@@ -867,7 +914,7 @@ describe('plite clipboard contract', () => {
     ]);
   });
 
-  it('replaces selected text with a single text-block fragment as one logical operation', () => {
+  it('replaces selected text with a single text-block fragment as one canonical change', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -878,19 +925,21 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ text: 'XY' }],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'XY' }],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -902,16 +951,17 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
   it('replaces selected text before an inline with a single text-block fragment', () => {
     const editor = createEditor();
 
-    extendTestSchema(editor, { type: 'link', inline: true });
+    extendTestSchema(editor, { link: { inline: true } });
 
     editorReplace(editor, {
       children: [
@@ -929,19 +979,21 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 'text'.length },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ text: 'replaced' }],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'replaced' }],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -961,16 +1013,17 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'replaced'.length },
       focus: { path: [0, 0], offset: 'replaced'.length },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
   it('replaces selected text after an inline with a single text-block fragment', () => {
     const editor = createEditor();
 
-    extendTestSchema(editor, { type: 'link', inline: true });
+    extendTestSchema(editor, { link: { inline: true } });
 
     editorReplace(editor, {
       children: [
@@ -988,19 +1041,21 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 2], offset: 0 },
         focus: { path: [0, 2], offset: 'text'.length },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ text: 'replaced' }],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'replaced' }],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -1020,13 +1075,14 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 2], offset: 'replaced'.length },
       focus: { path: [0, 2], offset: 'replaced'.length },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
-  it('preserves marked text while fitting a single text-block fragment as one logical operation', () => {
+  it('preserves marked text while fitting a single text-block fragment as one canonical change', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -1037,19 +1093,21 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ bold: true, text: 'BC' }],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ bold: true, text: 'BC' }],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -1061,16 +1119,17 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 1], offset: 2 },
       focus: { path: [0, 1], offset: 2 },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
   it('pastes rich text into selected inline link text without swallowing the paste into the link', () => {
     const editor = createEditor();
 
-    extendTestSchema(editor, { type: 'link', inline: true });
+    extendTestSchema(editor, { link: { inline: true } });
 
     editorReplace(editor, {
       children: [
@@ -1088,19 +1147,21 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 1, 0], offset: 0 },
         focus: { path: [0, 1, 0], offset: 'Wor'.length },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ text: 'Hello ' }, { bold: true, text: 'bold' }],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'Hello ' }, { bold: true, text: 'bold' }],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -1121,16 +1182,17 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 1], offset: 'bold'.length },
       focus: { path: [0, 1], offset: 'bold'.length },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
-  it('preserves inline fragment children while fitting a single text-block fragment as one logical operation', () => {
+  it('preserves inline fragment children while fitting a single text-block fragment as one canonical change', () => {
     const editor = createEditor();
 
-    extendTestSchema(editor, { type: 'chip', inline: true });
+    extendTestSchema(editor, { chip: { inline: true } });
 
     editorReplace(editor, {
       children: [
@@ -1140,23 +1202,25 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [
-            { text: 'B' },
-            { type: 'chip', children: [{ text: 'C' }] },
-            { text: 'D' },
-          ],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [
+              { text: 'B' },
+              { type: 'chip', children: [{ text: 'C' }] },
+              { text: 'D' },
+            ],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -1172,10 +1236,11 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 2], offset: 1 },
       focus: { path: [0, 2], offset: 1 },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
   it('fits a single nested text-block fragment into the active nested text block', () => {
@@ -1198,24 +1263,29 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0, 0], offset: 0 },
         focus: { path: [0, 0, 0], offset: 0 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'code-block',
-          children: [
+      tx.slice.replace(
+        createOpenSlice(
+          [
             {
-              type: 'code-line',
-              children: [{ text: 'Add' }],
+              type: 'code-block',
+              children: [
+                {
+                  type: 'code-line',
+                  children: [{ text: 'Add' }],
+                },
+              ],
             },
           ],
-        },
-      ]);
+          2
+        )
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -1236,15 +1306,17 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0, 0], offset: 3 },
       focus: { path: [0, 0, 0], offset: 3 },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
   it('preserves partial inline link content when copying and pasting a fragment', () => {
     const editor = createEditor();
 
+    extendTestSchema(editor, { link: { inline: true } });
     editorReplace(editor, {
       children: [
         {
@@ -1261,26 +1333,30 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 1, 0], offset: 1 },
         focus: { path: [0, 1, 0], offset: 3 },
       },
-      marks: null,
     });
 
-    const fragment = editor.read((state) => state.fragment());
+    const slice = editor.read((state) => state.slice.get());
 
-    assert.deepEqual(fragment, [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            type: 'link',
-            url: 'https://test.com/',
-            children: [{ text: 'in' }],
-          },
-        ],
-      },
-    ]);
+    assert.deepEqual(slice, {
+      content: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: 'link',
+              url: 'https://test.com/',
+              children: [{ text: 'in' }],
+            },
+          ],
+        },
+      ],
+      openEnd: 2,
+      openStart: 2,
+    });
 
     editorReplace(editor, {
       children: [
@@ -1290,14 +1366,14 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 'paste '.length },
         focus: { path: [0, 0], offset: 'paste '.length },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert(fragment);
+      tx.slice.replace(slice);
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -1317,13 +1393,14 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 2 },
       focus: { path: [0, 1, 0], offset: 2 },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
-  it('inserts a block fragment into an empty block as one logical operation', () => {
+  it('inserts a block fragment into an empty block as one canonical change', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -1334,29 +1411,29 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
-      marks: null,
     });
 
-    const operationsBefore = editorGetOperations(editor).length;
-
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ text: 'one' }],
-        },
-        {
-          type: 'paragraph',
-          children: [{ text: 'two' }],
-        },
-        {
-          type: 'paragraph',
-          children: [{ text: 'three' }],
-        },
-      ]);
+      tx.slice.replace(
+        ContentSlice.closed([
+          {
+            type: 'paragraph',
+            children: [{ text: 'one' }],
+          },
+          {
+            type: 'paragraph',
+            children: [{ text: 'two' }],
+          },
+          {
+            type: 'paragraph',
+            children: [{ text: 'three' }],
+          },
+        ])
+      );
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1374,13 +1451,14 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [2, 0], offset: 'three'.length },
       focus: { path: [2, 0], offset: 'three'.length },
     });
-    assert.equal(editorGetOperations(editor).length - operationsBefore, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
-  it('insertFragment places selection after inserting a text-block fragment into an empty block', () => {
+  it('slice replacement places selection after inserting a text-block fragment into an empty block', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -1391,13 +1469,13 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
-      marks: null,
     });
 
-    editorInsertFragment(editor, [
+    replaceSlice(editor, [
       {
         type: 'paragraph',
         children: [{ text: 'inserted' }],
@@ -1413,12 +1491,13 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'inserted'.length },
       focus: { path: [0, 0], offset: 'inserted'.length },
     });
   });
 
-  it('insertFragment preserves a copied text-block type over an empty target block', () => {
+  it('slice replacement preserves a copied text-block type over an empty target block', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -1433,13 +1512,13 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       },
-      marks: null,
     });
 
-    editorInsertFragment(editor, [
+    replaceSlice(editor, [
       {
         type: 'heading',
         children: [{ text: 'inserted' }],
@@ -1459,12 +1538,13 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'inserted'.length },
       focus: { path: [1, 0], offset: 'inserted'.length },
     });
   });
 
-  it('insertFragment preserves copied text-block types over an empty target block', () => {
+  it('slice replacement preserves copied text-block types over an empty target block', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -1483,13 +1563,13 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       },
-      marks: null,
     });
 
-    editorInsertFragment(editor, [
+    replaceSlice(editor, [
       {
         type: 'heading',
         children: [{ text: 'heading' }],
@@ -1529,14 +1609,15 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [3, 0], offset: 'code'.length },
       focus: { path: [3, 0], offset: 'code'.length },
     });
   });
 
-  it('insertFragment places selection after an inline void pasted into an empty target block', () => {
+  it('slice replacement places selection after an inline void pasted into an empty target block', () => {
     const editor = createEditor();
-    extendTestSchema(editor, { type: 'mention', void: 'markable-inline' });
+    extendTestSchema(editor, { mention: { void: 'markable-inline' } });
 
     editorReplace(editor, {
       children: [
@@ -1550,13 +1631,13 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       },
-      marks: null,
     });
 
-    editorInsertFragment(editor, [
+    replaceSlice(editor, [
       {
         type: 'paragraph',
         children: [
@@ -1591,12 +1672,13 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 2], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
     });
   });
 
-  it('insertFragment preserves a copied text-block type over a single empty document block', () => {
+  it('slice replacement preserves a copied text-block type over a single empty document block', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -1607,13 +1689,13 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
-      marks: null,
     });
 
-    editorInsertFragment(editor, [
+    replaceSlice(editor, [
       {
         type: 'heading',
         children: [{ text: 'inserted' }],
@@ -1629,12 +1711,13 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'inserted'.length },
       focus: { path: [0, 0], offset: 'inserted'.length },
     });
   });
 
-  it('insertFragment preserves copied text-block props over a single empty document block', () => {
+  it('slice replacement preserves copied text-block props over a single empty document block', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -1645,13 +1728,13 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
-      marks: null,
     });
 
-    editorInsertFragment(editor, [
+    replaceSlice(editor, [
       {
         type: 'paragraph',
         indent: 1,
@@ -1683,12 +1766,13 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'two'.length },
       focus: { path: [1, 0], offset: 'two'.length },
     });
   });
 
-  it('insertFragment preserves copied block void attributes over an empty target block', () => {
+  it('slice replacement preserves copied block void attributes over an empty target block', () => {
     const editor = createEditor();
     const image = {
       type: 'image',
@@ -1699,12 +1783,7 @@ describe('plite clipboard contract', () => {
       children: [{ text: '' }],
     } as Descendant;
 
-    editor.extend(
-      defineEditorExtension({
-        elements: [{ type: 'image', void: 'block' }],
-        name: 'image-void-fragment-attrs',
-      })
-    );
+    extendTestSchema(editor, { image: { void: 'block' } });
 
     editorReplace(editor, {
       children: [
@@ -1714,51 +1793,54 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
-      marks: null,
     });
 
-    editorInsertFragment(editor, [image]);
+    replaceSlice(editor, [image]);
 
     const snapshot = editorGetSnapshot(editor);
 
     assert.deepEqual(snapshot.children, [image]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
   });
 
-  it('replaces selected top-level blocks with a structural fragment as one logical operation', () => {
+  it('replaces selected top-level blocks with one structural change', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
       children: createChildren(),
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 'alpha'.length },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'bulleted-list',
-          children: [
-            {
-              type: 'list-item',
-              children: [{ text: 'one' }],
-            },
-            {
-              type: 'list-item',
-              children: [{ text: 'two' }],
-            },
-          ],
-        },
-      ]);
+      tx.slice.replace(
+        ContentSlice.closed([
+          {
+            type: 'bulleted-list',
+            children: [
+              {
+                type: 'list-item',
+                children: [{ text: 'one' }],
+              },
+              {
+                type: 'list-item',
+                children: [{ text: 'two' }],
+              },
+            ],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -1783,10 +1865,11 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 'two'.length },
       focus: { path: [0, 1, 0], offset: 'two'.length },
     });
-    assert.equal(editorGetOperations(editor).length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
   });
 
   it('inserts a copied list fragment into selected text without swallowing surrounding text', () => {
@@ -1800,28 +1883,30 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'bulleted-list',
-          children: [
-            {
-              type: 'list-item',
-              children: [{ text: 'one' }],
-            },
-            {
-              type: 'list-item',
-              children: [{ text: 'two' }],
-            },
-          ],
-        },
-      ]);
+      tx.slice.replace(
+        ContentSlice.closed([
+          {
+            type: 'bulleted-list',
+            children: [
+              {
+                type: 'list-item',
+                children: [{ text: 'one' }],
+              },
+              {
+                type: 'list-item',
+                children: [{ text: 'two' }],
+              },
+            ],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -1850,6 +1935,7 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 1, 0], offset: 'two'.length },
       focus: { path: [1, 1, 0], offset: 'two'.length },
     });
@@ -1887,23 +1973,25 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 3, 0], offset: 2 },
         focus: { path: [0, 3, 0], offset: 2 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ text: 'Hello' }],
-        },
-        {
-          type: 'paragraph',
-          children: [{ text: 'World' }],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'Hello' }],
+          },
+          {
+            type: 'paragraph',
+            children: [{ text: 'World' }],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -1945,6 +2033,7 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'World'.length },
       focus: { path: [1, 0], offset: 'World'.length },
     });
@@ -1974,23 +2063,25 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 2, 0], offset: 0 },
         focus: { path: [0, 2, 0], offset: 0 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ text: 'Hello' }],
-        },
-        {
-          type: 'paragraph',
-          children: [{ text: 'World' }],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'Hello' }],
+          },
+          {
+            type: 'paragraph',
+            children: [{ text: 'World' }],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -2019,6 +2110,7 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'World'.length },
       focus: { path: [1, 0], offset: 'World'.length },
     });
@@ -2030,19 +2122,21 @@ describe('plite clipboard contract', () => {
     editorReplace(editor, {
       children: createChildren(),
       selection: {
+        kind: 'text' as const,
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ text: 'alpha' }],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'alpha' }],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -2058,6 +2152,7 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 5 },
       focus: { path: [1, 0], offset: 5 },
     });
@@ -2074,19 +2169,21 @@ describe('plite clipboard contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([
-        {
-          type: 'paragraph',
-          children: [{ text: 'alpha' }],
-        },
-      ]);
+      tx.slice.replace(
+        createOpenSlice([
+          {
+            type: 'paragraph',
+            children: [{ text: 'alpha' }],
+          },
+        ])
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -2098,6 +2195,7 @@ describe('plite clipboard contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     });

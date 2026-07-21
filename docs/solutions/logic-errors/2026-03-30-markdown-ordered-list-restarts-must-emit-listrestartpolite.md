@@ -83,5 +83,5 @@ If a deserializer feeds nodes into a normalized list system, do not emit only th
 Emit the restart signal that normalization actually respects, then add one regression that runs the full path:
 
 1. deserialize markdown
-2. call `editor.tf.setValue(...)`
+2. call `editor.update.value.replace({ children: value })`
 3. assert the restarted list still begins at the original number

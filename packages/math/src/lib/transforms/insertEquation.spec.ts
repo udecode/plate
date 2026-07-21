@@ -9,6 +9,7 @@ describe('insertEquation', () => {
     const editor = createBaseEditor({
       plugins: [BaseEquationPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
@@ -43,6 +44,7 @@ describe('insertEquation', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -60,7 +62,7 @@ describe('insertEquation', () => {
 
     expect(editor.read.value().children).toMatchObject([
       {
-        children: [{ text: 'a' }, { text: 'b' }],
+        children: [{ text: 'ab' }],
         type: KEYS.p,
       },
       {

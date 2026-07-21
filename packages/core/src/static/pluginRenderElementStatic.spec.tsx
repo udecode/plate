@@ -9,7 +9,7 @@ describe('pluginRenderElementStatic', () => {
   it('applies above/below wrappers and below-root renderers around the element output', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { isElement: true, type: 'p' },
+      node: { element: { groups: ['block'] }, type: 'p' },
       render: { as: 'article' },
     });
     const AbovePlugin = createBasePlugin({

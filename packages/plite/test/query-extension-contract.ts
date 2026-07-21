@@ -4,8 +4,9 @@ import { describe, it } from 'node:test';
 import {
   elementReadOnly as editorElementReadOnly,
   first as editorFirst,
-  getOperations as editorGetOperations,
+  getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
+  isSelectable as editorIsSelectable,
   path as editorPath,
   positions as editorPositions,
   replace as editorReplace,
@@ -20,6 +21,7 @@ import {
   defineEditorExtension,
   type EditorUpdateTransaction,
 } from '@platejs/plite';
+import { defineTestSchema } from './support/schema';
 
 const children: Element[] = [
   {
@@ -107,10 +109,10 @@ describe('extension query middleware', () => {
     editorReplace(editor, {
       children,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     editor.extend(
@@ -183,8 +185,8 @@ describe('extension query middleware', () => {
           children: [{ bold: true, text: 'alpha', transientPreview: true }],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
       },
@@ -240,10 +242,10 @@ describe('extension query middleware', () => {
     editorReplace(editor, {
       children,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
-      marks: null,
     });
 
     editor.extend(
@@ -277,15 +279,17 @@ describe('extension query middleware', () => {
     editorReplace(editor, {
       children,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     editor.extend(
       defineEditorExtension({
-        elements: [{ type: 'image', void: 'block' }],
+        ...defineTestSchema('all-query-spy-schema', {
+          image: { void: 'block' },
+        }),
         name: 'all-query-spy',
         queries: {
           fragment: {
@@ -360,6 +364,11 @@ describe('extension query middleware', () => {
             },
             isBlock({ element, next }) {
               seen.push('nodes.isBlock');
+
+              return next({ element });
+            },
+            isSelectable({ element, next }) {
+              seen.push('nodes.isSelectable');
 
               return next({ element });
             },
@@ -521,6 +530,7 @@ describe('extension query middleware', () => {
       state.nodes.hasPath([0]);
       state.nodes.hasTexts(paragraph);
       state.nodes.isBlock(paragraph);
+      state.nodes.isSelectable(paragraph);
       state.nodes.isEmpty(paragraph);
       state.nodes.last([]);
       state.nodes.leaf([0, 0]);
@@ -573,6 +583,7 @@ describe('extension query middleware', () => {
       'nodes.hasPath',
       'nodes.hasTexts',
       'nodes.isBlock',
+      'nodes.isSelectable',
       'nodes.isEmpty',
       'nodes.last',
       'nodes.leaf',
@@ -609,7 +620,6 @@ describe('extension query middleware', () => {
     editorReplace(editor, {
       children,
       selection: null,
-      marks: null,
     });
 
     editor.extend(
@@ -621,6 +631,11 @@ describe('extension query middleware', () => {
               seen.push('nodes.elementReadOnly');
 
               return next({ options });
+            },
+            isSelectable({ element, next }) {
+              seen.push('nodes.isSelectable');
+
+              return next({ element });
             },
             path({ at, next, options }) {
               seen.push('nodes.path');
@@ -650,6 +665,8 @@ describe('extension query middleware', () => {
     editor.read((state) => Array.from(state.points.positions({ at: [0] })));
     editorElementReadOnly(editor, { at: [0] });
     editor.read((state) => state.nodes.elementReadOnly({ at: [0] }));
+    editorIsSelectable(editor, children[0]!);
+    editor.read((state) => state.nodes.isSelectable(children[0]!));
     editorShouldMergeNodesRemovePrevNode(
       editor,
       [{ text: '' }, [0, 0]],
@@ -669,6 +686,8 @@ describe('extension query middleware', () => {
       'points.positions',
       'nodes.elementReadOnly',
       'nodes.elementReadOnly',
+      'nodes.isSelectable',
+      'nodes.isSelectable',
       'nodes.shouldMergeNodesRemovePrevNode',
       'nodes.shouldMergeNodesRemovePrevNode',
     ]);
@@ -680,7 +699,6 @@ describe('extension query middleware', () => {
     editorReplace(editor, {
       children,
       selection: null,
-      marks: null,
     });
 
     editor.extend(
@@ -711,10 +729,10 @@ describe('extension query middleware', () => {
     editorReplace(editor, {
       children,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
-      marks: null,
     });
 
     editor.extend(
@@ -738,10 +756,10 @@ describe('extension query middleware', () => {
       })
     );
 
-    const operationsBefore = editorGetOperations(editor).length;
+    const commitBefore = editorGetLastCommit(editor);
 
     assert.equal(editorString(editor, [0]), 'one');
-    assert.equal(editorGetOperations(editor).length, operationsBefore);
+    assert.equal(editorGetLastCommit(editor), commitBefore);
   });
 
   it('does not allow generator cleanup to mutate editor state after iteration stops early', () => {
@@ -750,10 +768,10 @@ describe('extension query middleware', () => {
     editorReplace(editor, {
       children,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
-      marks: null,
     });
 
     editor.extend(

@@ -1,15 +1,62 @@
+import {
+  deleteBackward,
+  deleteForward,
+  insertBreak,
+} from '@platejs/plite/internal';
+import { property } from '@platejs/plite';
+
 import { createBaseEditor } from '../../editor';
 import { createBasePlugin } from '../../plugin';
 
 describe('OverridePlugin', () => {
+  it('publishes a closed Plate schema for elements and text properties', () => {
+    const CalloutPlugin = createBasePlugin({
+      key: 'callout',
+      node: { element: { groups: ['block'] } },
+    });
+    const TonePlugin = createBasePlugin({
+      key: 'tone',
+      node: { mark: { value: property.string() } },
+    });
+    const editor = createBaseEditor({
+      plugins: [CalloutPlugin, TonePlugin],
+      value: [
+        {
+          children: [{ text: 'typed', tone: 'quiet' }],
+          type: 'callout',
+        },
+      ],
+    });
+
+    expect(
+      editor.read.schema.isBlock({
+        children: [{ text: '' }],
+        type: 'callout',
+      })
+    ).toBe(true);
+    expect(() =>
+      createBaseEditor({
+        plugins: [CalloutPlugin],
+        value: [{ children: [{ text: 'unknown' }], type: 'missing' }],
+      })
+    ).toThrow(/unknown editor element type "missing"/i);
+    expect(() =>
+      createBaseEditor({
+        plugins: [TonePlugin],
+        value: [{ children: [{ text: 'invalid', tone: true }], type: 'p' }],
+      })
+    ).toThrow(/text property "tone".*string/i);
+  });
+
   it('selects a previous block void before deleting it', () => {
     const VoidPlugin = createBasePlugin({
       key: 'void',
-      node: { isElement: true, isVoid: true },
+      node: { element: { groups: ['block'], void: 'block' } },
     });
     const editor = createBaseEditor({
       plugins: [VoidPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -19,13 +66,14 @@ describe('OverridePlugin', () => {
       ],
     });
 
-    editor.update((tx) => tx.text.deleteBackward({ unit: 'character' }));
+    deleteBackward(editor, { unit: 'character' });
 
     expect(editor.read.value().children).toEqual([
       { children: [{ text: '' }], type: 'void' },
       { children: [{ text: 'after' }], type: 'p' },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -34,11 +82,12 @@ describe('OverridePlugin', () => {
   it('removes a selected block void without merging the next block into it', () => {
     const VoidPlugin = createBasePlugin({
       key: 'void',
-      node: { isElement: true, isVoid: true },
+      node: { element: { groups: ['block'], void: 'block' } },
     });
     const editor = createBaseEditor({
       plugins: [VoidPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -48,12 +97,13 @@ describe('OverridePlugin', () => {
       ],
     });
 
-    editor.update((tx) => tx.text.deleteForward({ unit: 'character' }));
+    deleteForward(editor, { unit: 'character' });
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'after' }], type: 'p' },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -62,7 +112,10 @@ describe('OverridePlugin', () => {
   it('handles deleteExit through the OverridePlugin Plite extension', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',
-      node: { isElement: true, type: 'callout' },
+      node: {
+        element: { groups: ['block'] },
+        type: 'callout',
+      },
       rules: {
         break: {
           emptyLineEnd: 'deleteExit',
@@ -72,13 +125,14 @@ describe('OverridePlugin', () => {
     const editor = createBaseEditor({
       plugins: [CalloutPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
       value: [{ children: [{ text: 'foo\n' }], type: 'callout' }],
     });
 
-    editor.update.break.insert();
+    insertBreak(editor);
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'foo' }], type: 'callout' },
@@ -89,19 +143,23 @@ describe('OverridePlugin', () => {
   it('resets the empty block inserted at the start of a splitReset block', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',
-      node: { isElement: true, type: 'callout' },
+      node: {
+        element: { groups: ['block'] },
+        type: 'callout',
+      },
       rules: { break: { splitReset: true } },
     });
     const editor = createBaseEditor({
       plugins: [CalloutPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
       value: [{ children: [{ text: 'foo' }], type: 'callout' }],
     });
 
-    editor.update.break.insert();
+    insertBreak(editor);
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: '' }], type: 'p' },
@@ -112,12 +170,16 @@ describe('OverridePlugin', () => {
   it('preserves an empty merge target when its plugin disables removal', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',
-      node: { isElement: true, type: 'callout' },
+      node: {
+        element: { groups: ['block'] },
+        type: 'callout',
+      },
       rules: { merge: { removeEmpty: false } },
     });
     const editor = createBaseEditor({
       plugins: [CalloutPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -127,7 +189,7 @@ describe('OverridePlugin', () => {
       ],
     });
 
-    editor.update((tx) => tx.text.deleteBackward({ unit: 'character' }));
+    deleteBackward(editor, { unit: 'character' });
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'after' }], type: 'callout' },
@@ -137,7 +199,10 @@ describe('OverridePlugin', () => {
   it('preserves plugin-owned empty merge targets by default', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',
-      node: { isElement: true, type: 'callout' },
+      node: {
+        element: { groups: ['block'] },
+        type: 'callout',
+      },
     });
     const MergeAwarePlugin = createBasePlugin({
       key: 'merge-aware',
@@ -146,6 +211,7 @@ describe('OverridePlugin', () => {
     const editor = createBaseEditor({
       plugins: [CalloutPlugin, MergeAwarePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -155,7 +221,7 @@ describe('OverridePlugin', () => {
       ],
     });
 
-    editor.update((tx) => tx.text.deleteBackward({ unit: 'character' }));
+    deleteBackward(editor, { unit: 'character' });
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'after' }], type: 'callout' },

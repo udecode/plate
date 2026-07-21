@@ -7,7 +7,7 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor } from '@platejs/plite';
+import { createEditor, DocumentChange } from '@platejs/plite';
 
 describe('editor write boundary', () => {
   const createSeededEditor = () => {
@@ -21,10 +21,10 @@ describe('editor write boundary', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     return editor;
@@ -38,34 +38,35 @@ describe('editor write boundary', () => {
 
       assert.equal(name in editor, false, name);
       assert.equal(editorString(editor, []), 'one', name);
-      assert.equal(editorGetLastCommit(editor)?.classes[0], 'replace', name);
+      assert.equal(
+        editorGetLastCommit(editor)?.changed.has('replace'),
+        true,
+        name
+      );
     }
   });
 
-  it('replays imported operations through tx.operations.replay', () => {
+  it('applies imported canonical changes through the transaction boundary', () => {
     const editor = createSeededEditor();
-    const staleOperationReplayKey = `apply${'Operations'}` as const;
-
-    assert.equal('apply' in editor, false);
-    assert.equal(staleOperationReplayKey in editor, false);
-
-    editor.update((tx) => {
-      tx.operations.replay([
+    const before = editor.read.value();
+    const change = DocumentChange.between(before, {
+      ...before,
+      children: [
         {
-          offset: 3,
-          path: [0, 0],
-          text: '!',
-          type: 'insert_text',
+          type: 'paragraph',
+          children: [{ text: 'one!' }],
         },
-      ]);
+      ],
     });
+
+    editor.update((tx) => tx.changes.apply(change));
 
     const commit = editorGetLastCommit(editor);
 
     assert(commit);
     assert.equal(editorString(editor, []), 'one!');
-    assert.deepEqual(commit.classes, ['text']);
-    assert.equal(commit.operations.length, 1);
+    assert.equal(commit.changed.has('text'), true);
+    assert.equal(commit.changes.empty, false);
   });
 
   it('routes implicit writes through editor.update and tx methods', () => {
@@ -83,10 +84,10 @@ describe('editor write boundary', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 3 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -100,6 +101,7 @@ describe('editor write boundary', () => {
     assert.equal(snapshot.children[1].type, 'heading-one');
     assert.equal(editorString(editor, [1]), 'TWO');
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 3 },
       focus: { path: [1, 0], offset: 3 },
     });

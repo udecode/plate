@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant, Operation } from '@platejs/plite';
+import type { Descendant } from '@platejs/plite';
 import {
+  assertCanonicalYjsTrace,
   assertPeerTexts,
   clearYjsTrace,
   connectYjsPeerAndSync,
@@ -11,14 +12,12 @@ import {
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   getPeerTopLevelTypes,
-  getYjsNodeAt,
-  getYjsTrace,
+  getVisibleYjsNodeAt,
   type Peer,
   paragraph,
   readPeerChildren,
   readPeerSelection,
   readPeerPliteValue,
-  recordOperationTypes,
   redoYjsPeerAndSync,
   syncConnectedPeers,
   undoYjsPeerAndSync,
@@ -59,39 +58,18 @@ const appendRemoteText = (peer: Peer): void => {
   });
 };
 
-const collectWrapOperations = (): Operation['type'][] => {
-  const peer = createPeer('b');
-  const operations = recordOperationTypes(peer, {
-    name: 'wrap-operation-recorder',
-  });
-  wrapFirstBlock(peer);
-
-  return operations;
-};
-
 describe('@platejs/yjs wrapNodes collaboration contract', () => {
-  it('characterizes public wrapNodes as insert_node then move_node', () => {
-    assert.deepEqual(collectWrapOperations(), ['insert_node', 'move_node']);
-  });
-
-  it('applies local offline public wrap without replacing the original Yjs node', () => {
+  it('applies a local offline public wrap as a canonical change', () => {
     const peer = createPeer('b');
-    const original = getYjsNodeAt(peer, [0]);
+    const wrapped = getVisibleYjsNodeAt(peer, [0]);
 
     disconnectAndClearYjsTrace(peer);
     wrapFirstBlock(peer);
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha']);
     assert.deepEqual(getPeerTopLevelTypes(peer), ['quote']);
-    assert.equal(getYjsNodeAt(peer, [1]), original);
-    assert.deepEqual(getYjsTrace(peer), [
-      { mode: 'operation', operationType: 'insert_node' },
-      {
-        fallback: 'virtual-move-ref',
-        mode: 'traceable-fallback',
-        operationType: 'move_node',
-      },
-    ]);
+    assert.equal(getVisibleYjsNodeAt(peer, [0, 0]), wrapped);
+    assertCanonicalYjsTrace(peer);
   });
 
   it('preserves concurrent remote text when an offline wrap reconnects', () => {
@@ -115,7 +93,7 @@ describe('@platejs/yjs wrapNodes collaboration contract', () => {
     assert.deepEqual(getPeerTopLevelTypes(b), ['quote']);
   });
 
-  it('splits text inside a virtual wrapped block without a root snapshot fallback', () => {
+  it('splits text inside a wrapped block through a canonical change', () => {
     const peer = createPeer('b');
 
     wrapFirstBlock(peer);
@@ -123,6 +101,7 @@ describe('@platejs/yjs wrapNodes collaboration contract', () => {
 
     peer.editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0, 0], offset: 2 },
         focus: { path: [0, 0, 0], offset: 2 },
       });
@@ -141,10 +120,7 @@ describe('@platejs/yjs wrapNodes collaboration contract', () => {
         type: 'quote',
       },
     ]);
-    assert.deepEqual(getYjsTrace(peer), [
-      { mode: 'operation', operationType: 'split_node' },
-      { mode: 'operation', operationType: 'split_node' },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
   it('drops a preserved selection that no longer points to text after remote wrap import', () => {
@@ -152,6 +128,7 @@ describe('@platejs/yjs wrapNodes collaboration contract', () => {
     const [a, b] = peers;
 
     a.editor.update.selection.set({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'alpha'.length },
       focus: { path: [0, 0], offset: 'alpha'.length },
     });
@@ -180,7 +157,7 @@ describe('@platejs/yjs wrapNodes collaboration contract', () => {
     assert.deepEqual(getPeerTopLevelTypes(b), ['quote']);
   });
 
-  it('undoes and redoes only the local wrap intent after reconnect', () => {
+  it('undoes and redoes only the local wrap after reconnect', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 

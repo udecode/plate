@@ -1,4 +1,4 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, prepareParserPluginContext } from '@platejs/core';
 
 import { deserializeCsv } from './deserializer/utils/deserializeCsv';
 import { CsvPlugin } from './CsvPlugin';
@@ -10,10 +10,16 @@ describe('CsvPlugin', () => {
     });
     const plugin = editor.getPlugin(CsvPlugin);
     const data = 'name,age\nAda,36';
+    const dataTransfer = new DataTransfer();
+    const createContext = prepareParserPluginContext(editor, CsvPlugin);
     const parserOptions = {
       data,
-      dataTransfer: new DataTransfer(),
-      mimeType: 'text/plain',
+      format: 'text/plain',
+      source: {
+        files: dataTransfer.files,
+        getData: (format: string) => dataTransfer.getData(format),
+        types: [...dataTransfer.types],
+      },
     };
 
     expect(editor.plugin(CsvPlugin).getOptions()).toEqual({
@@ -26,10 +32,12 @@ describe('CsvPlugin', () => {
     expect(typeof editor.plugin(CsvPlugin).api.deserialize).toBe('function');
     expect(plugin.parser?.format).toBe('text/plain');
     expect(
-      plugin.parser?.deserialize?.({
-        ...editor.plugin(CsvPlugin),
-        ...parserOptions,
-      })
+      editor.read((state) =>
+        plugin.parser?.deserialize?.({
+          ...createContext(state),
+          ...parserOptions,
+        })
+      )
     ).toEqual(deserializeCsv(editor, { data }));
   });
 });

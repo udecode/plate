@@ -1,66 +1,45 @@
 ---
-date: 2026-04-16
-topic: slate-transforms-api-ledger
+date: 2026-07-20
+topic: plite-transforms-api-ledger
 status: active
 ---
 
 # Plite Transforms API Ledger
 
 - owner: `packages/plite`
-- tranche: 3
-- rule: recover transform contracts before dependent helper or runtime cleanup
+- public write boundary: `editor.update`
+- transaction surface: semantic `tx` groups plus canonical changes
 
-## Current Read
+## Contract
 
-- transforms-family deleted-test closure is already banked
-- current package-local `slate` transform behavior is green on:
-  - `packages/plite/test/**`
-  - `bunx turbo build --filter=./packages/plite`
-  - `bunx turbo typecheck --filter=./packages/plite`
-  - `bun run lint:fix`
-  - `bun run lint`
-- tranche-3 transform/fragment/range-ref owners are now landed:
-  - `transforms-contract.ts`
-  - `clipboard-contract.ts`
-  - `range-ref-contract.ts`
-- the `#6038` benchmark lane now exists and runs:
-  - `bun run bench:plite:6038:local`
-- the old broad-helper explicit-skip read is stale for `packages/plite`, but
-  is no longer an active owner problem for this package
-- `Transforms.applyBatch(...)` is now recovered again as the public batch entry
-  point, backed by the real draft transaction owner `Editor.withTransaction(...)`
-- the package is reopened for one explicit transform-family cut:
-  - legacy ordinary-op adjacent-text/spacer canonicalization rows are no longer
-    kept by default
-  - owner:
-    `/Users/zbeyens/git/plate-2/packages/plite/test/fixture-claim-overrides.ts`
-  - live rule:
-    heavier adjacent-text/spacer cleanup stays explicit, not automatic on every
-    ordinary structural op
+Transforms mutate one isolated transaction draft and publish one canonical
+`DocumentChange`. Reads inside the transaction use the transaction view;
+ambient editor reads remain committed. Pure commands return a frozen
+`TransactionSpec` and dispatch it once against its checked base revision.
 
-That means the active transforms problem for `packages/plite` is no longer
-"missing owner files".
-It is explicit claim width.
+Primitive draft steps may temporarily violate representation rules. Final
+construction merges equal adjacent text, removes redundant empty leaves,
+preserves inline caret spacers, fills compiled schema defaults, and maps
+selection and runtime identity before publication.
 
-## Sources
+External direct changes are strict. Fragment and paste callers pass an intact
+`ContentSlice` through `state.slice.fit(...)` or `tx.slice.replace(...)`.
+Closed application content uses `tx.fragment.replace(...)` instead of
+maintaining transform-specific insertion branches.
 
-- [2026-04-18-plite-slate-claim-width-classification.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-18-plite-slate-claim-width-classification.md)
-- [2026-04-09-plite-transforms-family-deleted-test-closure.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-09-plite-transforms-family-deleted-test-closure.md)
+Extension corrections run from classified changed paths to a deterministic
+fixed point. `editor.update.value.repair()` is the explicit all-root
+maintenance entrypoint.
 
-## Tranche 3 Rule
+## Proof owners
 
-- legacy transform width wins by default unless a narrower cut is explicitly
-  justified as no longer relevant to keep
-- recover only the transform rows that still belong in the kept live claim
-- for `packages/plite`, the named owner files now exist and the benchmark owner
-  exists
-- do not let draft helper modules or green shaped harness rows silently widen
-  or silently narrow the transform claim
+- `packages/plite/test/transaction-contract.ts`
+- `packages/plite/test/command-spec.test.ts`
+- `packages/plite/test/transforms-contract.ts`
+- `packages/plite/test/clipboard-contract.ts`
+- `packages/plite/test/slice-fit-contract.test.ts`
+- `packages/plite/test/normalization-contract.ts`
+- `packages/plite/test/runtime-contracts.test.ts`
 
-Recovered transform grouping is good when it rides the same engine seam. Do not
-fork batch behavior behind a second implementation path.
-
-For the perfect-redesign lane:
-
-- transform compatibility survives only where it still earns its keep
-- do not keep a worse transform surface alive just because legacy shipped it
+The public surface contains no operation middleware, `EditorIntent`,
+`applyIntent`, or transform-specific fragment choreography.

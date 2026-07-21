@@ -170,6 +170,56 @@ test.describe('paste html example', () => {
     await expect(page.locator('strong')).toContainText('Hello');
   });
 
+  test('parses HTML when CSP requires Trusted Types', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', 'Chromium Trusted Types');
+
+    await page.route('**/examples/plite/paste-html**', async (route) => {
+      const response = await route.fetch();
+
+      await route.fulfill({
+        response,
+        headers: {
+          ...response.headers(),
+          'content-security-policy': "require-trusted-types-for 'script'",
+        },
+      });
+    });
+
+    const editor = await openExample(page, 'plite/paste-html', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const element = document.createElement('div');
+
+          try {
+            element.innerHTML = '<strong>blocked</strong>';
+            return false;
+          } catch {
+            return true;
+          }
+        })
+      )
+      .toBe(true);
+
+    await editor.selection.selectAll();
+    await editor.clipboard.pasteHtml(
+      '<p><strong>Trusted Types paste</strong></p>',
+      'Trusted Types paste'
+    );
+
+    await editor.assert.blockTexts(['Trusted Types paste']);
+    await expect(editor.root.locator('strong')).toHaveText(
+      'Trusted Types paste'
+    );
+  });
+
   test('keeps inline HTML marks bounded to their source text', async ({
     page,
   }) => {
@@ -366,6 +416,7 @@ test.describe('paste html example', () => {
     ).toHaveCount(1);
     if (testInfo.project.name === 'mobile') {
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'Hello Bold'.length },
         focus: { path: [0, 0], offset: 'Hello Bold'.length },
       });
@@ -598,6 +649,7 @@ test.describe('paste html example', () => {
 
     try {
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [2, 0], offset: 0 },
         focus: { path: [2, 0], offset: copiedText.length },
       });
@@ -632,6 +684,7 @@ test.describe('paste html example', () => {
     const insertedText = 'Prediction';
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 1], offset: 0 },
       focus: { path: [0, 1], offset: 0 },
     });
@@ -645,6 +698,7 @@ test.describe('paste html example', () => {
       `${insertedText}'text/plain'`
     );
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1], offset: insertedText.length },
       focus: { path: [0, 1], offset: insertedText.length },
     });
@@ -1203,6 +1257,44 @@ test.describe('paste html example', () => {
     }
 
     await editor.assert.text(text);
+  });
+
+  test('restores Apple converted spaces before an IME follow-up', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      !['chromium', 'webkit'].includes(testInfo.project.name),
+      'Chromium and WebKit clipboard/IME proof'
+    );
+
+    const editor = await openExample(page, 'plite/paste-html', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+    const pastedText = 'one two';
+
+    await editor.selection.selectAll();
+    await editor.clipboard.pasteHtml(
+      '<p>one<span class="Apple-converted-space">&nbsp;</span>two</p>',
+      pastedText
+    );
+
+    await editor.assert.blockTexts([pastedText]);
+    expect(await editor.get.modelText()).not.toContain('\u00A0');
+
+    await editor.selection.select({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: pastedText.length },
+      focus: { path: [0, 0], offset: pastedText.length },
+    });
+    await editor.ime.compose({
+      committedText: '寿司',
+      steps: ['寿', '寿司'],
+      text: '寿司',
+    });
+
+    await editor.assert.blockTexts([`${pastedText}寿司`]);
   });
 
   test('preserves spaces between adjacent inline mark elements from rich HTML paste', async ({

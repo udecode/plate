@@ -9,6 +9,7 @@ describe('getCursorOverlayState', () => {
 
   it('attaches rects and computed caret positions per cursor key', () => {
     const selection = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 2, path: [0, 1] },
     };

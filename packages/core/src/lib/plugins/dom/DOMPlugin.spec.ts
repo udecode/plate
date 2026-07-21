@@ -1,4 +1,4 @@
-import { defineEditorExtension } from '@platejs/plite';
+import { defineEditorExtension, DocumentChange } from '@platejs/plite';
 
 import { createBaseEditor } from '../../editor';
 import { DOMPlugin } from './DOMPlugin';
@@ -10,10 +10,11 @@ describe('DOMPlugin', () => {
     mock.restore();
   });
 
-  it('scrolls enabled operations while auto-scrolling is active', () => {
+  it('scrolls enabled canonical changes while auto-scrolling is active', () => {
     const scrollSpy = mock((..._args: unknown[]) => {});
     const editor = createBaseEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -46,20 +47,21 @@ describe('DOMPlugin', () => {
     expect(scrollSpy).toHaveBeenCalledTimes(2);
     expect(scrollSpy.mock.calls).toEqual([
       [
-        { offset: 0, path: [0, 0] },
+        { offset: 1, path: [0, 0] },
         { block: 'center', scrollMode: 'if-needed' },
       ],
       [
-        { offset: 0, path: [0, 0] },
+        { offset: 1, path: [0, 0] },
         { block: 'center', scrollMode: 'if-needed' },
       ],
     ]);
   });
 
-  it('skips scrolling when the current operation type is disabled', () => {
+  it('skips scrolling when the current change kind is disabled', () => {
     const scrollSpy = mock((..._args: unknown[]) => {});
     const editor = createBaseEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -82,7 +84,7 @@ describe('DOMPlugin', () => {
           scrollTx.text.insert('a');
         },
         {
-          operations: { insert_text: false },
+          changes: { text: false },
         }
       );
     });
@@ -90,10 +92,11 @@ describe('DOMPlugin', () => {
     expect(scrollSpy).not.toHaveBeenCalled();
   });
 
-  it('scrolls inserted nodes when insert_node is enabled', () => {
+  it('scrolls inserted nodes when structure changes are enabled', () => {
     const scrollSpy = mock((..._args: unknown[]) => {});
     const editor = createBaseEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -119,16 +122,89 @@ describe('DOMPlugin', () => {
       });
     });
 
-    expect(scrollSpy).toHaveBeenCalledWith(
-      { offset: 0, path: [1] },
-      { scrollMode: 'if-needed' }
+    expect(scrollSpy).toHaveBeenCalledWith([1], {
+      scrollMode: 'if-needed',
+    });
+  });
+
+  it('scrolls an explicit text target instead of an unrelated selection', () => {
+    const scrollSpy = mock((..._args: unknown[]) => {});
+    const editor = createBaseEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [
+        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], type: 'p' },
+      ],
+    });
+    editor.extend(
+      defineEditorExtension({
+        api: {
+          dom: {
+            scrollIntoView: scrollSpy,
+          },
+        },
+        name: 'test:scroll-service',
+      })
     );
+
+    editor.update((tx) => {
+      tx.dom.autoScroll((scrollTx) => {
+        scrollTx.text.insert('x', { at: { offset: 0, path: [1, 0] } });
+      });
+    });
+
+    expect(scrollSpy).toHaveBeenCalledWith([1, 0], {
+      scrollMode: 'if-needed',
+    });
+  });
+
+  it('scrolls the exact target of a classification-free change', () => {
+    const twoBlocks = [
+      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'p' },
+    ];
+    const source = createBaseEditor({ value: twoBlocks });
+
+    source.update.text.insert('x', { at: { offset: 0, path: [1, 0] } });
+
+    const change = DocumentChange.fromJSON(
+      source.read.lastCommit()!.changes.toJSON()
+    );
+    const scrollSpy = mock((..._args: unknown[]) => {});
+    const editor = createBaseEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: twoBlocks,
+    });
+    editor.extend(
+      defineEditorExtension({
+        api: { dom: { scrollIntoView: scrollSpy } },
+        name: 'test:scroll-service',
+      })
+    );
+
+    expect(change.primaryClassification).toBeNull();
+    editor.update((tx) => {
+      tx.dom.autoScroll((scrollTx) => scrollTx.changes.apply(change));
+    });
+
+    expect(scrollSpy).toHaveBeenCalledWith([1, 0], {
+      scrollMode: 'if-needed',
+    });
   });
 
   it('passes explicit scroll options through to Plite DOM', () => {
     const scrollSpy = mock((..._args: unknown[]) => {});
     const editor = createBaseEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -157,7 +233,7 @@ describe('DOMPlugin', () => {
     });
 
     expect(scrollSpy).toHaveBeenCalledWith(
-      { offset: 0, path: [0, 0] },
+      { offset: 1, path: [0, 0] },
       { block: 'end', scrollMode: 'always' }
     );
   });
@@ -166,6 +242,7 @@ describe('DOMPlugin', () => {
     const scrollSpy = mock((..._args: unknown[]) => {});
     const editor = createBaseEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -193,7 +270,7 @@ describe('DOMPlugin', () => {
       );
     });
 
-    expect(scrollSpy).toHaveBeenCalledWith({ offset: 0, path: [0, 0] }, false);
+    expect(scrollSpy).toHaveBeenCalledWith({ offset: 1, path: [0, 0] }, false);
   });
 
   it('maps temporary scrolling options and restores them after the callback', () => {
@@ -210,8 +287,8 @@ describe('DOMPlugin', () => {
         },
         {
           mode: 'first',
-          operations: {
-            insert_node: false,
+          changes: {
+            structure: false,
           },
           scrollOptions: {
             block: 'center',
@@ -222,9 +299,9 @@ describe('DOMPlugin', () => {
 
     expect(callbackScrolling).toBe(true);
     expect(callbackOptions?.scrollMode).toBe('first');
-    expect(callbackOptions?.scrollOperations).toMatchObject({
-      insert_node: false,
-      insert_text: true,
+    expect(callbackOptions?.scrollChanges).toMatchObject({
+      structure: false,
+      text: true,
     });
     expect(callbackOptions?.scrollOptions).toEqual({
       block: 'center',

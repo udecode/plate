@@ -15,6 +15,7 @@ export const test = (value) =>
   Array.from(
     NodeApi.elements(value, {
       range: {
+        kind: 'text',
         anchor: {
           path: [0, 1],
           offset: 0,

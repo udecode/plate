@@ -3,15 +3,15 @@ import { transformDiffDescendants } from './transformDiffDescendants';
 const options = {
   getDeleteProps: () => ({
     diff: true,
-    diffOperation: { type: 'delete' },
+    diffIntent: { type: 'delete' },
   }),
   getInsertProps: () => ({
     diff: true,
-    diffOperation: { type: 'insert' },
+    diffIntent: { type: 'insert' },
   }),
   getUpdateProps: (_node: any, properties: any, newProperties: any) => ({
     diff: true,
-    diffOperation: {
+    diffIntent: {
       newProperties,
       properties,
       type: 'update',
@@ -77,7 +77,7 @@ describe('transformDiffDescendants', () => {
         type: 'p',
         children: [{ text: 'delete' }],
         diff: true,
-        diffOperation: { type: 'delete' },
+        diffIntent: { type: 'delete' },
       },
       {
         type: 'p',
@@ -87,7 +87,7 @@ describe('transformDiffDescendants', () => {
         type: 'p',
         children: [{ text: 'insert' }],
         diff: true,
-        diffOperation: { type: 'insert' },
+        diffIntent: { type: 'insert' },
       },
     ]);
   });
@@ -116,12 +116,12 @@ describe('transformDiffDescendants', () => {
       {
         text: 'old',
         diff: true,
-        diffOperation: { type: 'delete' },
+        diffIntent: { type: 'delete' },
       },
       {
         text: 'new',
         diff: true,
-        diffOperation: { type: 'insert' },
+        diffIntent: { type: 'insert' },
       },
     ]);
   });

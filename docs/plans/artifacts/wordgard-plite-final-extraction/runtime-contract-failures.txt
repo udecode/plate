@@ -1,0 +1,22 @@
+Runtime contract discovery closure, 2026-07-20
+
+Discovery classification:
+- Plite, Plite DOM, and Plite React contain 85 contract files.
+- 76 runtime contract files are imported by discovered test wrappers.
+- 9 generic/type contracts are compile-only.
+- No runtime contract file is undiscovered.
+
+Commands and final results:
+- bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/runtime-contracts.test.ts
+  Result: 750 pass, 0 fail, 750 tests.
+- pnpm --filter @platejs/plite-react test
+  Result: 69 files passed, 902 tests passed, 0 failed.
+
+Closure:
+- The original discovery run exposed 33 Plite runtime failures and no React
+  discovery gap. Those failures were repaired at their transaction, selection,
+  transform, runtime-ID, and publication owners.
+- The final wrapper run proves every discovered Plite runtime contract; the
+  full React package run proves the imported node:test rows and Vitest-owned
+  browser-host contracts together.
+- This artifact is closure evidence, not an allowlist of known failures.

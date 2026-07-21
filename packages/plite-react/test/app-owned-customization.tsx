@@ -7,10 +7,7 @@ import {
   type EditorUpdateTransaction,
   NodeApi,
 } from '@platejs/plite';
-import {
-  isEditor as editorIsEditor,
-  replace as editorReplace,
-} from '@platejs/plite/internal';
+import { replace as editorReplace } from '@platejs/plite/internal';
 
 import {
   createReactEditor,
@@ -59,6 +56,7 @@ describe('plite-react app-owned customization', () => {
             data: { token },
             key: 'hook-source-token',
             range: {
+              kind: 'text',
               anchor: { path: [0, 0], offset: 0 },
               focus: { path: [0, 0], offset: 5 },
             },
@@ -117,6 +115,7 @@ describe('plite-react app-owned customization', () => {
             data: { token },
             key: 'hook-deps-token',
             range: {
+              kind: 'text',
               anchor: { path: [0, 0], offset: 0 },
               focus: { path: [0, 0], offset: 5 },
             },
@@ -250,6 +249,7 @@ describe('plite-react app-owned customization', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         });
@@ -286,6 +286,7 @@ describe('plite-react app-owned customization', () => {
           data: { type },
           key: `${path.join('.')}:${type}:${start}:${end}`,
           range: {
+            kind: 'text',
             anchor: { path, offset: start },
             focus: { path, offset: end },
           },
@@ -396,6 +397,7 @@ describe('plite-react app-owned customization', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
@@ -423,6 +425,7 @@ describe('plite-react app-owned customization', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 1 },
         });
@@ -442,12 +445,14 @@ describe('plite-react app-owned customization', () => {
           },
         ],
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
       });
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 1 },
         });
@@ -474,8 +479,6 @@ describe('plite-react app-owned customization', () => {
         children: [{ text: '' }],
       }) as Descendant;
 
-    const originalNormalizeNode = editor.normalizeNode;
-
     const getNodeText = (node: Descendant): string =>
       'text' in node
         ? node.text.replace(/\uFEFF/g, '')
@@ -486,36 +489,31 @@ describe('plite-react app-owned customization', () => {
       selection: null,
     });
 
-    editor.normalizeNode = (entry, options) => {
-      const [node] = entry;
+    editor.extend({
+      corrections: [
+        {
+          correct({ tx }) {
+            const [first, second] = tx.value().children;
 
-      if (
-        node &&
-        editorIsEditor(node) &&
-        Array.isArray((node as any).children) &&
-        node.children.length >= 2
-      ) {
-        const first = node.children[0];
-        const second = node.children[1];
-
-        if (
-          first &&
-          'children' in first &&
-          first.type === 'title' &&
-          getNodeText(first) === '' &&
-          second &&
-          getNodeText(second as Descendant) === ''
-        ) {
-          editorReplace(editor, {
-            children: [createTitle(), createParagraph()],
-            selection: null,
-          });
-          return;
-        }
-      }
-
-      originalNormalizeNode(entry, options);
-    };
+            if (
+              first &&
+              'children' in first &&
+              first.type === 'title' &&
+              getNodeText(first) === '' &&
+              second &&
+              getNodeText(second) === ''
+            ) {
+              tx.nodes.replaceChildren([createTitle(), createParagraph()], {
+                at: [],
+              });
+            }
+          },
+          event: 'content',
+          query: 'root',
+        },
+      ],
+      name: 'forced-layout',
+    });
 
     const rendered = render(
       <TestEditorSurface
@@ -579,6 +577,7 @@ describe('plite-react app-owned customization', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 4 },
         });
@@ -610,6 +609,7 @@ describe('plite-react app-owned customization', () => {
     await act(async () => {
       editor.update(PliteReactUpdatePolicy.preserveSelection, (tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 4 },
         });

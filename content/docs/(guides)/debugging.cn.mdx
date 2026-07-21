@@ -102,28 +102,31 @@ try {
 
 除了使用 DebugPlugin，还有其他有效的方法来调试你的 Plate 编辑器：
 
-### 1. 使用日志覆盖编辑器方法
+### 1. 记录已提交的变更
 
-使用 `overrideEditor` 包装编辑器方法并添加日志记录：
+使用 Plite 扩展的 `onCommit` 观察已发布的规范变更：
 
 ```ts
+import { defineEditorExtension } from '@platejs/plite';
+import { createPlatePlugin } from 'platejs/react';
+
+const commitLogger = defineEditorExtension({
+  name: 'commit-logger',
+  onCommit({ commit }) {
+    console.debug('Document change:', commit.changes);
+  },
+});
+
 const LoggingPlugin = createPlatePlugin({
   key: 'logging',
-}).overrideEditor(({ editor, tf: { apply } }) => ({
-  tf: {
-    apply(operation) {
-      console.debug('Operation:', operation);
-      apply(operation);
-    },
-  },
-}));
+}).extendExtension(commitLogger);
 
 const editor = createPlateEditor({
   plugins: [LoggingPlugin],
 });
 ```
 
-这种方法允许你记录操作、选择或任何你想要检查的编辑器行为。
+`commit.changes` 是历史记录、协作和订阅者共享的文档变更事实。需要查看选择或影响范围时，可以同时检查提交上的选择字段和 `commit.changed` 查询。
 
 ### 2. 移除可疑插件
 
@@ -209,4 +212,4 @@ Plate 使用几个预定义的错误类型来帮助识别开发过程中的特�
 
 ### PLUGIN_NODE_TYPE
 
-当插件被错误地配置为既是 element 又是 leaf 时抛出。当插件的配置通过同时将 `isElement` 和 `isLeaf` 设置为 true 而自相矛盾时，会发生此错误。
+当插件同时声明 `node.element` 和 `node.mark` 时抛出。一个插件只能拥有 element 类型或文本属性，不能同时拥有两者。

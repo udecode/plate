@@ -4,7 +4,7 @@ import { createBaseEditor } from '@platejs/core';
 
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { jsxt } from '@platejs/test-utils';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseListPlugin } from './BaseListPlugin';
 import { BulletedListRules } from './BulletedListRules';
@@ -18,6 +18,7 @@ describe('BaseListPlugin input rules', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -35,6 +36,7 @@ describe('BaseListPlugin input rules', () => {
     {
       input: [{ children: [{ text: '-hello' }], type: 'p' }],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -43,6 +45,7 @@ describe('BaseListPlugin input rules', () => {
     {
       input: [{ children: [{ text: '1.hello' }], type: 'p' }],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
@@ -96,6 +99,7 @@ describe('BaseListPlugin input rules', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
@@ -110,6 +114,7 @@ describe('BaseListPlugin input rules', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
@@ -165,6 +170,7 @@ describe('BaseListPlugin input rules', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0, 0] },
         focus: { offset: 1, path: [0, 0, 0] },
       },
@@ -173,10 +179,10 @@ describe('BaseListPlugin input rules', () => {
           children: [
             {
               children: [{ text: '-code' }],
-              type: KEYS.codeLine,
+              type: NODES.codeLine,
             },
           ],
-          type: KEYS.codeBlock,
+          type: NODES.codeBlock,
         },
       ],
     } as any);

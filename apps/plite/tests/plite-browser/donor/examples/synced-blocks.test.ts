@@ -15,20 +15,27 @@ const getBrowserUndoHotkey = async (root: Locator) =>
   root
     .page()
     .evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta+Z' : 'Control+Z'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta+Z'
+        : 'Control+Z'
     );
 
 const getBrowserRedoHotkey = async (root: Locator) =>
   root
     .page()
     .evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta+Shift+Z' : 'Control+Shift+Z'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta+Shift+Z'
+        : 'Control+Shift+Z'
     );
 
 const getBrowserWordForwardHotkey = async (root: Locator) =>
   root
     .page()
     .evaluate(() =>
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
       /Mac OS X/.test(navigator.userAgent)
         ? 'Alt+ArrowRight'
         : 'Control+ArrowRight'
@@ -38,6 +45,7 @@ const getBrowserWordForwardSelectionHotkey = async (root: Locator) =>
   root
     .page()
     .evaluate(() =>
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
       /Mac OS X/.test(navigator.userAgent)
         ? 'Alt+Shift+ArrowRight'
         : 'Control+Shift+ArrowRight'
@@ -499,6 +507,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
+        kind: 'text',
         anchor: { path: [2, 0] },
         focus: { path: [2, 0] },
       });
@@ -522,6 +531,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
+        kind: 'text',
         anchor: { path: [4, 0] },
         focus: { path: [4, 0] },
       });
@@ -544,6 +554,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
+        kind: 'text',
         anchor: { path: [6, 0] },
         focus: { path: [6, 0] },
       });
@@ -596,6 +607,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
+        kind: 'text',
         anchor: { path: [4, 0] },
         focus: { path: [4, 0] },
       });
@@ -615,6 +627,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
+        kind: 'text',
         anchor: { path: [2, 0] },
         focus: { path: [2, 0] },
       });
@@ -655,6 +668,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -698,6 +712,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [6, 0], offset: 0 },
         focus: { path: [6, 0], offset: 0 },
       });
@@ -824,6 +839,7 @@ test.describe('synced blocks example', () => {
     );
 
     await first.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'Shared mission'.length },
     });
@@ -877,6 +893,7 @@ test.describe('synced blocks example', () => {
     const selectionStart = SHARED_BODY_SECOND.indexOf(selectedText);
 
     await first.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [1, 0], offset: selectionStart },
       focus: { path: [1, 0], offset: selectionStart + selectedText.length },
     });
@@ -1537,6 +1554,7 @@ test.describe('synced blocks example', () => {
     await focusRoot(firstEditor);
     await first.insertText('not so good!');
     await first.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'not so '.length },
       focus: { path: [0, 0], offset: 'not so good'.length },
     });
@@ -1906,6 +1924,7 @@ test.describe('synced blocks example', () => {
     );
 
     await outer.selection.select({
+      kind: 'text',
       anchor: { path: [6, 0], offset: 1 },
       focus: { path: [6, 0], offset: 0 },
     });
@@ -2009,6 +2028,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -2038,6 +2058,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 'p1'.length },
       });
@@ -2166,6 +2187,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       });
@@ -2237,6 +2259,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -2292,6 +2315,7 @@ test.describe('synced blocks example', () => {
       await expect
         .poll(() => outer.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         });
@@ -2332,6 +2356,7 @@ test.describe('synced blocks example', () => {
       const selectedText = SHARED_BODY_SECOND.slice(anchorOffset);
 
       await first.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [1, 0], offset: anchorOffset },
         focus: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
       });
@@ -2425,6 +2450,7 @@ test.describe('synced blocks example', () => {
       const selectedText = SHARED_BODY_SECOND.slice(anchorOffset);
 
       await first.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [1, 0], offset: anchorOffset },
         focus: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
       });
@@ -2463,6 +2489,7 @@ test.describe('synced blocks example', () => {
       await expect
         .poll(() => first.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [2, 0], offset: 0 },
           focus: { path: [2, 0], offset: 0 },
         });
@@ -2500,6 +2527,7 @@ test.describe('synced blocks example', () => {
       );
 
       await first.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
       });
@@ -2550,20 +2578,13 @@ test.describe('synced blocks example', () => {
               element as HTMLElement & {
                 __pliteBrowserHandle?: {
                   getLastCommit?: () => {
-                    operations?: { root?: string; type: string }[];
+                    changedRoots?: (string | null)[];
                   } | null;
                 };
               }
             ).__pliteBrowserHandle;
 
-            return (
-              handle
-                ?.getLastCommit?.()
-                ?.operations?.filter(
-                  (operation) => operation.type !== 'set_selection'
-                )
-                .map((operation) => operation.root ?? 'main') ?? []
-            );
+            return handle?.getLastCommit?.()?.changedRoots ?? [];
           })
         )
         .toEqual([SHARED_ROOT]);
@@ -2713,6 +2734,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => second.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -2730,6 +2752,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [6, 0], offset: 0 },
         focus: { path: [6, 0], offset: 0 },
       });
@@ -2744,6 +2767,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => second.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
         focus: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
       });
@@ -2758,6 +2782,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: {
           path: [4, 0],
           offset: 'Between synced documents.'.length,
@@ -2800,6 +2825,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => first.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'Shared'.length },
         focus: { path: [0, 0], offset: 'Shared'.length },
       });
@@ -2834,6 +2860,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [6, 0], offset: 'p2'.length },
         focus: { path: [6, 0], offset: 'p2'.length },
       });
@@ -2846,6 +2873,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -2980,6 +3008,7 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [6, 0], offset: 2 },
       });

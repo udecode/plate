@@ -1,9 +1,5 @@
 import { createTestEditor } from '../__tests__/createTestEditor';
-import {
-  deserializeMd,
-  markdownToAstProcessor,
-  markdownToSlateNodes,
-} from './deserializeMd';
+import { deserializeMd, markdownToAstProcessor } from './deserializeMd';
 
 describe('deserializeMd', () => {
   it('falls back to the safe markdown path for incomplete mdx tails', () => {
@@ -221,53 +217,5 @@ describe('markdownToAstProcessor', () => {
 
     expect(ast.type).toBe('root');
     expect(ast.children[0]?.type).toBe('heading');
-  });
-});
-
-describe('markdownToSlateNodes', () => {
-  it('preserves explicit space tokens when memoization keeps them', () => {
-    const editor = createTestEditor();
-
-    expect(
-      markdownToSlateNodes(editor, 'one\n\n\n\ntwo', {
-        memoize: true,
-        parser: { exclude: [], trim: false },
-      })
-    ).toEqual([
-      {
-        _memo: 'one',
-        children: [{ text: 'one' }],
-        type: 'p',
-      },
-      {
-        _memo: '\n\n\n\n',
-        children: [{ text: '' }],
-        type: 'p',
-      },
-      {
-        _memo: 'two',
-        children: [{ text: 'two' }],
-        type: 'p',
-      },
-    ]);
-  });
-
-  it('attaches raw block text to memoized output nodes', () => {
-    const editor = createTestEditor();
-
-    expect(
-      markdownToSlateNodes(editor, 'one\n\n\ntwo', { memoize: true })
-    ).toEqual([
-      {
-        _memo: 'one',
-        children: [{ text: 'one' }],
-        type: 'p',
-      },
-      {
-        _memo: 'two',
-        children: [{ text: 'two' }],
-        type: 'p',
-      },
-    ]);
   });
 });

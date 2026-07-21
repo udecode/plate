@@ -62,7 +62,6 @@ editor.read((state) => {
 editor.update((tx) => {
   tx.value.replace({
     children,
-    marks: null,
     selection: null,
   })
   tx.nodes.unwrap({ match: isList })

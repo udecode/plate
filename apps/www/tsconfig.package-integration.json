@@ -1,17 +1,16 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"],
-      "@/.source": ["./.source"],
-      "registry": ["./public/r/registry.json"],
-      "registry-shadcn": ["./registry-shadcn.json"]
-    }
-  },
   "include": [
     "next-env.d.ts",
+    "src/app/dev/editor-perf/**/*.ts",
+    "src/app/dev/editor-perf/**/*.tsx",
     "src/__tests__/package-integration/**/*.ts",
-    "src/__tests__/package-integration/**/*.tsx"
+    "src/__tests__/package-integration/**/*.tsx",
+    "src/registry/components/editor/plugins/**/*.ts",
+    "src/registry/components/editor/plugins/**/*.tsx",
+    "src/types/**/*.d.ts",
+    "../../packages/*/src/**/*.d.ts",
+    "../../packages/udecode/*/src/**/*.d.ts"
   ],
   "exclude": ["node_modules", "__registry__", "**/blocks/fumadocs"]
 }

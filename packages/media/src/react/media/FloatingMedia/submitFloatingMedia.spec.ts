@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import type { TMediaElement } from '@platejs/utils';
-import { KEYS } from '@platejs/utils';
+import { NODES } from '@platejs/utils';
 
 import { BaseMediaEmbedPlugin } from '../../../lib/media-embed/BaseMediaEmbedPlugin';
 import { FloatingMediaStore } from './FloatingMediaStore';
@@ -12,13 +12,14 @@ describe('submitFloatingMedia', () => {
     createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
       value: [
         {
           children: [{ text: '' }],
-          type: KEYS.mediaEmbed,
+          type: NODES.mediaEmbed,
           url: 'https://example.com/old',
         },
       ],
@@ -51,10 +52,10 @@ describe('submitFloatingMedia', () => {
 
     expect(result).toBe(true);
     expect(editor.read.children()[0]).toMatchObject({
-      id: '1234567890',
       provider: 'twitter',
       url: 'https://x.com/platejs/status/1234567890',
     });
+    expect(editor.read.children()[0]).not.toHaveProperty('id');
   });
 
   it('stores canonical provider metadata for supported video urls', () => {
@@ -72,11 +73,11 @@ describe('submitFloatingMedia', () => {
 
     expect(result).toBe(true);
     expect(editor.read.children()[0]).toMatchObject({
-      id: 'M7lc1UVf-VE',
       provider: 'youtube',
       sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
       url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
     });
+    expect(editor.read.children()[0]).not.toHaveProperty('id');
   });
 
   it('rejects non-allowlisted script embed snippets after transform', () => {

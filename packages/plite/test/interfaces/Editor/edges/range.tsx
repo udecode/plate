@@ -9,6 +9,7 @@ export const input = (
 
 export const test = (editor) =>
   editorEdges(editor, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 3 },
   });

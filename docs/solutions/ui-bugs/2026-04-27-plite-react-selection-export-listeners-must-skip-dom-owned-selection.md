@@ -1,6 +1,7 @@
 ---
 title: Plite React selection export listeners must skip DOM-owned selection
 date: 2026-04-27
+status: superseded
 category: docs/solutions/ui-bugs
 module: plite slate-react browser editing
 problem_type: ui_bug
@@ -16,6 +17,10 @@ tags: [plite, slate-react, selection, dom-selection, hovering-toolbar, app-owned
 ---
 
 # Plite React selection export listeners must skip DOM-owned selection
+
+> **Superseded architecture record.** This article predates
+> `EditableDOMRuntime` and its model/DOM phase scheduler. Current selection
+> export uses canonical commit queries and explicit DOM ownership state.
 
 ## Problem
 

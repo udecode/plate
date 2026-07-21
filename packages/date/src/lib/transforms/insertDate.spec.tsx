@@ -9,6 +9,7 @@ describe('insertDate', () => {
     const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
@@ -41,6 +42,7 @@ describe('insertDate', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 2] },
       focus: { offset: 1, path: [0, 2] },
     });
@@ -50,6 +52,7 @@ describe('insertDate', () => {
     const editor = createBaseEditor({
       plugins: [BaseDatePlugin.configure({ node: { type: 'custom-date' } })],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -80,12 +83,21 @@ describe('insertDate', () => {
     const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
       value: [
         {
-          children: [{ text: 'a' }, { text: 'b' }],
+          children: [
+            { text: 'a' },
+            {
+              children: [{ text: '' }],
+              date: '2025-01-01',
+              type: KEYS.date,
+            },
+            { text: 'b' },
+          ],
           type: KEYS.p,
         },
       ],
@@ -105,7 +117,13 @@ describe('insertDate', () => {
             date: '2026-03-23',
             type: KEYS.date,
           },
-          { text: ' b' },
+          { text: ' ' },
+          {
+            children: [{ text: '' }],
+            date: '2025-01-01',
+            type: KEYS.date,
+          },
+          { text: 'b' },
         ],
         type: KEYS.p,
       },
@@ -116,6 +134,7 @@ describe('insertDate', () => {
     const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },

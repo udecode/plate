@@ -10,6 +10,7 @@ describe('floating link triggers', () => {
     const editor = createPlateEditor({
       plugins: [LinkPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 13, path: [0, 0] },
       },
@@ -28,18 +29,21 @@ describe('floating link triggers', () => {
     const editor = createPlateEditor({
       plugins: [LinkPlugin],
       selection: {
-        anchor: { offset: 3, path: [0, 0, 0] },
-        focus: { offset: 3, path: [0, 0, 0] },
+        kind: 'text',
+        anchor: { offset: 3, path: [0, 1, 0] },
+        focus: { offset: 3, path: [0, 1, 0] },
       },
       value: [
         {
           children: [
+            { text: '' },
             {
               children: [{ text: 'https://x.dev' }],
               target: '_blank',
               type: 'a',
               url: 'https://x.dev',
             },
+            { text: '' },
           ],
           type: 'p',
         },
@@ -59,12 +63,14 @@ describe('floating link triggers', () => {
     const editor = createPlateEditor({
       plugins: [LinkPlugin],
       selection: {
-        anchor: { offset: 3, path: [0, 2, 0] },
-        focus: { offset: 3, path: [0, 2, 0] },
+        kind: 'text',
+        anchor: { offset: 3, path: [0, 3, 0] },
+        focus: { offset: 3, path: [0, 3, 0] },
       },
       value: [
         {
           children: [
+            { text: '' },
             {
               children: [{ text: 'first' }],
               type: 'a',
@@ -76,6 +82,7 @@ describe('floating link triggers', () => {
               type: 'a',
               url: 'https://second.dev',
             },
+            { text: '' },
           ],
           type: 'p',
         },
@@ -97,17 +104,20 @@ describe('floating link triggers', () => {
         }),
       ],
       selection: {
-        anchor: { offset: 2, path: [0, 0, 0] },
-        focus: { offset: 2, path: [0, 0, 0] },
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 1, 0] },
+        focus: { offset: 2, path: [0, 1, 0] },
       },
       value: [
         {
           children: [
+            { text: '' },
             {
               children: [{ text: 'hello' }],
               type: 'a',
               url: 'https://x.dev',
             },
+            { text: '' },
           ],
           type: 'p',
         },

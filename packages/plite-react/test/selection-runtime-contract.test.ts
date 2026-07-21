@@ -1,4 +1,4 @@
-import type { EditorCommit, Operation, Range } from '@platejs/plite';
+import type { EditorCommit, Range } from '@platejs/plite';
 import {
   createEditableInputController,
   createEditableInputControllerState,
@@ -20,18 +20,43 @@ import {
 
 describe('selection runtime', () => {
   const createChange = (
-    change: Pick<EditorCommit, 'childrenChanged' | 'selectionChanged'> &
-      Partial<
-        Pick<
-          EditorCommit,
-          | 'command'
-          | 'fullDocumentChanged'
-          | 'rootRuntimeIdsChanged'
-          | 'structureChanged'
-          | 'topLevelOrderChanged'
-        >
-      >
-  ) => change as EditorCommit;
+    change: Pick<EditorCommit, 'selectionChanged'> & {
+      childrenChanged: boolean;
+      command?: EditorCommit['command'];
+      structureChanged?: boolean;
+      textChanged?: boolean;
+      topLevelOrderChanged?: boolean;
+    }
+  ) => {
+    const {
+      childrenChanged,
+      command = null,
+      selectionChanged,
+      structureChanged = false,
+      textChanged = childrenChanged && !structureChanged,
+      topLevelOrderChanged = false,
+    } = change;
+    const kinds = new Set([
+      ...(childrenChanged ? ['document'] : []),
+      ...(selectionChanged ? ['selection'] : []),
+      ...(structureChanged ? ['structure'] : []),
+      ...(textChanged ? ['text'] : []),
+      ...(topLevelOrderChanged ? ['root-order'] : []),
+    ]);
+
+    return {
+      changed: {
+        has: (kind: string) => kinds.has(kind),
+        hasAny: (kind: string) => kinds.has(kind),
+        hasRuntime: () => false,
+        runtimeIds: () => [],
+        runtimeIdsAll: () => [],
+        topLevelRanges: () => [],
+      },
+      command,
+      selectionChanged,
+    } as EditorCommit;
+  };
 
   const createInputController = () =>
     createEditableInputController({
@@ -39,10 +64,12 @@ describe('selection runtime', () => {
       state: createEditableInputControllerState(),
     });
   const expandedSelection: Range = {
+    kind: 'text',
     anchor: { offset: 0, path: [0, 0] },
     focus: { offset: 1, path: [0, 0] },
   };
   const collapsedSelection: Range = {
+    kind: 'text',
     anchor: { offset: 0, path: [0, 0] },
     focus: { offset: 0, path: [0, 0] },
   };
@@ -99,7 +126,6 @@ describe('selection runtime', () => {
   test('subscribes to model selection and structural changes only', () => {
     expect(
       shouldSyncModelSelectionAfterCommit(
-        undefined,
         createChange({
           childrenChanged: false,
           selectionChanged: true,
@@ -108,7 +134,6 @@ describe('selection runtime', () => {
     ).toBe(true);
     expect(
       shouldSyncModelSelectionAfterCommit(
-        undefined,
         createChange({
           childrenChanged: true,
           selectionChanged: true,
@@ -117,7 +142,6 @@ describe('selection runtime', () => {
     ).toBe(true);
     expect(
       shouldSyncModelSelectionAfterCommit(
-        undefined,
         createChange({
           childrenChanged: true,
           selectionChanged: false,
@@ -126,7 +150,6 @@ describe('selection runtime', () => {
     ).toBe(false);
     expect(
       shouldSyncModelSelectionAfterCommit(
-        undefined,
         createChange({
           childrenChanged: true,
           selectionChanged: false,
@@ -150,16 +173,11 @@ describe('selection runtime', () => {
       isTextInputSelectionHandledByCaretRepair(inputController, textCommit)
     ).toBe(true);
     expect(
-      shouldSyncModelSelectionAfterCommit(
-        undefined,
-        textCommit,
-        inputController
-      )
+      shouldSyncModelSelectionAfterCommit(textCommit, inputController)
     ).toBe(false);
 
     expect(
       shouldSyncModelSelectionAfterCommit(
-        undefined,
         createChange({
           childrenChanged: true,
           selectionChanged: true,
@@ -177,7 +195,6 @@ describe('selection runtime', () => {
 
     expect(
       shouldSyncModelSelectionAfterCommit(
-        undefined,
         createChange({
           childrenChanged: true,
           selectionChanged: true,
@@ -369,9 +386,7 @@ describe('selection runtime', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'dom-current';
     inputController.state.selectionChangeOrigin = 'native-user';
-    let listener:
-      | ((operations?: readonly Operation[], change?: EditorCommit) => void)
-      | null = null;
+    let listener: ((change?: EditorCommit) => void) | null = null;
     let scheduled: (() => void) | null = null;
     let syncCalls = 0;
 
@@ -391,7 +406,6 @@ describe('selection runtime', () => {
     });
 
     listener?.(
-      undefined,
       createChange({
         childrenChanged: true,
         command: { origin: 'command', type: 'toggle_mark' },
@@ -408,9 +422,7 @@ describe('selection runtime', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'dom-current';
     inputController.state.selectionChangeOrigin = 'native-user';
-    let listener:
-      | ((operations?: readonly Operation[], change?: EditorCommit) => void)
-      | null = null;
+    let listener: ((change?: EditorCommit) => void) | null = null;
     let scheduled: (() => void) | null = null;
     let cleanupCalls = 0;
     let cancelCalls = 0;
@@ -438,7 +450,6 @@ describe('selection runtime', () => {
     });
 
     listener?.(
-      undefined,
       createChange({
         childrenChanged: true,
         command: { origin: 'command', type: 'toggle_mark' },
@@ -458,16 +469,14 @@ describe('selection runtime', () => {
     const inputController = createInputController();
     inputController.state.activeIntent = 'text-insert';
     inputController.state.selectionSource = 'model-owned';
-    let listener:
-      | ((operations?: readonly Operation[], change?: EditorCommit) => void)
-      | null = null;
+    let listener: ((change?: EditorCommit) => void) | null = null;
     let syncCalls = 0;
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener, options) {
-        listener = (operations, change) => {
-          if (options?.shouldUpdate?.(operations, change) ?? true) {
-            nextListener(operations, change);
+        listener = (change) => {
+          if (options?.shouldUpdate?.(change) ?? true) {
+            nextListener(change);
           }
         };
 
@@ -483,7 +492,6 @@ describe('selection runtime', () => {
     });
 
     listener?.(
-      undefined,
       createChange({
         childrenChanged: true,
         selectionChanged: true,
@@ -557,16 +565,14 @@ describe('selection runtime', () => {
   test('does not notify DOM export listener for synced text-only selection commits', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'model-owned';
-    let listener:
-      | ((operations?: readonly Operation[], change?: EditorCommit) => void)
-      | null = null;
+    let listener: ((change?: EditorCommit) => void) | null = null;
     let syncCalls = 0;
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener, options) {
-        listener = (operations, change) => {
-          if (options?.shouldUpdate?.(operations, change) ?? true) {
-            nextListener(operations, change);
+        listener = (change) => {
+          if (options?.shouldUpdate?.(change) ?? true) {
+            nextListener(change);
           }
         };
 
@@ -582,14 +588,6 @@ describe('selection runtime', () => {
     });
 
     listener?.(
-      [
-        { offset: 0, path: [0, 0], text: 'x', type: 'insert_text' },
-        {
-          newProperties: collapsedSelection,
-          properties: null,
-          type: 'set_selection',
-        },
-      ] as readonly Operation[],
       createChange({
         childrenChanged: true,
         selectionChanged: true,
@@ -603,16 +601,14 @@ describe('selection runtime', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'dom-current';
     inputController.state.selectionChangeOrigin = 'native-user';
-    let listener:
-      | ((operations?: readonly Operation[], change?: EditorCommit) => void)
-      | null = null;
+    let listener: ((change?: EditorCommit) => void) | null = null;
     let syncCalls = 0;
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener, options) {
-        listener = (operations, change) => {
-          if (options?.shouldUpdate?.(operations, change) ?? true) {
-            nextListener(operations, change);
+        listener = (change) => {
+          if (options?.shouldUpdate?.(change) ?? true) {
+            nextListener(change);
           }
         };
 
@@ -629,14 +625,6 @@ describe('selection runtime', () => {
     });
 
     listener?.(
-      [
-        { offset: 0, path: [0, 0], text: 'x', type: 'remove_text' },
-        {
-          newProperties: expandedSelection,
-          properties: collapsedSelection,
-          type: 'set_selection',
-        },
-      ] as readonly Operation[],
       createChange({
         childrenChanged: true,
         command: { origin: 'command', type: 'history_undo' },
@@ -653,7 +641,6 @@ describe('selection runtime', () => {
 
     expect(
       shouldSyncModelSelectionAfterCommit(
-        [{ offset: 0, path: [0, 0], text: 'x', type: 'insert_text' }] as any,
         createChange({
           childrenChanged: true,
           selectionChanged: true,
@@ -666,16 +653,14 @@ describe('selection runtime', () => {
   test('skips DOM export for selections owned by a synthetic partial-DOM lane', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'model-owned';
-    let listener:
-      | ((operations?: readonly Operation[], change?: EditorCommit) => void)
-      | null = null;
+    let listener: ((change?: EditorCommit) => void) | null = null;
     let syncCalls = 0;
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener, options) {
-        listener = (operations, change) => {
-          if (options?.shouldUpdate?.(operations, change) ?? true) {
-            nextListener(operations, change);
+        listener = (change) => {
+          if (options?.shouldUpdate?.(change) ?? true) {
+            nextListener(change);
           }
         };
 
@@ -683,6 +668,9 @@ describe('selection runtime', () => {
       },
       getModelSelection: () => expandedSelection,
       inputController,
+      scheduleDOMExport(callback) {
+        callback();
+      },
       shouldSkipDOMExport: (selection) => selection === expandedSelection,
       syncDOMSelectionToEditor() {
         syncCalls += 1;
@@ -690,7 +678,6 @@ describe('selection runtime', () => {
     });
 
     listener?.(
-      undefined,
       createChange({
         childrenChanged: false,
         selectionChanged: true,

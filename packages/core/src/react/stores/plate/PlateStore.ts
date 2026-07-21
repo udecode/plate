@@ -1,10 +1,9 @@
 import type {
-  Descendant,
+  EditorNodeChangeContext,
+  EditorTextChangeContext,
   NodeEntry,
-  NodeOperation,
   Range,
   Selection,
-  TextOperation,
   ValueOf,
 } from '@platejs/plite';
 import type { Nullable } from '@udecode/utils';
@@ -33,23 +32,12 @@ export type PlateStoreState<E extends PlateStoreEditor = PlateStoreEditor> =
     renderText: NonNullable<EditableProps['renderText']>;
     /** Controlled callback called when the editor state changes. */
     onChange: (options: { editor: E; value: ValueOf<E> }) => void;
-    /** Controlled callback called when a node operation is applied. */
-    onNodeChange: (options: {
-      editor: E;
-      node: Descendant;
-      operation: NodeOperation;
-      prevNode: Descendant;
-    }) => void;
+    /** Controlled callback called for a canonical node change. */
+    onNodeChange: (options: EditorNodeChangeContext<E>) => void;
     /** Controlled callback called when the selection changes. */
     onSelectionChange: (options: { editor: E; selection: Selection }) => void;
-    /** Controlled callback called when a text operation is applied. */
-    onTextChange: (options: {
-      editor: E;
-      node: Descendant;
-      operation: TextOperation;
-      prevText: string;
-      text: string;
-    }) => void;
+    /** Controlled callback called for a canonical text change. */
+    onTextChange: (options: EditorTextChangeContext<E>) => void;
     /** Controlled callback called when the value changes. */
     onValueChange: (options: { editor: E; value: ValueOf<E> }) => void;
   }> & {

@@ -12,9 +12,10 @@ import {
   PointApi,
   type Range,
   RangeApi,
+  SelectionApi,
   type Text,
 } from '@platejs/plite';
-import { extendTestSchema } from './support/schema';
+import { defineTestSchema } from './support/schema';
 
 type PropMode = 'all' | 'block' | 'text';
 
@@ -28,27 +29,25 @@ const text = (value: string, props: Record<string, unknown> = {}): Text => ({
   text: value,
 });
 
+const UpstreamHelperSchema = defineTestSchema('upstream-helper-loss', {
+  blockquote: {},
+  image: { void: 'block' },
+  link: { inline: true },
+  list: {},
+  'list-item': {},
+  mention: { void: 'markable-inline' },
+  paragraph: {},
+});
+
 const createSeededEditor = (
   children: Element[],
   selection: Range | null = null
-) => {
-  const editor = createEditor({
-    initialSelection: selection,
+) =>
+  createEditor({
+    extensions: [UpstreamHelperSchema],
+    initialSelection: selection ? SelectionApi.text(selection) : null,
     initialValue: children,
   });
-
-  extendTestSchema(editor, [
-    { type: 'paragraph' },
-    { type: 'blockquote' },
-    { type: 'list' },
-    { type: 'list-item' },
-    { inline: true, type: 'link' },
-    { type: 'image', void: 'block' },
-    { type: 'mention', void: 'markable-inline' },
-  ]);
-
-  return editor;
-};
 
 const typeIs =
   (type: string) =>
@@ -87,7 +86,7 @@ const getCurrentIsAt = (
         if (!after) return true;
 
         return /^(?:\s|$)/.test(
-          state.text.string({ anchor: target, focus: after })
+          state.text.string({ kind: 'text', anchor: target, focus: after })
         );
       }
 
@@ -204,6 +203,7 @@ const getCurrentIsEmptyAfter = (editor: Editor, at: Point | Range | null) =>
 
     return (
       state.text.string({
+        kind: 'text',
         anchor: point,
         focus,
       }) === ''
@@ -568,7 +568,7 @@ describe('old Slate helper behavior through current Plite APIs', () => {
     const editor = createSeededEditor([
       {
         type: 'paragraph',
-        children: [{ text: 'ab' }, { text: 'cd' }],
+        children: [{ bold: true, text: 'ab' }, { text: 'cd' }],
       },
     ]);
     const samePath: Range = {

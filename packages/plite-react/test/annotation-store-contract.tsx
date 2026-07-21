@@ -1,7 +1,6 @@
 import { act, render } from '@testing-library/react';
-import { createEditor } from '@platejs/plite';
+import { createEditor, type Editor, type Range } from '@platejs/plite';
 import {
-  bookmark as editorBookmark,
   getRuntimeId as editorGetRuntimeId,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
@@ -17,6 +16,12 @@ import {
   usePliteProjectionEntries,
 } from '../src';
 import { createPliteAnnotationStore } from '../src/annotation-store';
+
+const createRangeAnchor = (editor: Editor, range: Range) =>
+  editor.anchor(range, {
+    association: 'inward',
+    deletion: 'drop',
+  });
 
 type CommentData = {
   body?: string;
@@ -81,7 +86,7 @@ const createChildren = () => [
 
 const AnnotationOverlaySlices = () => {
   const editor = useEditor();
-  const leftId = editorGetSnapshot(editor).index.pathToId['0.0'] ?? '';
+  const leftId = editorGetSnapshot(editor).index.idAt([0, 0]) ?? '';
   const comment = usePliteAnnotation<CommentData, CommentProjection>(
     'comment-1'
   );
@@ -185,13 +190,14 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const bookmark = editorBookmark(editor, {
+    const anchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
     const annotations = [
       {
-        anchor: bookmark,
+        anchor,
         data: {
           kind: 'annotation',
           label: 'Comment 1',
@@ -246,13 +252,14 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const bookmark = editorBookmark(editor, {
+    const anchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
     const comments = [
       {
-        anchor: bookmark,
+        anchor,
         id: 'comment-1',
         label: 'Comment 1',
         tone: 'draft',
@@ -293,7 +300,7 @@ describe('plite-react annotation store contract', () => {
     ).toBe('comment-1:1-4:annotation:reviewed:comment-1');
   });
 
-  test('annotation stores ignore selection-only changes and update when bookmark ranges rebase', async () => {
+  test('annotation stores ignore selection-only changes and update when anchor ranges rebase', async () => {
     const editor = createEditor();
     let notifications = 0;
 
@@ -302,13 +309,14 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const bookmark = editorBookmark(editor, {
+    const anchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
     const store = createPliteAnnotationStore(editor, () => [
       {
-        anchor: bookmark,
+        anchor,
         data: {
           kind: 'annotation',
           label: 'Comment 1',
@@ -327,6 +335,7 @@ describe('plite-react annotation store contract', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         });
@@ -384,6 +393,7 @@ describe('plite-react annotation store contract', () => {
 
     const runtimeId = editorGetRuntimeId(editor, [0, 0]);
     const staleRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     };
@@ -426,6 +436,7 @@ describe('plite-react annotation store contract', () => {
       editor.update((tx) => {
         tx.text.delete({
           at: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 1 },
             focus: { path: [0, 0], offset: 4 },
           },
@@ -447,13 +458,14 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const bookmark = editorBookmark(editor, {
+    const anchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
     const store = createPliteAnnotationStore(editor, () => [
       {
-        anchor: bookmark,
+        anchor,
         data: {
           kind: 'annotation',
           label: 'Comment 1',
@@ -468,10 +480,11 @@ describe('plite-react annotation store contract', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         });
-        tx.fragment.insert([
+        tx.fragment.replace([
           {
             type: 'paragraph',
             children: [{ text: 'intro-a' }],
@@ -499,7 +512,8 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const bookmark = editorBookmark(editor, {
+    const anchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -510,7 +524,7 @@ describe('plite-react annotation store contract', () => {
 
     const store = createPliteAnnotationStore(editor, () => [
       {
-        anchor: bookmark,
+        anchor,
         data: {
           kind: 'annotation',
           label: 'Comment 1',
@@ -563,14 +577,15 @@ describe('plite-react annotation store contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const middleId = snapshot.index.pathToId['0.1'];
-    const bookmark = editorBookmark(editor, {
+    const middleId = snapshot.index.idAt([0, 1]);
+    const anchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 2], offset: 2 },
     });
     const store = createPliteAnnotationStore(editor, () => [
       {
-        anchor: bookmark,
+        anchor,
         data,
         id: 'comment-1',
         projection: {
@@ -616,7 +631,7 @@ describe('plite-react annotation store contract', () => {
     ]);
 
     store.destroy();
-    bookmark.unref();
+    anchor.release();
   });
 
   test('external refresh targets annotation ids and treats an empty id list as a no-op', () => {
@@ -629,11 +644,13 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const commentBookmark = editorBookmark(editor, {
+    const commentAnchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
-    const unrelatedBookmark = editorBookmark(editor, {
+    const unrelatedAnchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
     });
@@ -642,7 +659,7 @@ describe('plite-react annotation store contract', () => {
       CommentProjection
     >[] = [
       {
-        anchor: commentBookmark,
+        anchor: commentAnchor,
         data: {
           body: 'first body',
           kind: 'annotation',
@@ -654,7 +671,7 @@ describe('plite-react annotation store contract', () => {
         },
       },
       {
-        anchor: unrelatedBookmark,
+        anchor: unrelatedAnchor,
         data: {
           body: 'unrelated body',
           kind: 'annotation',
@@ -704,8 +721,8 @@ describe('plite-react annotation store contract', () => {
     });
 
     store.destroy();
-    commentBookmark.unref();
-    unrelatedBookmark.unref();
+    commentAnchor.release();
+    unrelatedAnchor.release();
   });
 
   test('annotation data changes wake annotation subscribers without repainting stable projections', () => {
@@ -725,7 +742,8 @@ describe('plite-react annotation store contract', () => {
       throw new Error('Expected runtime id for projection split proof');
     }
 
-    const bookmark = editorBookmark(editor, {
+    const anchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -734,7 +752,7 @@ describe('plite-react annotation store contract', () => {
       CommentProjection
     >[] = [
       {
-        anchor: bookmark,
+        anchor,
         data: {
           body: 'first body',
           kind: 'annotation',
@@ -788,7 +806,7 @@ describe('plite-react annotation store contract', () => {
     });
 
     store.destroy();
-    bookmark.unref();
+    anchor.release();
   });
 
   test('partial annotation projection refresh preserves annotation order in shared runtime buckets', () => {
@@ -805,11 +823,13 @@ describe('plite-react annotation store contract', () => {
       throw new Error('Expected runtime id for annotation order proof');
     }
 
-    const firstBookmark = editorBookmark(editor, {
+    const firstAnchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
-    const secondBookmark = editorBookmark(editor, {
+    const secondAnchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 5 },
     });
@@ -818,7 +838,7 @@ describe('plite-react annotation store contract', () => {
       CommentProjection
     >[] = [
       {
-        anchor: firstBookmark,
+        anchor: firstAnchor,
         data: {
           kind: 'annotation',
           label: 'Comment 1',
@@ -831,7 +851,7 @@ describe('plite-react annotation store contract', () => {
         },
       },
       {
-        anchor: secondBookmark,
+        anchor: secondAnchor,
         data: {
           kind: 'annotation',
           label: 'Comment 2',
@@ -875,8 +895,8 @@ describe('plite-react annotation store contract', () => {
     ]);
 
     store.destroy();
-    firstBookmark.unref();
-    secondBookmark.unref();
+    firstAnchor.release();
+    secondAnchor.release();
   });
 
   test('annotation metadata uses reference equality for non-JSON data', () => {
@@ -910,6 +930,7 @@ describe('plite-react annotation store contract', () => {
         {
           anchor: {
             resolve: () => ({
+              kind: 'text',
               anchor: { path: [0, 0], offset: 1 },
               focus: { path: [0, 0], offset: 4 },
             }),
@@ -995,11 +1016,13 @@ describe('plite-react annotation store contract', () => {
       throw new Error('Expected runtime ids for scoped annotation proof');
     }
 
-    const commentBookmark = editorBookmark(editor, {
+    const commentAnchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
-    const unrelatedBookmark = editorBookmark(editor, {
+    const unrelatedAnchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
     });
@@ -1008,7 +1031,7 @@ describe('plite-react annotation store contract', () => {
       CommentProjection
     >[] = [
       {
-        anchor: commentBookmark,
+        anchor: commentAnchor,
         data: {
           body: 'first body',
           kind: 'annotation',
@@ -1022,7 +1045,7 @@ describe('plite-react annotation store contract', () => {
         },
       },
       {
-        anchor: unrelatedBookmark,
+        anchor: unrelatedAnchor,
         data: {
           body: 'unrelated body',
           kind: 'annotation',
@@ -1118,8 +1141,8 @@ describe('plite-react annotation store contract', () => {
     });
 
     store.destroy();
-    commentBookmark.unref();
-    unrelatedBookmark.unref();
+    commentAnchor.release();
+    unrelatedAnchor.release();
   });
 
   test('editor text changes rebase only annotations in impacted runtime buckets', async () => {
@@ -1148,8 +1171,9 @@ describe('plite-react annotation store contract', () => {
       );
     }
 
-    const bookmarks = Array.from({ length: blockCount }, (_, index) =>
-      editorBookmark(editor, {
+    const anchors = Array.from({ length: blockCount }, (_, index) =>
+      createRangeAnchor(editor, {
+        kind: 'text',
         anchor: { path: [index, 0], offset: 1 },
         focus: { path: [index, 0], offset: 4 },
       })
@@ -1157,7 +1181,7 @@ describe('plite-react annotation store contract', () => {
     const annotations: readonly PliteAnnotation<
       CommentData,
       CommentProjection
-    >[] = bookmarks.map((anchor, index) => ({
+    >[] = anchors.map((anchor, index) => ({
       anchor,
       data: {
         body: `body ${index}`,
@@ -1225,8 +1249,8 @@ describe('plite-react annotation store contract', () => {
     });
 
     store.destroy();
-    bookmarks.forEach((bookmark) => {
-      bookmark.unref();
+    anchors.forEach((anchor) => {
+      anchor.release();
     });
   });
 
@@ -1244,13 +1268,14 @@ describe('plite-react annotation store contract', () => {
       throw new Error('Expected runtime id for annotation metrics proof');
     }
 
-    const bookmark = editorBookmark(editor, {
+    const anchor = createRangeAnchor(editor, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
     const store = createPliteAnnotationStore(editor, () => [
       {
-        anchor: bookmark,
+        anchor,
         data: {
           kind: 'annotation',
           label: 'Comment 1',
@@ -1292,6 +1317,6 @@ describe('plite-react annotation store contract', () => {
     });
 
     store.destroy();
-    bookmark.unref();
+    anchor.release();
   });
 });

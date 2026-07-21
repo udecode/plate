@@ -61,6 +61,7 @@ const contractByFamily =
 const point = (path: number[], offset: number) => ({ path, offset });
 
 const collapsedSelection = (path: number[], offset: number) => ({
+  kind: 'text',
   anchor: point(path, offset),
   focus: point(path, offset),
 });
@@ -188,6 +189,7 @@ const hugeDocumentCut = (): StressCase => {
         kind: 'select',
         label: 'select-two-top-level-blocks',
         selection: {
+          kind: 'text',
           anchor: { path: [cutIndex, 0], offset: 0 },
           focus: { path: [cutIndex + 2, 0], offset: 0 },
         },
@@ -472,8 +474,38 @@ const blockVoidNavigation = (route: 'embeds' | 'images'): StressCase => {
   });
 };
 
-const staleTargetRemoteRebase = (): StressCase =>
-  createStressCase({
+const staleTargetRemoteRebase = (): StressCase => {
+  const intro = {
+    type: 'paragraph',
+    children: [
+      {
+        text: 'In addition to nodes that contain editable text, you can also create other types of nodes, like images or videos.',
+      },
+    ],
+  };
+  const secondImage = {
+    type: 'image',
+    url: 'https://picsum.photos/id/1025/160/90.jpg',
+    children: [{ text: '' }],
+  };
+  const description = {
+    type: 'paragraph',
+    children: [
+      {
+        text: 'This example shows images in action. It features two ways to add images. You can either add an image via the toolbar icon above, or if you want in on a little secret, copy an image URL to your clipboard and paste it anywhere in the editor!',
+      },
+    ],
+  };
+  const deletePrompt = {
+    type: 'paragraph',
+    children: [
+      {
+        text: 'You can delete images with the cross in the top left. Try deleting this image:',
+      },
+    ],
+  };
+
+  return createStressCase({
     family: 'stale-target-remote-rebase',
     route: 'images',
     steps: [
@@ -501,25 +533,12 @@ const staleTargetRemoteRebase = (): StressCase =>
         selection: collapsedSelection([1, 0], 0),
       },
       {
-        kind: 'applyOperations',
+        kind: 'applyValueChange',
         label: 'remote-remove-first-image-and-move-second-image',
-        operations: [
-          {
-            type: 'remove_node',
-            path: [1],
-            node: {
-              type: 'image',
-              url: 'https://picsum.photos/id/1015/160/90.jpg',
-              children: [{ text: '' }],
-            },
-          },
-          {
-            type: 'move_node',
-            path: [3],
-            newPath: [1],
-          },
-        ],
         tag: 'remote-rebase',
+        value: {
+          children: [intro, secondImage, description, deletePrompt],
+        },
       },
       {
         kind: 'assertCapturedRuntimeIdPath',
@@ -538,6 +557,13 @@ const staleTargetRemoteRebase = (): StressCase =>
         label: 'assert-second-image-runtime-id-rebased',
         name: 'second-image',
         path: [1],
+      },
+      {
+        count: 1,
+        kind: 'assertLocatorCount',
+        label: 'assert-second-image-moved-by-canonical-change',
+        selector:
+          '[data-plite-path="1"] img[src="https://picsum.photos/id/1025/160/90.jpg"]',
       },
       {
         kind: 'assertLastCommitTags',
@@ -561,6 +587,7 @@ const staleTargetRemoteRebase = (): StressCase =>
       },
     ],
   });
+};
 
 const pasteHtmlImageVoid = (): StressCase =>
   createStressCase({
@@ -1011,6 +1038,7 @@ const webkitBackwardSelection = (): StressCase => {
         kind: 'assertSelection',
         label: 'assert-model-selection-is-backward',
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 4 },
           focus: { path: [0, 0], offset: 3 },
         },
@@ -1294,88 +1322,98 @@ if (stressCases.length === 0) {
 }
 
 for (const stressCase of stressCases) {
-  test(`${stressCase.route} ${stressCase.family}`, async ({
-    page,
-  }, testInfo) => {
-    const artifactPath = stressArtifactPath(testInfo.project.name, stressCase);
-    const resultPath = stressResultPath(artifactPath);
-
-    writeStressArtifact(
-      artifactPath,
-      createStressArtifact({
-        artifactPath,
-        projectName: testInfo.project.name,
-        resultPath,
-        status: 'running',
-        stressCase,
-      })
-    );
-
-    try {
-      await installPliteReactRenderProfiler(page);
-      const editor = await openExample(
-        page,
-        stressCase.route.startsWith('plite/')
-          ? stressCase.route
-          : `plite/${stressCase.route}`,
-        {
-          ready: { editor: 'visible' },
-          surface: stressCase.surface,
-        }
+  test(
+    `${stressCase.route} ${stressCase.family}`,
+    {
+      annotation: {
+        description: 'serial',
+        type: 'plite-browser-profile',
+      },
+    },
+    async ({ page }, testInfo) => {
+      const artifactPath = stressArtifactPath(
+        testInfo.project.name,
+        stressCase
       );
-      const result = await editor.scenario.run(
-        stressCase.id,
-        stressCase.steps,
-        {
-          metadata: {
-            capabilities: [
-              'generated-stress',
-              stressCase.family,
-              stressCase.route,
-            ],
-            platform: testInfo.project.name,
-            transport: 'playwright-browser',
-          },
-          tracePath: resultPath,
-        }
-      );
-      const finalState = await takePliteBrowserRenderStateSnapshot(editor);
-
-      assertNoIllegalKernelTransitions(result);
-      expect(result.replay.replayable).toBe(true);
+      const resultPath = stressResultPath(artifactPath);
 
       writeStressArtifact(
         artifactPath,
         createStressArtifact({
           artifactPath,
-          finalSnapshot: {
-            domSelection: finalState.domSelection,
-            focusOwner: finalState.focusOwner,
-            lastCommit: finalState.lastCommit,
-            renderCounts: finalState.renderCounts,
-            selection: finalState.selection,
-          },
           projectName: testInfo.project.name,
-          reductionCandidates: result.reductionCandidates,
-          result,
           resultPath,
-          status: 'passed',
+          status: 'running',
           stressCase,
         })
       );
-    } catch (error) {
-      writeStressArtifact(
-        artifactPath,
-        createStressArtifact({
+
+      try {
+        await installPliteReactRenderProfiler(page);
+        const editor = await openExample(
+          page,
+          stressCase.route.startsWith('plite/')
+            ? stressCase.route
+            : `plite/${stressCase.route}`,
+          {
+            ready: { editor: 'visible' },
+            surface: stressCase.surface,
+          }
+        );
+        const result = await editor.scenario.run(
+          stressCase.id,
+          stressCase.steps,
+          {
+            metadata: {
+              capabilities: [
+                'generated-stress',
+                stressCase.family,
+                stressCase.route,
+              ],
+              platform: testInfo.project.name,
+              transport: 'playwright-browser',
+            },
+            tracePath: resultPath,
+          }
+        );
+        const finalState = await takePliteBrowserRenderStateSnapshot(editor);
+
+        assertNoIllegalKernelTransitions(result);
+        expect(result.replay.replayable).toBe(true);
+
+        writeStressArtifact(
           artifactPath,
-          error,
-          projectName: testInfo.project.name,
-          resultPath,
-          status: 'failed',
-          stressCase,
-        })
-      );
-      throw error;
+          createStressArtifact({
+            artifactPath,
+            finalSnapshot: {
+              domSelection: finalState.domSelection,
+              focusOwner: finalState.focusOwner,
+              lastCommit: finalState.lastCommit,
+              renderCounts: finalState.renderCounts,
+              selection: finalState.selection,
+            },
+            projectName: testInfo.project.name,
+            reductionCandidates: result.reductionCandidates,
+            result,
+            resultPath,
+            status: 'passed',
+            stressCase,
+          })
+        );
+      } catch (error) {
+        writeStressArtifact(
+          artifactPath,
+          createStressArtifact({
+            artifactPath,
+            error,
+            projectName: testInfo.project.name,
+            resultPath,
+            status: 'failed',
+            stressCase,
+          })
+        );
+        throw error;
+      }
     }
-  });
+  );
 }

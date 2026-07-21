@@ -9,4 +9,3 @@ Raw source was read from local checkouts:
 - `/Users/zbeyens/git/tiptap`
 
 No large raw dumps were copied into `docs/slate-v2/research/**`.
-

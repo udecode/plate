@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { type Element } from '@platejs/plite';
+import type { Element } from '@platejs/plite';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
@@ -90,7 +90,7 @@ describe('withInsertFragmentTable', () => {
         value: input.children,
       });
 
-      editor.update.fragment.insert(fragment);
+      editor.update.fragment.replace(fragment);
 
       expect(editor.read.children()).toMatchObject(output.children!);
     });
@@ -109,8 +109,10 @@ describe('withInsertFragmentTable', () => {
           <htable>
             <htr>
               <htd>
-                11
-                <cursor />
+                <hp>
+                  11
+                  <cursor />
+                </hp>
               </htd>
               <htd>
                 <hp>12</hp>
@@ -173,7 +175,7 @@ describe('withInsertFragmentTable', () => {
         value: input.children,
       });
 
-      editor.update.fragment.insert(fragment);
+      editor.update.fragment.replace(fragment);
 
       expect(editor.read.children()).toMatchObject(output.children!);
     });
@@ -266,7 +268,7 @@ describe('withInsertFragmentTable', () => {
       });
 
       editor.update.fragment.delete();
-      editor.update.fragment.insert(fragment);
+      editor.update.fragment.replace(fragment);
 
       expect(editor.read.children()).toMatchObject(output.children!);
     });
@@ -352,7 +354,7 @@ describe('withInsertFragmentTable', () => {
         value: input.children,
       });
 
-      editor.update.fragment.insert(fragment);
+      editor.update.fragment.replace(fragment);
 
       expect(editor.read.children()).toMatchObject(output.children!);
 
@@ -438,7 +440,7 @@ describe('withInsertFragmentTable', () => {
                 <htd>
                   <hp>12</hp>
                 </htd>
-                <htd custom>
+                <htd background="custom">
                   <hp>
                     <htext />
                   </hp>
@@ -454,20 +456,20 @@ describe('withInsertFragmentTable', () => {
                     aa
                   </hp>
                 </htd>
-                <htd custom>
+                <htd background="custom">
                   <hp>ab</hp>
                 </htd>
               </htr>
               <htr>
-                <htd custom>
+                <htd background="custom">
                   <hp>
                     <htext />
                   </hp>
                 </htd>
-                <htd custom>
+                <htd background="custom">
                   <hp>ba</hp>
                 </htd>
-                <htd custom>
+                <htd background="custom">
                   <hp>
                     bb
                     <focus />
@@ -481,8 +483,13 @@ describe('withInsertFragmentTable', () => {
         const plugins = getTestTablePlugins(options, (plugin) =>
           plugin.extendApi(() => ({
             createCell: () => ({
-              children: [{ text: '' }],
-              custom: true,
+              background: 'custom',
+              children: [
+                {
+                  children: [{ text: '' }],
+                  type: 'p',
+                },
+              ],
               type: 'td',
             }),
           }))
@@ -495,7 +502,7 @@ describe('withInsertFragmentTable', () => {
           value: input.children,
         });
 
-        editor.update.fragment.insert(fragment);
+        editor.update.fragment.replace(fragment);
 
         expect(editor.read.children()).toMatchObject(output.children!);
         expect(editor.read.selection()).toEqual(output.selection!);
@@ -590,7 +597,7 @@ describe('withInsertFragmentTable', () => {
         value: input.children,
       });
 
-      editor.update.fragment.insert(fragment);
+      editor.update.fragment.replace(fragment);
 
       expect(editor.read.children()).toMatchObject(output.children!);
 
@@ -659,7 +666,192 @@ describe('withInsertFragmentTable', () => {
         value: input.children,
       });
 
-      editor.update.fragment.insert(fragment);
+      editor.update.fragment.replace(fragment);
+
+      expect(editor.read.children()).toMatchObject(output.children!);
+    });
+  });
+
+  describe('logical table grid paste', () => {
+    it('splits merged cells that cross the pasted rectangle', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>
+                  b<cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>c</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd colSpan={2}>
+                <hp>e</hp>
+              </htd>
+              <htd colSpan={2}>
+                <hp>f</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const fragment = (
+        <fragment>
+          <htable>
+            <htr>
+              <htd>
+                <hp>x</hp>
+              </htd>
+              <htd>
+                <hp>y</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>z</hp>
+              </htd>
+              <htd>
+                <hp>q</hp>
+              </htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as Element[];
+      const output = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>x</hp>
+              </htd>
+              <htd>
+                <hp>y</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>e</hp>
+              </htd>
+              <htd>
+                <hp>z</hp>
+              </htd>
+              <htd>
+                <hp>q</hp>
+              </htd>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const editor = createPlateEditor({
+        nodeId: true,
+        plugins: getTestTablePlugins({ disableMerge: false }),
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.update.fragment.replace(fragment);
+
+      expect(editor.read.children()).toMatchObject(output.children!);
+    });
+
+    it('fills a non-rectangular fragment before pasting it', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  a<cursor />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const fragment = (
+        <fragment>
+          <htable>
+            <htr>
+              <htd>
+                <hp>b</hp>
+              </htd>
+              <htd>
+                <hp>c</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd colSpan={2} rowSpan={2}>
+                <hp>e</hp>
+              </htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as Element[];
+      const output = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>b</hp>
+              </htd>
+              <htd>
+                <hp>c</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd colSpan={2} rowSpan={2}>
+                <hp>e</hp>
+              </htd>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const editor = createPlateEditor({
+        nodeId: true,
+        plugins: getTestTablePlugins({ disableMerge: false }),
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.update.fragment.replace(fragment);
 
       expect(editor.read.children()).toMatchObject(output.children!);
     });
@@ -725,7 +917,7 @@ describe('withInsertFragmentTable', () => {
         value: input.children,
       });
 
-      editor.update.fragment.insert(fragment);
+      editor.update.fragment.replace(fragment);
 
       expect(editor.read.children()).toMatchObject(output.children!);
     });

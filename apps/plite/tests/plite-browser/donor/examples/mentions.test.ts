@@ -22,7 +22,10 @@ const getBrowserUndoHotkey = async (root: Locator) =>
   root
     .page()
     .evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta+Z' : 'Control+Z'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta+Z'
+        : 'Control+Z'
     );
 
 const MENTIONS_FIREFOX_SELECT_ALL_DIAGNOSTIC =
@@ -63,6 +66,7 @@ const selectMentionInsertionPoint = async (
     }
 
     handle.selectRange({
+      kind: 'text',
       anchor: point,
       focus: point,
     });
@@ -358,6 +362,7 @@ test.describe('mentions example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [1, 1, 0], offset: 0 },
           focus: { path: [1, 1, 0], offset: 0 },
         });
@@ -400,6 +405,7 @@ test.describe('mentions example', () => {
 
       await page.locator('[data-cy="mention-R2-D2"]').click();
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 1, 0], offset: 0 },
         focus: { path: [1, 1, 0], offset: 0 },
       });
@@ -407,18 +413,25 @@ test.describe('mentions example', () => {
       const payload = await editor.clipboard.copyPayload();
 
       expect(payload.html).toContain('data-plite-fragment=');
-      expect(parsePliteFragmentFromHtml(payload.html)).toEqual([
-        {
-          type: 'paragraph',
-          children: [
+      expect(parsePliteFragmentFromHtml(payload.html)).toEqual({
+        version: 1,
+        slice: {
+          content: [
             {
-              type: 'mention',
-              character: 'R2-D2',
-              children: [{ text: '', bold: true }],
+              type: 'paragraph',
+              children: [
+                {
+                  type: 'mention',
+                  character: 'R2-D2',
+                  children: [{ text: '', bold: true }],
+                },
+              ],
             },
           ],
+          openEnd: 1,
+          openStart: 1,
         },
-      ]);
+      });
 
       await editor.selection.collapse({ path: [1, 2], offset: 4 });
       await editor.focus();
@@ -461,6 +474,7 @@ test.describe('mentions example', () => {
 
       await page.locator('[data-cy="mention-R2-D2"]').click();
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 1, 0], offset: 0 },
         focus: { path: [1, 1, 0], offset: 0 },
       });
@@ -480,18 +494,25 @@ test.describe('mentions example', () => {
 
       const fragment = parsePliteFragmentFromHtml(payload.html);
 
-      expect(fragment).toEqual([
-        {
-          type: 'paragraph',
-          children: [
+      expect(fragment).toEqual({
+        version: 1,
+        slice: {
+          content: [
             {
-              type: 'mention',
-              character: 'R2-D2',
-              children: [{ text: '', bold: true }],
+              type: 'paragraph',
+              children: [
+                {
+                  type: 'mention',
+                  character: 'R2-D2',
+                  children: [{ text: '', bold: true }],
+                },
+              ],
             },
           ],
+          openEnd: 1,
+          openStart: 1,
         },
-      ]);
+      });
 
       const externalTarget = page.locator('[data-cy="external-paste-target"]');
 
@@ -540,6 +561,7 @@ test.describe('mentions example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [1, 1, 0], offset: 0 },
           focus: { path: [1, 1, 0], offset: 0 },
         });
@@ -551,6 +573,7 @@ test.describe('mentions example', () => {
         1
       );
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 0], offset: beforeFirstMentionText.length },
         focus: { path: [1, 0], offset: beforeFirstMentionText.length },
       });
@@ -561,39 +584,26 @@ test.describe('mentions example', () => {
         transition: { allowed: true },
       });
       const lastCommit = (await editor.get.lastCommit()) as {
+        change?: { version?: number };
+        changedRoots?: (string | null)[];
+        classifications?: { root: string | null; structure?: boolean }[];
         command?: { kind?: string } | null;
-        operations?: Array<{
-          newProperties?: unknown;
-          node?: unknown;
-          path?: number[];
-          properties?: unknown;
-          root?: string;
-          type?: string;
-        }>;
         selectionAfter?: unknown;
         selectionBefore?: unknown;
         selectionChanged?: boolean;
       } | null;
 
-      expect(
-        lastCommit?.operations?.filter((op) => op.type === 'remove_node')
-      ).toEqual([
-        {
-          type: 'remove_node',
-          path: [1, 1],
-          node: {
-            type: 'mention',
-            character: 'R2-D2',
-            children: [{ text: '', bold: true }],
-          },
-        },
-      ]);
       expect(lastCommit).toMatchObject({
+        change: { version: 3 },
+        changedRoots: [null],
+        classifications: [{ root: null, structure: true }],
         selectionAfter: {
+          kind: 'text',
           anchor: { path: [1, 0], offset: beforeFirstMentionText.length },
           focus: { path: [1, 0], offset: beforeFirstMentionText.length },
         },
         selectionBefore: {
+          kind: 'text',
           anchor: { path: [1, 1, 0], offset: 0 },
           focus: { path: [1, 1, 0], offset: 0 },
         },
@@ -698,6 +708,7 @@ test.describe('mentions example', () => {
 
     await selectMentionInsertionPoint(page);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: beforeFirstMentionText.length },
       focus: { path: [1, 0], offset: beforeFirstMentionText.length },
     });
@@ -712,6 +723,7 @@ test.describe('mentions example', () => {
     await editor.assert.text(`${beforeFirstMentionText}${insertedText}`);
     await expect(page.locator('[data-cy="mention-R2-D2"]')).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: insertedOffset },
       focus: { path: [1, 0], offset: insertedOffset },
     });
@@ -734,10 +746,12 @@ test.describe('mentions example', () => {
     const betweenMentionsPoint = { path: [1, 2], offset: 2 };
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: betweenMentionsPoint,
       focus: betweenMentionsPoint,
     });
     await editor.assert.selection({
+      kind: 'text',
       anchor: betweenMentionsPoint,
       focus: betweenMentionsPoint,
     });
@@ -760,6 +774,7 @@ test.describe('mentions example', () => {
     await expect(page.locator('[data-cy="mention-R2-D2"]')).toHaveCount(1);
     await expect(page.locator('[data-cy="mention-Mace-Windu"]')).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 2], offset: 4 },
       focus: { path: [1, 2], offset: 4 },
     });
@@ -782,10 +797,12 @@ test.describe('mentions example', () => {
     const afterFirstMentionPoint = { path: [1, 2], offset: 0 };
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: afterFirstMentionPoint,
       focus: afterFirstMentionPoint,
     });
     await editor.assert.selection({
+      kind: 'text',
       anchor: afterFirstMentionPoint,
       focus: afterFirstMentionPoint,
     });
@@ -805,6 +822,7 @@ test.describe('mentions example', () => {
     await expect(page.locator('[data-cy="mention-R2-D2"]')).toHaveCount(1);
     await expect(page.locator('[data-cy="mention-Mace-Windu"]')).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 2], offset: 2 },
       focus: { path: [1, 2], offset: 2 },
     });
@@ -836,18 +854,21 @@ test.describe('mentions example', () => {
     });
     await editor.focus();
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: beforeFirstMentionText.length },
       focus: { path: [1, 0], offset: beforeFirstMentionText.length },
     });
     await resetPliteReactRenderProfiler(page);
     await editor.root.press('ArrowRight');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 1, 0], offset: 0 },
       focus: { path: [1, 1, 0], offset: 0 },
     });
     let proof = await takePliteBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 1, 0], offset: 0 },
       focus: { path: [1, 1, 0], offset: 0 },
     });
@@ -864,18 +885,21 @@ test.describe('mentions example', () => {
 
     await editor.selection.collapse({ path: [1, 2], offset: 0 });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 2], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
     });
     await resetPliteReactRenderProfiler(page);
     await editor.root.press('ArrowLeft');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 1, 0], offset: 0 },
       focus: { path: [1, 1, 0], offset: 0 },
     });
     proof = await takePliteBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 1, 0], offset: 0 },
       focus: { path: [1, 1, 0], offset: 0 },
     });
@@ -888,18 +912,21 @@ test.describe('mentions example', () => {
       offset: betweenMentionsText.length,
     });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 2], offset: betweenMentionsText.length },
       focus: { path: [1, 2], offset: betweenMentionsText.length },
     });
     await resetPliteReactRenderProfiler(page);
     await editor.root.press('ArrowRight');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 3, 0], offset: 0 },
       focus: { path: [1, 3, 0], offset: 0 },
     });
     proof = await takePliteBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 3, 0], offset: 0 },
       focus: { path: [1, 3, 0], offset: 0 },
     });
@@ -915,18 +942,21 @@ test.describe('mentions example', () => {
 
     await editor.selection.collapse({ path: [1, 4], offset: 0 });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 4], offset: 0 },
       focus: { path: [1, 4], offset: 0 },
     });
     await resetPliteReactRenderProfiler(page);
     await editor.root.press('ArrowLeft');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 3, 0], offset: 0 },
       focus: { path: [1, 3, 0], offset: 0 },
     });
     proof = await takePliteBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 3, 0], offset: 0 },
       focus: { path: [1, 3, 0], offset: 0 },
     });
@@ -954,6 +984,7 @@ test.describe('mentions example', () => {
       const betweenMentionsText = ' or ';
 
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [1, 2], offset: 0 },
         focus: { path: [1, 2], offset: betweenMentionsText.length },
       });
@@ -979,6 +1010,7 @@ test.describe('mentions example', () => {
         )
         .not.toContain('@R2-D2x@Mace Windu');
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 2], offset: 0 },
         focus: { path: [1, 2], offset: 0 },
       });
@@ -1003,6 +1035,7 @@ test.describe('mentions example', () => {
     const beforeFirstMentionText = 'Try mentioning characters, like ';
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: beforeFirstMentionText.length },
     });
@@ -1061,6 +1094,7 @@ test.describe('mentions example', () => {
       const beforeFirstMentionText = 'Try mentioning characters, like ';
 
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: beforeFirstMentionText.length },
       });
@@ -1239,6 +1273,7 @@ test.describe('mentions example', () => {
         )
         .not.toContain('R2-D2.');
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 2], offset: 2 },
         focus: { path: [1, 2], offset: 2 },
       });
@@ -1261,8 +1296,10 @@ test.describe('mentions example', () => {
         editor: 'visible',
       },
     });
-    const isMacBrowser = await page.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent)
+    const isMacBrowser = await page.evaluate(
+      () =>
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        /Mac OS X/.test(navigator.userAgent)
     );
     const lineStartHotkey = isMacBrowser ? 'Control+A' : 'Home';
     const lineEndHotkey = isMacBrowser ? 'Control+E' : 'End';
@@ -1276,12 +1313,14 @@ test.describe('mentions example', () => {
 
     await editor.root.press(lineStartHotkey);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
 
     await editor.root.press(lineEndHotkey);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 4], offset: 1 },
       focus: { path: [1, 4], offset: 1 },
     });
@@ -1309,6 +1348,7 @@ test.describe('mentions example', () => {
     await editor.selection.collapse(boundaryPoint);
     await editor.focus();
     await editor.assert.selection({
+      kind: 'text',
       anchor: boundaryPoint,
       focus: boundaryPoint,
     });
@@ -1322,6 +1362,7 @@ test.describe('mentions example', () => {
     await expect(page.locator('[data-cy="mention-R2-D2"]')).toHaveCount(1);
     await expect(page.locator('[data-cy="mention-Mace-Windu"]')).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: boundaryPoint,
       focus: boundaryPoint,
     });
@@ -1363,6 +1404,7 @@ test.describe('mentions example', () => {
         )
     ).toEqual(['mention-R2-D2', 'mention-Mace-Windu']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: boundaryPoint,
       focus: boundaryPoint,
     });

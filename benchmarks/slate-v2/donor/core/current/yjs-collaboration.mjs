@@ -1,45 +1,46 @@
 import assert from 'node:assert/strict';
 import { performance } from 'node:perf_hooks';
 
-import { createEditor } from '@platejs/slate';
-import { Editor } from '@platejs/slate/internal';
-import * as Y from 'yjs';
+import { createEditor } from '../../../../../packages/plite/src/index.ts';
+import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
+import * as Y from '../../../../../packages/yjs/node_modules/yjs/dist/yjs.mjs';
 
-import { createYjsExtension } from '../../../../../packages/yjs/src/index.ts';
+import { createYjsExtension } from '../../../../../packages/yjs/src/core/extension.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const iterations = Number.parseInt(
-  process.env.SLATE_YJS_COLLAB_ITERATIONS ?? '5',
+  process.env.PLITE_YJS_COLLAB_ITERATIONS ?? '5',
   10
 );
 const peerCount = Number.parseInt(
-  process.env.SLATE_YJS_COLLAB_PEERS ?? '4',
+  process.env.PLITE_YJS_COLLAB_PEERS ?? '4',
   10
 );
 const syncBlocks = Number.parseInt(
-  process.env.SLATE_YJS_COLLAB_SYNC_BLOCKS ?? '100',
+  process.env.PLITE_YJS_COLLAB_SYNC_BLOCKS ?? '100',
   10
 );
 const syncOps = Number.parseInt(
-  process.env.SLATE_YJS_COLLAB_SYNC_OPS ?? '40',
+  process.env.PLITE_YJS_COLLAB_SYNC_OPS ?? '40',
   10
 );
 const awarenessUpdates = Number.parseInt(
-  process.env.SLATE_YJS_COLLAB_AWARENESS_UPDATES ?? '100',
+  process.env.PLITE_YJS_COLLAB_AWARENESS_UPDATES ?? '100',
   10
 );
 const reconnectOps = Number.parseInt(
-  process.env.SLATE_YJS_COLLAB_RECONNECT_OPS ?? '40',
+  process.env.PLITE_YJS_COLLAB_RECONNECT_OPS ?? '40',
   10
 );
 const largeBlocks = Number.parseInt(
-  process.env.SLATE_YJS_COLLAB_LARGE_BLOCKS ?? '1000',
+  process.env.PLITE_YJS_COLLAB_LARGE_BLOCKS ?? '1000',
   10
 );
 const largeOps = Number.parseInt(
-  process.env.SLATE_YJS_COLLAB_LARGE_OPS ?? '120',
+  process.env.PLITE_YJS_COLLAB_LARGE_OPS ?? '120',
   10
 );
+const moveBlocks = Math.max(2, largeBlocks);
 
 class FakeAwareness {
   constructor(clientID) {
@@ -119,6 +120,7 @@ const createPeer = ({
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
+      kind: 'text',
     },
   });
 
@@ -133,7 +135,7 @@ const createPeer = ({
   }
 
   editor.extend(
-    createYjsExtension({ awareness, clientId, doc, rootName: '@platejs/slate' })
+    createYjsExtension({ awareness, clientId, doc, rootName: '@platejs/plite' })
   );
 
   return { awareness, doc, editor, id: clientId };
@@ -352,6 +354,7 @@ const broadcastAwareness = (source, peers) => {
 const selection = (blockIndex, offset = 1) => ({
   anchor: { path: [blockIndex, 0], offset },
   focus: { path: [blockIndex, 0], offset },
+  kind: 'text',
 });
 
 const measureAwarenessUpdates = () =>
@@ -464,11 +467,46 @@ const measureLargeDocSync = () =>
     };
   })();
 
+const measureSparseTopLevelMove = () => {
+  return measurePhased({
+    setup: () => {
+      const peer = createPeer({
+        children: createDocument(moveBlocks, 'move'),
+        clientId: 'move-peer',
+        numericClientId: 701,
+      });
+
+      getYjsState(peer).trace();
+      runYjsUpdate(peer, (yjs) => yjs.clearTrace());
+
+      return { moveBlocks, peer };
+    },
+    verify: ({ moveBlocks, peer }) => {
+      const trace = getYjsState(peer).trace();
+
+      assert.equal(trace.length, 1);
+      assert.equal(trace[0].mode, 'canonical-change');
+      assert.equal(trace[0].fallback, undefined);
+      assert.equal(trace[0].tokenLengthNodes, 0);
+      assert.equal(
+        Editor.string(peer.editor, [moveBlocks - 1]),
+        'move-00000'
+      );
+    },
+    work: ({ moveBlocks, peer }) => {
+      peer.editor.update.nodes.move({ at: [0], to: [moveBlocks - 1] });
+
+      return { moveBlocks, peer };
+    },
+  });
+};
+
 const measuredLanes = {
   multiEditorSync: measureMultiEditorSync(),
   awarenessUpdates: measureAwarenessUpdates(),
   reconnect: measureReconnect(),
   largeDocSync: measureLargeDocSync(),
+  sparseTopLevelMove: measureSparseTopLevelMove(),
 };
 
 const lanes = {
@@ -476,6 +514,7 @@ const lanes = {
   awarenessUpdatesMs: measuredLanes.awarenessUpdates.total,
   reconnectMs: measuredLanes.reconnect.total,
   largeDocSyncMs: measuredLanes.largeDocSync.total,
+  sparseTopLevelMoveMs: measuredLanes.sparseTopLevelMove.total,
 };
 
 const workLanes = {
@@ -487,6 +526,7 @@ const workLanes = {
   largeDocRemoteApplyMs: measuredLanes.largeDocSync.remoteApply,
   largeDocRemoteEncodeMs: measuredLanes.largeDocSync.remoteEncode,
   largeDocRemoteSyncMs: measuredLanes.largeDocSync.remoteSync,
+  sparseTopLevelMoveWorkMs: measuredLanes.sparseTopLevelMove.work,
 };
 
 const verificationLanes = {
@@ -494,6 +534,8 @@ const verificationLanes = {
   awarenessUpdatesVerificationMs: measuredLanes.awarenessUpdates.verification,
   reconnectVerificationMs: measuredLanes.reconnect.verification,
   largeDocSyncVerificationMs: measuredLanes.largeDocSync.verification,
+  sparseTopLevelMoveVerificationMs:
+    measuredLanes.sparseTopLevelMove.verification,
 };
 
 const metrics = {
@@ -517,35 +559,44 @@ const metrics = {
   yjs_large_doc_remote_sync_p95_ms: workLanes.largeDocRemoteSyncMs.p95,
   yjs_large_doc_sync_verification_p95_ms:
     verificationLanes.largeDocSyncVerificationMs.p95,
+  yjs_sparse_top_level_move_p95_ms: lanes.sparseTopLevelMoveMs.p95,
+  yjs_sparse_top_level_move_work_p95_ms:
+    workLanes.sparseTopLevelMoveWorkMs.p95,
+  yjs_sparse_top_level_move_verification_p95_ms:
+    verificationLanes.sparseTopLevelMoveVerificationMs.p95,
   yjs_collaboration_worst_p95_ms: Math.max(
     lanes.multiEditorSyncMs.p95,
     lanes.awarenessUpdatesMs.p95,
     lanes.reconnectMs.p95,
-    lanes.largeDocSyncMs.p95
+    lanes.largeDocSyncMs.p95,
+    lanes.sparseTopLevelMoveMs.p95
   ),
   yjs_collaboration_worst_work_p95_ms: Math.max(
     workLanes.multiEditorSyncWorkMs.p95,
     workLanes.awarenessUpdatesWorkMs.p95,
     workLanes.reconnectWorkMs.p95,
-    workLanes.largeDocSyncWorkMs.p95
+    workLanes.largeDocSyncWorkMs.p95,
+    workLanes.sparseTopLevelMoveWorkMs.p95
   ),
   yjs_collaboration_worst_verification_p95_ms: Math.max(
     verificationLanes.multiEditorSyncVerificationMs.p95,
     verificationLanes.awarenessUpdatesVerificationMs.p95,
     verificationLanes.reconnectVerificationMs.p95,
-    verificationLanes.largeDocSyncVerificationMs.p95
+    verificationLanes.largeDocSyncVerificationMs.p95,
+    verificationLanes.sparseTopLevelMoveVerificationMs.p95
   ),
   yjs_correctness_failures: 0,
 };
 
 const result = {
-  benchmark: 'slate-yjs-collaboration',
-  artifactVersion: 1,
+  benchmark: 'plite-yjs-collaboration',
+  artifactVersion: 2,
   config: {
     awarenessUpdates,
     iterations,
     largeBlocks,
     largeOps,
+    moveBlocks,
     peerCount,
     reconnectOps,
     syncBlocks,
@@ -558,6 +609,7 @@ const result = {
     multiEditorConverges: true,
     noRootSnapshotFallback: true,
     reconnectConverges: true,
+    sparseTopLevelMoveMeasuresNoDocumentNodes: true,
   },
   lanes,
   phaseLanes: {

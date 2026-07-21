@@ -1,4 +1,10 @@
-import { defineEditorExtension } from '@platejs/plite';
+import {
+  defineEditorExtension,
+  definePropertyPolicy,
+  property,
+  schema,
+  target,
+} from '@platejs/plite';
 
 import {
   resolveCreatePluginTest,
@@ -6,8 +12,10 @@ import {
 } from '../../internal/plugin/resolveCreatePluginTest';
 import {
   type AnyBasePlugin,
+  type PluginConfig,
   createBaseEditor,
   createBasePlugin,
+  prepareParserPluginContext,
 } from '../index';
 import { getEditorPlugin } from './getEditorPlugin';
 
@@ -26,6 +34,67 @@ const resolveEditorExtensions = (plugin: AnyBasePlugin) => {
 };
 
 describe('createBasePlugin', () => {
+  it('preserves immutable property policies through plugin resolution', () => {
+    const policy = definePropertyPolicy<number>({
+      id: 'plate.test.positive',
+      validate: (value): value is number =>
+        typeof value === 'number' && value > 0,
+      version: 1,
+    });
+    const width = property.number({ policy });
+    const plugin = resolvePluginTest(
+      createBasePlugin({
+        key: 'policy-node',
+        node: {
+          element: {
+            properties: {
+              width,
+            },
+          },
+        },
+      })
+    );
+
+    const resolvedPolicy = plugin.node.element?.properties?.width.policy;
+
+    expect(resolvedPolicy).toBe(width.policy);
+    expect(typeof resolvedPolicy?.validate).toBe('function');
+    expect(resolvedPolicy?.validate(1)).toBe(true);
+    expect(resolvedPolicy?.validate(-1)).toBe(false);
+  });
+
+  it('contextually types explicit node schema declarations', () => {
+    type Config = PluginConfig<
+      'typed-node-schema',
+      { targetPluginKeys: string[] }
+    >;
+
+    const plugin = createBasePlugin<Config>({
+      key: 'typed-node-schema',
+      options: { targetPluginKeys: ['p'] },
+      schema: ({ key, options, type }) => ({
+        properties: [
+          schema.elementProperty(
+            schema.key.prefix(`${key}:${type}:`),
+            property.json(),
+            { target: target.types(options.targetPluginKeys) }
+          ),
+        ],
+      }),
+    });
+    const editor = createBaseEditor({ plugins: [plugin] });
+
+    expect(() =>
+      editor.read.schema.validateFragment([
+        {
+          children: [{ text: '' }],
+          'typed-node-schema:typed-node-schema:value': 1,
+          type: 'p',
+        },
+      ])
+    ).not.toThrow();
+  });
+
   describe('extend', () => {
     it('keeps the original key while merging object config', () => {
       const plugin = resolvePluginTest(
@@ -256,10 +325,8 @@ describe('createBasePlugin', () => {
         createBasePlugin({
           key: 'runtime',
         }).extendExtension({
-          operations: {
-            apply({ next, operation }) {
-              next(operation);
-            },
+          api: {
+            runtime: { ping: () => true },
           },
         })
       );
@@ -327,10 +394,8 @@ describe('createBasePlugin', () => {
         createBasePlugin({
           key: 'runtime',
         }).extendExtension('custom', {
-          operations: {
-            apply({ next, operation }) {
-              next(operation);
-            },
+          api: {
+            runtime: { ping: () => true },
           },
         })
       );
@@ -503,11 +568,14 @@ describe('createBasePlugin', () => {
 
       const editor = createBaseEditor({ plugins: [configuredPlugin] });
       const resolvedPlugin = editor.getPlugin(configuredPlugin);
-      const parsedNode = resolvedPlugin.parsers?.html?.deserializer?.parse?.({
-        ...getEditorPlugin(editor, resolvedPlugin),
-        element: document.createElement('td'),
-        node: {},
-      });
+      const createContext = prepareParserPluginContext(editor, resolvedPlugin);
+      const parsedNode = editor.read((state) =>
+        resolvedPlugin.parsers?.html?.deserializer?.parse?.({
+          ...createContext(state),
+          element: document.createElement('td'),
+          node: {},
+        })
+      );
 
       expect(parsedNode).toEqual({ type: 'custom-td' });
     });
@@ -566,13 +634,16 @@ describe('createBasePlugin', () => {
       });
 
       const plugin = editor.getPlugin(linkPlugin);
+      const createContext = prepareParserPluginContext(editor, plugin);
 
       expect(
-        plugin.parsers.html?.deserializer?.parse?.({
-          ...getEditorPlugin(editor, plugin),
-          element: document.createElement('a'),
-          node: {},
-        })
+        editor.read((state) =>
+          plugin.parsers.html?.deserializer?.parse?.({
+            ...createContext(state),
+            element: document.createElement('a'),
+            node: {},
+          })
+        )
       ).toEqual({
         test: true,
       });
@@ -630,7 +701,7 @@ describe('createBasePlugin', () => {
     it('configures deeply nested plugins', () => {
       const grandchild = createBasePlugin({
         key: 'c',
-        node: { isElement: true },
+        node: { element: {} },
         options: { a: 1 },
       });
 
@@ -645,13 +716,13 @@ describe('createBasePlugin', () => {
             key: 'a',
             plugins: [child],
           }).configurePlugin(grandchild, {
-            node: { isElement: false },
+            node: { element: { selectable: false } },
             options: { a: 2 },
           }),
         ],
       });
 
-      expect(editor.plugins.c.node.isElement).toBe(false);
+      expect(editor.plugins.c.node.element?.selectable).toBe(false);
       expect(editor.plugin(grandchild).getOptions().a).toBe(2);
     });
   });

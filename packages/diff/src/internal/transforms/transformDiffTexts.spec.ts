@@ -3,15 +3,15 @@ import { transformDiffTexts } from './transformDiffTexts';
 const options = {
   getDeleteProps: () => ({
     diff: true,
-    diffOperation: { type: 'delete' },
+    diffIntent: { type: 'delete' },
   }),
   getInsertProps: () => ({
     diff: true,
-    diffOperation: { type: 'insert' },
+    diffIntent: { type: 'insert' },
   }),
   getUpdateProps: (_node: any, properties: any, newProperties: any) => ({
     diff: true,
-    diffOperation: {
+    diffIntent: {
       newProperties,
       properties,
       type: 'update',
@@ -45,12 +45,12 @@ describe('transformDiffTexts', () => {
           {
             text: 'old',
             diff: true,
-            diffOperation: { type: 'delete' },
+            diffIntent: { type: 'delete' },
           },
           {
             text: 'new',
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
           },
         ],
       },
@@ -71,23 +71,50 @@ describe('transformDiffTexts', () => {
       {
         ...mention,
         diff: true,
-        diffOperation: { type: 'delete' },
+        diffIntent: { type: 'delete' },
       },
       {
         text: 'b',
         diff: true,
-        diffOperation: { type: 'delete' },
+        diffIntent: { type: 'delete' },
       },
       {
         ...mention,
         diff: true,
-        diffOperation: { type: 'insert' },
+        diffIntent: { type: 'insert' },
       },
       {
         text: 'c',
         diff: true,
-        diffOperation: { type: 'insert' },
+        diffIntent: { type: 'insert' },
       },
     ]);
+  });
+
+  it('encodes removed properties without undefined JSON values', () => {
+    const result = transformDiffTexts(
+      [{ bold: true, text: 'same' }] as any,
+      [{ text: 'same' }] as any,
+      options
+    );
+
+    expect(result).toEqual([
+      {
+        diff: true,
+        diffIntent: {
+          newProperties: {},
+          properties: { bold: true },
+          type: 'update',
+        },
+        text: 'same',
+      },
+    ]);
+    expect(JSON.parse(JSON.stringify(result))).toEqual(result);
+  });
+
+  it('preserves the target empty leaf', () => {
+    expect(
+      transformDiffTexts([{ text: '' }] as any, [{ text: '' }] as any, options)
+    ).toEqual([{ text: '' }]);
   });
 });

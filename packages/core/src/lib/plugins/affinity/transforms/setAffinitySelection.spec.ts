@@ -1,18 +1,35 @@
 import type { EdgeNodes } from '../types';
 
 import { createBaseEditor } from '../../../editor';
+import { createBasePlugin } from '../../../plugin';
 import { setAffinitySelection } from './setAffinitySelection';
+
+const MarkPlugins = [
+  createBasePlugin({
+    key: 'bold',
+    node: { mark: true },
+  }),
+  createBasePlugin({
+    key: 'italic',
+    node: { mark: true },
+  }),
+];
 
 const createAffinityEditor = () => {
   const editor = createBaseEditor({
+    plugins: MarkPlugins,
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
     value: [
       {
         type: 'p',
-        children: [{ text: 'before' }, { text: 'after' }],
+        children: [
+          { bold: true, text: 'before' },
+          { italic: true, text: 'after' },
+        ],
       },
     ],
   });
@@ -30,7 +47,7 @@ const applyAffinitySelection = (
   affinity: 'backward' | 'forward'
 ) => {
   editor.update((tx) => {
-    setAffinitySelection(editor, edgeNodes, affinity, tx);
+    setAffinitySelection(edgeNodes, affinity, tx);
   });
 };
 
@@ -46,12 +63,14 @@ describe('setAffinitySelection', () => {
 
     expect(editor.read.marks()).toEqual({});
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
+      marks: {},
     });
   });
 
-  it('moves selection to the previous text edge and clears marks for backward affinity', () => {
+  it('moves selection to the previous text edge and inherits its marks', () => {
     const editor = createAffinityEditor();
 
     applyAffinitySelection(
@@ -64,10 +83,11 @@ describe('setAffinitySelection', () => {
     );
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 6, path: [0, 0] },
       focus: { offset: 6, path: [0, 0] },
     });
-    expect(editor.read.marks()).toEqual({});
+    expect(editor.read.marks()).toEqual({ bold: true });
   });
 
   it('copies the next text marks for forward affinity', () => {
@@ -83,8 +103,10 @@ describe('setAffinitySelection', () => {
     );
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 6, path: [0, 0] },
       focus: { offset: 6, path: [0, 0] },
+      marks: { italic: true },
     });
     expect(editor.read.marks()).toEqual(
       expect.objectContaining({
@@ -93,7 +115,7 @@ describe('setAffinitySelection', () => {
     );
   });
 
-  it('clears marks when moving forward without a previous edge node', () => {
+  it('keeps the active marks when moving forward without a previous edge node', () => {
     const editor = createAffinityEditor();
 
     applyAffinitySelection(
@@ -102,8 +124,9 @@ describe('setAffinitySelection', () => {
       'forward'
     );
 
-    expect(editor.read.marks()).toEqual({});
+    expect(editor.read.marks()).toEqual({ bold: true });
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -122,6 +145,7 @@ describe('setAffinitySelection', () => {
     );
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 6, path: [0, 0] },
       focus: { offset: 6, path: [0, 0] },
     });

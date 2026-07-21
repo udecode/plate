@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { RangeApi, type Selection } from '@platejs/plite';
+import { type EditorCommit, RangeApi, type Selection } from '@platejs/plite';
 import { useEditorRuntimeState } from '@platejs/plite-react';
 
 import { useAtomStoreSet, useAtomStoreState, useAtomStoreValue } from 'jotai-x';
@@ -18,8 +18,8 @@ export type PlateStore = ReturnType<typeof usePlateStore>;
 
 export const PLATE_SCOPE = 'plate';
 
-const childrenChanged = (change?: { childrenChanged?: boolean }) =>
-  Boolean(change?.childrenChanged);
+const childrenChanged = (change?: EditorCommit) =>
+  Boolean(change?.changed.hasAny('document'));
 
 const selectionChanged = (change?: { selectionChanged?: boolean }) =>
   Boolean(change?.selectionChanged);

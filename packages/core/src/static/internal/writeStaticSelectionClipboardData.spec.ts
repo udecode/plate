@@ -80,13 +80,18 @@ describe('writeStaticSelectionClipboardData', () => {
     ).mockReturnValue(false);
 
     expect(writeStaticSelectionClipboardData(editor, data)).toBe(true);
-    expect(data.getData('application/x-plite-fragment')).not.toBe('');
-    expect(data.getData('text/html')).toBe('<p>Alpha</p>');
+    const encoded = data.getData('application/x-plite-fragment');
+
+    expect(encoded).not.toBe('');
+    expect(data.getData('text/html')).toBe(
+      `<p data-plite-fragment="${encoded}" data-plite-fragment-format="x-plite-fragment">Alpha</p>`
+    );
     expect(data.getData('text/plain')).toBe('Alpha');
   });
 
   it('writes Plite fragment from rendered static DOM', () => {
     const editor = createStaticEditor({
+      nodeId: true,
       value: [
         {
           id: 'block-1',

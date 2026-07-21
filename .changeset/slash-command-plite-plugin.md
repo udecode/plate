@@ -1,5 +1,6 @@
 ---
-"@platejs/slash-command": patch
+"@platejs/slash-command": major
 ---
 
-Expose Slash plugins through the Plite-native plugin contract
+- Expose Slash plugins through the Plite-native plugin contract
+- Register slash-input values in compiled schemas

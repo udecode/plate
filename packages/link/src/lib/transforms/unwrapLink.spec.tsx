@@ -21,7 +21,7 @@ const value = [
 const createEditor = (anchor: Point, focus: Point) =>
   createBaseEditor({
     plugins: [BaseLinkPlugin],
-    selection: { anchor, focus },
+    selection: { kind: 'text', anchor, focus },
     value,
   });
 

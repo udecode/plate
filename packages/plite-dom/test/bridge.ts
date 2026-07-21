@@ -118,7 +118,7 @@ const bindTextOwner = (editor: any, path: number[], owner: HTMLElement) => {
 };
 
 describe('plite-dom bridge', () => {
-  it('does not mark node maps dirty for selection-only operations', () => {
+  it('does not mark node maps dirty for selection-only commits', () => {
     const editor = createParagraphEditor();
 
     IS_NODE_MAP_DIRTY.set(editor, false);
@@ -414,6 +414,7 @@ describe('plite-dom bridge', () => {
     const editor = createParagraphEditor();
     const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
     const range = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -1591,6 +1592,7 @@ describe('plite-dom bridge', () => {
       bindTextOwner(editor, [0, 0], owner);
 
       const domRange = editor.api.dom.assertDOMRange({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });

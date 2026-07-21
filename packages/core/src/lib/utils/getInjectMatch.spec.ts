@@ -1,3 +1,5 @@
+import { schema } from '@platejs/plite';
+
 import { createBaseEditor } from '../editor';
 import type { AnyBasePlugin } from '../plugin';
 import { createBasePlugin } from '../plugin';
@@ -5,17 +7,23 @@ import { getInjectMatch } from './getInjectMatch';
 
 const ParagraphPlugin = createBasePlugin({
   key: 'paragraph',
-  node: { isElement: true, type: 'p' },
+  node: { element: { groups: ['block'] }, type: 'paragraph-test' },
 });
 
 const QuotePlugin = createBasePlugin({
   key: 'quote',
-  node: { isElement: true, type: 'quote' },
+  node: {
+    element: {
+      content: schema.content.group('block'),
+      groups: ['block'],
+    },
+    type: 'quote',
+  },
 });
 
 const LinkPlugin = createBasePlugin({
   key: 'link',
-  node: { isElement: true, isInline: true, type: 'a' },
+  node: { element: { inline: true }, type: 'a' },
 });
 
 const createMatchEditor = (plugin: AnyBasePlugin) =>
@@ -23,7 +31,7 @@ const createMatchEditor = (plugin: AnyBasePlugin) =>
     plugins: [ParagraphPlugin, QuotePlugin, LinkPlugin, plugin],
     value: [
       {
-        children: [{ children: [{ text: 'nested' }], type: 'p' }],
+        children: [{ children: [{ text: 'nested' }], type: 'paragraph-test' }],
         type: 'quote',
       },
     ],
@@ -60,16 +68,25 @@ describe('getInjectMatch', () => {
 
     expect(elementMatch({ text: 'leaf' } as any, [0, 0])).toBe(false);
     expect(
-      elementMatch({ children: [{ text: 'leaf' }], type: 'p' } as any, [0])
+      elementMatch(
+        { children: [{ text: 'leaf' }], type: 'paragraph-test' } as any,
+        [0]
+      )
     ).toBe(true);
     expect(
       blockMatch({ children: [{ text: 'leaf' }], type: 'a' } as any, [0])
     ).toBe(false);
     expect(
-      blockMatch({ children: [{ text: 'leaf' }], type: 'p' } as any, [0])
+      blockMatch(
+        { children: [{ text: 'leaf' }], type: 'paragraph-test' } as any,
+        [0]
+      )
     ).toBe(true);
     expect(
-      leafMatch({ children: [{ text: 'leaf' }], type: 'p' } as any, [0])
+      leafMatch(
+        { children: [{ text: 'leaf' }], type: 'paragraph-test' } as any,
+        [0]
+      )
     ).toBe(false);
     expect(leafMatch({ text: 'leaf' } as any, [0, 0])).toBe(true);
   });
@@ -96,7 +113,10 @@ describe('getInjectMatch', () => {
     );
 
     expect(
-      targetMatch({ children: [{ text: 'leaf' }], type: 'p' } as any, [0])
+      targetMatch(
+        { children: [{ text: 'leaf' }], type: 'paragraph-test' } as any,
+        [0]
+      )
     ).toBe(true);
     expect(
       targetMatch({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
@@ -105,7 +125,10 @@ describe('getInjectMatch', () => {
       excludeMatch({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
     ).toBe(false);
     expect(
-      excludeMatch({ children: [{ text: 'leaf' }], type: 'p' } as any, [0])
+      excludeMatch(
+        { children: [{ text: 'leaf' }], type: 'paragraph-test' } as any,
+        [0]
+      )
     ).toBe(true);
   });
 
@@ -122,13 +145,19 @@ describe('getInjectMatch', () => {
     const match = getInjectMatch(editor, editor.getPlugin(plugin));
 
     expect(
-      match({ children: [{ text: 'leaf' }], type: 'p' } as any, [0, 0])
+      match(
+        { children: [{ text: 'leaf' }], type: 'paragraph-test' } as any,
+        [0, 0]
+      )
     ).toBe(false);
     expect(
       match({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
     ).toBe(true);
     expect(
-      match({ children: [{ text: 'leaf' }], type: 'p' } as any, [0, 0, 0])
+      match(
+        { children: [{ text: 'leaf' }], type: 'paragraph-test' } as any,
+        [0, 0, 0]
+      )
     ).toBe(false);
   });
 });

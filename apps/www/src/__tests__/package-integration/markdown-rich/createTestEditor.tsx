@@ -23,6 +23,7 @@ import {
 } from '@platejs/code-block';
 import { BaseListPlugin } from '@platejs/list';
 import { BaseLinkPlugin } from '@platejs/link';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
@@ -84,6 +85,8 @@ export const createTestEditor = (plugins: any[] = []) =>
       BaseKbdPlugin,
       BaseListPlugin,
       BaseLinkPlugin,
+      BaseEquationPlugin,
+      BaseInlineEquationPlugin,
       BaseFootnoteReferencePlugin,
       BaseFootnoteDefinitionPlugin,
       markdownPlugin,

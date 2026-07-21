@@ -1,6 +1,9 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
-import { openExample } from '@platejs/browser/playwright';
+import {
+  openExample,
+  type SelectionSnapshot,
+} from '@platejs/browser/playwright';
 
 const findRenderedText = async (page: Page, text: string) =>
   page.evaluate((query) => {
@@ -27,10 +30,7 @@ const findRenderedText = async (page: Page, text: string) =>
 
 const collapseDOMSelectionToTextEnd = async (
   text: Locator,
-  selection: {
-    anchor: { path: number[]; offset: number };
-    focus: { path: number[]; offset: number };
-  }
+  selection: SelectionSnapshot
 ) => {
   await text.evaluate((element: HTMLElement, nextSelection) => {
     const root = element.closest(
@@ -72,8 +72,6 @@ const collapseDOMSelectionToTextEnd = async (
 };
 
 test.describe('dom coverage boundaries example', () => {
-  test.describe.configure({ mode: 'serial' });
-
   test('keeps hidden content out of native find until materialized', async ({
     page,
   }) => {
@@ -305,6 +303,7 @@ test.describe('dom coverage boundaries example', () => {
     const text = 'Section summary stays mounted.';
 
     await collapseDOMSelectionToTextEnd(editor.root.getByText(text), {
+      kind: 'text',
       anchor: { path: [2, 0, 0], offset: text.length },
       focus: { path: [2, 0, 0], offset: text.length },
     });
@@ -312,6 +311,7 @@ test.describe('dom coverage boundaries example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [2, 0, 0], offset: text.length },
         focus: { path: [2, 0, 0], offset: text.length },
       });

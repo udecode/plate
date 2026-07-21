@@ -177,6 +177,12 @@ Rules:
   `editor.read.nodes.path(node)` only when a `Path` is the actual result. Never
   rediscover that node with `read.nodes.find` by matching its `type` and `id`.
   Plate package source must handle an unresolved path instead of asserting it.
+- Do not mechanically replace `editor.read.nodes.path(node)` with `usePath()`.
+  `usePath()` is a reactive element-context dependency. In a repeated node
+  renderer, keep event-only path resolution inside the handler or command.
+  Use an incoming renderer `path` prop when render output depends on it, and
+  keep `usePath()` only when a descendant must react to path changes. Every
+  newly introduced `usePath()` in migrated code requires that classification.
 - Use `match: { type }`, `match: { id }`, or an array-valued one-of matcher for
   shallow exact node metadata checks. Property matchers intentionally ignore
   `text` and `children`; content and structure checks stay predicates. Keep a

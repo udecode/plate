@@ -3,26 +3,21 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { cloneDeep } from 'lodash';
 import {
   createEditor,
   type Element,
-  type Editor as EditorType,
-  type EditorUpdateTransaction,
+  type EditorExtension,
+  TextApi,
 } from '@platejs/plite';
 import {
   getLastCommit as editorGetLastCommit,
-  getOperations as editorGetOperations,
   getPathByRuntimeId as editorGetPathByRuntimeId,
   getRuntimeId as editorGetRuntimeId,
   getSnapshot as editorGetSnapshot,
   insertNodes as editorInsertNodes,
   isEditor as editorIsEditor,
-  normalize as editorNormalize,
   replace as editorReplace,
-  runTrustedUpdate,
 } from '@platejs/plite/internal';
-import { getEditorRuntime } from '@platejs/plite/internal';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 import { isExplicitCutFixture } from './fixture-claim-overrides.js';
 import { createFixtureTransactionApi, withTest } from './support/with-test.js';
@@ -91,18 +86,6 @@ const runFixtureTree = (
   });
 };
 
-const withBatchTest = (editor: EditorType, dirties: string[]) => {
-  const runtime = getEditorRuntime(editor);
-  const { normalizeNode } = runtime;
-
-  runtime.normalizeNode = ([node, path]) => {
-    dirties.push(JSON.stringify(path));
-    normalizeNode([node, path]);
-  };
-
-  return editor;
-};
-
 const getExpectedSnapshot = (output: any) =>
   editorIsEditor(output) ? editorGetSnapshot(output) : output;
 
@@ -119,42 +102,62 @@ describe('@platejs/plite', () => {
     assert.deepEqual(actual, output, fixturePath);
   });
 
-  runFixtureTree(resolve(testsDir, 'operations'), (module, fixturePath) => {
-    const { input, operations, output } = module;
-    const editor = withTest(input);
-
-    runEditorTransaction(editor, (transaction) => {
-      for (const op of operations) {
-        transaction.apply(op);
-      }
-    });
-
-    const snapshot = editorGetSnapshot(editor);
-    const expected = getExpectedSnapshot(output);
-
-    assert.deepEqual(snapshot.children, expected.children, fixturePath);
-    assert.deepEqual(snapshot.selection, expected.selection, fixturePath);
-  });
-
   runFixtureTree(resolve(testsDir, 'normalization'), (module, fixturePath) => {
     const { input, output, withFallbackElement } = module;
     const editor = withTest(input);
 
     if (withFallbackElement) {
-      const runtime = getEditorRuntime(editor);
-      const { normalizeNode } = runtime;
+      const fallbackExtension = {
+        corrections: [
+          {
+            correct: ({ entry, tx }) => {
+              const [node, path] = entry;
 
-      runtime.normalizeNode = (entry, options) => {
-        normalizeNode(entry, {
-          ...options,
-          fallbackElement: () => ({ type: 'paragraph', children: [] }),
-        });
-      };
+              if (TextApi.isText(node)) return;
+
+              const children = editorIsEditor(node)
+                ? editor.read((state) => state.children())
+                : node.children;
+              const firstChild = children[0];
+
+              if (
+                path.length > 0 &&
+                (editor.read.schema.isInline(node) ||
+                  TextApi.isText(firstChild) ||
+                  (firstChild && editor.read.schema.isInline(firstChild)))
+              ) {
+                return;
+              }
+
+              const index = children.findIndex(
+                (child) =>
+                  TextApi.isText(child) || editor.read.schema.isInline(child)
+              );
+
+              if (index < 0) return;
+
+              tx.nodes.wrap(
+                { type: 'paragraph', children: [] },
+                { at: [...path, index] }
+              );
+            },
+            event: 'content',
+          },
+          {
+            correct(context) {
+              fallbackExtension.corrections[0].correct(context);
+            },
+            event: 'content',
+            query: 'root',
+          },
+        ],
+        name: `fixture-root-content-${fixturePath}`,
+      } satisfies EditorExtension;
+
+      editor.extend(fallbackExtension);
     }
 
-    editor.update(() => {
-      editorNormalize(editor, { force: true });
-    });
+    editor.update.value.repair();
 
     const snapshot = editorGetSnapshot(editor);
     const expected = getExpectedSnapshot(output);
@@ -167,7 +170,7 @@ describe('@platejs/plite', () => {
     const { input, output, run } = module;
     const editor = withTest(input);
 
-    editor.update((tx: EditorUpdateTransaction) => {
+    editor.update((tx) => {
       run(createFixtureTransactionApi(editor, tx));
     });
 
@@ -224,20 +227,8 @@ describe('@platejs/plite', () => {
     });
   });
 
-  describe('schema', () => {
-    it('rolls back earlier specs when batch registration fails', () => {
-      const editor = createEditor();
-      const schema = getEditorRuntime(editor).schema;
-
-      assert.throws(() => {
-        schema.define([{ type: 'atomic-a' }, { type: 'atomic-a' }]);
-      }, /conflicts/);
-      assert.equal(schema.getElementSpec('atomic-a'), null);
-    });
-  });
-
-  describe('selection operations', () => {
-    it('does not emit a selection operation for null-to-null selection updates', () => {
+  describe('selection updates', () => {
+    it('does not publish a commit for a null-to-null selection update', () => {
       const editor = createEditor();
 
       editorReplace(editor, {
@@ -248,54 +239,15 @@ describe('@platejs/plite', () => {
           },
         ],
         selection: null,
-        marks: null,
       });
 
-      const operationCount = editorGetOperations(editor).length;
       const lastCommit = editorGetLastCommit(editor);
 
       runEditorTransaction(editor, (tx) => {
         tx.setSelection(null);
       });
 
-      assert.equal(editorGetOperations(editor).length, operationCount);
       assert.equal(editorGetLastCommit(editor), lastCommit);
     });
-  });
-
-  describe('batchDirty', () => {
-    const runBatchDirtyTree = (path: string) => {
-      runFixtureTree(path, (module) => {
-        const { input, run } = module;
-        const input2 = createEditor();
-        const snapshot = editorGetSnapshot(input);
-
-        runTrustedUpdate(input2, (tx) => {
-          tx.value.replace({
-            children: cloneDeep(snapshot.children),
-            selection: cloneDeep(snapshot.selection),
-            marks: cloneDeep(snapshot.marks),
-          });
-        });
-
-        const dirties1: string[] = [];
-        const dirties2: string[] = [];
-
-        const editor1 = withBatchTest(withTest(input), dirties1);
-        const editor2 = withBatchTest(withTest(input2), dirties2);
-
-        editor1.update((tx) => {
-          run(createFixtureTransactionApi(editor1, tx), { batchDirty: true });
-        });
-        editor2.update((tx) => {
-          run(createFixtureTransactionApi(editor2, tx), { batchDirty: false });
-        });
-
-        assert.equal(dirties1.join(' '), dirties2.join(' '));
-      });
-    };
-
-    runBatchDirtyTree(resolve(testsDir, 'transforms/insertNodes'));
-    runBatchDirtyTree(resolve(testsDir, 'transforms/insertFragment'));
   });
 });

@@ -7,22 +7,61 @@ on:
       - next
     paths:
       - "packages/browser/**"
+      - "packages/core/**"
       - "packages/plite/**"
       - "packages/plite-dom/**"
       - "packages/plite-history/**"
       - "packages/plite-hyperscript/**"
       - "packages/plite-layout/**"
       - "packages/plite-react/**"
+      - "packages/plate-scripts/**"
+      - "packages/udecode/**"
       - "packages/yjs/**"
       - "apps/plite/**"
       - "apps/www/src/app/(app)/examples/plite/**"
-      - "apps/plite/tests/plite-browser/**"
-      - "content/docs/plite/**"
+      - "apps/www/src/app/dev/editor-perf/**"
+      - "apps/www/src/app/globals.css"
+      - "apps/www/src/components/icons.tsx"
+      - "apps/www/src/components/ui/**"
+      - "apps/www/src/components/preview-dev-overlay-styles.tsx"
+      - "apps/www/src/components/themed-syntax-highlighter.tsx"
+      - "apps/www/src/hooks/use-copy-to-clipboard.ts"
+      - "apps/www/src/hooks/use-mobile.ts"
+      - "apps/www/src/lib/utils.ts"
+      - "apps/www/src/registry/hooks/use-mounted.ts"
+      - "apps/www/src/registry/components/editor/plugins/**/*.ts"
+      - "apps/www/src/registry/components/editor/plugins/**/*.tsx"
+      - "apps/www/src/types/**"
+      - "apps/www/src/utils/cn.ts"
+      - "apps/www/package.json"
+      - "apps/www/postcss.config.js"
+      - "apps/www/tsconfig.package-integration.json"
+      - "apps/www/tsconfig.json"
+      - "benchmarks/editor/benchmarks/benchmark-artifact.ts"
+      - "benchmarks/editor/benchmarks/benchmark-artifact.test.ts"
+      - "benchmarks/editor/benchmarks/plite-*"
+      - "benchmarks/slate-v2/donor/core/current/**"
+      - "benchmarks/slate-v2/donor/shared/**"
+      - "benchmarks/targets/slate-v2.json"
+      - "config/**"
+      - "tooling/config/**"
+      - "tooling/scripts/build-plite-package.mjs"
+      - "tooling/scripts/build-plite-package.test.mjs"
       - "tooling/scripts/bench-targets.mjs"
+      - "tooling/scripts/bench-targets.test.mjs"
+      - "tooling/scripts/check-plite*.mjs"
+      - "tooling/scripts/plite-source-aliases.test.mjs"
+      - "tooling/scripts/run-bounded-process.mjs"
+      - "tooling/scripts/run-bounded-process.test.mjs"
+      - "tooling/scripts/typecheck-package-source.mjs"
       - "package.json"
+      - "bunfig.toml"
+      - "postcss.config.mjs"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - "tsconfig.json"
       - "turbo.json"
+      - ".npmrc"
       - ".github/actions/pnpm-install/**"
       - ".github/workflows/plite-ci.yml"
   pull_request:
@@ -32,22 +71,61 @@ on:
       - reopened
     paths:
       - "packages/browser/**"
+      - "packages/core/**"
       - "packages/plite/**"
       - "packages/plite-dom/**"
       - "packages/plite-history/**"
       - "packages/plite-hyperscript/**"
       - "packages/plite-layout/**"
       - "packages/plite-react/**"
+      - "packages/plate-scripts/**"
+      - "packages/udecode/**"
       - "packages/yjs/**"
       - "apps/plite/**"
       - "apps/www/src/app/(app)/examples/plite/**"
-      - "apps/plite/tests/plite-browser/**"
-      - "content/docs/plite/**"
+      - "apps/www/src/app/dev/editor-perf/**"
+      - "apps/www/src/app/globals.css"
+      - "apps/www/src/components/icons.tsx"
+      - "apps/www/src/components/ui/**"
+      - "apps/www/src/components/preview-dev-overlay-styles.tsx"
+      - "apps/www/src/components/themed-syntax-highlighter.tsx"
+      - "apps/www/src/hooks/use-copy-to-clipboard.ts"
+      - "apps/www/src/hooks/use-mobile.ts"
+      - "apps/www/src/lib/utils.ts"
+      - "apps/www/src/registry/hooks/use-mounted.ts"
+      - "apps/www/src/registry/components/editor/plugins/**/*.ts"
+      - "apps/www/src/registry/components/editor/plugins/**/*.tsx"
+      - "apps/www/src/types/**"
+      - "apps/www/src/utils/cn.ts"
+      - "apps/www/package.json"
+      - "apps/www/postcss.config.js"
+      - "apps/www/tsconfig.package-integration.json"
+      - "apps/www/tsconfig.json"
+      - "benchmarks/editor/benchmarks/benchmark-artifact.ts"
+      - "benchmarks/editor/benchmarks/benchmark-artifact.test.ts"
+      - "benchmarks/editor/benchmarks/plite-*"
+      - "benchmarks/slate-v2/donor/core/current/**"
+      - "benchmarks/slate-v2/donor/shared/**"
+      - "benchmarks/targets/slate-v2.json"
+      - "config/**"
+      - "tooling/config/**"
+      - "tooling/scripts/build-plite-package.mjs"
+      - "tooling/scripts/build-plite-package.test.mjs"
       - "tooling/scripts/bench-targets.mjs"
+      - "tooling/scripts/bench-targets.test.mjs"
+      - "tooling/scripts/check-plite*.mjs"
+      - "tooling/scripts/plite-source-aliases.test.mjs"
+      - "tooling/scripts/run-bounded-process.mjs"
+      - "tooling/scripts/run-bounded-process.test.mjs"
+      - "tooling/scripts/typecheck-package-source.mjs"
       - "package.json"
+      - "bunfig.toml"
+      - "postcss.config.mjs"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - "tsconfig.json"
       - "turbo.json"
+      - ".npmrc"
       - ".github/actions/pnpm-install/**"
       - ".github/workflows/plite-ci.yml"
   workflow_dispatch:
@@ -63,6 +141,7 @@ jobs:
   packages:
     name: Plite packages
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -72,7 +151,7 @@ jobs:
       - name: Install bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.12
 
       - name: Monorepo install
         uses: ./.github/actions/pnpm-install
@@ -80,18 +159,86 @@ jobs:
       - name: Typecheck packages
         run: pnpm plite:typecheck
 
+      - name: Typecheck www Plite adopters
+        run: pnpm --filter www exec tsc --noEmit -p tsconfig.package-integration.json
+
       - name: Test packages
         run: pnpm plite:test
 
-      - name: Test browser package
-        run: pnpm plite:browser:test
+      - name: Test Plite proof contracts
+        run: pnpm check:plite:contracts
+
+  plite-adopters:
+    name: Plite adopter typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+
+      - name: Monorepo install
+        uses: ./.github/actions/pnpm-install
+
+      - name: Typecheck affected Plite adopters
+        env:
+          PLITE_CHECK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: pnpm check:plite:adopters
+
+  browser-build:
+    name: Plite browser build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+
+      - name: Monorepo install
+        uses: ./.github/actions/pnpm-install
+
+      - name: Build browser package
+        run: node apps/plite/scripts/build-browser-if-stale.mjs
+
+      - name: Build Plite proof app
+        run: PLITE_PROOF_FORCE_BUILD=1 node apps/plite/scripts/build-app-if-stale.mjs
+
+      - name: Upload proof build
+        uses: actions/upload-artifact@v4
+        with:
+          name: plite-browser-build
+          path: |
+            apps/plite/out
+            packages/browser/dist
+          include-hidden-files: true
+          retention-days: 3
 
   browser-chromium:
-    name: Plite browser chromium
+    name: Plite browser chromium ${{ matrix.shard }}/4
+    needs: browser-build
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.53.0-noble
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     env:
-      PLAYWRIGHT_RETRIES: 2
-      PLAYWRIGHT_WORKERS: 6
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      PLITE_BROWSER_JOB: ${{ matrix.shard }}/4
+      PLITE_BROWSER_UNIT_WORKERS: 2
 
     steps:
       - uses: actions/checkout@v4
@@ -101,30 +248,98 @@ jobs:
       - name: Install bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.12
 
       - name: Monorepo install
         uses: ./.github/actions/pnpm-install
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
+      - name: Download proof build
+        uses: actions/download-artifact@v4
         with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          name: plite-browser-build
+          path: .
 
-      - name: Install Chromium
-        run: pnpm --filter plite exec playwright install --with-deps chromium
+      # Cache lookup may cross commits; the runner validates the exact source,
+      # build, runtime, environment, plan, partition, and unit fingerprints.
+      - name: Restore Chromium browser proof state
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: apps/plite/.tmp/plite-browser-runner
+          key: plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
+            plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Run Chromium browser proof
-        run: pnpm --filter plite test:plite-browser:chromium
+        id: browser-proof
+        run: pnpm --filter plite test:plite-browser:project -- chromium
 
-  browser-matrix:
-    name: Plite browser matrix
+      - name: Save Chromium browser proof state
+        if: ${{ always() && !cancelled() && steps.browser-proof.outcome != 'skipped' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: apps/plite/.tmp/plite-browser-runner
+          key: plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload Chromium proof summary
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: plite-browser-summary-chromium-${{ matrix.shard }}
+          path: apps/plite/test-results/plite-browser-runner/summary-*.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload Chromium failure evidence
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: plite-browser-failure-chromium-${{ matrix.shard }}
+          path: |
+            apps/plite/test-results/plite-browser
+            apps/plite/test-results/plite-browser-runner
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
+
+  browser-chromium-merge:
+    name: Plite browser chromium coverage
+    needs: browser-chromium
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Chromium proof summaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: plite-browser-summary-chromium-*
+          path: browser-summaries
+          merge-multiple: true
+
+      - name: Verify exact Chromium coverage
+        run: node apps/plite/scripts/merge-plite-browser-summaries.mjs browser-summaries chromium
+
+  browser-matrix-linux:
+    name: Plite browser ${{ matrix.project }} ${{ matrix.shard }}/4
+    needs: browser-build
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.53.0-noble
     if: ${{ github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [firefox, mobile]
+        shard: [1, 2, 3, 4]
     env:
-      PLAYWRIGHT_RETRIES: 2
-      PLAYWRIGHT_WORKERS: 6
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      PLITE_BROWSER_JOB: ${{ matrix.shard }}/4
+      PLITE_BROWSER_UNIT_WORKERS: 2
 
     steps:
       - uses: actions/checkout@v4
@@ -134,19 +349,161 @@ jobs:
       - name: Install bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.12
 
       - name: Monorepo install
         uses: ./.github/actions/pnpm-install
 
+      - name: Download proof build
+        uses: actions/download-artifact@v4
+        with:
+          name: plite-browser-build
+          path: .
+
+      - name: Restore browser proof state
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: apps/plite/.tmp/plite-browser-runner
+          key: plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
+            plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Run browser proof
+        id: browser-proof
+        run: pnpm --filter plite test:plite-browser:project -- "${{ matrix.project }}"
+
+      - name: Save browser proof state
+        if: ${{ always() && !cancelled() && steps.browser-proof.outcome != 'skipped' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: apps/plite/.tmp/plite-browser-runner
+          key: plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload browser proof summary
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: plite-browser-summary-${{ matrix.project }}-${{ matrix.shard }}
+          path: apps/plite/test-results/plite-browser-runner/summary-*.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload browser failure evidence
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: plite-browser-failure-${{ matrix.project }}-${{ matrix.shard }}
+          path: |
+            apps/plite/test-results/plite-browser
+            apps/plite/test-results/plite-browser-runner
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
+
+  browser-webkit:
+    name: Plite browser webkit ${{ matrix.shard }}/4
+    needs: browser-build
+    runs-on: macos-latest
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    env:
+      PLITE_BROWSER_JOB: ${{ matrix.shard }}/4
+      PLITE_BROWSER_UNIT_WORKERS: 2
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+
+      - name: Monorepo install
+        uses: ./.github/actions/pnpm-install
+
+      - name: Download proof build
+        uses: actions/download-artifact@v4
+        with:
+          name: plite-browser-build
+          path: .
+
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
-          path: ~/.cache/ms-playwright
+          path: ~/Library/Caches/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Install Playwright browsers
-        run: pnpm --filter plite exec playwright install --with-deps chromium firefox
+      - name: Install WebKit
+        run: pnpm --filter plite exec playwright install webkit
 
-      - name: Run browser matrix
-        run: pnpm --filter plite test:plite-browser
+      - name: Restore WebKit browser proof state
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: apps/plite/.tmp/plite-browser-runner
+          key: plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
+            plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Run WebKit browser proof
+        id: browser-proof
+        run: pnpm --filter plite test:plite-browser:project -- webkit
+
+      - name: Save WebKit browser proof state
+        if: ${{ always() && !cancelled() && steps.browser-proof.outcome != 'skipped' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: apps/plite/.tmp/plite-browser-runner
+          key: plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload WebKit proof summary
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: plite-browser-summary-webkit-${{ matrix.shard }}
+          path: apps/plite/test-results/plite-browser-runner/summary-*.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload WebKit failure evidence
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: plite-browser-failure-webkit-${{ matrix.shard }}
+          path: |
+            apps/plite/test-results/plite-browser
+            apps/plite/test-results/plite-browser-runner
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
+
+  browser-matrix-merge:
+    name: Plite browser matrix coverage
+    needs: [browser-chromium, browser-matrix-linux, browser-webkit]
+    if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download browser proof summaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: plite-browser-summary-*
+          path: browser-summaries
+          merge-multiple: true
+
+      - name: Verify exact browser-matrix coverage
+        run: node apps/plite/scripts/merge-plite-browser-summaries.mjs browser-summaries chromium firefox mobile webkit

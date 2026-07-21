@@ -47,47 +47,45 @@ Once blockquote became a real container, the old keyboard primitives stopped mat
 
 ## Solution
 
-Add an explicit structural primitive and wire quote rules to it:
+Wire quote rules and the plugin's semantic command to the transaction primitive:
 
-- introduce `editor.tf.liftBlock(...)`
+- use `tx.blocks.lift(...)` for one-level structural lifting
 - add `'lift'` to `rules.break.empty` and `rules.delete.start`
-- make `BlockquotePlugin` claim lift behavior only for plain quoted paragraphs
+- make `BaseBlockquotePlugin` claim lift behavior only for plain quoted paragraphs
 - only lift `delete.start` for non-empty quoted paragraphs or the first empty quoted paragraph in the quote
 - let empty non-first quoted paragraphs fall through to the default delete path so they merge inside the quote
 - let list behavior win first for quoted list items
 - keep plain paragraph `Tab` editor-owned through indent behavior
 - keep quoted paragraph `Tab` editor-owned through the same indent behavior
-- make reverse `Tab` on a quoted plain paragraph lift one quote level
+- define reverse `Tab` with `.extendTx(...)` and lift eligible blocks through its active `tx`
 - let reverse `Tab` remove paragraph indent before lifting the quote
 
-The key transform is narrow on purpose:
+Inside the `untab` command's active transaction, the algorithm stays narrow on
+purpose:
 
 ```ts
-export const liftBlock = (editor, { at, match } = {}) => {
-  const block = editor.api.block({ at });
+const blocks = tx.nodes
+  .toArray<Element>({
+    at: tx.selection() ?? undefined,
+    match: (node, path) =>
+      ElementApi.isElement(node) &&
+      !(node as { indent?: unknown }).indent &&
+      isLiftableBlockquoteChild(editor, node, path, type),
+    mode: 'lowest',
+  })
+  .sort(
+    (a, b) =>
+      b[1].length - a[1].length ||
+      b[1].join('.').localeCompare(a[1].join('.'))
+  );
 
-  if (!block || !match) return;
+if (blocks.length === 0) return false;
 
-  const [, blockPath] = block;
-  const ancestor = editor.api.above({
-    at: blockPath,
-    match: combineMatchOptions(
-      editor,
-      (_node, path) => path.length < blockPath.length,
-      { match }
-    ),
-  });
+for (const [, path] of blocks) {
+  tx.blocks.lift({ at: path });
+}
 
-  if (!ancestor) return;
-
-  editor.tf.unwrapNodes({
-    at: blockPath,
-    match,
-    split: true,
-  });
-
-  return true;
-};
+return true;
 ```
 
 And the blockquote rule seam becomes:
@@ -103,7 +101,7 @@ rules: {
 
 Markdown containers should behave like lists: one keypress changes one structural depth.
 
-`unwrapNodes(..., { split: true })` gives exactly that. The current block leaves the nearest matching ancestor, nested containers only lose one level, and quoted siblings stay wrapped instead of exploding into flat content.
+`tx.blocks.lift(...)` gives exactly that. The current block leaves its nearest structural level, nested containers only lose one level, and quoted siblings stay wrapped instead of exploding into flat content.
 
 But destructive keys still need one more law: empty blocks should die in place before structure peels away. A second empty paragraph inside the same quote is not a quote-exit gesture. It is just dead air.
 

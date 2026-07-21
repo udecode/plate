@@ -156,4 +156,26 @@ describe('toggle code block', () => {
 
     expect(editor.read.children()).toEqual(output.children);
   });
+
+  it('uses a selection written earlier in the same transaction', () => {
+    const input = (
+      <editor>
+        <hp>
+          line 1
+          <cursor />
+        </hp>
+      </editor>
+    ) as TestEditor;
+    const editor = createBaseEditor({
+      plugins: [CodeBlockPlugin],
+      value: input.children,
+    });
+
+    editor.update((tx) => {
+      tx.selection.set(input.selection!);
+      tx.codeBlock.toggle();
+    });
+
+    expect(editor.read.children()[0]).toMatchObject({ type: 'code_block' });
+  });
 });

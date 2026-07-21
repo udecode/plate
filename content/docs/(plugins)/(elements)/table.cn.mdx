@@ -610,7 +610,7 @@ const editor = createPlateEditor({
 
 ## 转换操作
 
-### `tf.insert.table`
+### `editor.update.insert.table`
 
 在当前选区插入表格（若编辑器中无现有表格）。选中插入表格的起始位置。
 
@@ -639,7 +639,7 @@ const editor = createPlateEditor({
 </APIParameters>
 </API>
 
-### `tf.insert.tableColumn`
+### `editor.update.insert.tableColumn`
 
 在表格的当前选区或指定单元格路径处插入一列。
 
@@ -663,7 +663,7 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `tf.insert.tableRow`
+### `editor.update.insert.tableRow`
 
 在表格的当前选区或指定行路径处插入一行。
 
@@ -687,19 +687,19 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `tf.remove.tableColumn`
+### `editor.update.remove.tableColumn`
 
 删除表格中包含选中单元格的列。
 
-### `tf.remove.tableRow`
+### `editor.update.remove.tableRow`
 
 删除表格中包含选中单元格的行。
 
-### `tf.remove.table`
+### `editor.update.remove.table`
 
 删除整个表格。
 
-### `tf.table.merge`
+### `editor.update.table.merge`
 
 将多个选中的单元格合并为一个。
 
@@ -709,7 +709,7 @@ const editor = createPlateEditor({
 - 包含所有合并单元格的组合内容（仅非空单元格）
 - 继承第一个选中单元格的表头状态
 
-### `tf.table.split`
+### `editor.update.table.split`
 
 将合并的单元格拆分回单独的单元格。
 
@@ -719,7 +719,7 @@ const editor = createPlateEditor({
 - 将原始单元格的内容放在第一个单元格中
 - 为剩余空间创建空单元格
 
-### `tf.moveSelectionFromCell`
+### `moveSelectionFromCell(editor, options?)`
 
 在表格内按单元格单位移动选区。
 
@@ -740,7 +740,7 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `tf.setBorderSize`
+### `setBorderSize(editor, size, options?)`
 
 设置表格单元格中指定边框的大小。
 
@@ -767,7 +767,7 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `tf.setTableColSize`
+### `setTableColSize(editor, options, tableOptions?)`
 
 设置表格中特定列的宽度。
 
@@ -785,7 +785,7 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `tf.setTableMarginLeft`
+### `setTableMarginLeft(editor, options, tableOptions?)`
 
 设置表格的左边距。
 
@@ -800,7 +800,7 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `tf.setTableRowSize`
+### `setTableRowSize(editor, options, tableOptions?)`
 
 设置表格行的大小（高度）。
 

@@ -1,5 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseInlineEquationPlugin } from '../BaseInlineEquationPlugin';
 import { insertInlineEquation } from './insertInlineEquation';
@@ -9,6 +9,7 @@ describe('insertInlineEquation', () => {
     const editor = createBaseEditor({
       plugins: [BaseInlineEquationPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
@@ -31,7 +32,7 @@ describe('insertInlineEquation', () => {
           {
             children: [{ text: '' }],
             texExpression: 'abc',
-            type: KEYS.inlineEquation,
+            type: NODES.inlineEquation,
           },
           { text: '' },
         ],
@@ -48,6 +49,7 @@ describe('insertInlineEquation', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -61,7 +63,7 @@ describe('insertInlineEquation', () => {
 
     editor.update((tx) =>
       insertInlineEquation(tx, editor.getType(KEYS.inlineEquation), {
-        at: [0, 1],
+        at: { offset: 1, path: [0, 0] },
         texExpression: 'x^2',
       })
     );

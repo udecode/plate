@@ -7,6 +7,7 @@ const createEditor = (value: Value) =>
   createBaseEditor({
     plugins: [BaseLinkPlugin],
     selection: {
+      kind: 'text',
       anchor: { offset: 4, path: [0, 1, 0] },
       focus: { offset: 4, path: [0, 1, 0] },
     },
@@ -47,6 +48,7 @@ describe('BaseLinkPlugin Plite runtime', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 2] },
       focus: { offset: 1, path: [0, 2] },
     });

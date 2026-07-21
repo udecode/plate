@@ -2,10 +2,11 @@
 "@platejs/core": patch
 ---
 
-Synced latest changes from `main` into the beta lane and delete selected block
-voids without merging following content into them.
-
-Expose every plugin-owned one-shot command group through
-`editor.plugin(Plugin).update`.
-
-Preserve editor extension state types through `toPlatePlugin`.
+- Delete selected block voids without merging following content into them
+- Expose plugin-owned one-shot command groups through `editor.plugin(Plugin).update`
+- Preserve editor extension state types through `toPlatePlugin`
+- Declare plugin element behavior and marks through `node.element`, `node.mark`, and schema contributions compiled by Plite
+- Publish Plate schema installation and an empty primary-root default as one atomic extension migration
+- Register parser plugins as pure schema-bound Plite DOM host codecs that return immutable slices
+- Publish bundled declaration entrypoints that resolve under NodeNext
+- Resolve navigation, normalization, and input-rule targets against the active transaction draft

@@ -71,10 +71,12 @@ describe('onKeyDownTable', () => {
 
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
-    expect(editor.read.selection()).toEqual({
+    expect(editor.read.selection()).toMatchObject({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 1, 0, 0, 0] },
+      kind: 'table-cell',
     });
+    expect(editor.read.selection.ranges()).toHaveLength(2);
   });
 
   it('keeps Shift+Down native while focus can still extend inside the current cell', () => {
@@ -136,10 +138,12 @@ describe('onKeyDownTable', () => {
 
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
-    expect(editor.read.selection()).toEqual({
+    expect(editor.read.selection()).toMatchObject({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 1, 0, 0] },
+      kind: 'table-cell',
     });
+    expect(editor.read.selection.ranges()).toHaveLength(2);
   });
 
   it('eagerly expands Shift+Up from one cell into the previous cell', () => {
@@ -170,10 +174,12 @@ describe('onKeyDownTable', () => {
 
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
-    expect(editor.read.selection()).toEqual({
+    expect(editor.read.selection()).toMatchObject({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 1, 0, 0, 0] },
+      kind: 'table-cell',
     });
+    expect(editor.read.selection.ranges()).toHaveLength(2);
   });
 
   it('eagerly expands Shift+Left from one cell into the previous cell', () => {
@@ -202,10 +208,12 @@ describe('onKeyDownTable', () => {
 
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
-    expect(editor.read.selection()).toEqual({
+    expect(editor.read.selection()).toMatchObject({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 1, 0, 0] },
+      kind: 'table-cell',
     });
+    expect(editor.read.selection.ranges()).toHaveLength(2);
   });
 
   it('extends an existing multi-cell selection with Shift+Right', () => {
@@ -240,9 +248,11 @@ describe('onKeyDownTable', () => {
 
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
-    expect(editor.read.selection()).toEqual({
+    expect(editor.read.selection()).toMatchObject({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 2, 0, 0] },
+      kind: 'table-cell',
     });
+    expect(editor.read.selection.ranges()).toHaveLength(3);
   });
 });

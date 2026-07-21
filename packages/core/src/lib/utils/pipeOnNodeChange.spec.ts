@@ -1,4 +1,4 @@
-import type { Descendant, NodeOperation } from '@platejs/plite';
+import type { Descendant, EditorNodeChangeContext } from '@platejs/plite';
 
 import { createBaseEditor } from '../editor';
 import { type BasePlugin, createBasePlugin } from '../plugin';
@@ -16,11 +16,18 @@ const createNodeChangePlugin = (key: string, onNodeChange: OnNodeChange) =>
 
 const node: Descendant = { text: 'next' };
 const prevNode: Descendant = { text: 'prev' };
-const insertNodeOperation: NodeOperation = {
+const createInsertNodeChange = (
+  editor: ReturnType<typeof createBaseEditor>
+): EditorNodeChangeContext<ReturnType<typeof createBaseEditor>> => ({
+  commit: {} as never,
+  editor,
+  kind: 'insert',
   node,
   path: [0],
-  type: 'insert_node',
-};
+  previousPath: null,
+  prevNode,
+  root: 'main',
+});
 
 describe('pipeOnNodeChange', () => {
   it('skips handlers when the editor is read-only', () => {
@@ -34,7 +41,7 @@ describe('pipeOnNodeChange', () => {
 
     onNodeChange.mockClear();
 
-    expect(pipeOnNodeChange(editor, node, prevNode, insertNodeOperation)).toBe(
+    expect(pipeOnNodeChange(editor, createInsertNodeChange(editor))).toBe(
       false
     );
     expect(onNodeChange).not.toHaveBeenCalled();
@@ -57,16 +64,17 @@ describe('pipeOnNodeChange', () => {
     second.mockClear();
     third.mockClear();
 
-    expect(pipeOnNodeChange(editor, node, prevNode, insertNodeOperation)).toBe(
-      true
-    );
+    expect(pipeOnNodeChange(editor, createInsertNodeChange(editor))).toBe(true);
     expect(first).toHaveBeenCalledTimes(1);
     expect(second).toHaveBeenCalledTimes(1);
     expect(third).not.toHaveBeenCalled();
     expect(second.mock.calls[0]?.[0]).toMatchObject({
+      kind: 'insert',
       node,
-      operation: insertNodeOperation,
+      path: [0],
+      previousPath: null,
       prevNode,
+      root: undefined,
     });
   });
 });

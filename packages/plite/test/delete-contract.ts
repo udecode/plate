@@ -6,7 +6,6 @@ import {
   deleteForward as editorDeleteForward,
   getChildren as editorGetChildren,
   getLastCommit as editorGetLastCommit,
-  getOperations as editorGetOperations,
   getSnapshot as editorGetSnapshot,
   insertBreak as editorInsertBreak,
   insertText as editorInsertText,
@@ -14,11 +13,8 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import {
-  createEditor,
-  type Element,
-  defineEditorExtension,
-} from '@platejs/plite';
+import { createEditor, type Element } from '@platejs/plite';
+import { defineTestSchema } from './support/schema';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -59,20 +55,75 @@ const table = (): Element => ({
 });
 
 describe('plite delete contract', () => {
+  it('keeps the adjacent text boundary when deleting an inline void', () => {
+    for (const reverse of [true, false]) {
+      const editor = createEditor();
+
+      editor.extend(
+        defineTestSchema(`inline-void-delete-${reverse}`, {
+          token: { void: 'inline' },
+        })
+      );
+      editorReplace(editor, {
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              { text: 'hi ' },
+              { type: 'token', children: [{ text: '' }] },
+              { text: ' after' },
+            ],
+          },
+        ],
+        selection: {
+          kind: 'text',
+          anchor: reverse
+            ? { path: [0, 2], offset: 0 }
+            : { path: [0, 0], offset: 3 },
+          focus: reverse
+            ? { path: [0, 2], offset: 0 }
+            : { path: [0, 0], offset: 3 },
+        },
+      });
+
+      const before = editorGetSnapshot(editor);
+      const leftRuntimeId = before.index.idAt([0, 0]);
+      const rightRuntimeId = before.index.idAt([0, 2]);
+
+      assert.ok(leftRuntimeId);
+      assert.ok(rightRuntimeId);
+
+      editor.update((tx) => {
+        if (reverse) tx.text.deleteBackward();
+        else tx.text.deleteForward();
+      });
+
+      const snapshot = editorGetSnapshot(editor);
+
+      assert.deepEqual(snapshot.children, [paragraph('hi  after')]);
+      assert.equal(snapshot.index.idAt([0, 0]), leftRuntimeId);
+      assert.equal(snapshot.index.pathOf(rightRuntimeId), null);
+      assert.deepEqual(snapshot.selection, {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      });
+    }
+  });
+
   it('deletes a selected block void on Delete without merging the next block into it', () => {
     const editor = createEditor();
 
     editor.extend(
-      defineEditorExtension({
-        elements: [{ type: 'toc', void: 'block' }],
-        name: 'block-void-delete-contract',
+      defineTestSchema('block-void-delete-contract', {
+        toc: { void: 'block' },
       })
     );
 
     editorReplace(editor, {
       children: [{ type: 'toc', children: [{ text: '' }] }, paragraph('after')],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -84,6 +135,7 @@ describe('plite delete contract', () => {
 
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('after')]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -97,52 +149,23 @@ describe('plite delete contract', () => {
       ),
       'utf8'
     );
-    const publicStateSource = readFileSync(
-      new URL('../src/core/public-state.ts', import.meta.url),
-      'utf8'
-    );
-    const operationReplaySource = readFileSync(
-      new URL('../src/core/operation-replay.ts', import.meta.url),
-      'utf8'
-    );
-
     assert.match(wholeBlockSource, /delete-whole-range-edge-check/);
     assert.match(wholeBlockSource, /delete-whole-range-block-scan/);
     assert.match(wholeBlockSource, /delete-whole-range-children-slice/);
     assert.match(wholeBlockSource, /delete-whole-range-apply/);
-    assert.match(publicStateSource, /operation-replay-clone:replace_children/);
-    assert.match(publicStateSource, /markInternalOwnedReplayOperation/);
-    assert.match(operationReplaySource, /INTERNAL_OWNED_REPLAY_OPERATIONS/);
-    assert.match(
-      operationReplaySource,
-      /INTERNAL_OWNED_REPLAY_OPERATIONS\.delete\(operation\)/
-    );
-    assert.match(publicStateSource, /build-snapshot-change:node-impact/);
-    assert.match(publicStateSource, /build-snapshot-change:complete-commit/);
   });
 
-  it('keeps replayed replace_children payloads isolated by default', () => {
+  it('keeps replacement payloads isolated by default', () => {
     const editor = createEditor();
     const inserted = paragraph('inserted');
 
     editorReplace(editor, {
       children: [paragraph('original')],
-      marks: null,
       selection: null,
     });
 
     editor.update((tx) => {
-      tx.operations.replay([
-        {
-          children: [paragraph('original')],
-          index: 0,
-          newChildren: [inserted],
-          newSelection: null,
-          path: [],
-          selection: null,
-          type: 'replace_children',
-        },
-      ]);
+      tx.value.replace({ children: [inserted], selection: null });
     });
 
     inserted.children[0]!.text = 'mutated';
@@ -150,7 +173,6 @@ describe('plite delete contract', () => {
     assert.deepEqual(editorGetSnapshot(editor).children, [
       paragraph('inserted'),
     ]);
-    assert.equal(editorGetLastCommit(editor)?.nodeImpactRuntimeIds, null);
   });
 
   it('deletes forward over Unicode whitespace before the next word', () => {
@@ -170,8 +192,8 @@ describe('plite delete contract', () => {
 
       editorReplace(editor, {
         children: [paragraph(`Hello${whitespace}World`)],
-        marks: null,
         selection: {
+          kind: 'text' as const,
           anchor: { path: [0, 0], offset: 'Hello'.length },
           focus: { path: [0, 0], offset: 'Hello'.length },
         },
@@ -183,6 +205,7 @@ describe('plite delete contract', () => {
       assert.deepEqual(
         editorGetSnapshot(editor).selection,
         {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 'Hello'.length },
           focus: { path: [0, 0], offset: 'Hello'.length },
         },
@@ -196,8 +219,8 @@ describe('plite delete contract', () => {
 
     editorReplace(editor, {
       children: [paragraph('Foo\tbar')],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -207,6 +230,7 @@ describe('plite delete contract', () => {
 
     assert.equal(editorString(editor, [0]), '\tbar');
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -220,8 +244,8 @@ describe('plite delete contract', () => {
 
       editorReplace(editor, {
         children: [paragraph(text)],
-        marks: null,
         selection: {
+          kind: 'text' as const,
           anchor: { path: [0, 0], offset: 'A '.length },
           focus: { path: [0, 0], offset: 'A '.length },
         },
@@ -233,6 +257,7 @@ describe('plite delete contract', () => {
       assert.deepEqual(
         editorGetSnapshot(editor).selection,
         {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 'A '.length },
           focus: { path: [0, 0], offset: 'A '.length },
         },
@@ -246,8 +271,8 @@ describe('plite delete contract', () => {
 
     editorReplace(editor, {
       children: [paragraph('Hello World')],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 'Hello '.length },
         focus: { path: [0, 0], offset: 'Hello '.length },
       },
@@ -257,6 +282,7 @@ describe('plite delete contract', () => {
 
     assert.equal(editorString(editor, [0]), 'World');
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -267,8 +293,8 @@ describe('plite delete contract', () => {
 
     editorReplace(editor, {
       children: [paragraph('A'), paragraph('next')],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
@@ -283,6 +309,7 @@ describe('plite delete contract', () => {
       paragraph('next'),
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -298,8 +325,8 @@ describe('plite delete contract', () => {
           children: [{ code: true, text: '<textarea>' }, { text: '!' }],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: '<textarea>'.length },
         focus: { path: [0, 0], offset: '<textarea>'.length },
       },
@@ -309,6 +336,7 @@ describe('plite delete contract', () => {
 
     assert.equal(editorString(editor, [0]), '<textarea>');
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: '<textarea>'.length },
       focus: { path: [0, 0], offset: '<textarea>'.length },
     });
@@ -324,8 +352,8 @@ describe('plite delete contract', () => {
           children: [{ text: '!' }, { code: true, text: '<textarea>' }],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 1], offset: 0 },
         focus: { path: [0, 1], offset: 0 },
       },
@@ -335,6 +363,7 @@ describe('plite delete contract', () => {
 
     assert.equal(editorString(editor, [0]), '<textarea>');
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -342,11 +371,11 @@ describe('plite delete contract', () => {
 
   it('deletes a full selection that starts with an inline element', () => {
     const editor = createEditor();
-    editor.extend({
-      elements: [{ inline: true, type: 'link' }],
-      name: 'delete-leading-inline',
-    });
+    editor.extend(
+      defineTestSchema('delete-leading-inline', { link: { inline: true } })
+    );
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 2], offset: 'World'.length },
     };
@@ -356,12 +385,12 @@ describe('plite delete contract', () => {
         {
           type: 'paragraph',
           children: [
+            { text: '' },
             { type: 'link', url: 'https://', children: [{ text: 'Hello' }] },
             { text: 'World' },
           ],
         },
       ],
-      marks: null,
       selection,
     });
 
@@ -376,6 +405,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -383,11 +413,13 @@ describe('plite delete contract', () => {
 
   it('deletes an expanded range that starts with an inline element', () => {
     const editor = createEditor();
-    editor.extend({
-      elements: [{ inline: true, type: 'link' }],
-      name: 'delete-selection-leading-inline',
-    });
+    editor.extend(
+      defineTestSchema('delete-selection-leading-inline', {
+        link: { inline: true },
+      })
+    );
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 2], offset: 'World'.length },
     };
@@ -403,7 +435,6 @@ describe('plite delete contract', () => {
           ],
         },
       ],
-      marks: null,
       selection,
     });
 
@@ -418,6 +449,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Say'.length },
       focus: { path: [0, 0], offset: 'Say'.length },
     });
@@ -426,13 +458,13 @@ describe('plite delete contract', () => {
   it('normalizes reversed expanded delete ranges before removing text', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 1 },
     };
 
     editorReplace(editor, {
       children: [paragraph('abcdef')],
-      marks: null,
       selection,
     });
 
@@ -442,6 +474,7 @@ describe('plite delete contract', () => {
 
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('aef')]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -450,6 +483,7 @@ describe('plite delete contract', () => {
   it('deletes only the selected formatted leaf window', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 'A '.length },
       focus: { path: [0, 3], offset: 0 },
     };
@@ -468,7 +502,6 @@ describe('plite delete contract', () => {
             ],
           },
         ],
-        marks: null,
         selection,
       });
     });
@@ -488,6 +521,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'A '.length },
       focus: { path: [0, 0], offset: 'A '.length },
     });
@@ -496,6 +530,7 @@ describe('plite delete contract', () => {
   it('trims both edges of an expanded range across sibling text leaves', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 'fi'.length },
       focus: { path: [0, 1], offset: 'sec'.length },
     };
@@ -512,7 +547,6 @@ describe('plite delete contract', () => {
             ],
           },
         ],
-        marks: null,
         selection,
       });
     });
@@ -532,6 +566,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'fi'.length },
       focus: { path: [0, 0], offset: 'fi'.length },
     });
@@ -540,6 +575,7 @@ describe('plite delete contract', () => {
   it('trims cross-block expanded ranges into the anchor block', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 'fi'.length },
       focus: { path: [1, 0], offset: 'sec'.length },
     };
@@ -547,7 +583,6 @@ describe('plite delete contract', () => {
     editor.update((tx) => {
       tx.value.replace({
         children: [paragraph('first'), paragraph('second'), paragraph('third')],
-        marks: null,
         selection,
       });
     });
@@ -564,6 +599,7 @@ describe('plite delete contract', () => {
       paragraph('third'),
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'fi'.length },
       focus: { path: [0, 0], offset: 'fi'.length },
     });
@@ -572,14 +608,16 @@ describe('plite delete contract', () => {
   it('preserves an unselected suffix inside an isolating nested block', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 'Intro visible '.length },
       focus: { path: [2, 0, 0], offset: 'Overview tab'.length },
     };
 
     editor.extend(
-      defineEditorExtension({
-        elements: [{ isolating: true, type: 'tabs-block' }],
-        name: 'isolating-expanded-range-delete',
+      defineTestSchema('isolating-expanded-range-delete', {
+        'accordion-block': {},
+        'tab-panel': {},
+        'tabs-block': { isolating: true },
       })
     );
     editor.update((tx) => {
@@ -610,7 +648,6 @@ describe('plite delete contract', () => {
           },
           paragraph('Outro visible after hidden blocks.'),
         ],
-        marks: null,
         selection,
       });
     });
@@ -639,6 +676,7 @@ describe('plite delete contract', () => {
       paragraph('Outro visible after hidden blocks.'),
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Intro visible '.length },
       focus: { path: [0, 0], offset: 'Intro visible '.length },
     });
@@ -659,8 +697,8 @@ describe('plite delete contract', () => {
             children: [{ bold: true, text: '' }, { text: ' second' }],
           },
         ],
-        marks: null,
         selection: {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         },
@@ -678,6 +716,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'first'.length },
       focus: { path: [0, 0], offset: 'first'.length },
     });
@@ -694,8 +733,8 @@ describe('plite delete contract', () => {
             children: [{ text: 'a' }, { text: '#foo', token: true }],
           },
         ],
-        marks: null,
         selection: {
+          kind: 'text' as const,
           anchor: { path: [0, 1], offset: '#foo'.length },
           focus: { path: [0, 1], offset: '#foo'.length },
         },
@@ -717,6 +756,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -725,6 +765,7 @@ describe('plite delete contract', () => {
   it('resets list-heavy content when deleting the full document selection', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [2, 0], offset: 'after'.length },
     };
@@ -749,7 +790,6 @@ describe('plite delete contract', () => {
           },
           paragraph('after'),
         ],
-        marks: null,
         selection,
       });
     });
@@ -765,6 +805,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -786,8 +827,8 @@ describe('plite delete contract', () => {
         },
         paragraph('paragraph'),
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       },
@@ -809,6 +850,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0, 0], offset: 'list'.length },
       focus: { path: [0, 0, 0], offset: 'list'.length },
     });
@@ -833,6 +875,7 @@ describe('plite delete contract', () => {
           paragraph('after'),
         ],
         selection: {
+          kind: 'text' as const,
           anchor: { path: [0, 0, 0], offset: 0 },
           focus: { path: [0, 0, 0], offset: 0 },
         },
@@ -846,6 +889,7 @@ describe('plite delete contract', () => {
           paragraph('after'),
         ],
         selection: {
+          kind: 'text' as const,
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -857,8 +901,8 @@ describe('plite delete contract', () => {
 
       editorReplace(editor, {
         children: [paragraph(''), ...structuredClone(children)],
-        marks: null,
         selection: {
+          kind: 'text' as const,
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -876,9 +920,8 @@ describe('plite delete contract', () => {
   it('deletes a preceding non-selectable atom block on Backspace without throwing', () => {
     const editor = createEditor();
     editor.extend(
-      defineEditorExtension({
-        elements: [{ atom: true, selectable: false, type: 'atom-block' }],
-        name: 'non-selectable-atom-delete-contract',
+      defineTestSchema('non-selectable-atom-delete-contract', {
+        'atom-block': { atom: true, selectable: false },
       })
     );
 
@@ -890,8 +933,8 @@ describe('plite delete contract', () => {
         },
         paragraph(''),
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       },
@@ -903,6 +946,7 @@ describe('plite delete contract', () => {
 
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('')]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -911,9 +955,8 @@ describe('plite delete contract', () => {
   it('does not merge across an isolating block boundary on Backspace', () => {
     const editor = createEditor();
     editor.extend(
-      defineEditorExtension({
-        elements: [{ isolating: true, type: 'callout' }],
-        name: 'isolating-delete-boundary',
+      defineTestSchema('isolating-delete-boundary', {
+        callout: { isolating: true },
       })
     );
 
@@ -926,8 +969,8 @@ describe('plite delete contract', () => {
           },
           paragraph(''),
         ],
-        marks: null,
         selection: {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         },
@@ -946,28 +989,27 @@ describe('plite delete contract', () => {
       paragraph(''),
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
   });
 
-  it('deletes a selected top-level block range with a bounded operation stream', () => {
+  it('deletes a selected top-level block range with bounded changed ranges', () => {
     const editor = createEditor();
     const children = Array.from({ length: 20 }, (_, index) =>
       paragraph(`block-${index}`)
     );
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [10, 0], offset: 0 },
       focus: { path: [11, 0], offset: 'block-11'.length },
     };
 
     editorReplace(editor, {
       children,
-      marks: null,
       selection,
     });
-
-    const operationsBefore = editorGetOperations(editor).length;
 
     editor.update((tx) => {
       tx.text.delete({ at: selection });
@@ -999,34 +1041,30 @@ describe('plite delete contract', () => {
       ]
     );
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [10, 0], offset: 0 },
       focus: { path: [10, 0], offset: 0 },
     });
-    assert.deepEqual(
-      editorGetOperations(editor)
-        .slice(operationsBefore)
-        .map((operation) => operation.type),
-      ['replace_children']
-    );
+    assert.deepEqual(editorGetLastCommit(editor)?.changed.topLevelRanges(), [
+      [10, 11],
+    ]);
   });
 
-  it('deletes a selected full-document block range with one structural operation', () => {
+  it('deletes a selected full-document block range as one structural change', () => {
     const editor = createEditor();
     const children = Array.from({ length: 20 }, (_, index) =>
       paragraph(`block-${index}`)
     );
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [19, 0], offset: 'block-19'.length },
     };
 
     editorReplace(editor, {
       children,
-      marks: null,
       selection,
     });
-
-    const operationsBefore = editorGetOperations(editor).length;
 
     editor.update((tx) => {
       tx.fragment.delete({ direction: 'backward' });
@@ -1034,38 +1072,30 @@ describe('plite delete contract', () => {
 
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('')]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
-    assert.deepEqual(
-      editorGetOperations(editor)
-        .slice(operationsBefore)
-        .map((operation) => operation.type),
-      ['replace_children']
-    );
+    assert.equal(editorGetLastCommit(editor)?.changed.has('structure'), true);
   });
 
   it('does not use the full-document structural fast path for structured first blocks', () => {
     const editor = createEditor();
     const children = [table(), paragraph('tail')];
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 'tail'.length },
     };
 
     editorReplace(editor, {
       children,
-      marks: null,
       selection,
     });
-
-    const operationsBefore = editorGetOperations(editor).length;
 
     editor.update((tx) => {
       tx.fragment.delete({ direction: 'backward' });
     });
-
-    const operations = editorGetOperations(editor).slice(operationsBefore);
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
       {
@@ -1078,13 +1108,7 @@ describe('plite delete contract', () => {
         ],
       },
     ]);
-    assert.equal(
-      operations.some(
-        (operation) =>
-          operation.type === 'replace_children' && operation.path.length === 0
-      ),
-      false
-    );
+    assert.equal(editorGetLastCommit(editor)?.changed.has('replace'), false);
   });
 
   it('keeps table shape intact when Backspace starts after a table', () => {
@@ -1092,8 +1116,8 @@ describe('plite delete contract', () => {
 
     editorReplace(editor, {
       children: [paragraph('before'), table(), paragraph('')],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [2, 0], offset: 0 },
         focus: { path: [2, 0], offset: 0 },
       },
@@ -1119,6 +1143,7 @@ describe('plite delete contract', () => {
     assert.equal(editorString(editor, [1, 0, 0]), '');
     assert.equal(editorString(editor, [1, 0, 1]), 'Human');
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [1, 2, 3, 0], offset: 1 },
       focus: { path: [1, 2, 3, 0], offset: 1 },
     });
@@ -1129,8 +1154,8 @@ describe('plite delete contract', () => {
 
     editorReplace(editor, {
       children: [paragraph('text')],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1159,6 +1184,7 @@ describe('plite delete contract', () => {
       paragraph('text'),
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: 0 },
     });
@@ -1169,8 +1195,8 @@ describe('plite delete contract', () => {
 
     editorReplace(editor, {
       children: [paragraph(''), paragraph(''), paragraph('text')],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1186,6 +1212,7 @@ describe('plite delete contract', () => {
       paragraph('text'),
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1196,8 +1223,8 @@ describe('plite delete contract', () => {
 
     editorReplace(editor, {
       children: [paragraph('text')],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1233,6 +1260,7 @@ describe('plite delete contract', () => {
       paragraph(' text'),
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [4, 0], offset: 1 },
       focus: { path: [4, 0], offset: 1 },
     });
@@ -1248,8 +1276,8 @@ describe('plite delete contract', () => {
           children: [{ bold: true, text: 'foo' }],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 'foo'.length },
         focus: { path: [0, 0], offset: 'foo'.length },
       },
@@ -1269,6 +1297,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'bar'.length },
       focus: { path: [0, 0], offset: 'bar'.length },
     });
@@ -1284,8 +1313,8 @@ describe('plite delete contract', () => {
           children: [{ bold: true, text: 'Styled' }],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 'Styled'.length },
       },
@@ -1303,6 +1332,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Next'.length },
       focus: { path: [0, 0], offset: 'Next'.length },
     });
@@ -1311,9 +1341,8 @@ describe('plite delete contract', () => {
   it('removes an empty editable inline on Backspace without deleting preceding text', () => {
     const editor = createEditor();
     editor.extend(
-      defineEditorExtension({
-        elements: [{ inline: true, type: 'button' }],
-        name: 'inline-delete-boundary',
+      defineTestSchema('inline-delete-boundary', {
+        button: { inline: true },
       })
     );
 
@@ -1328,8 +1357,8 @@ describe('plite delete contract', () => {
           ],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 1, 0], offset: 0 },
         focus: { path: [0, 1, 0], offset: 0 },
       },
@@ -1346,6 +1375,7 @@ describe('plite delete contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'an '.length },
       focus: { path: [0, 0], offset: 'an '.length },
     });
@@ -1361,8 +1391,8 @@ describe('plite delete contract', () => {
           children: [{ bold: true, text: 'abc' }],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
@@ -1391,8 +1421,8 @@ describe('plite delete contract', () => {
           children: [{ bold: true, text: 'abc' }],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1421,8 +1451,8 @@ describe('plite delete contract', () => {
           children: [{ bold: true, text: 'bc' }],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 1 },
       },

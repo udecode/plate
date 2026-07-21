@@ -85,6 +85,7 @@ describe('table merge behavior', () => {
       expect(editor.read.selection()).toEqual({
         anchor: { offset: 2, path: [0, 0, 0, 3, 0] },
         focus: { offset: 2, path: [0, 0, 0, 3, 0] },
+        kind: 'text',
       });
     });
   });

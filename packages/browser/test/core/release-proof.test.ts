@@ -123,7 +123,7 @@ describe('release proof helpers', () => {
 
     expect(result.ok).toBe(false);
     expect(result.issues).toEqual([
-      'Missing release discipline guards: public-field-hard-cut-contract, escape-hatch-inventory-contract, write-boundary-contract, leaf-lifecycle-contract, selection-rebase-contract, rendered-dom-shape-contract, destructive-leaf-boundary-gauntlet, leaf-delete-parity, compat-alias-hard-cut-contract',
+      'Missing release discipline guards: write-boundary-contract, leaf-lifecycle-contract, selection-rebase-contract, rendered-dom-shape-contract',
     ]);
   });
 

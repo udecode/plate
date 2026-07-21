@@ -15,6 +15,7 @@ export const test = (editor) =>
   editorParent(
     editor,
     {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 2 },
     },

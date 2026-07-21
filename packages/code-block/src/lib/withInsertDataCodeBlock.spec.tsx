@@ -108,10 +108,16 @@ describe('when pasting text into a code block', () => {
     ) as TestEditor;
 
     const editor = createEditor(input);
+    let commits = 0;
+    const unsubscribe = editor.subscribeCommit(() => commits++);
 
     editor.api.clipboard.insertData(data);
+    unsubscribe();
 
     expect(editor.read.children()).toEqual(expected.children);
+    expect(editor.read.selection()).toEqual(expected.selection!);
+    expect(commits).toBe(1);
+    expect(editor.read.history.undos()).toHaveLength(1);
   });
 
   it('inserts vscode lines into the current code block instead of nesting one', () => {

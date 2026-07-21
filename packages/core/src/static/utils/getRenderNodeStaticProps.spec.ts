@@ -1,4 +1,4 @@
-import { ElementApi } from '@platejs/plite';
+import { ElementApi, property, schema, target } from '@platejs/plite';
 
 import { createBaseEditor, createBasePlugin } from '../../lib';
 import { getRenderNodeStaticProps } from './getRenderNodeStaticProps';
@@ -9,7 +9,7 @@ describe('getRenderNodeStaticProps', () => {
       key: 'p',
       node: {
         dangerouslyAllowAttributes: ['target'],
-        isElement: true,
+        element: { groups: ['block'] },
         props: ({ editor }) => ({
           className: 'plugin-class',
           'data-has-editor': editor ? 'yes' : 'no',
@@ -26,6 +26,13 @@ describe('getRenderNodeStaticProps', () => {
           styleKey: 'textAlign',
           targetPlugins: ['p'],
         },
+      },
+      schema: {
+        properties: [
+          schema.elementProperty('align', property.string(), {
+            target: target.type('p'),
+          }),
+        ],
       },
     });
     const editor = createBaseEditor({

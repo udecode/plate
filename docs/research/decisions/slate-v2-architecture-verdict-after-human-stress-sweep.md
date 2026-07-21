@@ -86,7 +86,7 @@ The item 4/5/6 hard-cut lane is complete:
   `setChildren`, public `Editor.getLive*`, public `<Slate onChange>`,
   `SlateReactCompat`, decorate compat adapter, and `useEditor` are no longer
   normal public surfaces
-- replay/import uses `applyOperations(...)`
+- replay/import uses `tx.changes.apply(...)`
 - ordinary app writes use transactions, snapshots, transforms, and
   selector/runtime APIs
 - generated `slate-browser` contracts cover inline void navigation, block void
@@ -253,8 +253,8 @@ ownership and proof architecture:
    family where parity matters.
 5. Add Plate adapter and Yjs adapter migration rows before saying the API is
    migration-ready.
-6. Keep direct low-level replay through `editor.applyOperations`, but keep
-   ordinary app writes inside `editor.update`.
+6. Import canonical changes through `tx.changes.apply(...)`, and keep ordinary
+   app writes inside `editor.update(...)`.
 7. Treat any new "works in package tests, breaks in browser" result as a
    missing proof row, not a one-off patch.
 

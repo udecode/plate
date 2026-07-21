@@ -17,6 +17,7 @@ describe('selection helpers', () => {
   it('serializes a range with anchor and focus', () => {
     expect(
       serializeRange({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 3 },
       })
@@ -26,6 +27,7 @@ describe('selection helpers', () => {
   it('detects a collapsed range', () => {
     expect(
       isCollapsed({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 2 },
         focus: { path: [1, 0], offset: 2 },
       })

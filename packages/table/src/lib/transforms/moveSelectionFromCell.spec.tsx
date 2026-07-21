@@ -65,10 +65,12 @@ describe('moveSelectionFromCell', () => {
     expect(
       moveSelectionFromCell(editor, { edge: 'right', fromOneCell: true })
     ).toBe(true);
-    expect(editor.read.selection()).toEqual({
+    expect(editor.read.selection()).toMatchObject({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 1, 0, 0] },
+      kind: 'table-cell',
     });
+    expect(editor.read.selection.ranges()).toHaveLength(2);
   });
 
   it('can expand a single active cell upward when fromOneCell is true', () => {
@@ -97,10 +99,12 @@ describe('moveSelectionFromCell', () => {
     expect(
       moveSelectionFromCell(editor, { edge: 'top', fromOneCell: true })
     ).toBe(true);
-    expect(editor.read.selection()).toEqual({
+    expect(editor.read.selection()).toMatchObject({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 1, 0, 0, 0] },
+      kind: 'table-cell',
     });
+    expect(editor.read.selection.ranges()).toHaveLength(2);
   });
 
   it('can expand a single active cell downward when fromOneCell is true', () => {
@@ -129,10 +133,12 @@ describe('moveSelectionFromCell', () => {
     expect(
       moveSelectionFromCell(editor, { edge: 'bottom', fromOneCell: true })
     ).toBe(true);
-    expect(editor.read.selection()).toEqual({
+    expect(editor.read.selection()).toMatchObject({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 1, 0, 0, 0] },
+      kind: 'table-cell',
     });
+    expect(editor.read.selection.ranges()).toHaveLength(2);
   });
 
   it('does nothing when edge expansion would leave the table grid', () => {

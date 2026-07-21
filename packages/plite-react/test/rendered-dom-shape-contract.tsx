@@ -1,9 +1,22 @@
 import { act, render, waitFor } from '@testing-library/react';
 import React from 'react';
-import type { Descendant } from '@platejs/plite';
+import {
+  defineEditorSchema,
+  type Descendant,
+  element,
+  schema,
+} from '@platejs/plite';
 import { replace as editorReplace } from '@platejs/plite/internal';
 
 import { createReactEditor, Editable, Plite } from '../src';
+
+const inlineLinkSchema = defineEditorSchema({
+  elements: { link: element({ inline: true }) },
+  id: 'rendered-dom-shape-inline-link',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
+});
 
 const getFirstElement = (container: HTMLElement) => {
   const element = container.querySelector('[data-plite-node="element"]');
@@ -43,6 +56,27 @@ const getZeroWidthLineBreaks = (element: HTMLElement) =>
   Array.from(element.querySelectorAll('[data-plite-zero-width="n"]')).filter(
     (zeroWidth) => zeroWidth.querySelector('br')
   );
+
+const getRenderedShape = (container: HTMLElement) =>
+  Array.from(container.querySelectorAll('[data-plite-node]')).map((node) => ({
+    inline: node.getAttribute('data-plite-inline'),
+    node: node.getAttribute('data-plite-node'),
+    path: node.getAttribute('data-plite-path'),
+    tag: node.tagName.toLowerCase(),
+    text: node.textContent?.replaceAll('\uFEFF', '') ?? '',
+    void: node.getAttribute('data-plite-void'),
+    zeroWidthLines: getZeroWidthLineBreaks(node as HTMLElement).length,
+  }));
+
+const createSeededRandom = (initialSeed: number) => {
+  let seed = initialSeed >>> 0;
+
+  return () => {
+    seed = (seed * 1_664_525 + 1_013_904_223) >>> 0;
+
+    return seed / 0x1_00_00_00_00;
+  };
+};
 
 describe('rendered DOM shape contract', () => {
   test('custom element and text renderers include mounted path metadata', () => {
@@ -150,10 +184,7 @@ describe('rendered DOM shape contract', () => {
   test('empty inline elements inside non-empty blocks do not render visual line breaks', () => {
     const editor = createReactEditor();
 
-    editor.extend({
-      elements: [{ inline: true, type: 'link' }],
-      name: 'rendered-dom-shape-inline-link',
-    });
+    editor.extend(inlineLinkSchema);
 
     editorReplace(editor, {
       children: [
@@ -362,6 +393,7 @@ describe('rendered DOM shape contract', () => {
         editor.update((tx) => {
           tx.text.delete({
             at: {
+              kind: 'text',
               anchor: { path: [0, 0], offset: 0 },
               focus: { path: [0, 0], offset: 3 },
             },
@@ -382,4 +414,136 @@ describe('rendered DOM shape contract', () => {
         originalGetBoundingClientRect;
     }
   });
+
+  test('incremental DOM matches fresh rendering across deterministic edit traces', async () => {
+    const seeds = [0x27_01_d0_0d, 0x27_02_d0_0d, 0x27_03_d0_0d];
+
+    for (const seed of seeds) {
+      const random = createSeededRandom(seed);
+      const editor = createReactEditor({
+        initialValue: Array.from({ length: 4 }, (_, index) => ({
+          type: 'paragraph',
+          children: [{ text: `seed-${seed}-block-${index}` }],
+        })),
+      });
+      const incremental = render(
+        <Plite editor={editor}>
+          <Editable id={`rendered-dom-differential-${seed}`} />
+        </Plite>
+      );
+      const trace: string[] = [];
+
+      try {
+        for (let step = 0; step < 80; step++) {
+          const value = editor.read.value();
+          const blockIndex = Math.floor(random() * value.children.length);
+          const text = (
+            value.children[blockIndex]!.children[0] as { text: string }
+          ).text;
+          const edit = Math.floor(random() * 5);
+          const preservesPaths = edit <= 2;
+          const untouchedIndex =
+            preservesPaths && value.children.length > 1
+              ? (blockIndex + 1) % value.children.length
+              : null;
+          const untouchedElement =
+            untouchedIndex === null
+              ? null
+              : getElementByPath(incremental.container, String(untouchedIndex));
+          const untouchedText =
+            untouchedIndex === null
+              ? null
+              : getTextByPath(incremental.container, `${untouchedIndex},0`);
+
+          await act(async () => {
+            editor.update((tx) => {
+              if (edit === 0 || (edit === 1 && text.length === 0)) {
+                const offset = Math.floor(random() * (text.length + 1));
+                const inserted = String.fromCharCode(
+                  97 + Math.floor(random() * 26)
+                );
+
+                tx.text.insert(inserted, {
+                  at: { offset, path: [blockIndex, 0] },
+                });
+                trace.push(
+                  `${step}:insert-text:${blockIndex}:${offset}:${inserted}`
+                );
+                return;
+              }
+
+              if (edit === 1) {
+                const offset = Math.floor(random() * text.length);
+
+                tx.text.delete({
+                  at: {
+                    kind: 'text',
+                    anchor: { offset, path: [blockIndex, 0] },
+                    focus: { offset: offset + 1, path: [blockIndex, 0] },
+                  },
+                });
+                trace.push(`${step}:delete-text:${blockIndex}:${offset}`);
+                return;
+              }
+
+              if (edit === 2) {
+                const rank = Math.floor(random() * 1000);
+
+                tx.nodes.set({ rank }, { at: [blockIndex] });
+                trace.push(`${step}:set-node:${blockIndex}:${rank}`);
+                return;
+              }
+
+              if (edit === 3 || value.children.length <= 2) {
+                const at = Math.floor(random() * (value.children.length + 1));
+
+                tx.nodes.insert(
+                  {
+                    type: 'paragraph',
+                    children: [{ text: `inserted-${seed}-${step}` }],
+                  },
+                  { at: [at] }
+                );
+                trace.push(`${step}:insert-node:${at}`);
+                return;
+              }
+
+              tx.nodes.remove({ at: [blockIndex] });
+              trace.push(`${step}:remove-node:${blockIndex}`);
+            });
+          });
+
+          if (untouchedIndex !== null) {
+            expect(
+              getElementByPath(incremental.container, String(untouchedIndex))
+            ).toBe(untouchedElement);
+            expect(
+              getTextByPath(incremental.container, `${untouchedIndex},0`)
+            ).toBe(untouchedText);
+          }
+
+          const freshEditor = createReactEditor({
+            initialValue: structuredClone(editor.read.value().children),
+          });
+          const fresh = render(
+            <Plite editor={freshEditor}>
+              <Editable id={`rendered-dom-fresh-${seed}-${step}`} />
+            </Plite>
+          );
+
+          expect(getRenderedShape(incremental.container)).toEqual(
+            getRenderedShape(fresh.container)
+          );
+          fresh.unmount();
+        }
+      } catch (error) {
+        throw new Error(
+          `Rendered DOM differential failed for seed ${seed}. Trace: ${trace.slice(-30).join(' | ')}`,
+          { cause: error }
+        );
+      } finally {
+        incremental.unmount();
+      }
+    }
+  }, 20_000);
 });

@@ -58,6 +58,7 @@ const createEditor = ({
   createBaseEditor({
     plugins,
     selection: {
+      kind: 'text',
       anchor: { offset: offset ?? text.length, path: [0, 0] },
       focus: { offset: offset ?? text.length, path: [0, 0] },
     },
@@ -112,6 +113,7 @@ describe('playground rules current contract', () => {
         type,
       });
       expect(editor.read.selection()).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -127,6 +129,7 @@ describe('playground rules current contract', () => {
         type: 'blockquote',
       });
       expect(editor.read.selection()).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       });
@@ -263,6 +266,7 @@ describe('playground rules current contract', () => {
         children: [{ text: '' }],
       });
       expect(editor.read.selection()).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -326,7 +330,6 @@ describe('playground rules current contract', () => {
           { text: '' },
           {
             children: [{ text: 'Example' }],
-            target: undefined,
             type: 'a',
             url: 'https://example.com',
           },
@@ -335,6 +338,7 @@ describe('playground rules current contract', () => {
         type: 'p',
       });
       expect(editor.read.selection()).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       });

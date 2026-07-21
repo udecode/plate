@@ -1,4 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
+import { ElementApi, TextApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
@@ -14,6 +15,7 @@ describe('insertFragmentSuggestion', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -34,10 +36,22 @@ describe('insertFragmentSuggestion', () => {
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
     insertFragmentSuggestion(editor, fragment);
 
-    const inlineData = getInlineSuggestionData(fragment[0]);
-    const blockSuggestion = fragment[1][KEYS.suggestion];
+    const suggestionNodes = editor.plugin(BaseSuggestionPlugin).api.nodes();
+    const inline = suggestionNodes.find(([node]) => TextApi.isText(node))?.[0];
+    const block = suggestionNodes.find(([node]) =>
+      ElementApi.isElement(node)
+    )?.[0];
 
-    expect(fragment[0]).not.toHaveProperty(getSuggestionKey('other-user'));
+    expect(inline && TextApi.isText(inline)).toBe(true);
+    expect(block && ElementApi.isElement(block)).toBe(true);
+
+    const inlineData =
+      inline && TextApi.isText(inline)
+        ? getInlineSuggestionData(inline)
+        : undefined;
+    const blockSuggestion = block?.[KEYS.suggestion];
+
+    expect(fragment[0]).toHaveProperty(getSuggestionKey('other-user'));
     expect(inlineData).toMatchObject({
       type: 'insert',
       userId: 'user-1',
@@ -47,6 +61,6 @@ describe('insertFragmentSuggestion', () => {
       type: 'insert',
       userId: 'user-1',
     });
-    expect(editor.plugin(BaseSuggestionPlugin).api.nodes()).toHaveLength(2);
+    expect(suggestionNodes).toHaveLength(2);
   });
 });

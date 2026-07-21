@@ -153,7 +153,7 @@ content/docs/(guides)/form.cn.mdx:174:editor.tf.setValue(formStateValue);
 content/docs/(guides)/form.cn.mdx:220:          editor.tf.reset();
 content/docs/(guides)/form.cn.mdx:233:- **重置** -> 同时调用 `editor.tf.reset()` 和 `form.reset()` 以保持一致性
 content/docs/(guides)/form.cn.mdx:421:- 对于受控值，适度使用 `editor.tf.setValue(formStateValue)`。
-content/docs/(guides)/form.cn.mdx:426:2. **最小化替换**：避免过于频繁地调用 `editor.tf.setValue`，这可能会破坏选择、历史记录或降低性能。  
+content/docs/(guides)/form.cn.mdx:426:2. **最小化替换**：避免过于频繁地调用 `editor.tf.setValue`，这可能会破坏选择、历史记录或降低性能。
 content/docs/(guides)/form.cn.mdx:428:4. **同时重置**：如果重置表单，调用 `editor.tf.reset()` 以保持同步。
 content/docs/(plugins)/(collaboration)/yjs.cn.mdx:162:    editor.getPluginApi(YjsPlugin).yjs.init({
 content/docs/(plugins)/(collaboration)/yjs.cn.mdx:169:      editor.getPluginApi(YjsPlugin).yjs.destroy();

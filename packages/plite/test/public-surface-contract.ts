@@ -16,7 +16,11 @@ const plitePackageDirectories = {
   '@platejs/yjs': 'yjs',
 } as const;
 
-const publicDocsRoot = resolve(repoRoot, 'content/docs/plite');
+const publicDocsRoots = [
+  resolve(repoRoot, 'content/docs/plite'),
+  resolve(repoRoot, 'content/docs/api/plite'),
+];
+const publicDocsIndex = 'content/docs/api/plite.mdx';
 const publicExamplesRoot = resolve(
   repoRoot,
   'apps/www/src/app/(app)/examples/plite'
@@ -56,18 +60,46 @@ const collectFiles = (directory: string, pattern: RegExp): string[] => {
 const readSource = (relativePath: string) =>
   readFileSync(resolve(repoRoot, relativePath), 'utf8');
 
-const publicDocs = collectFiles(publicDocsRoot, /\.mdx?$/);
+const publicDocs = [
+  publicDocsIndex,
+  ...publicDocsRoots.flatMap((root) => collectFiles(root, /\.mdx?$/)),
+]
+  .filter((path) => !path.endsWith('.cn.mdx'))
+  .sort();
 const publicExamples = collectFiles(publicExamplesRoot, /\.(ts|tsx)$/);
 const browserProofSpecs = collectFiles(browserProofRoot, /\.test\.ts$/);
 const publicAuthoringFiles = [...publicDocs, ...publicExamples].sort();
 
 const bannedPublicSurface = [
   {
+    pattern: /(?<!schema\.)\b(?:elementProperty|textProperty)\b/,
+    reason:
+      'schema property declarations should use schema.elementProperty or schema.textProperty',
+  },
+  {
     pattern: /\bTransforms\./,
     reason: 'public Plite docs/examples should use editor.update',
   },
   {
-    pattern: /\beditor\.(selection|children|marks|operations)\b/,
+    pattern:
+      /\b(?:tx\.fragment\.insert|editor\.update(?:\([^)]*\))?\.fragment\.insert)\b/,
+    reason: 'decoded content should use fitted slice replacement',
+  },
+  {
+    pattern: /\boperations\.apply\b/,
+    reason: 'canonical changes should use the changes transaction group',
+  },
+  {
+    pattern:
+      /\b(?:EditorTransformMiddleware|getEditorTransformRegistry|setEditorTransformRegistry)\b/,
+    reason: 'pure command handlers replace transform middleware registries',
+  },
+  {
+    pattern: /\b(?:extension\s+`transforms`|transforms\s*:)/i,
+    reason: 'extension commands own typed semantic actions',
+  },
+  {
+    pattern: /\beditor\.(selection|children|marks|intents)\b/,
     reason: 'public Plite docs/examples should use editor.read',
   },
   {
@@ -83,12 +115,23 @@ const bannedPublicSurface = [
     reason: 'primary roots are implicit in public Plite APIs',
   },
   {
+    pattern:
+      /\b(?:change|commit\.changes)\.(?:changes|classifications|preserveEmptyRoots)\b|\.toJSON\(\)\.changes\b/,
+    reason:
+      'DocumentChange exposes primary and named-root fields without legacy root maps',
+  },
+  {
+    pattern:
+      /\b(?:roots|rootClassifications)\.(?:get|has)\(\s*['"]main['"]\s*\)|\broots\.main\b/,
+    reason: 'the primary document never appears inside named-root collections',
+  },
+  {
     pattern: /\b(Slate v2|Plate Slate)\b|\bslate-v2\b/,
     reason: 'public Plite docs/examples should use Plite terminology',
   },
   {
     pattern:
-      /\b(site\/examples|docs\/api|docs\/concepts|docs\/walkthroughs|playwright\/integration\/examples)\b/,
+      /\b(site\/examples|docs\/concepts|docs\/walkthroughs|playwright\/integration\/examples)\b/,
     reason: 'public Plite docs/examples should point at current repo paths',
   },
 ];

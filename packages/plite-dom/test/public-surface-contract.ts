@@ -70,14 +70,18 @@ const expectedPliteDOMRuntimeRootExports = [
   'applyStringDiff',
   'closestShadowAware',
   'containsShadowAware',
+  'defineHostCodec',
   'dom',
   'getActiveElement',
+  'getDOMClipboardFormatKey',
   'getDefaultView',
   'getElements',
   'getNodeDataAttributeKeys',
   'getSelection',
   'hasShadowRoot',
+  'hostCodecs',
   'isAfter',
+  'isApplePlatform',
   'isBefore',
   'isDOMElement',
   'isDOMNode',
@@ -105,6 +109,8 @@ const expectedPliteDOMRuntimeRootExports = [
   'targetRange',
   'verifyDiffState',
   'writeDOMFragmentData',
+  'writeDOMRangeData',
+  'writeHostFragmentData',
 ];
 
 describe('plite-dom public surface contract', () => {
@@ -294,7 +300,7 @@ describe('plite-dom public surface contract', () => {
     });
     assert.equal(
       packageJson.scripts.build,
-      'tsdown --config ./tsdown.config.mts --log-level warn && tsc -p tsconfig.build.json'
+      'node ../../tooling/scripts/build-plite-package.mjs'
     );
   });
 

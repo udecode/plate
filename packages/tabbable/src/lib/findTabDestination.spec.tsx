@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import type { Node, Path } from '@platejs/plite';
+import { type Node, type Path, schema } from '@platejs/plite';
 
 import type { TabbableEntry } from './types';
 
@@ -10,26 +10,38 @@ import { findTabDestination } from './findTabDestination';
 
 jsxt;
 
+const MyVoidPlugin = createBasePlugin({
+  key: 'my-void',
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', max: 1, min: 1 }),
+      groups: ['block'],
+      void: 'block',
+    },
+  },
+});
+
 describe('findTabDestination', () => {
   const input = (
     <editor>
       <hp>Line 1</hp>
-      <element type="my-void" void>
+      <element type="my-void">
         <htext />
       </element>
       <hp>Line 2</hp>
       <hp>Line 3</hp>
-      <element type="my-void" void>
+      <element type="my-void">
         <htext />
         <cursor />
       </element>
-      <element type="my-void" void>
+      <element type="my-void">
         <htext />
       </element>
       <hp>Line 4</hp>
     </editor>
   ) as TestEditor;
   const editor = createBaseEditor({
+    plugins: [MyVoidPlugin],
     selection: input.selection,
     value: input.children,
   });
@@ -109,7 +121,9 @@ describe('findTabDestination', () => {
 
   const createEditorAt = (path: Path) =>
     createBaseEditor({
+      plugins: [MyVoidPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path },
         focus: { offset: 0, path },
       },

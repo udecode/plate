@@ -190,6 +190,7 @@ test('WebKit shadow beforeinput uses the shadow root realm', async () => {
   const root = host.attachShadow({ mode: 'open' });
   const range = frameDocument.createRange();
   const pliteRange = {
+    kind: 'text',
     anchor: { offset: 0, path: [0, 0] },
     focus: { offset: 1, path: [0, 0] },
   };

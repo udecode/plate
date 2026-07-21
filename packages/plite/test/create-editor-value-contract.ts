@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { runInNewContext } from 'node:vm';
 
-import { createEditor, type Descendant } from '@platejs/plite';
+import {
+  createEditor,
+  type Descendant,
+  type InitialValue,
+} from '@platejs/plite';
 
 const paragraph = (text: string) =>
   ({
@@ -48,6 +53,86 @@ describe('createEditor value contract', () => {
         meta,
       }
     );
+  });
+
+  it('normalizes document values created in another realm', () => {
+    const initialValue = runInNewContext(`({
+      children: [{
+        children: [{ payload: { source: ["iframe"] }, text: "body" }],
+        type: "paragraph"
+      }],
+      meta: { document: { title: "Cross realm" } },
+      roots: {
+        header: [{
+          children: [{ text: "header" }],
+          type: "paragraph"
+        }]
+      }
+    })`) as InitialValue;
+    const editor = createEditor({ initialValue });
+    const value = editor.read.value();
+
+    assert.deepEqual(value, {
+      children: [
+        {
+          children: [{ payload: { source: ['iframe'] }, text: 'body' }],
+          type: 'paragraph',
+        },
+      ],
+      meta: { document: { title: 'Cross realm' } },
+      roots: {
+        header: [
+          {
+            children: [{ text: 'header' }],
+            type: 'paragraph',
+          },
+        ],
+      },
+    });
+    assert.equal(Object.getPrototypeOf(value.children), Array.prototype);
+    assert.equal(
+      Object.getPrototypeOf(value.children[0]?.children),
+      Array.prototype
+    );
+    assert.equal(
+      Object.getPrototypeOf(value.children[0]?.children[0]?.payload as object),
+      Object.prototype
+    );
+    assert.equal(Object.getPrototypeOf(value.meta), Object.prototype);
+    assert.equal(Object.getPrototypeOf(value.roots), Object.prototype);
+    assert.equal(Object.getPrototypeOf(value.roots?.header), Array.prototype);
+  });
+
+  it('rejects noncanonical document containers from another realm', () => {
+    const values = runInNewContext(`(() => {
+      class DocumentValue {
+        constructor() {
+          this.children = [];
+        }
+      }
+      class Children extends Array {}
+      const accessor = {};
+      Object.defineProperty(accessor, "children", {
+        enumerable: true,
+        get: () => []
+      });
+      const cyclic = { children: [] };
+      cyclic.self = cyclic;
+
+      return [
+        new DocumentValue(),
+        new Children(),
+        accessor,
+        cyclic
+      ];
+    })()`) as unknown[];
+
+    for (const initialValue of values) {
+      assert.throws(
+        () => createEditor({ initialValue: initialValue as InitialValue }),
+        /JSON-compatible data/
+      );
+    }
   });
 
   it('rejects public main roots in document values', () => {

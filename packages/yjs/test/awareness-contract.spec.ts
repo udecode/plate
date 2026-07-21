@@ -116,7 +116,7 @@ describe('@platejs/yjs awareness contract', () => {
     ]);
   });
 
-  it('auto-publishes local selection commits without document operations', () => {
+  it('auto-publishes local selection-only commits', () => {
     const { awareness, peer } = createAwarePeer();
     const range = selection([0, 0], 1);
 

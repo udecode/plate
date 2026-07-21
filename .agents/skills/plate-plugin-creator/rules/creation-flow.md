@@ -9,22 +9,20 @@ Need a new plugin?
 |  |
 |  +- yes -> author `packages/*/src/lib`
 |  |   |
-|  |   +- Need explicit public contract control?
-|  |   |   +- yes -> `createTSlatePlugin`
-|  |   |   +- no  -> `createSlatePlugin`
+|  |   +- `createBasePlugin`
+|  |       +- pass a `PluginConfig` generic only for a real public contract
 |  |   |
 |  |   +- Need a React/Plate layer later?
-|  |       +- yes -> `toPlatePlugin` / `toTPlatePlugin`
-|  |       +- no  -> keep it Slate-only
+|  |       +- yes -> `toPlatePlugin`
+|  |       +- no  -> keep it base-only
 |  |
 |  +- no -> stay in `packages/*/src/react`
 |      |
 |      +- Is it a bundle of existing Plate plugins?
 |      |   +- yes -> `createPlatePlugin`
 |      |
-|      +- Does it need explicit typed options/api/transforms?
-|          +- yes -> `createTPlatePlugin`
-|          +- no  -> `createPlatePlugin`
+|      +- `createPlatePlugin`
+|          +- pass a `PluginConfig` generic only for a real public contract
 |
 +- Need docs?
    +- hand off to `docs-creator`
@@ -34,7 +32,7 @@ Need a new plugin?
 
 ### Semantic base plugin
 
-Use this for document semantics, transforms, parsers, injected rules, and
+Use this for document semantics, update groups, parsers, injected rules, and
 shared behavior contracts.
 
 Good fits:
@@ -56,7 +54,7 @@ Good fits:
 
 ### React-native exception
 
-Use direct Plate authoring only when the plugin has no meaningful Slate-only
+Use direct Plate authoring only when the plugin has no meaningful semantic
 base.
 
 Good fits:
@@ -76,7 +74,7 @@ Good fits:
 
 ## Named Exceptions
 
-Breaking the Slate-first law is fine only when one of these is true:
+Skipping a semantic base is fine only when one of these is true:
 
 1. The plugin is fundamentally hook-driven or `useHooks`-driven.
 2. The plugin only exists to wire DOM/editor events in the Plate layer.

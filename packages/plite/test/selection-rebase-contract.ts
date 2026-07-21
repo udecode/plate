@@ -8,6 +8,8 @@ import {
 } from '@platejs/plite/internal';
 
 import { createEditor, type Descendant, type Element } from '@platejs/plite';
+import { setSelectionStateSelection } from '../src/core/selection-state';
+import { extendTestSchema } from './support/schema';
 
 const paragraphWithEmptySuffixLeaves = (): Element => ({
   type: 'paragraph',
@@ -38,6 +40,7 @@ describe('selection rebase contract', () => {
     editorReplace(editor, {
       children: [paragraphWithEmptySuffixLeaves()],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 5], offset: 0 },
         focus: { path: [0, 5], offset: 0 },
       },
@@ -49,6 +52,7 @@ describe('selection rebase contract', () => {
 
     assert.equal(editorString(editor, [0]), 'This is editable rich text, much');
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [0, 3], offset: 4 },
       focus: { path: [0, 3], offset: 4 },
     });
@@ -66,6 +70,7 @@ describe('selection rebase contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 2], offset: 0 },
         focus: { path: [0, 2], offset: 0 },
       },
@@ -77,6 +82,7 @@ describe('selection rebase contract', () => {
 
     assert.equal(editorString(editor, [0]), 'This is editable <textarea>');
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [0, 1], offset: '<textarea>'.length },
       focus: { path: [0, 1], offset: '<textarea>'.length },
     });
@@ -84,10 +90,7 @@ describe('selection rebase contract', () => {
 
   it('rebases selection to the previous inline when the selected leaf is removed', () => {
     const editor = createEditor();
-    editor.extend({
-      elements: [{ inline: true, type: 'link' }],
-      name: 'selection-rebase-inline-link',
-    });
+    extendTestSchema(editor, { link: { inline: true } });
 
     editorReplace(editor, {
       children: [
@@ -104,6 +107,7 @@ describe('selection rebase contract', () => {
         } as Descendant,
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 2], offset: 0 },
         focus: { path: [0, 2], offset: 0 },
       },
@@ -114,6 +118,7 @@ describe('selection rebase contract', () => {
     });
 
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 'link'.length },
       focus: { path: [0, 1, 0], offset: 'link'.length },
     });
@@ -134,6 +139,7 @@ describe('selection rebase contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -150,6 +156,7 @@ describe('selection rebase contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -166,6 +173,7 @@ describe('selection rebase contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -176,6 +184,37 @@ describe('selection rebase contract', () => {
     });
 
     assert.deepEqual(editorGetChildren(editor), []);
+    assert.equal(editorGetSelection(editor), null);
+  });
+
+  it('clears a stale text selection during destructive structural edits', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'quote',
+          children: [
+            {
+              type: 'paragraph',
+              children: [{ text: 'one' }],
+            },
+          ],
+        },
+      ],
+    });
+
+    setSelectionStateSelection(
+      editor,
+      {
+        kind: 'text',
+        anchor: { path: [0], offset: 0 },
+        focus: { path: [0], offset: 0 },
+      },
+      'main'
+    );
+
+    assert.doesNotThrow(() => {
+      editor.update.nodes.remove({ at: [0, 0] });
+    });
     assert.equal(editorGetSelection(editor), null);
   });
 });

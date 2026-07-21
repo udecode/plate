@@ -11,10 +11,11 @@ import { history } from '@platejs/plite-history';
 
 import {
   createEditor,
+  DocumentChange,
   type Element,
+  type EditorTransactionSpecBuilder,
   type EditorUpdatePolicy,
-  type Operation,
-  type Range,
+  type TextSelection,
 } from '@platejs/plite';
 
 const paragraph = (text: string): Element => ({
@@ -42,30 +43,35 @@ const createCollabEditor = ({
   selection,
 }: {
   children?: Element[];
-  selection: Range;
+  selection: TextSelection;
 }) => {
   const editor = createEditor({ extensions: [history()] as const });
 
   editorReplace(editor, {
     children,
     selection,
-    marks: null,
   });
 
   return editor;
 };
 
-const collapsed = (path: number[], offset: number): Range => ({
+const collapsed = (path: number[], offset: number): TextSelection => ({
   anchor: { path, offset },
   focus: { path, offset },
+  kind: 'text',
 });
 
-const replayRemote = (
+const importRemote = (
   editor: ReturnType<typeof createCollabEditor>,
-  operations: Operation[]
+  build: (tx: EditorTransactionSpecBuilder) => void
 ) => {
+  const spec = editor.read((state) => state.transaction(build));
+
+  assert(spec);
+  const change = DocumentChange.fromJSON(clone(spec.changes.toJSON()));
+
   editor.update(remoteCollabPolicy, (tx) => {
-    tx.operations.replay(clone(operations));
+    tx.changes.apply(change);
   });
 };
 
@@ -104,14 +110,13 @@ const assertLastRemoteCommit = (
 describe('collab remote selection stress contract', () => {
   it('keeps a collapsed local selection valid through high-QPS remote prefix inserts', () => {
     const editor = createCollabEditor({ selection: collapsed([0, 0], 3) });
-    const remoteOperations = Array.from({ length: 50 }, (_, index) => ({
-      type: 'insert_text' as const,
-      path: [0, 0],
-      offset: 0,
-      text: String(index % 10),
-    }));
-
-    replayRemote(editor, remoteOperations);
+    importRemote(editor, (tx) => {
+      for (let index = 0; index < 50; index++) {
+        tx.text.insert(String(index % 10), {
+          at: { path: [0, 0], offset: 0 },
+        });
+      }
+    });
 
     assertSelectionValidOrNull(editor);
     assert.deepEqual(
@@ -136,11 +141,11 @@ describe('collab remote selection stress contract', () => {
   it('keeps same-offset remote contention deterministic for follow-up local typing', () => {
     const editor = createCollabEditor({ selection: collapsed([0, 0], 1) });
 
-    replayRemote(editor, [
-      { type: 'insert_text', path: [0, 0], offset: 1, text: 'A' },
-      { type: 'insert_text', path: [0, 0], offset: 1, text: 'B' },
-      { type: 'insert_text', path: [0, 0], offset: 1, text: 'C' },
-    ]);
+    importRemote(editor, (tx) => {
+      tx.text.insert('A', { at: { path: [0, 0], offset: 1 } });
+      tx.text.insert('B', { at: { path: [0, 0], offset: 1 } });
+      tx.text.insert('C', { at: { path: [0, 0], offset: 1 } });
+    });
 
     assertSelectionValidOrNull(editor);
     assertLastRemoteCommit(editor);
@@ -160,9 +165,9 @@ describe('collab remote selection stress contract', () => {
   it('does not move a collapsed selection for remote suffix inserts after the local point', () => {
     const editor = createCollabEditor({ selection: collapsed([0, 0], 1) });
 
-    replayRemote(editor, [
-      { type: 'insert_text', path: [0, 0], offset: 3, text: 'XYZ' },
-    ]);
+    importRemote(editor, (tx) => {
+      tx.text.insert('XYZ', { at: { path: [0, 0], offset: 3 } });
+    });
 
     assertSelectionValidOrNull(editor);
     assert.deepEqual(editorGetSnapshot(editor).selection, collapsed([0, 0], 1));
@@ -172,16 +177,16 @@ describe('collab remote selection stress contract', () => {
     assert.equal(editorString(editor, [0]), 'o!neXYZ');
   });
 
-  it('rebases local typing through remote split and merge operations around the local point', () => {
+  it('rebases local typing through remote split and merge changes around the local point', () => {
     const editor = createCollabEditor({
       children: [paragraph('abcd')],
       selection: collapsed([0, 0], 2),
     });
 
-    replayRemote(editor, [
-      { type: 'split_node', path: [0, 0], position: 1, properties: {} },
-      { type: 'merge_node', path: [0, 1], position: 1, properties: {} },
-    ]);
+    importRemote(editor, (tx) => {
+      tx.nodes.split({ at: { path: [0, 0], offset: 1 } });
+      tx.nodes.merge({ at: [1] });
+    });
 
     assertSelectionValidOrNull(editor);
     assert.deepEqual(editorGetSnapshot(editor).selection, collapsed([0, 0], 2));
@@ -196,15 +201,9 @@ describe('collab remote selection stress contract', () => {
       children: [paragraph('one'), paragraph('two')],
       selection: collapsed([1, 0], 1),
     });
-    const removedNode = editorGetSnapshot(editor).children[1]!;
-
-    replayRemote(editor, [
-      {
-        type: 'remove_node',
-        path: [1],
-        node: removedNode,
-      },
-    ]);
+    importRemote(editor, (tx) => {
+      tx.nodes.remove({ at: [1] });
+    });
 
     assert.deepEqual(editorGetSnapshot(editor).selection, collapsed([0, 0], 3));
     assertLastRemoteCommit(editor);

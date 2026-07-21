@@ -28,6 +28,7 @@ const setupEditor = () => {
   editorReplace(editor, {
     children: [richTextParagraph()],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 6], offset: 1 },
       focus: { path: [0, 6], offset: 1 },
     },
@@ -70,6 +71,7 @@ describe('leaf lifecycle contract', () => {
       false
     );
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [0, 4], offset: 1 },
       focus: { path: [0, 4], offset: 1 },
     });

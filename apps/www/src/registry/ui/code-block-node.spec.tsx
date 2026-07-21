@@ -40,7 +40,6 @@ mock.module('platejs/react', () => ({
   }),
   useElement: () => currentElement,
   useEditorReadOnly: () => useReadOnlyMock(),
-  usePath: () => [0],
 }));
 
 mock.module('@/components/ui/button', () => ({

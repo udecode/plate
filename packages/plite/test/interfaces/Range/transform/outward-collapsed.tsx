@@ -3,7 +3,7 @@
 import { RangeApi } from '@platejs/plite';
 
 /**
- * If a collapsed Range is transformed with affinity outward by an insert_text operation, it should expand.
+ * If a collapsed Range is transformed with affinity outward by an insert_text intent, it should expand.
  */
 
 export const input = {

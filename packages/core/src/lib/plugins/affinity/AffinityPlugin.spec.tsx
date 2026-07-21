@@ -3,6 +3,8 @@
 import type { BaseEditor } from '../../editor';
 import type { TestEditor } from '@platejs/test-utils';
 
+import { property } from '@platejs/plite';
+import { deleteBackward, insertText, move } from '@platejs/plite/internal';
 import { jsxt } from '@platejs/test-utils';
 
 import { createBaseEditor } from '../../editor';
@@ -13,22 +15,31 @@ jsxt;
 
 const BaseBoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { isLeaf: true },
+  node: { mark: true },
 });
 
 const BaseItalicPlugin = createBasePlugin({
   key: 'italic',
-  node: { isLeaf: true },
+  node: { mark: true },
 });
 
 const BaseCodePlugin = createBasePlugin({
   key: 'code',
-  node: { isLeaf: true },
+  node: { mark: true },
 });
 
 const BaseLinkPlugin = createBasePlugin({
   key: 'a',
-  node: { isElement: true, isInline: true, type: 'a' },
+  node: {
+    element: {
+      inline: true,
+      properties: {
+        target: property.string(),
+        url: property.string(),
+      },
+    },
+    type: 'a',
+  },
 });
 
 const expectChildren = (editor: BaseEditor, output: TestEditor) => {
@@ -88,7 +99,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -128,7 +139,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -167,7 +178,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -205,7 +216,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -245,7 +256,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -282,7 +293,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -319,7 +330,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -362,7 +373,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -405,7 +416,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -448,7 +459,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -492,8 +503,8 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({ distance: 1, unit: 'character' });
-        editor.update.text.insert('1');
+        move(editor, { distance: 1, unit: 'character' });
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -535,8 +546,8 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({ distance: 1, unit: 'character' });
-        editor.update.text.insert('1');
+        move(editor, { distance: 1, unit: 'character' });
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -579,12 +590,12 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({
+        move(editor, {
           distance: 1,
           reverse: true,
           unit: 'character',
         });
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -627,12 +638,12 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({
+        move(editor, {
           distance: 1,
           reverse: true,
           unit: 'character',
         });
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -672,9 +683,9 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.deleteBackward({ unit: 'character' });
+        deleteBackward(editor, { unit: 'character' });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -715,9 +726,9 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.deleteBackward({ unit: 'character' });
+        deleteBackward(editor, { unit: 'character' });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -760,8 +771,8 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({ distance: 1, unit: 'character' });
-        editor.update.text.insert('1');
+        move(editor, { distance: 1, unit: 'character' });
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -803,12 +814,12 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({
+        move(editor, {
           distance: 1,
           reverse: true,
           unit: 'character',
         });
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -852,9 +863,9 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.deleteBackward({ unit: 'character' });
+        deleteBackward(editor, { unit: 'character' });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -894,9 +905,9 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.text.deleteBackward({ unit: 'character' });
+        deleteBackward(editor, { unit: 'character' });
 
-        editor.update.text.insert('1');
+        insertText(editor, '1');
 
         expectChildren(editor, output);
       });
@@ -942,8 +953,8 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({ distance: 1, unit: 'character' });
-        editor.update.text.insert('x');
+        move(editor, { distance: 1, unit: 'character' });
+        insertText(editor, 'x');
 
         expectChildren(editor, output);
         expect(editor.read.selection()).toEqual(output.selection);
@@ -986,12 +997,12 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({
+        move(editor, {
           distance: 1,
           reverse: true,
           unit: 'character',
         });
-        editor.update.text.insert('x');
+        insertText(editor, 'x');
 
         expectChildren(editor, output);
         expect(editor.read.selection()).toEqual(output.selection);
@@ -1039,14 +1050,14 @@ describe('AffinityPlugin', () => {
         });
 
         // Move left at the start should just change affinity
-        editor.update.selection.move({
+        move(editor, {
           distance: 1,
           reverse: true,
           unit: 'character',
         });
 
         // Insert text should now go outside the code mark
-        editor.update.text.insert('x');
+        insertText(editor, 'x');
 
         expectChildren(editor, output);
       });
@@ -1087,12 +1098,12 @@ describe('AffinityPlugin', () => {
         });
 
         // Move right at the end should just change affinity
-        editor.update.selection.move({ distance: 1, unit: 'character' });
+        move(editor, { distance: 1, unit: 'character' });
 
         // expect(editor.read.selection()).toEqual(output.selection);
 
         // Insert text should now go outside the code mark
-        editor.update.text.insert('x');
+        insertText(editor, 'x');
 
         expectChildren(editor, output);
       });
@@ -1114,10 +1125,10 @@ describe('AffinityPlugin', () => {
           <editor>
             <hp>
               <htext>before</htext>
-              <htext code>first</htext>
               <htext code>
+                firsts
                 <cursor />
-                second
+                econd
               </htext>
               <htext>after</htext>
             </hp>
@@ -1134,7 +1145,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({ distance: 1, unit: 'character' });
+        move(editor, { distance: 1, unit: 'character' });
 
         expect(editor.read.selection()).toEqual(output.selection);
       });
@@ -1177,7 +1188,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({ distance: 1, unit: 'character' });
+        move(editor, { distance: 1, unit: 'character' });
 
         expect(editor.read.selection()).toEqual(output.selection);
       });
@@ -1220,7 +1231,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        editor.update.selection.move({ distance: 1, unit: 'character' });
+        move(editor, { distance: 1, unit: 'character' });
 
         expect(editor.read.selection()).toEqual(output.selection);
       });

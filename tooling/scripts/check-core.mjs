@@ -205,23 +205,11 @@ run('type contracts', 'pnpm', [
   'packages/core/tsconfig.type-tests.json',
   '--noEmit',
 ]);
-for (const target of packageTestTargets) {
-  run(`lint ${target.name}`, 'pnpm', ['--filter', target.name, 'lint']);
-}
-run('build Plite artifact for Core/Utils runtime tests', 'pnpm', [
-  '--filter',
-  '@platejs/plite',
-  'build',
-]);
-run('build Core artifact for reviewed package runtime tests', 'pnpm', [
-  '--filter',
-  '@platejs/core',
-  'build',
-]);
-run('build Utils artifact for reviewed package runtime tests', 'pnpm', [
-  '--filter',
-  '@platejs/utils',
-  'build',
+run(`lint ${packageSlugs.length} Core and reviewed packages`, 'pnpm', [
+  'turbo',
+  'lint',
+  '--only',
+  ...packageSlugs.map((slug) => `--filter=./packages/${slug}`),
 ]);
 for (const target of testInventory) {
   runPackageTests(target);

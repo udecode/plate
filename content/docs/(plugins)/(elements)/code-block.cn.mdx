@@ -203,12 +203,12 @@ const editor = createPlateEditor({
 安装 `CodeBlockPlugin` 后，通过命令组修改代码块：
 
 ```tsx
-editor.update.code_block.insert();
-editor.update.code_block.toggle();
-editor.update.code_block.tab();
-editor.update.code_block.untab();
-editor.update.code_block.resetBlock();
-editor.update.code_block.selectAll();
+editor.update.codeBlock.insert();
+editor.update.codeBlock.toggle();
+editor.update.codeBlock.tab();
+editor.update.codeBlock.untab();
+editor.update.codeBlock.resetBlock();
+editor.update.codeBlock.selectAll();
 ```
 
 - `insert()` 原地转换选中的空块；对于非空或展开选区，在选区末尾块之后插入段落并转换。无选区时不执行操作。

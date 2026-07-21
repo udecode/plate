@@ -11,15 +11,12 @@ import {
   getLastCommit as editorGetLastCommit,
   getPathByRuntimeId as editorGetPathByRuntimeId,
   getRuntimeId as editorGetRuntimeId,
-  type getSelection as editorGetSelection,
   getSnapshot as editorGetSnapshot,
+  dispatchCommand,
   insertBreak as editorInsertBreak,
   insertSoftBreak as editorInsertSoftBreak,
   insertText as editorInsertText,
-  registerCapability as editorRegisterCapability,
-  registerCommand as editorRegisterCommand,
-  registerCommitListener as editorRegisterCommitListener,
-  registerNormalizer as editorRegisterNormalizer,
+  move as editorMove,
   removeMark as editorRemoveMark,
   replace as editorReplace,
   string as editorString,
@@ -27,11 +24,21 @@ import {
 } from '@platejs/plite/internal';
 
 import {
+  ContentSlice,
   createEditor,
   createEditorRuntime,
   createEditorView,
+  defineEditorExtension,
+  DocumentChange,
+  editorCommands,
+  type Editor,
+  type EditorCommand,
+  type EditorCommandHandler,
+  type EditorCommandOptions,
+  type EditorCommandReference,
   type Element,
-  type Operation,
+  type Range,
+  SelectionApi,
 } from '@platejs/plite';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 
@@ -44,6 +51,27 @@ const runEditorTransaction = (
     authority: 'explicit',
     ...options,
   });
+
+let commandExtensionOrder = 0;
+
+const installCommandExtension = <TCommand extends EditorCommand>(
+  editor: Editor,
+  command: EditorCommandReference<TCommand>,
+  handler: EditorCommandHandler<TCommand>,
+  options?: EditorCommandOptions
+) =>
+  editor.extend(
+    defineEditorExtension({
+      commands: [
+        {
+          command,
+          handler,
+          ...(options ? { options } : {}),
+        },
+      ],
+      name: `test-command-${commandExtensionOrder++}`,
+    })
+  );
 
 const paragraph = (
   text: string,
@@ -79,25 +107,15 @@ const replaceChildren = (
   editorReplace(editor, {
     children: clone(children),
     selection: null,
-    marks: null,
   });
 };
 
 const selectEditor = (
   editor: ReturnType<typeof createEditor>,
-  selection: NonNullable<ReturnType<typeof editorGetSelection>>
+  selection: Range
 ) => {
   editor.update((tx) => {
-    tx.selection.set(selection);
-  });
-};
-
-const runManualTransaction = (
-  editor: ReturnType<typeof createEditor>,
-  operations: Operation[]
-) => {
-  editor.update((tx) => {
-    tx.operations.replay(clone(operations));
+    tx.selection.set(SelectionApi.text(selection));
   });
 };
 
@@ -106,117 +124,12 @@ const getVisibleState = (editor: ReturnType<typeof createEditor>) => {
 
   return {
     children: snapshot.children,
-    marks: snapshot.marks,
+    runtimeEntries: snapshot.index.entries(),
     selection: snapshot.selection,
-    pathToId: snapshot.index.pathToId,
   };
 };
 
 describe('plite transaction contract', () => {
-  it('applyBatch matches manual transaction for duplicate exact-path set_node writes', () => {
-    const children = [paragraph('one'), paragraph('two'), paragraph('three')];
-    const batchEditor = createEditor();
-    const manualEditor = createEditor();
-    const operations: Operation[] = [
-      {
-        type: 'set_node',
-        path: [0],
-        properties: {},
-        newProperties: { id: 'blue' },
-      },
-      {
-        type: 'set_node',
-        path: [0],
-        properties: {},
-        newProperties: { id: 'final', role: 'final' },
-      },
-    ];
-
-    replaceChildren(batchEditor, children);
-    replaceChildren(manualEditor, children);
-
-    batchEditor.update((tx) => {
-      tx.operations.replay(clone(operations));
-    });
-    runManualTransaction(manualEditor, operations);
-
-    assert.deepEqual(
-      getVisibleState(batchEditor),
-      getVisibleState(manualEditor)
-    );
-    assert.deepEqual(editorGetSnapshot(batchEditor).children, [
-      {
-        type: 'paragraph',
-        id: 'final',
-        role: 'final',
-        children: [{ text: 'one' }],
-      },
-      paragraph('two'),
-      paragraph('three'),
-    ]);
-  });
-
-  it('applyBatch matches manual transaction for mixed text, selection, and node ops', () => {
-    const children = [paragraph('abcd')];
-    const selection = {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    };
-    const batchEditor = createEditor();
-    const manualEditor = createEditor();
-    const operations: Operation[] = [
-      {
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 1,
-        text: 'X',
-      },
-      {
-        type: 'set_selection',
-        properties: {
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 0 },
-        },
-        newProperties: {
-          anchor: { path: [0, 0], offset: 2 },
-          focus: { path: [0, 0], offset: 2 },
-        },
-      },
-      {
-        type: 'set_node',
-        path: [0],
-        properties: {},
-        newProperties: { id: 'p0' },
-      },
-    ];
-
-    replaceChildren(batchEditor, children);
-    replaceChildren(manualEditor, children);
-    selectEditor(batchEditor, selection);
-    selectEditor(manualEditor, selection);
-
-    batchEditor.update((tx) => {
-      tx.operations.replay(clone(operations));
-    });
-    runManualTransaction(manualEditor, operations);
-
-    assert.deepEqual(
-      getVisibleState(batchEditor),
-      getVisibleState(manualEditor)
-    );
-    assert.deepEqual(editorGetSnapshot(batchEditor).children, [
-      {
-        type: 'paragraph',
-        id: 'p0',
-        children: [{ text: 'aXbcd' }],
-      },
-    ]);
-    assert.deepEqual(editorGetSnapshot(batchEditor).selection, {
-      anchor: { path: [0, 0], offset: 2 },
-      focus: { path: [0, 0], offset: 2 },
-    });
-  });
-
   it('reads one document root without materializing the serializable value', () => {
     const editor = createEditor();
 
@@ -235,53 +148,7 @@ describe('plite transaction contract', () => {
     );
     assert.deepEqual(value.children, [paragraph('main')]);
     assert.deepEqual(value.roots?.header, [paragraph('header')]);
-    assert.notEqual(root, value.roots?.header);
-  });
-
-  it('applyBatch matches manual transaction for structural insert, move, and set batches', () => {
-    const children = [paragraph('zero'), paragraph('one')];
-    const batchEditor = createEditor();
-    const manualEditor = createEditor();
-    const operations: Operation[] = [
-      {
-        type: 'insert_node',
-        path: [2],
-        node: paragraph('two'),
-      },
-      {
-        type: 'move_node',
-        path: [2],
-        newPath: [0],
-      },
-      {
-        type: 'set_node',
-        path: [1],
-        properties: {},
-        newProperties: { id: 'shifted' },
-      },
-    ];
-
-    replaceChildren(batchEditor, children);
-    replaceChildren(manualEditor, children);
-
-    batchEditor.update((tx) => {
-      tx.operations.replay(clone(operations));
-    });
-    runManualTransaction(manualEditor, operations);
-
-    assert.deepEqual(
-      getVisibleState(batchEditor),
-      getVisibleState(manualEditor)
-    );
-    assert.deepEqual(editorGetSnapshot(batchEditor).children, [
-      paragraph('two'),
-      {
-        type: 'paragraph',
-        id: 'shifted',
-        children: [{ text: 'zero' }],
-      },
-      paragraph('one'),
-    ]);
+    assert.equal(root, value.roots?.header);
   });
 
   it('internal transaction keeps direct replacement draft-visible and publishes once on exit', () => {
@@ -296,22 +163,20 @@ describe('plite transaction contract', () => {
 
     publishedStates.length = 0;
 
-    runEditorTransaction(editor, (transaction) => {
-      editorReplace(editor, {
+    editor.update((tx) => {
+      tx.value.replace({
         children: [paragraph('replacement')],
         selection: null,
-        marks: null,
       });
 
       assert.equal(publishedStates.length, 0);
       assert.equal(editorString(editor, [0]), 'replacement');
+      assert.equal(
+        editor.read((state) => state.text.string([0])),
+        'one'
+      );
 
-      transaction.apply({
-        type: 'set_node',
-        path: [0],
-        properties: {},
-        newProperties: { id: 'p0' },
-      });
+      tx.nodes.set({ id: 'p0' }, { at: [0] });
 
       assert.equal(publishedStates.length, 0);
       assert.deepEqual(editorGetChildren(editor), [
@@ -335,7 +200,7 @@ describe('plite transaction contract', () => {
     ]);
   });
 
-  it('keeps runtime-id multi-node replacement atomic until commit and rollbackable', () => {
+  it('keeps runtime-id multi-node replacement atomic until commit and discardable', () => {
     const editor = createEditor();
     const publishedStates: ReturnType<typeof getVisibleState>[] = [];
     const normalizedPaths: string[] = [];
@@ -350,13 +215,15 @@ describe('plite transaction contract', () => {
     assert(targetRuntimeId);
 
     const unextend = editor.extend({
-      name: 'atomic-replace-normalizer-spy',
-      normalizers: {
-        node({ entry, next }) {
-          normalizedPaths.push(entry[1].join('.'));
-          next();
+      name: 'atomic-replace-correction-spy',
+      corrections: [
+        {
+          event: 'content',
+          correct({ entry }) {
+            normalizedPaths.push(entry[1].join('.'));
+          },
         },
-      },
+      ],
     });
     const unsubscribe = editorSubscribe(editor, () => {
       publishedStates.push(getVisibleState(editor));
@@ -388,19 +255,16 @@ describe('plite transaction contract', () => {
       assert.deepEqual(normalizedPaths, []);
     });
 
+    const commit = editorGetLastCommit(editor);
+
     unsubscribe();
     unextend();
-
-    const commit = editorGetLastCommit(editor);
 
     assert.equal(publishedStates.length, 1);
     assert(normalizedPaths.length > 0);
     assert(commit);
-    assert.deepEqual(commit.classes, ['structural']);
-    assert.deepEqual(
-      commit.operations.map((operation) => operation.type),
-      ['remove_node', 'insert_node', 'insert_node']
-    );
+    assert.equal(commit.changed.has('structure'), true);
+    assert.deepEqual(commit.changed.topLevelRanges(), [[1, 2]]);
     assert.deepEqual(editorGetSnapshot(editor).children, [
       paragraph('before'),
       paragraph('replacement-a'),
@@ -408,30 +272,30 @@ describe('plite transaction contract', () => {
       paragraph('after'),
     ]);
 
-    const rollbackEditor = createEditor();
-    const rollbackPublishedStates: ReturnType<typeof getVisibleState>[] = [];
+    const discardEditor = createEditor();
+    const discardPublishedStates: ReturnType<typeof getVisibleState>[] = [];
 
-    replaceChildren(rollbackEditor, [
+    replaceChildren(discardEditor, [
       paragraph('before'),
       paragraph('target'),
       paragraph('after'),
     ]);
 
-    const rollbackTargetRuntimeId = editorGetRuntimeId(rollbackEditor, [1]);
-    assert(rollbackTargetRuntimeId);
+    const discardTargetRuntimeId = editorGetRuntimeId(discardEditor, [1]);
+    assert(discardTargetRuntimeId);
 
-    const rollbackBefore = getVisibleState(rollbackEditor);
-    const unsubscribeRollback = editorSubscribe(rollbackEditor, () => {
-      rollbackPublishedStates.push(getVisibleState(rollbackEditor));
+    const discardBefore = getVisibleState(discardEditor);
+    const unsubscribeDiscard = editorSubscribe(discardEditor, () => {
+      discardPublishedStates.push(getVisibleState(discardEditor));
     });
 
-    rollbackPublishedStates.length = 0;
+    discardPublishedStates.length = 0;
 
     assert.throws(() => {
-      rollbackEditor.update((transaction) => {
+      discardEditor.update((transaction) => {
         const targetPath = editorGetPathByRuntimeId(
-          rollbackEditor,
-          rollbackTargetRuntimeId
+          discardEditor,
+          discardTargetRuntimeId
         );
 
         assert.deepEqual(targetPath, [1]);
@@ -446,12 +310,12 @@ describe('plite transaction contract', () => {
       });
     }, /reject preview/);
 
-    unsubscribeRollback();
+    unsubscribeDiscard();
 
-    assert.equal(rollbackPublishedStates.length, 0);
-    assert.deepEqual(getVisibleState(rollbackEditor), rollbackBefore);
+    assert.equal(discardPublishedStates.length, 0);
+    assert.deepEqual(getVisibleState(discardEditor), discardBefore);
     assert.deepEqual(
-      editorGetPathByRuntimeId(rollbackEditor, rollbackTargetRuntimeId),
+      editorGetPathByRuntimeId(discardEditor, discardTargetRuntimeId),
       [1]
     );
   });
@@ -465,23 +329,18 @@ describe('plite transaction contract', () => {
       assert.deepEqual(tx.children(), [paragraph('one'), paragraph('two')]);
       assert.equal(tx.selection(), null);
 
-      tx.operations.replay([
-        {
-          type: 'insert_text',
-          path: [0, 0],
-          offset: 3,
-          text: '!',
-        },
-      ]);
+      tx.text.insert('!', { at: { path: [0, 0], offset: 3 } });
 
       assert.equal(tx.children()[0]?.children[0]?.text, 'one!');
 
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       });
 
       assert.deepEqual(tx.selection(), {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -493,21 +352,45 @@ describe('plite transaction contract', () => {
     );
   });
 
-  it('internal transaction exposes tx.apply as the transaction-owned write boundary', () => {
+  it('selection.set preserves text-selection metadata', () => {
+    const editor = createEditor();
+
+    replaceChildren(editor, [paragraph('one')]);
+    selectEditor(editor, {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    });
+
+    editor.update((tx) => {
+      tx.selection.set({
+        affinity: 'backward',
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+        kind: 'text',
+        marks: { bold: true },
+      });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
+      affinity: 'backward',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+      kind: 'text',
+      marks: { bold: true },
+    });
+  });
+
+  it('exposes high-level writes through the transaction-owned mutation groups', () => {
     const editor = createEditor();
 
     replaceChildren(editor, [paragraph('one')]);
 
-    runEditorTransaction(editor, (transaction) => {
-      transaction.apply({
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 3,
-        text: '!',
+    editor.update((tx) => {
+      tx.text.insert('!', {
+        at: { path: [0, 0], offset: 3 },
       });
 
-      assert.equal(transaction.children[0]?.children[0]?.text, 'one!');
-      assert.equal(transaction.operations.length, 1);
+      assert.equal(editorGetChildren(editor)[0]?.children[0]?.text, 'one!');
     });
 
     assert.equal(
@@ -526,10 +409,8 @@ describe('plite transaction contract', () => {
     const replaceCommit = editorGetLastCommit(editor);
 
     assert(replaceCommit);
-    assert.deepEqual(replaceCommit.classes, ['replace']);
+    assert.equal(replaceCommit.changed.has('replace'), true);
     assert.equal(replaceCommit.version, 1);
-    assert.equal(replaceCommit.dirty.wholeDocument, true);
-    assert.equal(replaceCommit.dirty.topLevelRange, null);
 
     editor.update((tx) => {
       tx.text.insert('!', {
@@ -542,17 +423,12 @@ describe('plite transaction contract', () => {
     assert(commit);
     assert.equal(commit.previousVersion, 1);
     assert.equal(commit.version, 2);
-    assert.deepEqual(commit.classes, ['text']);
-    assert.equal(commit.textChanged, true);
+    assert.equal(commit.changed.has('text'), true);
     assert.equal(commit.selectionChanged, false);
-    assert.equal(commit.structureChanged, false);
-    assert.equal(commit.snapshotChanged, true);
-    assert.deepEqual(commit.dirty.paths, [[], [0], [0, 0]]);
-    assert.deepEqual(commit.dirty.topLevelRange, [0, 0]);
-    assert.deepEqual(commit.dirty.runtimeIds, commit.touchedRuntimeIds);
-    assert.equal(commit.dirty.wholeDocument, false);
-    assert.equal(commit.operations.length, 1);
-    assert.equal(commit.operations[0]?.type, 'insert_text');
+    assert.equal(commit.changed.has('structure'), false);
+    assert.equal(commit.changed.has('snapshot'), true);
+    assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
+    assert.equal(commit.changes.empty, false);
   });
 
   it('passes explicit commit metadata through subscribers', () => {
@@ -576,63 +452,140 @@ describe('plite transaction contract', () => {
     unsubscribe();
 
     assert.equal(commits.length, 1);
-    assert.deepEqual(commits[0]?.classes, ['text']);
+    assert.equal(commits[0]?.changed.has('text'), true);
     assert.equal(commits[0], editorGetLastCommit(editor));
-    assert.deepEqual(commits[0]?.dirty.topLevelRange, [0, 0]);
+    assert.deepEqual(commits[0]?.changed.topLevelRanges(), [[0, 0]]);
   });
 
-  it('tx.apply routes through operations.apply and the core transaction writer', () => {
+  it('notifies extensions about canonical transaction changes', () => {
     const editor = createEditor();
 
     replaceChildren(editor, [paragraph('one')]);
 
-    const seenOperations: Operation[] = [];
+    const seenChanges: DocumentChange[] = [];
     const unextend = editor.extend({
-      name: 'operation-spy',
-      operations: {
-        apply({ operation, next }) {
-          seenOperations.push(operation);
-          next(operation);
-        },
+      name: 'transaction-change-spy',
+      onTransactionChange({ change }) {
+        seenChanges.push(change);
       },
     });
 
-    runEditorTransaction(editor, (transaction) => {
-      transaction.apply({
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 3,
-        text: '!',
+    editor.update((tx) => {
+      tx.text.insert('!', {
+        at: { path: [0, 0], offset: 3 },
       });
     });
 
-    assert.equal(seenOperations.length, 1);
+    assert.equal(seenChanges.length, 1);
     assert.equal(
       editorGetSnapshot(editor).children[0].children[0].text,
       'one!'
     );
 
     editor.update((tx) => {
-      tx.operations.replay([
-        {
-          type: 'insert_text',
-          path: [0, 0],
-          offset: 4,
-          text: '?',
-        },
-      ]);
+      tx.text.insert('?', { at: { path: [0, 0], offset: 4 } });
     });
 
     unextend();
 
-    assert.equal(seenOperations.length, 2);
+    assert.equal(seenChanges.length, 2);
     assert.equal(
       editorGetSnapshot(editor).children[0].children[0].text,
       'one!?'
     );
   });
 
-  it('transaction.apply reuses the transaction writer and publishes once', () => {
+  it('derives changed paths lazily for an unclassified canonical change', () => {
+    const editor = createEditor();
+
+    replaceChildren(editor, [paragraph('one')]);
+
+    const observations: Array<{
+      paths: readonly number[][];
+      properties: boolean;
+      ranges: readonly {
+        after: readonly [number, number] | null;
+        before: readonly [number, number] | null;
+      }[];
+      structure: boolean;
+      text: boolean;
+    }> = [];
+    const unextend = editor.extend({
+      name: 'lazy-transaction-change-spy',
+      onTransactionChange({ changed }) {
+        observations.push({
+          paths: changed.paths(),
+          properties: changed.has('properties'),
+          ranges: changed.topLevelRanges(),
+          structure: changed.has('structure'),
+          text: changed.has('text'),
+        });
+      },
+    });
+    const classified = DocumentChange.between(
+      { children: [paragraph('one')] },
+      { children: [paragraph('one!')] }
+    );
+    const unclassified = new DocumentChange({ primary: classified.primary });
+
+    assert.equal(unclassified.primaryClassification, null);
+
+    editor.update((tx) => {
+      tx.changes.apply(unclassified);
+    });
+
+    const commit = editorGetLastCommit(editor);
+
+    unextend();
+
+    assert.deepEqual(observations, [
+      {
+        paths: [[0], [0, 0]],
+        properties: false,
+        ranges: [{ after: [0, 0], before: [0, 0] }],
+        structure: false,
+        text: true,
+      },
+    ]);
+    assert.deepEqual(commit?.changed.paths(), [[0], [0, 0]]);
+    assert.equal(Object.isFrozen(observations[0]?.paths), true);
+    assert.equal(Object.isFrozen(observations[0]?.paths[0]), true);
+  });
+
+  it('keeps transaction changed paths bounded in a 20k-block document', () => {
+    const editor = createEditor({
+      initialValue: Array.from({ length: 20_000 }, (_, index) =>
+        paragraph(`row-${index}`)
+      ),
+    });
+    const paths: number[][] = [];
+    const ranges: Array<{
+      after: readonly [number, number] | null;
+      before: readonly [number, number] | null;
+    }> = [];
+    const unextend = editor.extend({
+      name: 'bounded-transaction-change-paths',
+      onTransactionChange({ changed }) {
+        paths.push(...changed.paths());
+        ranges.push(...changed.topLevelRanges());
+      },
+    });
+
+    editor.update((tx) => {
+      tx.text.insert('!', {
+        at: { path: [10_000, 0], offset: 3 },
+      });
+    });
+
+    unextend();
+
+    assert.deepEqual(paths, [[10_000], [10_000, 0]]);
+    assert.deepEqual(ranges, [
+      { after: [10_000, 10_000], before: [10_000, 10_000] },
+    ]);
+  });
+
+  it('transaction mutation groups publish once', () => {
     const editor = createEditor();
     const publishedStates: ReturnType<typeof getVisibleState>[] = [];
 
@@ -644,17 +597,13 @@ describe('plite transaction contract', () => {
 
     publishedStates.length = 0;
 
-    runEditorTransaction(editor, (transaction) => {
-      transaction.apply({
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 3,
-        text: '!',
+    editor.update((tx) => {
+      tx.text.insert('!', {
+        at: { path: [0, 0], offset: 3 },
       });
 
       assert.equal(publishedStates.length, 0);
-      assert.equal(transaction.children[0]?.children[0]?.text, 'one!');
-      assert.equal(transaction.operations.length, 1);
+      assert.equal(editorGetChildren(editor)[0]?.children[0]?.text, 'one!');
     });
 
     unsubscribe();
@@ -672,20 +621,25 @@ describe('plite transaction contract', () => {
     editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
-      marks: null,
     });
 
     runEditorTransaction(editor, (transaction) => {
       transaction.setMarks({ bold: true });
 
       assert.deepEqual(transaction.marks, { bold: true });
-      assert.deepEqual(getMarks(editor), { bold: true });
+      assert.deepEqual(getMarks(editor), {});
     });
 
-    assert.deepEqual(editorGetSnapshot(editor).marks, { bold: true });
+    const selection = editorGetSnapshot(editor).selection;
+
+    assert.equal(SelectionApi.isText(selection), true);
+    assert.deepEqual(SelectionApi.isText(selection) ? selection.marks : null, {
+      bold: true,
+    });
   });
 
   it('internal transaction exposes tx.setSelection as the transaction-owned selection boundary', () => {
@@ -694,71 +648,73 @@ describe('plite transaction contract', () => {
     editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
-      marks: null,
     });
 
     runEditorTransaction(editor, (transaction) => {
       transaction.setSelection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       });
 
       assert.deepEqual(transaction.selection, {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       });
     });
 
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
   });
 
-  it('internal transaction rolls back staged changes when a later operation throws', () => {
+  it('discards staged changes when the update callback throws', () => {
     const editor = createEditor();
 
     replaceChildren(editor, [paragraph('one'), paragraph('two')]);
 
     const before = getVisibleState(editor);
+    const beforeCommit = editorGetLastCommit(editor);
+    const beforeVersion = editorGetSnapshot(editor).version;
 
     assert.throws(() => {
-      runEditorTransaction(editor, (transaction) => {
-        transaction.apply({
-          type: 'set_node',
-          path: [0],
-          properties: {},
-          newProperties: { id: 'temp' },
-        });
-
-        transaction.apply({
-          type: 'set_node',
-          path: [99],
-          properties: {},
-          newProperties: { boom: true },
-        });
+      editor.update((tx) => {
+        tx.nodes.set({ id: 'temp' }, { at: [0] });
+        assert.equal(tx.children()[0]?.id, 'temp');
+        assert.equal(
+          editor.read((state) => state.text.string([0])),
+          'one'
+        );
+        throw new Error('abort update');
       });
     });
 
     assert.deepEqual(getVisibleState(editor), before);
+    assert.equal(editorGetSnapshot(editor).version, beforeVersion);
+    assert.equal(editorGetLastCommit(editor), beforeCommit);
   });
 
-  it('routes insertText through command middleware and preserves commit metadata', () => {
+  it('routes insertText through pure command handlers and preserves commit metadata', () => {
     const editor = createEditor();
     const seenCommands: unknown[] = [];
 
     replaceChildren(editor, [paragraph('one')]);
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       });
     });
 
-    const unsubscribe = editorRegisterCommand(
+    const unsubscribe = installCommandExtension(
       editor,
       'insert_text',
       (context, next) => {
@@ -773,9 +729,9 @@ describe('plite transaction contract', () => {
     editor.update((tx) => {
       editorInsertText(editor, '?');
     });
-    unsubscribe();
-
     const commit = editorGetLastCommit(editor);
+
+    unsubscribe();
 
     assert.equal(seenCommands.length, 1);
     assert.deepEqual(seenCommands[0], {
@@ -789,18 +745,11 @@ describe('plite transaction contract', () => {
       origin: 'command',
       type: 'insert_text',
     });
-    assert.deepEqual(commit.classes, ['text']);
-    assert.deepEqual(commit.operations, [
-      {
-        offset: 3,
-        path: [0, 0],
-        text: '!',
-        type: 'insert_text',
-      },
-    ]);
-    assert.deepEqual(commit.dirty.paths, [[], [0], [0, 0]]);
-    assert.deepEqual(commit.dirty.runtimeIds, commit.touchedRuntimeIds);
+    assert.equal(commit.changed.has('text'), true);
+    assert.equal(commit.changed.has('structure'), false);
+    assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
     assert.deepEqual(commit.selectionBefore, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -816,6 +765,7 @@ describe('plite transaction contract', () => {
     replaceChildren(editor, [paragraph('one')]);
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       });
@@ -832,30 +782,24 @@ describe('plite transaction contract', () => {
       origin: 'command',
       type: 'insert_text',
     });
-    assert.deepEqual(commit.classes, ['text']);
-    assert.deepEqual(commit.operations, [
-      {
-        offset: 3,
-        path: [0, 0],
-        text: '!',
-        type: 'insert_text',
-      },
-    ]);
+    assert.equal(commit.changed.has('text'), true);
+    assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
   });
 
-  it('routes insertBreak through command middleware and preserves structural commit metadata', () => {
+  it('routes insertBreak through pure command handlers and preserves structural commit metadata', () => {
     const editor = createEditor();
     const seenCommands: unknown[] = [];
 
     replaceChildren(editor, [paragraph('one')]);
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
     });
 
-    const unsubscribe = editorRegisterCommand(
+    const unsubscribe = installCommandExtension(
       editor,
       'insert_break',
       (context, next) => {
@@ -867,9 +811,9 @@ describe('plite transaction contract', () => {
     editor.update((tx) => {
       editorInsertBreak(editor);
     });
-    unsubscribe();
-
     const commit = editorGetLastCommit(editor);
+
+    unsubscribe();
 
     assert.deepEqual(seenCommands, [{ type: 'insert_break' }]);
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -881,36 +825,35 @@ describe('plite transaction contract', () => {
       origin: 'command',
       type: 'insert_break',
     });
-    assert.deepEqual(commit.classes, ['structural']);
-    assert.deepEqual(
-      commit.operations.map((operation) => operation.type),
-      ['split_node', 'split_node']
-    );
-    assert.equal(commit.structureChanged, true);
+    assert.equal(commit.changed.has('structure'), true);
+    assert.deepEqual(commit.changed.topLevelRanges(), [[0, 1]]);
     assert.equal(commit.selectionChanged, true);
     assert.deepEqual(commit.selectionBefore, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
     assert.deepEqual(commit.selectionAfter, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
   });
 
-  it('routes insertSoftBreak through command middleware and preserves text commit metadata', () => {
+  it('routes insertSoftBreak through pure command handlers and preserves text commit metadata', () => {
     const editor = createEditor();
     const seenCommands: unknown[] = [];
 
     replaceChildren(editor, [paragraph('one')]);
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
     });
 
-    const unsubscribe = editorRegisterCommand(
+    const unsubscribe = installCommandExtension(
       editor,
       'insert_soft_break',
       (context, next) => {
@@ -922,9 +865,9 @@ describe('plite transaction contract', () => {
     editor.update((tx) => {
       editorInsertSoftBreak(editor);
     });
-    unsubscribe();
-
     const commit = editorGetLastCommit(editor);
+
+    unsubscribe();
 
     assert.deepEqual(seenCommands, [{ type: 'insert_soft_break' }]);
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('o\nne')]);
@@ -933,28 +876,23 @@ describe('plite transaction contract', () => {
       origin: 'command',
       type: 'insert_soft_break',
     });
-    assert.deepEqual(commit.classes, ['text']);
-    assert.deepEqual(commit.operations, [
-      {
-        offset: 1,
-        path: [0, 0],
-        text: '\n',
-        type: 'insert_text',
-      },
-    ]);
-    assert.equal(commit.structureChanged, false);
+    assert.equal(commit.changed.has('text'), true);
+    assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
+    assert.equal(commit.changed.has('structure'), false);
     assert.equal(commit.selectionChanged, true);
     assert.deepEqual(commit.selectionBefore, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
     assert.deepEqual(commit.selectionAfter, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
   });
 
-  it('routes delete commands through command middleware and preserves history-shaped commits', () => {
+  it('routes delete commands through pure command handlers and preserves commits', () => {
     const backwardEditor = createEditor();
     const fragmentEditor = createEditor();
     const deleteFragmentCommand =
@@ -968,7 +906,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeDelete = editorRegisterCommand(
+    const unsubscribeDelete = installCommandExtension(
       backwardEditor,
       'delete',
       (context, next) => {
@@ -980,9 +918,9 @@ describe('plite transaction contract', () => {
     backwardEditor.update(() => {
       editorDeleteBackward(backwardEditor);
     });
-    unsubscribeDelete();
-
     const backwardCommit = editorGetLastCommit(backwardEditor);
+
+    unsubscribeDelete();
 
     assert.deepEqual(deleteCommands, [
       {
@@ -993,17 +931,8 @@ describe('plite transaction contract', () => {
     ]);
     assert.equal(editorString(backwardEditor, [0]), 'on');
     assert(backwardCommit);
-    assert.deepEqual(backwardCommit.classes, ['text']);
-    assert.deepEqual(backwardCommit.operations[0], {
-      offset: 2,
-      path: [0, 0],
-      text: 'e',
-      type: 'remove_text',
-    });
-    assert.deepEqual(
-      backwardCommit.operations.map((operation) => operation.type),
-      ['remove_text']
-    );
+    assert.equal(backwardCommit.changed.has('text'), true);
+    assert.equal(backwardCommit.changed.has('structure'), false);
 
     replaceChildren(fragmentEditor, [paragraph('hello')]);
     selectEditor(fragmentEditor, {
@@ -1011,7 +940,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 4 },
     });
 
-    const unsubscribeFragment = editorRegisterCommand(
+    const unsubscribeFragment = installCommandExtension(
       fragmentEditor,
       deleteFragmentCommand,
       (context, next) => {
@@ -1023,9 +952,9 @@ describe('plite transaction contract', () => {
     fragmentEditor.update(() => {
       editorDeleteFragment(fragmentEditor, { direction: 'backward' });
     });
-    unsubscribeFragment();
-
     const fragmentCommit = editorGetLastCommit(fragmentEditor);
+
+    unsubscribeFragment();
 
     assert.deepEqual(fragmentCommands[0], {
       direction: 'backward',
@@ -1033,14 +962,11 @@ describe('plite transaction contract', () => {
     });
     assert.equal(editorString(fragmentEditor, [0]), 'ho');
     assert(fragmentCommit);
-    assert.deepEqual(fragmentCommit.classes, ['text']);
-    assert.deepEqual(
-      fragmentCommit.operations.map((operation) => operation.type),
-      ['remove_text']
-    );
+    assert.equal(fragmentCommit.changed.has('text'), true);
+    assert.equal(fragmentCommit.changed.has('structure'), false);
   });
 
-  it('honors delete command direction overrides from middleware', () => {
+  it('honors delete command direction overrides from pure handlers', () => {
     const deleteCommand = editorDefineCommand<DeleteCommand>('delete');
     const backwardEditor = createEditor();
     const forwardEditor = createEditor();
@@ -1051,7 +977,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 1 },
     });
 
-    const unsubscribeBackward = editorRegisterCommand(
+    const unsubscribeBackward = installCommandExtension(
       backwardEditor,
       deleteCommand,
       (context, next) => next({ ...context.command, direction: 'forward' })
@@ -1070,7 +996,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 1 },
     });
 
-    const unsubscribeForward = editorRegisterCommand(
+    const unsubscribeForward = installCommandExtension(
       forwardEditor,
       deleteCommand,
       (context, next) => next({ ...context.command, direction: 'backward' })
@@ -1084,72 +1010,33 @@ describe('plite transaction contract', () => {
     assert.equal(editorString(forwardEditor, [0]), 'bc');
   });
 
-  it('routes selection through command middleware and preserves selection-only commit metadata', () => {
+  it('writes selection directly and preserves selection-only commit metadata', () => {
     const editor = createEditor();
-    const seenCommands: unknown[] = [];
 
     replaceChildren(editor, [paragraph('one')]);
-
-    const unsubscribe = editorRegisterCommand(
-      editor,
-      'set_selection',
-      (context, next) => {
-        seenCommands.push(context.command);
-        return next({
-          ...context.command,
-          newProperties: {
-            anchor: { path: [0, 0], offset: 2 },
-            focus: { path: [0, 0], offset: 2 },
-          },
-        });
-      }
-    );
 
     selectEditor(editor, {
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
-    unsubscribe();
 
     const commit = editorGetLastCommit(editor);
 
-    assert.deepEqual(seenCommands, [
-      {
-        newProperties: {
-          anchor: { path: [0, 0], offset: 3 },
-          focus: { path: [0, 0], offset: 3 },
-        },
-        properties: null,
-        type: 'set_selection',
-      },
-    ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
-      anchor: { path: [0, 0], offset: 2 },
-      focus: { path: [0, 0], offset: 2 },
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 3 },
     });
     assert(commit);
-    assert.deepEqual(commit.command, {
-      origin: 'command',
-      type: 'set_selection',
-    });
-    assert.deepEqual(commit.classes, ['selection']);
-    assert.equal(commit.childrenChanged, false);
+    assert.equal(commit.command, null);
+    assert.equal(commit.changed.has('selection'), true);
+    assert.equal(commit.changed.has('document'), false);
     assert.equal(commit.selectionChanged, true);
-    assert.deepEqual(commit.operations, [
-      {
-        newProperties: {
-          anchor: { path: [0, 0], offset: 2 },
-          focus: { path: [0, 0], offset: 2 },
-        },
-        properties: null,
-        type: 'set_selection',
-      },
-    ]);
-    assert.deepEqual(commit.dirty.paths, []);
-    assert.deepEqual(commit.touchedRuntimeIds, []);
+    assert.equal(commit.changes.empty, true);
+    assert.deepEqual(commit.changed.runtimeIds('node'), []);
   });
 
-  it('keeps rootless selection commands caller-shaped while committing the view root', () => {
+  it('keeps rootless selection caller-shaped while committing the view root', () => {
     const runtime = createEditorRuntime({
       initialValue: {
         children: [paragraph('body')],
@@ -1157,46 +1044,24 @@ describe('plite transaction contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const seenCommands: unknown[] = [];
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     };
 
-    const unsubscribe = editorRegisterCommand(
-      runtime.editor,
-      'set_selection',
-      (context, next) => {
-        seenCommands.push(context.command);
-        return next(context.command);
-      }
-    );
-
     headerEditor.update((tx) => {
       tx.selection.set(selection);
     });
-    unsubscribe();
 
     const commit = editorGetLastCommit(runtime.editor);
 
-    assert.deepEqual(seenCommands, [
-      {
-        newProperties: selection,
-        properties: null,
-        type: 'set_selection',
-      },
-    ]);
-    assert.deepEqual(commit?.operations, [
-      {
-        newProperties: selection,
-        properties: null,
-        root: 'header',
-        type: 'set_selection',
-      },
-    ]);
+    assert.equal(commit?.changes.empty, true);
+    assert.equal(commit?.selectionAfterRoot, 'header');
+    assert.deepEqual(commit?.selectionAfter, selection);
   });
 
-  it('routes movement through command middleware and preserves selection-only commit metadata', () => {
+  it('routes movement through pure command handlers and preserves selection-only commit metadata', () => {
     const editor = createEditor();
     const seenCommands: unknown[] = [];
 
@@ -1206,7 +1071,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 0 },
     });
 
-    const unsubscribe = editorRegisterCommand(
+    const unsubscribe = installCommandExtension(
       editor,
       'move_selection',
       (context, next) => {
@@ -1220,12 +1085,12 @@ describe('plite transaction contract', () => {
       }
     );
 
-    editor.update((tx) => {
-      tx.selection.move();
+    editor.update(() => {
+      editorMove(editor);
     });
-    unsubscribe();
-
     const commit = editorGetLastCommit(editor);
+
+    unsubscribe();
 
     assert.deepEqual(seenCommands, [
       {
@@ -1234,6 +1099,7 @@ describe('plite transaction contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
@@ -1242,13 +1108,9 @@ describe('plite transaction contract', () => {
       origin: 'command',
       type: 'move_selection',
     });
-    assert.deepEqual(commit.classes, ['selection']);
-    assert.deepEqual(
-      commit.operations.map((operation) => operation.type),
-      ['set_selection']
-    );
-    assert.deepEqual(commit.dirty.paths, []);
-    assert.deepEqual(commit.touchedRuntimeIds, []);
+    assert.equal(commit.changed.has('selection'), true);
+    assert.equal(commit.changes.empty, true);
+    assert.deepEqual(commit.changed.runtimeIds('node'), []);
   });
 
   it('moves word selection across initial sibling text leaves', () => {
@@ -1274,6 +1136,7 @@ describe('plite transaction contract', () => {
     });
 
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 1], offset: 3 },
       focus: { path: [0, 1], offset: 3 },
     });
@@ -1302,6 +1165,7 @@ describe('plite transaction contract', () => {
     });
 
     assert.deepEqual(editorGetSnapshot(forward).selection, {
+      kind: 'text',
       anchor: { path: [0, 1], offset: 3 },
       focus: { path: [0, 1], offset: 3 },
     });
@@ -1328,6 +1192,7 @@ describe('plite transaction contract', () => {
     });
 
     assert.deepEqual(editorGetSnapshot(backward).selection, {
+      kind: 'text',
       anchor: { path: [0, 1], offset: 0 },
       focus: { path: [0, 1], offset: 0 },
     });
@@ -1365,6 +1230,7 @@ describe('plite transaction contract', () => {
       });
 
       assert.deepEqual(editorGetSnapshot(editor).selection, {
+        kind: 'text',
         anchor: point,
         focus: point,
       });
@@ -1382,13 +1248,14 @@ describe('plite transaction contract', () => {
       });
 
       assert.deepEqual(editorGetSnapshot(editor).selection, {
+        kind: 'text',
         anchor: point,
         focus: point,
       });
     }
   });
 
-  it('routes mark commands through command middleware and preserves mark commit metadata', () => {
+  it('routes mark commands through pure command handlers and preserves mark commit metadata', () => {
     const editor = createEditor();
     const seenCommands: unknown[] = [];
 
@@ -1398,7 +1265,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeAdd = editorRegisterCommand(
+    const unsubscribeAdd = installCommandExtension(
       editor,
       'add_mark',
       (context, next) => {
@@ -1413,9 +1280,9 @@ describe('plite transaction contract', () => {
     editor.update((tx) => {
       editorAddMark(editor, 'bold', true);
     });
-    unsubscribeAdd();
-
     const addCommit = editorGetLastCommit(editor);
+
+    unsubscribeAdd();
 
     assert.deepEqual(seenCommands[0], {
       key: 'bold',
@@ -1424,12 +1291,18 @@ describe('plite transaction contract', () => {
     });
     assert.deepEqual(getMarks(editor), { italic: true });
     assert(addCommit);
-    assert.deepEqual(addCommit.classes, ['mark']);
-    assert.deepEqual(addCommit.marksBefore, null);
-    assert.deepEqual(addCommit.marksAfter, { italic: true });
-    assert.deepEqual(addCommit.operations, []);
+    assert.equal(addCommit.changed.has('marks'), true);
+    assert.equal(SelectionApi.isText(addCommit.selectionBefore), true);
+    assert.equal(SelectionApi.isText(addCommit.selectionAfter), true);
+    assert.deepEqual(
+      SelectionApi.isText(addCommit.selectionAfter)
+        ? addCommit.selectionAfter.marks
+        : null,
+      { italic: true }
+    );
+    assert.equal(addCommit.changes.empty, true);
 
-    const unsubscribeRemove = editorRegisterCommand(
+    const unsubscribeRemove = installCommandExtension(
       editor,
       'remove_mark',
       (context, next) => {
@@ -1444,9 +1317,9 @@ describe('plite transaction contract', () => {
     editor.update((tx) => {
       editorRemoveMark(editor, 'bold');
     });
-    unsubscribeRemove();
-
     const removeCommit = editorGetLastCommit(editor);
+
+    unsubscribeRemove();
 
     assert.deepEqual(seenCommands[1], {
       key: 'bold',
@@ -1454,15 +1327,25 @@ describe('plite transaction contract', () => {
     });
     assert.deepEqual(getMarks(editor), {});
     assert(removeCommit);
-    assert.deepEqual(removeCommit.classes, ['mark']);
-    assert.deepEqual(removeCommit.marksBefore, { italic: true });
-    assert.deepEqual(removeCommit.marksAfter, {});
-    assert.deepEqual(removeCommit.operations, []);
+    assert.equal(removeCommit.changed.has('marks'), true);
+    assert.deepEqual(
+      SelectionApi.isText(removeCommit.selectionBefore)
+        ? removeCommit.selectionBefore.marks
+        : null,
+      { italic: true }
+    );
+    assert.deepEqual(
+      SelectionApi.isText(removeCommit.selectionAfter)
+        ? removeCommit.selectionAfter.marks
+        : null,
+      {}
+    );
+    assert.equal(removeCommit.changes.empty, true);
   });
 
   it('stores command handlers in the extension registry command slot', () => {
     const editor = createEditor();
-    const registry = editorGetExtensionRegistry(editor);
+    const initialRegistry = editorGetExtensionRegistry(editor);
     const seenCommands: unknown[] = [];
 
     replaceChildren(editor, [paragraph('one')]);
@@ -1471,7 +1354,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribe = editorRegisterCommand(
+    const unsubscribe = installCommandExtension(
       editor,
       'insert_text',
       (context, next) => {
@@ -1480,7 +1363,9 @@ describe('plite transaction contract', () => {
       }
     );
 
-    assert.equal(editorGetExtensionRegistry(editor), registry);
+    const registry = editorGetExtensionRegistry(editor);
+
+    assert.notEqual(registry, initialRegistry);
     assert.equal(registry.commands.get('insert_text')?.length, 1);
 
     editor.update((tx) => {
@@ -1495,7 +1380,10 @@ describe('plite transaction contract', () => {
         type: 'insert_text',
       },
     ]);
-    assert.equal(registry.commands.get('insert_text')?.length, 0);
+    assert.equal(
+      editorGetExtensionRegistry(editor).commands.has('insert_text'),
+      false
+    );
   });
 
   it('registers typed internal command definitions with deterministic priority order', () => {
@@ -1516,7 +1404,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeEarly = editorRegisterCommand(
+    const unsubscribeEarly = installCommandExtension(
       editor,
       insertTextCommand,
       (context, next) => {
@@ -1527,7 +1415,7 @@ describe('plite transaction contract', () => {
       },
       { priority: 1 }
     );
-    const unsubscribeLate = editorRegisterCommand(
+    const unsubscribeLate = installCommandExtension(
       editor,
       insertTextCommand,
       (context, next) => {
@@ -1536,7 +1424,7 @@ describe('plite transaction contract', () => {
       },
       { priority: 1 }
     );
-    const unsubscribeHigh = editorRegisterCommand(
+    const unsubscribeHigh = installCommandExtension(
       editor,
       insertTextCommand,
       (context, next) => {
@@ -1556,8 +1444,8 @@ describe('plite transaction contract', () => {
 
     assert.deepEqual(seenCommands, ['high:!', 'early:!', 'late:!']);
     assert.equal(
-      editorGetExtensionRegistry(editor).commands.get('insert_text')?.length,
-      0
+      editorGetExtensionRegistry(editor).commands.has('insert_text'),
+      false
     );
   });
 
@@ -1571,7 +1459,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeDecline = editorRegisterCommand(
+    const unsubscribeDecline = installCommandExtension(
       editor,
       'insert_text',
       (context) => {
@@ -1580,7 +1468,7 @@ describe('plite transaction contract', () => {
       },
       { priority: 2 }
     );
-    const unsubscribeOverride = editorRegisterCommand(
+    const unsubscribeOverride = installCommandExtension(
       editor,
       'insert_text',
       (context, next) => {
@@ -1604,40 +1492,42 @@ describe('plite transaction contract', () => {
     assert.equal(editorString(editor, [0]), 'one?');
   });
 
-  it('exposes stable extension registry slots beyond commands', () => {
+  it('publishes extension-owned registry slots atomically', () => {
     const editor = createEditor();
-    const registry = editorGetExtensionRegistry(editor);
     const capability = { type: 'link' };
-    const normalizer = () => {};
+    const correction = {
+      correct() {},
+      event: 'content' as const,
+    };
     const commitListener = () => {};
 
-    const unregisterCapability = editorRegisterCapability(
-      editor,
-      'inline',
-      capability
+    const cleanup = editor.extend(
+      defineEditorExtension({
+        api: { inline: capability },
+        corrections: [correction],
+        name: 'registry-slots',
+        onCommit: commitListener,
+      })
     );
-    const unregisterNormalizer = editorRegisterNormalizer(
-      editor,
-      'paragraph-normalizer',
-      normalizer
-    );
-    const unregisterCommitListener = editorRegisterCommitListener(
-      editor,
-      commitListener
-    );
+    const registry = editorGetExtensionRegistry(editor);
 
-    assert.equal(editorGetExtensionRegistry(editor), registry);
     assert.deepEqual(registry.capabilities.get('inline'), [capability]);
-    assert.equal(registry.normalizers.get('paragraph-normalizer'), normalizer);
-    assert.equal(registry.commitListeners.has(commitListener), true);
+    assert.equal(
+      registry.corrections.get('registry-slots:corrections.0'),
+      correction
+    );
+    assert.equal(registry.commitListeners.size, 1);
 
-    unregisterCapability();
-    unregisterNormalizer();
-    unregisterCommitListener();
+    cleanup();
 
-    assert.equal(registry.capabilities.has('inline'), false);
-    assert.equal(registry.normalizers.has('paragraph-normalizer'), false);
-    assert.equal(registry.commitListeners.has(commitListener), false);
+    const clearedRegistry = editorGetExtensionRegistry(editor);
+
+    assert.equal(clearedRegistry.capabilities.has('inline'), false);
+    assert.equal(
+      clearedRegistry.corrections.has('registry-slots:corrections.0'),
+      false
+    );
+    assert.equal(clearedRegistry.commitListeners.size, 0);
   });
 
   it('cleans extension registration output and aborts its lifecycle signal', () => {
@@ -1653,24 +1543,22 @@ describe('plite transaction contract', () => {
     });
 
     const unextend = editor.extend({
-      name: 'lifecycle-extension',
-      setup: (context) => {
+      activate: (_editor, context) => {
         signal = context.signal;
-
-        return {
-          cleanup: () => {
-            cleanupCalls += 1;
-          },
-          onCommit({ commit }) {
-            commits.push(commit);
-          },
-        };
+        context.onCleanup(() => {
+          cleanupCalls += 1;
+        });
+      },
+      name: 'lifecycle-extension',
+      onCommit({ commit }) {
+        commits.push(commit);
       },
     });
 
     const registeredSignal = signal as unknown as AbortSignal;
 
     assert.equal(registeredSignal.aborted, false);
+    commits.length = 0;
     editor.update((tx) => {
       tx.text.insert('!', {
         at: { path: [0, 0], offset: 3 },
@@ -1735,11 +1623,13 @@ describe('plite transaction contract', () => {
 
     unextend();
 
-    assert.equal(registry.stateGroups.has('mirror'), false);
-    assert.equal(registry.txGroups.has('mirror'), false);
+    const clearedRegistry = editorGetExtensionRegistry(editor);
+    assert.notEqual(clearedRegistry, registry);
+    assert.equal(clearedRegistry.stateGroups.has('mirror'), false);
+    assert.equal(clearedRegistry.txGroups.has('mirror'), false);
   });
 
-  it('routes insertFragment through command middleware and preserves commit metadata', () => {
+  it('routes slice replacement through pure command handlers and preserves commit metadata', () => {
     const editor = createEditor();
     const seenCommands: unknown[] = [];
 
@@ -1749,41 +1639,125 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribe = editorRegisterCommand(
+    const unsubscribe = installCommandExtension(
       editor,
-      'insert_fragment',
+      editorCommands.replaceSlice,
       (context, next) => {
         seenCommands.push(context.command);
         return next({
           ...context.command,
-          fragment: [{ text: '!' }],
+          slice: ContentSlice.closed([{ text: '!' }]),
         });
       }
     );
 
-    editor.update((tx) => {
-      tx.fragment.insert([{ text: '?' }]);
+    dispatchCommand(editor, editorCommands.replaceSlice, {
+      slice: ContentSlice.closed([{ text: '?' }]),
+      type: editorCommands.replaceSlice.type,
     });
-    unsubscribe();
-
     const commit = editorGetLastCommit(editor);
+
+    unsubscribe();
 
     assert.deepEqual(seenCommands, [
       {
-        fragment: [{ text: '?' }],
-        options: {},
-        type: 'insert_fragment',
+        slice: {
+          content: [{ text: '?' }],
+          openEnd: 0,
+          openStart: 0,
+        },
+        type: 'replace_slice',
       },
     ]);
     assert.equal(editorString(editor, [0]), 'one!');
     assert(commit);
-    assert.deepEqual(commit.classes, ['structural']);
-    assert.deepEqual(
-      commit.operations.map((operation) => operation.type),
-      ['insert_node', 'set_selection', 'merge_node']
-    );
-    assert.equal(commit.structureChanged, true);
+    assert.equal(commit.changed.has('text'), true);
+    assert.equal(commit.changed.has('structure'), false);
     assert.equal(commit.selectionChanged, true);
+  });
+
+  it('snapshots structural slice commands before middleware observes them', () => {
+    const editor = createEditor();
+    const content = [paragraph('?')];
+    const rawSlice = { content, openEnd: 0, openStart: 0 };
+    let receivedSlice: unknown;
+
+    replaceChildren(editor, [paragraph('one')]);
+    selectEditor(editor, {
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+
+    const unsubscribe = installCommandExtension(
+      editor,
+      editorCommands.replaceSlice,
+      (context, next) => {
+        receivedSlice = context.command.slice;
+
+        assert.notEqual(context.command.slice, rawSlice);
+        assert.equal(Object.isFrozen(context.command.slice), true);
+        assert.equal(Object.isFrozen(context.command.slice.content), true);
+        assert.equal(Object.isFrozen(context.command.slice.content[0]), true);
+
+        return next();
+      }
+    );
+
+    dispatchCommand(editor, editorCommands.replaceSlice, {
+      slice: rawSlice,
+      type: editorCommands.replaceSlice.type,
+    });
+    content[0]!.children[0] = { text: 'mutated' };
+    unsubscribe();
+
+    assert.deepEqual(receivedSlice, {
+      content: [paragraph('?')],
+      openEnd: 0,
+      openStart: 0,
+    });
+  });
+
+  it('dispatches direct slice and fragment replacements once while callbacks stay primitive', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      }),
+      initialValue: [paragraph('ab')],
+    });
+    let commands = 0;
+    let commits = 0;
+
+    const unsubscribe = installCommandExtension(
+      editor,
+      editorCommands.replaceSlice,
+      (_context, next) => {
+        commands += 1;
+
+        return next();
+      }
+    );
+
+    editor.subscribeCommit(() => commits++);
+
+    editor.update.slice.replace(ContentSlice.closed([{ text: '1' }]));
+    assert.equal(commands, 1);
+    assert.equal(commits, 1);
+
+    editor.update.fragment.replace([{ text: '2' }]);
+    assert.equal(commands, 2);
+    assert.equal(commits, 2);
+
+    editor.update((tx) => {
+      tx.slice.replace(ContentSlice.closed([{ text: '3' }]));
+      tx.fragment.replace([{ text: '4' }]);
+    });
+
+    assert.equal(commands, 2);
+    assert.equal(commits, 3);
+    assert.equal(editorString(editor, []), 'a1234b');
+
+    unsubscribe();
   });
 
   it('delivers command-backed commits to extension commit listeners and preserves subscribe behavior', () => {
@@ -1801,12 +1775,13 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeCommitListener = editorRegisterCommitListener(
-      editor,
-      (commit) => {
+    const unextendCommitListener = editor.extend({
+      name: 'command-commit-listener',
+      onCommit({ commit }) {
         extensionCommits.push(commit);
-      }
-    );
+      },
+    });
+    extensionCommits.length = 0;
     const unsubscribeSubscriber = editorSubscribe(
       editor,
       (_snapshot, commit) => {
@@ -1819,11 +1794,6 @@ describe('plite transaction contract', () => {
     editor.update((tx) => {
       editorInsertText(editor, '!');
     });
-    unsubscribeCommitListener();
-    unsubscribeSubscriber();
-    editor.update((tx) => {
-      editorInsertText(editor, '?');
-    });
 
     assert.equal(extensionCommits.length, 1);
     assert.equal(subscribedCommits.length, 1);
@@ -1832,6 +1802,17 @@ describe('plite transaction contract', () => {
       origin: 'command',
       type: 'insert_text',
     });
+
+    unsubscribeSubscriber();
+    unextendCommitListener();
+    const extensionCommitCount = extensionCommits.length;
+
+    editor.update((tx) => {
+      editorInsertText(editor, '?');
+    });
+
+    assert.equal(extensionCommits.length, extensionCommitCount);
+    assert.equal(subscribedCommits.length, 1);
     assert.equal(editorString(editor, [0]), 'one!?');
   });
 });

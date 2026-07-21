@@ -678,7 +678,6 @@ editor.update((tx) => {
   tx.value.replace({
     children: remoteCanonicalChildren,
     selection: currentSelectionOrNull,
-    marks: null,
   });
 }, remoteOptions);
 ```

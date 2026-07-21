@@ -174,7 +174,7 @@ Source-backed architecture north star:
 - target shape: Plite React owns generic React runtime/editable behavior;
   Plate composes it and adds product plugins only.
 - source evidence: `packages/plite-react/src/plugin/with-react.ts` exposes
-  `editor.api.react.refreshDecorations`, focus, readOnly, composition; 
+  `editor.api.react.refreshDecorations`, focus, readOnly, composition;
   `packages/plite-react/src/editable/keyboard-input-strategy.ts` owns editable
   keydown handling and user handler ordering; Plite docs teach
   `Editable onKeyDown`.

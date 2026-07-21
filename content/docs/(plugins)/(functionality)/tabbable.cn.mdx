@@ -78,7 +78,9 @@ const editor = createPlateEditor({
         query: (event) => {
           // 在列表或代码块中禁用
           const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
-          const inCodeBlock = editor.read.nodes.some({ match: { type: KEYS.codeBlock } });
+          const inCodeBlock = editor.read.nodes.some({
+            match: { type: editor.getType(KEYS.codeBlock) },
+          });
           return !inList && !inCodeBlock;
         },
         globalEventListener: true,
@@ -111,7 +113,9 @@ Tabbable插件可能会与处理`Tab`键的其他插件产生冲突，例如：
 ```tsx
 query: (event) => {
   const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
-  const inCodeBlock = editor.read.nodes.some({ match: { type: KEYS.codeBlock } });
+  const inCodeBlock = editor.read.nodes.some({
+    match: { type: editor.getType(KEYS.codeBlock) },
+  });
   return !inList && !inCodeBlock;
 },
 ```

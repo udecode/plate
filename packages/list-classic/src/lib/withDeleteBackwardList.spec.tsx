@@ -1,12 +1,17 @@
 /** @jsx jsxt */
 
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
+
+const BaseBoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
+});
 
 describe('li > lic * 2 with selection at second child start', () => {
   it('merge the children', () => {
@@ -35,7 +40,7 @@ describe('li > lic * 2 with selection at second child start', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+      plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -76,7 +81,7 @@ describe('li with selection at start', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+      plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -137,7 +142,7 @@ describe('list + sublist where second item has multiple children', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+      plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });

@@ -115,7 +115,7 @@ const classifiedInsertText = {
       'browser DOM-mutation probe',
     'types at the browser-selected end of a block':
       'browser-selected insertion probe',
-    'undoes inserted text': 'single-operation undo grouping',
+    'undoes inserted text': 'single-intent undo grouping',
   },
   'shadow-dom.test.ts': {
     __module_helper__: 'shadow-root fallback text insertion helper',

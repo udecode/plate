@@ -1,3 +1,4 @@
+import { ContentSlice } from '@platejs/plite';
 import { writeDOMFragmentData } from '@platejs/plite-dom';
 
 import type { BaseEditor } from '../../lib/editor';
@@ -18,8 +19,8 @@ export const writeStaticSelectionClipboardData = (
   }
 
   writeDOMFragmentData(data, {
-    fragment,
     html: html.innerHTML,
+    slice: ContentSlice.closed(fragment),
     text: getPlainText(html),
   });
 

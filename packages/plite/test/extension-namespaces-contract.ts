@@ -20,10 +20,10 @@ describe('editor extension namespaces', () => {
     editorReplace(editor, {
       children: [paragraph('one'), paragraph('two')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     return editor;

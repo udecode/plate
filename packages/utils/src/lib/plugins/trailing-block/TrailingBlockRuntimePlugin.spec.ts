@@ -1,6 +1,7 @@
 import type { BaseEditor } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 
+import { fixtureSchemaPlugins } from '../__tests__/normalizeRoot';
 import {
   TrailingBlockPlugin,
   type TrailingBlockInsertOptions,
@@ -10,6 +11,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
   it('appends a trailing block at the root when the last node is invalid', () => {
     const editor = createPlateEditor({
       plugins: [
+        ...fixtureSchemaPlugins,
         TrailingBlockPlugin.configure({
           options: { level: 0, type: 'p' },
         }),
@@ -32,6 +34,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
   it('appends the trailing block at the configured depth', () => {
     const editor = createPlateEditor({
       plugins: [
+        ...fixtureSchemaPlugins,
         TrailingBlockPlugin.configure({
           options: { level: 1, type: 'p' },
         }),
@@ -64,6 +67,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
   it('skips insertion when the last node is excluded by the query', () => {
     const editor = createPlateEditor({
       plugins: [
+        ...fixtureSchemaPlugins,
         TrailingBlockPlugin.configure({
           options: {
             level: 0,
@@ -93,6 +97,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
     };
     const editor = createPlateEditor({
       plugins: [
+        ...fixtureSchemaPlugins,
         TrailingBlockPlugin.configure({
           options: { insert, level: 0, type: 'p' },
         }),

@@ -46,37 +46,59 @@ That path assumes the target is a retaggable block. After blockquote became a co
 
 ## Solution
 
-Make the app rule explicit about blockquote being a wrapper:
+Make the package-owned rule explicit about blockquote being a wrapper:
 
-- set `allowSameTypeAbove: true` so the rule can fire while already inside a quote
-- replace the generic retag behavior with `editor.tf.wrapNodes({ type: KEYS.blockquote, children: [] })`
+- resolve the current block with `getBlockEntry()`
+- delete the matched marker and wrap that block in the same active transaction
+- use `tx.nodes.wrap(...)` so the rule constructs the container directly
 - add an app integration test for both root `> ` and nested `> ` inside an existing quote
 
 The fixed rule became:
 
 ```ts
-{
-  allowSameTypeAbove: true,
-  format: (editor) => {
-    editor.tf.wrapNodes({ children: [], type: KEYS.blockquote });
-  },
-  match: '> ',
-  mode: 'block',
-  type: KEYS.blockquote,
-}
+export const BlockquoteRules = {
+  markdown: createRuleFactory<{}, { marker: string }>({
+    type: 'blockStart',
+    marker: '>',
+    trigger: ' ',
+    enabled: ({ editor }) =>
+      !editor.read.nodes.some({
+        match: { type: editor.getType(KEYS.codeBlock) },
+      }),
+    match: ({ marker }) => marker,
+    apply: ({ editor, getBlockEntry, tx }, match) => {
+      const blockEntry = getBlockEntry();
+
+      if (!blockEntry) return;
+
+      tx.text.delete({ at: match.range });
+      tx.nodes.wrap(
+        {
+          children: [],
+          type: editor.getType(KEYS.blockquote),
+        },
+        {
+          at: blockEntry[1],
+        }
+      );
+
+      return true;
+    },
+  }),
+};
 ```
 
 ## Why This Works
 
 Nested quotes require one blockquote to wrap another block, not one block to change its `type` field.
 
-`wrapNodes(...)` preserves that container relationship directly. `allowSameTypeAbove: true` removes the guard that previously blocked the rule the moment the cursor was already inside a quote.
+`tx.nodes.wrap(...)` preserves that container relationship directly. Because the rule targets the resolved block path rather than retagging it, the same operation works at the root and inside an existing quote.
 
 ## Prevention
 
 - When a node type becomes a wrapper/container, audit autoformat rules separately from toolbar and slash-command transforms.
 - Generic block autoformat is safe for headings and paragraphs. It is not automatically safe for wrapper nodes like blockquote.
-- If a rule should work both at the root and under the same ancestor type, review same-type guards before assuming the formatter is broken.
+- If a rule should work both at the root and under the same ancestor type, make the target path explicit instead of relying on generic retag behavior.
 - Add one integration test for the root case and one nested case whenever autoformat behavior depends on container structure.
 
 ## Related Issues

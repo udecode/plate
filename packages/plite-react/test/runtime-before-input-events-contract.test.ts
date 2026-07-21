@@ -14,11 +14,13 @@ import {
 } from '../src/editable/runtime-before-input-events';
 
 const collapsedSelection: Range = {
+  kind: 'text',
   anchor: { offset: 1, path: [2500, 0] },
   focus: { offset: 1, path: [2500, 0] },
 };
 
 const expandedSelection: Range = {
+  kind: 'text',
   anchor: { offset: 1, path: [2500, 0] },
   focus: { offset: 3, path: [2500, 0] },
 };

@@ -2,21 +2,35 @@ import * as os from 'node:os';
 
 import { devices, type PlaywrightTestConfig } from '@playwright/test';
 
+import {
+  assertBrowserWorkerArgs,
+  MAX_BROWSER_WORKERS,
+  resolveBrowserWorkerCount,
+} from './scripts/plite-browser-runner.mjs';
+
 const explicitBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 const baseURL = explicitBaseURL ?? 'http://localhost:3102';
+const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 process.env.PLAYWRIGHT_BASE_URL = baseURL;
+assertBrowserWorkerArgs(process.argv);
 const availableParallelism = os.availableParallelism?.() ?? os.cpus().length;
-const localWorkerCount = Math.min(10, Math.max(2, availableParallelism - 2));
+const localWorkerCount = Math.min(
+  MAX_BROWSER_WORKERS,
+  Math.max(2, availableParallelism - 2)
+);
 const workerCount = process.env.PLAYWRIGHT_WORKERS
-  ? Number(process.env.PLAYWRIGHT_WORKERS)
+  ? resolveBrowserWorkerCount(
+      process.env.PLAYWRIGHT_WORKERS,
+      'PLAYWRIGHT_WORKERS'
+    )
   : process.env.CI
     ? undefined
     : localWorkerCount;
-const retryCount = process.env.PLAYWRIGHT_RETRIES
-  ? Number(process.env.PLAYWRIGHT_RETRIES)
-  : process.env.CI
-    ? 5
-    : 2;
+const fullyParallel =
+  process.env.PLITE_BROWSER_FULLY_PARALLEL === '1' || !process.env.CI;
+const jsonOutput = process.env.PLITE_BROWSER_JSON_OUTPUT;
+const outputDir =
+  process.env.PLITE_BROWSER_OUTPUT_DIR ?? './test-results/plite-browser';
 
 const projects: PlaywrightTestConfig['projects'] = [
   {
@@ -24,6 +38,9 @@ const projects: PlaywrightTestConfig['projects'] = [
     use: {
       ...devices['Desktop Chrome'],
       launchOptions: {
+        ...(chromiumExecutablePath
+          ? { executablePath: chromiumExecutablePath }
+          : {}),
         ignoreDefaultArgs: ['--hide-scrollbars'],
       },
       permissions: ['clipboard-read', 'clipboard-write'],
@@ -39,6 +56,9 @@ const projects: PlaywrightTestConfig['projects'] = [
     name: 'mobile',
     use: {
       ...devices['Pixel 5'],
+      ...(chromiumExecutablePath
+        ? { launchOptions: { executablePath: chromiumExecutablePath } }
+        : {}),
       permissions: ['clipboard-read', 'clipboard-write'],
     },
   },
@@ -57,12 +77,16 @@ const config: PlaywrightTestConfig = {
   expect: {
     timeout: 8000,
   },
-  fullyParallel: !process.env.CI,
+  fullyParallel,
   forbidOnly: !!process.env.CI,
-  outputDir: './test-results/plite-browser',
+  outputDir,
   projects,
-  reporter: process.env.CI ? 'github' : 'list',
-  retries: retryCount,
+  reporter: jsonOutput
+    ? [['dot'], ['json', { outputFile: jsonOutput }]]
+    : process.env.CI
+      ? 'github'
+      : 'list',
+  retries: 0,
   testDir: './tests/plite-browser',
   timeout: 45_000,
   use: {
@@ -70,7 +94,10 @@ const config: PlaywrightTestConfig = {
     baseURL,
     screenshot: 'only-on-failure',
     testIdAttribute: 'data-test-id',
-    trace: 'retain-on-first-failure',
+    trace:
+      process.env.PLITE_BROWSER_TRACE === '1'
+        ? 'retain-on-first-failure'
+        : 'off',
     viewport: {
       height: 720,
       width: 1280,

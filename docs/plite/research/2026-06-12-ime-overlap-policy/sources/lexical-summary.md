@@ -19,4 +19,3 @@ Plite pressure:
 Do not treat native composition as loose event noise. Model active composition
 ownership explicitly enough that overlapping edits can cancel it and stale
 native end events can be ignored safely.
-

@@ -112,6 +112,7 @@ describe('extendStaticEditor', () => {
       );
 
       const selection = {
+        kind: 'text' as const,
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       };
@@ -142,6 +143,7 @@ describe('extendStaticEditor', () => {
 
       const start = editor.read.points.start([]);
       const expectedSelection = {
+        kind: 'text',
         anchor: start,
         focus: start,
       };
@@ -164,6 +166,7 @@ describe('extendStaticEditor', () => {
 
       const end = editor.read.points.end([]);
       const expectedSelection = {
+        kind: 'text',
         anchor: end,
         focus: end,
       };
@@ -271,27 +274,6 @@ describe('extendStaticEditor', () => {
       expect(editor.read.children()).toEqual([
         {
           children: [{ text: '' }],
-          type: 'p',
-        },
-      ]);
-    });
-
-    it('preserves static _memo metadata during normalization', () => {
-      const editor = createStaticEditor({
-        shouldNormalizeEditor: true,
-        value: [
-          {
-            _memo: 'static-element',
-            children: [{ text: 'body' }],
-            type: 'p',
-          },
-        ],
-      });
-
-      expect(editor.read.children()).toEqual([
-        {
-          _memo: 'static-element',
-          children: [{ text: 'body' }],
           type: 'p',
         },
       ]);

@@ -1,4 +1,7 @@
-import { createTestEditor } from './__tests__/createTestEditor';
+import {
+  createTestEditor,
+  getTestMarkdownRuntime,
+} from './__tests__/createTestEditor';
 import { buildRules } from './rules/defaultRules';
 
 describe('defaultRules', () => {
@@ -28,7 +31,7 @@ describe('defaultRules', () => {
         url: '/from-mdast.png',
       },
       {},
-      { editor }
+      { runtime: getTestMarkdownRuntime(editor) }
     );
 
     expect(result).toEqual({
@@ -52,7 +55,7 @@ describe('defaultRules', () => {
         url: '/from-mdast.png',
       },
       {},
-      { editor }
+      { runtime: getTestMarkdownRuntime(editor) }
     );
 
     expect(result).toEqual({
@@ -79,7 +82,7 @@ describe('defaultRules', () => {
         url: '/from-mdast.png',
       },
       {},
-      { editor }
+      { runtime: getTestMarkdownRuntime(editor) }
     );
 
     expect(result).toEqual({

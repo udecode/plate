@@ -4,7 +4,8 @@ import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import { createTestEditor } from './createTestEditor';
 import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deserializer';
 import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
-import { buildRules } from '../../../../../../packages/markdown/src/lib/rules/defaultRules';
+import { withMarkdownRuntime } from '../../../../../../packages/markdown/src/lib/markdown-runtime';
+import { buildRulesWithRuntime } from '../../../../../../packages/markdown/src/lib/rules/defaultRules';
 import { serializeMd } from '../../../../../../packages/markdown/src/lib/serializer';
 
 describe('defaultRules', () => {
@@ -162,22 +163,24 @@ describe('defaultRules', () => {
   it('converts footnote definitions into dedicated nodes', () => {
     const editor = createTestEditor();
 
-    const result = buildRules(editor).footnoteDefinition.deserialize!(
-      {
-        children: [
-          {
-            children: [{ type: 'text', value: 'First note' }],
-            type: 'paragraph',
-          },
-          {
-            children: [{ type: 'text', value: 'Second note' }],
-            type: 'paragraph',
-          },
-        ],
-        identifier: '1',
-      } as any,
-      {},
-      { editor }
+    const result = withMarkdownRuntime(editor, (runtime) =>
+      buildRulesWithRuntime(runtime).footnoteDefinition!.deserialize!(
+        {
+          children: [
+            {
+              children: [{ type: 'text', value: 'First note' }],
+              type: 'paragraph',
+            },
+            {
+              children: [{ type: 'text', value: 'Second note' }],
+              type: 'paragraph',
+            },
+          ],
+          identifier: '1',
+        } as any,
+        {},
+        { runtime }
+      )
     );
 
     expect(result).toEqual({
@@ -199,20 +202,22 @@ describe('defaultRules', () => {
   it('prefers image attributes over mdast url and alt fields', () => {
     const editor = createTestEditor();
 
-    const result = buildRules(editor).img.deserialize!(
-      {
-        alt: 'fallback alt',
-        attributes: [
-          { name: 'alt', type: 'mdxJsxAttribute', value: 'caption alt' },
-          { name: 'src', type: 'mdxJsxAttribute', value: '/from-attr.png' },
-          { name: 'width', type: 'mdxJsxAttribute', value: '320' },
-        ],
-        title: 'Image title',
-        type: 'image',
-        url: '/from-mdast.png',
-      } as any,
-      {},
-      { editor }
+    const result = withMarkdownRuntime(editor, (runtime) =>
+      buildRulesWithRuntime(runtime).img!.deserialize!(
+        {
+          alt: 'fallback alt',
+          attributes: [
+            { name: 'alt', type: 'mdxJsxAttribute', value: 'caption alt' },
+            { name: 'src', type: 'mdxJsxAttribute', value: '/from-attr.png' },
+            { name: 'width', type: 'mdxJsxAttribute', value: '320' },
+          ],
+          title: 'Image title',
+          type: 'image',
+          url: '/from-mdast.png',
+        } as any,
+        {},
+        { runtime }
+      )
     );
 
     expect(result).toEqual({
@@ -228,12 +233,14 @@ describe('defaultRules', () => {
   it('serializes a trailing blockquote break as html so the newline survives', () => {
     const editor = createTestEditor();
 
-    const result = buildRules(editor).blockquote.serialize!(
-      {
-        children: [{ text: 'Line one' }, { text: '\n' }],
-        type: 'blockquote',
-      } as any,
-      { editor, rules: null }
+    const result = withMarkdownRuntime(editor, (runtime) =>
+      buildRulesWithRuntime(runtime).blockquote!.serialize!(
+        {
+          children: [{ text: 'Line one' }, { text: '\n' }],
+          type: 'blockquote',
+        } as any,
+        { runtime }
+      )
     );
 
     expect(result).toEqual({

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
+  ContentSlice,
   createEditor,
   type Element,
   type Editor as EditorType,
@@ -57,12 +58,17 @@ describe('plite headless contract', () => {
     editorReplace(editor, {
       children: editorGetChildren(input) as Element[],
       selection: editorGetSelection(input),
-      marks: null,
     });
 
     const inputSelection = editorGetSelection(input)!;
     editor.update((tx) => {
-      tx.fragment.insert(fragment);
+      tx.slice.replace(
+        ContentSlice.fromJSON({
+          content: fragment,
+          openEnd: 1,
+          openStart: 1,
+        })
+      );
     });
 
     const snapshot = editorGetSnapshot(editor);
@@ -78,6 +84,7 @@ describe('plite headless contract', () => {
       },
     ]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 7 },
       focus: { path: [1, 0], offset: 7 },
     });
@@ -114,7 +121,6 @@ describe('plite headless contract', () => {
     editorReplace(editor, {
       children: editorGetChildren(input) as Element[],
       selection: editorGetSelection(input),
-      marks: null,
     });
 
     assert.deepEqual(editorGetFragment(editor), [
@@ -136,10 +142,10 @@ describe('plite headless contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
-      marks: null,
     });
 
     editorDeleteForward(editor);
@@ -151,6 +157,7 @@ describe('plite headless contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });

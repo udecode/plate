@@ -1,29 +1,48 @@
 /** @jsx jsxt */
 
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, NodeIdPlugin } from '@platejs/core';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
+import {
+  BaseBulletedListPlugin,
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+  BaseNumberedListPlugin,
+  BaseTaskListPlugin,
+} from '../BaseListPlugin';
 import { moveListItemsToList } from './moveListItemsToList';
 
 jsxt;
+
+const SchemaOnlyNodeIdPlugin = NodeIdPlugin.configure({
+  options: { initialValueIds: false, match: () => false },
+});
+const ListSchemaPlugins = [
+  SchemaOnlyNodeIdPlugin,
+  BaseBulletedListPlugin,
+  BaseNumberedListPlugin,
+  BaseTaskListPlugin,
+  BaseListItemPlugin,
+  BaseListItemContentPlugin,
+];
 
 const input = (
   <editor>
     <hul id="1">
       <hli>
-        <hp>1</hp>
+        <hlic>1</hlic>
       </hli>
     </hul>
     <hul>
       <hli id="2">
-        <hp>2</hp>
+        <hlic>2</hlic>
         <hul>
           <hli>
-            <hp>21</hp>
+            <hlic>21</hlic>
           </hli>
           <hli>
-            <hp>22</hp>
+            <hlic>22</hlic>
           </hli>
         </hul>
       </hli>
@@ -35,18 +54,18 @@ const output = (
   <editor>
     <hul id="1">
       <hli>
-        <hp>1</hp>
+        <hlic>1</hlic>
       </hli>
       <hli>
-        <hp>21</hp>
+        <hlic>21</hlic>
       </hli>
       <hli>
-        <hp>22</hp>
+        <hlic>22</hlic>
       </hli>
     </hul>
     <hul>
       <hli id="2">
-        <hp>2</hp>
+        <hlic>2</hlic>
       </hli>
     </hul>
   </editor>
@@ -54,6 +73,7 @@ const output = (
 
 it('moves sublist items into the target list', () => {
   const editor = createBaseEditor({
+    plugins: ListSchemaPlugins,
     selection: input.selection,
     value: input.children,
   });

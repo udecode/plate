@@ -1,8 +1,22 @@
-import { BaseParagraphPlugin } from '@platejs/core';
-import type { Value } from '@platejs/plite';
+import { BaseParagraphPlugin, createBasePlugin } from '@platejs/core';
+import {
+  EditorSchemaValidationError,
+  schema,
+  type Value,
+} from '@platejs/plite';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseIndentPlugin } from './BaseIndentPlugin';
+
+const QuotePlugin = createBasePlugin({
+  key: 'quote',
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+  },
+});
 
 describe('BaseIndentPlugin Plite runtime', () => {
   it('caps matching block indent during normalization', () => {
@@ -27,20 +41,30 @@ describe('BaseIndentPlugin Plite runtime', () => {
     ]);
   });
 
-  it('unsets indent when the block no longer matches target types', () => {
+  it('rejects indent outside the configured target types', () => {
     const value: Value = [
       { children: [{ text: 'One' }], indent: 2, type: 'quote' },
     ];
 
-    const editor = createPlateEditor({
-      plugins: [BaseParagraphPlugin, BaseIndentPlugin],
-      value,
-    });
+    let thrown: unknown;
 
-    editor.update.value.repair();
+    try {
+      createPlateEditor({
+        plugins: [BaseParagraphPlugin, QuotePlugin, BaseIndentPlugin],
+        value,
+      });
+    } catch (error) {
+      thrown = error;
+    }
 
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: 'One' }], type: 'quote' },
+    expect(thrown).toBeInstanceOf(EditorSchemaValidationError);
+    if (!(thrown instanceof EditorSchemaValidationError)) throw thrown;
+    expect(thrown.diagnostics).toMatchObject([
+      {
+        code: 'property-target-mismatch',
+        nodeType: 'quote',
+        property: { key: 'indent' },
+      },
     ]);
   });
 });

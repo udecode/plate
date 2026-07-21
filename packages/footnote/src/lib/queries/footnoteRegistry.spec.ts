@@ -1,4 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
+import { DocumentChange } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import {
@@ -13,6 +14,7 @@ describe('footnote registry', () => {
         BaseFootnoteDefinitionPlugin,
       ] as const,
       selection: {
+        kind: 'text',
         anchor: { offset: 4, path: [1, 0, 0] },
         focus: { offset: 4, path: [1, 0, 0] },
       },
@@ -52,6 +54,7 @@ describe('footnote registry', () => {
     expect(footnote.definitionText({ identifier: '1' })).toBe('body!');
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });
@@ -160,5 +163,34 @@ describe('footnote registry', () => {
       [1],
     ]);
     expect(footnote.isDuplicateDefinition({ path: [1] })).toBe(false);
+  });
+
+  it('invalidates for a classification-free identifier change', () => {
+    const value = [
+      {
+        children: [{ children: [{ text: 'one' }], type: KEYS.p }],
+        identifier: '1',
+        type: 'footnoteDefinition',
+      },
+    ];
+    const plugins = [
+      BaseFootnoteReferencePlugin,
+      BaseFootnoteDefinitionPlugin,
+    ] as const;
+    const source = createBaseEditor({ plugins, value });
+
+    source.update.nodes.set({ identifier: '2' }, { at: [0] });
+
+    const change = DocumentChange.fromJSON(
+      source.read.lastCommit()!.changes.toJSON()
+    );
+    const replay = createBaseEditor({ plugins, value });
+
+    expect(replay.api.footnote.definition({ identifier: '1' })).toBeDefined();
+    expect(change.primaryClassification).toBeNull();
+    replay.update((tx) => tx.changes.apply(change));
+
+    expect(replay.api.footnote.definition({ identifier: '1' })).toBeUndefined();
+    expect(replay.api.footnote.definition({ identifier: '2' })).toBeDefined();
   });
 });

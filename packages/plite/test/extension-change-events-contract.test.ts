@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import { createEditor, defineEditorExtension } from '@platejs/plite';
 
 describe('extension change events', () => {
-  it('notifies node changes from committed node operations', () => {
+  it('notifies node changes from committed semantic intents', () => {
     const events: unknown[] = [];
     const editor = createEditor({
       extensions: [
@@ -12,9 +12,12 @@ describe('extension change events', () => {
           name: 'node-observer',
           onNodeChange(context) {
             events.push({
+              kind: context.kind,
               node: context.node,
-              operation: context.operation,
+              path: context.path,
+              previousPath: context.previousPath,
               prevNode: context.prevNode,
+              root: context.root,
             });
           },
         }),
@@ -26,26 +29,24 @@ describe('extension change events', () => {
 
     assert.deepEqual(events, [
       {
+        kind: 'update',
         node: {
           children: [{ text: 'hello' }],
           type: 'p',
           variant: 'lead',
         },
-        operation: {
-          newProperties: { variant: 'lead' },
-          path: [0],
-          properties: {},
-          type: 'set_node',
-        },
+        path: [0],
+        previousPath: [0],
         prevNode: {
           children: [{ text: 'hello' }],
           type: 'p',
         },
+        root: undefined,
       },
     ]);
   });
 
-  it('notifies text changes from committed text operations', () => {
+  it('notifies text changes from committed semantic intents', () => {
     const events: unknown[] = [];
     const editor = createEditor({
       extensions: [
@@ -54,14 +55,17 @@ describe('extension change events', () => {
           onTextChange(context) {
             events.push({
               node: context.node,
-              operation: context.operation,
+              path: context.path,
+              previousPath: context.previousPath,
               prevText: context.prevText,
+              root: context.root,
               text: context.text,
             });
           },
         }),
       ],
       initialSelection: {
+        kind: 'text' as const,
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
@@ -76,13 +80,10 @@ describe('extension change events', () => {
           children: [{ text: 'hello!' }],
           type: 'p',
         },
-        operation: {
-          offset: 5,
-          path: [0, 0],
-          text: '!',
-          type: 'insert_text',
-        },
+        path: [0, 0],
+        previousPath: [0, 0],
         prevText: 'hello',
+        root: undefined,
         text: 'hello!',
       },
     ]);

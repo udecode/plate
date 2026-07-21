@@ -18,8 +18,7 @@ const createVoidElementPlugin = (key: string) =>
   createBasePlugin({
     key,
     node: {
-      isElement: true,
-      isVoid: true,
+      element: { groups: ['block'], void: 'block' },
       type: key,
     },
   });
@@ -63,7 +62,11 @@ const isTrailingTextEmpty = (editor: ReturnType<typeof createBaseEditor>) =>
     if (!blockEnd) return true;
 
     return (
-      state.text.string({ anchor: selection.focus, focus: blockEnd }) === ''
+      state.text.string({
+        kind: 'text',
+        anchor: selection.focus,
+        focus: blockEnd,
+      }) === ''
     );
   });
 

@@ -4,7 +4,10 @@ import { createBaseEditor } from '@platejs/core';
 import { ParagraphPlugin } from '@platejs/core/react';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
-import { normalizeRoot } from '../__tests__/normalizeRoot';
+import {
+  fixtureSchemaPlugins,
+  normalizeRoot,
+} from '../__tests__/normalizeRoot';
 import { TrailingBlockPlugin } from './TrailingBlockPlugin';
 
 jsxt;
@@ -12,7 +15,7 @@ jsxt;
 describe('TrailingBlockPlugin', () => {
   it('uses the editor paragraph type as the default trailing block type', () => {
     const editor = createBaseEditor({
-      plugins: [TrailingBlockPlugin],
+      plugins: [...fixtureSchemaPlugins, TrailingBlockPlugin],
       value: [{ type: 'h1', children: [{ text: 'x' }] }],
     });
 
@@ -52,7 +55,7 @@ describe('TrailingBlockPlugin', () => {
     {
       input: (
         <editor>
-          <element>
+          <element type="element">
             <hh1>test</hh1>
             <hh1>test2</hh1>
           </element>
@@ -60,7 +63,7 @@ describe('TrailingBlockPlugin', () => {
       ) as TestEditor,
       output: (
         <editor>
-          <element>
+          <element type="element">
             <hh1>test</hh1>
             <hh1>test2</hh1>
             <hdefault>

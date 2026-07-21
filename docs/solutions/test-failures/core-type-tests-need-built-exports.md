@@ -19,7 +19,7 @@ tags:
 
 The type-test lane resolves package entrypoints through built package exports. Running `pnpm test:types` before the affected package graph is built makes subpath imports like `@platejs/core/react` look broken even when the fixture is fine.
 
-There was a second typing trap in the new fixtures: inside plugin extension callbacks, cross-plugin methods are not typed through the eventual merged `editor.api` or `editor.transforms` surface. They stay typed through `editor.getApi(...)` and `editor.getPlugin(...)`.
+There was a second typing trap in the new fixtures: reads and writes use different composition surfaces. Declared plugin dependencies contribute their reads to `editor.api`, while writes compose through the active transaction.
 
 ## Solution
 
@@ -33,20 +33,48 @@ pnpm lint:fix
 pnpm test:types
 ```
 
-In type fixtures, use this pattern inside extension callbacks:
+In type fixtures, declare the dependency and compose its write through the
+transaction passed to `.extendTx(...)`:
 
 ```ts
-.extendEditorApi(({ editor }) => ({
-  describeFormat: () => editor.getApi(FormatPlugin).format(),
-}))
-.extendEditorTransforms(({ editor }) => ({
-  setFriendly: () => {
-    editor.getPlugin(FormatPlugin).transforms.setTone('friendly');
+const DependencyPlugin = createBasePlugin({
+  key: 'dependency',
+})
+  .extendEditorApi(() => ({
+    dependencyValue: () => 'dependency' as const,
+  }))
+  .extendTx(() => () => ({
+    runDependency: () => undefined,
+  }));
+
+const DependentPlugin = createBasePlugin({
+  dependencies: [DependencyPlugin],
+  key: 'dependent',
+}).extendTx(({ editor }) => (tx) => ({
+  runDependent: () => {
+    const dependencyValue = editor.api.dependencyValue();
+
+    tx.dependency.runDependency();
+    void dependencyValue;
   },
-}))
+}));
+```
+
+Use the scoped plugin update portal for a one-shot write. Keep related writes
+on one active transaction:
+
+```ts
+editor.plugin(DependencyPlugin).update.runDependency();
+
+editor.update((tx) => {
+  tx.dependency.runDependency();
+  tx.dependent.runDependent();
+});
 ```
 
 ## Prevention
 
 - Do not trust `pnpm test:types` failures on package subpaths until the affected package graph is built.
-- In extension callbacks, use `editor.getApi(...)` and `editor.getPlugin(...)` for cross-plugin typing. Save merged `editor.api` and `editor.transforms` assertions for the created editor value.
+- Declare plugin dependencies before reading their APIs through `editor.api`.
+- Define plugin writes with `.extendTx(...)` and compose dependencies through `tx.<pluginKey>.*`.
+- Use `editor.plugin(Plugin).update.*` for one-shot calls and `editor.update((tx) => ...)` when several writes must share one transaction.

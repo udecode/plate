@@ -14,6 +14,12 @@ describe('BaseFontWeightPlugin', () => {
       nodeKey: 'fontWeight',
     });
     expect(
+      editor.read.schema.property({
+        key: KEYS.fontWeight,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('string');
+    expect(
       editor.api.html.deserialize({
         element: '<span style="font-weight: 700">text</span>',
       })
@@ -29,6 +35,7 @@ describe('BaseFontWeightPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseFontWeightPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },

@@ -2,4 +2,5 @@
 "@platejs/link": major
 ---
 
-Move link commands to the Base plugin API and `editor.update.link`
+Move link commands to the Base plugin API and `editor.update.link`, and register
+link target and URL properties in compiled schemas.

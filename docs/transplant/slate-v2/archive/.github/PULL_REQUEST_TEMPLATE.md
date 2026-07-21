@@ -16,4 +16,3 @@ If your change is non-trivial, please include a description of how the new logic
 - [ ] The linter passes with `yarn lint`. (Fix errors with `yarn fix`.)
 - [ ] The relevant examples still work. (Run examples with `yarn start`.)
 - [ ] You've [added a changeset](https://github.com/atlassian/changesets/blob/master/docs/adding-a-changeset.md) if changing functionality. (Add one with `yarn changeset add`.)
-

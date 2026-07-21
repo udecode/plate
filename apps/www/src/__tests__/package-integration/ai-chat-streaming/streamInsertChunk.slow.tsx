@@ -20,8 +20,10 @@ const streamChunks = (chunks: string[]) => {
 
 const getStreamedMarkdown = (chunks: string[]) => {
   const editor = streamChunks(chunks);
+  const deserialized = deserializeMd(editor, chunks.join(''));
+  const { editor: expectedEditor } = createTestEditor(deserialized);
 
-  return { editor, expected: deserializeMd(editor, chunks.join('')) };
+  return { editor, expected: expectedEditor.read.children() };
 };
 
 describe('streamInsertChunk', () => {

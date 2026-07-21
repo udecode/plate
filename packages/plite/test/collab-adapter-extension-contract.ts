@@ -8,11 +8,12 @@ import {
 
 import {
   createEditor,
-  type Element,
   defineEditorExtension,
+  DocumentChange,
+  type Element,
+  type Editor,
   type EditorUpdatePolicy,
   type EditorUpdateTransaction,
-  type Operation,
 } from '@platejs/plite';
 
 const paragraph = (text: string): Element => ({
@@ -41,10 +42,10 @@ const createSeededEditor = () => {
   editorReplace(editor, {
     children: [paragraph('one')],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     },
-    marks: null,
   });
 
   return editor;
@@ -52,17 +53,24 @@ const createSeededEditor = () => {
 
 type FakeAdapterState = {
   connected: boolean;
-  exports: readonly (readonly Operation[])[];
+  exports: readonly ReturnType<DocumentChange['toJSON']>[];
   originClientId: string;
   paused: boolean;
   remoteImports: number;
 };
 
+type FakeAdapterRuntimeState = {
+  get: () => FakeAdapterState;
+  set: (
+    value: FakeAdapterState | ((previous: FakeAdapterState) => FakeAdapterState)
+  ) => void;
+};
+
 const createFakeCollabAdapterExtension = () => {
   let controller: {
     connect: () => void;
-    exports: () => readonly (readonly Operation[])[];
-    importRemote: (operations: readonly Operation[]) => void;
+    exports: () => readonly ReturnType<DocumentChange['toJSON']>[];
+    importRemote: (change: ReturnType<DocumentChange['toJSON']>) => void;
     listenerEvents: () => readonly string[];
     pause: () => void;
     remoteImports: () => number;
@@ -70,17 +78,24 @@ const createFakeCollabAdapterExtension = () => {
     state: () => FakeAdapterState;
   } | null = null;
   const listenerEvents: string[] = [];
+  const runtimeStates = new WeakMap<Editor, FakeAdapterRuntimeState>();
 
   const extension = defineEditorExtension({
-    name: 'fake-collab-adapter',
-    setup(context) {
-      const adapterState = context.runtimeState<FakeAdapterState>({
+    activate(editor, context) {
+      let currentState: FakeAdapterState = {
         connected: true,
         exports: [],
         originClientId: 'local-client',
         paused: false,
         remoteImports: 0,
-      });
+      };
+      const adapterState: FakeAdapterRuntimeState = {
+        get: () => currentState,
+        set: (value) => {
+          currentState =
+            typeof value === 'function' ? value(currentState) : value;
+        },
+      };
       const setAdapterState = (
         patch:
           | Partial<FakeAdapterState>
@@ -90,6 +105,7 @@ const createFakeCollabAdapterExtension = () => {
           typeof patch === 'function' ? patch(state) : { ...state, ...patch }
         );
       };
+      runtimeStates.set(editor, adapterState);
 
       controller = {
         connect() {
@@ -98,13 +114,10 @@ const createFakeCollabAdapterExtension = () => {
         exports() {
           return adapterState.get().exports;
         },
-        importRemote(operations) {
-          context.editor.update(
-            remoteCollabPolicy,
-            (tx: EditorUpdateTransaction) => {
-              tx.operations.replay(clone(operations));
-            }
-          );
+        importRemote(change) {
+          editor.update(remoteCollabPolicy, (tx: EditorUpdateTransaction) => {
+            tx.changes.apply(DocumentChange.fromJSON(clone(change)));
+          });
           setAdapterState((state) => ({
             ...state,
             remoteImports: state.remoteImports + 1,
@@ -127,29 +140,29 @@ const createFakeCollabAdapterExtension = () => {
         },
       };
 
-      return {
-        cleanup() {
-          setAdapterState({ connected: false, paused: true });
-        },
-        onCommit({ commit }) {
-          listenerEvents.push(`commit:${commit.tags.join(',')}`);
+      context.onCleanup(() => {
+        setAdapterState({ connected: false, paused: true });
+        if (runtimeStates.get(editor) === adapterState) {
+          runtimeStates.delete(editor);
+        }
+      });
+    },
+    name: 'fake-collab-adapter',
+    onCommit({ commit, editor }) {
+      listenerEvents.push(`commit:${commit.tags.join(',')}`);
 
-          const state = adapterState.get();
+      const adapterState = runtimeStates.get(editor);
+      assert(adapterState);
+      const state = adapterState.get();
 
-          if (!state.connected || state.paused) {
-            return;
-          }
-          if (commit.tags.includes('skip-collab')) {
-            return;
-          }
-          if (commit.tags.includes('collaboration')) {
-            return;
-          }
-          setAdapterState({
-            exports: [...state.exports, clone(commit.operations)],
-          });
-        },
-      };
+      if (!state.connected || state.paused) return;
+      if (commit.tags.includes('skip-collab')) return;
+      if (commit.tags.includes('collaboration')) return;
+      if (commit.changes.empty) return;
+      adapterState.set({
+        ...state,
+        exports: [...state.exports, clone(commit.changes.toJSON())],
+      });
     },
   });
 
@@ -192,19 +205,18 @@ describe('collab adapter extension contract', () => {
     insertTextAtEnd(editor, '!');
 
     assert.equal(adapter.exports().length, 1);
-    assert.deepEqual(
-      adapter.exports()[0]?.map((operation) => operation.type),
-      ['insert_text']
+    assert.equal(DocumentChange.fromJSON(adapter.exports()[0]!).empty, false);
+
+    const remoteSpec = editor.read((state) =>
+      state.transaction((tx) => {
+        tx.text.insert('?', {
+          at: { path: [0, 0], offset: editorString(editor, [0]).length },
+        });
+      })
     );
 
-    adapter.importRemote([
-      {
-        type: 'insert_text',
-        path: [0, 0],
-        offset: editorString(editor, [0]).length,
-        text: '?',
-      },
-    ]);
+    assert(remoteSpec);
+    adapter.importRemote(remoteSpec.changes.toJSON());
 
     assert.equal(editorString(editor, []), 'one!?');
     assert.equal(adapter.exports().length, 1);

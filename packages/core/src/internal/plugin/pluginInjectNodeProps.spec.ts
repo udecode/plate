@@ -15,13 +15,7 @@ describe('pluginInjectNodeProps', () => {
     });
 
     const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'paragraph',
-          node: { isElement: true, type: 'p' },
-        }),
-        AlignPlugin,
-      ],
+      plugins: [AlignPlugin],
     });
 
     expect(
@@ -87,13 +81,7 @@ describe('pluginInjectNodeProps', () => {
     });
 
     const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'paragraph',
-          node: { isElement: true, type: 'p' },
-        }),
-        TargetPlugin,
-      ],
+      plugins: [TargetPlugin],
     });
 
     expect(
@@ -249,19 +237,13 @@ describe('pluginInjectNodeProps', () => {
             },
           }),
         },
-        targetPlugins: ['paragraph'],
+        targetPlugins: ['p'],
       },
       key: 'list',
     });
 
     const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'paragraph',
-          node: { isElement: true, type: 'p' },
-        }),
-        ListishPlugin,
-      ],
+      plugins: [ListishPlugin],
     });
 
     const getPath = mock(() => {

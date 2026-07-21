@@ -2,6 +2,7 @@
 
 import assert from 'node:assert/strict';
 import { createPlateEditor } from '@platejs/core/react';
+import { DocumentChange } from '@platejs/plite';
 import type { TTableCellElement } from '@platejs/utils';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -224,7 +225,62 @@ describe('withApplyTable', () => {
     getCellIndices(editor, remove);
     editor.update.remove.tableColumn();
 
+    expect(editor.plugin(BaseTablePlugin).getOptions()._cellIndices).toEqual(
+      {}
+    );
+    const nextKeep = editor.read.nodes.get<TTableCellElement>([0, 0, 0]);
+    assert(nextKeep);
+    expect(getCellIndices(editor, nextKeep[0])).toEqual({ col: 0, row: 0 });
     expect(editor.plugin(BaseTablePlugin).getOptions()._cellIndices).toEqual({
+      keep: { col: 0, row: 0 },
+    });
+  });
+
+  it('invalidates cell indices for a classification-free table change', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd id="keep">
+              <hp>11</hp>
+            </htd>
+            <htd id="remove">
+              <hp>
+                12
+                <cursor />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const source = createTableEditor(input);
+
+    source.update.remove.tableColumn();
+
+    const change = DocumentChange.fromJSON(
+      source.read.lastCommit()!.changes.toJSON()
+    );
+    const replay = createTableEditor(input);
+    const keepEntry = replay.read.nodes.get<TTableCellElement>([0, 0, 0]);
+    const removeEntry = replay.read.nodes.get<TTableCellElement>([0, 0, 1]);
+    assert(keepEntry);
+    assert(removeEntry);
+    const [keep] = keepEntry;
+    const [remove] = removeEntry;
+
+    getCellIndices(replay, keep);
+    getCellIndices(replay, remove);
+    expect(change.primaryClassification).toBeNull();
+    replay.update((tx) => tx.changes.apply(change));
+
+    expect(replay.plugin(BaseTablePlugin).getOptions()._cellIndices).toEqual(
+      {}
+    );
+    const nextKeep = replay.read.nodes.get<TTableCellElement>([0, 0, 0]);
+    assert(nextKeep);
+    expect(getCellIndices(replay, nextKeep[0])).toEqual({ col: 0, row: 0 });
+    expect(replay.plugin(BaseTablePlugin).getOptions()._cellIndices).toEqual({
       keep: { col: 0, row: 0 },
     });
   });

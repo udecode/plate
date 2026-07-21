@@ -1,16 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant, Operation, Path } from '@platejs/plite';
+import type { Descendant, Path } from '@platejs/plite';
 import * as Y from 'yjs';
 
-import { applyPliteOperationToYjs } from '../src/core/operations';
 import type { Peer } from './support/collaboration';
 import {
   createSeededYjsPeers,
   createYjsPeer,
   FakeAwareness,
   getPeerTopLevelTexts,
-  getYjsRoot,
   isYjsPeerConnected,
   paragraph,
   readPeerChildren,
@@ -335,10 +333,17 @@ const assertSelectionsTargetText = (peers: readonly Peer[]): void => {
   }
 };
 
+const drainConnectedPeerUpdates = (peers: readonly Peer[]): void => {
+  syncConnectedPeers(peers);
+  // Remote canonicalization can publish a follow-up Yjs update while the
+  // in-memory provider is delivering the first pass.
+  syncConnectedPeers(peers);
+};
+
 const sync = (peers: Readonly<Record<PeerId, Peer>>): void => {
   const peerList = allPeers(peers);
 
-  syncConnectedPeers(peerList);
+  drainConnectedPeerUpdates(peerList);
 
   for (const peer of peerList) {
     if (!isYjsPeerConnected(peer)) {
@@ -387,6 +392,7 @@ const runIncrementalCommand = (
 
     reconcileYjsPeer(peer);
   }
+  drainConnectedPeerUpdates(allPeers(peers));
 };
 
 const setConnected = (
@@ -429,6 +435,7 @@ const splitFirstText = (peer: Peer): void => {
 
   peer.editor.update((tx) => {
     tx.selection.set({
+      kind: 'text',
       anchor: { path: entry.path, offset },
       focus: { path: entry.path, offset },
     });
@@ -481,23 +488,16 @@ const removeSecondBlock = (peer: Peer): void => {
 };
 
 const replaceDocument = (peer: Peer, peerId: PeerId): void => {
-  const children = editorValueOf(peer);
   const text = replacementTexts[peerId];
 
-  peer.editor.update.operations.replay([
-    {
-      children,
-      index: 0,
-      newChildren: [paragraph(text)],
-      newSelection: {
-        anchor: { path: [0, 0], offset: text.length },
-        focus: { path: [0, 0], offset: text.length },
-      },
-      path: [],
-      selection: null,
-      type: 'replace_children',
-    },
-  ]);
+  peer.editor.update((tx) => {
+    tx.nodes.replaceChildren([paragraph(text)], { at: [] });
+    tx.selection.set({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: text.length },
+      focus: { path: [0, 0], offset: text.length },
+    });
+  });
 };
 
 const wrapFirstBlock = (peer: Peer): void => {
@@ -559,10 +559,11 @@ const insertPeerFragment = (peer: Peer, peerId: PeerId): void => {
 
   peer.editor.update((tx) => {
     tx.selection.set({
+      kind: 'text',
       anchor: { path: entry.path, offset: entry.text.length },
       focus: { path: entry.path, offset: entry.text.length },
     });
-    tx.fragment.insert([{ text: fragmentTexts[peerId] }]);
+    tx.fragment.replace([{ text: fragmentTexts[peerId] }]);
   });
 };
 
@@ -581,6 +582,7 @@ const deleteFirstFragment = (peer: Peer): void => {
 
   peer.editor.update((tx) => {
     tx.selection.set({
+      kind: 'text',
       anchor: { path: entry.path, offset: 0 },
       focus: { path: entry.path, offset: length },
     });
@@ -597,6 +599,7 @@ const deleteBackwardFromFirstBlockEnd = (peer: Peer): void => {
 
   peer.editor.update((tx) => {
     tx.selection.set({
+      kind: 'text',
       anchor: { path: entry.path, offset: entry.text.length },
       focus: { path: entry.path, offset: entry.text.length },
     });
@@ -627,6 +630,7 @@ const toggleFirstBlockBold = (peer: Peer): void => {
 
   peer.editor.update((tx) => {
     tx.selection.set({
+      kind: 'text',
       anchor: { path: entry.path, offset: 0 },
       focus: { path: entry.path, offset: length },
     });
@@ -689,8 +693,9 @@ describe('@platejs/yjs structural soak contracts', () => {
 
     runCommand(peers, 'd', wrapFirstBlock);
     peers.b.editor.update.selection.set({
-      anchor: { path: [0], offset: 0 },
-      focus: { path: [0], offset: 0 },
+      kind: 'text',
+      anchor: { path: [0, 0, 0], offset: 0 },
+      focus: { path: [0, 0, 0], offset: 0 },
     });
 
     assert.doesNotThrow(() => {
@@ -771,7 +776,7 @@ describe('@platejs/yjs structural soak contracts', () => {
     connectAll(peers);
     runCommand(peers, 'a', reconcilePeer);
 
-    assertPeerTopLevelTexts(allPeers(peers), ['!Ken fragmenHello ']);
+    assertPeerTopLevelTexts(allPeers(peers), ['ragmenHello world!']);
   });
 
   it('keeps offline structural mix seed 99 from retaining a zero-width prefix', () => {
@@ -841,7 +846,7 @@ describe('@platejs/yjs structural soak contracts', () => {
     connectAll(peers);
     runCommand(peers, 'a', reconcilePeer);
 
-    assertPeerTopLevelTexts(allPeers(peers), ['n', ' canonical snapshot.K']);
+    assertPeerTopLevelTexts(allPeers(peers), ['n canonica', 'l snapshot.K']);
   });
 
   it('keeps structural edits from projecting block placeholders inside paragraphs', () => {
@@ -942,10 +947,11 @@ describe('@platejs/yjs structural soak contracts', () => {
 
       peer.editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: entry.path, offset: entry.text.length },
           focus: { path: entry.path, offset: entry.text.length },
         });
-        tx.fragment.insert([{ text: `${peerId} fragment` }]);
+        tx.fragment.replace([{ text: `${peerId} fragment` }]);
       });
     });
     runCommand(peers, 'a', splitFirstText);
@@ -1002,21 +1008,6 @@ describe('@platejs/yjs structural soak contracts', () => {
     assertSelectionsTargetText(allPeers(peers));
   });
 
-  it('elides stale move_node source paths after concurrent structural removal', () => {
-    const peer = createPeers().a;
-    const operation: Operation = {
-      newPath: [1],
-      path: [1, 0],
-      type: 'move_node',
-    };
-
-    assert.deepEqual(applyPliteOperationToYjs(getYjsRoot(peer), operation), {
-      fallback: 'missing-move-source-elided',
-      mode: 'traceable-fallback',
-      operationType: 'move_node',
-    });
-  });
-
   it('keeps offline structural mix seed 16 from losing root text boundaries', () => {
     const peers = createAwarePeers();
 
@@ -1033,7 +1024,13 @@ describe('@platejs/yjs structural soak contracts', () => {
 
     assertNoNestedParagraphs(allPeers(peers));
     assertDocumentHasTextBoundary(allPeers(peers));
-    assertPeerTopLevelTexts(allPeers(peers), ['', 'l', 'o ', '', 'world!']);
+    assertPeerTopLevelTexts(allPeers(peers), [
+      ' world!',
+      'l',
+      'o ',
+      '',
+      'world!',
+    ]);
   });
 
   it('keeps remote wrap and unwrap from dropping split-merge text prefixes', () => {

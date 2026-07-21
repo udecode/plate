@@ -2,4 +2,6 @@
 "@platejs/diff": patch
 ---
 
-Report operation-specific errors when change-tracking replay cannot resolve required points or ranges
+Derive annotated text spans directly from source and target leaves, preserving
+exact formatting boundaries and JSON-compatible property removals without a
+temporary editor replay.

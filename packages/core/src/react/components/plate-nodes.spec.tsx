@@ -61,6 +61,7 @@ describe('PlateElement', () => {
 
   it('does not render data-block-id in server output', () => {
     const editor = createPlateEditor({
+      nodeId: true,
       value: [createElement('block-1')],
     });
     const html = renderToString(
@@ -72,6 +73,7 @@ describe('PlateElement', () => {
 
   it('renders data-block-id after the editor is mounted', () => {
     const editor = createPlateEditor({
+      nodeId: true,
       value: [createElement('block-1')],
     });
     const { container } = renderWithStore({ editor, isMounted: true });

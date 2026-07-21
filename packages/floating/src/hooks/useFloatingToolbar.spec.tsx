@@ -3,6 +3,7 @@ import React from 'react';
 import { act, renderHook } from '@testing-library/react';
 
 const selection = {
+  kind: 'text',
   anchor: { offset: 0, path: [0, 0] },
   focus: { offset: 4, path: [0, 0] },
 };

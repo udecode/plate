@@ -1,5 +1,30 @@
-import { createTestEditor } from './__tests__/createTestEditor';
+import { BaseCommentPlugin } from '@platejs/comment';
+import { BaseLinkPlugin } from '@platejs/link';
+import {
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseItalicPlugin,
+  BaseKbdPlugin,
+  BaseStrikethroughPlugin,
+  BaseUnderlinePlugin,
+} from '@platejs/basic-nodes';
+import { BaseParagraphPlugin, createBaseEditor, type Value } from 'platejs';
+
 import { findTextRangeInBlock } from '../../../../../../packages/ai/src/react/ai/utils/findTextRangeInBlock';
+
+const plugins = [
+  BaseParagraphPlugin,
+  BaseLinkPlugin,
+  BaseBoldPlugin,
+  BaseItalicPlugin,
+  BaseUnderlinePlugin,
+  BaseCodePlugin,
+  BaseStrikethroughPlugin,
+  BaseCommentPlugin,
+  BaseKbdPlugin,
+];
+
+const createTestEditor = (value: Value) => createBaseEditor({ plugins, value });
 
 const getFirstBlock = (editor: ReturnType<typeof createTestEditor>) =>
   editor.read.nodes.get([0])!;

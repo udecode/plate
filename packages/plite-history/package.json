@@ -1,11 +1,11 @@
 {
   "name": "@platejs/plite-history",
   "version": "54.0.0-beta.0",
-  "description": "An operation-based history implementation for Plite editors.",
+  "description": "Canonical change history for Plite editors.",
   "keywords": [
     "editor",
     "history",
-    "operation",
+    "change",
     "redo",
     "save",
     "@platejs/plite",
@@ -40,7 +40,7 @@
   ],
   "scripts": {
     "brl": "echo 'No barrels to generate'",
-    "build": "tsdown --config ./tsdown.config.mts --log-level warn && tsc -p tsconfig.build.json",
+    "build": "node ../../tooling/scripts/build-plite-package.mjs",
     "clean": "rimraf dist lib",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",

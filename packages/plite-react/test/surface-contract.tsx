@@ -2,6 +2,7 @@
 // biome-ignore-all lint/performance/useTopLevelRegex: Source-contract assertions keep patterns next to their claims.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
+import { defineEditorSchema, element, schema } from '@platejs/plite';
 import { act, render } from '@testing-library/react';
 import { type ComponentProps, useEffect } from 'react';
 import * as PliteReact from '../src';
@@ -30,6 +31,32 @@ const packageDirectoryByName = new Map([
   ['@platejs/plite-dom', 'plite-dom'],
   ['@platejs/plite-react', 'plite-react'],
 ]);
+
+const blockVoidSchema = defineEditorSchema({
+  elements: { image: element({ void: 'block' }) },
+  id: 'react-surface-block-void',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
+});
+
+const editableIslandSchema = defineEditorSchema({
+  elements: {
+    'editable-card': element({ void: 'editable-island' }),
+  },
+  id: 'react-surface-editable-island',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
+});
+
+const inlineVoidSchema = defineEditorSchema({
+  elements: { mention: element({ void: 'inline' }) },
+  id: 'react-surface-inline-void',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
+});
 
 const readRepoFileIfExists = (file: string) => {
   const absolutePath = resolve(repoRoot, file);
@@ -473,7 +500,7 @@ describe('plite-react surface contract', () => {
       (absolutePath) => {
         const contents = readFileSync(absolutePath, 'utf8');
 
-        return contents.includes('skipSyncedTextOperations')
+        return contents.includes('skipSyncedTextIntents')
           ? [relative(repoRoot, absolutePath)]
           : [];
       }
@@ -511,22 +538,6 @@ describe('plite-react surface contract', () => {
 
     expect(contents).toMatch(/projectRangeInSnapshot\(snapshot,/);
     expect(contents).not.toMatch(/Editor\.projectRange/);
-  });
-
-  test('root runtime-id selector can reuse cached full-root replace indexes', () => {
-    const contents = readFileSync(
-      resolve(
-        repoRoot,
-        'packages/plite-react/src/editable/root-selector-sources.ts'
-      ),
-      'utf8'
-    );
-
-    expect(contents).toMatch(/getCachedFullRootReplaceTopLevelRuntimeIds/);
-    expect(contents).toMatch(
-      /selectRootRuntimeIds\(editor, root, operations\)/
-    );
-    expect(contents).toMatch(/useEditorSelector\(\s*selector,/);
   });
 
   test('runtime package-private imports pin peer floors to sibling runtime packages', () => {
@@ -722,7 +733,7 @@ describe('plite-react surface contract', () => {
 
       expect(contents).toMatch(/from '@platejs\/plite'/);
       expect(contents).toMatch(/from '@platejs\/plite-react'/);
-      expect(contents).toMatch(/\bBookmark\b/);
+      expect(contents).toMatch(/\bAnchor\b/);
       expect(contents).toMatch(/\busePliteAnnotationStore\b/);
       expect(contents).toMatch(/\busePliteAnnotations\b/);
       expect(contents).toMatch(/\bannotationStore=/);
@@ -1742,10 +1753,7 @@ describe('plite-react surface contract', () => {
       ],
     }) as ReactRuntimeEditor;
 
-    editor.extend({
-      elements: [{ type: 'image', void: 'block' }],
-      name: 'test-renderers',
-    });
+    editor.extend(blockVoidSchema);
 
     const rendered = render(
       <Plite editor={editor}>
@@ -2047,10 +2055,7 @@ describe('plite-react surface contract', () => {
       <p>{children}</p>
     ));
 
-    editor.extend({
-      elements: [{ type: 'image', void: 'block' }],
-      name: 'test-block-void',
-    });
+    editor.extend(blockVoidSchema);
 
     const renderVoid = (props: RenderVoidProps) => {
       renderVoidProps = props;
@@ -2101,10 +2106,7 @@ describe('plite-react surface contract', () => {
       )
     );
 
-    editor.extend({
-      elements: [{ type: 'image', void: 'block' }],
-      name: 'test-block-void-render-element-fallback',
-    });
+    editor.extend(blockVoidSchema);
 
     const rendered = render(
       <Plite editor={editor}>
@@ -2130,10 +2132,7 @@ describe('plite-react surface contract', () => {
       ],
     }) as ReactRuntimeEditor;
 
-    editor.extend({
-      elements: [{ type: 'editable-card', void: 'editable-island' }],
-      name: 'test-editable-island-void',
-    });
+    editor.extend(editableIslandSchema);
 
     const rendered = render(
       <Plite editor={editor}>
@@ -2168,6 +2167,7 @@ describe('plite-react surface contract', () => {
 
   test('renderVoid receives content-only props and runtime owns inline void anchor', () => {
     const editor = createReactEditor({
+      extensions: [inlineVoidSchema],
       initialValue: [
         {
           type: 'paragraph',
@@ -2184,11 +2184,6 @@ describe('plite-react surface contract', () => {
       ],
     }) as ReactRuntimeEditor;
     let renderVoidProps: RenderVoidProps | null = null;
-
-    editor.extend({
-      elements: [{ type: 'mention', void: 'inline' }],
-      name: 'test-inline-void',
-    });
 
     const renderElement = jest.fn(({ children }: RenderElementProps) => (
       <p>{children}</p>

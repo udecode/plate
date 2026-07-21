@@ -3,6 +3,7 @@
 import { createBaseEditor } from '@platejs/core';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
+import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { isCodeBlockEmpty } from './isCodeBlockEmpty';
 
 jsxt;
@@ -10,7 +11,11 @@ jsxt;
 describe('isCodeBlockEmpty', () => {
   const run = (input: TestEditor) =>
     isCodeBlockEmpty(
-      createBaseEditor({ selection: input.selection, value: input.children })
+      createBaseEditor({
+        plugins: [BaseCodeBlockPlugin],
+        selection: input.selection,
+        value: input.children,
+      })
     );
 
   it.each([

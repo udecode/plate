@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
-import { createEditor } from '../../../../../packages/slate/src/index.ts';
-import { Editor } from '../../../../../packages/slate/src/internal/index.ts';
+import { createEditor } from '../../../../../packages/plite/src/index.ts';
+import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 function rangeIsCollapsed(selection) {
@@ -30,6 +30,7 @@ const createEditorWithChildren = () => {
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
+      kind: 'text',
     },
     marks: null,
   });
@@ -50,6 +51,7 @@ const createMoveEditor = () => {
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
+      kind: 'text',
     },
     marks: null,
   });
@@ -107,6 +109,7 @@ const deleteExpandedMs = measureLane(createEditorWithChildren, (editor) => {
       tx.selection.set({
         anchor: { path: [blockIndex, 0], offset: 0 },
         focus: { path: [blockIndex, 0], offset: 5 },
+        kind: 'text',
       });
 
       tx.text.delete();
@@ -128,12 +131,14 @@ const selectMs = measureLane(createEditorWithChildren, (editor) => {
     select(editor, {
       anchor: { path: [blockIndex, 0], offset: 0 },
       focus: { path: [blockIndex, 0], offset: 3 },
+      kind: 'text',
     });
   }
 
   assert.deepEqual(Editor.getSnapshot(editor).selection, {
     anchor: { path: [(steps - 1) % blockCount, 0], offset: 0 },
     focus: { path: [(steps - 1) % blockCount, 0], offset: 3 },
+    kind: 'text',
   });
 });
 
@@ -143,6 +148,7 @@ const setSelectionMs = measureLane(createEditorWithChildren, (editor) => {
       tx.selection.set({
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
+        kind: 'text',
       });
 
       tx.selection.setRange({
@@ -159,6 +165,7 @@ const setPointMs = measureLane(createEditorWithChildren, (editor) => {
   select(editor, {
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 4 },
+    kind: 'text',
   });
 
   for (let index = 0; index < steps; index += 1) {
@@ -187,6 +194,7 @@ const collapseMs = measureLane(createEditorWithChildren, (editor) => {
       tx.selection.set({
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
+        kind: 'text',
       });
       tx.selection.collapse({
         edge: index % 2 === 0 ? 'start' : 'end',
@@ -198,7 +206,7 @@ const collapseMs = measureLane(createEditorWithChildren, (editor) => {
 });
 
 const summary = {
-  lane: 'slate-text-selection',
+  lane: 'plite-text-selection',
   iterations,
   config: {
     blockCount,

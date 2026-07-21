@@ -41,4 +41,3 @@
   - `AffinityPlugin`
   - `PliteExtensionPlugin`
   - `PliteReactExtensionPlugin`
-

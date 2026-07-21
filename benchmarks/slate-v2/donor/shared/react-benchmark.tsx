@@ -5,7 +5,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 
 const require = createRequire(
-  new URL('../../../../packages/slate-react/package.json', import.meta.url)
+  new URL('../../../../packages/plite-react/package.json', import.meta.url)
 );
 const { JSDOM } = require('jsdom') as typeof import('jsdom');
 

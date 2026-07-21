@@ -1,5 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseAudioPlugin } from './BaseAudioPlugin';
 import { BaseFilePlugin } from './BaseFilePlugin';
@@ -14,8 +14,7 @@ describe('Base media plugin contracts', () => {
     });
 
     expect(editor.getPlugin({ key: KEYS.file }).node).toMatchObject({
-      isElement: true,
-      isVoid: true,
+      element: { groups: ['block'], void: 'block' },
     });
   });
 
@@ -25,8 +24,7 @@ describe('Base media plugin contracts', () => {
     });
 
     expect(editor.getPlugin({ key: KEYS.audio }).node).toMatchObject({
-      isElement: true,
-      isVoid: true,
+      element: { groups: ['block'], void: 'block' },
     });
   });
 
@@ -37,9 +35,80 @@ describe('Base media plugin contracts', () => {
 
     expect(editor.getPlugin({ key: KEYS.video }).node).toMatchObject({
       dangerouslyAllowAttributes: ['width', 'height'],
-      isElement: true,
-      isVoid: true,
+      element: { groups: ['block'], void: 'block' },
     });
+  });
+
+  it('preserves relative media widths in document data', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseAudioPlugin,
+        BaseFilePlugin,
+        BaseVideoPlugin,
+        BaseImagePlugin,
+        BaseMediaEmbedPlugin,
+      ],
+      value: [
+        {
+          children: [{ text: '' }],
+          type: KEYS.img,
+          url: 'https://platejs.org/example',
+          width: '55%',
+        },
+        {
+          children: [{ text: '' }],
+          type: NODES.mediaEmbed,
+          url: 'https://platejs.org/embed',
+          width: '65%',
+        },
+        {
+          children: [{ text: '' }],
+          type: KEYS.audio,
+          url: 'https://platejs.org/audio',
+          width: '75%',
+        },
+        {
+          children: [{ text: '' }],
+          type: KEYS.file,
+          url: 'https://platejs.org/file',
+          width: '80%',
+        },
+        {
+          children: [{ text: '' }],
+          type: KEYS.video,
+          url: 'https://platejs.org/video',
+          width: '85%',
+        },
+      ],
+    });
+
+    expect(editor.read.children()).toEqual([
+      expect.objectContaining({ type: KEYS.img, width: '55%' }),
+      expect.objectContaining({ type: NODES.mediaEmbed, width: '65%' }),
+      expect.objectContaining({ type: KEYS.audio, width: '75%' }),
+      expect.objectContaining({ type: KEYS.file, width: '80%' }),
+      expect.objectContaining({ type: KEYS.video, width: '85%' }),
+    ]);
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            children: [{ text: '' }],
+            type: NODES.mediaEmbed,
+            url: 'https://platejs.org/example',
+            width: true,
+          },
+        ],
+      })
+    ).toThrow(/plate\.media\.width/);
+  });
+
+  it('does not deserialize an image without a source URL', () => {
+    const editor = createBaseEditor({ plugins: [BaseImagePlugin] });
+
+    expect(
+      editor.api.html.deserialize({ element: '<img alt="missing" />' })
+    ).toEqual([]);
   });
 
   it('selects every media void when deleting backward from the next block', () => {
@@ -48,13 +117,14 @@ describe('Base media plugin contracts', () => {
       [BaseAudioPlugin, KEYS.audio],
       [BaseVideoPlugin, KEYS.video],
       [BaseImagePlugin, KEYS.img],
-      [BaseMediaEmbedPlugin, KEYS.mediaEmbed],
+      [BaseMediaEmbedPlugin, NODES.mediaEmbed],
     ] as const;
 
     for (const [plugin, type] of rows) {
       const editor = createBaseEditor({
         plugins: [plugin],
         selection: {
+          kind: 'text',
           anchor: { offset: 0, path: [1, 0] },
           focus: { offset: 0, path: [1, 0] },
         },
@@ -62,7 +132,7 @@ describe('Base media plugin contracts', () => {
           {
             children: [{ text: '' }],
             type,
-            ...(type === KEYS.mediaEmbed || type === KEYS.img
+            ...(type === NODES.mediaEmbed || type === KEYS.img
               ? { url: 'https://platejs.org/example' }
               : {}),
           },
@@ -74,6 +144,7 @@ describe('Base media plugin contracts', () => {
 
       expect(editor.read.children()).toHaveLength(2);
       expect(editor.read.selection()).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });

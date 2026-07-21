@@ -148,6 +148,7 @@ describe('shouldMoveSelectionFromCell', () => {
       selection: {
         anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
         focus: { offset: 3, path: [0, 0, 1, 0, 0] },
+        kind: 'text',
       },
       value: [
         {

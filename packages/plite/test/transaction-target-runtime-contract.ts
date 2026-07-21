@@ -28,6 +28,7 @@ const setupEditor = () => {
   editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
@@ -51,11 +52,13 @@ describe('transaction target runtime', () => {
       resolveImplicitTarget(_editor, request) {
         calls += 1;
         assert.deepEqual(request.fallback, {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         });
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         };
@@ -70,6 +73,7 @@ describe('transaction target runtime', () => {
     assert.equal(getElementType(editorGetChildren(editor)[0]!), 'paragraph');
     assert.equal(getElementType(editorGetChildren(editor)[1]!), 'heading-one');
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -104,6 +108,7 @@ describe('transaction target runtime', () => {
         name: 'select',
         run: (tx) =>
           tx.selection.set({
+            kind: 'text',
             anchor: { path: [1, 0], offset: 0 },
             focus: { path: [1, 0], offset: 0 },
           }),
@@ -122,15 +127,16 @@ describe('transaction target runtime', () => {
         run: (tx) =>
           tx.text.delete({
             at: {
+              kind: 'text',
               anchor: { path: [1, 0], offset: 0 },
               focus: { path: [1, 0], offset: 1 },
             },
           }),
       },
       {
-        name: 'insertFragment',
+        name: 'replaceSlice',
         run: (tx) =>
-          tx.fragment.insert([{ text: '!' }], {
+          tx.fragment.replace([{ text: '!' }], {
             at: { path: [1, 0], offset: 3 },
           }),
       },
@@ -192,6 +198,7 @@ describe('transaction target runtime', () => {
       resolveImplicitTarget() {
         calls += 1;
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         };
@@ -204,8 +211,36 @@ describe('transaction target runtime', () => {
 
     assert.equal(calls, 0);
     assert.deepEqual(selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
+  });
+
+  it('uses an explicit selection command as the next implicit target', () => {
+    const editor = setupEditor();
+    let calls = 0;
+
+    setEditorTargetRuntime(editor, {
+      resolveImplicitTarget() {
+        calls += 1;
+        return {
+          kind: 'text' as const,
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 0 },
+        };
+      },
+    });
+
+    editor.update((tx) => {
+      tx.selection.move({ unit: 'offset' });
+      tx.text.insert('!');
+    });
+
+    assert.equal(calls, 0);
+    assert.deepEqual(editorGetChildren(editor), [
+      paragraph('o!ne'),
+      paragraph('two'),
+    ]);
   });
 });

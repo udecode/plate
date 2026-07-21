@@ -4,6 +4,7 @@ import { RangeApi } from '@platejs/plite';
 
 export const input = {
   range: {
+    kind: 'text',
     anchor: {
       path: [1],
       offset: 3,

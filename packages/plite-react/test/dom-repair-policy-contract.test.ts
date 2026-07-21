@@ -1,61 +1,43 @@
 import { readFileSync } from 'node:fs';
+import { afterEach } from 'vitest';
 import { replace as editorReplace } from '@platejs/plite/internal';
 import {
+  createDOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
 import { createReactEditor } from '../src';
-import { createRestoreDomManager } from '../src/components/restore-dom/restore-dom-manager';
 import {
   beginDOMRepairFrame,
   cancelDOMRepairBefore,
   createDOMRepairFrameState,
-  createDOMRepairQueue,
+  createDOMRepairQueue as createRuntimeDOMRepairQueue,
   isDOMRepairFrameCurrent,
 } from '../src/editable/dom-repair-queue';
 import { beginEditableEventFrame } from '../src/editable/editing-kernel';
 import { createEditableInputControllerState } from '../src/editable/input-state';
 import { executeEditableRepairPolicy } from '../src/editable/mutation-controller';
 
-const asNodeList = (nodes: Node[]) => nodes as unknown as NodeList;
+const testSchedulers = new Set<ReturnType<typeof createDOMPhaseScheduler>>();
+const createDOMRepairQueue = (
+  options: Omit<
+    Parameters<typeof createRuntimeDOMRepairQueue>[0],
+    'domPhaseScheduler'
+  >
+) => {
+  const domPhaseScheduler = createDOMPhaseScheduler();
 
-const createChildListMutation = ({
-  addedNodes = [],
-  nextSibling = null,
-  removedNodes = [],
-  target,
-}: {
-  addedNodes?: Node[];
-  nextSibling?: Node | null;
-  removedNodes?: Node[];
-  target: Node;
-}) =>
-  ({
-    addedNodes: asNodeList(addedNodes),
-    attributeName: null,
-    attributeNamespace: null,
-    nextSibling,
-    oldValue: null,
-    previousSibling: null,
-    removedNodes: asNodeList(removedNodes),
-    target,
-    type: 'childList',
-  }) as MutationRecord;
+  testSchedulers.add(domPhaseScheduler);
 
-const createCharacterDataMutation = (target: Node) =>
-  ({
-    addedNodes: asNodeList([]),
-    attributeName: null,
-    attributeNamespace: null,
-    nextSibling: null,
-    oldValue: 'Hello',
-    previousSibling: null,
-    removedNodes: asNodeList([]),
-    target,
-    type: 'characterData',
-  }) as MutationRecord;
+  return createRuntimeDOMRepairQueue({ ...options, domPhaseScheduler });
+};
+
+afterEach(() => {
+  for (const scheduler of testSchedulers) scheduler.destroy();
+  testSchedulers.clear();
+});
 
 const markEditable = (element: HTMLElement) => {
   Object.defineProperty(element, 'isContentEditable', {
@@ -91,7 +73,6 @@ test('DOM repair exposes focused profiler buckets for huge-document attribution'
   expect(source).toContain("'read-current-frame'");
   expect(source).toContain("'read-runtime-selection'");
   expect(source).toContain("'record-kernel-trace'");
-  expect(source).toContain('operations: []');
   expect(source).toContain('selectionAfter: selectionBefore');
 });
 
@@ -119,47 +100,6 @@ test('stale repair frames cannot replace the active frame', () => {
   expect(isDOMRepairFrameCurrent(state, 2)).toBe(true);
 });
 
-test('restore manager rolls back structural DOM mutations and leaves text sync mutations', () => {
-  const editor = createReactEditor();
-  const root = mountEditorRoot(editor);
-  const paragraph = document.createElement('p');
-  const textWrapper = document.createElement('span');
-  const text = document.createTextNode('Hello');
-  const rogue = document.createElement('span');
-
-  markEditable(paragraph);
-  markEditable(textWrapper);
-  textWrapper.append(text);
-  paragraph.append(textWrapper);
-  root.append(paragraph);
-
-  const manager = createRestoreDomManager(editor, { current: true });
-
-  paragraph.remove();
-  rogue.textContent = 'rogue';
-  root.append(rogue);
-  text.nodeValue = 'Bonjour';
-
-  manager.registerMutations([
-    createChildListMutation({
-      removedNodes: [paragraph],
-      target: root,
-    }),
-    createChildListMutation({
-      addedNodes: [rogue],
-      target: root,
-    }),
-    createCharacterDataMutation(text),
-  ]);
-  manager.restoreDOM();
-
-  expect(root.firstChild).toBe(paragraph);
-  expect(root.contains(rogue)).toBe(false);
-  expect(text.nodeValue).toBe('Bonjour');
-
-  root.remove();
-});
-
 test('native input repair skips already synced local text inside partial DOM roots', () => {
   const editor = createReactEditor();
   const root = mountEditorRoot(editor);
@@ -176,6 +116,7 @@ test('native input repair skips already synced local text inside partial DOM roo
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 5 },
       focus: { path: [1, 0], offset: 5 },
     },
@@ -233,6 +174,7 @@ test('native input repair imports a burst DOM text delta once', () => {
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: prefix.length },
       focus: { path: [0, 0], offset: prefix.length },
     },
@@ -269,6 +211,7 @@ test('native input repair imports a burst DOM text delta once', () => {
 
   expect(editor.read((state) => state.text.string([0]))).toBe(domText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: prefix.length + burstText.length },
     focus: { path: [0, 0], offset: prefix.length + burstText.length },
   });
@@ -298,6 +241,7 @@ test('native input repair does not move selection for pathless clicks outside th
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     },
@@ -350,6 +294,7 @@ test('native input repair does not move selection for pathless clicks outside th
 
   expect(editor.read((state) => state.text.string([0]))).toBe(domText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -377,6 +322,7 @@ test('native input repair reconciles captured burst targets against partially sy
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: prefix.length + syncedPrefix.length },
       focus: { path: [0, 0], offset: prefix.length + syncedPrefix.length },
     },
@@ -426,6 +372,7 @@ test('native input repair reconciles captured burst targets against partially sy
 
   expect(editor.read((state) => state.text.string([0]))).toBe(domText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: nextOffset },
     focus: { path: [0, 0], offset: nextOffset },
   });
@@ -450,6 +397,7 @@ test('native input repair moves model selection when the captured target still o
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
@@ -498,6 +446,7 @@ test('native input repair moves model selection when the captured target still o
 
   expect(editor.read((state) => state.text.string([0]))).toBe(domText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: nextOffset },
     focus: { path: [0, 0], offset: nextOffset },
   });
@@ -524,6 +473,7 @@ test('native input repair guards virtualized DOM replacement selectionchanges', 
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
@@ -557,6 +507,7 @@ test('native input repair guards virtualized DOM replacement selectionchanges', 
 
     expect(editor.read((state) => state.text.string([0]))).toBe('aXbc');
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
@@ -588,6 +539,7 @@ test('native text repair keeps model authority inside virtualized pages', () => 
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -624,6 +576,7 @@ test('native text repair keeps model authority inside virtualized pages', () => 
 
   expect(editor.read((state) => state.text.string([0]))).toBe('aXbc');
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [0, 0], offset: 2 },
   });
@@ -634,7 +587,7 @@ test('native text repair keeps model authority inside virtualized pages', () => 
   root.remove();
 });
 
-test('native text repair keeps same virtualized target DOM-owned', () => {
+test('native text repair keeps a reconciled virtualized target model-owned until delayed caret repair', () => {
   const editor = createReactEditor();
   const root = mountEditorRoot(editor);
   const inputController = {
@@ -652,6 +605,7 @@ test('native text repair keeps same virtualized target DOM-owned', () => {
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -707,12 +661,13 @@ test('native text repair keeps same virtualized target DOM-owned', () => {
 
     expect(editor.read((state) => state.text.string([0]))).toBe('aXbc');
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
-    expect(inputController.preferModelSelectionForInputRef.current).toBe(false);
-    expect(inputController.state.selectionSource).toBe('dom-current');
-    expect(inputController.state.modelOwnedTextInputGuard).toBe(0);
+    expect(inputController.preferModelSelectionForInputRef.current).toBe(true);
+    expect(inputController.state.selectionSource).toBe('model-owned');
+    expect(inputController.state.modelOwnedTextInputGuard).toBeGreaterThan(0);
     expect(setBaseAndExtentSpy).not.toHaveBeenCalled();
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 25);
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 100);
@@ -742,6 +697,7 @@ test('native text repair advances captured virtualized target when DOM offset la
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -791,6 +747,7 @@ test('native text repair advances captured virtualized target when DOM offset la
 
   expect(editor.read((state) => state.text.string([0]))).toBe('aXbc');
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [0, 0], offset: 2 },
   });
@@ -824,6 +781,7 @@ test('native text repair advances captured virtualized target when DOM caret res
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -873,6 +831,7 @@ test('native text repair advances captured virtualized target when DOM caret res
 
   expect(editor.read((state) => state.text.string([0]))).toBe(domText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: nextOffset },
     focus: { path: [0, 0], offset: nextOffset },
   });
@@ -903,6 +862,7 @@ test('native text repair keeps model authority when synced virtualized DOM caret
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     },
@@ -951,6 +911,7 @@ test('native text repair keeps model authority when synced virtualized DOM caret
   );
 
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [0, 0], offset: 2 },
   });
@@ -984,6 +945,7 @@ test('text insert caret repair keeps model authority in virtualized DOM', () => 
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     },
@@ -1048,6 +1010,7 @@ test('text insert caret repair keeps model authority for projected DOM sync', ()
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     },
@@ -1090,6 +1053,87 @@ test('text insert caret repair keeps model authority for projected DOM sync', ()
   root.remove();
 });
 
+test('completed projected text insert repair does not schedule repair retries', () => {
+  const editor = createReactEditor();
+  const root = mountEditorRoot(editor);
+  const inputController = {
+    preferModelSelectionForInputRef: { current: true },
+    state: createEditableInputControllerState(),
+  };
+  const repairRequestAnimationFrame = vi.fn(() => 1);
+  const repairSetTimeout = vi.fn(() => 1);
+  const repairQueueMicrotask = vi.fn();
+  const domPhaseScheduler = createDOMPhaseScheduler({
+    getWindow: () =>
+      ({
+        cancelAnimationFrame: vi.fn(),
+        clearTimeout: vi.fn(),
+        queueMicrotask: repairQueueMicrotask,
+        requestAnimationFrame: repairRequestAnimationFrame,
+        setTimeout: repairSetTimeout,
+      }) as unknown as Window,
+  });
+
+  testSchedulers.add(domPhaseScheduler);
+  inputController.state.selectionSource = 'model-owned';
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'aXbc' }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 2 },
+    },
+  });
+
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('aXbc');
+  const range = document.createRange();
+  const selection = window.getSelection();
+
+  textHost.setAttribute('data-plite-node', 'text');
+  textHost.setAttribute('data-plite-path', '0,0');
+  textHost.setAttribute('data-plite-projected-dom-sync', 'true');
+  string.setAttribute('data-plite-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+
+  range.setStart(text, 0);
+  range.collapse(true);
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+
+  const setBaseAndExtent = vi.spyOn(Selection.prototype, 'setBaseAndExtent');
+  const queue = createRuntimeDOMRepairQueue({
+    domPhaseScheduler,
+    editor,
+    inputController,
+    scrollSelectionIntoView: () => {},
+    syncDOMSelectionToEditor: () => {},
+  });
+
+  try {
+    queue.repairCaretAfterModelTextInsert();
+
+    expect(selection?.anchorOffset).toBe(2);
+    expect(setBaseAndExtent).toHaveBeenCalledTimes(1);
+    expect(repairQueueMicrotask).not.toHaveBeenCalled();
+    expect(repairRequestAnimationFrame).not.toHaveBeenCalled();
+    expect(repairSetTimeout).toHaveBeenCalledTimes(1);
+    expect(repairSetTimeout).toHaveBeenCalledWith(expect.any(Function), 150);
+  } finally {
+    setBaseAndExtent.mockRestore();
+    root.remove();
+  }
+});
+
 test('text insert caret repair keeps existing model authority for plain DOM text', () => {
   const editor = createReactEditor();
   const root = mountEditorRoot(editor);
@@ -1110,6 +1154,7 @@ test('text insert caret repair keeps existing model authority for plain DOM text
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     },
@@ -1172,6 +1217,7 @@ test('virtualized text insert caret repair ignores stale frame cancellation when
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     },
@@ -1243,6 +1289,7 @@ test('virtualized text insert caret repair corrects model drift back to pending 
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 12 },
       focus: { path: [0, 0], offset: 12 },
     },
@@ -1278,6 +1325,7 @@ test('virtualized text insert caret repair corrects model drift back to pending 
   queue.repairCaretAfterModelTextInsert();
 
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: 11 },
     focus: { path: [0, 0], offset: 11 },
   });
@@ -1304,6 +1352,7 @@ test('native input repair trusts captured coalesced inserts when projected DOM i
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
@@ -1354,6 +1403,7 @@ test('native input repair trusts captured coalesced inserts when projected DOM i
 
   expect(editor.read((state) => state.text.string([0]))).toBe(repairedText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: nextOffset },
     focus: { path: [0, 0], offset: nextOffset },
   });
@@ -1375,6 +1425,7 @@ test('native input repair rebases later captured same-path inserts against repai
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
@@ -1438,6 +1489,7 @@ test('native input repair rebases later captured same-path inserts against repai
 
   expect(editor.read((state) => state.text.string([0]))).toBe(finalDOMText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: finalDOMText.length },
     focus: { path: [0, 0], offset: finalDOMText.length },
   });
@@ -1467,6 +1519,7 @@ test('native input repair does not repair the caret for stale captured targets',
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: prefix.length },
       focus: { path: [0, 0], offset: prefix.length },
     },
@@ -1546,6 +1599,7 @@ test('native input repair does not move selection for stale coalesced targets', 
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     },
@@ -1606,6 +1660,7 @@ test('native input repair does not move selection for stale coalesced targets', 
 
   expect(editor.read((state) => state.text.string([0]))).toBe(capturedText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -1628,6 +1683,7 @@ test('native input repair replaces expanded model selections and collapses at th
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: originalText.length },
     },
@@ -1667,6 +1723,7 @@ test('native input repair replaces expanded model selections and collapses at th
 
   expect(editor.read((state) => state.text.string([0]))).toBe(replacementText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: replacementText.length },
     focus: { path: [0, 0], offset: replacementText.length },
   });
@@ -1692,12 +1749,18 @@ test('text insert caret repair waits until rendered text matches the model', () 
   const repairRequestAnimationFrame = vi.fn(() => 1);
   const repairSetTimeout = vi.fn(() => 1);
   const repairQueueMicrotask = vi.fn((callback: () => void) => callback());
+  const domPhaseScheduler = createDOMPhaseScheduler({
+    getWindow: () =>
+      ({
+        cancelAnimationFrame: vi.fn(),
+        clearTimeout: vi.fn(),
+        queueMicrotask: repairQueueMicrotask,
+        requestAnimationFrame: repairRequestAnimationFrame,
+        setTimeout: repairSetTimeout,
+      }) as unknown as Window,
+  });
 
-  EDITOR_TO_WINDOW.set(editor, {
-    queueMicrotask: repairQueueMicrotask,
-    requestAnimationFrame: repairRequestAnimationFrame,
-    setTimeout: repairSetTimeout,
-  } as unknown as Window);
+  testSchedulers.add(domPhaseScheduler);
 
   editorReplace(editor, {
     children: [
@@ -1707,6 +1770,7 @@ test('text insert caret repair waits until rendered text matches the model', () 
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -1724,7 +1788,8 @@ test('text insert caret repair waits until rendered text matches the model', () 
   selection?.removeAllRanges();
   selection?.addRange(range);
 
-  const queue = createDOMRepairQueue({
+  const queue = createRuntimeDOMRepairQueue({
+    domPhaseScheduler,
     editor,
     inputController,
     scrollSelectionIntoView: () => {},
@@ -1741,7 +1806,6 @@ test('text insert caret repair waits until rendered text matches the model', () 
     expect(repairRequestAnimationFrame).toHaveBeenCalled();
     expect(repairSetTimeout).toHaveBeenCalled();
   } finally {
-    EDITOR_TO_WINDOW.set(editor, window);
     root.remove();
   }
 });
@@ -1782,6 +1846,7 @@ test('deferred native input repair still fixes a stale caret after text already 
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: modelOffset },
       focus: { path: [0, 0], offset: modelOffset },
     },
@@ -1819,6 +1884,7 @@ test('deferred native input repair still fixes a stale caret after text already 
 
   expect(editor.read((state) => state.text.string([0]))).toBe(modelText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: modelOffset },
     focus: { path: [0, 0], offset: modelOffset },
   });
@@ -1862,6 +1928,7 @@ test('virtualized captured input repair moves selection when DOM selection is ro
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     },
@@ -1898,6 +1965,7 @@ test('virtualized captured input repair moves selection when DOM selection is ro
 
   expect(editor.read((state) => state.text.string([0]))).toBe(domText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: expectedOffset },
     focus: { path: [0, 0], offset: expectedOffset },
   });
@@ -1937,6 +2005,7 @@ test('native input repair prefers live model continuation over stale captured te
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
@@ -1974,6 +2043,7 @@ test('native input repair prefers live model continuation over stale captured te
 
   expect(editor.read((state) => state.text.string([0]))).toBe(domText);
   expect(editor.read((state) => state.selection())).toEqual({
+    kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 5 },
   });
@@ -2017,6 +2087,7 @@ test('deferred native input repair fixes a stale caret after text already synced
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: modelOffset },
       focus: { path: [0, 0], offset: modelOffset },
     },
@@ -2075,6 +2146,7 @@ test('deferred native input repair rechecks a virtualized synced caret after ini
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: modelOffset },
       focus: { path: [0, 0], offset: modelOffset },
     },
@@ -2120,6 +2192,9 @@ test('deferred native input repair rechecks a virtualized synced caret after ini
 
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 25);
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 100);
+    expect(inputController.preferModelSelectionForInputRef.current).toBe(true);
+    expect(inputController.state.selectionSource).toBe('model-owned');
+    expect(inputController.state.modelOwnedTextInputGuard).toBeGreaterThan(0);
   } finally {
     setTimeoutSpy.mockRestore();
     root.remove();

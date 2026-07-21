@@ -34,7 +34,6 @@ editor.read((state) => {
 editor.update((tx) => {
   tx.value.replace({
     children,
-    marks: null,
     selection: null,
   });
   tx.selection.get();
@@ -135,8 +134,7 @@ Current research verdict:
   author-facing path if the goal is the clean architecture/DX target.
 - either demote primitive editor writes to advanced/internal bridge status with
   explicit release guards, or migrate examples/docs/tests to `tx.*`.
-- keep `applyOperations` as the explicit operation replay writer for
-  collaboration/backbone proof.
+- use `tx.changes.apply(...)` as the canonical collaboration import path.
 
 This is a plan/execution gap, not a research contradiction.
 

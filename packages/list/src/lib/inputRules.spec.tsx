@@ -28,6 +28,7 @@ describe('list input rules', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset, path: [0, 0] },
         focus: { offset, path: [0, 0] },
       },
@@ -46,6 +47,7 @@ describe('list input rules', () => {
       type: 'p',
     });
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -65,6 +67,7 @@ describe('list input rules', () => {
       type: 'p',
     });
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -83,6 +86,7 @@ describe('list input rules', () => {
       type: 'p',
     });
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });

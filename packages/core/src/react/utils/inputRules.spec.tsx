@@ -1,6 +1,8 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
+import { schema } from '@platejs/plite';
+import { insertBreak, insertText } from '@platejs/plite/internal';
 import { BaseParagraphPlugin } from '../../lib/plugins';
 
 import { createPlateEditor } from '../editor';
@@ -13,6 +15,28 @@ import {
 jsxt;
 
 describe('input rules', () => {
+  it('retains element schema contributions after configuring input rules', () => {
+    const CalloutPlugin = createPlatePlugin({
+      key: 'callout',
+      node: { element: { groups: ['block'] } },
+    }).configure({
+      inputRules: [
+        defineInputRule({
+          apply: () => true,
+          target: 'insertText',
+          trigger: '>',
+        }),
+      ],
+    });
+    const editor = createPlateEditor({ plugins: [CalloutPlugin] });
+
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [{ children: [{ text: '' }], type: 'callout' }],
+      })
+    ).not.toThrow();
+  });
+
   it('registers explicit configured rule instances on the owning plugin', () => {
     const strongRule = defineInputRule({
       apply: () => true,
@@ -55,7 +79,7 @@ describe('input rules', () => {
       value: [{ children: [{ text: '' }], type: 'p' }],
     } as any);
 
-    editor.update.text.insert('*');
+    insertText(editor, '*');
 
     expect(apply).toHaveBeenCalledTimes(1);
   });
@@ -85,10 +109,11 @@ describe('input rules', () => {
     } as any);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
-    editor.update.text.insert('*');
+    insertText(editor, '*');
 
     expect(applyCount).toBe(1);
     expect(editor.read.children()).toEqual([
@@ -115,10 +140,11 @@ describe('input rules', () => {
     } as any);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 5, path: [0, 0] },
     });
-    editor.update.break.insert();
+    insertBreak(editor);
 
     expect(apply).toHaveBeenCalledTimes(1);
     expect(editor.read.children()).toEqual([
@@ -150,10 +176,11 @@ describe('input rules', () => {
     } as any);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 5, path: [0, 0] },
     });
-    editor.update.break.insert();
+    insertBreak(editor);
 
     expect(applyCount).toBe(1);
     expect(editor.read.children()).toEqual([
@@ -225,7 +252,7 @@ describe('input rules', () => {
       value: [{ children: [{ text: '' }], type: 'p' }],
     } as any);
 
-    editor.update.text.insert('*');
+    insertText(editor, '*');
 
     expect(enabled).toHaveBeenCalledTimes(1);
     expect(apply).not.toHaveBeenCalled();
@@ -290,11 +317,12 @@ describe('input rules', () => {
       value: [{ children: [{ text: '##' }], type: 'p' }],
     } as any);
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
 
-    editor.update.text.insert(' ');
+    insertText(editor, ' ');
 
     expect(resolve).toHaveBeenCalledTimes(1);
     expect(apply).toHaveBeenCalledTimes(1);
@@ -328,11 +356,12 @@ describe('input rules', () => {
       value: [{ children: [{ text: 'abc' }], type: 'p' }],
     } as any);
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
 
-    editor.update.text.insert(' ');
+    insertText(editor, ' ');
 
     expect(resolve).toHaveBeenCalledTimes(1);
     expect(apply).toHaveBeenCalledTimes(1);
@@ -379,16 +408,18 @@ describe('input rules', () => {
               trigger: '*',
             }),
           ],
+          node: { mark: true },
         }),
       ],
       value: [{ children: [{ text: '**hello*' }], type: 'p' }],
     });
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 8, path: [0, 0] },
       focus: { offset: 8, path: [0, 0] },
     });
-    editor.update.text.insert('*');
+    insertText(editor, '*');
 
     expect(editor.runtime.inputRules.plugins.bold.rules).toHaveLength(1);
     expect(editor.runtime.inputRules.insertText.byTrigger['*']).toHaveLength(1);
@@ -418,10 +449,11 @@ describe('input rules', () => {
     });
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 13, path: [0, 0] },
       focus: { offset: 13, path: [0, 0] },
     });
-    editor.update.text.insert('*');
+    insertText(editor, '*');
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: '**hello* nope*' }], type: 'p' },
@@ -448,10 +480,11 @@ describe('input rules', () => {
     } as any);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
-    editor.update.text.insert('`');
+    insertText(editor, '`');
 
     expect(apply).toHaveBeenCalledTimes(1);
     expect(editor.runtime.inputRules.plugins.codeBlock.rules).toHaveLength(1);
@@ -465,7 +498,8 @@ describe('input rules', () => {
           node: { type: 'paragraph' },
         }),
         createPlatePlugin({
-          key: 'code_block',
+          key: 'codeBlock',
+          node: { type: 'code_block' },
         }).configure({
           inputRules: [
             defineInputRule({
@@ -476,15 +510,16 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '``' }], type: 'p' }],
+      value: [{ children: [{ text: '``' }], type: 'paragraph' }],
     } as any);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
 
-    expect(editor.runtime.inputRules.plugins.code_block.rules).toHaveLength(1);
+    expect(editor.runtime.inputRules.plugins.codeBlock.rules).toHaveLength(1);
     expect(editor.runtime.inputRules.insertText.byTrigger['`']).toHaveLength(1);
   });
 
@@ -524,6 +559,12 @@ describe('input rules', () => {
       plugins: [
         createPlatePlugin({
           key: 'blockquote',
+          node: {
+            element: {
+              content: schema.content.group('block'),
+              groups: ['block'],
+            },
+          },
         }).configure({
           inputRules: [blockquoteMarkdown({ marker: '|' })],
         }),
@@ -532,10 +573,11 @@ describe('input rules', () => {
     } as any);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
-    editor.update.text.insert(' ');
+    insertText(editor, ' ');
 
     expect(editor.read.children()).toMatchObject([
       {
@@ -560,7 +602,7 @@ describe('input rules', () => {
         }),
         createPlatePlugin({
           key: 'heading',
-          node: { isElement: true },
+          node: { element: { groups: ['block'] } },
         }).configure({
           inputRules: [headingMarkdown()],
         }),
@@ -569,10 +611,11 @@ describe('input rules', () => {
     } as any);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
-    editor.update.text.insert(' ');
+    insertText(editor, ' ');
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: '' }], type: 'paragraph' },

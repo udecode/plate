@@ -3,16 +3,19 @@ import { createPlateEditor } from '@platejs/core/react';
 import { CursorOverlayPlugin } from './CursorOverlayPlugin';
 
 const selection = {
+  kind: 'text',
   anchor: { offset: 0, path: [0, 0] },
   focus: { offset: 3, path: [0, 0] },
 };
 
 const nextSelection = {
+  kind: 'text',
   anchor: { offset: 1, path: [0, 0] },
   focus: { offset: 4, path: [0, 0] },
 };
 
 const nextSelectionRange = {
+  kind: 'text',
   anchor: selection.anchor,
   focus: { offset: 4, path: [0, 0] },
 };

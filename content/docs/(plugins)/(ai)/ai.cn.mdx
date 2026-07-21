@@ -14,8 +14,8 @@ docs:
 
 - **上下文感知命令菜单**，可适应光标、文本选择和块选择工作流。
 - **流式 Markdown/MDX 插入**，支持表格、列和代码块，由 `streamInsertChunk` 驱动。
-- **插入和聊天审查模式**，通过局部回滚的插入预览以及 `withAIBatch` 和 `tf.ai.undo()` 实现撤销安全批处理。
-- **块选择感知变换**，使用 `tf.aiChat.replaceSelection` 和 `tf.aiChat.insertBelow` 替换或追加整个部分。
+- **插入和聊天审查模式**，通过局部回滚的插入预览以及 `withAIBatch` 和 `editor.plugin(BaseAIPlugin).api.undo()` 实现撤销安全批处理。
+- **块选择感知变换**，使用 `editor.plugin(AIChatPlugin).api.replaceSelection` 和 `editor.plugin(AIChatPlugin).api.insertBelow` 替换或追加整个部分。
 - **与 `@ai-sdk/react` 直接集成**，使 `api.aiChat.submit` 可以从 Vercel AI SDK 助手流式传输响应。
 - **建议和评论工具**，可对 AI 编辑进行差异比较、接受/拒绝更改，并将 AI 反馈映射回文档范围。
 
@@ -385,13 +385,12 @@ editor.plugin(aiChatPlugin).setOption('chatOptions', {
 
 ### `useAIChatEditor`
 
-为聊天预览注册一个辅助编辑器，并使用块级记忆化反序列化 Markdown。
+为聊天预览注册一个辅助编辑器，并将 Markdown 反序列化到该编辑器中。
 
 <API name="useAIChatEditor">
 <APIParameters>
   <APIItem name="editor" type="BaseEditor">专用于聊天预览的编辑器实例。</APIItem>
   <APIItem name="content" type="string">模型返回的 Markdown 内容。</APIItem>
-  <APIItem name="options" type="DeserializeMdOptions" optional>传递 `parser` 以在反序列化之前过滤令牌。</APIItem>
 </APIParameters>
 </API>
 
@@ -404,9 +403,7 @@ const aiPreviewEditor = usePlateEditor({
   plugins: [MarkdownPlugin, AIChatPlugin],
 });
 
-useAIChatEditor(aiPreviewEditor, responseMarkdown, {
-  parser: { exclude: ['space'] },
-});
+useAIChatEditor(aiPreviewEditor, responseMarkdown);
 ```
 
 ### `useEditorChat`
@@ -437,7 +434,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 ### `withAIBatch`
 
-将编辑器操作分组到单个历史批次中，并将其标记为 AI 生成，以便 `tf.ai.undo()` 安全地移除它。
+将编辑器操作分组到单个历史批次中，并将其标记为 AI 生成，以便 `editor.plugin(BaseAIPlugin).api.undo()` 安全地移除它。
 
 <API name="withAIBatch">
 <APIParameters>
@@ -520,7 +517,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="AIPlugin">
   <APIOptions>
-    <APIItem name="node.isLeaf" type="true">AI 内容存储在文本节点上。</APIItem>
+    <APIItem name="node.mark" type="true">AI 内容存储在文本节点上。</APIItem>
     <APIItem name="node.isDecoration" type="false">AI 标记是常规文本属性，而不是装饰。</APIItem>
   </APIOptions>
 </API>
@@ -608,11 +605,11 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 ## 变换
 
-### `tf.aiChat.accept()`
+### `editor.plugin(AIChatPlugin).api.accept()`
 
 接受最新的响应。在插入模式下，它移除 AI 标记并将光标放置在流式内容的末尾。在聊天模式下，它应用待处理的建议。
 
-### `tf.aiChat.insertBelow(sourceEditor, options?)`
+### `editor.plugin(AIChatPlugin).api.insertBelow(sourceEditor, options?)`
 
 在当前选择或块选择下方插入聊天预览（`sourceEditor`）。
 
@@ -623,7 +620,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 </APIParameters>
 </API>
 
-### `tf.aiChat.replaceSelection(sourceEditor, options?)`
+### `editor.plugin(AIChatPlugin).api.replaceSelection(sourceEditor, options?)`
 
 用聊天预览替换当前选择或块选择。
 
@@ -634,7 +631,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 </APIParameters>
 </API>
 
-### `tf.aiChat.removeAnchor(options?)`
+### `editor.update.aiChat.removeAnchor(options?)`
 
 移除用于定位 AI 菜单的临时锚点节点。
 
@@ -644,15 +641,15 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 </APIParameters>
 </API>
 
-### `tf.ai.insertNodes(nodes, options?)`
+### `editor.update.ai.insertNodes(nodes, options?)`
 
 在当前选择（或 `options.target`）处插入带有 AI 标记的节点。
 
-### `tf.ai.removeMarks(options?)`
+### `editor.update.ai.removeMarks(options?)`
 
 从匹配的节点中清除 AI 标记。
 
-### `tf.ai.removeNodes(options?)`
+### `editor.update.ai.removeNodes(options?)`
 
 移除标记为 AI 生成的文本节点。
 
@@ -683,7 +680,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 <APIReturns type="boolean">当活动预览被恢复时返回 `true`。</APIReturns>
 </API>
 
-### `tf.ai.discardPreview()`
+### `editor.plugin(BaseAIPlugin).api.discardPreview()`
 
 清除预览状态而不恢复内容。当预览内容应该保留在文档中时使用它。
 
@@ -691,7 +688,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 <APIReturns type="boolean">当活动预览状态被清除时返回 `true`。</APIReturns>
 </API>
 
-### `tf.ai.hasPreview()`
+### `editor.plugin(BaseAIPlugin).api.hasPreview()`
 
 报告当前是否存在插入模式预览的回滚点。
 
@@ -699,7 +696,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 <APIReturns type="boolean">当存在预览回滚状态时返回 `true`。</APIReturns>
 </API>
 
-### `tf.ai.undo()`
+### `editor.plugin(BaseAIPlugin).api.undo()`
 
 如果最新的 AI 历史条目由 `withAIBatch` 创建，则撤销它。若当前存在插入模式预览，则优先取消该预览，而不是回放每个流式块。两种情况下都会避免通过重做重新应用 AI 输出。
 

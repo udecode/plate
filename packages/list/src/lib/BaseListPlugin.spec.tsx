@@ -1,4 +1,5 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { DocumentChange, schema } from '@platejs/plite';
 import ReactDOMServer from 'react-dom/server';
 
 import { KEYS } from '@platejs/utils';
@@ -29,10 +30,77 @@ const assertScopedListTypes = () => {
 void assertScopedListTypes;
 
 describe('BaseListPlugin', () => {
+  it('keeps list blocks on the single compiled paragraph schema', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      value: [
+        {
+          children: [{ text: 'Item' }],
+          indent: 1,
+          listStyleType: 'disc',
+          type: KEYS.p,
+        },
+      ],
+    });
+    const paragraph = editor.read.children()[0];
+
+    expect(editor.read.schema.element(KEYS.p)?.groups).toContain('block');
+    expect(editor.read.schema.isBlock(paragraph)).toBe(true);
+    expect(() =>
+      editor.read.schema.validateDocument(editor.read.value())
+    ).not.toThrow();
+  });
+
+  it('uses targetPluginKeys for both model validation and injection', () => {
+    const CalloutPlugin = createBasePlugin({
+      key: 'callout',
+      node: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          groups: ['block'],
+        },
+        type: 'note',
+      },
+    });
+    const ListCalloutPlugin = BaseListPlugin.configure({
+      options: { targetPluginKeys: ['callout'] },
+    });
+    const editor = createBaseEditor({
+      plugins: [CalloutPlugin, ListCalloutPlugin],
+      value: [
+        {
+          children: [{ text: 'Callout' }],
+          listStyleType: 'disc',
+          type: 'note',
+        },
+      ],
+    });
+
+    expect(editor.getPlugin(BaseListPlugin).inject.targetPlugins).toEqual([
+      'callout',
+    ]);
+    expect(editor.read.children()[0]).toMatchObject({
+      listStyleType: 'disc',
+      type: 'note',
+    });
+    expect(() =>
+      editor.read.schema.validateFragment([
+        {
+          children: [{ text: 'Paragraph' }],
+          listStyleType: 'disc',
+          type: KEYS.p,
+        },
+      ])
+    ).toThrow(
+      /Schema element property "listStyleType" cannot target element "p"/
+    );
+  });
+
   it('installs Indent and exposes scoped list reads and updates', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -88,6 +156,7 @@ describe('BaseListPlugin', () => {
     const source = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 6, path: [1, 0] },
       },
@@ -96,10 +165,16 @@ describe('BaseListPlugin', () => {
 
     source.plugin(BaseListPlugin).update.toggle({ listStyleType: 'decimal' });
 
-    const operations = JSON.parse(
-      JSON.stringify(source.read.lastCommit()?.operations ?? [])
+    const committedChange = source.read.lastCommit()?.changes;
+
+    expect(committedChange).toBeDefined();
+
+    const change = DocumentChange.fromJSON(
+      JSON.parse(JSON.stringify(committedChange!.toJSON()))
     );
+    expect(change.primaryClassification).toBeNull();
     const replaySelection = {
+      kind: 'text' as const,
       anchor: { offset: 2, path: [1, 0] },
       focus: { offset: 2, path: [1, 0] },
     };
@@ -109,9 +184,7 @@ describe('BaseListPlugin', () => {
       value,
     });
 
-    replay.update({ history: 'skip' }, (tx) =>
-      tx.operations.replay(operations)
-    );
+    replay.update({ history: 'skip' }, (tx) => tx.changes.apply(change));
 
     expect(replay.read.children()).toEqual(source.read.children());
     expect(replay.read.selection()).toEqual(replaySelection);
@@ -204,9 +277,11 @@ describe('BaseListPlugin', () => {
 
     expect(
       parse({
-        editor,
         element,
-        getOptions: () => plugin.options,
+        options: plugin.options,
+        registry: {
+          getType: (key: string) => editor.getType(key),
+        },
       } as any)
     ).toEqual({
       indent: 2,

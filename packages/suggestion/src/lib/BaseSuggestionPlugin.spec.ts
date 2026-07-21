@@ -1,8 +1,23 @@
-import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import { schema } from '@platejs/plite';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { SuggestionUpdatePolicy } from './update-policy';
 import { getTransientSuggestionKey } from './utils/getTransientSuggestionKey';
+
+const SuggestionTargetPlugin = createBasePlugin({
+  key: 'suggestionTarget',
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+  },
+});
 
 describe('BaseSuggestionPlugin', () => {
   const inlineSuggestion = {
@@ -20,7 +35,11 @@ describe('BaseSuggestionPlugin', () => {
 
   const createEditor = () =>
     createBaseEditor({
-      plugins: [BaseParagraphPlugin, BaseSuggestionPlugin],
+      plugins: [
+        BaseParagraphPlugin,
+        SuggestionTargetPlugin,
+        BaseSuggestionPlugin,
+      ],
       value: [
         {
           children: [
@@ -55,6 +74,107 @@ describe('BaseSuggestionPlugin', () => {
         },
       ],
     } as any);
+
+  it('compiles suggestion placement, namespace, lifecycle, and merge laws', () => {
+    const editor = createEditor();
+    const paragraph = { children: [{ text: '' }], type: 'p' };
+    const replacement = {
+      createdAt: 4,
+      id: 'replacement',
+      type: 'remove' as const,
+      userId: 'alice',
+    };
+
+    expect(
+      editor.read.schema.property({
+        key: 'suggestion',
+        placement: 'element',
+        type: 'p',
+      })
+    ).toMatchObject({ value: { kind: 'json' } });
+    expect(
+      editor.read.schema.property({
+        key: 'suggestion_any',
+        placement: 'element',
+        type: 'p',
+      })
+    ).toMatchObject({ value: { kind: 'json' } });
+    expect(
+      editor.read.schema.property({
+        key: 'suggestion',
+        placement: 'text',
+        type: 'p',
+      })
+    ).toMatchObject({
+      lifecycle: {
+        split: 'preserve',
+        typeChange: 'preserve-if-allowed',
+      },
+      merge: 'replace',
+      value: { kind: 'boolean' },
+    });
+    expect(
+      editor.read.schema.property({
+        key: 'suggestion_any',
+        placement: 'text',
+        type: 'p',
+      })
+    ).toMatchObject({
+      lifecycle: {
+        split: 'preserve',
+        typeChange: 'preserve-if-allowed',
+      },
+      merge: 'replace',
+      value: { kind: 'json' },
+    });
+    expect(
+      editor.read.schema.property({
+        key: getTransientSuggestionKey(),
+        placement: 'text',
+        type: 'p',
+      })
+    ).toMatchObject({ value: { kind: 'boolean' } });
+    expect(
+      editor.read.schema.property({
+        key: 'suggestion_any',
+        placement: 'text',
+        type: paragraph.type,
+      })
+    ).not.toBeNull();
+    expect(
+      editor.read.schema.property({
+        key: 'suggestion_any',
+        placement: 'text',
+        type: 'missing',
+      })
+    ).toBeNull();
+    expect(
+      editor.read.schema.property({
+        key: 'suggestion_any',
+        placement: 'element',
+        type: 'p',
+      })?.value.significant
+    ).toBe(true);
+
+    editor.update.nodes.set({ type: 'suggestionTarget' }, { at: [0] });
+
+    expect(editor.read.nodes.get([0, 0])?.[0]).toMatchObject({
+      suggestion: true,
+      suggestion_inline: inlineSuggestion,
+      text: 'inline',
+    });
+
+    editor.update.selection.set({
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 6, path: [0, 0] },
+    });
+    editor.update.marks.add('suggestion_inline', replacement);
+
+    expect(editor.read.nodes.get([0, 0])?.[0]).toMatchObject({
+      suggestion_inline: replacement,
+    });
+  });
 
   it('finds inline and block suggestion nodes by id', () => {
     const editor = createEditor();

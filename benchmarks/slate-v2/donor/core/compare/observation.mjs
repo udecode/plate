@@ -23,18 +23,24 @@ const legacyRepo = resolve(
 const iterations = Number(process.env.CORE_OBSERVATION_BENCH_ITERATIONS || 3);
 const blocks = Number(process.env.CORE_OBSERVATION_BENCH_BLOCKS || 500);
 const insertOps = Number(process.env.CORE_OBSERVATION_BENCH_INSERT_OPS || 40);
+const skipBuild = process.env.BENCHMARK_SKIP_BUILD === '1';
 
 const benchmarkSource = `
 import assert from 'node:assert/strict';
 
+const isPlite = process.env.BENCHMARK_ENGINE === 'current';
 let Slate;
 let SlateInternal = {};
 
-try {
-  Slate = await import('../../packages/slate/src/index.ts');
-  SlateInternal = await import('../../packages/slate/src/internal/index.ts');
-} catch {
-  Slate = await import('@platejs/slate');
+if (isPlite) {
+  Slate = await import('@platejs/plite');
+  SlateInternal = await import('@platejs/plite/internal');
+} else {
+  try {
+    Slate = await import('slate');
+  } catch {
+    Slate = await import('@platejs/slate');
+  }
 
   try {
     SlateInternal = await import('@platejs/slate/internal');
@@ -42,7 +48,7 @@ try {
 }
 
 const { createEditor } = Slate;
-const Editor = Slate.Editor ?? SlateInternal.Editor;
+const Editor = Slate.Editor ?? SlateInternal.Editor ?? SlateInternal;
 const NodeApi = Slate.NodeApi ?? Slate.Node ?? SlateInternal.NodeApi ?? SlateInternal.Node;
 const legacyTransforms = Slate.Transforms;
 
@@ -237,8 +243,10 @@ console.log(JSON.stringify({
 const currentPackageManager = await parsePackageManager(currentRepo);
 const legacyPackageManager = await parsePackageManager(legacyRepo);
 
-await buildRepo(currentRepo, currentPackageManager, './packages/slate');
-await buildRepo(legacyRepo, legacyPackageManager, './packages/slate');
+if (!skipBuild) {
+  await buildRepo(currentRepo, currentPackageManager, './packages/plite');
+  await buildRepo(legacyRepo, legacyPackageManager, './packages/slate');
+}
 
 const env = {
   CORE_OBSERVATION_BENCH_ITERATIONS: String(iterations),
@@ -248,13 +256,13 @@ const env = {
 
 const current = await benchmarkRepo({
   benchmarkSource,
-  env,
+  env: { ...env, BENCHMARK_ENGINE: 'current' },
   packageManager: currentPackageManager,
   repo: currentRepo,
 });
 const legacy = await benchmarkRepo({
   benchmarkSource,
-  env,
+  env: { ...env, BENCHMARK_ENGINE: 'legacy' },
   packageManager: legacyPackageManager,
   repo: legacyRepo,
 });

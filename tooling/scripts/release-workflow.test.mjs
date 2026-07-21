@@ -868,6 +868,14 @@ test('package scripts expose CI version and release commands only', async () => 
     packageJson.scripts['g:release:beta'],
     'node tooling/scripts/release-packages.mjs --channel beta'
   );
+  assert.equal(
+    packageJson.scripts.release,
+    'pnpm build && pnpm plite:release:artifacts && pnpm changeset publish'
+  );
+  assert.equal(
+    packageJson.scripts['plite:release:artifacts'],
+    'pnpm plite:packages:build && node tooling/scripts/check-plite-release-artifacts.mjs'
+  );
   assert.equal(packageJson.scripts['g:release:next'], 'pnpm g:release:beta');
   assert.doesNotMatch(
     Object.values(packageJson.scripts).join('\n'),
@@ -903,6 +911,7 @@ test('beta package release uses an explicit npm beta tag', async () => {
     build: ['pnpm', ['build']],
     hidePreStateForPublish: true,
     publish: ['pnpm', ['changeset', 'publish', '--tag', 'beta']],
+    verify: ['pnpm', ['plite:release:artifacts']],
   });
   assert.equal(
     isPublishDisabled({ env: { PLATE_DISABLE_PUBLISH: 'false' } }),
@@ -920,6 +929,10 @@ test('beta package release uses an explicit npm beta tag', async () => {
   assert.match(
     releasePackages,
     /runCommand\('pnpm', \['changeset', 'publish', '--tag', 'beta'\]\)/
+  );
+  assert.match(
+    releasePackages,
+    /runCommand\('pnpm', \['plite:release:artifacts'\]\)/
   );
 });
 

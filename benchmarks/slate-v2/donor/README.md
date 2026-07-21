@@ -76,7 +76,7 @@ Keep file names blunt and family-shaped:
 
 - `transaction-execution.mjs`
 - `normalization.mjs`
-- `query-ref-observation.mjs`
+- `query-anchor-observation.mjs`
 - `node-transforms.mjs`
 - `huge-document.mjs`
 
@@ -125,12 +125,12 @@ Current artifact owners:
 - `tmp/slate-react-huge-document-browser-trace-benchmark-*.json`
 - `tmp/slate-react-huge-document-full-benchmark.json`
 - `tmp/slate-normalization-benchmark.json`
-- `tmp/slate-query-ref-observation-benchmark.json`
+- `tmp/plite-query-anchor-observation-benchmark.json`
 - `tmp/slate-node-transform-benchmark.json`
 - `tmp/slate-text-selection-benchmark.json`
 - `tmp/slate-history-retained-memory.json`
 - `tmp/slate-editor-store-benchmark.json`
-- `tmp/slate-refs-projection-benchmark.json`
+- `tmp/plite-anchors-projection-benchmark.json`
 - `tmp/slate-yjs-collaboration-benchmark.json`
 - `tmp/slate-normalization-compare-benchmark.json`
 - `tmp/slate-core-observation-benchmark.json`

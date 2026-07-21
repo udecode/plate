@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { PlateTest, createPlateEditor } from '@platejs/core/react';
+import type { TextSelection } from '@platejs/plite';
 import { act, render } from '@testing-library/react';
 
 import { makeClientRect } from './makeClientRect';
@@ -17,9 +18,10 @@ describe('createVirtualRef', () => {
 
   it('returns the computed bounding rect for the given editor location', async () => {
     const selection = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
-    };
+    } satisfies TextSelection;
     const rect = makeClientRect({
       bottom: 16,
       left: 3,

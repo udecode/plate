@@ -1,4 +1,4 @@
-import { KEYS } from '@platejs/utils';
+import { NODES } from '@platejs/utils';
 
 import * as mediaModule from '../..';
 import { insertMedia } from './insertMedia';
@@ -57,7 +57,7 @@ describe('insertMedia', () => {
 
     await insertMedia(editor, {
       getUrl: async () => 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-      type: KEYS.mediaEmbed,
+      type: NODES.mediaEmbed,
     });
 
     expect(insertImageSpy).not.toHaveBeenCalled();

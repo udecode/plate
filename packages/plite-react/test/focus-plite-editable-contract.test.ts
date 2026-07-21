@@ -10,6 +10,7 @@ import {
   readModelSelectionDOMPreference,
   writeCollapsedModelSelectionDOMPreference,
 } from '../src/editable/model-selection-dom-preference';
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { focusPliteEditable } from '../src/hooks/focus-plite-editable';
 import { createReactEditor } from '../src/plugin/with-react';
 import { createPliteProjectionGraph } from '../src/projection-graph';
@@ -25,6 +26,7 @@ const createProjectedSelection = () => {
   ]);
 
   return createPliteViewSelection(graph, {
+    kind: 'text',
     anchor: { point: { path: [0, 0], offset: 0 } },
     focus: { point: { path: [0, 0], root: 'side', offset: 1 } },
   });
@@ -34,6 +36,7 @@ const createCollapsedProjectedSelection = () => {
   const graph = createPliteProjectionGraph([{ path: [0], root: 'main' }]);
 
   return createPliteViewSelection(graph, {
+    kind: 'text',
     anchor: { point: { path: [0, 0], offset: 1 } },
     focus: { point: { path: [0, 0], offset: 1 } },
   });
@@ -103,6 +106,7 @@ describe('focusPliteEditable', () => {
     const secondLine = document.createTextNode('second line');
     const domSelection = document.getSelection();
     const selection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: firstLine.textContent!.length },
       focus: { path: [0, 0], offset: firstLine.textContent!.length },
     };
@@ -118,6 +122,10 @@ describe('focusPliteEditable', () => {
     EDITOR_TO_WINDOW.set(editor, window);
     ELEMENT_TO_NODE.set(element, editor);
     NODE_TO_ELEMENT.set(editor, element);
+    const runtime = new EditableDOMRuntime({ editor });
+
+    runtime.setRoot(element);
+    runtime.connect();
 
     editorReplace(editor, {
       children: [
@@ -143,6 +151,7 @@ describe('focusPliteEditable', () => {
       expect(domSelection.anchorNode).toBe(secondLine);
       expect(domSelection.anchorOffset).toBe(0);
     } finally {
+      runtime.destroy();
       EDITOR_TO_ELEMENT.delete(editor);
       EDITOR_TO_WINDOW.delete(editor);
       ELEMENT_TO_NODE.delete(element);
@@ -153,17 +162,22 @@ describe('focusPliteEditable', () => {
   it('expires a preferred DOM point after the current task', () => {
     vi.useFakeTimers();
 
-    const editor = {};
+    const editor = createReactEditor();
     const element = document.createElement('div');
     const firstLine = document.createTextNode('first line');
     const secondLine = document.createTextNode('second line');
     const selection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: firstLine.textContent!.length },
       focus: { path: [0, 0], offset: firstLine.textContent!.length },
     };
 
     element.append(firstLine, secondLine);
     document.body.appendChild(element);
+    const runtime = new EditableDOMRuntime({ editor });
+
+    runtime.setRoot(element);
+    runtime.connect();
 
     writeCollapsedModelSelectionDOMPreference(editor, selection, {
       node: secondLine,
@@ -186,6 +200,7 @@ describe('focusPliteEditable', () => {
         selection,
       })
     ).toBeNull();
+    runtime.destroy();
     vi.useRealTimers();
   });
 });

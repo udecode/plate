@@ -3,15 +3,15 @@ import { transformDiffNodes } from './transformDiffNodes';
 const options = {
   getDeleteProps: () => ({
     diff: true,
-    diffOperation: { type: 'delete' },
+    diffIntent: { type: 'delete' },
   }),
   getInsertProps: () => ({
     diff: true,
-    diffOperation: { type: 'insert' },
+    diffIntent: { type: 'insert' },
   }),
   getUpdateProps: (_node: any, properties: any, newProperties: any) => ({
     diff: true,
-    diffOperation: {
+    diffIntent: {
       newProperties,
       properties,
       type: 'update',
@@ -35,12 +35,12 @@ describe('transformDiffNodes', () => {
           {
             text: 'old',
             diff: true,
-            diffOperation: { type: 'delete' },
+            diffIntent: { type: 'delete' },
           },
           {
             text: 'new',
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
           },
         ],
       },
@@ -60,13 +60,35 @@ describe('transformDiffNodes', () => {
         align: 'right',
         children: [{ text: 'same' }],
         diff: true,
-        diffOperation: {
+        diffIntent: {
           type: 'update',
           properties: { align: 'left' },
           newProperties: { align: 'right' },
         },
       },
     ]);
+  });
+
+  it('encodes removed element properties without undefined JSON values', () => {
+    const result = transformDiffNodes(
+      { type: 'p', align: 'left', children: [{ text: 'same' }] } as any,
+      { type: 'p', children: [{ text: 'same' }] } as any,
+      options
+    );
+
+    expect(result).toEqual([
+      {
+        type: 'p',
+        children: [{ text: 'same' }],
+        diff: true,
+        diffIntent: {
+          type: 'update',
+          properties: { align: 'left' },
+          newProperties: {},
+        },
+      },
+    ]);
+    expect(JSON.parse(JSON.stringify(result))).toEqual(result);
   });
 
   it('returns false when neither children-only nor props-only strategies apply', () => {

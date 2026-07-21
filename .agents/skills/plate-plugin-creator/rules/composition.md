@@ -40,11 +40,18 @@ That keeps the ownership boundary obvious and preserves shared behavior.
   Merge config or compute context-aware config.
 - `extendPlugin`
   Reach into a nested plugin when the parent owns that decision.
-- `overrideEditor`
-  Change editor behavior itself.
+- `extendExtension`
+  Install Plite editor behavior such as commands, normalizers, or operation
+  middleware.
+- `extendApi`
+  Own plugin-specific read and service methods.
+- `extendTx` / `extendTxGroup`
+  Own plugin-keyed or explicitly named update groups.
+- `extendEditorApi`
+  Add a root `editor.api` capability only when root ownership is intentional.
 - `handlers`
   Use for events that actually belong at the plugin boundary, not as a dumping
-  ground for logic that should be a transform or editor override.
+  ground for logic that should be an update group or Plite extension.
 
 ## Prefer `transformProps` For React-Only Node Augmentation
 
@@ -75,6 +82,6 @@ If you extract a helper:
 
 - make it generic
 - keep it context-free when possible
-- avoid locking it to `SlateEditor` by habit
+- avoid locking it to `BaseEditor` by habit
 
 Do not create abstraction sludge just because a callback body is slightly long.

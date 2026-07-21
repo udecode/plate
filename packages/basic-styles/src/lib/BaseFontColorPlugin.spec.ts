@@ -15,6 +15,12 @@ describe('BaseFontColorPlugin', () => {
       nodeKey: 'color',
     });
     expect(
+      editor.read.schema.property({
+        key: KEYS.color,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('string');
+    expect(
       editor.api.html.deserialize({
         element: '<span style="color: rgb(255, 0, 0)">text</span>',
       })
@@ -30,6 +36,7 @@ describe('BaseFontColorPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseFontColorPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },

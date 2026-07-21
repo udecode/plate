@@ -135,7 +135,7 @@ describe('resolvePlugins', () => {
           },
           node: {
             isDecoration: false,
-            isLeaf: true,
+            mark: true,
             leafProps: { 'data-leaf': 'x' } as any,
             textProps: { 'data-text': 'y' } as any,
             type: 'cachey',
@@ -170,7 +170,7 @@ describe('resolvePlugins', () => {
     expect(editor.runtime.pluginCache.handlers.onTextChange).toContain(
       'cachey'
     );
-    expect(editor.runtime.pluginCache.node.isText).toContain('cachey');
+    expect(editor.runtime.pluginCache.node.textMarks).toContain('cachey');
     expect(editor.runtime.pluginCache.node.leafProps).toContain('cachey');
     expect(editor.runtime.pluginCache.node.textProps).toContain('cachey');
     expect(editor.runtime.pluginCache.transformInitialValue).toContain(

@@ -19,4 +19,3 @@ Local source checkouts used by the 2026-06-12 Slate v2 research packet:
 | Tiptap | `/Users/zbeyens/git/tiptap` | Confirms Tiptap OSS table extension delegates table editing semantics to `prosemirror-tables`. |
 | Lexical | `/Users/zbeyens/git/lexical` | Secondary contrast for table selection shape, DOM import/export, and clipboard selected-node strategy. |
 | Slate v2 lab | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | Target proof surface and current skipped table-fragment fixtures. |
-

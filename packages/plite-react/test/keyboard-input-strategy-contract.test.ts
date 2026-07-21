@@ -3,19 +3,22 @@ import {
   createEditorRuntime,
   createEditorView,
   type Descendant,
-  defineEditorExtension,
+  defineEditorSchema,
+  element,
+  schema,
 } from '@platejs/plite';
 import { Hotkeys } from '@platejs/plite-dom';
 import { DOMCoverage } from '@platejs/plite-dom/internal';
 import { history } from '@platejs/plite-history';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isSelectAllHotkey } from '../src/dom-strategy/dom-strategy-commands';
 import { resolveHistoryFocusEditor } from '../src/editable/history-focus';
 import {
-  applyEditableKeyDown,
+  applyEditableKeyDown as applyRuntimeEditableKeyDown,
   getTextDirection,
   shouldDeferBackspaceToNativeInput,
 } from '../src/editable/keyboard-input-strategy';
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { applyEditableCommand } from '../src/editable/mutation-controller';
 import { isNativeVerticalKeyFastPathFullyMounted } from '../src/editable/runtime-keyboard-events';
 import { ReactEditor } from '../src/plugin/react-editor';
@@ -25,6 +28,29 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../src/view-selection';
+
+type ApplyEditableKeyDownOptions = Parameters<
+  typeof applyRuntimeEditableKeyDown
+>[0];
+const testRuntimes = new Set<EditableDOMRuntime>();
+const applyEditableKeyDown = (
+  options: Omit<ApplyEditableKeyDownOptions, 'domPhaseScheduler'> &
+    Partial<Pick<ApplyEditableKeyDownOptions, 'domPhaseScheduler'>>
+) => {
+  const runtime = new EditableDOMRuntime({ editor: options.editor });
+
+  testRuntimes.add(runtime);
+
+  return applyRuntimeEditableKeyDown({
+    ...options,
+    domPhaseScheduler: options.domPhaseScheduler ?? runtime.domPhaseScheduler,
+  });
+};
+
+afterEach(() => {
+  for (const runtime of testRuntimes) runtime.destroy();
+  testRuntimes.clear();
+});
 
 const keyEvent = (
   key: string,
@@ -62,15 +88,20 @@ const paragraph = (text: string) =>
     children: [{ text }],
   }) satisfies Descendant;
 
-const contentRootExtension = defineEditorExtension({
-  name: 'keyboard-content-root-test',
-  elements: [
-    {
-      type: 'content-card',
-      contentRoot: { slot: 'body' },
+const contentRootExtension = defineEditorSchema({
+  elements: {
+    'content-card': element({
+      contentRoot: {
+        content: schema.content.not(schema.content.text()),
+        slot: 'body',
+      },
       void: 'editable-island',
-    },
-  ],
+    }),
+  },
+  id: 'keyboard-content-root-test',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
 });
 
 const contentCard = (bodyRoot = 'card:body') =>
@@ -155,6 +186,36 @@ describe('keyboard input strategy', () => {
     ).toBe(true);
   });
 
+  it('uses navigator.platform when the user agent is spoofed', () => {
+    vi.stubGlobal('navigator', {
+      platform: 'MacIntel',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+    });
+
+    try {
+      expect(
+        isSelectAllHotkey({
+          altKey: false,
+          ctrlKey: false,
+          key: 'a',
+          metaKey: true,
+          shiftKey: false,
+        })
+      ).toBe(true);
+      expect(
+        isSelectAllHotkey({
+          altKey: false,
+          ctrlKey: true,
+          key: 'a',
+          metaKey: false,
+          shiftKey: false,
+        })
+      ).toBe(false);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('defers iOS Korean Backspace to native input', () => {
     expect(
       shouldDeferBackspaceToNativeInput({
@@ -225,6 +286,7 @@ describe('keyboard input strategy', () => {
     );
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
@@ -263,6 +325,7 @@ describe('keyboard input strategy', () => {
       });
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [1, 0] },
       });
@@ -278,6 +341,7 @@ describe('keyboard input strategy', () => {
     );
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
@@ -325,6 +389,7 @@ describe('keyboard input strategy', () => {
       });
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [1, 0] },
       });
@@ -338,6 +403,7 @@ describe('keyboard input strategy', () => {
   it('leaves plain vertical shift extension native in small DOM-strategy documents', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
@@ -387,6 +453,7 @@ describe('keyboard input strategy', () => {
     );
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
@@ -420,6 +487,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).not.toEqual({
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       });
@@ -435,6 +503,7 @@ describe('keyboard input strategy', () => {
     );
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
@@ -515,6 +584,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).not.toEqual({
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       });
@@ -623,6 +693,7 @@ describe('keyboard input strategy', () => {
   it('does not apply projected destructive commands while read-only', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -647,6 +718,7 @@ describe('keyboard input strategy', () => {
     writePliteViewSelection(
       editor,
       createPliteViewSelection(graph, {
+        kind: 'text',
         anchor: { point: { path: [0, 0], offset: 1 } },
         focus: { point: { path: [0, 0], offset: 3 } },
       })
@@ -719,12 +791,14 @@ describe('keyboard input strategy', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1, root: 'card:body' },
         focus: { path: [0, 0], offset: 1, root: 'card:body' },
       });
     });
     bodyEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -820,12 +894,14 @@ describe('keyboard input strategy', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1, root: 'card:body' },
         focus: { path: [0, 0], offset: 1, root: 'card:body' },
       });
     });
     bodyEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -964,6 +1040,7 @@ describe('keyboard input strategy', () => {
 
     headerEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'header'.length },
         focus: { path: [0, 0], offset: 'header'.length },
       });
@@ -971,6 +1048,7 @@ describe('keyboard input strategy', () => {
     });
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'body'.length },
         focus: { path: [0, 0], offset: 'body'.length },
       });
@@ -998,6 +1076,7 @@ describe('keyboard input strategy', () => {
 
       expect(getMountedViewEditor).toHaveBeenLastCalledWith('main');
       expect(mainEditor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'body'.length },
         focus: { path: [0, 0], offset: 'body'.length },
       });
@@ -1122,10 +1201,16 @@ describe('keyboard input strategy', () => {
   it('does not swallow printable keys for an unmounted selected root', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0, root: 'caption' },
         focus: { path: [0, 0], offset: 0, root: 'caption' },
       },
-      initialValue: [{ children: [{ text: 'main' }] }],
+      initialValue: {
+        children: [{ children: [{ text: 'main' }] }],
+        roots: {
+          caption: [{ children: [{ text: 'caption' }] }],
+        },
+      },
     }) as ReactEditorType;
     const event = reactKeyEvent(keyEvent('a'));
     const hasEditableTarget = vi
@@ -1159,6 +1244,7 @@ describe('keyboard input strategy', () => {
   it('lets mounted virtualized collapsed text use native printable input', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [2500, 0], offset: 1 },
         focus: { path: [2500, 0], offset: 1 },
       },
@@ -1229,6 +1315,7 @@ describe('keyboard input strategy', () => {
   it('lets pending virtualized native text bursts keep using native printable input while the model offset lags', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [2500, 0], offset: 1 },
         focus: { path: [2500, 0], offset: 1 },
       },
@@ -1305,6 +1392,7 @@ describe('keyboard input strategy', () => {
   it('keeps virtualized printable input model-owned when the DOM caret offset is stale', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [2500, 0], offset: 2 },
         focus: { path: [2500, 0], offset: 2 },
       },
@@ -1377,6 +1465,7 @@ describe('keyboard input strategy', () => {
   it('keeps ArrowRight at a skip-policy hidden range edge', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0, 0], offset: 'Overview tab visible text'.length },
         focus: { path: [0, 0, 0], offset: 'Overview tab visible text'.length },
       },
@@ -1408,7 +1497,7 @@ describe('keyboard input strategy', () => {
       anchor: { type: 'placeholder' },
       boundaryId: 'inactive-tab',
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [0, 1], focus: [0, 1] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1436,6 +1525,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: {
           offset: 'Overview tab visible text'.length,
           path: [0, 0, 0],
@@ -1456,6 +1546,7 @@ describe('keyboard input strategy', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: intro.length },
         focus: { path: [0, 0], offset: intro.length },
       },
@@ -1495,7 +1586,7 @@ describe('keyboard input strategy', () => {
       anchor: { type: 'placeholder' },
       boundaryId: 'closed-accordion',
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 1] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 1] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1523,6 +1614,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [2, 0] },
         focus: { offset: 0, path: [2, 0] },
       });
@@ -1537,6 +1629,7 @@ describe('keyboard input strategy', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: intro.length },
       },
@@ -1572,7 +1665,7 @@ describe('keyboard input strategy', () => {
       anchor: { type: 'placeholder' },
       boundaryId: 'closed-accordion',
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1600,6 +1693,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 1, path: [2, 0] },
       });
@@ -1614,6 +1708,7 @@ describe('keyboard input strategy', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: intro.length },
         focus: { path: [0, 0], offset: intro.length },
       },
@@ -1646,7 +1741,7 @@ describe('keyboard input strategy', () => {
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-word',
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1674,6 +1769,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: intro.length, path: [0, 0] },
         focus: { offset: 'Next'.length, path: [2, 0] },
       });
@@ -1688,6 +1784,7 @@ describe('keyboard input strategy', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: intro.length },
         focus: { path: [2, 0], offset: 0 },
       },
@@ -1720,7 +1817,7 @@ describe('keyboard input strategy', () => {
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-word',
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1748,6 +1845,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: intro.length, path: [0, 0] },
         focus: { offset: 'Intro visible before hidden '.length, path: [0, 0] },
       });
@@ -1762,6 +1860,7 @@ describe('keyboard input strategy', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: intro.length },
         focus: { path: [0, 0], offset: intro.length },
       },
@@ -1797,8 +1896,8 @@ describe('keyboard input strategy', () => {
       boundaryId: 'same-owner-hidden-ranges',
       copyPolicy: 'model',
       coveredPathRanges: [
-        { anchor: [1, 0], focus: [1, 0] },
-        { anchor: [2, 0], focus: [2, 0] },
+        { kind: 'text', anchor: [1, 0], focus: [1, 0] },
+        { kind: 'text', anchor: [2, 0], focus: [2, 0] },
       ],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
@@ -1827,6 +1926,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [3, 0] },
         focus: { offset: 0, path: [3, 0] },
       });
@@ -1841,6 +1941,7 @@ describe('keyboard input strategy', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: intro.length },
         focus: { path: [0, 0], offset: intro.length },
       },
@@ -1874,7 +1975,7 @@ describe('keyboard input strategy', () => {
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-line',
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1902,6 +2003,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [2, 0] },
         focus: { offset: 0, path: [2, 0] },
       });
@@ -1917,6 +2019,7 @@ describe('keyboard input strategy', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: intro.length },
         focus: { path: [0, 0], offset: intro.length },
       },
@@ -1947,7 +2050,7 @@ describe('keyboard input strategy', () => {
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-line',
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1975,6 +2078,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: intro.length, path: [0, 0] },
         focus: { offset: 0, path: [1, 0] },
       });
@@ -1990,6 +2094,7 @@ describe('keyboard input strategy', () => {
     const startOffset = 'Intro visible before '.length;
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: startOffset },
         focus: { path: [0, 0], offset: startOffset },
       },
@@ -2020,7 +2125,7 @@ describe('keyboard input strategy', () => {
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-line',
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -2048,6 +2153,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: startOffset, path: [0, 0] },
         focus: { offset: 0, path: [1, 0] },
       });
@@ -2063,6 +2169,7 @@ describe('keyboard input strategy', () => {
     const introEnd = 'hidden blocks.';
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: introStart.length },
         focus: { path: [0, 0], offset: introStart.length },
       },
@@ -2093,7 +2200,7 @@ describe('keyboard input strategy', () => {
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-line',
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -2121,6 +2228,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: introStart.length, path: [0, 0] },
         focus: { offset: 0, path: [1, 0] },
       });
@@ -2135,6 +2243,7 @@ describe('keyboard input strategy', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: intro.length },
         focus: { path: [1, 0], offset: 0 },
       },
@@ -2165,7 +2274,7 @@ describe('keyboard input strategy', () => {
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-line',
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -2193,6 +2302,7 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(false);
       expect(event.preventDefault).not.toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { offset: intro.length, path: [0, 0] },
         focus: { offset: 0, path: [1, 0] },
       });
@@ -2238,6 +2348,7 @@ describe('keyboard input strategy', () => {
         ]);
       const editor = createEditor({
         initialSelection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [1, 0], offset: 2 },
         },
@@ -2308,7 +2419,7 @@ describe('keyboard input strategy', () => {
 
     try {
       const [
-        { createEditor, defineEditorExtension },
+        { createEditor, defineEditorSchema, element, schema },
         { ReactEditor },
         { applyEditableKeyDown },
       ] = await Promise.all([
@@ -2318,12 +2429,18 @@ describe('keyboard input strategy', () => {
       ]);
       const editor = createEditor({
         extensions: [
-          defineEditorExtension({
-            elements: [{ type: 'mention', void: 'markable-inline' }],
-            name: 'keyboard-input-strategy-inline-void-test',
+          defineEditorSchema({
+            elements: { mention: element({ void: 'markable-inline' }) },
+            id: 'keyboard-input-strategy-inline-void-test',
+            root: schema.root({
+              content: schema.content.not(schema.content.text()),
+            }),
+            unknown: 'preserve',
+            version: 1,
           }),
         ],
         initialSelection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 2], offset: 1 },
         },
@@ -2414,7 +2531,7 @@ describe('keyboard input strategy', () => {
 
     try {
       const [
-        { createEditor, defineEditorExtension },
+        { createEditor, defineEditorSchema, element, schema },
         { ReactEditor },
         { applyEditableKeyDown },
       ] = await Promise.all([
@@ -2424,12 +2541,18 @@ describe('keyboard input strategy', () => {
       ]);
       const editor = createEditor({
         extensions: [
-          defineEditorExtension({
-            elements: [{ type: 'image', void: 'block' }],
-            name: 'keyboard-input-strategy-void-test',
+          defineEditorSchema({
+            elements: { image: element({ void: 'block' }) },
+            id: 'keyboard-input-strategy-void-test',
+            root: schema.root({
+              content: schema.content.not(schema.content.text()),
+            }),
+            unknown: 'preserve',
+            version: 1,
           }),
         ],
         initialSelection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },

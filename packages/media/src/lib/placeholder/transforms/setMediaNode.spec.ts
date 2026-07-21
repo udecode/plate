@@ -1,10 +1,12 @@
 import { createBaseEditor } from '@platejs/core';
 
+import { BaseImagePlugin } from '../../image/BaseImagePlugin';
 import { setMediaNode } from './setMediaNode';
 
 describe('setMediaNode', () => {
   it('sets media props through the update boundary', () => {
     const editor = createBaseEditor({
+      plugins: [BaseImagePlugin],
       value: [
         {
           children: [{ text: '' }],

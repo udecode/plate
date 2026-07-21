@@ -3,6 +3,7 @@
 import { createBaseEditor } from '@platejs/core';
 
 import { createBasePlugin } from '@platejs/core';
+import { schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseIndentPlugin } from '@platejs/indent';
@@ -18,6 +19,12 @@ const CUSTOM_H1 = 'heading-one';
 
 const H1Plugin = createBasePlugin({
   key: KEYS.h1,
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+  },
 });
 
 const CustomH1Plugin = H1Plugin.extend({
@@ -26,19 +33,38 @@ const CustomH1Plugin = H1Plugin.extend({
 
 const BlockquotePlugin = createBasePlugin({
   key: KEYS.blockquote,
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+  },
+});
+
+const PagePlugin = createBasePlugin({
+  key: 'page',
+  node: {
+    element: {
+      content: schema.content.group('block', {
+        default: { type: KEYS.p },
+        min: 1,
+      }),
+      groups: ['block'],
+    },
+  },
 });
 
 const headingListPlugins = [
   H1Plugin,
   BlockquotePlugin,
   BaseListPlugin.configure({
-    inject: {
-      targetPlugins: [KEYS.blockquote, KEYS.h1, KEYS.p],
+    options: {
+      targetPluginKeys: [KEYS.blockquote, KEYS.h1, KEYS.p],
     },
   }),
   BaseIndentPlugin.configure({
-    inject: {
-      targetPlugins: [KEYS.blockquote, KEYS.h1, KEYS.p],
+    options: {
+      targetPluginKeys: [KEYS.blockquote, KEYS.h1, KEYS.p],
     },
   }),
 ];
@@ -47,13 +73,13 @@ const customHeadingListPlugins = [
   CustomH1Plugin,
   BlockquotePlugin,
   BaseListPlugin.configure({
-    inject: {
-      targetPlugins: [KEYS.blockquote, KEYS.h1, KEYS.p],
+    options: {
+      targetPluginKeys: [KEYS.blockquote, KEYS.h1, KEYS.p],
     },
   }),
   BaseIndentPlugin.configure({
-    inject: {
-      targetPlugins: [KEYS.blockquote, KEYS.h1, KEYS.p],
+    options: {
+      targetPluginKeys: [KEYS.blockquote, KEYS.h1, KEYS.p],
     },
   }),
 ];
@@ -79,8 +105,30 @@ const getToggledEditor = ({
 };
 
 describe('toggleList', () => {
+  it('uses a selection written earlier in the same transaction', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      value: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set({
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      });
+      tx.list.toggle({ listStyleType: 'disc' });
+    });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      indent: 1,
+      listStyleType: 'disc',
+    });
+  });
+
   it('targets one path without moving selection', () => {
     const selection = {
+      kind: 'text' as const,
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     };
@@ -882,13 +930,13 @@ describe('toggleList', () => {
       it('toggle', async () => {
         const input = (
           <editor>
-            <element>
+            <element type="page">
               <hp indent={1} listStyleType="disc">
                 1
                 <cursor />
               </hp>
             </element>
-            <element>
+            <element type="page">
               <hp indent={1} listStyleType="disc">
                 2
               </hp>
@@ -898,13 +946,13 @@ describe('toggleList', () => {
 
         const output = (
           <editor>
-            <element>
+            <element type="page">
               <hp indent={1} listStyleType="decimal">
                 1
                 <cursor />
               </hp>
             </element>
-            <element>
+            <element type="page">
               <hp indent={1} listStart={2} listStyleType="decimal">
                 2
               </hp>
@@ -915,7 +963,7 @@ describe('toggleList', () => {
         const editor = getToggledEditor({
           input,
           options: { listStyleType: 'decimal' },
-          plugins: [listPluginPage, BaseIndentPlugin],
+          plugins: [listPluginPage, BaseIndentPlugin, PagePlugin],
         });
 
         expect(editor.read.children()).toEqual(output.children);

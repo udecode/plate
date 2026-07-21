@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 
-import { createEditor } from '../../../../../packages/slate/src/index.ts';
-import {
-  Editor,
-  setEditorChildren,
-} from '../../../../../packages/slate/src/internal/index.ts';
+import { createEditor } from '../../../../../packages/plite/src/index.ts';
+import { setEditorChildren } from '../../../../../packages/plite/src/internal/index.ts';
+import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const iterations = Number(process.env.EDITOR_STORE_BENCH_ITERATIONS || 5);
@@ -22,6 +20,7 @@ const createSnapshotInput = (prefix) => ({
   selection: {
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 0 },
+    kind: 'text',
   },
   marks: null,
 });
@@ -139,7 +138,7 @@ const subscribeDispatchMs = measureLane(createEditorWithChildren, (editor) => {
 });
 
 const summary = {
-  lane: 'slate-editor-store',
+  lane: 'plite-editor-store',
   iterations,
   config: {
     blockCount,

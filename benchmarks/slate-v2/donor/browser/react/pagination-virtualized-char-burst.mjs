@@ -11,17 +11,17 @@ const siteOutRoot = fileURLToPath(
 );
 const siteRoot = fileURLToPath(new URL('../../../../site', import.meta.url));
 const reportPath =
-  process.env.SLATE_PAGINATION_CHAR_BURST_REPORT ||
+  process.env.PLITE_PAGINATION_CHAR_BURST_REPORT ||
   'tmp/slate-pagination-virtualized-char-burst-playwright.json';
 const artifactPath =
-  process.env.SLATE_PAGINATION_CHAR_BURST_ARTIFACT ||
+  process.env.PLITE_PAGINATION_CHAR_BURST_ARTIFACT ||
   'tmp/slate-pagination-virtualized-char-burst-benchmark.json';
 const grep =
   'keeps (staged burst typing responsive|staged typing responsive in a 500-row|rows=800 virtualized pagination in the staged-class perf envelope)';
-const useDevServer = process.env.SLATE_PAGINATION_CHAR_BURST_DEV === '1';
+const useDevServer = process.env.PLITE_PAGINATION_CHAR_BURST_DEV === '1';
 const skipStaticBuild =
-  process.env.SLATE_PAGINATION_CHAR_BURST_SKIP_BUILD === '1' ||
-  process.env.SLATE_PAGINATION_CHAR_BURST_SKIP_STATIC_BUILD === '1';
+  process.env.PLITE_PAGINATION_CHAR_BURST_SKIP_BUILD === '1' ||
+  process.env.PLITE_PAGINATION_CHAR_BURST_SKIP_STATIC_BUILD === '1';
 
 const runStaticBuild = async () =>
   new Promise((resolve, reject) => {
@@ -274,12 +274,12 @@ const runPlaywright = async (baseURL) =>
     });
   });
 
-const server = process.env.SLATE_PAGINATION_CHAR_BURST_BASE_URL
+const server = process.env.PLITE_PAGINATION_CHAR_BURST_BASE_URL
   ? null
-  : useDevServer || process.env.SLATE_PAGINATION_CHAR_BURST_STATIC === '0'
+  : useDevServer || process.env.PLITE_PAGINATION_CHAR_BURST_STATIC === '0'
     ? await startNextDevServer()
     : await startStaticServer();
-const baseURL = process.env.SLATE_PAGINATION_CHAR_BURST_BASE_URL ?? server?.url;
+const baseURL = process.env.PLITE_PAGINATION_CHAR_BURST_BASE_URL ?? server?.url;
 
 const result = await runPlaywright(baseURL);
 await server?.close();

@@ -1,5 +1,11 @@
 import type { ClipboardEvent, DragEvent } from 'react';
-import { type Descendant } from '@platejs/plite';
+import {
+  defineEditorSchema,
+  type Descendant,
+  element,
+  type Range,
+  schema,
+} from '@platejs/plite';
 import {
   getRuntimeId as editorGetRuntimeId,
   getSnapshot as editorGetSnapshot,
@@ -27,6 +33,22 @@ import {
   ReactEditor,
   type ReactRuntimeEditor,
 } from '../src/plugin/react-editor';
+
+const blockImageSchema = defineEditorSchema({
+  elements: { image: element({ void: 'block' }) },
+  id: 'dom-coverage-block-image',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
+});
+
+const blockVideoSchema = defineEditorSchema({
+  elements: { video: element({ void: 'block' }) },
+  id: 'dom-coverage-block-video',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
+});
 
 class FakeDataTransfer {
   private readonly data = new Map<string, string>();
@@ -129,6 +151,7 @@ const createHiddenSelectionEditor = () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 'Hidden alpha'.length, path: [0, 1, 0] },
     },
@@ -138,9 +161,10 @@ const createHiddenSelectionEditor = () => {
     anchor: { runtimeId: getRuntimeId(editor, [0, 0]), type: 'summary-slot' },
     boundaryId: 'section-body',
     copyPolicy: 'model',
-    coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
+    coveredPathRanges: [{ kind: 'text', anchor: [0, 1], focus: [0, 1] }],
     coveredRuntimeRanges: [
       {
+        kind: 'text',
         anchor: getRuntimeId(editor, [0, 1]),
         focus: getRuntimeId(editor, [0, 1]),
       },
@@ -172,6 +196,7 @@ const createStagedSelectionEditor = () => {
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 'Pending omega'.length, path: [1, 0] },
     },
@@ -181,9 +206,10 @@ const createStagedSelectionEditor = () => {
     anchor: { runtimeId: getRuntimeId(editor, [1]), type: 'placeholder' },
     boundaryId: 'rendering-staged:pending',
     copyPolicy: 'materialize',
-    coveredPathRanges: [{ anchor: [1], focus: [1] }],
+    coveredPathRanges: [{ kind: 'text', anchor: [1], focus: [1] }],
     coveredRuntimeRanges: [
       {
+        kind: 'text',
         anchor: getRuntimeId(editor, [1]),
         focus: getRuntimeId(editor, [1]),
       },
@@ -341,6 +367,7 @@ describe('DOM coverage native bridge', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -352,6 +379,7 @@ describe('DOM coverage native bridge', () => {
     const resolveEventRange = jest
       .spyOn(ReactEditor, 'resolveEventRange')
       .mockReturnValue({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -370,9 +398,161 @@ describe('DOM coverage native bridge', () => {
       expect(result.command).toMatchObject({ kind: 'insert-data' });
       expect(editorString(editor, [])).toBe('Dropped textOriginal text');
       expect(editorGetSnapshot(editor).selection).toEqual({
+        kind: 'text',
         anchor: { offset: 'Dropped text'.length, path: [0, 0] },
         focus: { offset: 'Dropped text'.length, path: [0, 0] },
       });
+    } finally {
+      resolveEventRange.mockRestore();
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('internal block void drop moves the source in one commit', () => {
+    const editor = createReactEditor({
+      extensions: [blockVideoSchema],
+    });
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'Intro' }],
+        },
+        {
+          type: 'video',
+          children: [{ text: '' }],
+        },
+        {
+          type: 'paragraph',
+          children: [{ text: 'Target' }],
+        },
+        {
+          type: 'paragraph',
+          children: [{ text: 'Trailing' }],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      },
+    });
+
+    const root = mountEditorRoot(editor);
+    const source = mountVisibleDragTarget(root);
+    const dataTransfer = new FakeDataTransfer();
+    const state = {
+      draggedBlock: false,
+      draggedRange: null,
+      isDraggingInternally: false,
+    };
+    const resolveEventRange = jest
+      .spyOn(ReactEditor, 'resolveEventRange')
+      .mockReturnValue({
+        kind: 'text',
+        anchor: { offset: 'Target'.length, path: [2, 0] },
+        focus: { offset: 'Target'.length, path: [2, 0] },
+      });
+
+    try {
+      applyEditableDragStart({
+        editor,
+        event: createDragEvent(source, dataTransfer),
+        readOnly: false,
+        state,
+      });
+
+      let commits = 0;
+      const unsubscribe = editor.subscribeCommit(() => commits++);
+
+      applyEditableDrop({
+        editor,
+        event: createDragEvent(root, dataTransfer),
+        readOnly: false,
+        state,
+      });
+      unsubscribe();
+
+      expect(commits).toBe(1);
+      expect(editorGetSnapshot(editor)).toMatchObject({
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'Intro' }],
+          },
+          {
+            type: 'paragraph',
+            children: [{ text: 'Target' }],
+          },
+          {
+            type: 'video',
+            children: [{ text: '' }],
+          },
+          {
+            type: 'paragraph',
+            children: [{ text: 'Trailing' }],
+          },
+        ],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [2, 0] },
+          focus: { offset: 0, path: [2, 0] },
+        },
+      });
+    } finally {
+      resolveEventRange.mockRestore();
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('internal collapsed text drop does not delete the source character', () => {
+    const editor = createReactEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'abcdef' }],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+    });
+
+    const root = mountEditorRoot(editor);
+    const dataTransfer = new FakeDataTransfer();
+    const draggedRange: Range = {
+      kind: 'text',
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    };
+    const resolveEventRange = jest
+      .spyOn(ReactEditor, 'resolveEventRange')
+      .mockReturnValue({
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      });
+
+    dataTransfer.setData('text/plain', 'X');
+
+    try {
+      applyEditableDrop({
+        editor,
+        event: createDragEvent(root, dataTransfer),
+        readOnly: false,
+        state: {
+          draggedBlock: false,
+          draggedRange,
+          isDraggingInternally: true,
+        },
+      });
+
+      expect(editorString(editor, [])).toBe('abcdXef');
     } finally {
       resolveEventRange.mockRestore();
       cleanupEditorRoot(editor, root);
@@ -390,6 +570,7 @@ describe('DOM coverage native bridge', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -399,10 +580,12 @@ describe('DOM coverage native bridge', () => {
     const resolveEventRange = jest
       .spyOn(ReactEditor, 'resolveEventRange')
       .mockReturnValueOnce({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       })
       .mockReturnValueOnce({
+        kind: 'text',
         anchor: { offset: 'First '.length, path: [0, 0] },
         focus: { offset: 'First '.length, path: [0, 0] },
       });
@@ -427,6 +610,7 @@ describe('DOM coverage native bridge', () => {
 
       expect(editorString(editor, [])).toBe('First Second Original text');
       expect(editorGetSnapshot(editor).selection).toEqual({
+        kind: 'text',
         anchor: { offset: 'First Second '.length, path: [0, 0] },
         focus: { offset: 'First Second '.length, path: [0, 0] },
       });
@@ -447,6 +631,7 @@ describe('DOM coverage native bridge', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       },
@@ -481,6 +666,7 @@ describe('DOM coverage native bridge', () => {
       expect(result.command).toBe(null);
       expect(editorString(editor, [])).toBe('Original text');
       expect(editorGetSnapshot(editor).selection).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       });
@@ -500,6 +686,7 @@ describe('DOM coverage native bridge', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       },
@@ -523,6 +710,7 @@ describe('DOM coverage native bridge', () => {
       expect(result.command).toBe(null);
       expect(editorString(editor, [])).toBe('Original text');
       expect(editorGetSnapshot(editor).selection).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       });
@@ -542,6 +730,7 @@ describe('DOM coverage native bridge', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       },
@@ -565,6 +754,7 @@ describe('DOM coverage native bridge', () => {
       expect(result.command).toBe(null);
       expect(editorString(editor, [])).toBe('Original text');
       expect(editorGetSnapshot(editor).selection).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       });
@@ -584,6 +774,7 @@ describe('DOM coverage native bridge', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       },
@@ -625,6 +816,7 @@ describe('DOM coverage native bridge', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       },
@@ -649,6 +841,7 @@ describe('DOM coverage native bridge', () => {
       expect(result.command).toBe(null);
       expect(editorString(editor, [])).toBe('Original text');
       expect(editorGetSnapshot(editor).selection).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       });
@@ -668,6 +861,7 @@ describe('DOM coverage native bridge', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       },
@@ -774,10 +968,7 @@ describe('DOM coverage native bridge', () => {
   test('cutting a selected block void writes model data, deletes once, and requests model-owned repair', () => {
     const editor = createReactEditor();
 
-    editor.extend({
-      elements: [{ type: 'image', void: 'block' }],
-      name: 'block-void-cut',
-    });
+    editor.extend(blockImageSchema);
     editorReplace(editor, {
       children: [
         {
@@ -795,6 +986,7 @@ describe('DOM coverage native bridge', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -815,13 +1007,20 @@ describe('DOM coverage native bridge', () => {
 
       expect(event.preventDefault).toHaveBeenCalled();
       expect(encoded).not.toBe('');
-      expect(decodeFragmentPayload(encoded)).toEqual([
-        {
-          type: 'image',
-          url: 'about:blank',
-          children: [{ text: '' }],
+      expect(decodeFragmentPayload(encoded)).toEqual({
+        slice: {
+          content: [
+            {
+              type: 'image',
+              url: 'about:blank',
+              children: [{ text: '' }],
+            },
+          ],
+          openEnd: 0,
+          openStart: 0,
         },
-      ]);
+        version: 1,
+      });
       expect(editorGetSnapshot(editor).children).toEqual([
         {
           type: 'paragraph',
@@ -833,6 +1032,7 @@ describe('DOM coverage native bridge', () => {
         },
       ]);
       expect(editorGetSnapshot(editor).selection).toEqual({
+        kind: 'text',
         anchor: { offset: 'before'.length, path: [0, 0] },
         focus: { offset: 'before'.length, path: [0, 0] },
       });

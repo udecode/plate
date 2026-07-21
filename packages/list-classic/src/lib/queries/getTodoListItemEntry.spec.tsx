@@ -1,7 +1,23 @@
-import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { schema } from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
 
+import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 import { getTodoListItemEntry } from './getTodoListItemEntry';
+
+const TodoRootPlugin = createBasePlugin({
+  key: 'todoRoot',
+  node: {
+    element: {
+      content: schema.content.type(KEYS.listTodoClassic, {
+        default: { type: KEYS.listTodoClassic },
+        min: 1,
+      }),
+      groups: ['block'],
+    },
+    type: KEYS.taskList,
+  },
+});
 
 const createTodoEditor = ({
   at,
@@ -12,12 +28,12 @@ const createTodoEditor = ({
         {
           checked: false,
           children: [{ text: 'one' }],
-          type: KEYS.listTodoClassic,
+          type: NODES.listTodoClassic,
         },
         {
           checked: true,
           children: [{ text: 'two' }],
-          type: KEYS.listTodoClassic,
+          type: NODES.listTodoClassic,
         },
       ],
     },
@@ -31,6 +47,7 @@ const createTodoEditor = ({
   value?: any[];
 } = {}) =>
   createBaseEditor({
+    plugins: [TodoRootPlugin, BaseTodoListPlugin],
     selection: at,
     value,
   });
@@ -39,6 +56,7 @@ describe('getTodoListItemEntry', () => {
   it('returns the nearest todo item and parent task list for a collapsed selection', () => {
     const editor = createTodoEditor({
       at: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 1, 0] },
         focus: { offset: 1, path: [0, 1, 0] },
       },
@@ -50,7 +68,7 @@ describe('getTodoListItemEntry', () => {
     expect(result?.list[1]).toEqual([0]);
     expect(result?.listItem[0]).toMatchObject({
       checked: true,
-      type: KEYS.listTodoClassic,
+      type: NODES.listTodoClassic,
     });
     expect(result?.listItem[1]).toEqual([0, 1]);
   });
@@ -58,6 +76,7 @@ describe('getTodoListItemEntry', () => {
   it('uses the focus path for expanded selections', () => {
     const editor = createTodoEditor({
       at: {
+        kind: 'text',
         anchor: { offset: 2, path: [1, 0] },
         focus: { offset: 1, path: [0, 0, 0] },
       },
@@ -69,7 +88,7 @@ describe('getTodoListItemEntry', () => {
     expect(result?.listItem[1]).toEqual([0, 0]);
     expect(result?.listItem[0]).toMatchObject({
       checked: false,
-      type: KEYS.listTodoClassic,
+      type: NODES.listTodoClassic,
     });
   });
 

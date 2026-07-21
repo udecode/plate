@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';
@@ -13,6 +13,11 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
     currentUserId: 'testId',
   },
+});
+
+const BoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
 });
 
 describe('acceptSuggestion', () => {
@@ -43,7 +48,7 @@ describe('acceptSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin],
       value: input.children,
     });
 
@@ -128,7 +133,7 @@ describe('acceptSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin],
       value: input.children,
     });
 
@@ -215,6 +220,7 @@ describe('acceptSuggestion', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },

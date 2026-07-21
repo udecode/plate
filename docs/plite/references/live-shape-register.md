@@ -1,104 +1,27 @@
 ---
-date: 2026-04-09
+date: 2026-07-20
 topic: plite-live-shape-register
 ---
 
 # Plite Live Shape Register
 
-> Reference doc. Not a live queue owner. For current queue and roadmap truth,
-> see [../master-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/master-roadmap.md).
+Committed editor snapshots have no allowed noncanonical shape exceptions.
 
-## Purpose
+Primitive steps inside an active transaction may temporarily contain adjacent
+compatible text leaves, redundant empty leaves, block descendants in inline
+content, or missing default content. These draft shapes are private. Transaction
+finalization constructs one canonical change before publication.
 
-Named register for allowed non-canonical live shapes in the `True Plite RC`
-program.
+Canonical construction merges equal adjacent text, preserves required inline
+caret spacers, flattens invalid inline content, and fills compiled schema
+defaults. Selection and runtime identity map through the same change.
 
-This exists so maintainers can audit:
+External direct changes must already satisfy the canonical representation.
+`editor.update.value.repair()` is the explicit all-root maintenance boundary
+for imported raw data or rules installed after data already exists.
 
-- why a non-canonical shape is allowed
-- where it is allowed
-- what boundary canonicalizes it
-- which proof rows keep it safe
-
-## Rule
-
-If a live shape is not listed here, it is not an allowed intentional exception.
-
-## Allowed Non-Canonical Live Shapes
-
-### 1. Adjacent compatible text siblings in inline-style containers
-
-Why it exists:
-
-- forcing live text coalescing after ordinary edits kept breaking split/merge
-  and delete proof
-- the better value is to keep live editing stable and canonicalize only when
-  the caller asks for heavier cleanup
-
-Where it is allowed:
-
-- ordinary committed snapshots
-- ordinary live transactions
-- inline-style containers only
-
-What canonicalizes it:
-
-- explicit `Editor.normalize()`
-- import/load boundaries when app code chooses to normalize
-- app-owned custom `normalizeNode(...)`
-
-Proof rows:
-
-- [normalization-contract.ts](/Users/zbeyens/git/plate-2/packages/plite/test/normalization-contract.ts)
-  — explicit adjacent-text cleanup owner rows
-- [range-ref-contract.ts](/Users/zbeyens/git/plate-2/packages/plite/test/range-ref-contract.ts)
-  — explicit adjacent-text cleanup rebasing row
-- [clipboard-contract.ts](/Users/zbeyens/git/plate-2/packages/plite/test/clipboard-contract.ts)
-  — broad mixed-inline proof stays green because this is not default live
-  cleanup
-- [app-owned-customization.tsx](/Users/zbeyens/git/plate-2/packages/plite-react/test/app-owned-customization.tsx)
-  — runtime selection/render proof stays green because this is not default live
-  cleanup
-
-### 2. Block-wrapper descendants inside inline-style containers
-
-Why it exists:
-
-- broad live flattening kept breaking mixed-inline clipboard and runtime proof
-- the better value is to keep the default live path safe and flatten only on
-  explicit canonicalization boundaries
-
-Where it is allowed:
-
-- ordinary committed snapshots
-- ordinary live transactions
-- inline-style containers, outside the direct-child node-op seam that is
-  already proved safe to flatten
-
-What canonicalizes it:
-
-- explicit `Editor.normalize()`
-- import/load boundaries when app code chooses to normalize
-- app-owned custom `normalizeNode(...)`
-
-Proof rows:
-
-- [normalization-contract.ts](/Users/zbeyens/git/plate-2/packages/plite/test/normalization-contract.ts)
-  — explicit inline-container flattening owner row
-- [range-ref-contract.ts](/Users/zbeyens/git/plate-2/packages/plite/test/range-ref-contract.ts)
-  — explicit inline-container flattening rebasing row
-- [clipboard-contract.ts](/Users/zbeyens/git/plate-2/packages/plite/test/clipboard-contract.ts)
-  — broad mixed-inline proof stays green because broad live flattening is not
-  default
-- [primitives-contract.tsx](/Users/zbeyens/git/plate-2/packages/plite-react/test/primitives-contract.tsx)
-  — mixed-inline runtime/selection proof stays green because broad live
-  flattening is not default
-
-## Not Allowed By Default
-
-These are explicitly outside the default live contract unless reopened with a
-better design and fresh proof:
-
-- broad always-on live inline-container coercion
-- broad always-on live adjacent-text cleanup
-- blanket child-family coercion as a general invariant
+Proof lives in
+[`normalization-contract.ts`](/Users/zbeyens/git/plate-2/packages/plite/test/normalization-contract.ts),
+[`slice-fit-contract.test.ts`](/Users/zbeyens/git/plate-2/packages/plite/test/slice-fit-contract.test.ts),
+and
+[`architecture-contract.md`](/Users/zbeyens/git/plate-2/docs/plite/references/architecture-contract.md).

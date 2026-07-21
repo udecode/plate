@@ -49,15 +49,15 @@ its custom apply path. Modern list rules did not.
 
 Make modern list rules mirror `list-classic`:
 
-- resolve the matched range explicitly
+- use the block-start match payload, which already includes the marker range
 - delete `match.range` inside custom `apply`
-- then run `toggleList(...)`
+- then run `toggleListWithTx(...)`
 
 ```ts
-resolveMatch: ({ range }) => ({ range }),
-apply: ({ editor }, match) => {
-  editor.tf.delete({ at: match.range });
-  toggleList(editor, { listStyleType: KEYS.ul });
+match: ({ variant }) => variant,
+apply: ({ editor, tx }, match) => {
+  tx.text.delete({ at: match.range });
+  toggleListWithTx(editor, tx, { listStyleType: KEYS.ul });
   return true;
 }
 ```
@@ -65,8 +65,7 @@ apply: ({ editor }, match) => {
 For ordered lists, keep the parsed start number and the range together:
 
 ```ts
-resolveMatch: ({ match, range }) => ({
-  range,
+resolveMatch: ({ match }) => ({
   start: Number((match as RegExpMatchArray)[1]),
 })
 ```

@@ -50,7 +50,7 @@ detail file for durable direction.
 
 ### Boundary Law
 
-- Slate packages are the raw editor substrate: model, operations, runtime,
+- Plite packages are the raw editor substrate: model, canonical document changes, runtime,
   DOM/input, selection, history, browser proof, and unopinionated APIs.
 - Plate packages are the product/editor framework layer: plugins, React
   wrappers, components, kits, opinionated UX, examples, and app-facing docs.
@@ -135,14 +135,15 @@ tests for ownership, API intent, and public teaching surfaces.
 - "Batch loop" means keep working through safe alternate owners and collect
   unblock questions for the end.
 
-## Slate Essentials
+## Plite Essentials
 
-Slate is the raw editor substrate. It must stay unopinionated, precise, and
-boring in the best way: document model, operations, runtime, input, DOM,
+Plite is the raw editor substrate. It must stay unopinionated, precise, and
+boring in the best way: document model, canonical changes, runtime, input, DOM,
 selection, history, browser proof, package API, and benchmarks.
 
-- Preserve Slate's simple document model and operations as truth; do not let
-  React define the core ontology.
+- Preserve Plite's simple document model and canonical `DocumentChange` as the
+  sole mutation and commit truth. Transactions construct canonical changes
+  directly; React does not define the core ontology.
 - Public API should teach `editor.read`, `editor.update`, `state`, `tx`,
   extension groups, commit listeners, and projection sources.
 - Primary-root APIs do not expose a public `main` key. The primary document is
@@ -159,7 +160,7 @@ selection, history, browser proof, package API, and benchmarks.
   packets only when correctness stays green.
 - Degraded huge-document modes stay degraded until native behavior is proved.
 
-Read `docs/vision/slate.md` for the full Slate doctrine.
+Read `docs/vision/plite.md` for the full Plite doctrine.
 
 ## Plate Essentials
 

@@ -14,11 +14,17 @@ describe('BaseDatePlugin', () => {
       plugins: [BaseDatePlugin],
     });
 
-    const plugin = editor.getPlugin(BaseDatePlugin);
+    const element = { children: [{ text: '' }], type: KEYS.date };
 
-    expect(plugin.node.isVoid).toBe(true);
-    expect(plugin.node.isInline).toBe(true);
-    expect(plugin.node.isElement).toBe(true);
+    expect(editor.read.schema.isVoid(element)).toBe(true);
+    expect(editor.read.schema.isInline(element)).toBe(true);
+    expect(
+      editor.read.schema.property({
+        key: 'date',
+        placement: 'element',
+        type: KEYS.date,
+      })?.value.kind
+    ).toBe('string');
   });
 
   it('does not force date elements to opt out of keyboard entry', () => {
@@ -26,9 +32,9 @@ describe('BaseDatePlugin', () => {
       plugins: [BaseDatePlugin],
     });
 
-    const plugin = editor.getPlugin(BaseDatePlugin);
+    const element = { children: [{ text: '' }], type: KEYS.date };
 
-    expect(plugin.node.isSelectable).toBeUndefined();
+    expect(editor.read.schema.isKeyboardSelectable(element)).toBe(true);
   });
 
   it('provides the date.insert transaction', () => {
@@ -44,6 +50,7 @@ describe('BaseDatePlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       },
@@ -72,6 +79,7 @@ describe('BaseDatePlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -81,6 +89,7 @@ describe('BaseDatePlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
@@ -109,6 +118,7 @@ describe('BaseDatePlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -118,6 +128,7 @@ describe('BaseDatePlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
@@ -140,6 +151,7 @@ describe('BaseDatePlugin', () => {
     editor.update.selection.move({ distance: 1, unit: 'character' });
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });
@@ -149,6 +161,7 @@ describe('BaseDatePlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       },
@@ -175,6 +188,7 @@ describe('BaseDatePlugin', () => {
     });
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });

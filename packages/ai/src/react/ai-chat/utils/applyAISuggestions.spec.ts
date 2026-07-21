@@ -5,8 +5,8 @@ import {
 } from '@platejs/selection/react';
 import { getTransientSuggestionKey } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { BaseParagraphPlugin } from '@platejs/core';
-import { type Range, type Value } from '@platejs/plite';
+import { BaseParagraphPlugin, NodeIdPlugin } from '@platejs/core';
+import { SelectionApi, type TextSelection, type Value } from '@platejs/plite';
 import { type TIdElement, KEYS } from '@platejs/utils';
 import { createPlateEditor } from '@platejs/core/react';
 
@@ -19,14 +19,22 @@ import {
   withTransient,
 } from './applyAISuggestions';
 
+const SchemaOnlyNodeIdPlugin = NodeIdPlugin.configure({
+  options: {
+    initialValueIds: false,
+    match: () => false,
+  },
+});
+
 const createEditor = (
   value: Value,
   chatNodes: TIdElement[],
-  selection: Range | null = null
+  selection: TextSelection | null = null
 ) =>
   createPlateEditor<Value>({
     plugins: [
       BaseParagraphPlugin,
+      SchemaOnlyNodeIdPlugin,
       BaseAIPlugin,
       MarkdownPlugin,
       SuggestionPlugin,
@@ -137,6 +145,7 @@ describe('applyAISuggestions utils', () => {
   it('inserts fragment suggestions and selects transient text for one block', () => {
     const chatNodes = [{ children: [{ text: 'old' }], id: 'id-1', type: 'p' }];
     const editor = createEditor(structuredClone(chatNodes), chatNodes, {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -159,6 +168,6 @@ describe('applyAISuggestions utils', () => {
           Boolean(Reflect.get(node, getTransientSuggestionKey())),
       })
     ).toBe(true);
-    expect(editor.read.selection()).toEqual(transientRange);
+    expect(editor.read.selection()).toEqual(SelectionApi.text(transientRange));
   });
 });

@@ -1,14 +1,14 @@
 import { performance } from 'node:perf_hooks';
 
-import { createEditor } from '../../../../../packages/slate/src/index.ts';
-import { Editor } from '../../../../../packages/slate/src/internal/index.ts';
+import { createEditor } from '../../../../../packages/plite/src/index.ts';
+import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const iterations = Number.parseInt(
-  process.env.SLATE_6038_ITERATIONS ?? '200',
+  process.env.PLITE_6038_ITERATIONS ?? '200',
   10
 );
-const blocks = Number.parseInt(process.env.SLATE_6038_BLOCKS ?? '8', 10);
+const blocks = Number.parseInt(process.env.PLITE_6038_BLOCKS ?? '8', 10);
 
 const createParagraph = (index) => ({
   type: 'paragraph',
@@ -18,162 +18,135 @@ const createParagraph = (index) => ({
 const createChildren = (count) =>
   Array.from({ length: count }, (_, index) => createParagraph(index));
 
-const createBatchOps = (count) => [
+const createBatchCommands = (count) => [
   {
-    type: 'insert_text',
-    path: [0, 0],
-    offset: 0,
-    text: 'x',
+    apply: (tx) =>
+      tx.text.insert('x', { at: { offset: 0, path: [0, 0] } }),
+    type: 'insertText',
   },
   {
-    type: 'set_node',
-    path: [1],
-    properties: {},
-    newProperties: { id: 'changed' },
+    apply: (tx) => tx.nodes.set({ id: 'changed' }, { at: [1] }),
+    type: 'setNode',
   },
   {
-    type: 'insert_node',
-    path: [count],
-    node: createParagraph(count),
+    apply: (tx) => tx.nodes.insert(createParagraph(count), { at: [count] }),
+    type: 'insertNode',
   },
   {
-    type: 'split_node',
-    path: [2, 0],
-    position: 4,
-    properties: {},
+    apply: (tx) => tx.nodes.move({ at: [count], to: [1] }),
+    type: 'moveNode',
   },
   {
-    type: 'move_node',
-    path: [count],
-    newPath: [1],
-  },
-  {
-    type: 'remove_text',
-    path: [4, 0],
-    offset: 1,
-    text: 'ode-03',
+    apply: (tx) =>
+      tx.text.delete({
+        at: {
+          anchor: { offset: 1, path: [4, 0] },
+          focus: { offset: 7, path: [4, 0] },
+        },
+      }),
+    type: 'removeText',
   },
 ];
 
-const operationScenarios = (count) => [
-  {
-    id: 'mixedBatch',
-    opFamily: 'mixed-structural-text',
-    operations: createBatchOps(count),
-  },
-  {
-    id: 'insertText',
-    opFamily: 'text-insert',
-    operations: [
-      {
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 0,
-        text: 'x',
-      },
-    ],
-  },
-  {
-    id: 'setNode',
-    opFamily: 'node-property',
-    operations: [
-      {
-        type: 'set_node',
-        path: [1],
-        properties: {},
-        newProperties: { id: 'changed' },
-      },
-    ],
-  },
-  {
-    id: 'insertNode',
-    opFamily: 'node-insert',
-    operations: [
-      {
-        type: 'insert_node',
-        path: [count],
-        node: createParagraph(count),
-      },
-    ],
-  },
-  {
-    id: 'splitNode',
-    opFamily: 'node-split',
-    operations: [
-      {
-        type: 'split_node',
-        path: [2, 0],
-        position: 4,
-        properties: {},
-      },
-    ],
-  },
-  {
-    id: 'moveNode',
-    opFamily: 'node-move',
-    operations: [
-      {
-        type: 'move_node',
-        path: [count - 1],
-        newPath: [1],
-      },
-    ],
-  },
-  {
-    id: 'removeText',
-    opFamily: 'text-remove',
-    operations: [
-      {
-        type: 'remove_text',
-        path: [3, 0],
-        offset: 1,
-        text: 'ode-03',
-      },
-    ],
-  },
-];
+const commandScenarios = (count) => {
+  const commands = createBatchCommands(count);
+
+  return [
+    {
+      commandFamily: 'mixed-structural-text',
+      commands,
+      id: 'mixedBatch',
+    },
+    ...commands.slice(0, 3).map((command) => ({
+      commandFamily: command.type,
+      commands: [command],
+      id: command.type,
+    })),
+    {
+      commandFamily: 'moveNode',
+      commands: [
+        {
+          apply: (tx) => tx.nodes.move({ at: [count - 1], to: [1] }),
+          type: 'moveNode',
+        },
+      ],
+      id: 'moveNode',
+    },
+    {
+      commandFamily: 'removeText',
+      commands: [
+        {
+          apply: (tx) =>
+            tx.text.delete({
+              at: {
+                anchor: { offset: 1, path: [3, 0] },
+                focus: { offset: 7, path: [3, 0] },
+              },
+            }),
+          type: 'removeText',
+        },
+      ],
+      id: 'removeText',
+    },
+  ];
+};
 
 const resetEditor = (editor, children) => {
   Editor.replace(editor, {
     children,
     selection: null,
-    marks: null,
   });
 };
 
 const snapshotJson = (editor) =>
   JSON.stringify(Editor.getSnapshot(editor).children);
 
-const runWithUpdateReplay = (children, ops) => {
+const runBatchedUpdate = (children, commands) => {
   const editor = createEditor();
+
   resetEditor(editor, children);
+  let publicationCount = 0;
+  const unsubscribe = editor.subscribe((_snapshot, commit) => {
+    if (commit) publicationCount += 1;
+  });
 
   const start = performance.now();
+
   editor.update((tx) => {
-    tx.operations.replay(structuredClone(ops));
+    for (const command of commands) command.apply(tx);
   });
-  const end = performance.now();
+  const elapsedMs = performance.now() - start;
+
+  unsubscribe();
 
   return {
-    elapsedMs: end - start,
+    elapsedMs,
+    publicationCount,
     snapshot: snapshotJson(editor),
   };
 };
 
-const runSeparateUpdates = (children, ops) => {
+const runSeparateUpdates = (children, commands) => {
   const editor = createEditor();
+
   resetEditor(editor, children);
+  let publicationCount = 0;
+  const unsubscribe = editor.subscribe((_snapshot, commit) => {
+    if (commit) publicationCount += 1;
+  });
 
   const start = performance.now();
-  for (const operation of ops) {
-    editor.update((tx) => {
-      tx.operations.replay([structuredClone(operation)]);
-    });
+
+  for (const command of commands) {
+    editor.update((tx) => command.apply(tx));
   }
-  const end = performance.now();
+  const elapsedMs = performance.now() - start;
+
+  unsubscribe();
 
   return {
-    elapsedMs: end - start,
+    elapsedMs,
+    publicationCount,
     snapshot: snapshotJson(editor),
   };
 };
@@ -183,73 +156,122 @@ const mean = (values) =>
     ? 0
     : values.reduce((sum, value) => sum + value, 0) / values.length;
 
-const measureScenario = ({ id, opFamily, operations }) => {
+const measureScenario = ({ commandFamily, commands, id }) => {
   const children = createChildren(blocks);
-  const updateReplaySamples = [];
+  const batchedUpdateSamples = [];
   const separateUpdateSamples = [];
 
   for (let index = 0; index < iterations; index += 1) {
-    const updateReplay = runWithUpdateReplay(children, operations);
-    const separateUpdates = runSeparateUpdates(children, operations);
+    let batched;
+    let separate;
 
-    if (updateReplay.snapshot !== separateUpdates.snapshot) {
+    if (index % 2 === 0) {
+      batched = runBatchedUpdate(children, commands);
+      separate = runSeparateUpdates(children, commands);
+    } else {
+      separate = runSeparateUpdates(children, commands);
+      batched = runBatchedUpdate(children, commands);
+    }
+
+    if (batched.snapshot !== separate.snapshot) {
       throw new Error(
-        `6038 ${id} benchmark lane produced divergent final snapshots`
+        `6038 ${id} benchmark lane produced divergent final snapshots:\nbatch=${batched.snapshot}\nseparate=${separate.snapshot}`
+      );
+    }
+    if (
+      batched.publicationCount !== 1 ||
+      separate.publicationCount !== commands.length
+    ) {
+      throw new Error(
+        `6038 ${id} publication invariant failed: batch=${batched.publicationCount} separate=${separate.publicationCount}.`
       );
     }
 
-    updateReplaySamples.push(updateReplay.elapsedMs);
-    separateUpdateSamples.push(separateUpdates.elapsedMs);
+    batchedUpdateSamples.push(batched.elapsedMs);
+    separateUpdateSamples.push(separate.elapsedMs);
   }
 
   return {
-    opFamily,
-    operationTypes: operations.map((operation) => operation.type),
-    operationCount: operations.length,
+    batchedUpdateMs: summarize(batchedUpdateSamples),
+    batchedPublicationCount: 1,
+    commandCount: commands.length,
+    commandFamily,
+    commandTypes: commands.map((command) => command.type),
+    deltaMs: mean(separateUpdateSamples) - mean(batchedUpdateSamples),
     separateUpdateMs: summarize(separateUpdateSamples),
-    updateReplayMs: summarize(updateReplaySamples),
-    deltaMs: mean(separateUpdateSamples) - mean(updateReplaySamples),
+    separatePublicationCount: commands.length,
   };
 };
 
-const opFamilyLanes = Object.fromEntries(
-  operationScenarios(blocks).map((scenario) => [
+const commandFamilyLanes = Object.fromEntries(
+  commandScenarios(blocks).map((scenario) => [
     scenario.id,
     measureScenario(scenario),
   ])
 );
-
-const mixedBatchLane = opFamilyLanes.mixedBatch;
-
-const result = {
-  benchmark: 'slate-6038-transaction-execution',
-  issue: '#6038',
-  artifactVersion: 2,
-  iterations,
-  blocks,
-  thresholdPolicy: {
-    mode: 'calibration-only',
-    releaseGate: false,
-    repeatRunsRequiredBeforeEnforcement: 3,
-  },
-  batchShape: {
-    id: 'mixedBatch',
-    opFamily: mixedBatchLane.opFamily,
-    operationTypes: mixedBatchLane.operationTypes,
-    operationCount: mixedBatchLane.operationCount,
-  },
-  separateUpdateMeanMs: mixedBatchLane.separateUpdateMs.mean,
-  updateReplayMeanMs: mixedBatchLane.updateReplayMs.mean,
-  withTransactionMeanMs: mixedBatchLane.separateUpdateMs.mean,
-  applyBatchMeanMs: mixedBatchLane.updateReplayMs.mean,
-  deltaMs: mixedBatchLane.deltaMs,
-  lanes: {
-    separateUpdateMs: mixedBatchLane.separateUpdateMs,
-    updateReplayMs: mixedBatchLane.updateReplayMs,
-  },
-  opFamilyLanes,
+const mixedBatchLane = commandFamilyLanes.mixedBatch;
+const mixedBatchMedianRatio =
+  mixedBatchLane.batchedUpdateMs.median /
+  Math.max(mixedBatchLane.separateUpdateMs.median, 0.000_001);
+const mixedBatchP95Ratio =
+  mixedBatchLane.batchedUpdateMs.p95 /
+  Math.max(mixedBatchLane.separateUpdateMs.p95, 0.000_001);
+const thresholdPolicy = {
+  mixedBatchMedianRatioMax: 1,
+  mixedBatchP95RatioMax: 1.25,
+  publicationInvariantRequired: true,
+  snapshotParityRequired: true,
 };
 
-await writeBenchmarkArtifact('tmp/bench-slate-6038.json', result);
+const result = {
+  benchmark: 'plite-transaction-execution',
+  artifactVersion: 5,
+  iterations,
+  blocks,
+  thresholdPolicy,
+  batchShape: {
+    id: 'mixedBatch',
+    commandCount: mixedBatchLane.commandCount,
+    commandFamily: mixedBatchLane.commandFamily,
+    commandTypes: mixedBatchLane.commandTypes,
+  },
+  fairness: {
+    sampleOrder:
+      'Batched-first and separate-first samples alternate within every command-family lane.',
+    setup:
+      'Each timed lane starts from an equivalent fresh editor; editor construction and fixture replacement are excluded.',
+  },
+  separateUpdateMeanMs: mixedBatchLane.separateUpdateMs.mean,
+  batchedUpdateMeanMs: mixedBatchLane.batchedUpdateMs.mean,
+  deltaMs: mixedBatchLane.deltaMs,
+  mixedBatchMedianRatio,
+  mixedBatchP95Ratio,
+  lanes: {
+    batchedUpdateMs: mixedBatchLane.batchedUpdateMs,
+    separateUpdateMs: mixedBatchLane.separateUpdateMs,
+  },
+  commandFamilyLanes,
+};
+
+await writeBenchmarkArtifact(
+  'tmp/plite-transaction-execution-benchmark.json',
+  result
+);
 
 console.log(JSON.stringify(result, null, 2));
+console.log(
+  `METRIC plite_transaction_mixed_batch_median_ratio=${mixedBatchMedianRatio}`
+);
+console.log(
+  `METRIC plite_transaction_mixed_batch_p95_ratio=${mixedBatchP95Ratio}`
+);
+
+if (
+  process.env.PLITE_TRANSACTION_EXECUTION_STRICT === '1' &&
+  (mixedBatchMedianRatio > thresholdPolicy.mixedBatchMedianRatioMax ||
+    mixedBatchP95Ratio > thresholdPolicy.mixedBatchP95RatioMax)
+) {
+  throw new Error(
+    `Native transaction batch missed its gate: median=${mixedBatchMedianRatio.toFixed(2)}x p95=${mixedBatchP95Ratio.toFixed(2)}x.`
+  );
+}

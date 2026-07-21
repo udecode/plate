@@ -19,14 +19,14 @@ tags: [autoformat, input-rules, api-design, math]
 
 ## Problem
 
-`insertTextRules` and `insertBreakRules` only supported a boolean `query` gate.
-That forced richer rules to compute the same match twice: once to decide whether
-the rule should run, then again inside `format` to recover the payload.
+`insertTextRules` and `insertBreakRules` only supported a boolean gate. That
+forced richer rules to compute the same match twice: once to decide whether the
+rule should run, then again inside `apply` to recover the payload.
 
 ## Symptoms
 
 - Math input rules had `getInlineEquationMatch` and `getBlockEquationTarget`
-  helpers called from both `query` and `format`.
+  helpers called from both the gate and `apply`.
 - The runtime could only say "yes or no", not "yes, and here is the resolved
   match you already paid to compute".
 - Reusable payload-driven input rules were possible in spirit but awkward in
@@ -35,58 +35,35 @@ the rule should run, then again inside `format` to recover the payload.
 ## What Didn't Work
 
 - Treating payload lookup as a math-specific problem.
-- Keeping `query` as the only gate and stuffing payload recovery into `format`.
+- Keeping a boolean-only gate and stuffing payload recovery into `apply`.
 - Moving more equation-specific helpers into the shared runtime instead of
   fixing the generic rule contract.
 
 ## Solution
 
-Add `resolve` to insert input rules and pass the resolved value into `format`.
-Keep `query` working as a simple pre-check for rules that only need a boolean
-gate.
-
-```ts
-export type AutoformatInsertTextRule<TMatch = true> = {
-  trigger?: readonly string[] | string;
-  query?: (editor, context) => boolean;
-  resolve?: (editor, context) => TMatch | undefined;
-  format: (editor, context, match: TMatch) => void;
-};
-```
-
-Then the runtime resolves once and forwards the payload:
-
-```ts
-const match = resolveInsertTextRuleMatch(rule, currentEditor, context);
-
-if (match === undefined) return false;
-
-rule.format(currentEditor, context, match);
-```
+Add `resolve` to insert input rules and pass the resolved value into `apply`.
+Keep `enabled` as the simple pre-check for rules that only need a boolean gate.
 
 That lets math rules stay local but shorter:
 
 ```ts
-export const autoformatInlineEquation: AutoformatInsertTextRule<{
-  deleteRange: TRange;
-  texExpression: string;
-}> = {
+const inlineEquationRule = {
+  type: 'insertText',
   trigger: '$',
-  resolve: (editor, { options, text }) => {
-    if (text !== '$' || options?.at || isEquationInputBlocked(editor)) return;
+  enabled: ({ editor }) => !isEquationInputBlocked(editor),
+  resolve: (context) => {
+    if (context.text !== '$' || context.options?.at) return;
 
-    return getInlineEquationMatch(editor);
+    return getInlineEquationMatch(context);
   },
-  format: (editor, _context, match) => {
-    editor.tf.withoutNormalizing(() => {
-      editor.tf.delete({ at: match.deleteRange });
-      editor.tf.select(match.deleteRange.anchor);
-      editor.tf.insertNodes({
-        children: [{ text: '' }],
-        texExpression: match.texExpression,
-        type: editor.getType(KEYS.inlineEquation),
-      });
+  apply: ({ editor, tx }, match) => {
+    tx.text.delete({ at: match.deleteRange });
+    tx.selection.set(match.deleteRange.anchor);
+    insertInlineEquation(tx, editor.getType(KEYS.inlineEquation), {
+      texExpression: match.texExpression,
     });
+
+    return true;
   },
 };
 ```
@@ -95,16 +72,16 @@ export const autoformatInlineEquation: AutoformatInsertTextRule<{
 
 The runtime stays generic while richer rules get a real payload lane.
 
-- Generic rules can still use `query` only.
+- Generic rules can still use `enabled` only.
 - Payload rules can use `resolve` and skip duplicated recomputation.
 - Package-owned logic stays in the package rule file instead of leaking
   equation-specific assumptions into the core runtime.
 
 ## Prevention
 
-- If an input rule needs data later in `format`, prefer a `resolve` payload over
-  recomputing it through `query`.
-- Keep `query` for cheap boolean gates; use `resolve` when the match carries
+- If an input rule needs data later in `apply`, prefer a `resolve` payload over
+  recomputing it through `enabled`.
+- Keep `enabled` for cheap boolean gates; use `resolve` when the match carries
   structure.
 - Do not add feature-specific helpers to the shared runtime when the real gap is
   the generic rule contract.

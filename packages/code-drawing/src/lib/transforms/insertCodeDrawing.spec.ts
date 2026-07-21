@@ -1,9 +1,7 @@
 import { createBaseEditor } from '@platejs/core';
+import { KEYS, NODES } from '@platejs/utils';
 
-import {
-  BaseCodeDrawingPlugin,
-  CODE_DRAWING_KEY,
-} from '../BaseCodeDrawingPlugin';
+import { BaseCodeDrawingPlugin } from '../BaseCodeDrawingPlugin';
 import { insertCodeDrawing } from './insertCodeDrawing';
 
 describe('insertCodeDrawing', () => {
@@ -11,6 +9,7 @@ describe('insertCodeDrawing', () => {
     const editor = createBaseEditor({
       plugins: [BaseCodeDrawingPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
@@ -22,7 +21,7 @@ describe('insertCodeDrawing', () => {
       ],
     });
 
-    editor.update.code_drawing.insert();
+    editor.update.codeDrawing.insert();
 
     expect(editor.read.children()).toMatchObject([
       {
@@ -36,7 +35,7 @@ describe('insertCodeDrawing', () => {
           drawingMode: 'Both',
           drawingType: 'Mermaid',
         },
-        type: CODE_DRAWING_KEY,
+        type: NODES.codeDrawing,
       },
     ]);
   });
@@ -49,6 +48,7 @@ describe('insertCodeDrawing', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -61,7 +61,7 @@ describe('insertCodeDrawing', () => {
     });
 
     editor.update((tx) => {
-      insertCodeDrawing(tx, editor.getType(CODE_DRAWING_KEY), {
+      insertCodeDrawing(tx, editor.getType(KEYS.codeDrawing), {
         data: {
           code: 'graph TD; A-->B',
           drawingType: 'Graphviz',
@@ -90,6 +90,7 @@ describe('insertCodeDrawing', () => {
     const editor = createBaseEditor({
       plugins: [BaseCodeDrawingPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -101,7 +102,7 @@ describe('insertCodeDrawing', () => {
       ],
     });
 
-    editor.update.code_drawing.insert();
+    editor.update.codeDrawing.insert();
 
     expect(editor.read.children()).toMatchObject([
       {
@@ -110,7 +111,7 @@ describe('insertCodeDrawing', () => {
       },
       {
         children: [{ text: '' }],
-        type: CODE_DRAWING_KEY,
+        type: NODES.codeDrawing,
       },
     ]);
   });

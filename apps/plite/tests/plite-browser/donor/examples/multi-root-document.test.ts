@@ -168,7 +168,6 @@ test.describe('multi-root document example', () => {
         scope: '#multi-root-body-surface',
       },
     });
-
     const overflow = await page.evaluate(() => {
       const frame = document.querySelector(
         '.plite-multi-root-document-document'
@@ -492,8 +491,10 @@ test.describe('multi-root document example', () => {
     const commitStatus = page.locator('#multi-root-commit');
     const headerText = 'Confidential quarterly plan';
     const bodyText = 'The body root carries the document content.';
-    const undoHotkey = (await page.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent)
+    const undoHotkey = (await page.evaluate(
+      () =>
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        /Mac OS X/.test(navigator.userAgent)
     ))
       ? 'Meta+Z'
       : 'Control+Z';
@@ -568,8 +569,10 @@ test.describe('multi-root document example', () => {
     const footer = page.locator('#multi-root-footer');
     const bodyText = 'The body root carries the document content.';
     const footerText = 'Prepared for leadership review';
-    const undoHotkey = (await page.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent)
+    const undoHotkey = (await page.evaluate(
+      () =>
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        /Mac OS X/.test(navigator.userAgent)
     ))
       ? 'Meta+Z'
       : 'Control+Z';
@@ -730,6 +733,7 @@ test.describe('multi-root document example', () => {
 
     await focusRootByLabel(page, 'Header editor', headerEditor);
     await headerEditor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: headerText.length },
       focus: { path: [0, 0], offset: headerText.length },
     });
@@ -777,6 +781,7 @@ test.describe('multi-root document example', () => {
 
     await focusRootByLabel(page, 'Header editor', headerEditor);
     await headerEditor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: headerTextWithTail.length },
       focus: { path: [0, 0], offset: headerTextWithTail.length },
     });
@@ -879,6 +884,7 @@ test.describe('multi-root document example', () => {
     }
 
     await bodyEditor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -974,7 +980,10 @@ test.describe('multi-root document example', () => {
       .toBe(expectedCaret.offset);
 
     await page.keyboard.type('Body native ');
-    const expectedBodyText = `${bodyText.slice(0, expectedCaret.offset)}Body native ${bodyText.slice(expectedCaret.offset)}`;
+    const expectedBodyText = `${bodyText.slice(
+      0,
+      expectedCaret.offset
+    )}Body native ${bodyText.slice(expectedCaret.offset)}`;
 
     await expect(main).toContainText('Body native ');
     await expect(main).toContainText(expectedBodyText);
@@ -1053,7 +1062,6 @@ test.describe('multi-root document example', () => {
         scope: '#multi-root-body-surface',
       },
     });
-
     const firstBodyText = 'The body root carries the document content.';
     const lastBodyText = 'Header and footer are editable roots.';
     const header = page.locator('#multi-root-header');
@@ -1116,7 +1124,10 @@ test.describe('multi-root document example', () => {
       .toBe(expectedCaret.offset);
 
     await page.keyboard.type(' Body padding end ');
-    const expectedBodyText = `${lastBodyText.slice(0, expectedCaret.offset)} Body padding end ${lastBodyText.slice(expectedCaret.offset)}`;
+    const expectedBodyText = `${lastBodyText.slice(
+      0,
+      expectedCaret.offset
+    )} Body padding end ${lastBodyText.slice(expectedCaret.offset)}`;
 
     await expect(main).toContainText(expectedBodyText);
   });

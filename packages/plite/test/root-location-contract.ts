@@ -1,9 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import type { Operation, Range } from '@platejs/plite';
+import type { Range } from '@platejs/plite';
 import {
-  getOperationRoot,
   getPointRoot,
   getRangeRoot,
   getSelectionPatchRoot,
@@ -15,17 +14,10 @@ import {
 } from '../src/internal/root-location';
 
 describe('root location contract', () => {
-  it('uses main as the implicit root for rootless operations and points', () => {
-    const operation = {
-      offset: 0,
-      path: [0, 0],
-      text: '!',
-      type: 'insert_text',
-    } satisfies Operation;
+  it('uses main as the implicit root for rootless points', () => {
     const point = { path: [0, 0], offset: 1 };
 
     assert.equal(MAIN_ROOT_KEY, 'main');
-    assert.equal(getOperationRoot(operation), 'main');
     assert.deepEqual(getPointRoot(point), {
       root: 'main',
       visibility: 'implicit',

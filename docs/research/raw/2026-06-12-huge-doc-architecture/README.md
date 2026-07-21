@@ -25,4 +25,3 @@ Decision:
 
 Keep the `huge-document-virtualized-scroll-stability` contract row. Queue
 scroll-anchor and estimated-coordinate metric work for later packets.
-

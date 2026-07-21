@@ -4,9 +4,8 @@ import { ElementApi } from '@platejs/plite';
 
 export const input = {
   children: [],
-  operations: [],
+  intents: [],
   selection: null,
-  marks: null,
   addMark() {},
   deleteBackward() {},
   deleteForward() {},
@@ -20,9 +19,7 @@ export const input = {
   isInline() {},
   isSelectable() {},
   isVoid() {},
-  normalizeNode() {},
   removeMark() {},
-  getDirtyPaths() {},
 };
 export const test = (value) => ElementApi.isElement(value);
 export const output = false;

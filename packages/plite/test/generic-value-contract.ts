@@ -4,6 +4,7 @@ import {
   type BooleanMarkKeysOf,
   type BooleanMarksOf,
   type ChildOf,
+  ContentSlice,
   createEditor,
   type DescendantEntry,
   type DescendantEntryOf,
@@ -97,7 +98,6 @@ typedEditor.update((tx) => {
   tx.value.replace({
     children: value,
     selection: null,
-    marks: null,
   });
 });
 
@@ -231,6 +231,12 @@ type _TextEntryFromEditor = Assert<
     [CustomText, import('@platejs/plite').Path]
   >
 >;
+type _ContentSliceFromEditor = Assert<
+  Equal<
+    ReturnType<typeof typedEditor.read.slice.get>,
+    import('@platejs/plite').ContentSlice<CustomValue>
+  >
+>;
 
 const maybeText: unknown = { text: 'one', bold: true };
 if (TextApi.isText<CustomText>(maybeText)) {
@@ -248,12 +254,29 @@ if (ElementApi.isElement<ParagraphElement>(maybeElement)) {
 }
 
 const assertPrimitiveMethodTypes = () => {
+  const slice: import('@platejs/plite').ContentSlice<CustomValue> =
+    typedEditor.read.slice.get();
+  const fitted: false | import('@platejs/plite').TransactionSpec =
+    typedEditor.read.slice.fit(slice);
+  const fittedContent: readonly DescendantIn<CustomValue>[] | null =
+    typedEditor.read.slice.fitContent(slice, {
+      parent: { children: [{ text: '' }], type: 'paragraph' },
+    });
+
   typedEditor.update((tx) => {
     tx.nodes.insert({ type: 'quote', children: [{ text: 'two' }] });
-    tx.fragment.insert([{ type: 'paragraph', children: [{ text: 'two' }] }]);
+    tx.fragment.replace([{ type: 'paragraph', children: [{ text: 'two' }] }]);
+    tx.slice.replace(ContentSlice.empty);
+    tx.slice.replace(slice);
     tx.nodes.wrap({ type: 'quote', children: [] });
     tx.nodes.set({ type: 'quote' });
   });
+  typedEditor.update.fragment.replace([
+    { type: 'paragraph', children: [{ text: 'three' }] },
+  ]);
+
+  void fitted;
+  void fittedContent;
 };
 
 void assertPrimitiveMethodTypes;

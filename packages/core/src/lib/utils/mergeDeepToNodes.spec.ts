@@ -1,6 +1,5 @@
 import { NodeApi } from '@platejs/plite';
 
-import { createBaseEditor } from '../editor';
 import { mergeDeepToNodes } from './mergeDeepToNodes';
 
 const createNestedElement = () => ({
@@ -14,11 +13,6 @@ const createNestedElement = () => ({
   ],
   type: 'li',
 });
-
-const createEditorRoot = () =>
-  createBaseEditor({
-    value: [createNestedElement()],
-  });
 
 describe('mergeDeepToNodes', () => {
   it('merges props into the root node and all descendants by default', () => {
@@ -61,56 +55,29 @@ describe('mergeDeepToNodes', () => {
       expect(node).toEqual({ a: 1, text: 'test' });
     });
 
-    it.each([
-      {
-        expected: {
-          a: 1,
-          children: [
-            { a: 1, text: 'test' },
-            {
-              a: 1,
-              children: [{ a: 1, text: 'test' }],
-              type: 'p',
-            },
-            { a: 1, text: 'test' },
-          ],
-          type: 'li',
-        },
-        label: 'element roots',
-        node: createNestedElement(),
-      },
-      {
-        expected: [
+    it('applies props to all descendants for element roots', () => {
+      const node = createNestedElement();
+      const expected = {
+        a: 1,
+        children: [
+          { a: 1, text: 'test' },
           {
             a: 1,
-            children: [
-              { a: 1, text: 'test' },
-              {
-                a: 1,
-                children: [{ a: 1, text: 'test' }],
-                type: 'p',
-              },
-              { a: 1, text: 'test' },
-            ],
-            type: 'li',
+            children: [{ a: 1, text: 'test' }],
+            type: 'p',
           },
+          { a: 1, text: 'test' },
         ],
-        label: 'editor roots',
-        node: createEditorRoot(),
-      },
-    ])('applies props to all descendants for $label', ({ expected, node }) => {
+        type: 'li',
+      };
+
       mergeDeepToNodes({
         node: node as any,
         match: NodeApi.isDescendant,
         source: { a: 1 },
       });
 
-      if (NodeApi.isEditor(node)) {
-        expect(node).not.toHaveProperty('a');
-        expect(node.read.children()).toEqual(expected);
-      } else {
-        expect(node).toEqual(expected);
-      }
+      expect(node).toEqual(expected);
     });
 
     it('calls the source factory for each matched node', () => {
@@ -153,59 +120,29 @@ describe('mergeDeepToNodes', () => {
       expect(node).toEqual({ text: 'test' });
     });
 
-    it.each([
-      {
-        expected: {
-          a: 1,
-          children: [
-            { text: 'test' },
-            {
-              a: 1,
-              children: [{ text: 'test' }],
-              type: 'p',
-            },
-            { text: 'test' },
-          ],
-          type: 'li',
-        },
-        label: 'element roots',
-        node: createNestedElement(),
-      },
-      {
-        expected: [
+    it('applies props only to element nodes for element roots', () => {
+      const node = createNestedElement();
+      const expected = {
+        a: 1,
+        children: [
+          { text: 'test' },
           {
             a: 1,
-            children: [
-              { text: 'test' },
-              {
-                a: 1,
-                children: [{ text: 'test' }],
-                type: 'p',
-              },
-              { text: 'test' },
-            ],
-            type: 'li',
+            children: [{ text: 'test' }],
+            type: 'p',
           },
+          { text: 'test' },
         ],
-        label: 'editor roots',
-        node: createEditorRoot(),
-      },
-    ])('applies props only to element nodes for $label', ({
-      expected,
-      node,
-    }) => {
+        type: 'li',
+      };
+
       mergeDeepToNodes({
         node: node as any,
         match: NodeApi.isElement,
         source: { a: 1 },
       });
 
-      if (NodeApi.isEditor(node)) {
-        expect(node).not.toHaveProperty('a');
-        expect(node.read.children()).toEqual(expected);
-      } else {
-        expect(node).toEqual(expected);
-      }
+      expect(node).toEqual(expected);
     });
   });
 });

@@ -30,7 +30,6 @@ mock.module('platejs/react', () => ({
     return <div data-testid="plate-element">{props.children}</div>;
   },
   useEditorReadOnly: useReadOnlyMock,
-  usePath: () => [0],
 }));
 
 mock.module('@/components/ui/calendar', () => ({
@@ -122,6 +121,11 @@ describe('DateElement', () => {
 
   it('writes the canonical date value on calendar selection', async () => {
     const setNodes = mock();
+    const element = {
+      children: [{ text: '' }],
+      date: '2026-03-23',
+      type: 'date',
+    } as any;
     const { DateElement } = await import(
       `./date-node?test=${Math.random().toString(36).slice(2)}`
     );
@@ -130,13 +134,7 @@ describe('DateElement', () => {
       <DateElement
         attributes={{}}
         editor={{ update: { nodes: { set: setNodes } } }}
-        element={
-          {
-            children: [{ text: '' }],
-            date: '2026-03-23',
-            type: 'date',
-          } as any
-        }
+        element={element}
       >
         {null}
       </DateElement>
@@ -146,7 +144,7 @@ describe('DateElement', () => {
 
     expect(setNodes).toHaveBeenCalledWith(
       { date: '2026-03-24', rawDate: undefined },
-      { at: [0] }
+      { at: element }
     );
   });
 });

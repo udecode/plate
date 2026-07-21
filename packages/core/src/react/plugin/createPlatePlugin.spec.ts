@@ -53,7 +53,7 @@ describe('withComponent method', () => {
 
   it('extendEditorApi', () => {
     type CodeBlockConfig = PluginConfig<
-      'code_block',
+      'codeBlock',
       { syntax: boolean; syntaxPopularFirst: boolean },
       {
         plugin: {
@@ -64,7 +64,8 @@ describe('withComponent method', () => {
     >;
 
     createPlatePlugin({
-      key: 'code_block',
+      key: 'codeBlock',
+      node: { type: 'code_block' },
       options: { syntax: true, syntaxPopularFirst: false },
     })
       .extendEditorApi<CodeBlockConfig['api']>(() => ({

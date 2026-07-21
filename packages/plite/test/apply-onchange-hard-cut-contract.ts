@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   type getLastCommit as editorGetLastCommit,
-  registerCommitListener as editorRegisterCommitListener,
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
 
 import {
   createEditor,
+  defineEditorExtension,
   type Element,
   type Editor as EditorType,
 } from '@platejs/plite';
@@ -46,7 +46,7 @@ describe('apply/onChange hard cuts', () => {
     );
   });
 
-  it('imports operations through tx.operations.replay and publishes one commit', () => {
+  it('publishes one tagged commit for a transaction', () => {
     const editor = createEditor();
     const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
     const unsubscribe = editor.subscribe((_snapshot, commit) => {
@@ -58,23 +58,16 @@ describe('apply/onChange hard cuts', () => {
     editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
     commits.length = 0;
 
     editor.update((tx) => {
       tx.tags.add('remote-import');
-      tx.operations.replay([
-        {
-          type: 'insert_text',
-          path: [0, 0],
-          offset: 3,
-          text: '!',
-        },
-      ]);
+      tx.text.insert('!');
     });
 
     unsubscribe();
@@ -82,42 +75,44 @@ describe('apply/onChange hard cuts', () => {
     assert.equal(editorString(editor, []), 'one!');
     assert.equal(commits.length, 1);
     assert.deepEqual(commits[0]?.tags, ['remote-import']);
-    assert.deepEqual(
-      commits[0]?.operations.map((operation) => operation.type),
-      ['insert_text']
-    );
+    assert.equal(commits[0]?.changed.has('text'), true);
   });
 
   it('uses commit listeners instead of onChange callback timing', () => {
-    const editor = createEditor();
     const events: string[] = [];
+    const editor = createEditor({
+      extensions: [
+        defineEditorExtension({
+          name: 'commit-timing-listener',
+          onCommit({ commit }) {
+            events.push(`commit:${commit.changed.has('text')}`);
+          },
+        }),
+      ] as const,
+    });
 
     editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
+    events.length = 0;
 
     const unsubscribeSubscribe = editor.subscribe((_snapshot, commit) => {
       if (commit) {
-        events.push(`subscribe:${commit.operations.length}`);
+        events.push(`subscribe:${commit.changed.has('text')}`);
       }
     });
-    const unsubscribeCommit = editorRegisterCommitListener(editor, (commit) => {
-      events.push(`commit:${commit.operations.length}`);
-    });
-
     editor.update((tx) => {
       tx.text.insert('!');
       tx.text.insert('?');
     });
 
     unsubscribeSubscribe();
-    unsubscribeCommit();
 
-    assert.deepEqual(events, ['commit:2', 'subscribe:2']);
+    assert.deepEqual(events, ['commit:true', 'subscribe:true']);
   });
 });

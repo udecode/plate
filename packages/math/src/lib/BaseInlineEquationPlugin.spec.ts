@@ -1,22 +1,34 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseInlineEquationPlugin } from './BaseInlineEquationPlugin';
 
 describe('BaseInlineEquationPlugin', () => {
-  it('configures inlineEquation as an inline void element and exposes insert.inlineEquation', () => {
+  it('uses a camelCase plugin identity without changing serialized nodes', () => {
     const editor = createBaseEditor({
       plugins: [BaseInlineEquationPlugin],
     });
     const plugin = editor.getPlugin(BaseInlineEquationPlugin);
+    const element = {
+      children: [{ text: '' }],
+      type: NODES.inlineEquation,
+    };
 
-    expect(plugin.node).toMatchObject({
-      isElement: true,
-      isInline: true,
-      isVoid: true,
-    });
+    expect(plugin.key).toBe('inlineEquation');
+    expect(plugin.node.type).toBe(NODES.inlineEquation);
+    expect(editor.read.schema.isInline(element)).toBe(true);
+    expect(editor.read.schema.isVoid(element)).toBe(true);
+    expect(
+      editor.read.schema.property({
+        key: 'texExpression',
+        placement: 'element',
+        type: NODES.inlineEquation,
+      })?.value.kind
+    ).toBe('string');
+    expect(editor.getType(KEYS.inlineEquation)).toBe(NODES.inlineEquation);
+
     editor.update((tx) => {
-      expect(typeof tx.inline_equation.insert).toBe('function');
+      expect(typeof tx.inlineEquation.insert).toBe('function');
     });
   });
 
@@ -24,6 +36,7 @@ describe('BaseInlineEquationPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseInlineEquationPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
@@ -34,7 +47,7 @@ describe('BaseInlineEquationPlugin', () => {
             {
               children: [{ text: '' }],
               texExpression: 'x+1',
-              type: KEYS.inlineEquation,
+              type: NODES.inlineEquation,
             },
             { text: ' after' },
           ],
@@ -48,6 +61,7 @@ describe('BaseInlineEquationPlugin', () => {
     );
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });
@@ -57,6 +71,7 @@ describe('BaseInlineEquationPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseInlineEquationPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       },
@@ -67,7 +82,7 @@ describe('BaseInlineEquationPlugin', () => {
             {
               children: [{ text: '' }],
               texExpression: 'x+1',
-              type: KEYS.inlineEquation,
+              type: NODES.inlineEquation,
             },
             { text: ' after' },
           ],
@@ -81,6 +96,7 @@ describe('BaseInlineEquationPlugin', () => {
     );
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });

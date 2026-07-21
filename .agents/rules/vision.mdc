@@ -14,7 +14,7 @@ and essential summary. Detailed owner doctrine lives in `docs/vision/*.md`.
 3. Read only the relevant detail files:
    - common proof, automation, docs, maintainer policy:
      `docs/vision/common.md`
-   - Slate substrate/API/runtime/browser/perf work: `docs/vision/slate.md`
+   - Plite substrate/API/runtime/browser/perf work: `docs/vision/plite.md`
    - Plate framework/plugin/component/docs work: `docs/vision/plate.md`
    - vision learning, baseline, or doctrine sync: `docs/vision/sync.md`
 4. Follow root first when root and a detail file conflict, then repair the

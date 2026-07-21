@@ -1,48 +1,21 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
-  addMark as editorAddMark,
-  collapse as editorCollapse,
-  delete as editorDelete,
   deleteBackward as editorDeleteBackward,
-  deleteForward as editorDeleteForward,
-  deleteFragment as editorDeleteFragment,
-  deselect as editorDeselect,
   getExtensionRegistry as editorGetExtensionRegistry,
   getSnapshot as editorGetSnapshot,
-  insertBreak as editorInsertBreak,
-  insertFragment as editorInsertFragment,
-  insertNode as editorInsertNode,
-  insertNodes as editorInsertNodes,
-  insertSoftBreak as editorInsertSoftBreak,
   insertText as editorInsertText,
-  liftNodes as editorLiftNodes,
-  mergeNodes as editorMergeNodes,
-  move as editorMove,
-  moveNodes as editorMoveNodes,
-  removeMark as editorRemoveMark,
-  removeNodes as editorRemoveNodes,
   replace as editorReplace,
-  select as editorSelect,
-  setNodes as editorSetNodes,
-  setPoint as editorSetPoint,
-  setSelection as editorSetSelection,
-  splitNodes as editorSplitNodes,
   string as editorString,
-  toggleMark as editorToggleMark,
-  unsetNodes as editorUnsetNodes,
-  unwrapNodes as editorUnwrapNodes,
-  wrapNodes as editorWrapNodes,
 } from '@platejs/plite/internal';
 
 import {
   createEditor,
   defineEditorExtension,
-  type Element,
+  editorCommands,
   type EditorExtensionInput,
-  type EditorExtensionRuntimeState,
 } from '@platejs/plite';
-import { hasTransformMiddleware } from '../src/core/transform-middleware';
+import { hasCommandHandler } from '../src/core/command-registry';
 
 const asExtensionInput = (extension: unknown): EditorExtensionInput =>
   extension as EditorExtensionInput;
@@ -66,7 +39,7 @@ describe('extension method hard cut', () => {
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
   });
 
-  it('rejects public command slots before mutating the editor', () => {
+  it('rejects malformed command registrations before mutating the editor', () => {
     const editor = createEditor();
     const commandExtension = asExtensionInput({
       commands: [
@@ -80,7 +53,7 @@ describe('extension method hard cut', () => {
 
     assert.throws(
       () => editor.extend(commandExtension),
-      /Editor extension "command-extension" cannot use commands\. Add state or tx groups instead\./
+      /command registrations must reference a non-empty command type/
     );
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
     assert.equal(editorGetExtensionRegistry(editor).commands.size, 0);
@@ -97,17 +70,7 @@ describe('extension method hard cut', () => {
             register() {},
           })
         ),
-      /Editor extension "setup-only-register" cannot use register\. Add setup instead\./
-    );
-    assert.throws(
-      () =>
-        editor.extend(
-          asExtensionInput({
-            name: 'operations-slot',
-            operationMiddlewares: [() => {}],
-          })
-        ),
-      /Editor extension "operations-slot" cannot use operationMiddlewares\. Add operations\.apply instead\./
+      /Editor extension "setup-only-register" cannot use register\. Declare extension resources directly\./
     );
     assert.throws(
       () =>
@@ -173,7 +136,7 @@ describe('extension method hard cut', () => {
     );
   });
 
-  it('rolls back earlier namespace groups when a later extension fails', () => {
+  it('discards earlier namespace groups when a later extension fails', () => {
     const editor = createEditor();
     const first = defineEditorExtension({
       name: 'first-table',
@@ -203,48 +166,63 @@ describe('extension method hard cut', () => {
     );
   });
 
-  it('installs setup output with options, cleanup signal, and extension-local state', () => {
+  it('activates options and cleanup signal around extension-owned state', () => {
     const editor = createEditor();
     const cleanupEvents: string[] = [];
-    let runtimeMode: EditorExtensionRuntimeState<'text' | 'cell'> | null = null;
+    let runtimeMode: {
+      cleanup: () => void;
+      get: () => 'cell' | 'text';
+      set: (value: 'cell' | 'text') => void;
+    } | null = null;
 
     const unextend = editor.extend(
       defineEditorExtension({
-        name: 'runtime-table',
-        options: { initialMode: 'text' as const },
-        setup(context) {
+        activate(_editor, context) {
           assert.equal(context.name, 'runtime-table');
           assert.equal(context.options.initialMode, 'text');
 
-          const mode = context.runtimeState<'text' | 'cell'>(
-            context.options.initialMode
-          );
+          let active = true;
+          let current: 'cell' | 'text' = context.options.initialMode;
+          const mode = {
+            cleanup() {
+              active = false;
+            },
+            get() {
+              if (!active) throw new Error('Extension state is inactive.');
+
+              return current;
+            },
+            set(value: 'cell' | 'text') {
+              if (!active) throw new Error('Extension state is inactive.');
+              current = value;
+            },
+          };
           runtimeMode = mode;
           context.signal.addEventListener('abort', () => {
             cleanupEvents.push(`abort:${mode.get()}`);
           });
-
-          return {
-            cleanup() {
-              cleanupEvents.push(`cleanup:${mode.get()}`);
-            },
-            state: {
-              table() {
-                return {
-                  mode: () => mode.get(),
-                };
+          context.onCleanup(() => {
+            cleanupEvents.push(`cleanup:${mode.get()}`);
+            mode.cleanup();
+          });
+        },
+        name: 'runtime-table',
+        options: { initialMode: 'text' as const },
+        state: {
+          table() {
+            return {
+              mode: () => runtimeMode?.get(),
+            };
+          },
+        },
+        tx: {
+          table() {
+            return {
+              setMode(nextMode: 'text' | 'cell') {
+                runtimeMode?.set(nextMode);
               },
-            },
-            tx: {
-              table() {
-                return {
-                  setMode(nextMode: 'text' | 'cell') {
-                    mode.set(nextMode);
-                  },
-                };
-              },
-            },
-          };
+            };
+          },
         },
       })
     );
@@ -272,10 +250,7 @@ describe('extension method hard cut', () => {
     unextend();
 
     assert.deepEqual(cleanupEvents, ['abort:cell', 'cleanup:cell']);
-    assert.throws(
-      () => runtimeMode?.get(),
-      /Editor extension runtime state has been cleaned up/
-    );
+    assert.throws(() => runtimeMode?.get(), /Extension state is inactive/);
     assert.equal(
       editor.read((state) => 'table' in state),
       false
@@ -317,109 +292,41 @@ describe('extension method hard cut', () => {
     );
   });
 
-  it('extension transform middleware can delegate and override insertText args', () => {
-    const editor = createEditor();
-    const seenText: string[] = [];
-
-    editorReplace(editor, {
-      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
-      selection: {
-        anchor: { path: [0, 0], offset: 3 },
-        focus: { path: [0, 0], offset: 3 },
-      },
-      marks: null,
-    });
-
-    editor.extend(
-      defineEditorExtension({
-        name: 'insert-text-transform',
-        transforms: {
-          insertText({ next, text }) {
-            seenText.push(text);
-
-            if (text === '?') {
-              return next({ text: '!' });
-            }
-
-            return next();
-          },
-        },
-      })
-    );
-
-    editor.update(() => {
-      editorInsertText(editor, '!');
-      editorInsertText(editor, '?');
-    });
-
-    assert.deepEqual(seenText, ['!', '?']);
-    assert.equal(editorString(editor, [0]), 'one!!');
-  });
-
-  it('receives normalized locations for node-target transforms', () => {
+  it('pure command handlers delegate, override, and extend one spec', () => {
+    const seenOffsets: number[] = [];
     const editor = createEditor({
+      extensions: [
+        defineEditorExtension({
+          name: 'insert-text-command',
+          commands: [
+            editorCommands.insertText.handle(({ command, state }, next) => {
+              seenOffsets.push(state.selection()?.anchor.offset ?? -1);
+              const spec = next({
+                ...command,
+                text: command.text.toUpperCase(),
+              });
+
+              if (!spec) return false;
+
+              return state.transaction.extend(spec, (tx) => {
+                seenOffsets.push(tx.selection()?.anchor.offset ?? -1);
+                tx.tags.add('extended-command');
+              });
+            }),
+          ],
+        }),
+      ],
       initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     });
-    const firstEntry = editor.read.nodes.get<Element>([0]);
-    assert(firstEntry);
-    const [first] = firstEntry;
-    const seen: unknown[] = [];
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'node-target-transform-spy',
-        transforms: {
-          setNodes({ next, options }) {
-            seen.push([options?.at, typeof options?.match]);
-            return next({ options });
-          },
-        },
-      })
-    );
-
-    editor.update.nodes.set(
-      { tone: 'quiet' },
-      { at: first, match: { type: 'paragraph' } }
-    );
-
-    assert.deepEqual(seen, [[[0], 'function']]);
-    const updatedEntry = editor.read.nodes.get<Element>([0]);
-    assert(updatedEntry);
-    assert.equal(updatedEntry[0].tone, 'quiet');
-  });
-
-  it('extension transform middleware receives transaction-local tx', () => {
-    const editor = createEditor();
-    const seenOffsets: number[] = [];
-
-    editorReplace(editor, {
-      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
-      selection: {
-        anchor: { path: [0, 0], offset: 3 },
-        focus: { path: [0, 0], offset: 3 },
-      },
-      marks: null,
+    editor.update((tx) => {
+      tx.selection.set({ path: [0, 0], offset: 3 });
     });
-
-    editor.extend(
-      defineEditorExtension({
-        name: 'transaction-local-transform',
-        transforms: {
-          insertText({ next, text, tx }) {
-            seenOffsets.push(tx.selection()?.anchor.offset ?? -1);
-            const handled = next({ text: text.toUpperCase() });
-            seenOffsets.push(tx.selection()?.anchor.offset ?? -1);
-
-            return handled;
-          },
-        },
-      })
-    );
-
     editorInsertText(editor, '!');
 
     assert.deepEqual(seenOffsets, [3, 4]);
     assert.equal(editorString(editor, [0]), 'one!');
+    assert.deepEqual(editorGetSnapshot(editor).version, 2);
   });
 
   it('extension clipboard middleware receives the owned transaction', () => {
@@ -430,10 +337,10 @@ describe('extension method hard cut', () => {
     editorReplace(editor, {
       children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
-      marks: null,
     });
 
     editor.extend(
@@ -455,59 +362,55 @@ describe('extension method hard cut', () => {
     assert.equal(hasTx, true);
   });
 
-  it('detects registered transform middleware by key', () => {
+  it('detects registered semantic command handlers by token', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          name: 'insert-break-transform',
-          transforms: {
-            insertBreak({ next }) {
-              return next();
-            },
-          },
+          name: 'insert-break-command',
+          commands: [
+            editorCommands.insertBreak.handle((_context, next) => next()),
+          ],
         }),
       ],
     });
 
-    assert.equal(hasTransformMiddleware(editor, 'insertText'), false);
-    assert.equal(hasTransformMiddleware(editor, 'insertBreak'), true);
+    assert.equal(hasCommandHandler(editor, editorCommands.insertText), false);
+    assert.equal(hasCommandHandler(editor, editorCommands.insertBreak), true);
 
     editor.extend(
       defineEditorExtension({
-        name: 'insert-text-transform',
-        transforms: {
-          insertText({ next }) {
-            return next();
-          },
-        },
+        name: 'insert-text-command',
+        commands: [
+          editorCommands.insertText.handle((_context, next) => next()),
+        ],
       })
     );
 
-    assert.equal(hasTransformMiddleware(editor, 'insertText'), true);
+    assert.equal(hasCommandHandler(editor, editorCommands.insertText), true);
   });
 
-  it('extension transform middleware handles deleteBackward by not calling next', () => {
+  it('a handled command can intentionally produce no document change', () => {
     const editor = createEditor();
     const seenUnits: string[] = [];
 
     editorReplace(editor, {
       children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     editor.extend(
       defineEditorExtension({
-        name: 'delete-backward-transform',
-        transforms: {
-          deleteBackward({ unit }) {
-            seenUnits.push(unit);
-            return true;
-          },
-        },
+        name: 'delete-backward-command',
+        commands: [
+          editorCommands.delete.handle(({ command, state }) => {
+            seenUnits.push(command.unit);
+            return state.transaction(() => {});
+          }),
+        ],
       })
     );
 
@@ -517,388 +420,35 @@ describe('extension method hard cut', () => {
     assert.equal(editorString(editor, [0]), 'one');
   });
 
-  it('extension transform middleware priority beats install order', () => {
+  it('command priority beats install order', () => {
     const editor = createEditor();
     const calls: string[] = [];
 
     editor.extend([
       defineEditorExtension({
-        name: 'low-delete-backward-transform',
-        transforms: {
-          deleteBackward({ next }) {
+        name: 'low-delete-backward-command',
+        commands: [
+          editorCommands.delete.handle((_context, next) => {
             calls.push('low');
             return next();
-          },
-        },
+          }),
+        ],
       }),
       defineEditorExtension({
-        name: 'high-delete-backward-transform',
+        name: 'high-delete-backward-command',
         priority: 10,
-        transforms: {
-          deleteBackward() {
+        commands: [
+          editorCommands.delete.handle(({ state }) => {
             calls.push('high');
-            return true;
-          },
-        },
+            return state.transaction(() => {});
+          }),
+        ],
       }),
     ]);
 
     editorDeleteBackward(editor);
 
     assert.deepEqual(calls, ['high']);
-  });
-
-  it('extension transform middleware covers every public mutating transform key', () => {
-    const createEditorWithTransformSpy = (seen: string[]) => {
-      const editor = createEditor();
-
-      editorReplace(editor, {
-        children: [
-          { type: 'paragraph', children: [{ text: 'one' }] },
-          { type: 'paragraph', children: [{ text: 'two' }] },
-        ],
-        selection: {
-          anchor: { path: [0, 0], offset: 1 },
-          focus: { path: [0, 0], offset: 2 },
-        },
-        marks: null,
-      });
-
-      editor.extend(
-        defineEditorExtension({
-          name: 'full-transform-spy',
-          transforms: {
-            addMark({ key }) {
-              assert.equal(key, 'bold');
-              seen.push('addMark');
-              return true;
-            },
-            collapse({ options }) {
-              assert.equal(options?.edge, 'start');
-              seen.push('collapse');
-              return true;
-            },
-            delete({ options }) {
-              assert.equal(options?.unit, 'character');
-              seen.push('delete');
-              return true;
-            },
-            deleteBackward({ unit }) {
-              assert.equal(unit, 'character');
-              seen.push('deleteBackward');
-              return true;
-            },
-            deleteForward({ unit }) {
-              assert.equal(unit, 'word');
-              seen.push('deleteForward');
-              return true;
-            },
-            deleteFragment({ options }) {
-              assert.equal(options?.direction, 'backward');
-              seen.push('deleteFragment');
-              return true;
-            },
-            deselect() {
-              seen.push('deselect');
-              return true;
-            },
-            insertBreak() {
-              seen.push('insertBreak');
-              return true;
-            },
-            insertFragment({ fragment }) {
-              assert.deepEqual(fragment, [
-                { type: 'paragraph', children: [{ text: 'fragment' }] },
-              ]);
-              seen.push('insertFragment');
-              return true;
-            },
-            insertNode({ node }) {
-              assert.deepEqual(node, {
-                type: 'paragraph',
-                children: [{ text: 'node' }],
-              });
-              seen.push('insertNode');
-              return true;
-            },
-            insertNodes({ nodes }) {
-              assert.equal(Array.isArray(nodes), true);
-              seen.push('insertNodes');
-              return true;
-            },
-            insertSoftBreak() {
-              seen.push('insertSoftBreak');
-              return true;
-            },
-            insertText({ text }) {
-              assert.equal(text, '!');
-              seen.push('insertText');
-              return true;
-            },
-            liftNodes({ options }) {
-              assert.deepEqual(options?.at, [0]);
-              seen.push('liftNodes');
-              return true;
-            },
-            mergeNodes({ options }) {
-              assert.deepEqual(options?.at, [1]);
-              seen.push('mergeNodes');
-              return true;
-            },
-            move({ options }) {
-              assert.equal(options?.distance, 1);
-              seen.push('move');
-              return true;
-            },
-            moveNodes({ options }) {
-              assert.deepEqual(options.to, [1]);
-              seen.push('moveNodes');
-              return true;
-            },
-            removeMark({ key }) {
-              assert.equal(key, 'bold');
-              seen.push('removeMark');
-              return true;
-            },
-            removeNodes({ options }) {
-              assert.deepEqual(options?.at, [0]);
-              seen.push('removeNodes');
-              return true;
-            },
-            select({ target }) {
-              assert.deepEqual(target, { path: [0, 0], offset: 0 });
-              seen.push('select');
-              return true;
-            },
-            setNodes({ props }) {
-              assert.deepEqual(props, { type: 'heading' });
-              seen.push('setNodes');
-              return true;
-            },
-            setPoint({ options, props }) {
-              assert.equal(options?.edge, 'anchor');
-              assert.equal(props.offset, 0);
-              seen.push('setPoint');
-              return true;
-            },
-            setSelection({ props }) {
-              assert.equal(props.anchor?.offset, 0);
-              seen.push('setSelection');
-              return true;
-            },
-            splitNodes({ options }) {
-              assert.equal(options?.always, true);
-              seen.push('splitNodes');
-              return true;
-            },
-            toggleMark({ key, value }) {
-              assert.equal(key, 'bold');
-              assert.equal(value, true);
-              seen.push('toggleMark');
-              return true;
-            },
-            unsetNodes({ props }) {
-              assert.deepEqual(props, ['bold']);
-              seen.push('unsetNodes');
-              return true;
-            },
-            unwrapNodes({ options }) {
-              assert.deepEqual(options?.at, [0]);
-              seen.push('unwrapNodes');
-              return true;
-            },
-            wrapNodes({ element }) {
-              assert.equal(element.type, 'quote');
-              seen.push('wrapNodes');
-              return true;
-            },
-          },
-        })
-      );
-
-      return editor;
-    };
-
-    const expectTransformHandled = (
-      name: string,
-      invoke: (editor: ReturnType<typeof createEditor>) => void
-    ) => {
-      const seen: string[] = [];
-      const editor = createEditorWithTransformSpy(seen);
-
-      invoke(editor);
-
-      assert.deepEqual(seen, [name]);
-    };
-
-    expectTransformHandled('addMark', (editor) =>
-      editorAddMark(editor, 'bold', true)
-    );
-    expectTransformHandled('collapse', (editor) =>
-      editorCollapse(editor, { edge: 'start' })
-    );
-    expectTransformHandled('delete', (editor) =>
-      editorDelete(editor, { unit: 'character' })
-    );
-    expectTransformHandled('deleteBackward', (editor) =>
-      editorDeleteBackward(editor)
-    );
-    expectTransformHandled('deleteForward', (editor) =>
-      editorDeleteForward(editor, { unit: 'word' })
-    );
-    expectTransformHandled('deleteFragment', (editor) =>
-      editorDeleteFragment(editor, { direction: 'backward' })
-    );
-    expectTransformHandled('deselect', (editor) => editorDeselect(editor));
-    expectTransformHandled('insertBreak', (editor) =>
-      editorInsertBreak(editor)
-    );
-    expectTransformHandled('insertFragment', (editor) =>
-      editorInsertFragment(editor, [
-        { type: 'paragraph', children: [{ text: 'fragment' }] },
-      ])
-    );
-    expectTransformHandled('insertNode', (editor) =>
-      editorInsertNode(editor, {
-        type: 'paragraph',
-        children: [{ text: 'node' }],
-      })
-    );
-    expectTransformHandled('insertNodes', (editor) =>
-      editorInsertNodes(editor, [
-        { type: 'paragraph', children: [{ text: 'nodes' }] },
-      ])
-    );
-    expectTransformHandled('insertSoftBreak', (editor) =>
-      editorInsertSoftBreak(editor)
-    );
-    expectTransformHandled('insertText', (editor) =>
-      editorInsertText(editor, '!')
-    );
-    expectTransformHandled('liftNodes', (editor) =>
-      editorLiftNodes(editor, { at: [0] })
-    );
-    expectTransformHandled('mergeNodes', (editor) =>
-      editorMergeNodes(editor, { at: [1] })
-    );
-    expectTransformHandled('move', (editor) =>
-      editorMove(editor, { distance: 1 })
-    );
-    expectTransformHandled('moveNodes', (editor) =>
-      editorMoveNodes(editor, { at: [0], to: [1] })
-    );
-    expectTransformHandled('removeMark', (editor) =>
-      editorRemoveMark(editor, 'bold')
-    );
-    expectTransformHandled('removeNodes', (editor) =>
-      editorRemoveNodes(editor, { at: [0] })
-    );
-    expectTransformHandled('select', (editor) =>
-      editorSelect(editor, { path: [0, 0], offset: 0 })
-    );
-    expectTransformHandled('setNodes', (editor) =>
-      editorSetNodes(editor, { type: 'heading' })
-    );
-    expectTransformHandled('setPoint', (editor) =>
-      editorSetPoint(editor, { offset: 0 }, { edge: 'anchor' })
-    );
-    expectTransformHandled('setSelection', (editor) =>
-      editorSetSelection(editor, {
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
-      })
-    );
-    expectTransformHandled('splitNodes', (editor) =>
-      editorSplitNodes(editor, { always: true })
-    );
-    expectTransformHandled('toggleMark', (editor) =>
-      editorToggleMark(editor, 'bold', true)
-    );
-    expectTransformHandled('unsetNodes', (editor) =>
-      editorUnsetNodes(editor, ['bold'])
-    );
-    expectTransformHandled('unwrapNodes', (editor) =>
-      editorUnwrapNodes(editor, { at: [0] })
-    );
-    expectTransformHandled('wrapNodes', (editor) =>
-      editorWrapNodes(editor, {
-        type: 'quote',
-        children: [],
-      })
-    );
-  });
-
-  it('extension transform middleware can delegate and override insertNode args', () => {
-    const editor = createEditor();
-    const seenNodes: unknown[] = [];
-
-    editorReplace(editor, {
-      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
-      selection: null,
-      marks: null,
-    });
-
-    editor.extend(
-      defineEditorExtension({
-        name: 'insert-node-transform',
-        transforms: {
-          insertNode({ next, node, options }) {
-            seenNodes.push(node);
-            return next({
-              node: {
-                type: 'paragraph',
-                children: [{ text: 'override' }],
-              },
-              options,
-            });
-          },
-        },
-      })
-    );
-
-    editorInsertNode(
-      editor,
-      { type: 'paragraph', children: [{ text: 'original' }] },
-      { at: [1] }
-    );
-
-    assert.deepEqual(seenNodes, [
-      { type: 'paragraph', children: [{ text: 'original' }] },
-    ]);
-    assert.deepEqual(editorGetSnapshot(editor).children, [
-      { type: 'paragraph', children: [{ text: 'one' }] },
-      { type: 'paragraph', children: [{ text: 'override' }] },
-    ]);
-  });
-
-  it('extension transform middleware rejects double next calls', () => {
-    const editor = createEditor();
-
-    editorReplace(editor, {
-      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
-      selection: {
-        anchor: { path: [0, 0], offset: 3 },
-        focus: { path: [0, 0], offset: 3 },
-      },
-      marks: null,
-    });
-
-    editor.extend(
-      defineEditorExtension({
-        name: 'double-next-transform',
-        transforms: {
-          insertText({ next }) {
-            next();
-            return next();
-          },
-        },
-      })
-    );
-
-    assert.throws(
-      () => editorInsertText(editor, '!'),
-      /Transform middleware next\(\) cannot be called more than once\./
-    );
   });
 
   it('validates peer dependencies and conflicts before mutating the editor', () => {

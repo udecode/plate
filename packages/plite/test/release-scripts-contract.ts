@@ -95,13 +95,14 @@ describe('release scripts contract', () => {
     const testBun = packageJson.scripts['test:bun'];
 
     assert.equal(testBun, undefined);
-    assert.equal(
-      packageJson.scripts['test:plite'],
-      'pnpm plite:test && pnpm plite:browser:test'
-    );
+    assert.equal(packageJson.scripts['test:plite'], 'pnpm plite:test');
     assert.match(
       packageJson.scripts['plite:test'],
       /--filter @platejs\/plite\b.* test/
+    );
+    assert.match(
+      packageJson.scripts['plite:test'],
+      /--filter @platejs\/browser\b.* test/
     );
     assert.equal(
       packageJson.scripts['plite:browser:test'],

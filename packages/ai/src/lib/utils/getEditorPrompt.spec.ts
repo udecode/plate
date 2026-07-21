@@ -1,5 +1,5 @@
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { BaseParagraphPlugin } from '@platejs/core';
+import { BaseParagraphPlugin, NodeIdPlugin } from '@platejs/core';
 import { type Value } from '@platejs/plite';
 import { createPlateEditor } from '@platejs/core/react';
 
@@ -7,8 +7,9 @@ import { getEditorPrompt } from './getEditorPrompt';
 
 const createEditor = () =>
   createPlateEditor<Value>({
-    plugins: [BaseParagraphPlugin, BlockSelectionPlugin],
+    plugins: [BaseParagraphPlugin, NodeIdPlugin, BlockSelectionPlugin],
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     },

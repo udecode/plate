@@ -1,5 +1,5 @@
 import { createBaseEditor } from '../../editor';
-import { getEditorPlugin } from '../../plugin';
+import { prepareParserPluginContext } from '../../utils';
 import { HtmlPlugin } from './HtmlPlugin';
 
 describe('HtmlPlugin', () => {
@@ -9,15 +9,22 @@ describe('HtmlPlugin', () => {
     expect(editor.getPlugin(HtmlPlugin).parser.format).toBe('text/html');
   });
 
-  it('deserializes the parsed document body', () => {
+  it('deserializes the parsed document body without a second fitter', () => {
     const editor = createBaseEditor();
 
-    const result = editor.getPlugin(HtmlPlugin).parser.deserialize?.({
-      ...getEditorPlugin(editor, HtmlPlugin),
-      data: '<p>Hello</p>',
-      dataTransfer: new DataTransfer(),
-      mimeType: 'text/html',
-    });
+    const createContext = prepareParserPluginContext(editor, HtmlPlugin);
+    const result = editor.read((state) =>
+      editor.getPlugin(HtmlPlugin).parser.deserialize?.({
+        ...createContext(state),
+        data: '<p>Hello</p>',
+        format: 'text/html',
+        source: {
+          files: [] as any,
+          getData: () => '<p>Hello</p>',
+          types: ['text/html'],
+        },
+      })
+    );
 
     expect(result).toEqual([{ children: [{ text: 'Hello' }], type: 'p' }]);
   });

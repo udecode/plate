@@ -7,8 +7,14 @@ editor API through `editor.plugin(FooPlugin).editor.api`.
 
 Replace Slate-era Core exports with Plite and Plate-owned names.
 
+Replace `pipeInsertDataQuery` with `prepareInsertDataQuery`, which compiles one
+resolved plugin query and runs it against an immutable editor state.
+
 Pass each render wrapper its owning plugin portal context and forward Plite DOM
 strategy props through Plate content.
+
+Render legacy decoration data through projection-backed leaves without coupling
+plugin identities to serialized mark names.
 
 Skip autofocus, input rule, and override work when lifecycle targets are unavailable.
 
@@ -30,6 +36,13 @@ editor.plugin(FooPlugin).api.foo.method();
 // After
 editor.plugin(FooPlugin).api.method();
 editor.plugin(FooPlugin).editor.api.foo.method();
+```
+
+Prepare parser queries once, then run them against read-only editor state:
+
+```tsx
+const canInsert = prepareInsertDataQuery(editor, ParserPlugin);
+const allowed = editor.read((state) => canInsert(state, options));
 ```
 
 Rename these exports:

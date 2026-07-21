@@ -1,7 +1,12 @@
 /** @jsx jsxt */
 
 import { createBaseEditor } from '@platejs/core';
-import type { Descendant } from '@platejs/plite';
+import {
+  ContentSlice,
+  type Descendant,
+  defineEditorExtension,
+  editorCommands,
+} from '@platejs/plite';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
@@ -16,7 +21,7 @@ const editorTest = (input: any, fragment: any, expected: any) => {
     value: input.children,
   });
 
-  editor.update.fragment.insert(fragment);
+  editor.update.fragment.replace(fragment);
 
   expect(editor.read.children()).toEqual(expected.children);
 };
@@ -730,6 +735,77 @@ describe('when pasting ul > 2 li fragment', () => {
   });
 
   describe('when selection not in li', () => {
+    for (const openDepth of [0, 1]) {
+      it(`delegates an ${openDepth === 0 ? 'closed' : 'open'} list-root slice unchanged to one core fit`, () => {
+        const input = (
+          <editor>
+            <hp>
+              one
+              <cursor />
+            </hp>
+          </editor>
+        ) as TestEditor;
+        const fragment = (
+          <fragment>
+            <hul>
+              <hli>
+                <hlic>two</hlic>
+              </hli>
+            </hul>
+          </fragment>
+        ) as any as Descendant[];
+        const editor = createBaseEditor({
+          plugins: [BaseListPlugin],
+          selection: input.selection,
+          value: input.children,
+        });
+        const seen: unknown[] = [];
+
+        editor.extend(
+          defineEditorExtension({
+            commands: [
+              editorCommands.replaceSlice.handle(({ command }, next) => {
+                seen.push(command.slice);
+
+                return next();
+              }),
+            ],
+            name: `list-root-delegation-${openDepth}`,
+          })
+        );
+
+        const slice = ContentSlice.fromJSON({
+          content: fragment,
+          openEnd: openDepth,
+          openStart: openDepth,
+        });
+        const profilerGlobal = globalThis as typeof globalThis & {
+          __PLITE_REACT_RENDER_PROFILER__?: {
+            acceptsCoreDuration: (id: string) => boolean;
+            record: (event: { id: string }) => void;
+          };
+        };
+        const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+        const events: string[] = [];
+
+        profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+          acceptsCoreDuration: (id) => id === 'slice-fit-input',
+          record: ({ id }) => {
+            if (id) events.push(id);
+          },
+        };
+
+        try {
+          editor.update.slice.replace(slice);
+        } finally {
+          profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+        }
+
+        expect(seen).toEqual([slice]);
+        expect(events).toEqual(['slice-fit-input']);
+      });
+    }
+
     it('paste the list', () => {
       const input = (
         <editor>

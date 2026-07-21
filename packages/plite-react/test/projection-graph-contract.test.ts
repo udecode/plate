@@ -98,6 +98,7 @@ describe('plite projection graph', () => {
     const separateKey = getPliteProjectionOwnerKey(separateOwner);
 
     const segments = PliteProjectionGraph.segmentRange(graph, {
+      kind: 'text',
       anchor: {
         point: point(undefined, [0, 0], 1),
       },
@@ -154,6 +155,7 @@ describe('plite projection graph', () => {
   it('keeps projection owner metadata outside serialized Plite points', () => {
     const graph = createSyncedBlocksProjectionGraph();
     const segments = PliteProjectionGraph.segmentRange(graph, {
+      kind: 'text',
       anchor: {
         point: point(undefined, [0, 0], 1),
       },

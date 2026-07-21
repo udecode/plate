@@ -1,6 +1,7 @@
 ---
 title: Plite migration-backbone lanes need browser contracts before completion
 date: 2026-04-28
+status: superseded
 category: docs/solutions/developer-experience
 module: plite migration backbone
 problem_type: developer_experience
@@ -16,6 +17,10 @@ tags: [plite, migration-backbone, browser-proof, completion-check, plite-browser
 ---
 
 # Plite migration-backbone lanes need browser contracts before completion
+
+> **Superseded architecture record.** The proof discipline remains useful, but
+> the examples use the removed operation replay runtime. Current collaboration
+> imports canonical changes through `tx.changes.apply(...)`.
 
 ## Problem
 

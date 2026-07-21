@@ -1,11 +1,13 @@
 /** @jsx jsx */
 
 import { jsx } from '../../..';
+import { insertContentSlice } from '../../../support/with-test.js';
 
 jsx;
 
 export const run = (editor, options = {}) => {
-  editor.fragment.insert(
+  insertContentSlice(
+    editor,
     <fragment>
       <inline>one</inline>
       <inline>two</inline>

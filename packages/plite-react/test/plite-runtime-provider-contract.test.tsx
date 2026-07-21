@@ -11,7 +11,12 @@ import {
   createEditorView,
   type Descendant,
   defineEditorExtension,
+  defineEditorSchema,
+  defineExtensionSlot,
+  defineFacet,
+  element,
   type Element,
+  schema,
 } from '@platejs/plite';
 import {
   EDITOR_TO_PENDING_ACTION,
@@ -74,14 +79,35 @@ const initialValue = () => ({
   roots: { footer: [paragraph('footer')], header: [paragraph('header')] },
 });
 
-const editableIsland = defineEditorExtension({
-  name: 'test-editable-island',
-  elements: [{ type: 'editable-void', void: 'editable-island' }],
+const editableIsland = defineEditorSchema({
+  elements: {
+    'editable-void': element({
+      contentRoot: {
+        content: schema.content.not(schema.content.text()),
+        slot: 'body',
+      },
+      void: 'editable-island',
+    }),
+  },
+  id: 'test-editable-island',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
 });
 
-const contentRootExtension = defineEditorExtension({
-  name: 'test-content-root',
-  elements: [{ type: 'details-content', contentRoot: { slot: 'body' } }],
+const contentRootExtension = defineEditorSchema({
+  elements: {
+    'details-content': element({
+      contentRoot: {
+        content: schema.content.not(schema.content.text()),
+        slot: 'body',
+      },
+    }),
+  },
+  id: 'test-content-root',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
 });
 
 const createRuntimeWrapper =
@@ -105,6 +131,48 @@ const createRootWrapper =
   };
 
 describe('PliteRuntime provider contract', () => {
+  test('publishes one React runtime revision for slot reconfiguration', async () => {
+    const mode = defineFacet<string, string>({
+      combine: (values) => values.at(-1) ?? 'missing',
+      key: 'react-runtime-configuration-mode',
+    });
+    const slot = defineExtensionSlot('react-runtime-configuration-mode');
+    const extension = (value: string) =>
+      defineEditorExtension({
+        facets: [mode.of(value)],
+        name: `react-runtime-configuration-mode-${value}`,
+      });
+    const editor = createReactEditor({
+      extensions: [slot.of(extension('read'))] as const,
+      initialValue: [paragraph('body')],
+    });
+    const renders: string[] = [];
+    const Probe = () => {
+      const value = useEditorState((state) => state.facet(mode));
+
+      renders.push(value);
+
+      return <span data-testid="configuration-mode">{value}</span>;
+    };
+
+    render(
+      <Plite editor={editor}>
+        <Probe />
+      </Plite>
+    );
+
+    expect(screen.getByTestId('configuration-mode')).toHaveTextContent('read');
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.extensions.reconfigure(slot, extension('write'));
+      });
+    });
+
+    expect(screen.getByTestId('configuration-mode')).toHaveTextContent('write');
+    expect(renders.at(-1)).toBe('write');
+  });
+
   test('usePliteChildRoot renders same-runtime rich island content', async () => {
     const childRoot = 'island-a:body';
     const editor = createReactEditor({
@@ -391,6 +459,7 @@ describe('PliteRuntime provider contract', () => {
     });
 
     const expectedSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     };
@@ -466,7 +535,7 @@ describe('PliteRuntime provider contract', () => {
       { wrapper: createRootWrapper() }
     );
 
-    expect(main.result.current).toEqual({ root: 'main', text: 'body' });
+    expect(main.result.current).toEqual({ root: undefined, text: 'body' });
 
     const header = renderHook(
       () => ({
@@ -570,6 +639,7 @@ describe('PliteRuntime provider contract', () => {
     await act(async () => {
       runtime.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 6, root: 'header' },
           focus: { path: [0, 0], offset: 6, root: 'header' },
         });
@@ -577,6 +647,7 @@ describe('PliteRuntime provider contract', () => {
     });
 
     expect(result.current).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 6, root: 'header' },
       focus: { path: [0, 0], offset: 6, root: 'header' },
     });
@@ -584,6 +655,7 @@ describe('PliteRuntime provider contract', () => {
     await act(async () => {
       createEditorView(runtime).update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 4 },
           focus: { path: [0, 0], offset: 4 },
         });
@@ -612,7 +684,7 @@ describe('PliteRuntime provider contract', () => {
     expect(result.current).toBe('footer');
   });
 
-  test('usePliteRuntimeState forwards operations to shouldUpdate filters', async () => {
+  test('usePliteRuntimeState forwards commits to shouldUpdate filters', async () => {
     let runtime!: ReturnType<typeof usePliteRuntime>;
     const shouldUpdate = vi.fn(() => false);
 
@@ -642,11 +714,15 @@ describe('PliteRuntime provider contract', () => {
 
     expect(shouldUpdate).toHaveBeenCalled();
     expect(shouldUpdate.mock.calls.at(-1)).toEqual([
-      expect.objectContaining({ childrenChanged: true }),
-      expect.arrayContaining([
-        expect.objectContaining({ type: 'insert_node' }),
-      ]),
+      expect.objectContaining({
+        changed: expect.objectContaining({
+          has: expect.any(Function),
+        }),
+      }),
     ]);
+    expect(shouldUpdate.mock.calls.at(-1)?.[0].changed.has('document')).toBe(
+      true
+    );
   });
 
   test('usePliteRuntimeState catches commits made before runtime subscription starts', async () => {
@@ -814,6 +890,7 @@ describe('PliteRuntime provider contract', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -839,6 +916,7 @@ describe('PliteRuntime provider contract', () => {
 
       expect(update).not.toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -1032,6 +1110,7 @@ describe('PliteRuntime provider contract', () => {
     await act(async () => {
       headerEditor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 3 },
           focus: { path: [0, 0], offset: 3 },
         });
@@ -1058,15 +1137,13 @@ describe('PliteRuntime provider contract', () => {
     });
   });
 
-  test('runtime views share one document subscription and focus listener pair', () => {
+  test('runtime views do not install document focus listeners', () => {
     const addEventListener = vi.spyOn(document, 'addEventListener');
     const RuntimeViews = () => {
       const runtime = usePliteRuntime({ initialValue: initialValue() });
-      const subscribe = vi.fn(runtime.subscribe);
-      const instrumentedRuntime = { ...runtime, subscribe };
 
       return (
-        <PliteRuntime runtime={instrumentedRuntime}>
+        <PliteRuntime runtime={runtime}>
           <Plite root="header">
             <span />
           </Plite>
@@ -1084,10 +1161,10 @@ describe('PliteRuntime provider contract', () => {
 
     expect(
       addEventListener.mock.calls.filter(([event]) => event === 'focusin')
-    ).toHaveLength(1);
+    ).toHaveLength(0);
     expect(
       addEventListener.mock.calls.filter(([event]) => event === 'focusout')
-    ).toHaveLength(1);
+    ).toHaveLength(0);
   });
 
   test('sibling Plite roots receive distinct editor view objects', () => {
@@ -1389,6 +1466,7 @@ describe('PliteRuntime provider contract', () => {
     render(<RuntimeViews />);
 
     const expectedSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 6, root: 'header' },
       focus: { path: [0, 0], offset: 6, root: 'header' },
     };
@@ -1469,6 +1547,7 @@ describe('PliteRuntime provider contract', () => {
     });
 
     const expectedSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 7, root: 'header' },
       focus: { path: [0, 0], offset: 7, root: 'header' },
     };

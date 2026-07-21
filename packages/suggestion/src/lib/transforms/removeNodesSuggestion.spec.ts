@@ -8,6 +8,7 @@ describe('removeNodesSuggestion', () => {
     const editor = createBaseEditor({
       plugins: [BaseSuggestionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -29,6 +30,7 @@ describe('removeNodesSuggestion', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },

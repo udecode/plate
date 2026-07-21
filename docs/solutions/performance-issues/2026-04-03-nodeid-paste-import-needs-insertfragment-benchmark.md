@@ -1,13 +1,13 @@
 ---
-title: NodeId paste/import work needs a dedicated `insertFragment` benchmark
+title: NodeId paste/import work needs a dedicated fragment replacement benchmark
 date: 2026-04-03
 category: docs/solutions/performance-issues
 module: NodeId paste/import
 problem_type: performance_issue
 component: tooling
 symptoms:
-  - "`init-dissection` looked good, but it did not exercise the real `withNodeId` insert path used by paste/import flows"
-  - "It was still unclear whether more `withNodeId` rewrites would buy anything meaningful for real fragment insertion"
+  - "`init-dissection` looked good, but it did not exercise the NodeIdPlugin transaction-change path used by paste/import flows"
+  - "It was still unclear whether more NodeId insertion work would buy anything meaningful for real fragment replacement"
   - "Static normalization numbers risked sending follow-up work in the wrong direction"
 root_cause: inadequate_documentation
 resolution_type: code_fix
@@ -15,30 +15,30 @@ severity: medium
 tags:
   - plate
   - nodeid
-  - withnodeid
-  - insertfragment
+  - document-change
+  - replace-slice
   - paste
   - import
   - benchmark
   - performance
 ---
 
-# NodeId paste/import work needs a dedicated `insertFragment` benchmark
+# NodeId paste/import work needs a dedicated fragment replacement benchmark
 
 ## Problem
 
-`NodeIdPlugin` already had a clean init-time story, but the expensive real-world
-path for copy/paste and import lives inside `withNodeId` during fragment
-insertion. The existing `init-dissection` lane did not touch that path.
+`NodeIdPlugin` already had a clean init-time story, but copy/paste and import
+exercise its transaction-change correction after a fragment replacement. The
+existing `init-dissection` lane did not touch that path.
 
 That meant we could keep shaving the wrong seam and still have no honest answer
-about whether `withNodeId` deserved more surgery.
+about whether NodeId insertion handling deserved more surgery.
 
 ## Symptoms
 
 - `init-dissection` only timed construction, initialization, and pure
   `normalizeNodeId(...)`.
-- The optimized `withNodeId` insert path still had no dedicated benchmark lane.
+- The NodeId insertion correction still had no dedicated benchmark lane.
 - Any argument about paste/import cost was half evidence and half vibes.
 
 ## What Didn't Work
@@ -47,7 +47,7 @@ about whether `withNodeId` deserved more surgery.
   not the same path.
 - Guessing from unit tests alone. Tests can prove correctness, not the shape of
   the runtime bill.
-- Doing more blind `withNodeId` rewrites before measuring duplicate-id paste
+- Doing more blind NodeId insertion rewrites before measuring duplicate-id paste
   directly.
 
 ## Solution
@@ -55,7 +55,15 @@ about whether `withNodeId` deserved more surgery.
 Add a dedicated `nodeid-fragment` benchmark lane to
 [`/dev/editor-perf`](/Users/zbeyens/git/plate-2/apps/www/src/app/dev/editor-perf/page.tsx).
 
-The new lane times real `editor.tf.insertFragment(...)` work for four cases:
+The lane times a real content-slice replacement:
+
+```ts
+editor.update((tx) => {
+  tx.fragment.replace(fragment);
+});
+```
+
+It covers four cases:
 
 - NodeId off, raw import
 - NodeId on, raw import
@@ -67,7 +75,7 @@ It also records the counters that actually explain the cost:
 - ids assigned during insertion
 - duplicate lookup count
 - duplicate lookup time
-- `insert_node` operation count
+- `replaceSlice` duration
 
 The fragment builder intentionally separates two shapes:
 
@@ -102,7 +110,7 @@ That means:
 So the benchmark changed the conclusion:
 
 - do not keep optimizing init-time NodeId because paste/import feels scary
-- only do more `withNodeId` work if you are targeting duplicate lookup cost
+- only do more NodeId insertion work if you are targeting duplicate lookup cost
 
 ## Prevention
 

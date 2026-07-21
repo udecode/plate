@@ -195,7 +195,7 @@ describe('PlateEditor core package', () => {
   describe('Plugin', () => {
     const BoldPlugin = createBasePlugin<'bold'>({
       key: 'bold',
-      node: { isLeaf: true },
+      node: { mark: true },
       parsers: {
         html: {
           deserializer: {

@@ -19,7 +19,8 @@ const getHookOrderErrors = (errorSpy: any) =>
 
     return (
       message.includes('change in the order of Hooks') ||
-      message.includes('Rendered more hooks')
+      message.includes('Rendered more hooks') ||
+      message.includes('Rendered fewer hooks')
     );
   });
 
@@ -64,7 +65,7 @@ it('render with render.leaf and isDecoration=false', () => {
     key: 'test',
     node: {
       isDecoration: false,
-      isLeaf: true,
+      mark: true,
     },
     render: {
       leaf: ({ children }: ChildrenProps) => (
@@ -98,7 +99,7 @@ it('render with render.leaf and isDecoration=true', () => {
     key: 'test',
     node: {
       isDecoration: true,
-      isLeaf: true,
+      mark: true,
     },
     render: {
       leaf: ({ children }: ChildrenProps) => (
@@ -131,7 +132,7 @@ it('keeps the outer leaf attributes for render.as leaf plugins', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'test',
     },
     render: {
@@ -167,7 +168,7 @@ it('nests multiple simple render.as leaf plugins without losing outer attributes
   const boldPlugin = createBasePlugin({
     key: 'bold',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'bold',
     },
     render: {
@@ -177,7 +178,7 @@ it('nests multiple simple render.as leaf plugins without losing outer attributes
   const italicPlugin = createBasePlugin({
     key: 'italic',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'italic',
     },
     render: {
@@ -218,7 +219,7 @@ it('skips inactive leaf renderers', () => {
   const boldPlugin = createBasePlugin({
     key: 'bold',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'bold',
     },
     render: {
@@ -232,7 +233,7 @@ it('skips inactive leaf renderers', () => {
   const italicPlugin = createBasePlugin({
     key: 'italic',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'italic',
     },
     render: {
@@ -274,7 +275,7 @@ it('keeps complex leaf renderer hooks stable when a mark activates', () => {
     const testPlugin = createBasePlugin({
       key: 'test',
       node: {
-        isLeaf: true,
+        mark: true,
         type: 'test',
       },
       render: {
@@ -323,11 +324,54 @@ it('keeps complex leaf renderer hooks stable when a mark activates', () => {
   }
 });
 
+it('keeps hooks stable when the projection segment count changes', () => {
+  const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
+
+  try {
+    const testPlugin = createBasePlugin({
+      key: 'test',
+      node: {
+        mark: true,
+        type: 'test',
+      },
+    });
+    const editor = createPlateEditor({
+      navigationFeedback: false,
+      plugins: [testPlugin],
+    });
+    const renderLeaf = pipeRenderLeaf(editor)!;
+
+    const ProjectedLeaves = ({ count }: { count: number }) => (
+      <>
+        {Array.from({ length: count }, (_, index) =>
+          renderLeaf({
+            attributes: {
+              ...attributes,
+              'data-testid': `Leaf-${index}`,
+            },
+            children: `segment ${index}`,
+            leaf: text,
+            leafPosition: { end: index + 1, start: index },
+            text,
+          } as any)
+        )}
+      </>
+    );
+
+    const { rerender } = render(<ProjectedLeaves count={2} />);
+
+    expect(() => rerender(<ProjectedLeaves count={1} />)).not.toThrow();
+    expect(getHookOrderErrors(errorSpy)).toEqual([]);
+  } finally {
+    errorSpy.mockRestore();
+  }
+});
+
 it('uses node.type to activate leaf renderers when key differs', () => {
   const simplePlugin = createBasePlugin({
     key: 'simple',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'simpleMark',
     },
     render: {
@@ -337,7 +381,7 @@ it('uses node.type to activate leaf renderers when key differs', () => {
   const complexPlugin = createBasePlugin({
     key: 'complex',
     node: {
-      isLeaf: true,
+      mark: true,
       type: 'complexMark',
     },
     render: {
@@ -374,11 +418,58 @@ it('uses node.type to activate leaf renderers when key differs', () => {
   expect(getByTestId('complex-leaf')).toBeInTheDocument();
 });
 
+it('renders legacy decoration data from projection slices', () => {
+  const searchPlugin = createBasePlugin({
+    key: 'searchHighlight',
+    node: {
+      mark: true,
+      type: 'search_highlight',
+    },
+    render: {
+      leaf: ({ children }: ChildrenProps) => (
+        <span data-testid="search-highlight">{children}</span>
+      ),
+    },
+  });
+  const editor = createPlateEditor({
+    navigationFeedback: false,
+    plugins: [searchPlugin],
+  });
+  const Leaf = pipeRenderLeaf(editor)! as any;
+  const undecoratedText = { text: 'editable' } as any;
+
+  const { getByTestId } = render(
+    <Leaf
+      attributes={attributes}
+      leaf={undecoratedText}
+      segment={{
+        end: 8,
+        marks: {},
+        slices: [
+          {
+            data: { search_highlight: true },
+            end: 8,
+            key: 'search:0',
+            start: 0,
+          },
+        ],
+        start: 0,
+        text: 'editable',
+      }}
+      text={undecoratedText}
+    >
+      editable
+    </Leaf>
+  );
+
+  expect(getByTestId('search-highlight')).toBeInTheDocument();
+});
+
 it('keeps plugin leafProps behavior', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
     node: {
-      isLeaf: true,
+      mark: true,
       leafProps: {
         'data-leaf-probe': 'yes',
       },
@@ -414,7 +505,7 @@ it('render with render.node', () => {
     key: 'test',
     node: {
       isDecoration: false,
-      isLeaf: true,
+      mark: true,
     },
   });
 
@@ -448,12 +539,55 @@ it('returns the custom text renderer unchanged when no plugin work exists', () =
   ).toBe(renderText);
 });
 
+it('keeps text hooks stable when the projection segment count changes', () => {
+  const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
+
+  try {
+    const testPlugin = createBasePlugin({
+      key: 'test',
+      node: {
+        isDecoration: false,
+        mark: true,
+        type: 'test',
+      },
+    });
+    const editor = createPlateEditor({
+      navigationFeedback: false,
+      plugins: [testPlugin],
+    });
+    const renderText = pipeRenderText(editor)!;
+    const activeText = { test: true, text: 'test' } as any;
+
+    const ProjectedTexts = ({ count }: { count: number }) => (
+      <>
+        {Array.from({ length: count }, (_, index) =>
+          renderText({
+            attributes: {
+              ...attributes,
+              'data-testid': `Text-${index}`,
+            },
+            children: `segment ${index}`,
+            text: activeText,
+          } as any)
+        )}
+      </>
+    );
+
+    const { rerender } = render(<ProjectedTexts count={2} />);
+
+    expect(() => rerender(<ProjectedTexts count={1} />)).not.toThrow();
+    expect(getHookOrderErrors(errorSpy)).toEqual([]);
+  } finally {
+    errorSpy.mockRestore();
+  }
+});
+
 it('keeps the outer text attributes for render.as text plugins', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
     node: {
       isDecoration: false,
-      isLeaf: true,
+      mark: true,
       type: 'test',
     },
     render: {
@@ -488,7 +622,7 @@ it('skips inactive text renderers', () => {
     key: 'bold',
     node: {
       isDecoration: false,
-      isLeaf: true,
+      mark: true,
       type: 'bold',
     },
     render: {
@@ -503,7 +637,7 @@ it('skips inactive text renderers', () => {
     key: 'italic',
     node: {
       isDecoration: false,
-      isLeaf: true,
+      mark: true,
       type: 'italic',
     },
     render: {
@@ -541,7 +675,7 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
       key: 'test',
       node: {
         isDecoration: false,
-        isLeaf: true,
+        mark: true,
         type: 'test',
       },
       render: {
@@ -585,7 +719,7 @@ it('keeps plugin textProps behavior', () => {
     key: 'test',
     node: {
       isDecoration: false,
-      isLeaf: true,
+      mark: true,
       textProps: {
         'data-text-probe': 'yes',
       },

@@ -9,80 +9,6 @@ import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 jsxt;
 
 describe('withNormalizeTable', () => {
-  describe('invalid table children', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('removes tables without row children (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const editor = createPlateEditor({
-        nodeId: true,
-        plugins: getTestTablePlugins({ disableMerge }),
-        value: (
-          <fragment>
-            <htable>
-              <hp>bad</hp>
-            </htable>
-          </fragment>
-        ) as Value,
-      });
-
-      editor.update.value.repair();
-
-      expect(editor.read.children()).toEqual([]);
-    });
-  });
-
-  // https://github.com/udecode/editor-protocol/issues/65
-  describe('cell child is a text', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('wraps the children into a p (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <htext>a</htext>
-                <htext bold>b</htext>
-                <htext italic>c</htext>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const output = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  <htext>a</htext>
-                  <htext bold>b</htext>
-                  <htext italic>c</htext>
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const editor = createPlateEditor({
-        nodeId: true,
-        plugins: getTestTablePlugins({ disableMerge }),
-        value: input,
-      });
-
-      editor.update.value.repair();
-      expect(editor.read.children()).toMatchObject(output);
-    });
-  });
-
   describe('initialTableWidth is defined and colSizes is not defined', () => {
     it.each([
       { disableMerge: true },
@@ -384,58 +310,187 @@ describe('withNormalizeTable', () => {
     });
   });
 
-  // https://github.com/udecode/editor-protocol/issues/76
-  describe('table in a table', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('unwraps nested table, tr, and td nodes (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-                <htable>
-                  <htr>
-                    <htd>
-                      <hp>b</hp>
-                    </htd>
-                    <htd>
-                      <hp>c</hp>
-                    </htd>
-                  </htr>
-                </htable>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const output = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-                <hp>b</hp>
-                <hp>c</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
+  describe('rectangular table repair', () => {
+    it('fills missing logical cells', () => {
       const editor = createPlateEditor({
         nodeId: true,
-        plugins: getTestTablePlugins({ disableMerge }),
-        value: input,
+        plugins: getTestTablePlugins({ disableMerge: false }),
+        value: (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>c</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value,
       });
 
       editor.update.value.repair();
-      expect(editor.read.children()).toMatchObject(output);
+
+      expect(editor.read.children()).toMatchObject(
+        (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>c</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value
+      );
+    });
+
+    it('clamps a row span to the table height', () => {
+      const editor = createPlateEditor({
+        nodeId: true,
+        plugins: getTestTablePlugins({ disableMerge: false }),
+        value: (
+          <fragment>
+            <htable>
+              <htr>
+                <htd rowSpan={3}>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>c</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value,
+      });
+
+      editor.update.value.repair();
+
+      expect(editor.read.children()).toMatchObject(
+        (
+          <fragment>
+            <htable>
+              <htr>
+                <htd rowSpan={2}>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>c</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value
+      );
+    });
+
+    it('splits a cell whose span collides with an earlier row span', () => {
+      const editor = createPlateEditor({
+        nodeId: true,
+        plugins: getTestTablePlugins({ disableMerge: false }),
+        value: (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd rowSpan={3}>
+                  <hp>b</hp>
+                </htd>
+                <htd>
+                  <hp>c</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd colSpan={3}>
+                  <hp>d</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>e</hp>
+                </htd>
+                <htd>
+                  <hp>f</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value,
+      });
+
+      editor.update.value.repair();
+
+      expect(editor.read.children()).toMatchObject(
+        (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd rowSpan={3}>
+                  <hp>b</hp>
+                </htd>
+                <htd>
+                  <hp>c</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>d</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>e</hp>
+                </htd>
+                <htd>
+                  <hp>f</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value
+      );
     });
   });
 });

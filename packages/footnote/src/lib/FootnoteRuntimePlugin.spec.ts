@@ -88,9 +88,36 @@ describe('BaseFootnoteReferencePlugin Plite runtime', () => {
     expect(footnote.definition({ identifier: '2' })?.[1]).toEqual([1]);
   });
 
+  it('renumbers a definition inserted earlier in the same transaction', () => {
+    const editor = createFootnoteRuntimeEditor({
+      value: [
+        {
+          children: [{ children: [{ text: 'one' }], type: 'p' }],
+          identifier: '1',
+          type: 'footnoteDefinition',
+        },
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.nodes.insert(
+        {
+          children: [{ children: [{ text: 'duplicate' }], type: 'p' }],
+          identifier: '1',
+          type: 'footnoteDefinition',
+        },
+        { at: [1] }
+      );
+      tx.footnote.normalizeDuplicateDefinition({ path: [1] });
+    });
+
+    expect(editor.read.nodes.get([1])?.[0]).toMatchObject({ identifier: '2' });
+  });
+
   it('inserts a footnote reference and definition through the runtime transaction group', () => {
     const editor = createFootnoteRuntimeEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
@@ -119,6 +146,7 @@ describe('BaseFootnoteReferencePlugin Plite runtime', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });
@@ -152,6 +180,7 @@ describe('BaseFootnoteReferencePlugin Plite runtime', () => {
 
     expect(didFocusDefinition).toBe(true);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -162,6 +191,7 @@ describe('BaseFootnoteReferencePlugin Plite runtime', () => {
 
     expect(didFocusReference).toBe(true);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });

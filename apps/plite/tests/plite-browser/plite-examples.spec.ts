@@ -41,7 +41,11 @@ const openPliteExample = async (
   });
 
 const getHistoryHotkeys = async (page: Parameters<typeof openExample>[0]) => {
-  const isMac = await page.evaluate(() => /Mac OS X/.test(navigator.userAgent));
+  const isMac = await page.evaluate(
+    () =>
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+  );
 
   return {
     redo: isMac ? 'Meta+Shift+Z' : 'Control+Shift+Z',
@@ -145,6 +149,7 @@ test.describe('Plite app example routes', () => {
       const focusOffset = 'This is editable'.length;
 
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: focusOffset },
       });
@@ -156,6 +161,7 @@ test.describe('Plite app example routes', () => {
         .poll(() => page.evaluate(() => window.getSelection()?.toString()))
         .toBe('This is editable');
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: focusOffset },
       });
@@ -181,6 +187,7 @@ test.describe('Plite app example routes', () => {
 
       if (testInfo.project.name === 'mobile') {
         await editor.selection.select({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         });

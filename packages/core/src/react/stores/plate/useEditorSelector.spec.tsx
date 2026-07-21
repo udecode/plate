@@ -37,6 +37,7 @@ describe('useEditorSelector', () => {
 
     act(() => {
       editor.update.selection.set({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });

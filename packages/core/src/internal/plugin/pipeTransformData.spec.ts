@@ -1,6 +1,7 @@
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { pipeTransformData } from './pipeTransformData';
+import { prepareParserRegistry } from './prepareParserRegistry';
 
 const createParserEditor = (
   plugins: NonNullable<Parameters<typeof createBaseEditor>[0]>['plugins']
@@ -32,11 +33,13 @@ describe('pipeTransformData', () => {
 
     const editor = createParserEditor([firstPlugin, secondPlugin]);
 
-    const result = pipeTransformData(editor, [firstPlugin, secondPlugin], {
-      data: 'start',
-      dataTransfer: {} as DataTransfer,
-      mimeType: 'text/plain',
-    });
+    const result = editor.read((state) =>
+      pipeTransformData(state, prepareParserRegistry(editor).plugins, {
+        data: 'start',
+        format: 'text/plain',
+        source: { files: [] as any, getData: () => '', types: [] },
+      })
+    );
 
     expect(result).toBe('start-alpha-beta');
     expect(calls).toEqual(['first:start', 'second:start-alpha']);
@@ -53,11 +56,13 @@ describe('pipeTransformData', () => {
 
     const editor = createParserEditor([passivePlugin, activePlugin]);
 
-    const result = pipeTransformData(editor, [passivePlugin, activePlugin], {
-      data: 'start',
-      dataTransfer: {} as DataTransfer,
-      mimeType: 'text/plain',
-    });
+    const result = editor.read((state) =>
+      pipeTransformData(state, prepareParserRegistry(editor).plugins, {
+        data: 'start',
+        format: 'text/plain',
+        source: { files: [] as any, getData: () => '', types: [] },
+      })
+    );
 
     expect(result).toBe('start-done');
   });

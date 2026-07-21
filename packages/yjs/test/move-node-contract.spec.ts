@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant, Operation } from '@platejs/plite';
+import type { Descendant } from '@platejs/plite';
 import { string as editorString } from '@platejs/plite/internal';
 
 import {
+  assertCanonicalYjsTrace,
+  clearYjsTrace,
   connectYjsPeerAndSync,
   createSeededYjsPeers,
   createYjsPeer,
@@ -15,7 +17,6 @@ import {
   type Peer,
   paragraph,
   readPeerChildren,
-  recordOperationTypes,
   redoYjsPeerAndSync,
   syncConnectedPeers,
   undoYjsPeerAndSync,
@@ -100,37 +101,18 @@ const appendNestedRemoteAlpha = (peer: Peer): void => {
   });
 };
 
-const collectMoveOperations = (): Operation['type'][] => {
-  const peer = createPeer('b');
-  const operations = recordOperationTypes(peer, {
-    name: 'move-operation-recorder',
-  });
-  moveFirstBlockToEnd(peer);
-
-  return operations;
-};
-
 describe('@platejs/yjs move_node collaboration contract', () => {
-  it('characterizes public moveNodes as move_node', () => {
-    assert.deepEqual(collectMoveOperations(), ['move_node']);
-  });
-
-  it('applies local offline same-parent move without replacing the original Yjs node', () => {
+  it('applies a local offline same-parent move as a canonical change', () => {
     const peer = createPeer('b');
-    const original = getVisibleYjsNodeAt(peer, [0]);
+    const moved = getVisibleYjsNodeAt(peer, [0]);
 
     disconnectAndClearYjsTrace(peer);
     moveFirstBlockToEnd(peer);
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['beta', 'gamma', 'alpha']);
-    assert.equal(getVisibleYjsNodeAt(peer, [2]), original);
-    assert.deepEqual(getYjsTrace(peer), [
-      {
-        fallback: 'virtual-move-placeholder',
-        mode: 'traceable-fallback',
-        operationType: 'move_node',
-      },
-    ]);
+    assert.equal(getVisibleYjsNodeAt(peer, [2]), moved);
+    assertCanonicalYjsTrace(peer);
+    assert.equal(getYjsTrace(peer)[0]?.tokenLengthNodes, 0);
   });
 
   it('preserves concurrent remote text when an offline same-parent move reconnects', () => {
@@ -152,7 +134,22 @@ describe('@platejs/yjs move_node collaboration contract', () => {
     }
   });
 
-  it('undoes and redoes only the local same-parent move intent after reconnect', () => {
+  it('updates a relocated node without a snapshot fallback', () => {
+    const peer = createPeer('b');
+    const moved = getVisibleYjsNodeAt(peer, [0]);
+
+    moveFirstBlockToEnd(peer);
+    clearYjsTrace(peer);
+    peer.editor.update.text.insert('!', {
+      at: { path: [2, 0], offset: 'alpha'.length },
+    });
+
+    assert.equal(getVisibleYjsNodeAt(peer, [2]), moved);
+    assert.deepEqual(getPeerTopLevelTexts(peer), ['beta', 'gamma', 'alpha!']);
+    assertCanonicalYjsTrace(peer);
+  });
+
+  it('undoes and redoes only the local same-parent move after reconnect', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 
@@ -177,22 +174,14 @@ describe('@platejs/yjs move_node collaboration contract', () => {
     }
   });
 
-  it('applies local offline cross-parent move without replacing the original Yjs node', () => {
+  it('applies a local offline cross-parent move as a canonical change', () => {
     const peer = createPeer('b', undefined, nestedInitialValue());
-    const original = getVisibleYjsNodeAt(peer, [0, 0]);
 
     disconnectAndClearYjsTrace(peer);
     moveNestedBlockToSecondSection(peer);
 
     assert.deepEqual(nestedTexts(peer), [['beta'], ['gamma', 'alpha']]);
-    assert.equal(getVisibleYjsNodeAt(peer, [1, 1]), original);
-    assert.deepEqual(getYjsTrace(peer), [
-      {
-        fallback: 'virtual-move-placeholder',
-        mode: 'traceable-fallback',
-        operationType: 'move_node',
-      },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
   it('moves a sibling before a leading virtual moved child', () => {
@@ -203,22 +192,48 @@ describe('@platejs/yjs move_node collaboration contract', () => {
     ]);
 
     peer.editor.update.nodes.move({ at: [1], to: [0, 0] });
-    const moved = getVisibleYjsNodeAt(peer, [0, 0]);
-    const before = getVisibleYjsNodeAt(peer, [1]);
-
     disconnectAndClearYjsTrace(peer);
     peer.editor.update.nodes.move({ at: [1], to: [0, 0] });
 
     assert.deepEqual(nestedTexts(peer), [['before', 'moved']]);
-    assert.equal(getVisibleYjsNodeAt(peer, [0, 0]), before);
-    assert.equal(getVisibleYjsNodeAt(peer, [0, 1]), moved);
-    assert.deepEqual(getYjsTrace(peer), [
-      {
-        fallback: 'virtual-move-placeholder',
-        mode: 'traceable-fallback',
-        operationType: 'move_node',
-      },
-    ]);
+    assertCanonicalYjsTrace(peer);
+  });
+
+  it('keeps an untouched projected sibling on the sparse event path', () => {
+    const peers = createSeededYjsPeers({
+      children: [section(), paragraph('moved'), paragraph('sibling')],
+      clientIds: ['a', 'b'],
+      numericClientIds: { a: 1, b: 2 },
+    });
+    const [a, b] = peers;
+
+    b.editor.update.nodes.move({ at: [1], to: [0, 0] });
+    syncConnectedPeers(peers);
+    b.editor.update.text.insert('!', {
+      at: { path: [1, 0], offset: 'sibling'.length },
+    });
+    syncConnectedPeers(peers);
+    peers.forEach(clearYjsTrace);
+
+    a.editor.update.nodes.insert(paragraph('remote'), { at: [2] });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(getPeerTopLevelTexts(b), ['moved', 'sibling!', 'remote']);
+    const trace = getYjsTrace(b);
+
+    assert.equal(
+      trace.some((entry) => entry.fallback !== undefined),
+      false
+    );
+    assert.equal(
+      trace.some(
+        (entry) =>
+          entry.importKind === 'event-change' &&
+          entry.changedRanges === 1 &&
+          entry.readTopLevelNodes === 1
+      ),
+      true
+    );
   });
 
   it('preserves concurrent remote text when an offline cross-parent move reconnects', () => {
@@ -240,7 +255,7 @@ describe('@platejs/yjs move_node collaboration contract', () => {
     }
   });
 
-  it('undoes and redoes only the local cross-parent move intent after reconnect', () => {
+  it('undoes and redoes only the local cross-parent move after reconnect', () => {
     const peers = createNestedPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 

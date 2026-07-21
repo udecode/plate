@@ -8,7 +8,7 @@ import { createPlatePlugin } from '../plugin';
 
 const BoldPlugin = createPlatePlugin({
   key: 'bold',
-  node: { isLeaf: true },
+  node: { mark: true },
 });
 
 it('uses custom hotkey handler for bold', () => {

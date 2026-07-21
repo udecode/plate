@@ -94,6 +94,7 @@ describe('plite view selection', () => {
 
   it('stores a projected selection over visible graph segments without widening Plite points', () => {
     const selection = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: { point: point(undefined, [0, 0], 1) },
       focus: {
         owner: firstSharedOwner,
@@ -121,6 +122,7 @@ describe('plite view selection', () => {
 
   it('treats implicit main-root and explicit main-root points as the same view point', () => {
     const selection = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: { point: point(undefined, [0, 0], 1) },
       focus: { point: point('main', [0, 0], 1) },
     });
@@ -131,6 +133,7 @@ describe('plite view selection', () => {
   it('creates model-backed selections in the active non-main root', () => {
     const selection = createMainRootPliteViewSelection(
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       },
@@ -156,6 +159,7 @@ describe('plite view selection', () => {
 
   it('collapses by anchor, focus, and visible start/end with repeated-root owner identity intact', () => {
     const forward = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: { point: point(undefined, [0, 0], 1) },
       focus: {
         owner: secondSharedOwner,
@@ -163,6 +167,7 @@ describe('plite view selection', () => {
       },
     });
     const backward = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: {
         owner: secondSharedOwner,
         point: point(SHARED_ROOT, [0, 0], 2),
@@ -185,6 +190,7 @@ describe('plite view selection', () => {
 
   it('extends from a stable anchor to a new projected focus', () => {
     const initial = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: { point: point(undefined, [0, 0], 1) },
       focus: {
         owner: firstSharedOwner,
@@ -213,6 +219,7 @@ describe('plite view selection', () => {
     const editorA = {};
     const editorB = {};
     const selection = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: { point: point(undefined, [0, 0], 1) },
       focus: {
         owner: separateOwner,
@@ -234,6 +241,7 @@ describe('plite view selection', () => {
     const runtimeEditor = {};
     const viewEditor = {};
     const selection = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: { point: point(undefined, [0, 0], 1) },
       focus: {
         owner: separateOwner,
@@ -304,6 +312,7 @@ describe('plite view selection', () => {
     const selection = createPliteViewSelection(
       createPliteProjectionGraph([{ path: [0], root: 'main' }]),
       {
+        kind: 'text',
         anchor: { point: point(undefined, [0, 0], 0) },
         focus: { point: point(undefined, [0, 0], 4) },
       }
@@ -316,6 +325,7 @@ describe('plite view selection', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 2 },
       });
@@ -345,6 +355,7 @@ describe('plite view selection', () => {
     writePliteViewSelection(
       editor,
       createMainRootPliteViewSelection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [3, 0], offset: 2 },
       })!
@@ -354,6 +365,7 @@ describe('plite view selection', () => {
     writePliteViewSelection(
       editor,
       createMainRootPliteViewSelection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [4, 0], offset: 2 },
       })!
@@ -380,17 +392,18 @@ describe('plite view selection', () => {
     writePliteViewSelection(
       editor,
       createMainRootPliteViewSelection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [4, 0], offset: 2 },
       })!
     );
 
     const snapshot = editorGetSnapshot(editor);
-    const anchorTextRuntimeId = snapshot.index.pathToId['0.0'];
-    const focusTextRuntimeId = snapshot.index.pathToId['4.0'];
-    const mountedBlockRuntimeId = snapshot.index.pathToId['2'];
-    const mountedTextRuntimeId = snapshot.index.pathToId['2.0'];
-    const unmountedTextRuntimeId = snapshot.index.pathToId['1.0'];
+    const anchorTextRuntimeId = snapshot.index.idAt([0, 0]);
+    const focusTextRuntimeId = snapshot.index.idAt([4, 0]);
+    const mountedBlockRuntimeId = snapshot.index.idAt([2]);
+    const mountedTextRuntimeId = snapshot.index.idAt([2, 0]);
+    const unmountedTextRuntimeId = snapshot.index.idAt([1, 0]);
 
     if (
       !anchorTextRuntimeId ||

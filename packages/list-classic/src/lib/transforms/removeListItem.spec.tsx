@@ -1,46 +1,65 @@
 /** @jsx jsxt */
 
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, NodeIdPlugin } from '@platejs/core';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
+import {
+  BaseBulletedListPlugin,
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+  BaseNumberedListPlugin,
+  BaseTaskListPlugin,
+} from '../BaseListPlugin';
 import { removeListItem } from './removeListItem';
 
 jsxt;
+
+const SchemaOnlyNodeIdPlugin = NodeIdPlugin.configure({
+  options: { initialValueIds: false, match: () => false },
+});
+const ListSchemaPlugins = [
+  SchemaOnlyNodeIdPlugin,
+  BaseBulletedListPlugin,
+  BaseNumberedListPlugin,
+  BaseTaskListPlugin,
+  BaseListItemPlugin,
+  BaseListItemContentPlugin,
+];
 
 const input = (
   <editor>
     <hul id="1">
       <hli id="11">
-        <hp>1</hp>
+        <hlic>1</hlic>
         <hul>
           <hli>
-            <hp>11</hp>
+            <hlic>11</hlic>
           </hli>
           <hli>
-            <hp>12</hp>
+            <hlic>12</hlic>
           </hli>
         </hul>
       </hli>
       <hli id="12">
-        <hp>2</hp>
+        <hlic>2</hlic>
         <hul>
           <hli>
-            <hp>21</hp>
+            <hlic>21</hlic>
           </hli>
           <hli>
-            <hp>22</hp>
+            <hlic>22</hlic>
           </hli>
         </hul>
       </hli>
       <hli id="13">
-        <hp>3</hp>
+        <hlic>3</hlic>
         <hul>
           <hli>
-            <hp>31</hp>
+            <hlic>31</hlic>
           </hli>
           <hli>
-            <hp>32</hp>
+            <hlic>32</hlic>
           </hli>
         </hul>
       </hli>
@@ -52,35 +71,35 @@ const output = (
   <editor>
     <hul id="1">
       <hli id="11">
-        <hp>1</hp>
+        <hlic>1</hlic>
         <hul>
           <hli>
-            <hp>11</hp>
+            <hlic>11</hlic>
           </hli>
           <hli>
-            <hp>12</hp>
+            <hlic>12</hlic>
           </hli>
         </hul>
       </hli>
       <hli id="12">
-        <hp>2</hp>
+        <hlic>2</hlic>
         <hul>
           <hli>
-            <hp>21</hp>
+            <hlic>21</hlic>
           </hli>
           <hli>
-            <hp>22</hp>
+            <hlic>22</hlic>
           </hli>
           <hli>
-            <hp>31</hp>
+            <hlic>31</hlic>
           </hli>
           <hli>
-            <hp>32</hp>
+            <hlic>32</hlic>
           </hli>
         </hul>
       </hli>
       <hli id="13">
-        <hp>3</hp>
+        <hlic>3</hlic>
       </hli>
     </hul>
   </editor>
@@ -88,6 +107,7 @@ const output = (
 
 it('moves the removed item children into the previous sublist', () => {
   const editor = createBaseEditor({
+    plugins: ListSchemaPlugins,
     selection: input.selection,
     value: input.children,
   });

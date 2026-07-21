@@ -1,11 +1,16 @@
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import type { Selection, Value } from '@platejs/plite';
+import { schema, type Selection, type Value } from '@platejs/plite';
 
 import { BaseCaptionPlugin } from './BaseCaptionPlugin';
 
 const MediaPlugin = createBasePlugin({
   key: 'media',
-  node: { isElement: true },
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', max: 1, min: 1 }),
+      groups: ['block'],
+    },
+  },
 });
 
 const createCaptionEditor = (value: Value, selection: Selection = null) =>
@@ -35,6 +40,39 @@ const runShortcut = (
   });
 
 describe('withCaption', () => {
+  it('targets caption data only to configured element types', () => {
+    const editor = createCaptionEditor([
+      {
+        caption: [{ text: 'caption' }],
+        children: [{ text: '' }],
+        type: 'media',
+      },
+    ]);
+
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            caption: [{ text: 'caption' }],
+            children: [{ text: '' }],
+            type: 'p',
+          },
+        ],
+      })
+    ).toThrow(/caption/);
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            caption: { text: 'not-an-array' },
+            children: [{ text: '' }],
+            type: 'media',
+          },
+        ],
+      })
+    ).toThrow(/plate\.caption\.content/);
+  });
+
   it('stores focusEndPath when arrow-up moves into an allowed node with caption text', async () => {
     const editor = createCaptionEditor([
       {
@@ -47,6 +85,7 @@ describe('withCaption', () => {
     expect(runShortcut(editor, 'focusCaptionBackward')).toBe(false);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -70,6 +109,7 @@ describe('withCaption', () => {
     expect(runShortcut(editor, 'focusCaptionBackward')).toBe(false);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -91,6 +131,7 @@ describe('withCaption', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       }
@@ -112,6 +153,7 @@ describe('withCaption', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       }
@@ -134,6 +176,7 @@ describe('withCaption', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },

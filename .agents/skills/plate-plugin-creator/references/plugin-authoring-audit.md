@@ -22,10 +22,10 @@ Why it is good:
 
 Why it is good:
 
-- base plugin owns semantic rules and transforms
+- base plugin owns semantic rules and update groups
 - wrapper only adds Plate child plugins
 
-### Slate-only plugin stays Slate-only
+### Base-only plugin stays base-only
 
 - [HtmlPlugin.ts](packages/core/src/lib/plugins/html/HtmlPlugin.ts)
 
@@ -52,7 +52,7 @@ Why it is good:
 Why they are good:
 
 - they live in the Plate/React layer for real reasons
-- they are not pretending to be Slate-first semantic plugins
+- they are not pretending to have platform-independent semantics
 
 ### React-only prop augmentation via `transformProps`
 
@@ -78,7 +78,7 @@ Why it matters:
 - hardcoded literals are usually fine only for tiny internal plugins or local
   test fixtures
 
-### Manual `SlateEditor` callback annotations
+### Manual editor callback annotations
 
 - [BaseTextAlignPlugin.ts](packages/basic-styles/src/lib/BaseTextAlignPlugin.ts)
 
@@ -97,7 +97,7 @@ shape is not available.
 
 Why to be careful:
 
-- extracting `getAITransforms(editor: SlateEditor)` is workable
+- extracting editor-locked command helpers is workable
 - it also encourages editor-threading patterns that the newer callback context
   APIs often make unnecessary
 

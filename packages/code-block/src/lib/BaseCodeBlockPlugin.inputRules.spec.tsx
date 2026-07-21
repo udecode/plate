@@ -51,6 +51,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
@@ -93,6 +94,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
     });
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });

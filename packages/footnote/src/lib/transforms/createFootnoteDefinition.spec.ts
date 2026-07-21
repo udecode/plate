@@ -13,6 +13,7 @@ describe('createFootnoteDefinition', () => {
         BaseFootnoteDefinitionPlugin,
       ] as const,
       selection: {
+        kind: 'text',
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
@@ -43,6 +44,7 @@ describe('createFootnoteDefinition', () => {
       type: 'footnoteDefinition',
     });
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [2, 0, 0] },
       focus: { offset: 0, path: [2, 0, 0] },
     });
@@ -72,6 +74,7 @@ describe('createFootnoteDefinition', () => {
     ).toEqual([1]);
     expect(editor.read.value().children).toHaveLength(2);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -84,6 +87,7 @@ describe('createFootnoteDefinition', () => {
         BaseFootnoteDefinitionPlugin,
       ] as const,
       selection: {
+        kind: 'text',
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
@@ -107,6 +111,7 @@ describe('createFootnoteDefinition', () => {
       type: 'footnoteDefinition',
     });
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 5, path: [0, 0] },
     });

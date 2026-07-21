@@ -50,8 +50,8 @@ Make blockquote a real container contract across the whole surface:
 - deserialize markdown blockquotes as block children
 - group only legacy inline children into paragraphs for compatibility
 - serialize blockquote children directly instead of forcing a single paragraph wrapper
-- change `tf.blockquote.toggle()` to wrap and unwrap blocks
-- remove stale text-block break rules from `BaseBlockquotePlugin`
+- define the blockquote command with `.extendTx(...)` and delegate wrapper semantics to `tx.blocks.toggle(...)`
+- replace stale text-block break rules with container lift rules
 - update docs and seeded example values to use nested paragraph children
 
 The critical deserialize seam became:
@@ -70,12 +70,18 @@ return [
 ];
 ```
 
-The transform seam changed from block replacement to wrapper semantics:
+The plugin's `.extendTx(...)` command delegates to the active transaction:
 
 ```ts
 toggle: () => {
-  editor.tf.toggleBlock(type, { wrap: true });
-};
+  tx.blocks.toggle(type, { wrap: true });
+}
+```
+
+Call the semantic command through its scoped plugin update portal:
+
+```ts
+editor.plugin(BaseBlockquotePlugin).update.toggle();
 ```
 
 ## Why This Works

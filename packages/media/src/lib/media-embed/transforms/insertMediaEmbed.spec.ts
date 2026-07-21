@@ -1,5 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseMediaEmbedPlugin } from '../BaseMediaEmbedPlugin';
 import { insertMediaEmbed } from './insertMediaEmbed';
@@ -20,6 +20,7 @@ describe('insertMediaEmbed', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -30,7 +31,7 @@ describe('insertMediaEmbed', () => {
 
     expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: '' }],
-      type: KEYS.mediaEmbed,
+      type: NODES.mediaEmbed,
       url: 'https://platejs.org/embed',
     });
   });
@@ -44,7 +45,7 @@ describe('insertMediaEmbed', () => {
     insertMediaEmbed(editor, { url: 'https://platejs.org/embed' }, { at: [0] });
 
     expect(editor.read.children()[1]).toMatchObject({
-      type: KEYS.mediaEmbed,
+      type: NODES.mediaEmbed,
       url: 'https://platejs.org/embed',
     });
   });

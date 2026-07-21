@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { schema } from '@platejs/plite';
 
-import { BaseImagePlugin } from '@platejs/media';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import { KEYS } from '@platejs/utils';
 
@@ -10,6 +10,17 @@ import { BaseListPlugin } from '../BaseListPlugin';
 import { toggleList, toggleTaskList } from './toggleList';
 
 jsxt;
+
+const BaseImagePlugin = createBasePlugin({
+  key: KEYS.img,
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+      void: 'block',
+    },
+  },
+});
 
 const runToggleList = (
   input: TestEditor,
@@ -124,6 +135,7 @@ describe('toggleList', () => {
       ) as TestEditor;
 
       const editor = runToggleList(input, [
+        BaseImagePlugin,
         BaseListPlugin.configure({
           options: {
             validLiChildrenTypes: [BaseImagePlugin.key],
@@ -177,6 +189,42 @@ describe('toggleList', () => {
           type: 'taskList',
         },
       ]);
+    });
+
+    it('drops checked when switching a task list to a bulleted list', () => {
+      const input = {
+        children: [
+          {
+            children: [
+              {
+                checked: true,
+                children: [{ children: [{ text: 'task' }], type: 'lic' }],
+                type: 'li',
+              },
+            ],
+            type: 'taskList',
+          },
+        ],
+        selection: {
+          kind: 'text' as const,
+          anchor: { offset: 4, path: [0, 0, 0, 0] },
+          focus: { offset: 4, path: [0, 0, 0, 0] },
+        },
+      } as TestEditor;
+
+      const editor = runToggleList(input);
+
+      expect(editor.read.children()).toEqual(
+        (
+          <editor>
+            <hul>
+              <hli>
+                <hlic>task</hlic>
+              </hli>
+            </hul>
+          </editor>
+        ).children
+      );
     });
   });
 

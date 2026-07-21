@@ -122,8 +122,8 @@ const buildWorkspaceDevAliases = () => {
   }
 
   return {
-    ...sourceAliases,
     ...distAliases,
+    ...sourceAliases,
     ...docsSourceAlias,
   };
 };

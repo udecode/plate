@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { PlateTest, createPlateEditor } from '@platejs/core/react';
+import type { TextSelection } from '@platejs/plite';
 import { act, render } from '@testing-library/react';
 
 import { makeClientRect } from './makeClientRect';
@@ -17,9 +18,10 @@ describe('getBoundingClientRect', () => {
 
   it('uses the current selection when no location is provided', async () => {
     const selection = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
-    };
+    } satisfies TextSelection;
     const rect = makeClientRect({
       bottom: 20,
       left: 10,

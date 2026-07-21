@@ -66,6 +66,7 @@ test.describe('embeds example', () => {
     });
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 177 },
       focus: { path: [0, 0], offset: 177 },
     });
@@ -80,6 +81,7 @@ test.describe('embeds example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -92,6 +94,7 @@ test.describe('embeds example', () => {
     const embedProof = await takePliteBrowserRenderStateSnapshot(editor);
 
     expect(embedProof.selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -114,6 +117,7 @@ test.describe('embeds example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [2, 0], offset: 0 },
         focus: { path: [2, 0], offset: 0 },
       });
@@ -126,6 +130,7 @@ test.describe('embeds example', () => {
     const afterEmbedProof = await takePliteBrowserRenderStateSnapshot(editor);
 
     expect(afterEmbedProof.selection).toEqual({
+      kind: 'text',
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: 0 },
     });
@@ -211,6 +216,7 @@ test.describe('embeds example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -323,6 +329,7 @@ test.describe('embeds example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [2, 0], offset: 0 },
           focus: { path: [2, 0], offset: 0 },
         });
@@ -411,6 +418,7 @@ test.describe('embeds example', () => {
       expect(contentEditableState.staleFalsePaths).toEqual([]);
 
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [2, 0], offset: 0 },
         focus: { path: [2, 0], offset: 0 },
       });
@@ -449,21 +457,22 @@ test.describe('embeds example', () => {
       expect(targetText).toContain('Try it out!');
 
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         });
 
-      const paragraph = editor.root.locator(
-        '[data-plite-node="element"][data-plite-path="2"]'
-      );
-
-      await paragraph.click({ position: { x: 16, y: 10 } });
+      await editor.dom.clickTextOffset({
+        offset: 0,
+        path: [2, 0],
+      });
       await expect
         .poll(async () => {
           const selection = await editor.selection.get();

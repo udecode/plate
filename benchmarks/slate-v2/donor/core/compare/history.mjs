@@ -24,21 +24,28 @@ const iterations = Number(process.env.HISTORY_BENCH_ITERATIONS || 15);
 const blocks = Number(process.env.HISTORY_BENCH_BLOCKS || 5000);
 const typeOps = Number(process.env.HISTORY_BENCH_TYPE_OPS || 20);
 const fragmentBlocks = Number(process.env.HISTORY_BENCH_FRAGMENT_BLOCKS || 200);
+const skipBuild = process.env.BENCHMARK_SKIP_BUILD === '1';
 
 const benchmarkSource = `
 import assert from 'node:assert/strict';
 
+const isPlite = process.env.BENCHMARK_ENGINE === 'current';
 let Slate;
 let SlateInternal = {};
 let SlateHistory;
 
-try {
-  Slate = await import('../../packages/slate/src/index.ts');
-  SlateInternal = await import('../../packages/slate/src/internal/index.ts');
-  SlateHistory = await import('../../packages/slate-history/src/index.ts');
-} catch {
-  Slate = await import('@platejs/slate');
-  SlateHistory = await import('@platejs/slate-history');
+if (isPlite) {
+  Slate = await import('@platejs/plite');
+  SlateInternal = await import('@platejs/plite/internal');
+  SlateHistory = await import('@platejs/plite-history');
+} else {
+  try {
+    Slate = await import('slate');
+    SlateHistory = await import('slate-history');
+  } catch {
+    Slate = await import('@platejs/slate');
+    SlateHistory = await import('@platejs/slate-history');
+  }
 
   try {
     SlateInternal = await import('@platejs/slate/internal');
@@ -46,7 +53,7 @@ try {
 }
 
 const { createEditor } = Slate;
-const Editor = Slate.Editor ?? SlateInternal.Editor;
+const Editor = Slate.Editor ?? SlateInternal.Editor ?? SlateInternal;
 const historyExtension = SlateHistory.history;
 const withHistory = SlateHistory.withHistory;
 
@@ -130,6 +137,10 @@ const withHistoryEditor = () => {
 };
 
 const readHistory = (editor) => {
+  if (isPlite) {
+    return editor.read((state) => state.history());
+  }
+
   if (editor.history) {
     return editor.history;
   }
@@ -142,6 +153,11 @@ const readHistory = (editor) => {
 };
 
 const undo = (editor) => {
+  if (isPlite) {
+    editor.update((tx) => tx.history.undo());
+    return;
+  }
+
   if (typeof editor.undo === 'function') {
     editor.undo();
     return;
@@ -153,6 +169,11 @@ const undo = (editor) => {
 };
 
 const redo = (editor) => {
+  if (isPlite) {
+    editor.update((tx) => tx.history.redo());
+    return;
+  }
+
   if (typeof editor.redo === 'function') {
     editor.redo();
     return;
@@ -164,14 +185,19 @@ const redo = (editor) => {
 };
 
 const replaceEditor = (editor, input) => {
+  const nextInput =
+    isPlite && input.selection
+      ? { ...input, selection: { ...input.selection, kind: 'text' } }
+      : input;
+
   if (typeof Editor.replace === 'function') {
-    Editor.replace(editor, input);
+    Editor.replace(editor, nextInput);
     return;
   }
 
-  editor.children = input.children;
-  editor.selection = input.selection ?? null;
-  editor.marks = input.marks ?? null;
+  editor.children = nextInput.children;
+  editor.selection = nextInput.selection ?? null;
+  editor.marks = nextInput.marks ?? null;
 };
 
 const getChildren = (editor) =>
@@ -331,8 +357,10 @@ console.log(JSON.stringify({
 const currentPackageManager = await parsePackageManager(currentRepo);
 const legacyPackageManager = await parsePackageManager(legacyRepo);
 
-await buildRepo(currentRepo, currentPackageManager, './packages/slate-history');
-await buildRepo(legacyRepo, legacyPackageManager, './packages/slate-history');
+if (!skipBuild) {
+  await buildRepo(currentRepo, currentPackageManager, './packages/plite-history');
+  await buildRepo(legacyRepo, legacyPackageManager, './packages/slate-history');
+}
 
 const env = {
   HISTORY_BENCH_ITERATIONS: String(iterations),
@@ -343,13 +371,13 @@ const env = {
 
 const current = await benchmarkRepo({
   benchmarkSource,
-  env,
+  env: { ...env, BENCHMARK_ENGINE: 'current' },
   packageManager: currentPackageManager,
   repo: currentRepo,
 });
 const legacy = await benchmarkRepo({
   benchmarkSource,
-  env,
+  env: { ...env, BENCHMARK_ENGINE: 'legacy' },
   packageManager: legacyPackageManager,
   repo: legacyRepo,
 });

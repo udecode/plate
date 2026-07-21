@@ -69,7 +69,8 @@ Copy this pattern for new surfaces with static + live renderers.
 Copy:
 
 - `useEditorPlugin(plugin)` when the whole file is plugin-centric
-- `editor.getApi(plugin)` / `editor.getTransforms(plugin)` when that is simpler
+- `editor.plugin(plugin).api` / `editor.plugin(plugin).update` when that is
+  simpler
 
 ## Registry wiring reminders
 

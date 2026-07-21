@@ -2,11 +2,12 @@
 
 import React from 'react';
 
-import type { Value } from '@platejs/plite';
+import { property, schema, target, type Value } from '@platejs/plite';
 import { useEditorViewState } from '@platejs/plite-react';
 
 import { act, render, waitFor } from '@testing-library/react';
 
+import { createBasePlugin } from '../../lib';
 import { createPlateEditor } from '../editor';
 import { useEditorRef } from '../stores';
 import { Plate } from './Plate';
@@ -14,6 +15,17 @@ import { PlateContainer } from './PlateContainer';
 import { PlateContent } from './PlateContent';
 
 const value: Value = [{ children: [{ text: 'one' }], type: 'p' }];
+
+const VariantPlugin = createBasePlugin({
+  key: 'variant',
+  schema: {
+    properties: [
+      schema.elementProperty('variant', property.string(), {
+        target: target.type('p'),
+      }),
+    ],
+  },
+});
 
 const ReadOnlyProbe = () => {
   const editor = useEditorRef();
@@ -76,7 +88,7 @@ describe('PlateContent', () => {
   });
 
   it('routes store node and text handlers through Plite change events', async () => {
-    const editor = createPlateEditor({ value });
+    const editor = createPlateEditor({ plugins: [VariantPlugin], value });
     const onNodeChange = mock();
     const onTextChange = mock();
 
@@ -125,6 +137,7 @@ describe('PlateContent', () => {
       expect(focus).toHaveBeenCalledWith({ preventScroll: true });
     });
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });

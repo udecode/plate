@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { replace as editorReplace } from '@platejs/plite/internal';
 import { PliteReactUpdatePolicy } from '../src';
 
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { createEditableInputController } from '../src/editable/input-state';
 import { applyEditableRepairRequest } from '../src/editable/mutation-controller';
 import {
@@ -46,6 +47,7 @@ const createRemoteSelectionEditor = () => {
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     },
@@ -53,6 +55,7 @@ const createRemoteSelectionEditor = () => {
 
   editor.update(PliteReactUpdatePolicy.preserveSelection, (tx) => {
     tx.selection.set({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -71,6 +74,7 @@ test('selection preservation policy skips DOM, scroll, and focus side effects', 
 
 test('selection preservation policy suppresses repair focus without skipping selection sync', () => {
   const editor = createRemoteSelectionEditor();
+  const runtime = new EditableDOMRuntime({ editor });
   const originalFocus = ReactEditor.focus;
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
@@ -94,11 +98,12 @@ test('selection preservation policy suppresses repair focus without skipping sel
 
   try {
     applyEditableRepairRequest({
+      domPhaseScheduler: runtime.domPhaseScheduler,
       domRepairQueue: {
         beginFrame() {},
         cancelBefore() {},
         repair() {},
-        repairCaretAfterModelOperation() {},
+        repairCaretAfterModelIntent() {},
         repairCaretAfterModelTextInsert() {},
         repairDOMInput() {},
       },
@@ -111,6 +116,7 @@ test('selection preservation policy suppresses repair focus without skipping sel
       },
     });
   } finally {
+    runtime.destroy();
     ReactEditor.focus = originalFocus;
   }
 
@@ -120,6 +126,7 @@ test('selection preservation policy suppresses repair focus without skipping sel
 
 test('sync-selection repair can mark programmatic selection without DOM sync', () => {
   const editor = createRemoteSelectionEditor();
+  const runtime = new EditableDOMRuntime({ editor });
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: {
@@ -136,11 +143,12 @@ test('sync-selection repair can mark programmatic selection without DOM sync', (
   let syncCalls = 0;
 
   applyEditableRepairRequest({
+    domPhaseScheduler: runtime.domPhaseScheduler,
     domRepairQueue: {
       beginFrame() {},
       cancelBefore() {},
       repair() {},
-      repairCaretAfterModelOperation() {},
+      repairCaretAfterModelIntent() {},
       repairCaretAfterModelTextInsert() {},
       repairDOMInput() {},
     },
@@ -168,4 +176,5 @@ test('sync-selection repair can mark programmatic selection without DOM sync', (
   );
   expect(inputController.state.selectionSource).toBe('model-owned');
   expect(inputController.state.modelOwnedTextInputGuard).toBeGreaterThan(0);
+  runtime.destroy();
 });

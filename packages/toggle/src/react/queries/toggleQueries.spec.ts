@@ -1,4 +1,5 @@
 import { createPlateEditor } from '@platejs/core/react';
+import { BaseIndentPlugin } from '@platejs/indent';
 import { KEYS } from '@platejs/utils';
 
 import { TogglePlugin } from '../TogglePlugin';
@@ -9,6 +10,14 @@ import { getLastEntryEnclosedInToggle } from './getLastEntryEnclosedInToggle';
 import { isInClosedToggle } from './isInClosedToggle';
 
 describe('toggle queries', () => {
+  const plugins = [
+    BaseIndentPlugin.configure({
+      options: {
+        targetPluginKeys: [KEYS.p, KEYS.toggle],
+      },
+    }),
+    TogglePlugin,
+  ];
   const value = [
     { children: [{ text: 'toggle' }], id: 't1', type: KEYS.toggle },
     { children: [{ text: 'one' }], id: 'p1', indent: 1, type: KEYS.p },
@@ -17,13 +26,13 @@ describe('toggle queries', () => {
   ];
 
   it('finds the last top-level entry enclosed by a toggle id', () => {
-    const editor = createPlateEditor({ plugins: [TogglePlugin], value });
+    const editor = createPlateEditor({ plugins, value });
 
     expect(getLastEntryEnclosedInToggle(editor, 't1')).toEqual([value[2], [2]]);
   });
 
   it('detects hidden ids and closed toggle state from the toggle index', () => {
-    const editor = createPlateEditor({ plugins: [TogglePlugin], value });
+    const editor = createPlateEditor({ plugins, value });
     const toggleIndex = buildToggleIndex(editor.read.children());
 
     editor.plugin(TogglePlugin).setOption('toggleIndex', toggleIndex);

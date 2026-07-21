@@ -54,7 +54,7 @@ const createPasteFragment = () => [
 ];
 const currentJsdomRequireFrom = resolve(
   currentRepo,
-  'packages/slate-react/package.json'
+  'packages/plite-react/package.json'
 );
 const latestArtifactPath =
   'tmp/slate-react-huge-document-legacy-compare-benchmark.json';
@@ -207,8 +207,8 @@ import { createRequire } from 'node:module'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import TestUtils from 'react-dom/test-utils'
-import * as SlateCore from '@platejs/slate'
-import { withReact } from '@platejs/slate-react'
+import * as SlateCore from 'slate'
+import { withReact } from 'slate-react'
 
 const { createEditor, Editor } = SlateCore
 const legacyTransforms = SlateCore.Transforms
@@ -310,8 +310,8 @@ const profileBenchmarkDurationAsync = async (id, callback) => {
 }
 
 const getSelection = (editor) =>
-  typeof editor.read === 'function'
-    ? editor.read((state) => state.selection.get())
+  typeof editor.read?.selection === 'function'
+    ? editor.read.selection()
     : typeof editor.getSelection === 'function'
       ? editor.getSelection()
       : editor.selection
@@ -319,8 +319,8 @@ const getSelection = (editor) =>
 const select = (editor, target) => {
   if (typeof editor.update === 'function') {
     profileBenchmarkDuration('editor-update-selection-set', () => {
-      editor.update((tx) => {
-        tx.selection.set(target)
+    editor.update((tx) => {
+        tx.selection.set({ ...target, kind: 'text' })
       })
     })
     return
@@ -754,22 +754,24 @@ const renderChunk = ({ attributes, children }) =>
 
 const currentSharedSource = sharedSource
   .replace(
-    "import * as SlateCore from '@platejs/slate'",
-    "import * as SlateCore from '@platejs/slate'\nimport { Editor as InternalEditor } from '@platejs/slate/internal'"
+    "import * as SlateCore from 'slate'",
+    "import * as SlateCore from '@platejs/plite'\nimport * as InternalEditor from '@platejs/plite/internal'"
   )
   .replace(
     'const { createEditor, Editor } = SlateCore',
     "const { createEditor } = SlateCore\nconst Editor = { ...InternalEditor, end: (editor, at) => InternalEditor.point(editor, at, { edge: 'end' }), start: (editor, at) => InternalEditor.point(editor, at, { edge: 'start' }), string: InternalEditor.string }"
   )
   .replace(
-    "import { withReact } from '@platejs/slate-react'",
-    "import { createReactEditor } from '../../packages/slate-react/dist/index.js'"
+    "import { withReact } from 'slate-react'",
+    "import { createReactEditor } from '../../packages/plite-react/dist/index.js'"
   )
-  .replaceAll('withReact(createEditor())', 'createReactEditor()');
+  .replaceAll('withReact(createEditor())', 'createReactEditor()')
+  .replaceAll('__SLATE_REACT_RENDER_PROFILER__', '__PLITE_REACT_RENDER_PROFILER__')
+  .replaceAll('data-slate-', 'data-plite-');
 
 const legacyBenchmarkSource = `
 ${sharedSource}
-import { Editable, Slate } from '@platejs/slate-react'
+import { Editable, Slate } from 'slate-react'
 
 const chunkSize = Number(process.env.REACT_HUGE_COMPARE_CHUNK_SIZE || 1000)
 
@@ -1139,7 +1141,7 @@ console.log(JSON.stringify({
 
 const currentBenchmarkSource = `
 ${currentSharedSource}
-import { Editable, Slate } from '../../packages/slate-react/dist/index.js'
+import { Editable, Plite as Slate } from '../../packages/plite-react/dist/index.js'
 
 const segmentSize = Number(process.env.REACT_HUGE_COMPARE_ISLAND_SIZE || 32)
 const overscan = Number(process.env.REACT_HUGE_COMPARE_ACTIVE_RADIUS || 0)
@@ -1393,7 +1395,7 @@ const resolveReadyTrace = ({ nativeSurfaceCompleteMs, readyMs, trace }) => ({
 })
 
 const recordSurfaceWeight = (id, value) => {
-  globalThis.__SLATE_REACT_RENDER_PROFILER__?.record?.({
+  globalThis.__PLITE_REACT_RENDER_PROFILER__?.record?.({
     duration: value,
     id,
     kind: 'surface-weight',
@@ -1416,21 +1418,21 @@ const measureReadySurfaceWeights = (container) => {
   }
   const processHeapUsedBytes = getProcessHeapUsedBytes()
   const domNodeCount = root.querySelectorAll('*').length + 1
-  const slateElementCount = countElements(root, '[data-slate-node="element"]')
-  const slateTextCount = countElements(root, '[data-slate-node="text"]')
-  const slateLeafCount = countElements(root, '[data-slate-leaf]')
-  const rootGroupCount = countElements(root, '[data-slate-root-group="true"]')
+  const slateElementCount = countElements(root, '[data-plite-node="element"]')
+  const slateTextCount = countElements(root, '[data-plite-node="text"]')
+  const slateLeafCount = countElements(root, '[data-plite-leaf]')
+  const rootGroupCount = countElements(root, '[data-plite-root-group="true"]')
   const explicitMountedRootGroupCount = countElements(
     root,
-    '[data-slate-root-group-state="mounted"]'
+    '[data-plite-root-group-state="mounted"]'
   )
   const freshMountedRootGroupCount = countElements(
     root,
-    '[data-slate-root-group-state="fresh-mounted"]'
+    '[data-plite-root-group-state="fresh-mounted"]'
   )
   const pendingRootGroupCount = countElements(
     root,
-    '[data-slate-root-group-state="pending-mount"]'
+    '[data-plite-root-group-state="pending-mount"]'
   )
   const unstatedRootGroupCount = Math.max(
     0,
@@ -1445,11 +1447,11 @@ const measureReadySurfaceWeights = (container) => {
     unstatedRootGroupCount
   const domCoverageBoundaryCount = countElements(
     root,
-    '[data-slate-dom-coverage-boundary]'
+    '[data-plite-dom-coverage-boundary]'
   )
   const partialDOMCount = countElements(
     root,
-    '[data-slate-dom-strategy-placeholder="true"]'
+    '[data-plite-dom-strategy-placeholder="true"]'
   )
   const mountedEditableDescendantCount = slateElementCount + slateTextCount
 
@@ -1493,7 +1495,7 @@ const measureReadySurfaceWeights = (container) => {
 const recordReadySurfaceWeight = (container) => {
   const surfaceWeights = measureReadySurfaceWeights(container)
 
-  if (globalThis.__SLATE_REACT_RENDER_PROFILER__) {
+  if (globalThis.__PLITE_REACT_RENDER_PROFILER__) {
     for (const [id, value] of Object.entries(surfaceWeights)) {
       recordSurfaceWeight(id, value)
     }
@@ -1634,10 +1636,10 @@ const measureLane = async (setup, run) => {
 
   for (let iteration = 0; iteration < iterations + 1; iteration += 1) {
     const counter = profileEnabled ? createProfilerCounter() : null
-    const previousProfiler = globalThis.__SLATE_REACT_RENDER_PROFILER__
+    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__
 
     if (counter) {
-      globalThis.__SLATE_REACT_RENDER_PROFILER__ = counter.profiler
+      globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler
     }
 
     try {
@@ -1671,7 +1673,7 @@ const measureLane = async (setup, run) => {
         }
       }
     } finally {
-      globalThis.__SLATE_REACT_RENDER_PROFILER__ = previousProfiler
+      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler
     }
   }
 
@@ -1693,10 +1695,10 @@ const measurePreparedLane = async (setup, prepare, run) => {
 
   for (let iteration = 0; iteration < iterations + 1; iteration += 1) {
     const counter = profileEnabled ? createProfilerCounter() : null
-    const previousProfiler = globalThis.__SLATE_REACT_RENDER_PROFILER__
+    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__
 
     if (counter) {
-      globalThis.__SLATE_REACT_RENDER_PROFILER__ = counter.profiler
+      globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler
     }
 
     try {
@@ -1727,7 +1729,7 @@ const measurePreparedLane = async (setup, prepare, run) => {
         }
       }
     } finally {
-      globalThis.__SLATE_REACT_RENDER_PROFILER__ = previousProfiler
+      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler
     }
   }
 
@@ -1755,10 +1757,10 @@ const measureModelOnlyLane = async (setup, run) => {
 
   for (let iteration = 0; iteration < iterations + 1; iteration += 1) {
     const counter = profileEnabled ? createProfilerCounter() : null
-    const previousProfiler = globalThis.__SLATE_REACT_RENDER_PROFILER__
+    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__
 
     if (counter) {
-      globalThis.__SLATE_REACT_RENDER_PROFILER__ = counter.profiler
+      globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler
     }
 
     try {
@@ -1778,7 +1780,7 @@ const measureModelOnlyLane = async (setup, run) => {
         }
       }
     } finally {
-      globalThis.__SLATE_REACT_RENDER_PROFILER__ = previousProfiler
+      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler
     }
   }
 
@@ -1968,7 +1970,7 @@ const measureTypeAfterSelect = async ({
 const getPartialDOMPlaceholderForBlock = ({ blockIndex, container }) => {
   const placeholders = [
     ...container.querySelectorAll(
-      '[data-slate-dom-strategy-placeholder="true"]'
+      '[data-plite-dom-strategy-placeholder="true"]'
     ),
   ]
   const inferredSegmentSize = Math.max(
@@ -1978,7 +1980,7 @@ const getPartialDOMPlaceholderForBlock = ({ blockIndex, container }) => {
   const segmentIndex = Math.floor(blockIndex / inferredSegmentSize)
   const placeholder = placeholders.find(
     (element) =>
-      element.getAttribute('data-slate-dom-strategy-segment') ===
+      element.getAttribute('data-plite-dom-strategy-segment') ===
       String(segmentIndex)
   )
 
@@ -2036,7 +2038,7 @@ const measurePromoteBlock = async ({
         inferredSegmentSize: promotion.inferredSegmentSize,
         promoted: promotion.promoted ? 1 : 0,
         segmentIndex: promotion.segmentIndex,
-        textHostCount: root.querySelectorAll('[data-slate-node="text"]').length,
+        textHostCount: root.querySelectorAll('[data-plite-node="text"]').length,
       }
     }
   )
@@ -2102,14 +2104,14 @@ const createMissingBeforeInputTargetMessage = ({ blockIndex, root }) =>
   'Missing mounted text target for beforeinput: selection=' +
   JSON.stringify(root.__slateBrowserHandle?.getSelection?.()) +
   ', textHosts=' +
-  root.querySelectorAll('[data-slate-node="text"]').length +
+  root.querySelectorAll('[data-plite-node="text"]').length +
   ', blockIndex=' +
   blockIndex +
   ', mountedText=' +
   JSON.stringify((root.textContent ?? '').slice(0, 160))
 
 const getPendingRootGroupCount = (container) =>
-  container.querySelectorAll('[data-slate-root-group-state="pending-mount"]')
+  container.querySelectorAll('[data-plite-root-group-state="pending-mount"]')
     .length
 
 const waitForNativeSurfaceComplete = async (container) => {
@@ -2506,8 +2508,8 @@ console.log(JSON.stringify({
 const currentPackageManager = await parsePackageManager(currentRepo);
 
 if (!skipBuild) {
-  await buildRepo(currentRepo, currentPackageManager, './packages/slate');
-  await buildRepo(currentRepo, currentPackageManager, './packages/slate-react');
+  await buildRepo(currentRepo, currentPackageManager, './packages/plite');
+  await buildRepo(currentRepo, currentPackageManager, './packages/plite-react');
 }
 
 const env = {

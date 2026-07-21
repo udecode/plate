@@ -3,7 +3,10 @@ import type { Descendant } from '@platejs/plite';
 import type { MdRootContent } from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';
 
-import { createTestEditor } from '../__tests__/createTestEditor';
+import {
+  createTestEditor,
+  getTestMarkdownRuntime,
+} from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';
 import { buildMdastNode, convertNodesSerialize } from './convertNodesSerialize';
 
@@ -68,7 +71,7 @@ describe('convertNodesSerialize', () => {
   ];
 
   const baseOptions: SerializeMdOptions = {
-    editor,
+    runtime: getTestMarkdownRuntime(editor),
     rules: defaultRules,
   };
 

@@ -3,7 +3,7 @@
 import { type TUpdateSuggestionData } from '@platejs/utils';
 
 import { jsxt } from '@platejs/test-utils';
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from '../utils';
@@ -14,6 +14,16 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
     currentUserId: 'testId',
   },
+});
+
+const BoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
+});
+
+const ItalicPlugin = createBasePlugin({
+  key: 'italic',
+  node: { mark: true },
 });
 
 describe('addMarkSuggestion', () => {
@@ -29,7 +39,7 @@ describe('addMarkSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -51,6 +61,32 @@ describe('addMarkSuggestion', () => {
     expect(data?.newProperties).toEqual({ bold: true });
     expect(typeof data?.createdAt).toBe('number');
     expect(typeof data?.id).toBe('string');
+  });
+
+  it('tracks a mark added through the semantic toggle command', () => {
+    const input = (
+      <editor>
+        <hp>
+          <anchor />
+          test
+          <focus />
+        </hp>
+      </editor>
+    ) as any;
+    const editor = createBaseEditor({
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+    editor.update.marks.toggle('bold', true);
+
+    const node = editor.read.children()[0].children[0] as any;
+    const data = getInlineSuggestionData(node) as TUpdateSuggestionData;
+
+    expect(node.bold).toBe(true);
+    expect(data.newProperties).toEqual({ bold: true });
   });
 
   it('add new suggestion mark while preserving existing suggestion mark', () => {
@@ -76,7 +112,7 @@ describe('addMarkSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -119,7 +155,7 @@ describe('addMarkSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
       selection: input.selection,
       value: input.children,
     });

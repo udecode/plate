@@ -1,6 +1,12 @@
-import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import { schema } from '@platejs/plite';
 
 import { BaseAIPlugin } from '../BaseAIPlugin';
+import { AIChatPlugin } from '../../react/ai-chat/AIChatPlugin';
 import {
   AI_PREVIEW_KEY,
   acceptAIPreview,
@@ -27,13 +33,28 @@ const createParagraph = (
 
 const createEditor = () =>
   createBaseEditor({
-    plugins: [BaseParagraphPlugin, BaseAIPlugin],
+    plugins: [
+      BaseParagraphPlugin,
+      BaseAIPlugin,
+      AIChatPlugin.configure({ options: { open: true } }),
+    ],
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
     value: [createParagraph('start'), createParagraph('untouched')],
   });
+
+const InlineFixturePlugin = createBasePlugin({
+  key: 'inlineFixture',
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
+});
 
 const installPreview = (
   editor: ReturnType<typeof createEditor>,
@@ -53,6 +74,57 @@ const installPreview = (
 };
 
 describe('ai preview transforms', () => {
+  it('targets AI marks to text parents and preview state to blocks', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseAIPlugin,
+        AIChatPlugin,
+        InlineFixturePlugin,
+      ],
+    });
+    expect(
+      editor.read.schema.property({ key: 'ai', placement: 'text', type: 'p' })
+    ).not.toBeNull();
+    expect(
+      editor.read.schema.property({
+        key: 'ai',
+        placement: 'text',
+        type: 'missing',
+      })
+    ).toBeNull();
+    expect(
+      editor.read.schema.property({
+        key: AI_PREVIEW_KEY,
+        placement: 'element',
+        type: 'p',
+      })?.value.kind
+    ).toBe('boolean');
+    expect(
+      editor.read.schema.property({
+        key: AI_PREVIEW_KEY,
+        placement: 'element',
+        type: 'inlineFixture',
+      })
+    ).toBeNull();
+    expect(
+      editor.read.schema.property({
+        key: AI_PREVIEW_KEY,
+        placement: 'element',
+        type: 'p',
+      })?.value.significant
+    ).toBe(true);
+    expect(
+      editor.read.schema.property({ key: 'ai', placement: 'text', type: 'p' })
+    ).toMatchObject({
+      lifecycle: {
+        split: 'preserve',
+        typeChange: 'preserve-if-allowed',
+      },
+      merge: 'replace',
+    });
+  });
+
   it('captures once and keeps the original rollback point', () => {
     const editor = createEditor();
     const initialValue = structuredClone(editor.read.children());
@@ -66,6 +138,7 @@ describe('ai preview transforms', () => {
 
     installPreview(editor, {
       selection: {
+        kind: 'text',
         anchor: { offset: 7, path: [0, 0] },
         focus: { offset: 7, path: [0, 0] },
       },
@@ -112,6 +185,7 @@ describe('ai preview transforms', () => {
     });
     installPreview(editor, {
       selection: {
+        kind: 'text',
         anchor: { offset: 7, path: [0, 0] },
         focus: { offset: 7, path: [0, 0] },
       },

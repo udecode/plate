@@ -5,14 +5,14 @@ import { type GetSiblingListOptions, BaseListPlugin } from '../lib';
 export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
   options: {
     getSiblingListOptions: {
-      getNextEntry: ([, path]: any) => {
+      getNextEntry: ([, path]: any, state) => {
+        const nodes = state?.nodes ?? editor.read.nodes;
         const nextPath = PathApi.next(path);
-        const nextNode = editor.read.nodes.get<Element>(nextPath)?.[0];
+        const nextNode = nodes.get<Element>(nextPath)?.[0];
 
         if (!nextNode) {
           const nextPagePath = [path[0] + 1];
-          const nextPageNode =
-            editor.read.nodes.get<Element>(nextPagePath)?.[0];
+          const nextPageNode = nodes.get<Element>(nextPagePath)?.[0];
 
           if (!nextPageNode) return;
 
@@ -21,7 +21,8 @@ export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
 
         return [nextNode, nextPath];
       },
-      getPreviousEntry: ([, path]: any) => {
+      getPreviousEntry: ([, path]: any, state) => {
+        const nodes = state?.nodes ?? editor.read.nodes;
         const prevPath = PathApi.hasPrevious(path)
           ? PathApi.previous(path)
           : undefined;
@@ -31,7 +32,7 @@ export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
 
           const prevPagePath = [path[0] - 1];
 
-          const node = editor.read.nodes.get<Element>(prevPagePath)?.[0];
+          const node = nodes.get<Element>(prevPagePath)?.[0];
 
           if (!node) return;
 
@@ -40,7 +41,7 @@ export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
           return [lastNode, prevPagePath.concat(node.children.length - 1)];
         }
 
-        const prevNode = editor.read.nodes.get<Element>(prevPath)?.[0];
+        const prevNode = nodes.get<Element>(prevPath)?.[0];
 
         if (!prevNode) return;
 

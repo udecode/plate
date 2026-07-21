@@ -17,8 +17,7 @@ describe('BasePlaceholderPlugin', () => {
     const plugin = editor.getPlugin(BasePlaceholderPlugin);
 
     expect(plugin.node).toMatchObject({
-      isElement: true,
-      isVoid: true,
+      element: { groups: ['block'], void: 'block' },
     });
 
     switch (transform) {

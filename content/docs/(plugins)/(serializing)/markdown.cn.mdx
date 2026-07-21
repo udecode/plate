@@ -308,14 +308,8 @@ MarkdownPlugin.configure({
     <APIItem name="allowNode" type="AllowNodeConfig" optional>
       覆盖插件的 `allowNode` 配置。
     </APIItem>
-    <APIItem name="memoize" type="boolean" optional>
-      为顶级 Block 节点添加 `_memo` 属性，记录原始 Markdown，用于如 `PlateStatic` 之类的记忆场景。默认值：`false`。
-    </APIItem>
     <APIItem name="rules" type="MdRules | null" optional>
       覆盖插件的 `rules` 配置。
-    </APIItem>
-    <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
-      Markdown 块级解析器 (`parseMarkdownBlocks`) 的相关选项，详见下文。
     </APIItem>
     <APIItem name="remarkPlugins" type="Plugin[]" optional>
       覆盖插件的 `remarkPlugins`。
@@ -369,7 +363,7 @@ MarkdownPlugin.configure({
 
 ### `parseMarkdownBlocks`
 
-工具函数：将 Markdown 字符串切分为块级 token（`deserialize` 内部使用，`memoize` 时也有用）。
+工具函数：将 Markdown 字符串切分为块级 token。
 
 <API name="parseMarkdownBlocks">
   <APIParameters>
@@ -501,6 +495,7 @@ const editor = createPlateEditor({
 ```tsx title="lib/plate-editor.ts"
 import { MarkdownPlugin } from '@platejs/markdown';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { NODES } from 'platejs';
 
 MarkdownPlugin.configure({
   options: {
@@ -509,7 +504,7 @@ MarkdownPlugin.configure({
       code: {
         deserialize: (mdastNode, deco, options) => {
           return {
-            type: KEYS.codeBlock, // Plate 的 type
+            type: NODES.codeBlock,
             lang: mdastNode.lang ?? undefined,
             rawCode: mdastNode.value || '', // 直接存原始 code 文本
             children: [{ text: '' }], // Plate 元素必须要有子文本节点
@@ -517,7 +512,7 @@ MarkdownPlugin.configure({
         },
       },
       // 还需要为 `code_block` 自定义 serialize 规则，将 `rawCode` 转回 mdast 'code' 节点
-      [KEYS.codeBlock]: {
+      [NODES.codeBlock]: {
         serialize: (slateNode, options) => {
           return {
             // mdast 'code' 节点

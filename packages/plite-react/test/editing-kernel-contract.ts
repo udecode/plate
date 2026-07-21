@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { createEditor } from '@platejs/plite';
 
 import {
@@ -36,7 +35,6 @@ const createBaseTrace = () =>
     eventFamily: 'selectionchange' as const,
     intent: null,
     nativeAllowed: true,
-    operations: [],
     ownership: 'native-allowed' as const,
     repair: null,
     selectionBefore: null,
@@ -45,28 +43,6 @@ const createBaseTrace = () =>
     stateBefore: 'idle' as const,
     targetOwner: 'editor' as const,
   }) satisfies Parameters<typeof createEditableKernelResult>[0]['trace'];
-
-test('runtime keydown traces stay compact for huge document commands', () => {
-  const source = readFileSync('src/editable/runtime-kernel-trace.ts', 'utf8');
-
-  expect(source).toContain('operations: []');
-  expect(source).toContain('recordKeyDownTrace');
-});
-
-test('runtime browser event traces stay compact for huge document commands', () => {
-  const source = readFileSync('src/editable/runtime-kernel-trace.ts', 'utf8');
-  const recordKernelEventTraceSource = source.slice(
-    source.indexOf('const recordKernelEventTrace'),
-    source.indexOf('const repairDOMInputWithTrace')
-  );
-  const repairDOMInputWithTraceSource = source.slice(
-    source.indexOf('const repairDOMInputWithTrace'),
-    source.indexOf('const getCurrentKernelFrameId')
-  );
-
-  expect(recordKernelEventTraceSource).toContain('operations: []');
-  expect(repairDOMInputWithTraceSource).toContain('operations: []');
-});
 
 test('kernel results expose explicit selection and repair policies', () => {
   const editor = createEditor();
@@ -299,6 +275,30 @@ test('document boundary keydown commands are model-owned selection moves', () =>
   expect(getEditableCommandDefinition(startCommand)?.modelOwned).toBe(true);
 });
 
+test('select-all keydown commands keep model selection ownership', () => {
+  const event = {
+    nativeEvent: {
+      altKey: false,
+      ctrlKey: true,
+      key: 'a',
+      metaKey: false,
+      shiftKey: false,
+    },
+    target: null,
+  } as any;
+
+  expect(getEditableCommandFromKeyDown({ event, selection: null })).toEqual({
+    kind: 'select-all',
+  });
+  expect(
+    classifyKeyboardIntent({
+      editor: createEditor() as any,
+      event,
+      domStrategyRuntime: null,
+    })
+  ).toBe('model-selection-move');
+});
+
 test('document boundary keyboard intent uses model selection ownership', () => {
   expect(
     classifyKeyboardIntent({
@@ -417,6 +417,7 @@ test('editable kernel trace keeps only the newest bounded entries', () => {
       trace: {
         ...createBaseTrace(),
         selectionBefore: {
+          kind: 'text',
           anchor: { offset: 0, path: [index] },
           focus: { offset: 0, path: [index] },
         },
@@ -536,6 +537,39 @@ test('keyboard structural commands keep model selection after programmatic DOM e
   expect(decision).toMatchObject({
     intent: 'insert-break',
     ownership: 'model-owned',
+    selectionPolicy: { kind: 'preserve-model', reason: 'model-owned' },
+    shouldForceDOMImport: false,
+  });
+});
+
+test('unknown modified printable shortcuts preserve model selection for app handlers', () => {
+  const editor = createEditor() as any;
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: true },
+    state: createEditableInputControllerState(),
+  });
+  inputController.state.selectionSource = 'model-owned';
+
+  const decision = prepareEditableKeyDownKernel({
+    editor,
+    event: {
+      nativeEvent: {
+        altKey: false,
+        ctrlKey: false,
+        key: 'u',
+        metaKey: true,
+        shiftKey: false,
+      },
+      target: null,
+    } as any,
+    inputController,
+    domStrategyRuntime: null,
+  });
+
+  expect(decision).toMatchObject({
+    command: null,
+    intent: null,
+    ownership: 'no-op',
     selectionPolicy: { kind: 'preserve-model', reason: 'model-owned' },
     shouldForceDOMImport: false,
   });
@@ -838,6 +872,7 @@ test('keyboard input preserves projected view selection before command routing',
   });
   inputController.state.selectionSource = 'dom-current';
   writePliteViewSelection(editor, {
+    kind: 'text',
     anchor: { point: { path: [0, 0], offset: 0 } },
     focus: { point: { path: [1, 0], offset: 0 } },
     segments: { backward: false, parts: [] },

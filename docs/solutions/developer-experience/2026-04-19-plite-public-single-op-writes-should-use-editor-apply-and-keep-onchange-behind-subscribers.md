@@ -1,6 +1,7 @@
 ---
 title: Plite operation replay should use applyOperations, operation middleware, and commit subscribers
 date: 2026-04-19
+status: superseded
 last_updated: 2026-04-25
 category: developer-experience
 module: plite
@@ -18,6 +19,11 @@ tags: [slate, plite, applyoperations, operation-middleware, commit-subscribers, 
 ---
 
 # Plite operation replay should use applyOperations, operation middleware, and commit subscribers
+
+> **Superseded architecture record.** This article describes the removed
+> operation replay and middleware runtime. Current Plite publishes canonical
+> `DocumentChange` values and extends behavior through commands, corrections,
+> query middleware, and commit listeners.
 
 ## Problem
 

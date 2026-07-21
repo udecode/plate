@@ -51,4 +51,3 @@ Result: `3 pass`, `6 skip`, `0 fail`.
 - https://discuss.prosemirror.net/t/broken-table-pasting/5117
 - https://discuss.prosemirror.net/t/prosemirror-table-with-strict-schema-and-copy-paste/8473
 - https://discuss.prosemirror.net/t/building-a-canvas-based-editor-on-top-of-prosemirror-s-state-and-plugin-system/8982
-

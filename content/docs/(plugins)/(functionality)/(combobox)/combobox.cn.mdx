@@ -52,9 +52,7 @@ const TagInputPlugin = createBasePlugin({
   key: 'tag_input',
   editOnly: true,
   node: {
-    isElement: true,
-    isInline: true,
-    isVoid: true,
+    element: { inline: true, void: 'inline' },
   },
 });
 ```
@@ -71,7 +69,7 @@ type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
 
 export const TagPlugin = createBasePlugin<TagConfig>({
   key: 'tag',
-  node: { isElement: true, isInline: true, isVoid: true },
+  node: { element: { inline: true, void: 'inline' } },
   options: {
     trigger: '#',
     triggerPreviousCharPattern: /^\s?$/,
@@ -84,9 +82,9 @@ export const TagPlugin = createBasePlugin<TagConfig>({
 });
 ```
 
-- `node.isElement`: 定义此为元素节点(非文本)
-- `node.isInline`: 使标签元素内联(非块级)
-- `node.isVoid`: 防止在标签元素内编辑
+- `node.element`: 定义插件的元素模型行为
+- `node.element.inline`: 使标签元素以内联方式而不是块级方式显示
+- `node.element.void`: 防止在标签元素内部编辑
 - `options.trigger`: 触发组合框的字符(本例为`#`)
 - `options.triggerPreviousCharPattern`: 必须匹配触发器前字符的正则表达式。`/^\s?$/`允许在行首或空白后触发
 - `options.createComboboxInput`: 触发器激活时创建输入元素节点的函数

@@ -21,7 +21,7 @@ const editorTest = (
     value: input.children,
   });
 
-  editor.update.fragment.insert(fragment, options);
+  editor.update.fragment.replace(fragment, options);
 
   expect(editor.read.children()).toEqual(expected.children);
 };
@@ -109,6 +109,53 @@ describe('pasting a code block', () => {
       ) as TestEditor;
 
       editorTest(input, fragment, expected);
+    });
+
+    it('selects the fitted insertion end and records one undo step', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              hello
+              <cursor />
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+      const editor = createBaseEditor({
+        plugins: [BaseParagraphPlugin, CodeBlockPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      const fragment = (
+        <fragment>
+          <hp>world</hp>
+          <hp>!</hp>
+        </fragment>
+      ) as Descendant[];
+
+      editor.update.fragment.replace(fragment);
+
+      expect(editor.read.children()).toEqual(
+        (
+          <editor>
+            <hcodeblock>
+              <hcodeline>helloworld</hcodeline>
+              <hcodeline>!</hcodeline>
+            </hcodeblock>
+          </editor>
+        ).children
+      );
+      expect(editor.read.selection()).toEqual({
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 1, 0] },
+        focus: { offset: 1, path: [0, 1, 0] },
+      });
+      expect(editor.read.history.undos()).toHaveLength(1);
+
+      editor.update.history.undo();
+
+      expect(editor.read.children()).toEqual(input.children);
     });
   });
 

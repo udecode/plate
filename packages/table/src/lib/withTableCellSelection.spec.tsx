@@ -1,6 +1,14 @@
 /** @jsx jsxt */
 
-import { type Element, type Text, TextApi } from '@platejs/plite';
+import {
+  property,
+  schema,
+  target,
+  type Element,
+  type Text,
+  TextApi,
+} from '@platejs/plite';
+import { createBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -9,6 +17,28 @@ import { BaseTablePlugin, type TableConfig } from './BaseTablePlugin';
 
 jsxt;
 
+const TestAlignPlugin = createBasePlugin({
+  key: 'align',
+  schema: {
+    properties: [
+      schema.elementProperty('align', property.string(), {
+        target: target.group('element'),
+      }),
+      schema.elementProperty('indent', property.number(), {
+        target: target.group('element'),
+      }),
+    ],
+  },
+});
+const TestBoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
+});
+const TestItalicPlugin = createBasePlugin({
+  key: 'italic',
+  node: { mark: true },
+});
+
 const getTestTablePlugins = (options?: Partial<TableConfig['options']>) => [
   BaseTablePlugin.configure({
     options: {
@@ -16,6 +46,9 @@ const getTestTablePlugins = (options?: Partial<TableConfig['options']>) => [
       ...options,
     },
   }),
+  TestAlignPlugin,
+  TestBoldPlugin,
+  TestItalicPlugin,
 ];
 
 const createTableEditor = (
@@ -612,6 +645,7 @@ describe('withTableCellSelection', () => {
       const editor = createTableEditor(input);
 
       editor.update.selection.set({
+        kind: 'text',
         anchor: editor.read.points.start([0, 0, 0])!,
         focus: editor.read.points.end([0, 0, 1])!,
       });
@@ -657,6 +691,7 @@ describe('withTableCellSelection', () => {
       const editor = createTableEditor(input, { disableMerge: false });
 
       editor.update.selection.set({
+        kind: 'text',
         anchor: editor.read.points.start([0, 0, 0])!,
         focus: editor.read.points.end([0, 1, 1])!,
       });

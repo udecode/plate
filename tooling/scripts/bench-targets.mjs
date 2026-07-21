@@ -1,21 +1,24 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { runBoundedProcess } from './run-bounded-process.mjs';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '../..');
-const registryPath = path.join(root, 'benchmarks/targets/plite.json');
+const registryPath = path.join(root, 'benchmarks/targets/slate-v2.json');
 const historyPath = path.join(
   root,
-  'benchmarks/targets/history/plite-latest.json'
+  'benchmarks/targets/history/slate-v2-latest.json'
 );
 const historyRepoPath = path
   .relative(root, historyPath)
   .replaceAll(path.sep, '/');
-const reportPath = path.join(root, 'benchmarks/targets/reports/plite.md');
+const reportPath = path.join(root, 'benchmarks/targets/reports/slate-v2.md');
 const evidenceKitRegistryPath = path.join(
   root,
   'benchmarks/editor/research/benchmark-registry.json'
@@ -28,6 +31,10 @@ const autoresearchScriptCandidates = [
     '../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs'
   ),
 ].filter(Boolean);
+const defaultTargetTimeouts = Object.freeze({
+  benchmarkMs: 30 * 60_000,
+  correctnessMs: 10 * 60_000,
+});
 
 const usage = `Usage:
   node tooling/scripts/bench-targets.mjs list
@@ -40,9 +47,9 @@ const usage = `Usage:
   node tooling/scripts/bench-targets.mjs import-evidence-kit [--write]
 `;
 
-function fail(message) {
+function fail(message, status = 1) {
   console.error(message);
-  process.exit(1);
+  process.exit(status);
 }
 
 function resolveAutoresearchScript({ required = true } = {}) {
@@ -151,6 +158,7 @@ function importEvidenceKit() {
       activeLoops:
         'Autoresearch sessions optimize one target id at a time and own only active loop state.',
       docs: 'Docs and research files are linked evidence, not benchmark control state.',
+      timeouts: defaultTargetTimeouts,
     },
     targets,
   };
@@ -171,9 +179,41 @@ function sortedTargets(registry) {
 
 function getTarget(id) {
   if (!id) fail(usage);
-  const target = loadRegistry().targets.find((entry) => entry.id === id);
+  const registry = loadRegistry();
+  const target = registry.targets.find((entry) => entry.id === id);
   if (!target) fail(`Unknown benchmark target: ${id}`);
-  return target;
+  return {
+    ...target,
+    timeouts: resolveTargetTimeouts(target, registry.policy?.timeouts),
+  };
+}
+
+function resolveTargetTimeouts(target, policyTimeouts = defaultTargetTimeouts) {
+  return {
+    benchmarkMs:
+      target.timeouts?.benchmarkMs ??
+      policyTimeouts?.benchmarkMs ??
+      defaultTargetTimeouts.benchmarkMs,
+    correctnessMs:
+      target.timeouts?.correctnessMs ??
+      policyTimeouts?.correctnessMs ??
+      defaultTargetTimeouts.correctnessMs,
+  };
+}
+
+function validateTimeouts(value, prefix, errors, { required = false } = {}) {
+  if (value === undefined && !required) return;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    errors.push(`${prefix} must be an object`);
+    return;
+  }
+
+  for (const field of ['correctnessMs', 'benchmarkMs']) {
+    if (value[field] === undefined && !required) continue;
+    if (!Number.isInteger(value[field]) || value[field] <= 0) {
+      errors.push(`${prefix}.${field} must be a positive integer`);
+    }
+  }
 }
 
 function validateRegistry(registry) {
@@ -184,6 +224,9 @@ function validateRegistry(registry) {
   if (!Array.isArray(registry.targets) || registry.targets.length === 0) {
     errors.push('targets must be a non-empty array');
   }
+  validateTimeouts(registry.policy?.timeouts, 'policy.timeouts', errors, {
+    required: true,
+  });
 
   for (const target of registry.targets ?? []) {
     const prefix = target.id || '<missing id>';
@@ -218,6 +261,7 @@ function validateRegistry(registry) {
     if (!Array.isArray(target.artifacts) || target.artifacts.length === 0) {
       errors.push(`${prefix}: missing artifacts`);
     }
+    validateTimeouts(target.timeouts, `${prefix}: timeouts`, errors);
     for (const artifact of target.artifacts ?? []) {
       if (!artifact.path) errors.push(`${prefix}: artifact missing path`);
       if (path.isAbsolute(artifact.path ?? '')) {
@@ -469,19 +513,155 @@ function assertFileEquals(filePath, expected) {
   }
 }
 
-function runTarget(id) {
-  const target = getTarget(id);
-  const cwd = path.resolve(root, target.cwd);
-  console.log(`target=${target.id}`);
-  console.log(`cwd=${path.relative(root, cwd)}`);
-  console.log(`command=${target.command}`);
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+}
 
-  const result = spawnSync(target.command, {
-    cwd,
-    shell: true,
-    stdio: 'inherit',
-  });
-  process.exit(result.status ?? 1);
+function artifactSnapshot(repoRoot, artifact) {
+  const filePath = path.resolve(repoRoot, artifact.path);
+
+  if (!fs.existsSync(filePath)) {
+    return { exists: false, filePath };
+  }
+
+  const stat = fs.statSync(filePath, { bigint: true });
+
+  if (!stat.isFile()) {
+    throw new Error(`Benchmark artifact is not a file: ${artifact.path}`);
+  }
+
+  return {
+    digest: createHash('sha256')
+      .update(fs.readFileSync(filePath))
+      .digest('hex'),
+    exists: true,
+    filePath,
+    mtimeNs: stat.mtimeNs,
+    size: stat.size,
+  };
+}
+
+function writeCommandOutput(result) {
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+}
+
+function assertSuccessfulCommand(label, command, result) {
+  if (result.error) {
+    throw new Error(
+      `${label} could not start: ${command}\n${result.error.message}`
+    );
+  }
+  if (result.status !== 0) {
+    const error = new Error(
+      `${label} failed: exit=${result.status ?? 'null'} signal=${result.signal ?? 'none'}\n${command}`
+    );
+
+    error.exitCode = result.status ?? 1;
+    throw error;
+  }
+}
+
+function metricValue(stdout, metricName) {
+  const match = stdout.match(
+    new RegExp(`^METRIC ${escapeRegExp(metricName)}=([^\\s]+)\\s*$`, 'mu')
+  );
+
+  if (!match) return null;
+
+  const value = Number(match[1]);
+  return Number.isFinite(value) ? value : null;
+}
+
+async function runBenchmarkTarget(
+  target,
+  { repoRoot = root, runProcess = runBoundedProcess, writeOutput = true } = {}
+) {
+  const cwd = path.resolve(repoRoot, target.cwd);
+  const timeouts = resolveTargetTimeouts(target);
+  const run = async (label, command, timeoutMs) => {
+    console.log(`${label}=${command}`);
+    let result;
+
+    try {
+      result = await runProcess({
+        args: [],
+        captureLimitBytes: 64 * 1024 * 1024,
+        command,
+        cwd,
+        shell: true,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeoutMs,
+      });
+    } catch (error) {
+      throw new Error(
+        `${label} could not start: ${command}\n${error.message}`,
+        {
+          cause: error,
+        }
+      );
+    }
+
+    if (writeOutput) writeCommandOutput(result);
+    assertSuccessfulCommand(label, command, result);
+    return result;
+  };
+
+  console.log(`target=${target.id}`);
+  console.log(`cwd=${path.relative(repoRoot, cwd) || '.'}`);
+
+  await run('correctness', target.correctness.command, timeouts.correctnessMs);
+
+  const requiredArtifacts = target.artifacts.filter(
+    (artifact) => artifact.required
+  );
+  const before = new Map(
+    requiredArtifacts.map((artifact) => [
+      artifact.path,
+      artifactSnapshot(repoRoot, artifact),
+    ])
+  );
+  const benchmark = await run(
+    'benchmark',
+    target.command,
+    timeouts.benchmarkMs
+  );
+
+  for (const artifact of requiredArtifacts) {
+    const previous = before.get(artifact.path);
+    const current = artifactSnapshot(repoRoot, artifact);
+
+    if (!current.exists) {
+      throw new Error(
+        `Benchmark did not produce required artifact: ${artifact.path}`
+      );
+    }
+    if (
+      previous?.exists &&
+      previous.digest === current.digest &&
+      previous.mtimeNs === current.mtimeNs &&
+      previous.size === current.size
+    ) {
+      throw new Error(`Benchmark artifact is stale: ${artifact.path}`);
+    }
+  }
+
+  let primaryMetric = null;
+  if (target.metrics.printsMetric) {
+    primaryMetric = metricValue(benchmark.stdout, target.metrics.primary);
+
+    if (primaryMetric === null) {
+      throw new Error(
+        `Benchmark did not print a finite primary metric: METRIC ${target.metrics.primary}=<number>`
+      );
+    }
+  }
+
+  return { primaryMetric };
+}
+
+async function runTarget(id) {
+  await runBenchmarkTarget(getTarget(id));
 }
 
 function autoresearchSetupArgs(target, command) {
@@ -610,7 +790,7 @@ function writeImportedRegistry() {
   );
 }
 
-function main() {
+async function main() {
   const [command, ...rawArgs] = process.argv.slice(2);
   const args = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs;
 
@@ -647,7 +827,7 @@ function main() {
       });
       break;
     case 'run':
-      runTarget(args[0]);
+      await runTarget(args[0]);
       break;
     default:
       fail(usage);
@@ -658,7 +838,14 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
-  main();
+  main().catch((error) =>
+    fail(error?.stack ?? String(error), error?.exitCode ?? 1)
+  );
 }
 
-export { buildTargetHistory, renderMarkdownReport, validateRegistry };
+export {
+  buildTargetHistory,
+  renderMarkdownReport,
+  runBenchmarkTarget,
+  validateRegistry,
+};

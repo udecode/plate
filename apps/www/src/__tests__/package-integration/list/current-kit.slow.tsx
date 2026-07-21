@@ -1,3 +1,7 @@
+import { BaseBasicBlocksPlugin } from '@platejs/basic-nodes';
+import { BaseCodeBlockPlugin } from '@platejs/code-block';
+import { BaseImagePlugin } from '@platejs/media';
+import { BaseTogglePlugin } from '@platejs/toggle';
 import { BaseParagraphPlugin } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
@@ -7,11 +11,19 @@ describe('ListKit current contract', () => {
   it('promotes `- ` into a list item and moves selection into the empty item', () => {
     const editor = createPlateEditor({
       nodeId: true,
-      plugins: [BaseParagraphPlugin, ...ListKit],
+      plugins: [
+        BaseParagraphPlugin,
+        BaseBasicBlocksPlugin,
+        BaseCodeBlockPlugin,
+        BaseTogglePlugin,
+        BaseImagePlugin,
+        ...ListKit,
+      ],
       value: [{ children: [{ text: '-' }], type: 'p' }],
     });
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
@@ -28,6 +40,7 @@ describe('ListKit current contract', () => {
     ]);
     expect(editor.read.children()[0]).toHaveProperty('id');
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });

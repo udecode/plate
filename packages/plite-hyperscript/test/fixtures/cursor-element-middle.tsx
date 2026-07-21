@@ -11,6 +11,7 @@ export const input = (
 export const output = {
   children: [
     {
+      type: 'fixture-block',
       children: [
         {
           text: 'one',
@@ -19,6 +20,7 @@ export const output = {
     },
   ],
   selection: {
+    kind: 'text',
     anchor: {
       path: [0, 0],
       offset: 1,

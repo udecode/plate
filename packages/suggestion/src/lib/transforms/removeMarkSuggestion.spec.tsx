@@ -3,7 +3,7 @@
 import { type TUpdateSuggestionData } from '@platejs/utils';
 
 import { jsxt } from '@platejs/test-utils';
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from '../utils';
@@ -14,6 +14,16 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
     currentUserId: 'testId',
   },
+});
+
+const BoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
+});
+
+const ItalicPlugin = createBasePlugin({
+  key: 'italic',
+  node: { mark: true },
 });
 
 describe('removeMarkSuggestion', () => {
@@ -31,7 +41,7 @@ describe('removeMarkSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -50,16 +60,44 @@ describe('removeMarkSuggestion', () => {
     expect(data).toBeDefined();
     expect(data?.type).toBe('update');
     expect(data?.userId).toBe('testId');
-    expect(data?.properties).toEqual({ bold: undefined });
+    expect(data?.properties).toEqual({ bold: true });
     expect(typeof data?.createdAt).toBe('number');
     expect(typeof data?.id).toBe('string');
+  });
+
+  it('tracks a mark removed through the semantic toggle command', () => {
+    const input = (
+      <editor>
+        <hp>
+          <htext bold>
+            <anchor />
+            test
+            <focus />
+          </htext>
+        </hp>
+      </editor>
+    ) as any;
+    const editor = createBaseEditor({
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+
+    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+    editor.update.marks.toggle('bold', true);
+
+    const node = editor.read.children()[0].children[0] as any;
+    const data = getInlineSuggestionData(node) as TUpdateSuggestionData;
+
+    expect(node.bold).toBeUndefined();
+    expect(data.properties).toEqual({ bold: true });
   });
 
   it('add new suggestion mark while preserving existing suggestion mark', () => {
     const existingData = {
       id: '1',
       createdAt: Date.now(),
-      properties: { italic: undefined },
+      properties: { italic: true },
       type: 'update' as const,
       userId: 'testId',
     };
@@ -78,7 +116,7 @@ describe('removeMarkSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -95,7 +133,7 @@ describe('removeMarkSuggestion', () => {
     expect(dataList).toHaveLength(2);
     expect(dataList[0]).toEqual(existingData);
     expect(dataList[1].type).toBe('update');
-    expect(dataList[1].properties).toEqual({ bold: undefined });
+    expect(dataList[1].properties).toEqual({ bold: true });
     expect(dataList[1].id !== existingData.id).toBeTruthy();
     // expect(dataList[1].createdAt !== existingData.createdAt).toBeTruthy();
   });
@@ -121,7 +159,7 @@ describe('removeMarkSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
       selection: input.selection,
       value: input.children,
     });

@@ -1,6 +1,7 @@
 ---
 title: Plite value generics should be public boundary not runtime variance
 date: 2026-04-26
+status: superseded
 category: docs/solutions/developer-experience
 module: plite slate slate-react plite-dom slate-history
 problem_type: developer_experience
@@ -16,6 +17,11 @@ tags: [plite, generics, editor-types, value, variance, typescript]
 ---
 
 # Plite value generics should be public boundary not runtime variance
+
+> **Superseded architecture record.** The generic-boundary lesson remains
+> useful, but the APIs in this article belong to the removed operation runtime.
+> Current extensions type state, transaction, command, correction, and commit
+> boundaries directly.
 
 ## Problem
 

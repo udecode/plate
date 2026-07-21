@@ -39,10 +39,8 @@ const handleFileUpload = async (file: File) => {
   const arrayBuffer = await file.arrayBuffer();
   const result = await importDocx(editor, arrayBuffer);
 
-  // 将节点插入编辑器
-  editor.update((tx) => {
-    tx.nodes.insert(result.nodes);
-  });
+  // 使用导入的节点替换当前片段
+  editor.update.fragment.replace(result.nodes);
 
   // 处理批注（如需要）
   for (const comment of result.comments) {

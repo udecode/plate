@@ -3,7 +3,8 @@ const environmentUrl = new URL('../src/utils/environment.ts', import.meta.url)
 
 const getEnvironmentSupport = async (
   userAgent: string,
-  inputEventPrototype: string
+  inputEventPrototype: string,
+  platform = ''
 ) => {
   const child = Bun.spawn({
     cmd: [
@@ -13,7 +14,10 @@ const getEnvironmentSupport = async (
 delete globalThis.navigator
 Object.defineProperty(globalThis, 'navigator', {
   configurable: true,
-  value: { userAgent: ${JSON.stringify(userAgent)} },
+  value: {
+    platform: ${JSON.stringify(platform)},
+    userAgent: ${JSON.stringify(userAgent)},
+  },
 })
 Object.defineProperty(globalThis, 'InputEvent', {
   configurable: true,
@@ -23,6 +27,7 @@ Object.defineProperty(globalThis, 'InputEvent', {
 const env = await import(${JSON.stringify(environmentUrl)})
 console.log(JSON.stringify({
   hasBeforeInputSupport: Boolean(env.HAS_BEFORE_INPUT_SUPPORT),
+  isApple: Boolean(env.IS_APPLE),
 }))
       `,
     ],
@@ -41,6 +46,7 @@ console.log(JSON.stringify({
 
   return JSON.parse(stdout) as {
     hasBeforeInputSupport: boolean;
+    isApple: boolean;
   };
 };
 
@@ -78,5 +84,15 @@ describe('plite-dom environment', () => {
     );
 
     expect(environment.hasBeforeInputSupport).toBe(true);
+  });
+
+  test('prefers the browser platform when the user agent is spoofed', async () => {
+    const environment = await getEnvironmentSupport(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+      '{}',
+      'MacIntel'
+    );
+
+    expect(environment.isApple).toBe(true);
   });
 });

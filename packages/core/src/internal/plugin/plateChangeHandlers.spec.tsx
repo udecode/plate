@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
+import { property, schema, target } from '@platejs/plite';
 
 jsxt;
 
@@ -13,6 +14,13 @@ describe('plate change handlers', () => {
     const NodeObserverPlugin = createBasePlugin({
       handlers: { onNodeChange },
       key: 'nodeObserver',
+      schema: {
+        properties: [
+          schema.elementProperty('variant', property.string(), {
+            target: target.type('p'),
+          }),
+        ],
+      },
     });
     const editor = createBaseEditor({
       plugins: [NodeObserverPlugin],
@@ -29,10 +37,6 @@ describe('plate change handlers', () => {
         children: [{ text: 'hello' }],
         type: 'p',
         variant: 'lead',
-      },
-      operation: {
-        path: [0],
-        type: 'set_node',
       },
       prevNode: {
         children: [{ text: 'hello' }],
@@ -62,28 +66,20 @@ describe('plate change handlers', () => {
 
     expect(onNodeChange).toHaveBeenCalledTimes(2);
     expect(onNodeChange.mock.calls[0]?.[0]).toMatchObject({
+      kind: 'insert',
       node: {
         children: [{ text: 'inserted' }],
         type: 'p',
       },
-      operation: {
-        path: [1],
-        type: 'insert_node',
-      },
-      prevNode: {
-        children: [{ text: 'inserted' }],
-        type: 'p',
-      },
+      path: [1],
+      previousPath: null,
+      prevNode: null,
     });
     expect(onNodeChange.mock.calls[1]?.[0]).toMatchObject({
-      node: {
-        children: [{ text: 'inserted' }],
-        type: 'p',
-      },
-      operation: {
-        path: [1],
-        type: 'remove_node',
-      },
+      kind: 'remove',
+      node: null,
+      path: [1],
+      previousPath: [1],
       prevNode: {
         children: [{ text: 'inserted' }],
         type: 'p',
@@ -91,7 +87,7 @@ describe('plate change handlers', () => {
     });
   });
 
-  it('does not dispatch node handlers for text operations', () => {
+  it('does not dispatch node handlers for text intents', () => {
     const onNodeChange = mock();
     const NodeObserverPlugin = createBasePlugin({
       handlers: { onNodeChange },
@@ -100,6 +96,7 @@ describe('plate change handlers', () => {
     const editor = createBaseEditor({
       plugins: [NodeObserverPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
@@ -122,6 +119,7 @@ describe('plate change handlers', () => {
     const editor = createBaseEditor({
       plugins: [TextObserverPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
@@ -137,12 +135,6 @@ describe('plate change handlers', () => {
       node: {
         children: [{ text: 'hello!' }],
         type: 'p',
-      },
-      operation: {
-        offset: 5,
-        path: [0, 0],
-        text: '!',
-        type: 'insert_text',
       },
       prevText: 'hello',
       text: 'hello!',

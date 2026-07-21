@@ -14,6 +14,7 @@ describe('insertFootnote', () => {
         BaseFootnoteDefinitionPlugin,
       ] as const,
       selection: {
+        kind: 'text',
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
@@ -51,6 +52,7 @@ describe('insertFootnote', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -63,6 +65,7 @@ describe('insertFootnote', () => {
         BaseFootnoteDefinitionPlugin,
       ] as const,
       selection: {
+        kind: 'text',
         anchor: { offset: 6, path: [0, 0] },
         focus: { offset: 11, path: [0, 0] },
       },
@@ -149,6 +152,7 @@ describe('insertFootnote', () => {
         BaseFootnoteDefinitionPlugin,
       ] as const,
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -206,6 +210,7 @@ describe('insertFootnote', () => {
         BaseFootnoteDefinitionPlugin,
       ] as const,
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -243,6 +248,7 @@ describe('insertFootnote', () => {
     ]);
     expect(editor.read.value().children).toHaveLength(2);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -255,6 +261,7 @@ describe('insertFootnote', () => {
         BaseFootnoteDefinitionPlugin,
       ] as const,
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -288,6 +295,7 @@ describe('insertFootnote', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });
@@ -304,6 +312,7 @@ describe('insertFootnote', () => {
         }),
       ] as const,
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -376,6 +385,7 @@ describe('insertFootnote', () => {
       true
     );
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -393,6 +403,7 @@ describe('insertFootnote', () => {
       true
     );
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });
@@ -440,6 +451,7 @@ describe('insertFootnote', () => {
       true
     );
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });

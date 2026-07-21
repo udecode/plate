@@ -5,7 +5,7 @@ import {
 } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { type TTableElement, KEYS } from '@platejs/utils';
-import { type Value } from '@platejs/plite';
+import { type Value, schema } from '@platejs/plite';
 import { BaseParagraphPlugin } from '@platejs/core';
 import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
 
@@ -14,7 +14,10 @@ import {
   beginAIPreview,
   hasAIPreview,
 } from '../../../lib/transforms/aiStreamSnapshot';
-import { aiBatchField, withAIBatch } from '../../../lib/transforms/withAIBatch';
+import {
+  aiBatchEffect,
+  withAIBatch,
+} from '../../../lib/transforms/withAIBatch';
 import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
 import { acceptAISuggestions } from './acceptAISuggestions';
 import { applyTableCellSuggestion } from './applyTableCellSuggestion';
@@ -27,15 +30,37 @@ import { resetAIChat } from './resetAIChat';
 
 const TablePlugin = createPlatePlugin({
   key: KEYS.table,
-  node: { isContainer: true, isElement: true },
+  node: {
+    element: {
+      content: schema.content.type(KEYS.tr, {
+        default: { type: KEYS.tr },
+        min: 1,
+      }),
+      groups: ['block'],
+    },
+  },
 });
 const TableRowPlugin = createPlatePlugin({
   key: KEYS.tr,
-  node: { isElement: true },
+  node: {
+    element: {
+      content: schema.content.type(KEYS.td, {
+        default: { type: KEYS.td },
+        min: 1,
+      }),
+    },
+  },
 });
 const TableCellPlugin = createPlatePlugin({
   key: KEYS.td,
-  node: { isElement: true },
+  node: {
+    element: {
+      content: schema.content.group('block', {
+        default: { type: KEYS.p },
+        min: 1,
+      }),
+    },
+  },
 });
 
 const createSuggestionEditor = (type: 'insert' | 'remove') => {
@@ -73,6 +98,7 @@ describe('ai chat action utils', () => {
     const editor = createPlateEditor<Value>({
       plugins: [
         BaseParagraphPlugin,
+        BaseAIPlugin,
         MarkdownPlugin,
         SuggestionPlugin.configure({ options: { currentUserId: 'u1' } }),
         TablePlugin,
@@ -108,8 +134,8 @@ describe('ai chat action utils', () => {
       })
     ).toBe(true);
     expect(editor.read.text.string([])).toContain('ai');
-    expect(editor.read.history.undos()[0]?.statePatches).toContainEqual(
-      expect.objectContaining({ key: aiBatchField.key })
+    expect(editor.read.history.undos()[0]?.effects).toContainEqual(
+      expect.objectContaining({ type: aiBatchEffect, value: -1 })
     );
   });
 

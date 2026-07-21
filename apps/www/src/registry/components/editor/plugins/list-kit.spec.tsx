@@ -1,5 +1,7 @@
 import ReactDOMServer from 'react-dom/server';
 
+import { createBasePlugin } from '@platejs/core';
+import { schema } from '@platejs/plite';
 import { createBaseEditor, KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
@@ -8,6 +10,24 @@ import { BlockListStatic } from '@/registry/ui/block-list-static';
 
 import { BaseListKit } from './list-base-kit';
 import { ListKit } from './list-kit';
+
+const ListTargetSchemaKit = [
+  ...KEYS.heading,
+  KEYS.blockquote,
+  KEYS.codeBlock,
+  KEYS.toggle,
+  KEYS.img,
+].map((type) =>
+  createBasePlugin({
+    key: type,
+    node: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        groups: ['block'],
+      },
+    },
+  })
+);
 
 const unorderedElement = {
   children: [{ text: 'Bullet' }],
@@ -57,12 +77,12 @@ describe('ListKit unordered list rendering', () => {
   it('injects root list-item props without wiping indent margin', () => {
     const interactiveNodeProps = getListNodeProps(
       createPlateEditor({
-        plugins: ListKit,
+        plugins: [...ListTargetSchemaKit, ...ListKit],
       })
     );
     const staticNodeProps = getListNodeProps(
       createBaseEditor({
-        plugins: BaseListKit,
+        plugins: [...ListTargetSchemaKit, ...BaseListKit],
       })
     );
 

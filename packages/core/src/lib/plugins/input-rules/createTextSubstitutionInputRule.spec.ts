@@ -1,3 +1,5 @@
+import { insertText } from '@platejs/plite/internal';
+
 import { createBaseEditor } from '../../editor';
 import { createBasePlugin } from '../../plugin';
 import { createTextSubstitutionInputRule } from './createInputRules';
@@ -8,6 +10,7 @@ const createEditor = (
   createBaseEditor({
     plugins: [createBasePlugin({ key: 'shortcuts', inputRules: [rule] })],
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
@@ -21,8 +24,8 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.update.text.insert('-');
-    editor.update.text.insert('>');
+    insertText(editor, '-');
+    insertText(editor, '>');
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: '→' }], type: 'p' },
@@ -35,7 +38,7 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.update.text.insert('-');
+    insertText(editor, '-');
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: '-' }], type: 'p' },
@@ -48,9 +51,9 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.update.text.insert('(');
-    editor.update.text.insert('c');
-    editor.update.text.insert(')');
+    insertText(editor, '(');
+    insertText(editor, 'c');
+    insertText(editor, ')');
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: '©' }], type: 'p' },
@@ -63,10 +66,10 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.update.text.insert('"');
-    editor.update.text.insert('h');
-    editor.update.text.insert('i');
-    editor.update.text.insert('"');
+    insertText(editor, '"');
+    insertText(editor, 'h');
+    insertText(editor, 'i');
+    insertText(editor, '"');
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: '“hi”' }], type: 'p' },
@@ -79,10 +82,10 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.update.text.insert('f');
-    editor.update.text.insert('o');
-    editor.update.text.insert('o');
-    editor.update.text.insert(' ');
+    insertText(editor, 'f');
+    insertText(editor, 'o');
+    insertText(editor, 'o');
+    insertText(editor, ' ');
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'FOO' }], type: 'p' },

@@ -12,7 +12,6 @@ import {
   createEditor,
   ElementApi,
   NodeApi,
-  OperationApi,
   PointApi,
   RangeApi,
   TextApi,
@@ -84,88 +83,10 @@ describe('plite interfaces contract', () => {
     assert.equal(NodeApi.isNode({}), false);
   });
 
-  it('recognizes move_node operations', () => {
-    assert.equal(
-      OperationApi.isOperation({
-        type: 'move_node',
-        path: [0],
-        newPath: [1],
-      }),
-      true
-    );
-  });
-
-  it('recognizes operation lists', () => {
-    assert.equal(
-      OperationApi.isOperationList([
-        {
-          type: 'set_node',
-          path: [0],
-          properties: {},
-          newProperties: {},
-        },
-      ]),
-      true
-    );
-  });
-
-  it('keeps operation validation strict for custom operation-like objects', () => {
-    const customOperation = {
-      type: 'custom_operation',
-      path: [0],
-      payload: true,
-    };
-
-    assert.equal(OperationApi.isOperation(customOperation), false);
-    assert.equal(
-      OperationApi.isOperationList([
-        {
-          offset: 0,
-          path: [0, 0],
-          text: 'x',
-          type: 'insert_text',
-        },
-        customOperation,
-      ]),
-      false
-    );
-  });
-
-  it('recognizes concrete operation subtypes', () => {
-    assert.equal(
-      OperationApi.isInsertTextOperation({
-        offset: 0,
-        path: [0, 0],
-        text: 'x',
-        type: 'insert_text',
-      }),
-      true
-    );
-    assert.equal(
-      OperationApi.isReplaceChildrenOperation({
-        children: [],
-        index: 0,
-        newChildren: [],
-        newSelection: null,
-        path: [],
-        selection: null,
-        type: 'replace_children',
-      }),
-      true
-    );
-    assert.equal(
-      OperationApi.isInsertNodeOperation({
-        type: 'custom_operation',
-        path: [0],
-        payload: true,
-      }),
-      false
-    );
-  });
-
   it('recognizes ranges', () => {
     assert.equal(
       RangeApi.isRange({
+        kind: 'text',
         anchor: { path: [0, 1], offset: 0 },
         focus: { path: [0, 1], offset: 0 },
       }),
@@ -175,10 +96,12 @@ describe('plite interfaces contract', () => {
 
   it('normalizes range edges and intersections by document order', () => {
     const backwardRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 8 },
       focus: { path: [0, 0], offset: 2 },
     };
     const overlapRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 5 },
     };
@@ -200,6 +123,7 @@ describe('plite interfaces contract', () => {
       offset: 8,
     });
     assert.deepEqual(RangeApi.intersection(backwardRange, overlapRange), {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 5 },
     });
@@ -207,18 +131,22 @@ describe('plite interfaces contract', () => {
 
   it('distinguishes intersecting ranges from fully surrounded ranges', () => {
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 8 },
     };
     const backwardSelection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 8 },
       focus: { path: [0, 0], offset: 2 },
     };
     const endpointOnlyRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 4 },
     };
     const interiorRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 6 },
     };
@@ -262,17 +190,6 @@ describe('plite interfaces contract', () => {
     );
   });
 
-  it('rejects insert_fragment operations whose at target is only a Path', () => {
-    assert.equal(
-      OperationApi.isOperation({
-        type: 'insert_fragment',
-        fragment: [],
-        at: [0],
-      }),
-      false
-    );
-  });
-
   it('recognizes editor instances without stale public state fields', () => {
     const editor = createEditor() as ReturnType<typeof createEditor> & {
       exec?: () => void;
@@ -290,9 +207,9 @@ describe('plite interfaces contract', () => {
     assert.equal('selection' in editor, false);
   });
 
-  it('recognizes editor instances even when user code attaches custom operations', () => {
+  it('recognizes editor instances with unrelated user metadata', () => {
     const editor = createEditor() as ReturnType<typeof createEditor> & {
-      operations?: unknown[];
+      customMetadata?: unknown[];
     };
 
     editorReplace(editor, {
@@ -300,9 +217,9 @@ describe('plite interfaces contract', () => {
       selection: null,
     });
 
-    editor.operations = [
+    editor.customMetadata = [
       {
-        type: 'custom_operation',
+        type: 'custom_record',
         path: [0],
       },
     ];

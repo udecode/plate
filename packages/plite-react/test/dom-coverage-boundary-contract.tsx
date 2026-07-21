@@ -71,6 +71,8 @@ const createLargeHiddenBoundaryChildren = (
   },
 ];
 
+const BoundaryVisibilityContext = React.createContext(false);
+
 describe('DOM coverage private boundary harness', () => {
   test('renderElement dev coverage guard treats missing process env as production-safe', () => {
     const originalProcess = Object.getOwnPropertyDescriptor(
@@ -398,6 +400,7 @@ describe('DOM coverage private boundary harness', () => {
     expect(boundaryId).toMatch(/^content-boundary:/);
 
     const range = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 'Hidden header'.length, path: [0, 0] },
     };
@@ -471,6 +474,70 @@ describe('DOM coverage private boundary harness', () => {
     expect(rendered.container.textContent).toContain('Footer hidden by slot');
     expect(rendered.container.textContent).not.toContain('Hidden header');
     expect(rendered.container.textContent).not.toContain('Hidden footer');
+  });
+
+  test('renderElement slot visibility follows external React context', async () => {
+    const editor = createReactEditor();
+
+    editorReplace(editor, {
+      children: createNestedChildren(),
+      selection: null,
+    });
+
+    const renderElement = ({
+      children,
+      element,
+      slots,
+    }: Parameters<
+      NonNullable<React.ComponentProps<typeof Editable>['renderElement']>
+    >[0]) => {
+      const mounted = React.useContext(BoundaryVisibilityContext);
+
+      if (element.type === 'section') {
+        return (
+          <EditableElement>
+            {slots.contentBoundary({
+              boundaryId: 'context-section-body',
+              mounted,
+              scope: {
+                from: 0,
+                to: element.children.length - 1,
+                type: 'children',
+              },
+            })}
+          </EditableElement>
+        );
+      }
+
+      return <EditableElement>{children}</EditableElement>;
+    };
+    const Surface = ({ mounted }: { mounted: boolean }) => (
+      <BoundaryVisibilityContext.Provider value={mounted}>
+        <Plite editor={editor}>
+          <Editable
+            id="dom-coverage-context-boundary-toggle"
+            renderElement={renderElement}
+          />
+        </Plite>
+      </BoundaryVisibilityContext.Provider>
+    );
+    const rendered = render(<Surface mounted={false} />);
+
+    await waitFor(() => {
+      expect(
+        DOMCoverage.getBoundary(editor, 'context-section-body')
+      ).not.toBeNull();
+      expect(rendered.container.textContent).not.toContain('Hidden alpha');
+    });
+
+    rendered.rerender(<Surface mounted />);
+
+    await waitFor(() => {
+      expect(
+        DOMCoverage.getBoundary(editor, 'context-section-body')
+      ).toBeNull();
+      expect(rendered.container.textContent).toContain('Hidden alpha');
+    });
   });
 
   test('renderElement slots cover child ranges without exposing runtime ids', async () => {

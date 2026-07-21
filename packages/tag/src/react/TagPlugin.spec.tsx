@@ -39,6 +39,7 @@ describe('MultiSelectPlugin', () => {
     const editor = createPlateEditor({
       plugins: [MultiSelectPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 7, path: [0, 0] },
       },

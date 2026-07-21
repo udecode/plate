@@ -13,7 +13,7 @@ it('uses a plain render.as fast path for simple text plugins', () => {
     key: 'test',
     node: {
       isDecoration: false,
-      isLeaf: true,
+      mark: true,
       type: 'test',
     },
     render: {

@@ -17,7 +17,46 @@ describe('BaseTextAlignPlugin', () => {
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     });
+    expect(
+      editor.read.schema.property({
+        key: 'align',
+        placement: 'element',
+        type: KEYS.p,
+      })?.value.kind
+    ).toBe('string');
     expect(typeof editor.update.textAlign.set).toBe('function');
+  });
+
+  it('derives schema and injection targets from configured plugin keys', () => {
+    const ParagraphPlugin = BaseParagraphPlugin.configure({
+      node: { type: 'custom-paragraph' },
+    });
+    const TextAlignPlugin = BaseTextAlignPlugin.configure({
+      options: { targetPluginKeys: [KEYS.p] },
+    });
+    const editor = createBaseEditor({
+      plugins: [ParagraphPlugin, TextAlignPlugin],
+    });
+    const plugin = editor.getPlugin(TextAlignPlugin);
+
+    expect(plugin.options.targetPluginKeys).toEqual([KEYS.p]);
+    expect(plugin.inject.targetPlugins).toEqual(
+      plugin.options.targetPluginKeys
+    );
+    expect(
+      editor.read.schema.property({
+        key: 'align',
+        placement: 'element',
+        type: 'custom-paragraph',
+      })?.value.kind
+    ).toBe('string');
+    expect(
+      editor.read.schema.property({
+        key: 'align',
+        placement: 'element',
+        type: KEYS.p,
+      })
+    ).toBeNull();
   });
 
   it('parses text-align styles through the injected target plugin deserializer', () => {
@@ -42,6 +81,7 @@ describe('BaseTextAlignPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },

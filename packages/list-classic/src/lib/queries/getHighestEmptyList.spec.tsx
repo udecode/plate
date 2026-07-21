@@ -4,6 +4,7 @@ import { createBaseEditor } from '@platejs/core';
 
 import { jsxt } from '@platejs/test-utils';
 
+import { BaseListPlugin } from '../BaseListPlugin';
 import { getHighestEmptyList } from './getHighestEmptyList';
 
 jsxt;
@@ -30,7 +31,10 @@ describe('getHighestEmptyList', () => {
         </hul>
       </editor>
     ) as any;
-    const editor = createBaseEditor({ value: input.children });
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      value: input.children,
+    });
 
     expect(getHighestEmptyList(editor, { liPath: [0, 1] })).toEqual([0, 1]);
   });
@@ -53,7 +57,10 @@ describe('getHighestEmptyList', () => {
         </hul>
       </editor>
     ) as any;
-    const editor = createBaseEditor({ value: input.children });
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      value: input.children,
+    });
 
     expect(getHighestEmptyList(editor, { liPath: [0, 0, 1, 0] })).toEqual([
       0, 0,
@@ -78,7 +85,10 @@ describe('getHighestEmptyList', () => {
         </hul>
       </editor>
     ) as any;
-    const editor = createBaseEditor({ value: input.children });
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      value: input.children,
+    });
 
     expect(
       getHighestEmptyList(editor, {

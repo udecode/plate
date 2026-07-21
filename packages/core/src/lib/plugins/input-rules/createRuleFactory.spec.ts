@@ -51,6 +51,7 @@ describe('createRuleFactory', () => {
     })() as InsertTextInputRule<BlockStartInputRuleMatch>;
 
     const range = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     };
@@ -75,6 +76,7 @@ describe('createRuleFactory', () => {
     })() as InsertTextInputRule<BlockStartInputRuleMatch & { start: number }>;
 
     const range = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     };

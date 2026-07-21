@@ -95,6 +95,7 @@ describe('plite-react DOM capability contract', () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createReactEditor({ initialValue });
     const expectedSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -131,6 +132,7 @@ describe('plite-react DOM capability contract', () => {
       { type: 'block', children: [{ text: 'bar' }] },
     ];
     const expectedSelection = {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 3 },
     };
@@ -185,10 +187,12 @@ describe('plite-react DOM capability contract', () => {
     });
 
     expect(editorGetSelection(editor)).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
     const expectedSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -229,6 +233,7 @@ describe('plite-react DOM capability contract', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 2 },
           focus: { path: [1, 0], offset: 2 },
         });
@@ -244,6 +249,7 @@ describe('plite-react DOM capability contract', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: tx.points.start([]),
           focus: tx.points.end([]),
         });
@@ -278,6 +284,7 @@ describe('plite-react DOM capability contract', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: tx.points.start([]),
           focus: tx.points.end([]),
         });
@@ -317,6 +324,7 @@ describe('plite-react DOM capability contract', () => {
 
     await act(async () => {
       editable?.__pliteBrowserHandle?.selectRange({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });

@@ -5,7 +5,12 @@ import {
   renderHook,
   screen,
 } from '@testing-library/react';
-import type { Descendant } from '@platejs/plite';
+import {
+  createEditor,
+  defineEditorExtension,
+  type Descendant,
+  type Range as PliteRange,
+} from '@platejs/plite';
 import { afterEach, vi } from 'vitest';
 
 import { createReactEditor, Editable, Plite } from '../src';
@@ -87,6 +92,32 @@ const createMouseCaptureEvent = ({
     target,
   }) as unknown as React.MouseEvent<HTMLElement>;
 
+const createCoordinateSelectionEditor = ({
+  editable,
+  initialValue,
+  resolvedRanges,
+}: {
+  editable: HTMLElement;
+  initialValue: Descendant[];
+  resolvedRanges: Array<PliteRange | null>;
+}) =>
+  createEditor({
+    extensions: [
+      defineEditorExtension({
+        api: {
+          dom: {
+            assertDOMNode: () => editable,
+            focus: vi.fn(),
+            resolveDOMNode: () => editable,
+            resolveEventRange: () => resolvedRanges.shift() ?? null,
+          },
+        },
+        name: 'root-interaction-test-dom',
+      }),
+    ],
+    initialValue,
+  }) as unknown as RootInteractionEditor;
+
 afterEach(() => {
   if (rangeDescriptor) {
     Object.defineProperty(Range.prototype, 'getClientRects', rangeDescriptor);
@@ -146,6 +177,7 @@ describe('root interaction controller', () => {
     const previousElementFromPoint = document.elementFromPoint;
     const resolveEventRange = vi.fn(() => null);
     const startRange = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     };
@@ -197,14 +229,17 @@ describe('root interaction controller', () => {
     const scroller = createScrollableElement();
     const previousElementFromPoint = document.elementFromPoint;
     const staleRange = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     };
     const startRange = {
+      kind: 'text',
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     };
     const currentRange = {
+      kind: 'text',
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 10, path: [4, 0] },
     };
@@ -312,6 +347,7 @@ describe('root interaction controller', () => {
     const string = document.createElement('span');
     const update = vi.fn();
     const resolveEventRange = vi.fn(() => ({
+      kind: 'text',
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     }));
@@ -577,67 +613,34 @@ describe('root interaction controller', () => {
     const editable = document.createElement('div');
     const string = document.createElement('span');
     const startRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     };
     const endRange = {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 4 },
       focus: { path: [1, 0], offset: 4 },
     };
     const resolvedRanges = [startRange, null, endRange, null];
-    let selection: unknown = null;
-
     editable.dataset.pliteEditor = 'true';
     editable.dataset.pliteRoot = 'main';
     string.dataset.pliteString = 'true';
     editable.append(string);
     document.body.append(editable);
 
-    const editor = {
-      api: {
-        dom: {
-          assertDOMNode: () => editable,
-          focus: vi.fn(),
-          resolveDOMNode: () => editable,
-          resolveEventRange: vi.fn(() => resolvedRanges.shift() ?? null),
-        },
-      },
-      read: (reader: (state: unknown) => unknown) =>
-        reader({
-          points: {
-            end: () => ({ path: [1, 0], offset: 4 }),
-          },
-          schema: {
-            getElementSpec: () => null,
-          },
-          selection: {
-            get: () => selection,
-          },
-          value: {
-            get: () => ({
-              children: [paragraph('first'), paragraph('second')],
-            }),
-          },
-        }),
-      update: (policyOrWriter: unknown, writer?: (tx: unknown) => void) => {
-        const update = writer ?? (policyOrWriter as (tx: unknown) => void);
-
-        update({
-          selection: {
-            set: (range: unknown) => {
-              selection = range;
-            },
-          },
-        });
-      },
-    };
+    const editor = createCoordinateSelectionEditor({
+      editable,
+      initialValue: [paragraph('first'), paragraph('second')],
+      resolvedRanges,
+    });
 
     const { result, unmount } = renderHook(() =>
       useRootInteractionController({
         disabled: false,
-        editor: editor as never,
+        editor,
         getLastSelectionForRoot: () => startRange,
-        getMountedViewEditor: () => editor as never,
+        getMountedViewEditor: () => editor,
         root: 'main',
         selection: 'restore',
       })
@@ -662,9 +665,10 @@ describe('root interaction controller', () => {
       );
     });
 
-    expect(selection).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 4 },
+      kind: 'text',
     });
 
     act(() => {
@@ -678,9 +682,10 @@ describe('root interaction controller', () => {
       );
     });
 
-    expect(selection).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 4 },
+      kind: 'text',
     });
 
     unmount();
@@ -691,14 +696,17 @@ describe('root interaction controller', () => {
     const editable = document.createElement('div');
     const string = document.createElement('span');
     const startRange = {
+      kind: 'text',
       anchor: { path: [2, 0], offset: 1 },
       focus: { path: [2, 0], offset: 1 },
     };
     const endRange = {
+      kind: 'text',
       anchor: { path: [3, 0], offset: 4 },
       focus: { path: [3, 0], offset: 4 },
     };
     const staleMouseUpRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -709,64 +717,29 @@ describe('root interaction controller', () => {
       null,
       staleMouseUpRange,
     ];
-    let selection: unknown = null;
-
     editable.dataset.pliteEditor = 'true';
     editable.dataset.pliteRoot = 'main';
     string.dataset.pliteString = 'true';
     editable.append(string);
     document.body.append(editable);
 
-    const editor = {
-      api: {
-        dom: {
-          assertDOMNode: () => editable,
-          focus: vi.fn(),
-          resolveDOMNode: () => editable,
-          resolveEventRange: vi.fn(() => resolvedRanges.shift() ?? null),
-        },
-      },
-      read: (reader: (state: unknown) => unknown) =>
-        reader({
-          points: {
-            end: () => ({ path: [3, 0], offset: 4 }),
-          },
-          schema: {
-            getElementSpec: () => null,
-          },
-          selection: {
-            get: () => selection,
-          },
-          value: {
-            get: () => ({
-              children: [
-                paragraph('heading'),
-                paragraph('intro'),
-                paragraph('first'),
-                paragraph('second'),
-              ],
-            }),
-          },
-        }),
-      update: (policyOrWriter: unknown, writer?: (tx: unknown) => void) => {
-        const update = writer ?? (policyOrWriter as (tx: unknown) => void);
-
-        update({
-          selection: {
-            set: (range: unknown) => {
-              selection = range;
-            },
-          },
-        });
-      },
-    };
+    const editor = createCoordinateSelectionEditor({
+      editable,
+      initialValue: [
+        paragraph('heading'),
+        paragraph('intro'),
+        paragraph('first'),
+        paragraph('second'),
+      ],
+      resolvedRanges,
+    });
 
     const { result, unmount } = renderHook(() =>
       useRootInteractionController({
         disabled: false,
-        editor: editor as never,
+        editor,
         getLastSelectionForRoot: () => startRange,
-        getMountedViewEditor: () => editor as never,
+        getMountedViewEditor: () => editor,
         root: 'main',
         selection: 'restore',
       })
@@ -791,9 +764,10 @@ describe('root interaction controller', () => {
       );
     });
 
-    expect(selection).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [2, 0], offset: 1 },
       focus: { path: [3, 0], offset: 4 },
+      kind: 'text',
     });
 
     document.getSelection()?.removeAllRanges();
@@ -809,9 +783,10 @@ describe('root interaction controller', () => {
       );
     });
 
-    expect(selection).toEqual({
+    expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [2, 0], offset: 1 },
       focus: { path: [3, 0], offset: 4 },
+      kind: 'text',
     });
 
     unmount();

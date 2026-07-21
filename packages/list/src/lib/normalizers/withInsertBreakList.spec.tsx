@@ -118,42 +118,4 @@ describe('withInsertBreakList', () => {
 
     expect(editor.read.children()).toEqual(output.children);
   });
-
-  it('uses the active transaction selection', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
-      value: [
-        {
-          checked: true,
-          children: [{ text: 'Todo item' }],
-          indent: 1,
-          listStyleType: KEYS.listTodo,
-          type: KEYS.p,
-        },
-      ],
-    });
-
-    editor.update((tx) => {
-      tx.selection.set({ offset: 9, path: [0, 0] });
-      tx.break.insert();
-    });
-
-    expect(editor.read.children()).toEqual([
-      {
-        checked: true,
-        children: [{ text: 'Todo item' }],
-        indent: 1,
-        listStyleType: KEYS.listTodo,
-        type: KEYS.p,
-      },
-      {
-        checked: false,
-        children: [{ text: '' }],
-        indent: 1,
-        listStart: 2,
-        listStyleType: KEYS.listTodo,
-        type: KEYS.p,
-      },
-    ]);
-  });
 });

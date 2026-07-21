@@ -131,7 +131,10 @@ const getBrowserModKey = async (
   root: Awaited<ReturnType<typeof openExample>>['root']
 ) =>
   root.evaluate(() =>
-    /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+    /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+    /Mac OS X/.test(navigator.userAgent)
+      ? 'Meta'
+      : 'Control'
   );
 
 const getParagraphBlankTailPoint = async (
@@ -362,7 +365,6 @@ type PaginationMiddleTypingSample = {
   hasExpectedText: boolean;
   inputEventCount?: number;
   inputState?: unknown;
-  kernelTrace?: unknown[];
   lastInputToPaintMs?: number;
   modelHasExpectedText?: boolean;
   modelSelection?: unknown;
@@ -380,12 +382,6 @@ type PaginationMiddleTypingSample = {
     focusText: string | null;
   } | null;
   pageSurfaceCount: number;
-  profiler?: {
-    byKind: Record<string, number>;
-    byKey: Record<string, number>;
-    durationsById: Record<string, number>;
-    total: number;
-  };
   sampleCount?: number;
   textObservedMs?: number | null;
   totalElementCount: number;
@@ -2015,30 +2011,9 @@ const armPaginationMiddleTypingProbe = async (
       let textObservedAt: number | null = null;
       const inputController = new AbortController();
       const global = window as typeof window & {
-        __paginationMiddleTypingProfilerEvents?: {
-          duration?: number;
-          id?: string | null;
-          kind?: string;
-        }[];
         __paginationMiddleTypingProbe?: Promise<PaginationMiddleTypingSample>;
-        __PLITE_REACT_RENDER_PROFILER__?: {
-          record: (event: {
-            duration?: number;
-            id?: string | null;
-            kind?: string;
-          }) => void;
-        };
       };
-      const profilerEvents: NonNullable<
-        typeof global.__paginationMiddleTypingProfilerEvents
-      > = [];
 
-      global.__paginationMiddleTypingProfilerEvents = profilerEvents;
-      global.__PLITE_REACT_RENDER_PROFILER__ = {
-        record(event) {
-          profilerEvents.push({ ...event });
-        },
-      };
       document.addEventListener(
         'beforeinput',
         () => {
@@ -2046,7 +2021,6 @@ const armPaginationMiddleTypingProbe = async (
 
           if (firstInputStartedAt === null) {
             firstInputStartedAt = now;
-            profilerEvents.length = 0;
           }
 
           inputEventCount += 1;
@@ -2090,23 +2064,6 @@ const armPaginationMiddleTypingProbe = async (
             .length,
         };
       };
-      const observer = new MutationObserver(() => {
-        const { blockMatch } = findBestBlock();
-
-        if (
-          textObservedAt === null &&
-          blockMatch?.candidate.textContent?.includes(payload.expectedText)
-        ) {
-          textObservedAt = performance.now();
-        }
-      });
-
-      observer.observe(element, {
-        characterData: true,
-        childList: true,
-        subtree: true,
-      });
-
       global.__paginationMiddleTypingProbe = new Promise((resolve, reject) => {
         const deadline = startedAt + payload.timeoutMs;
         const getSample = (
@@ -2138,10 +2095,6 @@ const armPaginationMiddleTypingProbe = async (
             typeof handle?.getInputState === 'function'
               ? handle.getInputState()
               : null;
-          const kernelTrace =
-            typeof handle?.getKernelTrace === 'function'
-              ? handle.getKernelTrace().slice(-12)
-              : [];
           const modelSnippetAnchor =
             modelText?.indexOf('mixed block carries') ?? -1;
           const modelTextSnippet =
@@ -2178,23 +2131,6 @@ const armPaginationMiddleTypingProbe = async (
           const nativeFocus = getNativeEndpoint(
             nativeSelection?.focusNode ?? null
           );
-          const byKind: Record<string, number> = {};
-          const byKey: Record<string, number> = {};
-          const durationsById: Record<string, number> = {};
-
-          for (const event of profilerEvents) {
-            if (event.kind) {
-              byKind[event.kind] = (byKind[event.kind] ?? 0) + 1;
-              const key = event.id ? `${event.kind}:${event.id}` : event.kind;
-              byKey[key] = (byKey[key] ?? 0) + 1;
-            }
-
-            if (event.duration !== undefined && event.id) {
-              durationsById[event.id] =
-                (durationsById[event.id] ?? 0) + event.duration;
-            }
-          }
-
           return {
             blockVisible: Boolean(
               blockRect &&
@@ -2211,7 +2147,6 @@ const armPaginationMiddleTypingProbe = async (
             hasExpectedText,
             inputState,
             inputEventCount,
-            kernelTrace,
             lastInputToPaintMs: frameObservedAt - lastInputStartedAt,
             modelHasExpectedText:
               modelText?.includes(payload.expectedText) ?? false,
@@ -2234,12 +2169,6 @@ const armPaginationMiddleTypingProbe = async (
             pageSurfaceCount: document.querySelectorAll(
               '[data-plite-page-surface]'
             ).length,
-            profiler: {
-              byKind,
-              byKey,
-              durationsById,
-              total: profilerEvents.length,
-            },
             sampleCount,
             textObservedMs:
               textObservedAt === null
@@ -2251,20 +2180,45 @@ const armPaginationMiddleTypingProbe = async (
           };
         };
 
-        const tick = () => {
-          sampleCount += 1;
-          const sample = getSample(performance.now());
+        let framePending = false;
+        let settled = false;
+        let timeout = 0;
+        const hasExpectedText = () =>
+          Array.from(
+            document.querySelectorAll<HTMLElement>(
+              `[data-plite-path="${payload.path}"]`
+            )
+          ).some((candidate) =>
+            candidate.textContent?.includes(payload.expectedText)
+          );
+        const observer = new MutationObserver(observeExpectedText);
+        const cleanup = () => {
+          settled = true;
+          window.clearTimeout(timeout);
+          observer.disconnect();
+          inputController.abort();
+        };
+        function sampleAfterPaint() {
+          if (framePending || settled) return;
 
-          if (sample.blockVisible && sample.hasExpectedText) {
-            observer.disconnect();
-            inputController.abort();
-            resolve(sample);
-            return;
-          }
+          framePending = true;
+          requestAnimationFrame(() => {
+            framePending = false;
+            sampleCount += 1;
+            const sample = getSample(performance.now());
 
-          if (performance.now() > deadline) {
-            observer.disconnect();
-            inputController.abort();
+            if (sample.blockVisible && sample.hasExpectedText) {
+              cleanup();
+              resolve(sample);
+              return;
+            }
+
+            if (performance.now() <= deadline) {
+              sampleAfterPaint();
+              return;
+            }
+
+            cleanup();
             reject(
               new Error(
                 `Timed out waiting for pagination typing paint: ${JSON.stringify(
@@ -2272,13 +2226,37 @@ const armPaginationMiddleTypingProbe = async (
                 )}`
               )
             );
-            return;
-          }
+          });
+        }
+        function observeExpectedText() {
+          if (settled || textObservedAt !== null) return;
 
-          requestAnimationFrame(tick);
-        };
+          if (!hasExpectedText()) return;
 
-        requestAnimationFrame(tick);
+          textObservedAt = performance.now();
+          sampleAfterPaint();
+        }
+
+        observer.observe(element, {
+          characterData: true,
+          childList: true,
+          subtree: true,
+        });
+        requestAnimationFrame(observeExpectedText);
+        timeout = window.setTimeout(() => {
+          if (settled) return;
+
+          const sample = getSample();
+
+          cleanup();
+          reject(
+            new Error(
+              `Timed out waiting for pagination typing paint: ${JSON.stringify(
+                sample
+              )}`
+            )
+          );
+        }, payload.timeoutMs);
       });
     },
     { expectedText, path, timeoutMs }
@@ -2313,7 +2291,12 @@ const getPercentile = (values: number[], percentile: number) => {
   return sorted[index] ?? 0;
 };
 
-test.describe('pagination example', () => {
+test.describe('pagination example', {
+  annotation: {
+    description: 'serial',
+    type: 'plite-browser-profile',
+  },
+}, () => {
   test.describe.configure({ mode: 'serial' });
 
   test('renders the existing pagination route as the canonical paged editable surface', async ({
@@ -2596,6 +2579,7 @@ test.describe('pagination example', () => {
     const tablePath = Number(tablePathAttribute);
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [tablePath, 24, 0, 0], offset: 0 },
       focus: { path: [tablePath, 25, 2, 0], offset: 'Fragment 26'.length },
     });
@@ -2863,6 +2847,7 @@ test.describe('pagination example', () => {
       await expect
         .poll(async () => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: {
             offset: target.expectedOffset,
             path: target.expectedPath,
@@ -2964,6 +2949,7 @@ test.describe('pagination example', () => {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: firstBlockText.length },
         focus: { path: [0, 0], offset: firstBlockText.length },
       });
@@ -3088,6 +3074,7 @@ test.describe('pagination example', () => {
             isCollapsed: true,
           },
           selection: {
+            kind: 'text',
             anchor: {
               path: [Number(target.blockPath), 0],
               offset: target.expectedOffset,
@@ -3208,6 +3195,7 @@ test.describe('pagination example', () => {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: firstBlockText.length + 3 },
         focus: { path: [0, 0], offset: firstBlockText.length + 3 },
       });
@@ -3443,6 +3431,7 @@ test.describe('pagination example', () => {
       .toEqual({
         domPath: '0,0',
         selection: expect.objectContaining({
+          kind: 'text',
           anchor: expect.objectContaining({ path: [0, 0] }),
           focus: expect.objectContaining({ path: [0, 0] }),
         }),
@@ -3457,6 +3446,7 @@ test.describe('pagination example', () => {
       .toEqual({
         domPath: '1,0',
         selection: expect.objectContaining({
+          kind: 'text',
           anchor: expect.objectContaining({ path: [1, 0] }),
           focus: expect.objectContaining({ path: [1, 0] }),
         }),
@@ -3574,6 +3564,7 @@ test.describe('pagination example', () => {
           kind: 'assertSelection',
           label: 'assert-model-selected-projected-word',
           selection: {
+            kind: 'text',
             anchor: { offset: 0, path: [0, 0] },
             focus: { offset: 'Premirror'.length, path: [0, 0] },
           },
@@ -3637,6 +3628,7 @@ test.describe('pagination example', () => {
           kind: 'assertSelection',
           label: 'assert-model-selected-virtualized-projected-word',
           selection: {
+            kind: 'text',
             anchor: { offset: 0, path: [0, 0] },
             focus: { offset: 'Premirror'.length, path: [0, 0] },
           },
@@ -3808,6 +3800,7 @@ test.describe('pagination example', () => {
       .toEqual({
         activeIsEditor: true,
         selection: {
+          kind: 'text',
           anchor: { path: [Number(marginTarget!.blockPath), 0], offset: 0 },
           focus: { path: [Number(marginTarget!.blockPath), 0], offset: 0 },
         },
@@ -3896,6 +3889,7 @@ test.describe('pagination example', () => {
             hasAnchorText: true,
           },
           selection: {
+            kind: 'text',
             anchor: {
               path: [Number(target.blockPath), 0],
               offset: target.expectedOffset,
@@ -4045,6 +4039,7 @@ test.describe('pagination example', () => {
       .toEqual({
         blockText: expectedText,
         selection: {
+          kind: 'text',
           anchor: { offset: clickedOffset + 1, path: [targetPath, 0] },
           focus: { offset: clickedOffset + 1, path: [targetPath, 0] },
         },
@@ -4305,6 +4300,7 @@ test.describe('pagination example', () => {
       .toEqual({
         modelHasTableText: true,
         selection: {
+          kind: 'text',
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         },
@@ -4447,6 +4443,7 @@ test.describe('pagination example', () => {
       .toEqual({
         domPath: `${tablePath},119,1,0`,
         selection: {
+          kind: 'text',
           anchor: {
             path: [tablePath, 119, 1, 0],
             offset: 'Path-aware cell 120'.length,
@@ -4496,6 +4493,7 @@ test.describe('pagination example', () => {
         .toEqual({
           domPath: `${tablePath},119,1,0`,
           selection: {
+            kind: 'text',
             anchor: {
               path: [tablePath, 119, 1, 0],
               offset: targetText.length - 1,
@@ -4516,6 +4514,7 @@ test.describe('pagination example', () => {
         .toEqual({
           modelHasText: true,
           selection: {
+            kind: 'text',
             anchor: { path: [tablePath, 119, 1, 0], offset: targetText.length },
             focus: { path: [tablePath, 119, 1, 0], offset: targetText.length },
           },
@@ -4607,6 +4606,7 @@ test.describe('pagination example', () => {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: {
           path: [targetBlockPath, 0],
           offset: targetTextPrefix.length,
@@ -4662,6 +4662,7 @@ test.describe('pagination example', () => {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: {
           path: [targetBlockPath, 0],
           offset: targetTextPrefix.length + typedPrefix.length,
@@ -4691,6 +4692,10 @@ test.describe('pagination example', () => {
       'n',
       'o',
       'p',
+      'q',
+      'r',
+      's',
+      't',
     ]) {
       typedPrefix += char;
       const expectedText = `${targetTextPrefix}${typedPrefix}readiness memo`;
@@ -4709,6 +4714,7 @@ test.describe('pagination example', () => {
       await expect
         .poll(async () => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset: targetTextPrefix.length + typedPrefix.length,
@@ -4733,6 +4739,7 @@ test.describe('pagination example', () => {
       .toEqual({
         modelHasText: true,
         selection: {
+          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset: targetTextPrefix.length + typedPrefix.length,
@@ -4761,6 +4768,10 @@ test.describe('pagination example', () => {
       samples.map((sample) => sample.composeMs),
       0.95
     );
+    const responsiveTypingBudgetMs = Math.min(
+      32,
+      Math.max(24, rafCadenceMs * 1.5)
+    );
 
     await testInfo.attach('pagination-middle-typing-metrics', {
       body: JSON.stringify(
@@ -4776,6 +4787,7 @@ test.describe('pagination example', () => {
           p95EventToPaint,
           p95TextObserved,
           rafCadenceMs,
+          responsiveTypingBudgetMs,
           samples,
         },
         null,
@@ -4784,7 +4796,8 @@ test.describe('pagination example', () => {
       contentType: 'application/json',
     });
 
-    expect(p95TextObserved).toBeLessThanOrEqual(16);
+    expect(p95TextObserved).toBeLessThanOrEqual(responsiveTypingBudgetMs);
+    expect(p95EventToPaint).toBeLessThanOrEqual(responsiveTypingBudgetMs);
     expect(maxEventToPaint).toBeLessThanOrEqual(120);
   });
 
@@ -4855,6 +4868,7 @@ test.describe('pagination example', () => {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: {
           path: [targetBlockPath, 0],
           offset: targetTextPrefix.length,
@@ -4906,6 +4920,7 @@ test.describe('pagination example', () => {
         hasExpectedText: true,
         modelHasExpectedText: true,
         selection: {
+          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset: targetTextPrefix.length + burstText.length,
@@ -5070,6 +5085,7 @@ test.describe('pagination example', () => {
         hasExpectedText: true,
         modelHasExpectedText: true,
         selection: {
+          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset:
@@ -5248,6 +5264,7 @@ test.describe('pagination example', () => {
         hasExpectedText: true,
         modelHasExpectedText: true,
         selection: {
+          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset:
@@ -5356,7 +5373,7 @@ test.describe('pagination example', () => {
 
     const targetBlockPath = 43;
     const targetTextPrefix = 'This ';
-    const incrementalText = 'abcdefghijklmnop';
+    const incrementalText = 'abcdefghijklmnopqrstuvwxyz0123456789ABCD';
     const burstText = 'qrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
     await editor.selection.collapse({
@@ -5608,6 +5625,7 @@ test.describe('pagination example', () => {
           `mno${originalSuffix}`,
         ],
         selection: {
+          kind: 'text',
           anchor: { path: [targetBlockPath + 4, 0], offset: 3 },
           focus: { path: [targetBlockPath + 4, 0], offset: 3 },
         },
@@ -5698,6 +5716,7 @@ test.describe('pagination example', () => {
       .toEqual({
         modelHasExpectedText: true,
         selection: {
+          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset: targetTextPrefix.length + 3,
@@ -5736,6 +5755,7 @@ test.describe('pagination example', () => {
         hasExpectedText: true,
         modelHasExpectedText: true,
         selection: {
+          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset: targetTextPrefix.length + 2,
@@ -6198,6 +6218,7 @@ test.describe('pagination example', () => {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [8, 0], offset: 0 },
         focus: { path: [8, 0], offset: 0 },
       });
@@ -6238,6 +6259,7 @@ test.describe('pagination example', () => {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [7, 0], offset: 0 },
         focus: { path: [7, 0], offset: 0 },
       });
@@ -6275,10 +6297,12 @@ test.describe('pagination example', () => {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [5, 0], offset: 0 },
         focus: { path: [5, 0], offset: 0 },
       });
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [5, 0], offset: 0 },
       focus: { path: [5, 0], offset: 0 },
     });
@@ -6292,6 +6316,7 @@ test.describe('pagination example', () => {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [4, 0], offset: 1 },
         focus: { path: [4, 0], offset: 1 },
       });

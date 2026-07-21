@@ -9,6 +9,7 @@ export const run = (editor) => {
   // focus at the end
   editor.update(() => {
     editor.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     });
@@ -16,6 +17,7 @@ export const run = (editor) => {
   // select all
   editor.update(() => {
     editor.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -31,6 +33,7 @@ export const run = (editor) => {
   // focus back
   editor.update(() => {
     editor.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -51,9 +54,11 @@ export const output = {
           text: 'Hello',
         },
       ],
+      type: 'fixture-block',
     },
   ],
   selection: {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 0 },
   },

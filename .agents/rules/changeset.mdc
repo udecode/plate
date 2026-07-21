@@ -142,13 +142,15 @@ Use code examples only when needed:
 
 ```tsx
 // Before
-editor.api.foo();
+editor.api.insertText('hello');
 
 // After
-editor.tf.foo();
+editor.update.text.insert('hello');
 ```
 
 Focus on user impact only. No implementation diary.
+Never invent or document `editor.tf` or `editor.transforms`; Plate mutations use
+`editor.update.*`, an active `tx`, or an existing scoped plugin command.
 
 Prefer this shape:
 
@@ -177,14 +179,14 @@ API change:
 "@platejs/core": patch
 ---
 
-Rename `editor.api.foo` to `editor.tf.foo`
+Move one-shot text insertion to `editor.update.text.insert`
 
 ```tsx
 // Before
-editor.api.foo();
+editor.api.insertText('hello');
 
 // After
-editor.tf.foo();
+editor.update.text.insert('hello');
 ```
 ````
 

@@ -1,106 +1,62 @@
 import { createBaseEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
 
 describe('BaseBlockquotePlugin', () => {
-  it('uses wrapper semantics and drops text-block break rules', () => {
+  it('uses container grammar and scoped wrapper semantics', () => {
     const editor = createBaseEditor({
       plugins: [BaseBlockquotePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
       value: [{ children: [{ text: 'Quote' }], type: 'p' }],
     });
-    const plugin = editor.getPlugin(BaseBlockquotePlugin);
+    const before = { children: editor.read.children() };
 
-    expect(plugin.rules).toMatchObject({
-      break: {
-        empty: 'lift',
-      },
-      delete: {
-        start: 'lift',
-      },
+    expect(
+      editor.read.schema.isElementTypeInGroup(KEYS.blockquote, 'block')
+    ).toBe(true);
+    expect(editor.read.schema.allowsElementType(KEYS.blockquote, KEYS.p)).toBe(
+      true
+    );
+    expect(editor.read.schema.createAndFill(KEYS.blockquote)).toEqual({
+      children: [{ children: [{ text: '' }], type: KEYS.p }],
+      type: KEYS.blockquote,
     });
 
     editor.update.blockquote.toggle();
 
-    expect(editor.read.children()).toEqual([
+    expect(editor.read.children()).toMatchObject([
       {
-        children: [{ children: [{ text: 'Quote' }], type: 'p' }],
+        children: [{ children: [{ text: 'Quote' }], type: KEYS.p }],
         type: 'blockquote',
       },
     ]);
+
+    const commit = editor.read.lastCommit();
+
+    expect(commit?.changed.has('structure')).toBe(true);
+    expect(commit?.changes.apply(before).children).toEqual(
+      editor.read.children()
+    );
   });
 
-  it('normalizes legacy flat blockquote children into paragraphs', () => {
+  it('keeps canonical nested block content during repair', () => {
     const editor = createBaseEditor({
       plugins: [BaseBlockquotePlugin],
       selection: {
-        anchor: { offset: 2, path: [0, 0] },
-        focus: { offset: 2, path: [0, 0] },
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0, 0] },
+        focus: { offset: 2, path: [0, 0, 0] },
       },
-      value: [
-        {
-          children: [{ text: 'Quote' }],
-          type: 'blockquote',
-        },
-      ],
-    });
-
-    editor.update.value.repair();
-
-    expect(editor.read.children()).toEqual([
-      {
-        children: [
-          {
-            children: [{ text: 'Quote' }],
-            type: 'p',
-          },
-        ],
-        type: 'blockquote',
-      },
-    ]);
-    expect(editor.read.selection()).toEqual({
-      anchor: { offset: 2, path: [0, 0, 0] },
-      focus: { offset: 2, path: [0, 0, 0] },
-    });
-    expect(editor.read.lastCommit()?.operations).toEqual([
-      {
-        children: [{ text: 'Quote' }],
-        index: 0,
-        newChildren: [
-          {
-            children: [{ text: 'Quote' }],
-            type: 'p',
-          },
-        ],
-        newSelection: {
-          anchor: { offset: 2, path: [0, 0, 0] },
-          focus: { offset: 2, path: [0, 0, 0] },
-        },
-        path: [0],
-        selection: {
-          anchor: { offset: 2, path: [0, 0] },
-          focus: { offset: 2, path: [0, 0] },
-        },
-        type: 'replace_children',
-      },
-    ]);
-  });
-
-  it('wraps inline runs when a legacy blockquote mixes inline and block children', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseBlockquotePlugin],
       value: [
         {
           children: [
-            { text: 'Lead' },
-            {
-              children: [{ text: 'Nested block' }],
-              type: 'p',
-            },
-            { text: 'Tail' },
+            { children: [{ text: 'Quote' }], type: KEYS.p },
+            { children: [{ text: 'Second paragraph' }], type: KEYS.p },
           ],
           type: 'blockquote',
         },
@@ -112,28 +68,24 @@ describe('BaseBlockquotePlugin', () => {
     expect(editor.read.children()).toEqual([
       {
         children: [
-          {
-            children: [{ text: 'Lead' }],
-            type: 'p',
-          },
-          {
-            children: [{ text: 'Nested block' }],
-            type: 'p',
-          },
-          {
-            children: [{ text: 'Tail' }],
-            type: 'p',
-          },
+          { children: [{ text: 'Quote' }], type: KEYS.p },
+          { children: [{ text: 'Second paragraph' }], type: KEYS.p },
         ],
         type: 'blockquote',
       },
     ]);
+    expect(editor.read.selection()).toEqual({
+      kind: 'text',
+      anchor: { offset: 2, path: [0, 0, 0] },
+      focus: { offset: 2, path: [0, 0, 0] },
+    });
   });
 
   it('lifts selected blockquote children on reverse-tab', () => {
     const editor = createBaseEditor({
       plugins: [BaseBlockquotePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 3, path: [0, 0, 0] },
       },
@@ -142,11 +94,11 @@ describe('BaseBlockquotePlugin', () => {
           children: [
             {
               children: [{ text: 'One' }],
-              type: 'p',
+              type: KEYS.p,
             },
             {
               children: [{ text: 'Two' }],
-              type: 'p',
+              type: KEYS.p,
             },
           ],
           type: 'blockquote',
@@ -155,16 +107,16 @@ describe('BaseBlockquotePlugin', () => {
     });
 
     expect(editor.update.blockquote.untab()).toBe(true);
-    expect(editor.read.children()).toEqual([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'One' }],
-        type: 'p',
+        type: KEYS.p,
       },
       {
         children: [
           {
             children: [{ text: 'Two' }],
-            type: 'p',
+            type: KEYS.p,
           },
         ],
         type: 'blockquote',
@@ -176,15 +128,16 @@ describe('BaseBlockquotePlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseBlockquotePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'One' }], type: 'p' }],
+      value: [{ children: [{ text: 'One' }], type: KEYS.p }],
     });
 
     expect(editor.update.blockquote.untab()).toBe(false);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'One' }], type: 'p' },
+      { children: [{ text: 'One' }], type: KEYS.p },
     ]);
   });
 
@@ -192,6 +145,7 @@ describe('BaseBlockquotePlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseBlockquotePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       },
@@ -200,7 +154,7 @@ describe('BaseBlockquotePlugin', () => {
           children: [
             {
               children: [{ text: '' }],
-              type: 'p',
+              type: KEYS.p,
             },
           ],
           type: 'blockquote',
@@ -213,7 +167,7 @@ describe('BaseBlockquotePlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: '' }],
-        type: 'p',
+        type: KEYS.p,
       },
     ]);
   });
@@ -222,6 +176,7 @@ describe('BaseBlockquotePlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseBlockquotePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       },
@@ -230,7 +185,7 @@ describe('BaseBlockquotePlugin', () => {
           children: [
             {
               children: [{ text: '' }],
-              type: 'p',
+              type: KEYS.p,
             },
           ],
           type: 'blockquote',
@@ -243,7 +198,7 @@ describe('BaseBlockquotePlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: '' }],
-        type: 'p',
+        type: KEYS.p,
       },
     ]);
   });

@@ -43,7 +43,7 @@ common doctrine after the lane is selected.
 
 ## Boundary Law
 
-- Plite packages are the raw editor substrate: model, operations, runtime,
+- Plite packages are the raw editor substrate: model, canonical changes, runtime,
   DOM/input, selection, history, browser proof, and unopinionated APIs.
 - Plate packages are the product/editor framework layer: plugins, React
   wrappers, components, kits, opinionated UX, examples, and app-facing docs.
@@ -149,7 +149,7 @@ tests for package ownership, API intent, and public teaching surfaces.
   verified, new test written and verified, Plate-owned proof linked, or
   explicit defer owner recorded.
 - External editors are pressure sources, not architecture to clone. Translate
-  their lessons into local model, operation, selection, DOM, browser, and
+  their lessons into local model, change, selection, DOM, browser, and
   package-owner proof vocabulary.
 - Research is a compiled agent layer, not a scrapbook: stable paths, one
   concept per file, outward claims, durable promotion only.

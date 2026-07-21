@@ -4,7 +4,7 @@ import type { EditorUpdateTransaction, Point } from '@platejs/plite';
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-const pointRefUnrefMock = mock();
+const pointAnchorReleaseMock = mock();
 const insertTextMock = mock();
 const useComboboxInputMock = mock();
 const useEditorRefMock = mock();
@@ -23,9 +23,10 @@ const store = {
   },
 };
 
-let pointRefCurrent: {
-  current: Point | null;
-  unref: typeof pointRefUnrefMock;
+let pointAnchorValue: Point | null;
+let pointAnchor: {
+  release: typeof pointAnchorReleaseMock;
+  resolve: () => Point | null;
 };
 let capturedCancelInput:
   | ((cause: 'arrowLeft' | 'arrowRight' | 'blur' | 'backspace') => void)
@@ -87,15 +88,16 @@ describe('InlineCombobox', () => {
   beforeEach(() => {
     capturedCancelInput = undefined;
     insertTextMock.mockReset();
-    pointRefUnrefMock.mockReset();
+    pointAnchorReleaseMock.mockReset();
     useComboboxInputMock.mockReset();
     useEditorRefMock.mockReset();
     useNodePathMock.mockReset();
     store.setActiveId.mockReset();
 
-    pointRefCurrent = {
-      current: { offset: 1, path: [0, 0] },
-      unref: pointRefUnrefMock,
+    pointAnchorValue = { offset: 1, path: [0, 0] };
+    pointAnchor = {
+      release: pointAnchorReleaseMock,
+      resolve: () => pointAnchorValue,
     };
 
     useComboboxInputMock.mockImplementation(({ onCancelInput }: any) => {
@@ -109,25 +111,19 @@ describe('InlineCombobox', () => {
 
     useNodePathMock.mockReturnValue([0]);
     useEditorRefMock.mockReturnValue({
+      anchor: () => pointAnchor,
       read: {
         points: {
           before: () => ({ offset: 1, path: [0, 0] }),
         },
       },
       runtime: {},
-      update: Object.assign(
-        (callback: (tx: EditorUpdateTransaction) => void) => {
-          callback({
-            selection: { move: mock() },
-            text: { insert: insertTextMock },
-          } as unknown as EditorUpdateTransaction);
-        },
-        {
-          refs: {
-            point: () => pointRefCurrent,
-          },
-        }
-      ),
+      update: (callback: (tx: EditorUpdateTransaction) => void) => {
+        callback({
+          selection: { move: mock() },
+          text: { insert: insertTextMock },
+        } as unknown as EditorUpdateTransaction);
+      },
     });
   });
 
@@ -135,7 +131,7 @@ describe('InlineCombobox', () => {
     mock.restore();
   });
 
-  it('uses the live point ref value when canceling input', async () => {
+  it('uses the live point anchor value when canceling input', async () => {
     const { InlineCombobox } = await import(
       `./inline-combobox?test=${Math.random().toString(36).slice(2)}`
     );
@@ -149,7 +145,7 @@ describe('InlineCombobox', () => {
       </InlineCombobox>
     );
 
-    pointRefCurrent.current = { offset: 4, path: [0, 2] };
+    pointAnchorValue = { offset: 4, path: [0, 2] };
     capturedCancelInput?.('blur');
 
     expect(insertTextMock).toHaveBeenCalledWith('@', {

@@ -447,10 +447,9 @@ Ownership:
 - blockquote owns one-level structural exit after stronger local owners yield
 - quoted lists still let list own the first step and quote own the second
 
-Plugin surface:
+Editor surface:
 
-- blockquote plugins expose `editor.tf.blockquote.toggle()` to wrap or unwrap
-  blocks
+- use `editor.update.blockquote.toggle()` to wrap or unwrap selected blocks
 - this section defines editing behavior after quoted structure already exists
 
 Blockquote is a real container, not a flat text block.
@@ -1278,7 +1277,7 @@ Ownership:
 
 Plugin surface:
 
-- date plugins expose `tf.insert.date`
+- date plugins expose `editor.update.date.insert`
 - this section defines current boundary and insertion law, not date-picker UI
 - current canonical node payload is one `YYYY-MM-DD` calendar-day string on
   `node.date`
@@ -2020,17 +2019,17 @@ Plugin surface:
 
 - `@platejs/footnote` exposes `FootnoteReferencePlugin` and
   `FootnoteDefinitionPlugin`
-- `tf.insert.footnote` inserts a reference, creates a missing definition, and
-  moves focus into the definition body
-- `tf.footnote.createDefinition` creates a missing definition for an existing
-  identifier without inserting another reference
+- `editor.update.insert.footnote` inserts a reference, creates a missing
+  definition, and moves focus into the definition body
+- `editor.update.footnote.createDefinition` creates a missing definition for an
+  existing identifier without inserting another reference
 - `api.footnote.nextId`, `api.footnote.definition`,
   `api.footnote.definitions`, `api.footnote.definitionText`,
   `api.footnote.references`, `api.footnote.isResolved`,
   `api.footnote.hasDuplicateDefinitions`, and
   `api.footnote.duplicateIdentifiers` expose lookup and resolution helpers
-- `tf.footnote.focusDefinition` and `tf.footnote.focusReference` expose
-  navigation helpers
+- `editor.update.footnote.focusDefinition` and
+  `editor.update.footnote.focusReference` expose navigation helpers
 - toolbar and slash-command entry points are valid app-surface integrations for
   the same insert transform
 - lookup helpers should resolve through one lazy registry-backed index per

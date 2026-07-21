@@ -26,6 +26,7 @@ import {
 } from '../src';
 import { createDecorationSource } from '../src/decoration-source';
 import { createLayoutVirtualizerSizeMap } from '../src/dom-strategy/use-virtualized-root-plan';
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { syncEditableDOMSelectionToEditor } from '../src/editable/selection-controller';
 import { didSyncTextPathToDOM } from '../src/hooks/use-plite-node-ref';
 import { createPliteReactRenderCounter } from '../src/render-profiler';
@@ -118,6 +119,7 @@ test('Editable full DOM Ctrl+A keeps select-all native-owned', async () => {
   });
 
   expect(editorGetSnapshot(editor).selection).toEqual({
+    kind: 'text',
     anchor: editorPoint(editor, [], { edge: 'start' }),
     focus: editorPoint(editor, [], { edge: 'end' }),
   });
@@ -461,6 +463,7 @@ test('Editable domStrategy experimental virtualized mode uses viewport DOM cover
   await act(async () => {
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { offset: 0, path: [2, 0] },
         focus: { offset: 0, path: [2, 0] },
       });
@@ -500,6 +503,7 @@ test('Editable domStrategy experimental virtualized mode can use layout-backed i
       children: [{ text: `block-${index + 1}` }],
     })),
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     },
@@ -719,6 +723,7 @@ test('Editable domStrategy experimental virtualized mode materializes layout-bac
   });
 
   const targetRange = {
+    kind: 'text',
     anchor: { offset: 0, path: [5, 0] },
     focus: { offset: 0, path: [5, 0] },
   };
@@ -819,6 +824,7 @@ test('Editable domStrategy experimental virtualized mode materializes estimated 
   });
 
   const targetRange = {
+    kind: 'text',
     anchor: { offset: 0, path: [5, 0] },
     focus: { offset: 0, path: [5, 0] },
   };
@@ -916,6 +922,7 @@ test('Editable domStrategy experimental virtualized mode keeps broad selections 
   });
 
   expect(editorGetSnapshot(editor).selection).toEqual({
+    kind: 'text',
     anchor: editorPoint(editor, [], { edge: 'start' }),
     focus: editorPoint(editor, [], { edge: 'end' }),
   });
@@ -1233,6 +1240,53 @@ test('Editable disables DOM text sync for app-owned text renderers', async () =>
   ).toBe('custom-text');
 });
 
+test('Editable restores native-updated app-owned text from model history', async () => {
+  const editor = createReactEditor();
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'alpha' }],
+      },
+    ],
+    selection: null,
+  });
+
+  const rendered = render(
+    <TestEditorSurface
+      editor={editor}
+      renderText={({ attributes, children }) => (
+        <span {...attributes} data-custom-text="true">
+          {children}
+        </span>
+      )}
+    />
+  );
+  const string = rendered.container.querySelector('[data-plite-string="true"]');
+
+  expect(string).toBeTruthy();
+  string!.textContent = 'beta';
+
+  await act(async () => {
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 5 },
+          kind: 'text',
+        },
+      });
+      tx.text.insert('beta', { at: { path: [0, 0], offset: 0 } });
+    });
+    editor.update.history.undo();
+  });
+
+  expect(
+    rendered.container.querySelector('[data-plite-string="true"]')?.textContent
+  ).toBe('alpha');
+});
+
 test('Editable disables DOM text sync for custom leaf renderers', async () => {
   const leafEditor = createReactEditor();
 
@@ -1381,6 +1435,7 @@ test('Editable disables DOM text sync when projections affect the text node', as
       {
         key: 'highlight-alpha',
         range: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 5 },
         },
@@ -1435,6 +1490,7 @@ test('Editable treats native-updated projected text as synced without rewriting 
       {
         key: 'highlight-alpha',
         range: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 5 },
         },
@@ -1509,6 +1565,7 @@ test('Editable syncs projected leaf strings for Plite-owned text input', async (
       {
         key: 'highlight-alpha',
         range: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 5 },
         },
@@ -1556,7 +1613,7 @@ test('Editable syncs projected leaf strings for Plite-owned text input', async (
   highlightSource.destroy();
 });
 
-test('Editable refreshes projected leaf strings from model-owned history', async () => {
+test('Editable syncs projected leaf strings from model-owned history', async () => {
   const editor = createReactEditor();
 
   editorReplace(editor, {
@@ -1575,6 +1632,7 @@ test('Editable refreshes projected leaf strings from model-owned history', async
       {
         key: 'highlight-alpha-history',
         range: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 5 },
         },
@@ -1602,10 +1660,10 @@ test('Editable refreshes projected leaf strings from model-owned history', async
     editor.update((tx) => {
       tx.text.insert('!', { at: { path: [0, 0], offset: 5 } });
     });
-    editor.update((tx) => tx.history.undo());
+    editor.update.history.undo();
   });
 
-  expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(false);
+  expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(true);
   expect(
     [...rendered.container.querySelectorAll('[data-plite-string]')].map(
       (element) => element.textContent
@@ -1690,6 +1748,7 @@ test('Editable falls back to React when text sync reaches empty text', async () 
     editor.update((tx) => {
       tx.text.delete({
         at: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 5 },
         },
@@ -1725,6 +1784,7 @@ test('Editable falls back to React updates while composing', async () => {
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     },
@@ -1800,6 +1860,7 @@ test('Editable staged full-document replacement removes stale far DOM immediatel
           },
         ],
         selection: {
+          kind: 'text',
           anchor: { offset: 'replacement marker'.length, path: [0, 0] },
           focus: { offset: 'replacement marker'.length, path: [0, 0] },
         },
@@ -1851,6 +1912,7 @@ test('Editable staged full-document replacement resets staged coverage without s
           children: [{ text: `fresh line ${index}` }],
         })),
         selection: {
+          kind: 'text',
           anchor: { offset: 'fresh line 0'.length, path: [0, 0] },
           focus: { offset: 'fresh line 0'.length, path: [0, 0] },
         },
@@ -1977,6 +2039,7 @@ test('Editable staged selection export consults DOM coverage before raw DOM look
   const materialized: string[] = [];
   const root = document.createElement('div');
   const selection = {
+    kind: 'text',
     anchor: { offset: 0, path: [1, 0] },
     focus: { offset: 0, path: [1, 0] },
   };
@@ -2002,6 +2065,10 @@ test('Editable staged selection export consults DOM coverage before raw DOM look
   EDITOR_TO_WINDOW.set(editor, window);
   ELEMENT_TO_NODE.set(root, editor);
   NODE_TO_ELEMENT.set(editor, root);
+  const runtime = new EditableDOMRuntime({ editor });
+
+  runtime.setRoot(root);
+  runtime.connect();
 
   try {
     const domSelection = document.getSelection();
@@ -2048,6 +2115,7 @@ test('Editable staged selection export consults DOM coverage before raw DOM look
     expect(materialized).toEqual(['rendering-staged:pending:selection']);
     expect(domSelection?.rangeCount).toBe(0);
   } finally {
+    runtime.destroy();
     DOMCoverage.clear(editor);
     EDITOR_TO_ELEMENT.delete(editor);
     EDITOR_TO_WINDOW.delete(editor);
@@ -2115,6 +2183,7 @@ test('Editable staged materializes the selected root group urgently', async () =
   await act(async () => {
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { offset: 0, path: [1000, 0] },
         focus: { offset: 0, path: [1000, 0] },
       });
@@ -2192,6 +2261,7 @@ test('Editable domStrategy promotes a partial-DOM segment on mouse down', async 
     rendered.container.querySelectorAll('[data-plite-node="text"]').length
   ).toBe(2);
   expect(editorGetSnapshot(editor).selection).toEqual({
+    kind: 'text',
     anchor: { offset: 0, path: [2, 0] },
     focus: { offset: 0, path: [2, 0] },
   });
@@ -2244,6 +2314,7 @@ test('Editable domStrategy mounts only the target partial-DOM segment during the
     rendered.container.querySelectorAll('[data-plite-node="text"]').length
   ).toBe(2);
   expect(editorGetSnapshot(editor).selection).toEqual({
+    kind: 'text',
     anchor: { offset: 0, path: [4, 0] },
     focus: { offset: 0, path: [4, 0] },
   });
@@ -2303,6 +2374,7 @@ test('Editable domStrategy promotes partial-DOM segments without a second root-p
     });
 
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [4, 0] },
       focus: { offset: 0, path: [4, 0] },
     });
@@ -2362,6 +2434,7 @@ test('Editable domStrategy keeps model inserts stable after partial-DOM promotio
   });
 
   expect(editorGetSnapshot(editor).selection).toEqual({
+    kind: 'text',
     anchor: { offset: 0, path: [blockIndex, 0] },
     focus: { offset: 0, path: [blockIndex, 0] },
   });
@@ -2416,6 +2489,7 @@ test('Editable domStrategy promotes large partial-DOM segments as bounded window
   });
 
   expect(editorGetSnapshot(editor).selection).toEqual({
+    kind: 'text',
     anchor: { offset: 0, path: [64, 0] },
     focus: { offset: 0, path: [64, 0] },
   });
@@ -2455,6 +2529,7 @@ test('Editable domStrategy promotes large partial-DOM segments as bounded window
   });
 
   expect(editorGetSnapshot(editor).selection).toEqual({
+    kind: 'text',
     anchor: { offset: 0, path: [72, 0] },
     focus: { offset: 0, path: [72, 0] },
   });
@@ -2615,6 +2690,7 @@ test('Editable domStrategy promotes a partial-DOM segment with keyboard activati
     )
   ).toBe(null);
   expect(editorGetSnapshot(editor).selection).toEqual({
+    kind: 'text',
     anchor: { offset: 0, path: [2, 0] },
     focus: { offset: 0, path: [2, 0] },
   });
@@ -2669,6 +2745,7 @@ test('Editable domStrategy promotes a partial-DOM segment with Space keyboard ac
     )
   ).toBe(null);
   expect(editorGetSnapshot(editor).selection).toEqual({
+    kind: 'text',
     anchor: { offset: 0, path: [2, 0] },
     focus: { offset: 0, path: [2, 0] },
   });
@@ -2711,6 +2788,7 @@ test('Editable domStrategy maps Ctrl+A to a full-document model selection withou
   const snapshot = editorGetSnapshot(editor);
 
   expect(snapshot.selection).toEqual({
+    kind: 'text',
     anchor: editorPoint(editor, [], { edge: 'start' }),
     focus: editorPoint(editor, [], { edge: 'end' }),
   });
@@ -2758,6 +2836,7 @@ test('Editable domStrategy derives partial-dom-backed state for programmatic bro
   await act(async () => {
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: editorPoint(editor, [], { edge: 'start' }),
         focus: editorPoint(editor, [], { edge: 'end' }),
       });
@@ -2813,6 +2892,7 @@ test('Editable domStrategy keeps broad select-all from replanning the active seg
     const snapshot = editorGetSnapshot(editor);
 
     expect(snapshot.selection).toEqual({
+      kind: 'text',
       anchor: editorPoint(editor, [], { edge: 'start' }),
       focus: editorPoint(editor, [], { edge: 'end' }),
     });
@@ -2858,6 +2938,7 @@ test('Editable staged domStrategy keeps broad select-all model-backed', async ()
   });
 
   expect(editorGetSnapshot(editor).selection).toEqual({
+    kind: 'text',
     anchor: editorPoint(editor, [], { edge: 'start' }),
     focus: editorPoint(editor, [], { edge: 'end' }),
   });
@@ -3018,6 +3099,7 @@ test('Editable forwards scrollSelectionIntoView to app-owned code', async () => 
   await act(async () => {
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 1 },
         focus: { path: [1, 0], offset: 4 },
       });

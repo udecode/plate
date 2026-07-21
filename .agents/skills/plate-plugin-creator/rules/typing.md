@@ -4,16 +4,11 @@
 
 Default to:
 
-- `createSlatePlugin`
+- `createBasePlugin`
 - `createPlatePlugin`
 
-Step up to:
-
-- `createTSlatePlugin`
-- `createTPlatePlugin`
-
-only when you need explicit `PluginConfig` control for exported options, API,
-transforms, or selectors.
+Pass an explicit `PluginConfig` generic only when exported options, API,
+update groups, or selectors define a real public contract.
 
 ## Use Context, Not Threaded Editors
 
@@ -23,12 +18,12 @@ Plugin callbacks already receive rich context. Prefer:
 - `plugin`
 - `type`
 - `api`
-- `tf`
+- `update`
 - `getOptions`
 - `setOption`
 - `setOptions`
 
-Do not teach people to pass `SlateEditor` through callback signatures, helper
+Do not teach people to pass `BaseEditor` through callback signatures, helper
 inputs, or public option callbacks when this context is already present.
 
 ## Keys Are Shared Contracts
@@ -56,19 +51,23 @@ in a test fixture that is intentionally not modeling the shared contract.
 These are usually noise, not help:
 
 ```ts
-extendTransforms(({ editor }: { editor: SlateEditor }) => ...)
-targetPluginToInject: ({ editor }: { editor: SlateEditor }) => ...
+extendTx(({ editor }: { editor: BaseEditor }) => (tx) => ...)
+targetPluginToInject: ({ editor }: { editor: BaseEditor }) => ...
 ```
 
-If inference fails, prefer fixing the plugin config shape with `createT*` or a
-real exported `PluginConfig` alias before spraying manual editor annotations.
+If inference fails, prefer fixing the plugin config shape with a real exported
+`PluginConfig` alias before spraying manual editor annotations.
 
 ## Choose The Right API Lane
 
-- `extendApi` / `extendTransforms`
-  Use when the surface semantically belongs to that plugin.
-- `extendEditorApi` / `extendEditorTransforms`
-  Use when you intentionally want merged editor convenience.
+- `extendApi`
+  Own plugin-specific read and service methods.
+- `extendTx`
+  Own the plugin-keyed update group.
+- `extendTxGroup`
+  Own an explicitly named update group.
+- `extendEditorApi`
+  Add a root `editor.api` capability only when root ownership is intentional.
 
 The distinction is real. Do not blur it because one version is shorter to type.
 

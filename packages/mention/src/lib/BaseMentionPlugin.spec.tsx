@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import type { Element } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
 
@@ -10,6 +10,7 @@ describe('BaseMentionPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
@@ -18,22 +19,19 @@ describe('BaseMentionPlugin', () => {
     const plugin = editor.getPlugin(BaseMentionPlugin);
     const inputPlugin = editor.getPlugin(BaseMentionInputPlugin);
 
+    expect(inputPlugin.key).toBe('mentionInput');
+    expect(inputPlugin.node.type).toBe(NODES.mentionInput);
     expect(plugin.node).toMatchObject({
-      isElement: true,
-      isInline: true,
-      isMarkableVoid: true,
-      isVoid: true,
+      element: { inline: true, void: 'markable-inline' },
     });
     expect(plugin.options.trigger).toBe('@');
     expect(plugin.options.createComboboxInput?.('@')).toEqual({
       children: [{ text: '' }],
       trigger: '@',
-      type: KEYS.mentionInput,
+      type: NODES.mentionInput,
     });
     expect(inputPlugin.node).toMatchObject({
-      isElement: true,
-      isInline: true,
-      isVoid: true,
+      element: { inline: true, void: 'inline' },
     });
 
     editor.update.mention.insert({ key: 'u1', value: 'Ada' });
@@ -56,6 +54,7 @@ describe('BaseMentionPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       },
@@ -85,6 +84,7 @@ describe('BaseMentionPlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -94,6 +94,7 @@ describe('BaseMentionPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
@@ -123,6 +124,7 @@ describe('BaseMentionPlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -132,6 +134,7 @@ describe('BaseMentionPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
@@ -155,6 +158,7 @@ describe('BaseMentionPlugin', () => {
     editor.update.selection.move({ distance: 1, unit: 'character' });
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });
@@ -164,6 +168,7 @@ describe('BaseMentionPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       },
@@ -191,6 +196,7 @@ describe('BaseMentionPlugin', () => {
     });
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });

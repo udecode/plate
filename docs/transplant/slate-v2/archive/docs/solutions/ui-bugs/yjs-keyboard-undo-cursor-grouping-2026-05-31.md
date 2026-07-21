@@ -95,4 +95,3 @@ selection as awareness so remote cursor UI follows the reverted state.
 - `docs/solutions/developer-experience/yjs-awareness-react-hooks-2026-05-29.md`
 - `docs/solutions/logic-errors/yjs-offline-merge-stale-undo-2026-05-26.md`
 - `docs/solutions/logic-errors/yjs-split-history-empty-leaf-reconnect-2026-05-26.md`
-

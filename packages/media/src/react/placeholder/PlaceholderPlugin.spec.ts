@@ -49,6 +49,7 @@ describe('PlaceholderPlugin', () => {
     const editor = createPlateEditor({
       plugins: [PlaceholderPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -74,6 +75,7 @@ describe('PlaceholderPlugin', () => {
     const editor = createPlateEditor({
       plugins: [PlaceholderPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -89,6 +91,32 @@ describe('PlaceholderPlugin', () => {
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: '' }], type: KEYS.p },
       { children: [{ text: '' }], type: KEYS.placeholder },
+    ]);
+  });
+
+  it('does not publish uploading files when the document update aborts', () => {
+    const editor = createPlateEditor({
+      plugins: [PlaceholderPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+    const file = new File(['image'], 'image.png', { type: 'image/png' });
+
+    expect(() =>
+      editor.update((tx) => {
+        tx.placeholder.insertMedia([file]);
+        throw new Error('abort');
+      })
+    ).toThrow('abort');
+    expect(
+      editor.plugin(PlaceholderPlugin).getOption('uploadingFiles')
+    ).toEqual({});
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '' }], type: KEYS.p },
     ]);
   });
 });

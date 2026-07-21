@@ -1,4 +1,4 @@
-import { createEditor, type Operation, type ValueOf } from '@platejs/plite';
+import { createEditor } from '@platejs/plite';
 import * as PliteHistory from '@platejs/plite-history';
 import { history } from '@platejs/plite-history';
 
@@ -25,16 +25,14 @@ editor.update((tx) => {
   tx.text.insert('a');
 });
 
-const operation: Operation<ValueOf<typeof editor>> | undefined = editor.read(
-  (state) => state.history.undos()[0]?.operations[0]
-);
 const historyValue = editor.read((state) => state.history());
 const directUndoCount: number = editor.read.history.undos().length;
+const decodedHistory = PliteHistory.History.fromJSON(
+  editor,
+  PliteHistory.History.toJSON(editor)
+);
 
 editor.update((tx) => {
-  tx.history.undo();
-  tx.history.redo();
-  tx.history.discardRedo();
   tx.history.skip();
   tx.history.merge();
   tx.history.newBatch();
@@ -42,6 +40,7 @@ editor.update((tx) => {
 editor.update.history.undo();
 editor.update.history.redo();
 editor.update.history.discardRedo();
+editor.update.history.restore(decodedHistory);
 editor.update({ history: 'skip' }, (tx) => {
   tx.text.insert('b');
 });
@@ -52,14 +51,14 @@ editor.update({ history: 'new-batch' }, (tx) => {
   tx.text.insert('d');
 });
 
-// @ts-expect-error history controls only exist on an active transaction
-editor.update.history.skip();
-
 const assertHistoryTypeErrors = () => {
+  // @ts-expect-error history controls only exist on an active transaction
+  editor.update.history.skip();
+
   // @ts-expect-error history stacks are read through state.history
   editor.api.history.undos();
 
-  // @ts-expect-error undo is a replayable tx action, not an ambient api action
+  // @ts-expect-error replay actions live on editor.update, not editor.api
   editor.api.history.undo();
 
   // @ts-expect-error history controls are tx/update methods, not runtime api methods
@@ -68,7 +67,7 @@ const assertHistoryTypeErrors = () => {
   // @ts-expect-error history is extension state, not an editor root field
   void editor.history;
 
-  // @ts-expect-error undo is exposed on tx.history, not the editor root
+  // @ts-expect-error undo is exposed on editor.update.history, not the editor root
   editor.undo();
 
   // @ts-expect-error public withHistory wrapper is cut
@@ -78,4 +77,3 @@ const assertHistoryTypeErrors = () => {
 void assertHistoryTypeErrors;
 void directUndoCount;
 void historyValue;
-void operation;

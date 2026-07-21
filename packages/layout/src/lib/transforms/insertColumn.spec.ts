@@ -18,25 +18,30 @@ describe('insertColumn', () => {
               {
                 children: [{ children: [{ text: 'First' }], type: 'p' }],
                 type: 'column',
-                width: '67%',
+                width: '34%',
+              },
+              {
+                children: [{ children: [{ text: 'Second' }], type: 'p' }],
+                type: 'column',
+                width: '33%',
               },
             ],
             type: 'column_group',
           },
         ],
       });
-      tx.column.insert({ at: [0, 1] });
+      tx.column.insert({ at: [0, 2] });
     });
 
     const entry = editor.read.nodes.get<TColumnGroupElement>([0]);
     assert(entry);
     const [columnGroup] = entry;
 
-    expect(columnGroup.children).toHaveLength(2);
-    expect(columnGroup.children[1].type).toBe('column');
-    expect(columnGroup.children[1].width).toBe('33%');
-    expect(columnGroup.children[0].width).toBe('67%');
-    expect(columnGroup.children[1].children[0]).toMatchObject({ type: 'p' });
+    expect(columnGroup.children).toHaveLength(3);
+    expect(columnGroup.children[2].type).toBe('column');
+    expect(columnGroup.children[2].width).toBe('33%');
+    expect(columnGroup.children[0].width).toBe('34%');
+    expect(columnGroup.children[2].children[0]).toMatchObject({ type: 'p' });
   });
 
   it('respect a custom width and insertion path', () => {
@@ -52,7 +57,12 @@ describe('insertColumn', () => {
               {
                 children: [{ children: [{ text: 'Existing' }], type: 'p' }],
                 type: 'column',
-                width: '75%',
+                width: '50%',
+              },
+              {
+                children: [{ children: [{ text: 'Second' }], type: 'p' }],
+                type: 'column',
+                width: '25%',
               },
             ],
             type: 'column_group',
@@ -66,9 +76,9 @@ describe('insertColumn', () => {
     assert(entry);
     const [columnGroup] = entry;
 
-    expect(columnGroup.children).toHaveLength(2);
+    expect(columnGroup.children).toHaveLength(3);
     expect(columnGroup.children[0].width).toBe('25%');
-    expect(columnGroup.children[1].width).toBe('75%');
+    expect(columnGroup.children[1].width).toBe('50%');
     expect(editor.read.text.string([0, 0])).toBe('');
     expect(editor.read.text.string([0, 1])).toBe('Existing');
   });

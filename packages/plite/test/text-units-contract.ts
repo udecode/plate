@@ -4,6 +4,7 @@ import { getSnapshot as editorGetSnapshot } from '@platejs/plite/internal';
 
 import { createEditor, type Element, NodeApi } from '@platejs/plite';
 import { getCharacterDistance, getWordDistance } from '../src/text-units';
+import { getWordDistances } from '../src/utils/string';
 
 type LexicalGraphemeCase = {
   backwardDistances: readonly number[];
@@ -105,6 +106,63 @@ const lexical7163GraphemeCases: readonly LexicalGraphemeCase[] = [
   },
 ];
 
+const unicodeWordCases = [
+  {
+    backwardDistances: [1, 1, 1, 1],
+    description: 'Chinese scalar boundaries',
+    forwardDistances: [1, 1, 1, 1],
+    text: '两只兔子',
+  },
+  {
+    backwardDistances: [1, 1, 1, 1, 1],
+    description: 'Japanese mixed kanji and hiragana',
+    forwardDistances: [1, 1, 1, 1, 1],
+    text: '今日は世界',
+  },
+  {
+    backwardDistances: [1, 2],
+    description: 'decomposed kana combining mark',
+    forwardDistances: [2, 1],
+    text: 'は\u3099世',
+  },
+  {
+    backwardDistances: [1, 1, 3, 1, 1],
+    description: 'Chinese and Latin script transitions',
+    forwardDistances: [1, 1, 3, 1, 1],
+    text: '中文ABC测试',
+  },
+  {
+    backwardDistances: [1, 1, 2],
+    description: 'supplementary-plane CJK ideograph',
+    forwardDistances: [2, 1, 1],
+    text: '𠮞野家',
+  },
+  {
+    backwardDistances: [1, 3],
+    description: 'ideograph variation sequence',
+    forwardDistances: [3, 1],
+    text: '禰\u{E0100}家',
+  },
+  {
+    backwardDistances: [1, 1, 1],
+    description: 'ideographic zero and Bopomofo scalars',
+    forwardDistances: [1, 1, 1],
+    text: '\u3007\u3105\u31A0',
+  },
+  {
+    backwardDistances: [2, 1],
+    description: 'CJK compatibility ideographs',
+    forwardDistances: [1, 2],
+    text: '\uF900\u{2F800}',
+  },
+  {
+    backwardDistances: [2, 2, 2, 2, 2, 2, 2, 2, 2],
+    description: 'CJK unified ideograph extensions B through J',
+    forwardDistances: [2, 2, 2, 2, 2, 2, 2, 2, 2],
+    text: '\u{20000}\u{2A700}\u{2B740}\u{2B820}\u{2CEB0}\u{2EBF0}\u{30000}\u{31350}\u{323B0}',
+  },
+] as const;
+
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
@@ -118,8 +176,8 @@ const createTextEditor = (text: string, offset: number) => {
   editor.update((tx) => {
     tx.value.replace({
       children: [paragraph(text)],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: point(offset),
         focus: point(offset),
       },
@@ -175,6 +233,7 @@ const assertUnitCharacterDeletion = (
 
     assert.equal(getEditorText(editor), expected, testCase.description);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: point(expectedOffset),
       focus: point(expectedOffset),
     });
@@ -208,6 +267,7 @@ const assertUnitCharacterMovement = (
     assert.deepEqual(
       editorGetSnapshot(editor).selection,
       {
+        kind: 'text',
         anchor: point(expectedOffset),
         focus: point(expectedOffset),
       },
@@ -268,6 +328,97 @@ describe('plite text-units contract', () => {
     assert.equal(getWordDistance('alpha 🙂,', true), 3);
   });
 
+  it('uses the pinned CJK scalar profile for word boundaries', () => {
+    for (const testCase of unicodeWordCases) {
+      assert.deepEqual(
+        getWordDistances(testCase.text),
+        testCase.forwardDistances,
+        `${testCase.description} forward`
+      );
+      assert.deepEqual(
+        getWordDistances(testCase.text, true),
+        testCase.backwardDistances,
+        `${testCase.description} backward`
+      );
+    }
+  });
+
+  it('keeps punctuation around markup-like words in the directional unit', () => {
+    assert.deepEqual(
+      getWordDistances('a <textarea>!', true).slice(0, 2),
+      [10, 3]
+    );
+  });
+
+  it('keeps CJK positions, movement, and deletion on the same boundaries', () => {
+    for (const testCase of unicodeWordCases) {
+      for (const [reverse, distances] of [
+        [false, testCase.forwardDistances],
+        [true, testCase.backwardDistances],
+      ] as const) {
+        const initialOffset = reverse ? testCase.text.length : 0;
+        const expectedOffsets = [initialOffset];
+
+        for (const distance of distances) {
+          expectedOffsets.push(
+            expectedOffsets.at(-1)! + (reverse ? -distance : distance)
+          );
+        }
+
+        const positionsEditor = createTextEditor(testCase.text, initialOffset);
+        const positionOffsets = Array.from(
+          positionsEditor.read.points.positions({
+            at: [0],
+            reverse,
+            unit: 'word',
+          }),
+          ({ offset }) => offset
+        );
+
+        assert.deepEqual(
+          positionOffsets,
+          expectedOffsets,
+          `${testCase.description} positions`
+        );
+
+        const moveEditor = createTextEditor(testCase.text, initialOffset);
+
+        for (const offset of expectedOffsets.slice(1)) {
+          moveEditor.update((tx) => {
+            tx.selection.move({ reverse, unit: 'word' });
+          });
+
+          assert.deepEqual(
+            editorGetSnapshot(moveEditor).selection,
+            {
+              kind: 'text',
+              anchor: point(offset),
+              focus: point(offset),
+            },
+            `${testCase.description} movement`
+          );
+        }
+
+        for (let index = 1; index < expectedOffsets.length; index++) {
+          const from = expectedOffsets[index - 1]!;
+          const to = expectedOffsets[index]!;
+          const deleteEditor = createTextEditor(testCase.text, from);
+
+          deleteEditor.update((tx) => {
+            tx.text.delete({ reverse, unit: 'word' });
+          });
+
+          assert.equal(
+            getEditorText(deleteEditor),
+            testCase.text.slice(0, Math.min(from, to)) +
+              testCase.text.slice(Math.max(from, to)),
+            `${testCase.description} deletion`
+          );
+        }
+      }
+    }
+  });
+
   it('moves word selection across soft line boundaries', () => {
     const forward = createTextEditor('one\ntwo three', 3);
 
@@ -276,6 +427,7 @@ describe('plite text-units contract', () => {
     });
 
     assert.deepEqual(editorGetSnapshot(forward).selection, {
+      kind: 'text',
       anchor: point(7),
       focus: point(7),
     });
@@ -287,6 +439,7 @@ describe('plite text-units contract', () => {
     });
 
     assert.deepEqual(editorGetSnapshot(backward).selection, {
+      kind: 'text',
       anchor: point(0),
       focus: point(0),
     });
@@ -300,6 +453,7 @@ describe('plite text-units contract', () => {
     });
 
     assert.deepEqual(editorGetSnapshot(forward).selection, {
+      kind: 'text',
       anchor: point(8),
       focus: point(8),
     });
@@ -311,6 +465,7 @@ describe('plite text-units contract', () => {
     });
 
     assert.deepEqual(editorGetSnapshot(backward).selection, {
+      kind: 'text',
       anchor: point(0),
       focus: point(0),
     });
@@ -327,6 +482,7 @@ describe('plite text-units contract', () => {
       });
 
       assert.deepEqual(editorGetSnapshot(editor).selection, {
+        kind: 'text',
         anchor: point(offset),
         focus: point(offset),
       });
@@ -343,6 +499,7 @@ describe('plite text-units contract', () => {
       });
 
       assert.deepEqual(editorGetSnapshot(editor).selection, {
+        kind: 'text',
         anchor: point(offset),
         focus: point(offset),
       });
@@ -354,6 +511,7 @@ describe('plite text-units contract', () => {
       });
 
       assert.deepEqual(editorGetSnapshot(editor).selection, {
+        kind: 'text',
         anchor: point(offset),
         focus: point(offset),
       });

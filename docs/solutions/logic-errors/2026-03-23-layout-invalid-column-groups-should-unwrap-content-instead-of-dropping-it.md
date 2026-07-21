@@ -52,21 +52,29 @@ That sequence can both corrupt the tree and discard the user's block content.
 
 ## Fix
 
-Unwrap the `column_group` itself in both recovery paths and return immediately:
+`withColumn` owns this recovery as a content correction. The correction receives
+the active transaction and flattens a group with fewer than two children before
+returning:
 
 ```ts
-if (node.children.length === 1 && firstChild.type === editor.getType(KEYS.p)) {
-  editor.tf.unwrapNodes({ at: path });
-  return;
-}
+correct({ entry: [node, path], tx }) {
+  const columnGroupType = editor.getType(KEYS.columnGroup);
 
-if (!node.children.some((child) => ElementApi.isElement(child) && child.type === type)) {
-  editor.tf.unwrapNodes({ at: path });
-  return;
+  if (
+    ElementApi.isElementType<TColumnGroupElement>(node, columnGroupType) &&
+    node.children.length < 2
+  ) {
+    tx.nodes.unwrap({ at: path });
+    tx.nodes.unwrap({ at: path });
+
+    return;
+  }
 }
 ```
 
-Now invalid column wrappers recover to plain blocks instead of crashing or eating content.
+Both unwraps use the same path because the remaining wrapper occupies that path
+after the first unwrap. Invalid column wrappers recover to plain blocks instead
+of dropping their content.
 
 ## Verification
 

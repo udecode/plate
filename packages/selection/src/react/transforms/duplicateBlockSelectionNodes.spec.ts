@@ -24,9 +24,12 @@ describe('duplicateBlockSelectionNodes', () => {
     editor
       .plugin(BlockSelectionPlugin)
       .setOption('selectedIds', new Set(['block1']));
+    const selectedIds = editor
+      .plugin(BlockSelectionPlugin)
+      .getOption('selectedIds');
 
-    editor.update((tx) => {
-      duplicateBlockSelectionNodes(editor, tx);
+    editor.update((tx, context) => {
+      duplicateBlockSelectionNodes(editor, tx, context);
     });
 
     expect(editor.read.children()).toEqual([
@@ -46,5 +49,41 @@ describe('duplicateBlockSelectionNodes', () => {
         type: 'p',
       },
     ]);
+    expect(
+      editor.plugin(BlockSelectionPlugin).getOption('selectedIds')
+    ).not.toBe(selectedIds);
+  });
+
+  it('does not schedule plugin state after a rolled-back duplicate', async () => {
+    const editor = createBaseEditor({
+      plugins: [BlockSelectionPlugin],
+      value: [
+        {
+          id: 'block1',
+          children: [{ text: 'One' }],
+          type: 'p',
+        },
+      ],
+    });
+
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block1']));
+    const selectedIds = editor
+      .plugin(BlockSelectionPlugin)
+      .getOption('selectedIds');
+
+    expect(() =>
+      editor.update((tx, context) => {
+        duplicateBlockSelectionNodes(editor, tx, context);
+        throw new Error('rollback');
+      })
+    ).toThrow('rollback');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(editor.read.children()).toHaveLength(1);
+    expect(editor.plugin(BlockSelectionPlugin).getOption('selectedIds')).toBe(
+      selectedIds
+    );
   });
 });

@@ -1,12 +1,49 @@
-import { type BaseEditor, createBaseEditor } from '@platejs/core';
+import {
+  type BaseEditor,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import { schema } from '@platejs/plite';
 
 import { BaseTocPlugin } from '../lib/BaseTocPlugin';
 import { getHeadingList } from './getHeadingList';
 
+const TestHeadingsPlugin = createBasePlugin({
+  plugins: [
+    createBasePlugin({
+      key: 'h1',
+      node: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          groups: ['block'],
+        },
+      },
+    }),
+    createBasePlugin({
+      key: 'h2',
+      node: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          groups: ['block'],
+        },
+      },
+    }),
+    createBasePlugin({
+      key: 'h3',
+      node: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          groups: ['block'],
+        },
+      },
+    }),
+  ],
+});
+
 describe('getHeadingList', () => {
   it('returns titled headings with depth, path, and id', () => {
     const editor = createBaseEditor({
-      plugins: [BaseTocPlugin],
+      plugins: [BaseTocPlugin, TestHeadingsPlugin],
       value: [
         {
           children: [{ text: 'Title' }],
@@ -60,7 +97,10 @@ describe('getHeadingList', () => {
       },
     ]);
     const editor = createBaseEditor({
-      plugins: [BaseTocPlugin.configure({ options: { queryHeading } })],
+      plugins: [
+        BaseTocPlugin.configure({ options: { queryHeading } }),
+        TestHeadingsPlugin,
+      ],
       value: [
         {
           children: [{ text: 'Ignored' }],

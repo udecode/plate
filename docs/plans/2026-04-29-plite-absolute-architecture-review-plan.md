@@ -1011,7 +1011,6 @@ editor.update((tx) => {
   tx.value.replace({
     children,
     selection: null,
-    marks: null,
   });
   tx.text.insert("x");
   tx.nodes.set({ type: "heading" }, { at: target });

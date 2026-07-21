@@ -258,7 +258,11 @@ describe('table sizing and selection helpers', () => {
 
       moveSelectionFromCell(editor, { edge: 'right' });
 
-      expect(editor.read.selection()).toEqual(output.selection!);
+      expect(editor.read.selection()).toMatchObject({
+        ...output.selection!,
+        kind: 'table-cell',
+      });
+      expect(editor.read.selection.ranges()).toHaveLength(4);
     });
 
     it('moves forward out of the table when there is no next cell', () => {

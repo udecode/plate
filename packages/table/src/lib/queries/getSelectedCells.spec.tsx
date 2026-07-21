@@ -100,6 +100,7 @@ describe('getSelectedCells helpers', () => {
     expect(isSelectingCell(editor)).toBe(false);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 1, 0, 0] },
     });

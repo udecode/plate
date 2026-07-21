@@ -2,7 +2,6 @@ import {
   createEditor,
   defineEditorExtension,
   type EditorCommit,
-  type Operation,
   type Node as PliteNode,
   type ValueOf,
 } from '@platejs/plite';
@@ -10,12 +9,18 @@ import { history } from '@platejs/plite-history';
 import * as PliteReact from '@platejs/plite-react';
 import {
   createReactEditor,
+  Editable,
   type EditorSelectorOptions,
+  Plite,
   type ReactEditor,
   react,
   type StateFieldSetter,
   useEditorSelector,
   usePliteEditor,
+  usePliteHistory,
+  usePliteRootChrome,
+  usePliteRootEditor,
+  usePliteRootState,
 } from '@platejs/plite-react';
 
 type CustomText = {
@@ -192,12 +197,9 @@ noHistoryReactEditor.update((tx) => tx.history.undo());
 noHistoryReactEditor.update({ history: 'skip' }, () => {});
 
 const selectorOptions: EditorSelectorOptions<typeof historyReactEditor> = {
-  shouldUpdate: (operations, change) => {
-    const typedOperations: readonly Operation<CustomValue>[] | undefined =
-      operations;
+  shouldUpdate: (change) => {
     const typedChange: EditorCommit<CustomValue> | undefined = change;
 
-    void typedOperations;
     void typedChange;
 
     return true;
@@ -206,15 +208,12 @@ const selectorOptions: EditorSelectorOptions<typeof historyReactEditor> = {
 
 const SelectorProbe = () => {
   const selected = useEditorSelector(
-    (selectedEditor: typeof historyReactEditor, operations) => {
+    (selectedEditor: typeof historyReactEditor) => {
       const valueFromSelector: Readonly<CustomValue> = selectedEditor.read(
         (state) => state.children()
       );
-      const typedOperations: readonly Operation<CustomValue>[] | undefined =
-        operations;
 
       void valueFromSelector;
-      void typedOperations;
 
       return valueFromSelector.length;
     },
@@ -268,6 +267,25 @@ const NoHistoryHookProbe = () => {
   return null;
 };
 
+const NamedRootRejectionProbe = () => {
+  // @ts-expect-error omit root to address the primary editor
+  usePliteRootEditor('main');
+  // @ts-expect-error omit root to address primary root state
+  usePliteRootState('main', (state) => state.children());
+  // @ts-expect-error omit root to create primary root chrome
+  usePliteRootChrome('main');
+  // @ts-expect-error omit root to bind history to the primary document
+  usePliteHistory({ root: 'main' });
+
+  return (
+    // @ts-expect-error omit root to render the primary document
+    <Plite root="main">
+      {/* @ts-expect-error omit root to render the primary editable */}
+      <Editable root="main" />
+    </Plite>
+  );
+};
+
 // @ts-expect-error React is not installed on a plain editor
 baseEditor.api.react.isComposing();
 
@@ -306,3 +324,4 @@ void _placeholderAsInput;
 void SelectorProbe;
 void HookProbe;
 void NoHistoryHookProbe;
+void NamedRootRejectionProbe;

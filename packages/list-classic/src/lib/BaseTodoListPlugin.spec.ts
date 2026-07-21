@@ -1,6 +1,6 @@
 import { createBaseEditor } from '@platejs/core';
 import { BaseParagraphPlugin } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseTodoListPlugin } from './BaseTodoListPlugin';
 
@@ -9,6 +9,7 @@ describe('BaseTodoListPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseTodoListPlugin],
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },
@@ -16,10 +17,24 @@ describe('BaseTodoListPlugin', () => {
         {
           checked: true,
           children: [{ text: 'task' }],
-          type: KEYS.listTodoClassic,
+          type: NODES.listTodoClassic,
         },
       ],
     } as any);
+
+    expect(BaseTodoListPlugin.key).toBe('listTodoClassic');
+    expect(BaseTodoListPlugin.node.type).toBe(NODES.listTodoClassic);
+    const typedEditor = createBaseEditor({
+      plugins: [BaseTodoListPlugin],
+    });
+    expect(typeof typedEditor.update.listTodoClassic.toggle).toBe('function');
+    expect(
+      typedEditor.read.schema.createAndFill(NODES.listTodoClassic)
+    ).toEqual({
+      checked: false,
+      children: [{ text: '' }],
+      type: NODES.listTodoClassic,
+    });
 
     editor.update.break.insert();
 
@@ -27,15 +42,16 @@ describe('BaseTodoListPlugin', () => {
       {
         checked: true,
         children: [{ text: 'task' }],
-        type: KEYS.listTodoClassic,
+        type: NODES.listTodoClassic,
       },
       {
         checked: false,
         children: [{ text: '' }],
-        type: KEYS.listTodoClassic,
+        type: NODES.listTodoClassic,
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
@@ -45,6 +61,7 @@ describe('BaseTodoListPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTodoListPlugin],
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },
@@ -64,6 +81,7 @@ describe('BaseTodoListPlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
@@ -73,6 +91,7 @@ describe('BaseTodoListPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseTodoListPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },

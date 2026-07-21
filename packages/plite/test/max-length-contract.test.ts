@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, type Element, type Operation } from '@platejs/plite';
+import { createEditor, DocumentChange, type Element } from '@platejs/plite';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -11,6 +11,7 @@ const paragraph = (text: string): Element => ({
 const createLimitedEditor = (maxLength?: number) =>
   createEditor({
     initialSelection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
@@ -47,6 +48,7 @@ describe('maxLength editor option', () => {
   it('counts selected replacement text before truncating', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 5 },
       },
@@ -62,7 +64,9 @@ describe('maxLength editor option', () => {
   it('truncates inserted fragments', () => {
     const editor = createLimitedEditor(5);
 
-    editor.update.fragment.insert([paragraph('Hel'), paragraph('lo world')]);
+    editor.update((tx) => {
+      tx.fragment.replace([paragraph('Hel'), paragraph('lo world')]);
+    });
 
     assert.equal(editor.read.text.string([]), 'Hello');
   });
@@ -75,15 +79,15 @@ describe('maxLength editor option', () => {
     assert.equal(editor.read.text.string([]), 'Hello');
   });
 
-  it('does not limit operation replay', () => {
+  it('does not limit imported canonical changes', () => {
     const editor = createLimitedEditor(5);
-    const operations: Operation[] = [
-      { type: 'insert_text', path: [0, 0], offset: 0, text: 'Hello world' },
-    ];
-
-    editor.update((tx) => {
-      tx.operations.replay(operations);
+    const before = editor.read.value();
+    const change = DocumentChange.between(before, {
+      ...before,
+      children: [paragraph('Hello world')],
     });
+
+    editor.update((tx) => tx.changes.apply(change));
 
     assert.equal(editor.read.text.string([]), 'Hello world');
   });

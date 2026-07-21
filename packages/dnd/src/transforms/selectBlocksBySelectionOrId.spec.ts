@@ -22,6 +22,7 @@ describe('selectBlocksBySelectionOrId', () => {
     });
     spyOn(editor.api.dom, 'focus').mockImplementation(() => {});
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [1, 0] },
     });
@@ -29,6 +30,7 @@ describe('selectBlocksBySelectionOrId', () => {
     selectBlocksBySelectionOrId(editor, 'block-2');
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 3, path: [1, 0] },
     });
@@ -43,6 +45,7 @@ describe('selectBlocksBySelectionOrId', () => {
     });
     spyOn(editor.api.dom, 'focus').mockImplementation(() => {});
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
@@ -50,6 +53,7 @@ describe('selectBlocksBySelectionOrId', () => {
     selectBlocksBySelectionOrId(editor, 'block-2');
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 3, path: [1, 0] },
     });

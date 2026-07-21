@@ -42,7 +42,7 @@ describe('plite-react root and command hooks', () => {
       </Plite>
     );
 
-    expect(calls).toEqual([{ childLayoutSeen: 'ready', root: 'main' }]);
+    expect(calls).toEqual([{ childLayoutSeen: 'ready', root: undefined }]);
   });
 
   test('usePliteRootEffect stays registered across editor commits', async () => {

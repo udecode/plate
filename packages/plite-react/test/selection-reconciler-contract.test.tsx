@@ -1,5 +1,4 @@
 import { act, render } from '@testing-library/react';
-import { useRef } from 'react';
 import {
   getRuntimeId as editorGetRuntimeId,
   getSelection as editorGetSelection,
@@ -15,6 +14,7 @@ import {
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
 import { applyDOMCoverageSelectionPolicy } from '../src/editable/dom-coverage-selection';
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import {
   createEditableInputController,
   createEditableInputControllerState,
@@ -56,6 +56,7 @@ test('beforeinput preserves pending native text repair selection over mismatched
       { type: 'paragraph', children: [{ text: 'two' }] },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     },
@@ -122,6 +123,7 @@ test('beforeinput ignores stale backward target range while model owns insert', 
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'This abcdef'.length },
       focus: { path: [0, 0], offset: 'This abcdef'.length },
     },
@@ -197,6 +199,7 @@ test('beforeinput preserves model selection for projected text target ranges', (
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'This abcdef'.length },
       focus: { path: [1, 0], offset: 'This abcdef'.length },
     },
@@ -307,6 +310,7 @@ test('beforeinput returns same-path pending native text repair DOM range without
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -375,6 +379,7 @@ test('beforeinput imports same-path native selection when pending repair owns a 
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -433,6 +438,7 @@ test('beforeinput imports backward native text caret when no pending repair owns
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'oXXXne' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
@@ -465,6 +471,7 @@ test('beforeinput imports backward native text caret when no pending repair owns
       focus: { path: [0, 0], offset: 3 },
     });
     expect(editorGetSelection(editor)).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -503,6 +510,7 @@ test('beforeinput ignores repair-induced backward text caret when no pending rep
       },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'This abcdef'.length },
       focus: { path: [0, 0], offset: 'This abcdef'.length },
     },
@@ -566,6 +574,7 @@ test('beforeinput ignores text host target ranges while the node map is dirty', 
       { type: 'paragraph', children: [{ text: 'two' }] },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     },
@@ -629,6 +638,7 @@ test('beforeinput keeps current text host target ranges while the node map is di
       { type: 'paragraph', children: [{ text: 'two' }] },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     },
@@ -660,6 +670,10 @@ test('beforeinput keeps current text host target ranges while the node map is di
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 3 },
   };
+  const targetSelection = {
+    kind: 'text',
+    ...targetPliteRange,
+  };
 
   try {
     domSelection.removeAllRanges();
@@ -682,7 +696,7 @@ test('beforeinput keeps current text host target ranges while the node map is di
     });
 
     expect(result.selection).toEqual(targetPliteRange);
-    expect(editorGetSelection(editor)).toEqual(targetPliteRange);
+    expect(editorGetSelection(editor)).toEqual(targetSelection);
   } finally {
     IS_NODE_MAP_DIRTY.delete(editor);
     root.remove();
@@ -711,6 +725,7 @@ test('beforeinput uses event target range instead of later live DOM selection', 
       { type: 'paragraph', children: [{ text: 'two' }] },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     },
@@ -738,14 +753,19 @@ test('beforeinput uses event target range instead of later live DOM selection', 
     startContainer: firstText,
     startOffset: 0,
   } as unknown as StaticRange;
-  const eventSelection = {
+  const eventRange = {
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 3 },
+  };
+  const eventSelection = {
+    kind: 'text',
+    ...eventRange,
   };
 
   try {
     domSelection.removeAllRanges();
     domSelection.setBaseAndExtent(secondText, 1, secondText, 1);
+    IS_NODE_MAP_DIRTY.set(editor, false);
     vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
 
     const result = syncSelectionForBeforeInput({
@@ -765,9 +785,10 @@ test('beforeinput uses event target range instead of later live DOM selection', 
     });
 
     expect(result.native).toBe(false);
-    expect(result.selection).toEqual(eventSelection);
+    expect(result.selection).toEqual(eventRange);
     expect(editorGetSelection(editor)).toEqual(eventSelection);
   } finally {
+    IS_NODE_MAP_DIRTY.delete(editor);
     root.remove();
     domSelection.removeAllRanges();
     vi.restoreAllMocks();
@@ -799,6 +820,7 @@ test('beforeinput resolves block-spanning element target ranges before live sele
       { type: 'paragraph', children: [{ text: 'two' }] },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     },
@@ -872,6 +894,7 @@ test('beforeinput resolves block-spanning element target ranges before live sele
   keyToElement.set(editor.api.dom.findKey(firstTextNode), firstTextHost);
   keyToElement.set(editor.api.dom.findKey(secondBlockNode), secondBlock);
   keyToElement.set(editor.api.dom.findKey(secondTextNode), secondTextHost);
+  IS_NODE_MAP_DIRTY.set(editor, false);
 
   const targetRange = document.createRange();
   targetRange.setStart(firstBlock, 0);
@@ -897,13 +920,17 @@ test('beforeinput resolves block-spanning element target ranges before live sele
       selection: editorGetSelection(editor),
     });
 
-    const eventSelection = {
+    const eventRange = {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 3 },
     };
+    const eventSelection = {
+      kind: 'text',
+      ...eventRange,
+    };
 
     expect(result.native).toBe(false);
-    expect(result.selection).toEqual(eventSelection);
+    expect(result.selection).toEqual(eventRange);
     expect(editorGetSelection(editor)).toEqual(eventSelection);
   } finally {
     root.remove();
@@ -911,6 +938,7 @@ test('beforeinput resolves block-spanning element target ranges before live sele
     EDITOR_TO_ELEMENT.delete(editor);
     EDITOR_TO_KEY_TO_ELEMENT.delete(editor);
     EDITOR_TO_WINDOW.delete(editor);
+    IS_NODE_MAP_DIRTY.delete(editor);
     ELEMENT_TO_NODE.delete(root);
     ELEMENT_TO_NODE.delete(firstBlock);
     ELEMENT_TO_NODE.delete(firstTextHost);
@@ -945,6 +973,7 @@ test('beforeinput does not import only the first range from multiple target rang
       { type: 'paragraph', children: [{ text: 'two' }] },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 2 },
     },
@@ -1016,37 +1045,30 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
   vi.useFakeTimers();
 
   const editor = createReactEditor();
-  const inputController = createEditableInputController({
-    preferModelSelectionForInputRef: { current: true },
-    state: createEditableInputControllerState(),
-  });
-  const state = inputController.state;
-  const androidInputManagerRef = { current: null };
+  const runtime = new EditableDOMRuntime({ editor });
+  const state = runtime.state;
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
 
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 1 },
     },
   });
 
   const Harness = () => {
-    const rootRef = useRef<HTMLDivElement | null>(null);
-
     useEditableSelectionReconciler({
-      androidInputManagerRef,
-      editor,
-      inputController,
-      rootRef,
-      scrollSelectionIntoView: vi.fn(),
       partialDOMBackedSelection: false,
-      state,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
     });
 
     return (
-      <div data-render-tick={renderTick} ref={rootRef}>
+      <div data-render-tick={renderTick} ref={runtime.rootRef}>
         <span>abc</span>
       </div>
     );
@@ -1100,37 +1122,30 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
   vi.useFakeTimers();
 
   const editor = createReactEditor();
-  const inputController = createEditableInputController({
-    preferModelSelectionForInputRef: { current: true },
-    state: createEditableInputControllerState(),
-  });
-  const state = inputController.state;
-  const androidInputManagerRef = { current: null };
+  const runtime = new EditableDOMRuntime({ editor });
+  const state = runtime.state;
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
 
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
   });
 
   const Harness = () => {
-    const rootRef = useRef<HTMLDivElement | null>(null);
-
     useEditableSelectionReconciler({
-      androidInputManagerRef,
-      editor,
-      inputController,
-      rootRef,
-      scrollSelectionIntoView: vi.fn(),
       partialDOMBackedSelection: false,
-      state,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
     });
 
     return (
-      <div data-render-tick={renderTick} ref={rootRef}>
+      <div data-render-tick={renderTick} ref={runtime.rootRef}>
         <span>abc</span>
       </div>
     );
@@ -1181,12 +1196,10 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
   vi.useFakeTimers();
 
   const editor = createReactEditor();
-  const inputController = createEditableInputController({
-    preferModelSelectionForInputRef: { current: true },
-    state: createEditableInputControllerState(),
-  });
-  const state = inputController.state;
-  const androidInputManagerRef = { current: null };
+  const runtime = new EditableDOMRuntime({ editor });
+  const state = runtime.state;
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
 
   editorReplace(editor, {
@@ -1196,6 +1209,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
       { type: 'paragraph', children: [{ text: 'two' }] },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [2, 0], offset: 0 },
     },
@@ -1204,7 +1218,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     anchor: { type: 'placeholder' },
     boundaryId: 'hidden-block',
     copyPolicy: 'model',
-    coveredPathRanges: [{ anchor: [1], focus: [1] }],
+    coveredPathRanges: [{ kind: 'text', anchor: [1], focus: [1] }],
     coveredRuntimeRanges: [],
     findPolicy: 'native',
     ownerPath: [],
@@ -1216,20 +1230,14 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
   });
 
   const Harness = () => {
-    const rootRef = useRef<HTMLDivElement | null>(null);
-
     useEditableSelectionReconciler({
-      androidInputManagerRef,
-      editor,
-      inputController,
-      rootRef,
-      scrollSelectionIntoView: vi.fn(),
       partialDOMBackedSelection: false,
-      state,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
     });
 
     return (
-      <div data-render-tick={renderTick} ref={rootRef}>
+      <div data-render-tick={renderTick} ref={runtime.rootRef}>
         <span>one</span>
         <button type="button">hidden shell</button>
         <span>two</span>
@@ -1289,6 +1297,7 @@ test('DOM coverage selection materializes every covered materialize boundary wit
       { type: 'paragraph', children: [{ text: 'focus' }] },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'anchor'.length },
       focus: { path: [4, 0], offset: 0 },
     },
@@ -1303,7 +1312,7 @@ test('DOM coverage selection materializes every covered materialize boundary wit
       anchor: { type: 'placeholder' },
       boundaryId,
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: path, focus: path }],
+      coveredPathRanges: [{ kind: 'text', anchor: path, focus: path }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1351,12 +1360,10 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
   vi.useFakeTimers();
 
   const editor = createReactEditor();
-  const inputController = createEditableInputController({
-    preferModelSelectionForInputRef: { current: true },
-    state: createEditableInputControllerState(),
-  });
-  const state = inputController.state;
-  const androidInputManagerRef = { current: null };
+  const runtime = new EditableDOMRuntime({ editor });
+  const state = runtime.state;
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
 
   editorReplace(editor, {
@@ -1366,6 +1373,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
       { type: 'paragraph', children: [{ text: 'two' }] },
     ],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [2, 0], offset: 1 },
     },
@@ -1374,7 +1382,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
     anchor: { type: 'placeholder' },
     boundaryId: 'hidden-block',
     copyPolicy: 'model',
-    coveredPathRanges: [{ anchor: [1], focus: [1] }],
+    coveredPathRanges: [{ kind: 'text', anchor: [1], focus: [1] }],
     coveredRuntimeRanges: [],
     findPolicy: 'native',
     ownerPath: [],
@@ -1386,20 +1394,18 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
   });
 
   const Harness = () => {
-    const rootRef = useRef<HTMLDivElement | null>(null);
-
     useEditableSelectionReconciler({
-      androidInputManagerRef,
-      editor,
-      inputController,
-      rootRef,
-      scrollSelectionIntoView: vi.fn(),
       partialDOMBackedSelection: false,
-      state,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
     });
 
     return (
-      <div data-render-tick={renderTick} data-selection-test-root ref={rootRef}>
+      <div
+        data-render-tick={renderTick}
+        data-selection-test-root
+        ref={runtime.rootRef}
+      >
         <span data-plite-node="text" data-plite-path="0,0">
           <span data-plite-leaf="true">
             <span data-plite-string="true">one</span>
@@ -1500,6 +1506,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
 
 test('read-only triple-click stays native and does not update model selection', () => {
   const editor = createReactEditor();
+  const runtime = new EditableDOMRuntime({ editor });
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
@@ -1508,6 +1515,7 @@ test('read-only triple-click stays native and does not update model selection', 
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -1522,6 +1530,7 @@ test('read-only triple-click stays native and does not update model selection', 
 
   try {
     applyEditableClick({
+      domPhaseScheduler: runtime.domPhaseScheduler,
       editor,
       event: {
         defaultPrevented: false,
@@ -1536,10 +1545,12 @@ test('read-only triple-click stays native and does not update model selection', 
 
     expect(update).not.toHaveBeenCalled();
     expect(editorGetSelection(editor)).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
   } finally {
+    runtime.destroy();
     target.remove();
     update.mockRestore();
   }

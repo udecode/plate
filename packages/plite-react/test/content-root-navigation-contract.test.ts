@@ -1,7 +1,9 @@
 import {
   createEditorRuntime,
   createEditorView,
-  defineEditorExtension,
+  defineEditorSchema,
+  element,
+  schema,
   type Point,
 } from '@platejs/plite';
 import { describe, expect, it, vi } from 'vitest';
@@ -19,15 +21,20 @@ import {
   writePliteViewSelection,
 } from '../src/view-selection';
 
-const contentRootExtension = defineEditorExtension({
-  elements: [
-    {
-      type: 'content-card',
-      contentRoot: { slot: 'body' },
+const contentRootExtension = defineEditorSchema({
+  elements: {
+    'content-card': element({
+      contentRoot: {
+        content: schema.content.not(schema.content.text()),
+        slot: 'body',
+      },
       void: 'editable-island',
-    },
-  ],
-  name: 'content-root-navigation-test',
+    }),
+  },
+  id: 'content-root-navigation-test',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
 });
 
 const paragraph = (text: string) => ({
@@ -86,7 +93,7 @@ const createRepeatedProjectionFixture = () => {
 
 const selectPoint = (editor: ReactRuntimeEditor, point: Point) => {
   editor.update((tx) => {
-    tx.selection.set({ anchor: point, focus: point });
+    tx.selection.set({ kind: 'text', anchor: point, focus: point });
   });
 };
 
@@ -128,6 +135,7 @@ describe('content root navigation', () => {
       event,
       isRTL: false,
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -216,6 +224,7 @@ describe('content root navigation', () => {
     expect(result.handled).toBe(false);
     expect(event.preventDefault).not.toHaveBeenCalled();
     expect(bodyEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0], root: 'card:body' },
       focus: { offset: 0, path: [1, 0], root: 'card:body' },
     });
@@ -241,6 +250,7 @@ describe('content root navigation', () => {
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(bodyEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0, root: 'card:body' },
       focus: { path: [0, 0], offset: 0, root: 'card:body' },
     });
@@ -266,6 +276,7 @@ describe('content root navigation', () => {
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(bodyEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
       focus: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
     });
@@ -288,6 +299,7 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(bodyEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
       focus: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
     });
@@ -311,6 +323,7 @@ describe('content root navigation', () => {
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(bodyEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0, root: 'card:body' },
       focus: { path: [0, 0], offset: 0, root: 'card:body' },
     });
@@ -338,6 +351,7 @@ describe('content root navigation', () => {
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(mainEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [2, 0], offset: 'After'.length },
       focus: { path: [2, 0], offset: 'After'.length },
     });
@@ -364,6 +378,7 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(mainEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [4, 0], offset: 0 },
       focus: { path: [4, 0], offset: 0 },
     });
@@ -390,6 +405,7 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(mainEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [2, 0], offset: 'Between'.length },
       focus: { path: [2, 0], offset: 'Between'.length },
     });
@@ -414,6 +430,7 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(mainEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Before'.length },
       focus: { path: [0, 0], offset: 'Before'.length },
     });
@@ -438,6 +455,7 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(mainEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Before'.length },
       focus: { path: [0, 0], offset: 'Before'.length },
     });
@@ -460,6 +478,7 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(mainEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Before'.length },
       focus: { path: [0, 0], offset: 'Before'.length },
     });
@@ -485,6 +504,7 @@ describe('content root navigation', () => {
     writePliteViewSelection(
       mainEditor,
       createPliteViewSelection(graph, {
+        kind: 'text',
         anchor: { point: { path: [0, 0], offset: 'Before'.length } },
         focus: {
           owner,
@@ -521,6 +541,7 @@ describe('content root navigation', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'Before'.length - 1 },
         focus: { path: [0, 0], offset: 'Before'.length },
       });
@@ -558,6 +579,7 @@ describe('content root navigation', () => {
 
     mainEditor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [2, 0], offset: 0 },
         focus: { path: [0, 0], offset: 'Before'.length },
       });
@@ -603,6 +625,7 @@ describe('content root navigation', () => {
     writePliteViewSelection(
       mainEditor,
       createPliteViewSelection(graph, {
+        kind: 'text',
         anchor: { point: { path: [0, 0], offset: 0 } },
         focus: {
           owner,
@@ -650,6 +673,7 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(bodyEditor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0, root: 'card:body' },
       focus: { path: [0, 0], offset: 0, root: 'card:body' },
     });
@@ -675,6 +699,7 @@ describe('content root navigation', () => {
     } as const;
     const graph = createContentRootProjectionGraph(mainEditor, [owner]);
     const selection = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: { point: { path: [0, 0, 0], offset: 'Before'.length } },
       focus: {
         owner,
@@ -720,6 +745,7 @@ describe('content root navigation', () => {
     )!;
     const graph = createContentRootProjectionGraph(mainEditor, owners);
     const selectionIntoNested = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: { point: { path: [0, 0], offset: 'Before'.length } },
       focus: {
         owner: nestedOwner,
@@ -731,6 +757,7 @@ describe('content root navigation', () => {
       },
     });
     const selectionOutOfNested = createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: {
         owner: nestedOwner,
         point: {

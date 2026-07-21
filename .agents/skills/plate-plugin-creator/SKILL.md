@@ -1,5 +1,5 @@
 ---
-description: Build new Plate plugins with Slate-first architecture, sane typing, and explicit React/Plate wrapper boundaries. Use when authoring or refactoring Plate plugin packages, deciding between createSlatePlugin vs createPlatePlugin, defining plugin APIs/transforms/options, or lifting semantic base plugins into React/Plate wrappers.
+description: Build new Plate plugins with semantic base-first architecture, sane typing, and explicit React/Plate wrapper boundaries. Use when authoring or refactoring Plate plugin packages, deciding between createBasePlugin and createPlatePlugin, defining plugin APIs/update groups/options, or lifting semantic base plugins into React/Plate wrappers.
 name: plate-plugin-creator
 metadata:
   skiller:
@@ -54,7 +54,7 @@ Derived checklist from `vision`:
 
 - `packages/*/src/lib` — semantic base plugins, transforms, parsers, rules
 - `packages/*/src/react` — Plate/React wrappers, hooks, node props, components
-- `packages/core/src/lib/plugin` — Slate-first authoring primitives
+- `packages/core/src/lib/plugin` — semantic base authoring primitives
 - `packages/core/src/react/plugin` — Plate wrapper primitives
 - `packages/core/type-tests` — plugin contract source of truth
 
@@ -62,10 +62,10 @@ Derived checklist from `vision`:
 
 1. **Start where semantics live.** If the behavior matters without React, start
    in `src/lib`.
-2. **Use inference before ceremony.** Reach for `createT*` only when explicit
-   contract control buys something real.
+2. **Use inference before ceremony.** Pass a `PluginConfig` generic only when
+   explicit contract control buys something real.
 3. **Wrap base plugins.** If a semantic base already exists, lift it with
-   `toPlatePlugin` or `toTPlatePlugin` instead of re-authoring it in React.
+   `toPlatePlugin` instead of re-authoring it in React.
 4. **Design the API shape on purpose.** Plugin-specific surfaces and merged
    editor surfaces are different tools.
 5. **Use shared keys.** Shipped plugin keys and cross-plugin references should
@@ -94,37 +94,41 @@ Derived checklist from `vision`:
 ### Creation Flow → [creation-flow.md](./rules/creation-flow.md)
 
 - Start with the decision tree before writing code.
-- `createSlatePlugin` / `createTSlatePlugin` own semantic base plugins.
-- `toPlatePlugin` / `toTPlatePlugin` lift a semantic base into the React/Plate
+- `createBasePlugin` owns semantic base plugins.
+- `toPlatePlugin` lifts a semantic base into the React/Plate
   surface.
-- `createPlatePlugin` / `createTPlatePlugin` are for real React/Plate-native
+- `createPlatePlugin` is for real React/Plate-native
   plugins or bundles of existing Plate plugins.
 - If you only need to bundle existing Plate plugins, do not invent a fake base
   plugin first.
 
 ### Typing & Context → [typing.md](./rules/typing.md)
 
-- Callback context already provides `editor`, `plugin`, `type`, `api`, `tf`,
+- Callback context already provides `editor`, `plugin`, `type`, `api`, `update`,
   `getOptions`, `setOption`, and friends. Use them.
 - Forbid `any` in source files. The only acceptable exception is non-type test
   code where the looseness is intentional and local to the test.
-- Do not thread `SlateEditor` through callbacks, options, or helper signatures
+- Do not thread `BaseEditor` through callbacks, options, or helper signatures
   when plugin context already has the editor.
 - Prefer `KEYS` from `packages/utils/src/lib/plate-keys.ts` for shipped/shared
   plugin keys and cross-plugin references. Use `editor.getType(KEYS.foo)` when
   you need the resolved node type.
-- `createTSlatePlugin` and `createTPlatePlugin` are explicit-contract tools, not
-  default ceremony.
+- Let `createBasePlugin` and `createPlatePlugin` infer ordinary contracts; pass
+  an explicit `PluginConfig` only when it defines a real public contract.
 - Trust `packages/core/type-tests/*` over stale package precedent.
 
 ### Composition & API Shape → [composition.md](./rules/composition.md)
 
-- `extendApi` / `extendTransforms` are plugin-specific surfaces.
-- `extendEditorApi` / `extendEditorTransforms` feed the merged editor surface.
+- `extendApi` owns plugin-specific read/service methods.
+- `extendTx` owns the plugin-keyed one-shot update group; `extendTxGroup` owns
+  an explicitly named update group.
+- `extendEditorApi` feeds the merged root `editor.api` only when the capability
+  genuinely belongs at the editor root.
 - Use `configurePlugin` to override nested child plugins instead of cloning
   their config by hand.
-- Use `overrideEditor` when the real ownership is editor behavior, not random
-  event glue.
+- Use `extendExtension` when the real ownership is Plite editor behavior.
+  Install the narrow command, normalizer, or operation-middleware hook instead
+  of wrapping the root editor or hiding behavior in event glue.
 - For React-only augmentation of existing rendered nodes, prefer
   `inject.nodeProps.transformProps` before inventing wrapper components or
   heavier node plumbing. This is especially right when the augmentation needs
@@ -132,7 +136,7 @@ Derived checklist from `vision`:
 
 ## Hard Law
 
-**Slate-first, Plate-second.**
+**Semantic base first, Plate second.**
 
 If a plugin has meaningful document semantics without React, author the base in
 `packages/*/src/lib` first. Add the React/Plate layer only when rendering,
@@ -141,7 +145,7 @@ hooks, or Plate-only editor integration is actually needed.
 Named exceptions:
 
 1. React-only hook or `useHooks` plugins
-2. DOM/editor-surface plugins with no meaningful Slate-only base
+2. DOM/editor-surface plugins with no meaningful semantic base
 3. Plate-only bundle plugins that just compose existing Plate plugins
 4. React node-prop injection that truly depends on hooks or component context
 
@@ -152,8 +156,8 @@ Named exceptions:
   component or small wrapper config.
 - Do not hardcode shipped/shared plugin keys when `KEYS` already owns that
   contract.
-- Do not cargo-cult `({ editor }: { editor: SlateEditor }) => ...` callback
-  annotations when inference already knows the editor type.
+- Do not cargo-cult explicit `editor` callback annotations when inference
+  already knows the editor type.
 - Do not extract editor-locked helpers just to placate TypeScript.
 - Do not create new public top-level files when `internal/` is enough.
 - Do not treat `transformProps` like a universal replacement for
@@ -165,7 +169,7 @@ Named exceptions:
 
 ```ts
 // Good: semantic base first, thin Plate wrapper second.
-export const BaseCommentPlugin = createTSlatePlugin<BaseCommentConfig>({
+export const BaseCommentPlugin = createBasePlugin<BaseCommentConfig>({
   key: KEYS.comment,
 }).extendApi(...);
 
@@ -200,8 +204,8 @@ export const BasicBlocksPlugin = createPlatePlugin({
    - a bundle plugin
 4. Lock the contract shape:
    - options
-   - plugin-specific API/transforms
-   - merged editor API/transforms
+   - plugin-specific API/update groups
+   - merged editor API, only when root ownership is intentional
    - nested child plugins
 5. Apply the typing rules before adding explicit annotations.
 6. Add docs only by handing off to [docs-creator](../docs-creator/SKILL.md).

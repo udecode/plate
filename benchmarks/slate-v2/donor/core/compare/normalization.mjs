@@ -31,18 +31,24 @@ const insertOps = Number(process.env.NORMALIZATION_BENCH_INSERT_OPS || 50);
 const forcedLayoutCases = Number(
   process.env.NORMALIZATION_BENCH_FORCED_LAYOUT_CASES || 100
 );
+const skipBuild = process.env.BENCHMARK_SKIP_BUILD === '1';
 
 const benchmarkSource = `
 import assert from 'node:assert/strict';
 
+const isPlite = process.env.BENCHMARK_ENGINE === 'current';
 let Slate;
 let SlateInternal = {};
 
-try {
-  Slate = await import('../../packages/slate/src/index.ts');
-  SlateInternal = await import('../../packages/slate/src/internal/index.ts');
-} catch {
-  Slate = await import('@platejs/slate');
+if (isPlite) {
+  Slate = await import('@platejs/plite');
+  SlateInternal = await import('@platejs/plite/internal');
+} else {
+  try {
+    Slate = await import('slate');
+  } catch {
+    Slate = await import('@platejs/slate');
+  }
 
   try {
     SlateInternal = await import('@platejs/slate/internal');
@@ -50,8 +56,22 @@ try {
 }
 
 const { createEditor } = Slate;
-const Editor = Slate.Editor ?? SlateInternal.Editor;
+const Editor = Slate.Editor ?? SlateInternal.Editor ?? SlateInternal;
 const legacyTransforms = Slate.Transforms;
+const currentInlineSchema = isPlite
+  ? Slate.defineEditorSchema({
+      elements: {
+        inline: Slate.element({ inline: true }),
+        paragraph: Slate.element({}),
+      },
+      id: 'normalization-compare-inline',
+      root: Slate.schema.root({
+        content: Slate.schema.content.types(['paragraph']),
+      }),
+      unknown: 'preserve',
+      version: 1,
+    })
+  : null;
 
 const iterations = Number(process.env.NORMALIZATION_BENCH_ITERATIONS || 3);
 const explicitBlocks = Number(process.env.NORMALIZATION_BENCH_EXPLICIT_BLOCKS || 250);
@@ -161,6 +181,11 @@ const getChildren = (editor) =>
         : editor.children;
 
 const normalizeEditor = (editor, options) => {
+  if (isPlite) {
+    editor.update.value.repair();
+    return;
+  }
+
   if (typeof editor.update === 'function') {
     editor.update(() => {
       Editor.normalize(editor, options);
@@ -200,11 +225,14 @@ const installNoopNormalizer = (editor) => {
   if (typeof editor.extend === 'function') {
     editor.extend({
       name: 'benchmark-noop-normalizer',
-      normalizers: {
-        node({ next }) {
-          next();
+      corrections: [
+        {
+          event: 'content',
+          correct() {
+            // Measure registered correction dispatch without changing content.
+          },
         },
-      },
+      ],
     });
     return;
   }
@@ -219,36 +247,41 @@ const installForcedLayoutNormalizer = (editor) => {
   if (typeof editor.extend === 'function') {
     editor.extend({
       name: 'benchmark-forced-layout-normalizer',
-      normalizers: {
-        editor({ next, tx }) {
-          const children = tx.nodes.children();
-          const first = children[0];
-          const second = children[1];
-          const firstText = nodeString(first);
+      corrections: [
+        {
+          event: 'children',
+          query: 'root',
+          correct({ tx }) {
+            const children = tx.nodes.children();
+            const first = children[0];
+            const second = children[1];
+            const firstText = nodeString(first);
 
-          if (children.length <= 1 && firstText === '') {
-            tx.nodes.insert(createTitle(), { at: [0], select: true });
-            return;
-          }
+            if (children.length <= 1 && firstText === '') {
+              tx.nodes.insert(createTitle(), { at: [0], select: true });
+              return;
+            }
 
-          if (children.length < 2) {
-            tx.nodes.insert(createParagraph(), { at: [1] });
-            return;
-          }
+            if (children.length < 2) {
+              tx.nodes.insert(createParagraph(), { at: [1] });
+              return;
+            }
 
-          if (first && 'children' in first && first.type !== 'title') {
-            tx.nodes.set({ type: 'title' }, { at: [0] });
-            return;
-          }
+            if (first && 'children' in first && first.type !== 'title') {
+              tx.nodes.set({ type: 'title' }, { at: [0] });
+              return;
+            }
 
-          if (second && 'children' in second && second.type !== 'paragraph') {
-            tx.nodes.set({ type: 'paragraph' }, { at: [1] });
-            return;
-          }
-
-          next();
+            if (
+              second &&
+              'children' in second &&
+              second.type !== 'paragraph'
+            ) {
+              tx.nodes.set({ type: 'paragraph' }, { at: [1] });
+            }
+          },
         },
-      },
+      ],
     });
     return;
   }
@@ -329,13 +362,10 @@ const explicitAdjacentTextNormalizeMs = measureLane(
 
 const explicitInlineFlattenNormalizeMs = measureLane(
   () => {
-    const editor = createEditor();
-    if (typeof editor.extend === 'function') {
-      editor.extend({
-        name: 'normalization-compare-inline',
-        elements: [{ type: 'inline', inline: true }],
-      });
-    } else {
+    const editor = isPlite
+      ? createEditor({ extensions: [currentInlineSchema] })
+      : createEditor();
+    if (!isPlite) {
       editor.isInline = (element) => element.type === 'inline';
     }
     replaceEditor(editor, {
@@ -439,8 +469,10 @@ console.log(JSON.stringify({
 const currentPackageManager = await parsePackageManager(currentRepo);
 const legacyPackageManager = await parsePackageManager(legacyRepo);
 
-await buildRepo(currentRepo, currentPackageManager, './packages/slate');
-await buildRepo(legacyRepo, legacyPackageManager, './packages/slate');
+if (!skipBuild) {
+  await buildRepo(currentRepo, currentPackageManager, './packages/plite');
+  await buildRepo(legacyRepo, legacyPackageManager, './packages/slate');
+}
 
 const env = {
   NORMALIZATION_BENCH_ITERATIONS: String(iterations),
@@ -452,13 +484,13 @@ const env = {
 
 const current = await benchmarkRepo({
   benchmarkSource,
-  env,
+  env: { ...env, BENCHMARK_ENGINE: 'current' },
   packageManager: currentPackageManager,
   repo: currentRepo,
 });
 const legacy = await benchmarkRepo({
   benchmarkSource,
-  env,
+  env: { ...env, BENCHMARK_ENGINE: 'legacy' },
   packageManager: legacyPackageManager,
   repo: legacyRepo,
 });

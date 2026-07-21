@@ -43,6 +43,27 @@ const parseElement = (html: string) => {
 };
 
 describe('BaseMarkPlugins', () => {
+  it('registers and parses bold as a schema-owned text property', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseBoldPlugin],
+      value: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+    const bold = editor.read.schema
+      .getVocabulary()
+      .propertyIds.find((propertyId) =>
+        propertyId.startsWith(`text:${KEYS.bold}@`)
+      );
+    const data = new DataTransfer();
+
+    data.setData('text/html', '<p><strong>bold</strong></p>');
+
+    expect(bold).toBeDefined();
+    expect(editor.api.clipboard.insertData(data)).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ bold: true, text: 'bold' }], type: KEYS.p },
+    ]);
+  });
+
   it.each([
     [
       'bold',
@@ -93,6 +114,7 @@ describe('BaseMarkPlugins', () => {
     const editor = createBaseEditor({
       plugins: [BaseCodePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -111,6 +133,7 @@ describe('BaseMarkPlugins', () => {
     const bold = createBaseEditor({
       plugins: [BaseBoldPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -119,6 +142,7 @@ describe('BaseMarkPlugins', () => {
     const italic = createBaseEditor({
       plugins: [BaseItalicPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -127,6 +151,7 @@ describe('BaseMarkPlugins', () => {
     const underline = createBaseEditor({
       plugins: [BaseUnderlinePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -135,6 +160,7 @@ describe('BaseMarkPlugins', () => {
     const strikethrough = createBaseEditor({
       plugins: [BaseStrikethroughPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },

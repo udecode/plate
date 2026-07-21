@@ -49,7 +49,7 @@ describe('outdent code line', () => {
       const codeLine = getElementEntry(editor, [0, 0]);
 
       editor.update((tx) => {
-        outdentCodeLine(editor, tx, { codeBlock, codeLine });
+        outdentCodeLine(tx, { codeBlock, codeLine });
       });
 
       expect(editor.read.children()).toEqual(output.children);
@@ -84,7 +84,7 @@ describe('outdent code line', () => {
       const codeLine = getElementEntry(editor, [0, 0]);
 
       editor.update((tx) => {
-        outdentCodeLine(editor, tx, { codeBlock, codeLine });
+        outdentCodeLine(tx, { codeBlock, codeLine });
       });
 
       expect(editor.read.children()).toEqual(output.children);

@@ -9,7 +9,7 @@ describe('getBlocksWithId', () => {
       [
         { children: [{ text: '' }], id: 'a', type: 'p' },
         { children: [{ text: '' }], type: 'p' },
-        { children: [{ text: '' }], id: 'b', type: 'blockquote' },
+        { children: [{ text: '' }], id: 'b', type: 'p' },
       ],
       { at: [0] }
     );

@@ -10,10 +10,12 @@ import {
 } from '@platejs/plite/internal';
 import {
   createEditor,
+  DocumentChange,
   type Element,
   defineEditorExtension,
-  elementProperty,
-  type Operation,
+  element,
+  property,
+  schema,
 } from '@platejs/plite';
 import { extendTestSchema } from './support/schema';
 
@@ -27,8 +29,8 @@ const createFoundationEditor = () => {
 
   editorReplace(editor, {
     children: [paragraph('one'), paragraph('two'), paragraph('three')],
-    marks: null,
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     },
@@ -52,21 +54,22 @@ describe('editor foundation contract', () => {
   it('combines extension namespaces and schema specs without extension namespaces on the editor surface', () => {
     const editor = createFoundationEditor();
 
-    extendTestSchema(editor, [
-      { type: 'image', void: 'block' },
-      { type: 'mention', void: 'markable-inline' },
-    ]);
+    extendTestSchema(editor, {
+      image: { void: 'block' },
+      mention: { void: 'markable-inline' },
+    });
     editor.extend(
       defineEditorExtension({
-        elements: [
-          {
-            properties: {
-              colSpan: elementProperty.number({ default: 1 }),
-            },
-            type: 'table-cell',
-          },
-        ],
         name: 'table-foundation',
+        schema: schema.contribution({
+          elements: {
+            'table-cell': element({
+              properties: {
+                colSpan: property.number({ default: 1 }),
+              },
+            }),
+          },
+        }),
         state: {
           table(state) {
             return {
@@ -91,15 +94,17 @@ describe('editor foundation contract', () => {
         tx: {
           table(tx) {
             return {
-              imageSpec() {
-                return tx.schema.getElementSpec('image');
+              imageVoidKind() {
+                return tx.schema.element('image')?.behavior.voidKind;
               },
               colSpanIsDefault(value: unknown) {
-                return tx.schema.isElementPropertyEqual(
-                  'table-cell',
-                  'colSpan',
+                return Object.is(
                   value,
-                  undefined
+                  tx.schema.property({
+                    key: 'colSpan',
+                    placement: 'element',
+                    type: 'table-cell',
+                  })?.value.default
                 );
               },
               insertRow(text: string) {
@@ -138,7 +143,7 @@ describe('editor foundation contract', () => {
       };
     });
     let txState: {
-      imageSpec: unknown;
+      imageVoidKind: unknown;
       colSpanIsDefault: boolean;
       mentionIsMarkableVoid: boolean;
       rowCountAfterInsert: number;
@@ -148,7 +153,7 @@ describe('editor foundation contract', () => {
       const tableTx = tx as typeof tx & {
         table: {
           colSpanIsDefault(value: unknown): boolean;
-          imageSpec(): unknown;
+          imageVoidKind(): unknown;
           insertRow(text: string): void;
           mentionIsMarkableVoid(): boolean;
           rowCount(): number;
@@ -158,7 +163,7 @@ describe('editor foundation contract', () => {
       tableTx.table.insertRow('four');
       txState = {
         colSpanIsDefault: tableTx.table.colSpanIsDefault(1),
-        imageSpec: tableTx.table.imageSpec(),
+        imageVoidKind: tableTx.table.imageVoidKind(),
         mentionIsMarkableVoid: tableTx.table.mentionIsMarkableVoid(),
         rowCountAfterInsert: tableTx.table.rowCount(),
       };
@@ -171,7 +176,7 @@ describe('editor foundation contract', () => {
     });
     assert.deepEqual(txState, {
       colSpanIsDefault: true,
-      imageSpec: { type: 'image', void: 'block' },
+      imageVoidKind: 'block',
       mentionIsMarkableVoid: true,
       rowCountAfterInsert: 4,
     });
@@ -187,7 +192,7 @@ describe('editor foundation contract', () => {
     assert.equal('table' in editorSurface, false);
   });
 
-  it('replays deterministic operations with commit metadata and local-only runtime targets', () => {
+  it('applies serialized canonical changes with commit metadata and local-only runtime targets', () => {
     const source = createFoundationEditor();
     const remote = createFoundationEditor();
     const remoteCommits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] =
@@ -210,7 +215,7 @@ describe('editor foundation contract', () => {
 
     remote.update((tx) => {
       tx.tags.add('remote-import');
-      tx.operations.replay(sourceCommit.operations);
+      tx.changes.apply(DocumentChange.fromJSON(sourceCommit.changes.toJSON()));
     });
     unsubscribe();
 
@@ -221,27 +226,29 @@ describe('editor foundation contract', () => {
     assert.equal(remoteCommits.length, 1);
     assert.deepEqual(remoteCommits[0]?.tags, ['remote-import']);
     assert.deepEqual(
-      remoteCommits[0]?.operations.map((operation) => operation.type),
-      sourceCommit.operations.map((operation) => operation.type)
+      remoteCommits[0]?.changes.toJSON(),
+      sourceCommit.changes.toJSON()
     );
 
     const targetEditor = createFoundationEditor();
     const removedId = editorGetRuntimeId(targetEditor, [1]);
-    const removedNode = editorGetSnapshot(targetEditor).children[1]!;
 
     assert(removedId);
 
-    const removeOperation: Operation = {
-      node: removedNode,
-      path: [1],
-      type: 'remove_node',
-    };
+    const before = targetEditor.read.value();
+    const removeChange = DocumentChange.between(before, {
+      ...before,
+      children: before.children.filter((_node, index) => index !== 1),
+    });
 
-    assert.equal(JSON.stringify(removeOperation).includes(removedId), false);
+    assert.equal(
+      JSON.stringify(removeChange.toJSON()).includes(removedId),
+      false
+    );
 
     targetEditor.update((tx) => {
       tx.tags.add('remote-remove');
-      tx.operations.replay([removeOperation]);
+      tx.changes.apply(DocumentChange.fromJSON(removeChange.toJSON()));
     });
 
     const removeCommit = editorGetLastCommit(targetEditor);

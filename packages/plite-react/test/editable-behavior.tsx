@@ -127,6 +127,7 @@ describe('plite-react editable behavior', () => {
     });
 
     const expectedSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     };
@@ -360,6 +361,7 @@ describe('plite-react editable behavior', () => {
     editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: 'test' }] }],
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },
@@ -409,6 +411,7 @@ describe('plite-react editable behavior', () => {
     editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: 'test' }] }],
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },

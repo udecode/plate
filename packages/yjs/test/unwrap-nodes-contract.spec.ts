@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant, Operation } from '@platejs/plite';
+import type { Descendant } from '@platejs/plite';
 
 import {
+  assertCanonicalYjsTrace,
   assertPeerTexts,
   clearYjsTrace,
   connectYjsPeerAndSync,
@@ -11,11 +12,8 @@ import {
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   getPeerTopLevelTypes,
-  getYjsNodeAt,
-  getYjsTrace,
   type Peer,
   paragraph,
-  recordOperationTypes,
   redoYjsPeerAndSync,
   syncConnectedPeers,
   undoYjsPeerAndSync,
@@ -90,43 +88,16 @@ const createWrappedPeers = (ids: readonly ClientId[]): Peer[] => {
   return peers;
 };
 
-const collectUnwrapOperations = (): Operation['type'][] => {
-  const peer = createWrappedPeer('b');
-  const operations = recordOperationTypes(peer, {
-    name: 'unwrap-operation-recorder',
-  });
-  unwrapFirstBlock(peer);
-
-  return operations;
-};
-
 describe('@platejs/yjs unwrapNodes collaboration contract', () => {
-  it('characterizes public unwrapNodes as move_node then remove_node', () => {
-    assert.deepEqual(collectUnwrapOperations(), ['move_node', 'remove_node']);
-  });
-
-  it('applies local offline public unwrap without replacing the original Yjs node', () => {
+  it('applies a local offline public unwrap as a canonical change', () => {
     const peer = createWrappedPeer('b');
-    const original = getYjsNodeAt(peer, [1]);
 
     disconnectYjsPeer(peer);
     unwrapFirstBlock(peer);
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha']);
     assert.deepEqual(getPeerTopLevelTypes(peer), ['paragraph']);
-    assert.equal(getYjsNodeAt(peer, [0]), original);
-    assert.deepEqual(getYjsTrace(peer), [
-      {
-        fallback: 'virtual-unwrap-ref',
-        mode: 'traceable-fallback',
-        operationType: 'move_node',
-      },
-      {
-        fallback: 'virtual-unwrap-wrapper-remove',
-        mode: 'traceable-fallback',
-        operationType: 'remove_node',
-      },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
   it('preserves concurrent remote text when an offline unwrap reconnects', () => {
@@ -162,7 +133,7 @@ describe('@platejs/yjs unwrapNodes collaboration contract', () => {
     assert.deepEqual(getPeerTopLevelTypes(b), ['paragraph']);
   });
 
-  it('undoes and redoes only the local unwrap intent after reconnect', () => {
+  it('undoes and redoes only the local unwrap after reconnect', () => {
     const peers = createWrappedPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 

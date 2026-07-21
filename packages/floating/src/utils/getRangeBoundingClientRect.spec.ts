@@ -27,6 +27,7 @@ describe('getRangeBoundingClientRect', () => {
   it('returns the default rect when toDOMRange fails', () => {
     const editor = createPlateEditor();
     const range = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     };
@@ -47,6 +48,7 @@ describe('getRangeBoundingClientRect', () => {
       value: [{ children: [{ text: 'a' }], type: 'p' }],
     });
     const range = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     };

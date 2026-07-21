@@ -13,6 +13,7 @@ const createEditor = () =>
   createPlateEditor({
     plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin, CopilotPlugin],
     selection: {
+      kind: 'text',
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     },

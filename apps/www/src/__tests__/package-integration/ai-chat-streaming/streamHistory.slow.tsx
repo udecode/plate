@@ -33,7 +33,7 @@ const streamPreview = (chunks: string[]) => {
         type: getPluginType(editor, KEYS.aiChat),
       },
       {
-        at: PathApi.next(editor.read.selection()!.focus.path.slice(0, 1)),
+        at: PathApi.next(tx.selection()!.focus.path.slice(0, 1)),
       }
     );
   });
@@ -75,9 +75,11 @@ describe('ai chat streaming history', () => {
     acceptAIChat(editor);
 
     expect(editor.read.history.undos()).toHaveLength(1);
-    expect(editor.read.history.undos()[0]!.operations.length).toBeLessThan(
-      chunks.length
-    );
+    const [batch] = editor.read.history.undos();
+    const mainChange = batch!.change.primary;
+
+    expect(mainChange).toBeDefined();
+    expect(mainChange!.data.length).toBeLessThan(chunks.length);
     expect(
       editor.read.nodes.some({
         at: [],
@@ -111,6 +113,7 @@ describe('ai chat streaming history', () => {
     acceptAIChat(editor);
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 11, path: [0, 0] },
       focus: { offset: 11, path: [0, 0] },
     });
@@ -124,6 +127,7 @@ describe('ai chat streaming history', () => {
     editor.update.history.redo();
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 11, path: [0, 0] },
       focus: { offset: 11, path: [0, 0] },
     });

@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { type Descendant, defineStateField } from '@platejs/plite';
+import { type Descendant, defineStateField, valueCodecs } from '@platejs/plite';
 import { getLastCommit as editorGetLastCommit } from '@platejs/plite/internal';
 
 import {
@@ -20,7 +20,7 @@ const documentTitle = defineStateField({
   collab: 'shared',
   history: 'push',
   initial: () => 'Untitled',
-  persist: true,
+  persist: valueCodecs.string,
 });
 
 describe('plite-react state field selector contract', () => {
@@ -29,7 +29,7 @@ describe('plite-react state field selector contract', () => {
       extensions: [documentTitle],
       initialValue: {
         children: [paragraph('body')],
-        meta: { [documentTitle.key]: 'Q2 Plan' },
+        meta: { [documentTitle.key]: documentTitle.serialize('Q2 Plan') },
       },
     });
     const values: string[] = [];

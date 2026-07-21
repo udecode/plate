@@ -17,34 +17,41 @@ const reductionLabel = process.env.STRESS_REDUCTION;
 test.skip(!replayPath, 'Set STRESS_REPLAY to a stress artifact path.');
 test.describe.configure({ mode: 'serial' });
 
-test('replays a generated browser stress artifact', async ({
-  page,
-}, testInfo) => {
-  if (!replayPath) {
-    throw new Error('Set STRESS_REPLAY to a stress artifact path.');
-  }
-
-  const artifact = readStressArtifact(replayPath);
-  const steps = artifactStepsToScenarioSteps(artifact, { reductionLabel });
-  await installPliteReactRenderProfiler(page);
-  const editor = await openExample(page, artifact.route, {
-    ready: { editor: 'visible' },
-    surface: artifact.surface,
-  });
-  const result = await editor.scenario.run(`${artifact.id}-replay`, steps, {
-    metadata: {
-      capabilities: [
-        'stress-replay',
-        ...(reductionLabel ? ['stress-reduction'] : []),
-        artifact.family,
-        artifact.route,
-      ],
-      platform: testInfo.project.name,
-      transport: 'playwright-browser',
+test(
+  'replays a generated browser stress artifact',
+  {
+    annotation: {
+      description: 'serial',
+      type: 'plite-browser-profile',
     },
-    tracePath: stressResultPath(replayPath, reductionLabel),
-  });
+  },
+  async ({ page }, testInfo) => {
+    if (!replayPath) {
+      throw new Error('Set STRESS_REPLAY to a stress artifact path.');
+    }
 
-  assertNoIllegalKernelTransitions(result);
-  expect(result.replay.replayable).toBe(true);
-});
+    const artifact = readStressArtifact(replayPath);
+    const steps = artifactStepsToScenarioSteps(artifact, { reductionLabel });
+    await installPliteReactRenderProfiler(page);
+    const editor = await openExample(page, artifact.route, {
+      ready: { editor: 'visible' },
+      surface: artifact.surface,
+    });
+    const result = await editor.scenario.run(`${artifact.id}-replay`, steps, {
+      metadata: {
+        capabilities: [
+          'stress-replay',
+          ...(reductionLabel ? ['stress-reduction'] : []),
+          artifact.family,
+          artifact.route,
+        ],
+        platform: testInfo.project.name,
+        transport: 'playwright-browser',
+      },
+      tracePath: stressResultPath(replayPath, reductionLabel),
+    });
+
+    assertNoIllegalKernelTransitions(result);
+    expect(result.replay.replayable).toBe(true);
+  }
+);

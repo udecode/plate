@@ -49,10 +49,11 @@ describe('docx cleaner helpers', () => {
   });
 
   it('parses list indent and detects docx lists from either marker style', () => {
-    const [ignoreList, commentList, plain] = Array.from(
+    const [ignoreList, visuallyNestedList, commentList, plain] = Array.from(
       new DOMParser().parseFromString(
         [
           '<div style="mso-list:l0 level3 lfo1"><span style="mso-list:Ignore">1.</span>Item</div>',
+          '<div style="margin-left:54pt;mso-list:l1 level1 lfo2"><span style="mso-list:Ignore">I.</span>Nested item</div>',
           '<div style="mso-list:l0 level2 lfo1"><!--[if !supportLists]--><span>1.</span><!--[endif]-->Item</div>',
           '<div style="color:red">plain</div>',
         ].join(''),
@@ -61,6 +62,7 @@ describe('docx cleaner helpers', () => {
     );
 
     expect(getDocxListIndent(ignoreList)).toBe(3);
+    expect(getDocxListIndent(visuallyNestedList)).toBe(2);
     expect(getDocxListIndent(plain)).toBe(1);
     expect(isDocxList(ignoreList)).toBe(true);
     expect(isDocxList(commentList)).toBe(true);

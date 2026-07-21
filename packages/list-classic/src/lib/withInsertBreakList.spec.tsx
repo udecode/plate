@@ -44,32 +44,6 @@ describe('withInsertBreakList', () => {
     expect(editor.read.selection()).toEqual(expected.selection!);
   });
 
-  it('resets an orphan empty list item into a paragraph', () => {
-    const input = (
-      <editor>
-        <hli>
-          <hlic>
-            <cursor />
-          </hlic>
-        </hli>
-      </editor>
-    ) as TestEditor;
-    const expected = (
-      <editor>
-        <hp>
-          <cursor />
-        </hp>
-      </editor>
-    ) as TestEditor;
-
-    const editor = createListEditor(input);
-
-    editor.update.break.insert();
-
-    expect(editor.read.children()).toEqual(expected.children);
-    expect(editor.read.selection()).toEqual(expected.selection!);
-  });
-
   it('inserts a sibling list item for non-empty content', () => {
     const input = (
       <editor>

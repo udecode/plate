@@ -5,6 +5,8 @@ import {
   createEditor,
   type Descendant,
   defineStateField,
+  defineValueCodec,
+  valueCodecs,
 } from '@platejs/plite';
 
 const paragraph = (text: string) =>
@@ -20,7 +22,7 @@ describe('document meta contract', () => {
       collab: 'shared',
       history: 'push',
       initial: () => 'Untitled',
-      persist: true,
+      persist: valueCodecs.string,
     });
 
     const explicit = createEditor({
@@ -28,7 +30,7 @@ describe('document meta contract', () => {
       initialValue: {
         children: [paragraph('body')],
         meta: {
-          [documentTitle.key]: 'Q2 Plan',
+          [documentTitle.key]: documentTitle.serialize('Q2 Plan'),
         },
       },
     });
@@ -45,7 +47,9 @@ describe('document meta contract', () => {
       explicit.read((state) => state.value()),
       {
         children: [paragraph('body')],
-        meta: { [documentTitle.key]: 'Q2 Plan' },
+        meta: {
+          [documentTitle.key]: documentTitle.serialize('Q2 Plan'),
+        },
       }
     );
     assert.equal(
@@ -56,7 +60,9 @@ describe('document meta contract', () => {
       defaulted.read((state) => state.value()),
       {
         children: [paragraph('body')],
-        meta: { [documentTitle.key]: 'Untitled' },
+        meta: {
+          [documentTitle.key]: documentTitle.serialize('Untitled'),
+        },
       }
     );
   });
@@ -65,12 +71,11 @@ describe('document meta contract', () => {
     const documentTitle = defineStateField({
       key: 'document.title',
       initial: () => 'Untitled',
-      persist: true,
+      persist: valueCodecs.string,
     });
     const localPanel = defineStateField({
       key: 'local.panel',
       initial: () => 'closed',
-      persist: false,
     });
     const editor = createEditor({
       extensions: [documentTitle, localPanel] as const,
@@ -90,8 +95,89 @@ describe('document meta contract', () => {
       editor.read((state) => state.value()),
       {
         children: [paragraph('body')],
-        meta: { [documentTitle.key]: 'Q2 Plan' },
+        meta: {
+          [documentTitle.key]: documentTitle.serialize('Q2 Plan'),
+        },
       }
+    );
+  });
+
+  it('preserves state-field identity and persistence across uninstall', () => {
+    let decodeCalls = 0;
+    let initialCalls = 0;
+    const persisted = defineStateField({
+      initial: () => {
+        initialCalls++;
+
+        return { count: 0 };
+      },
+      key: 'document.counter',
+      persist: defineValueCodec<{ count: number }>({
+        decode(value) {
+          decodeCalls++;
+
+          return value as { count: number };
+        },
+        encode: (value) => value,
+        version: 3,
+      }),
+    });
+    const local = defineStateField({
+      initial: () => ({ open: false }),
+      key: 'local.panel',
+    });
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        meta: { unknown: { retained: true } },
+      },
+    });
+    const removePersisted = editor.extend(persisted);
+    const removeLocal = editor.extend(local);
+
+    editor.update((tx) => {
+      tx.setField(persisted, { count: 7 });
+      tx.setField(local, { open: true });
+    });
+    const stored = editor.read.getField(persisted);
+    const initialCallsBeforeReinstall = initialCalls;
+    const decodeCallsBeforeReinstall = decodeCalls;
+
+    removePersisted();
+    removeLocal();
+
+    assert.throws(
+      () => editor.read.getField(persisted),
+      /state field "document.counter" is not installed/i
+    );
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('body')],
+      meta: {
+        [persisted.key]: { value: { count: 7 }, version: 3 },
+        unknown: { retained: true },
+      },
+    });
+
+    const removeReinstalled = editor.extend(persisted);
+
+    assert.equal(editor.read.getField(persisted), stored);
+    assert.equal(initialCalls, initialCallsBeforeReinstall);
+    assert.equal(decodeCalls, decodeCallsBeforeReinstall);
+    removeReinstalled();
+
+    const impostor = defineStateField({
+      initial: () => ({ count: 0 }),
+      key: persisted.key,
+      persist: defineValueCodec<{ count: number }>({
+        decode: (value) => value as { count: number },
+        encode: (value) => value,
+        version: 3,
+      }),
+    });
+
+    assert.throws(
+      () => editor.extend(impostor),
+      /does not match the stable descriptor identity/i
     );
   });
 });

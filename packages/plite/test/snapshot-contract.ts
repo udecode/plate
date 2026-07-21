@@ -1,28 +1,28 @@
 import assert from 'node:assert/strict';
 import {
-  createEditor,
+  createEditor as createPliteEditor,
+  defineEditorSchema,
   type Descendant,
   ElementApi,
   type Element,
   type EditorCommit,
-  type EditorElementSpec,
-  type Operation,
-  OperationApi,
-  type Path,
+  element,
+  property,
+  schema,
+  SelectionApi,
+  type TextInsertFragmentOptions,
 } from '@platejs/plite';
-import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
+import {
+  applyTransactionSpec,
+  runEditorTransaction as runInternalEditorTransaction,
+} from '../src/core/public-state';
 import {
   addMark as editorAddMark,
   collapse as editorCollapse,
   delete as editorDelete,
   deleteBackward as editorDeleteBackward,
   deselect as editorDeselect,
-  getChildren as editorGetChildren,
-  getCachedFullRootReplaceTopLevelRuntimeIds,
-  getEditorRuntime,
-  getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
-  insertFragment as editorInsertFragment,
   insertBreak as editorInsertBreak,
   insertNodes as editorInsertNodes,
   insertSoftBreak as editorInsertSoftBreak,
@@ -31,14 +31,11 @@ import {
   mergeNodes as editorMergeNodes,
   move as editorMove,
   moveNodes as editorMoveNodes,
-  normalize as editorNormalize,
   projectRangeInSnapshot,
-  getOperations as editorGetOperations,
   projectRange as editorProjectRange,
   removeMark as editorRemoveMark,
   removeNodes as editorRemoveNodes,
   replace as editorReplaceBase,
-  runTrustedUpdate,
   select as editorSelect,
   setPoint as editorSetPoint,
   setSelection as editorSetSelection,
@@ -71,14 +68,14 @@ const editorReplace = editorReplaceBase as unknown as (
   input: LegacySnapshotInput
 ) => void;
 
-const editorReplaceRaw = (
-  editor: Parameters<typeof editorReplaceBase>[0],
-  input: LegacySnapshotInput
-) => {
-  runTrustedUpdate(editor, (tx) => {
-    tx.value.replace(input);
+const replaceSlice = (
+  editor: ReturnType<typeof createEditor>,
+  content: readonly Descendant[],
+  options?: TextInsertFragmentOptions
+) =>
+  editor.update((tx) => {
+    tx.fragment.replace(content, options);
   });
-};
 
 const runEditorTransaction = (
   editor: Parameters<typeof runInternalEditorTransaction>[0],
@@ -90,26 +87,57 @@ const runEditorTransaction = (
     ...options,
   });
 
-let extensionIndex = 0;
+const SnapshotContractSchema = defineEditorSchema({
+  elements: {
+    article: element({}),
+    block: element({}),
+    'bulleted-list': element({}),
+    'code-block': element({}),
+    'code-line': element({}),
+    container: element({}),
+    heading: element({}),
+    inline: element({ inline: true }),
+    link: element({ inline: true }),
+    'list-item': element({}),
+    mention: element({ void: 'markable-inline' }),
+    'numbered-list': element({}),
+    paragraph: element({
+      properties: {
+        id: property.string(),
+        rootWrap: property.boolean(),
+      },
+    }),
+    quote: element({}),
+    section: element({}),
+    'thematic-break': element({ void: 'block' }),
+  },
+  id: 'snapshot-contract',
+  properties: [schema.textProperty('segment', property.boolean())],
+  root: schema.root({
+    content: schema.content.types([
+      'article',
+      'block',
+      'bulleted-list',
+      'code-block',
+      'container',
+      'heading',
+      'list-item',
+      'numbered-list',
+      'paragraph',
+      'quote',
+      'section',
+      'thematic-break',
+    ]),
+  }),
+  unknown: 'preserve',
+  version: 1,
+});
 
-const defineElement = (
-  editor: ReturnType<typeof createEditor>,
-  spec: EditorElementSpec
-) => {
-  editor.extend({
-    name: `snapshot-contract-element-${extensionIndex++}`,
-    elements: [spec],
-  });
-};
-
-const applyOperation = (
-  editor: ReturnType<typeof createEditor>,
-  operation: Operation
-) => {
-  editor.update((tx) => {
-    tx.operations.replay([operation]);
-  });
-};
+const createEditor = ((options = {}) =>
+  createPliteEditor({
+    ...options,
+    extensions: [SnapshotContractSchema],
+  })) as typeof createPliteEditor;
 
 const getMarks = (editor: ReturnType<typeof createEditor>) =>
   editor.read((state) => state.marks());
@@ -465,19 +493,24 @@ const getBlockTexts = (children: readonly Descendant[]) =>
 it('defers custom normalization until the outer update commits', () => {
   const editor = createEditor();
   let runs = 0;
-  const originalNormalizeNode = getEditorRuntime(editor).normalizeNode;
   let runsInsideCallback = 0;
 
-  getEditorRuntime(editor).normalizeNode = (...args) => {
-    runs += 1;
-    originalNormalizeNode(...args);
-  };
+  editor.extend({
+    corrections: [
+      {
+        correct() {
+          runs += 1;
+        },
+        event: 'content',
+      },
+    ],
+    name: 'deferred-correction-observer',
+  });
 
   editor.update(() => {
     editorReplace(editor, {
       children: createChildren(),
       selection: null,
-      marks: null,
     });
 
     runsInsideCallback = runs;
@@ -486,27 +519,28 @@ it('defers custom normalization until the outer update commits', () => {
   assert.equal(runsInsideCallback, 0);
   assert.equal(runs > 0, true);
 
-  editor.update((tx) => {
-    editorNormalize(editor);
-  });
+  editor.update.value.repair();
 
   assert.equal(runs > 0, true);
 });
 
 it('normalizes split dirty paths instead of the full document', () => {
   const editor = createEditor();
-  const originalNormalizeNode = getEditorRuntime(editor).normalizeNode;
   const normalizedTopLevelPaths: number[] = [];
 
-  getEditorRuntime(editor).normalizeNode = (entry, options) => {
-    const [, path] = entry;
-
-    if (path.length === 1) {
-      normalizedTopLevelPaths.push(path[0]!);
-    }
-
-    originalNormalizeNode(entry, options);
-  };
+  editor.extend({
+    corrections: [
+      {
+        correct({ entry: [, path] }) {
+          if (path.length === 1) {
+            normalizedTopLevelPaths.push(path[0]!);
+          }
+        },
+        event: 'content',
+      },
+    ],
+    name: 'dirty-path-observer',
+  });
 
   editorReplace(editor, {
     children: Array.from({ length: 256 }, (_value, index) => ({
@@ -514,10 +548,10 @@ it('normalizes split dirty paths instead of the full document', () => {
       children: [{ text: `line ${index}` }],
     })),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     },
-    marks: null,
   });
 
   normalizedTopLevelPaths.length = 0;
@@ -536,7 +570,6 @@ it('normalizes split dirty paths instead of the full document', () => {
 
 it('mirrors the legacy transforms/normalization/split_node-and-insert_node.tsx oracle row', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'inline', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -558,7 +591,6 @@ it('mirrors the legacy transforms/normalization/split_node-and-insert_node.tsx o
       },
     ],
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -570,13 +602,7 @@ it('mirrors the legacy transforms/normalization/split_node-and-insert_node.tsx o
       at: [2],
       position: 1,
     });
-    tx.operations.replay([
-      {
-        type: 'insert_node',
-        path: [2, 1],
-        node: { text: '' },
-      },
-    ]);
+    tx.nodes.insert({ text: '' }, { at: [2, 1] });
   });
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -622,7 +648,6 @@ it('shouldMergeNodesRemovePrevNode can remove an empty previous sibling during m
       },
     ],
     selection: null,
-    marks: null,
   });
 
   editorMergeNodes(editor, { at: [1] });
@@ -635,136 +660,32 @@ it('shouldMergeNodesRemovePrevNode can remove an empty previous sibling during m
   ]);
 });
 
-it('shouldNormalize runs once per custom normalization pass, not once per entry', () => {
-  const editor = createEditor();
-  const originalNormalizeNode = getEditorRuntime(editor).normalizeNode;
-  const shouldNormalizeCalls: Array<{
-    iteration: number;
-    operation?: unknown;
-  }> = [];
-  const normalizedPaths: Path[] = [];
-
-  getEditorRuntime(editor).shouldNormalize = (options) => {
-    shouldNormalizeCalls.push(options);
-    return shouldNormalizeCalls.length === 1;
-  };
-
-  getEditorRuntime(editor).normalizeNode = (entry, options) => {
-    normalizedPaths.push(entry[1]);
-    originalNormalizeNode(entry, options);
-  };
-
-  editorReplace(editor, {
-    children: createChildren(),
-    selection: null,
-    marks: null,
-  });
-
-  assert.deepEqual(shouldNormalizeCalls, [
-    { iteration: 0, operation: undefined },
-  ]);
-  assert.equal(normalizedPaths.length, 5);
-});
-
-it('shouldNormalize can skip a custom normalization pass for the current transaction', () => {
-  const editor = createEditor();
-  const originalNormalizeNode = getEditorRuntime(editor).normalizeNode;
-  const shouldNormalizeCalls: Array<{
-    iteration: number;
-    operation?: unknown;
-  }> = [];
-
-  getEditorRuntime(editor).shouldNormalize = (options) => {
-    shouldNormalizeCalls.push(options);
-    return false;
-  };
-
-  getEditorRuntime(editor).normalizeNode = (entry, options) => {
-    const [node] = entry;
-
-    if (editorIsEditor(node) && editorGetChildren(editor).length < 2) {
-      editorInsertNodes(
-        editor,
-        {
-          type: 'paragraph',
-          children: [{ text: '' }],
-        },
-        { at: [1] }
-      );
-      return;
-    }
-
-    originalNormalizeNode(entry, options);
-  };
-
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'title',
-        children: [{ text: 'Only title' }],
-      },
-    ],
-    selection: null,
-    marks: null,
-  });
-
-  assert.deepEqual(shouldNormalizeCalls, [
-    { iteration: 0, operation: undefined },
-  ]);
-  assert.equal(editorGetSnapshot(editor).children.length, 1);
-});
-
-it('editorNormalize uses the same normalization contract as update closeout', () => {
-  const editor = createEditor();
-  const shouldNormalizeCalls: Array<{
-    iteration: number;
-    operation?: unknown;
-  }> = [];
-
-  getEditorRuntime(editor).shouldNormalize = (options) => {
-    shouldNormalizeCalls.push(options);
-    return false;
-  };
-
-  editorReplace(editor, {
-    children: createChildren(),
-    selection: null,
-    marks: null,
-  });
-
-  shouldNormalizeCalls.length = 0;
-
-  editorNormalize(editor);
-
-  assert.deepEqual(shouldNormalizeCalls, [
-    { iteration: 0, operation: undefined },
-  ]);
-});
-
 it('fails intentionally when custom normalization revisits an earlier draft state', () => {
   const editor = createEditor();
 
-  getEditorRuntime(editor).normalizeNode = (entry) => {
-    const [node] = entry;
+  editor.extend({
+    corrections: [
+      {
+        correct({ tx }) {
+          if (tx.nodes.children().length === 1) {
+            tx.nodes.insert(
+              {
+                type: 'paragraph',
+                children: [{ text: '' }],
+              },
+              { at: [1] }
+            );
+            return;
+          }
 
-    if (!editorIsEditor(node)) {
-      return;
-    }
-
-    if (editorGetChildren(editor).length === 1) {
-      editorInsertNodes(
-        editor,
-        {
-          type: 'paragraph',
-          children: [{ text: '' }],
+          tx.nodes.remove({ at: [1] });
         },
-        { at: [1] }
-      );
-      return;
-    }
-
-    editorRemoveNodes(editor, { at: [1] });
-  };
+        event: 'children',
+        query: 'root',
+      },
+    ],
+    name: 'cycling-root-correction',
+  });
 
   assert.throws(() => {
     editorReplace(editor, {
@@ -775,31 +696,32 @@ it('fails intentionally when custom normalization revisits an earlier draft stat
         },
       ],
       selection: null,
-      marks: null,
     });
-  }, /revisited an earlier draft state|no-progress|debt/i);
+  }, /Structural correction cycle/);
 });
 
 it('treats semantic id prop changes as normalization progress', () => {
   const editor = createEditor();
-  const originalNormalizeNode = getEditorRuntime(editor).normalizeNode;
 
-  getEditorRuntime(editor).normalizeNode = (entry, options) => {
-    const [node, path] = entry;
-
-    if (
-      path.length === 1 &&
-      !editorIsEditor(node) &&
-      ElementApi.isElement(node) &&
-      node.type === 'paragraph' &&
-      (node as Element & { id?: string }).id !== 'kept'
-    ) {
-      editorSetNodes(editor, { id: 'kept' }, { at: path });
-      return;
-    }
-
-    originalNormalizeNode(entry, options);
-  };
+  editor.extend({
+    corrections: [
+      {
+        correct({ entry: [node, path], tx }) {
+          if (
+            path.length === 1 &&
+            !editorIsEditor(node) &&
+            ElementApi.isElement(node) &&
+            node.type === 'paragraph' &&
+            (node as Element & { id?: string }).id !== 'kept'
+          ) {
+            tx.nodes.set({ id: 'kept' }, { at: path });
+          }
+        },
+        event: 'content',
+      },
+    ],
+    name: 'semantic-id-correction',
+  });
 
   editorReplace(editor, {
     children: [
@@ -809,7 +731,6 @@ it('treats semantic id prop changes as normalization progress', () => {
       },
     ],
     selection: null,
-    marks: null,
   });
 
   assert.equal(
@@ -818,26 +739,31 @@ it('treats semantic id prop changes as normalization progress', () => {
   );
 });
 
-it('normalizeNode can enforce a descendant-level node rewrite with supported transforms', () => {
+it('a registered correction can enforce a descendant-level node rewrite', () => {
   const editor = createEditor();
-  const originalNormalizeNode = getEditorRuntime(editor).normalizeNode;
 
-  getEditorRuntime(editor).normalizeNode = (entry, options) => {
-    const [node, path] = entry;
-
-    if (path.length > 0 && 'children' in node && node.type === 'heading') {
-      editorSetNodes(
-        editor,
-        {
-          type: 'paragraph',
+  editor.extend({
+    corrections: [
+      {
+        correct({ entry: [node, path], tx }) {
+          if (
+            path.length > 0 &&
+            'children' in node &&
+            node.type === 'heading'
+          ) {
+            tx.nodes.set(
+              {
+                type: 'paragraph',
+              },
+              { at: path }
+            );
+          }
         },
-        { at: path }
-      );
-      return;
-    }
-
-    originalNormalizeNode(entry, options);
-  };
+        event: 'content',
+      },
+    ],
+    name: 'heading-correction',
+  });
 
   editorReplace(editor, {
     children: [
@@ -847,7 +773,6 @@ it('normalizeNode can enforce a descendant-level node rewrite with supported tra
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   const snapshot = editorGetSnapshot(editor);
@@ -860,53 +785,64 @@ it('normalizeNode can enforce a descendant-level node rewrite with supported tra
   ]);
 });
 
-it('normalizeNode can wrap stray top-level text and inline children through fallbackElement', () => {
+it('a root correction can wrap a semantically matched top-level block', () => {
   const editor = createEditor();
-  const originalNormalizeNode = getEditorRuntime(editor).normalizeNode;
 
-  defineElement(editor, { type: 'chip', inline: true });
-  getEditorRuntime(editor).normalizeNode = (entry, options) => {
-    originalNormalizeNode(entry, {
-      ...options,
-      fallbackElement: () => ({
-        type: 'paragraph',
-        children: [{ text: '' }],
-      }),
-    });
-  };
+  editor.extend({
+    corrections: [
+      {
+        correct: ({ entry, tx }) => {
+          const [, path] = entry;
+          const index = tx.nodes
+            .children()
+            .findIndex(
+              (child) => ElementApi.isElement(child) && child.rootWrap === true
+            );
+
+          if (index < 0) return;
+
+          tx.nodes.wrap(
+            { type: 'quote', children: [] },
+            {
+              at: [...path, index],
+            }
+          );
+        },
+        event: 'content',
+        query: 'root',
+      },
+    ],
+    name: 'root-block-content',
+  });
 
   editorReplace(editor, {
     children: [
-      { text: 'alpha' } as Descendant,
       {
-        type: 'chip',
-        children: [{ text: 'beta' }],
+        type: 'paragraph',
+        rootWrap: true,
+        children: [{ text: 'alpha' }],
       } as Descendant,
+      { type: 'paragraph', children: [{ text: 'beta' }] },
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
     {
-      type: 'paragraph',
-      children: [{ text: 'alpha' }],
-    },
-    {
-      type: 'paragraph',
+      type: 'quote',
       children: [
-        { text: '' },
         {
-          type: 'chip',
-          children: [{ text: 'beta' }],
+          type: 'paragraph',
+          rootWrap: true,
+          children: [{ text: 'alpha' }],
         },
-        { text: '' },
       ],
     },
+    { type: 'paragraph', children: [{ text: 'beta' }] },
   ]);
 });
 
-it('normalizeNode inserts an empty text child into empty elements', () => {
+it('the correction kernel inserts an empty text child into empty elements', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -917,7 +853,6 @@ it('normalizeNode inserts an empty text child into empty elements', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -928,7 +863,7 @@ it('normalizeNode inserts an empty text child into empty elements', () => {
   ]);
 });
 
-it('normalizes empty elements inserted by replace_children replay', () => {
+it('normalizes empty elements inserted by a root replacement', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -939,27 +874,13 @@ it('normalizes empty elements inserted by replace_children replay', () => {
       },
     ],
     selection: null,
-    marks: null,
   });
 
-  applyOperation(editor, {
-    type: 'replace_children',
-    path: [],
-    index: 0,
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'alpha' }],
-      },
-    ],
-    newChildren: [
-      {
-        type: 'paragraph',
-        children: [],
-      } as Descendant,
-    ],
-    selection: null,
-    newSelection: null,
+  editor.update((tx) => {
+    tx.value.replace({
+      children: [{ type: 'paragraph', children: [] } as Descendant],
+      selection: null,
+    });
   });
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -970,7 +891,7 @@ it('normalizes empty elements inserted by replace_children replay', () => {
   ]);
 });
 
-it('normalizes empty elements inserted by replace_fragment replay', () => {
+it('normalizes empty elements inserted by a nested replacement', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -986,26 +907,13 @@ it('normalizes empty elements inserted by replace_fragment replay', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
-  applyOperation(editor, {
-    type: 'replace_fragment',
-    path: [0],
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'alpha' }],
-      },
-    ],
-    newChildren: [
-      {
-        type: 'paragraph',
-        children: [],
-      } as Descendant,
-    ],
-    selection: null,
-    newSelection: null,
+  editor.update((tx) => {
+    tx.nodes.remove({ at: [0, 0] });
+    tx.nodes.insert({ type: 'paragraph', children: [] } as Descendant, {
+      at: [0, 0],
+    });
   });
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1021,10 +929,8 @@ it('normalizes empty elements inserted by replace_fragment replay', () => {
   ]);
 });
 
-it('normalizeNode inserts spacer text around inline-only children', () => {
+it('the correction kernel inserts spacer text around inline-only children', () => {
   const editor = createEditor();
-
-  defineElement(editor, { type: 'link', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -1039,7 +945,6 @@ it('normalizeNode inserts spacer text around inline-only children', () => {
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1060,8 +965,6 @@ it('normalizeNode inserts spacer text around inline-only children', () => {
 it('insertNodes keeps an inline node in the selected empty paragraph', () => {
   const editor = createEditor();
 
-  defineElement(editor, { type: 'link', inline: true });
-
   editorReplace(editor, {
     children: [
       {
@@ -1074,10 +977,10 @@ it('insertNodes keeps an inline node in the selected empty paragraph', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorInsertNodes(editor, {
@@ -1104,7 +1007,7 @@ it('insertNodes keeps an inline node in the selected empty paragraph', () => {
   ]);
 });
 
-it('normalizeNode removes a stray top-level text child after insertNodes', () => {
+it('the correction kernel removes stray top-level text after insertNodes', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1119,7 +1022,6 @@ it('normalizeNode removes a stray top-level text child after insertNodes', () =>
       },
     ],
     selection: null,
-    marks: null,
   });
 
   editorInsertNodes(editor, { text: 'stray' }, { at: [0] });
@@ -1136,10 +1038,8 @@ it('normalizeNode removes a stray top-level text child after insertNodes', () =>
   ]);
 });
 
-it('normalizeNode removes a stray block-only inline child after insertNodes', () => {
+it('the correction kernel removes block-only inline children after insertNodes', () => {
   const editor = createEditor();
-
-  defineElement(editor, { type: 'link', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -1154,7 +1054,6 @@ it('normalizeNode removes a stray block-only inline child after insertNodes', ()
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   editorInsertNodes(
@@ -1179,7 +1078,7 @@ it('normalizeNode removes a stray block-only inline child after insertNodes', ()
   ]);
 });
 
-it('normalizeNode removes a stray top-level text child during replace', () => {
+it('the correction kernel removes stray top-level text during replace', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1191,7 +1090,6 @@ it('normalizeNode removes a stray top-level text child during replace', () => {
       },
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1208,10 +1106,9 @@ it('editorNormalize explicitly merges adjacent compatible text children in inlin
   editorReplace(editor, {
     children: createMergeTextChildren(),
     selection: null,
-    marks: null,
   });
 
-  editorNormalize(editor);
+  editor.update.value.repair();
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
     {
@@ -1236,10 +1133,9 @@ it('editorNormalize explicitly removes empty adjacent text in inline-style conta
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
-  editorNormalize(editor);
+  editor.update.value.repair();
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
     {
@@ -1271,10 +1167,9 @@ it('editorNormalize explicitly flattens block wrappers inside inline-style conta
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
-  editorNormalize(editor);
+  editor.update.value.repair();
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
     {
@@ -1284,10 +1179,8 @@ it('editorNormalize explicitly flattens block wrappers inside inline-style conta
   ]);
 });
 
-it('normalizeNode removes a stray block-only inline child during replace', () => {
+it('the correction kernel removes block-only inline children during replace', () => {
   const editor = createEditor();
-
-  defineElement(editor, { type: 'link', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -1306,7 +1199,6 @@ it('normalizeNode removes a stray block-only inline child during replace', () =>
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1322,7 +1214,7 @@ it('normalizeNode removes a stray block-only inline child during replace', () =>
   ]);
 });
 
-it('normalizeNode flattens a direct block child inserted into an inline-style container', () => {
+it('the correction kernel flattens direct blocks in inline-style containers', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1336,7 +1228,6 @@ it('normalizeNode flattens a direct block child inserted into an inline-style co
       } as Descendant,
     ],
     selection: null,
-    marks: null,
   });
 
   editorInsertNodes(
@@ -1362,7 +1253,6 @@ it('normalizeNode flattens a direct block child inserted into an inline-style co
 
 it('markableVoid lets addMark and removeMark target the text child inside a void element', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'mention', void: 'markable-inline' });
   const getMention = (snapshot: ReturnType<typeof editorGetSnapshot>) =>
     snapshot.children[0].children.find(
       (child) => 'children' in child && child.type === 'mention'
@@ -1375,19 +1265,21 @@ it('markableVoid lets addMark and removeMark target the text child inside a void
       {
         type: 'paragraph',
         children: [
+          { text: '' },
           {
             type: 'mention',
             character: 'Ada',
             children: [{ text: '' }],
           },
+          { text: '' },
         ],
       } as Descendant,
     ],
     selection: {
-      anchor: { path: [0, 0, 0], offset: 0 },
-      focus: { path: [0, 0, 0], offset: 0 },
+      kind: 'text' as const,
+      anchor: { path: [0, 1, 0], offset: 0 },
+      focus: { path: [0, 1, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorAddMark(editor, 'bold', true);
@@ -1396,7 +1288,6 @@ it('markableVoid lets addMark and removeMark target the text child inside a void
   let mention = getMention(snapshot);
 
   assert.equal(mention.children[0]?.bold, true);
-  assert.equal(snapshot.marks, null);
 
   editorRemoveMark(editor, 'bold');
 
@@ -1404,7 +1295,6 @@ it('markableVoid lets addMark and removeMark target the text child inside a void
   mention = getMention(snapshot);
 
   assert.equal(mention.children[0]?.bold, undefined);
-  assert.equal(snapshot.marks, null);
 });
 
 it('insertBreak splits the current top-level block and moves selection into the new block', () => {
@@ -1413,10 +1303,10 @@ it('insertBreak splits the current top-level block and moves selection into the 
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     },
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -1440,6 +1330,7 @@ it('insertBreak splits the current top-level block and moves selection into the 
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -1456,10 +1347,10 @@ it('insertBreak replaces the next soft break with a block split', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 'alpha'.length },
       focus: { path: [0, 0], offset: 'alpha'.length },
     },
-    marks: null,
   });
 
   editor.update(() => {
@@ -1479,6 +1370,7 @@ it('insertBreak replaces the next soft break with a block split', () => {
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -1495,10 +1387,10 @@ it('insertBreak repeatedly splits trailing empty blocks and moves selection to t
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     },
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -1528,6 +1420,7 @@ it('insertBreak repeatedly splits trailing empty blocks and moves selection to t
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [3, 0], offset: 0 },
     focus: { path: [3, 0], offset: 0 },
   });
@@ -1535,8 +1428,6 @@ it('insertBreak repeatedly splits trailing empty blocks and moves selection to t
 
 it('insertBreak from an empty selectable block void creates a trailing block', () => {
   const editor = createEditor();
-
-  defineElement(editor, { type: 'thematic-break', void: 'block' });
 
   editorReplace(editor, {
     children: [
@@ -1546,10 +1437,10 @@ it('insertBreak from an empty selectable block void creates a trailing block', (
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editor.update(() => {
@@ -1569,6 +1460,7 @@ it('insertBreak from an empty selectable block void creates a trailing block', (
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -1576,8 +1468,6 @@ it('insertBreak from an empty selectable block void creates a trailing block', (
 
 it('insertSoftBreak from an empty selectable block void creates a trailing block', () => {
   const editor = createEditor();
-
-  defineElement(editor, { type: 'thematic-break', void: 'block' });
 
   editorReplace(editor, {
     children: [
@@ -1587,10 +1477,10 @@ it('insertSoftBreak from an empty selectable block void creates a trailing block
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editor.update(() => {
@@ -1610,6 +1500,7 @@ it('insertSoftBreak from an empty selectable block void creates a trailing block
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -1626,10 +1517,10 @@ it('insertBreak after marked text moves selection into the new block', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1], offset: 6 },
       focus: { path: [0, 1], offset: 6 },
     },
-    marks: null,
   });
 
   editor.update(() => {
@@ -1649,6 +1540,7 @@ it('insertBreak after marked text moves selection into the new block', () => {
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -1665,10 +1557,10 @@ it('insertBreak before marked text moves the marked leaf into the new block', ()
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1], offset: 0 },
       focus: { path: [0, 1], offset: 0 },
     },
-    marks: null,
   });
 
   editor.update(() => {
@@ -1688,6 +1580,7 @@ it('insertBreak before marked text moves the marked leaf into the new block', ()
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -1704,10 +1597,10 @@ it('insertBreak at the start of text opens a blank block before the text', () =>
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editor.update(() => {
@@ -1727,6 +1620,7 @@ it('insertBreak at the start of text opens a blank block before the text', () =>
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -1734,8 +1628,6 @@ it('insertBreak at the start of text opens a blank block before the text', () =>
 
 it('insertBreak before an inline at block start opens a blank block before the inline', () => {
   const editor = createEditor();
-
-  defineElement(editor, { type: 'link', inline: true });
 
   editorReplace(editor, {
     children: [
@@ -1752,10 +1644,10 @@ it('insertBreak before an inline at block start opens a blank block before the i
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editor.update(() => {
@@ -1782,6 +1674,7 @@ it('insertBreak before an inline at block start opens a blank block before the i
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [1, 1, 0], offset: 0 },
     focus: { path: [1, 1, 0], offset: 0 },
   });
@@ -1804,10 +1697,10 @@ it('insertBreak inside a nested block splits the nested block without splitting 
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 11 },
       focus: { path: [0, 0, 0], offset: 11 },
     },
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -1833,6 +1726,7 @@ it('insertBreak inside a nested block splits the nested block without splitting 
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 0 },
     focus: { path: [0, 1, 0], offset: 0 },
   });
@@ -1859,10 +1753,10 @@ it('deleteBackward removes a trailing empty nested block line', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editor.update(() => {
@@ -1884,6 +1778,7 @@ it('deleteBackward removes a trailing empty nested block line', () => {
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 0, 0], offset: '// Add the initial value.'.length },
     focus: { path: [0, 0, 0], offset: '// Add the initial value.'.length },
   });
@@ -1905,10 +1800,10 @@ it('insertBreak inside a list item splits the item and keeps the list wrapper', 
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 'one'.length },
       focus: { path: [0, 0, 0], offset: 'one'.length },
     },
-    marks: null,
   });
 
   editor.update(() => {
@@ -1933,6 +1828,7 @@ it('insertBreak inside a list item splits the item and keeps the list wrapper', 
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 0 },
     focus: { path: [0, 1, 0], offset: 0 },
   });
@@ -1944,10 +1840,10 @@ it('insertSoftBreak inserts a newline through its own command', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -1967,12 +1863,13 @@ it('insertSoftBreak inserts a newline through its own command', () => {
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 1 },
     focus: { path: [1, 0], offset: 1 },
   });
 });
 
-it('insertFragment keeps nested selection paths under the insertion ancestor', () => {
+it('slice replacement keeps nested selection paths under the insertion ancestor', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1993,13 +1890,13 @@ it('insertFragment keeps nested selection paths under the insertion ancestor', (
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0, 0], offset: 1 },
       focus: { path: [0, 0, 0, 0], offset: 1 },
     },
-    marks: null,
   });
 
-  editorInsertFragment(editor, [
+  replaceSlice(editor, [
     {
       type: 'paragraph',
       children: [{ text: 'AA' }],
@@ -2016,6 +1913,7 @@ it('insertFragment keeps nested selection paths under the insertion ancestor', (
   ]);
 
   assert.deepEqual(editorGetSnapshot(editor).selection, {
+    kind: 'text',
     anchor: { path: [0, 1, 0, 0], offset: 2 },
     focus: { path: [0, 1, 0, 0], offset: 2 },
   });
@@ -2033,10 +1931,11 @@ it('publishes once after a transaction and keeps same-version reads stable', () 
 
   editorReplace(editor, {
     children: createChildren(),
-    marks: { bold: true },
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
+      marks: { bold: true },
     },
   });
 
@@ -2058,10 +1957,10 @@ it('publishes once after a transaction and keeps same-version reads stable', () 
   assert.equal(notifications, 2);
   assert.equal(after.children[0].children[0].text, 'alpha!');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 6 },
     focus: { path: [0, 0], offset: 6 },
   });
-  assert.deepEqual(after.marks, { bold: true });
   assert.notEqual(before, after);
 });
 
@@ -2097,6 +1996,50 @@ it('keeps text snapshots stable across later path-stable text commits', () => {
   assert.equal(first.children[0].children[0].text, 'alpha!');
   assert.equal(second.children[0].children[0].text, 'alpha!?');
   assert.equal(first.children[1], second.children[1]);
+});
+
+it('keeps runtime ids unique when replacing a complete marked text leaf', () => {
+  const editor = createEditor();
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'prefix ' },
+          { bold: true, text: 'bold' },
+          { text: ', ' },
+          { italic: true, text: 'italic' },
+        ],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 1], offset: 0 },
+      focus: { path: [0, 1], offset: 4 },
+    },
+  });
+
+  const before = editorGetSnapshot(editor);
+  const replacedId = before.index.idAt([0, 1]);
+  const trailingId = before.index.idAt([0, 2]);
+
+  editor.update((tx) => {
+    tx.text.insert('p');
+  });
+
+  const after = editorGetSnapshot(editor);
+  const ids = after.index.entries().map(([runtimeId]) => runtimeId);
+
+  assert.deepEqual(after.children[0].children, [
+    { text: 'prefix ' },
+    { bold: true, text: 'p' },
+    { text: ', ' },
+    { italic: true, text: 'italic' },
+  ]);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.equal(after.index.idAt([0, 1]), replacedId);
+  assert.equal(after.index.idAt([0, 2]), trailingId);
 });
 
 it('publishes one path-stable snapshot for batched text commits', () => {
@@ -2143,6 +2086,7 @@ it('reuses snapshot indexes for selection-only listener snapshots', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
@@ -2164,6 +2108,7 @@ it('reuses snapshot indexes for selection-only listener snapshots', () => {
   assert.equal(snapshots.length, 1);
   assert.equal(after.index, before.index);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 2 },
     focus: { path: [1, 0], offset: 2 },
   });
@@ -2171,22 +2116,22 @@ it('reuses snapshot indexes for selection-only listener snapshots', () => {
   assert.equal(after.version, before.version + 1);
 });
 
-it('publishes touched runtime ids for collapsed insert_text operations', () => {
+it('publishes touched runtime ids for collapsed text changes', () => {
   const editor = createEditor();
   const changes: EditorCommit[] = [];
 
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const blockRuntimeId = snapshot.index.pathToId['0'];
-  const runtimeId = snapshot.index.pathToId['0.0'];
+  const blockRuntimeId = snapshot.index.idAt([0]);
+  const runtimeId = snapshot.index.idAt([0, 0]);
 
   assert.ok(blockRuntimeId);
   assert.ok(runtimeId);
@@ -2198,35 +2143,25 @@ it('publishes touched runtime ids for collapsed insert_text operations', () => {
   });
 
   editor.update((tx) => {
-    tx.operations.replay([
-      {
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 5,
-        text: '!',
-      },
-    ]);
+    tx.text.insert('!', { at: { path: [0, 0], offset: 5 } });
   });
 
   assert.equal(changes.length, 1);
-  assert.deepEqual(changes[0]?.classes, ['text']);
-  assert.deepEqual(changes[0]?.dirtyPaths, [[], [0], [0, 0]]);
-  assert.equal(changes[0]?.dirtyScope, 'paths');
-  assert.equal(changes[0]?.childrenChanged, true);
+  assert.equal(changes[0]?.changed.has('text'), true);
+  assert.deepEqual(changes[0]?.changed.topLevelRanges(), [[0, 0]]);
+  assert.equal(changes[0]?.changed.has('document'), true);
   assert.equal(changes[0]?.selectionChanged, false);
-  assert.equal(changes[0]?.marksChanged, false);
-  assert.deepEqual(changes[0]?.touchedRuntimeIds, [runtimeId]);
-  assert.deepEqual(changes[0]?.nodeImpactRuntimeIds, [
+  assert.deepEqual(changes[0]?.changed.runtimeIds('node'), [
     blockRuntimeId,
     runtimeId,
   ]);
-  assert.deepEqual(changes[0]?.decorationImpactRuntimeIds, [
+  assert.deepEqual(changes[0]?.changed.runtimeIds('decoration'), [
     blockRuntimeId,
     runtimeId,
   ]);
 });
 
-it('notifies snapshot subscribers with commit metadata for operation replay', () => {
+it('notifies snapshot subscribers with canonical commit metadata', () => {
   const editor = createEditor();
   const callOrder: string[] = [];
   const changes: EditorCommit[] = [];
@@ -2234,10 +2169,10 @@ it('notifies snapshot subscribers with commit metadata for operation replay', ()
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     },
-    marks: null,
   });
 
   editorSubscribe(editor, (_snapshot, change) => {
@@ -2248,19 +2183,12 @@ it('notifies snapshot subscribers with commit metadata for operation replay', ()
   });
 
   editor.update((tx) => {
-    tx.operations.replay([
-      {
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 5,
-        text: '!',
-      },
-    ]);
+    tx.text.insert('!', { at: { path: [0, 0], offset: 5 } });
   });
 
   assert.deepEqual(callOrder, ['subscribe']);
   assert.equal(changes.length, 1);
-  assert.deepEqual(changes[0]?.classes, ['text']);
+  assert.equal(changes[0]?.changed.has('text'), true);
   assert.equal(
     editorGetSnapshot(editor).children[0].children[0].text,
     'alpha!'
@@ -2274,15 +2202,15 @@ it('publishes selection-only dirtiness without touched runtime ids', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   const initialSnapshot = editorGetSnapshot(editor);
-  const initialBlockRuntimeId = initialSnapshot.index.pathToId['0'];
-  const initialTextRuntimeId = initialSnapshot.index.pathToId['0.0'];
+  const initialBlockRuntimeId = initialSnapshot.index.idAt([0]);
+  const initialTextRuntimeId = initialSnapshot.index.idAt([0, 0]);
 
   editorSubscribe(editor, (_snapshot, change) => {
     if (change) {
@@ -2298,27 +2226,23 @@ it('publishes selection-only dirtiness without touched runtime ids', () => {
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const selectedBlockRuntimeId = snapshot.index.pathToId['1'];
-  const selectedTextRuntimeId = snapshot.index.pathToId['1.0'];
+  const selectedBlockRuntimeId = snapshot.index.idAt([1]);
+  const selectedTextRuntimeId = snapshot.index.idAt([1, 0]);
 
   assert.equal(changes.length, 1);
-  assert.deepEqual(changes[0]?.classes, ['selection']);
-  assert.deepEqual(changes[0]?.dirtyPaths, []);
-  assert.equal(changes[0]?.dirtyScope, 'none');
-  assert.equal(changes[0]?.childrenChanged, false);
+  assert.equal(changes[0]?.changed.has('selection'), true);
+  assert.equal(changes[0]?.changed.has('document'), false);
   assert.equal(changes[0]?.selectionChanged, true);
-  assert.equal(changes[0]?.marksChanged, false);
-  assert.deepEqual(changes[0]?.touchedRuntimeIds, []);
-  assert.deepEqual(changes[0]?.nodeImpactRuntimeIds, []);
-  assert.deepEqual(changes[0]?.selectionImpactRuntimeIds, [
+  assert.deepEqual(changes[0]?.changed.runtimeIds('node'), []);
+  assert.deepEqual(changes[0]?.changed.runtimeIds('selection'), [
     initialTextRuntimeId,
     initialBlockRuntimeId,
     selectedTextRuntimeId,
     selectedBlockRuntimeId,
   ]);
   assert.deepEqual(
-    changes[0]?.decorationImpactRuntimeIds,
-    changes[0]?.selectionImpactRuntimeIds
+    changes[0]?.changed.runtimeIds('decoration'),
+    changes[0]?.changed.runtimeIds('selection')
   );
 });
 
@@ -2332,14 +2256,15 @@ it('keeps small top-level expanded selection impact precise', () => {
       children: [{ text: `block ${index}` }],
     })),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   const initialSnapshot = editorGetSnapshot(editor);
-  const runtimeId = (path: string) => initialSnapshot.index.pathToId[path];
+  const runtimeId = (path: string) =>
+    initialSnapshot.index.idAt(path.split('.').map(Number));
 
   editorSubscribe(editor, (_snapshot, change) => {
     if (change) {
@@ -2355,8 +2280,8 @@ it('keeps small top-level expanded selection impact precise', () => {
   });
 
   assert.equal(changes.length, 1);
-  assert.deepEqual(changes[0]?.classes, ['selection']);
-  assert.deepEqual(changes[0]?.selectionImpactRuntimeIds, [
+  assert.equal(changes[0]?.changed.has('selection'), true);
+  assert.deepEqual(changes[0]?.changed.runtimeIds('selection'), [
     runtimeId('0.0'),
     runtimeId('0'),
     runtimeId('2.0'),
@@ -2371,12 +2296,12 @@ it('keeps small top-level expanded selection impact precise', () => {
     runtimeId('5.0'),
   ]);
   assert.deepEqual(
-    changes[0]?.affectedSelectionRuntimeIds,
-    changes[0]?.selectionImpactRuntimeIds
+    changes[0]?.changed.runtimeIds('selection'),
+    changes[0]?.changed.runtimeIds('selection')
   );
   assert.deepEqual(
-    changes[0]?.decorationImpactRuntimeIds,
-    changes[0]?.selectionImpactRuntimeIds
+    changes[0]?.changed.runtimeIds('decoration'),
+    changes[0]?.changed.runtimeIds('selection')
   );
 });
 
@@ -2392,10 +2317,10 @@ it('does not rebuild root snapshots for selection-only subscriber commits', () =
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorSubscribe(editor, () => {});
@@ -2417,6 +2342,7 @@ it('does not rebuild root snapshots for selection-only subscriber commits', () =
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 1 },
         focus: { path: [1, 0], offset: 1 },
       });
@@ -2446,10 +2372,10 @@ it('does not materialize listener snapshots for irrelevant source subscribers', 
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   const unsubscribe = editorSubscribeSource(editor, 'text', () => {
@@ -2473,6 +2399,7 @@ it('does not materialize listener snapshots for irrelevant source subscribers', 
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 1 },
         focus: { path: [1, 0], offset: 1 },
       });
@@ -2500,10 +2427,10 @@ it('routes selection-only commits through source subscribers only', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   const unsubscribe = [
@@ -2529,6 +2456,7 @@ it('routes selection-only commits through source subscribers only', () => {
 
   editor.update((tx) => {
     tx.selection.set({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     });
@@ -2551,6 +2479,7 @@ it('uses broad selection impact for large cross-document selections', () => {
       children: [{ text: `block ${index}` }],
     })),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
@@ -2570,10 +2499,9 @@ it('uses broad selection impact for large cross-document selections', () => {
   });
 
   assert.equal(changes.length, 1);
-  assert.deepEqual(changes[0]?.classes, ['selection']);
-  assert.equal(changes[0]?.selectionImpactRuntimeIds, null);
-  assert.equal(changes[0]?.affectedSelectionRuntimeIds, null);
-  assert.equal(changes[0]?.decorationImpactRuntimeIds, null);
+  assert.equal(changes[0]?.changed.has('selection'), true);
+  assert.equal(changes[0]?.changed.runtimeIds('selection').length, 400);
+  assert.equal(changes[0]?.changed.runtimeIds('decoration').length, 400);
 });
 
 it('publishes replace-level broad invalidation for editorReplace', () => {
@@ -2583,7 +2511,6 @@ it('publishes replace-level broad invalidation for editorReplace', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editorSubscribe(editor, (_snapshot, change) => {
@@ -2600,19 +2527,14 @@ it('publishes replace-level broad invalidation for editorReplace', () => {
       },
     ],
     selection: null,
-    marks: null,
   });
 
   assert.equal(changes.length, 1);
-  assert.deepEqual(changes[0]?.classes, ['replace']);
-  assert.deepEqual(changes[0]?.dirtyPaths, []);
-  assert.equal(changes[0]?.dirtyScope, 'all');
-  assert.equal(changes[0]?.childrenChanged, true);
+  assert.equal(changes[0]?.changed.has('replace'), true);
+  assert.equal(changes[0]?.changed.has('document'), true);
   assert.equal(changes[0]?.selectionChanged, false);
-  assert.equal(changes[0]?.marksChanged, false);
-  assert.equal(changes[0]?.touchedRuntimeIds, null);
-  assert.equal(changes[0]?.nodeImpactRuntimeIds, null);
-  assert.equal(changes[0]?.decorationImpactRuntimeIds, null);
+  assert(changes[0]?.changed.runtimeIds('node').length > 0);
+  assert(changes[0]?.changed.runtimeIds('decoration').length > 0);
 });
 
 it('publishes marks-only dirtiness without pretending the document paths changed', () => {
@@ -2622,10 +2544,10 @@ it('publishes marks-only dirtiness without pretending the document paths changed
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorSubscribe(editor, (_snapshot, change) => {
@@ -2637,58 +2559,16 @@ it('publishes marks-only dirtiness without pretending the document paths changed
   editorAddMark(editor, 'bold', true);
 
   assert.equal(changes.length, 1);
-  assert.deepEqual(changes[0]?.classes, ['mark']);
-  assert.deepEqual(changes[0]?.dirtyPaths, []);
-  assert.equal(changes[0]?.dirtyScope, 'none');
-  assert.equal(changes[0]?.childrenChanged, false);
+  assert.equal(changes[0]?.changed.has('marks'), true);
+  assert.equal(changes[0]?.changed.has('document'), false);
   assert.equal(changes[0]?.selectionChanged, false);
-  assert.equal(changes[0]?.marksChanged, true);
-  assert.deepEqual(changes[0]?.touchedRuntimeIds, []);
-  assert.deepEqual(changes[0]?.nodeImpactRuntimeIds, []);
+  assert.deepEqual(changes[0]?.changed.runtimeIds('node'), []);
 });
 
-it('keeps selection null for replayed insert_text just like the transaction path', () => {
-  const directEditor = createEditor();
-  const transactionEditor = createEditor();
-
-  editorReplace(directEditor, {
-    children: createChildren(),
-    selection: null,
-    marks: null,
-  });
-  editorReplace(transactionEditor, {
-    children: createChildren(),
-    selection: null,
-    marks: null,
-  });
-
-  applyOperation(directEditor, {
-    type: 'insert_text',
-    path: [0, 0],
-    offset: 5,
-    text: '!',
-  });
-
-  runEditorTransaction(transactionEditor, (tx) => {
-    tx.apply({
-      type: 'insert_text',
-      path: [0, 0],
-      offset: 5,
-      text: '!',
-    });
-  });
-
-  assert.equal(editorGetSnapshot(directEditor).selection, null);
-  assert.equal(editorGetSnapshot(transactionEditor).selection, null);
-  assert.deepEqual(
-    editorGetSnapshot(directEditor),
-    editorGetSnapshot(transactionEditor)
-  );
-});
-
-it('publishes an immutable cloned selection for direct insert_text apply', () => {
+it('publishes an immutable cloned selection for a text change', () => {
   const editor = createEditor();
   const selection = {
+    kind: 'text' as const,
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 5 },
   };
@@ -2696,19 +2576,16 @@ it('publishes an immutable cloned selection for direct insert_text apply', () =>
   editorReplace(editor, {
     children: createChildren(),
     selection,
-    marks: null,
   });
 
-  applyOperation(editor, {
-    type: 'insert_text',
-    path: [0, 0],
-    offset: 5,
-    text: '!',
+  editor.update((tx) => {
+    tx.text.insert('!', { at: { path: [0, 0], offset: 5 } });
   });
 
   const snapshot = editorGetSnapshot(editor);
 
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 6 },
     focus: { path: [0, 0], offset: 6 },
   });
@@ -2728,44 +2605,42 @@ it('publishes an immutable cloned selection for direct insert_text apply', () =>
   assert.deepEqual(editorGetSnapshot(editor).selection?.anchor.path, [0, 0]);
 });
 
-it('falls back to the transaction path for direct text ops when custom normalization is overridden', () => {
+it('runs custom corrections after text changes', () => {
   const editor = createEditor();
-  const originalNormalizeNode = getEditorRuntime(editor).normalizeNode;
 
-  getEditorRuntime(editor).normalizeNode = (entry, options) => {
-    const [node, path] = entry;
-
-    if (
-      path.length === 1 &&
-      !editorIsEditor(node) &&
-      ElementApi.isElement(node) &&
-      node.type === 'paragraph' &&
-      (node as Element & { normalized?: boolean }).normalized !== true &&
-      node.children.some(
-        (child) =>
-          'text' in child &&
-          typeof child.text === 'string' &&
-          child.text.includes('!')
-      )
-    ) {
-      editorSetNodes(editor, { normalized: true }, { at: path });
-      return;
-    }
-
-    originalNormalizeNode(entry, options);
-  };
+  editor.extend({
+    corrections: [
+      {
+        correct({ entry: [node, path], tx }) {
+          if (
+            path.length === 1 &&
+            !editorIsEditor(node) &&
+            ElementApi.isElement(node) &&
+            node.type === 'paragraph' &&
+            (node as Element & { normalized?: boolean }).normalized !== true &&
+            node.children.some(
+              (child) =>
+                'text' in child &&
+                typeof child.text === 'string' &&
+                child.text.includes('!')
+            )
+          ) {
+            tx.nodes.set({ normalized: true }, { at: path });
+          }
+        },
+        event: 'content',
+      },
+    ],
+    name: 'direct-text-correction',
+  });
 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
-  applyOperation(editor, {
-    type: 'insert_text',
-    path: [0, 0],
-    offset: 5,
-    text: '!',
+  editor.update((tx) => {
+    tx.text.insert('!', { at: { path: [0, 0], offset: 5 } });
   });
 
   const firstBlock = editorGetSnapshot(editor).children[0] as Element & {
@@ -2781,7 +2656,6 @@ it('replacement publishes a new snapshot without mutating the previous one', () 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   const previous = editorGetSnapshot(editor);
@@ -2793,8 +2667,12 @@ it('replacement publishes a new snapshot without mutating the previous one', () 
         children: [{ text: 'changed' }],
       },
     ],
-    selection: null,
-    marks: { italic: true },
+    selection: {
+      kind: 'text' as const,
+      anchor: { path: [0, 0], offset: 7 },
+      focus: { path: [0, 0], offset: 7 },
+      marks: { italic: true },
+    },
   });
 
   const current = editorGetSnapshot(editor);
@@ -2802,7 +2680,12 @@ it('replacement publishes a new snapshot without mutating the previous one', () 
   assert.equal(previous.children[0].children[0].text, 'alpha');
   assert.equal(current.children[0].children[0].text, 'changed');
   assert.equal(current.version, previous.version + 1);
-  assert.deepEqual(current.marks, { italic: true });
+  assert.deepEqual(current.selection, {
+    kind: 'text',
+    anchor: { path: [0, 0], offset: 7 },
+    focus: { path: [0, 0], offset: 7 },
+    marks: { italic: true },
+  });
 });
 
 it('state marks return the current text leaf marks for a collapsed selection', () => {
@@ -2816,10 +2699,10 @@ it('state marks return the current text leaf marks for a collapsed selection', (
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     },
-    marks: null,
   });
 
   assert.deepEqual(getMarks(editor), { bold: true });
@@ -2834,21 +2717,22 @@ it('state marks are direction-independent for expanded marked selections', () =>
         type: 'paragraph',
         children: [
           { text: 'al', bold: true },
-          { text: 'pha', bold: true },
+          { text: 'pha', bold: true, segment: true },
         ],
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 1], offset: 3 },
     },
-    marks: null,
   });
 
   assert.deepEqual(getMarks(editor), { bold: true });
 
   editor.update((tx) => {
     tx.selection.set({
+      kind: 'text',
       anchor: { path: [0, 1], offset: 3 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -2868,10 +2752,10 @@ it('editorAddMark stores explicit marks for collapsed insertion and editorInsert
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     },
-    marks: null,
   });
 
   editorAddMark(editor, 'bold', true);
@@ -2885,8 +2769,8 @@ it('editorAddMark stores explicit marks for collapsed insertion and editorInsert
     children: Array<Element & { bold?: boolean }>;
   };
 
-  assert.deepEqual(snapshot.marks, null);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 1], offset: 1 },
     focus: { path: [0, 1], offset: 1 },
   });
@@ -2907,10 +2791,10 @@ it('editorRemoveMark can clear inherited leaf marks for the next collapsed inser
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorRemoveMark(editor, 'bold');
@@ -2924,8 +2808,8 @@ it('editorRemoveMark can clear inherited leaf marks for the next collapsed inser
     children: Array<Element & { bold?: boolean }>;
   };
 
-  assert.deepEqual(snapshot.marks, null);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 1], offset: 1 },
     focus: { path: [0, 1], offset: 1 },
   });
@@ -2946,10 +2830,10 @@ it('editorToggleMark clears an inherited collapsed mark before the next insertio
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorToggleMark(editor, 'bold', true);
@@ -2980,10 +2864,10 @@ it('tx.marks.toggle defaults to true and clears inherited collapsed marks', () =
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -3020,10 +2904,10 @@ it('editorAddMark applies bold across an expanded selection while preserving exi
       } as Descendant,
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 2], offset: 1 },
     },
-    marks: null,
   });
 
   editorAddMark(editor, 'bold', true);
@@ -3055,10 +2939,10 @@ it('editorRemoveMark clears bold only inside an expanded subrange', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorRemoveMark(editor, 'bold');
@@ -3081,7 +2965,6 @@ it('preserves custom node properties across replacement snapshots', () => {
   editorReplace(editor, {
     children: createStyledChildren(),
     selection: null,
-    marks: null,
   });
 
   const snapshot = editorGetSnapshot(editor);
@@ -3102,7 +2985,7 @@ it('preserves runtime ids when moving a node inside the proof subset', () => {
   });
 
   const before = editorGetSnapshot(editor);
-  const firstId = before.index.pathToId['0'];
+  const firstId = before.index.idAt([0]);
 
   assert.ok(firstId);
 
@@ -3115,8 +2998,91 @@ it('preserves runtime ids when moving a node inside the proof subset', () => {
 
   const after = editorGetSnapshot(editor);
 
-  assert.equal(after.index.pathToId['1'], firstId);
+  assert.equal(after.index.idAt([1]), firstId);
   assert.equal(after.children[1].children[0].text, 'alpha');
+});
+
+it('keeps runtime ids injective when prepending sibling moves across parents', () => {
+  const editor = createPliteEditor({
+    initialValue: [
+      {
+        type: 'list',
+        children: [
+          {
+            type: 'item',
+            children: [
+              { type: 'content', children: [{ text: '1' }] },
+              {
+                type: 'list',
+                children: [
+                  { type: 'item', children: [{ text: '11' }] },
+                  { type: 'item', children: [{ text: '12' }] },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'item',
+            children: [
+              { type: 'content', children: [{ text: '2' }] },
+              {
+                type: 'list',
+                children: [
+                  { type: 'item', children: [{ text: '21' }] },
+                  { type: 'item', children: [{ text: '22' }] },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  const before = editorGetSnapshot(editor);
+  const destinationId = before.index.idAt([0, 0]);
+  const firstMovedId = before.index.idAt([0, 1, 1, 0]);
+  const secondMovedId = before.index.idAt([0, 1, 1, 1]);
+
+  assert.ok(destinationId);
+  assert.ok(firstMovedId);
+  assert.ok(secondMovedId);
+
+  editor.update((tx) => {
+    const first = tx.refs.path([0, 1, 1, 0], {
+      association: 'forward',
+      deletion: 'drop',
+    });
+    const second = tx.refs.path([0, 1, 1, 1], {
+      association: 'forward',
+      deletion: 'drop',
+    });
+    const secondPath = second.resolve();
+
+    assert.ok(secondPath);
+    tx.nodes.move({ at: secondPath, to: [0, 0, 1, 0] });
+
+    const firstPath = first.resolve();
+
+    assert.deepEqual(firstPath, [0, 1, 1, 0]);
+    tx.nodes.move({ at: firstPath, to: [0, 0, 1, 0] });
+    tx.nodes.remove({ at: [0, 1, 1] });
+  });
+
+  const snapshot = editorGetSnapshot(editor);
+  const entries = snapshot.index.entries();
+
+  assert.equal(
+    new Set(entries.map(([runtimeId]) => runtimeId)).size,
+    entries.length
+  );
+  assert.deepEqual(snapshot.index.pathOf(destinationId), [0, 0]);
+  assert.deepEqual(snapshot.index.pathOf(firstMovedId), [0, 0, 1, 0]);
+  assert.deepEqual(snapshot.index.pathOf(secondMovedId), [0, 0, 1, 1]);
+  for (const [runtimeId, path] of entries) {
+    assert.equal(snapshot.index.idAt([...path]), runtimeId);
+    assert.deepEqual(snapshot.index.pathOf(runtimeId), path);
+  }
 });
 
 it('canonicalizes adjacent compatible text siblings after move_node', () => {
@@ -3134,7 +3100,6 @@ it('canonicalizes adjacent compatible text siblings after move_node', () => {
       },
     ],
     selection: null,
-    marks: null,
   });
 
   editorMoveNodes(editor, { at: [0, 0], to: [1, 0] });
@@ -3151,63 +3116,6 @@ it('canonicalizes adjacent compatible text siblings after move_node', () => {
   ]);
 });
 
-it('supports insert_node and remove_node operation replay while keeping sibling ids stable', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createChildren(),
-  });
-
-  const before = editorGetSnapshot(editor);
-  const alphaId = before.index.pathToId['0'];
-  const alphaTextId = before.index.pathToId['0.0'];
-  const betaId = before.index.pathToId['1'];
-
-  assert.ok(alphaId);
-  assert.ok(alphaTextId);
-  assert.ok(betaId);
-
-  applyOperation(editor, {
-    type: 'insert_node',
-    path: [0],
-    node: {
-      type: 'paragraph',
-      children: [{ text: 'zero' }],
-    },
-  });
-
-  const afterInsert = editorGetSnapshot(editor);
-
-  assert.deepEqual(getBlockTexts(afterInsert.children), [
-    'zero',
-    'alpha',
-    'beta',
-  ]);
-  assert.equal(afterInsert.index.pathToId['1'], alphaId);
-  assert.equal(afterInsert.index.pathToId['2'], betaId);
-
-  applyOperation(editor, {
-    type: 'remove_node',
-    path: [1],
-    node: afterInsert.children[1]!,
-  });
-
-  const afterRemove = editorGetSnapshot(editor);
-
-  assert.deepEqual(getBlockTexts(afterRemove.children), ['zero', 'beta']);
-  assert.equal(afterRemove.index.pathToId['1'], betaId);
-  assert.equal(afterRemove.index.idToPath[alphaId], undefined);
-  assert.equal(afterRemove.index.idToPath[alphaTextId], undefined);
-  assert.equal(
-    Object.values(afterRemove.index.pathToId).includes(alphaId),
-    false
-  );
-  assert.equal(
-    Object.values(afterRemove.index.pathToId).includes(alphaTextId),
-    false
-  );
-});
-
 it('supports path-based insertNodes/removeNodes transforms in one outer transaction', () => {
   const editor = createEditor();
 
@@ -3217,8 +3125,8 @@ it('supports path-based insertNodes/removeNodes transforms in one outer transact
   });
 
   const before = editorGetSnapshot(editor);
-  const alphaId = before.index.pathToId['0'];
-  const betaId = before.index.pathToId['1'];
+  const alphaId = before.index.idAt([0]);
+  const betaId = before.index.idAt([1]);
 
   editor.update((tx) => {
     editorInsertNodes(
@@ -3241,37 +3149,27 @@ it('supports path-based insertNodes/removeNodes transforms in one outer transact
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(getBlockTexts(after.children), ['zero', 'one', 'alpha']);
-  assert.equal(after.index.pathToId['2'], alphaId);
+  assert.equal(after.index.idAt([2]), alphaId);
   assert.equal(after.selection, null);
-  assert.equal(after.index.pathToId['3'], undefined);
-  assert.notEqual(after.index.pathToId['0'], alphaId);
-  assert.notEqual(after.index.pathToId['1'], betaId);
+  assert.equal(after.index.idAt([3]), null);
+  assert.notEqual(after.index.idAt([0]), alphaId);
+  assert.notEqual(after.index.idAt([1]), betaId);
 });
 
-it('supports set_node and path-based setNodes while keeping runtime ids stable', () => {
+it('supports path-based node property updates while keeping runtime ids stable', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
     children: createStyledChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const blockId = before.index.pathToId['0'];
-  const textId = before.index.pathToId['0.0'];
-
-  applyOperation(editor, {
-    type: 'set_node',
-    path: [0],
-    properties: {},
-    newProperties: {
-      type: 'quote',
-      align: 'center',
-    },
-  });
+  const blockId = before.index.idAt([0]);
+  const textId = before.index.idAt([0, 0]);
 
   editor.update((tx) => {
+    tx.nodes.set({ type: 'quote', align: 'center' }, { at: [0] });
     editorSetNodes(
       editor,
       {
@@ -3292,33 +3190,24 @@ it('supports set_node and path-based setNodes while keeping runtime ids stable',
   assert.equal(firstBlock.align, 'center');
   assert.equal(firstBlock.children[0]?.bold, true);
   assert.equal(firstBlock.children[0]?.italic, true);
-  assert.equal(after.index.pathToId['0'], blockId);
-  assert.equal(after.index.pathToId['0.0'], textId);
+  assert.equal(after.index.idAt([0]), blockId);
+  assert.equal(after.index.idAt([0, 0]), textId);
 });
 
-it('supports property removal through set_node and path-based unsetNodes while keeping runtime ids stable', () => {
+it('supports path-based property removal while keeping runtime ids stable', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
     children: createStyledChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const blockId = before.index.pathToId['0'];
-  const textId = before.index.pathToId['0.0'];
-
-  applyOperation(editor, {
-    type: 'set_node',
-    path: [0],
-    properties: {
-      align: 'left',
-    },
-    newProperties: {},
-  });
+  const blockId = before.index.idAt([0]);
+  const textId = before.index.idAt([0, 0]);
 
   editor.update((tx) => {
+    editorUnsetNodes(editor, 'align', { at: [0] });
     editorUnsetNodes(editor, 'bold', { at: [0, 0] });
   });
 
@@ -3330,108 +3219,72 @@ it('supports property removal through set_node and path-based unsetNodes while k
 
   assert.equal(firstBlock.align, undefined);
   assert.equal(firstBlock.children[0]?.bold, undefined);
-  assert.equal(after.index.pathToId['0'], blockId);
-  assert.equal(after.index.pathToId['0.0'], textId);
+  assert.equal(after.index.idAt([0]), blockId);
+  assert.equal(after.index.idAt([0, 0]), textId);
 });
 
-it('supports remove_text operation replay and rebases selection inward', () => {
+it('rebases selection inward when deleting text', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const textId = before.index.pathToId['0.0'];
+  const textId = before.index.idAt([0, 0]);
 
-  applyOperation(editor, {
-    type: 'remove_text',
-    path: [0, 0],
-    offset: 1,
-    text: 'lp',
+  editor.update((tx) => {
+    tx.text.delete({
+      at: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
   });
 
   const after = editorGetSnapshot(editor);
 
   assert.equal(after.children[0].children[0].text, 'aha');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [0, 0], offset: 2 },
   });
-  assert.equal(after.index.pathToId['0.0'], textId);
+  assert.equal(after.index.idAt([0, 0]), textId);
 });
 
-it('supports exact remove_text operation replay while keeping runtime ids stable', () => {
+it('keeps runtime ids stable through an exact text deletion', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const textId = before.index.pathToId['1.0'];
+  const textId = before.index.idAt([1, 0]);
 
   editor.update((tx) => {
-    tx.operations.replay([
-      {
-        type: 'remove_text',
-        path: [1, 0],
-        offset: 1,
-        text: 'et',
+    tx.text.delete({
+      at: {
+        kind: 'text',
+        anchor: { path: [1, 0], offset: 1 },
+        focus: { path: [1, 0], offset: 3 },
       },
-    ]);
+    });
   });
 
   const after = editorGetSnapshot(editor);
 
   assert.equal(after.children[1].children[0].text, 'ba');
   assert.equal(after.selection, null);
-  assert.equal(after.index.pathToId['1.0'], textId);
-});
-
-it('supports split_node on a text path and keeps the original id on the left branch', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createChildren(),
-    selection: {
-      anchor: { path: [0, 0], offset: 3 },
-      focus: { path: [0, 0], offset: 3 },
-    },
-    marks: null,
-  });
-
-  const before = editorGetSnapshot(editor);
-  const leftId = before.index.pathToId['0.0'];
-
-  applyOperation(editor, {
-    type: 'split_node',
-    path: [0, 0],
-    position: 3,
-    properties: {},
-  });
-
-  const after = editorGetSnapshot(editor);
-  const commit = editorGetLastCommit(editor);
-
-  assert.equal(after.children[0].children[0].text, 'alpha');
-  assert.equal(after.index.pathToId['0.0'], leftId);
-  assert.equal(after.index.pathToId['0.1'], undefined);
-  assert.equal(commit?.structureChanged, true);
-  assert.equal(commit?.textChanged, true);
-  assert.deepEqual(commit?.dirtyTextRuntimeIds, [leftId]);
-  assert.deepEqual(commit?.textDirtyRuntimeIds, [leftId]);
-  assert.deepEqual(after.selection, {
-    anchor: { path: [0, 0], offset: 3 },
-    focus: { path: [0, 0], offset: 3 },
-  });
+  assert.equal(after.index.idAt([1, 0]), textId);
 });
 
 it('supports point-based splitNodes helper calls on text nodes, splits the containing block, and keeps left-branch ids stable', () => {
@@ -3440,11 +3293,10 @@ it('supports point-based splitNodes helper calls on text nodes, splits the conta
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const leftId = before.index.pathToId['1.0'];
+  const leftId = before.index.idAt([1, 0]);
 
   editorSplitNodes(editor, {
     at: { path: [1, 0], offset: 2 },
@@ -3454,52 +3306,9 @@ it('supports point-based splitNodes helper calls on text nodes, splits the conta
 
   assert.equal(after.children[1].children[0].text, 'be');
   assert.equal(after.children[2].children[0].text, 'ta');
-  assert.equal(after.index.pathToId['1.0'], leftId);
-  assert.notEqual(after.index.pathToId['2.0'], leftId);
+  assert.equal(after.index.idAt([1, 0]), leftId);
+  assert.notEqual(after.index.idAt([2, 0]), leftId);
   assert.equal(after.selection, null);
-});
-
-it('supports split_node on an element path, keeps the legacy leading empty text, and preserves moved descendant ids', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createElementSplitChildren(),
-    selection: {
-      anchor: { path: [0, 2], offset: 2 },
-      focus: { path: [0, 2], offset: 2 },
-    },
-    marks: null,
-  });
-
-  const before = editorGetSnapshot(editor);
-  const leftId = before.index.pathToId['0'];
-  const linkId = before.index.pathToId['0.1'];
-  const trailingTextId = before.index.pathToId['0.2'];
-
-  applyOperation(editor, {
-    type: 'split_node',
-    path: [0],
-    position: 1,
-    properties: { data: true },
-  });
-
-  const after = editorGetSnapshot(editor);
-  const leftBlock = after.children[0] as Element & { data?: boolean };
-  const rightBlock = after.children[1] as Element & { data?: boolean };
-
-  assert.equal(leftBlock.data, true);
-  assert.equal(rightBlock.data, true);
-  assert.equal(leftBlock.children.length, 1);
-  assert.equal(rightBlock.children.length, 3);
-  assert.deepEqual(rightBlock.children[0], { text: '' });
-  assert.equal(after.index.pathToId['0'], leftId);
-  assert.equal(after.index.pathToId['1.1'], linkId);
-  assert.equal(after.index.pathToId['1.2'], trailingTextId);
-  assert.notEqual(after.index.pathToId['1'], leftId);
-  assert.deepEqual(after.selection, {
-    anchor: { path: [1, 2], offset: 2 },
-    focus: { path: [1, 2], offset: 2 },
-  });
 });
 
 it('supports path-based splitNodes helper calls on element nodes with the legacy leading empty text', () => {
@@ -3508,15 +3317,15 @@ it('supports path-based splitNodes helper calls on element nodes with the legacy
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 2], offset: 2 },
       focus: { path: [0, 2], offset: 2 },
     },
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const leftId = before.index.pathToId['0'];
-  const linkId = before.index.pathToId['0.1'];
+  const leftId = before.index.idAt([0]);
+  const linkId = before.index.idAt([0, 1]);
 
   editorSplitNodes(editor, {
     at: [0],
@@ -3532,145 +3341,34 @@ it('supports path-based splitNodes helper calls on element nodes with the legacy
   assert.equal(leftBlock.children.length, 1);
   assert.equal(rightBlock.children.length, 3);
   assert.deepEqual(rightBlock.children[0], { text: '' });
-  assert.equal(after.index.pathToId['0'], leftId);
-  assert.equal(after.index.pathToId['1.1'], linkId);
+  assert.equal(after.index.idAt([0]), leftId);
+  assert.equal(after.index.idAt([1, 1]), linkId);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 2], offset: 2 },
     focus: { path: [1, 2], offset: 2 },
   });
 });
 
-it('supports merge_node on a text path and keeps the left branch id', () => {
-  const editor = createEditor();
-
-  editorReplaceRaw(editor, {
-    children: createMergeTextChildren(),
-    selection: {
-      anchor: { path: [0, 1], offset: 2 },
-      focus: { path: [0, 1], offset: 2 },
-    },
-    marks: null,
-  });
-
-  const before = editorGetSnapshot(editor);
-  const leftId = before.index.pathToId['0.0'];
-  const rightId = before.index.pathToId['0.1'];
-
-  applyOperation(editor, {
-    type: 'merge_node',
-    path: [0, 1],
-    position: 2,
-    properties: { bold: true },
-  });
-
-  const after = editorGetSnapshot(editor);
-  const firstText = after.children[0].children[0] as Element & {
-    bold?: boolean;
-  };
-
-  assert.equal(after.children[0].children.length, 1);
-  assert.equal(firstText.text, 'alpha');
-  assert.equal(firstText.bold, true);
-  assert.equal(after.index.pathToId['0.0'], leftId);
-  assert.equal(after.index.pathToId['0.1'], undefined);
-  assert.notEqual(leftId, rightId);
-  assert.deepEqual(after.selection, {
-    anchor: { path: [0, 0], offset: 4 },
-    focus: { path: [0, 0], offset: 4 },
-  });
-});
-
-it('supports path-based mergeNodes helper calls on text nodes and keeps the left branch id', () => {
-  const editor = createEditor();
-
-  editorReplaceRaw(editor, {
-    children: createMergeTextChildren(),
-    selection: {
-      anchor: { path: [0, 1], offset: 1 },
-      focus: { path: [0, 1], offset: 1 },
-    },
-    marks: null,
-  });
-
-  const before = editorGetSnapshot(editor);
-  const leftId = before.index.pathToId['0.0'];
-
-  editorMergeNodes(editor, { at: [0, 1] });
-
-  const after = editorGetSnapshot(editor);
-  const firstText = after.children[0].children[0] as Element & {
-    bold?: boolean;
-  };
-
-  assert.equal(after.children[0].children.length, 1);
-  assert.equal(firstText.text, 'alpha');
-  assert.equal(firstText.bold, true);
-  assert.equal(after.index.pathToId['0.0'], leftId);
-  assert.deepEqual(after.selection, {
-    anchor: { path: [0, 0], offset: 3 },
-    focus: { path: [0, 0], offset: 3 },
-  });
-});
-
-it('supports merge_node on an element path and preserves moved descendant ids', () => {
-  const editor = createEditor();
-  defineElement(editor, { type: 'link', inline: true });
-
-  editorReplace(editor, {
-    children: createElementMergeChildren(),
-    selection: {
-      anchor: { path: [1, 1], offset: 2 },
-      focus: { path: [1, 1], offset: 2 },
-    },
-    marks: null,
-  });
-
-  const before = editorGetSnapshot(editor);
-  const leftId = before.index.pathToId['0'];
-  const movedSpacerId = before.index.pathToId['1.0'];
-  const movedLinkId = before.index.pathToId['1.1'];
-  const movedTextId = before.index.pathToId['1.2'];
-
-  applyOperation(editor, {
-    type: 'merge_node',
-    path: [1],
-    position: 1,
-    properties: { data: true },
-  });
-
-  const after = editorGetSnapshot(editor);
-  const block = after.children[0] as Element & { data?: boolean };
-
-  assert.equal(after.children.length, 1);
-  assert.equal(block.data, true);
-  assert.equal(block.children.length, 3);
-  assert.equal(after.index.pathToId['0'], leftId);
-  assert.equal(after.index.pathToId['0.1'], movedLinkId);
-  assert.equal(after.index.pathToId['0.2'], movedTextId);
-  assert.notEqual(after.index.pathToId['0.1'], movedSpacerId);
-  assert.deepEqual(after.selection, {
-    anchor: { path: [0, 2], offset: 2 },
-    focus: { path: [0, 2], offset: 2 },
-  });
-});
-
 it('supports path-based mergeNodes helper calls on element nodes', () => {
   const editor = createEditor();
-  defineElement(editor, { type: 'link', inline: true });
 
   editorReplace(editor, {
     children: createElementMergeChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [1, 1], offset: 1 },
       focus: { path: [1, 1], offset: 1 },
     },
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const leftId = before.index.pathToId['0'];
-  const movedSpacerId = before.index.pathToId['1.0'];
-  const movedLinkId = before.index.pathToId['1.1'];
+  const leftId = before.index.idAt([0]);
+  const mergedBlockId = before.index.idAt([1]);
+  const movedSpacerId = before.index.idAt([1, 0]);
+  const movedLinkId = before.index.idAt([1, 1]);
+
+  assert.ok(mergedBlockId);
 
   editorMergeNodes(editor, { at: [1] });
 
@@ -3680,10 +3378,12 @@ it('supports path-based mergeNodes helper calls on element nodes', () => {
   assert.equal(after.children.length, 1);
   assert.equal(block.data, true);
   assert.equal(block.children.length, 3);
-  assert.equal(after.index.pathToId['0'], leftId);
-  assert.equal(after.index.pathToId['0.1'], movedLinkId);
-  assert.notEqual(after.index.pathToId['0.1'], movedSpacerId);
+  assert.equal(after.index.idAt([0]), leftId);
+  assert.equal(after.index.pathOf(mergedBlockId), null);
+  assert.equal(after.index.idAt([0, 1]), movedLinkId);
+  assert.notEqual(after.index.idAt([0, 1]), movedSpacerId);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 2], offset: 1 },
     focus: { path: [0, 2], offset: 1 },
   });
@@ -3695,7 +3395,6 @@ it('supports setSelection helper calls once the live transaction selection has b
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -3714,6 +3413,7 @@ it('supports setSelection helper calls once the live transaction selection has b
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 6 },
   });
@@ -3725,7 +3425,6 @@ it('supports deselect helper calls against the live transaction selection', () =
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -3746,7 +3445,6 @@ it('supports collapse helper calls to the anchor against the live transaction se
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -3760,6 +3458,7 @@ it('supports collapse helper calls to the anchor against the live transaction se
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
@@ -3771,10 +3470,10 @@ it('supports collapse helper calls to the end against the live transaction selec
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     },
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -3791,6 +3490,7 @@ it('supports collapse helper calls to the end against the live transaction selec
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 5 },
     focus: { path: [1, 0], offset: 5 },
   });
@@ -3802,7 +3502,6 @@ it('supports setPoint helper calls on the focus edge against the live transactio
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -3822,6 +3521,7 @@ it('supports setPoint helper calls on the focus edge against the live transactio
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [1, 0], offset: 2 },
   });
@@ -3833,10 +3533,10 @@ it('supports setPoint helper calls on the start edge against a backward live sel
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [1, 0], offset: 4 },
       focus: { path: [1, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -3856,6 +3556,7 @@ it('supports setPoint helper calls on the start edge against a backward live sel
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 3 },
     focus: { path: [0, 0], offset: 0 },
   });
@@ -3867,7 +3568,6 @@ it('supports move helper calls on both edges within the current text node', () =
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editorSelect(editor, {
@@ -3879,6 +3579,7 @@ it('supports move helper calls on both edges within the current text node', () =
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 5 },
   });
@@ -3890,10 +3591,10 @@ it('mirrors the legacy move/anchor/basic.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 6 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'anchor' });
@@ -3901,6 +3602,7 @@ it('mirrors the legacy move/anchor/basic.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 6 },
   });
@@ -3912,10 +3614,10 @@ it('mirrors the legacy move/both/distance.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { distance: 6 });
@@ -3923,6 +3625,7 @@ it('mirrors the legacy move/both/distance.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 10 },
     focus: { path: [0, 0], offset: 10 },
   });
@@ -3934,10 +3637,10 @@ it('mirrors the legacy move/anchor/backward.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 10 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'anchor' });
@@ -3945,6 +3648,7 @@ it('mirrors the legacy move/anchor/backward.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 10 },
   });
@@ -3956,10 +3660,10 @@ it('mirrors the legacy move/focus/distance.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 6 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'focus', distance: 4 });
@@ -3967,6 +3671,7 @@ it('mirrors the legacy move/focus/distance.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 10 },
   });
@@ -3978,10 +3683,10 @@ it('mirrors the legacy move/start/backward.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 9 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'start' });
@@ -3989,6 +3694,7 @@ it('mirrors the legacy move/start/backward.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 9 },
     focus: { path: [0, 0], offset: 5 },
   });
@@ -4000,10 +3706,10 @@ it('mirrors the legacy move/end/distance.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'end', distance: 3 });
@@ -4011,6 +3717,7 @@ it('mirrors the legacy move/end/distance.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 12 },
   });
@@ -4022,10 +3729,10 @@ it('mirrors the legacy move/anchor/distance.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 11 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'anchor', distance: 3 });
@@ -4033,6 +3740,7 @@ it('mirrors the legacy move/anchor/distance.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 7 },
     focus: { path: [0, 0], offset: 11 },
   });
@@ -4044,10 +3752,10 @@ it('mirrors the legacy move/anchor/reverse-basic.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 6 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'anchor', reverse: true });
@@ -4055,6 +3763,7 @@ it('mirrors the legacy move/anchor/reverse-basic.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 6 },
   });
@@ -4066,10 +3775,10 @@ it('mirrors the legacy move/both/backward.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 10 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor);
@@ -4077,6 +3786,7 @@ it('mirrors the legacy move/both/backward.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 11 },
     focus: { path: [0, 0], offset: 5 },
   });
@@ -4088,10 +3798,10 @@ it('mirrors the legacy move/both/basic-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { reverse: true });
@@ -4099,6 +3809,7 @@ it('mirrors the legacy move/both/basic-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -4110,10 +3821,10 @@ it('mirrors the legacy move/end/backward.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 9 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'end' });
@@ -4121,6 +3832,7 @@ it('mirrors the legacy move/end/backward.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 10 },
     focus: { path: [0, 0], offset: 4 },
   });
@@ -4132,10 +3844,10 @@ it('mirrors the legacy move/focus/expanded.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 6 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'focus' });
@@ -4143,6 +3855,7 @@ it('mirrors the legacy move/focus/expanded.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 7 },
   });
@@ -4154,10 +3867,10 @@ it('mirrors the legacy move/start/expanded.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'start' });
@@ -4165,6 +3878,7 @@ it('mirrors the legacy move/start/expanded.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 9 },
   });
@@ -4176,10 +3890,10 @@ it('mirrors the legacy move/end/expanded.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'end' });
@@ -4187,6 +3901,7 @@ it('mirrors the legacy move/end/expanded.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 10 },
   });
@@ -4198,10 +3913,10 @@ it('mirrors the legacy move/anchor/reverse-distance.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 6 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'anchor', reverse: true, distance: 3 });
@@ -4209,6 +3924,7 @@ it('mirrors the legacy move/anchor/reverse-distance.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 6 },
   });
@@ -4220,10 +3936,10 @@ it('mirrors the legacy move/both/distance-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 10 },
       focus: { path: [0, 0], offset: 10 },
     },
-    marks: null,
   });
 
   editorMove(editor, { reverse: true, distance: 6 });
@@ -4231,6 +3947,7 @@ it('mirrors the legacy move/both/distance-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 4 },
   });
@@ -4242,10 +3959,10 @@ it('mirrors the legacy move/end/distance-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'end', reverse: true, distance: 3 });
@@ -4253,6 +3970,7 @@ it('mirrors the legacy move/end/distance-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 6 },
   });
@@ -4264,10 +3982,10 @@ it('mirrors the legacy move/start/distance-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'start', reverse: true, distance: 3 });
@@ -4275,6 +3993,7 @@ it('mirrors the legacy move/start/distance-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 9 },
   });
@@ -4286,10 +4005,10 @@ it('mirrors the legacy move/focus/distance-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 11 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'focus', reverse: true, distance: 6 });
@@ -4297,6 +4016,7 @@ it('mirrors the legacy move/focus/distance-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 5 },
   });
@@ -4308,10 +4028,10 @@ it('mirrors the legacy move/end/backward-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 9 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'end', reverse: true });
@@ -4319,6 +4039,7 @@ it('mirrors the legacy move/end/backward-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 8 },
     focus: { path: [0, 0], offset: 4 },
   });
@@ -4330,10 +4051,10 @@ it('mirrors the legacy move/focus/backward.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 8 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'focus', distance: 7 });
@@ -4341,6 +4062,7 @@ it('mirrors the legacy move/focus/backward.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 8 },
     focus: { path: [0, 0], offset: 11 },
   });
@@ -4352,10 +4074,10 @@ it('mirrors the legacy move/start/distance.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'start', distance: 3 });
@@ -4363,6 +4085,7 @@ it('mirrors the legacy move/start/distance.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 7 },
     focus: { path: [0, 0], offset: 9 },
   });
@@ -4374,10 +4097,10 @@ it('mirrors the legacy move/anchor/reverse-backward.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 10 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'anchor', reverse: true });
@@ -4385,6 +4108,7 @@ it('mirrors the legacy move/anchor/reverse-backward.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 9 },
     focus: { path: [0, 0], offset: 4 },
   });
@@ -4396,10 +4120,10 @@ it('mirrors the legacy move/start/backward-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 9 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'start', reverse: true });
@@ -4407,6 +4131,7 @@ it('mirrors the legacy move/start/backward-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 9 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -4418,10 +4143,10 @@ it('mirrors the legacy move/both/backward-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 10 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { reverse: true });
@@ -4429,6 +4154,7 @@ it('mirrors the legacy move/both/backward-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 9 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -4440,10 +4166,10 @@ it('mirrors the legacy move/both/expanded.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 10 },
     },
-    marks: null,
   });
 
   editorMove(editor);
@@ -4451,6 +4177,7 @@ it('mirrors the legacy move/both/expanded.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 11 },
   });
@@ -4462,10 +4189,10 @@ it('mirrors the legacy move/both/expanded-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 10 },
     },
-    marks: null,
   });
 
   editorMove(editor, { reverse: true });
@@ -4473,6 +4200,7 @@ it('mirrors the legacy move/both/expanded-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 9 },
   });
@@ -4484,10 +4212,10 @@ it('mirrors the legacy move/end/to-backward-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 7 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'end', reverse: true, distance: 6 });
@@ -4495,6 +4223,7 @@ it('mirrors the legacy move/end/to-backward-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 1 },
   });
@@ -4506,10 +4235,10 @@ it('mirrors the legacy move/start/from-backward.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 9 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'start', distance: 7 });
@@ -4517,6 +4246,7 @@ it('mirrors the legacy move/start/from-backward.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 9 },
     focus: { path: [0, 0], offset: 11 },
   });
@@ -4528,10 +4258,10 @@ it('mirrors the legacy move/start/to-backward.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'start', distance: 8 });
@@ -4539,6 +4269,7 @@ it('mirrors the legacy move/start/to-backward.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 12 },
     focus: { path: [0, 0], offset: 9 },
   });
@@ -4550,10 +4281,10 @@ it('mirrors the legacy move/anchor/collapsed.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 9 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'anchor' });
@@ -4561,6 +4292,7 @@ it('mirrors the legacy move/anchor/collapsed.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 10 },
     focus: { path: [0, 0], offset: 9 },
   });
@@ -4572,10 +4304,10 @@ it('mirrors the legacy move/both/collapsed.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor);
@@ -4583,6 +4315,7 @@ it('mirrors the legacy move/both/collapsed.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 5 },
   });
@@ -4594,10 +4327,10 @@ it('mirrors the legacy move/end/collapsed-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 9 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'end', reverse: true });
@@ -4605,6 +4338,7 @@ it('mirrors the legacy move/end/collapsed-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 9 },
     focus: { path: [0, 0], offset: 8 },
   });
@@ -4616,10 +4350,10 @@ it('mirrors the legacy move/focus/collapsed-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 9 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'focus', reverse: true });
@@ -4627,6 +4361,7 @@ it('mirrors the legacy move/focus/collapsed-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 9 },
     focus: { path: [0, 0], offset: 8 },
   });
@@ -4638,10 +4373,10 @@ it('mirrors the legacy move/end/expanded-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'end', reverse: true });
@@ -4649,6 +4384,7 @@ it('mirrors the legacy move/end/expanded-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 8 },
   });
@@ -4660,10 +4396,10 @@ it('mirrors the legacy move/focus/expanded-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 6 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'focus', reverse: true });
@@ -4671,6 +4407,7 @@ it('mirrors the legacy move/focus/expanded-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 5 },
   });
@@ -4682,10 +4419,10 @@ it('mirrors the legacy move/start/expanded-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 9 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'start', reverse: true });
@@ -4693,6 +4430,7 @@ it('mirrors the legacy move/start/expanded-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 9 },
   });
@@ -4704,10 +4442,10 @@ it('mirrors the legacy move/end/from-backward-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 8 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'end', reverse: true, distance: 7 });
@@ -4715,6 +4453,7 @@ it('mirrors the legacy move/end/from-backward-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 4 },
   });
@@ -4726,10 +4465,10 @@ it('mirrors the legacy move/focus/to-backward-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyMoveChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 11 },
     },
-    marks: null,
   });
 
   editorMove(editor, { edge: 'focus', reverse: true, distance: 10 });
@@ -4737,6 +4476,7 @@ it('mirrors the legacy move/focus/to-backward-reverse.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 1 },
   });
@@ -4748,7 +4488,6 @@ it('supports move helper calls on the start edge of a backward selection', () =>
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editorSelect(editor, {
@@ -4760,6 +4499,7 @@ it('supports move helper calls on the start edge of a backward selection', () =>
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 0 },
   });
@@ -4771,7 +4511,6 @@ it('supports move helper calls inside an outer transaction using the live draft 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -4785,6 +4524,7 @@ it('supports move helper calls inside an outer transaction using the live draft 
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -4796,7 +4536,6 @@ it('supports move helper calls across mixed-inline sibling text leaves in one bl
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   editorSelect(editor, {
@@ -4808,6 +4547,7 @@ it('supports move helper calls across mixed-inline sibling text leaves in one bl
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 1 },
     focus: { path: [0, 1, 0], offset: 1 },
   });
@@ -4819,7 +4559,6 @@ it('supports reverse move helper calls across mixed-inline sibling text leaves i
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   editorSelect(editor, {
@@ -4831,6 +4570,7 @@ it('supports reverse move helper calls across mixed-inline sibling text leaves i
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 8 },
     focus: { path: [0, 1, 0], offset: 8 },
   });
@@ -4842,7 +4582,6 @@ it('supports move helper calls across mixed-inline siblings inside an outer tran
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -4859,6 +4598,7 @@ it('supports move helper calls across mixed-inline siblings inside an outer tran
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 1 },
     focus: { path: [0, 1, 0], offset: 1 },
   });
@@ -4870,7 +4610,6 @@ it('supports select helper calls with a point and creates a collapsed selection'
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editorSelect(editor, {
@@ -4881,6 +4620,7 @@ it('supports select helper calls with a point and creates a collapsed selection'
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 2 },
     focus: { path: [1, 0], offset: 2 },
   });
@@ -4892,10 +4632,10 @@ it('supports select helper calls with a point inside an outer transaction', () =
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -4911,6 +4651,7 @@ it('supports select helper calls with a point inside an outer transaction', () =
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 5 },
     focus: { path: [1, 0], offset: 5 },
   });
@@ -4922,7 +4663,6 @@ it('supports select helper calls with a path and creates a node range', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editorSelect(editor, [0]);
@@ -4930,6 +4670,7 @@ it('supports select helper calls with a path and creates a node range', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 5 },
   });
@@ -4941,7 +4682,6 @@ it('supports select helper calls with a path inside an outer transaction using t
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -4959,6 +4699,7 @@ it('supports select helper calls with a path inside an outer transaction using t
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [2, 0], offset: 0 },
     focus: { path: [2, 0], offset: 5 },
   });
@@ -4970,10 +4711,10 @@ it('mirrors the legacy select/path.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacySingleBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorSelect(editor, [0, 0]);
@@ -4981,6 +4722,7 @@ it('mirrors the legacy select/path.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -4992,10 +4734,10 @@ it('mirrors the legacy select/point.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacySingleBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorSelect(editor, {
@@ -5006,6 +4748,7 @@ it('mirrors the legacy select/point.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
@@ -5017,10 +4760,10 @@ it('mirrors the legacy select/range.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacySingleBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorSelect(editor, {
@@ -5031,6 +4774,7 @@ it('mirrors the legacy select/range.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -5047,10 +4791,10 @@ it('mirrors the legacy setPoint/offset.tsx oracle row', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
-    marks: null,
   });
 
   editorMove(editor);
@@ -5065,6 +4809,7 @@ it('mirrors the legacy setPoint/offset.tsx oracle row', () => {
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [0, 0], offset: 0 },
   });
@@ -5076,10 +4821,10 @@ it('mirrors the legacy deselect/basic.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacySingleBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorDeselect(editor);
@@ -5095,14 +4840,14 @@ it('supports path-based wrapNodes helper calls and preserves the moved node id',
   editorReplace(editor, {
     children: createWrapChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     },
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const paragraphId = before.index.pathToId['0'];
+  const paragraphId = before.index.idAt([0]);
 
   editorWrapNodes(
     editor,
@@ -5118,7 +4863,7 @@ it('supports path-based wrapNodes helper calls and preserves the moved node id',
 
   assert.equal(wrapper.type, 'quote');
   assert.equal(wrapper.children.length, 1);
-  assert.equal(after.index.pathToId['0.0'], paragraphId);
+  assert.equal(after.index.idAt([0, 0]), paragraphId);
 });
 
 it('supports range-based wrapNodes helper calls across top-level block spans and preserves moved block ids', () => {
@@ -5127,15 +4872,15 @@ it('supports range-based wrapNodes helper calls across top-level block spans and
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [1, 0], offset: 2 },
     },
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const firstId = before.index.pathToId['0'];
-  const secondId = before.index.pathToId['1'];
+  const firstId = before.index.idAt([0]);
+  const secondId = before.index.idAt([1]);
 
   editorWrapNodes(
     editor,
@@ -5157,9 +4902,10 @@ it('supports range-based wrapNodes helper calls across top-level block spans and
   assert.equal(after.children.length, 1);
   assert.equal(wrapper.type, 'quote');
   assert.equal(wrapper.children.length, 2);
-  assert.equal(after.index.pathToId['0.0'], firstId);
-  assert.equal(after.index.pathToId['0.1'], secondId);
+  assert.equal(after.index.idAt([0, 0]), firstId);
+  assert.equal(after.index.idAt([0, 1]), secondId);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0, 0], offset: 2 },
     focus: { path: [0, 1, 0], offset: 2 },
   });
@@ -5171,7 +4917,6 @@ it('supports path-based wrapNodes inside an outer transaction using the live dra
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -5207,10 +4952,10 @@ it('mirrors the legacy wrapNodes/path/block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyWrappedBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorWrapNodes(
@@ -5226,6 +4971,7 @@ it('mirrors the legacy wrapNodes/path/block.tsx oracle row', () => {
   assert.equal(wrapper.a, true);
   assert.equal(wrapper.children[0].children[0].text, 'word');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0, 0], offset: 0 },
     focus: { path: [0, 0, 0], offset: 0 },
   });
@@ -5237,10 +4983,10 @@ it('mirrors the legacy wrapNodes/block/block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyWrappedBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorWrapNodes(editor, { type: 'quote', a: true, children: [] });
@@ -5252,6 +4998,7 @@ it('mirrors the legacy wrapNodes/block/block.tsx oracle row', () => {
   assert.equal(wrapper.a, true);
   assert.equal(wrapper.children[0].children[0].text, 'word');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0, 0], offset: 0 },
     focus: { path: [0, 0, 0], offset: 0 },
   });
@@ -5263,10 +5010,10 @@ it('mirrors the legacy wrapNodes/block/block-across.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [1, 0], offset: 2 },
     },
-    marks: null,
   });
 
   editorWrapNodes(editor, { type: 'quote', a: true, children: [] });
@@ -5282,6 +5029,7 @@ it('mirrors the legacy wrapNodes/block/block-across.tsx oracle row', () => {
   assert.equal(wrapper.a, true);
   assert.deepEqual(getBlockTexts(wrapper.children), ['one', 'two']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0, 0], offset: 2 },
     focus: { path: [0, 1, 0], offset: 2 },
   });
@@ -5293,10 +5041,10 @@ it('mirrors the legacy wrapNodes/block/block-end.tsx oracle row', () => {
   editorReplace(editor, {
     children: createExpandedChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [2, 0], offset: 5 },
     },
-    marks: null,
   });
 
   editorWrapNodes(editor, { type: 'quote', a: true, children: [] });
@@ -5312,6 +5060,7 @@ it('mirrors the legacy wrapNodes/block/block-end.tsx oracle row', () => {
   assert.equal(wrapper.a, true);
   assert.deepEqual(getBlockTexts(wrapper.children), ['beta', 'gamma']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0, 0], offset: 0 },
     focus: { path: [1, 1, 0], offset: 5 },
   });
@@ -5323,7 +5072,6 @@ it('supports selection-based wrapNodes inside an outer transaction using the liv
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -5353,6 +5101,7 @@ it('supports selection-based wrapNodes inside an outer transaction using the liv
   assert.equal(wrapper.children.length, 2);
   assert.deepEqual(getBlockTexts(wrapper.children), ['beta', 'gamma']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0, 0], offset: 1 },
     focus: { path: [1, 1, 0], offset: 3 },
   });
@@ -5364,10 +5113,10 @@ it('supports list formatting flows by turning selected top-level blocks into lis
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 2 },
     },
-    marks: null,
   });
 
   editorSetNodes(editor, { type: 'list-item' }, { at: [0] });
@@ -5395,6 +5144,7 @@ it('supports list formatting flows by turning selected top-level blocks into lis
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 0, 0], offset: 1 },
     focus: { path: [0, 1, 0], offset: 2 },
   });
@@ -5406,10 +5156,10 @@ it('supports numbered list formatting flows with list-item children', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 'two'.length },
     },
-    marks: null,
   });
 
   editorSetNodes(editor, { type: 'list-item' }, { at: [0] });
@@ -5437,6 +5187,7 @@ it('supports numbered list formatting flows with list-item children', () => {
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 0, 0], offset: 0 },
     focus: { path: [0, 1, 0], offset: 'two'.length },
   });
@@ -5448,23 +5199,23 @@ it('supports path-based unwrapNodes helper calls and preserves moved child ids',
   editorReplace(editor, {
     children: createUnwrapChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 2 },
       focus: { path: [0, 1, 0], offset: 2 },
     },
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const firstChildId = before.index.pathToId['0.0'];
-  const secondChildId = before.index.pathToId['0.1'];
+  const firstChildId = before.index.idAt([0, 0]);
+  const secondChildId = before.index.idAt([0, 1]);
 
   editorUnwrapNodes(editor, { at: [0] });
 
   const after = editorGetSnapshot(editor);
 
   assert.equal(after.children.length, 2);
-  assert.equal(after.index.pathToId['0'], firstChildId);
-  assert.equal(after.index.pathToId['1'], secondChildId);
+  assert.equal(after.index.idAt([0]), firstChildId);
+  assert.equal(after.index.idAt([1]), secondChildId);
 });
 
 it('supports range-based unwrapNodes helper calls across top-level wrapper spans and preserves moved child ids', () => {
@@ -5473,16 +5224,16 @@ it('supports range-based unwrapNodes helper calls across top-level wrapper spans
   editorReplace(editor, {
     children: createTopLevelUnwrapChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 2 },
       focus: { path: [1, 0, 0], offset: 2 },
     },
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const alphaId = before.index.pathToId['0.0'];
-  const betaId = before.index.pathToId['0.1'];
-  const gammaId = before.index.pathToId['1.0'];
+  const alphaId = before.index.idAt([0, 0]);
+  const betaId = before.index.idAt([0, 1]);
+  const gammaId = before.index.idAt([1, 0]);
 
   editorUnwrapNodes(editor, {
     at: {
@@ -5494,10 +5245,11 @@ it('supports range-based unwrapNodes helper calls across top-level wrapper spans
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(getBlockTexts(after.children), ['alpha', 'beta', 'gamma']);
-  assert.equal(after.index.pathToId['0'], alphaId);
-  assert.equal(after.index.pathToId['1'], betaId);
-  assert.equal(after.index.pathToId['2'], gammaId);
+  assert.equal(after.index.idAt([0]), alphaId);
+  assert.equal(after.index.idAt([1]), betaId);
+  assert.equal(after.index.idAt([2]), gammaId);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [2, 0], offset: 2 },
   });
@@ -5509,7 +5261,6 @@ it('mirrors the legacy unwrapNodes/path/block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyNestedBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   editorUnwrapNodes(editor, { at: [0] });
@@ -5526,10 +5277,10 @@ it('mirrors the legacy unwrapNodes/match-block/block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyNestedBlockAcrossChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 0 },
       focus: { path: [0, 0, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorUnwrapNodes(editor);
@@ -5539,6 +5290,7 @@ it('mirrors the legacy unwrapNodes/match-block/block.tsx oracle row', () => {
   assert.equal(after.children.length, 2);
   assert.deepEqual(getBlockTexts(after.children), ['one', 'two']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 0 },
   });
@@ -5550,10 +5302,10 @@ it('mirrors the legacy unwrapNodes/match-block/block-across.tsx oracle row', () 
   editorReplace(editor, {
     children: createLegacyNestedBlockAcrossChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 2 },
       focus: { path: [0, 1, 0], offset: 2 },
     },
-    marks: null,
   });
 
   editorUnwrapNodes(editor);
@@ -5563,6 +5315,7 @@ it('mirrors the legacy unwrapNodes/match-block/block-across.tsx oracle row', () 
   assert.equal(after.children.length, 2);
   assert.deepEqual(getBlockTexts(after.children), ['one', 'two']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [1, 0], offset: 2 },
   });
@@ -5580,10 +5333,10 @@ it('mirrors the legacy unwrapNodes/match-block/block-end.tsx oracle row', () => 
       } as Descendant,
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 2, 0], offset: 5 },
     },
-    marks: null,
   });
 
   editorUnwrapNodes(editor);
@@ -5592,6 +5345,7 @@ it('mirrors the legacy unwrapNodes/match-block/block-end.tsx oracle row', () => 
 
   assert.deepEqual(getBlockTexts(after.children), ['alpha', 'beta', 'gamma']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [2, 0], offset: 5 },
   });
@@ -5616,10 +5370,10 @@ it('mirrors the legacy unwrapNodes/match-block/block-middle.tsx oracle row', () 
       } as Descendant,
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 2, 0], offset: 0 },
       focus: { path: [0, 3, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorUnwrapNodes(editor);
@@ -5635,6 +5389,7 @@ it('mirrors the legacy unwrapNodes/match-block/block-middle.tsx oracle row', () 
     'six',
   ]);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [2, 0], offset: 0 },
     focus: { path: [3, 0], offset: 0 },
   });
@@ -5646,10 +5401,10 @@ it('mirrors the legacy unwrapNodes/match-block/block-start.tsx oracle row', () =
   editorReplace(editor, {
     children: createLegacyNestedBlockStartChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorUnwrapNodes(editor);
@@ -5665,6 +5420,7 @@ it('mirrors the legacy unwrapNodes/match-block/block-start.tsx oracle row', () =
     'six',
   ]);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   });
@@ -5676,7 +5432,6 @@ it('supports path-based unwrapNodes inside an outer transaction using the live d
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -5702,7 +5457,6 @@ it('mirrors the legacy unwrapNodes/path/block-multiple.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyNestedBlockMultipleChildren(),
     selection: null,
-    marks: null,
   });
 
   editorUnwrapNodes(editor, { at: [0] });
@@ -5718,7 +5472,6 @@ it('supports selection-based unwrapNodes inside an outer transaction using the l
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -5737,6 +5490,7 @@ it('supports selection-based unwrapNodes inside an outer transaction using the l
 
   assert.deepEqual(getBlockTexts(after.children), ['alpha', 'beta']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 1 },
     focus: { path: [1, 0], offset: 1 },
   });
@@ -5748,14 +5502,14 @@ it('supports path-based liftNodes helper calls for an only child and preserves t
   editorReplace(editor, {
     children: createLiftOnlyChildChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 2 },
       focus: { path: [0, 0, 0], offset: 2 },
     },
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const paragraphId = before.index.pathToId['0.0'];
+  const paragraphId = before.index.idAt([0, 0]);
 
   editorLiftNodes(editor, { at: [0, 0] });
 
@@ -5763,7 +5517,7 @@ it('supports path-based liftNodes helper calls for an only child and preserves t
 
   assert.equal(after.children.length, 1);
   assert.equal(after.children[0].children[0].text, 'alpha');
-  assert.equal(after.index.pathToId['0'], paragraphId);
+  assert.equal(after.index.idAt([0]), paragraphId);
 });
 
 it('supports path-based liftNodes helper calls for a first child', () => {
@@ -5772,11 +5526,10 @@ it('supports path-based liftNodes helper calls for a first child', () => {
   editorReplace(editor, {
     children: createLiftSiblingChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const firstChildId = before.index.pathToId['0.0'];
+  const firstChildId = before.index.idAt([0, 0]);
 
   editorLiftNodes(editor, { at: [0, 0] });
 
@@ -5785,7 +5538,7 @@ it('supports path-based liftNodes helper calls for a first child', () => {
 
   assert.equal(after.children.length, 2);
   assert.equal(after.children[0].children[0].text, 'one');
-  assert.equal(after.index.pathToId['0'], firstChildId);
+  assert.equal(after.index.idAt([0]), firstChildId);
   assert.equal(trailingWrapper.type, 'quote');
   assert.deepEqual(
     trailingWrapper.children.map((child) => child.children[0].text),
@@ -5799,7 +5552,6 @@ it('mirrors the legacy liftNodes/path/block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyNestedBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   editorLiftNodes(editor, { at: [0, 0] });
@@ -5816,7 +5568,6 @@ it('mirrors the legacy liftNodes/path/first-block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyLiftPairChildren(),
     selection: null,
-    marks: null,
   });
 
   editorLiftNodes(editor, { at: [0, 0] });
@@ -5835,7 +5586,6 @@ it('mirrors the legacy liftNodes/path/last-block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyLiftPairChildren(),
     selection: null,
-    marks: null,
   });
 
   editorLiftNodes(editor, { at: [0, 1] });
@@ -5854,7 +5604,6 @@ it('mirrors the legacy liftNodes/path/middle-block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyLiftTripleChildren(),
     selection: null,
-    marks: null,
   });
 
   editorLiftNodes(editor, { at: [0, 1] });
@@ -5882,10 +5631,10 @@ it('mirrors the legacy liftNodes/selection/block-full.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyLiftFullChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 0 },
       focus: { path: [0, 5, 0], offset: 3 },
     },
-    marks: null,
   });
 
   editorLiftNodes(editor);
@@ -5901,6 +5650,7 @@ it('mirrors the legacy liftNodes/selection/block-full.tsx oracle row', () => {
     'six',
   ]);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [5, 0], offset: 3 },
   });
@@ -5912,11 +5662,10 @@ it('supports path-based liftNodes helper calls for a middle child', () => {
   editorReplace(editor, {
     children: createLiftSiblingChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const middleChildId = before.index.pathToId['0.1'];
+  const middleChildId = before.index.idAt([0, 1]);
 
   editorLiftNodes(editor, { at: [0, 1] });
 
@@ -5931,7 +5680,7 @@ it('supports path-based liftNodes helper calls for a middle child', () => {
     ['one']
   );
   assert.equal(after.children[1].children[0].text, 'two');
-  assert.equal(after.index.pathToId['1'], middleChildId);
+  assert.equal(after.index.idAt([1]), middleChildId);
   assert.equal(trailingWrapper.type, 'quote');
   assert.deepEqual(
     trailingWrapper.children.map((child) => child.children[0].text),
@@ -5945,11 +5694,10 @@ it('supports path-based liftNodes helper calls for a last child', () => {
   editorReplace(editor, {
     children: createLiftSiblingChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const lastChildId = before.index.pathToId['0.2'];
+  const lastChildId = before.index.idAt([0, 2]);
 
   editorLiftNodes(editor, { at: [0, 2] });
 
@@ -5963,7 +5711,7 @@ it('supports path-based liftNodes helper calls for a last child', () => {
     ['one', 'two']
   );
   assert.equal(after.children[1].children[0].text, 'three');
-  assert.equal(after.index.pathToId['1'], lastChildId);
+  assert.equal(after.index.idAt([1]), lastChildId);
 });
 
 it('supports range-based liftNodes helper calls across top-level wrapper-child spans and preserves moved ids', () => {
@@ -5972,15 +5720,15 @@ it('supports range-based liftNodes helper calls across top-level wrapper-child s
   editorReplace(editor, {
     children: createLiftSiblingChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 1 },
       focus: { path: [0, 1, 0], offset: 2 },
     },
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const firstId = before.index.pathToId['0.0'];
-  const secondId = before.index.pathToId['0.1'];
+  const firstId = before.index.idAt([0, 0]);
+  const secondId = before.index.idAt([0, 1]);
 
   editorLiftNodes(editor, {
     at: {
@@ -5993,11 +5741,12 @@ it('supports range-based liftNodes helper calls across top-level wrapper-child s
   const trailingWrapper = after.children[2] as Element & { type: string };
 
   assert.deepEqual(getBlockTexts(after.children), ['one', 'two', '']);
-  assert.equal(after.index.pathToId['0'], firstId);
-  assert.equal(after.index.pathToId['1'], secondId);
+  assert.equal(after.index.idAt([0]), firstId);
+  assert.equal(after.index.idAt([1]), secondId);
   assert.equal(trailingWrapper.type, 'quote');
   assert.deepEqual(getBlockTexts(trailingWrapper.children), ['three']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [1, 0], offset: 2 },
   });
@@ -6009,7 +5758,6 @@ it('supports path-based liftNodes inside an outer transaction using the live dra
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -6043,7 +5791,6 @@ it('supports selection-based liftNodes inside an outer transaction using the liv
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -6062,6 +5809,7 @@ it('supports selection-based liftNodes inside an outer transaction using the liv
 
   assert.deepEqual(getBlockTexts(after.children), ['alpha', 'beta']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [1, 0], offset: 2 },
   });
@@ -6073,10 +5821,10 @@ it('supports list outdent flows by lifting selected list items and restoring par
   editorReplace(editor, {
     children: createListWrapperChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 1 },
       focus: { path: [0, 1, 0], offset: 2 },
     },
-    marks: null,
   });
 
   editorLiftNodes(editor);
@@ -6096,6 +5844,7 @@ it('supports list outdent flows by lifting selected list items and restoring par
     },
   ]);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [1, 0], offset: 2 },
   });
@@ -6107,11 +5856,10 @@ it('supports delete helper calls with an exact block path and preserves survivin
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const firstId = before.index.pathToId['0'];
+  const firstId = before.index.idAt([0]);
 
   editorDelete(editor, { at: [1] });
 
@@ -6119,7 +5867,7 @@ it('supports delete helper calls with an exact block path and preserves survivin
 
   assert.equal(after.children.length, 1);
   assert.equal(after.children[0].children[0].text, 'alpha');
-  assert.equal(after.index.pathToId['0'], firstId);
+  assert.equal(after.index.idAt([0]), firstId);
   assert.equal(after.selection, null);
 });
 
@@ -6129,7 +5877,6 @@ it('mirrors the legacy delete/path/block.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: null,
-    marks: null,
   });
 
   editorDelete(editor, { at: [1] });
@@ -6146,7 +5893,6 @@ it('supports delete helper calls with an exact path inside an outer transaction 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -6173,11 +5919,10 @@ it('supports delete helper calls with an exact point and removes one forward cha
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const textId = before.index.pathToId['0.0'];
+  const textId = before.index.idAt([0, 0]);
 
   editorDelete(editor, {
     at: { path: [0, 0], offset: 2 },
@@ -6186,7 +5931,7 @@ it('supports delete helper calls with an exact point and removes one forward cha
   const after = editorGetSnapshot(editor);
 
   assert.equal(after.children[0].children[0].text, 'alha');
-  assert.equal(after.index.pathToId['0.0'], textId);
+  assert.equal(after.index.idAt([0, 0]), textId);
 });
 
 it('supports delete helper calls with an exact point, reverse, and distance inside the current text node', () => {
@@ -6195,11 +5940,10 @@ it('supports delete helper calls with an exact point, reverse, and distance insi
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const textId = before.index.pathToId['0.0'];
+  const textId = before.index.idAt([0, 0]);
 
   editorDelete(editor, {
     at: { path: [0, 0], offset: 3 },
@@ -6210,7 +5954,7 @@ it('supports delete helper calls with an exact point, reverse, and distance insi
   const after = editorGetSnapshot(editor);
 
   assert.equal(after.children[0].children[0].text, 'aha');
-  assert.equal(after.index.pathToId['0.0'], textId);
+  assert.equal(after.index.idAt([0, 0]), textId);
 });
 
 it('supports delete helper calls with an exact point across mixed-inline sibling leaves in one block', () => {
@@ -6219,7 +5963,6 @@ it('supports delete helper calls with an exact point across mixed-inline sibling
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   editorDelete(editor, {
@@ -6234,6 +5977,7 @@ it('supports delete helper calls with an exact point across mixed-inline sibling
 
   assert.equal(link.children[0].text, 'yperlink');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 0 },
     focus: { path: [0, 1, 0], offset: 0 },
   });
@@ -6245,11 +5989,10 @@ it('supports delete helper calls with an exact point across an adjacent top-leve
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const firstBlockId = before.index.pathToId['0'];
+  const firstBlockId = before.index.idAt([0]);
 
   editorDelete(editor, {
     at: { path: [0, 0], offset: 5 },
@@ -6260,8 +6003,9 @@ it('supports delete helper calls with an exact point across an adjacent top-leve
 
   assert.equal(after.children.length, 1);
   assert.deepEqual(getBlockTexts(after.children), ['alphabeta']);
-  assert.equal(after.index.pathToId['0'], firstBlockId);
+  assert.equal(after.index.idAt([0]), firstBlockId);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 5 },
   });
@@ -6287,12 +6031,11 @@ it('supports delete helper calls across adjacent nested block boundaries without
       },
     ],
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const codeBlockId = before.index.pathToId['0'];
-  const firstLineId = before.index.pathToId['0.0'];
+  const codeBlockId = before.index.idAt([0]);
+  const firstLineId = before.index.idAt([0, 0]);
 
   editor.update((tx) => {
     editorDelete(editor, {
@@ -6312,9 +6055,10 @@ it('supports delete helper calls across adjacent nested block boundaries without
   assert.equal(codeBlock.children.length, 1);
   assert.equal(codeBlock.children[0].type, 'code-line');
   assert.deepEqual(codeBlock.children[0].children, [{ text: 'alphabeta' }]);
-  assert.equal(after.index.pathToId['0'], codeBlockId);
-  assert.equal(after.index.pathToId['0.0'], firstLineId);
+  assert.equal(after.index.idAt([0]), codeBlockId);
+  assert.equal(after.index.idAt([0, 0]), firstLineId);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0, 0], offset: 5 },
     focus: { path: [0, 0, 0], offset: 5 },
   });
@@ -6326,10 +6070,10 @@ it('supports delete helper calls with an exact point inside an outer transaction
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [1, 0], offset: 4 },
       focus: { path: [1, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -6345,6 +6089,7 @@ it('supports delete helper calls with an exact point inside an outer transaction
 
   assert.equal(after.children[1].children[0].text, 'beta');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 4 },
     focus: { path: [1, 0], offset: 4 },
   });
@@ -6356,22 +6101,23 @@ it('supports delete helper calls with the current same-text selection and collap
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 3 },
     },
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const textId = before.index.pathToId['0.0'];
+  const textId = before.index.idAt([0, 0]);
 
   editorDelete(editor);
 
   const after = editorGetSnapshot(editor);
 
   assert.equal(after.children[0].children[0].text, 'aha');
-  assert.equal(after.index.pathToId['0.0'], textId);
+  assert.equal(after.index.idAt([0, 0]), textId);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
@@ -6388,10 +6134,10 @@ it('mirrors the legacy delete/selection/character-middle.tsx oracle row', () => 
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 2 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6400,6 +6146,7 @@ it('mirrors the legacy delete/selection/character-middle.tsx oracle row', () => 
 
   assert.equal(after.children[0].children[0].text, 'wrd');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
@@ -6411,10 +6158,10 @@ it('mirrors the legacy delete/point/basic.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyDeleteBoundaryChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6423,6 +6170,7 @@ it('mirrors the legacy delete/point/basic.tsx oracle row', () => {
 
   assert.deepEqual(getBlockTexts(after.children), ['wordanother']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 4 },
   });
@@ -6434,10 +6182,10 @@ it('mirrors the legacy delete/point/basic-reverse.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyBlockChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     },
-    marks: null,
   });
 
   editorDelete(editor, { reverse: true });
@@ -6446,6 +6194,7 @@ it('mirrors the legacy delete/point/basic-reverse.tsx oracle row', () => {
 
   assert.deepEqual(getBlockTexts(after.children), ['onetwo']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -6457,10 +6206,10 @@ it('mirrors the legacy delete/point/inline.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyInlineBoundaryChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6478,6 +6227,7 @@ it('mirrors the legacy delete/point/inline.tsx oracle row', () => {
     { text: 'four' },
   ]);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -6494,10 +6244,10 @@ it('mirrors the legacy delete/selection/character-start.tsx oracle row', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 1 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6506,6 +6256,7 @@ it('mirrors the legacy delete/selection/character-start.tsx oracle row', () => {
 
   assert.equal(after.children[0].children[0].text, 'ord');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 0 },
   });
@@ -6522,10 +6273,10 @@ it('mirrors the legacy delete/selection/character-end.tsx oracle row', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6534,6 +6285,7 @@ it('mirrors the legacy delete/selection/character-end.tsx oracle row', () => {
 
   assert.equal(after.children[0].children[0].text, 'wor');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -6558,10 +6310,10 @@ it('mirrors the legacy delete/selection/block-middle.tsx oracle row', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 2 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6570,6 +6322,7 @@ it('mirrors the legacy delete/selection/block-middle.tsx oracle row', () => {
 
   assert.deepEqual(getBlockTexts(after.children), ['one', 'to', 'three']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 1 },
     focus: { path: [1, 0], offset: 1 },
   });
@@ -6581,10 +6334,10 @@ it('mirrors the legacy delete/selection/block-across.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyDeleteBoundaryChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [1, 0], offset: 2 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6593,6 +6346,7 @@ it('mirrors the legacy delete/selection/block-across.tsx oracle row', () => {
 
   assert.deepEqual(getBlockTexts(after.children), ['woother']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [0, 0], offset: 2 },
   });
@@ -6604,10 +6358,10 @@ it('mirrors the legacy delete/selection/inline-inside.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyInlineDeleteInsideChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 2 },
       focus: { path: [0, 1, 0], offset: 3 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6619,6 +6373,7 @@ it('mirrors the legacy delete/selection/inline-inside.tsx oracle row', () => {
 
   assert.equal(link.children[0].text, 'wod');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 2 },
     focus: { path: [0, 1, 0], offset: 2 },
   });
@@ -6627,14 +6382,13 @@ it('mirrors the legacy delete/selection/inline-inside.tsx oracle row', () => {
 it('collapses outside an inline after deleting its first selected character', () => {
   const editor = createEditor();
 
-  defineElement(editor, { inline: true, type: 'link' });
   editorReplace(editor, {
     children: createLegacyInlineDeleteInsideChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 1 },
     },
-    marks: null,
   });
 
   editorDelete(editor, { reverse: true });
@@ -6646,6 +6400,7 @@ it('collapses outside an inline after deleting its first selected character', ()
 
   assert.equal(link.children[0].text, 'ord');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 0 },
   });
@@ -6654,14 +6409,13 @@ it('collapses outside an inline after deleting its first selected character', ()
 it('collapses outside an inline after deleting its last selected character', () => {
   const editor = createEditor();
 
-  defineElement(editor, { inline: true, type: 'link' });
   editorReplace(editor, {
     children: createLegacyInlineDeleteInsideChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 3 },
       focus: { path: [0, 1, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorDelete(editor, { reverse: false });
@@ -6673,6 +6427,7 @@ it('collapses outside an inline after deleting its last selected character', () 
 
   assert.equal(link.children[0].text, 'wor');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 2], offset: 0 },
     focus: { path: [0, 2], offset: 0 },
   });
@@ -6684,10 +6439,10 @@ it('mirrors the legacy delete/selection/inline-over.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyInlineDeleteChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 2], offset: 4 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6699,6 +6454,7 @@ it('mirrors the legacy delete/selection/inline-over.tsx oracle row', () => {
 
   assert.equal(remainingTexts, 'oe');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
@@ -6710,6 +6466,7 @@ it('deletes equivalent forward and backward expanded selections across text, blo
       assertSnapshot(snapshot: ReturnType<typeof editorGetSnapshot>) {
         assert.equal(snapshot.children[0].children[0].text, 'wd');
         assert.deepEqual(snapshot.selection, {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         });
@@ -6722,6 +6479,7 @@ it('deletes equivalent forward and backward expanded selections across text, blo
       ],
       name: 'same text',
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -6730,6 +6488,7 @@ it('deletes equivalent forward and backward expanded selections across text, blo
       assertSnapshot(snapshot: ReturnType<typeof editorGetSnapshot>) {
         assert.deepEqual(getBlockTexts(snapshot.children), ['woother']);
         assert.deepEqual(snapshot.selection, {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 2 },
           focus: { path: [0, 0], offset: 2 },
         });
@@ -6737,6 +6496,7 @@ it('deletes equivalent forward and backward expanded selections across text, blo
       children: createLegacyDeleteBoundaryChildren,
       name: 'block boundary',
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [1, 0], offset: 2 },
       },
@@ -6749,16 +6509,15 @@ it('deletes equivalent forward and backward expanded selections across text, blo
 
         assert.equal(remainingTexts, 'oe');
         assert.deepEqual(snapshot.selection, {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         });
       },
       children: createLegacyInlineDeleteChildren,
-      configure(editor: ReturnType<typeof createEditor>) {
-        defineElement(editor, { inline: true, type: 'link' });
-      },
       name: 'inline boundary',
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 2], offset: 4 },
       },
@@ -6770,15 +6529,14 @@ it('deletes equivalent forward and backward expanded selections across text, blo
       const editor = createEditor();
       const selection = invert
         ? {
+            kind: 'text' as const,
             anchor: testCase.selection.focus,
             focus: testCase.selection.anchor,
           }
         : testCase.selection;
 
-      testCase.configure?.(editor);
       editorReplace(editor, {
         children: testCase.children(),
-        marks: null,
         selection,
       });
       editorDelete(editor);
@@ -6810,10 +6568,10 @@ it('mirrors the legacy delete/selection/inline-whole.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyInlineDeleteInsideChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 4 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6825,6 +6583,7 @@ it('mirrors the legacy delete/selection/inline-whole.tsx oracle row', () => {
 
   assert.equal(link.children[0].text, '');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 0 },
     focus: { path: [0, 1, 0], offset: 0 },
   });
@@ -6836,10 +6595,10 @@ it('mirrors the legacy delete/selection/inline-after.tsx oracle row', () => {
   editorReplace(editor, {
     children: createLegacyInlineAfterChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 2], offset: 0 },
       focus: { path: [0, 2], offset: 1 },
     },
-    marks: null,
   });
 
   editorDelete(editor);
@@ -6856,6 +6615,7 @@ it('mirrors the legacy delete/selection/inline-after.tsx oracle row', () => {
     { text: '' },
   ]);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 2], offset: 0 },
     focus: { path: [0, 2], offset: 0 },
   });
@@ -6867,7 +6627,6 @@ it('supports delete helper calls with an explicit non-empty range across adjacen
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   editorDelete(editor, {
@@ -6885,6 +6644,7 @@ it('supports delete helper calls with an explicit non-empty range across adjacen
   assert.equal(after.children[0].children[0].text, 'befo');
   assert.equal(link.children[0].text, 'perlink');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 4 },
   });
@@ -6896,7 +6656,6 @@ it('supports delete helper calls with an explicit non-empty range across a fully
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   editorDelete(editor, {
@@ -6911,6 +6670,7 @@ it('supports delete helper calls with an explicit non-empty range across a fully
   assert.equal(after.children[0].children[0].text, 'befoter');
   assert.equal(after.children[0].children.length, 1);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 4 },
   });
@@ -6922,11 +6682,10 @@ it('supports delete helper calls with an explicit non-empty range across an adja
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   const before = editorGetSnapshot(editor);
-  const firstBlockId = before.index.pathToId['0'];
+  const firstBlockId = before.index.idAt([0]);
 
   editorDelete(editor, {
     at: {
@@ -6939,8 +6698,9 @@ it('supports delete helper calls with an explicit non-empty range across an adja
 
   assert.equal(after.children.length, 1);
   assert.deepEqual(getBlockTexts(after.children), ['alphta']);
-  assert.equal(after.index.pathToId['0'], firstBlockId);
+  assert.equal(after.index.idAt([0]), firstBlockId);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
     focus: { path: [0, 0], offset: 4 },
   });
@@ -6952,7 +6712,6 @@ it('supports delete helper calls with the current same-text selection inside an 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -6970,6 +6729,7 @@ it('supports delete helper calls with the current same-text selection inside an 
 
   assert.equal(after.children[0].children[0].text, 'aa!');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
@@ -6981,7 +6741,6 @@ it('supports delete helper calls with the current non-empty selection across adj
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -7003,6 +6762,7 @@ it('supports delete helper calls with the current non-empty selection across adj
   assert.equal(after.children[0].children[0].text, 'before');
   assert.equal(link.children[0].text, 'yperlink');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 6 },
     focus: { path: [0, 0], offset: 6 },
   });
@@ -7014,7 +6774,6 @@ it('supports delete helper calls with the current non-empty selection across a f
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -7033,6 +6792,7 @@ it('supports delete helper calls with the current non-empty selection across a f
   assert.equal(after.children[0].children[0].text, 'before!fter');
   assert.equal(after.children[0].children.length, 1);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 7 },
     focus: { path: [0, 0], offset: 7 },
   });
@@ -7044,7 +6804,6 @@ it('supports delete helper calls with the current non-empty selection across an 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -7063,6 +6822,7 @@ it('supports delete helper calls with the current non-empty selection across an 
   assert.equal(after.children.length, 1);
   assert.deepEqual(getBlockTexts(after.children), ['alphata!']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 5 },
   });
@@ -7074,7 +6834,6 @@ it('supports delete helper calls with the current collapsed selection, reverse, 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -7092,6 +6851,7 @@ it('supports delete helper calls with the current collapsed selection, reverse, 
 
   assert.equal(after.children[0].children[0].text, 'alp!');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 3 },
   });
@@ -7103,7 +6863,6 @@ it('supports delete helper calls with the current collapsed selection across mix
   editorReplace(editor, {
     children: createElementSplitChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -7121,6 +6880,7 @@ it('supports delete helper calls with the current collapsed selection across mix
 
   assert.equal(link.children[0].text, 'hyperlin');
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 1, 0], offset: 8 },
     focus: { path: [0, 1, 0], offset: 8 },
   });
@@ -7132,7 +6892,6 @@ it('supports delete helper calls with the current collapsed selection across an 
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
-    marks: null,
   });
 
   editor.update((tx) => {
@@ -7151,30 +6910,10 @@ it('supports delete helper calls with the current collapsed selection across an 
   assert.equal(after.children.length, 1);
   assert.deepEqual(getBlockTexts(after.children), ['alphabeta!']);
   assert.deepEqual(after.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
     focus: { path: [0, 0], offset: 5 },
   });
-});
-
-it('supports operation replay through implicit transactions', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createChildren(),
-  });
-
-  applyOperation(editor, {
-    type: 'insert_text',
-    path: [1, 0],
-    offset: 4,
-    text: '!',
-  });
-
-  const snapshot = editorGetSnapshot(editor);
-
-  assert.equal(snapshot.children[1].children[0].text, 'beta!');
-  assert.equal(snapshot.version, 2);
-  assert.equal(editorGetOperations(editor).length, 1);
 });
 
 it('stages replacement inside the active transaction', () => {
@@ -7224,7 +6963,7 @@ it('publishes immutable snapshots detached from public editor fields', () => {
   });
 
   assert.throws(() => {
-    (snapshot.index.pathToId as Record<string, string>)['0'] = 'broken';
+    Object.assign(snapshot.index, { idAt: () => 'broken' });
   });
   editorReplace(editor, {
     children: [
@@ -7234,7 +6973,6 @@ it('publishes immutable snapshots detached from public editor fields', () => {
       },
     ],
     selection: null,
-    marks: null,
   });
 
   const reread = editorGetSnapshot(editor);
@@ -7247,6 +6985,7 @@ it('publishes immutable snapshots detached from public editor fields', () => {
 it('deep-freezes snapshot selections including point paths', () => {
   const editor = createEditor();
   const selection = {
+    kind: 'text' as const,
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [1, 0], offset: 2 },
   };
@@ -7279,19 +7018,26 @@ it('deep-freezes nested marks instead of sharing nested payloads', () => {
 
   editorReplace(editor, {
     children: createChildren(),
-    marks,
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+      marks,
+    },
   });
 
   const snapshot = editorGetSnapshot(editor);
 
   marks.style.color = 'blue';
 
-  assert.equal(
-    (snapshot.marks as { style: { color: string } }).style.color,
-    'red'
-  );
+  assert.ok(SelectionApi.isText(snapshot.selection));
+  const snapshotMarks = snapshot.selection.marks as {
+    style: { color: string };
+  };
+
+  assert.equal(snapshotMarks.style.color, 'red');
   assert.throws(() => {
-    (snapshot.marks as { style: { color: string } }).style.color = 'green';
+    snapshotMarks.style.color = 'green';
   });
 });
 
@@ -7306,15 +7052,20 @@ it('uses addMark as the active mark write path', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     },
-    marks: null,
   });
 
   editorAddMark(editor, 'bold', true);
 
-  assert.deepEqual(editorGetSnapshot(editor).marks, { bold: true });
+  assert.deepEqual(editorGetSnapshot(editor).selection, {
+    kind: 'text',
+    anchor: { path: [0, 0], offset: 5 },
+    focus: { path: [0, 0], offset: 5 },
+    marks: { bold: true },
+  });
   assert.deepEqual(getMarks(editor), { bold: true });
 
   editorInsertText(editor, '!');
@@ -7324,8 +7075,8 @@ it('uses addMark as the active mark write path', () => {
     children: Array<Element & { bold?: boolean }>;
   };
 
-  assert.deepEqual(snapshot.marks, null);
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 1], offset: 1 },
     focus: { path: [0, 1], offset: 1 },
   });
@@ -7346,10 +7097,10 @@ it('preserves inherited leaf marks when addMark is collapsed', () => {
       },
     ],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     },
-    marks: null,
   });
 
   editorAddMark(editor, 'bold', true);
@@ -7375,6 +7126,7 @@ it('uses select as the selection write path', () => {
   editorReplace(editor, {
     children: createChildren(),
     selection: {
+      kind: 'text' as const,
       anchor: { path: [1, 0], offset: 4 },
       focus: { path: [1, 0], offset: 4 },
     },
@@ -7390,41 +7142,35 @@ it('uses select as the selection write path', () => {
 
   assert.equal(snapshot.children[0].children[0].text, '!alpha');
   assert.deepEqual(snapshot.selection, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
 });
 
 it('keeps ids stable across repeated replace calls in one outer transaction', () => {
-  const singleReplaceEditor = createEditor();
-  const doubleReplaceEditor = createEditor();
+  const editor = createEditor();
+  let firstRuntimeId: string | null = null;
+  let secondRuntimeId: string | null = null;
 
-  editorReplace(singleReplaceEditor, {
+  editorReplace(editor, {
     children: createChildren(),
   });
-  editorReplace(doubleReplaceEditor, {
-    children: createChildren(),
-  });
 
-  runEditorTransaction(singleReplaceEditor, (tx) => {
-    editorReplace(singleReplaceEditor, {
+  runEditorTransaction(editor, () => {
+    editorReplace(editor, {
       children: createExpandedChildren(),
     });
-  });
-
-  runEditorTransaction(doubleReplaceEditor, (tx) => {
-    editorReplace(doubleReplaceEditor, {
+    firstRuntimeId = editorGetSnapshot(editor).index.idAt([2, 0]);
+    editorReplace(editor, {
       children: createExpandedChildren(),
     });
-    editorReplace(doubleReplaceEditor, {
-      children: createExpandedChildren(),
-    });
+    secondRuntimeId = editorGetSnapshot(editor).index.idAt([2, 0]);
   });
 
-  assert.equal(
-    editorGetSnapshot(singleReplaceEditor).index.pathToId['2.0'],
-    editorGetSnapshot(doubleReplaceEditor).index.pathToId['2.0']
-  );
+  assert.ok(firstRuntimeId);
+  assert.equal(secondRuntimeId, firstRuntimeId);
+  assert.equal(editorGetSnapshot(editor).index.idAt([2, 0]), firstRuntimeId);
 });
 
 it('projects a cross-block range into local text segments keyed by runtime id', () => {
@@ -7436,8 +7182,8 @@ it('projects a cross-block range into local text segments keyed by runtime id', 
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const leftId = snapshot.index.pathToId['0.0'];
-  const rightId = snapshot.index.pathToId['1.0'];
+  const leftId = snapshot.index.idAt([0, 0]);
+  const rightId = snapshot.index.idAt([1, 0]);
 
   assert.ok(leftId);
   assert.ok(rightId);
@@ -7473,8 +7219,8 @@ it('projects ranges against an explicit snapshot for internal projection stores'
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const leftId = snapshot.index.pathToId['0.0'];
-  const rightId = snapshot.index.pathToId['1.0'];
+  const leftId = snapshot.index.idAt([0, 0]);
+  const rightId = snapshot.index.idAt([1, 0]);
 
   assert.ok(leftId);
   assert.ok(rightId);
@@ -7506,65 +7252,6 @@ it('projects ranges against an explicit snapshot for internal projection stores'
   );
 });
 
-it('reuses cached full-root replace indexes for top-level runtime ids', () => {
-  const editor = createEditor();
-  const children = Array.from({ length: 12 }, (_value, index) => ({
-    type: 'paragraph',
-    children: [{ text: `block ${index}` }],
-  }));
-
-  editorReplace(editor, {
-    children,
-    selection: null,
-  });
-
-  const unsubscribe = editorSubscribe(editor, () => {});
-  const operation: Operation = {
-    children,
-    index: 0,
-    newChildren: [{ type: 'paragraph', children: [{ text: '' }] }],
-    newSelection: null,
-    path: [],
-    selection: null,
-    type: 'replace_children',
-  };
-
-  try {
-    applyOperation(editor, operation);
-
-    const committedDeleteOperation = editorGetLastCommit(editor)?.operations[0];
-
-    assert(committedDeleteOperation);
-    assert.equal(committedDeleteOperation.type, 'replace_children');
-
-    applyOperation(editor, OperationApi.inverse(committedDeleteOperation));
-
-    const committedUndoOperation = editorGetLastCommit(editor)?.operations[0];
-
-    assert(committedUndoOperation);
-    assert.equal(committedUndoOperation.type, 'replace_children');
-
-    const topLevelRuntimeIds = getCachedFullRootReplaceTopLevelRuntimeIds(
-      committedUndoOperation
-    );
-    const restored = editorGetSnapshot(editor);
-
-    assert.deepEqual(
-      topLevelRuntimeIds,
-      Array.from(
-        { length: 12 },
-        (_value, index) => restored.index.pathToId[index]
-      )
-    );
-    assert.equal(
-      topLevelRuntimeIds?.includes(restored.index.pathToId['0.0']!),
-      false
-    );
-  } finally {
-    unsubscribe();
-  }
-});
-
 it('projects a collapsed range into a zero-width local segment', () => {
   const editor = createEditor();
 
@@ -7574,7 +7261,7 @@ it('projects a collapsed range into a zero-width local segment', () => {
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const leftId = snapshot.index.pathToId['0.0'];
+  const leftId = snapshot.index.idAt([0, 0]);
 
   assert.ok(leftId);
   assert.deepEqual(
@@ -7614,7 +7301,57 @@ it('keeps runtime ids unique across replace commits that allocate new nodes', ()
     ],
   });
 
-  const ids = Object.values(editorGetSnapshot(editor).index.pathToId);
+  const ids = editorGetSnapshot(editor)
+    .index.entries()
+    .map(([runtimeId]) => runtimeId);
 
   assert.equal(new Set(ids).size, ids.length);
+});
+
+it('keeps prepared transaction-spec runtime paths total through reconstruction', () => {
+  const editor = createEditor();
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'alpha' }] },
+      { type: 'paragraph', children: [{ text: 'beta' }] },
+      { type: 'paragraph', children: [{ text: 'gamma' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [2, 0], offset: 2 },
+    },
+  });
+
+  const before = editorGetSnapshot(editor);
+  const survivingTextRuntimeId = before.index.idAt([0, 0]);
+  const mergedTextRuntimeId = before.index.idAt([2, 0]);
+
+  const spec = editor.read((state) =>
+    state.transaction((tx) => {
+      tx.fragment.delete();
+    })
+  );
+
+  assert(spec);
+  editor.update(() => applyTransactionSpec(editor, spec));
+
+  const snapshot = editorGetSnapshot(editor);
+
+  assert.deepEqual(snapshot.children, [
+    { type: 'paragraph', children: [{ text: 'almma' }] },
+  ]);
+  assert.ok(survivingTextRuntimeId);
+  assert.ok(mergedTextRuntimeId);
+  assert.equal(snapshot.index.idAt([0, 0]), survivingTextRuntimeId);
+  assert.equal(snapshot.index.pathOf(mergedTextRuntimeId), null);
+
+  const entries = snapshot.index.entries();
+
+  assert.equal(entries.length, 2);
+  for (const [runtimeId, path] of entries) {
+    assert.equal(snapshot.index.idAt([...path]), runtimeId);
+    assert.deepEqual(snapshot.index.pathOf(runtimeId), path);
+  }
 });

@@ -1,4 +1,8 @@
-import { createEditor, defineEditorExtension } from '@platejs/plite';
+import {
+  createEditor,
+  defineEditorExtension,
+  editorCommands,
+} from '@platejs/plite';
 import {
   addMark as editorAddMark,
   getSnapshot as editorGetSnapshot,
@@ -6,11 +10,17 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 import {
+  createDOMPhaseScheduler,
+  type DOMPhaseScheduler,
   EDITOR_TO_PENDING_ACTION,
   EDITOR_TO_PENDING_DIFFS,
   EDITOR_TO_PENDING_INSERTION_MARKS,
+  EDITOR_TO_PENDING_SELECTION,
+  EDITOR_TO_PLACEHOLDER_ELEMENT,
+  EDITOR_TO_SCHEDULE_FLUSH,
   IS_COMPOSING,
 } from '@platejs/plite-dom/internal';
+import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   clearExpiredTextInputRepairEcho,
@@ -18,12 +28,33 @@ import {
   createEditableInputControllerState,
 } from '../src/editable/input-state';
 import {
-  createAndroidInputManager,
-  shouldFlushStoredTextDiffForTransformMiddleware,
+  createAndroidInputManager as createRawAndroidInputManager,
+  type CreateAndroidInputManagerOptions,
+  shouldFlushStoredTextDiffForInsertTextHandler,
 } from '../src/hooks/android-input-manager/android-input-manager';
+import { useAndroidInputManagerForEditor } from '../src/hooks/android-input-manager/use-android-input-manager';
 import { ReactEditor } from '../src/plugin/react-editor';
 
+const testSchedulers = new Set<DOMPhaseScheduler>();
+
+const createAndroidInputManager = (
+  options: Omit<CreateAndroidInputManagerOptions, 'scheduleTask'>
+) => {
+  const scheduler = createDOMPhaseScheduler({ getWindow: () => window });
+
+  testSchedulers.add(scheduler);
+
+  return createRawAndroidInputManager({
+    ...options,
+    scheduleTask: scheduler.schedule,
+  });
+};
+
 afterEach(() => {
+  testSchedulers.forEach((scheduler) => {
+    scheduler.destroy();
+  });
+  testSchedulers.clear();
   vi.clearAllTimers();
   vi.useRealTimers();
   vi.restoreAllMocks();
@@ -42,6 +73,7 @@ const createInputController = () =>
   });
 
 const range = (start: number, end = start) => ({
+  kind: 'text',
   anchor: { path: [0, 0], offset: start },
   focus: { path: [0, 0], offset: end },
 });
@@ -59,23 +91,261 @@ const beforeInputEvent = (
     preventDefault: vi.fn(),
   }) as unknown as InputEvent;
 
-describe('Android input manager transform middleware flush policy', () => {
-  it('flushes stored text diffs when insertText transform middleware is registered', () => {
+const createScheduleRecorder = () => {
+  const tasks: Array<{
+    callback: (frameTime?: number) => void;
+    cancel: ReturnType<typeof vi.fn>;
+    label: string;
+    options: Parameters<DOMPhaseScheduler['schedule']>[3];
+    phase: Parameters<DOMPhaseScheduler['schedule']>[0];
+  }> = [];
+  const scheduleTask: DOMPhaseScheduler['schedule'] = (
+    phase,
+    label,
+    callback,
+    options
+  ) => {
+    const cancel = vi.fn();
+
+    tasks.push({ callback, cancel, label, options, phase });
+
+    return cancel;
+  };
+
+  return { scheduleTask, tasks };
+};
+
+const createRecordedAndroidInputManager = (
+  scheduleTask: DOMPhaseScheduler['schedule']
+) =>
+  createRawAndroidInputManager({
+    editor: createEditor() as never,
+    inputController: createInputController(),
+    onDOMSelectionChange: createDebouncedSpy(),
+    receivedUserInput: { current: true },
+    scheduleOnDOMSelectionChange: createDebouncedSpy(),
+    scheduleTask,
+  });
+
+describe('Android input manager phase scheduling', () => {
+  it('recreates and republishes the manager when editor/runtime ownership changes', () => {
+    const firstEditor = createEditor();
+    const secondEditor = createEditor();
+    const firstSchedule = vi.fn(() => vi.fn()) as DOMPhaseScheduler['schedule'];
+    const secondSchedule = vi.fn(() =>
+      vi.fn()
+    ) as DOMPhaseScheduler['schedule'];
+    const mounted = renderHook(
+      ({ editor, inputController, scheduleTask }) =>
+        useAndroidInputManagerForEditor(editor as never, {
+          inputController,
+          onDOMSelectionChange: createDebouncedSpy(),
+          receivedUserInput: { current: true },
+          scheduleOnDOMSelectionChange: createDebouncedSpy(),
+          scheduleTask,
+        }),
+      {
+        initialProps: {
+          editor: firstEditor,
+          inputController: createInputController(),
+          scheduleTask: firstSchedule,
+        },
+      }
+    );
+    const firstManager = mounted.result.current;
+
+    expect(EDITOR_TO_SCHEDULE_FLUSH.get(firstEditor)).toBe(
+      firstManager.scheduleFlush
+    );
+
+    mounted.rerender({
+      editor: secondEditor,
+      inputController: createInputController(),
+      scheduleTask: secondSchedule,
+    });
+
+    const secondManager = mounted.result.current;
+
+    expect(secondManager).not.toBe(firstManager);
+    expect(EDITOR_TO_SCHEDULE_FLUSH.get(firstEditor)).toBeUndefined();
+    expect(EDITOR_TO_SCHEDULE_FLUSH.get(secondEditor)).toBe(
+      secondManager.scheduleFlush
+    );
+
+    secondManager.scheduleFlush();
+    expect(firstSchedule).not.toHaveBeenCalled();
+    expect(secondSchedule).toHaveBeenCalledTimes(1);
+
+    mounted.unmount();
+    expect(EDITOR_TO_SCHEDULE_FLUSH.get(secondEditor)).toBeUndefined();
+  });
+
+  it('delays composition completion in the model phase and cancels it on restart', () => {
+    const { scheduleTask, tasks } = createScheduleRecorder();
+    const manager = createRecordedAndroidInputManager(scheduleTask);
+
+    manager.handleCompositionEnd({} as React.CompositionEvent<HTMLDivElement>);
+
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0]).toMatchObject({
+      label: 'android-composition-end',
+      options: {
+        delay: 25,
+        key: 'android-composition-end',
+        timing: 'timeout',
+      },
+      phase: 'model',
+    });
+
+    manager.handleCompositionStart(
+      {} as React.CompositionEvent<HTMLDivElement>
+    );
+
+    expect(tasks[0]!.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('coalesces action flush latency in the model phase', () => {
+    const { scheduleTask, tasks } = createScheduleRecorder();
+    const manager = createRecordedAndroidInputManager(scheduleTask);
+
+    manager.scheduleFlush();
+    manager.scheduleFlush();
+
+    expect(tasks).toHaveLength(2);
+    expect(tasks[0]).toMatchObject({
+      label: 'android-action-flush',
+      options: {
+        key: 'android-action-flush',
+        timing: 'timeout',
+      },
+      phase: 'model',
+    });
+    expect(tasks[0]!.cancel).toHaveBeenCalledTimes(1);
+    expect(tasks[1]!.cancel).not.toHaveBeenCalled();
+  });
+
+  it('restores placeholder visibility as a scheduled DOM write', () => {
+    const { scheduleTask, tasks } = createScheduleRecorder();
+    const editor = createEditor();
+    const placeholder = document.createElement('span');
+    const manager = createRawAndroidInputManager({
+      editor: editor as never,
+      inputController: createInputController(),
+      onDOMSelectionChange: createDebouncedSpy(),
+      receivedUserInput: { current: true },
+      scheduleOnDOMSelectionChange: createDebouncedSpy(),
+      scheduleTask,
+    });
+
+    EDITOR_TO_PLACEHOLDER_ELEMENT.set(editor, placeholder);
+    manager.handleKeyDown({} as React.KeyboardEvent<HTMLDivElement>);
+
+    expect(placeholder.style.display).toBe('none');
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0]).toMatchObject({
+      label: 'android-placeholder-visibility',
+      options: {
+        key: 'android-placeholder-visibility',
+        timing: 'timeout',
+      },
+      phase: 'dom-write',
+    });
+
+    tasks[0]!.callback();
+    expect(placeholder.style.display).toBe('');
+    EDITOR_TO_PLACEHOLDER_ELEMENT.delete(editor);
+  });
+
+  it('routes selection latency and flushing state through model tasks', () => {
+    const { scheduleTask, tasks } = createScheduleRecorder();
+    const editor = createEditor();
+    const manager = createRawAndroidInputManager({
+      editor: editor as never,
+      inputController: createInputController(),
+      onDOMSelectionChange: createDebouncedSpy(),
+      receivedUserInput: { current: true },
+      scheduleOnDOMSelectionChange: createDebouncedSpy(),
+      scheduleTask,
+    });
+
+    manager.handleUserSelect(range(0));
+
+    expect(tasks[0]).toMatchObject({
+      label: 'android-selection-flush',
+      options: {
+        delay: 200,
+        key: 'android-selection-flush',
+        timing: 'timeout',
+      },
+      phase: 'model',
+    });
+
+    EDITOR_TO_PENDING_ACTION.set(editor, { run: vi.fn() });
+    manager.flush();
+
+    expect(tasks[0]!.cancel).toHaveBeenCalledTimes(1);
+    expect(tasks[1]).toMatchObject({
+      label: 'android-flushing-reset',
+      options: {
+        key: 'android-flushing-reset',
+        timing: 'timeout',
+      },
+      phase: 'model',
+    });
+  });
+
+  it('flushes pending input and resets scheduled state before DOM teardown', () => {
+    const { scheduleTask, tasks } = createScheduleRecorder();
+    const editor = createEditor();
+    const run = vi.fn();
+    const manager = createRawAndroidInputManager({
+      editor: editor as never,
+      inputController: createInputController(),
+      onDOMSelectionChange: createDebouncedSpy(),
+      receivedUserInput: { current: true },
+      scheduleOnDOMSelectionChange: createDebouncedSpy(),
+      scheduleTask,
+    });
+
+    manager.handleCompositionStart(
+      {} as React.CompositionEvent<HTMLDivElement>
+    );
+    manager.handleCompositionEnd({} as React.CompositionEvent<HTMLDivElement>);
+    EDITOR_TO_PENDING_ACTION.set(editor, { run });
+    manager.flush();
+    manager.handleKeyDown({} as React.KeyboardEvent<HTMLDivElement>);
+
+    expect(manager.isFlushing()).toBe('action');
+    expect(IS_COMPOSING.get(editor)).toBe(true);
+    expect(run).toHaveBeenCalledTimes(1);
+
+    manager.prepareDOMTeardown();
+
+    expect(manager.isFlushing()).toBe(false);
+    expect(IS_COMPOSING.get(editor)).toBe(false);
+    expect(manager.hasPendingChanges()).toBe(false);
+    expect(tasks).toHaveLength(3);
+    expect(tasks.every(({ cancel }) => cancel.mock.calls.length === 1)).toBe(
+      true
+    );
+  });
+});
+
+describe('Android input manager command-handler flush policy', () => {
+  it('flushes stored text diffs when an insertText command handler is registered', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          name: 'insert-text-transform',
-          transforms: {
-            insertText({ next }) {
-              return next();
-            },
-          },
+          commands: [
+            editorCommands.insertText.handle((_context, next) => next()),
+          ],
+          name: 'insert-text-command',
         }),
       ],
     });
 
     expect(
-      shouldFlushStoredTextDiffForTransformMiddleware(editor as never, {
+      shouldFlushStoredTextDiffForInsertTextHandler(editor as never, {
         start: 0,
         end: 0,
         text: ' ',
@@ -87,7 +357,7 @@ describe('Android input manager transform middleware flush policy', () => {
     const editor = createEditor();
 
     expect(
-      shouldFlushStoredTextDiffForTransformMiddleware(editor as never, {
+      shouldFlushStoredTextDiffForInsertTextHandler(editor as never, {
         start: 0,
         end: 0,
         text: ' ',
@@ -95,22 +365,20 @@ describe('Android input manager transform middleware flush policy', () => {
     ).toBe(false);
   });
 
-  it('does not fast-flush delete diffs through insertText middleware', () => {
+  it('does not fast-flush delete diffs through insertText command handlers', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          name: 'insert-text-transform',
-          transforms: {
-            insertText({ next }) {
-              return next();
-            },
-          },
+          commands: [
+            editorCommands.insertText.handle((_context, next) => next()),
+          ],
+          name: 'insert-text-command',
         }),
       ],
     });
 
     expect(
-      shouldFlushStoredTextDiffForTransformMiddleware(editor as never, {
+      shouldFlushStoredTextDiffForInsertTextHandler(editor as never, {
         start: 0,
         end: 1,
         text: '',
@@ -118,22 +386,20 @@ describe('Android input manager transform middleware flush policy', () => {
     ).toBe(false);
   });
 
-  it('does not treat unrelated transform middleware as insertText policy', () => {
+  it('does not treat unrelated command handlers as insertText policy', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          name: 'insert-break-transform',
-          transforms: {
-            insertBreak({ next }) {
-              return next();
-            },
-          },
+          commands: [
+            editorCommands.insertBreak.handle((_context, next) => next()),
+          ],
+          name: 'insert-break-command',
         }),
       ],
     });
 
     expect(
-      shouldFlushStoredTextDiffForTransformMiddleware(editor as never, {
+      shouldFlushStoredTextDiffForInsertTextHandler(editor as never, {
         start: 0,
         end: 0,
         text: ' ',
@@ -352,6 +618,75 @@ describe('Android input manager stored text diffs', () => {
     manager.handleInput();
 
     expect(editorString(editor, [])).toBe('A');
+  });
+
+  it('yields a verified root-captured insert to canonical DOM repair', () => {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'stale' }] },
+        { children: [{ text: 'ABCDE' }] },
+      ],
+    });
+    const inputController = createInputController();
+    const scheduleOnDOMSelectionChange = createDebouncedSpy();
+    const onDOMSelectionChange = createDebouncedSpy();
+
+    inputController.state.selectionChangeOrigin = 'native-user';
+    inputController.state.selectionSource = 'dom-current';
+    EDITOR_TO_PENDING_DIFFS.set(editor, [
+      {
+        diff: { start: 2, end: 2, text: 'x' },
+        id: 0,
+        path: [1, 0],
+      },
+    ]);
+    editorSelect(editor, range(5));
+
+    const manager = createAndroidInputManager({
+      editor: editor as never,
+      inputController,
+      onDOMSelectionChange,
+      receivedUserInput: { current: true },
+      scheduleOnDOMSelectionChange,
+    });
+
+    expect(
+      manager.handleInput({
+        insert: { offset: 1, text: 'x' },
+        path: [1, 0],
+        preferCapturedInsert: true,
+        selectionOffset: 2,
+        text: 'AxBCDE',
+      })
+    ).toBe(false);
+    expect(editorString(editor, [])).toBe('staleABCDE');
+    expect(editorGetSnapshot(editor).selection).toEqual(range(5));
+    expect(EDITOR_TO_PENDING_DIFFS.get(editor)).toEqual([]);
+    expect(EDITOR_TO_PENDING_ACTION.get(editor)).toBeUndefined();
+  });
+
+  it('declines input without applying a stale pending selection', () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'abc' }] }],
+    });
+    const inputController = createInputController();
+    const scheduleOnDOMSelectionChange = createDebouncedSpy();
+    const onDOMSelectionChange = createDebouncedSpy();
+
+    editorSelect(editor, range(0));
+    EDITOR_TO_PENDING_SELECTION.set(editor, range(3));
+
+    const manager = createAndroidInputManager({
+      editor: editor as never,
+      inputController,
+      onDOMSelectionChange,
+      receivedUserInput: { current: true },
+      scheduleOnDOMSelectionChange,
+    });
+
+    expect(manager.handleInput()).toBe(false);
+    expect(editorGetSnapshot(editor).selection).toEqual(range(0));
+    expect(EDITOR_TO_PENDING_SELECTION.get(editor)).toEqual(range(3));
   });
 
   it('keeps pending text diffs deferred while Android composition is active', () => {
@@ -689,6 +1024,50 @@ describe('Android input manager stored text diffs', () => {
     expect(editorString(editor, [])).toBe('xABCDE');
   });
 
+  it('prefers the live DOM-current caret over a stale target range', () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'ABCDE' }] }],
+    });
+    const inputController = createInputController();
+    const scheduleOnDOMSelectionChange = createDebouncedSpy();
+    const onDOMSelectionChange = createDebouncedSpy();
+    const textHost = document.createElement('span');
+    const textNode = document.createTextNode('ABCDE');
+    const staleTarget = {} as StaticRange;
+    const liveSelection = {} as Selection;
+
+    textHost.setAttribute('data-plite-dom-sync', 'true');
+    textHost.setAttribute('data-plite-node', 'text');
+    textHost.append(textNode);
+    inputController.state.modelSelectionPreference = {
+      preferModelSelection: false,
+      reason: 'native-selection',
+      selectionSource: 'dom-current',
+    };
+    inputController.state.selectionSource = 'model-owned';
+    vi.spyOn(ReactEditor, 'getWindow').mockReturnValue({
+      getSelection: () => liveSelection,
+    } as Window);
+    vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 0]);
+    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(range(2));
+
+    const manager = createAndroidInputManager({
+      editor: editor as never,
+      inputController,
+      onDOMSelectionChange,
+      receivedUserInput: { current: true },
+      scheduleOnDOMSelectionChange,
+    });
+
+    editorSelect(editor, range(1));
+    manager.handleDOMBeforeInput(
+      beforeInputEvent('insertText', 'x', [staleTarget])
+    );
+    manager.flush();
+
+    expect(editorString(editor, [])).toBe('AxBCDE');
+  });
+
   it('flushes a pending text insert before reading the next insert target', () => {
     const editor = createEditor({
       initialValue: [{ children: [{ text: '' }] }],
@@ -803,6 +1182,7 @@ describe('Android input manager SwiftKey insert-position hint', () => {
       { children: [{ text: 'a' }, { bold: true, text: 'w' }] },
     ]);
     expect(snapshot.selection).toEqual({
+      kind: 'text',
       anchor: { path: [0, 1], offset: 1 },
       focus: { path: [0, 1], offset: 1 },
     });

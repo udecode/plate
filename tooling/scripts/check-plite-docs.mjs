@@ -3,20 +3,35 @@ import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const repoRoot = resolve(import.meta.dirname, '../..');
-const docsRoot = join(repoRoot, 'content/docs/plite');
+const docsRoots = [
+  join(repoRoot, 'content/docs/plite'),
+  join(repoRoot, 'content/docs/api/plite'),
+];
 const contractPath = join(
   repoRoot,
   'packages/plite/test/public-surface-contract.ts'
 );
 const requiredContractSignals = [
-  'bannedSlateRootHelperExports',
-  'bannedEditorInstanceSurface',
-  "'getSelection'",
-  "'getChildren'",
-  "'Transforms'",
+  'bannedPublicSurface',
+  'bannedPublicTypeSlop',
+  'browserProofSpecs',
+  'getPackageExportSpecifiers',
+  'publicAuthoringFiles',
 ];
 
 const teachingDocs = new Set([
+  'content/docs/(guides)/debugging.cn.mdx',
+  'content/docs/(guides)/debugging.mdx',
+  'content/docs/(guides)/editing-behavior.mdx',
+  'content/docs/(guides)/plugin-methods.cn.mdx',
+  'content/docs/(guides)/plugin-methods.mdx',
+  'content/docs/(guides)/plugin-rules.cn.mdx',
+  'content/docs/(guides)/plugin-rules.mdx',
+  'content/docs/(guides)/plugin.cn.mdx',
+  'content/docs/(guides)/plugin.mdx',
+  'content/docs/api/core/plate-plugin.cn.mdx',
+  'content/docs/api/core/plate-plugin.mdx',
+  'content/docs/migration/plite-to-plate.mdx',
   'docs/plite/agent-start.md',
   'docs/plite/absolute-architecture-release-claim.md',
   'docs/plite/references/architecture-contract.md',
@@ -39,6 +54,11 @@ const staleCodePatterns = [
   },
 ];
 
+const removedRootMutationFacadePattern =
+  /\b(?:editor\.(?:tf|transforms)|overrideEditor)\b|\btf\s*:\s*\{/;
+const removedPlateSchemaFlagsPattern =
+  /\bnode\.(?:isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp)\b|\b(?:isElement\b[^\n]{0,160}\bisLeaf|isLeaf\b[^\n]{0,160}\bisElement)\b/;
+
 const staleTeachingPatterns = [
   {
     pattern:
@@ -49,6 +69,68 @@ const staleTeachingPatterns = [
     pattern:
       /`editor\.(insertNodes|insertNode|setNodes|moveNodes|wrapNodes|unwrapNodes|removeNodes|insertText|insertFragment|delete|select|move)\(/,
     reason: 'public write prose must name editor.update tx groups',
+  },
+];
+
+const deletedArchitecturePatterns = [
+  {
+    pattern: removedPlateSchemaFlagsPattern,
+    reason:
+      'Plate schema declarations use node.element, node.mark, and schema.properties',
+  },
+  {
+    pattern: removedRootMutationFacadePattern,
+    reason:
+      'current docs must use editor.update.*, an active tx, or a scoped plugin command',
+  },
+  {
+    pattern:
+      /\b(?:tx\.fragment\.insert|editor\.update(?:\([^)]*\))?\.fragment\.insert)\b/,
+    reason: 'decoded content uses a fitted slice replacement',
+  },
+  {
+    pattern: /\boperations\.apply\b/,
+    reason: 'canonical changes use the changes transaction group',
+  },
+  {
+    pattern:
+      /\b(?:EditorTransformMiddleware|getEditorTransformRegistry|setEditorTransformRegistry)\b/,
+    reason: 'pure command handlers replace transform middleware registries',
+  },
+  {
+    pattern:
+      /\b(?:EditorTransformMiddleware(?:Args|Context|Map)|transform middleware|extension transform hooks)\b/i,
+    reason: 'pure command handlers replace transform middleware',
+  },
+  {
+    pattern: /\bextension `transforms`\b/i,
+    reason: 'extension commands own typed semantic actions',
+  },
+  {
+    pattern: /\b(?:commit|batch)\.(?:intents|operations)\b/,
+    reason: 'canonical changes are the only document replay truth',
+  },
+  {
+    pattern: /\b(?:applyOperations|tx\.operations\.replay)\b/,
+    reason: 'canonical changes use tx.changes.apply',
+  },
+  {
+    pattern: /\b(?:intent|operation) middleware\b/i,
+    reason: 'extensions use commands, corrections, and query middleware',
+  },
+  {
+    pattern: /\bchildrenChanged\b/,
+    reason: 'commit document queries use change.changed.has("document")',
+  },
+  {
+    pattern: /\b(?:snapshot[^.\n]{0,120}marks|marks[^.\n]{0,120}snapshot)\b/i,
+    reason: 'pending insertion marks belong to collapsed text selections',
+  },
+  {
+    pattern:
+      /\b(?:Normalizing is multi-pass|final normalization pass|normalizer (?:can )?loop forever)\b/i,
+    reason:
+      'canonical construction and event-indexed corrections replace normalization loops',
   },
 ];
 
@@ -199,14 +281,20 @@ function auditSlateV2Docs() {
     contract = readFileSync(contractPath, 'utf8');
   } catch {
     failures.push(
-      `${relative(repoRoot, contractPath).replaceAll('\\', '/')}: missing public-surface contract`
+      `${relative(repoRoot, contractPath).replaceAll(
+        '\\',
+        '/'
+      )}: missing public-surface contract`
     );
   }
 
   for (const signal of requiredContractSignals) {
     if (!contract.includes(signal)) {
       failures.push(
-        `${relative(repoRoot, contractPath).replaceAll('\\', '/')}: missing expected public-surface signal: ${signal}`
+        `${relative(repoRoot, contractPath).replaceAll(
+          '\\',
+          '/'
+        )}: missing expected public-surface signal: ${signal}`
       );
     }
   }
@@ -303,11 +391,43 @@ function auditSlateV2Docs() {
     }
   }
 
-  for (const path of collectMarkdown(docsRoot)) {
+  const auditedDocs = new Set([
+    ...docsRoots.flatMap(collectMarkdown),
+    ...[...teachingDocs].map((path) => join(repoRoot, path)),
+  ]);
+  const currentReleaseNotes = collectMarkdown(join(repoRoot, '.changeset'));
+
+  for (const path of currentReleaseNotes) {
+    const relativePath = relative(repoRoot, path).replaceAll('\\', '/');
+    const source = readFileSync(path, 'utf8');
+    const match = removedRootMutationFacadePattern.exec(source);
+
+    if (match?.index !== undefined) {
+      const lineNumber = source.slice(0, match.index).split('\n').length;
+      const line = source.split('\n')[lineNumber - 1]?.trim() ?? match[0];
+
+      failures.push(
+        `${relativePath}:${lineNumber}: current release notes must teach editor.update.*, an active tx, or a scoped plugin command: ${line}`
+      );
+    }
+  }
+
+  for (const path of [...auditedDocs].sort()) {
     const relativePath = relative(repoRoot, path).replaceAll('\\', '/');
     const source = readFileSync(path, 'utf8');
     const lines = source.split('\n');
     const codeLines = inCodeFenceByLine(lines);
+
+    for (const { pattern, reason } of deletedArchitecturePatterns) {
+      const match = pattern.exec(source);
+
+      if (match?.index !== undefined) {
+        const lineNumber = source.slice(0, match.index).split('\n').length;
+        const line = lines[lineNumber - 1]?.trim() ?? match[0];
+
+        failures.push(`${relativePath}:${lineNumber}: ${reason}: ${line}`);
+      }
+    }
 
     lines.forEach((line, index) => {
       if (codeLines.has(index)) {
@@ -361,4 +481,6 @@ export {
   closureColumnIndexes,
   isActionableLedgerValue,
   isClosedLedgerValue,
+  removedPlateSchemaFlagsPattern,
+  removedRootMutationFacadePattern,
 };

@@ -1,0 +1,9 @@
+---
+title: 文档变更
+description: Plite 规范文档变更、序列化和重放。
+---
+
+应用代码通过 `editor.update` 修改文档。序列化 `commit.changes`，并通过
+`tx.changes.apply` 导入规范 `DocumentChange`。
+
+完整参考见 [Document Changes](/docs/plite/concepts/05-document-changes)。

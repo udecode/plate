@@ -118,7 +118,7 @@ const editor = createPlateEditor({
 
 ## 工作原理
 
-退出块功能使用 [`isStrictSiblings`](/docs/api/core/plate-plugin#isstrictsiblings) 属性来确定退出嵌套结构时新块的插入位置。
+退出块功能使用已编译的元素内容语法来确定退出嵌套结构时段落可以插入的位置。
 
 ### 退出点判定
 
@@ -126,7 +126,7 @@ const editor = createPlateEditor({
 
 1. 从当前文本块开始（例如表格单元格内的段落）
 2. 向上遍历文档树检查每个祖先节点
-3. 找到第一个 `isStrictSiblings: false` 的祖先节点
+3. 找到父节点允许段落子节点的第一个祖先节点
 4. 在该祖先节点同级位置插入新段落
 
 ### 示例
@@ -144,9 +144,9 @@ const editor = createPlateEditor({
 // 第一次退出
 <column_group>                           
   <column>                               
-    <table>                              // ← 退出点（isStrictSiblings: false）
-      <tr>                               // isStrictSiblings: true
-        <td>                             // isStrictSiblings: true
+    <table>                              // ← 退出点（列允许块）
+      <tr>                               // 表格只允许行
+        <td>                             // 行只允许单元格
           <p>内容|</p>                   // ← 起始位置
         </td>
       </tr>
@@ -156,8 +156,8 @@ const editor = createPlateEditor({
 </column_group>
 
 // 第二次退出
-<column_group>                           // ← 退出点（isStrictSiblings: false）
-  <column>                               // isStrictSiblings: true
+<column_group>                           // ← 退出点（根允许块）
+  <column>                               // 分组只允许列
     <table>                              
       <tr>                               
         <td>                             
@@ -173,31 +173,36 @@ const editor = createPlateEditor({
 
 ### 自定义插件配置
 
-为自定义插件配置 [`isStrictSiblings`](/docs/api/core/plate-plugin#isstrictsiblings)：
+声明每个自定义元素允许的子内容：
 
 ```tsx
+import { schema } from '@platejs/plite';
+
 // 表格结构
 const CustomTablePlugin = createBasePlugin({
   key: 'table',
   node: {
-    isElement: true,
-    // isStrictSiblings: false (默认值) - 允许段落兄弟节点
+    element: {
+      content: schema.content.type('tr', { min: 1 }),
+    },
   },
 });
 
 const CustomTableRowPlugin = createBasePlugin({
   key: 'tr',
   node: {
-    isElement: true,
-    isStrictSiblings: true, // 仅允许 tr 兄弟节点
+    element: {
+      content: schema.content.types(['td', 'th'], { min: 1 }),
+    },
   },
 });
 
 const CustomTableCellPlugin = createBasePlugin({
   key: 'td',
   node: {
-    isElement: true,
-    isStrictSiblings: true, // 仅允许 td/th 兄弟节点
+    element: {
+      content: schema.content.group('block', { min: 1 }),
+    },
   },
 });
 ```

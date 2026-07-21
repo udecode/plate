@@ -53,8 +53,17 @@ and registry wiring.
 
 ### Component Shape & Editor Access → [component-shape.md](./rules/component-shape.md)
 
-- Node renderers use node-context hooks like `useElement()` or `usePath()` when they are in element context.
-- Prefer direct `editor.getApi(plugin)` / `editor.getTransforms(plugin)` or `useEditorPlugin(plugin)` over local wrapper helpers.
+- Use `useElement()` for node-context element access. Treat `usePath()` as a
+  reactive path dependency, not the default way to obtain a path.
+- In repeated node renderers, do not subscribe with `usePath()` when a path is
+  needed only inside an event handler or command. Resolve
+  `editor.read.nodes.path(element)` at interaction time. Use the existing
+  `PlateElementProps.path` when rendered output genuinely depends on the path.
+- Keep `usePath()` only when a descendant must rerender or resynchronize as its
+  element moves and no path prop is already available. Account for that
+  dependency in the repeated-unit subscription budget.
+- Prefer direct `editor.plugin(plugin).api` / `editor.plugin(plugin).update` or
+  `useEditorPlugin(plugin)` over local wrapper helpers.
 - If a node renderer forwards to `PlateElement` or `SlateElement`, keep the full incoming `props` object intact. Read from `props`, but do not destructure away `editor`, `element`, or other required fields and then spread only a partial object into the renderer.
 - Keep helpers inline when used once.
 - Split static/base and live kits cleanly.
@@ -130,8 +139,8 @@ return (
 );
 
 // Good: direct plugin access, no local wrapper layer.
-const api = editor.getApi(CommentPlugin).comment;
-const tf = editor.getTransforms(CommentPlugin).comment;
+const api = editor.plugin(CommentPlugin).api;
+const update = editor.plugin(CommentPlugin).update;
 
 // Good: package core owns commands/state, platform UI composes locally.
 const canToggleBold = bridgeState.canToggleBold;

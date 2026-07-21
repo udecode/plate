@@ -1,17 +1,27 @@
 import React from 'react';
 
+import { createBasePlugin } from '@platejs/core';
 import {
   createPlateEditor,
   Plate,
   type PlateEditor,
 } from '@platejs/core/react';
-import { defineEditorExtension } from '@platejs/plite';
+import { defineEditorExtension, property, schema } from '@platejs/plite';
 import { renderHook } from '@testing-library/react';
 
 import {
   useMarkToolbarButton,
   useMarkToolbarButtonState,
 } from './useMarkToolbarButton';
+
+const MarksPlugin = createBasePlugin({
+  key: 'testMarks',
+  schema: {
+    properties: ['bold', 'italic', 'subscript', 'superscript'].map((key) =>
+      schema.textProperty(key, property.boolean())
+    ),
+  },
+});
 
 const createWrapper = (editor: PlateEditor) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
@@ -25,7 +35,9 @@ const createWrapper = (editor: PlateEditor) =>
 describe('useMarkToolbarButton', () => {
   it('derives pressed state from editor marks', () => {
     const editor = createPlateEditor({
+      plugins: [MarksPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -50,7 +62,9 @@ describe('useMarkToolbarButton', () => {
 
   it('toggles the mark and focuses the editor on click', () => {
     const editor = createPlateEditor({
+      plugins: [MarksPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -95,7 +109,9 @@ describe('useMarkToolbarButton', () => {
 
   it('removes only the target mark when it is already active', () => {
     const editor = createPlateEditor({
+      plugins: [MarksPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -129,7 +145,9 @@ describe('useMarkToolbarButton', () => {
 
   it('replaces mutually exclusive marks when enabling a mark', () => {
     const editor = createPlateEditor({
+      plugins: [MarksPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -162,6 +180,7 @@ describe('useMarkToolbarButton', () => {
 
   it('prevents the default mouse down behavior', () => {
     const editor = createPlateEditor({
+      plugins: [MarksPlugin],
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     const preventDefault = mock();

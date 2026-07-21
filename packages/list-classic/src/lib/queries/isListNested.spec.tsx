@@ -1,28 +1,33 @@
 /** @jsx jsxt */
 
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, NodeIdPlugin } from '@platejs/core';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
+import { BaseListPlugin } from '../BaseListPlugin';
 import { isListNested } from './isListNested';
 
 jsxt;
+
+const SchemaOnlyNodeIdPlugin = NodeIdPlugin.configure({
+  options: { initialValueIds: false, match: () => false },
+});
 
 describe('when the list is nested', () => {
   const input = (
     <editor>
       <hul id="1">
         <hli id="2">
-          <hp>2</hp>
+          <hlic>2</hlic>
           <hul id="21">
             <hli>
-              <hp>21</hp>
+              <hlic>21</hlic>
             </hli>
             <hli>
-              <hp>
+              <hlic>
                 22
                 <cursor />
-              </hp>
+              </hlic>
             </hli>
           </hul>
         </hli>
@@ -32,6 +37,7 @@ describe('when the list is nested', () => {
 
   it('returns true', () => {
     const editor = createBaseEditor({
+      plugins: [SchemaOnlyNodeIdPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -47,7 +53,7 @@ describe('when the list is not nested', () => {
     <editor>
       <hul id="1">
         <hli id="2">
-          <hp>2</hp>
+          <hlic>2</hlic>
         </hli>
       </hul>
     </editor>
@@ -55,6 +61,7 @@ describe('when the list is not nested', () => {
 
   it('returns false', () => {
     const editor = createBaseEditor({
+      plugins: [SchemaOnlyNodeIdPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });

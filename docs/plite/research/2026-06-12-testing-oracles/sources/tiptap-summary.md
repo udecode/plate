@@ -15,4 +15,3 @@ dispatches it on the subject.
 Reject as duplicate. Plite's `plite-browser` already does that plus native
 clipboard access, exclusive locking, copy/cut payload snapshots, HTML/text
 fallbacks, command trace checks, and model/native selection assertions.
-

@@ -1,7 +1,18 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseTocPlugin } from './BaseTocPlugin';
+
+const TestParagraphPlugin = createBasePlugin({
+  key: 'paragraph',
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+  },
+});
 
 describe('BaseTocPlugin', () => {
   it('configures toc as a void element with the shipped defaults', () => {
@@ -11,14 +22,20 @@ describe('BaseTocPlugin', () => {
     const plugin = editor.getPlugin(BaseTocPlugin);
 
     expect(plugin.key).toBe(KEYS.toc);
-    expect(plugin.node).toMatchObject({
-      isElement: true,
-      isVoid: true,
+    expect(plugin.node.element).toMatchObject({
+      void: 'block',
     });
     expect(plugin.options).toMatchObject({
       isScroll: true,
       topOffset: 80,
     });
+    expect(
+      editor.read.schema.getElementBehavior({
+        children: [{ text: '' }],
+        type: KEYS.toc,
+      })
+    ).toMatchObject({ atom: true, inline: false, void: true });
+    expect(editor.read.schema.element(KEYS.toc)?.groups).toContain('block');
     expect(editor.update.toc.insert).toBeDefined();
   });
 
@@ -26,6 +43,7 @@ describe('BaseTocPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -50,6 +68,7 @@ describe('BaseTocPlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -59,6 +78,7 @@ describe('BaseTocPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -78,6 +98,7 @@ describe('BaseTocPlugin', () => {
 
     expect(editor.read.children()).toHaveLength(2);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -87,6 +108,7 @@ describe('BaseTocPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -105,6 +127,7 @@ describe('BaseTocPlugin', () => {
     editor.update.selection.move({ reverse: true, unit: 'line' });
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -112,8 +135,9 @@ describe('BaseTocPlugin', () => {
 
   it('inserts a paragraph after the toc on Enter', () => {
     const editor = createBaseEditor({
-      plugins: [BaseTocPlugin],
+      plugins: [BaseTocPlugin, TestParagraphPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -146,6 +170,7 @@ describe('BaseTocPlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });

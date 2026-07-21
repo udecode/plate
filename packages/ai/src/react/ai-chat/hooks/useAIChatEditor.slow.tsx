@@ -21,7 +21,7 @@ describe('useAIChatEditor', () => {
       <Plate editor={primaryEditor}>{children}</Plate>
     );
 
-    const { result } = renderHook(() => useAIChatEditor(editor, '# hi'), {
+    const { result } = renderHook(() => useAIChatEditor(editor, 'hi'), {
       wrapper,
     });
 

@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { schema } from '@platejs/plite';
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -11,7 +12,12 @@ jsxt;
 
 const InlinePlugin = createBasePlugin({
   key: 'inline',
-  node: { isElement: true, isInline: true },
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
 });
 
 describe('normalizeList', () => {
@@ -225,34 +231,6 @@ describe('keyboard handling', () => {
 
       expect(editor.read.children()).toEqual(output.children);
     });
-
-    it('uses the active transaction selection', () => {
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        value: [
-          {
-            children: [{ text: '' }],
-            indent: 2,
-            listStyleType: 'disc',
-            type: 'p',
-          },
-        ],
-      });
-
-      editor.update((tx) => {
-        tx.selection.set({ offset: 0, path: [0, 0] });
-        tx.break.insert();
-      });
-
-      expect(editor.read.children()).toEqual([
-        {
-          children: [{ text: '' }],
-          indent: 1,
-          listStyleType: 'disc',
-          type: 'p',
-        },
-      ]);
-    });
   });
 
   describe('when Enter on indented and empty but not list', () => {
@@ -318,6 +296,7 @@ describe('keyboard handling', () => {
 
       expect(editor.read.children()).toEqual(output.children);
       expect(editor.read.selection()).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -354,6 +333,7 @@ describe('keyboard handling', () => {
 
       expect(editor.read.children()).toEqual(output.children);
       expect(editor.read.selection()).toEqual({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -363,6 +343,7 @@ describe('keyboard handling', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin, InlinePlugin],
         selection: {
+          kind: 'text',
           anchor: { offset: 0, path: [0, 1, 0] },
           focus: { offset: 0, path: [0, 1, 0] },
         },
@@ -534,6 +515,7 @@ describe('apply override', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin, BaseIndentPlugin],
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
@@ -542,7 +524,7 @@ describe('apply override', () => {
           children: [{ text: '12' }],
           indent: 1,
           listRestart: 5,
-          listRestartPolite: true,
+          listRestartPolite: 5,
           listStyleType: 'decimal',
           type: 'p',
         },
@@ -556,7 +538,7 @@ describe('apply override', () => {
         children: [{ text: '1' }],
         indent: 1,
         listRestart: 5,
-        listRestartPolite: true,
+        listRestartPolite: 5,
         listStart: 5,
         listStyleType: 'decimal',
         type: 'p',

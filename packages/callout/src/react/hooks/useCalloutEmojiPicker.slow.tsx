@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import type { TCalloutElement } from '@platejs/utils';
 import * as platejsReact from '@platejs/core/react';
 
+import { BaseCalloutPlugin } from '../../lib/BaseCalloutPlugin';
 import { useCalloutEmojiPicker } from './useCalloutEmojiPicker';
 
 const element = {
@@ -48,11 +49,17 @@ describe('useCalloutEmojiPicker', () => {
         icon: '✅',
       },
     ];
-    const editor = platejsReact.createPlateEditor({ value });
-    const target = editor.read.children()[0];
+    const editor = platejsReact.createPlateEditor({
+      plugins: [BaseCalloutPlugin],
+      value,
+    });
 
     useEditorRefSpy.mockReturnValue(editor);
-    useElementSpy.mockReturnValue(target);
+    const liveElement = editor.read.nodes.get([0])?.[0];
+
+    if (!liveElement) throw new Error('Expected the first callout element.');
+
+    useElementSpy.mockReturnValue(liveElement);
 
     const { result } = renderHook(() =>
       useCalloutEmojiPicker({ isOpen: true, setIsOpen })

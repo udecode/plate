@@ -75,8 +75,13 @@ const CustomListPlugin = ListPlugin.configure({
     OrderedListRules.markdown({ variant: '.' }),
     TaskListRules.markdown({ checked: false }),
   ],
-  inject: {
-    targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote, KEYS.codeBlock],
+  options: {
+    targetPluginKeys: [
+      ...KEYS.heading,
+      KEYS.p,
+      KEYS.blockquote,
+      KEYS.codeBlock,
+    ],
   },
   render: {
     belowNodes: BlockList,

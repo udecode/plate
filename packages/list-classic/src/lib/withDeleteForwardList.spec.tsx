@@ -1,12 +1,17 @@
 /** @jsx jsxt */
 
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
+
+const BaseBoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
+});
 
 describe('p (empty) + list when selection not in list', () => {
   it('remove the p', () => {
@@ -34,7 +39,7 @@ describe('p (empty) + list when selection not in list', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+      plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -68,7 +73,7 @@ describe('p /w text + list when selection not in list', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+      plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -108,7 +113,7 @@ describe('p /w text + list when selection not in list', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+      plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -164,7 +169,7 @@ describe('p /w text + list when selection not in list', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+      plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -218,7 +223,7 @@ describe('list + list when selection is at the end of the first list', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+      plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -267,7 +272,7 @@ describe('list where second item has multiple children', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+      plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -290,15 +295,15 @@ describe('list + sublist where second item has multiple children', () => {
                 <hlic>
                   <htext />
                   <cursor />
-                  <hul>
-                    <hli>
-                      <hlic>
-                        <htext>two</htext>
-                        <htext bold>three</htext>
-                      </hlic>
-                    </hli>
-                  </hul>
                 </hlic>
+                <hul>
+                  <hli>
+                    <hlic>
+                      <htext>two</htext>
+                      <htext bold>three</htext>
+                    </hlic>
+                  </hli>
+                </hul>
               </hli>
             </hul>
           </hli>
@@ -328,7 +333,7 @@ describe('list + sublist where second item has multiple children', () => {
     ) as TestEditor;
 
     const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+      plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });

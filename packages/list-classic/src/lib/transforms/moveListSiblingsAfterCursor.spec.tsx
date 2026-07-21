@@ -4,9 +4,24 @@ import { createBaseEditor } from '@platejs/core';
 
 import { jsxt } from '@platejs/test-utils';
 
+import {
+  BaseBulletedListPlugin,
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+  BaseNumberedListPlugin,
+  BaseTaskListPlugin,
+} from '../BaseListPlugin';
 import { moveListSiblingsAfterCursor } from './moveListSiblingsAfterCursor';
 
 jsxt;
+
+const ListSchemaPlugins = [
+  BaseBulletedListPlugin,
+  BaseNumberedListPlugin,
+  BaseTaskListPlugin,
+  BaseListItemPlugin,
+  BaseListItemContentPlugin,
+];
 
 describe('moveListSiblingsAfterCursor', () => {
   it('moves the following list items into the destination list', () => {
@@ -14,24 +29,25 @@ describe('moveListSiblingsAfterCursor', () => {
       <editor>
         <hul>
           <hli>
-            <hp>1</hp>
+            <hlic>1</hlic>
           </hli>
           <hli>
-            <hp>2</hp>
+            <hlic>2</hlic>
           </hli>
           <hli>
-            <hp>3</hp>
+            <hlic>3</hlic>
           </hli>
         </hul>
         <hul>
           <hli>
-            <hp>x</hp>
+            <hlic>x</hlic>
           </hli>
         </hul>
       </editor>
     ) as any;
 
     const editor = createBaseEditor({
+      plugins: ListSchemaPlugins,
       value: input.children,
     });
 
@@ -49,7 +65,7 @@ describe('moveListSiblingsAfterCursor', () => {
       {
         children: [
           {
-            children: [{ children: [{ text: '1' }], type: 'p' }],
+            children: [{ children: [{ text: '1' }], type: 'lic' }],
             type: 'li',
           },
         ],
@@ -58,15 +74,15 @@ describe('moveListSiblingsAfterCursor', () => {
       {
         children: [
           {
-            children: [{ children: [{ text: 'x' }], type: 'p' }],
+            children: [{ children: [{ text: 'x' }], type: 'lic' }],
             type: 'li',
           },
           {
-            children: [{ children: [{ text: '2' }], type: 'p' }],
+            children: [{ children: [{ text: '2' }], type: 'lic' }],
             type: 'li',
           },
           {
-            children: [{ children: [{ text: '3' }], type: 'p' }],
+            children: [{ children: [{ text: '3' }], type: 'lic' }],
             type: 'li',
           },
         ],
@@ -80,16 +96,17 @@ describe('moveListSiblingsAfterCursor', () => {
       <editor>
         <hul>
           <hli>
-            <hp>1</hp>
+            <hlic>1</hlic>
           </hli>
           <hli>
-            <hp>2</hp>
+            <hlic>2</hlic>
           </hli>
         </hul>
       </editor>
     ) as any;
 
     const editor = createBaseEditor({
+      plugins: ListSchemaPlugins,
       value: input.children,
     });
 

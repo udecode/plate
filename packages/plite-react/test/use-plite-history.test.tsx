@@ -117,6 +117,7 @@ describe('usePliteHistory', () => {
         command: {
           kind: 'delete-fragment',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: {
               path: [blockCount - 1, 0],

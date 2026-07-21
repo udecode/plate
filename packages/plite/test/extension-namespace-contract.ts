@@ -27,24 +27,20 @@ const paragraph = (text: string): ParagraphElement => ({
 
 const createBlockSelectionExtension = () =>
   defineEditorExtension({
-    name: 'block-selection-contract',
-    setup({ editor }) {
-      return {
-        api: {
-          blockSelection: {
-            clear() {
-              selectedBlockPaths.set(editor, null);
-            },
-            select(path: Path) {
-              selectedBlockPaths.set(editor, [...path] as Path);
-            },
-            selectedPath() {
-              return selectedBlockPaths.get(editor) ?? null;
-            },
-          },
+    api: (editor) => ({
+      blockSelection: {
+        clear() {
+          selectedBlockPaths.set(editor, null);
         },
-      };
-    },
+        select(path: Path) {
+          selectedBlockPaths.set(editor, [...path] as Path);
+        },
+        selectedPath() {
+          return selectedBlockPaths.get(editor) ?? null;
+        },
+      },
+    }),
+    name: 'block-selection-contract',
     state: {
       blockSelection(_state, editor) {
         return {
@@ -80,7 +76,7 @@ const createBlockSelectionEditor = () =>
 const createInstalledBlockSelectionEditor = () => {
   const extension = createBlockSelectionExtension();
 
-  return createEditor<CustomValue, readonly [typeof extension]>({
+  return createEditor({
     extensions: [extension] as const,
     initialValue: [paragraph('one'), paragraph('two')],
   });

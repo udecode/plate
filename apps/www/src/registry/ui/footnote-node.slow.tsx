@@ -123,7 +123,6 @@ mock.module('platejs/react', () => ({
 
     return activeTarget;
   },
-  usePath: () => nodePath,
   useElementSelected: () => isSelected,
 }));
 
@@ -361,6 +360,7 @@ describe('footnote node rendering', () => {
           },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '2' } as any}
+        path={nodePath}
       >
         <p>Body</p>
       </FootnoteDefinitionElement>
@@ -397,6 +397,7 @@ describe('footnote node rendering', () => {
           tx: { footnote: {} },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '2' } as any}
+        path={nodePath}
       >
         <p>Body</p>
       </FootnoteDefinitionElement>
@@ -443,6 +444,7 @@ describe('footnote node rendering', () => {
           },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '1' } as any}
+        path={nodePath}
       >
         <span />
       </FootnoteReferenceElement>
@@ -601,6 +603,7 @@ describe('footnote node rendering', () => {
           },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '1' } as any}
+        path={nodePath}
       >
         <span />
       </FootnoteReferenceElement>
@@ -615,6 +618,7 @@ describe('footnote node rendering', () => {
     isFocused = true;
     nodePath = [0, 1];
     selection = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     };
@@ -641,6 +645,7 @@ describe('footnote node rendering', () => {
           },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '1' } as any}
+        path={nodePath}
       >
         <span />
       </FootnoteReferenceElement>
@@ -801,6 +806,7 @@ describe('footnote node rendering', () => {
           },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '2' } as any}
+        path={nodePath}
       >
         <p>Body</p>
       </FootnoteDefinitionElement>
@@ -902,6 +908,7 @@ describe('footnote node rendering', () => {
           tx: { footnote: { focusReference: mock() } },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '3' } as any}
+        path={nodePath}
       >
         <p>Body</p>
       </FootnoteDefinitionElement>
@@ -923,6 +930,7 @@ describe('footnote node rendering', () => {
     );
 
     selection = {
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     };

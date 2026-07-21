@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, type Element } from '@platejs/plite';
+import { createEditor, DocumentChange, type Element } from '@platejs/plite';
 import { replaceEditorValue } from './support/snapshot';
 
 const paragraph = (text: string): Element => ({
@@ -19,6 +19,7 @@ describe('read/update contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -31,6 +32,7 @@ describe('read/update contract', () => {
 
     assert.deepEqual(state.children, [paragraph('one')]);
     assert.deepEqual(state.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -47,7 +49,7 @@ describe('read/update contract', () => {
     const commit = editor.read((state) => state.lastCommit());
 
     assert(commit);
-    assert.deepEqual(commit.classes, ['text']);
+    assert.equal(commit.changed.has('text'), true);
     assert.deepEqual(commit.tags, ['history-push', 'paste']);
   });
 
@@ -57,6 +59,7 @@ describe('read/update contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -64,6 +67,7 @@ describe('read/update contract', () => {
 
     assert.equal(editor.read.text.string([]), 'one');
     assert.deepEqual(editor.read.selection(), {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -80,7 +84,7 @@ describe('read/update contract', () => {
       paragraph('two'),
     ]);
     assert.deepEqual(editor.read.marks(), { bold: true });
-    assert.equal(editor.read.lastCommit()?.classes.includes('mark'), true);
+    assert.equal(editor.read.lastCommit()?.changed.has('marks'), true);
   });
 
   it('toggles marks with mutually exclusive clear options', () => {
@@ -89,6 +93,7 @@ describe('read/update contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -110,6 +115,7 @@ describe('read/update contract', () => {
   it('sets an exact expanded range without retargeting endpoints', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 1, 0, 0, 0], offset: 2 },
       focus: { path: [0, 0, 1, 0, 0], offset: 2 },
     };
@@ -170,10 +176,11 @@ describe('read/update contract', () => {
       editor.read((state) => state.selection()),
       selection
     );
-    const operation = editor.read((state) => state.operations()).at(-1);
+    const commit = editor.read.lastCommit();
 
-    assert.equal(operation?.type, 'set_selection');
-    assert.deepEqual(operation?.newProperties, selection);
+    assert.equal(commit?.selectionChanged, true);
+    assert.deepEqual(commit?.selectionAfter, selection);
+    assert.equal(commit?.changes.empty, true);
   });
 
   it('rejects nested transaction writes inside a plain read', () => {
@@ -182,6 +189,7 @@ describe('read/update contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -198,30 +206,28 @@ describe('read/update contract', () => {
     );
   });
 
-  it('rejects replay writes inside a plain read', () => {
+  it('rejects canonical change writes inside a plain read', () => {
     const editor = createEditor();
 
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
     });
 
+    const before = editor.read.value();
+    const change = DocumentChange.between(before, {
+      ...before,
+      children: [paragraph('one!')],
+    });
+
     assert.throws(
       () =>
         editor.read(() => {
-          editor.update((tx) => {
-            tx.operations.replay([
-              {
-                offset: 3,
-                path: [0, 0],
-                text: '!',
-                type: 'insert_text',
-              },
-            ]);
-          });
+          editor.update((tx) => tx.changes.apply(change));
         }),
       NESTED_UPDATE_ERROR
     );
@@ -233,6 +239,7 @@ describe('read/update contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },

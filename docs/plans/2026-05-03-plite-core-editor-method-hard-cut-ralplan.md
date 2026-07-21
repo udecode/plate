@@ -431,7 +431,7 @@ editor.update((tx) => {
   tx.break.insert();
   tx.selection.set(target);
   tx.nodes.insert(node);
-  tx.value.replace({ children, marks: null, selection: null });
+  tx.value.replace({ children, selection: null });
   tx.normalize();
   tx.withoutNormalizing(() => {});
 });

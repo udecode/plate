@@ -14,6 +14,12 @@ describe('BaseFontSizePlugin', () => {
       nodeKey: 'fontSize',
     });
     expect(
+      editor.read.schema.property({
+        key: KEYS.fontSize,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('string');
+    expect(
       editor.api.html.deserialize({
         element: '<span style="font-size: 18px">text</span>',
       })
@@ -29,6 +35,7 @@ describe('BaseFontSizePlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseFontSizePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },

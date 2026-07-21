@@ -25,6 +25,17 @@ import {
 
 jsxt;
 
+const basicMarkPlugins = [
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseHighlightPlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
+  BaseUnderlinePlugin,
+] as const;
+
 describe('basic mark input rules', () => {
   it('stays literal until markdown groups are explicitly enabled', () => {
     const input = (
@@ -329,7 +340,7 @@ describe('basic mark input rules', () => {
     },
   ])('$title', ({ input, output, plugin, text }) => {
     const editor = createBaseEditor({
-      plugins: [plugin],
+      plugins: [...basicMarkPlugins, plugin],
       selection: input.selection,
       value: input.children,
     });

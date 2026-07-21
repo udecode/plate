@@ -41,7 +41,7 @@ Treat insert-mode preview as a localized top-level block range instead of a full
 
 ### 1. Capture only the replaced slice
 
-`tf.ai.beginPreview` stores:
+`editor.plugin(BaseAIPlugin).api.beginPreview(...)` stores:
 
 - `originalBlocks`: the exact top-level blocks the preview overwrites
 - `selectionBefore`: the original selection
@@ -56,24 +56,25 @@ That makes the live preview range discoverable without relying on drifting paths
 
 ### 3. Cancel by restoring only the marked range
 
-`tf.ai.cancelPreview()`:
+`editor.plugin(BaseAIPlugin).api.cancelPreview()`:
 
 - finds the contiguous top-level `aiPreview` range
 - replaces only that range with `originalBlocks`
 - removes the AI chat anchor
 - restores `selectionBefore`
 
-All of that runs in `withoutSaving`, so preview cancel still stays out of history.
+All of that runs in `editor.update({ history: 'skip' }, ...)`, so preview cancel
+stays out of history.
 
 ### 4. Accept by localized restore-then-commit
 
-`tf.ai.acceptPreview()`:
+`editor.plugin(BaseAIPlugin).api.acceptPreview()`:
 
 - clones only the marked preview blocks
 - strips `aiPreview` and AI text marks from that local clone
-- restores the original block slice with `withoutSaving`
-- inserts the accepted local blocks in one fresh history batch
-- stamps that batch with the original `selectionBefore`
+- restores the original block slice and `selectionBefore` in a history-skipped
+  update
+- replaces the local range with the accepted blocks in one fresh history batch
 
 That produces a single undoable commit whose cost scales with the preview range, not the whole document.
 

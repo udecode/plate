@@ -192,7 +192,7 @@ describe('@platejs/yjs selection relative-position contract', () => {
     );
   });
 
-  it('does not record selection-only conversions in the Yjs operation trace', () => {
+  it('does not record selection-only conversions in the Yjs change trace', () => {
     const peer = createPeer('b');
 
     clearYjsTrace(peer);

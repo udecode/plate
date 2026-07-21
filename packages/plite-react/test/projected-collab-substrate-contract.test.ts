@@ -1,8 +1,8 @@
 import {
   createEditor,
   type Descendant,
+  type DocumentChange,
   type EditorUpdatePolicy,
-  type Operation,
   type Range,
 } from '@platejs/plite';
 import { getLastCommit as editorGetLastCommit } from '@platejs/plite/internal';
@@ -62,20 +62,20 @@ const createProjectedEditor = () =>
 const readValue = (editor: ReturnType<typeof createProjectedEditor>) =>
   editor.read((state) => state.value());
 
-const replayRemote = (
+const applyRemote = (
   editor: ReturnType<typeof createProjectedEditor>,
-  operations: readonly Operation[]
+  change: DocumentChange
 ) => {
   editor.update(remoteCollabPolicy, (tx) => {
-    tx.operations.replay(clone(operations));
+    tx.changes.apply(change);
   });
 };
 
-const lastOperations = (editor: ReturnType<typeof createProjectedEditor>) => {
+const lastChange = (editor: ReturnType<typeof createProjectedEditor>) => {
   const commit = editorGetLastCommit(editor);
 
   expect(commit).not.toBe(null);
-  return commit!.operations;
+  return commit!.changes;
 };
 
 const collapsed = (root: string, path: number[], offset: number): Range => ({
@@ -84,14 +84,14 @@ const collapsed = (root: string, path: number[], offset: number): Range => ({
 });
 
 describe('projected root lifecycle collaboration substrate', () => {
-  it('replays duplicate and unsync as root-keyed operations without serializing projection owners', () => {
+  it('applies duplicate and unsync as root-keyed changes without serializing projection owners', () => {
     const source = createProjectedEditor();
     const remote = createProjectedEditor();
 
     source.update((tx) => {
       tx.nodes.insert(syncedBlock(SHARED_ROOT, 'duplicate'), { at: [2] });
     });
-    replayRemote(remote, lastOperations(source));
+    applyRemote(remote, lastChange(source));
 
     expect(readValue(remote)).toEqual(readValue(source));
     expect(getRootKeyedCollabTargets(readValue(remote))).toEqual([
@@ -113,16 +113,15 @@ describe('projected root lifecycle collaboration substrate', () => {
       );
     });
 
-    const operations = lastOperations(source);
+    const change = lastChange(source);
 
-    expect(operations.map((operation) => operation.type)).toEqual([
-      'replace_children',
-      'set_node',
-    ]);
-    expect(JSON.stringify(operations)).not.toContain('ownerPath');
-    expect(JSON.stringify(operations)).not.toContain('ownerRoot');
+    expect([...change.createRoots]).toEqual([UNSYNCED_ROOT]);
+    expect(change.primary).not.toBeNull();
+    expect(change.roots.has(UNSYNCED_ROOT)).toBe(true);
+    expect(JSON.stringify(change.toJSON())).not.toContain('ownerPath');
+    expect(JSON.stringify(change.toJSON())).not.toContain('ownerRoot');
 
-    replayRemote(remote, operations);
+    applyRemote(remote, change);
 
     expect(readValue(remote)).toEqual(readValue(source));
     expect(readValue(remote).roots?.[SHARED_ROOT]).toEqual([
@@ -141,7 +140,7 @@ describe('projected root lifecycle collaboration substrate', () => {
     source.update((tx) => {
       tx.nodes.remove({ at: [1] });
     });
-    replayRemote(remote, lastOperations(source));
+    applyRemote(remote, lastChange(source));
 
     expect(readValue(remote).roots?.[SHARED_ROOT]).toEqual([
       paragraph('Shared mission statement'),
@@ -150,7 +149,7 @@ describe('projected root lifecycle collaboration substrate', () => {
     source.update((tx) => {
       tx.roots.delete(SHARED_ROOT);
     });
-    replayRemote(remote, lastOperations(source));
+    applyRemote(remote, lastChange(source));
 
     expect(readValue(remote)).toEqual(readValue(source));
     expect(Object.hasOwn(readValue(remote).roots ?? {}, SHARED_ROOT)).toBe(

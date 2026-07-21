@@ -14,6 +14,12 @@ describe('BaseFontFamilyPlugin', () => {
       nodeKey: 'fontFamily',
     });
     expect(
+      editor.read.schema.property({
+        key: KEYS.fontFamily,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('string');
+    expect(
       editor.api.html.deserialize({
         element: '<span style="font-family: Fira Code, monospace">text</span>',
       })
@@ -29,6 +35,7 @@ describe('BaseFontFamilyPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseFontFamilyPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },

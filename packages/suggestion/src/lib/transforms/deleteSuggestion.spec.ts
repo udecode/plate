@@ -34,6 +34,7 @@ describe('deleteSuggestion', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -66,6 +67,7 @@ describe('deleteSuggestion', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -105,6 +107,7 @@ describe('deleteSuggestion', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },

@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { rejectSuggestion } from './rejectSuggestion';
@@ -12,6 +12,16 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
     currentUserId: 'testId',
   },
+});
+
+const BoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
+});
+
+const ItalicPlugin = createBasePlugin({
+  key: 'italic',
+  node: { mark: true },
 });
 
 describe('rejectSuggestion', () => {
@@ -42,7 +52,7 @@ describe('rejectSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
       value: input.children,
     });
 
@@ -81,7 +91,7 @@ describe('rejectSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
       value: input.children,
     });
 
@@ -123,7 +133,7 @@ describe('rejectSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
       value: input.children,
     });
 
@@ -135,7 +145,7 @@ describe('rejectSuggestion', () => {
     expect(editor.read.children()).toEqual(output.children);
   });
 
-  it('restores falsy removed properties from update suggestions', () => {
+  it('restores falsy previous properties from update suggestions', () => {
     const updateData = {
       createdAt: Date.now(),
       id: '1',
@@ -159,7 +169,7 @@ describe('rejectSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
       value: input.children,
     });
 
@@ -172,7 +182,7 @@ describe('rejectSuggestion', () => {
       {
         children: [
           { text: 'test' },
-          { italic: true, text: 'updated' },
+          { italic: false, text: 'updated' },
           { text: 'text' },
         ],
         type: 'p',

@@ -1,10 +1,18 @@
+import { schema } from '@platejs/plite';
+
 import { createBaseEditor } from '../../../editor';
 import { createBasePlugin } from '../../../plugin';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 
 const ParagraphPlugin = createBasePlugin({
   key: 'p',
-  node: { isElement: true, type: 'p' },
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+    type: 'p',
+  },
 });
 
 describe('deserializeHtmlNodeChildren', () => {

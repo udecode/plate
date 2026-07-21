@@ -280,6 +280,7 @@ describe('usePlateViewEditor', () => {
           createBasePlugin({ key: 'plugin2' }),
         ],
         selection: {
+          kind: 'text' as const,
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 7, path: [0, 0] },
         },

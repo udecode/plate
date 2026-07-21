@@ -21,6 +21,7 @@ describe('test helper snapshot boundary', () => {
     replaceEditorValue(editor, {
       children: [paragraph('test snapshot')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 8 },
       },
@@ -30,6 +31,7 @@ describe('test helper snapshot boundary', () => {
 
     assert.deepEqual(snapshot.children, [paragraph('test snapshot')]);
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 8 },
     });

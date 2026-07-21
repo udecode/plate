@@ -4,35 +4,54 @@ import { performance } from 'node:perf_hooks';
 import {
   createEditor,
   defineEditorExtension,
-} from '../../../../../packages/slate/src/index.ts';
-import { Editor } from '../../../../../packages/slate/src/internal/index.ts';
-import { history as historyExtension } from '../../../../../packages/slate-history/src/index.ts';
+} from '../../../../../packages/plite/src/index.ts';
+import { DocumentChangeBuilder } from '../../../../../packages/plite/src/core/document-change.ts';
+import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
+import { history as historyExtension } from '../../../../../packages/plite-history/src/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const iterations = Number.parseInt(
-  process.env.SLATE_COLLAB_READINESS_ITERATIONS ?? '3',
+  process.env.PLITE_COLLAB_READINESS_ITERATIONS ?? '3',
   10
 );
 const textBytes = Number.parseInt(
-  process.env.SLATE_COLLAB_READINESS_TEXT_BYTES ?? '24',
+  process.env.PLITE_COLLAB_READINESS_TEXT_BYTES ?? '24',
   10
 );
+const benchmarkMode =
+  process.env.PLITE_COLLAB_READINESS_MODE === 'anchors'
+    ? 'anchors'
+    : 'complete';
 
+const requestedCohorts = new Set(
+  (process.env.PLITE_COLLAB_READINESS_COHORTS ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+);
 const cohorts = [
-  { id: 'normal', blocks: 100, remoteOps: 50, bookmarks: 25 },
-  { id: 'large', blocks: 1000, remoteOps: 100, bookmarks: 100 },
-  { id: 'stress', blocks: 10_000, remoteOps: 250, bookmarks: 250 },
-  { id: 'pathological', blocks: 1, remoteOps: 1000, bookmarks: 50 },
-];
+  { id: 'normal', blocks: 100, remoteOps: 50, anchors: 25 },
+  { id: 'large', blocks: 1000, remoteOps: 100, anchors: 100 },
+  { id: 'stress', blocks: 10_000, remoteOps: 250, anchors: 250 },
+  { id: 'pathological', blocks: 1, remoteOps: 1000, anchors: 50 },
+].filter(
+  (cohort) => requestedCohorts.size === 0 || requestedCohorts.has(cohort.id)
+);
+
+if (cohorts.length === 0) {
+  throw new Error('No collaboration readiness cohorts selected.');
+}
 
 const remoteOptions = {
-  metadata: {
-    collab: { origin: 'remote', saveToHistory: false },
-    history: { mode: 'skip' },
-    selection: { dom: 'preserve', focus: false, scroll: false },
-  },
-  tag: ['collaboration', 'remote-import'],
+  tags: [
+    'collaboration',
+    'remote-import',
+    'skip-dom-selection',
+    'skip-scroll-into-view',
+    'skip-selection-focus',
+  ],
 };
+const remoteHistoryOptions = { ...remoteOptions, history: 'skip' };
 
 const textFor = (prefix, index) =>
   `${prefix}-${String(index).padStart(5, '0')} ${'x'.repeat(
@@ -46,8 +65,6 @@ const paragraph = (prefix, index) => ({
 
 const createDocument = (count, prefix = 'block') =>
   Array.from({ length: count }, (_, index) => paragraph(prefix, index));
-
-const clone = (value) => structuredClone(value);
 
 const snapshotJson = (editor) =>
   JSON.stringify(Editor.getSnapshot(editor).children);
@@ -74,39 +91,62 @@ const createEditorWithDocument = (blockCount, history = false) => {
     selection: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
+      kind: 'text',
     },
   });
 
   return editor;
 };
 
-const createRemoteTextBurstOps = ({ blocks, remoteOps }) =>
+const createRemoteTextBurstCommands = ({ blocks, remoteOps }) =>
   Array.from({ length: remoteOps }, (_, index) => ({
-    type: 'insert_text',
     path: [Math.min(index % Math.max(1, blocks), blocks - 1), 0],
-    offset: 0,
     text: String(index % 10),
+    type: 'insertText',
   }));
 
-const createPathologicalTextBurstOps = (remoteOps) =>
+const createPathologicalTextBurstCommands = (remoteOps) =>
   Array.from({ length: remoteOps }, (_, index) => ({
-    type: 'insert_text',
     path: [0, 0],
-    offset: 0,
     text: String(index % 10),
+    type: 'insertText',
   }));
 
-const createRemoteOps = (cohort) =>
-  cohort.id === 'pathological'
-    ? createPathologicalTextBurstOps(cohort.remoteOps)
-    : createRemoteTextBurstOps(cohort);
+const compileRemoteChanges = (cohort) => {
+  const children = createDocument(cohort.blocks);
+  const commands =
+    cohort.id === 'pathological'
+      ? createPathologicalTextBurstCommands(cohort.remoteOps)
+      : createRemoteTextBurstCommands(cohort);
+  const builder = new DocumentChangeBuilder({
+    children,
+    marks: null,
+    selection: {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+      kind: 'text',
+    },
+  });
+  const changes = commands.map(({ path, text }) =>
+    builder.insertText('main', path, 0, text).change
+  );
 
-const assertRemoteCommit = (editor) => {
+  return {
+    batch: builder.change,
+    changes,
+    commandCount: commands.length,
+    commandTypes: [...new Set(commands.map((command) => command.type))],
+  };
+};
+
+const assertRemoteCommit = (editor, options = remoteOptions) => {
   const commit = Editor.getLastCommit(editor);
 
   assert(commit);
-  assert.deepEqual(commit.tags, remoteOptions.tag);
-  assert.deepEqual(commit.metadata, remoteOptions.metadata);
+  assert.deepEqual(commit.tags, [
+    ...options.tags,
+    ...(options.history === 'skip' ? ['history-skip'] : []),
+  ]);
 };
 
 const createFakeCollabAdapter = () => {
@@ -139,14 +179,17 @@ const createFakeCollabAdapter = () => {
               current.paused ||
               commit.tags.includes('skip-collab') ||
               commit.tags.includes('collaboration') ||
-              commit.metadata.collab?.origin === 'remote'
+              commit.tags.includes('remote-import')
             ) {
               return;
             }
 
             state.set({
               ...current,
-              exports: [...current.exports, clone(commit.operations)],
+              exports: [
+                ...current.exports,
+                commit.changes?.toJSON() ?? null,
+              ],
             });
           },
         };
@@ -182,103 +225,128 @@ const measureLocalExportCommit = (cohort) =>
       tx.text.insert('L', { at: { path: [0, 0], offset: 0 } });
     });
 
-    const state = editor.read((state) => state.value.lastCommit());
+    const state = Editor.getLastCommit(editor);
 
     assert(state);
     assert.equal(adapter.listenerCalls(), 1);
   });
 
-const runRemoteReplayBatch = (cohort, operations) => {
+const runRemoteChangeBatch = (cohort, change) => {
   const editor = createEditorWithDocument(cohort.blocks);
 
-  editor.update((tx) => {
-    tx.operations.replay(clone(operations));
-  }, remoteOptions);
+  editor.update(remoteOptions, (tx) => tx.changes.apply(change));
 
   assertRemoteCommit(editor);
 
   return snapshotJson(editor);
 };
 
-const runRemoteReplaySeparate = (cohort, operations) => {
+const runRemoteChangesSeparately = (cohort, changes) => {
   const editor = createEditorWithDocument(cohort.blocks);
 
-  for (const operation of operations) {
-    editor.update((tx) => {
-      tx.operations.replay([clone(operation)]);
-    }, remoteOptions);
+  for (const change of changes) {
+    editor.update(remoteOptions, (tx) => tx.changes.apply(change));
     assertRemoteCommit(editor);
   }
 
   return snapshotJson(editor);
 };
 
-const measureRemoteReplayBatch = (cohort, operations) =>
+const measureRemoteChangeBatch = (cohort, change) =>
   measure(() => {
-    runRemoteReplayBatch(cohort, operations);
+    runRemoteChangeBatch(cohort, change);
   });
 
-const measureRemoteReplaySeparate = (cohort, operations) =>
+const measureRemoteChangesSeparately = (cohort, changes) =>
   measure(() => {
-    runRemoteReplaySeparate(cohort, operations);
+    runRemoteChangesSeparately(cohort, changes);
   });
 
-const measureBookmarkRebase = (cohort, operations) =>
-  measure(() => {
+const measureAnchors = (cohort, change) => {
+  const samples = {
+    anchorCreateMs: [],
+    anchorRebaseMs: [],
+    anchorResolveMs: [],
+    anchorSetupMs: [],
+  };
+
+  for (let iteration = 0; iteration < iterations + 1; iteration += 1) {
+    const setupStart = performance.now();
     const editor = createEditorWithDocument(cohort.blocks);
-    const bookmarks = Array.from(
-      { length: Math.min(cohort.bookmarks, cohort.blocks) },
+    const setupDuration = performance.now() - setupStart;
+    const createStart = performance.now();
+    const anchors = Array.from(
+      { length: Math.min(cohort.anchors, cohort.blocks) },
       (_, index) =>
-        Editor.bookmark(editor, {
-          anchor: { path: [index, 0], offset: 1 },
-          focus: { path: [index, 0], offset: 6 },
-        })
+        editor.anchor(
+          {
+            anchor: { path: [index, 0], offset: 1 },
+            focus: { path: [index, 0], offset: 6 },
+          },
+          { association: 'inward', deletion: 'nearest' }
+        )
     );
+    const createDuration = performance.now() - createStart;
 
-    editor.update((tx) => {
-      tx.operations.replay(clone(operations));
-    }, remoteOptions);
+    const rebaseStart = performance.now();
+    editor.update(remoteOptions, (tx) => tx.changes.apply(change));
+    const rebaseDuration = performance.now() - rebaseStart;
 
     assertRemoteCommit(editor);
 
-    for (const bookmark of bookmarks) {
-      const resolved = bookmark.resolve();
+    const resolveStart = performance.now();
+    const resolvedAnchors = anchors.map((anchor) => anchor.release());
+    const resolveDuration = performance.now() - resolveStart;
 
+    for (const resolved of resolvedAnchors) {
       if (resolved) {
-        assert.doesNotThrow(() => Editor.string(editor, resolved));
+        const entry = editor.read((state) => state.nodes.get(resolved.anchor));
+
+        assert(entry && 'text' in entry[0]);
+        assert(resolved.anchor.offset <= entry[0].text.length);
+        assert(resolved.focus.offset <= entry[0].text.length);
       }
-      bookmark.unref();
     }
-  });
+
+    if (iteration > 0) {
+      samples.anchorSetupMs.push(setupDuration);
+      samples.anchorCreateMs.push(createDuration);
+      samples.anchorRebaseMs.push(rebaseDuration);
+      samples.anchorResolveMs.push(resolveDuration);
+    }
+  }
+
+  return Object.fromEntries(
+    Object.entries(samples).map(([key, values]) => [key, summarize(values)])
+  );
+};
 
 const measureCanonicalReplace = (cohort) =>
   measure(() => {
     const editor = createEditorWithDocument(cohort.blocks);
 
-    editor.update((tx) => {
+    editor.update(remoteOptions, (tx) => {
       tx.value.replace({
         children: createDocument(cohort.blocks, 'canonical'),
         marks: null,
         selection: null,
       });
-    }, remoteOptions);
+    });
 
     const commit = Editor.getLastCommit(editor);
 
     assertRemoteCommit(editor);
-    assert.deepEqual(commit.classes, ['replace']);
+    assert.equal(commit.changed.has('replace'), true);
   });
 
-const measureHistorySkip = (cohort, operations) =>
+const measureHistorySkip = (cohort, change) =>
   measure(() => {
     const editor = createEditorWithDocument(cohort.blocks, true);
 
-    editor.update((tx) => {
-      tx.operations.replay(clone(operations));
-    }, remoteOptions);
+    editor.update(remoteHistoryOptions, (tx) => tx.changes.apply(change));
 
-    assertRemoteCommit(editor);
-    const historyState = editor.read((state) => state.history.get());
+    assertRemoteCommit(editor, remoteHistoryOptions);
+    const historyState = editor.read((state) => state.history());
     assert.equal(historyState.undos.length, 0);
     assert.equal(historyState.redos.length, 0);
   });
@@ -318,32 +386,52 @@ const measureConnectDisconnectHeap = (cohort) => {
 };
 
 const measureCohort = (cohort) => {
-  const operations = createRemoteOps(cohort);
-  const batchSnapshot = runRemoteReplayBatch(cohort, operations);
-  const separateSnapshot = runRemoteReplaySeparate(cohort, operations);
+  const compiled = compileRemoteChanges(cohort);
+
+  if (benchmarkMode === 'anchors') {
+    return {
+      config: cohort,
+      commandCount: compiled.commandCount,
+      commandTypes: compiled.commandTypes,
+      ...measureAnchors(cohort, compiled.batch),
+      invariants: {
+        anchorResolutionChecked: true,
+      },
+    };
+  }
+
+  const batchSnapshot = runRemoteChangeBatch(cohort, compiled.batch);
+  const separateSnapshot = runRemoteChangesSeparately(
+    cohort,
+    compiled.changes
+  );
 
   if (batchSnapshot !== separateSnapshot) {
     throw new Error(
-      `Collab readiness ${cohort.id} batch/separate replay diverged`
+      `Collab readiness ${cohort.id} batch/separate changes diverged`
     );
   }
 
   return {
     config: cohort,
-    operationTypes: [...new Set(operations.map((operation) => operation.type))],
-    operationCount: operations.length,
+    commandCount: compiled.commandCount,
+    commandTypes: compiled.commandTypes,
     localExportCommitMs: measureLocalExportCommit(cohort),
-    remoteReplayBatchMs: measureRemoteReplayBatch(cohort, operations),
-    remoteReplaySeparateMs: measureRemoteReplaySeparate(cohort, operations),
-    bookmarkRebaseMs: measureBookmarkRebase(cohort, operations),
+    remoteChangeBatchMs: measureRemoteChangeBatch(cohort, compiled.batch),
+    remoteChangesSeparateMs: measureRemoteChangesSeparately(
+      cohort,
+      compiled.changes
+    ),
+    ...measureAnchors(cohort, compiled.batch),
     canonicalReplaceMs: measureCanonicalReplace(cohort),
-    historySkipMs: measureHistorySkip(cohort, operations),
+    historySkipMs: measureHistorySkip(cohort, compiled.batch),
     connectDisconnectHeapDeltaBytes: measureConnectDisconnectHeap(cohort),
     invariants: {
       batchAndSeparateConverge: true,
+      canonicalChangesOnly: true,
       remoteCommitMetadataChecked: true,
       historySkipChecked: true,
-      bookmarkResolutionChecked: true,
+      anchorResolutionChecked: true,
       cleanupListenerChecked: true,
     },
   };
@@ -358,15 +446,17 @@ const redFlags = Object.fromEntries(
     id,
     {
       batchSlowerThanSeparate:
-        lane.remoteReplayBatchMs.mean > lane.remoteReplaySeparateMs.mean,
-      connectDisconnectHeapMaxBytes: lane.connectDisconnectHeapDeltaBytes.max,
+        lane.remoteChangeBatchMs?.mean > lane.remoteChangesSeparateMs?.mean,
+      connectDisconnectHeapMaxBytes:
+        lane.connectDisconnectHeapDeltaBytes?.max ?? null,
     },
   ])
 );
 
 const result = {
-  benchmark: 'slate-collab-readiness',
-  artifactVersion: 1,
+  benchmark: 'plite-collab-readiness',
+  artifactVersion: 2,
+  mode: benchmarkMode,
   iterations,
   thresholdPolicy: {
     mode: 'calibration-only',

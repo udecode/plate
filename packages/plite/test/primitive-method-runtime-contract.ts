@@ -34,6 +34,7 @@ const setupEditor = () => {
   editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     },
@@ -48,6 +49,7 @@ const setupCollapsedEditor = () => {
   editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -62,6 +64,7 @@ const setupWrappedEditor = () => {
   editorReplace(editor, {
     children: [quote('one'), quote('two')],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 0 },
       focus: { path: [0, 0, 0], offset: 3 },
     },
@@ -76,6 +79,7 @@ const setupThreeBlockEditor = () => {
   editorReplace(editor, {
     children: [paragraph('one'), paragraph('two'), paragraph('three')],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     },
@@ -92,10 +96,11 @@ const setupSplitTextEditor = () => {
       children: [
         {
           type: 'paragraph',
-          children: [{ text: 'one' }, { text: 'two' }],
+          children: [{ bold: true, text: 'one' }, { text: 'two' }],
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -115,6 +120,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -141,6 +147,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -164,6 +171,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -191,6 +199,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -207,6 +216,7 @@ describe('primitive method runtime contract', () => {
       paragraph('tXwo'),
     ]);
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 2 },
       focus: { path: [1, 0], offset: 2 },
     });
@@ -218,7 +228,6 @@ describe('primitive method runtime contract', () => {
     editorReplace(editor, {
       children: [paragraph('one'), paragraph('two')],
       selection: null,
-      marks: null,
     });
 
     editorInsertText(editor, '!');
@@ -228,6 +237,7 @@ describe('primitive method runtime contract', () => {
       paragraph('two!'),
     ]);
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 4 },
       focus: { path: [1, 0], offset: 4 },
     });
@@ -239,7 +249,6 @@ describe('primitive method runtime contract', () => {
     editorReplace(editor, {
       children: [paragraph('one'), paragraph('two')],
       selection: null,
-      marks: null,
     });
 
     editorInsertText(editor, 'replacement', {
@@ -250,12 +259,13 @@ describe('primitive method runtime contract', () => {
     assert.equal(editorGetSelection(editor), null);
   });
 
-  it('insertText in an empty block remains an operation commit, not a replacement', () => {
+  it('insertText in an empty block remains a text change, not a replacement', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
       children: [paragraph('')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -268,15 +278,8 @@ describe('primitive method runtime contract', () => {
     const commit = editorGetLastCommit(editor);
 
     assert.equal(editorString(editor, []), 'U');
-    assert.deepEqual(commit?.classes, ['text']);
-    assert.deepEqual(commit?.operations, [
-      {
-        offset: 0,
-        path: [0, 0],
-        text: 'U',
-        type: 'insert_text',
-      },
-    ]);
+    assert.equal(commit?.changed.has('text'), true);
+    assert.equal(commit?.changed.has('replace'), false);
   });
 
   it('insertText with active marks advances selection so follow-up text stays marked', () => {
@@ -292,6 +295,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -317,6 +321,7 @@ describe('primitive method runtime contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [1, 1], offset: 4 },
       focus: { path: [1, 1], offset: 4 },
     });
@@ -336,8 +341,8 @@ describe('primitive method runtime contract', () => {
           ],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 1], offset: 0 },
         focus: { path: [0, 1], offset: 4 },
       },
@@ -358,6 +363,7 @@ describe('primitive method runtime contract', () => {
       },
     ]);
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [0, 1], offset: 6 },
       focus: { path: [0, 1], offset: 6 },
     });
@@ -367,7 +373,7 @@ describe('primitive method runtime contract', () => {
     const editor = createEditor();
     let calls = 0;
 
-    extendTestSchema(editor, { type: 'read-only', readOnly: true });
+    extendTestSchema(editor, { 'read-only': { readOnly: true } });
 
     editorReplace(editor, {
       children: [
@@ -378,10 +384,11 @@ describe('primitive method runtime contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
+        marks: { bold: true },
       },
-      marks: { bold: true },
     });
 
     setEditorTargetRuntime(editor, {
@@ -389,6 +396,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -418,6 +426,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -445,6 +454,7 @@ describe('primitive method runtime contract', () => {
         { type: 'paragraph', align: 'center', children: [{ text: 'two' }] },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -455,6 +465,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -481,6 +492,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -498,7 +510,7 @@ describe('primitive method runtime contract', () => {
     ]);
   });
 
-  it('insertFragment uses the transaction target when at is omitted inside editor.update', () => {
+  it('slice replacement uses the transaction target when at is omitted inside editor.update', () => {
     const editor = setupCollapsedEditor();
     let calls = 0;
 
@@ -507,6 +519,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -514,7 +527,7 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      tx.fragment.insert([{ text: 'X' }]);
+      tx.fragment.replace([{ text: 'X' }]);
     });
 
     assert.equal(calls, 1);
@@ -533,6 +546,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0, 0], offset: 0 },
           focus: { path: [1, 0, 0], offset: 3 },
         };
@@ -561,6 +575,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0, 0], offset: 0 },
           focus: { path: [1, 0, 0], offset: 3 },
         };
@@ -589,6 +604,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -616,6 +632,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [0, 1], offset: 0 },
           focus: { path: [0, 1], offset: 0 },
         };
@@ -630,7 +647,7 @@ describe('primitive method runtime contract', () => {
     assert.deepEqual(editorGetChildren(editor), [
       {
         type: 'paragraph',
-        children: [{ text: 'onetwo' }],
+        children: [{ bold: true, text: 'onetwo' }],
       },
     ]);
   });
@@ -644,6 +661,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -673,6 +691,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -700,6 +719,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -726,6 +746,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -752,6 +773,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };

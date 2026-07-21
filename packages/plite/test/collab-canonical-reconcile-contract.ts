@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
-  bookmark as editorBookmark,
   getLastCommit as editorGetLastCommit,
   getPathByRuntimeId as editorGetPathByRuntimeId,
   getRuntimeId as editorGetRuntimeId,
@@ -18,7 +17,9 @@ import {
   type Element,
   type EditorUpdatePolicy,
   type Range,
+  type TextSelection,
 } from '@platejs/plite';
+import { createRangeAnchor } from './support/anchor';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -44,10 +45,10 @@ const createCollabEditor = () => {
   editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     },
-    marks: null,
   });
 
   return editor;
@@ -58,11 +59,14 @@ const range = (
   focus: { path: number[]; offset: number }
 ): Range => ({ anchor, focus });
 
-const collapsed = (path: number[], offset: number): Range =>
-  range({ path, offset }, { path, offset });
+const collapsed = (path: number[], offset: number): TextSelection => ({
+  anchor: { path, offset },
+  focus: { path, offset },
+  kind: 'text',
+});
 
 describe('collab canonical remote reconcile contract', () => {
-  it('publishes one remote replace commit, skips history, and preserves same-position bookmarks', () => {
+  it('publishes one remote replace commit, skips history, and preserves same-position anchors', () => {
     const editor = createCollabEditor();
     const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
     const unsubscribe = editorSubscribe(editor, (_snapshot, commit) => {
@@ -72,7 +76,7 @@ describe('collab canonical remote reconcile contract', () => {
     });
     const oldBlockRuntimeId = editorGetRuntimeId(editor, [0]);
     const oldTextRuntimeId = editorGetRuntimeId(editor, [0, 0]);
-    const bookmark = editorBookmark(
+    const anchor = createRangeAnchor(
       editor,
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
     );
@@ -84,7 +88,6 @@ describe('collab canonical remote reconcile contract', () => {
     editor.update(remoteCollabPolicy, (tx) => {
       tx.value.replace({
         children: [paragraph('remote'), paragraph('canonical')],
-        marks: null,
         selection: collapsed([1, 0], 'canonical'.length),
       });
     });
@@ -96,10 +99,9 @@ describe('collab canonical remote reconcile contract', () => {
     assert(commit);
     assert.equal(commits.length, 1);
     assert.equal(commits[0], commit);
-    assert.deepEqual(commit.classes, ['replace']);
     assert.deepEqual(commit.tags, remoteCollabTags);
-    assert.equal(commit.fullDocumentChanged, true);
-    assert.equal(commit.rootRuntimeIdsChanged, true);
+    assert.equal(commit.changed.has('replace'), true);
+    assert.equal(commit.changed.has('root-order'), false);
     assert.equal(
       editor.read((state) => state.history.undos().length),
       0
@@ -120,12 +122,12 @@ describe('collab canonical remote reconcile contract', () => {
     assert(editorGetRuntimeId(editor, [0]));
     assert(editorGetRuntimeId(editor, [0, 0]));
     assert.deepEqual(
-      bookmark.resolve(),
+      anchor.resolve(),
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
     );
-    assert.equal(editorString(editor, bookmark.resolve()!), 'em');
+    assert.equal(editorString(editor, anchor.resolve()!), 'em');
     assert.deepEqual(
-      bookmark.unref(),
+      anchor.release(),
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
     );
   });
@@ -136,7 +138,6 @@ describe('collab canonical remote reconcile contract', () => {
     editor.update(remoteCollabPolicy, (tx) => {
       tx.value.replace({
         children: [paragraph('remote')],
-        marks: null,
         selection: null,
       });
     });

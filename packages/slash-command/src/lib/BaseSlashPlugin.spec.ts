@@ -1,5 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { NODES } from '@platejs/utils';
 
 import { BaseSlashInputPlugin, BaseSlashPlugin } from './BaseSlashPlugin';
 
@@ -11,6 +11,9 @@ describe('BaseSlashPlugin', () => {
     const plugin = editor.getPlugin(BaseSlashPlugin);
     const inputPlugin = editor.getPlugin(BaseSlashInputPlugin);
 
+    expect(plugin.key).toBe('slashCommand');
+    expect(inputPlugin.key).toBe('slashInput');
+    expect(inputPlugin.node.type).toBe(NODES.slashInput);
     expect(plugin.editOnly).toBe(true);
     expect(plugin.options.trigger).toBe('/');
     const triggerPreviousCharPattern =
@@ -26,12 +29,10 @@ describe('BaseSlashPlugin', () => {
     expect(triggerPreviousCharPattern.test('x')).toBe(false);
     expect(createComboboxInput('/')).toEqual({
       children: [{ text: '' }],
-      type: KEYS.slashInput,
+      type: NODES.slashInput,
     });
     expect(inputPlugin.node).toMatchObject({
-      isElement: true,
-      isInline: true,
-      isVoid: true,
+      element: { inline: true, void: 'inline' },
     });
   });
 });

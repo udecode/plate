@@ -28,18 +28,14 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { bold: true },
               properties: {},
               type: 'update',
             },
             text: 'Wiki',
           },
-          {
-            // TODO
-            bold: undefined,
-            text: ' & Worktile',
-          },
+          { text: ' & Worktile' },
         ],
         type: 'paragraph',
       },
@@ -74,7 +70,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { bold: true },
               properties: {},
               type: 'update',
@@ -125,7 +121,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { bold: true },
               properties: {},
               type: 'update',
@@ -134,13 +130,13 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           },
           {
             diff: true,
-            diffOperation: { type: 'delete' },
+            diffIntent: { type: 'delete' },
             text: 'B',
           },
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { bold: true },
               properties: {},
               type: 'update',
@@ -178,7 +174,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { italic: true },
               properties: {},
               type: 'update',
@@ -218,7 +214,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'Worktile' }],
         diff: true,
-        diffOperation: { type: 'insert' },
+        diffIntent: { type: 'insert' },
         type: 'paragraph',
       },
     ],
@@ -251,7 +247,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [{ text: 'Worktile' }],
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             type: 'paragraph',
           },
         ],
@@ -294,33 +290,25 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { bold: true },
               properties: {},
               type: 'update',
             },
             text: 'words',
           },
-          {
-            // TODO
-            bold: undefined,
-            text: ' are ',
-          },
+          { text: ' are ' },
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { bold: true },
               properties: {},
               type: 'update',
             },
             text: 'bold',
           },
-          {
-            // TODO
-            bold: undefined,
-            text: '!',
-          },
+          { text: '!' },
         ],
         type: 'paragraph',
       },
@@ -366,7 +354,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         id: '3',
         children: [
           { text: 'Worktile' },
-          { diff: true, diffOperation: { type: 'insert' }, text: '!' },
+          { diff: true, diffIntent: { type: 'insert' }, text: '!' },
         ],
         type: 'paragraph',
       },
@@ -507,26 +495,26 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: '3/Added paragraph 1' }],
         diff: true,
-        diffOperation: { type: 'insert' },
+        diffIntent: { type: 'insert' },
         type: 'paragraph',
       },
       {
         children: [
           { text: '1/First paragraph' },
-          { diff: true, diffOperation: { type: 'insert' }, text: ' modified' },
+          { diff: true, diffIntent: { type: 'insert' }, text: ' modified' },
         ],
         type: 'paragraph',
       },
       {
         children: [{ text: '4/Added paragraph 2' }],
         diff: true,
-        diffOperation: { type: 'insert' },
+        diffIntent: { type: 'insert' },
         type: 'paragraph',
       },
       {
         children: [
           { text: '2/Second paragraph' },
-          { diff: true, diffOperation: { type: 'insert' }, text: ' modified' },
+          { diff: true, diffIntent: { type: 'insert' }, text: ' modified' },
         ],
         type: 'paragraph',
       },
@@ -574,7 +562,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [{ text: '' }],
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             type: inlineVoidType,
           },
           { text: '!' },
@@ -610,7 +598,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'PingCode' },
           {
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             text: ' & Worktile',
           },
         ],
@@ -643,7 +631,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { bold: true },
               properties: {},
               type: 'update',
@@ -651,16 +639,14 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: 'PingCode',
           },
           {
-            // TODO:
-            bold: undefined,
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             text: ' & ',
           },
           {
             bold: true,
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             text: 'Worktile',
           },
         ],
@@ -704,7 +690,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         key: '2',
         children: [{ text: 'This is the second paragraph.' }],
         diff: true,
-        diffOperation: {
+        diffIntent: {
           type: 'insert',
         },
         type: 'paragraph',
@@ -715,7 +701,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is the third paragraph' },
           {
             diff: true,
-            diffOperation: {
+            diffIntent: {
               type: 'insert',
             },
             text: ', and insert some text',
@@ -792,7 +778,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         key: '2',
         children: [{ text: 'This is the second paragraph.' }],
         diff: true,
-        diffOperation: { type: 'insert' },
+        diffIntent: { type: 'insert' },
         type: 'paragraph',
       },
       {
@@ -801,7 +787,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is the third paragraph' },
           {
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             text: ', and insert some text',
           },
           {
@@ -814,7 +800,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         key: '5',
         children: [{ text: 'This is the fifth paragraph.' }],
         diff: true,
-        diffOperation: { type: 'insert' },
+        diffIntent: { type: 'insert' },
         type: 'paragraph',
       },
       {
@@ -823,7 +809,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is the fourth paragraph' },
           {
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             text: ', and insert some text',
           },
           {
@@ -900,19 +886,19 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { text: 'Ping' },
-          { diff: true, diffOperation: { type: 'insert' }, text: '¶\n' },
+          { diff: true, diffIntent: { type: 'insert' }, text: '¶\n' },
           { text: 'Co' },
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { bold: true },
-              properties: { bold: undefined },
+              properties: {},
               type: 'update',
             },
             text: 'd',
           },
-          { bold: undefined, text: 'e' },
+          { text: 'e' },
         ],
         type: 'paragraph',
       },
@@ -941,7 +927,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { text: 'Ping' },
-          { diff: true, diffOperation: { type: 'insert' }, text: '\n' },
+          { diff: true, diffIntent: { type: 'insert' }, text: '\n' },
           { text: 'Code' },
         ],
         type: 'paragraph',
@@ -971,13 +957,13 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           },
           {
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             text: ' & ',
           },
           {
             bold: true,
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             text: 'co',
           },
         ],
@@ -994,7 +980,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           },
         ],
         diff: true,
-        diffOperation: { type: 'delete' },
+        diffIntent: { type: 'delete' },
         type: 'paragraph',
       },
     ],
@@ -1047,18 +1033,23 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         children: [
           {
             diff: true,
-            diffOperation: {
-              newProperties: { bold: undefined },
+            diffIntent: {
+              newProperties: {},
               properties: { bold: true },
               type: 'update',
             },
             text: 'PingCode',
           },
           {
+            diff: true,
+            diffIntent: { type: 'delete' },
+            text: ' & ',
+          },
+          {
             bold: true,
             diff: true,
-            diffOperation: { type: 'delete' },
-            text: ' & Worktile',
+            diffIntent: { type: 'delete' },
+            text: 'Worktile',
           },
         ],
         type: 'paragraph',
@@ -1105,7 +1096,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { bold: true },
               properties: {},
               type: 'update',
@@ -1154,7 +1145,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             bold: true,
             diff: true,
-            diffOperation: {
+            diffIntent: {
               newProperties: { bold: true },
               properties: {},
               type: 'update',
@@ -1208,7 +1199,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [{ text: '' }],
             diff: true,
-            diffOperation: { type: 'delete' },
+            diffIntent: { type: 'delete' },
             type: inlineVoidType,
           },
           { text: '!' },
@@ -1246,7 +1237,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'Worktile' }],
         diff: true,
-        diffOperation: { type: 'delete' },
+        diffIntent: { type: 'delete' },
         type: 'paragraph',
       },
     ],
@@ -1275,7 +1266,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'PingCode' },
           {
             diff: true,
-            diffOperation: { type: 'delete' },
+            diffIntent: { type: 'delete' },
             text: ' & Worktile',
           },
         ],
@@ -1301,7 +1292,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { text: 'Ping' },
-          { diff: true, diffOperation: { type: 'delete' }, text: '¶' },
+          { diff: true, diffIntent: { type: 'delete' }, text: '¶' },
           { text: 'Code' },
         ],
         type: 'paragraph',
@@ -1327,7 +1318,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { text: 'Ping' },
-          { diff: true, diffOperation: { type: 'delete' }, text: '\n' },
+          { diff: true, diffIntent: { type: 'delete' }, text: '\n' },
           { text: 'Code' },
         ],
         type: 'paragraph',
@@ -1354,12 +1345,12 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'PingCode & W' },
           {
             diff: true,
-            diffOperation: { type: 'delete' },
+            diffIntent: { type: 'delete' },
             text: 'orktile',
           },
           {
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             text: 'hatever',
           },
         ],
@@ -1389,7 +1380,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'Worktile' }],
         diff: true,
-        diffOperation: {
+        diffIntent: {
           newProperties: { someProp: 'World' },
           properties: {},
           type: 'update',
@@ -1430,7 +1421,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'Worktile' }],
         diff: true,
-        diffOperation: {
+        diffIntent: {
           newProperties: { someProp: 'World' },
           properties: { someProp: 'Hello' },
           type: 'update',
@@ -1472,8 +1463,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'Worktile' }],
         diff: true,
-        diffOperation: {
-          newProperties: { someProp: undefined },
+        diffIntent: {
+          newProperties: {},
           properties: { someProp: 'Hello' },
           type: 'update',
         },
@@ -1508,7 +1499,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'NO_DIFF_INLINE FirstA' }],
         diff: true,
-        diffOperation: {
+        diffIntent: {
           type: 'delete',
         },
         type: 'paragraph',
@@ -1516,7 +1507,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'NO_DIFF_INLINE SecondA' }],
         diff: true,
-        diffOperation: {
+        diffIntent: {
           type: 'delete',
         },
         type: 'paragraph',
@@ -1524,7 +1515,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'NO_DIFF_INLINE ThirdA' }],
         diff: true,
-        diffOperation: {
+        diffIntent: {
           type: 'delete',
         },
         type: 'paragraph',
@@ -1532,7 +1523,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'NO_DIFF_INLINE FirstB' }],
         diff: true,
-        diffOperation: {
+        diffIntent: {
           type: 'insert',
         },
         type: 'paragraph',
@@ -1540,7 +1531,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'NO_DIFF_INLINE SecondB' }],
         diff: true,
-        diffOperation: {
+        diffIntent: {
           type: 'insert',
         },
         type: 'paragraph',
@@ -1548,7 +1539,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [{ text: 'NO_DIFF_INLINE ThirdB' }],
         diff: true,
-        diffOperation: {
+        diffIntent: {
           type: 'insert',
         },
         type: 'paragraph',
@@ -1607,7 +1598,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [
               { text: 'ma' },
-              { diff: true, diffOperation: { type: 'delete' }, text: 'a' },
+              { diff: true, diffIntent: { type: 'delete' }, text: 'a' },
               { text: 'in' },
             ],
             type: inlineElementType,
@@ -1674,14 +1665,14 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [{ text: '' }],
             diff: true,
-            diffOperation: { type: 'delete' },
+            diffIntent: { type: 'delete' },
             someProp: 'Hello',
             type: inlineVoidType,
           },
           {
             children: [{ text: '' }],
             diff: true,
-            diffOperation: { type: 'insert' },
+            diffIntent: { type: 'insert' },
             someProp: 'World',
             type: inlineVoidType,
           },

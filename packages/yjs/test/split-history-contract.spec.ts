@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { getSplitHistoryCandidatePaths } from '../src/core/split-history-adapter';
 import { isSplitHistory, type SplitHistory } from '../src/core/split-history';
 
 const splitHistory = (): SplitHistory => ({
@@ -13,6 +14,23 @@ const splitHistory = (): SplitHistory => ({
 });
 
 describe('split history contract', () => {
+  it('bounds sparse structural candidates by changed-path depth', () => {
+    const candidates = getSplitHistoryCandidatePaths([[99_999, 42, 7]]);
+
+    assert.equal(candidates.length, 9);
+    assert.deepEqual(candidates, [
+      [99_999, 42, 7],
+      [99_999, 42, 6],
+      [99_999, 42, 8],
+      [99_999, 42],
+      [99_999, 41],
+      [99_999, 43],
+      [99_999],
+      [99_998],
+      [100_000],
+    ]);
+  });
+
   it('accepts complete split history metadata', () => {
     assert.equal(isSplitHistory(splitHistory()), true);
     assert.equal(

@@ -301,4 +301,3 @@ Open risks:
 - Full lint is not green; current Plite examples/tests have broad pre-existing lint debt outside this rename.
 - Full Chromium browser proof had one flaky pagination stress row that passed on retry; not a rename blocker, but it should stay in perf/proof debt.
 - Historical changelogs, issue ledgers, and research artifacts intentionally still mention upstream Slate; do not rewrite them unless their owner is promoted to public current-state docs.
-

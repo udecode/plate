@@ -4,9 +4,248 @@
     "authority": "Benchmark targets are the future source of truth. Evidence Kit is a legacy import/report archive during migration.",
     "benchmarkCode": "Benchmark implementation lives with the runtime/package code it measures.",
     "activeLoops": "Autoresearch sessions optimize one target id at a time and own only active loop state.",
-    "docs": "Docs and research files are linked evidence, not benchmark control state."
+    "docs": "Docs and research files are linked evidence, not benchmark control state.",
+    "timeouts": {
+      "benchmarkMs": 1800000,
+      "correctnessMs": 600000
+    }
   },
   "targets": [
+    {
+      "id": "plite-schema-construction",
+      "question": "Does canonical schema construction keep the changed representation and untouched identities local for a sparse edit inside one deep, wide top-level node?",
+      "owner": "plite",
+      "family": "core-schema",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_SCHEMA_CONSTRUCTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-construction-benchmark.ts --output=tmp/plite-schema-construction-benchmark.json",
+      "metrics": {
+        "primary": "plite_schema_construction_max_changed_span",
+        "direction": "lower",
+        "unit": "tokens",
+        "printsMetric": true,
+        "upgrade": "Sparse canonical construction must retain untouched boundary identities and change fewer than 64 tokens. Whole publication timing remains diagnostic because immutable plain-JSON ancestor reconstruction scales with ancestor width."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/slice-fit-contract.test.ts",
+        "policy": "Promotion requires contextual fitter laws, strict direct-write rejection, mapped selection/runtime identity, canonical idempotence, and the strict locality benchmark."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-schema-construction-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-07-18-wordgard-plite-full-architecture-ledger.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_schema_construction_max_changed_span<64 and plite_schema_construction_boundary_identity_preserved=1"
+      }
+    },
+    {
+      "id": "plite-content-slice-value",
+      "question": "What does immutable clone, validation, and preparation cost at 10, 100, 1,000, and 10,000 nodes, and does trusted ContentSlice reuse identity and preparation without size-dependent work?",
+      "owner": "plite",
+      "family": "core-slice",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_CONTENT_SLICE_VALUE_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-content-slice-value-benchmark.ts --output=tmp/plite-content-slice-value-benchmark.json",
+      "metrics": {
+        "primary": "plite_content_slice_value_trusted_identity_reuse",
+        "direction": "higher",
+        "unit": "boolean",
+        "printsMetric": true,
+        "upgrade": "Record closed and untrusted fromJSON clone-plus-validation-and-preparation p50/p95/p99 alongside trusted identity and preparation reuse at 10, 100, 1,000, and 10,000 nodes. Promotion requires exact source isolation, deep freezing, trusted identity reuse, and trusted preparation reuse; latency remains baseline-only until comparable runs justify a target."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./benchmarks/editor/benchmarks/plite-content-slice-value-benchmark.test.ts",
+        "policy": "The live ContentSlice API must own immutable snapshots, trusted identity reuse, and trusted preparation reuse, while this registered benchmark remains the single metric and artifact authority."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-content-slice-value-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-07-20-wordgard-plite-slice-architecture.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_content_slice_value_trusted_identity_reuse=1 and plite_content_slice_value_trusted_preparation_reuse=1 and plite_content_slice_value_source_alias_free=1 and plite_content_slice_value_deeply_frozen=1; timing metrics are baseline-only"
+      }
+    },
+    {
+      "id": "plite-schema-architecture",
+      "question": "Does the compiled schema keep a 100-type, 200-exact-property, 20-prefix, 30-group, four-root corpus cheap to compile, query, validate, reconfigure equivalently, and retain?",
+      "owner": "plite",
+      "family": "core-schema",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_SCHEMA_ARCHITECTURE_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts --output=tmp/plite-schema-architecture-benchmark.json",
+      "metrics": {
+        "primary": "plite_schema_architecture_compile_p95_ms",
+        "direction": "lower",
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Compile p95 must stay below 16 ms; semantically comparable warm type, exact-property, prefix, and declared-wrapper queries target at least 2x less latency; unknown wrapper lookup reports first/warm timing and zero plan searches after the first; a sparse edit in a 50k-block constructor-owned document must take the incremental path, validate exactly the changed text property and owning-element property, visit zero properties in the unchanged named root, and take zero full fallbacks; equivalent reconfiguration must execute zero compiles and stay within 5% of the recorded legacy p95; every apples-to-apples forced-GC retained-heap sample must stay at least 25% below the recorded legacy p50. Group, allowed-parent, compiler-only compile scope, cold-detached/repeated-frozen 10k-block full validation, and deterministic representation-byte rows are current baselines without invented ratios."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/schema-target-model-oracle.test.ts ./packages/plite/test/schema-compiler-laws.test.ts ./packages/plite/test/schema-compiler.test.ts ./packages/plite/test/incremental-schema-validation.test.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts",
+        "policy": "Promotion requires replayable target-model equivalence, compiler/property algebra laws, bounded wrapper-plan caching, differential incremental/full validation, exact 50k sparse-edit property-visit and unchanged-root counters, compiler contracts, exact corpus counts, four-root compilation, and strict benchmark assertions."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-schema-architecture-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-07-20-wordgard-plite-schema-architecture.md",
+          "docs/plans/artifacts/wordgard-plite-schema-architecture/baseline.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_schema_architecture_compile_p95_ms<16 and comparable type/exact-property/prefix/declared-wrapper ratios<=0.5 and plite_schema_architecture_wrapper_plan_searches_after_first=0 and plite_schema_architecture_equivalent_reconfigure_compile_count=0 and equivalent-reconfiguration ratio<=1.05 and worst-sample plite_schema_architecture_retained_heap_baseline_ratio<=0.75; unknown-wrapper first/warm timing, group, allowed-parent, compile-scope, cold/warm full-validation, and retained-representation-proxy metrics are baseline-only"
+      }
+    },
+    {
+      "id": "plite-fit-content-locality",
+      "question": "Does detached fitContent work scale with the immutable slice and parent rather than unrelated editor-root or schema width?",
+      "owner": "plite",
+      "family": "core-slice",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_FIT_CONTENT_LOCALITY_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-fit-content-locality-benchmark.ts --output=tmp/plite-fit-content-locality-benchmark.json",
+      "metrics": {
+        "primary": "plite_fit_content_document_width_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "Warm fitting of one fixed detached parent/slice must remain within 1.5x across 10 to 50,000 unrelated editor blocks and 5 to 100 declared element types. Cold editor setup and 1/10/100-node slice timings remain absolute baselines."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/slice-fit-content-contract.test.ts ./benchmarks/editor/benchmarks/plite-fit-content-locality-benchmark.test.ts",
+        "policy": "Every measured fit must validate under the detached parent, remain deterministic and idempotent, and publish no editor state or commit."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-fit-content-locality-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-07-20-wordgard-plite-slice-architecture.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_fit_content_document_width_ratio<=1.5 and plite_fit_content_schema_width_ratio<=1.5 and zero fit correctness failures or editor commits; slice-size and cold-editor rows are baseline-only"
+      }
+    },
+    {
+      "id": "plite-correction-worklist",
+      "question": "Does a sparse edit schedule only matching correction events for touched nodes and ancestors as document width grows?",
+      "owner": "plite",
+      "family": "core-corrections",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_CORRECTION_WORKLIST_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-correction-worklist-benchmark.ts --output=tmp/plite-correction-worklist-benchmark.json",
+      "metrics": {
+        "primary": "plite_correction_worklist_max_touched_targets",
+        "direction": "lower",
+        "unit": "targets",
+        "printsMetric": true,
+        "upgrade": "A property write must schedule exactly the matching properties and content corrections, never children corrections or unrelated siblings, through the 50,000-block cohort."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/normalization-contract.ts",
+        "policy": "Promotion requires composed-change classification, runtime-ID remapping, fixed-point/cycle laws, force repair, root lifecycle, and strict sparse touched-count proof."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-correction-worklist-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-07-18-wordgard-plite-full-architecture-ledger.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_correction_worklist_max_touched_targets<=2"
+      }
+    },
+    {
+      "id": "plite-history-depth",
+      "question": "Does the cost of one history-skipped remote commit stay independent of retained undo depth?",
+      "owner": "plite-history",
+      "family": "history",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_HISTORY_DEPTH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-history-depth-benchmark.ts --output=tmp/plite-history-depth-benchmark.json",
+      "metrics": {
+        "primary": "plite_history_depth_median_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "At equal 1,000-commit remote bursts, depth 1,000 must stay within 4x the depth-100 median and p95 while lazy undo resolves exactly."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite-history/test/history-branch-contract.spec.ts",
+        "policy": "The benchmark gate requires immutable depth clipping, lazy/eager equivalence, explicit mapping failure, and exact undo after the burst."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-history-depth-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-07-19-wordgard-plite-final-extraction.md"]
+      },
+      "thresholds": {
+        "promotion": "plite_history_depth_median_ratio<=4 and plite_history_depth_p95_ratio<=4 and undoCorrectnessRequired=true"
+      }
+    },
+    {
+      "id": "plite-yjs-event-change-bridge",
+      "question": "Does one sparse Yjs edit stay local and distance-independent across a 10,000-block root?",
+      "owner": "yjs",
+      "family": "collaboration",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_YJS_EVENT_CHANGE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts packages/yjs/scripts/benchmark-event-change-bridge.ts --output=tmp/plite-yjs-event-change-bridge-benchmark.json",
+      "metrics": {
+        "primary": "plite_yjs_event_change_sync_distance_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "Start, middle, and end edits must keep local and sync medians within 2x, decode one top-level node, retain one changed range, and keep runtime-ID p95 below 1ms."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/yjs/test/remote-import-contract.spec.ts ./packages/yjs/test/canonical-change-contract.spec.ts",
+        "policy": "The performance claim requires exact event-native traces, narrow changed ranges, full event-shape coverage, and explicit fallback tests."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-yjs-event-change-bridge-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-07-19-wordgard-plite-final-extraction.md"]
+      },
+      "thresholds": {
+        "promotion": "plite_yjs_event_change_local_distance_ratio<=2 and plite_yjs_event_change_sync_distance_ratio<=2 and plite_yjs_event_change_runtime_ids_p95_ms<=1 and traceInvariantRequired=true"
+      }
+    },
     {
       "id": "react-huge-document-legacy-compare",
       "question": "Does Slate v2 beat legacy Slate for 5,000-block React editing, selection, startup, and full-document replacement?",
@@ -23,7 +262,7 @@
         "upgrade": "Primary metric is the worst p95 ratio across the 5,000-block default/render-auto and DOM-present product lanes versus legacy chunking-on."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
+        "command": "pnpm check:plite",
         "policy": "Promotion requires the benchmark p95 ratio plus the fast Slate v2 check suite."
       },
       "artifacts": [
@@ -66,7 +305,7 @@
         "upgrade": "Primary metric is the worst normalized budget ratio across core huge-doc ops, React legacy compare, browser type-to-paint, click latency, cold and materialized selection, model-backed typing, DOM budget, long-task, listener, selector, and overlay locality lanes. Strict budget mode must be enabled so over-budget rows fail instead of only printing metrics."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
+        "command": "pnpm check:plite",
         "policy": "Promotion requires the aggregate suite metric at or below budget, zero react_huge_doc_full_budget_failure_count, zero react_huge_doc_full_failure_count, and the fast Slate v2 check suite."
       },
       "artifacts": [
@@ -104,8 +343,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -135,14 +374,14 @@
       "cwd": ".",
       "command": "bun benchmarks/slate-v2/donor/browser/react/runtime-node-fanout.tsx",
       "metrics": {
-        "primary": "slate_react_runtime_node_fanout_count",
+        "primary": "plite_react_runtime_node_fanout_count",
         "direction": "lower",
         "unit": "count",
         "printsMetric": true,
         "upgrade": "Primary metric is the aggregate fanout violation count; local root-order edits should be 0 and full replacement should stay within the benchmark allowance."
       },
       "correctness": {
-        "command": "pnpm --filter @platejs/slate-react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx -t \"fan out|full-document replacement\"",
+        "command": "pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx -t \"fan out|full-document replacement\"",
         "policy": "Promotion requires the runtime-node selector fanout contract plus the benchmark metric at 0."
       },
       "artifacts": [
@@ -157,7 +396,7 @@
         ]
       },
       "thresholds": {
-        "promotion": "slate_react_runtime_node_fanout_count=0"
+        "promotion": "plite_react_runtime_node_fanout_count=0"
       }
     },
     {
@@ -176,8 +415,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -199,6 +438,74 @@
       }
     },
     {
+      "id": "core-resolved-token-cursor",
+      "question": "Does a package-private cursor make repeated token walks scale with document depth while preserving structural path answers?",
+      "owner": "plite",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/resolved-token-cursor.mjs --output=tmp/plite-resolved-token-cursor-benchmark.json",
+      "metrics": {
+        "primary": "plite_resolved_token_cursor_worst_large_stress_median_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "Promotion requires parity, no normal-cohort regression, and the large and stress median/p95 ratio gates in the benchmark artifact."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/resolved-token-cursor.test.ts",
+        "policy": "Promotion requires generated query equivalence plus unchanged public structural path APIs."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-resolved-token-cursor-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-07-19-wordgard-plite-final-extraction.md",
+          "docs/plans/artifacts/wordgard-plite-final-extraction/resolved-token-cursor-review.md",
+          "docs/plans/artifacts/wordgard-plite-final-extraction/resolved-token-cursor-benchmark.json"
+        ]
+      },
+      "thresholds": {
+        "promotion": "largeAndStressWin=true and normalDoesNotRegress=true and parity=true"
+      }
+    },
+    {
+      "id": "react-stable-id-overlay-source",
+      "question": "Does one changed stable-ID decoration, annotation, or widget justify incremental mapping at 10,000 and 100,000 source entries?",
+      "owner": "plite-react",
+      "family": "react-locality",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_OVERLAY_SOURCE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/stable-id-overlay-source.mjs",
+      "metrics": {
+        "primary": "plite_overlay_decoration_recreated_100000_indexed_median_ms",
+        "direction": "lower",
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "The artifact reports all decoration, annotation, and widget median/p95 controls; promotion requires every 100k row to clear the shared gate."
+      },
+      "correctness": {
+        "command": "pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/stable-id-mapped-source.test.ts test/annotation-store-contract.test.tsx test/widget-layer-contract.test.tsx test/projections-and-selection-contract.test.tsx",
+        "policy": "Promotion requires snapshot/subscriber parity plus every 100k concept and churn row above 3x median and 2x p95 speedup."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-stable-id-overlay-source-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-07-19-wordgard-plite-final-extraction.md"]
+      },
+      "thresholds": {
+        "promotion": "All 100k full-rebuild medians exceed 16.67ms; all indexed rows beat the control by at least 3x median and 2x p95."
+      }
+    },
+    {
       "id": "react-active-typing-breakdown",
       "question": "Where does active typing time go in the React runtime?",
       "owner": "slate-v2",
@@ -214,8 +521,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -252,7 +559,7 @@
         "upgrade": "Primary metric compares rows=800 virtualized burst latency against the staged 500-row table burst in the same benchmark run."
       },
       "correctness": {
-        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright test playwright/integration/examples/pagination.test.ts --project=chromium -g \"keeps rows=800 virtualized pagination in the staged-class perf envelope|keeps fast staged text after insert breaks at the model caret|selects projected pagination words on native double click|places virtualized pagination selection at wrapped line ends\"",
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite exec playwright test --config playwright.config.ts --project=chromium tests/plite-browser/donor/examples/pagination.test.ts -g \"keeps rows=800 virtualized pagination in the staged-class perf envelope|keeps fast staged text after insert breaks at the model caret|selects projected pagination words on native double click|places virtualized pagination selection at wrapped line ends\"",
         "policy": "Promotion requires virtualized burst perf plus native pagination selection/editing correctness."
       },
       "artifacts": [
@@ -275,7 +582,7 @@
       "family": "react-pagination",
       "kind": "browser-trace",
       "cwd": ".",
-      "command": "SLATE_PAGINATION_REAL_OPS_PROFILER=0 SLATE_PAGINATION_REAL_OPS_COHORTS=current,rows800 SLATE_PAGINATION_REAL_OPS_ITERATIONS=5 bun benchmarks/slate-v2/donor/browser/react/pagination-virtualized-real-editor-ops.mjs",
+      "command": "PLITE_PAGINATION_REAL_OPS_PROFILER=0 PLITE_PAGINATION_REAL_OPS_COHORTS=current,rows800 PLITE_PAGINATION_REAL_OPS_ITERATIONS=5 bun benchmarks/slate-v2/donor/browser/react/pagination-virtualized-real-editor-ops.mjs",
       "metrics": {
         "primary": "pagination_virtualized_real_ops_worst_p95_ms",
         "direction": "lower",
@@ -284,7 +591,7 @@
         "upgrade": "Primary metric is the worst p95 across real editor operations for the selected cohorts, with click, selection, typing, break, delete, undo/redo, scroll-click, DOM node, and page-surface guardrails in the same artifact. Run profiler-off for user-visible latency."
       },
       "correctness": {
-        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=chromium tests/slate-browser/donor/examples/pagination.test.ts -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite exec playwright test --config playwright.config.ts --project=chromium tests/plite-browser/donor/examples/pagination.test.ts -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
         "policy": "Promotion requires latency gains without native click, selection, margin, wrapped-line, or double-click regressions."
       },
       "artifacts": [
@@ -316,7 +623,7 @@
         "upgrade": "Primary metric is browser p95 type-to-paint for the default auto and staged DOM-present surfaces. Supporting METRIC lines cover click-to-paint, click-to-selection-ready, cold select-to-paint, materialized select-to-paint, model-backed typing, DOM nodes, heap, long tasks, listener counts, and selector counts."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
+        "command": "pnpm check:plite",
         "policy": "Use this trace for diagnosis only. Promotion is owned by react-huge-document-full strict budget mode or a target-specific correctness command."
       },
       "artifacts": [
@@ -345,7 +652,7 @@
       "family": "react-large-document",
       "kind": "browser-trace",
       "cwd": ".",
-      "command": "SLATE_BROWSER_TRACE_SURFACES=virtualized SLATE_BROWSER_TRACE_ITERATIONS=5 SLATE_BROWSER_TRACE_TYPE_OPS=10 SLATE_BROWSER_TRACE_NATIVE_TIMEOUT_MS=5000 bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
+      "command": "PLITE_BROWSER_TRACE_SURFACES=virtualized PLITE_BROWSER_TRACE_ITERATIONS=5 PLITE_BROWSER_TRACE_TYPE_OPS=10 PLITE_BROWSER_TRACE_NATIVE_TIMEOUT_MS=5000 bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
       "metrics": {
         "primary": "react_huge_doc_type_to_paint_p95_ms",
         "direction": "lower",
@@ -354,7 +661,7 @@
         "upgrade": "Primary metric is browser p95 type-to-paint for the virtualized surface; DOM, heap, and long-task metrics remain supporting guardrails."
       },
       "correctness": {
-        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright test playwright/integration/examples/huge-document.test.ts --project=chromium -g \"exposes virtualized DOM strategy controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite exec playwright test --config playwright.config.ts --project=chromium tests/plite-browser/donor/examples/huge-document.test.ts -g \"exposes virtualized DOM strategy controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",
         "policy": "Promotion requires virtualized example controls, bounded coverage metrics, and stable dynamic-height scroll behavior."
       },
       "artifacts": [
@@ -389,8 +696,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -427,8 +734,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -456,7 +763,7 @@
       "family": "core-current",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/normalization.mjs",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/normalization.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -465,8 +772,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/normalization-contract.ts",
+        "policy": "Normalization benchmark iteration runs the focused correction and normalization laws; pnpm check:plite remains a separate handoff gate."
       },
       "artifacts": [
         {
@@ -488,13 +795,71 @@
       }
     },
     {
-      "id": "core-query-ref-observation",
-      "question": "How expensive are query, ref, and observation paths?",
+      "id": "core-document-change-current",
+      "question": "How expensive are canonical document changes and replay?",
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/query-ref-observation.mjs",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/document-change.mjs",
+      "metrics": {
+        "primary": "transaction_median_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": false,
+        "upgrade": "Emit benchmark-native METRIC lines when this target joins automated comparison runs."
+      },
+      "correctness": {
+        "command": "pnpm check:plite",
+        "policy": "Canonical replay performance is valid only when the Plite package and browser correctness gate passes."
+      },
+      "artifacts": [
+        {
+          "path": "docs/plans/artifacts/wordgard-plite-rewrite-comparison/changeset-prototype-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-07-17-wordgard-plite-rewrite-execution.md"]
+      }
+    },
+    {
+      "id": "core-yjs-collaboration-current",
+      "question": "How expensive are collaborative sync, awareness, and reconnect paths?",
+      "owner": "slate-v2",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs",
+      "metrics": {
+        "primary": "yjs_collaboration_worst_p95_ms",
+        "direction": "lower",
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Promote calibrated thresholds after three comparable release runs."
+      },
+      "correctness": {
+        "command": "pnpm check:plite",
+        "policy": "Collaboration performance is valid only when the Plite package and browser correctness gate passes."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/slate-yjs-collaboration-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-07-17-wordgard-plite-rewrite-execution.md"]
+      }
+    },
+    {
+      "id": "core-query-anchor-observation",
+      "question": "How expensive are query, anchor, and observation paths?",
+      "owner": "slate-v2",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/query-anchor-observation.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -503,12 +868,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": "tmp/slate-query-ref-observation-benchmark.json",
+          "path": "tmp/plite-query-anchor-observation-benchmark.json",
           "required": true
         }
       ],
@@ -532,7 +897,7 @@
       "family": "core-current",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/node-transforms.mjs",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/node-transforms.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -541,8 +906,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -570,7 +935,7 @@
       "family": "core-current",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/text-selection.mjs",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/text-selection.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -579,8 +944,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -608,7 +973,7 @@
       "family": "core-current",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/editor-store.mjs",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/editor-store.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -617,8 +982,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -640,13 +1005,13 @@
       }
     },
     {
-      "id": "core-refs-projection",
-      "question": "How expensive are refs and projection paths?",
+      "id": "core-anchors-projection",
+      "question": "How expensive are anchors and projection paths?",
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/refs-projection.mjs",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/anchors-projection.mjs",
       "metrics": {
         "primary": "core_benchmark_seconds",
         "direction": "lower",
@@ -655,12 +1020,12 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
-          "path": "tmp/slate-refs-projection-benchmark.json",
+          "path": "tmp/plite-anchors-projection-benchmark.json",
           "required": true
         }
       ],
@@ -684,17 +1049,17 @@
       "family": "clipboard",
       "kind": "current",
       "cwd": ".",
-      "command": "SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs",
+      "command": "PLITE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 PLITE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs --output=tmp/slate-clipboard-large-payload-benchmark.json",
       "metrics": {
-        "primary": "clipboard_seconds",
+        "primary": "plite_clipboard_worst_issue_p95_ms",
         "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Primary metric is the worst measured p95 across issue-shaped paste, copy, and cut work only. Supporting metrics isolate setup and correctness inspection, DOM encode/decode, HostCodec parse, detached fit, slice commit, changed spans, structural retention, heap deltas, retained heap with exposed GC, correctness failures, and fixed issue-budget failures."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "bun test benchmarks/editor/benchmarks/plite-clipboard-large-payload-benchmark.test.ts",
+        "policy": "Promotion requires the bounded live clipboard benchmark contract plus plite_clipboard_correctness_failures=0 from the authoritative issue-sized run."
       },
       "artifacts": [
         {
@@ -722,7 +1087,7 @@
       "family": "collaboration",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs",
       "metrics": {
         "primary": "yjs_collaboration_worst_p95_ms",
         "direction": "lower",
@@ -754,12 +1119,12 @@
     },
     {
       "id": "collab-readiness",
-      "question": "Are remote replay, bookmark rebase, canonical replacement, history skip, and cleanup lanes ready?",
+      "question": "Are remote change application, anchor rebase, canonical replacement, history skip, and cleanup lanes ready?",
       "owner": "slate-v2",
       "family": "collaboration",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/collab-readiness.mjs",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/collab-readiness.mjs",
       "metrics": {
         "primary": "benchmark_seconds",
         "direction": "lower",
@@ -768,8 +1133,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -806,8 +1171,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -844,8 +1209,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -882,8 +1247,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -920,8 +1285,8 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -958,7 +1323,7 @@
         "upgrade": "Primary metric is the structural-operation composite p95 across the catastrophic rich-text lanes; legacy ratio remains a supporting guardrail."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
+        "command": "pnpm check:plite",
         "policy": "Promotion requires the core benchmark metric plus the fast Slate v2 check suite."
       },
       "artifacts": [
@@ -1001,8 +1366,8 @@
         "printsMetric": true
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "pnpm check:plite",
+        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
       },
       "artifacts": [
         {
@@ -1017,7 +1382,7 @@
         ]
       },
       "thresholds": {
-        "promotion": "history_compare_worst_p95_ratio at or below 2.0 with bun check green",
+        "promotion": "history_compare_worst_p95_ratio at or below 2.0 with pnpm check:plite green",
         "plateau": "stop after 2 correctness-green packets with less than 5% gain"
       },
       "migration": {
@@ -1028,41 +1393,35 @@
       }
     },
     {
-      "id": "core-transaction-current",
-      "question": "How expensive is the current-only transaction path?",
-      "owner": "slate-v2",
-      "family": "core-current",
+      "id": "plite-transaction-execution",
+      "question": "Does one native immutable transaction publish a mixed structural/text command batch once and beat five equivalent publications?",
+      "owner": "plite",
+      "family": "core-transaction",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/transaction-execution.mjs",
+      "command": "PLITE_TRANSACTION_EXECUTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/transaction-execution.mjs",
       "metrics": {
-        "primary": "core_benchmark_seconds",
+        "primary": "plite_transaction_mixed_batch_p95_ratio",
         "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "The mixed native batch must preserve snapshot parity, publish exactly once, keep its median at or below separate publications, and keep p95 within 1.25x."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/state-tx-public-api-contract.ts ./packages/plite/test/transaction-extension-contract.ts ./packages/plite/test/generic-update-policy-contract.ts",
+        "policy": "Promotion requires native transaction isolation/composition laws plus snapshot parity and publication-count assertions in the benchmark."
       },
       "artifacts": [
         {
-          "path": "tmp/slate-transaction-benchmark.json",
-          "required": false
+          "path": "tmp/plite-transaction-execution-benchmark.json",
+          "required": true
         }
       ],
       "docs": {
-        "sources": [
-          "benchmarks/editor/research/evidence-source-map.md",
-          "benchmarks/editor/iterations/003-evidence-control-plane.md"
-        ]
+        "sources": ["docs/plans/2026-07-19-wordgard-plite-final-extraction.md"]
       },
-      "migration": {
-        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "core-transaction-current",
-        "evidenceKitCategory": "slate-core-transaction-current",
-        "evidenceKitActive": true
+      "thresholds": {
+        "promotion": "plite_transaction_mixed_batch_median_ratio<=1 and plite_transaction_mixed_batch_p95_ratio<=1.25 and publicationInvariantRequired=true and snapshotParityRequired=true"
       }
     },
     {
@@ -1072,7 +1431,7 @@
       "family": "core-current",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/update-policy.mjs",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/update-policy.mjs",
       "metrics": {
         "primary": "historyToDefaultP95",
         "direction": "lower",
@@ -1098,41 +1457,35 @@
       }
     },
     {
-      "id": "history-retained-memory",
-      "question": "How much retained memory does history keep?",
-      "owner": "slate-v2",
+      "id": "plite-history-retained-memory",
+      "question": "Does one 5,000-block History batch retain one versioned change without duplicating more than 2.25x its input payload?",
+      "owner": "plite-history",
       "family": "history",
       "kind": "current",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/core/current/history-retained-memory.mjs",
+      "command": "PLITE_HISTORY_RETAINED_MEMORY_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/history-retained-memory.mjs",
       "metrics": {
-        "primary": "benchmark_seconds",
+        "primary": "plite_history_retained_memory_json_ratio",
         "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "Both replacement and range-delete lanes must restore one versioned entry, run with exposed GC, and keep serialized History payload at or below 2.25x the measured input."
       },
       "correctness": {
-        "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite-history/test/history-branch-contract.spec.ts ./packages/plite-history/test/history-persistence-contract.spec.ts",
+        "policy": "Promotion requires immutable branch and persistence laws plus the benchmark's exact restore and GC assertions."
       },
       "artifacts": [
         {
           "path": "tmp/slate-history-retained-memory-benchmark.json",
-          "required": false
+          "required": true
         }
       ],
       "docs": {
-        "sources": [
-          "benchmarks/editor/research/evidence-source-map.md",
-          "benchmarks/editor/iterations/003-evidence-control-plane.md"
-        ]
+        "sources": ["docs/plans/2026-07-19-wordgard-plite-final-extraction.md"]
       },
-      "migration": {
-        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "history-retained-memory",
-        "evidenceKitCategory": "slate-history-retained-memory",
-        "evidenceKitActive": true
+      "thresholds": {
+        "promotion": "plite_history_retained_memory_json_ratio<=2.25 and plite_history_retained_memory_gc_available=1 and restoredEntryRequired=true"
       }
     }
   ]

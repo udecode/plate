@@ -44,8 +44,8 @@ docs:
 将 kit 添加到你的插件中：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
-import { FontKit } from '@/components/editor/plugins/font-kit';
+import { createPlateEditor } from "platejs/react";
+import { FontKit } from "@/components/editor/plugins/font-kit";
 
 const editor = createPlateEditor({
   plugins: [
@@ -77,8 +77,8 @@ import {
   FontColorPlugin,
   FontFamilyPlugin,
   FontSizePlugin,
-} from '@platejs/basic-styles/react';
-import { createPlateEditor } from 'platejs/react';
+} from "@platejs/basic-styles/react";
+import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
   plugins: [
@@ -91,19 +91,13 @@ const editor = createPlateEditor({
 });
 ```
 
-### 配置插件
+### 配置默认字体颜色
 
-你可以使用自定义选项和目标元素来配置各个字体插件。
+字体插件会注册字符串类型的文本标记，因此它们跟随选中文本，而不是块级目标列表。只有 UI 需要不同默认值时才配置渲染属性。
 
 ```tsx
-import {
-  FontColorPlugin,
-  FontBackgroundColorPlugin,
-  FontSizePlugin,
-  FontFamilyPlugin,
-} from '@platejs/basic-styles/react';
-import { KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { FontColorPlugin } from "@platejs/basic-styles/react";
+import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
   plugins: [
@@ -111,32 +105,15 @@ const editor = createPlateEditor({
     FontColorPlugin.configure({
       inject: {
         nodeProps: {
-          defaultNodeValue: 'black',
+          defaultNodeValue: "currentColor",
         },
-        targetPlugins: [KEYS.p],
-      },
-    }),
-    FontSizePlugin.configure({
-      inject: {
-        targetPlugins: [KEYS.p],
-      },
-    }),
-    FontBackgroundColorPlugin.configure({
-      inject: {
-        targetPlugins: [KEYS.p],
-      },
-    }),
-    FontFamilyPlugin.configure({
-      inject: {
-        targetPlugins: [KEYS.p],
       },
     }),
   ],
 });
 ```
 
-- `inject.nodeProps.defaultNodeValue`: 设置默认字体颜色值。
-- `inject.targetPlugins`: 指定哪些元素类型可以接收字体样式（影响 HTML 解析）。
+`FontColorPlugin` 的默认值为 `black`。HTML 解析器会把字体样式直接写入文本属性；块级注入目标不会限制文本标记。
 
 ### 添加工具栏按钮
 
@@ -168,64 +145,64 @@ const editor = createPlateEditor({
 
 ## 转换
 
-### `tf.backgroundColor.addMark`
+### `editor.update.backgroundColor.set`
 
 在选中的文本上设置字体背景色标记。
 
-<API name="tf.backgroundColor.addMark">
-<APIParameters>
-  <APIItem name="value" type="string">
-    要设置的背景色值（例如：`'#ff0000'`、`'red'`）。
-  </APIItem>
-</APIParameters>
+<API name="editor.update.backgroundColor.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      要设置的背景色值（例如：`'#ff0000'`、`'red'`）。
+    </APIItem>
+  </APIParameters>
 </API>
 
-### `tf.color.addMark`
+### `editor.update.color.set`
 
 在选中的文本上设置字体颜色标记。
 
-<API name="tf.color.addMark">
-<APIParameters>
-  <APIItem name="value" type="string">
-    要设置的颜色值（例如：`'#0000ff'`、`'blue'`）。
-  </APIItem>
-</APIParameters>
+<API name="editor.update.color.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      要设置的颜色值（例如：`'#0000ff'`、`'blue'`）。
+    </APIItem>
+  </APIParameters>
 </API>
 
-### `tf.fontFamily.addMark`
+### `editor.update.fontFamily.set`
 
 在选中的文本上设置字体标记。
 
-<API name="tf.fontFamily.addMark">
-<APIParameters>
-  <APIItem name="value" type="string">
-    要设置的字体值（例如：`'Arial'`、`'Times New Roman'`）。
-  </APIItem>
-</APIParameters>
+<API name="editor.update.fontFamily.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      要设置的字体值（例如：`'Arial'`、`'Times New Roman'`）。
+    </APIItem>
+  </APIParameters>
 </API>
 
-### `tf.fontSize.addMark`
+### `editor.update.fontSize.set`
 
 在选中的文本上设置字体大小标记。
 
-<API name="tf.fontSize.addMark">
-<APIParameters>
-  <APIItem name="value" type="string">
-    要设置的字体大小值（例如：`'16px'`、`'1.2em'`）。
-  </APIItem>
-</APIParameters>
+<API name="editor.update.fontSize.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      要设置的字体大小值（例如：`'16px'`、`'1.2em'`）。
+    </APIItem>
+  </APIParameters>
 </API>
 
-### `tf.fontWeight.addMark`
+### `editor.update.fontWeight.set`
 
 在选中的文本上设置字体粗细标记。
 
-<API name="tf.fontWeight.addMark">
-<APIParameters>
-  <APIItem name="value" type="string">
-    要设置的字体粗细值（例如：`'bold'`、`'400'`、`'600'`）。
-  </APIItem>
-</APIParameters>
+<API name="editor.update.fontWeight.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      要设置的字体粗细值（例如：`'bold'`、`'400'`、`'600'`）。
+    </APIItem>
+  </APIParameters>
 </API>
 
 ## API

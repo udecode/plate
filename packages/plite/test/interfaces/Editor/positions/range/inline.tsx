@@ -16,6 +16,7 @@ export const test = (editor) =>
   Array.from(
     editorPositions(editor, {
       at: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 4], offset: 2 },
       },

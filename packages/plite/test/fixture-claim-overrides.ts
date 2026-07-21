@@ -57,9 +57,17 @@ const EXPLICIT_CUT_FIXTURES = [
 ] as const;
 
 const EXPLICIT_CUT_FIXTURE_SET = new Set<string>(EXPLICIT_CUT_FIXTURES);
+const EXPLICIT_CUT_FIXTURE_PREFIXES = [
+  'interfaces/Path/transform/',
+  'interfaces/Point/transform/',
+  'interfaces/Range/transform/',
+] as const;
 
 export const IMPLICIT_CANONICALIZATION_CUT_REASON =
   'Legacy ordinary-op adjacent-text/spacer canonicalization row. The live Plite claim keeps this cleanup explicit-only.';
 
 export const isExplicitCutFixture = (fixturePathFromTestRoot: string) =>
-  EXPLICIT_CUT_FIXTURE_SET.has(fixturePathFromTestRoot);
+  EXPLICIT_CUT_FIXTURE_SET.has(fixturePathFromTestRoot) ||
+  EXPLICIT_CUT_FIXTURE_PREFIXES.some((prefix) =>
+    fixturePathFromTestRoot.startsWith(prefix)
+  );

@@ -17,29 +17,6 @@ const createColumnRuntimeEditor = ({
   });
 
 describe('BaseColumnPlugin Plite runtime', () => {
-  it('unwraps a single-column group back to plain blocks', () => {
-    const editor = createColumnRuntimeEditor({
-      value: [
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'Only' }], type: 'p' }],
-              type: 'column',
-              width: '100%',
-            },
-          ],
-          type: 'column_group',
-        },
-      ],
-    });
-
-    editor.update.value.repair();
-
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: 'Only' }], type: 'p' },
-    ]);
-  });
-
   it('normalizes column widths so the group sums to one hundred percent', () => {
     const editor = createColumnRuntimeEditor({
       value: [
@@ -82,58 +59,10 @@ describe('BaseColumnPlugin Plite runtime', () => {
     ]);
   });
 
-  it('unwraps column groups that contain only non-column children', () => {
-    const editor = createColumnRuntimeEditor({
-      value: [
-        {
-          children: [
-            { children: [{ text: 'A' }], type: 'p' },
-            { children: [{ text: 'B' }], type: 'blockquote' },
-          ],
-          type: 'column_group',
-        },
-      ],
-    });
-
-    editor.update.value.repair();
-
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: 'A' }], type: 'p' },
-      { children: [{ text: 'B' }], type: 'blockquote' },
-    ]);
-  });
-
-  it('removes empty columns and unwraps the remaining single column', () => {
-    const editor = createColumnRuntimeEditor({
-      value: [
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'A' }], type: 'p' }],
-              type: 'column',
-              width: '50%',
-            },
-            {
-              children: [],
-              type: 'column',
-              width: '50%',
-            },
-          ],
-          type: 'column_group',
-        },
-      ],
-    });
-
-    editor.update.value.repair();
-
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: 'A' }], type: 'p' },
-    ]);
-  });
-
   it('selects the containing column and then the parent group', () => {
     const editor = createColumnRuntimeEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0, 0, 0] },
         focus: { offset: 1, path: [0, 0, 0, 0] },
       },
@@ -158,12 +87,14 @@ describe('BaseColumnPlugin Plite runtime', () => {
 
     expect(editor.update.column.selectAll()).toBe(true);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0, 0, 0] },
       focus: { offset: 3, path: [0, 0, 0, 0] },
     });
 
     expect(editor.update.column.selectAll()).toBe(true);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0, 0, 0] },
       focus: { offset: 3, path: [0, 1, 0, 0] },
     });
@@ -172,6 +103,7 @@ describe('BaseColumnPlugin Plite runtime', () => {
   it('expands a backward full-column selection to the parent group', () => {
     const editor = createColumnRuntimeEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 3, path: [0, 0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0, 0] },
       },
@@ -196,6 +128,7 @@ describe('BaseColumnPlugin Plite runtime', () => {
 
     expect(editor.update.column.selectAll()).toBe(true);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0, 0, 0] },
       focus: { offset: 3, path: [0, 1, 0, 0] },
     });

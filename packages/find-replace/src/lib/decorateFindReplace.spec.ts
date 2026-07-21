@@ -3,14 +3,20 @@ import {
   createBasePlugin,
   getEditorPlugin,
 } from '@platejs/core';
-import type { Descendant } from '@platejs/plite';
+import { type Descendant, schema } from '@platejs/plite';
+import { NODES } from '@platejs/utils';
 
 import { FindReplacePlugin } from './FindReplacePlugin';
 import { decorateFindReplace } from './decorateFindReplace';
 
 const InlinePlugin = createBasePlugin({
   key: 'a',
-  node: { isElement: true, isInline: true },
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
 });
 
 const decorate = ({
@@ -34,6 +40,17 @@ const decorate = ({
 };
 
 describe('decorateFindReplace', () => {
+  it('registers search highlights as a boolean text property', () => {
+    const editor = createBaseEditor({ plugins: [FindReplacePlugin] });
+
+    expect(
+      editor.read.schema.property({
+        key: NODES.searchHighlight,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('boolean');
+  });
+
   it('returns no ranges when the search term is empty', () => {
     expect(decorate({ children: [{ text: '' }], search: '' })).toEqual([]);
   });
@@ -41,7 +58,7 @@ describe('decorateFindReplace', () => {
   it('matches text case-insensitively in a single text node', () => {
     const expected = [
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: {
           offset: 0,
           path: [0, 0],
@@ -62,7 +79,7 @@ describe('decorateFindReplace', () => {
   it('splits one match across adjacent text nodes', () => {
     const expected = [
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: {
           offset: 0,
           path: [0, 0],
@@ -74,7 +91,7 @@ describe('decorateFindReplace', () => {
         search: 'tes',
       },
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: {
           offset: 0,
           path: [0, 1],
@@ -98,19 +115,19 @@ describe('decorateFindReplace', () => {
   it('matches across text and inline element descendants', () => {
     const expected = [
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 6, path: [0, 0] },
         search: 'hello ',
       },
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: { offset: 0, path: [0, 1, 0] },
         focus: { offset: 5, path: [0, 1, 0] },
         search: 'world',
       },
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 6, path: [0, 2] },
         search: ' again',
@@ -144,7 +161,7 @@ describe('decorateFindReplace', () => {
   it('returns ranges for multiple matches across text nodes', () => {
     const expected = [
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: {
           offset: 0,
           path: [0, 0],
@@ -156,7 +173,7 @@ describe('decorateFindReplace', () => {
         search: 'tes',
       },
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: {
           offset: 0,
           path: [0, 1],
@@ -168,7 +185,7 @@ describe('decorateFindReplace', () => {
         search: 't',
       },
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: {
           offset: 7,
           path: [0, 1],
@@ -180,7 +197,7 @@ describe('decorateFindReplace', () => {
         search: 'test',
       },
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: {
           offset: 17,
           path: [0, 1],
@@ -192,7 +209,7 @@ describe('decorateFindReplace', () => {
         search: 't',
       },
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: {
           offset: 0,
           path: [0, 2],
@@ -224,11 +241,14 @@ describe('decorateFindReplace', () => {
 
     const plugin = editor.getPlugin(FindReplacePlugin);
 
+    expect(plugin.key).toBe('searchHighlight');
+    expect(plugin.node.type).toBe(NODES.searchHighlight);
+
     editor.plugin(FindReplacePlugin).setOption('search', 'test');
 
     const expected = [
       {
-        [FindReplacePlugin.key]: true,
+        [NODES.searchHighlight]: true,
         anchor: {
           offset: 0,
           path: [0, 0],

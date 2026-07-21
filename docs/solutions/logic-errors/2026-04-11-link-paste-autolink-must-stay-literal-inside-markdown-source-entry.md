@@ -48,26 +48,46 @@ text when a valid URL paste is intentionally kept literal.
 const MARKDOWN_LINK_SOURCE_RE = /!?\[[^\]\n]*]\([^)\n]*$/;
 
 const shouldAutoLinkPasteByDefault = (editor, { textBefore }) => {
-  if (editor.api.some({ match: { type: [editor.getType(KEYS.codeBlock)] } })) {
+  const selection = editor.read.selection();
+
+  if (!selection) return false;
+
+  if (
+    editor.read.nodes.above({
+      at: selection,
+      match: { type: editor.getType(KEYS.codeBlock) },
+    })
+  ) {
     return false;
   }
 
-  if (!editor.api.isCollapsed()) return true;
+  if (!editor.read.selection.isCollapsed()) return true;
 
   return !MARKDOWN_LINK_SOURCE_RE.test(textBefore);
 };
 ```
 
-Then, for valid URL candidates:
+Then handle the valid URL candidate through the input rule's active
+transaction:
 
 ```ts
-if (isValidPasteUrl) {
-  if (canAutoLinkPaste) {
-    return upsertLink(...);
+apply: (context, match) => {
+  if (match.shouldLink) {
+    const { keepSelectedTextOnPaste } = context.editor
+      .plugin(BaseLinkPlugin)
+      .getOptions();
+    const inserted = upsertLink(context.editor, context.tx, {
+      insertTextInLink: true,
+      text: keepSelectedTextOnPaste ? undefined : match.url,
+      url: match.url,
+    });
+
+    if (inserted) return true;
   }
 
-  editor.tf.insertText(text);
-  return;
+  context.tx.text.insert(match.text);
+
+  return true;
 }
 ```
 

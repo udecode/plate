@@ -1,6 +1,7 @@
 ---
 title: Plite history leading selection imports are batch preconditions
 date: 2026-05-13
+status: superseded
 last_updated: 2026-05-21
 category: docs/solutions/logic-errors
 module: plite slate-history
@@ -18,6 +19,10 @@ tags: [plite, slate-history, selection, undo, redo, set-selection, multi-root]
 ---
 
 # Plite history leading selection imports are batch preconditions
+
+> **Superseded architecture record.** This article describes operation-backed
+> history batches. Current history stores inverse `DocumentChange` values,
+> effects, and rooted selection checkpoints.
 
 ## Problem
 

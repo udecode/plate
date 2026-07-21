@@ -81,6 +81,7 @@ test.describe('async decorations', () => {
       }
 
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: FINAL_CARET_OFFSET },
         focus: { path: [0, 0], offset: FINAL_CARET_OFFSET },
       });
@@ -92,6 +93,7 @@ test.describe('async decorations', () => {
         page.locator('[data-cy="async-decoration-highlight"]')
       ).toHaveCount(3);
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: FINAL_CARET_OFFSET },
         focus: { path: [0, 0], offset: FINAL_CARET_OFFSET },
       });
@@ -126,6 +128,7 @@ test.describe('async decorations', () => {
       await editor.focus();
       await page.keyboard.type(INSERTED_TEXT);
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: FINAL_CARET_OFFSET },
         focus: { path: [0, 0], offset: FINAL_CARET_OFFSET },
       });
@@ -147,6 +150,7 @@ test.describe('async decorations', () => {
 
       await editor.assert.blockTexts([FINAL_COMPOSED_TEXT]);
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: FINAL_COMPOSED_CARET_OFFSET },
         focus: { path: [0, 0], offset: FINAL_COMPOSED_CARET_OFFSET },
       });

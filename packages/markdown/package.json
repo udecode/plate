@@ -45,6 +45,7 @@
     "@platejs/core": "workspace:^",
     "@platejs/date": "workspace:*",
     "@platejs/plite": "workspace:^",
+    "@platejs/plite-dom": "workspace:^",
     "@platejs/utils": "workspace:^",
     "@udecode/utils": "workspace:^",
     "lodash": "^4.17.23",

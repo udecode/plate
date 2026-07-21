@@ -5,20 +5,20 @@ import type {
   Descendant,
   EditorSnapshot,
   RuntimeId,
-} from '../../../../../packages/slate/src/index.ts';
-import { Editor } from '../../../../../packages/slate/src/internal/index.ts';
-import { createDecorationSource } from '../../../../../packages/slate-react/src/decoration-source.ts';
+} from '../../../../../packages/plite/src/index.ts';
+import { getSnapshot as editorGetSnapshot, replace as editorReplace } from '../../../../../packages/plite/src/internal/index.ts';
+import { createDecorationSource } from '../../../../../packages/plite-react/src/decoration-source.ts';
 import {
   createReactEditor,
   Editable,
   type ReactEditor,
-  Slate,
-  type SlateDecorationSource,
+  Plite,
+  type PliteDecorationSource,
   useEditorSelector,
   useElementPath,
-  useSlateProjectionEntries,
-} from '../../../../../packages/slate-react/src/index.ts';
-import { createSlateReactRenderCounter } from '../../../../../packages/slate-react/src/render-profiler.ts';
+  usePliteProjectionEntries,
+} from '../../../../../packages/plite-react/src/index.ts';
+import { createPliteReactRenderCounter } from '../../../../../packages/plite-react/src/render-profiler.ts';
 import {
   cloneCounts,
   deltaCounts,
@@ -131,7 +131,7 @@ const createOverlayRanges = (snapshot: EditorSnapshot) => {
 };
 
 const getProjectionMetricCounts = (
-  store: Pick<SlateDecorationSource<unknown>, 'getMetrics'> | null | undefined
+  store: Pick<PliteDecorationSource<unknown>, 'getMetrics'> | null | undefined
 ) => {
   const metrics =
     store && typeof store.getMetrics === 'function' ? store.getMetrics() : null;
@@ -160,7 +160,7 @@ const TopLevelBlockSlice = memo(
     slot: string;
   }) => {
     const value = useEditorSelector((editor) =>
-      getTopLevelBlockText(Editor.getSnapshot(editor), index)
+      getTopLevelBlockText(editorGetSnapshot(editor), index)
     );
     increment(counts, slot);
     return <span>{value}</span>;
@@ -177,7 +177,7 @@ const ProjectionCountSlice = memo(
     runtimeId: RuntimeId | null;
     slot: string;
   }) => {
-    const projections = useSlateProjectionEntries<{ highlight?: boolean }>(
+    const projections = usePliteProjectionEntries<{ highlight?: boolean }>(
       runtimeId ?? ''
     ) as readonly unknown[];
 
@@ -193,9 +193,9 @@ const TrackedElement = ({
   isInline,
 }: {
   attributes: {
-    'data-slate-inline'?: true;
-    'data-slate-node': 'element';
-    'data-slate-void'?: true;
+    'data-plite-inline'?: true;
+    'data-plite-node': 'element';
+    'data-plite-void'?: true;
     ref: React.RefCallback<HTMLElement>;
   };
   children: React.ReactNode;
@@ -225,7 +225,7 @@ const RenderingStrategyOverlayApp = ({
   counts: Record<string, number>;
   editor: ReactEditor;
   onDecorationSource?: (
-    source: SlateDecorationSource<{ highlight?: boolean }>
+    source: PliteDecorationSource<{ highlight?: boolean }>
   ) => void;
 }) => {
   const [overlayActive, setOverlayActive] = useState(false);
@@ -262,7 +262,7 @@ const RenderingStrategyOverlayApp = ({
   }, [decorationSource, overlayActive]);
 
   return (
-    <Slate decorationSources={decorationSources} editor={editor}>
+    <Plite decorationSources={decorationSources} editor={editor}>
       <RenderingStrategyOverlayInner
         counts={counts}
         onToggle={() => {
@@ -270,7 +270,7 @@ const RenderingStrategyOverlayApp = ({
         }}
         overlayActive={overlayActive}
       />
-    </Slate>
+    </Plite>
   );
 };
 
@@ -285,13 +285,11 @@ const RenderingStrategyOverlayInner = ({
 }) => {
   const activeLeafId = useEditorSelector(
     (editorValue) =>
-      Editor.getSnapshot(editorValue).index.pathToId['0.0'] ?? null
+      editorGetSnapshot(editorValue).index.idAt([0, 0]) ?? null
   );
   const farLeafId = useEditorSelector(
     (editorValue) =>
-      Editor.getSnapshot(editorValue).index.pathToId[
-        `${getFarBlockIndex()}.0`
-      ] ?? null
+      editorGetSnapshot(editorValue).index.idAt([getFarBlockIndex(), 0])
   );
 
   return (
@@ -342,19 +340,19 @@ const RenderingStrategyOverlayInner = ({
 };
 
 const countMountedTextNodes = (container: HTMLElement) =>
-  container.querySelectorAll('[data-slate-node="text"]').length;
+  container.querySelectorAll('[data-plite-node="text"]').length;
 
 const countShells = (container: HTMLElement) =>
-  container.querySelectorAll('[data-slate-dom-strategy-placeholder="true"]')
+  container.querySelectorAll('[data-plite-dom-strategy-placeholder="true"]')
     .length;
 
 const setupScenario = async () => {
   const editor = createReactEditor();
   const counts: Record<string, number> = {};
-  let decorationSource: SlateDecorationSource<{ highlight?: boolean }> | null =
+  let decorationSource: PliteDecorationSource<{ highlight?: boolean }> | null =
     null;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: createChildren(),
     selection: null,
   });
@@ -415,7 +413,7 @@ const promoteSegment = async ({
   view: Window;
 }) => {
   const targetShell = mounted.container.querySelector<HTMLElement>(
-    `[data-slate-dom-strategy-placeholder="true"][data-slate-dom-strategy-segment="${segmentIndex}"]`
+    `[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="${segmentIndex}"]`
   );
 
   if (!targetShell) {
@@ -541,10 +539,10 @@ const measurePartialDOMPromotion = async () =>
   measureLane(async () => {
     const { editor, mounted, projectionStore, toggle, view } =
       await setupScenario();
-    const previousRenderProfiler = globalThis.__SLATE_REACT_RENDER_PROFILER__;
-    const renderCounter = createSlateReactRenderCounter();
+    const previousRenderProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+    const renderCounter = createPliteReactRenderCounter();
 
-    globalThis.__SLATE_REACT_RENDER_PROFILER__ = renderCounter.profiler;
+    globalThis.__PLITE_REACT_RENDER_PROFILER__ = renderCounter.profiler;
 
     await act(async () => {
       toggle.dispatchEvent(
@@ -608,8 +606,8 @@ const measurePartialDOMPromotion = async () =>
     }
     const partialDOMCountAfter = countShells(mounted.container);
     const mountedTextAfter = countMountedTextNodes(mounted.container);
-    const selection = Editor.getSnapshot(editor).selection;
-    globalThis.__SLATE_REACT_RENDER_PROFILER__ = previousRenderProfiler;
+    const selection = editorGetSnapshot(editor).selection;
+    globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousRenderProfiler;
 
     await mounted.dispose();
 
@@ -645,7 +643,7 @@ const main = async () => {
       segmentSize,
       iterations,
     },
-    lane: 'slate-react-huge-document-overlays',
+    lane: 'plite-react-huge-document-overlays',
     activeEditAfterOverlay: await measureActiveEditAfterOverlay(),
     overlayToggle: await measureOverlayToggle(),
     partialDOMPromotion: await measurePartialDOMPromotion(),

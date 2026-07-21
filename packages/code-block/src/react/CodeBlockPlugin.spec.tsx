@@ -6,11 +6,16 @@ import {
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
-import { defineEditorExtension } from '@platejs/plite';
+import {
+  defineEditorExtension,
+  DocumentChange,
+  property,
+} from '@platejs/plite';
 import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
 import { createLowlight } from 'lowlight';
 
 import { CodeBlockPlugin } from './CodeBlockPlugin';
+import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
 
 jsxt;
 
@@ -220,6 +225,14 @@ describe('CodeBlockPlugin operations', () => {
       plugins: [
         BaseParagraphPlugin,
         CodeBlockPlugin.configure({
+          node: {
+            element: {
+              properties: {
+                foo: property.string(),
+                lang: property.string(),
+              },
+            },
+          },
           options: { lowlight: createLowlight() },
         }),
       ],
@@ -232,5 +245,41 @@ describe('CodeBlockPlugin operations', () => {
     editor.update.nodes.set({ foo: 'bar' }, { at: [0] });
 
     expect(refreshDecorations).not.toHaveBeenCalled();
+  });
+
+  it('refreshes decorations for a classification-free language change', () => {
+    const value = [
+      {
+        children: [{ children: [{ text: 'aa' }], type: 'code_line' }],
+        lang: 'javascript',
+        type: 'code_block',
+      },
+    ];
+    const source = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+      value,
+    });
+
+    source.update.nodes.set({ lang: 'json' }, { at: [0] });
+
+    const change = DocumentChange.fromJSON(
+      source.read.lastCommit()!.changes.toJSON()
+    );
+    const editor = createBaseEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        CodeBlockPlugin.configure({
+          options: { lowlight: createLowlight() },
+        }),
+      ],
+      value,
+    });
+    const refreshDecorations = mock();
+
+    expect(change.primaryClassification).toBeNull();
+    installRefreshDecorationsProbe(editor, refreshDecorations);
+    editor.update((tx) => tx.changes.apply(change));
+
+    expect(refreshDecorations).toHaveBeenCalledTimes(1);
   });
 });

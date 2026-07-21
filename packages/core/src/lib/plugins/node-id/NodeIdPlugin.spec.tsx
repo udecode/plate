@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
+import { DocumentChange, schema } from '@platejs/plite';
 
 import { createBaseEditor } from '../../editor';
 import { createBasePlugin } from '../../plugin';
@@ -14,7 +15,27 @@ jsxt;
 
 const TestLinkPlugin = createBasePlugin({
   key: 'a',
-  node: { isElement: true, isInline: true, type: 'a' },
+  node: { element: { inline: true }, type: 'a' },
+});
+
+const TestBlockquotePlugin = createBasePlugin({
+  key: 'blockquote',
+  node: {
+    element: {
+      content: schema.content.group('block'),
+      groups: ['block'],
+    },
+  },
+});
+
+const TestHeadingPlugin = createBasePlugin({
+  key: 'h1',
+  node: { element: { groups: ['block'] } },
+});
+
+const TestMarkLikePlugin = createBasePlugin({
+  key: 'markLike',
+  node: { mark: true },
 });
 
 const createIdFactory = (start = 1) => {
@@ -362,18 +383,17 @@ describe('NodeIdPlugin', () => {
       value: [{ children: [{ text: 'existing' }], id: 'taken-id', type: 'p' }],
     });
 
-    editor.update.operations.replay([
-      {
-        node: {
+    editor.update((tx) => {
+      tx.nodes.insert(
+        {
           _id: 'preferred-id',
           children: [{ text: 'inserted' }],
           id: 'taken-id',
           type: 'p',
         } as any,
-        path: [1],
-        type: 'insert_node',
-      },
-    ]);
+        { at: [1] }
+      );
+    });
 
     expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: 'inserted' }],
@@ -397,23 +417,52 @@ describe('NodeIdPlugin', () => {
       ],
     });
 
-    editor.update.operations.replay([
-      {
-        node: {
+    editor.update((tx) => {
+      tx.nodes.insert(
+        {
           children: [{ text: 'inserted' }],
           id: 'unique-id',
           type: 'p',
         } as any,
-        path: [1],
-        type: 'insert_node',
-      },
-    ]);
+        { at: [1] }
+      );
+    });
 
     expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: 'inserted' }],
       id: 'unique-id',
       type: 'p',
     });
+  });
+
+  it('deduplicates ids across nodes inserted in one transaction', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: createStringIdFactory(),
+          },
+        }),
+      ],
+      value: [
+        { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.nodes.insert(
+        [
+          { children: [{ text: 'first' }], id: 'shared-id', type: 'p' },
+          { children: [{ text: 'second' }], id: 'shared-id', type: 'p' },
+        ],
+        { at: [1] }
+      );
+    });
+
+    expect(editor.read.children().slice(1)).toEqual([
+      { children: [{ text: 'first' }], id: 'shared-id', type: 'p' },
+      { children: [{ text: 'second' }], id: 'generated-1', type: 'p' },
+    ]);
   });
 
   it('applies match policy to inserted nodes', () => {
@@ -425,22 +474,19 @@ describe('NodeIdPlugin', () => {
             match: { type: 'p' },
           },
         }),
+        TestHeadingPlugin,
       ],
       value: [{ children: [{ text: 'existing' }], id: 'existing', type: 'p' }],
     });
 
-    editor.update.operations.replay([
-      {
-        node: { children: [{ text: 'heading' }], type: 'h1' } as any,
-        path: [1],
-        type: 'insert_node',
-      },
-      {
-        node: { children: [{ text: 'paragraph' }], type: 'p' } as any,
-        path: [2],
-        type: 'insert_node',
-      },
-    ]);
+    editor.update((tx) => {
+      tx.nodes.insert({ children: [{ text: 'heading' }], type: 'h1' } as any, {
+        at: [1],
+      });
+      tx.nodes.insert({ children: [{ text: 'paragraph' }], type: 'p' } as any, {
+        at: [2],
+      });
+    });
 
     expect(editor.read.children()[1].id).toBeUndefined();
     expect(editor.read.children()[2].id).toBe('generated-1');
@@ -454,24 +500,24 @@ describe('NodeIdPlugin', () => {
             idCreator: createStringIdFactory(),
           },
         }),
+        TestMarkLikePlugin,
       ],
       value: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
 
-    editor.update.operations.replay([
-      {
-        node: {
+    editor.update((tx) => {
+      tx.nodes.insert(
+        {
+          markLike: true,
           text: ' marked',
-          type: 'mark-like',
         } as any,
-        path: [0, 1],
-        type: 'insert_node',
-      },
-    ]);
+        { at: [0, 1] }
+      );
+    });
 
     expect((editor.read.children()[0] as any).children[1]).toEqual({
+      markLike: true,
       text: ' marked',
-      type: 'mark-like',
     });
   });
 
@@ -485,6 +531,7 @@ describe('NodeIdPlugin', () => {
             onDuplicateIdScan,
           },
         }),
+        TestBlockquotePlugin,
       ],
       value: [
         { children: [{ text: 'existing a' }], id: 'taken-a', type: 'p' },
@@ -492,9 +539,9 @@ describe('NodeIdPlugin', () => {
       ],
     });
 
-    editor.update.operations.replay([
-      {
-        node: {
+    editor.update((tx) => {
+      tx.nodes.insert(
+        {
           children: [
             {
               children: [{ text: 'hello' }],
@@ -509,10 +556,9 @@ describe('NodeIdPlugin', () => {
           ],
           type: 'blockquote',
         } as any,
-        path: [2],
-        type: 'insert_node',
-      },
-    ]);
+        { at: [2] }
+      );
+    });
 
     expect(onDuplicateIdScan).toHaveBeenCalledTimes(1);
     expect(onDuplicateIdScan).toHaveBeenCalledWith({
@@ -551,17 +597,24 @@ describe('NodeIdPlugin', () => {
       ],
     });
 
-    editor.update.operations.replay([
-      {
-        path: [1],
-        position: 1,
-        properties: {
+    const before = editor.read.value();
+    const source = before.children[1] as any;
+    const after = {
+      ...before,
+      children: [
+        before.children[0],
+        { ...source, children: [{ text: 'before' }] },
+        {
+          ...source,
+          children: [{ text: 'after' }],
           id: 'existing-id',
-          type: 'p',
         },
-        type: 'split_node',
-      },
-    ]);
+      ],
+    };
+
+    editor.update((tx) => {
+      tx.changes.apply(DocumentChange.between(before, after));
+    });
 
     expect(editor.read.children()[2]).toMatchObject({
       children: [{ text: 'after' }],
@@ -583,50 +636,24 @@ describe('NodeIdPlugin', () => {
       value: [{ children: [{ text: 'before' }, { text: 'after' }], type: 'p' }],
     });
 
-    editor.update.operations.replay([
-      {
-        path: [0],
-        position: 1,
-        properties: {
-          id: 'keep-id',
-          type: 'p',
-        },
-        type: 'split_node',
-      },
-    ]);
+    const before = editor.read.value();
+    const source = before.children[0] as any;
+    const after = {
+      ...before,
+      children: [
+        { ...source, children: [{ text: 'before' }] },
+        { ...source, children: [{ text: 'after' }], id: 'keep-id' },
+      ],
+    };
+
+    editor.update((tx) => {
+      tx.changes.apply(DocumentChange.between(before, after));
+    });
 
     expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: 'after' }],
       id: 'keep-id',
       type: 'p',
     });
-  });
-
-  it('removes ids from disallowed split text nodes', () => {
-    const editor = createBaseEditor({
-      plugins: [
-        NodeIdPlugin.configure({
-          options: {
-            idCreator: createStringIdFactory(),
-          },
-        }),
-      ],
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
-    });
-
-    editor.update.operations.replay([
-      {
-        path: [0, 0],
-        position: 2,
-        properties: {
-          id: 'remove-me',
-        } as any,
-        type: 'split_node',
-      },
-    ]);
-
-    expect((editor.read.children()[0] as any).children).toEqual([
-      { text: 'hello' },
-    ]);
   });
 });

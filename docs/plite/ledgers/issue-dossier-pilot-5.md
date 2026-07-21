@@ -42,13 +42,13 @@ Evidence:
   `docs/plite/ledgers/issue-coverage-matrix.md`.
 
 Decision:
-Keep this as `improves-claimed`, not `fixes-claimed`. Plite has
-transaction/applyOperations benchmark coverage for mixed structural snapshots,
+Keep this as `improves-claimed`, not `fixes-claimed`. Plite has immutable
+transaction and canonical-change benchmark coverage for mixed structural snapshots,
 but the current ledger does not define an accepted performance threshold that
 would prove the full upstream benchmark claim.
 
 PR-description text:
-Improves #6038: Plite adds transaction/applyOperations benchmark coverage for
+Improves #6038: Plite adds immutable transaction and canonical-change benchmark coverage for
 batch-style repeated tree updates, but this PR does not auto-close the issue
 because no accepted performance threshold proves the full upstream benchmark
 claim.

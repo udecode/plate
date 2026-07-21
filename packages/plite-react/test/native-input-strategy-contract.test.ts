@@ -61,6 +61,7 @@ test('native anchor checks use the editor window NodeFilter realm', () => {
         eventData: 'x',
         hasAppInputPolicy: false,
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 2 },
           focus: { path: [0, 0], offset: 2 },
         },
@@ -72,6 +73,7 @@ test('native anchor checks use the editor window NodeFilter realm', () => {
         eventData: 'x',
         hasAppInputPolicy: false,
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 2 },
           focus: { path: [0, 0], offset: 2 },
         },
@@ -116,6 +118,7 @@ test('native single-character input allows synced printable ASCII', () => {
         eventData: '5',
         hasAppInputPolicy: false,
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -127,6 +130,7 @@ test('native single-character input allows synced printable ASCII', () => {
         eventData: 'ä',
         hasAppInputPolicy: false,
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -146,6 +150,7 @@ test('native single-character input keeps deferred dirty DOM bursts native on th
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'Xalpha' }] }],
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -215,6 +220,7 @@ test('native single-character input rejects projected text hosts', () => {
         eventData: 'x',
         hasAppInputPolicy: false,
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },

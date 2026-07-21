@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/plite';
+import { property, schema, target, type Value } from '@platejs/plite';
 
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
@@ -18,7 +18,17 @@ describe('pipeNormalizeInitialValue', () => {
         })),
     });
 
-  const plugins = [createTestPlugin('a'), createTestPlugin('b')];
+  const CountPlugin = createBasePlugin({
+    key: 'count',
+    schema: {
+      properties: [
+        schema.elementProperty('count', property.number(), {
+          target: target.type('p'),
+        }),
+      ],
+    },
+  });
+  const plugins = [CountPlugin, createTestPlugin('a'), createTestPlugin('b')];
 
   describe('when value is passed to createBaseEditor', () => {
     it('transforms the initial value once', () => {
@@ -90,6 +100,7 @@ describe('pipeNormalizeInitialValue', () => {
     describe('selection handling', () => {
       it('use provided selection', () => {
         const selection = {
+          kind: 'text' as const,
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 1, path: [0, 0] },
         };
@@ -109,6 +120,7 @@ describe('pipeNormalizeInitialValue', () => {
         });
 
         expect(editor.read.selection()).toEqual({
+          kind: 'text',
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         });
@@ -121,6 +133,7 @@ describe('pipeNormalizeInitialValue', () => {
         });
 
         expect(editor.read.selection()).toEqual({
+          kind: 'text',
           anchor: { offset: 4, path: [0, 0] },
           focus: { offset: 4, path: [0, 0] },
         });

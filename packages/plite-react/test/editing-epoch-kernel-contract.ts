@@ -29,7 +29,7 @@ const createTrace = () =>
     eventFamily: 'keydown' as const,
     intent: 'delete-backward' as const,
     nativeAllowed: false,
-    operations: [],
+    intents: [],
     ownership: 'model-owned' as const,
     repair: null,
     selectionBefore: null,

@@ -23,9 +23,10 @@ describe('createPlateStore', () => {
     const editor = createPlateEditor({
       id: 'scoped-editor',
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
-      } as Range,
+      },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
@@ -103,6 +104,7 @@ describe('createPlateStore', () => {
 
     act(() => {
       editor.update.selection.set({
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       } as Range);
@@ -142,6 +144,7 @@ describe('createPlateStore', () => {
     act(() => {
       result.current.editorRef.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         });
@@ -152,6 +155,7 @@ describe('createPlateStore', () => {
     expect(result.current.editorRef).toBe(editor);
     expect(result.current.editorRef.store).toBeDefined();
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });

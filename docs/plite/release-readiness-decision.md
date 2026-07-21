@@ -67,7 +67,8 @@ The live claim is only this:
 - tranche order is locked
 - drift discipline is locked
 - absolute architecture doctrine is live:
-  - Plite model and operations stay the collaboration truth
+  - the Plite model and canonical `DocumentChange` are the sole mutation,
+    commit, history, and collaboration truth
   - `editor.read` and `editor.update` are the public lifecycle
   - transaction-owned primitive editor methods are the mutation power API
   - `EditorCommit` is the local runtime truth for history, React, DOM repair,
@@ -79,11 +80,11 @@ The live claim is only this:
   green
 - `packages/plite` is materially farther along:
   - package-local tests/build/typecheck/lint are green
-  - query / operations / snapshot / legacy fixture owners are live
+  - query / canonical change / snapshot owners are live
   - accessor / transaction boundary is recovered
   - stale public field pressure is cut from primary docs/examples/tests:
-    `editor.children`, `editor.selection`, `editor.marks`, and
-    `editor.operations` are not primary read paths
+    `editor.children`, `editor.selection`, and `editor.marks` are not primary
+    read paths
   - `Transforms.*` is not the primary mutation story
   - direct `editor.apply` and `editor.onChange` are not extension points
   - commit subscribers and extension groups own those jobs

@@ -68,9 +68,9 @@ Phase / pass table:
 
 Manifest command: `git ls-files packages/autoformat | sort`
 
-Expected rows: 6  
-Actual rows: 6  
-Checked rows: 6  
+Expected rows: 6
+Actual rows: 6
+Checked rows: 6
 Deferred package rows: 0
 
 | Done | File | Score | Verdict | Evidence | Next |

@@ -50,6 +50,7 @@ describe('insertAINodes', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 3, path: [0, 1] },
       focus: { offset: 3, path: [0, 1] },
     });
@@ -82,6 +83,7 @@ describe('insertAINodes', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 3, path: [0, 1] },
       focus: { offset: 3, path: [0, 1] },
     });
@@ -101,6 +103,7 @@ describe('insertAINodes', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       });

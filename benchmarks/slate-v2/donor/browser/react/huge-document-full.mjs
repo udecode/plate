@@ -7,7 +7,7 @@ import { round, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 const smoke = process.env.HUGE_DOC_FULL_SMOKE === '1';
 const includeLegacyBrowserTrace =
   process.env.HUGE_DOC_FULL_INCLUDE_LEGACY_BROWSER_TRACE === '1';
-const legacyRepo = process.env.HUGE_DOC_FULL_LEGACY_REPO || '../../../slate';
+const legacyRepo = process.env.HUGE_DOC_FULL_LEGACY_REPO || '../slate';
 
 const blocks = Number(process.env.HUGE_DOC_FULL_BLOCKS || (smoke ? 20 : 5000));
 const iterations = Number(
@@ -923,24 +923,27 @@ const diagnosticStepIds = new Set([
 const steps = [
   {
     artifactPath: 'tmp/slate-core-huge-document-benchmark.json',
-    command: 'bun run bench:core:huge-document:compare:local',
+    command: 'bun benchmarks/slate-v2/donor/core/compare/huge-document.mjs',
     env: {
       CORE_HUGE_BENCH_BLOCKS: blocks,
       CORE_HUGE_BENCH_ITERATIONS: coreIterations,
       CORE_HUGE_BENCH_LEGACY_REPO: legacyRepo,
+      CORE_HUGE_BENCH_SKIP_BUILD: skipBrowserBuild ? 1 : 0,
       CORE_HUGE_BENCH_TYPE_OPS: typeOps,
     },
     id: 'core-huge-document-compare',
   },
   {
     artifactPath: 'tmp/slate-react-huge-document-legacy-compare-benchmark.json',
-    command: 'bun run bench:react:huge-document:legacy-compare:local',
+    command:
+      'bun benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs',
     env: {
       REACT_HUGE_COMPARE_BLOCKS: blocks,
       REACT_HUGE_COMPARE_DISPOSE_DELAY_MS: 0,
       REACT_HUGE_COMPARE_ISOLATE_SURFACES: 1,
       REACT_HUGE_COMPARE_ITERATIONS: iterations,
       REACT_HUGE_COMPARE_LEGACY_REPO: legacyRepo,
+      REACT_HUGE_COMPARE_SKIP_BUILD: skipBrowserBuild ? 1 : 0,
       REACT_HUGE_COMPARE_SPLIT_SELECTION: 1,
       REACT_HUGE_COMPARE_SURFACES: 'v2DefaultRenderAuto,v2DomPresent',
       REACT_HUGE_COMPARE_TYPE_OPS: typeOps,
@@ -949,46 +952,49 @@ const steps = [
   },
   {
     artifactPath: browserTraceLatestArtifactPath,
-    command: 'bun run bench:react:huge-document:browser-trace:local',
+    command:
+      'bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs',
     env: {
-      SLATE_BROWSER_TRACE_BLOCKS: blocks,
-      SLATE_BROWSER_TRACE_ITERATIONS: traceIterations,
-      SLATE_BROWSER_TRACE_SKIP_BUILD: skipBrowserBuild ? 1 : 0,
-      SLATE_BROWSER_TRACE_SURFACES: 'defaultAuto',
-      SLATE_BROWSER_TRACE_TYPE_OPS: typeOps,
+      PLITE_BROWSER_TRACE_BLOCKS: blocks,
+      PLITE_BROWSER_TRACE_ITERATIONS: traceIterations,
+      PLITE_BROWSER_TRACE_SKIP_BUILD: skipBrowserBuild ? 1 : 0,
+      PLITE_BROWSER_TRACE_SURFACES: 'defaultAuto',
+      PLITE_BROWSER_TRACE_TYPE_OPS: typeOps,
     },
     id: 'react-huge-document-browser-trace',
   },
   {
     artifactPath: browserTraceLatestArtifactPath,
-    command: 'bun run bench:react:huge-document:browser-trace:local',
+    command:
+      'bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs',
     env: {
-      SLATE_BROWSER_TRACE_BLOCKS: blocks,
-      SLATE_BROWSER_TRACE_ITERATIONS: traceIterations,
-      SLATE_BROWSER_TRACE_SKIP_BUILD: 1,
-      SLATE_BROWSER_TRACE_SURFACES:
+      PLITE_BROWSER_TRACE_BLOCKS: blocks,
+      PLITE_BROWSER_TRACE_ITERATIONS: traceIterations,
+      PLITE_BROWSER_TRACE_SKIP_BUILD: 1,
+      PLITE_BROWSER_TRACE_SURFACES:
         'stagedActiveDOMGroup,stagedContentVisibility',
-      SLATE_BROWSER_TRACE_TYPE_OPS: typeOps,
+      PLITE_BROWSER_TRACE_TYPE_OPS: typeOps,
     },
     id: 'react-huge-document-staged-diagnostic-trace',
   },
   {
     artifactPath: browserTraceLatestArtifactPath,
-    command: 'bun run bench:react:huge-document:browser-trace:local',
+    command:
+      'bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs',
     env: {
-      SLATE_BROWSER_TRACE_BLOCKS: blocks,
-      SLATE_BROWSER_TRACE_ITERATIONS: traceIterations,
-      SLATE_BROWSER_TRACE_NATIVE_TIMEOUT_MS: 5000,
-      SLATE_BROWSER_TRACE_SKIP_BUILD: 1,
-      SLATE_BROWSER_TRACE_SURFACES: 'virtualized',
-      SLATE_BROWSER_TRACE_TYPE_OPS: typeOps,
+      PLITE_BROWSER_TRACE_BLOCKS: blocks,
+      PLITE_BROWSER_TRACE_ITERATIONS: traceIterations,
+      PLITE_BROWSER_TRACE_NATIVE_TIMEOUT_MS: 5000,
+      PLITE_BROWSER_TRACE_SKIP_BUILD: 1,
+      PLITE_BROWSER_TRACE_SURFACES: 'virtualized',
+      PLITE_BROWSER_TRACE_TYPE_OPS: typeOps,
     },
     id: 'react-huge-document-virtualized-type-to-paint',
   },
   {
-    artifactPath:
-      'packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json',
-    command: 'bun run bench:react:huge-document-overlays:local',
+    artifactPath: 'tmp/slate-react-huge-document-overlays-benchmark.json',
+    command:
+      'bun benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx',
     env: {
       REACT_HUGE_DOC_ACTIVE_RADIUS: 1,
       REACT_HUGE_DOC_BENCH_ITERATIONS: iterations,
@@ -1003,7 +1009,8 @@ if (includeLegacyBrowserTrace) {
   steps.push({
     artifactPath:
       'tmp/slate-react-huge-document-slate-browser-trace-benchmark.json',
-    command: 'bun run bench:react:huge-document:slate-browser-trace:local',
+    command:
+      'bun benchmarks/slate-v2/donor/browser/react/huge-document-slate-browser-trace.mjs',
     env: {
       SLATE_LEGACY_BROWSER_TRACE_BLOCKS: blocks,
       SLATE_LEGACY_BROWSER_TRACE_ITERATIONS: traceIterations,

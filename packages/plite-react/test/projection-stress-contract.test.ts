@@ -50,6 +50,7 @@ const runRepeatedProjectionStress = (projectionCount: number) => {
   );
   const lastOwner = owner(projectionCount - 1);
   const segments = PliteProjectionGraph.segmentRange(graph, {
+    kind: 'text',
     anchor: { point: point(undefined, [0, 0], 0) },
     focus: {
       owner: lastOwner,
@@ -86,6 +87,7 @@ describe('projection stress budgets', () => {
       }))
     );
     const segments = PliteProjectionGraph.segmentRange(graph, {
+      kind: 'text',
       anchor: { point: point(undefined, [0, 0], 0) },
       focus: { point: point(undefined, [999, 0], 4) },
     });

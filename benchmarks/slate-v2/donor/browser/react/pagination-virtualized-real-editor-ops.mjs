@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
 import { chromium } from '@playwright/test';
 import handler from 'serve-handler';
@@ -11,31 +11,29 @@ import {
   writeBenchmarkArtifact,
 } from '../../shared/stats.mjs';
 
-const siteOutRoot = fileURLToPath(
-  new URL('../../../../site/out', import.meta.url)
-);
-const siteRoot = fileURLToPath(new URL('../../../../site', import.meta.url));
+const siteRoot = resolve(process.cwd(), 'apps/plite');
+const siteOutRoot = resolve(siteRoot, 'out');
 
 const iterations = Number(
-  process.env.SLATE_PAGINATION_REAL_OPS_ITERATIONS || 5
+  process.env.PLITE_PAGINATION_REAL_OPS_ITERATIONS || 5
 );
-const headless = process.env.SLATE_PAGINATION_REAL_OPS_HEADLESS !== '0';
-const useDevServer = process.env.SLATE_PAGINATION_REAL_OPS_DEV === '1';
+const headless = process.env.PLITE_PAGINATION_REAL_OPS_HEADLESS !== '0';
+const useDevServer = process.env.PLITE_PAGINATION_REAL_OPS_DEV === '1';
 const skipStaticBuild =
-  process.env.SLATE_PAGINATION_REAL_OPS_SKIP_BUILD === '1' ||
-  process.env.SLATE_PAGINATION_REAL_OPS_SKIP_STATIC_BUILD === '1';
-const traceProfiler = process.env.SLATE_PAGINATION_REAL_OPS_PROFILER !== '0';
+  process.env.PLITE_PAGINATION_REAL_OPS_SKIP_BUILD === '1' ||
+  process.env.PLITE_PAGINATION_REAL_OPS_SKIP_STATIC_BUILD === '1';
+const traceProfiler = process.env.PLITE_PAGINATION_REAL_OPS_PROFILER !== '0';
 const artifactPath =
-  process.env.SLATE_PAGINATION_REAL_OPS_ARTIFACT ||
+  process.env.PLITE_PAGINATION_REAL_OPS_ARTIFACT ||
   'tmp/slate-pagination-virtualized-real-editor-ops-benchmark.json';
 
 const cohortKeys = (
-  process.env.SLATE_PAGINATION_REAL_OPS_COHORTS || 'current,rows800'
+  process.env.PLITE_PAGINATION_REAL_OPS_COHORTS || 'current,rows800'
 )
   .split(',')
   .map((key) => key.trim())
   .filter(Boolean);
-const requestedLaneKeys = process.env.SLATE_PAGINATION_REAL_OPS_LANES?.split(
+const requestedLaneKeys = process.env.PLITE_PAGINATION_REAL_OPS_LANES?.split(
   ','
 )
   .map((key) => key.trim())
@@ -47,7 +45,7 @@ const allCohorts = new Map([
     {
       key: 'current',
       label: 'default virtualized pagination',
-      path: '/examples/pagination?page_layout=single&strategy=virtualized',
+      path: '/examples/plite/pagination?page_layout=single&strategy=virtualized',
     },
   ],
   [
@@ -55,7 +53,7 @@ const allCohorts = new Map([
     {
       key: 'rows8',
       label: 'rows=8 virtualized pagination',
-      path: '/examples/pagination?page_layout=single&rows=8&strategy=virtualized',
+      path: '/examples/plite/pagination?page_layout=single&rows=8&strategy=virtualized',
     },
   ],
   [
@@ -63,7 +61,7 @@ const allCohorts = new Map([
     {
       key: 'rows800',
       label: 'rows=800 virtualized pagination',
-      path: '/examples/pagination?page_layout=single&rows=800&strategy=virtualized',
+      path: '/examples/plite/pagination?page_layout=single&rows=800&strategy=virtualized',
     },
   ],
   [
@@ -71,7 +69,7 @@ const allCohorts = new Map([
     {
       key: 'rows800_table',
       label: 'rows=800 table-only virtualized pagination',
-      path: '/examples/pagination?page_layout=single&rows=800&stress_pages=0&strategy=virtualized',
+      path: '/examples/plite/pagination?page_layout=single&rows=800&stress_pages=0&strategy=virtualized',
     },
   ],
 ]);
@@ -217,7 +215,7 @@ const allLanes = [
       await page.waitForFunction(
         ({ beforeLength: expectedBeforeLength, path }) => {
           const block = document.querySelector(
-            `[data-slate-node="element"][data-slate-path="${path}"]`
+            `[data-plite-node="element"][data-plite-path="${path}"]`
           );
 
           return (
@@ -289,7 +287,7 @@ const runStaticBuild = async () =>
       return;
     }
 
-    const child = spawn('bun', ['next', 'build'], {
+    const child = spawn('pnpm', ['build'], {
       cwd: siteRoot,
       env: {
         ...process.env,
@@ -455,7 +453,10 @@ const startNextDevServer = async () => {
   });
   const url = `http://127.0.0.1:${port}`;
 
-  await Promise.race([waitForURL(`${url}/examples/pagination`), exitPromise]);
+  await Promise.race([
+    waitForURL(`${url}/examples/plite/pagination`),
+    exitPromise,
+  ]);
 
   return {
     close: () =>
@@ -529,9 +530,9 @@ const installTraceObserver = async (page) => {
         },
       };
 
-      target.__SLATE_PAGINATION_REAL_OPS_TRACE__ = trace;
+      target.__PLITE_PAGINATION_REAL_OPS_TRACE__ = trace;
       if (shouldTraceProfiler) {
-        target.__SLATE_REACT_RENDER_PROFILER__ = {
+        target.__PLITE_REACT_RENDER_PROFILER__ = {
           record(event) {
             trace.profilerEvents.push({ ...event });
           },
@@ -584,18 +585,18 @@ const installTraceObserver = async (page) => {
 
 const resetTrace = (page) =>
   page.evaluate(() => {
-    globalThis.__SLATE_PAGINATION_REAL_OPS_TRACE__?.reset?.();
+    globalThis.__PLITE_PAGINATION_REAL_OPS_TRACE__?.reset?.();
   });
 
 const readTrace = (page) =>
   page.evaluate(
-    () => globalThis.__SLATE_PAGINATION_REAL_OPS_TRACE__?.snapshot?.() ?? null
+    () => globalThis.__PLITE_PAGINATION_REAL_OPS_TRACE__?.snapshot?.() ?? null
   );
 
 const readProof = (page) =>
   page.evaluate(() => {
     const editor = document.querySelector('[contenteditable="true"]');
-    const meta = document.querySelector('.slate-pagination-meta');
+    const meta = document.querySelector('.plite-pagination-meta');
 
     return {
       layoutComposeCount: Number(
@@ -604,11 +605,11 @@ const readProof = (page) =>
       layoutComposeMs: Number(
         meta?.getAttribute('data-layout-compose-ms') ?? 0
       ),
-      pageSurfaceCount: document.querySelectorAll('[data-slate-page-surface]')
+      pageSurfaceCount: document.querySelectorAll('[data-plite-page-surface]')
         .length,
       pageVirtualizationEnabled: Boolean(
         document.querySelector(
-          '[data-slate-paged-editable-page-virtualization="true"]'
+          '[data-plite-paged-editable-page-virtualization="true"]'
         )
       ),
       totalElementCount:
@@ -658,7 +659,7 @@ const openCohortPage = async (page, baseURL, cohort) => {
     timeout: 20_000,
   });
   await page.waitForSelector(
-    '[data-slate-node="element"][data-slate-path="1"] [data-slate-string]',
+    '[data-plite-node="element"][data-plite-path="1"] [data-plite-string]',
     { timeout: 20_000 }
   );
   await nextPaint(page);
@@ -672,7 +673,7 @@ const getBrowserModKey = (page) =>
 const getBlockTextLength = (page, path) =>
   page.evaluate((blockPath) => {
     const block = document.querySelector(
-      `[data-slate-node="element"][data-slate-path="${blockPath}"]`
+      `[data-plite-node="element"][data-plite-path="${blockPath}"]`
     );
 
     return block?.textContent?.length ?? 0;
@@ -683,10 +684,10 @@ const getTopLevelElementCount = (page) =>
     () =>
       Array.from(
         document.querySelectorAll(
-          '[data-slate-node="element"][data-slate-path]'
+          '[data-plite-node="element"][data-plite-path]'
         )
       ).filter((element) => {
-        const path = element.getAttribute('data-slate-path');
+        const path = element.getAttribute('data-plite-path');
 
         return path != null && !path.includes(',');
       }).length
@@ -697,10 +698,10 @@ const waitForTopLevelElementCount = (page, count) =>
     (expectedCount) =>
       Array.from(
         document.querySelectorAll(
-          '[data-slate-node="element"][data-slate-path]'
+          '[data-plite-node="element"][data-plite-path]'
         )
       ).filter((element) => {
-        const path = element.getAttribute('data-slate-path');
+        const path = element.getAttribute('data-plite-path');
 
         return path != null && !path.includes(',');
       }).length >= expectedCount,
@@ -722,10 +723,10 @@ const getTextTarget = async (page, path, placement = 'start') => {
               top: 0,
             };
       const block = document.querySelector(
-        `[data-slate-node="element"][data-slate-path="${blockPath}"]`
+        `[data-plite-node="element"][data-plite-path="${blockPath}"]`
       );
       const leaves = Array.from(
-        block?.querySelectorAll('[data-slate-leaf]') ?? []
+        block?.querySelectorAll('[data-plite-leaf]') ?? []
       ).filter((node) => node instanceof HTMLElement);
       const leaf = leaves.find((candidate) => {
         const rect = candidate.getBoundingClientRect();
@@ -778,7 +779,7 @@ const getVisibleTextTarget = async (page) => {
             top: 0,
           };
     const blocks = Array.from(
-      document.querySelectorAll('[data-slate-node="element"][data-slate-path]')
+      document.querySelectorAll('[data-plite-node="element"][data-plite-path]')
     );
 
     for (const block of blocks) {
@@ -786,7 +787,7 @@ const getVisibleTextTarget = async (page) => {
         continue;
       }
 
-      const leaf = Array.from(block.querySelectorAll('[data-slate-leaf]')).find(
+      const leaf = Array.from(block.querySelectorAll('[data-plite-leaf]')).find(
         (candidate) => {
           if (!(candidate instanceof HTMLElement)) {
             return false;
@@ -810,7 +811,7 @@ const getVisibleTextTarget = async (page) => {
       const rect = leaf.getBoundingClientRect();
 
       return {
-        path: block.getAttribute('data-slate-path'),
+        path: block.getAttribute('data-plite-path'),
         x: Math.min(rect.right - 4, rect.left + 60),
         y: (rect.top + rect.bottom) / 2,
       };
@@ -842,7 +843,7 @@ const waitForCollapsedSelection = (page) =>
           ? selection.anchorNode
           : selection.anchorNode?.parentElement;
 
-      return Boolean(anchor?.closest('[data-slate-node="text"]'));
+      return Boolean(anchor?.closest('[data-plite-node="text"]'));
     },
     undefined,
     { timeout: 5000 }
@@ -937,12 +938,12 @@ const summarizeProof = (samples, key) =>
       .filter((value) => typeof value === 'number')
   );
 
-const server = process.env.SLATE_PAGINATION_REAL_OPS_BASE_URL
+const server = process.env.PLITE_PAGINATION_REAL_OPS_BASE_URL
   ? null
-  : useDevServer || process.env.SLATE_PAGINATION_REAL_OPS_STATIC === '0'
+  : useDevServer || process.env.PLITE_PAGINATION_REAL_OPS_STATIC === '0'
     ? await startNextDevServer()
     : await startStaticServer();
-const baseURL = process.env.SLATE_PAGINATION_REAL_OPS_BASE_URL ?? server?.url;
+const baseURL = process.env.PLITE_PAGINATION_REAL_OPS_BASE_URL ?? server?.url;
 
 if (!baseURL) {
   throw new Error('Unable to resolve pagination real-ops base URL');

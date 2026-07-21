@@ -5,6 +5,8 @@ import {
   insertText as editorInsertText,
   replace as editorReplace,
 } from '@platejs/plite/internal';
+import { EDITOR_TO_PENDING_SELECTION } from '@platejs/plite-dom/internal';
+import { react } from '../src/plugin/with-react';
 
 const withNavigator = async (userAgent: string, run: () => Promise<void>) => {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
@@ -29,10 +31,6 @@ test('react() clears pending selection before Android insertText bridge calls', 
   await withNavigator(
     'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/124.0 Mobile Safari/537.36',
     async () => {
-      const [{ react }, { EDITOR_TO_PENDING_SELECTION }] = await Promise.all([
-        import('../src/plugin/with-react.ts'),
-        import('@platejs/plite-dom'),
-      ]);
       const editor = createEditor({ extensions: [react()] });
 
       editorReplace(editor, {
@@ -43,12 +41,14 @@ test('react() clears pending selection before Android insertText bridge calls', 
           },
         ],
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 5 },
           focus: { path: [0, 0], offset: 5 },
         },
       });
 
       EDITOR_TO_PENDING_SELECTION.set(editor, {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });

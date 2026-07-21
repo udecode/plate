@@ -10,6 +10,7 @@ import {
 import { dom } from '../src/index';
 import {
   DOMCoverage,
+  type DOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
   EDITOR_TO_KEY_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -17,6 +18,7 @@ import {
   IS_COMPOSING,
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
+  installEditorDOMPhaseScheduler,
   NODE_TO_ELEMENT,
 } from '../src/internal';
 
@@ -78,6 +80,34 @@ const withDom = (run: (document: Document) => void) => {
   } finally {
     dom.window.close();
   }
+};
+
+const createRecordingScheduler = ({ run = false } = {}) => {
+  const tasks: Array<{
+    label: string;
+    options: Parameters<DOMPhaseScheduler['schedule']>[3];
+    phase: Parameters<DOMPhaseScheduler['schedule']>[0];
+  }> = [];
+  const scheduler: DOMPhaseScheduler = {
+    destroy: () => {},
+    diagnostics: () => ({
+      flushes: 0,
+      lastFlushPhases: [],
+      loopLimitHits: 0,
+      loopRestarts: 0,
+      maxObservedPasses: 0,
+    }),
+    flush: () => {},
+    pending: () => tasks.length,
+    schedule: (phase, label, callback, options) => {
+      tasks.push({ label, options, phase });
+      if (run) callback();
+
+      return () => {};
+    },
+  };
+
+  return { scheduler, tasks };
 };
 
 const mountEditorRoot = (
@@ -157,9 +187,10 @@ const registerSectionBodyBoundary = (editor: DOMTestEditor) =>
     boundaryId: 'section-body',
     anchor: { type: 'summary-slot', runtimeId: getRuntimeId(editor, [0, 0]) },
     copyPolicy: 'model',
-    coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
+    coveredPathRanges: [{ kind: 'text', anchor: [0, 1], focus: [0, 1] }],
     coveredRuntimeRanges: [
       {
+        kind: 'text',
         anchor: getRuntimeId(editor, [0, 1]),
         focus: getRuntimeId(editor, [0, 1]),
       },
@@ -178,7 +209,7 @@ const registerNestedParagraphBoundary = (editor: DOMTestEditor) =>
     boundaryId: 'nested-paragraph',
     anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [0, 1]) },
     copyPolicy: 'summary',
-    coveredPathRanges: [{ anchor: [0, 1, 0], focus: [0, 1, 0] }],
+    coveredPathRanges: [{ kind: 'text', anchor: [0, 1, 0], focus: [0, 1, 0] }],
     coveredRuntimeRanges: [],
     findPolicy: 'native',
     ownerPath: [0, 1],
@@ -239,7 +270,7 @@ describe('DOM coverage boundaries', () => {
       boundaryId: 'hidden-header',
       anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [0]) },
       copyPolicy: 'exclude',
-      coveredPathRanges: [{ anchor: [0], focus: [0] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [0], focus: [0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [0],
@@ -253,7 +284,7 @@ describe('DOM coverage boundaries', () => {
       boundaryId: 'hidden-footer',
       anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [2]) },
       copyPolicy: 'exclude',
-      coveredPathRanges: [{ anchor: [2], focus: [2] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [2], focus: [2] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [2],
@@ -280,6 +311,7 @@ describe('DOM coverage boundaries', () => {
   test('resolves a range crossing hidden content to boundary policy', () => {
     const editor = createNestedEditor();
     const range: Range = {
+      kind: 'text',
       anchor: { path: [0, 0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 7 },
     };
@@ -325,6 +357,7 @@ describe('DOM coverage boundaries', () => {
           },
         ] satisfies Descendant[],
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 2 },
           focus: { path: [0, 0], offset: 2 },
         },
@@ -337,23 +370,48 @@ describe('DOM coverage boundaries', () => {
       root.appendChild(textDOM);
       const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
       bindDOMNode(editor, textNode as Descendant, textDOM);
+      const { scheduler, tasks } = createRecordingScheduler({ run: true });
+      const uninstall = installEditorDOMPhaseScheduler(editor, root, scheduler);
 
       editor.api.dom.focus({ retries: 1 });
 
       expect(getSelectionCalls).toBeGreaterThan(0);
+      expect(tasks).toContainEqual({
+        label: 'dom-editor-focus-selection-sync',
+        options: {
+          key: 'dom-editor-focus-selection-sync',
+          timing: 'microtask',
+        },
+        phase: 'selection-repair',
+      });
+      uninstall();
     });
   });
 
-  test('focus fails closed while the node map is still dirty', () => {
+  test('focus retries dirty node maps through the root DOM scheduler', () => {
     withDom((document) => {
       const editor = createEditor({ extensions: [dom()] });
 
-      mountEditorRoot(editor, document);
+      const root = mountEditorRoot(editor, document);
+      const { scheduler, tasks } = createRecordingScheduler();
+      const uninstall = installEditorDOMPhaseScheduler(editor, root, scheduler);
       IS_FOCUSED.delete(editor);
       IS_NODE_MAP_DIRTY.set(editor, true);
 
-      expect(() => editor.api.dom.focus({ retries: 0 })).not.toThrow();
+      expect(() => editor.api.dom.focus({ retries: 1 })).not.toThrow();
       expect(IS_FOCUSED.get(editor)).toBeUndefined();
+      expect(tasks).toEqual([
+        {
+          label: 'dom-editor-focus-retry',
+          options: {
+            delay: 10,
+            key: 'dom-editor-focus-retry',
+            timing: 'timeout',
+          },
+          phase: 'dom-write',
+        },
+      ]);
+      uninstall();
     });
   });
 
@@ -373,6 +431,7 @@ describe('DOM coverage boundaries', () => {
 
     expect(
       DOMCoverage.getBoundariesForRange(editor, {
+        kind: 'text',
         anchor: { path: [0, 1, 0], offset: 0 },
         focus: { path: [0, 1, 0], offset: 6 },
       }).map((boundary) => boundary.boundaryId)
@@ -527,6 +586,7 @@ describe('DOM coverage boundaries', () => {
 
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 1, 0], offset: 0 },
           focus: { path: [0, 1, 0], offset: 12 },
         });
@@ -555,6 +615,7 @@ describe('DOM coverage boundaries', () => {
 
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 1, 0], offset: 0 },
           focus: { path: [0, 1, 0], offset: 12 },
         });
@@ -669,9 +730,10 @@ describe('DOM coverage boundaries', () => {
       boundaryId: 'merged-section-body',
       anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [1, 1]) },
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1, 1], focus: [1, 1] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [1, 1], focus: [1, 1] }],
       coveredRuntimeRanges: [
         {
+          kind: 'text',
           anchor: getRuntimeId(editor, [1, 1]),
           focus: getRuntimeId(editor, [1, 1]),
         },
@@ -711,7 +773,7 @@ describe('DOM coverage boundaries', () => {
         boundaryId: `hidden-${index}`,
         anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, path) },
         copyPolicy: 'model',
-        coveredPathRanges: [{ anchor: path, focus: path }],
+        coveredPathRanges: [{ kind: 'text', anchor: path, focus: path }],
         coveredRuntimeRanges: [],
         findPolicy: 'native',
         ownerPath: path,
@@ -741,7 +803,7 @@ describe('DOM coverage boundaries', () => {
       boundaryId: 'hidden-200',
       anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [200]) },
       copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [200, 0], focus: [200, 0] }],
+      coveredPathRanges: [{ kind: 'text', anchor: [200, 0], focus: [200, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [200],
@@ -754,6 +816,7 @@ describe('DOM coverage boundaries', () => {
 
     expect(
       DOMCoverage.getBoundariesForRange(editor, {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [300, 0], offset: 0 },
       }).map((boundary) => boundary.boundaryId)
@@ -765,6 +828,7 @@ describe('DOM coverage boundaries', () => {
       const editor = createLargeEditor(500);
       const hiddenPoint = { path: [200, 0], offset: 3 };
       const hiddenRange: Range = {
+        kind: 'text',
         anchor: hiddenPoint,
         focus: hiddenPoint,
       };
@@ -774,7 +838,9 @@ describe('DOM coverage boundaries', () => {
         boundaryId: 'virtualized-200',
         anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [200]) },
         copyPolicy: 'model',
-        coveredPathRanges: [{ anchor: [200, 0], focus: [200, 0] }],
+        coveredPathRanges: [
+          { kind: 'text', anchor: [200, 0], focus: [200, 0] },
+        ],
         coveredRuntimeRanges: [],
         findPolicy: 'native',
         ownerPath: [200],

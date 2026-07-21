@@ -3,27 +3,72 @@ import {
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import {
+  type PropertyValueDescriptor,
+  type SchemaElement,
+  property,
+  schema,
+  target,
+} from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
+import { withMarkdownRuntime } from '../markdown-runtime';
 import { remarkMdx, remarkMention } from '../plugins';
 
-const element = (key: string, node: Record<string, unknown> = {}) =>
-  createBasePlugin({ key, node: { isElement: true, ...node } });
+type TestElementOptions = {
+  properties?: Readonly<Record<string, PropertyValueDescriptor>>;
+  inline?: boolean;
+  type?: string;
+  void?: boolean;
+};
 
-const leaf = (key: string) => createBasePlugin({ key, node: { isLeaf: true } });
+const element = (key: string, options: TestElementOptions = {}) => {
+  const descriptor: SchemaElement = {
+    ...(options.inline ? { inline: true } : {}),
+    ...(options.properties ? { properties: options.properties } : {}),
+    ...(options.void ? { void: options.inline ? 'inline' : 'block' } : {}),
+  };
+
+  return createBasePlugin({
+    key,
+    node: {
+      element: descriptor,
+      ...(options.type ? { type: options.type } : {}),
+    },
+  });
+};
+
+const leaf = (key: string, type = key) =>
+  createBasePlugin({ key, node: { mark: true, type } });
 
 const testSchemaPlugins = [
-  createBasePlugin({ key: KEYS.list }),
+  createBasePlugin({
+    key: KEYS.list,
+    schema: schema.contribution({
+      properties: Object.entries({
+        checked: property.boolean(),
+        indent: property.number(),
+        listRestart: property.number(),
+        listRestartPolite: property.number(),
+        listStart: property.number(),
+        listStyleType: property.string(),
+      }).map(([key, value]) =>
+        schema.elementProperty(key, value, {
+          target: target.group('element'),
+        })
+      ),
+    }),
+  }),
   ...KEYS.heading.map((key) => element(key)),
   element(KEYS.blockquote),
-  element(KEYS.hr, { isVoid: true }),
-  element(KEYS.codeBlock),
-  element(KEYS.codeLine),
-  leaf(KEYS.codeSyntax),
+  element(KEYS.hr, { void: true }),
+  element(KEYS.codeBlock, { type: NODES.codeBlock }),
+  element(KEYS.codeLine, { type: NODES.codeLine }),
+  leaf(KEYS.codeSyntax, NODES.codeSyntax),
   leaf(KEYS.bold),
   leaf(KEYS.italic),
   leaf(KEYS.underline),
@@ -33,28 +78,39 @@ const testSchemaPlugins = [
   leaf(KEYS.sup),
   leaf(KEYS.highlight),
   leaf(KEYS.kbd),
-  element(KEYS.a, { isInline: true }),
-  element(KEYS.footnoteReference, { isInline: true, isVoid: true }),
+  element(KEYS.a, { inline: true }),
+  element(KEYS.footnoteReference, { inline: true, void: true }),
   element(KEYS.footnoteDefinition),
   element(KEYS.olClassic),
   element(KEYS.ulClassic),
   element(KEYS.li),
   element(KEYS.lic),
-  element(KEYS.mention, { isInline: true, isVoid: true }),
-  element(KEYS.date, { isInline: true, isVoid: true }),
-  element(KEYS.equation, { isVoid: true }),
-  element(KEYS.inlineEquation, { isInline: true, isVoid: true }),
-  element(KEYS.file, { isVoid: true }),
-  element(KEYS.audio, { isVoid: true }),
-  element(KEYS.img, { isVoid: true }),
-  element(KEYS.mediaEmbed, { isVoid: true }),
-  element(KEYS.video, { isVoid: true }),
-  element(KEYS.columnGroup, { isContainer: true }),
-  element(KEYS.column, { isContainer: true }),
-  element(KEYS.table, { isContainer: true }),
-  element(KEYS.tr, { isContainer: true }),
-  element(KEYS.td, { isContainer: true }),
-  element(KEYS.th, { isContainer: true }),
+  element(KEYS.mention, {
+    properties: {
+      key: property.string(),
+      value: property.string(),
+    },
+    inline: true,
+    void: true,
+  }),
+  element(KEYS.date, { inline: true, void: true }),
+  element(KEYS.equation, { void: true }),
+  element(KEYS.inlineEquation, {
+    inline: true,
+    type: NODES.inlineEquation,
+    void: true,
+  }),
+  element(KEYS.file, { void: true }),
+  element(KEYS.audio, { void: true }),
+  element(KEYS.img, { void: true }),
+  element(KEYS.mediaEmbed, { type: NODES.mediaEmbed, void: true }),
+  element(KEYS.video, { void: true }),
+  element(KEYS.columnGroup, { type: NODES.columnGroup }),
+  element(KEYS.column),
+  element(KEYS.table),
+  element(KEYS.tr),
+  element(KEYS.td),
+  element(KEYS.th),
 ];
 
 const markdownPlugin = MarkdownPlugin.configure({
@@ -74,3 +130,7 @@ export const createTestEditor = () =>
   createBaseEditor({
     plugins: [BaseParagraphPlugin, ...testSchemaPlugins, markdownPlugin],
   });
+
+export const getTestMarkdownRuntime = (
+  editor: ReturnType<typeof createTestEditor>
+) => withMarkdownRuntime(editor, (runtime) => runtime);

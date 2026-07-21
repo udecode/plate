@@ -2,7 +2,9 @@ import type { ClipboardEvent } from 'react';
 import {
   createEditorRuntime,
   createEditorView,
-  defineEditorExtension,
+  defineEditorSchema,
+  element,
+  schema,
   type Point,
   type RootKey,
 } from '@platejs/plite';
@@ -33,15 +35,20 @@ import {
 
 const SHARED_ROOT = 'synced-block:shared:body' as RootKey;
 
-const contentRootExtension = defineEditorExtension({
-  elements: [
-    {
-      type: 'content-card',
-      contentRoot: { slot: 'body' },
+const contentRootExtension = defineEditorSchema({
+  elements: {
+    'content-card': element({
+      contentRoot: {
+        content: schema.content.not(schema.content.text()),
+        slot: 'body',
+      },
       void: 'editable-island',
-    },
-  ],
-  name: 'projected-clipboard-test',
+    }),
+  },
+  id: 'projected-clipboard-test',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
 });
 
 const paragraph = (text: string) => ({
@@ -94,6 +101,7 @@ const createFixture = () => {
   writePliteViewSelection(
     editor,
     createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: { point: point(undefined, [0, 0], 'Bef'.length) },
       focus: {
         owner: sharedOwner,
@@ -131,6 +139,7 @@ const createRepeatedFixture = () => {
   writePliteViewSelection(
     editor,
     createPliteViewSelection(graph, {
+      kind: 'text',
       anchor: {
         owner: sharedOwner,
         point: point(SHARED_ROOT, [0, 0], 'In'.length),

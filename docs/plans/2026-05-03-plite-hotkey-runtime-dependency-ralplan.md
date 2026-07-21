@@ -1,8 +1,8 @@
 # Plite Hotkey Runtime Dependency Ralplan
 
-Date: 2026-05-03  
-Status: ready for implementation  
-Skill: `plite-ralplan`  
+Date: 2026-05-03
+Status: ready for implementation
+Skill: `plite-ralplan`
 Source repo: `/Users/zbeyens/git/plite`
 
 ## Verdict
@@ -508,8 +508,8 @@ Implementation starts with tests, not a dependency deletion.
 
 ### 2026-05-03 hotkey hard cut started
 
-Status: in progress  
-Driver skill: `ralph`  
+Status: in progress
+Driver skill: `ralph`
 Supporting skills: `hard-cut`, `tdd`
 
 Actions:
@@ -527,8 +527,8 @@ Next action:
 
 ### 2026-05-03 hotkey hard cut completed
 
-Status: complete  
-Driver skill: `ralph`  
+Status: complete
+Driver skill: `ralph`
 Supporting skills: `hard-cut`, `tdd`, `ce-compound`
 
 Actions:

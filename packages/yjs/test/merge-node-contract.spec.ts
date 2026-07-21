@@ -1,43 +1,26 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { Descendant } from '@platejs/plite';
-import { history } from '@platejs/plite-history';
 
 import {
+  assertCanonicalYjsTrace,
   assertPeerTexts,
-  clearYjsTrace,
   connectYjsPeerAndSync,
   createSeededYjsPeers,
   createYjsPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
-  getHistoryUndoCount,
   getPeerTopLevelTexts,
-  getYjsNodeAt,
-  getYjsTrace,
   type Peer,
   paragraph,
-  readPeerChildren,
-  readPeerPliteValue,
-  reconcileYjsPeer,
   redoYjsPeerAndSync,
   syncConnectedPeers,
   undoYjsPeerAndSync,
 } from './support/collaboration';
 
-const quote = (...children: readonly Descendant[]): Descendant => ({
-  type: 'block-quote',
-  children,
-});
-
 const initialValue = (): Descendant[] => [
   paragraph('alpha'),
   paragraph('beta'),
-];
-
-const incompatibleMergeValue = (): Descendant[] => [
-  paragraph('block 2'),
-  quote(paragraph('alpha'), paragraph('beta')),
 ];
 
 const textMergeValue = (): Descendant[] => [
@@ -63,14 +46,7 @@ const mergeSecondParagraph = (peer: Peer): void => {
 };
 
 const mergeRightText = (peer: Peer): void => {
-  peer.editor.update.operations.replay([
-    {
-      path: [0, 1],
-      position: 'alpha'.length,
-      properties: { source: 'right' },
-      type: 'merge_node',
-    },
-  ]);
+  peer.editor.update.nodes.merge({ at: [0, 1] });
 };
 
 const appendRemoteTextToLeftParagraph = (peer: Peer): void => {
@@ -80,62 +56,14 @@ const appendRemoteTextToLeftParagraph = (peer: Peer): void => {
 };
 
 describe('@platejs/yjs merge_node collaboration contract', () => {
-  it('elides incompatible structural merge instead of nesting blocks into a paragraph', () => {
-    const peer = createPeer('b', undefined, incompatibleMergeValue());
-
-    clearYjsTrace(peer);
-    mergeSecondParagraph(peer);
-
-    assert.deepEqual(readPeerPliteValue(peer), [
-      paragraph('block 2'),
-      quote(paragraph('alpha'), paragraph('beta')),
-    ]);
-    assert.deepEqual(getYjsTrace(peer), [
-      {
-        fallback: 'incompatible-structural-merge-elided',
-        mode: 'traceable-fallback',
-        operationType: 'merge_node',
-      },
-    ]);
-
-    reconcileYjsPeer(peer);
-
-    assert.deepEqual(readPeerChildren(peer), incompatibleMergeValue());
-  });
-
-  it('does not save an incompatible structural merge in Plite history', () => {
-    const peer = createPeer('b', undefined, incompatibleMergeValue());
-    const cleanupHistory = peer.editor.extend(history());
-
-    mergeSecondParagraph(peer);
-
-    assert.equal(getHistoryUndoCount(peer.editor), 0);
-
-    cleanupHistory();
-    peer.cleanup();
-  });
-
-  it('applies local offline public merge without a root snapshot fallback', () => {
+  it('applies a local offline public merge as a canonical change', () => {
     const peer = createPeer('b');
-    const survivor = getYjsNodeAt(peer, [0]);
 
     disconnectAndClearYjsTrace(peer);
     mergeSecondParagraph(peer);
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alphabeta']);
-    assert.equal(getYjsNodeAt(peer, [0]), survivor);
-    assert.deepEqual(getYjsTrace(peer), [
-      {
-        fallback: 'virtual-merge-ref',
-        mode: 'traceable-fallback',
-        operationType: 'merge_node',
-      },
-      {
-        fallback: 'text-merge-preserve-yjs-boundary',
-        mode: 'traceable-fallback',
-        operationType: 'merge_node',
-      },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
   it('preserves concurrent remote survivor edits when an offline merge reconnects', () => {
@@ -166,7 +94,7 @@ describe('@platejs/yjs merge_node collaboration contract', () => {
     assertPeerTexts(peers, ['alphabeta']);
   });
 
-  it('undoes and redoes only the local merge intent after reconnect', () => {
+  it('undoes and redoes only the local merge after reconnect', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 
@@ -185,12 +113,9 @@ describe('@platejs/yjs merge_node collaboration contract', () => {
     assertPeerTexts(peers, ['alpha!beta']);
   });
 
-  it('keeps raw text merge_node in a traceable identity-preserving fallback', () => {
+  it('merges adjacent text leaves through a canonical change', () => {
     const peers = createPeers(['a', 'b', 'c'], textMergeValue());
     const [a, b] = peers;
-    const survivor = getYjsNodeAt(b, [0, 0]);
-    const rightText = getYjsNodeAt(b, [0, 1]);
-
     disconnectAndClearYjsTrace(b);
     mergeRightText(b);
     appendRemoteTextToLeftParagraph(a);
@@ -198,15 +123,7 @@ describe('@platejs/yjs merge_node collaboration contract', () => {
 
     assert.deepEqual(getPeerTopLevelTexts(a), ['alpha!beta']);
     assert.deepEqual(getPeerTopLevelTexts(b), ['alphabeta']);
-    assert.equal(getYjsNodeAt(b, [0, 0]), survivor);
-    assert.equal(getYjsNodeAt(b, [0, 1]), rightText);
-    assert.deepEqual(getYjsTrace(b), [
-      {
-        fallback: 'text-merge-preserve-yjs-boundary',
-        mode: 'traceable-fallback',
-        operationType: 'merge_node',
-      },
-    ]);
+    assertCanonicalYjsTrace(b);
 
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!beta']);

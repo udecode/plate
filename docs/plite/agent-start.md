@@ -65,10 +65,22 @@ For reads, teach `editor.read((state) => ...)`. For writes, teach
 From `/Users/zbeyens/git/plate-2`:
 
 ```sh
-pnpm plite:typecheck
-pnpm plite:test
-pnpm --filter plite test:plite-browser
+pnpm check:plite:dev
+pnpm check:plite
+pnpm check:plite:browser-matrix
 ```
+
+`check:plite:dev` uses uncommitted inputs by default. Set
+`PLITE_CHECK_BASE=<ref>` when the affected range is already committed.
+`check:plite` is the strict all-package plus Chromium handoff gate; the browser
+matrix remains closure-only.
+
+The publish path runs `pnpm plite:release:artifacts` after the release build.
+It packs every Plite-family package, consumes every public subpath from the
+tarballs under NodeNext and Bundler resolution, checks runtime dependency
+direction, and proves unused bare and named imports tree-shake to the empty
+consumer baseline. Keep this release-only; it validates built output and does
+not belong in the daily Plite loop.
 
 From `plate-2`:
 

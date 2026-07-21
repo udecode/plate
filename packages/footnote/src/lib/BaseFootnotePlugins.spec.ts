@@ -16,10 +16,9 @@ describe('BaseFootnotePlugins', () => {
     const inputPlugin = editor.plugins[BaseFootnoteInputPlugin.key];
     const options = editor.plugin(BaseFootnoteReferencePlugin).getOptions();
 
-    expect(plugin.node).toMatchObject({
-      isElement: true,
-      isInline: true,
-      isVoid: true,
+    expect(plugin.node.element).toMatchObject({
+      inline: true,
+      void: 'inline',
     });
     expect(options.trigger).toBe('^');
     expect(options.triggerPreviousCharPattern?.test('[')).toBe(true);
@@ -28,11 +27,26 @@ describe('BaseFootnotePlugins', () => {
       children: [{ text: '' }],
       type: 'footnoteInput',
     });
-    expect(inputPlugin.node).toMatchObject({
-      isElement: true,
-      isInline: true,
-      isVoid: true,
+    expect(inputPlugin.node.element).toMatchObject({
+      inline: true,
+      void: 'inline',
     });
+    expect(
+      editor.read.schema.getElementBehavior({
+        children: [{ text: '' }],
+        type: KEYS.footnoteReference,
+      })
+    ).toMatchObject({ atom: true, inline: true, void: true });
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            children: [{ text: '' }],
+            type: KEYS.footnoteReference,
+          },
+        ],
+      })
+    ).toThrow(/root.*cannot contain|cannot contain.*root/i);
   });
 
   it('configures footnote definition as a block element', () => {
@@ -41,10 +55,29 @@ describe('BaseFootnotePlugins', () => {
     });
     const plugin = editor.plugins[BaseFootnoteDefinitionPlugin.key];
 
-    expect(plugin.node).toMatchObject({
-      isElement: true,
+    expect(plugin.node.element).toMatchObject({
+      content: {
+        allowed: { group: 'block', kind: 'group' },
+      },
     });
-    expect(plugin.node.isInline).toBeUndefined();
+    expect(plugin.node.element?.inline).toBeUndefined();
+    expect(editor.read.schema.createAndFill(KEYS.footnoteDefinition)).toEqual({
+      children: [{ children: [{ text: '' }], type: KEYS.p }],
+      type: KEYS.footnoteDefinition,
+    });
+    expect(
+      editor.read.schema.element(KEYS.footnoteDefinition)?.groups
+    ).toContain('block');
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            children: [{ children: [{ text: '' }], type: KEYS.p }],
+            type: KEYS.footnoteDefinition,
+          },
+        ],
+      })
+    ).not.toThrow();
   });
 
   it('provides footnote api and insert / navigation transforms on the editor', () => {
@@ -81,6 +114,7 @@ describe('BaseFootnotePlugins', () => {
     const editor = createBaseEditor({
       plugins: [BaseFootnoteReferencePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       },
@@ -109,6 +143,7 @@ describe('BaseFootnotePlugins', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -118,6 +153,7 @@ describe('BaseFootnotePlugins', () => {
     const editor = createBaseEditor({
       plugins: [BaseFootnoteReferencePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
@@ -146,6 +182,7 @@ describe('BaseFootnotePlugins', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -155,6 +192,7 @@ describe('BaseFootnotePlugins', () => {
     const editor = createBaseEditor({
       plugins: [BaseFootnoteReferencePlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },

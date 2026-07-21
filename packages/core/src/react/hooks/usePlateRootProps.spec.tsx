@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Range, Value } from '@platejs/plite';
+import type { TextSelection, Value } from '@platejs/plite';
 
 import { act, renderHook } from '@testing-library/react';
 
@@ -35,7 +35,8 @@ describe('usePlateRootProps', () => {
       { wrapper }
     );
     const nextValue: Value = [{ children: [{ text: 'two' }], type: 'p' }];
-    const nextSelection: Range = {
+    const nextSelection: TextSelection = {
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     };

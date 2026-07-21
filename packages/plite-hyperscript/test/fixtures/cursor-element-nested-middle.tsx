@@ -14,8 +14,10 @@ export const input = (
 export const output = {
   children: [
     {
+      type: 'fixture-block',
       children: [
         {
+          type: 'fixture-block',
           children: [
             {
               text: 'word',
@@ -26,6 +28,7 @@ export const output = {
     },
   ],
   selection: {
+    kind: 'text',
     anchor: {
       path: [0, 0, 0],
       offset: 2,

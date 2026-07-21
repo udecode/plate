@@ -111,7 +111,7 @@ test.describe('editable voids', () => {
     );
 
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
-      patterns: ['Could not set focus', 'pending operations'],
+      patterns: ['Could not set focus'],
     });
 
     try {
@@ -166,6 +166,7 @@ test.describe('editable voids', () => {
     );
 
     await restoredChild.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -214,6 +215,7 @@ test.describe('editable voids', () => {
       outerEditor
     );
     const outerSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -270,6 +272,7 @@ test.describe('editable voids', () => {
     );
 
     await outer.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -279,6 +282,7 @@ test.describe('editable voids', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -298,6 +302,7 @@ test.describe('editable voids', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'Outer '.length },
         focus: { path: [0, 0], offset: 'Outer '.length },
       });
@@ -319,6 +324,7 @@ test.describe('editable voids', () => {
         controlValue: 'Typing',
         followUpText: 'Outer ',
         outerSelection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -356,6 +362,7 @@ test.describe('editable voids', () => {
     );
 
     const outerSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -420,6 +427,7 @@ test.describe('editable voids', () => {
     );
 
     await outer.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -431,6 +439,7 @@ test.describe('editable voids', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -450,6 +459,7 @@ test.describe('editable voids', () => {
 
     await expect(childEditor).toContainText('This is editable');
     await childRoot.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -482,6 +492,7 @@ test.describe('editable voids', () => {
     );
 
     await childRoot.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 4], offset: 1 },
     });
@@ -529,6 +540,7 @@ test.describe('editable voids', () => {
 
     await expect(childEditor).toContainText('This is editable');
     await childRoot.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -549,6 +561,7 @@ test.describe('editable voids', () => {
     await expect
       .poll(() => childRoot.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'Child '.length },
         focus: { path: [0, 0], offset: 'Child '.length },
       });
@@ -594,6 +607,7 @@ test.describe('editable voids', () => {
         {
           kind: 'assertSelection',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 'This is editable'.length },
             focus: { path: [0, 0], offset: 'This is editable'.length },
           },
@@ -606,6 +620,7 @@ test.describe('editable voids', () => {
         {
           kind: 'assertSelection',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 0 },
           },
@@ -618,6 +633,7 @@ test.describe('editable voids', () => {
         {
           kind: 'assertSelection',
           selection: {
+            kind: 'text',
             anchor: {
               path: [0, 1],
               offset: 'rich'.length,
@@ -642,6 +658,7 @@ test.describe('editable voids', () => {
         {
           kind: 'assertSelection',
           selection: {
+            kind: 'text',
             anchor: {
               path: [0, 1],
               offset: 'richX'.length,
@@ -700,6 +717,7 @@ test.describe('editable voids', () => {
         {
           kind: 'assertSelection',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 1 },
             focus: { path: [0, 0], offset: 1 },
           },
@@ -711,6 +729,7 @@ test.describe('editable voids', () => {
         {
           kind: 'assertSelection',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 2 },
             focus: { path: [0, 0], offset: 2 },
           },
@@ -727,6 +746,7 @@ test.describe('editable voids', () => {
         {
           kind: 'assertSelection',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 1], offset: 1 },
             focus: { path: [0, 1], offset: 1 },
           },
@@ -743,6 +763,7 @@ test.describe('editable voids', () => {
         {
           kind: 'assertSelection',
           selection: {
+            kind: 'text',
             anchor: { path: [1, 0], offset: 1 },
             focus: { path: [1, 0], offset: 1 },
           },
@@ -800,6 +821,7 @@ test.describe('editable voids', () => {
     await expect
       .poll(() => childRoot.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -817,6 +839,7 @@ test.describe('editable voids', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: beforeVoidText.length },
         focus: { path: [0, 0], offset: beforeVoidText.length },
       });
@@ -830,6 +853,7 @@ test.describe('editable voids', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [2, 0], offset: 0 },
         focus: { path: [2, 0], offset: 0 },
       });
@@ -892,6 +916,7 @@ test.describe('editable voids', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
+        kind: 'text',
         anchor: { path: [0, 0] },
         focus: { path: [0, 0] },
       });
@@ -922,6 +947,7 @@ test.describe('editable voids', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
+        kind: 'text',
         anchor: { path: [2, 0], offset: belowOuterExitOffset },
         focus: { path: [2, 0], offset: belowOuterExitOffset },
       });
@@ -1090,6 +1116,7 @@ test.describe('editable voids', () => {
         {
           kind: 'assertSelection',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 1], offset: 'rich'.length },
             focus: { path: [0, 1], offset: 'rich'.length },
           },
@@ -1132,6 +1159,7 @@ test.describe('editable voids', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1161,6 +1189,7 @@ test.describe('editable voids', () => {
       childEditor
     );
     const outerSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -1168,6 +1197,7 @@ test.describe('editable voids', () => {
     try {
       await outer.selection.select(outerSelection);
       await childRoot.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 4], offset: '!'.length },
       });
@@ -1220,10 +1250,12 @@ test.describe('editable voids', () => {
       childEditor
     );
     const outerSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
     const childSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 1], offset: 'rich'.length },
     };
@@ -1299,6 +1331,7 @@ test.describe('editable voids', () => {
       childEditor
     );
     const outerSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -1306,6 +1339,7 @@ test.describe('editable voids', () => {
     try {
       await outer.selection.select(outerSelection);
       await childRoot.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1372,6 +1406,7 @@ test.describe('editable voids', () => {
 
     try {
       await outer.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });

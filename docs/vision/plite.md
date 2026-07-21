@@ -1,7 +1,7 @@
 # Plite Vision
 
 Plite is the raw editor substrate. It must stay unopinionated, precise, and
-boring in the best way: document model, operations, runtime, input, DOM,
+boring in the best way: document model, canonical changes, runtime, input, DOM,
 selection, history, browser proof, package API, and benchmarks.
 
 Root `VISION.md` is the mandatory first read. This file carries the fuller
@@ -24,8 +24,9 @@ donor checkout as proof after the transplant.
 
 ## Plite Rules
 
-- Preserve Plite's simple document model and operations as truth; do not let
-  React define the core ontology.
+- Preserve Plite's simple document model and canonical `DocumentChange` as the
+  sole mutation and commit truth. Transactions construct canonical changes
+  directly; React does not define the core ontology.
 - Public API should teach `editor.read`, `editor.update`, `state`, `tx`,
   extension groups, commit listeners, and projection sources.
 - Plite stays unopinionated. Plate owns product opinion.
@@ -68,8 +69,9 @@ donor checkout as proof after the transplant.
 - `EditorCommit` is the local runtime fact for history, collaboration, React,
   DOM repair, proof, and subscribers.
 - Overlay architecture is split into Decoration, Annotation, and Widget lanes.
-- Durable anchors and live handles are separate nouns. Prefer bookmarks for
-  durable public anchor language; keep low-level refs as runtime machinery.
+- Anchors are live editor-scoped handles created through `editor.anchor` or
+  `tx.anchor`. Serialized durable positions are a separate concern; low-level
+  refs are runtime machinery.
 - Lightweight text problems do not automatically deserve the full editor stack.
 
 ## Plite Browser And Behavior Proof
@@ -105,6 +107,13 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
   paste, IME, focus, undo, follow-up input, native find, or scroll/caret
   behavior.
 - Escalate to `plite-plan` when the next useful win is API/runtime boundary.
+- Each mounted `Editable` owns one bounded DOM phase scheduler. Queued root
+  work runs in `model -> DOM read -> DOM/React write -> selection/repair`
+  order, coalesces by semantic key, and reports recursive loop-limit hits.
+- Browser/OS policy clocks such as composition guard lifetimes and native event
+  settling may use timers, but DOM mutation, scroll restoration, focus writes,
+  and selection repair re-enter the root scheduler. Standalone internal test
+  adapters may create a disposable fallback scheduler.
 
 ## Plite Perf And Degraded Modes
 

@@ -59,6 +59,7 @@ describe('useSelection hooks', () => {
   it('reports a collapsed selection within one block', () => {
     const editor = createPlateEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -95,6 +96,7 @@ describe('useSelection hooks', () => {
   it('reports an expanded selection across blocks', () => {
     const editor = createPlateEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [1, 0] },
       },

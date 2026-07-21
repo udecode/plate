@@ -6,6 +6,7 @@ const createEditor = (offset: number) =>
   createPlateEditor({
     plugins: [TabbableKit],
     selection: {
+      kind: 'text',
       anchor: { offset, path: [0, 0] },
       focus: { offset, path: [0, 0] },
     },

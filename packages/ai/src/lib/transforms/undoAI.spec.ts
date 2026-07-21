@@ -1,7 +1,11 @@
 import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
-import { getTransientSuggestionKey } from '@platejs/suggestion';
+import {
+  BaseSuggestionPlugin,
+  getTransientSuggestionKey,
+} from '@platejs/suggestion';
 
 import { BaseAIPlugin } from '../BaseAIPlugin';
+import { AIChatPlugin } from '../../react/ai-chat/AIChatPlugin';
 import {
   AI_PREVIEW_KEY,
   beginAIPreview,
@@ -12,8 +16,14 @@ import { withAIBatch } from './withAIBatch';
 
 const createEditor = () =>
   createBaseEditor({
-    plugins: [BaseParagraphPlugin, BaseAIPlugin],
+    plugins: [
+      BaseParagraphPlugin,
+      BaseSuggestionPlugin,
+      BaseAIPlugin,
+      AIChatPlugin.configure({ options: { open: true } }),
+    ],
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },

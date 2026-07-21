@@ -1,12 +1,21 @@
-import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
 
 import { BaseAIPlugin } from '../BaseAIPlugin';
 import { removeAIMarks } from './removeAIMarks';
 
+const BaseBoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
+});
+
 describe('removeAIMarks', () => {
   it('unsets only ai marks and leaves other marks alone', () => {
     const editor = createBaseEditor({
-      plugins: [BaseParagraphPlugin, BaseAIPlugin],
+      plugins: [BaseParagraphPlugin, BaseBoldPlugin, BaseAIPlugin],
       value: [
         {
           type: 'p',

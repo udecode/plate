@@ -201,7 +201,7 @@ describe('when element is strong and validNodeName is strong', () => {
       pluginDeserializeHtml(
         createBaseEditor(),
         createBasePlugin({
-          node: { isLeaf: true, type: BoldPlugin.key },
+          node: { mark: true, type: BoldPlugin.key },
           parsers: {
             html: {
               deserializer: {

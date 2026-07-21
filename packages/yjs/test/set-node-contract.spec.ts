@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import { type Descendant, type Element, NodeApi } from '@platejs/plite';
 
 import {
+  assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
   createSeededYjsPeers,
@@ -11,11 +12,9 @@ import {
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   getVisibleYjsNodeAt,
-  getYjsTrace,
   type Peer,
   paragraph,
   readPeerChildren,
-  recordOperationTypes,
   redoYjsPeerAndSync,
   syncConnectedPeers,
   undoYjsPeerAndSync,
@@ -77,16 +76,6 @@ const appendRemoteText = (peer: Peer): void => {
 };
 
 describe('@platejs/yjs set_node collaboration contract', () => {
-  it('characterizes public setNodes as set_node', () => {
-    const peer = createPeer('b');
-    const operations = recordOperationTypes(peer, {
-      name: 'set-node-operation-recorder',
-    });
-    setHeading(peer);
-
-    assert.deepEqual(operations, ['set_node']);
-  });
-
   it('applies local offline element set_node without replacing the Yjs element', () => {
     const peer = createPeer('b');
     const element = getVisibleYjsNodeAt(peer, [0]);
@@ -98,9 +87,7 @@ describe('@platejs/yjs set_node collaboration contract', () => {
       { type: 'heading-one', role: 'title', children: [{ text: 'alpha' }] },
     ]);
     assert.equal(getVisibleYjsNodeAt(peer, [0]), element);
-    assert.deepEqual(getYjsTrace(peer), [
-      { mode: 'operation', operationType: 'set_node' },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
   it('preserves concurrent remote text when an offline element set_node reconnects', () => {
@@ -145,7 +132,7 @@ describe('@platejs/yjs set_node collaboration contract', () => {
     }
   });
 
-  it('undoes and redoes only the local element set_node intent after reconnect', () => {
+  it('undoes and redoes only the local element property change after reconnect', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 
@@ -184,14 +171,10 @@ describe('@platejs/yjs set_node collaboration contract', () => {
     }
   });
 
-  it('characterizes public unsetNodes as set_node', () => {
+  it('unsets a node property through a canonical change', () => {
     const peer = createPeer('b', roleValue());
-    const operations = recordOperationTypes(peer, {
-      name: 'unset-node-operation-recorder',
-    });
     unsetRole(peer);
 
-    assert.deepEqual(operations, ['set_node']);
     assert.deepEqual(readPeerChildren(peer), [
       { type: 'paragraph', children: [{ text: 'alpha' }] },
     ]);
@@ -208,9 +191,7 @@ describe('@platejs/yjs set_node collaboration contract', () => {
       { type: 'paragraph', children: [{ bold: true, text: 'alpha' }] },
     ]);
     assert.equal(getVisibleYjsNodeAt(peer, [0, 0]), text);
-    assert.deepEqual(getYjsTrace(peer), [
-      { mode: 'operation', operationType: 'set_node' },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
   it('syncs text mark set_node through reconnect and undo without root snapshots', () => {

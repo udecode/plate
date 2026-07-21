@@ -1,3 +1,5 @@
+import { property } from '@platejs/plite';
+
 import { BaseParagraphPlugin } from '../lib/plugins';
 import { createBasePlugin } from '../lib/plugin';
 import { createStaticEditor } from './editor/withStatic';
@@ -23,8 +25,13 @@ const plugins = [
     key: 'a',
     node: {
       dangerouslyAllowAttributes: ['target'],
-      isElement: true,
-      isInline: true,
+      element: {
+        inline: true,
+        properties: {
+          target: property.string(),
+          url: property.string(),
+        },
+      },
       props: ({ element }) =>
         /^https?:\/\/platejs.org\/?/.test(getStringProp(element, 'url'))
           ? {}
@@ -35,7 +42,13 @@ const plugins = [
   createBasePlugin({
     key: 'img',
     node: {
-      isElement: true,
+      element: {
+        inline: true,
+        properties: {
+          attributes: property.json(),
+          url: property.string(),
+        },
+      },
       props: ({ element }) => ({
         alt: getObjectProp(element, 'attributes').alt,
         width: getStringProp(element, 'url').split('/').pop(),

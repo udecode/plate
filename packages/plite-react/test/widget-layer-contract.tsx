@@ -1,3 +1,5 @@
+import { runInNewContext } from 'node:vm';
+
 import { act, render } from '@testing-library/react';
 import React from 'react';
 import { createEditor } from '@platejs/plite';
@@ -184,6 +186,7 @@ const ProjectedAnnotationWidgetHarness = ({
       labels.map((label) => ({
         anchor: {
           resolve: () => ({
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 4 },
           }),
@@ -268,6 +271,7 @@ describe('plite-react widget layer contract', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 4 },
         });
@@ -308,6 +312,7 @@ describe('plite-react widget layer contract', () => {
     editorReplace(editor, {
       children: createChildren(),
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       },
@@ -347,6 +352,7 @@ describe('plite-react widget layer contract', () => {
     editorReplace(editor, {
       children: createChildren(),
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       },
@@ -381,6 +387,7 @@ describe('plite-react widget layer contract', () => {
     editorReplace(editor, {
       children: createChildren(),
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       },
@@ -474,6 +481,7 @@ describe('plite-react widget layer contract', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 3 },
         });
@@ -595,6 +603,70 @@ describe('plite-react widget layer contract', () => {
     store.destroy();
   });
 
+  test('widget metadata ignores equivalent cross-realm JSON and wakes for a changed leaf', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: createChildren(),
+      selection: null,
+    });
+
+    let metadata = runInNewContext(`({
+      nested: {
+        label: 'Toolbar',
+        values: [1, 2],
+      },
+      active: true,
+    })`) as {
+      active: boolean;
+      nested: {
+        label: string;
+        values: number[];
+      };
+    };
+    const store = createPliteWidgetStore(editor, () => [
+      {
+        anchor: {
+          type: 'selection' as const,
+        },
+        data: metadata,
+        id: 'toolbar-widget',
+      },
+    ]);
+    let notifications = 0;
+
+    store.subscribeWidget('toolbar-widget', () => {
+      notifications += 1;
+    });
+
+    metadata = {
+      active: true,
+      nested: {
+        label: 'Toolbar',
+        values: [1, 2],
+      },
+    };
+    store.refresh();
+
+    expect(notifications).toBe(0);
+
+    metadata = {
+      ...metadata,
+      nested: {
+        ...metadata.nested,
+        label: 'Changed',
+      },
+    };
+    store.refresh();
+
+    expect(notifications).toBe(1);
+    expect(store.getWidget('toolbar-widget')?.data?.nested.label).toBe(
+      'Changed'
+    );
+
+    store.destroy();
+  });
+
   test('widget metrics count changed ids and widget subscriber wakes', async () => {
     const editor = createEditor();
 
@@ -624,6 +696,7 @@ describe('plite-react widget layer contract', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 3 },
         });

@@ -69,6 +69,7 @@ describe('playwright selection snapshots', () => {
           path: [0, 0],
           offset: 0,
         },
+        kind: 'text',
       });
     };
 
@@ -163,6 +164,7 @@ describe('playwright selection snapshots', () => {
 
     (root as any).__pliteBrowserHandle = {
       getSelection: () => ({
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 3, path: [1, 0] },
       }),

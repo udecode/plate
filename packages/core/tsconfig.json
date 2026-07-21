@@ -14,6 +14,9 @@
         "../../packages/plite-hyperscript/src/index.ts"
       ],
       "@platejs/plite-react": ["../../packages/plite-react/src/index.ts"],
+      "@platejs/plite-react/internal": [
+        "../../packages/plite-react/src/internal/index.ts"
+      ],
       "@platejs/test-utils": ["../../packages/test-utils/src/index.ts"],
       "@udecode/react-hotkeys": [
         "../../packages/udecode/react-hotkeys/src/index.tsx"

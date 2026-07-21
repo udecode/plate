@@ -8,18 +8,23 @@ describe('BaseTagPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseTagPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
       value: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
-    const plugin = editor.getPlugin(BaseTagPlugin);
+    const tag = { children: [{ text: '' }], type: KEYS.tag };
 
-    expect(plugin.node).toMatchObject({
-      isElement: true,
-      isInline: true,
-      isVoid: true,
-    });
+    expect(editor.read.schema.isInline(tag)).toBe(true);
+    expect(editor.read.schema.isVoid(tag)).toBe(true);
+    expect(
+      editor.read.schema.property({
+        key: 'value',
+        placement: 'element',
+        type: KEYS.tag,
+      })?.value.kind
+    ).toBe('string');
 
     editor.update.tag.insert({ value: 'alpha' });
 

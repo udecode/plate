@@ -13,6 +13,7 @@ export const input = (
 );
 export const test = (editor) =>
   editorPoint(editor, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 1], offset: 2 },
   });

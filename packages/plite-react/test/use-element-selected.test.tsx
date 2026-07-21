@@ -106,6 +106,7 @@ describe('useElementSelected', () => {
       await act(async () => {
         editor.update((tx) => {
           tx.selection.set({
+            kind: 'text',
             anchor: { path: [2, 0], offset: 0 },
             focus: { path: [0, 1, 0], offset: 0 },
           });
@@ -144,6 +145,7 @@ describe('useElementSelected', () => {
       await act(async () => {
         editor.update((tx) => {
           tx.selection.set({
+            kind: 'text',
             anchor: { path: [2, 0], offset: 0 },
             focus: { path: [0, 1, 0], offset: 0 },
           });
@@ -341,6 +343,7 @@ describe('useElementSelected', () => {
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [2, 0], offset: 0 },
           focus: { path: [0, 1, 0], offset: 0 },
         });

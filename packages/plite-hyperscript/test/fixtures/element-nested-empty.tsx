@@ -8,6 +8,7 @@ export const input = (
 export const output = {
   children: [
     {
+      type: 'fixture-block',
       children: [],
     },
   ],

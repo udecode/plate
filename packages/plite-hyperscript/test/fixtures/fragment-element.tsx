@@ -7,6 +7,7 @@ export const input = (
 );
 export const output = [
   {
+    type: 'fixture-block',
     children: [
       {
         text: 'word',

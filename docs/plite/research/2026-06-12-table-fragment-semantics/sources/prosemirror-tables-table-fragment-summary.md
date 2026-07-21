@@ -38,4 +38,3 @@ Do not hard-copy ProseMirror APIs. Keep the invariant shape:
 - spans crossing replacement boundaries are split or explicitly rejected by
   policy;
 - target selection after paste is part of the contract.
-

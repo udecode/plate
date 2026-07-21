@@ -1,4 +1,4 @@
-import { KEYS } from '@platejs/utils';
+import { NODES } from '@platejs/utils';
 
 import { htmlDeserializerCodeBlock } from './htmlDeserializerCodeBlock';
 
@@ -29,18 +29,18 @@ describe('htmlDeserializerCodeBlock', () => {
       children: [
         {
           children: [{ text: 'const a = 1;' }],
-          type: KEYS.codeLine,
+          type: NODES.codeLine,
         },
         {
           children: [{ text: '' }],
-          type: KEYS.codeLine,
+          type: NODES.codeLine,
         },
         {
           children: [{ text: 'const b = 2;' }],
-          type: KEYS.codeLine,
+          type: NODES.codeLine,
         },
       ],
-      type: KEYS.codeBlock,
+      type: NODES.codeBlock,
     });
   });
 });

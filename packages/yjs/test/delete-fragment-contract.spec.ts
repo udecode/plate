@@ -1,14 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  createEditor,
-  type Descendant,
-  type Operation,
-  type Range,
-} from '@platejs/plite';
-import { replace as editorReplace } from '@platejs/plite/internal';
+import { type Descendant, type Range } from '@platejs/plite';
 
 import {
+  assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
   createSeededYjsPeers,
@@ -17,10 +12,8 @@ import {
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   getVisibleYjsNodeAt,
-  getYjsTrace,
   type Peer,
   paragraph,
-  recordEditorOperationTypes,
   redoYjsPeerAndSync,
   syncConnectedPeers,
   undoYjsPeerAndSync,
@@ -54,30 +47,6 @@ const createPeers = (ids: readonly ClientId[]): Peer[] =>
     numericClientIds: clientIds,
   });
 
-const collectDeleteFragmentOperations = (
-  selection: Range
-): Operation['type'][] => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: initialValue(),
-    marks: null,
-    selection: null,
-  });
-
-  const operations = recordEditorOperationTypes(editor, {
-    name: 'delete-fragment-operation-capture',
-  });
-
-  editor.update.selection.set(selection);
-
-  operations.length = 0;
-
-  editor.update.fragment.delete();
-
-  return operations;
-};
-
 const selectAndDeleteFragment = (peer: Peer, selection: Range): void => {
   peer.editor.update.selection.set(selection);
 
@@ -86,6 +55,7 @@ const selectAndDeleteFragment = (peer: Peer, selection: Range): void => {
 
 const deleteBetaMiddle = (peer: Peer): void => {
   selectAndDeleteFragment(peer, {
+    kind: 'text',
     anchor: { path: [1, 0], offset: 1 },
     focus: { path: [1, 0], offset: 3 },
   });
@@ -93,6 +63,7 @@ const deleteBetaMiddle = (peer: Peer): void => {
 
 const deleteFromAlphaIntoGamma = (peer: Peer): void => {
   selectAndDeleteFragment(peer, {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [2, 0], offset: 2 },
   });
@@ -105,26 +76,6 @@ const appendRemoteGamma = (peer: Peer): void => {
 };
 
 describe('@platejs/yjs delete_fragment collaboration contract', () => {
-  it('characterizes public deleteFragment inside one text as remove_text', () => {
-    assert.deepEqual(
-      collectDeleteFragmentOperations({
-        anchor: { path: [1, 0], offset: 1 },
-        focus: { path: [1, 0], offset: 3 },
-      }),
-      ['remove_text']
-    );
-  });
-
-  it('characterizes public deleteFragment across blocks as text removals, node removal, and merges', () => {
-    assert.deepEqual(
-      collectDeleteFragmentOperations({
-        anchor: { path: [0, 0], offset: 2 },
-        focus: { path: [2, 0], offset: 2 },
-      }),
-      ['remove_text', 'remove_node', 'remove_text', 'merge_node', 'merge_node']
-    );
-  });
-
   it('applies local offline deleteFragment without replacing the edited Yjs text node', () => {
     const peer = createPeer('b');
     const text = getVisibleYjsNodeAt(peer, [1, 0]);
@@ -134,9 +85,7 @@ describe('@platejs/yjs delete_fragment collaboration contract', () => {
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha', 'ba', 'gamma']);
     assert.equal(getVisibleYjsNodeAt(peer, [1, 0]), text);
-    assert.deepEqual(getYjsTrace(peer), [
-      { mode: 'operation', operationType: 'remove_text' },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
   it('preserves concurrent remote text inside the end block when an offline deleteFragment reconnects', () => {
@@ -156,7 +105,7 @@ describe('@platejs/yjs delete_fragment collaboration contract', () => {
     assertPeerTexts(peers, ['almma!']);
   });
 
-  it('undoes and redoes only the local cross-block deleteFragment intent after reconnect', () => {
+  it('undoes and redoes only the local cross-block deletion after reconnect', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 

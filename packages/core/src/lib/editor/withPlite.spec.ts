@@ -1,12 +1,19 @@
-import { createEditor, type Value } from '@platejs/plite';
+import {
+  createEditor,
+  element,
+  property,
+  schema,
+  target,
+  type Value,
+} from '@platejs/plite';
 import { NavigationFeedbackPlugin, ParagraphPlugin } from '../../react';
 import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins';
 import { extendPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import { InputRulesPlugin } from '../plugins/input-rules/internal/InputRulesPlugin';
+import { getContainerTypes } from '../plugin/getBasePlugin';
 import {
-  AstPlugin,
   AffinityPlugin,
   createBasePlugin,
   createBaseEditor,
@@ -15,8 +22,10 @@ import {
   ElementStatePlugin,
   HistoryPlugin,
   HtmlPlugin,
+  NodeIdPlugin,
   OverridePlugin,
   ParserPlugin,
+  type PluginConfig,
   extendBaseEditor,
 } from '../index';
 
@@ -30,17 +39,16 @@ const coreKeys = [
   OverridePlugin.key,
   ParserPlugin.key,
   HtmlPlugin.key,
-  AstPlugin.key,
+  NodeIdPlugin.key,
   AffinityPlugin.key,
   ParagraphPlugin.key,
-  'editableMetadata',
   EventEditorPlugin.key,
   NavigationFeedbackPlugin.key,
 ];
 
 const TestBoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { isLeaf: true },
+  node: { mark: true },
   parsers: {
     html: {
       deserializer: {
@@ -48,6 +56,15 @@ const TestBoldPlugin = createBasePlugin({
       },
     },
   },
+});
+
+const TestItalicPlugin = createBasePlugin({
+  key: 'italic',
+  node: { mark: true },
+});
+
+const TextBlockElement = element({
+  content: schema.content.text({ default: 'text', min: 1 }),
 });
 
 describe('extendPlateEditor', () => {
@@ -71,6 +88,98 @@ describe('extendPlateEditor', () => {
       expect(editor.read.view.isReadOnly()).toBe(false);
     });
 
+    it('publishes the Plate schema and empty-root default together', () => {
+      const editor = createEditor();
+      const observations: Array<{
+        children: unknown;
+        documentChanged: boolean;
+        schema: ReturnType<typeof editor.read.schema.identity>;
+      }> = [];
+
+      editor.subscribeCommit((commit) => {
+        observations.push({
+          children: editor.read.children(),
+          documentChanged: !commit.changes.empty,
+          schema: editor.read.schema.identity(),
+        });
+      });
+
+      extendPlateEditor(editor);
+
+      expect(observations.find(({ schema }) => schema !== null)).toEqual({
+        children: [{ children: [{ text: '' }], type: 'p' }],
+        documentChanged: true,
+        schema: editor.read.schema.identity(),
+      });
+      expect(
+        observations.some(
+          ({ children, schema }) =>
+            schema !== null && (children as Value).length === 0
+        )
+      ).toBe(false);
+    });
+
+    it('rejects a nonempty invalid root without publishing the schema', () => {
+      const editor = createEditor({
+        initialValue: [
+          { children: [{ text: 'stable' }], type: 'not-a-plate-element' },
+        ],
+      });
+      const children = editor.read.children();
+      const observations: ReturnType<typeof editor.read.schema.identity>[] = [];
+
+      editor.subscribeCommit(() => {
+        observations.push(editor.read.schema.identity());
+      });
+
+      expect(() => extendPlateEditor(editor)).toThrow(
+        /unknown editor element type "not-a-plate-element"/i
+      );
+      expect(editor.read.children()).toBe(children);
+      expect(editor.read.schema.identity()).toBeNull();
+      expect(
+        observations.every((schemaIdentity) => schemaIdentity === null)
+      ).toBe(true);
+    });
+
+    it('registers the node id schema without generating ids in tests', () => {
+      const editor = createBaseEditor({
+        value: [
+          { children: [{ text: 'known' }], id: 'known', type: 'p' },
+          { children: [{ text: 'missing' }], type: 'p' },
+        ],
+      });
+
+      expect(editor.read.children()).toEqual([
+        { children: [{ text: 'known' }], id: 'known', type: 'p' },
+        { children: [{ text: 'missing' }], type: 'p' },
+      ]);
+      expect(() =>
+        editor.read.schema.validateDocument(editor.read.value())
+      ).not.toThrow();
+
+      editor.update.nodes.insert(
+        { children: [{ text: 'inserted' }], type: 'p' },
+        { at: [2] }
+      );
+
+      expect(editor.read.children()[2]?.id).toBeUndefined();
+
+      const disabledEditor = createBaseEditor({ nodeId: false });
+
+      expect(
+        disabledEditor.runtime.pluginList.some(
+          (plugin) => plugin.key === NodeIdPlugin.key
+        )
+      ).toBe(false);
+      expect(() =>
+        disabledEditor.update.nodes.insert(
+          { children: [{ text: 'unknown' }], id: 'unknown', type: 'p' },
+          { at: [0] }
+        )
+      ).toThrow(/unknown element property "id"/i);
+    });
+
     it('executes tx-backed plugin commands through update on the current editor runtime', () => {
       const TxPlugin = createBasePlugin({
         key: 'txPlugin',
@@ -78,8 +187,9 @@ describe('extendPlateEditor', () => {
         bold: () => tx.marks.add('bold', true),
       }));
       const editor = extendPlateEditor(createEditor(), {
-        plugins: [TxPlugin],
+        plugins: [TxPlugin, TestBoldPlugin],
         selection: {
+          kind: 'text',
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 4, path: [0, 0] },
         },
@@ -148,7 +258,9 @@ describe('extendPlateEditor', () => {
 
     it('runs update callbacks through the current Plite runtime', () => {
       const editor = extendPlateEditor(createEditor(), {
+        plugins: [TestItalicPlugin],
         selection: {
+          kind: 'text',
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 4, path: [0, 0] },
         },
@@ -167,13 +279,15 @@ describe('extendPlateEditor', () => {
       });
     });
 
-    it('installs plugin node flags before tx groups insert inline nodes', () => {
+    it('installs node.element behavior before tx groups insert inline nodes', () => {
       const InlineTxPlugin = createBasePlugin({
         key: 'mention',
         node: {
-          isElement: true,
-          isInline: true,
-          isVoid: true,
+          element: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            inline: true,
+            void: 'inline',
+          },
           type: 'mention',
         },
       }).extendTx(({ type }) => (tx) => ({
@@ -184,6 +298,7 @@ describe('extendPlateEditor', () => {
       const editor = extendPlateEditor(createEditor(), {
         plugins: [InlineTxPlugin],
         selection: {
+          kind: 'text',
           anchor: { offset: 2, path: [0, 0] },
           focus: { offset: 2, path: [0, 0] },
         },
@@ -208,14 +323,15 @@ describe('extendPlateEditor', () => {
       });
     });
 
-    it('installs plugin node selection flags through OverridePlugin', () => {
+    it('installs node.element selection behavior through the schema adapter', () => {
       const NonSelectableVoidPlugin = createBasePlugin({
         key: 'badge',
         node: {
-          isElement: true,
-          isMarkableVoid: true,
-          isSelectable: false,
-          isVoid: true,
+          element: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            selectable: false,
+            void: 'markable-inline',
+          },
           type: 'badge',
         },
       });
@@ -228,6 +344,280 @@ describe('extendPlateEditor', () => {
       expect(editor.read.schema.isSelectable(badgeElement)).toBe(false);
       expect(editor.read.schema.isVoid(badgeElement)).toBe(true);
       expect(editor.read.schema.markableVoid(badgeElement)).toBe(true);
+    });
+
+    it('compiles boolean marks, parameterized marks, and element grammar', () => {
+      const CellPlugin = createBasePlugin({
+        key: 'cell',
+        node: { element: TextBlockElement, type: 'configured-cell' },
+      });
+      const RowPlugin = createBasePlugin({
+        key: 'row',
+        node: {
+          element: {
+            content: schema.content.type('cell', {
+              default: { type: 'cell' },
+              min: 1,
+            }),
+            groups: ['block'],
+            selectable: false,
+          },
+          type: 'configured-row',
+        },
+      });
+      const TonePlugin = createBasePlugin({
+        key: 'tone',
+        node: {
+          mark: {
+            split: 'drop',
+            target: target.type('cell'),
+            value: property.string(),
+          },
+        },
+      });
+      const editor = extendPlateEditor(createEditor(), {
+        plugins: [RowPlugin, CellPlugin, TonePlugin],
+        schema: { id: 'plate-core-test', version: 4 },
+        value: [
+          {
+            children: [
+              {
+                children: [{ text: '', tone: 'quiet' }],
+                type: 'configured-cell',
+              },
+            ],
+            type: 'configured-row',
+          },
+        ],
+      });
+      expect(editor.read.schema.identity()).toMatchObject({
+        id: 'plate-core-test',
+        version: 4,
+      });
+      expect(editor.read.schema.identity()?.fingerprint).toEqual(
+        expect.any(String)
+      );
+      expect(editor.read.schema.createAndFill('configured-row')).toEqual({
+        children: [{ children: [{ text: '' }], type: 'configured-cell' }],
+        type: 'configured-row',
+      });
+      expect(
+        editor.read.schema.isSelectable({
+          children: [{ children: [{ text: '' }], type: 'configured-cell' }],
+          type: 'configured-row',
+        })
+      ).toBe(false);
+      expect(() =>
+        editor.read.schema.validateDocument({
+          children: [
+            {
+              children: [
+                {
+                  children: [{ text: '', tone: false }],
+                  type: 'configured-cell',
+                },
+              ],
+              type: 'configured-row',
+            },
+          ],
+        })
+      ).toThrow(/tone/i);
+    });
+
+    it('wraps directly fittable external content before publishing it', () => {
+      const editor = extendBaseEditor(
+        createEditor({
+          initialValue: [{ children: [{ text: 'seed' }], type: 'p' }],
+        }),
+        {
+          value: [{ text: 'wrapped' }] as unknown as Value,
+        }
+      );
+
+      expect(editor.read.children()).toEqual([
+        { children: [{ text: 'wrapped' }], type: 'p' },
+      ]);
+    });
+
+    it('deserializes and transforms HTML before fitting its root content', () => {
+      let transformedInput: Value | undefined;
+      const TransformHtmlPlugin = createBasePlugin({
+        key: 'transformHtml',
+        transformInitialValue: ({ value }) => {
+          transformedInput = value;
+
+          return [{ children: [], type: 'p' }];
+        },
+      });
+      const editor = extendBaseEditor(
+        createEditor({
+          initialValue: [{ children: [{ text: 'seed' }], type: 'p' }],
+        }),
+        {
+          plugins: [TransformHtmlPlugin],
+          value: '<p>html</p>',
+        }
+      );
+
+      expect(transformedInput).toEqual([
+        { children: [{ text: 'html' }], type: 'p' },
+      ]);
+      expect(editor.read.children()).toEqual([
+        { children: [{ text: '' }], type: 'p' },
+      ]);
+    });
+
+    it('rejects impossible external content before replacing the document', () => {
+      const editor = createEditor({
+        initialValue: [{ children: [{ text: 'stable' }], type: 'p' }],
+      });
+      const before = editor.read.children();
+
+      expect(() =>
+        extendBaseEditor(editor, {
+          value: [
+            {
+              children: [{ text: 'invalid' }],
+              type: 'impossible',
+            },
+          ],
+        })
+      ).toThrow('Unknown editor element type "impossible" at [0].');
+      expect(editor.read.children()).toBe(before);
+      expect(editor.read.text.string([])).toBe('stable');
+    });
+
+    it('keeps schema fingerprints independent of plugin order', () => {
+      const QuotePlugin = createBasePlugin({
+        key: 'quote',
+        node: { element: { ...TextBlockElement, groups: ['block'] } },
+      });
+      const TonePlugin = createBasePlugin({
+        key: 'tone',
+        node: { mark: { value: property.string() } },
+      });
+      const options = {
+        schema: { id: 'ordered-schema', version: 1 },
+        value: [
+          { children: [{ text: 'body', tone: 'quiet' }], type: 'quote' },
+        ] as Value,
+      };
+      const first = extendPlateEditor(createEditor(), {
+        ...options,
+        plugins: [QuotePlugin, TonePlugin],
+      });
+      const second = extendPlateEditor(createEditor(), {
+        ...options,
+        plugins: [TonePlugin, QuotePlugin],
+      });
+
+      expect(first.read.schema.identity()?.fingerprint).toBe(
+        second.read.schema.identity()?.fingerprint
+      );
+    });
+
+    it('uses configured pure schema targets without global property leakage', () => {
+      type IdentityConfig = PluginConfig<
+        'identity',
+        { targetPluginKeys: string[] }
+      >;
+      let configuredOptions: unknown;
+      const IdentityPlugin = createBasePlugin<IdentityConfig>({
+        key: 'identity',
+        options: { targetPluginKeys: ['badge'] },
+        schema: ({ options }) => {
+          configuredOptions = options;
+
+          return {
+            properties: [
+              schema.elementProperty('identity', property.string(), {
+                target: target.types(options.targetPluginKeys),
+              }),
+            ],
+          };
+        },
+      });
+      const BadgePlugin = createBasePlugin({
+        key: 'badge',
+        node: {
+          element: {
+            ...TextBlockElement,
+            groups: ['block'],
+            properties: { variant: property.string() },
+          },
+          type: 'badge-node',
+        },
+      });
+      const editor = extendPlateEditor(createEditor(), {
+        plugins: [IdentityPlugin, BadgePlugin],
+        value: [
+          { children: [{ text: 'paragraph' }], type: 'p' },
+          {
+            children: [{ text: 'badge' }],
+            identity: 'badge-1',
+            type: 'badge-node',
+            variant: 'info',
+          },
+        ],
+      });
+
+      expect(Object.isFrozen(configuredOptions)).toBe(true);
+      expect(
+        Object.isFrozen(
+          (configuredOptions as { targetPluginKeys: readonly string[] })
+            .targetPluginKeys
+        )
+      ).toBe(true);
+      expect(() =>
+        editor.read.schema.validateFragment([
+          { children: [{ text: '' }], identity: 'leak', type: 'p' },
+        ])
+      ).toThrow(/identity/i);
+      expect(() =>
+        editor.read.schema.validateFragment([
+          { children: [{ text: '' }], identity: 1, type: 'badge-node' },
+        ])
+      ).toThrow(/identity/i);
+    });
+
+    it('derives container types from compiled schema grammar', () => {
+      const ContainerPlugin = createBasePlugin({
+        key: 'container',
+        node: {
+          element: {
+            content: schema.content.group('block'),
+          },
+          type: 'container-node',
+        },
+      });
+      const editor = extendPlateEditor(createEditor(), {
+        plugins: [ContainerPlugin],
+      });
+
+      expect(getContainerTypes(editor)).toEqual(['container-node']);
+    });
+
+    it('publishes schema conflicts atomically', () => {
+      const editor = createEditor();
+      const duplicatePropertyPlugin = (key: string) =>
+        createBasePlugin({
+          key,
+          schema: {
+            properties: [
+              schema.elementProperty('duplicate', property.string(), {
+                target: target.group('element'),
+              }),
+            ],
+          },
+        });
+
+      expect(() =>
+        extendBaseEditor(editor, {
+          plugins: [duplicatePropertyPlugin('a'), duplicatePropertyPlugin('b')],
+        })
+      ).toThrow(/duplicate/i);
+      expect(editor.read.schema.identity()).toBeNull();
+      expect(editor.read.children()).toEqual([]);
     });
   });
 
@@ -567,11 +957,16 @@ describe('extendPlateEditor', () => {
   });
 
   it('syncs the Plate paragraph type into Plite block toggles', () => {
+    const BlockquotePlugin = createBasePlugin({
+      key: 'blockquote',
+      node: { element: { ...TextBlockElement, groups: ['block'] } },
+    });
     const editor = extendBaseEditor(createEditor(), {
       plugins: [
         ParagraphPlugin.configure({
           node: { type: 'paragraph' },
         }),
+        BlockquotePlugin,
       ],
       value: [{ children: [{ text: 'one' }], type: 'blockquote' }],
     });
@@ -587,10 +982,56 @@ describe('extendPlateEditor', () => {
     ]);
   });
 
+  it('preserves Plate marks allowed by the destination block schema', () => {
+    const HeadingPlugin = createBasePlugin({
+      key: 'heading',
+      node: { element: { ...TextBlockElement, groups: ['block'] } },
+    });
+    const TonePlugin = createBasePlugin({
+      key: 'tone',
+      node: { mark: { value: property.string() } },
+    });
+    const EphemeralPlugin = createBasePlugin({
+      key: 'ephemeral',
+      node: {
+        mark: {
+          typeChange: 'drop',
+          value: property.boolean(),
+        },
+      },
+    });
+    const editor = extendBaseEditor(createEditor(), {
+      plugins: [HeadingPlugin, TestBoldPlugin, TonePlugin, EphemeralPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [
+        {
+          children: [
+            { bold: true, ephemeral: true, text: 'one', tone: 'warm' },
+          ],
+          type: 'p',
+        },
+      ],
+    });
+
+    editor.update.blocks.toggle('heading');
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ bold: true, text: 'one', tone: 'warm' }],
+        type: 'heading',
+      },
+    ]);
+  });
+
   it('handle value, selection, and autoSelect options correctly', () => {
     const editor = createEditor();
-    const value = [{ children: [{ text: 'Hello' }], type: 'paragraph' }];
+    const value = [{ children: [{ text: 'Hello' }], type: 'p' }];
     const selection = {
+      kind: 'text' as const,
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     };
@@ -610,6 +1051,7 @@ describe('extendPlateEditor', () => {
       value,
     });
     const expectedStartSelection = {
+      kind: 'text',
       anchor: editorWithAutoSelectStart.read((state) => state.points.start([])),
       focus: editorWithAutoSelectStart.read((state) => state.points.start([])),
     };
@@ -623,6 +1065,7 @@ describe('extendPlateEditor', () => {
       value,
     });
     const expectedEndSelection = {
+      kind: 'text',
       anchor: editorWithAutoSelectEnd.read((state) => state.points.end([])),
       focus: editorWithAutoSelectEnd.read((state) => state.points.end([])),
     };
@@ -632,12 +1075,14 @@ describe('extendPlateEditor', () => {
 
     const editorWithElementPathSelection = extendBaseEditor(createEditor(), {
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0] },
         focus: { offset: 0, path: [0] },
       },
       value,
     });
     expect(editorWithElementPathSelection.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -693,9 +1138,44 @@ describe('extendPlateEditor', () => {
       transformInitialValue: ({ value: initialValue }: { value: Value }) =>
         initialValue.map(wrapCellText) as Value,
     });
+    const TablePlugin = createBasePlugin({
+      key: 'table',
+      node: {
+        element: {
+          content: schema.content.type('tr', {
+            default: { type: 'tr' },
+            min: 1,
+          }),
+          groups: ['block'],
+        },
+      },
+    });
+    const TableRowPlugin = createBasePlugin({
+      key: 'tr',
+      node: {
+        element: {
+          content: schema.content.type('td', {
+            default: { type: 'td' },
+            min: 1,
+          }),
+        },
+      },
+    });
+    const TableCellPlugin = createBasePlugin({
+      key: 'td',
+      node: {
+        element: {
+          content: schema.content.group('block', {
+            default: { type: 'p' },
+            min: 1,
+          }),
+        },
+      },
+    });
     const editor = extendBaseEditor(createEditor(), {
-      plugins: [WrapTextPlugin],
+      plugins: [WrapTextPlugin, TablePlugin, TableRowPlugin, TableCellPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 1, 0, 0] },
         focus: { offset: 2, path: [0, 0, 1, 0] },
       },
@@ -723,6 +1203,7 @@ describe('extendPlateEditor', () => {
     });
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 2, path: [0, 1, 0, 0, 0] },
       focus: { offset: 2, path: [0, 0, 1, 0, 0] },
     });

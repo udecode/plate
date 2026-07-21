@@ -3,6 +3,7 @@ import type { Descendant } from '@platejs/plite';
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { pipeTransformFragment } from './pipeTransformFragment';
+import { prepareParserRegistry } from './prepareParserRegistry';
 
 const createParserEditor = (
   plugins: NonNullable<Parameters<typeof createBaseEditor>[0]>['plugins']
@@ -42,12 +43,14 @@ describe('pipeTransformFragment', () => {
 
     const editor = createParserEditor([firstPlugin, secondPlugin]);
 
-    const result = pipeTransformFragment(editor, [firstPlugin, secondPlugin], {
-      data: '',
-      dataTransfer: {} as DataTransfer,
-      fragment: [createParagraph('first')],
-      mimeType: 'text/plain',
-    });
+    const result = editor.read((state) =>
+      pipeTransformFragment(state, prepareParserRegistry(editor).plugins, {
+        data: '',
+        format: 'text/plain',
+        fragment: [createParagraph('first')],
+        source: { files: [] as any, getData: () => '', types: [] },
+      })
+    );
 
     expect(result).toEqual([
       createParagraph('first-updated'),

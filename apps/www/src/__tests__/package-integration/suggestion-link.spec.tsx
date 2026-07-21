@@ -121,6 +121,7 @@ describe('suggestion link integration', () => {
 
     const editor = createEditor(input);
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 1, 0] },
       focus: { offset: 1, path: [0, 1, 0] },
     });

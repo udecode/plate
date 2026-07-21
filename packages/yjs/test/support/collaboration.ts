@@ -2,10 +2,6 @@ import assert from 'node:assert/strict';
 import {
   createEditor,
   type Descendant,
-  defineEditorExtension,
-  type EditorCommitContext,
-  type EditorExtensionSetupOutput,
-  type Operation,
   type Selection,
   type Editor as BasePlateEditor,
 } from '@platejs/plite';
@@ -18,10 +14,10 @@ import { history } from '@platejs/plite-history';
 import { createReactEditor, type ReactEditor } from '@platejs/plite-react';
 import * as Y from 'yjs';
 
-import { createYjsExtension } from '../../src';
 import type { YjsNode } from '../../src/core/attributes';
 import { getYjsNode, readPliteValueFromYjs } from '../../src/core/document';
 import { getEditorYjsState, getEditorYjsTx } from '../../src/core/editor-yjs';
+import { createYjsExtension } from '../../src/core/extension';
 import type {
   YjsAwarenessLike,
   YjsProviderLike,
@@ -54,11 +50,6 @@ type CreateYjsPeerOptions = {
   seedUpdate?: Uint8Array;
 };
 
-type OperationTypeRecorderOptions = {
-  readonly name: string;
-  readonly shouldRecord?: (context: EditorCommitContext<TestEditor>) => boolean;
-};
-
 export const paragraph = (
   text: string,
   attributes: Readonly<Record<string, unknown>> = {}
@@ -87,7 +78,6 @@ const createYjsPeerWithEditor = <TEditor extends TestEditor>(
 ): Peer<TEditor> => {
   editorReplace(editor, {
     children: [...children],
-    marks: null,
     selection: null,
   });
 
@@ -233,6 +223,31 @@ export const getYjsRoot = (peer: Peer): Y.XmlElement =>
 export const getYjsTrace = (peer: Peer): readonly YjsTraceEntry[] =>
   getYjsState(peer).trace();
 
+export const assertCanonicalYjsTrace = (
+  peer: Peer,
+  fallback: YjsTraceEntry['fallback'] | null = null
+): void => {
+  const trace = getYjsTrace(peer);
+
+  assert.ok(trace.length > 0, 'expected a canonical Yjs change trace');
+
+  for (const entry of trace) {
+    assert.equal(entry.mode, 'canonical-change');
+  }
+
+  if (fallback === null) {
+    assert.equal(
+      trace.some((entry) => entry.fallback !== undefined),
+      false
+    );
+  } else {
+    assert.equal(
+      trace.some((entry) => entry.fallback === fallback),
+      true
+    );
+  }
+};
+
 export const getYjsRemoteCursors = <
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
 >(
@@ -272,39 +287,6 @@ export const runEditorYjsUpdate = (
 export const runYjsUpdate = (peer: Peer, fn: (tx: YjsTx) => void): void => {
   runEditorYjsUpdate(peer.editor, fn);
 };
-
-export const recordEditorOperationTypes = (
-  editor: TestEditor,
-  { name, shouldRecord }: OperationTypeRecorderOptions
-): Operation['type'][] => {
-  const operationTypes: Operation['type'][] = [];
-
-  editor.extend(
-    defineEditorExtension({
-      name,
-      setup(): EditorExtensionSetupOutput<TestEditor> {
-        return {
-          onCommit(context): void {
-            if (shouldRecord && !shouldRecord(context)) {
-              return;
-            }
-
-            operationTypes.push(
-              ...context.commit.operations.map((operation) => operation.type)
-            );
-          },
-        };
-      },
-    })
-  );
-
-  return operationTypes;
-};
-
-export const recordOperationTypes = (
-  peer: Peer,
-  options: OperationTypeRecorderOptions
-): Operation['type'][] => recordEditorOperationTypes(peer.editor, options);
 
 export const disconnectYjsPeer = (peer: Peer): void => {
   runYjsUpdate(peer, (yjs) => yjs.disconnect());

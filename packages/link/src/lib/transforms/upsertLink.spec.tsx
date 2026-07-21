@@ -1,9 +1,15 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import type { Selection, Value } from '@platejs/plite';
 import type { TLinkElement } from '@platejs/utils';
 
 import type { BaseLinkConfig } from '../BaseLinkPlugin';
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
+
+const mark = (key: string) =>
+  createBasePlugin({
+    key,
+    node: { mark: true },
+  });
 
 const createEditor = ({
   options,
@@ -15,7 +21,11 @@ const createEditor = ({
   options?: Partial<BaseLinkConfig['options']>;
 }) =>
   createBaseEditor({
-    plugins: [options ? BaseLinkPlugin.configure({ options }) : BaseLinkPlugin],
+    plugins: [
+      mark('bold'),
+      mark('italic'),
+      options ? BaseLinkPlugin.configure({ options }) : BaseLinkPlugin,
+    ],
     selection,
     value,
   });
@@ -32,6 +42,7 @@ describe('upsertLink', () => {
   it('inserts a URL at a collapsed selection', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -50,6 +61,7 @@ describe('upsertLink', () => {
   it('uses custom text and preserves focused leaf marks', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -70,17 +82,20 @@ describe('upsertLink', () => {
   it('updates URL, target, and text inside an existing link', () => {
     const editor = createEditor({
       selection: {
-        anchor: { offset: 2, path: [0, 0, 0] },
-        focus: { offset: 2, path: [0, 0, 0] },
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 1, 0] },
+        focus: { offset: 2, path: [0, 1, 0] },
       },
       value: [
         {
           children: [
+            { text: '' },
             {
               children: [{ text: 'old' }],
               type: 'a',
               url: 'https://old.dev',
             },
+            { text: '' },
           ],
           type: 'p',
         },
@@ -103,17 +118,20 @@ describe('upsertLink', () => {
   it('inserts text when requested inside an existing link', () => {
     const editor = createEditor({
       selection: {
-        anchor: { offset: 3, path: [0, 0, 0] },
-        focus: { offset: 3, path: [0, 0, 0] },
+        kind: 'text',
+        anchor: { offset: 3, path: [0, 1, 0] },
+        focus: { offset: 3, path: [0, 1, 0] },
       },
       value: [
         {
           children: [
+            { text: '' },
             {
               children: [{ text: 'old' }],
               type: 'a',
               url: 'https://old.dev',
             },
+            { text: '' },
           ],
           type: 'p',
         },
@@ -134,17 +152,20 @@ describe('upsertLink', () => {
   it('uses the URL when replacement text is empty', () => {
     const editor = createEditor({
       selection: {
-        anchor: { offset: 2, path: [0, 0, 0] },
-        focus: { offset: 2, path: [0, 0, 0] },
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 1, 0] },
+        focus: { offset: 2, path: [0, 1, 0] },
       },
       value: [
         {
           children: [
+            { text: '' },
             {
               children: [{ text: 'old' }],
               type: 'a',
               url: 'https://old.dev',
             },
+            { text: '' },
           ],
           type: 'p',
         },
@@ -159,6 +180,7 @@ describe('upsertLink', () => {
   it('wraps an expanded selection and can replace its text', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
@@ -180,6 +202,7 @@ describe('upsertLink', () => {
   it('rejects invalid URLs unless validation is skipped', () => {
     const editor = createEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
@@ -199,6 +222,7 @@ describe('upsertLink', () => {
     const editor = createEditor({
       options: { isUrl: (url) => url.startsWith('/custom') },
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },

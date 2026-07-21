@@ -3,7 +3,7 @@ title: Plite transform namespaces should be hard-cut to editor methods
 type: solution
 date: 2026-04-09
 last_updated: 2026-04-25
-status: completed
+status: superseded
 category: developer-experience
 module: plite
 problem_type: developer_experience
@@ -25,6 +25,11 @@ tags:
 ---
 
 # Plite transform namespaces should be hard-cut to editor methods
+
+> **Superseded architecture record.** This article describes the removed
+> operation-era runtime. Current Plite writes through `editor.update(...)`,
+> builds canonical `DocumentChange` values, and imports them with
+> `tx.changes.apply(...)`.
 
 ## Problem
 

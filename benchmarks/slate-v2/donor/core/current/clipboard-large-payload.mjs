@@ -1,44 +1,92 @@
 import { Buffer } from 'node:buffer';
 import { performance } from 'node:perf_hooks';
-import { getOperationCount } from '../../../../../packages/slate/src/core/public-state.ts';
-import { createEditor } from '../../../../../packages/slate/src/index.ts';
 import {
-  Editor,
-  getEditorTransformRegistry,
-} from '../../../../../packages/slate/src/internal/index.ts';
-import { dom } from '../../../../../packages/slate-dom/src/index.ts';
-import { EDITOR_TO_WINDOW } from '../../../../../packages/slate-dom/src/internal/index.ts';
+  ContentSlice,
+  createEditor,
+} from '../../../../../packages/plite/src/index.ts';
+import {
+  defineHostCodec,
+  dom,
+  hostCodecs,
+  writeHostFragmentData,
+} from '../../../../../packages/plite-dom/src/index.ts';
+import { EDITOR_TO_WINDOW } from '../../../../../packages/plite-dom/src/internal/index.ts';
+import { insertHostData } from '../../../../../packages/plite-dom/src/plugin/host-codec.ts';
 import {
   insertDOMFragmentData,
   insertDOMTextData,
+  readDOMFragmentData,
+  writeDOMFragmentData,
   writeDOMSelectionData,
-} from '../../../../../packages/slate-dom/src/plugin/dom-clipboard-runtime.ts';
+} from '../../../../../packages/plite-dom/src/plugin/dom-clipboard-runtime.ts';
 import { round, writeBenchmarkArtifact } from '../../shared/stats.mjs';
+import {
+  CLIPBOARD_AUTHORITY_ARTIFACT_PATH,
+  createClipboardIssueTargetThresholds,
+  hasClipboardBenchmarkFailures,
+  isClipboardAuthorityArtifactPath,
+} from '../../../../editor/benchmarks/plite-clipboard-large-payload-gate.mjs';
 
-const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-slate-fragment';
-const NEWLINE_SPLIT_RE = /\r\n|\r|\n/;
+const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
 
-const iterations = Number(process.env.SLATE_CLIPBOARD_BENCH_ITERATIONS || 3);
+const iterations = Number(process.env.PLITE_CLIPBOARD_BENCH_ITERATIONS || 3);
 const stressIterations = Number(
-  process.env.SLATE_CLIPBOARD_BENCH_STRESS_ITERATIONS || 1
+  process.env.PLITE_CLIPBOARD_BENCH_STRESS_ITERATIONS || 1
 );
 const stressLineCount = Number(
-  process.env.SLATE_CLIPBOARD_BENCH_STRESS_LINES || 2000
+  process.env.PLITE_CLIPBOARD_BENCH_STRESS_LINES || 2000
 );
 const hugeCutIterations = Number(
-  process.env.SLATE_CLIPBOARD_BENCH_HUGE_CUT_ITERATIONS || 1
+  process.env.PLITE_CLIPBOARD_BENCH_HUGE_CUT_ITERATIONS || 3
 );
 const hugeCutBlocks = Number(
-  process.env.SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS || 10_000
+  process.env.PLITE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS || 10_000
 );
 const issueTargetsEnabled =
-  process.env.SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS === '1';
+  process.env.PLITE_CLIPBOARD_BENCH_ISSUE_TARGETS === '1';
 const issueTargetStressLines = Number(
-  process.env.SLATE_CLIPBOARD_BENCH_ISSUE_STRESS_LINES || 10_000
+  process.env.PLITE_CLIPBOARD_BENCH_ISSUE_STRESS_LINES || 10_000
 );
 const issueTargetIterations = Number(
-  process.env.SLATE_CLIPBOARD_BENCH_ISSUE_ITERATIONS || 1
+  process.env.PLITE_CLIPBOARD_BENCH_ISSUE_ITERATIONS || 1
 );
+const outputArgument = process.argv.find((candidate) =>
+  candidate.startsWith('--output=')
+);
+const outputPath =
+  outputArgument?.slice('--output='.length) ||
+  process.env.PLITE_CLIPBOARD_BENCH_OUTPUT ||
+  CLIPBOARD_AUTHORITY_ARTIFACT_PATH;
+const authorityArtifact = isClipboardAuthorityArtifactPath(outputPath);
+const correctnessFailures = [];
+const gcAvailable = typeof globalThis.gc === 'function';
+
+const assertAuthorityConfiguration = () => {
+  if (!authorityArtifact) return;
+
+  if (
+    !issueTargetsEnabled ||
+    hugeCutBlocks !== 50_000 ||
+    hugeCutIterations !== 3 ||
+    issueTargetStressLines !== 10_000
+  ) {
+    throw new Error(
+      'The canonical clipboard authority artifact requires 50,000 cut blocks, three cut samples, and 10,000 issue-stress lines. Use --output=<diagnostic-path> for reduced runs.'
+    );
+  }
+};
+
+assertAuthorityConfiguration();
+
+const recordFailure = (message) => {
+  correctnessFailures.push(message);
+};
+
+const verify = (condition, message) => {
+  if (!condition) recordFailure(message);
+
+  return condition;
+};
 
 const benchmarkWindow = {
   atob: (value) => Buffer.from(value, 'base64').toString('binary'),
@@ -67,7 +115,7 @@ const createParagraph = (text) => ({
 });
 
 const createTextLine = (index) =>
-  `${index} this is a test demo. Slate clipboard benchmark line.`;
+  `${index} this is a test demo. Plite clipboard benchmark line.`;
 
 const createPlainTextPayload = (lineCount) =>
   Array.from({ length: lineCount }, (_, index) => createTextLine(index)).join(
@@ -85,14 +133,45 @@ const createDocument = (blockCount) =>
   );
 
 const textByteLength = (text) => Buffer.byteLength(text, 'utf8');
+const roundRatio = (value) => Number(value.toFixed(6));
 
-const encodeFragment = (fragment) =>
-  benchmarkWindow.btoa(encodeURIComponent(JSON.stringify(fragment)));
+const benchmarkHostFormat = 'application/x-plite-benchmark-json';
+const hostCodecParseDurations = [];
+const hostCodecSerializeDurations = [];
+const benchmarkHostCodecExtension = hostCodecs('benchmark-host-codec', [
+  defineHostCodec({
+    format: benchmarkHostFormat,
+    key: 'benchmark:json',
+    parse: ({ data }) => {
+      const start = performance.now();
 
-const createBenchmarkEditor = (children, selection) => {
-  const editor = createEditor({ extensions: [dom()] });
+      try {
+        const content = JSON.parse(data);
 
-  Editor.replace(editor, { children, selection });
+        return Array.isArray(content) ? ContentSlice.closed(content) : null;
+      } finally {
+        hostCodecParseDurations.push(performance.now() - start);
+      }
+    },
+    serialize: ({ slice }) => {
+      const start = performance.now();
+
+      try {
+        return JSON.stringify(slice.content);
+      } finally {
+        hostCodecSerializeDurations.push(performance.now() - start);
+      }
+    },
+  }),
+]);
+
+const createBenchmarkEditor = (children, selection, extensions = []) => {
+  const editor = createEditor({
+    extensions: [dom(), ...extensions],
+    initialSelection: selection,
+    initialValue: children,
+  });
+
   EDITOR_TO_WINDOW.set(editor, benchmarkWindow);
 
   return editor;
@@ -101,6 +180,7 @@ const createBenchmarkEditor = (children, selection) => {
 const collapsedStartSelection = {
   anchor: { path: [0, 0], offset: 0 },
   focus: { path: [0, 0], offset: 0 },
+  kind: 'text',
 };
 
 const fullSelection = (children) => {
@@ -110,6 +190,7 @@ const fullSelection = (children) => {
   return {
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [lastIndex, 0], offset: lastText.length },
+    kind: 'text',
   };
 };
 
@@ -123,6 +204,7 @@ const twoBlockSelection = (children) => {
       path: [endIndex, 0],
       offset: children[endIndex].children[0].text.length,
     },
+    kind: 'text',
   };
 };
 
@@ -134,10 +216,14 @@ const middleCollapsedSelection = (children) => {
   return {
     anchor: { path: [index, 0], offset },
     focus: { path: [index, 0], offset },
+    kind: 'text',
   };
 };
 
 const heapUsed = () => process.memoryUsage?.().heapUsed ?? 0;
+const forceGc = () => {
+  if (gcAvailable) globalThis.gc();
+};
 
 const percentile = (sorted, ratio) => {
   if (sorted.length === 0) {
@@ -191,6 +277,7 @@ const summarizeHeapDeltas = (heapDeltas) => ({
 const measureLane = (sampleCount, run) => {
   const durations = [];
   const heapDeltas = [];
+  const metadataSamples = [];
   let metadata = {};
 
   for (let sample = 0; sample < sampleCount; sample += 1) {
@@ -198,238 +285,498 @@ const measureLane = (sampleCount, run) => {
     const start = performance.now();
     const result = run();
     const duration = performance.now() - start;
-    const heapAfter = heapUsed();
+    const heapAfterWork = heapUsed();
 
     durations.push(duration);
-    heapDeltas.push(heapAfter - heapBefore);
+    heapDeltas.push(heapAfterWork - heapBefore);
     metadata = result ?? metadata;
+    metadataSamples.push(result ?? {});
   }
 
   return {
     ...summarizeDurations(durations),
     heapDeltaBytes: summarizeHeapDeltas(heapDeltas),
     metadata,
+    metadataSamples,
+    retainedHeapDeltaBytes: null,
   };
 };
 
-const measurePreparedLane = (sampleCount, setup, run) => {
+const measurePreparedLane = (
+  sampleCount,
+  setup,
+  run,
+  {
+    collectSetupGarbage = false,
+    inspect,
+    measureRetained = false,
+    warmup = false,
+  } = {}
+) => {
   const durations = [];
   const heapDeltas = [];
+  const inspectionDurations = [];
+  const metadataSamples = [];
+  const retainedHeapDeltas = [];
+  const setupDurations = [];
   let metadata = {};
 
+  if (warmup) {
+    run(setup());
+    if (collectSetupGarbage) forceGc();
+  }
+
   for (let sample = 0; sample < sampleCount; sample += 1) {
+    const setupStart = performance.now();
     const context = setup();
+    const setupDuration = performance.now() - setupStart;
+
+    if (collectSetupGarbage) forceGc();
     const heapBefore = heapUsed();
     const start = performance.now();
-    const result = run(context);
+    const workResult = run(context);
     const duration = performance.now() - start;
-    const heapAfter = heapUsed();
+    const heapAfterWork = heapUsed();
+    const inspectionStart = performance.now();
+    const result = inspect ? inspect(context, workResult) : workResult;
+    const inspectionDuration = performance.now() - inspectionStart;
 
     durations.push(duration);
-    heapDeltas.push(heapAfter - heapBefore);
+    heapDeltas.push(heapAfterWork - heapBefore);
+    inspectionDurations.push(inspectionDuration);
     metadata = result ?? metadata;
+    metadataSamples.push(result ?? {});
+    setupDurations.push(setupDuration);
+  }
+
+  if (gcAvailable && measureRetained) {
+    const context = setup();
+
+    forceGc();
+    const heapBefore = heapUsed();
+
+    run(context);
+    forceGc();
+    retainedHeapDeltas.push(heapUsed() - heapBefore);
   }
 
   return {
     ...summarizeDurations(durations),
     heapDeltaBytes: summarizeHeapDeltas(heapDeltas),
+    inspectionMs: summarizeDurations(inspectionDurations),
     metadata,
+    metadataSamples,
+    retainedHeapDeltaBytes: gcAvailable && measureRetained
+      ? summarizeHeapDeltas(retainedHeapDeltas)
+      : null,
+    setupMs: summarizeDurations(setupDurations),
   };
 };
 
-const measurePlainTextSplit = (lineCount, sampleCount) => {
-  const text = createPlainTextPayload(lineCount);
+const getCommitMetadata = (editor, versionBefore, beforeChildren) => {
+  const snapshot = editor.read.runtime.snapshot();
+  const commit = editor.read.lastCommit();
+  const commitCount = snapshot.version - versionBefore;
+  let changedRangeCount = 0;
+  let maximumChangedTokenSpan = 0;
 
-  return measureLane(sampleCount, () => {
-    const lines = text.split(NEWLINE_SPLIT_RE);
+  verify(commitCount === 1, `Expected one commit, received ${commitCount}`);
+  verify(Boolean(commit), 'Expected a published commit');
 
-    if (lines.length !== lineCount) {
-      throw new Error(
-        `Expected ${lineCount} split lines, received ${lines.length}`
+  commit?.changes.iterChangedRanges(
+    (_root, fromBefore, toBefore, fromAfter, toAfter) => {
+      changedRangeCount += 1;
+      maximumChangedTokenSpan = Math.max(
+        maximumChangedTokenSpan,
+        toBefore - fromBefore,
+        toAfter - fromAfter
       );
     }
+  );
 
-    return {
-      lineCount,
-      textPlainBytes: textByteLength(text),
-    };
-  });
+  const topLevelRanges = commit?.changed.topLevelRanges() ?? [];
+  const maximumChangedTopLevelSpan = topLevelRanges.reduce(
+    (maximum, [from, to]) => Math.max(maximum, to - from),
+    0
+  );
+  const currentBlocks = new Set(snapshot.children);
+  const retainedExistingBlocks = beforeChildren.filter((node) =>
+    currentBlocks.has(node)
+  ).length;
+
+  return {
+    changedRangeCount,
+    commitCount,
+    maximumChangedTokenSpan,
+    maximumChangedTopLevelSpan,
+    retainedExistingBlockRatio:
+      beforeChildren.length === 0
+        ? 1
+        : roundRatio(retainedExistingBlocks / beforeChildren.length),
+    retainedExistingBlocks,
+    topLevelRanges,
+  };
 };
 
 const measurePlainTextInsert = (lineCount, sampleCount) => {
   const text = createPlainTextPayload(lineCount);
 
-  return measureLane(sampleCount, () => {
-    const editor = createBenchmarkEditor(
-      [createParagraph('')],
-      collapsedStartSelection
-    );
-    const data = new FakeDataTransfer();
-    const operationsBefore = getOperationCount(editor);
-
-    data.setData('text/plain', text);
-
-    let inserted = false;
-
-    editor.update(() => {
-      inserted = insertDOMTextData(editor, data);
-    });
-
-    if (!inserted) {
-      throw new Error('Plain-text insert benchmark did not insert data');
-    }
-
-    const children = Editor.getChildren(editor);
-
-    if (children.length !== lineCount) {
-      throw new Error(
-        `Expected ${lineCount} inserted blocks, received ${children.length}`
+  return measurePreparedLane(
+    sampleCount,
+    () => {
+      const editor = createBenchmarkEditor(
+        [createParagraph('')],
+        collapsedStartSelection
       );
-    }
+      const data = new FakeDataTransfer();
 
-    return {
-      insertedBlocks: children.length,
-      lineCount,
-      operationCount: getOperationCount(editor) - operationsBefore,
-      textPlainBytes: textByteLength(text),
-    };
-  });
+      data.setData('text/plain', text);
+
+      return {
+        beforeChildren: editor.read.children(),
+        data,
+        editor,
+        versionBefore: editor.read.runtime.snapshot().version,
+      };
+    },
+    ({ data, editor }) => insertDOMTextData(editor, data),
+    {
+      inspect: (
+        { beforeChildren, editor, versionBefore },
+        inserted
+      ) => {
+        verify(inserted, 'Plain-text insert benchmark did not insert data');
+
+        const children = editor.read.children();
+
+        verify(
+          children.length === lineCount,
+          `Expected ${lineCount} inserted blocks, received ${children.length}`
+        );
+
+        return {
+          ...getCommitMetadata(editor, versionBefore, beforeChildren),
+          insertedBlocks: children.length,
+          lineCount,
+          textPlainBytes: textByteLength(text),
+        };
+      },
+      measureRetained: true,
+    }
+  );
 };
 
 const measureFragmentEncode = (lineCount, sampleCount) => {
-  const fragment = createFragment(lineCount);
+  const slice = ContentSlice.closed(createFragment(lineCount));
 
   return measureLane(sampleCount, () => {
-    const encoded = encodeFragment(fragment);
-    const text = fragment.map((node) => node.children[0].text).join('\n');
-    const html = `<span data-slate-fragment="${encoded}">${text}</span>`;
+    const data = new FakeDataTransfer();
+    const encoded = writeDOMFragmentData(data, {
+      clipboardFormatKey: DEFAULT_CLIPBOARD_FORMAT_KEY,
+      html: ({ encoded, text }) =>
+        `<span data-plite-fragment="${encoded}" data-plite-fragment-format="${DEFAULT_CLIPBOARD_FORMAT_KEY}">${text}</span>`,
+      slice,
+      window: benchmarkWindow,
+    });
 
     return {
       applicationBytes: textByteLength(encoded),
-      fragmentNodes: fragment.length,
-      textHtmlBytes: textByteLength(html),
-      textPlainBytes: textByteLength(text),
+      fragmentNodes: slice.content.length,
+      textHtmlBytes: textByteLength(data.getData('text/html')),
+      textPlainBytes: textByteLength(data.getData('text/plain')),
     };
   });
 };
 
 const measureFragmentDecode = (lineCount, sampleCount) => {
-  const fragment = createFragment(lineCount);
-  const encoded = encodeFragment(fragment);
-
-  return measureLane(sampleCount, () => {
-    const decoded = decodeURIComponent(benchmarkWindow.atob(encoded));
-    const parsed = JSON.parse(decoded);
-
-    if (!Array.isArray(parsed) || parsed.length !== lineCount) {
-      throw new Error('Decoded fragment did not match the expected shape');
-    }
-
-    return {
-      applicationBytes: textByteLength(encoded),
-      fragmentNodes: parsed.length,
-    };
+  const data = new FakeDataTransfer();
+  const encoded = writeDOMFragmentData(data, {
+    clipboardFormatKey: DEFAULT_CLIPBOARD_FORMAT_KEY,
+    html: '',
+    slice: ContentSlice.closed(createFragment(lineCount)),
+    window: benchmarkWindow,
   });
+
+  return measurePreparedLane(
+    sampleCount,
+    () => ({
+      editor: createBenchmarkEditor(
+        [createParagraph('')],
+        collapsedStartSelection
+      ),
+    }),
+    ({ editor }) => readDOMFragmentData(editor, data),
+    {
+      inspect: (_context, decoded) => {
+        verify(
+          decoded?.content.length === lineCount,
+          'Decoded fragment did not match the expected shape'
+        );
+
+        return {
+          applicationBytes: textByteLength(encoded),
+          fragmentNodes: decoded?.content.length ?? 0,
+        };
+      },
+    }
+  );
 };
 
-const measureFragmentInsert = (lineCount, sampleCount) => {
-  const fragment = createFragment(lineCount);
+const measureSliceFit = (lineCount, sampleCount) => {
+  const slice = ContentSlice.closed(createFragment(lineCount));
 
-  return measureLane(sampleCount, () => {
-    const editor = createBenchmarkEditor(
-      [createParagraph('')],
-      collapsedStartSelection
-    );
-    const operationsBefore = getOperationCount(editor);
-
-    editor.update(() => {
-      getEditorTransformRegistry(editor).insertFragment(fragment);
-    });
-
-    const children = Editor.getChildren(editor);
-
-    if (children.length !== lineCount) {
-      throw new Error(
-        `Expected ${lineCount} fragment blocks, received ${children.length}`
+  return measurePreparedLane(
+    sampleCount,
+    () => {
+      const editor = createBenchmarkEditor(
+        [createParagraph('')],
+        collapsedStartSelection
       );
-    }
 
-    return {
-      fragmentNodes: fragment.length,
-      insertedBlocks: children.length,
-      operationCount: getOperationCount(editor) - operationsBefore,
-    };
-  });
+      return {
+        editor,
+        snapshotBefore: editor.read.runtime.snapshot(),
+      };
+    },
+    ({ editor }) => editor.read.slice.fit(slice),
+    {
+      inspect: ({ editor, snapshotBefore }, fitted) => {
+        const snapshotAfter = editor.read.runtime.snapshot();
+
+        verify(Boolean(fitted), 'Slice fit benchmark rejected valid content');
+        verify(
+          snapshotAfter.version === snapshotBefore.version &&
+            snapshotAfter.children === snapshotBefore.children,
+          'Detached slice fit published editor state'
+        );
+        verify(
+          editor.read.lastCommit() === null,
+          'Detached slice fit published a commit'
+        );
+
+        return {
+          fitted: Boolean(fitted),
+          fragmentNodes: slice.content.length,
+          publishedCommits: snapshotAfter.version - snapshotBefore.version,
+        };
+      },
+    }
+  );
+};
+
+const measureSliceCommit = (lineCount, sampleCount) => {
+  const slice = ContentSlice.closed(createFragment(lineCount));
+
+  return measurePreparedLane(
+    sampleCount,
+    () => {
+      const editor = createBenchmarkEditor(
+        [createParagraph('')],
+        collapsedStartSelection
+      );
+
+      return {
+        beforeChildren: editor.read.children(),
+        editor,
+        versionBefore: editor.read.runtime.snapshot().version,
+      };
+    },
+    ({ editor }) => editor.update.slice.replace(slice),
+    {
+      inspect: ({ beforeChildren, editor, versionBefore }) => {
+        const children = editor.read.children();
+
+        verify(
+          children.length === lineCount,
+          `Expected ${lineCount} slice blocks, received ${children.length}`
+        );
+
+        return {
+          ...getCommitMetadata(editor, versionBefore, beforeChildren),
+          fragmentNodes: slice.content.length,
+          insertedBlocks: children.length,
+        };
+      },
+      measureRetained: true,
+    }
+  );
 };
 
 const measureDOMFragmentInsert = (lineCount, sampleCount) => {
   const fragment = createFragment(lineCount);
-  const encoded = encodeFragment(fragment);
-
-  return measureLane(sampleCount, () => {
-    const editor = createBenchmarkEditor(
-      [createParagraph('')],
-      collapsedStartSelection
-    );
-    const data = new FakeDataTransfer();
-    const operationsBefore = getOperationCount(editor);
-
-    data.setData(`application/${DEFAULT_CLIPBOARD_FORMAT_KEY}`, encoded);
-
-    let inserted = false;
-
-    editor.update(() => {
-      inserted = insertDOMFragmentData(editor, data);
-    });
-
-    if (!inserted) {
-      throw new Error('DOM fragment insert benchmark did not insert data');
-    }
-
-    const children = Editor.getChildren(editor);
-
-    if (children.length !== lineCount) {
-      throw new Error(
-        `Expected ${lineCount} DOM fragment blocks, received ${children.length}`
-      );
-    }
-
-    return {
-      applicationBytes: textByteLength(encoded),
-      fragmentNodes: fragment.length,
-      insertedBlocks: children.length,
-      operationCount: getOperationCount(editor) - operationsBefore,
-    };
+  const data = new FakeDataTransfer();
+  const encoded = writeDOMFragmentData(data, {
+    clipboardFormatKey: DEFAULT_CLIPBOARD_FORMAT_KEY,
+    html: '',
+    slice: ContentSlice.closed(fragment),
+    window: benchmarkWindow,
   });
+
+  return measurePreparedLane(
+    sampleCount,
+    () => {
+      const editor = createBenchmarkEditor(
+        [createParagraph('')],
+        collapsedStartSelection
+      );
+
+      return {
+        beforeChildren: editor.read.children(),
+        editor,
+        versionBefore: editor.read.runtime.snapshot().version,
+      };
+    },
+    ({ editor }) => insertDOMFragmentData(editor, data),
+    {
+      inspect: (
+        { beforeChildren, editor, versionBefore },
+        inserted
+      ) => {
+        verify(inserted, 'DOM fragment insert benchmark did not insert data');
+
+        const children = editor.read.children();
+
+        verify(
+          children.length === lineCount,
+          `Expected ${lineCount} DOM fragment blocks, received ${children.length}`
+        );
+
+        return {
+          ...getCommitMetadata(editor, versionBefore, beforeChildren),
+          applicationBytes: textByteLength(encoded),
+          fragmentNodes: fragment.length,
+          insertedBlocks: children.length,
+        };
+      },
+    }
+  );
+};
+
+const measureHostCodecInsert = (lineCount, sampleCount) => {
+  const fragment = createFragment(lineCount);
+  const payload = JSON.stringify(fragment);
+
+  return measurePreparedLane(
+    sampleCount,
+    () => {
+      const editor = createBenchmarkEditor(
+        [createParagraph('')],
+        collapsedStartSelection,
+        [benchmarkHostCodecExtension]
+      );
+      const data = new FakeDataTransfer();
+
+      data.setData(benchmarkHostFormat, payload);
+
+      return {
+        beforeChildren: editor.read.children(),
+        data,
+        editor,
+        parseSample: hostCodecParseDurations.length,
+        versionBefore: editor.read.runtime.snapshot().version,
+      };
+    },
+    ({ data, editor }) => insertHostData(editor, data),
+    {
+      inspect: (
+        { beforeChildren, editor, parseSample, versionBefore },
+        inserted
+      ) => {
+        verify(inserted, 'Host codec insert benchmark did not insert data');
+
+        const children = editor.read.children();
+
+        verify(
+          children.length === lineCount,
+          `Expected ${lineCount} host codec blocks, received ${children.length}`
+        );
+
+        return {
+          ...getCommitMetadata(editor, versionBefore, beforeChildren),
+          fragmentNodes: fragment.length,
+          hostParseMs: round(
+            hostCodecParseDurations
+              .slice(parseSample)
+              .reduce((total, duration) => total + duration, 0)
+          ),
+          hostPayloadBytes: textByteLength(payload),
+          insertedBlocks: children.length,
+        };
+      },
+    }
+  );
+};
+
+const measureHostCodecSerialize = (lineCount, sampleCount) => {
+  const fragment = createFragment(lineCount);
+
+  return measurePreparedLane(
+    sampleCount,
+    () => ({
+      data: new FakeDataTransfer(),
+      editor: createBenchmarkEditor(fragment, null, [
+        benchmarkHostCodecExtension,
+      ]),
+      serializeSample: hostCodecSerializeDurations.length,
+    }),
+    ({ data, editor }) =>
+      writeHostFragmentData(editor, data, ContentSlice.closed(fragment)),
+    {
+      inspect: ({ data, serializeSample }) => {
+        const payload = data.getData(benchmarkHostFormat);
+
+        verify(
+          payload.length > 0,
+          'Host codec serialize benchmark produced no payload'
+        );
+
+        return {
+          fragmentNodes: fragment.length,
+          hostSerializeMs: round(
+            hostCodecSerializeDurations
+              .slice(serializeSample)
+              .reduce((total, duration) => total + duration, 0)
+          ),
+          hostPayloadBytes: textByteLength(payload),
+        };
+      },
+    }
+  );
 };
 
 const measureFullSelectionCopy = (lineCount, sampleCount) => {
   const children = createFragment(lineCount);
   const selection = fullSelection(children);
 
-  return measureLane(sampleCount, () => {
-    const editor = createBenchmarkEditor(children, selection);
-    const data = new FakeDataTransfer();
+  return measurePreparedLane(
+    sampleCount,
+    () => ({
+      data: new FakeDataTransfer(),
+      editor: createBenchmarkEditor(children, selection),
+    }),
+    ({ data, editor }) => writeDOMSelectionData(editor, data),
+    {
+      inspect: ({ data }) => {
+        const applicationPayload = data.getData(
+          `application/${DEFAULT_CLIPBOARD_FORMAT_KEY}`
+        );
+        const textHtml = data.getData('text/html');
+        const textPlain = data.getData('text/plain');
 
-    writeDOMSelectionData(editor, data);
+        verify(
+          Boolean(applicationPayload && textPlain),
+          'Model-backed full selection copy produced no payload'
+        );
 
-    const applicationPayload = data.getData(
-      `application/${DEFAULT_CLIPBOARD_FORMAT_KEY}`
-    );
-    const textHtml = data.getData('text/html');
-    const textPlain = data.getData('text/plain');
-
-    if (!applicationPayload || !textPlain) {
-      throw new Error('Model-backed full selection copy produced no payload');
+        return {
+          applicationBytes: textByteLength(applicationPayload),
+          fragmentNodes: children.length,
+          textHtmlBytes: textByteLength(textHtml),
+          textPlainBytes: textByteLength(textPlain),
+        };
+      },
     }
-
-    return {
-      applicationBytes: textByteLength(applicationPayload),
-      fragmentNodes: children.length,
-      textHtmlBytes: textByteLength(textHtml),
-      textPlainBytes: textByteLength(textPlain),
-    };
-  });
+  );
 };
 
 const measurePopulatedMiddlePlainTextPaste = (
@@ -439,44 +786,53 @@ const measurePopulatedMiddlePlainTextPaste = (
 ) => {
   const text = createPlainTextPayload(lineCount);
 
-  return measureLane(sampleCount, () => {
-    const children = createDocument(existingBlockCount);
-    const selection = middleCollapsedSelection(children);
-    const editor = createBenchmarkEditor(children, selection);
-    const data = new FakeDataTransfer();
-    const operationsBefore = getOperationCount(editor);
+  return measurePreparedLane(
+    sampleCount,
+    () => {
+      const children = createDocument(existingBlockCount);
+      const selection = middleCollapsedSelection(children);
+      const editor = createBenchmarkEditor(children, selection);
+      const data = new FakeDataTransfer();
 
-    data.setData('text/plain', text);
+      data.setData('text/plain', text);
 
-    let inserted = false;
+      return {
+        beforeChildren: editor.read.children(),
+        data,
+        editor,
+        versionBefore: editor.read.runtime.snapshot().version,
+      };
+    },
+    ({ data, editor }) => insertDOMTextData(editor, data),
+    {
+      inspect: (
+        { beforeChildren, editor, versionBefore },
+        inserted
+      ) => {
+        verify(
+          inserted,
+          'Populated plain-text paste benchmark did not insert data'
+        );
 
-    editor.update(() => {
-      inserted = insertDOMTextData(editor, data);
-    });
+        const nextChildren = editor.read.children();
+        const expectedBlockCount = existingBlockCount + lineCount - 1;
 
-    if (!inserted) {
-      throw new Error(
-        'Populated plain-text paste benchmark did not insert data'
-      );
+        verify(
+          nextChildren.length === expectedBlockCount,
+          `Expected ${expectedBlockCount} blocks after populated paste, received ${nextChildren.length}`
+        );
+
+        return {
+          ...getCommitMetadata(editor, versionBefore, beforeChildren),
+          existingBlockCount,
+          insertedBlocks: lineCount,
+          nextBlockCount: nextChildren.length,
+          textPlainBytes: textByteLength(text),
+        };
+      },
+      measureRetained: true,
     }
-
-    const nextChildren = Editor.getChildren(editor);
-    const expectedBlockCount = existingBlockCount + lineCount - 1;
-
-    if (nextChildren.length !== expectedBlockCount) {
-      throw new Error(
-        `Expected ${expectedBlockCount} blocks after populated paste, received ${nextChildren.length}`
-      );
-    }
-
-    return {
-      existingBlockCount,
-      insertedBlocks: lineCount,
-      nextBlockCount: nextChildren.length,
-      operationCount: getOperationCount(editor) - operationsBefore,
-      textPlainBytes: textByteLength(text),
-    };
-  });
+  );
 };
 
 const measureCutTwoBlocks = (blockCount, sampleCount) =>
@@ -485,23 +841,23 @@ const measureCutTwoBlocks = (blockCount, sampleCount) =>
     const selection = twoBlockSelection(children);
     const editor = createBenchmarkEditor(children, selection);
     const data = new FakeDataTransfer();
-    const operationsBefore = getOperationCount(editor);
+    const beforeChildren = editor.read.children();
+    const versionBefore = editor.read.runtime.snapshot().version;
 
     writeDOMSelectionData(editor, data);
-    editor.update(() => {
-      getEditorTransformRegistry(editor).delete({ at: selection });
-    });
+    editor.update.fragment.delete({ at: selection });
 
-    const nextChildren = Editor.getChildren(editor);
+    const nextChildren = editor.read.children();
 
-    if (nextChildren.length >= blockCount) {
-      throw new Error('Cut benchmark did not remove document content');
-    }
+    verify(
+      nextChildren.length < blockCount,
+      'Cut benchmark did not remove document content'
+    );
 
     return {
+      ...getCommitMetadata(editor, versionBefore, beforeChildren),
       blockCount,
       nextBlockCount: nextChildren.length,
-      operationCount: getOperationCount(editor) - operationsBefore,
       textPlainBytes: textByteLength(data.getData('text/plain')),
     };
   });
@@ -509,7 +865,7 @@ const measureCutTwoBlocks = (blockCount, sampleCount) =>
 const measurePreparedCutTwoBlocks = (
   blockCount,
   sampleCount,
-  { includeCopy = false, warmSnapshot = false } = {}
+  { includeCopy = false, measureRetained = false, warmSnapshot = false } = {}
 ) =>
   measurePreparedLane(
     sampleCount,
@@ -518,37 +874,43 @@ const measurePreparedCutTwoBlocks = (
       const selection = twoBlockSelection(children);
       const editor = createBenchmarkEditor(children, selection);
       const data = new FakeDataTransfer();
-      const operationsBefore = getOperationCount(editor);
+      const beforeChildren = editor.read.children();
+      const versionBefore = editor.read.runtime.snapshot().version;
 
       if (warmSnapshot) {
-        Editor.getSnapshot(editor);
+        editor.read.runtime.snapshot().index.entries();
       }
 
-      return { data, editor, operationsBefore, selection };
+      return { beforeChildren, data, editor, versionBefore, selection };
     },
-    ({ data, editor, operationsBefore, selection }) => {
+    ({ data, editor, selection }) => {
       if (includeCopy) {
         writeDOMSelectionData(editor, data);
       }
 
-      editor.update(() => {
-        getEditorTransformRegistry(editor).delete({ at: selection });
-      });
+      editor.update.fragment.delete({ at: selection });
+    },
+    {
+      collectSetupGarbage: true,
+      inspect: ({ beforeChildren, data, editor, versionBefore }) => {
+        const nextChildren = editor.read.children();
 
-      const nextChildren = Editor.getChildren(editor);
+        verify(
+          nextChildren.length < blockCount,
+          'Cut benchmark did not remove document content'
+        );
 
-      if (nextChildren.length >= blockCount) {
-        throw new Error('Cut benchmark did not remove document content');
-      }
-
-      return {
-        blockCount,
-        includeCopy,
-        nextBlockCount: nextChildren.length,
-        operationCount: getOperationCount(editor) - operationsBefore,
-        snapshot: warmSnapshot ? 'warm' : 'cold',
-        textPlainBytes: textByteLength(data.getData('text/plain')),
-      };
+        return {
+          ...getCommitMetadata(editor, versionBefore, beforeChildren),
+          blockCount,
+          includeCopy,
+          nextBlockCount: nextChildren.length,
+          snapshot: warmSnapshot ? 'warm' : 'cold',
+          textPlainBytes: textByteLength(data.getData('text/plain')),
+        };
+      },
+      measureRetained,
+      warmup: true,
     }
   );
 
@@ -573,11 +935,13 @@ const cohortResults = Object.fromEntries(
         sampleCount,
         fragmentDecodeMs: measureFragmentDecode(lineCount, sampleCount),
         fragmentEncodeMs: measureFragmentEncode(lineCount, sampleCount),
-        fragmentInsertMs: measureFragmentInsert(lineCount, sampleCount),
         domFragmentInsertMs: measureDOMFragmentInsert(lineCount, sampleCount),
         fullSelectionCopyMs: measureFullSelectionCopy(lineCount, sampleCount),
+        hostCodecInsertMs: measureHostCodecInsert(lineCount, sampleCount),
+        hostCodecSerializeMs: measureHostCodecSerialize(lineCount, sampleCount),
         plainTextInsertMs: measurePlainTextInsert(lineCount, sampleCount),
-        plainTextSplitMs: measurePlainTextSplit(lineCount, sampleCount),
+        sliceCommitMs: measureSliceCommit(lineCount, sampleCount),
+        sliceFitMs: measureSliceFit(lineCount, sampleCount),
       },
     ];
   })
@@ -595,7 +959,7 @@ const pathological = {
   cutTwoBlocksEditMs: measurePreparedCutTwoBlocks(
     hugeCutBlocks,
     hugeCutIterations,
-    { warmSnapshot: true }
+    { measureRetained: true, warmSnapshot: true }
   ),
   cutTwoBlocksMs: measurePreparedCutTwoBlocks(
     hugeCutBlocks,
@@ -604,29 +968,142 @@ const pathological = {
   ),
 };
 
-const issueTargetThresholds = issueTargetsEnabled
+const issueTargets = issueTargetsEnabled
   ? {
-      cutTwoBlocksEditMsP50: {
-        actualMs: pathological.cutTwoBlocksEditMs.p50,
-        limitMs: 150,
-        passed: pathological.cutTwoBlocksEditMs.p50 < 150,
-      },
-      cutTwoBlocksMsP50: {
-        actualMs: pathological.cutTwoBlocksMs.p50,
-        limitMs: 250,
-        passed: pathological.cutTwoBlocksMs.p50 < 250,
-      },
-      operationCount: {
-        actual: pathological.cutTwoBlocksEditMs.metadata.operationCount,
-        limit: 1,
-        passed: pathological.cutTwoBlocksEditMs.metadata.operationCount === 1,
-      },
+      largePlainTextPaste10000: measurePlainTextInsert(
+        issueTargetStressLines,
+        issueTargetIterations
+      ),
+      populatedFullSelectionCopy10000: measureFullSelectionCopy(
+        issueTargetStressLines,
+        issueTargetIterations
+      ),
+      populatedMiddlePlainTextPaste10000Into10000:
+        measurePopulatedMiddlePlainTextPaste(
+          issueTargetStressLines,
+          issueTargetStressLines,
+          issueTargetIterations
+        ),
     }
   : undefined;
 
+const issueTargetThresholds = issueTargetsEnabled
+  ? createClipboardIssueTargetThresholds({
+      hugeCutBlocks,
+      issueTargetStressLines,
+      issueTargets,
+      pathological,
+      releaseGate: authorityArtifact,
+    })
+  : undefined;
+
+const issueBudgetFailures = issueTargetThresholds
+  ? Object.entries(issueTargetThresholds)
+      .filter(([, threshold]) => !threshold.passed)
+      .map(([name]) => name)
+  : [];
+const stress = cohortResults.stress;
+const primaryLanes = issueTargets
+  ? [
+      ...Object.values(issueTargets),
+      pathological.cutTwoBlocksEditMs,
+      pathological.cutTwoBlocksMs,
+    ]
+  : [
+      stress.domFragmentInsertMs,
+      stress.fullSelectionCopyMs,
+      stress.hostCodecInsertMs,
+      stress.plainTextInsertMs,
+      pathological.cutTwoBlocksEditMs,
+      pathological.cutTwoBlocksMs,
+    ];
+const allLanes = [
+  ...Object.values(cohortResults).flatMap((cohort) =>
+    Object.values(cohort).filter((value) => Array.isArray(value?.samples))
+  ),
+  ...Object.values(pathological),
+  ...Object.values(issueTargets ?? {}),
+];
+const metadataP95 = (lane, key) =>
+  summarizeDurations(
+    lane.metadataSamples
+      .map((metadata) => metadata[key])
+      .filter((value) => typeof value === 'number')
+  ).p95;
+const maximumMetadata = (key) =>
+  Math.max(
+    0,
+    ...allLanes.flatMap((lane) =>
+      lane.metadataSamples
+        .map((metadata) => metadata[key])
+        .filter((value) => typeof value === 'number')
+    )
+  );
+const metrics = {
+  plite_clipboard_correctness_failures: correctnessFailures.length,
+  plite_clipboard_cut_edit_inspection_p95_ms:
+    pathological.cutTwoBlocksEditMs.inspectionMs.p95,
+  plite_clipboard_cut_edit_setup_p95_ms:
+    pathological.cutTwoBlocksEditMs.setupMs.p95,
+  plite_clipboard_cut_changed_token_span_max:
+    pathological.cutTwoBlocksEditMs.metadata.maximumChangedTokenSpan,
+  plite_clipboard_cut_changed_top_level_span_max:
+    pathological.cutTwoBlocksEditMs.metadata.maximumChangedTopLevelSpan,
+  plite_clipboard_cut_retained_existing_block_ratio:
+    pathological.cutTwoBlocksEditMs.metadata.retainedExistingBlockRatio,
+  plite_clipboard_decode_p95_ms: stress.fragmentDecodeMs.p95,
+  plite_clipboard_encode_p95_ms: stress.fragmentEncodeMs.p95,
+  plite_clipboard_fit_p95_ms: stress.sliceFitMs.p95,
+  plite_clipboard_gc_available: gcAvailable ? 1 : 0,
+  plite_clipboard_host_parse_p95_ms: metadataP95(
+    stress.hostCodecInsertMs,
+    'hostParseMs'
+  ),
+  plite_clipboard_host_serialize_p95_ms: metadataP95(
+    stress.hostCodecSerializeMs,
+    'hostSerializeMs'
+  ),
+  plite_clipboard_issue_budget_failures: issueBudgetFailures.length,
+  plite_clipboard_plain_text_paste_10000_p50_ms:
+    issueTargets?.largePlainTextPaste10000.p50 ?? 0,
+  plite_clipboard_populated_full_selection_copy_10000_p50_ms:
+    issueTargets?.populatedFullSelectionCopy10000.p50 ?? 0,
+  plite_clipboard_populated_plain_text_paste_10000_p50_ms:
+    issueTargets?.populatedMiddlePlainTextPaste10000Into10000.p50 ?? 0,
+  plite_clipboard_max_changed_token_span: maximumMetadata(
+    'maximumChangedTokenSpan'
+  ),
+  plite_clipboard_max_changed_top_level_span: maximumMetadata(
+    'maximumChangedTopLevelSpan'
+  ),
+  plite_clipboard_peak_heap_delta_bytes: Math.max(
+    0,
+    ...allLanes.flatMap((lane) => lane.heapDeltaBytes.samples)
+  ),
+  plite_clipboard_peak_retained_heap_delta_bytes: gcAvailable
+    ? Math.max(
+        0,
+        ...allLanes.flatMap(
+          (lane) => lane.retainedHeapDeltaBytes?.samples ?? []
+        )
+      )
+    : 0,
+  plite_clipboard_populated_paste_inspection_p95_ms:
+    issueTargets?.populatedMiddlePlainTextPaste10000Into10000.inspectionMs
+      .p95 ?? 0,
+  plite_clipboard_populated_paste_setup_p95_ms:
+    issueTargets?.populatedMiddlePlainTextPaste10000Into10000.setupMs.p95 ?? 0,
+  plite_clipboard_slice_commit_p95_ms: stress.sliceCommitMs.p95,
+  plite_clipboard_worst_issue_p95_ms: Math.max(
+    ...primaryLanes.map((lane) => lane.p95)
+  ),
+};
+
 const summary = {
-  benchmark: 'slate-clipboard-large-payload',
+  artifactVersion: 2,
+  benchmark: 'plite-clipboard-large-payload',
   config: {
+    authorityArtifact,
     hugeCutBlocks,
     hugeCutIterations,
     iterations,
@@ -637,36 +1114,47 @@ const summary = {
     stressIterations,
   },
   cohorts: cohortResults,
-  issueTargets: issueTargetsEnabled
-    ? {
-        largePlainTextPaste10000: measurePlainTextInsert(
-          issueTargetStressLines,
-          issueTargetIterations
-        ),
-        populatedFullSelectionCopy10000: measureFullSelectionCopy(
-          issueTargetStressLines,
-          issueTargetIterations
-        ),
-        populatedMiddlePlainTextPaste10000Into10000:
-          measurePopulatedMiddlePlainTextPaste(
-            issueTargetStressLines,
-            issueTargetStressLines,
-            issueTargetIterations
-          ),
-      }
-    : undefined,
+  correctnessFailures,
+  invariants: {
+    currentContentSliceBoundary: true,
+    currentDOMClipboardBoundary: true,
+    currentHostCodecBoundary: true,
+    oneCommitPerMutation: correctnessFailures.every(
+      (failure) => !failure.startsWith('Expected one commit')
+    ),
+  },
+  issueBudgetFailures,
+  issueTargets,
   issueTargetThresholds,
   issuePressure: {
     4056: 'large text paste/copy into populated editor',
     5945: '10,000-line plaintext paste',
     5992: '50,000-block two-node cut',
   },
+  memoryMethodology: {
+    allocationProxy:
+      'heapUsed immediately after timed work minus the pre-work baseline',
+    gcAvailable,
+    retained:
+      'selected prepared lanes run one separate untimed sample; heapUsed after exposed GC minus its post-setup, post-GC baseline; null on other lanes',
+    setupIsolation:
+      'pathological prepared lanes run one unreported warmup and exposed GC after each untimed setup before measured work',
+  },
+  metrics,
   pathological,
+  thresholdPolicy: {
+    releaseGate: authorityArtifact && issueTargetsEnabled,
+    source: 'Slate issues #4056, #5945, and #5992',
+  },
 };
 
-await writeBenchmarkArtifact(
-  'tmp/slate-clipboard-large-payload-benchmark.json',
-  summary
-);
+await writeBenchmarkArtifact(outputPath, summary);
+
+for (const [name, value] of Object.entries(metrics)) {
+  console.log(`METRIC ${name}=${value}`);
+}
 
 console.log(JSON.stringify(summary, null, 2));
+
+if (hasClipboardBenchmarkFailures({ correctnessFailures, issueBudgetFailures }))
+  process.exitCode = 1;

@@ -55,7 +55,7 @@
   ],
   "scripts": {
     "brl": "echo 'No barrels to generate'",
-    "build": "tsdown --config ./tsdown.config.mts --log-level warn && tsc -p tsconfig.build.json",
+    "build": "node ../../tooling/scripts/build-plite-package.mjs",
     "clean": "rimraf dist lib",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
@@ -63,8 +63,9 @@
     "typecheck": "tsc --project tsconfig.json --noEmit && tsc --project tsconfig.test.json --noEmit"
   },
   "devDependencies": {
-    "lodash": "^4.17.21",
-    "@plate/scripts": "workspace:*"
+    "@plate/scripts": "workspace:*",
+    "fast-check": "^3.23.2",
+    "lodash": "^4.17.21"
   },
   "publishConfig": {
     "access": "public"

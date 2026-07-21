@@ -1,15 +1,21 @@
 import { JSDOM } from 'jsdom';
 import {
+  ContentSlice,
   createEditor,
   type Descendant,
+  type EditorExtension,
   defineEditorExtension,
+  defineEditorSchema,
+  element,
   type Node,
+  property,
   type Range,
+  schema,
   ElementApi as PliteElement,
 } from '@platejs/plite';
 import {
   addMark as editorAddMark,
-  getOperations as editorGetOperations,
+  getLastCommit as editorGetLastCommit,
   getRuntimeId as editorGetRuntimeId,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
@@ -17,7 +23,13 @@ import {
 } from '@platejs/plite/internal';
 import { history } from '@platejs/plite-history';
 
-import { dom, writeDOMFragmentData } from '../src/index';
+import {
+  defineHostCodec,
+  dom,
+  hostCodecs,
+  writeDOMFragmentData,
+  writeDOMRangeData,
+} from '../src/index';
 import {
   DOMCoverage,
   EDITOR_TO_ELEMENT,
@@ -28,6 +40,11 @@ import {
   NODE_TO_INDEX,
   NODE_TO_PARENT,
 } from '../src/internal';
+
+const editorGetChangedRoots = (editor: Editor) => [
+  ...(editorGetLastCommit(editor)?.changes.primary ? [null] : []),
+  ...(editorGetLastCommit(editor)?.changes.roots.keys() ?? []),
+];
 
 class FakeDataTransfer {
   private readonly store = new Map<string, string>();
@@ -55,6 +72,42 @@ const createChildren = (): Descendant[] => [
     children: [{ text: 'beta' }],
   },
 ];
+
+const clipboardRichSchema = defineEditorSchema({
+  elements: {
+    image: element({
+      content: schema.content.text({ default: 'text', max: 1, min: 1 }),
+      groups: ['block'],
+      properties: { url: property.string() },
+      void: 'block',
+    }),
+    link: element({
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+      properties: { url: property.string() },
+    }),
+    mention: element({
+      content: schema.content.text({ default: 'text', max: 1, min: 1 }),
+      properties: { character: property.string() },
+      void: 'markable-inline',
+    }),
+    paragraph: element({
+      content: schema.content.any(
+        [schema.content.text(), schema.content.group('inline')],
+        { default: 'text', min: 1 }
+      ),
+      groups: ['block'],
+    }),
+  },
+  id: 'clipboard-rich-test',
+  root: schema.root({
+    content: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+  }),
+  version: 1,
+});
 
 const getHistory = (editor: Editor) =>
   editor.read((state: any) => state.history());
@@ -86,17 +139,15 @@ const createClipboardEditor = (
   children: Descendant[],
   selection: Range | null,
   clipboardFormatKey?: string,
-  configureEditor?: (editor: Editor) => void
+  extensions: readonly EditorExtension[] = []
 ) => {
   const editor = createEditor({
-    extensions: [dom(clipboardFormatKey ? { clipboardFormatKey } : {})],
-  });
-
-  configureEditor?.(editor);
-
-  editorReplace(editor, {
-    children,
-    selection,
+    extensions: [
+      dom(clipboardFormatKey ? { clipboardFormatKey } : {}),
+      ...extensions,
+    ],
+    ...(selection ? { initialSelection: selection } : {}),
+    initialValue: children,
   });
 
   seedNodeMaps(
@@ -396,9 +447,9 @@ describe('plite-dom clipboard boundary', () => {
 
     const encoded = writeDOMFragmentData(data as unknown as DataTransfer, {
       clipboardFormatKey: 'x-custom-plite-fragment',
-      fragment,
       html: ({ clipboardFormatKey, encoded }) =>
         `<p data-plite-fragment="${encoded}" data-plite-fragment-format="${clipboardFormatKey}">alpha</p>`,
+      slice: ContentSlice.closed(fragment),
       text: 'alpha',
     });
 
@@ -408,6 +459,109 @@ describe('plite-dom clipboard boundary', () => {
     expect(data.getData('text/html')).toBe(
       `<p data-plite-fragment="${encoded}" data-plite-fragment-format="x-custom-plite-fragment">alpha</p>`
     );
+    expect(
+      data.getData('text/html').match(/data-plite-fragment=/g)
+    ).toHaveLength(1);
+    expect(decodeFragmentPayload(document, encoded)).toEqual({
+      slice: ContentSlice.closed(fragment),
+      version: 1,
+    });
+  });
+
+  it('keeps v1 bytes and openness for frozen editor fragments', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'alpha' }],
+          type: 'paragraph',
+        },
+      ],
+    });
+    const slice = editor.read.slice.get({
+      at: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 5, path: [0, 0] },
+      },
+    });
+    const data = new FakeDataTransfer();
+    const encoded = writeDOMFragmentData(data as unknown as DataTransfer, {
+      html: '<p>alpha</p>',
+      slice,
+      text: 'alpha',
+    });
+
+    expect(decodeURIComponent(document.defaultView!.atob(encoded))).toBe(
+      '{"slice":{"content":[{"type":"paragraph","children":[{"text":"alpha"}]}],"openEnd":1,"openStart":1},"version":1}'
+    );
+  });
+
+  it('snapshots mutable fragment input before producing clipboard payloads', () => {
+    const data = new FakeDataTransfer();
+    const source = {
+      content: createChildren().slice(0, 1),
+      openEnd: 0,
+      openStart: 0,
+    };
+    const encoded = writeDOMFragmentData(data as unknown as DataTransfer, {
+      html: ({ text }) => {
+        source.content[0]!.children[0] = { text: 'mutated' };
+
+        return `<p>${text}</p>`;
+      },
+      slice: source,
+    });
+
+    expect(data.getData('text/plain')).toBe('alpha');
+    expect(data.getData('text/html')).toContain('data-plite-fragment=');
+    expect(data.getData('text/html')).toContain('>alpha</p>');
+    expect(decodeFragmentPayload(document, encoded)).toEqual({
+      slice: ContentSlice.closed([
+        { children: [{ text: 'alpha' }], type: 'paragraph' },
+      ]),
+      version: 1,
+    });
+  });
+
+  it('rejects hostile fragment input before writing any clipboard format', () => {
+    const repeated = {
+      children: [{ text: 'repeated' }],
+      type: 'paragraph',
+    };
+    const accessor = {
+      children: [{ text: 'accessor' }],
+      type: 'paragraph',
+    } as Record<string, unknown>;
+
+    Object.defineProperty(accessor, 'payload', {
+      enumerable: true,
+      get: () => 'unsafe',
+    });
+
+    for (const slice of [
+      { content: [repeated, repeated], openEnd: 0, openStart: 0 },
+      { content: [accessor], openEnd: 0, openStart: 0 },
+      {
+        content: [
+          {
+            children: [{ text: 'non-json' }],
+            payload: new Date(0),
+            type: 'paragraph',
+          },
+        ],
+        openEnd: 0,
+        openStart: 0,
+      },
+    ]) {
+      const data = new FakeDataTransfer();
+
+      expect(() =>
+        writeDOMFragmentData(data as unknown as DataTransfer, {
+          html: '<p>must not write</p>',
+          slice: slice as never,
+        })
+      ).toThrow();
+      expect(data.types).toEqual([]);
+    }
   });
 
   it('installs DOM host capabilities on the editor instance', () => {
@@ -430,35 +584,34 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
       undefined,
-      (target) => {
-        target.extend(
-          defineEditorExtension({
-            name: 'product-card-paste',
-            clipboard: {
-              insertData(data, { next, tx }) {
-                const title = data.getData('application/x-product-card-title');
+      [
+        defineEditorExtension({
+          name: 'product-card-paste',
+          clipboard: {
+            insertData(data, { next, tx }) {
+              const title = data.getData('application/x-product-card-title');
 
-                seen.push(
-                  `${title ? 'consume' : 'delegate'}:${
-                    tx.selection()?.anchor.offset ?? -1
-                  }`
-                );
+              seen.push(
+                `${title ? 'consume' : 'delegate'}:${
+                  tx.selection()?.anchor.offset ?? -1
+                }`
+              );
 
-                if (!title) {
-                  return next();
-                }
+              if (!title) {
+                return next();
+              }
 
-                tx.text.insert(`Card: ${title}`);
-                return true;
-              },
+              tx.text.insert(`Card: ${title}`);
+              return true;
             },
-          })
-        );
-      }
+          },
+        }),
+      ]
     );
     const productCard = new FakeDataTransfer();
     const plainText = new FakeDataTransfer();
@@ -485,10 +638,12 @@ describe('plite-dom clipboard boundary', () => {
   it('round-trips a selected fragment through clipboard payloads and replaces the target selection', () => {
     withDom((document) => {
       const copySelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
       };
       const replaceSelection: Range = {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       };
@@ -521,9 +676,191 @@ describe('plite-dom clipboard boundary', () => {
         },
       ]);
       expect(editorGetSnapshot(target).selection).toEqual({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 5 },
         focus: { path: [1, 0], offset: 5 },
       });
+    });
+  });
+
+  it('writes an explicit range without publishing or changing model selection', () => {
+    withDom((document) => {
+      const selection: Range = {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 5 },
+      };
+      const range: Range = {
+        kind: 'text',
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 4 },
+      };
+      const editor = createClipboardEditor(createChildren(), selection);
+      const clipboard = new FakeDataTransfer();
+      const selectionBefore = editor.read.selection();
+      let commits = 0;
+
+      editor.subscribeCommit(() => commits++);
+      mountSimpleEditorDOM(editor, document);
+
+      writeDOMRangeData(editor, clipboard as unknown as DataTransfer, range);
+
+      expect(clipboard.getData('text/plain')).toBe('beta');
+      expect(clipboard.getData('application/x-plite-fragment')).not.toBe('');
+      expect(clipboard.getData('text/html')).toContain('data-plite-fragment=');
+      expect(editor.read.selection()).toEqual(selectionBefore);
+      expect(commits).toBe(0);
+    });
+  });
+
+  it('keeps the native fragment fallback when a host codec serializes HTML', () => {
+    withDom((document) => {
+      const source = createClipboardEditor(
+        createChildren(),
+        {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 5 },
+        },
+        undefined,
+        [
+          hostCodecs('host-html-copy', [
+            defineHostCodec({
+              format: 'text/html',
+              key: 'host-html-copy',
+              serialize: () =>
+                '<strong data-plite-fragment="stale">host-alpha</strong>',
+            }),
+          ]),
+        ]
+      );
+      const target = createClipboardEditor(createChildren(), {
+        kind: 'text',
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 4 },
+      });
+      const clipboard = new FakeDataTransfer();
+
+      mountSimpleEditorDOM(source, document);
+      mountEditorRoot(target, document);
+
+      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+
+      const html = clipboard.getData('text/html');
+
+      expect(html).toContain('<strong');
+      expect(html).toContain('host-alpha');
+      expect(html).toContain('data-plite-fragment=');
+      expect(clipboard.getData('application/x-plite-fragment')).not.toBe('');
+
+      const htmlOnlyClipboard = new FakeDataTransfer();
+
+      htmlOnlyClipboard.setData('text/html', html);
+      target.update(() => {
+        target.api.clipboard.insertData(
+          htmlOnlyClipboard as unknown as DataTransfer
+        );
+      });
+
+      expect(editorGetSnapshot(target).children).toEqual([
+        {
+          type: 'paragraph',
+          children: [{ text: 'alpha' }],
+        },
+        {
+          type: 'paragraph',
+          children: [{ text: 'alpha' }],
+        },
+      ]);
+    });
+  });
+
+  it('orders exact v1, host codec, and plain-text fallback deterministically', () => {
+    withDom((document) => {
+      const createTarget = () => {
+        const target = createClipboardEditor(
+          [
+            {
+              type: 'paragraph',
+              children: [{ text: 'target' }],
+            },
+          ],
+          {
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 0 },
+            focus: { path: [0, 0], offset: 'target'.length },
+          },
+          undefined,
+          [
+            hostCodecs('host-html-paste', [
+              defineHostCodec({
+                format: 'text/html',
+                key: 'host-html-paste',
+                parse: ({ data }) =>
+                  data === '<p>host</p>'
+                    ? ContentSlice.closed([
+                        {
+                          type: 'paragraph',
+                          children: [{ text: 'host' }],
+                        },
+                      ])
+                    : null,
+              }),
+            ]),
+          ]
+        );
+
+        mountEditorRoot(target, document);
+
+        return target;
+      };
+      const exact = new FakeDataTransfer();
+
+      writeDOMFragmentData(exact as unknown as DataTransfer, {
+        html: '<p>host</p>',
+        slice: ContentSlice.closed([
+          { children: [{ text: 'exact' }], type: 'paragraph' },
+        ]),
+        text: 'plain',
+        window: {
+          btoa: (value) => document.defaultView!.btoa(value),
+        },
+      });
+
+      const exactTarget = createTarget();
+
+      exactTarget.api.clipboard.insertData(exact as unknown as DataTransfer);
+      expect(editorString(exactTarget, [0])).toBe('exact');
+
+      const host = new FakeDataTransfer();
+      const unsupportedEnvelope = encodeFragmentPayload(
+        document,
+        JSON.stringify({
+          slice: ContentSlice.closed([
+            { children: [{ text: 'wrong' }], type: 'paragraph' },
+          ]),
+          version: 2,
+        })
+      );
+
+      host.setData('application/x-plite-fragment', unsupportedEnvelope);
+      host.setData('text/html', '<p>host</p>');
+      host.setData('text/plain', 'plain');
+
+      const hostTarget = createTarget();
+
+      hostTarget.api.clipboard.insertData(host as unknown as DataTransfer);
+      expect(editorString(hostTarget, [0])).toBe('host');
+
+      const plain = new FakeDataTransfer();
+
+      plain.setData('text/html', '<p>miss</p>');
+      plain.setData('text/plain', 'plain');
+
+      const plainTarget = createTarget();
+
+      plainTarget.api.clipboard.insertData(plain as unknown as DataTransfer);
+      expect(editorString(plainTarget, [0])).toBe('plain');
     });
   });
 
@@ -545,6 +882,7 @@ describe('plite-dom clipboard boundary', () => {
           },
         ],
         {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [2, 0], offset: 1 },
         }
@@ -582,6 +920,7 @@ describe('plite-dom clipboard boundary', () => {
           },
         ],
         {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [3, 0], offset: 'Line 4'.length },
         }
@@ -617,6 +956,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ];
       const source = createClipboardEditor(children, {
+        kind: 'text',
         anchor: { path: [0, 0, 0], offset: 0 },
         focus: { path: [0, 1, 0], offset: 'two'.length },
       });
@@ -633,7 +973,14 @@ describe('plite-dom clipboard boundary', () => {
       const encoded = clipboard.getData('application/x-plite-fragment');
 
       expect(encoded).not.toBe('');
-      expect(decodeFragmentPayload(document, encoded)).toEqual(children);
+      expect(decodeFragmentPayload(document, encoded)).toEqual({
+        slice: ContentSlice.fromJSON({
+          content: children,
+          openEnd: 2,
+          openStart: 2,
+        }),
+        version: 1,
+      });
       expect(clipboard.getData('text/html')).toContain('data-plite-fragment=');
       expect(clipboard.getData('text/plain')).toContain('one');
       expect(clipboard.getData('text/plain')).toContain('two');
@@ -643,6 +990,7 @@ describe('plite-dom clipboard boundary', () => {
   it('does not emit hidden model fragments for summary coverage copy policy', () => {
     withDom((document) => {
       const source = createClipboardEditor(createChildren(), {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
       });
@@ -653,7 +1001,7 @@ describe('plite-dom clipboard boundary', () => {
         boundaryId: 'summary-alpha',
         anchor: { type: 'placeholder', runtimeId: getRuntimeId(source, [0]) },
         copyPolicy: 'summary',
-        coveredPathRanges: [{ anchor: [0, 0], focus: [0, 0] }],
+        coveredPathRanges: [{ kind: 'text', anchor: [0, 0], focus: [0, 0] }],
         coveredRuntimeRanges: [],
         findPolicy: 'native',
         ownerPath: [0],
@@ -677,10 +1025,12 @@ describe('plite-dom clipboard boundary', () => {
   it('preserves the target block type when a rich fragment replaces selected target text', () => {
     withDom((document) => {
       const copySelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
       };
       const replaceSelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       };
@@ -713,6 +1063,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ]);
       expect(editorGetSnapshot(target).selection).toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 5 },
       });
@@ -722,10 +1073,12 @@ describe('plite-dom clipboard boundary', () => {
   it('preserves block separation when a rich multi-block fragment is pasted in the middle of a text block', () => {
     withDom((document) => {
       const copySelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 'two'.length },
       };
       const targetSelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'before '.length },
         focus: { path: [0, 0], offset: 'before '.length },
       };
@@ -763,8 +1116,6 @@ describe('plite-dom clipboard boundary', () => {
       expect(clipboard.getData('text/html')).toContain('data-plite-fragment=');
       expect(clipboard.getData('text/plain').trimEnd()).toBe('one\ntwo');
 
-      const operationsBefore = editorGetOperations(target).length;
-
       target.update(() => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
@@ -780,20 +1131,23 @@ describe('plite-dom clipboard boundary', () => {
         },
       ]);
       expect(editorGetSnapshot(target).selection).toEqual({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 'two'.length },
         focus: { path: [1, 0], offset: 'two'.length },
       });
-      expect(editorGetOperations(target).length - operationsBefore).toBe(1);
+      expect(editorGetChangedRoots(target)).toEqual([null]);
     });
   });
 
-  it('preserves the copied first text block over a single empty target block and promotes the tail', () => {
+  it('keeps the target context for the first open block and promotes the tail', () => {
     withDom((document) => {
       const copySelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 'Some text'.length },
       };
       const targetSelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       };
@@ -827,15 +1181,13 @@ describe('plite-dom clipboard boundary', () => {
 
       source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
 
-      const operationsBefore = editorGetOperations(target).length;
-
       target.update(() => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
       expect(editorGetSnapshot(target).children).toEqual([
         {
-          type: 'paragraph',
+          type: 'block-quote',
           children: [{ text: 'Hello world' }],
         },
         {
@@ -844,20 +1196,23 @@ describe('plite-dom clipboard boundary', () => {
         },
       ]);
       expect(editorGetSnapshot(target).selection).toEqual({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 'Some text'.length },
         focus: { path: [1, 0], offset: 'Some text'.length },
       });
-      expect(editorGetOperations(target).length - operationsBefore).toBe(1);
+      expect(editorGetChangedRoots(target)).toEqual([null]);
     });
   });
 
   it('does not add empty text leaves when pasting a full multi-block fragment', () => {
     withDom((document) => {
       const copySelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 'second block'.length },
       };
       const targetSelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       };
@@ -911,10 +1266,12 @@ describe('plite-dom clipboard boundary', () => {
   it('replaces selected content that starts with an empty block when pasting', () => {
     withDom((document) => {
       const copySelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 'replacement'.length },
       };
       const targetSelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 'old content'.length },
       };
@@ -959,6 +1316,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ]);
       expect(editorGetSnapshot(target).selection).toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'replacement'.length },
         focus: { path: [0, 0], offset: 'replacement'.length },
       });
@@ -968,10 +1326,12 @@ describe('plite-dom clipboard boundary', () => {
   it('replaces selected content that starts with an empty block with multiple pasted blocks', () => {
     withDom((document) => {
       const copySelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 'second replacement'.length },
       };
       const targetSelection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 'old content'.length },
       };
@@ -1024,6 +1384,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ]);
       expect(editorGetSnapshot(target).selection).toEqual({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 'second replacement'.length },
         focus: { path: [1, 0], offset: 'second replacement'.length },
       });
@@ -1033,10 +1394,12 @@ describe('plite-dom clipboard boundary', () => {
   it('supports a custom fragment MIME key', () => {
     withDom((document) => {
       const selection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
       };
       const replaceSelection: Range = {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       };
@@ -1074,10 +1437,12 @@ describe('plite-dom clipboard boundary', () => {
   it('falls back to the HTML embedded fragment when the custom MIME payload is absent', () => {
     withDom((document) => {
       const selection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
       };
       const replaceSelection: Range = {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       };
@@ -1108,10 +1473,12 @@ describe('plite-dom clipboard boundary', () => {
   it('accepts custom-key embedded HTML fragments in matching custom-key editors', () => {
     withDom((document) => {
       const selection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
       };
       const replaceSelection: Range = {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       };
@@ -1151,10 +1518,12 @@ describe('plite-dom clipboard boundary', () => {
   it('rejects custom-key embedded HTML fragments in default-key editors', () => {
     withDom((document) => {
       const selection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
       };
       const replaceSelection: Range = {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       };
@@ -1191,6 +1560,7 @@ describe('plite-dom clipboard boundary', () => {
     const editor = createClipboardEditor(
       createChildren(),
       {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       },
@@ -1209,8 +1579,35 @@ describe('plite-dom clipboard boundary', () => {
     ).toEqual({ text: 'hello' });
   });
 
+  it('appends plain text at the document end when selection is absent', () => {
+    const editor = createClipboardEditor(createChildren(), null);
+    const clipboard = new FakeDataTransfer();
+
+    clipboard.setData('text/plain', 'hello');
+
+    expect(
+      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+    ).toBe(true);
+    expect(editorGetSnapshot(editor).children).toEqual([
+      {
+        type: 'paragraph',
+        children: [{ text: 'alpha' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'betahello' }],
+      },
+    ]);
+    expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 'betahello'.length },
+      focus: { path: [1, 0], offset: 'betahello'.length },
+    });
+  });
+
   it('applies collapsed active marks to plain text fallback', () => {
     const editor = createClipboardEditor(createChildren(), {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 4 },
       focus: { path: [1, 0], offset: 4 },
     });
@@ -1227,6 +1624,7 @@ describe('plite-dom clipboard boundary', () => {
       (editorGetSnapshot(editor).children[1] as PliteElement).children
     ).toEqual([{ text: 'beta' }, { bold: true, text: 'hello' }]);
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 1], offset: 'hello'.length },
       focus: { path: [1, 1], offset: 'hello'.length },
     });
@@ -1241,6 +1639,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'Hello '.length },
         focus: { path: [0, 0], offset: 'Hello '.length },
       }
@@ -1265,6 +1664,7 @@ describe('plite-dom clipboard boundary', () => {
       },
     ]);
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'Next'.length },
       focus: { path: [1, 0], offset: 'Next'.length },
     });
@@ -1279,6 +1679,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       }
@@ -1303,6 +1704,7 @@ describe('plite-dom clipboard boundary', () => {
       },
     ]);
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'Two'.length },
       focus: { path: [1, 0], offset: 'Two'.length },
     });
@@ -1325,16 +1727,12 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 1, 0], offset: 0 },
         focus: { path: [0, 1, 0], offset: 'Wor'.length },
       },
       undefined,
-      (editor) => {
-        editor.extend({
-          elements: [{ inline: true, type: 'link' }],
-          name: 'inline-text-paste',
-        });
-      }
+      [clipboardRichSchema]
     );
     const clipboard = new FakeDataTransfer();
 
@@ -1360,6 +1758,7 @@ describe('plite-dom clipboard boundary', () => {
       },
     ]);
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Hello replaced'.length },
       focus: { path: [0, 0], offset: 'Hello replaced'.length },
     });
@@ -1374,6 +1773,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'Hello '.length },
         focus: { path: [0, 0], offset: 'Hello '.length },
       }
@@ -1397,6 +1797,7 @@ describe('plite-dom clipboard boundary', () => {
       },
     ]);
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'And text below'.length },
       focus: { path: [1, 0], offset: 'And text below'.length },
     });
@@ -1411,6 +1812,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1435,6 +1837,7 @@ describe('plite-dom clipboard boundary', () => {
       },
     ]);
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'hello\tworld'.length },
       focus: { path: [1, 0], offset: 'hello\tworld'.length },
     });
@@ -1449,6 +1852,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1471,8 +1875,8 @@ describe('plite-dom clipboard boundary', () => {
 
     editorReplace(editor, {
       children: editorGetSnapshot(editor).children,
-      marks: null,
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
@@ -1490,6 +1894,7 @@ describe('plite-dom clipboard boundary', () => {
       },
     ]);
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -1498,6 +1903,7 @@ describe('plite-dom clipboard boundary', () => {
   it('falls back to plain text when the custom MIME fragment is malformed', () => {
     withDom((document) => {
       const editor = createClipboardEditor(createChildren(), {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       });
@@ -1522,6 +1928,7 @@ describe('plite-dom clipboard boundary', () => {
   it('falls back to plain text when the embedded HTML fragment is only text', () => {
     withDom((document) => {
       const editor = createClipboardEditor(createChildren(), {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       });
@@ -1546,16 +1953,26 @@ describe('plite-dom clipboard boundary', () => {
     });
   });
 
-  it('rejects decoded fragment payloads that are not Plite fragment arrays', () => {
+  it('rejects malformed and non-v1 fragment envelopes', () => {
     withDom((document) => {
+      const slice = ContentSlice.closed([
+        { children: [{ text: 'exact' }], type: 'paragraph' },
+      ]);
       const cases = [
         encodeRawFragmentPayload(document, '%E0%A4%A'),
         encodeFragmentPayload(document, 'not json'),
         encodeFragmentPayload(document, JSON.stringify({ text: 'oops' })),
+        encodeFragmentPayload(document, JSON.stringify({ slice })),
+        encodeFragmentPayload(document, JSON.stringify({ slice, version: 2 })),
+        encodeFragmentPayload(
+          document,
+          JSON.stringify({ extra: true, slice, version: 1 })
+        ),
       ];
 
       cases.forEach((payload, index) => {
         const editor = createClipboardEditor(createChildren(), {
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 4 },
         });
@@ -1583,6 +2000,7 @@ describe('plite-dom clipboard boundary', () => {
   it('ignores malformed fragment payloads when there is no fallback data', () => {
     withDom((document) => {
       const editor = createClipboardEditor(createChildren(), {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       });
@@ -1605,6 +2023,7 @@ describe('plite-dom clipboard boundary', () => {
   it('exports decorated multi-leaf text without leaking render-only wrappers', () => {
     withDom((document) => {
       const selection: Range = {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 4 },
       };
@@ -1649,16 +2068,12 @@ describe('plite-dom clipboard boundary', () => {
           },
         ],
         {
+          kind: 'text',
           anchor: { path: [0, 1, 0], offset: 0 },
           focus: { path: [0, 1, 0], offset: 0 },
         },
         undefined,
-        (editor) => {
-          editor.extend({
-            elements: [{ type: 'mention', void: 'markable-inline' }],
-            name: 'inline-void-copy',
-          });
-        }
+        [clipboardRichSchema]
       );
       const clipboard = new FakeDataTransfer();
       const target = createClipboardEditor(
@@ -1669,16 +2084,12 @@ describe('plite-dom clipboard boundary', () => {
           },
         ],
         {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 4 },
           focus: { path: [0, 0], offset: 4 },
         },
         undefined,
-        (editor) => {
-          editor.extend({
-            elements: [{ type: 'mention', void: 'markable-inline' }],
-            name: 'inline-void-paste',
-          });
-        }
+        [clipboardRichSchema]
       );
 
       mountInlineVoidEditorDOM(source, document);
@@ -1693,24 +2104,29 @@ describe('plite-dom clipboard boundary', () => {
       const encoded = clipboard.getData('application/x-plite-fragment');
 
       expect(encoded).not.toBe('');
-      expect(decodeFragmentPayload(document, encoded)).toEqual([
-        {
-          type: 'paragraph',
-          children: [
+      expect(decodeFragmentPayload(document, encoded)).toEqual({
+        slice: ContentSlice.fromJSON({
+          content: [
             {
-              type: 'mention',
-              character: 'R2-D2',
-              children: [{ text: '' }],
+              type: 'paragraph',
+              children: [
+                {
+                  type: 'mention',
+                  character: 'R2-D2',
+                  children: [{ text: '' }],
+                },
+              ],
             },
           ],
-        },
-      ]);
+          openEnd: 1,
+          openStart: 1,
+        }),
+        version: 1,
+      });
       expect(clipboard.getData('text/html')).toContain('data-plite-fragment=');
       expect(clipboard.getData('text/plain')).not.toContain('\uFEFF');
       expect(clipboard.getData('text/plain')).not.toContain('alpha');
       expect(clipboard.getData('text/plain')).not.toContain('omega');
-
-      const operationsBefore = editorGetOperations(target).length;
 
       target.update(() => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
@@ -1731,10 +2147,11 @@ describe('plite-dom clipboard boundary', () => {
         },
       ]);
       expect(editorGetSnapshot(target).selection).toEqual({
+        kind: 'text',
         anchor: { path: [0, 2], offset: 0 },
         focus: { path: [0, 2], offset: 0 },
       });
-      expect(editorGetOperations(target).length - operationsBefore).toBe(1);
+      expect(editorGetChangedRoots(target)).toEqual([null]);
 
       target.update(() => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
@@ -1761,10 +2178,11 @@ describe('plite-dom clipboard boundary', () => {
         },
       ]);
       expect(editorGetSnapshot(target).selection).toEqual({
+        kind: 'text',
         anchor: { path: [0, 4], offset: 0 },
         focus: { path: [0, 4], offset: 0 },
       });
-      expect(editorGetOperations(target).length - operationsBefore).toBe(2);
+      expect(editorGetChangedRoots(target)).toEqual([null]);
 
       source.update((tx) => {
         tx.text.delete();
@@ -1777,6 +2195,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ]);
       expect(editorGetSnapshot(source).selection).toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
@@ -1802,16 +2221,12 @@ describe('plite-dom clipboard boundary', () => {
           },
         ],
         {
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         },
         undefined,
-        (editor) => {
-          editor.extend({
-            elements: [{ type: 'image', void: 'block' }],
-            name: 'block-void-copy',
-          });
-        }
+        [clipboardRichSchema]
       );
       const clipboard = new FakeDataTransfer();
 
@@ -1823,13 +2238,16 @@ describe('plite-dom clipboard boundary', () => {
       const html = clipboard.getData('text/html');
 
       expect(encoded).not.toBe('');
-      expect(decodeFragmentPayload(document, encoded)).toEqual([
-        {
-          type: 'image',
-          url: 'https://example.com/image.png',
-          children: [{ text: '' }],
-        },
-      ]);
+      expect(decodeFragmentPayload(document, encoded)).toEqual({
+        slice: ContentSlice.closed([
+          {
+            type: 'image',
+            url: 'https://example.com/image.png',
+            children: [{ text: '' }],
+          },
+        ]),
+        version: 1,
+      });
       expect(html).toContain('data-plite-fragment=');
       expect(html).toContain('<img');
       expect(html).toContain('https://example.com/image.png');
@@ -1856,16 +2274,12 @@ describe('plite-dom clipboard boundary', () => {
           },
         ],
         {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         },
         undefined,
-        (editor) => {
-          editor.extend({
-            elements: [{ type: 'image', void: 'block' }],
-            name: 'block-void-end-copy',
-          });
-        }
+        [clipboardRichSchema]
       );
       const clipboard = new FakeDataTransfer();
 
@@ -1888,6 +2302,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
@@ -1930,13 +2345,13 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 2 },
         focus: { path: [1, 0], offset: 2 },
       },
       undefined
     );
     const clipboard = new FakeDataTransfer();
-    const operationsBefore = editorGetOperations(editor).length;
 
     clipboard.setData('text/plain', 'one\ntwo\nthree');
 
@@ -1967,10 +2382,11 @@ describe('plite-dom clipboard boundary', () => {
       },
     ]);
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { path: [3, 0], offset: 'three'.length },
       focus: { path: [3, 0], offset: 'three'.length },
     });
-    expect(editorGetOperations(editor).length - operationsBefore).toBe(1);
+    expect(editorGetChangedRoots(editor)).toEqual([null]);
   });
 
   it('replaces an expanded selection with every line from multiline plain-text fallback', () => {
@@ -1982,6 +2398,7 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 'replace me'.length },
       },
@@ -2016,13 +2433,13 @@ describe('plite-dom clipboard boundary', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
       undefined
     );
     const clipboard = new FakeDataTransfer();
-    const operationsBefore = editorGetOperations(editor).length;
 
     clipboard.setData('text/plain', 'one\ntwo\nthree');
 
@@ -2045,17 +2462,17 @@ describe('plite-dom clipboard boundary', () => {
       },
     ]);
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { path: [2, 0], offset: 'three'.length },
       focus: { path: [2, 0], offset: 'three'.length },
     });
-    expect(
-      editorGetOperations(editor).length - operationsBefore
-    ).toBeLessThanOrEqual(1);
+    expect(editorGetChangedRoots(editor)).toEqual([null]);
   });
 
   it('records multiline plain-text fallback as one undoable history batch', () => {
     const editor = createEditor({ extensions: [history(), dom()] });
     const clipboard = new FakeDataTransfer();
+    let commits = 0;
 
     editorReplace(editor, {
       children: [
@@ -2064,21 +2481,23 @@ describe('plite-dom clipboard boundary', () => {
           children: [{ text: '' }],
         },
       ],
-      marks: null,
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
     });
 
     clipboard.setData('text/plain', 'one\ntwo\nthree');
+    editor.subscribeCommit(() => commits++);
 
     editor.update(() => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
+    expect(commits).toBe(1);
     expect(getHistory(editor).undos).toHaveLength(1);
-    expect(getHistory(editor).undos[0]?.operations).toHaveLength(1);
+    expect(getHistory(editor).undos[0]?.change.empty).toBe(false);
 
     undo(editor);
 
@@ -2089,6 +2508,7 @@ describe('plite-dom clipboard boundary', () => {
       },
     ]);
     expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });

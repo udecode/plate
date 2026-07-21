@@ -3,10 +3,14 @@ import { createBaseEditor } from '@platejs/core';
 import { pipeDecorate } from '@platejs/core/static';
 import type { DecoratedRange, Element } from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 import { createLowlight } from 'lowlight';
 
-import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodeSyntaxPlugin,
+} from './BaseCodeBlockPlugin';
 import * as decorationsModule from './setCodeBlockToDecorations';
 
 describe('BaseCodeBlockPlugin', () => {
@@ -18,6 +22,7 @@ describe('BaseCodeBlockPlugin', () => {
     const editorWithCodeLine = createBaseEditor({
       plugins: [BaseCodeBlockPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       },
@@ -31,12 +36,49 @@ describe('BaseCodeBlockPlugin', () => {
     const editorWithoutCodeLine = createBaseEditor({
       plugins: [BaseCodeBlockPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
       value: [{ children: [{ text: '' }], type: 'p' }],
     });
     const html = new Map([['text/html', '<p>pasted</p>']]);
+
+    expect(BaseCodeBlockPlugin.key).toBe('codeBlock');
+    expect(BaseCodeBlockPlugin.node.type).toBe(NODES.codeBlock);
+    expect(BaseCodeLinePlugin.key).toBe('codeLine');
+    expect(BaseCodeLinePlugin.node.type).toBe(NODES.codeLine);
+    expect(BaseCodeSyntaxPlugin.key).toBe('codeSyntax');
+    expect(BaseCodeSyntaxPlugin.node.type).toBe(NODES.codeSyntax);
+    expect(
+      editorWithCodeLine.read.schema.createAndFill(NODES.codeBlock)
+    ).toEqual({
+      children: [{ children: [{ text: '' }], type: NODES.codeLine }],
+      type: NODES.codeBlock,
+    });
+    expect(
+      editorWithCodeLine.read.schema.getElementSlicePolicy({
+        children: [{ children: [{ text: '' }], type: NODES.codeLine }],
+        type: NODES.codeBlock,
+      })
+    ).toEqual({ preserveContext: true, replaceWhenCovered: false });
+    expect(
+      editorWithCodeLine.read.schema.property({
+        key: NODES.codeSyntax,
+        placement: 'text',
+      })
+    ).toMatchObject({ value: { kind: 'boolean' } });
+    expect(
+      editorWithCodeLine.read.schema.element(NODES.codeBlock)?.groups
+    ).toContain('block');
+    expect(
+      editorWithCodeLine.read.schema.element(NODES.codeLine)?.groups
+    ).not.toContain('block');
+    expect(() =>
+      editorWithCodeLine.read.schema.validateDocument({
+        children: [{ children: [{ text: '' }], type: NODES.codeLine }],
+      })
+    ).toThrow(/root.*cannot contain|cannot contain.*root/i);
 
     expect(
       editorWithCodeLine.api.clipboard.insertData(createDataTransfer(html))
@@ -45,7 +87,7 @@ describe('BaseCodeBlockPlugin', () => {
       editorWithoutCodeLine.api.clipboard.insertData(createDataTransfer(html))
     ).toBe(true);
 
-    expect(editorWithCodeLine.update.code_block.toggle).toEqual(
+    expect(editorWithCodeLine.update.codeBlock.toggle).toEqual(
       expect.any(Function)
     );
 

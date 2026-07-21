@@ -16,11 +16,9 @@ compatibility, alias, beta, migration, or changelog-style API language?
 
 ## Verdict
 
-No patch.
-
-The only narrowed source hit is the internal release-proof contract name
-`compat-alias-hard-cut-contract`. User-facing docs and package READMEs have no
-matches for the stale API/docs language terms in this packet.
+User-facing docs and package READMEs have no matches for the stale API/docs
+language terms in this packet. Release discipline names only current test
+owners; it does not retain placeholder compatibility guards.
 
 ## Proof
 
@@ -30,4 +28,4 @@ Focused scan:
 rg -n -i "deprecated|backward compat|compat alias|legacy|migration|previously|has been removed|now supports|beta|old API|alias" .tmp/plite/README.md .tmp/plite/docs .tmp/plite/packages/*/README.md .tmp/plite/packages/*/src --glob '!**/dist/**' --glob '!**/node_modules/**'
 ```
 
-Result: one internal source contract-name hit, no user-facing docs hits.
+Result: no user-facing docs hits.

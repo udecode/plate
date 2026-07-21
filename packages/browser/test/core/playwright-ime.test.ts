@@ -253,6 +253,7 @@ describe('playwright IME helpers', () => {
 
     active.__pliteBrowserHandle = {
       getSelection: () => ({
+        kind: 'text',
         anchor: { offset: 'This is '.length, path: [0, 0] },
         focus: { offset: 'This is '.length, path: [0, 0] },
       }),
@@ -313,6 +314,7 @@ describe('playwright IME helpers', () => {
 
       active.__pliteBrowserHandle = {
         getSelection: () => ({
+          kind: 'text',
           anchor: { offset: 'This is '.length, path: [0, 0] },
           focus: { offset: 'This is '.length, path: [0, 0] },
         }),
@@ -436,6 +438,7 @@ describe('playwright IME helpers', () => {
 
       active.__pliteBrowserHandle = {
         getSelection: () => ({
+          kind: 'text',
           anchor: { offset: 'This is '.length, path: [0, 0] },
           focus: { offset: 'This is '.length, path: [0, 0] },
         }),
@@ -491,6 +494,7 @@ describe('playwright IME helpers', () => {
 
       active.__pliteBrowserHandle = {
         getSelection: () => ({
+          kind: 'text',
           anchor: { offset: 'This is '.length, path: [0, 0] },
           focus: { offset: 'This is '.length, path: [0, 0] },
         }),

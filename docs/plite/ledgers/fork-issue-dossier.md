@@ -371,13 +371,13 @@ Evidence:
   `docs/plite/ledgers/issue-coverage-matrix.md`.
 
 Decision:
-Keep this as `improves-claimed`, not `fixes-claimed`. Plite has
-transaction/applyOperations benchmark coverage for mixed structural snapshots,
+Keep this as `improves-claimed`, not `fixes-claimed`. Plite has immutable
+transaction and canonical-change benchmark coverage for mixed structural snapshots,
 but the current ledger does not define an accepted performance threshold that
 would prove the full upstream benchmark claim.
 
 PR-description text:
-Improves #6038: Plite adds transaction/applyOperations benchmark coverage for
+Improves #6038: Plite adds immutable transaction and canonical-change benchmark coverage for
 batch-style repeated tree updates, but this PR does not auto-close the issue
 because no accepted performance threshold proves the full upstream benchmark
 claim.
@@ -3953,16 +3953,16 @@ for the high-pressure empty-editor paste case. Do not use `Fixes #5945` until a
 
 Slice 6 benchmark:
 The bounded baseline showed the old 2,000-line plain-text insert averaging
-`3545.36ms` with `5998` operations, while split/encode/decode/copy were cheap.
+`3545.36ms` with thousands of incremental writes, while
+split/encode/decode/copy were cheap.
 The current issue-size command `bun run bench:plite:5945:issue` covers the
 10,000-line plaintext workload and records one operation through
 `replace_fragment`; the latest run reported `34.72ms` for 10,000 inserted
 blocks. Focused package proof also covers trusted Plite fragment insertion into
 empty, compatible, marked, inline-child, and full-document text-block targets
-plus whole top-level structural block replacement as one logical operation with
-undoable history. Collaboration proof replays the resulting `replace_fragment`
-operation through `tx.operations.replay(...)`; CRDT/Yjs-style lowering remains
-an adapter-boundary concern.
+plus whole top-level structural block replacement as one canonical change with
+undoable history. Collaboration proof imports the resulting change through
+`tx.changes.apply(...)`; Yjs lowering remains an adapter-boundary concern.
 
 PR-description text:
 Improves #5945: 10,000-line plaintext paste uses one logical
@@ -5776,30 +5776,28 @@ Evidence:
   `packages/plite/src/editor/is-editor.ts` now checks internal
   editor state rather than operation-list validity.
 - implementation:
-  `packages/plite/src/core/public-state.ts` rejects unknown replay
-  operation types before they enter the operation log.
+  `packages/plite/src/core/public-state.ts` validates imported canonical
+  changes against the compiled schema before publication.
 - core proof:
   `packages/plite/test/interfaces-contract.ts` proves
   `Editor.isEditor` and core path/string reads keep working when user code
   attaches a custom `operations` property, and
-  `packages/plite/test/operations-contract.ts` proves unknown
-  operation replay fails closed.
+  `packages/plite/test/slice-fit-contract.test.ts` proves unknown imported
+  element types fail closed.
 - DOM proof:
   `packages/plite-dom/test/bridge.ts` proves `DOMEditor.findPath`
-  still resolves a Plite node when user code attaches a custom `operations`
+  still resolves a Plite node when user code attaches unrelated custom
   property to the editor.
 
 Decision:
 Claim `Fixes #5977`. v2 editor detection is internal-state based, so user
-operation-list shape cannot make a real editor stop being an editor. Replay now
-rejects unknown operation records before they can pollute history, refs,
-collaboration, or DOM repair. The fix deliberately does not accept arbitrary
-custom operations; app metadata belongs in update tags/commit metadata.
+metadata shape cannot make a real editor stop being an editor. Canonical change
+imports validate against the compiled schema before they can affect history,
+refs, collaboration, or DOM repair.
 
 PR-description text:
-Fixes #5977: Custom operation-like records no longer break editor detection or
-DOM path lookup, and unknown operation replay fails before the record enters the
-operation log.
+Fixes #5977: Unrelated user metadata no longer affects editor detection or DOM
+path lookup, and invalid canonical imports fail schema validation.
 
 ## #5558 I think we will need Operation.isInsertNodeOperation, Operation.isMergeNodeOperation,...etc
 
@@ -6859,11 +6857,9 @@ Implemented finding:
   imports selection with `set_selection(start -> middle)` and then applies
   `insert_text` stored the stale commit-wide `selectionBefore`; undo restored
   `[0,0]@0` instead of the edit point `[0,0]@3`.
-- `plite-history` now builds each batch from the first saveable operation,
-  applies leading selection-only operations to `batch.selectionBefore`, and
-  trims those leading precondition operations from `batch.operations`.
-- Selection operations after the first saveable operation remain in the batch;
-  redo keeps explicit post-edit selection.
+- `plite-history` captures the rooted selection checkpoint before the first
+  document change and stores it with the inverse canonical change.
+- Redo keeps the rooted post-edit selection stored with the batch.
 - The historical scroll-into-view browser row covered the user-visible
   follow-up: type at the final block, manually scroll away, type again, undo,
   wait for the delayed native selection update, scroll away again, and type a

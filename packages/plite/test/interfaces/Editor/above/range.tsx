@@ -17,6 +17,7 @@ export const input = (
   </editor>
 );
 const range = {
+  kind: 'text',
   anchor: { offset: 0, path: [0, 0, 0, 0] },
   focus: { offset: 0, path: [0, 1, 0] },
 };

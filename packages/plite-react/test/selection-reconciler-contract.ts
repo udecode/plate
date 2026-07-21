@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor } from '@platejs/plite';
+import { createEditor, defineEditorExtension } from '@platejs/plite';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import { syncSelectionForBeforeInput } from '../src/editable/selection-reconciler';
 import {
   ReactEditor,
@@ -19,8 +23,8 @@ const createTextEditor = () => {
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
     ],
-    marks: null,
     selection: {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     },
@@ -33,32 +37,36 @@ describe('selection reconciler', () => {
   it('does not scan the whole document for a valid model-owned text insertion', () => {
     const editor = createTextEditor();
     const selection = editorGetSelection(editor);
-    const originalString = editorString;
 
-    try {
-      editorString = () => {
-        throw new Error('unexpected root string scan');
-      };
+    editor.extend(
+      defineEditorExtension({
+        name: 'reject-root-string-scan',
+        queries: {
+          text: {
+            string() {
+              throw new Error('unexpected root string scan');
+            },
+          },
+        },
+      })
+    );
 
-      const result = syncSelectionForBeforeInput({
-        allowDOMSelectionImport: false,
-        data: 'x',
-        editor: editor as ReactRuntimeEditor,
-        editorElement: {} as HTMLElement,
-        event: { getTargetRanges: () => [] } as unknown as InputEvent,
-        inputType: 'insertText',
-        isCompositionChange: false,
-        native: false,
-        preferModelSelectionForInput: true,
-        root: createRootWithoutSelection(),
-        selection,
-      });
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: false,
+      data: 'x',
+      editor: editor as ReactRuntimeEditor,
+      editorElement: {} as HTMLElement,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: false,
+      preferModelSelectionForInput: true,
+      root: createRootWithoutSelection(),
+      selection,
+    });
 
-      assert.deepEqual(result.selection, selection);
-      assert.equal(result.native, false);
-    } finally {
-      editorString = originalString;
-    }
+    assert.deepEqual(result.selection, selection);
+    assert.equal(result.native, false);
   });
 
   it('keeps native text insertion when the model selection is preferred but not forced', () => {
@@ -111,6 +119,7 @@ describe('selection reconciler', () => {
     const selection = editorGetSelection(editor);
     const targetRange = {} as StaticRange;
     const targetPliteRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     };
@@ -150,6 +159,7 @@ describe('selection reconciler', () => {
     const selection = editorGetSelection(editor);
     const targetRange = {} as StaticRange;
     const targetPliteRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     };
@@ -189,6 +199,7 @@ describe('selection reconciler', () => {
     const selection = editorGetSelection(editor);
     const targetRange = {} as StaticRange;
     const targetPliteRange = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 3 },
     };

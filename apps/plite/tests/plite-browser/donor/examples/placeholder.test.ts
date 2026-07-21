@@ -8,7 +8,10 @@ const getBrowserUndoHotkey = async (root: Locator) =>
   root
     .page()
     .evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta+Z' : 'Control+Z'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta+Z'
+        : 'Control+Z'
     );
 
 test.describe('placeholder example', () => {
@@ -38,6 +41,7 @@ test.describe('placeholder example', () => {
     await editor.assert.placeholderVisible(true);
     await expect.poll(() => editor.get.modelText()).toBe('');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -140,6 +144,7 @@ test.describe('placeholder example', () => {
     });
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -153,6 +158,7 @@ test.describe('placeholder example', () => {
     await editor.assert.text('abc');
     await expect.poll(() => editor.get.modelText()).toBe('abc');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'abc'.length },
       focus: { path: [0, 0], offset: 'abc'.length },
     });
@@ -183,6 +189,7 @@ test.describe('placeholder example', () => {
     });
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -201,6 +208,7 @@ test.describe('placeholder example', () => {
     await expect.poll(() => editor.get.modelText()).toBe('dictated text');
     await editor.assert.placeholderVisible(false);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'dictated text'.length },
       focus: { path: [0, 0], offset: 'dictated text'.length },
     });
@@ -238,6 +246,7 @@ test.describe('placeholder example', () => {
     });
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -282,6 +291,7 @@ test.describe('placeholder example', () => {
 
     if (needsSemanticTransport) {
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -326,6 +336,7 @@ test.describe('placeholder example', () => {
     await editor.assert.blockTexts(['ab', '']);
     await expect.poll(() => editor.get.modelText()).toBe('ab');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });

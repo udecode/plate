@@ -102,6 +102,7 @@ test('Editable domStrategy virtualized mode uses page layout items as the retain
       children: [{ text: `block-${index + 1}` }],
     })),
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [4, 0] },
       focus: { offset: 0, path: [4, 0] },
     },
@@ -158,6 +159,7 @@ test('Editable domStrategy virtualized mode retains expanded selection endpoints
       children: [{ text: `endpoint-block-${index + 1}` }],
     })),
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [6, 0] },
     },

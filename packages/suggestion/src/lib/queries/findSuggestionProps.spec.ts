@@ -1,4 +1,5 @@
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property, schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
@@ -8,10 +9,15 @@ describe('findSuggestionProps', () => {
   const MentionPlugin = createBasePlugin({
     key: KEYS.mention,
     node: {
-      isElement: true,
-      isInline: true,
-      isMarkableVoid: true,
-      isVoid: true,
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+        properties: {
+          key: property.string(),
+          value: property.string(),
+        },
+        void: 'markable-inline',
+      },
     },
   });
 
@@ -25,6 +31,7 @@ describe('findSuggestionProps', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -78,6 +85,7 @@ describe('findSuggestionProps', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -119,6 +127,7 @@ describe('findSuggestionProps', () => {
         MentionPlugin,
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },

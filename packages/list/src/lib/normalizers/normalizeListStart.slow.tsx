@@ -5,7 +5,13 @@ import {
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
-import type { Value } from '@platejs/plite';
+import {
+  DocumentChange,
+  property,
+  schema,
+  target,
+  type Value,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseIndentPlugin } from '@platejs/indent';
@@ -22,6 +28,12 @@ const CUSTOM_H1 = 'heading-one';
 
 const H1Plugin = createBasePlugin({
   key: KEYS.h1,
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+  },
 });
 
 const CustomH1Plugin = H1Plugin.extend({
@@ -30,6 +42,36 @@ const CustomH1Plugin = H1Plugin.extend({
 
 const BlockquotePlugin = createBasePlugin({
   key: KEYS.blockquote,
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+  },
+});
+
+const PagePlugin = createBasePlugin({
+  key: 'page',
+  node: {
+    element: {
+      content: schema.content.group('block', {
+        default: { type: KEYS.p },
+        min: 1,
+      }),
+      groups: ['block'],
+    },
+  },
+});
+
+const VisitedPlugin = createBasePlugin({
+  key: 'visited',
+  schema: {
+    properties: [
+      schema.elementProperty('visited', property.boolean(), {
+        target: target.group('block'),
+      }),
+    ],
+  },
 });
 
 const createEditor = ({
@@ -50,16 +92,17 @@ const createEditor = ({
       BaseParagraphPlugin,
       headingPlugin,
       BlockquotePlugin,
+      PagePlugin,
       BaseIndentPlugin.configure({
-        inject: {
-          targetPlugins,
+        options: {
+          targetPluginKeys: targetPlugins,
         },
       }),
       pages
         ? listPluginPage
         : BaseListPlugin.configure({
-            inject: {
-              targetPlugins,
+            options: {
+              targetPluginKeys: targetPlugins,
             },
           }),
     ],
@@ -82,17 +125,15 @@ const createItem = (
     listStart?: number;
     listStyleType?: string;
   } = {}
-) => (
-  <hp
-    indent={indent}
-    listRestart={listRestart}
-    listRestartPolite={listRestartPolite}
-    listStart={listStart}
-    listStyleType={listStyleType}
-  >
-    {text}
-  </hp>
-);
+) => ({
+  children: [{ text }],
+  indent,
+  type: KEYS.p,
+  ...(listRestart === undefined ? {} : { listRestart }),
+  ...(listRestartPolite === undefined ? {} : { listRestartPolite }),
+  ...(listStart === undefined ? {} : { listStart }),
+  ...(listStyleType === undefined ? {} : { listStyleType }),
+});
 
 const createHeadingItem = (
   text: string,
@@ -107,16 +148,13 @@ const createHeadingItem = (
   const listStyleType =
     'listStyleType' in options ? options.listStyleType : 'decimal';
 
-  return (
-    <element
-      indent={indent}
-      listStart={listStart}
-      listStyleType={listStyleType}
-      type={type}
-    >
-      {text}
-    </element>
-  );
+  return {
+    children: [{ text }],
+    indent,
+    ...(listStart === undefined ? {} : { listStart }),
+    ...(listStyleType === undefined ? {} : { listStyleType }),
+    type,
+  };
 };
 
 const createBlockquoteItem = (
@@ -130,15 +168,13 @@ const createBlockquoteItem = (
     listStart?: number;
     listStyleType?: string;
   } = {}
-) => (
-  <hblockquote
-    indent={indent}
-    listStart={listStart}
-    listStyleType={listStyleType}
-  >
-    {text}
-  </hblockquote>
-);
+) => ({
+  children: [{ text }],
+  indent,
+  ...(listStart === undefined ? {} : { listStart }),
+  ...(listStyleType === undefined ? {} : { listStyleType }),
+  type: KEYS.blockquote,
+});
 
 const expectAlreadyNormalized = (editor: BaseEditor) => {
   const before = editor.read.children();
@@ -1042,16 +1078,21 @@ describe('normalizeListStart', () => {
           at: [2],
         });
 
-        const operations = JSON.parse(
-          JSON.stringify(editor.read.lastCommit()?.operations ?? [])
+        const committedChange = editor.read.lastCommit()?.changes;
+
+        expect(committedChange).toBeDefined();
+
+        const change = DocumentChange.fromJSON(
+          JSON.parse(JSON.stringify(committedChange!.toJSON()))
         );
+        expect(change.primaryClassification).toBeNull();
 
         expect(editor.read.children()).toEqual(output);
         expect(editor.read.text.string([1])).toBe('23');
 
         const replayEditor = createEditor({ value: input });
 
-        replayEditor.update((tx) => tx.operations.replay(operations));
+        replayEditor.update((tx) => tx.changes.apply(change));
         expect(replayEditor.read.children()).toEqual(output);
 
         editor.update.history.undo();
@@ -1146,23 +1187,65 @@ describe('normalizeListStart', () => {
 
     it.each([
       1000, 10_000,
-    ])('renumbers a %i-item suffix with linear operations', (size) => {
+    ])('renumbers a %i-item suffix with a compact canonical change', (size) => {
+      const startedAt = performance.now();
+      const coreDurations = new Map<
+        string,
+        { count: number; duration: number }
+      >();
+      (globalThis as any).__PLITE_REACT_RENDER_PROFILER__ = {
+        record: ({ duration, id }: { duration: number; id: string }) => {
+          const current = coreDurations.get(id) ?? { count: 0, duration: 0 };
+
+          current.count += 1;
+          current.duration += duration;
+          coreDurations.set(id, current);
+        },
+      };
       const value = Array.from({ length: size }, (_, index) =>
         createItem(String(index + 1), {
           listStart: index === 0 ? undefined : index + 1,
         })
       );
+      console.error(
+        '[DEBUG-listperf] value',
+        size,
+        performance.now() - startedAt
+      );
       const editor = createBaseEditor({
-        plugins: [BaseParagraphPlugin, BaseListPlugin],
+        plugins: [BaseParagraphPlugin, BaseListPlugin, VisitedPlugin],
         shouldNormalizeEditor: false,
         value,
       });
+      console.error(
+        '[DEBUG-listperf] editor',
+        size,
+        performance.now() - startedAt
+      );
+      console.error(
+        '[DEBUG-listperf] core',
+        [...coreDurations]
+          .sort((left, right) => right[1].duration - left[1].duration)
+          .slice(0, 20)
+      );
+      delete (globalThis as any).__PLITE_REACT_RENDER_PROFILER__;
 
       editor.update.nodes.set({ visited: true }, { at: [0] });
-
-      expect(editor.read.lastCommit()?.operations.length).toBeLessThanOrEqual(
-        2
+      console.error(
+        '[DEBUG-listperf] update',
+        size,
+        performance.now() - startedAt
       );
+
+      const mainChange = editor.read.lastCommit()?.changes.primary;
+      console.error(
+        '[DEBUG-listperf] commit',
+        size,
+        performance.now() - startedAt
+      );
+
+      expect(mainChange).toBeDefined();
+      expect(mainChange!.data.length).toBeLessThanOrEqual(2);
       expect(editor.read.children()[size - 1]).toMatchObject({
         listStart: size,
       });

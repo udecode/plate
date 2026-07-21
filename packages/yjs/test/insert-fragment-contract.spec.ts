@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant, Operation } from '@platejs/plite';
+import { DocumentChange, type Descendant } from '@platejs/plite';
 
 import {
+  assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
   createSeededYjsPeers,
@@ -11,10 +12,8 @@ import {
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   getYjsNodeAt,
-  getYjsTrace,
   type Peer,
   paragraph,
-  recordOperationTypes,
   redoYjsPeerAndSync,
   syncConnectedPeers,
   undoYjsPeerAndSync,
@@ -45,12 +44,26 @@ const createPeers = (ids: readonly ClientId[]): Peer[] =>
     numericClientIds: clientIds,
   });
 
-const insertFragment = (peer: Peer): void => {
+const replaceSlice = (peer: Peer): void => {
   peer.editor.update.selection.set({
+    kind: 'text',
     anchor: { path: [0, 0], offset: 'alpha'.length },
     focus: { path: [0, 0], offset: 'alpha'.length },
   });
-  peer.editor.update.fragment.insert([{ text: 'Lin fragment' }]);
+  peer.editor.update((tx) => {
+    tx.fragment.replace([{ text: 'Lin fragment' }]);
+  });
+};
+
+const replaceAlphaBlock = (peer: Peer): void => {
+  peer.editor.update((tx) => {
+    tx.selection.set({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 'alpha'.length },
+    });
+    tx.fragment.replace([paragraph('local')]);
+  });
 };
 
 const appendRemoteText = (peer: Peer): void => {
@@ -59,55 +72,39 @@ const appendRemoteText = (peer: Peer): void => {
   });
 };
 
-const collectInsertFragmentOperations = (): Operation['type'][] => {
-  const peer = createPeer('b');
-  const operations = recordOperationTypes(peer, {
-    name: 'insert-fragment-operation-recorder',
-    shouldRecord: ({ commit }) =>
-      commit.command?.type === 'insert_fragment' ||
-      commit.operations.some((operation) =>
-        ['insert_node', 'merge_node'].includes(operation.type)
-      ),
-  });
-  insertFragment(peer);
-
-  return operations;
-};
-
 describe('@platejs/yjs insert_fragment collaboration contract', () => {
-  it('characterizes public insert_fragment as insert_node then text merge fallback', () => {
-    assert.deepEqual(collectInsertFragmentOperations(), [
-      'insert_node',
-      'set_selection',
-      'merge_node',
-    ]);
-  });
-
   it('applies local offline public insert_fragment without replacing the original Yjs text node', () => {
     const peer = createPeer('b');
     const text = getYjsNodeAt(peer, [0, 0]);
+    const before = peer.editor.read.value();
 
     disconnectAndClearYjsTrace(peer);
-    insertFragment(peer);
+    replaceSlice(peer);
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alphaLin fragment']);
     assert.equal(getYjsNodeAt(peer, [0, 0]), text);
-    assert.deepEqual(getYjsTrace(peer), [
-      { mode: 'operation', operationType: 'insert_node' },
-      {
-        fallback: 'text-merge-preserve-yjs-boundary',
-        mode: 'traceable-fallback',
-        operationType: 'merge_node',
-      },
-    ]);
+    assertCanonicalYjsTrace(peer);
+
+    const change = peer.editor.read.lastCommit()?.changes;
+    const after = peer.editor.read.value();
+    const direct = DocumentChange.between(before, after);
+
+    assert(change instanceof DocumentChange);
+    assert.deepEqual(change.apply(before), direct.apply(before));
+    assert.deepEqual(change.invert(before).apply(after), before);
+    assert.deepEqual(
+      DocumentChange.fromJSON(change.toJSON()).toJSON(),
+      change.toJSON()
+    );
+    assert.doesNotMatch(JSON.stringify(change.toJSON()), /"open(?:End|Start)"/);
   });
 
   it('preserves concurrent remote text when an offline insert_fragment reconnects', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 
-    disconnectYjsPeer(b);
-    insertFragment(b);
+    disconnectAndClearYjsTrace(b);
+    replaceSlice(b);
     appendRemoteText(a);
     syncConnectedPeers(peers);
 
@@ -124,7 +121,7 @@ describe('@platejs/yjs insert_fragment collaboration contract', () => {
     const [, b] = peers;
 
     disconnectYjsPeer(b);
-    insertFragment(b);
+    replaceSlice(b);
     connectYjsPeerAndSync(b, peers);
 
     assertPeerTexts(peers, ['alphaLin fragment']);
@@ -134,7 +131,7 @@ describe('@platejs/yjs insert_fragment collaboration contract', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [, b] = peers;
 
-    insertFragment(b);
+    replaceSlice(b);
     syncConnectedPeers(peers);
     assertPeerTexts(peers, ['alphaLin fragment']);
 
@@ -143,6 +140,7 @@ describe('@platejs/yjs insert_fragment collaboration contract', () => {
 
     b.editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: text.length },
         focus: { path: [0, 0], offset: text.length },
       });
@@ -153,12 +151,12 @@ describe('@platejs/yjs insert_fragment collaboration contract', () => {
     assertPeerTexts(peers, ['alphaLin fragmen']);
   });
 
-  it('undoes and redoes only the local insert_fragment intent after reconnect', () => {
+  it('undoes and redoes only the local inserted fragment after reconnect', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 
     disconnectYjsPeer(b);
-    insertFragment(b);
+    replaceSlice(b);
     appendRemoteText(a);
     syncConnectedPeers(peers);
 
@@ -170,5 +168,28 @@ describe('@platejs/yjs insert_fragment collaboration contract', () => {
 
     redoYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha AdaLin fragment']);
+  });
+
+  it('converges a structural slice with a concurrent block insert across reconnect and history', () => {
+    const peers = createPeers(['a', 'b', 'c']);
+    const [a, b] = peers;
+
+    disconnectAndClearYjsTrace(b);
+    replaceAlphaBlock(b);
+    a.editor.update.nodes.insert([paragraph('remote')], { at: [1] });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(getPeerTopLevelTexts(a), ['alpha', 'remote']);
+    assert.deepEqual(getPeerTopLevelTexts(b), ['local']);
+    assertCanonicalYjsTrace(b);
+
+    connectYjsPeerAndSync(b, peers);
+    assertPeerTexts(peers, ['local', 'remote']);
+
+    undoYjsPeerAndSync(b, peers);
+    assertPeerTexts(peers, ['alpha', 'remote']);
+
+    redoYjsPeerAndSync(b, peers);
+    assertPeerTexts(peers, ['local', 'remote']);
   });
 });

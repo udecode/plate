@@ -8,11 +8,39 @@ const createParagraph = (text: string) => ({
 });
 
 describe('ParserPlugin', () => {
+  it('fits HTML leaf properties through the host codec pipeline', () => {
+    const BoldPlugin = createBasePlugin({
+      key: 'bold',
+      node: { mark: true },
+      parsers: {
+        html: {
+          deserializer: { rules: [{ validNodeName: 'STRONG' }] },
+        },
+      },
+    });
+    const editor = createBaseEditor({
+      plugins: [BoldPlugin],
+      value: [createParagraph('')],
+    });
+
+    const inserted = editor.api.clipboard.insertData({
+      files: [],
+      getData: mock((mimeType: string) =>
+        mimeType === 'text/html' ? '<p><strong>bold</strong></p>' : ''
+      ),
+    } as any);
+
+    expect(inserted).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ bold: true, text: 'bold' }], type: 'p' },
+    ]);
+  });
+
   it('pipes matching parser data into fragment insertion', () => {
     const PlainPlugin = createBasePlugin<PluginConfig<'plain'>>({
       key: 'plain',
       parser: {
-        format: 'plain',
+        format: 'text/plain',
         query: ({ data }) => data === 'hello',
         transformData: ({ data }) => `${data}-world`,
         deserialize: ({ data }) => [createParagraph(data)],
@@ -45,7 +73,7 @@ describe('ParserPlugin', () => {
     const PlainPlugin = createBasePlugin<PluginConfig<'plain'>>({
       key: 'plain',
       parser: {
-        format: 'plain',
+        format: 'text/plain',
         deserialize: () => [],
       },
     });
@@ -71,7 +99,7 @@ describe('ParserPlugin', () => {
     const PlainPlugin = createBasePlugin<PluginConfig<'plain'>>({
       key: 'plain',
       parser: {
-        format: 'plain',
+        format: 'text/plain',
         query: ({ data }) => data === 'hello',
         deserialize: ({ data }) => [createParagraph(data)],
         transformData: ({ data }) => `${data}-world`,
@@ -123,7 +151,7 @@ describe('ParserPlugin', () => {
     const PlainPlugin = createBasePlugin<PluginConfig<'plain'>>({
       key: 'plain',
       parser: {
-        format: 'plain',
+        format: 'text/plain',
         deserialize: () => [createParagraph('parsed')],
       },
     });

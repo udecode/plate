@@ -54,6 +54,9 @@
         "../../packages/plite-layout/src/react.tsx"
       ],
       "@platejs/plite-react": ["../../packages/plite-react/src/index.ts"],
+      "@platejs/plite-react/internal": [
+        "../../packages/plite-react/src/internal/index.ts"
+      ],
       "@platejs/suggestion/react": ["../../packages/suggestion/src/react"],
       "@platejs/tabbable/react": ["../../packages/tabbable/src/react"],
       "@platejs/table/react": ["../../packages/table/src/react"],

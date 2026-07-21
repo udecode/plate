@@ -88,6 +88,7 @@ describe('NavigationFeedbackPlugin', () => {
   it('navigate selects, focuses, scrolls, and flashes the target', () => {
     const editor = createPlateEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -124,6 +125,7 @@ describe('NavigationFeedbackPlugin', () => {
     });
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
@@ -140,6 +142,34 @@ describe('NavigationFeedbackPlugin', () => {
       type: 'node',
       variant: 'navigated',
     });
+  });
+
+  it('navigates to a node inserted earlier in the same transaction', () => {
+    const editor = createPlateEditor({
+      value: [{ children: [{ text: 'one' }], type: 'p' }],
+    });
+    let navigated = false;
+
+    editor.update((tx) => {
+      tx.nodes.insert({ children: [{ text: 'two' }], type: 'p' }, { at: [1] });
+      navigated = tx.navigation.navigate({
+        focus: false,
+        scroll: false,
+        select: { offset: 0, path: [1, 0] },
+        target: {
+          path: [1],
+          type: 'node',
+        },
+      });
+    });
+
+    expect(navigated).toBe(true);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 0, path: [1, 0] },
+      kind: 'text',
+    });
+    expect(editor.api.navigation.isTarget([1])).toBe(true);
   });
 
   it('keeps the active target path synced when the target node moves', () => {
@@ -181,8 +211,10 @@ describe('NavigationFeedbackPlugin', () => {
       variant: 'navigated',
     });
     expect(
-      editor.plugin(NavigationFeedbackPlugin).getOption('activeTarget')?.pathRef
-        .current
+      editor
+        .plugin(NavigationFeedbackPlugin)
+        .getOption('activeTarget')
+        ?.pathAnchor.resolve()
     ).toEqual([1]);
     expect(editor.api.navigation.isTarget([1])).toBe(true);
     expect(editor.api.navigation.isTarget([0])).toBe(false);

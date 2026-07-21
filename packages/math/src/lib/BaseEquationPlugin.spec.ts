@@ -8,12 +8,17 @@ describe('BaseEquationPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseEquationPlugin],
     });
-    const plugin = editor.getPlugin(BaseEquationPlugin);
+    const element = { children: [{ text: '' }], type: KEYS.equation };
 
-    expect(plugin.node).toMatchObject({
-      isElement: true,
-      isVoid: true,
-    });
+    expect(editor.read.schema.isBlock(element)).toBe(true);
+    expect(editor.read.schema.isVoid(element)).toBe(true);
+    expect(
+      editor.read.schema.property({
+        key: 'texExpression',
+        placement: 'element',
+        type: KEYS.equation,
+      })?.value.kind
+    ).toBe('string');
     editor.update((tx) => {
       expect(typeof tx.equation.insert).toBe('function');
     });
@@ -23,6 +28,7 @@ describe('BaseEquationPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseEquationPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -39,10 +45,11 @@ describe('BaseEquationPlugin', () => {
       ],
     });
 
-    editor.update((tx) => tx.text.deleteBackward({ unit: 'character' }));
+    editor.update.text.deleteBackward({ unit: 'character' });
 
     expect(editor.read.value().children).toHaveLength(2);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });

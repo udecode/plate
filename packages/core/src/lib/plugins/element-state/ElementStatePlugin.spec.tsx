@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
+import { property, schema, target } from '@platejs/plite';
 
 jsxt;
 
@@ -51,32 +52,38 @@ describe('ElementStatePlugin', () => {
     ).toBe(false);
   });
 
-  it('uses plugin node metadata prop rules', () => {
-    const CustomMetadataPlugin = createBasePlugin({
-      key: 'customMetadata',
-    }).extend({
-      node: {
-        isMetadataProp: ({ key }) => key === 'customId',
+  it('uses compiled property significance for element state', () => {
+    const StatePropertiesPlugin = createBasePlugin({
+      key: 'stateProperties',
+      schema: {
+        properties: [
+          schema.elementProperty(
+            'ephemeral',
+            property.string({ significant: false }),
+            { target: target.type('p') }
+          ),
+          schema.elementProperty('visible', property.string(), {
+            target: target.type('p'),
+          }),
+        ],
       },
     });
-
     const editor = createBaseEditor({
-      plugins: [ElementStatePlugin, CustomMetadataPlugin],
+      plugins: [ElementStatePlugin, StatePropertiesPlugin],
     });
 
     expect(
       editor.api.isElementStateEmpty({
         children: [{ text: '' }],
-        customId: 'a',
+        ephemeral: 'runtime-only',
         type: 'p',
       })
     ).toBe(true);
     expect(
       editor.api.isElementStateEmpty({
         children: [{ text: '' }],
-        customId: 'a',
-        listStyleType: 'disc',
         type: 'p',
+        visible: 'document-state',
       })
     ).toBe(false);
   });

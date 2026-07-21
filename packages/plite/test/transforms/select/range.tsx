@@ -6,6 +6,7 @@ jsx;
 
 export const run = (editor) => {
   editor.selection.set({
+    kind: 'text',
     anchor: {
       path: [0, 0],
       offset: 0,

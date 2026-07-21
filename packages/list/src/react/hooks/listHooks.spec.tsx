@@ -68,10 +68,25 @@ describe('list hooks', () => {
     );
     const setNodes = mock();
     const element = { checked: false, id: 'todo-1' };
+    const update = mock(
+      (
+        run: (tx: {
+          nodes: {
+            path: () => number[];
+            set: typeof setNodes;
+          };
+        }) => void
+      ) =>
+        run({
+          nodes: {
+            path: () => [0],
+            set: setNodes,
+          },
+        })
+    );
 
     useEditorRefMock.mockReturnValue({
-      read: { nodes: { path: () => [0] } },
-      update: { nodes: { set: setNodes } },
+      update,
     });
     useReadOnlyMock.mockReturnValue(false);
 

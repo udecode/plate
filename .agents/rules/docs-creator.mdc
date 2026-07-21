@@ -321,6 +321,9 @@ least one useful inbound link from the owning neighborhood.
 - Include real imports. Show `platejs` vs `platejs/react` vs `@platejs/*` paths explicitly.
 - Use `// ...otherPlugins,` only when the omission is obvious.
 - No placeholder comments (`// your logic here`, `// Your validation logic`).
+- In Plite schema examples, root-capable elements explicitly declare
+  `groups: ['block']`. Non-inline does not imply block membership, and inline
+  elements never claim the block group.
 - `showLineNumbers` + `{n-m}` highlights on snippets longer than ~15 lines.
 - `title="filename.tsx"` when file context matters.
 
@@ -544,14 +547,20 @@ Required shape:
    - use `.withComponent()` when only assigning a component
    - use `.configure()` when options, shortcuts, injection, or extra behavior
      are part of the example
-5. Style plugins without distinct components should emphasize
-   `inject.nodeProps`, defaults, and `inject.targetPlugins`.
+5. Style plugins without distinct components should document their schema
+   placement truth. Cross-cut block styles configure
+   `options.targetPluginKeys`; render/parser injection is derived and must not
+   be taught as a second target configuration. Text styles declare marks and
+   do not invent block target lists. Document `inject.nodeProps` only for real
+   rendering defaults and mappings.
 6. Toolbar sections only when the toolbar affordance exists. Check kit
    dependencies before writing about `*ToolbarButton`, Turn Into, or Insert
    controls.
 7. `## Plugins` for actual plugin objects.
 8. `## API Reference` and `## Transforms` only for real
-   `editor.api.<plugin>.*` and `editor.tf.<plugin>.*` surfaces.
+   `editor.plugin(Plugin).api.*` and `editor.update.<group>.*` surfaces.
+   Never invent or document `editor.tf`, `editor.transforms`, or a competing
+   root mutation namespace.
 
 Voice moves:
 

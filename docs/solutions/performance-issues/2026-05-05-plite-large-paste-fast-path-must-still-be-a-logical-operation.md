@@ -1,6 +1,7 @@
 ---
 title: Plite large paste fast path must still be a logical operation
 date: 2026-05-05
+status: superseded
 last_updated: 2026-05-06
 category: docs/solutions/performance-issues
 module: Plite clipboard paste runtime
@@ -27,6 +28,11 @@ tags:
 ---
 
 # Plite large paste fast path must still be a logical operation
+
+> **Superseded architecture record.** This article measures the removed
+> operation-backed paste path. Current paste fitting publishes one canonical
+> `DocumentChange`, and collaboration imports it through
+> `tx.changes.apply(...)`.
 
 ## Problem
 

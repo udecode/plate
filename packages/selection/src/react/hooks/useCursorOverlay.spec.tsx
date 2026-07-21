@@ -46,6 +46,7 @@ describe('useCursorOverlay', () => {
 
   it('normalizes tiny selection rects and forwards them to cursor state composition', async () => {
     const range = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     };

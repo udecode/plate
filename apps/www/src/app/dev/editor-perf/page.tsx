@@ -340,10 +340,9 @@ type NodeIdFragmentCase = {
 type NodeIdFragmentMetrics = {
   duplicateScanCalls: BenchmarkResult | null;
   duplicateScanTime: BenchmarkResult | null;
+  fragmentReplace: BenchmarkResult | null;
   fragmentBlocks: number | null;
   idsAssigned: BenchmarkResult | null;
-  insertFragment: BenchmarkResult | null;
-  insertNodeOps: BenchmarkResult | null;
 };
 
 type FanoutCaseId =
@@ -627,7 +626,7 @@ const DISSECTION_CASES: DissectionCase[] = [
 const NODE_ID_FRAGMENT_CASES: NodeIdFragmentCase[] = [
   {
     description:
-      'Plate core without nodeId, inserting a raw fragment with no ids. This is the baseline insertFragment cost.',
+      'Plate core without nodeId, inserting a raw fragment with no ids. This is the baseline fragment.replace cost.',
     fragmentKind: 'raw-import',
     id: 'plate-core-nodeid-off-raw-import',
     label: 'NodeId off, raw import',
@@ -2921,7 +2920,7 @@ function BenchmarkEditableMount({
       }
 
       if (elementBenchmarkMode === 'pipe-plugin-precomputed-path') {
-        if (elementPlugin?.node.isElement) {
+        if (elementPlugin?.node.element) {
           return (
             <PlateElement
               {...({
@@ -2952,7 +2951,7 @@ function BenchmarkEditableMount({
       }
 
       if (elementBenchmarkMode === 'pipe-plugin-precomputed-no-below-root') {
-        if (elementPlugin?.node.isElement) {
+        if (elementPlugin?.node.element) {
           return (
             <PlateElement
               {...({
@@ -2971,7 +2970,7 @@ function BenchmarkEditableMount({
       }
 
       if (elementBenchmarkMode === 'pipe-bare-plain-fast-path') {
-        if (elementPlugin?.node.isElement) {
+        if (elementPlugin?.node.element) {
           const typeClass = elementPlugin.node.type
             ? `plite-${elementPlugin.node.type}`
             : undefined;
@@ -3730,7 +3729,7 @@ function BenchmarkEditableMount({
   const precomputedElementRender = React.useMemo(() => {
     if (
       !precomputedElementPluginPath ||
-      !paragraphPlugin?.node.isElement ||
+      !paragraphPlugin?.node.element ||
       !paragraphPlugin.node.type
     ) {
       return;
@@ -4679,10 +4678,10 @@ function NodeIdFragmentCard({
           <span>{metrics.fragmentBlocks ?? 'n/a'}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">insertFragment</span>
+          <span className="text-muted-foreground">fragment.replace</span>
           <span>
-            {metrics.insertFragment
-              ? `${metrics.insertFragment.mean.toFixed(2)} ms`
+            {metrics.fragmentReplace
+              ? `${metrics.fragmentReplace.mean.toFixed(2)} ms`
               : 'No data'}
           </span>
         </div>
@@ -4707,14 +4706,6 @@ function NodeIdFragmentCard({
           <span>
             {metrics.duplicateScanTime
               ? `${metrics.duplicateScanTime.mean.toFixed(2)} ms`
-              : 'No data'}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">insert_node ops</span>
-          <span>
-            {metrics.insertNodeOps
-              ? metrics.insertNodeOps.mean.toFixed(0)
               : 'No data'}
           </span>
         </div>
@@ -4812,10 +4803,9 @@ export default function EditorPerfPage() {
           {
             duplicateScanCalls: null,
             duplicateScanTime: null,
+            fragmentReplace: null,
             fragmentBlocks: null,
             idsAssigned: null,
-            insertFragment: null,
-            insertNodeOps: null,
           } satisfies NodeIdFragmentMetrics,
         ])
       ) as Record<NodeIdFragmentCaseId, NodeIdFragmentMetrics>
@@ -4965,7 +4955,7 @@ export default function EditorPerfPage() {
         },
         results: nodeIdFragmentResults,
         runs: {
-          insertFragment: 25,
+          fragmentReplace: 25,
         },
       },
       fanout: {
@@ -5567,9 +5557,8 @@ export default function EditorPerfPage() {
       for (const caseItem of NODE_ID_FRAGMENT_CASES) {
         const duplicateScanCallSamples: number[] = [];
         const duplicateScanTimeSamples: number[] = [];
+        const fragmentReplaceSamples: number[] = [];
         const idsAssignedSamples: number[] = [];
-        const insertFragmentSamples: number[] = [];
-        const insertNodeOpSamples: number[] = [];
         let fragmentBlocks: number | null = null;
 
         for (let run = 0; run < WARMUP_RUNS + MEASURED_RUNS; run++) {
@@ -5587,36 +5576,29 @@ export default function EditorPerfPage() {
               mode: caseItem.nodeId,
             }) as any,
             value,
-          }) as any;
-          const insertNodeStats = { count: 0 };
+          });
           const idCountBeforeInsert = idCounter.count;
-          const originalApply = editor.apply.bind(editor);
-
-          editor.apply = ((operation: any) => {
-            if (operation.type === 'insert_node') {
-              insertNodeStats.count += 1;
-            }
-
-            return originalApply(operation);
-          }) as typeof editor.apply;
 
           const end = editor.read.points.end([]);
+
+          if (!end) {
+            throw new Error('Node id fragment benchmark requires a text end.');
+          }
 
           editor.update.selection.set({ anchor: end, focus: end });
 
           const insertStart = performance.now();
-          editor.update.fragment.insert(fragment as any);
+          editor.update((tx) => {
+            tx.fragment.replace(fragment);
+          });
           const insertDuration = performance.now() - insertStart;
-
-          editor.apply = originalApply;
 
           if (!isWarmup) {
             fragmentBlocks = fragment.length;
             duplicateScanCallSamples.push(duplicateScanStats.count);
             duplicateScanTimeSamples.push(duplicateScanStats.time);
+            fragmentReplaceSamples.push(insertDuration);
             idsAssignedSamples.push(idCounter.count - idCountBeforeInsert);
-            insertFragmentSamples.push(insertDuration);
-            insertNodeOpSamples.push(insertNodeStats.count);
           }
 
           if (run % 5 === 0) {
@@ -5629,10 +5611,9 @@ export default function EditorPerfPage() {
           [caseItem.id]: {
             duplicateScanCalls: calculateStats(duplicateScanCallSamples),
             duplicateScanTime: calculateStats(duplicateScanTimeSamples),
+            fragmentReplace: calculateStats(fragmentReplaceSamples),
             fragmentBlocks,
             idsAssigned: calculateStats(idsAssignedSamples),
-            insertFragment: calculateStats(insertFragmentSamples),
-            insertNodeOps: calculateStats(insertNodeOpSamples),
           },
         }));
       }
@@ -6345,10 +6326,10 @@ export default function EditorPerfPage() {
           <div className="rounded-xl border bg-background p-4">
             <h2 className="font-semibold">NodeId paste/import dissection</h2>
             <p className="mt-2 text-muted-foreground text-sm">
-              This lane times real <code>insertFragment</code> work against raw
-              import data and duplicate-id paste data. That is the only honest
-              way to see whether NodeId normalization still has money on the
-              table.
+              This lane times real <code>fragment.replace</code> work against
+              raw import data and duplicate-id paste data. That is the only
+              honest way to see whether NodeId normalization still has money on
+              the table.
             </p>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-2">

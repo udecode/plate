@@ -1,9 +1,76 @@
 import type { NodeComponent, PluginConfig } from './PluginConfig';
+import { property, schema, target } from '@platejs/plite';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { createBaseEditor } from '../editor';
 import { createBasePlugin } from './createBasePlugin';
+
+const assertTypedSchemaContributions = () => {
+  type SchemaConfig = PluginConfig<
+    'validSchema',
+    { targetPluginKeys: string[] }
+  >;
+
+  createBasePlugin<SchemaConfig>({
+    key: 'validSchema',
+    options: { targetPluginKeys: ['cell', 'header'] },
+    schema: ({ options }) => {
+      // @ts-expect-error schema callback options are deeply readonly
+      options.targetPluginKeys.push('paragraph');
+
+      return {
+        properties: [
+          schema.elementProperty('status', property.string(), {
+            target: target.types(options.targetPluginKeys),
+          }),
+        ],
+      };
+    },
+  });
+
+  createBasePlugin({
+    key: 'invalidSchema',
+    // @ts-expect-error schema callbacks cannot access the editor runtime
+    schema: ({ editor }) => ({ editor }),
+  });
+};
+
+void assertTypedSchemaContributions;
+
+const assertTypedNodeSchemas = () => {
+  createBasePlugin({
+    key: 'booleanMark',
+    node: { mark: true },
+  });
+
+  createBasePlugin({
+    key: 'tone',
+    node: {
+      mark: {
+        split: 'drop',
+        target: target.group('textBlock'),
+        value: property.string(),
+      },
+    },
+  });
+
+  createBasePlugin({
+    key: 'image',
+    node: {
+      element: {
+        inline: true,
+        properties: {
+          alt: property.string({ default: '' }),
+          url: property.string(),
+        },
+        void: 'inline',
+      },
+    },
+  });
+};
+
+void assertTypedNodeSchemas;
 
 describe('createBasePlugin', () => {
   it('work with fn', () => {

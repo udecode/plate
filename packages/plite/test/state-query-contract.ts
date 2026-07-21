@@ -18,6 +18,7 @@ describe('state query contract', () => {
   it('reads the current selection when text.string omits its target', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -44,6 +45,7 @@ describe('state query contract', () => {
   it('reports whether the current selection is collapsed', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
@@ -61,6 +63,7 @@ describe('state query contract', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       });
@@ -77,6 +80,7 @@ describe('state query contract', () => {
     editor.update((tx) => {
       tx.nodes.insert(paragraph('two'), { at: [1] });
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 3 },
       });
@@ -103,6 +107,7 @@ describe('state query contract', () => {
   it('exposes explicit selection and point predicates', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -120,6 +125,7 @@ describe('state query contract', () => {
     );
     assert.equal(
       editor.read.selection.intersects({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 5 },
       }),
@@ -127,6 +133,7 @@ describe('state query contract', () => {
     );
     assert.equal(
       editor.read.selection.contains({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 2 },
       }),
@@ -134,6 +141,7 @@ describe('state query contract', () => {
     );
     assert.equal(
       editor.read.selection.contains({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 5 },
       }),
@@ -150,6 +158,7 @@ describe('state query contract', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       });
@@ -160,6 +169,7 @@ describe('state query contract', () => {
     });
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 5 },
     });
@@ -172,6 +182,7 @@ describe('state query contract', () => {
   it('treats the boundary before a nested block as the current block end', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -306,6 +317,7 @@ describe('state query contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
 
     headerEditor.update.selection.set({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 6 },
     });
@@ -314,6 +326,7 @@ describe('state query contract', () => {
     assert.equal(headerEditor.read.selection.isAtBlockStart(), true);
     assert.equal(
       headerEditor.read.selection.intersects({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 8 },
       }),
@@ -449,6 +462,7 @@ describe('state query contract', () => {
         Array.from(
           state.points.positions({
             at: {
+              kind: 'text',
               anchor: { path: [9, 0], offset: 0 },
               focus: { path: [9, 0], offset: 0 },
             },

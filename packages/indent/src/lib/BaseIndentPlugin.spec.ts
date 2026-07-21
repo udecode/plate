@@ -1,11 +1,29 @@
 import {
   BaseParagraphPlugin,
   createBaseEditor,
+  createBasePlugin,
   getEditorPlugin,
 } from '@platejs/core';
+import {
+  EditorSchemaValidationError,
+  property,
+  schema,
+  target,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseIndentPlugin } from './BaseIndentPlugin';
+
+const TestIndentPropsPlugin = createBasePlugin({
+  key: 'testIndentProps',
+  schema: {
+    properties: [
+      schema.elementProperty('foo', property.string(), {
+        target: target.group('block'),
+      }),
+    ],
+  },
+});
 
 describe('BaseIndentPlugin', () => {
   it('exposes the default options and injected node-prop contract', () => {
@@ -17,6 +35,7 @@ describe('BaseIndentPlugin', () => {
 
     expect(editor.plugin(BaseIndentPlugin).getOptions()).toEqual({
       offset: 24,
+      targetPluginKeys: [KEYS.p],
       unit: 'px',
     });
     expect(plugin.inject.targetPlugins).toEqual([KEYS.p]);
@@ -33,7 +52,7 @@ describe('BaseIndentPlugin', () => {
 
   it('changes block indent through typed tx groups', () => {
     const editor = createBaseEditor({
-      plugins: [BaseParagraphPlugin, BaseIndentPlugin],
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin, TestIndentPropsPlugin],
       value: [
         {
           children: [{ text: 'One' }],
@@ -83,10 +102,64 @@ describe('BaseIndentPlugin', () => {
     ]);
   });
 
+  it('uses targetPluginKeys for both model validation and injection', () => {
+    const QuotePlugin = createBasePlugin({
+      key: 'quote',
+      node: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          groups: ['block'],
+        },
+        type: 'callout',
+      },
+    });
+    const IndentQuotePlugin = BaseIndentPlugin.configure({
+      options: { targetPluginKeys: ['quote'] },
+    });
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, QuotePlugin, IndentQuotePlugin],
+      value: [
+        {
+          children: [{ text: 'Quote' }],
+          indent: 1,
+          type: 'callout',
+        },
+      ],
+    });
+
+    expect(editor.getPlugin(BaseIndentPlugin).inject.targetPlugins).toEqual([
+      'quote',
+    ]);
+    expect(editor.read.children()[0]).toMatchObject({
+      indent: 1,
+      type: 'callout',
+    });
+    let thrown: unknown;
+
+    try {
+      editor.read.schema.validateFragment([
+        { children: [{ text: 'Paragraph' }], indent: 1, type: KEYS.p },
+      ]);
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(EditorSchemaValidationError);
+    if (!(thrown instanceof EditorSchemaValidationError)) throw thrown;
+    expect(thrown.diagnostics).toMatchObject([
+      {
+        code: 'property-target-mismatch',
+        nodeType: KEYS.p,
+        property: { key: 'indent' },
+      },
+    ]);
+  });
+
   it('routes tab and untab through typed tx groups', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },

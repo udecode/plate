@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
+import { property } from '@platejs/plite';
 
 import { createBasePlugin } from '../../../plugin';
 import { createPlateTestEditor } from '../../../../react/__tests__/createPlateTestEditor';
@@ -10,8 +11,22 @@ jsxt;
 
 const TestLinkPlugin = createBasePlugin({
   key: 'a',
-  node: { isElement: true, isInline: true, type: 'a' },
+  node: {
+    element: {
+      inline: true,
+      properties: {
+        target: property.string(),
+        url: property.string(),
+      },
+    },
+    type: 'a',
+  },
   rules: { selection: { affinity: 'hard' } },
+});
+
+const TestBoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
 });
 
 describe('getEdgeNodes', () => {
@@ -30,6 +45,7 @@ describe('getEdgeNodes', () => {
       ) as any;
 
       const [editor] = await createPlateTestEditor({
+        plugins: [TestBoldPlugin],
         selection: input.selection,
         value: input.children,
       });
@@ -54,6 +70,7 @@ describe('getEdgeNodes', () => {
       ) as any;
 
       const [editor] = await createPlateTestEditor({
+        plugins: [TestBoldPlugin],
         selection: input.selection,
         value: input.children,
       });

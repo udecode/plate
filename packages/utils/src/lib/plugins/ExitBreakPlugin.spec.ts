@@ -1,5 +1,6 @@
 import { createBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
+import { schema } from '@platejs/plite';
 
 import { ExitBreakPlugin } from './ExitBreakPlugin';
 
@@ -8,6 +9,7 @@ describe('ExitBreakPlugin', () => {
     const editor = createPlateEditor({
       plugins: [ExitBreakPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -26,6 +28,7 @@ describe('ExitBreakPlugin', () => {
     const editor = createPlateEditor({
       plugins: [ExitBreakPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -44,6 +47,7 @@ describe('ExitBreakPlugin', () => {
     const editor = createPlateEditor({
       plugins: [ExitBreakPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
@@ -58,28 +62,35 @@ describe('ExitBreakPlugin', () => {
     ]);
   });
 
-  it('exits after the nearest non-strict ancestor', () => {
+  it('exits after the nearest ancestor whose parent accepts a paragraph', () => {
     const editor = createPlateEditor({
       plugins: [
         ExitBreakPlugin,
         createBasePlugin({
           key: 'codeblock',
           node: {
-            isElement: true,
-            isStrictSiblings: false,
+            element: {
+              content: schema.content.type('codeline', {
+                default: { type: 'codeline' },
+                min: 1,
+              }),
+              groups: ['block'],
+            },
             type: 'codeblock',
           },
         }),
         createBasePlugin({
           key: 'codeline',
           node: {
-            isElement: true,
-            isStrictSiblings: true,
+            element: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            },
             type: 'codeline',
           },
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 4, path: [0, 0, 0] },
         focus: { offset: 4, path: [0, 0, 0] },
       },
@@ -102,32 +113,63 @@ describe('ExitBreakPlugin', () => {
     ]);
   });
 
-  it('exits after the outer strict-sibling structure', () => {
+  it('exits after an outer structure whose grammar rejects paragraphs', () => {
     const editor = createPlateEditor({
       plugins: [
         ExitBreakPlugin,
         createBasePlugin({
           key: 'table',
-          node: { isElement: true, isStrictSiblings: false, type: 'table' },
+          node: {
+            element: {
+              content: schema.content.type('tr', {
+                default: { type: 'tr' },
+                min: 1,
+              }),
+              groups: ['block'],
+            },
+            type: 'table',
+          },
         }),
         createBasePlugin({
           key: 'tr',
-          node: { isElement: true, isStrictSiblings: true, type: 'tr' },
+          node: {
+            element: {
+              content: schema.content.type('td', {
+                default: { type: 'td' },
+                min: 1,
+              }),
+            },
+            type: 'tr',
+          },
         }),
         createBasePlugin({
           key: 'td',
-          node: { isElement: true, isStrictSiblings: true, type: 'td' },
+          node: {
+            element: {
+              content: schema.content.group('block', {
+                default: { type: 'p' },
+                min: 1,
+              }),
+            },
+            type: 'td',
+          },
         }),
       ],
       selection: {
-        anchor: { offset: 4, path: [0, 0, 0, 0] },
-        focus: { offset: 4, path: [0, 0, 0, 0] },
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0, 0, 0, 0] },
+        focus: { offset: 4, path: [0, 0, 0, 0, 0] },
       },
       value: [
         {
           children: [
             {
-              children: [{ children: [{ text: 'cell' }], type: 'td' }],
+              children: [
+                {
+                  children: [{ children: [{ text: 'cell' }], type: 'p' }],
+                  type: 'td',
+                },
+              ],
               type: 'tr',
             },
           ],
@@ -142,7 +184,12 @@ describe('ExitBreakPlugin', () => {
       {
         children: [
           {
-            children: [{ children: [{ text: 'cell' }], type: 'td' }],
+            children: [
+              {
+                children: [{ children: [{ text: 'cell' }], type: 'p' }],
+                type: 'td',
+              },
+            ],
             type: 'tr',
           },
         ],

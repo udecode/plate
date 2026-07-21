@@ -107,6 +107,10 @@ describe('setCellBackground', () => {
       ) as TestEditor;
 
       const editorInstance = createEditorInstance(input);
+      const selection = editorInstance.read.selection();
+      let commits = 0;
+
+      editorInstance.subscribeCommit(() => commits++);
       setCellBackground(editorInstance, {
         color: 'red',
         selectedCells: [
@@ -116,6 +120,8 @@ describe('setCellBackground', () => {
       });
 
       expect(editorInstance.read.children()).toMatchObject(output.children!);
+      expect(editorInstance.read.selection()).toEqual(selection);
+      expect(commits).toBe(1);
     });
   });
 

@@ -51,8 +51,7 @@ describe('useEmojiPicker', () => {
       plugin: () => ({
         getOptions: () => ({ createEmojiNode: (emoji: unknown) => emoji }),
       }),
-      update: (fn: (tx: { nodes: { insert: typeof insert } }) => void) =>
-        fn({ nodes: { insert } }),
+      update: { nodes: { insert } },
     };
 
     useEditorRefMock.mockReturnValue(editor);

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   getChildren as editorGetChildren,
-  getOperations as editorGetOperations,
+  getLastCommit as editorGetLastCommit,
   replace as editorReplace,
 } from '@platejs/plite/internal';
 
@@ -20,6 +20,7 @@ const setupEditor = () => {
   editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
@@ -38,6 +39,7 @@ describe('editor methods', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -71,6 +73,7 @@ describe('editor methods', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -81,6 +84,7 @@ describe('editor methods', () => {
         calls += 1;
 
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -110,6 +114,7 @@ describe('editor methods', () => {
         paragraph('two'),
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -118,6 +123,7 @@ describe('editor methods', () => {
     setEditorTargetRuntime(editor, {
       resolveImplicitTarget() {
         return {
+          kind: 'text' as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -140,9 +146,10 @@ describe('editor methods', () => {
     ]);
   });
 
-  it('replaces ancestor children as one logical replace_children operation', () => {
+  it('classifies a same-shape child replacement by its canonical text delta', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0, 0], offset: 0 },
       focus: { path: [0, 0, 0], offset: 0 },
     };
@@ -173,21 +180,16 @@ describe('editor methods', () => {
         ],
       },
     ]);
-    assert.deepEqual(editorGetOperations(editor).at(-1), {
-      children: [paragraph('two')],
-      index: 1,
-      newChildren: [paragraph('replacement')],
-      newSelection: selection,
-      path: [0],
-      root: 'main',
-      selection,
-      type: 'replace_children',
-    });
+    const commit = editorGetLastCommit(editor);
+
+    assert(commit);
+    assert.equal(commit.changes.empty, false);
+    assert.equal(commit.changed.has('structure'), false);
+    assert.equal(commit.changed.has('text'), true);
   });
 
-  it('replaces one node with many as one logical replace_children operation', () => {
+  it('replaces one node with many as one canonical change', () => {
     const editor = setupEditor();
-    const operationCount = editorGetOperations(editor).length;
 
     editor.update.nodes.replace(
       [paragraph('replacement-a'), paragraph('replacement-b')],
@@ -195,6 +197,8 @@ describe('editor methods', () => {
     );
 
     const selection = {
+      kind: 'text' as const,
+
       anchor: { path: [2, 0], offset: 13 },
       focus: { path: [2, 0], offset: 13 },
     };
@@ -204,20 +208,12 @@ describe('editor methods', () => {
       paragraph('replacement-a'),
       paragraph('replacement-b'),
     ]);
-    assert.equal(editorGetOperations(editor).length, operationCount + 1);
-    assert.deepEqual(editorGetOperations(editor).at(-1), {
-      children: [paragraph('two')],
-      index: 1,
-      newChildren: [paragraph('replacement-a'), paragraph('replacement-b')],
-      newSelection: selection,
-      path: [],
-      root: 'main',
-      selection: {
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
-      },
-      type: 'replace_children',
-    });
+    const commit = editorGetLastCommit(editor);
+
+    assert(commit);
+    assert.equal(commit.changes.empty, false);
+    assert.equal(commit.changed.has('root-order'), true);
+    assert.deepEqual(commit.selectionAfter, selection);
   });
 
   it('replaces a live node target and ignores a detached target', () => {
@@ -249,21 +245,10 @@ describe('editor methods', () => {
     editor.update.nodes.replace([], { at: [1] });
 
     assert.deepEqual(editorGetChildren(editor), [paragraph('one')]);
-    assert.deepEqual(editorGetOperations(editor).at(-1), {
-      children: [paragraph('two')],
-      index: 1,
-      newChildren: [],
-      newSelection: {
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
-      },
-      path: [],
-      root: 'main',
-      selection: {
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
-      },
-      type: 'replace_children',
+    assert.deepEqual(editor.read.selection(), {
+      kind: 'text' as const,
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
     });
   });
 
@@ -279,6 +264,7 @@ describe('editor methods', () => {
   it('remaps replaceChildren selection when a selected node is reused', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     };
@@ -299,6 +285,8 @@ describe('editor methods', () => {
     );
 
     const newSelection = {
+      kind: 'text' as const,
+
       anchor: { path: [0, 0, 0], offset: 2 },
       focus: { path: [0, 0, 0], offset: 2 },
     };
@@ -309,21 +297,13 @@ describe('editor methods', () => {
         children: [{ type: 'paragraph', children: [text] }],
       },
     ]);
-    assert.deepEqual(editorGetOperations(editor).at(-1), {
-      children: [text],
-      index: 0,
-      newChildren: [{ type: 'paragraph', children: [text] }],
-      newSelection,
-      path: [0],
-      root: 'main',
-      selection,
-      type: 'replace_children',
-    });
+    assert.deepEqual(editor.read.selection(), newSelection);
   });
 
   it('clears replaceChildren selection when replaced content is not reused', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     };
@@ -337,15 +317,6 @@ describe('editor methods', () => {
       at: [0],
     });
 
-    assert.deepEqual(editorGetOperations(editor).at(-1), {
-      children: [{ text: 'Quote' }],
-      index: 0,
-      newChildren: [paragraph('replacement')],
-      newSelection: null,
-      path: [0],
-      root: 'main',
-      selection,
-      type: 'replace_children',
-    });
+    assert.equal(editor.read.selection(), null);
   });
 });

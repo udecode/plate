@@ -118,13 +118,12 @@ Tranche-3 closeout read:
   - `editor.children` is not a primary read path
   - `editor.selection` is not a primary read path
   - `editor.marks` is not a primary read path
-  - `editor.operations` is not a primary read path
 - write hierarchy:
   - `editor.update` is the write boundary
   - direct apply/onChange replacement is not an extension point
 - compatibility-baggage decisions:
-  - internal runtime mirrors exist only where package code still needs them
-  - public docs/examples/tests do not teach stale-state APIs
+  - the runtime exposes one canonical change truth
+  - public docs/examples/tests teach only current state and transaction APIs
 - explicit normalization claim width is settled:
   - heavier adjacent-text/spacer cleanup stays explicit-only
   - owner: `packages/plite/test/fixture-claim-overrides.ts`

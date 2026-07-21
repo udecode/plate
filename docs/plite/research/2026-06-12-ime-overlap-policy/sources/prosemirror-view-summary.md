@@ -26,4 +26,3 @@ Plite pressure:
 Use ProseMirror-style cancellation as the default policy candidate, but do not
 copy code. Define Plite composition ownership, overlap detection, stale event
 idempotence, and non-overlap preservation in a Plite-native contract first.
-

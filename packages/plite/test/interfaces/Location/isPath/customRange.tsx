@@ -3,6 +3,7 @@
 import { LocationApi, type Range } from '@platejs/plite';
 
 export const input: Range & { custom: string } = {
+  kind: 'text',
   anchor: { path: [0, 1], offset: 2 },
   focus: { path: [3, 4], offset: 5 },
   custom: 'value',

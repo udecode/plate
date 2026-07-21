@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(testDir, '../../..');
+const pliteDomRoot = resolve(repoRoot, 'packages/plite-dom/src');
 const pliteReactRoot = resolve(repoRoot, 'packages/plite-react/src');
 const sourceFiles = [
   resolve(pliteReactRoot, 'components/editable.tsx'),
@@ -555,8 +556,9 @@ test('root global lifecycle listeners are owned by the root lifecycle module', (
   );
 });
 
-test('root runtime cells are owned by the root state module', () => {
+test('root runtime cells are owned by EditableDOMRuntime', () => {
   const rootRuntimeStateFiles = [
+    'editable/editable-dom-runtime.ts',
     'editable/runtime-root-engine.ts',
     'editable/runtime-root-state.ts',
   ] as const;
@@ -575,32 +577,24 @@ test('root runtime cells are owned by the root state module', () => {
     }
   );
 
-  expectSourceOwnershipInventory(/\buseRef\(/g, rootRuntimeStateFiles, {
-    'packages/plite-react/src/editable/runtime-root-state.ts': {
-      count: 4,
-      next: 'root-runtime',
-      owner: 'Editable root runtime state',
-      rationale:
-        'Mutable root refs and browser-handle refs belong in the root state owner, not the coordinator body.',
-    },
-  });
+  expectSourceOwnershipInventory(/\buseRef\(/g, rootRuntimeStateFiles, {});
 
   expectSourceOwnershipInventory(
-    /\buseState\(createEditableInputControllerState\)/g,
+    /\bcreateEditableInputControllerState\(\)/g,
     rootRuntimeStateFiles,
     {
-      'packages/plite-react/src/editable/runtime-root-state.ts': {
+      'packages/plite-react/src/editable/editable-dom-runtime.ts': {
         count: 1,
         next: 'root-runtime',
-        owner: 'Editable root runtime state',
+        owner: 'Editable DOM runtime',
         rationale:
-          'Input controller state creation belongs with root runtime cells before the coordinator creates the controller facade.',
+          'The per-root runtime owns the input controller and its mutable state.',
       },
     }
   );
 
   expectSourceOwnershipInventory(
-    /\buseTrackUserInput\(/g,
+    /\bnew EditableDOMRuntime\(/g,
     rootRuntimeStateFiles,
     {
       'packages/plite-react/src/editable/runtime-root-state.ts': {
@@ -608,7 +602,7 @@ test('root runtime cells are owned by the root state module', () => {
         next: 'root-runtime',
         owner: 'Editable root runtime state',
         rationale:
-          'User-input tracking is root runtime state consumed by event wiring, not event policy itself.',
+          'The React bridge creates exactly one imperative runtime per mounted root.',
       },
     }
   );
@@ -617,14 +611,108 @@ test('root runtime cells are owned by the root state module', () => {
     /\bisSelectionPartialDOMBacked\(/g,
     rootRuntimeStateFiles,
     {
-      'packages/plite-react/src/editable/runtime-root-state.ts': {
+      'packages/plite-react/src/editable/editable-dom-runtime.ts': {
         count: 1,
         next: 'root-runtime',
-        owner: 'Editable root runtime state',
+        owner: 'Editable DOM runtime',
         rationale:
-          'Partial-DOM-backed selection state should be computed by the root state owner and consumed by selection/event runtimes.',
+          'Partial-DOM-backed selection policy belongs to the runtime that owns the mounted root.',
       },
     }
+  );
+});
+
+test('each mounted root runtime owns the only DOM phase scheduler instance', () => {
+  const allSourceFiles = collectSourceFiles(pliteReactRoot);
+  const allDOMSourceFiles = collectSourceFiles(pliteDomRoot);
+  const editableSourceFiles = collectSourceFiles(
+    resolve(pliteReactRoot, 'editable')
+  );
+
+  expect(
+    getMatchesByFiles(/\bcreateDOMPhaseScheduler\(/g, allSourceFiles)
+  ).toEqual({
+    'packages/plite-react/src/editable/editable-dom-runtime.ts': 1,
+  });
+  expect(
+    getMatchesByFiles(
+      /\b(?:queueMicrotask|requestAnimationFrame|setTimeout)\(/g,
+      editableSourceFiles
+    )
+  ).toEqual({});
+  expect(
+    getMatchesByFiles(
+      /\b(?:queueMicrotask|requestAnimationFrame|setTimeout)\(/g,
+      allDOMSourceFiles
+    )
+  ).toEqual({
+    'packages/plite-dom/src/plugin/dom-phase-scheduler.ts': 6,
+  });
+  expect(
+    getMatchesByFiles(/\bdomPhaseScheduler\?:/g, editableSourceFiles)
+  ).toEqual({});
+});
+
+test('all source timing primitives are scheduler internals or named semantic timers', () => {
+  const allSourceFiles = collectSourceFiles(pliteReactRoot);
+
+  expect(
+    getMatchesByFiles(
+      /\b(?:queueMicrotask|requestAnimationFrame|requestIdleCallback|setTimeout)\(|Promise\.resolve\(\)\.then\(/g,
+      allSourceFiles
+    )
+  ).toEqual({
+    'packages/plite-react/src/components/editable-rendered-element.tsx': 1,
+    'packages/plite-react/src/components/editable-text-blocks.tsx': 2,
+    'packages/plite-react/src/components/plite-void-shell.tsx': 1,
+    'packages/plite-react/src/editable/composition-state.ts': 1,
+    'packages/plite-react/src/hooks/use-plite-annotation-store.tsx': 1,
+    'packages/plite-react/src/hooks/use-plite-decoration-source.ts': 1,
+    'packages/plite-react/src/hooks/use-plite-widget-store.tsx': 1,
+    'packages/plite-react/src/hooks/use-editor-selector.tsx': 1,
+  });
+  expect(
+    getMatchesByFiles(
+      /document\.(?:addEventListener|removeEventListener)\(['"](?:blur|focus|focusin|focusout)['"]/g,
+      allSourceFiles
+    )
+  ).toEqual({});
+});
+
+test('DOM sync tokens and model selection preferences belong to the root runtime lifecycle', () => {
+  const allSourceFiles = collectSourceFiles(pliteReactRoot);
+
+  expect(
+    getMatchesByFiles(/\bnew DOMSyncMutationOwnership\(/g, allSourceFiles)
+  ).toEqual({
+    'packages/plite-react/src/editable/editable-dom-runtime.ts': 1,
+  });
+  expect(
+    getMatchesByFiles(
+      /\bMODEL_SELECTION_DOM_PREFERENCE_TTL_MS\b/g,
+      allSourceFiles
+    )
+  ).toEqual({
+    'packages/plite-react/src/editable/editable-dom-runtime.ts': 3,
+  });
+  expect(
+    getMatchesByFiles(
+      /\b(?:DOM_SYNC_MUTATION_TOKENS|PENDING_DOM_SYNC_MUTATION_TOKENS|MODEL_SELECTION_DOM_PREFERENCES)\b/g,
+      allSourceFiles
+    )
+  ).toEqual({});
+});
+
+test('one private root runtime owns DOM mutation observation', () => {
+  const allSourceFiles = collectSourceFiles(pliteReactRoot);
+
+  expect(
+    getMatchesByFiles(/\bnew MutationObserverConstructor\(/g, allSourceFiles)
+  ).toEqual({
+    'packages/plite-react/src/editable/dom-integrity-observer.ts': 1,
+  });
+  expect(getMatchesByFiles(/\buseMutationObserver\(/g, allSourceFiles)).toEqual(
+    {}
   );
 });
 
@@ -876,7 +964,7 @@ test('selection bridge authority has an explicit remaining inventory', () => {
     /\b(syncEditorSelectionFromDOM|syncEditableDOMSelectionToEditor)\(/g,
     {
       'packages/plite-react/src/editable/browser-handle.ts': {
-        count: 3,
+        count: 4,
         next: 'explicit-bridge',
         owner: 'Browser proof handle',
         rationale:
@@ -909,7 +997,7 @@ test('mutation and repair authority has an explicit remaining inventory', () => 
   );
 
   expectAuthorityInventory(
-    /\b(requestRepair|applyEditableRepairRequest|repairDOMInput|domRepairQueue\.repair|repairCaretAfterModelOperation|repairCaretAfterModelTextInsert)\(/g,
+    /\b(requestRepair|applyEditableRepairRequest|repairDOMInput|domRepairQueue\.repair|repairCaretAfterModelIntent|repairCaretAfterModelTextInsert)\(/g,
     {
       'packages/plite-react/src/editable/dom-repair-queue.ts': {
         count: 5,
@@ -923,6 +1011,13 @@ test('mutation and repair authority has an explicit remaining inventory', () => 
         owner: 'Input router',
         rationale:
           'Router forwards DOM input events to the Editable-owned repair callback.',
+      },
+      'packages/plite-react/src/editable/model-input-strategy.ts': {
+        count: 1,
+        next: 'explicit-bridge',
+        owner: 'Model input strategy',
+        rationale:
+          'Input strategy forwards a verified root receipt after Android declines ownership.',
       },
       'packages/plite-react/src/editable/mutation-controller.ts': {
         count: 2,
@@ -956,26 +1051,35 @@ test('mutation and repair authority has an explicit remaining inventory', () => 
   );
 });
 
-test('transform registry access is fenced to tx and extension override bridges', () => {
+test('React user-action mutation owners do not bypass semantic commands', () => {
+  const mutationOwnerFiles = [
+    resolve(pliteReactRoot, 'editable/mutation-block-editing.ts'),
+    resolve(pliteReactRoot, 'editable/mutation-controller.ts'),
+    resolve(pliteReactRoot, 'editable/mutation-full-block-editing.ts'),
+  ];
+
   expect(
     getMatchesByFiles(
-      /\b(getEditorTransformRegistry|setEditorTransformRegistry)\b/g,
-      collectSourceFiles(pliteReactRoot)
+      /\btx\.(?:break|fragment|marks|nodes|slice|text)\.(?:add|delete|insert|insertSoft|remove|replace|replaceChildren)\(/g,
+      mutationOwnerFiles
     )
-  ).toEqual({
-    'packages/plite-react/src/editable/runtime-editor-api.ts': 4,
-    'packages/plite-react/src/plugin/with-react.ts': 4,
-  });
+  ).toEqual({});
+
+  expect(
+    getMatchesByFiles(/\btx\.selection\.(?:collapse|move|set)\(/g, [
+      resolve(pliteReactRoot, 'editable/caret-engine.ts'),
+    ])
+  ).toEqual({});
 });
 
 test('direct force render calls have explicit runtime owners', () => {
   expectAuthorityInventory(/\bforceRender\(/g, {
     'packages/plite-react/src/editable/browser-handle.ts': {
-      count: 6,
+      count: 9,
       next: 'explicit-bridge',
       owner: 'Browser proof handle',
       rationale:
-        'Browser proof handles may force the view after explicit semantic test actions and remote operation replay until proof transport is split from runtime repair.',
+        'Browser proof handles may force the view after explicit semantic test actions and remote canonical change import until proof transport is split from runtime repair.',
     },
     'packages/plite-react/src/editable/keyboard-input-strategy.ts': {
       count: 1,
@@ -983,6 +1087,13 @@ test('direct force render calls have explicit runtime owners', () => {
       owner: 'Keyboard input worker',
       rationale:
         'Keyboard worker still directly forces render for select-all partial-dom-backed selection before repair/view runtime owns that request.',
+    },
+    'packages/plite-react/src/editable/runtime-repair-engine.ts': {
+      count: 1,
+      next: 'central-owner',
+      owner: 'Runtime repair engine',
+      rationale:
+        'The root repair owner may force one render while applying an explicit model-owned repair request.',
     },
   });
 });

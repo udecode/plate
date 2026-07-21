@@ -3,13 +3,8 @@ import { describe, it } from 'node:test';
 import type { Descendant } from '@platejs/plite';
 import { string as editorString } from '@platejs/plite/internal';
 import * as Y from 'yjs';
-
 import {
-  getPliteYjsElementType,
-  setPliteYjsAttribute,
-} from '../src/core/attributes';
-import { createSplitElement } from '../src/core/replacement';
-import {
+  assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
   createSeededYjsPeers,
@@ -19,7 +14,6 @@ import {
   getPeerTopLevelTexts,
   getVisibleYjsNodeAt,
   getYjsNodeAt,
-  getYjsTrace,
   type Peer,
   paragraph,
   readPeerChildren,
@@ -79,6 +73,7 @@ const insertWorldParagraphAfterFirst = (peer: Peer): void => {
   const offset = editorString(peer.editor, [0]).length;
 
   peer.editor.update.selection.set({
+    kind: 'text',
     anchor: { path: [0, 0], offset },
     focus: { path: [0, 0], offset },
   });
@@ -88,6 +83,7 @@ const insertWorldParagraphAfterFirst = (peer: Peer): void => {
 
 const insertTextSplitAndInsertRightText = (peer: Peer): void => {
   peer.editor.update.selection.set({
+    kind: 'text',
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 0 },
   });
@@ -97,23 +93,7 @@ const insertTextSplitAndInsertRightText = (peer: Peer): void => {
 };
 
 describe('@platejs/yjs split_node collaboration contract', () => {
-  it('keeps the original element type when split properties carry a non-string type', () => {
-    const doc = new Y.Doc();
-    const root = doc.get('@platejs/plite', Y.XmlElement);
-    const original = new Y.XmlElement('paragraph');
-
-    root.insert(0, [original]);
-    setPliteYjsAttribute(original, 'type', 'paragraph');
-
-    const right = createSplitElement(original, { role: 'note', type: 123 }, []);
-
-    root.insert(1, [right]);
-
-    assert.equal(getPliteYjsElementType(right), 'paragraph');
-    assert.equal(right.getAttribute('role'), 'note');
-  });
-
-  it('applies local offline public split without a root snapshot fallback', () => {
+  it('applies a local offline public split as a canonical change', () => {
     const peer = createPeer('b');
     const leftText = getYjsNodeAt(peer, [0, 0]);
 
@@ -122,10 +102,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alph', 'abeta']);
     assert.equal(getYjsNodeAt(peer, [0, 0]), leftText);
-    assert.deepEqual(getYjsTrace(peer), [
-      { mode: 'operation', operationType: 'split_node' },
-      { mode: 'operation', operationType: 'split_node' },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
   it('splits a block at a text leaf boundary without materializing empty text', () => {
@@ -152,76 +129,72 @@ describe('@platejs/yjs split_node collaboration contract', () => {
     ]);
   });
 
-  it('splits virtual moved content by visible child position', () => {
-    const peer = createPeer('b', undefined, [
-      { type: 'quote', children: [] },
-      paragraph('moved'),
-    ]);
+  it('splits at the physical boundary resolved across canonical text leaves', () => {
+    const peer = createPeer('b', undefined, [paragraph('alpha')]);
+    const paragraphNode = getYjsNodeAt(peer, [0]);
 
-    peer.editor.update.operations.replay([
-      {
-        newPath: [0, 0],
-        path: [1],
-        type: 'move_node',
-      },
-    ]);
-    const movedParagraph = getVisibleYjsNodeAt(peer, [0, 0]);
+    assert.ok(paragraphNode instanceof Y.XmlElement);
 
-    disconnectAndClearYjsTrace(peer);
-    peer.editor.update.operations.replay([
-      {
-        path: [0],
-        position: 0,
-        properties: { type: 'quote' },
-        type: 'split_node',
-      },
-    ]);
-    assert.deepEqual(getPeerTopLevelTexts(peer), ['', 'moved']);
-    assert.equal(getVisibleYjsNodeAt(peer, [1, 0]), movedParagraph);
-    assert.deepEqual(getYjsTrace(peer), [
-      { mode: 'operation', operationType: 'split_node' },
-      { mode: 'operation', operationType: 'insert_node' },
+    peer.doc.transact(() => {
+      const left = new Y.XmlText();
+      const right = new Y.XmlText();
+
+      left.insert(0, 'al');
+      right.insert(0, 'pha');
+      paragraphNode.delete(0, 1);
+      paragraphNode.insert(0, [left, right]);
+    });
+
+    assert.equal(paragraphNode.toArray().length, 2);
+    assert.deepEqual(readPeerChildren(peer), [paragraph('alpha')]);
+
+    peer.editor.update.nodes.split({
+      at: { path: [0, 0], offset: 3 },
+    });
+
+    assert.deepEqual(readPeerChildren(peer), [
+      paragraph('alp'),
+      paragraph('ha'),
     ]);
   });
 
-  it('splits raw children after a leading virtual moved child', () => {
+  it('splits moved content by visible child position', () => {
     const peer = createPeer('b', undefined, [
       { type: 'quote', children: [] },
       paragraph('moved'),
     ]);
 
-    peer.editor.update.operations.replay([
-      {
-        newPath: [0, 0],
-        path: [1],
-        type: 'move_node',
-      },
-      {
-        node: paragraph('raw'),
-        path: [0, 1],
-        type: 'insert_node',
-      },
-    ]);
+    peer.editor.update.nodes.move({ at: [1], to: [0, 0] });
     const movedParagraph = getVisibleYjsNodeAt(peer, [0, 0]);
 
     disconnectAndClearYjsTrace(peer);
-    peer.editor.update.operations.replay([
-      {
-        path: [0],
-        position: 1,
-        properties: { type: 'quote' },
-        type: 'split_node',
-      },
+    peer.editor.update.nodes.split({ at: [0], position: 0 });
+    assert.deepEqual(getPeerTopLevelTexts(peer), ['', 'moved']);
+    assert.equal(getVisibleYjsNodeAt(peer, [1, 0]), movedParagraph);
+    assertCanonicalYjsTrace(peer);
+  });
+
+  it('splits raw children after a leading moved child', () => {
+    const peer = createPeer('b', undefined, [
+      { type: 'quote', children: [] },
+      paragraph('moved'),
     ]);
+
+    peer.editor.update((tx) => {
+      tx.nodes.move({ at: [1], to: [0, 0] });
+      tx.nodes.insert([paragraph('raw')], { at: [0, 1] });
+    });
+    const movedParagraph = getVisibleYjsNodeAt(peer, [0, 0]);
+
+    disconnectAndClearYjsTrace(peer);
+    peer.editor.update.nodes.split({ at: [0], position: 1 });
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['moved', 'raw']);
     assert.equal(getVisibleYjsNodeAt(peer, [0, 0]), movedParagraph);
-    assert.deepEqual(getYjsTrace(peer), [
-      { mode: 'operation', operationType: 'split_node' },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
-  it('preserves concurrent remote insert intent when an offline public split reconnects', () => {
+  it('preserves a concurrent remote insertion when an offline public split reconnects', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 
@@ -311,7 +284,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
     assertPeerTexts(peers, ['Hello ', 'world!', 'world! after']);
   });
 
-  it('undoes and redoes only the local split intent after reconnect', () => {
+  it('undoes and redoes only the local split after reconnect', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 
@@ -360,20 +333,9 @@ describe('@platejs/yjs split_node collaboration contract', () => {
     peer.editor.update.nodes.merge({ at: [1] });
     assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello world!block 2']);
 
-    peer.editor.update.operations.replay([
-      {
-        path: [0, 0],
-        position: 'Hello wor'.length,
-        properties: {},
-        type: 'split_node',
-      },
-      {
-        path: [0],
-        position: 1,
-        properties: { type: 'paragraph' },
-        type: 'split_node',
-      },
-    ]);
+    peer.editor.update.nodes.split({
+      at: { path: [0, 0], offset: 'Hello wor'.length },
+    });
     assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello wor', 'ld!block 2']);
 
     undoYjsPeer(peer);
@@ -391,6 +353,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
 
     peer.editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'Hello wor'.length },
         focus: { path: [0, 0], offset: 'Hello wor'.length },
       });

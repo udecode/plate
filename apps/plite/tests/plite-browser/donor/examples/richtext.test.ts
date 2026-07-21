@@ -384,28 +384,31 @@ const expectDOMCaretAfterInsertedTextBeforeSuffix = async (
           );
           let foundAnchor = false;
           let nextText: string | null = null;
+          let previousText: string | null = null;
 
           while (walker.nextNode()) {
             const node = walker.currentNode;
+            const value = node.textContent ?? '';
 
-            if (foundAnchor) {
-              const value = node.textContent ?? '';
-
-              if (value.length > 0) {
-                nextText = value;
-                break;
-              }
+            if (foundAnchor && value.length > 0) {
+              nextText = value;
+              break;
             }
 
             if (node === selection.anchorNode) {
               foundAnchor = true;
+            } else if (value.length > 0) {
+              previousText = value;
             }
           }
 
           return (
-            textBeforeCaret.endsWith(expectedInsertedText) &&
-            selection.anchorOffset === text.length &&
-            !!nextText?.startsWith(expectedTrailingText)
+            (textBeforeCaret.endsWith(expectedInsertedText) &&
+              selection.anchorOffset === text.length &&
+              !!nextText?.startsWith(expectedTrailingText)) ||
+            (selection.anchorOffset === 0 &&
+              text.startsWith(expectedTrailingText) &&
+              !!previousText?.endsWith(expectedInsertedText))
           );
         },
         {
@@ -501,7 +504,10 @@ const getBrowserUndoHotkey = async (root: Locator) =>
   await root
     .page()
     .evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta+Z' : 'Control+Z'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta+Z'
+        : 'Control+Z'
     );
 
 const selectEndOfFirstBlockWithDOMSelection = async (root: Locator) => {
@@ -598,6 +604,7 @@ test.describe('On richtext example', () => {
     await expect(paragraphs.nth(1).locator('em')).toHaveText('baz qux');
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Foo '.length },
       focus: { path: [1, 0], offset: 'baz'.length },
     });
@@ -687,6 +694,7 @@ test.describe('On richtext example', () => {
     await expect(editor.root.locator('p')).toHaveCount(1);
     await expect.poll(() => editor.get.modelText()).toBe('');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -711,7 +719,10 @@ test.describe('On richtext example', () => {
     await editor.assert.modelBlockTexts(['']);
 
     const modifier = await editor.root.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta'
+        : 'Control'
     );
 
     await editor.root.press(`${modifier}+b`);
@@ -753,6 +764,7 @@ test.describe('On richtext example', () => {
     });
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 1], offset: 0 },
       focus: { path: [0, 1], offset: 4 },
     });
@@ -793,7 +805,10 @@ test.describe('On richtext example', () => {
     await editor.assert.modelBlockTexts(['']);
 
     const modifier = await editor.root.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta'
+        : 'Control'
     );
 
     await editor.root.press(`${modifier}+i`);
@@ -819,7 +834,10 @@ test.describe('On richtext example', () => {
     await page.keyboard.press('Backspace');
 
     const modifier = await editor.root.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta'
+        : 'Control'
     );
 
     await editor.root.press(`${modifier}+b`);
@@ -857,6 +875,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 6 },
           focus: { path: [0, 0], offset: 6 },
         });
@@ -900,7 +919,10 @@ test.describe('On richtext example', () => {
     await page.keyboard.press('Backspace');
 
     const modifier = await editor.root.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta'
+        : 'Control'
     );
 
     await editor.root.press(`${modifier}+b`);
@@ -932,7 +954,10 @@ test.describe('On richtext example', () => {
     await editor.assert.modelBlockTexts(['']);
 
     const modifier = await editor.root.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta'
+        : 'Control'
     );
 
     await editor.root.press(`${modifier}+b`);
@@ -964,6 +989,7 @@ test.describe('On richtext example', () => {
       await editor.deleteFragment();
       await editor.insertText('Styled');
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 'Styled'.length },
       });
@@ -999,7 +1025,10 @@ test.describe('On richtext example', () => {
       await editor.deleteFragment();
 
       const modifier = await editor.root.evaluate(() =>
-        /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        /Mac OS X/.test(navigator.userAgent)
+          ? 'Meta'
+          : 'Control'
       );
 
       await editor.root.press(`${modifier}+b`);
@@ -1031,7 +1060,10 @@ test.describe('On richtext example', () => {
       await editor.deleteFragment();
 
       const modifier = await editor.root.evaluate(() =>
-        /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        /Mac OS X/.test(navigator.userAgent)
+          ? 'Meta'
+          : 'Control'
       );
 
       await editor.root.press(`${modifier}+b`);
@@ -1068,11 +1100,15 @@ test.describe('On richtext example', () => {
     await page.keyboard.press('Backspace');
     await page.keyboard.type('Styled');
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'Styled'.length },
     });
     const modifier = await editor.root.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta'
+        : 'Control'
     );
 
     await editor.root.press(`${modifier}+b`);
@@ -1099,7 +1135,10 @@ test.describe('On richtext example', () => {
       },
     });
     const modifier = await editor.root.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta'
+        : 'Control'
     );
 
     await editor.selection.collapse({ path: [0, 0], offset: 'This is'.length });
@@ -1140,6 +1179,7 @@ test.describe('On richtext example', () => {
     await expect(editor.root.locator('p')).toHaveCount(1);
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'alpha'.length },
       focus: { path: [0, 0], offset: 'alpha'.length },
     });
@@ -1151,6 +1191,7 @@ test.describe('On richtext example', () => {
     await expect(editor.root.locator('p').nth(0)).toHaveText('alpha');
     await expect(editor.root.locator('p').nth(1)).toHaveText('beta');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -1178,6 +1219,7 @@ test.describe('On richtext example', () => {
     await page.keyboard.type('world');
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 1], offset: 0 },
       focus: { path: [0, 1], offset: 0 },
     });
@@ -1185,6 +1227,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts(['Hello ', 'world']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -1203,7 +1246,10 @@ test.describe('On richtext example', () => {
       },
     });
     const modifier = await editor.root.evaluate(() =>
-      /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+      /Mac OS X/.test(navigator.userAgent)
+        ? 'Meta'
+        : 'Control'
     );
     const pressShortcut = async (
       key: string,
@@ -1239,6 +1285,7 @@ test.describe('On richtext example', () => {
     await expect(editor.root.locator('h2')).toHaveCSS('text-align', 'justify');
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'Shortcut'.length },
     });
@@ -1274,6 +1321,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -1287,6 +1335,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -1301,6 +1350,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1372,6 +1422,7 @@ test.describe('On richtext example', () => {
     const pointInsideBold = { path: [0, 1], offset: 2 };
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: pointInsideBold,
       focus: pointInsideBold,
     });
@@ -1383,6 +1434,7 @@ test.describe('On richtext example', () => {
       editor.root.locator('strong').filter({ hasText: 'riZch' })
     ).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1], offset: 3 },
       focus: { path: [0, 1], offset: 3 },
     });
@@ -1394,6 +1446,7 @@ test.describe('On richtext example', () => {
       editor.root.locator('strong').filter({ hasText: 'rich' })
     ).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: pointInsideBold,
       focus: pointInsideBold,
     });
@@ -1417,6 +1470,7 @@ test.describe('On richtext example', () => {
     const insertedText =
       'This is editable riZch text, much better than a <textarea>!';
     const boldTextRange = {
+      kind: 'text',
       anchor: { path: [0, 1], offset: 0 },
       focus: { path: [0, 1], offset: 'rich'.length },
     };
@@ -1428,6 +1482,7 @@ test.describe('On richtext example', () => {
     await expect(nestedMarkText).toHaveText('rich');
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: pointInsideNestedMarks,
       focus: pointInsideNestedMarks,
     });
@@ -1436,6 +1491,7 @@ test.describe('On richtext example', () => {
     await editor.assert.text(insertedText);
     await expect(nestedMarkText).toHaveText('riZch');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1], offset: 3 },
       focus: { path: [0, 1], offset: 3 },
     });
@@ -1445,6 +1501,7 @@ test.describe('On richtext example', () => {
     await editor.assert.text(initialText);
     await expect(nestedMarkText).toHaveText('rich');
     await editor.assert.selection({
+      kind: 'text',
       anchor: pointInsideNestedMarks,
       focus: pointInsideNestedMarks,
     });
@@ -1466,7 +1523,10 @@ test.describe('On richtext example', () => {
     const modifier = await editor.root
       .page()
       .evaluate(() =>
-        /Mac OS X/.test(navigator.userAgent) ? 'Meta' : 'Control'
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        /Mac OS X/.test(navigator.userAgent)
+          ? 'Meta'
+          : 'Control'
       );
     const burst = 'zzzzzzzz';
 
@@ -1474,6 +1534,7 @@ test.describe('On richtext example', () => {
     await editor.deleteFragment();
     await editor.insertText('choice');
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'choice'.length },
     });
@@ -1486,6 +1547,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts([`cho${burst}Yice`]);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1], offset: burst.length + 1 },
       focus: { path: [0, 1], offset: burst.length + 1 },
     });
@@ -1505,6 +1567,7 @@ test.describe('On richtext example', () => {
       'This is editable rich text, much better than a <textarea>!';
     const selectedText = 'editable rich text';
     const selection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'This is '.length },
       focus: { path: [0, 2], offset: ' text'.length },
     };
@@ -1571,6 +1634,7 @@ test.describe('On richtext example', () => {
 
     await installInputBoundaryProbe(editor.root);
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: startPoint,
       focus: startPoint,
     });
@@ -1582,6 +1646,7 @@ test.describe('On richtext example', () => {
       .poll(async () => (await editor.get.blockTexts())[0])
       .toBe(`A7${initialText}`);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
@@ -1634,6 +1699,7 @@ test.describe('On richtext example', () => {
     const pointInsideBold = { path: [0, 1], offset: 2 };
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: pointInsideBold,
       focus: pointInsideBold,
     });
@@ -1720,6 +1786,7 @@ test.describe('On richtext example', () => {
       editor.root.locator('strong').filter({ hasText: 'すし' })
     ).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1], offset: 4 },
       focus: { path: [0, 1], offset: 4 },
     });
@@ -1740,6 +1807,7 @@ test.describe('On richtext example', () => {
       editor.root.locator('strong').filter({ hasText: 'ch' })
     ).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: pointInsideBold,
       focus: pointInsideBold,
     });
@@ -1763,6 +1831,7 @@ test.describe('On richtext example', () => {
     await expect.poll(() => editor.get.modelText()).toBe('');
     await editor.assert.blockTexts(['Enter some rich text…']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1782,6 +1851,7 @@ test.describe('On richtext example', () => {
     await editor.assert.text(insertedText);
     await expect.poll(() => editor.get.modelText()).toBe(insertedText);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: insertedText.length },
       focus: { path: [0, 0], offset: insertedText.length },
     });
@@ -1821,6 +1891,7 @@ test.describe('On richtext example', () => {
     await editor.assert.text(insertedText);
     await expect.poll(() => editor.get.modelText()).toBe(insertedText);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: insertedText.length },
       focus: { path: [0, 0], offset: insertedText.length },
     });
@@ -1850,6 +1921,7 @@ test.describe('On richtext example', () => {
     await expect.poll(() => editor.get.modelText()).toBe('');
     await editor.assert.blockTexts(['Enter some rich text…']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1874,6 +1946,7 @@ test.describe('On richtext example', () => {
       editor.root.locator('strong').filter({ hasText: 'abc' })
     ).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'abc'.length },
       focus: { path: [0, 0], offset: 'abc'.length },
     });
@@ -1904,6 +1977,7 @@ test.describe('On richtext example', () => {
     await editor.assert.text('two three');
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'two three'.length },
     });
@@ -1911,6 +1985,7 @@ test.describe('On richtext example', () => {
     await expect(editor.root.locator('em')).toHaveText('two three');
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'two'.length },
       focus: { path: [0, 0], offset: 'two three'.length },
     });
@@ -1920,6 +1995,7 @@ test.describe('On richtext example', () => {
     ).toHaveCount(1);
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'two'.length },
       focus: { path: [0, 0], offset: 'two'.length },
     });
@@ -1946,6 +2022,7 @@ test.describe('On richtext example', () => {
       editor.root.locator('em strong').filter({ hasText: 'three' })
     ).toHaveCount(1);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1], offset: 'oow'.length },
       focus: { path: [0, 1], offset: 'oow'.length },
     });
@@ -1996,8 +2073,6 @@ test.describe('On richtext example', () => {
       const anchor = { path: [0, 1], offset: 0 };
       const focus = { path: [0, 3], offset: 'much'.length };
 
-      handle.selectRange({ anchor, focus });
-
       const range = element.ownerDocument.createRange();
       range.setStart(textNodeAt(anchor.path), anchor.offset);
       range.setEnd(textNodeAt(focus.path), focus.offset);
@@ -2028,6 +2103,7 @@ test.describe('On richtext example', () => {
       editor.root.locator('em').filter({ hasText: 'much' })
     ).toHaveCount(0);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1], offset: insertedText.length },
       focus: { path: [0, 1], offset: insertedText.length },
     });
@@ -2075,6 +2151,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts(['one!', 'two.']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 'two.'.length },
       focus: { path: [1, 0], offset: 'two.'.length },
     });
@@ -2123,18 +2200,14 @@ test.describe('On richtext example', () => {
       (element: HTMLElement, { insertedPrefix }) => {
         const handle = (element as Record<string, any>).__pliteBrowserHandle;
 
-        if (!handle?.applyOperations) {
-          throw new Error('Cannot apply operation during IME composition');
+        if (!handle?.insertTextAt) {
+          throw new Error('Cannot insert model text during IME composition');
         }
 
-        handle.applyOperations([
-          {
-            offset: 0,
-            path: [0, 0],
-            text: insertedPrefix,
-            type: 'insert_text',
-          },
-        ]);
+        handle.insertTextAt(insertedPrefix, {
+          offset: 0,
+          path: [0, 0],
+        });
       },
       { insertedPrefix: prefix }
     );
@@ -2148,6 +2221,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts([expectedText]);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: expectedOffset },
       focus: { path: [0, 0], offset: expectedOffset },
     });
@@ -2196,18 +2270,15 @@ test.describe('On richtext example', () => {
       (element: HTMLElement, { deleted, offset }) => {
         const handle = (element as Record<string, any>).__pliteBrowserHandle;
 
-        if (!handle?.applyOperations) {
-          throw new Error('Cannot apply operation during IME composition');
+        if (!handle?.deleteTextAt) {
+          throw new Error('Cannot delete model text during IME composition');
         }
 
-        handle.applyOperations([
-          {
-            offset,
-            path: [0, 0],
-            text: deleted,
-            type: 'remove_text',
-          },
-        ]);
+        handle.deleteTextAt({
+          kind: 'text',
+          anchor: { offset, path: [0, 0] },
+          focus: { offset: offset + deleted.length, path: [0, 0] },
+        });
       },
       { deleted: deletedText, offset: compositionOffset }
     );
@@ -2221,6 +2292,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts([expectedText]);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: expectedOffset },
       focus: { path: [0, 0], offset: expectedOffset },
     });
@@ -2293,6 +2365,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts([expectedText]);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: expectedOffset },
       focus: { path: [0, 0], offset: expectedOffset },
     });
@@ -2324,10 +2397,12 @@ test.describe('On richtext example', () => {
     await editor.assert.blockTexts(['one two', 'three', 'four five']);
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'one '.length },
       focus: { path: [2, 0], offset: 'four'.length },
     });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'one '.length },
       focus: { path: [2, 0], offset: 'four'.length },
     });
@@ -2351,6 +2426,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts([`one ${insertedText} five`]);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: `one ${insertedText}`.length },
       focus: { path: [0, 0], offset: `one ${insertedText}`.length },
     });
@@ -2382,10 +2458,12 @@ test.describe('On richtext example', () => {
     await editor.assert.blockTexts(['one two', 'three', 'four five']);
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'one '.length },
       focus: { path: [2, 0], offset: 'four'.length },
     });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'one '.length },
       focus: { path: [2, 0], offset: 'four'.length },
     });
@@ -2398,6 +2476,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts([`one ${insertedText} five`]);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: `one ${insertedText}`.length },
       focus: { path: [0, 0], offset: `one ${insertedText}`.length },
     });
@@ -2453,6 +2532,7 @@ test.describe('On richtext example', () => {
     await expect.poll(() => editor.get.modelText()).toBe('');
     await editor.assert.blockTexts(['Enter some rich text…']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -2519,6 +2599,7 @@ test.describe('On richtext example', () => {
     await editor.assert.blockTexts(['Hello']);
     await expect.poll(() => editor.get.modelText()).toBe('Hello');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Hello'.length },
       focus: { path: [0, 0], offset: 'Hello'.length },
     });
@@ -2539,6 +2620,7 @@ test.describe('On richtext example', () => {
       },
     });
     const selection = {
+      kind: 'text',
       anchor: { path: [0, 6], offset: 1 },
       focus: { path: [0, 6], offset: 1 },
     };
@@ -2586,6 +2668,7 @@ test.describe('On richtext example', () => {
     });
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -2601,6 +2684,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -2636,6 +2720,7 @@ test.describe('On richtext example', () => {
         scrollContainer.style.overflowY = 'auto';
       }, scrollTarget);
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 6], offset: 1 },
         focus: { path: [0, 6], offset: 1 },
       });
@@ -2670,6 +2755,7 @@ test.describe('On richtext example', () => {
       element.style.scrollBehavior = 'auto';
     });
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 6], offset: 1 },
       focus: { path: [0, 6], offset: 1 },
     });
@@ -2747,6 +2833,7 @@ test.describe('On richtext example', () => {
       element.style.scrollBehavior = 'auto';
     });
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 6], offset: 1 },
       focus: { path: [0, 6], offset: 1 },
     });
@@ -2760,6 +2847,7 @@ test.describe('On richtext example', () => {
     const lastBlockIndex = blockTexts.length - 1;
     const lastBlockText = blockTexts[lastBlockIndex] ?? '';
     const bottomSelection = {
+      kind: 'text',
       anchor: { path: [lastBlockIndex, 0], offset: lastBlockText.length },
       focus: { path: [lastBlockIndex, 0], offset: lastBlockText.length },
     };
@@ -2809,6 +2897,7 @@ test.describe('On richtext example', () => {
     const boundaryPoint = { path: [0, 1], offset: 'rich'.length };
 
     await editor.selection.select({
+      kind: 'text',
       anchor: boundaryPoint,
       focus: boundaryPoint,
     });
@@ -2818,6 +2907,7 @@ test.describe('On richtext example', () => {
     await editor.assert.text(insertedText);
     await expect(editor.root.locator('strong').first()).toHaveText('rich ');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1], offset: 'rich '.length },
       focus: { path: [0, 1], offset: 'rich '.length },
     });
@@ -2827,6 +2917,7 @@ test.describe('On richtext example', () => {
     await editor.assert.text(initialText);
     await expect(editor.root.locator('strong').first()).toHaveText('rich');
     await editor.assert.selection({
+      kind: 'text',
       anchor: boundaryPoint,
       focus: boundaryPoint,
     });
@@ -2841,10 +2932,12 @@ test.describe('On richtext example', () => {
     const mobile = testInfo.project.name === 'mobile';
     const selection = mobile
       ? {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         }
       : {
+          kind: 'text',
           anchor: { path: [0, 6], offset: 1 },
           focus: { path: [0, 6], offset: 1 },
         };
@@ -2853,10 +2946,12 @@ test.describe('On richtext example', () => {
       : 'This is editable rich text, much better than a <textarea>!S';
     const expectedSelection = mobile
       ? {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         }
       : {
+          kind: 'text',
           anchor: { path: [0, 6], offset: 2 },
           focus: { path: [0, 6], offset: 2 },
         };
@@ -2915,10 +3010,12 @@ test.describe('On richtext example', () => {
       createPliteBrowserNavigationTypingGauntlet({
         insertedText: 'G',
         movedSelection: {
+          kind: 'text',
           anchor: { path: [0, 6], offset: 1 },
           focus: { path: [0, 6], offset: 1 },
         },
         startSelection: {
+          kind: 'text',
           anchor: { path: [0, 6], offset: 0 },
           focus: { path: [0, 6], offset: 0 },
         },
@@ -2958,6 +3055,7 @@ test.describe('On richtext example', () => {
     expect(result.replay.steps[0]?.value).toMatchObject({
       kind: 'select',
       selection: {
+        kind: 'text',
         anchor: { path: [0, 6], offset: 0 },
         focus: { path: [0, 6], offset: 0 },
       },
@@ -3015,22 +3113,27 @@ test.describe('On richtext example', () => {
         insertedText: 'Q',
         navigationKeys: ['ArrowRight'],
         selectionAfterDelete: {
+          kind: 'text',
           anchor: { path: [0, 6], offset: 1 },
           focus: { path: [0, 6], offset: 1 },
         },
         selectionAfterFollowUp: {
+          kind: 'text',
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         },
         selectionAfterInsert: {
+          kind: 'text',
           anchor: { path: [0, 6], offset: 2 },
           focus: { path: [0, 6], offset: 2 },
         },
         selectionAfterNavigation: {
+          kind: 'text',
           anchor: { path: [0, 6], offset: 1 },
           focus: { path: [0, 6], offset: 1 },
         },
         startSelection: {
+          kind: 'text',
           anchor: { path: [0, 6], offset: 0 },
           focus: { path: [0, 6], offset: 0 },
         },
@@ -3041,10 +3144,12 @@ test.describe('On richtext example', () => {
           'This is editable rich text, much better than a <textarea>!Q',
         toolbarButtonTestId: 'block-button-heading-one',
         toolbarSelection: {
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         },
         toolbarSelectionAfterCommand: {
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         },
@@ -3141,19 +3246,23 @@ test.describe('On richtext example', () => {
         },
         followUpText: '!',
         pasteSelection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 4 },
         },
         pastedText: 'Paste',
         selectionAfterDeleteAfterPaste: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 4 },
           focus: { path: [0, 0], offset: 4 },
         },
         selectionAfterFollowUp: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 5 },
           focus: { path: [0, 0], offset: 5 },
         },
         selectionAfterPaste: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 5 },
           focus: { path: [0, 0], offset: 5 },
         },
@@ -3165,6 +3274,7 @@ test.describe('On richtext example', () => {
         textAfterPaste:
           'Paste is editable rich text, much better than a <textarea>!',
         wordDeleteSelection: {
+          kind: 'text',
           anchor: { path: [0, 6], offset: 1 },
           focus: { path: [0, 6], offset: 1 },
         },
@@ -3216,18 +3326,22 @@ test.describe('On richtext example', () => {
       createPliteBrowserSemanticEditingConformanceGauntlet({
         insertedText: 'M',
         selectionAfterDelete: {
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         },
         selectionAfterFollowUp: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
         selectionAfterInsert: {
+          kind: 'text',
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         },
         startSelection: {
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         },
@@ -3238,10 +3352,12 @@ test.describe('On richtext example', () => {
           "MSince it's rich text, you can do things like turn a selection of text",
         toolbarButtonTestId: 'block-button-heading-one',
         toolbarSelection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
         toolbarSelectionAfterCommand: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -3285,6 +3401,7 @@ test.describe('On richtext example', () => {
       },
     });
     const expectedSelection = {
+      kind: 'text',
       anchor: { path: [0, 6], offset: 1 },
       focus: { path: [0, 6], offset: 1 },
     };
@@ -3336,6 +3453,7 @@ test.describe('On richtext example', () => {
     const afterBackspaceText =
       'This is editable rich text, much better than a <textarea>!';
     const afterBackspaceSelection = {
+      kind: 'text',
       anchor: { path: [0, 6], offset: 1 },
       focus: { path: [0, 6], offset: 1 },
     };
@@ -3382,6 +3500,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 6], offset: 2 },
         focus: { path: [0, 6], offset: 2 },
       });
@@ -3402,6 +3521,7 @@ test.describe('On richtext example', () => {
     const afterDeleteText =
       'This is editable rich text, much better than a <textarea>';
     const afterDeleteSelection = {
+      kind: 'text',
       anchor: { path: [0, 5], offset: '<textarea>'.length },
       focus: { path: [0, 5], offset: '<textarea>'.length },
     };
@@ -3409,10 +3529,12 @@ test.describe('On richtext example', () => {
       'This is editable rich text, much better than a <textarea>Z';
     const afterFollowUpSelections = [
       {
+        kind: 'text',
         anchor: { path: [0, 5], offset: '<textarea>Z'.length },
         focus: { path: [0, 5], offset: '<textarea>Z'.length },
       },
       {
+        kind: 'text',
         anchor: { path: [0, 6], offset: 'Z'.length },
         focus: { path: [0, 6], offset: 'Z'.length },
       },
@@ -3505,6 +3627,7 @@ test.describe('On richtext example', () => {
 
       await editor.click();
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -3516,6 +3639,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         });
@@ -3550,6 +3674,7 @@ test.describe('On richtext example', () => {
       await editor.deleteFragment();
       await editor.insertText('abc');
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       });
@@ -3561,6 +3686,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 2 },
           focus: { path: [0, 0], offset: 2 },
         });
@@ -3770,6 +3896,7 @@ test.describe('On richtext example', () => {
     const afterDeleteText =
       ' is editable rich text, much better than a <textarea>!';
     const afterDeleteSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -3778,6 +3905,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -3799,6 +3927,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -3818,6 +3947,7 @@ test.describe('On richtext example', () => {
     const afterDeleteText =
       ' is editable rich text, much better than a <textarea>!';
     const afterDeleteSelection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -3826,6 +3956,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -3847,6 +3978,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -3866,12 +3998,14 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 6], offset: 1 },
       focus: { path: [0, 6], offset: 1 },
     });
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 6], offset: 1 },
         focus: { path: [0, 6], offset: 1 },
       });
@@ -3880,6 +4014,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 6], offset: 0 },
         focus: { path: [0, 6], offset: 0 },
       });
@@ -3890,6 +4025,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 6], offset: 1 },
         focus: { path: [0, 6], offset: 1 },
       });
@@ -3918,6 +4054,7 @@ test.describe('On richtext example', () => {
     const headingText = 'Heise';
     await editor.insertText(headingText);
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: headingText.length },
     });
@@ -4002,6 +4139,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -4038,6 +4176,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 1 },
         focus: { path: [1, 0], offset: 1 },
       });
@@ -4060,6 +4199,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -4073,6 +4213,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -4116,6 +4257,7 @@ test.describe('On richtext example', () => {
           kind: 'selectDOM',
           label: 'select-dom-navigation-start',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 0 },
           },
@@ -4145,6 +4287,7 @@ test.describe('On richtext example', () => {
           kind: 'assertSelection',
           label: 'assert-after-arrow-right-after-down',
           selection: {
+            kind: 'text',
             anchor: { path: [1, 0], offset: 1 },
             focus: { path: [1, 0], offset: 1 },
           },
@@ -4194,6 +4337,7 @@ test.describe('On richtext example', () => {
           kind: 'select',
           label: 'select-insert-backspace-start',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 4 },
             focus: { path: [0, 0], offset: 4 },
           },
@@ -4202,6 +4346,7 @@ test.describe('On richtext example', () => {
           kind: 'assertSelection',
           label: 'assert-insert-backspace-start',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 4 },
             focus: { path: [0, 0], offset: 4 },
           },
@@ -4215,6 +4360,7 @@ test.describe('On richtext example', () => {
           kind: 'assertSelection',
           label: 'assert-after-type-before-backspace',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 5 },
             focus: { path: [0, 0], offset: 5 },
           },
@@ -4234,6 +4380,7 @@ test.describe('On richtext example', () => {
           kind: 'assertSelection',
           label: 'assert-after-backspace',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 4 },
             focus: { path: [0, 0], offset: 4 },
           },
@@ -4248,6 +4395,7 @@ test.describe('On richtext example', () => {
           kind: 'select',
           label: 'select-delete-type-undo-range',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 4 },
           },
@@ -4261,6 +4409,7 @@ test.describe('On richtext example', () => {
           kind: 'assertSelection',
           label: 'assert-after-delete-selected-range',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 0 },
           },
@@ -4443,6 +4592,7 @@ test.describe('On richtext example', () => {
 
       await editor.assert.blockTexts(['foo', 'bar']);
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -4451,6 +4601,7 @@ test.describe('On richtext example', () => {
 
       await editor.assert.blockTexts(['foo', '', 'bar']);
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -4505,6 +4656,7 @@ test.describe('On richtext example', () => {
       await page.keyboard.press('Backspace');
       await page.keyboard.insertText(emojiText);
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -4513,6 +4665,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts(['', emojiText]);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -4525,6 +4678,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts([emojiText]);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -4555,6 +4709,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.blockTexts([emoji, 'after']);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -4683,6 +4838,7 @@ test.describe('On richtext example', () => {
     await editor.press('ArrowRight');
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -4757,9 +4913,10 @@ test.describe('On richtext example', () => {
     const result = await editor.scenario.run(
       'richtext-generated-mark-typing-gauntlet',
       createPliteBrowserMarkTypingGauntlet({
-        hotkey: 'Control+b',
+        hotkey: 'ControlOrMeta+b',
         insertedText: 'MARK',
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 4 },
           focus: { path: [0, 0], offset: 4 },
         },
@@ -4804,14 +4961,16 @@ test.describe('On richtext example', () => {
           offset: 7,
           text: ', you Ocan do things like turn a selection of text ',
         },
-        hotkey: 'Control+b',
+        hotkey: 'ControlOrMeta+b',
         insertedText: 'O',
         markSelection: {
+          kind: 'text',
           anchor: { path: [1, 0], offset: 16 },
           focus: { path: [1, 0], offset: 20 },
         },
         selectionTransport: 'dom',
         selectionAfterInsert: {
+          kind: 'text',
           anchor: { path: [1, 2], offset: 7 },
           focus: { path: [1, 2], offset: 7 },
         },
@@ -4861,10 +5020,12 @@ test.describe('On richtext example', () => {
         insertedText: 'O',
         markButtonTestId: 'mark-button-bold',
         markSelection: {
+          kind: 'text',
           anchor: { path: [1, 0], offset: 16 },
           focus: { path: [1, 0], offset: 20 },
         },
         selectionAfterInsert: {
+          kind: 'text',
           anchor: { path: [1, 2], offset: 7 },
           focus: { path: [1, 2], offset: 7 },
         },
@@ -4931,6 +5092,7 @@ test.describe('On richtext example', () => {
           kind: 'assertSelection',
           label: 'assert-model-selected-word',
           selection: {
+            kind: 'text',
             anchor: { offset: 16, path: [1, 0] },
             focus: { offset: 20, path: [1, 0] },
           },
@@ -4969,6 +5131,7 @@ test.describe('On richtext example', () => {
           kind: 'assertSelection',
           label: 'assert-selection-after-toolbar-mark-click',
           selection: {
+            kind: 'text',
             anchor: { path: [1, 2], offset: 7 },
             focus: { path: [1, 2], offset: 7 },
           },
@@ -5035,11 +5198,13 @@ test.describe('On richtext example', () => {
     try {
       await editor.selection.collapse({ path: [0, 0], offset: 0 });
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
       await editor.root.dispatchEvent('mousedown');
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -5069,6 +5234,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         });
@@ -5082,6 +5248,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         });
@@ -5171,6 +5338,7 @@ test.describe('On richtext example', () => {
     try {
       await editor.selection.collapse({ path: [0, 0], offset: 0 });
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -5230,10 +5398,12 @@ test.describe('On richtext example', () => {
 
     try {
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -5267,6 +5437,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         });
@@ -5282,6 +5453,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 2 },
           focus: { path: [0, 0], offset: 2 },
         });
@@ -5304,6 +5476,7 @@ test.describe('On richtext example', () => {
 
     try {
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -5316,6 +5489,7 @@ test.describe('On richtext example', () => {
 
       await editor.root.dispatchEvent('mousedown');
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -5339,6 +5513,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         });
@@ -5374,6 +5549,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -5450,6 +5626,7 @@ test.describe('On richtext example', () => {
     await expect(editor.root.locator('h1')).toHaveText('Copied heading');
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'Copied heading'.length },
     });
@@ -5559,6 +5736,7 @@ test.describe('On richtext example', () => {
 
     try {
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -5569,6 +5747,7 @@ test.describe('On richtext example', () => {
 
       await editor.root.dispatchEvent('mousedown');
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 5 },
       });
@@ -5592,6 +5771,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 5 },
         });
@@ -5615,6 +5795,7 @@ test.describe('On richtext example', () => {
     try {
       await editor.root.dispatchEvent('mousedown');
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 8 },
         focus: { path: [0, 0], offset: 16 },
       });
@@ -5671,19 +5852,23 @@ test.describe('On richtext example', () => {
         },
         markButtonTestId: 'mark-button-bold',
         markSelection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 8 },
           focus: { path: [0, 0], offset: 16 },
         },
         selectedText: 'editable',
         selectionAfterArrowLeft: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 15 },
           focus: { path: [0, 0], offset: 15 },
         },
         selectionAfterCollapse: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 16 },
           focus: { path: [0, 0], offset: 16 },
         },
         selectionAfterInsert: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 17 },
           focus: { path: [0, 0], offset: 17 },
         },
@@ -5821,6 +6006,7 @@ test.describe('On richtext example', () => {
 
     try {
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -5832,6 +6018,7 @@ test.describe('On richtext example', () => {
 
       await editor.root.dispatchEvent('mousedown');
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -5850,6 +6037,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         });
@@ -5872,6 +6060,7 @@ test.describe('On richtext example', () => {
 
     try {
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -5884,6 +6073,7 @@ test.describe('On richtext example', () => {
 
       await editor.root.dispatchEvent('mousedown');
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -5904,6 +6094,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [1, 0, 0], offset: 0 },
           focus: { path: [1, 0, 0], offset: 0 },
         });
@@ -5933,6 +6124,7 @@ test.describe('On richtext example', () => {
 
     try {
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: secondPrefixText.length },
       });
@@ -5940,6 +6132,7 @@ test.describe('On richtext example', () => {
       await expect(root.locator('ul > li')).toHaveCount(2);
 
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0, 0], offset: 0 },
         focus: { path: [0, 1, 2], offset: secondTailText.length },
       });
@@ -5974,6 +6167,7 @@ test.describe('On richtext example', () => {
 
     try {
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 6], offset: 1 },
       });
@@ -6009,6 +6203,7 @@ test.describe('On richtext example', () => {
 
     try {
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 5 },
       });
@@ -6032,6 +6227,7 @@ test.describe('On richtext example', () => {
       ).toHaveCount(1);
 
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 5 },
       });
@@ -6071,6 +6267,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         });
@@ -6081,6 +6278,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [0, 0, 0], offset: 0 },
           focus: { path: [0, 0, 0], offset: 0 },
         });
@@ -6092,6 +6290,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         });
@@ -6119,6 +6318,7 @@ test.describe('On richtext example', () => {
           kind: 'select',
           label: 'select-text-input-start',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 4 },
             focus: { path: [0, 0], offset: 4 },
           },
@@ -6138,6 +6338,7 @@ test.describe('On richtext example', () => {
           kind: 'assertSelection',
           label: 'assert-selection-after-text-input',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 5 },
             focus: { path: [0, 0], offset: 5 },
           },
@@ -6184,6 +6385,7 @@ test.describe('On richtext example', () => {
           kind: 'assertSelection',
           label: 'assert-selection-after-backspace',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 4 },
             focus: { path: [0, 0], offset: 4 },
           },
@@ -6264,6 +6466,7 @@ test.describe('On richtext example', () => {
           kind: 'select',
           label: 'select-text-repair-start',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 4 },
             focus: { path: [0, 0], offset: 4 },
           },
@@ -6283,6 +6486,7 @@ test.describe('On richtext example', () => {
           kind: 'assertSelection',
           label: 'assert-selection-after-text-repair',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 5 },
             focus: { path: [0, 0], offset: 5 },
           },
@@ -6345,6 +6549,7 @@ test.describe('On richtext example', () => {
 
     await editor.root.click();
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -6352,6 +6557,7 @@ test.describe('On richtext example', () => {
     await editor.selection.importDOM();
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -6378,6 +6584,7 @@ test.describe('On richtext example', () => {
       | undefined;
 
     expect(importTrace?.selectionAfter).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -6411,12 +6618,14 @@ test.describe('On richtext example', () => {
     });
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     });
     await editor.page.keyboard.type('R');
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     });
@@ -6449,6 +6658,7 @@ test.describe('On richtext example', () => {
       | undefined;
 
     expect(repairTrace?.selectionAfter).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     });
@@ -6479,6 +6689,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 4], offset: 4 },
       focus: { path: [0, 4], offset: 4 },
     });
@@ -6488,6 +6699,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 4], offset: 1 },
         focus: { path: [0, 4], offset: 1 },
       });
@@ -6530,6 +6742,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 4], offset: 7 },
         focus: { path: [0, 4], offset: 7 },
       });
@@ -6586,6 +6799,7 @@ test.describe('On richtext example', () => {
 
       await editor.click();
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -6595,6 +6809,7 @@ test.describe('On richtext example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 6], offset: 1 },
         });
@@ -6666,6 +6881,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 6], offset: 1 },
       });
@@ -6795,6 +7011,7 @@ test.describe('On richtext example', () => {
       await page.getByTestId('block-button-heading-one').click();
 
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 'Heading'.length },
       });
@@ -6804,6 +7021,7 @@ test.describe('On richtext example', () => {
       await expect(editor.root.locator('h1')).toHaveText('Z');
       await expect(editor.root.locator('p')).toHaveCount(0);
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -6855,6 +7073,7 @@ test.describe('On richtext example', () => {
     await page.setViewportSize({ height: 720, width: 1100 });
     await editor.selection.collapse({ path: [0, 0], offset: 0 });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -6863,6 +7082,7 @@ test.describe('On richtext example', () => {
     await page.mouse.click(point.x, point.y);
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 6], offset: 1 },
       focus: { path: [0, 6], offset: 1 },
     });
@@ -6896,6 +7116,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 6], offset: 0 },
       focus: { path: [0, 6], offset: 0 },
     });
@@ -6923,6 +7144,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 2], offset: 1 },
       focus: { path: [0, 2], offset: 1 },
     });
@@ -6946,6 +7168,7 @@ test.describe('On richtext example', () => {
 
     if (browserName === 'firefox' || testInfo.project.name === 'mobile') {
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -7083,6 +7306,7 @@ test.describe('On richtext example', () => {
 
     await editor.assert.text('This is editable rich text');
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'This is editable '.length },
     });
@@ -7107,6 +7331,7 @@ test.describe('On richtext example', () => {
       'Paste! is editable rich text, much better than a <textarea>!';
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -7120,11 +7345,13 @@ test.describe('On richtext example', () => {
     await editor.assert.text(afterPasteText);
     if (testInfo.project.name === 'mobile') {
       await editor.selection.select({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 5 },
       });
     } else {
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 5 },
       });
@@ -7145,6 +7372,7 @@ test.describe('On richtext example', () => {
     await editor.assert.text(afterTypingText);
     if (testInfo.project.name !== 'mobile') {
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });

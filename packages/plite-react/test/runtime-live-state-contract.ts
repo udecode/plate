@@ -49,8 +49,8 @@ describe('plite-react runtime live state facade', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const blockRuntimeId = snapshot.index.pathToId['0'];
-    const textRuntimeId = snapshot.index.pathToId['0.0'];
+    const blockRuntimeId = snapshot.index.idAt([0]);
+    const textRuntimeId = snapshot.index.idAt([0, 0]);
 
     if (!blockRuntimeId || !textRuntimeId) {
       throw new Error('Expected runtime ids for runtime facade contract');
@@ -73,6 +73,7 @@ describe('plite-react runtime live state facade', () => {
   test('owns selection and marks fallback writes for react runtime callers', () => {
     const editor = createEditor();
     const selection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     };

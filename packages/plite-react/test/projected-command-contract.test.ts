@@ -1,17 +1,18 @@
-import { readFileSync } from 'node:fs';
 import {
   createEditorRuntime,
   createEditorView,
   defineEditorExtension,
+  defineEditorSchema,
+  element,
+  editorCommands,
+  schema,
   type EditorExtension,
   type Point,
   type RootKey,
 } from '@platejs/plite';
 import {
   getLastCommit as editorGetLastCommit,
-  getOperations as editorGetOperations,
   getSelection as editorGetSelection,
-  rangeRefs as editorRangeRefs,
   string as editorString,
 } from '@platejs/plite/internal';
 import { dom } from '@platejs/plite-dom';
@@ -56,25 +57,57 @@ class FakeDataTransfer {
 const encodePliteFragment = (fragment: unknown) =>
   globalThis.btoa(encodeURIComponent(JSON.stringify(fragment)));
 
-const contentRootExtension = defineEditorExtension({
-  elements: [
-    {
-      type: 'content-card',
-      contentRoot: { slot: 'body' },
+const contentRootExtension = defineEditorSchema({
+  elements: {
+    'content-card': element({
+      contentRoot: {
+        content: schema.content.not(schema.content.text()),
+        slot: 'body',
+      },
       void: 'editable-island',
-    },
-  ],
-  name: 'projected-command-test',
+    }),
+  },
+  id: 'projected-command-test',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
 });
 
-const inlineLinkExtension = defineEditorExtension({
-  elements: [{ inline: true, type: 'link' }],
-  name: 'projected-command-inline-test',
+const inlineLinkExtension = defineEditorSchema({
+  elements: { link: element({ inline: true }) },
+  id: 'projected-command-inline-test',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
 });
 
-const structuralListExtension = defineEditorExtension({
-  elements: [{ type: 'bulleted-list' }, { type: 'list-item' }],
-  name: 'projected-command-structural-list-test',
+const structuralListExtension = defineEditorSchema({
+  elements: {
+    paragraph: element({
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    }),
+    'list-item': element({
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['list-item'],
+    }),
+    'bulleted-list': element({
+      content: schema.content.group('list-item', {
+        default: { type: 'list-item' },
+        min: 1,
+      }),
+      groups: ['block'],
+    }),
+  },
+  groups: { 'list-item': schema.group() },
+  id: 'projected-command-structural-list-test',
+  root: schema.root({
+    content: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+  }),
+  version: 1,
 });
 
 const paragraph = (text: string) => ({
@@ -195,19 +228,6 @@ const writeAmbiguousRepeatedSelection = (
 };
 
 describe('projected editable commands', () => {
-  it('keeps full-block delete-fragment profiler buckets for huge-document attribution', () => {
-    const source = readFileSync(
-      'src/editable/mutation-full-block-editing.ts',
-      'utf8'
-    );
-
-    expect(source).toContain('delete-fragment.full-top-level-paths');
-    expect(source).toContain('delete-fragment.consistent-marks');
-    expect(source).toContain('delete-fragment.selected-children');
-    expect(source).toContain('delete-fragment.replay-replace');
-    expect(source).toContain('markInternalOwnedReplayOperation');
-  });
-
   it('typing over a projected selection replaces the visible span across roots in one commit', () => {
     const { editor, graph } = createFixture();
 
@@ -226,36 +246,17 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'BefX'.length },
       focus: { path: [0, 0], offset: 'BefX'.length },
     });
     expect(readPliteViewSelection(editor)).toBe(null);
-    const textOperations = editorGetLastCommit(editor)?.operations.filter(
-      (operation) =>
-        operation.type === 'insert_text' || operation.type === 'remove_text'
-    );
+    const commit = editorGetLastCommit(editor);
 
-    expect(textOperations).toEqual([
-      {
-        offset: 0,
-        path: [0, 0],
-        root: SHARED_ROOT,
-        text: 'In',
-        type: 'remove_text',
-      },
-      {
-        offset: 'Bef'.length,
-        path: [0, 0],
-        text: 'ore',
-        type: 'remove_text',
-      },
-      {
-        offset: 'Bef'.length,
-        path: [0, 0],
-        text: 'X',
-        type: 'insert_text',
-      },
-    ]);
+    expect(commit?.changes.primary).not.toBeNull();
+    expect(commit?.changes.roots.size).toBe(1);
+    expect(commit?.changed.has('text')).toBe(true);
+    expect(commit?.changed.has('text', SHARED_ROOT)).toBe(true);
   });
 
   it('pasting over a projected selection replaces the visible span at the projected start', () => {
@@ -264,6 +265,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: point(undefined, [2, 0], 0),
         focus: point(undefined, [2, 0], 0),
       });
@@ -283,6 +285,7 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'BefZ'.length },
       focus: { path: [0, 0], offset: 'BefZ'.length },
     });
@@ -302,6 +305,7 @@ describe('projected editable commands', () => {
     writePliteViewSelection(
       editor,
       createPliteViewSelection(graph, {
+        kind: 'text',
         anchor: {
           owner: sharedOwner,
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
@@ -323,6 +327,7 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('InZ')] },
     });
     expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'InZ'.length, root: SHARED_ROOT },
       focus: { path: [0, 0], offset: 'InZ'.length, root: SHARED_ROOT },
     });
@@ -463,6 +468,7 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'BefZ'.length },
       focus: { path: [0, 0], offset: 'BefZ'.length },
     });
@@ -540,7 +546,7 @@ describe('projected editable commands', () => {
     expect(readPliteViewSelection(editor)).toBe(null);
   });
 
-  it('releases projected range refs when clipboard insertData handlers throw', () => {
+  it('preserves projected selection when clipboard insertData handlers throw', () => {
     const pasteError = new Error('custom paste failed');
     const clipboardExtension = defineEditorExtension({
       clipboard: {
@@ -563,7 +569,6 @@ describe('projected editable commands', () => {
       })
     ).toThrow(pasteError);
 
-    expect(editorRangeRefs(getCanonicalRuntimeEditor(editor)).size).toBe(0);
     expect(readPliteViewSelection(editor)).not.toBe(null);
   });
 
@@ -634,6 +639,7 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'Bef'.length },
       focus: { path: [0, 0], offset: 'Bef'.length },
     });
@@ -652,6 +658,7 @@ describe('projected editable commands', () => {
     writePliteViewSelection(
       editor,
       createPliteViewSelection(graph, {
+        kind: 'text',
         anchor: {
           owner: sharedOwner,
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
@@ -672,6 +679,7 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('In')] },
     });
     expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'In'.length, root: SHARED_ROOT },
       focus: { path: [0, 0], offset: 'In'.length, root: SHARED_ROOT },
     });
@@ -700,6 +708,7 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
     expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -718,6 +727,7 @@ describe('projected editable commands', () => {
     writePliteViewSelection(
       editor,
       createPliteViewSelection(graph, {
+        kind: 'text',
         anchor: {
           owner: sharedOwner,
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
@@ -738,6 +748,7 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('In'), paragraph('')] },
     });
     expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0, root: SHARED_ROOT },
       focus: { path: [1, 0], offset: 0, root: SHARED_ROOT },
     });
@@ -756,6 +767,7 @@ describe('projected editable commands', () => {
     writePliteViewSelection(
       editor,
       createPliteViewSelection(graph, {
+        kind: 'text',
         anchor: {
           owner: sharedOwner,
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
@@ -776,6 +788,7 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph(''), paragraph('In')] },
     });
     expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0, root: SHARED_ROOT },
       focus: { path: [0, 0], offset: 0, root: SHARED_ROOT },
     });
@@ -787,14 +800,14 @@ describe('projected editable commands', () => {
     const runtime = createEditorRuntime({
       extensions: [
         defineEditorExtension({
-          name: 'projected-command-delete-fragment-middleware',
-          transforms: {
-            deleteFragment({ next, options }) {
-              seenDirections.push(options?.direction);
+          commands: [
+            editorCommands.deleteFragment.handle(({ command }, next) => {
+              seenDirections.push(command.direction);
 
               return next();
-            },
-          },
+            }),
+          ],
+          name: 'projected-command-delete-fragment-handler',
         }),
       ],
       initialValue: [paragraph('alpha beta')],
@@ -803,6 +816,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'alpha beta'.length },
         focus: { path: [0, 0], offset: 'alpha beta'.length },
       });
@@ -813,6 +827,7 @@ describe('projected editable commands', () => {
         command: {
           kind: 'delete-fragment',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 'alpha'.length },
           },
@@ -821,9 +836,10 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(seenDirections).toEqual([undefined]);
+    expect(seenDirections).toEqual(['forward']);
     expect(editorString(editor, [0])).toBe(' beta');
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -837,6 +853,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       });
@@ -847,6 +864,7 @@ describe('projected editable commands', () => {
         command: {
           kind: 'delete-fragment',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 2 },
             focus: { path: [0, 0], offset: 2 },
           },
@@ -869,6 +887,7 @@ describe('projected editable commands', () => {
         command: {
           kind: 'delete-fragment',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 'alpha'.length },
           },
@@ -879,6 +898,7 @@ describe('projected editable commands', () => {
 
     expect(editor.read((state) => state.children())).toEqual([paragraph('')]);
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -895,6 +915,7 @@ describe('projected editable commands', () => {
         command: {
           kind: 'delete-fragment',
           selection: {
+            kind: 'text',
             anchor: { path: [1, 0], offset: 0 },
             focus: { path: [1, 0], offset: 'beta'.length },
           },
@@ -906,9 +927,44 @@ describe('projected editable commands', () => {
     expect(editor.read((state) => state.children())).toEqual([
       paragraph('alpha'),
     ]);
+    expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 'alpha'.length },
+      focus: { path: [0, 0], offset: 'alpha'.length },
+    });
   });
 
-  it('delete-fragment over every top-level block uses one replace_children operation', () => {
+  it('delete-fragment over a whole sibling paragraph selects the next block', () => {
+    const runtime = createEditorRuntime({
+      initialValue: [paragraph('alpha'), paragraph('beta')],
+    });
+    const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
+
+    expect(
+      applyEditableCommand({
+        command: {
+          kind: 'delete-fragment',
+          selection: {
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 0 },
+            focus: { path: [0, 0], offset: 'alpha'.length },
+          },
+        },
+        editor,
+      })
+    ).toBe(true);
+
+    expect(editor.read((state) => state.children())).toEqual([
+      paragraph('beta'),
+    ]);
+    expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    });
+  });
+
+  it('delete-fragment over every top-level block publishes one canonical root change', () => {
     const initialValue = Array.from({ length: 1200 }, (_, index) =>
       paragraph(`block-${index}`)
     );
@@ -916,13 +972,13 @@ describe('projected editable commands', () => {
       initialValue,
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
-    const operationsBefore = editorGetOperations(editor).length;
 
     expect(
       applyEditableCommand({
         command: {
           kind: 'delete-fragment',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: {
               path: [initialValue.length - 1, 0],
@@ -936,14 +992,15 @@ describe('projected editable commands', () => {
 
     expect(editor.read((state) => state.children())).toEqual([paragraph('')]);
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
-    expect(
-      editorGetOperations(editor)
-        .slice(operationsBefore)
-        .map((operation) => operation.type)
-    ).toEqual(['replace_children']);
+    const commit = editorGetLastCommit(editor);
+
+    expect(commit!.changes.primary).not.toBeNull();
+    expect(commit?.changes.roots.size).toBe(0);
+    expect(commit?.changed.has('structure')).toBe(true);
   });
 
   it('delete-fragment over mixed top-level marks keeps no active marks when the first text is unmarked', () => {
@@ -963,6 +1020,7 @@ describe('projected editable commands', () => {
         command: {
           kind: 'delete-fragment',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [1, 0], offset: 'bold'.length },
           },
@@ -998,6 +1056,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 2], offset: ' after'.length },
       });
@@ -1008,6 +1067,7 @@ describe('projected editable commands', () => {
       editor,
       inputType: 'insertText',
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 2], offset: ' after'.length },
       },
@@ -1021,6 +1081,7 @@ describe('projected editable commands', () => {
       },
     ]);
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -1032,7 +1093,7 @@ describe('projected editable commands', () => {
       initialValue: [
         {
           type: 'bulleted-list',
-          children: [{ text: 'one' }],
+          children: [{ type: 'list-item', children: [{ text: 'one' }] }],
         },
       ],
     });
@@ -1040,8 +1101,9 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 'one'.length },
+        kind: 'text',
+        anchor: { path: [0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 0], offset: 'one'.length },
       });
     });
 
@@ -1050,13 +1112,15 @@ describe('projected editable commands', () => {
       editor,
       inputType: 'insertText',
       selection: {
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 'one'.length },
+        kind: 'text',
+        anchor: { path: [0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 0], offset: 'one'.length },
       },
     });
 
     expect(editor.read((state) => state.children())).toEqual([paragraph('Z')]);
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -1092,6 +1156,50 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
     expect(readPliteViewSelection(editor)).toBe(null);
+  });
+
+  it('ownerless projected paste undo restores the transaction-start model selection', () => {
+    const runtime = createEditorRuntime({
+      extensions: [history(), dom()],
+      initialValue: [paragraph('Before'), paragraph('After')],
+    });
+    const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
+    const graph = createPliteProjectionGraph([
+      { path: [0], root: 'main' },
+      { path: [1], root: 'main' },
+    ]);
+    const selection = {
+      kind: 'text' as const,
+      anchor: point(undefined, [0, 0], 0),
+      focus: point(undefined, [1, 0], 'After'.length),
+    };
+    const projectedSelection = createPliteViewSelection(graph, {
+      anchor: { point: selection.anchor },
+      focus: { point: selection.focus },
+    });
+    const data = new FakeDataTransfer();
+
+    editor.update((tx) => {
+      tx.selection.set(selection);
+    });
+    writePliteViewSelection(editor, projectedSelection);
+    data.setData('text/plain', 'Z');
+
+    expect(
+      applyEditableCommand({
+        command: { data: data as unknown as DataTransfer, kind: 'insert-data' },
+        editor,
+      })
+    ).toBe(true);
+    expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
+      true
+    );
+    expect(editor.read((state) => state.children())).toEqual([
+      paragraph('Before'),
+      paragraph('After'),
+    ]);
+    expect(editor.read((state) => state.selection())).toEqual(selection);
+    expect(readPliteViewSelection(editor)).toEqual(projectedSelection);
   });
 
   it('notifies view-selection subscribers when document history restores sidecars', () => {
@@ -1135,6 +1243,7 @@ describe('projected editable commands', () => {
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
     const selection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: {
         path: [blockCount - 1, 0],
@@ -1179,6 +1288,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: point(undefined, [0, 0], 0),
         focus: point(undefined, [0, 0], 0),
       });
@@ -1204,6 +1314,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: point(undefined, [0, 0], 0),
         focus: point(undefined, [0, 0], 0),
       });
@@ -1229,6 +1340,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: point(undefined, [2, 0], 0),
         focus: point(undefined, [2, 0], 0),
       });
@@ -1237,6 +1349,7 @@ describe('projected editable commands', () => {
     editor.update((tx) => {
       tx.roots.replace(SHARED_ROOT, []);
       tx.selection.set({
+        kind: 'text',
         anchor: point(undefined, [2, 0], 0),
         focus: point(undefined, [2, 0], 0),
       });
@@ -1263,6 +1376,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: point(undefined, [0, 0], 0),
         focus: point(undefined, [0, 0], 0),
       });
@@ -1290,6 +1404,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: point(undefined, [2, 0], 0),
         focus: point(undefined, [2, 0], 0),
       });
@@ -1317,6 +1432,7 @@ describe('projected editable commands', () => {
     setDOMClipboardFormatKey(editor, 'x-custom-plite-fragment');
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: point(undefined, [2, 0], 0),
         focus: point(undefined, [2, 0], 0),
       });
@@ -1346,6 +1462,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: point(undefined, [2, 0], 0),
         focus: point(undefined, [2, 0], 0),
       });
@@ -1375,6 +1492,7 @@ describe('projected editable commands', () => {
       command: {
         kind: 'select',
         selection: {
+          kind: 'text',
           anchor: point(undefined, [2, 0], 0),
           focus: point(undefined, [2, 0], 'After'.length),
         },
@@ -1384,6 +1502,7 @@ describe('projected editable commands', () => {
 
     expect(readPliteViewSelection(editor)).toBe(null);
     expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: 'After'.length },
     });
@@ -1395,6 +1514,7 @@ describe('projected editable commands', () => {
     writePliteViewSelection(
       editor,
       createPliteViewSelection(graph, {
+        kind: 'text',
         anchor: { point: point(undefined, [0, 0], 'Before'.length) },
         focus: {
           owner: sharedOwner,
@@ -1470,6 +1590,7 @@ describe('projected editable commands', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: point(undefined, [0, 0], 'Before'.length),
         focus: point(undefined, [0, 0], 'Before'.length),
       });

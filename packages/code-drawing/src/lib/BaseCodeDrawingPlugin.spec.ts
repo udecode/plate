@@ -1,20 +1,32 @@
 import { createBaseEditor } from '@platejs/core';
+import { KEYS, NODES } from '@platejs/utils';
 
-import {
-  BaseCodeDrawingPlugin,
-  CODE_DRAWING_KEY,
-} from './BaseCodeDrawingPlugin';
+import { BaseCodeDrawingPlugin } from './BaseCodeDrawingPlugin';
 
 describe('BaseCodeDrawingPlugin', () => {
-  it('configures code drawing as a void element node', () => {
+  it('uses a camelCase command identity without changing serialized nodes', () => {
     const editor = createBaseEditor({
       plugins: [BaseCodeDrawingPlugin],
     });
 
     const plugin = editor.getPlugin(BaseCodeDrawingPlugin);
+    const element = { children: [{ text: '' }], type: NODES.codeDrawing };
 
-    expect(plugin.node.isElement).toBe(true);
-    expect(plugin.node.isVoid).toBe(true);
-    expect(editor.getType(CODE_DRAWING_KEY)).toBe(CODE_DRAWING_KEY);
+    expect(plugin.key).toBe('codeDrawing');
+    expect(editor.read.schema.isBlock(element)).toBe(true);
+    expect(editor.read.schema.isVoid(element)).toBe(true);
+    expect(
+      editor.read.schema.property({
+        key: 'data',
+        placement: 'element',
+        type: NODES.codeDrawing,
+      })?.value.kind
+    ).toBe('json');
+    expect(editor.getType(KEYS.codeDrawing)).toBe(NODES.codeDrawing);
+    expect(plugin.node.type).toBe(NODES.codeDrawing);
+
+    editor.update((tx) => {
+      expect(typeof tx.codeDrawing.insert).toBe('function');
+    });
   });
 });

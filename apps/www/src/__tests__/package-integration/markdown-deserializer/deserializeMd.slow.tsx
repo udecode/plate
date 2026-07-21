@@ -463,40 +463,6 @@ Paragraph 2 line 1`,
     ])('$name', ({ input, output }) => {
       expect(parseMarkdown(input)).toEqual(output);
     });
-
-    it('adds memoized source strings when memoize is enabled', () => {
-      expect(
-        parseMarkdown('# Heading\n> Quote\n```\nCode\n```', editor, {
-          memoize: true,
-        })
-      ).toEqual([
-        {
-          _memo: '# Heading',
-          children: [{ text: 'Heading' }],
-          type: 'h1',
-        },
-        {
-          _memo: '> Quote',
-          children: [
-            {
-              children: [{ text: 'Quote' }],
-              type: 'p',
-            },
-          ],
-          type: 'blockquote',
-        },
-        {
-          _memo: '```\nCode\n```',
-          children: [
-            {
-              children: [{ text: 'Code' }],
-              type: 'code_line',
-            },
-          ],
-          type: 'code_block',
-        },
-      ]);
-    });
   });
 
   describe('fixtures', () => {

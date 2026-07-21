@@ -1,4 +1,4 @@
-import { createBaseEditor, getEditorPlugin } from '@platejs/core';
+import { createBaseEditor, prepareParserPluginContext } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { JuicePlugin } from './JuicePlugin';
@@ -8,7 +8,8 @@ describe('JuicePlugin', () => {
     const editor = createBaseEditor({
       plugins: [JuicePlugin],
     });
-    const context = getEditorPlugin(editor, JuicePlugin);
+    const createContext = prepareParserPluginContext(editor, JuicePlugin);
+    const context = editor.read((state) => createContext(state));
     const transformData =
       JuicePlugin.inject?.plugins?.[KEYS.html]?.parser?.transformData;
 
@@ -16,11 +17,16 @@ describe('JuicePlugin', () => {
       throw new Error('Missing HTML parser transformData');
     }
 
+    const dataTransfer = new DataTransfer();
     const result = transformData({
       ...context,
       data: '<style><!-- .x { color: red; } --></style><p class="x">a</p>',
-      dataTransfer: new DataTransfer(),
-      mimeType: 'text/html',
+      format: 'text/html',
+      source: {
+        files: dataTransfer.files,
+        getData: (format: string) => dataTransfer.getData(format),
+        types: [...dataTransfer.types],
+      },
     });
 
     expect(result).toContain('style="color: red;"');
@@ -31,7 +37,8 @@ describe('JuicePlugin', () => {
     const editor = createBaseEditor({
       plugins: [JuicePlugin],
     });
-    const context = getEditorPlugin(editor, JuicePlugin);
+    const createContext = prepareParserPluginContext(editor, JuicePlugin);
+    const context = editor.read((state) => createContext(state));
     const transformData =
       JuicePlugin.inject?.plugins?.[KEYS.html]?.parser?.transformData;
 
@@ -39,12 +46,18 @@ describe('JuicePlugin', () => {
       throw new Error('Missing HTML parser transformData');
     }
 
+    const dataTransfer = new DataTransfer();
+
     expect(
       transformData({
         ...context,
         data: '<p>a</p>',
-        dataTransfer: new DataTransfer(),
-        mimeType: 'text/html',
+        format: 'text/html',
+        source: {
+          files: dataTransfer.files,
+          getData: (format: string) => dataTransfer.getData(format),
+          types: [...dataTransfer.types],
+        },
       })
     ).toBe('<p>a</p>');
   });

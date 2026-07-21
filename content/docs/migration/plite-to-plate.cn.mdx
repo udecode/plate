@@ -90,7 +90,7 @@ export function ParagraphElement(props: PlateElementProps) {
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
   node: {
-    isElement: true,
+    element: {},
     type: 'paragraph',
     component: ParagraphElement,
   },

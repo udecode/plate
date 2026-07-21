@@ -6,6 +6,7 @@ import type {
   Descendant,
   Element,
   EditorUpdateTransaction,
+  Range,
   Selection,
   Editor as EditorType,
 } from '@platejs/plite';
@@ -13,6 +14,10 @@ import {
   createEditor,
   createEditorRuntime,
   createEditorView,
+  defineCommandType,
+  defineEditorExtension,
+  DocumentChange,
+  SelectionApi,
 } from '@platejs/plite';
 import {
   deleteBackward as editorDeleteBackward,
@@ -20,19 +25,20 @@ import {
   getSnapshot as editorGetSnapshot,
   insertBreak as editorInsertBreak,
   moveNodes as editorMoveNodes,
-  registerCommand as editorRegisterCommand,
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { History, history } from '../src';
+import { type Batch, History, history } from '../src';
 
 const PLITE_IMPORT_RE = /import \{ createEditor \} from "@platejs\/plite"/;
 const PLITE_REACT_IMPORT_RE =
   /import \{ usePliteEditor \} from ["']@platejs\/plite-react["']/;
-const HISTORY_SKIP_DOC_RE = /editor\.update\.history\.skip\(\(tx\) =>/;
+const HISTORY_SKIP_DOC_RE =
+  /editor\.update\(\{ history: "skip" \}\)\.text\.insert\("draft"\)/;
 const USE_PLITE_EDITOR_RE = /const editor = usePliteEditor\(\{/;
 const CREATE_REACT_EDITOR_RE = /createReactEditor/;
+const ROLLBACK_ERROR_RE = /rollback/;
 
 const paragraph = (
   text: string,
@@ -63,12 +69,14 @@ const redo = (editor: EditorType) => {
 const replace = (
   editor: EditorType,
   children: Descendant[],
-  selection: Selection = null
+  selection: Range | Selection = null
 ) => {
   editorReplace(editor, {
     children: structuredClone(children),
-    selection: structuredClone(selection),
-    marks: null,
+    selection:
+      selection && !SelectionApi.isSelection(selection)
+        ? SelectionApi.text(structuredClone(selection))
+        : structuredClone(selection),
   });
 };
 
@@ -87,6 +95,37 @@ const write = (
 ) => {
   editor.update(fn);
 };
+
+const historyBatch = (): Batch => ({
+  change: DocumentChange.between(
+    { children: [paragraph('before')] },
+    { children: [paragraph('after')] }
+  ),
+  effects: [],
+  selectionAfter: null,
+  selectionBefore: null,
+});
+
+const structuralDocumentChange = (
+  change: DocumentChange,
+  primary: DocumentChange['primary'] = change.primary
+): DocumentChange =>
+  Object.assign(Object.create(null) as object, {
+    apply: DocumentChange.prototype.apply,
+    compose: DocumentChange.prototype.compose,
+    correct: DocumentChange.prototype.correct,
+    createRoots: change.createRoots,
+    deleteRoots: change.deleteRoots,
+    empty: change.empty,
+    invert: DocumentChange.prototype.invert,
+    iterChangedRanges: DocumentChange.prototype.iterChangedRanges,
+    mapPosition: DocumentChange.prototype.mapPosition,
+    primary,
+    primaryClassification: change.primaryClassification,
+    rootClassifications: change.rootClassifications,
+    roots: change.roots,
+    toJSON: DocumentChange.prototype.toJSON,
+  }) as DocumentChange;
 
 describe('plite-history contract', () => {
   it('documents React-owned history setup through usePliteEditor', () => {
@@ -109,6 +148,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Initial text')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 12 },
       focus: { path: [0, 0], offset: 12 },
     });
@@ -127,10 +167,101 @@ describe('plite-history contract', () => {
     assert.equal(History.isHistory(getHistory(editor)), true);
   });
 
+  it('accepts empty structural history and change values', () => {
+    const batch = historyBatch();
+    const emptyChange = DocumentChange.between(
+      { children: [paragraph('same')] },
+      { children: [paragraph('same')] }
+    );
+
+    assert.equal(
+      History.isHistory({
+        redos: [],
+        revision: 0,
+        schema: null,
+        undos: [],
+      }),
+      true
+    );
+    assert.equal(
+      History.isHistory({
+        redos: [],
+        revision: 1,
+        schema: null,
+        undos: [{ ...batch, change: emptyChange }],
+      }),
+      true
+    );
+  });
+
+  it('validates every undo and redo batch', () => {
+    const valid = historyBatch();
+    const invalid = { ...valid, change: {} };
+
+    for (const stack of ['redos', 'undos'] as const) {
+      assert.equal(
+        History.isHistory({
+          redos: stack === 'redos' ? [valid, invalid] : [],
+          revision: 0,
+          schema: null,
+          undos: stack === 'undos' ? [valid, invalid] : [],
+        }),
+        false
+      );
+    }
+  });
+
+  it('accepts a prototype-free structurally equivalent document change', () => {
+    const batch = historyBatch();
+    const change = structuralDocumentChange(batch.change);
+
+    assert.equal(change instanceof DocumentChange, false);
+    assert.equal(
+      History.isHistory({
+        redos: [],
+        revision: 1,
+        schema: null,
+        undos: [{ ...batch, change }],
+      }),
+      true
+    );
+  });
+
+  it('rejects an invalid nested change set', () => {
+    const batch = historyBatch();
+    const changeSet = batch.change.primary!;
+    const invalidChangeSet = Object.assign(Object.create(null) as object, {
+      apply: changeSet.apply,
+      compose: changeSet.compose,
+      data: changeSet.data,
+      empty: changeSet.empty,
+      invert: changeSet.invert,
+      iterChangedRanges: changeSet.iterChangedRanges,
+      length: changeSet.length,
+      mapPos: changeSet.mapPos,
+      movedNode: changeSet.movedNode,
+      newLength: changeSet.newLength,
+      sections: changeSet.sections,
+      toJSON: () => [{ length: -1 }],
+    }) as unknown as typeof changeSet;
+    const change = structuralDocumentChange(batch.change, invalidChangeSet);
+
+    assert.equal(
+      History.isHistory({
+        redos: [],
+        revision: 1,
+        schema: null,
+        undos: [{ ...batch, change }],
+      }),
+      false
+    );
+  });
+
   it('keeps empty undo and redo stacks as no-op commands', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Initial text')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 12 },
       focus: { path: [0, 0], offset: 12 },
     });
@@ -149,6 +280,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -171,6 +303,7 @@ describe('plite-history contract', () => {
     editor.update({ tags: 'native-text-input' }, (tx) => {
       for (let offset = 1; offset <= 10; offset++) {
         tx.selection.set({
+          kind: 'text',
           anchor: { path: [0, 0], offset },
           focus: { path: [0, 0], offset },
         });
@@ -180,14 +313,17 @@ describe('plite-history contract', () => {
         at: { path: [0, 0], offset: 1 },
       });
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 11 },
         focus: { path: [0, 0], offset: 11 },
       });
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 10 },
         focus: { path: [0, 0], offset: 10 },
       });
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 11 },
         focus: { path: [0, 0], offset: 11 },
       });
@@ -197,6 +333,7 @@ describe('plite-history contract', () => {
     assert.deepEqual(getVisibleState(editor), {
       children: [paragraph('Condico uredo ante arca umbra.')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
@@ -207,36 +344,27 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Condico uredo ante arca umbra.')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     });
 
     editor.update({ tags: 'native-text-input' }, (tx) => {
-      tx.operations.replay([
-        {
-          offset: 1,
-          path: [0, 0],
-          text: 'XXXXXXXXXX',
-          type: 'insert_text',
-        },
-        {
-          newProperties: {
-            anchor: { path: [0, 0], offset: 11 },
-            focus: { path: [0, 0], offset: 11 },
-          },
-          properties: {
-            anchor: { path: [0, 0], offset: 15 },
-            focus: { path: [0, 0], offset: 15 },
-          },
-          type: 'set_selection',
-        },
-      ]);
+      tx.text.insert('XXXXXXXXXX', {
+        at: { path: [0, 0], offset: 1 },
+      });
+      tx.selection.set({
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 11 },
+        focus: { path: [0, 0], offset: 11 },
+      });
     });
     undo(editor);
 
     assert.deepEqual(getVisibleState(editor), {
       children: [paragraph('Condico uredo ante arca umbra.')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
@@ -247,8 +375,66 @@ describe('plite-history contract', () => {
     assert.deepEqual(getVisibleState(editor), {
       children: [paragraph('CXXXXXXXXXXondico uredo ante arca umbra.')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 11 },
         focus: { path: [0, 0], offset: 11 },
+      },
+    });
+  });
+
+  it('preserves text selection metadata across native burst undo and redo', () => {
+    const editor = historyTestEditor();
+
+    replace(editor, [paragraph('Condico uredo ante arca umbra.')], {
+      anchor: { path: [0, 0], offset: 5 },
+      focus: { path: [0, 0], offset: 5 },
+      kind: 'text',
+    });
+    write(editor, (tx) => {
+      tx.selection.set({
+        affinity: 'backward',
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 5 },
+        kind: 'text',
+        marks: { italic: true },
+      });
+    });
+
+    editor.update({ tags: 'native-text-input' }, (tx) => {
+      tx.text.insert('XXXXXXXXXX', {
+        at: { path: [0, 0], offset: 1 },
+      });
+      tx.selection.set({
+        affinity: 'forward',
+        anchor: { path: [0, 0], offset: 11 },
+        focus: { path: [0, 0], offset: 11 },
+        kind: 'text',
+        marks: { bold: true },
+      });
+    });
+    undo(editor);
+
+    assert.deepEqual(getVisibleState(editor), {
+      children: [paragraph('Condico uredo ante arca umbra.')],
+      selection: {
+        affinity: 'backward' as const,
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+        kind: 'text' as const,
+        marks: { italic: true },
+      },
+    });
+
+    redo(editor);
+
+    assert.deepEqual(getVisibleState(editor), {
+      children: [paragraph('CXXXXXXXXXXondico uredo ante arca umbra.')],
+      selection: {
+        affinity: 'forward' as const,
+        anchor: { path: [0, 0], offset: 11 },
+        focus: { path: [0, 0], offset: 11 },
+        kind: 'text' as const,
+        marks: { bold: true },
       },
     });
   });
@@ -257,52 +443,45 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Condico uredo ante arca umbra.')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     });
 
     write(editor, (tx) => {
-      tx.operations.replay([
-        {
-          offset: 1,
-          path: [0, 0],
-          text: 'XXXXXXXXXX',
-          type: 'insert_text',
-        },
-        {
-          newProperties: {
-            anchor: { path: [0, 0], offset: 11 },
-            focus: { path: [0, 0], offset: 11 },
-          },
-          properties: {
-            anchor: { path: [0, 0], offset: 15 },
-            focus: { path: [0, 0], offset: 15 },
-          },
-          type: 'set_selection',
-        },
-      ]);
+      tx.text.insert('XXXXXXXXXX', {
+        at: { path: [0, 0], offset: 1 },
+      });
+      tx.selection.set({
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 11 },
+        focus: { path: [0, 0], offset: 11 },
+      });
     });
     undo(editor);
 
     assert.deepEqual(getVisibleState(editor), {
       children: [paragraph('Condico uredo ante arca umbra.')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 5 },
       },
     });
   });
 
-  it('restores leading selection ops for non-native long text inserts before the caret', () => {
+  it('restores transaction-start selection when selection changes before the first document change', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Condico uredo ante arca umbra.')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
 
     write(editor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       });
@@ -315,8 +494,9 @@ describe('plite-history contract', () => {
     assert.deepEqual(getVisibleState(editor), {
       children: [paragraph('Condico uredo ante arca umbra.')],
       selection: {
-        anchor: { path: [0, 0], offset: 3 },
-        focus: { path: [0, 0], offset: 3 },
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
       },
     });
   });
@@ -370,6 +550,7 @@ describe('plite-history contract', () => {
 
     write(headerEditor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       });
@@ -377,6 +558,7 @@ describe('plite-history contract', () => {
     });
     write(mainEditor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       });
@@ -384,6 +566,7 @@ describe('plite-history contract', () => {
     });
     write(footerEditor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       });
@@ -391,6 +574,7 @@ describe('plite-history contract', () => {
     });
     write(headerEditor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       });
@@ -398,6 +582,7 @@ describe('plite-history contract', () => {
     });
     write(mainEditor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       });
@@ -468,6 +653,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('abcd')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -503,6 +689,7 @@ describe('plite-history contract', () => {
 
     write(mainEditor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       });
@@ -524,6 +711,7 @@ describe('plite-history contract', () => {
     assert.deepEqual(
       mainEditor.read((state) => state.selection()),
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       }
@@ -547,18 +735,7 @@ describe('plite-history contract', () => {
     });
 
     write(editor, (tx) => {
-      tx.operations.replay([
-        {
-          children: [],
-          index: 0,
-          newChildren: [paragraph('child')],
-          newSelection: null,
-          path: [],
-          root: childRoot,
-          selection: null,
-          type: 'replace_children',
-        },
-      ]);
+      tx.roots.create(childRoot, [paragraph('child')]);
       tx.nodes.insert(island, { at: [1] });
     });
 
@@ -591,6 +768,7 @@ describe('plite-history contract', () => {
   it('undoes a full-document selected text replacement as one structural batch', () => {
     const editor = historyTestEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 'two'.length },
     };
@@ -604,12 +782,6 @@ describe('plite-history contract', () => {
 
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('Z')]);
     assert.equal(getHistory(editor).undos.length, 1);
-    assert.deepEqual(
-      getHistory(editor).undos[0]?.operations.map(
-        (operation) => operation.type
-      ),
-      ['replace_children']
-    );
 
     undo(editor);
 
@@ -619,6 +791,7 @@ describe('plite-history contract', () => {
   it('undoes a full-document fragment deletion as one structural batch', () => {
     const editor = historyTestEditor();
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [2, 0], offset: 'three'.length },
     };
@@ -636,12 +809,6 @@ describe('plite-history contract', () => {
 
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('')]);
     assert.equal(getHistory(editor).undos.length, 1);
-    assert.deepEqual(
-      getHistory(editor).undos[0]?.operations.map(
-        (operation) => operation.type
-      ),
-      ['replace_children']
-    );
 
     undo(editor);
 
@@ -663,29 +830,23 @@ describe('plite-history contract', () => {
         } as Descendant,
       ],
       {
+        kind: 'text',
         anchor: { path: [1, 0, 0], offset: 3 },
         focus: { path: [1, 0, 0], offset: 3 },
       }
     );
 
     write(editor, (tx) => {
-      tx.operations.replay([
-        {
-          type: 'replace_children',
-          path: [1],
-          index: 0,
-          children: [oldChild],
-          newChildren: [newChild],
-          selection: {
-            anchor: { path: [1, 0, 0], offset: 3 },
-            focus: { path: [1, 0, 0], offset: 3 },
-          },
-          newSelection: {
-            anchor: { path: [1, 0, 0], offset: 3 },
-            focus: { path: [1, 0, 0], offset: 3 },
-          },
+      tx.nodes.replaceChildren([newChild], {
+        at: [1],
+        count: 1,
+        index: 0,
+        newSelection: {
+          kind: 'text',
+          anchor: { path: [1, 0, 0], offset: 3 },
+          focus: { path: [1, 0, 0], offset: 3 },
         },
-      ]);
+      });
     });
 
     editor.update(
@@ -693,26 +854,20 @@ describe('plite-history contract', () => {
         tags: ['collaboration', 'remote-insert', 'history-skip'],
       },
       (tx) => {
-        tx.operations.replay([
-          {
-            type: 'insert_node',
-            path: [0],
-            node: paragraph('remote'),
-          },
-        ]);
+        tx.nodes.insert(paragraph('remote'), { at: [0] });
       }
     );
 
-    const operation = getHistory(editor).undos[0]?.operations[0];
-
     assert.equal(getHistory(editor).undos.length, 1);
-
-    if (operation?.type !== 'replace_children') {
-      assert.fail('Expected replace_children to remain in undo history');
-    }
-
-    assert.deepEqual(operation.path, [2]);
-    assert.equal(operation.index, 0);
+    undo(editor);
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      paragraph('remote'),
+      paragraph('intro'),
+      {
+        type: 'quote',
+        children: [oldChild, paragraph('tail')],
+      },
+    ]);
   });
 
   it('rebases rootless replacement selections through non-main root edits', () => {
@@ -729,51 +884,28 @@ describe('plite-history contract', () => {
 
     write(headerEditor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       });
     });
 
     write(headerEditor, (tx) => {
-      tx.operations.replay([
-        {
-          children: [oldChild],
-          index: 0,
-          newChildren: [newChild],
-          newSelection: {
-            anchor: { path: [0, 0], offset: 3 },
-            focus: { path: [0, 0], offset: 3 },
-          },
-          path: [],
-          root: 'header',
-          selection: {
-            anchor: { path: [0, 0], offset: 3 },
-            focus: { path: [0, 0], offset: 3 },
-          },
-          type: 'replace_children',
+      tx.nodes.replaceChildren([newChild], {
+        at: [],
+        count: 1,
+        index: 0,
+        newSelection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 3 },
+          focus: { path: [0, 0], offset: 3 },
         },
-      ]);
+      });
     });
 
     headerEditor.update({ history: 'skip' }, (tx) => {
-      tx.operations.replay([
-        {
-          node: paragraph('remote'),
-          path: [0],
-          root: 'header',
-          type: 'insert_node',
-        },
-      ]);
+      tx.nodes.insert(paragraph('remote'), { at: [0] });
     });
-
-    const operation = getHistory(headerEditor).undos[0]?.operations[0];
-
-    if (operation?.type !== 'replace_children') {
-      assert.fail('Expected replace_children to remain in undo history');
-    }
-
-    assert.deepEqual(operation.selection?.anchor.path, [1, 0]);
-    assert.deepEqual(operation.newSelection?.anchor.path, [1, 0]);
 
     undo(headerEditor);
 
@@ -787,6 +919,7 @@ describe('plite-history contract', () => {
     assert.deepEqual(
       runtime.read((state) => state.selection()),
       {
+        kind: 'text',
         anchor: { path: [1, 0], offset: 3, root: 'header' },
         focus: { path: [1, 0], offset: 3, root: 'header' },
       }
@@ -797,6 +930,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('abcdef')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -809,14 +943,6 @@ describe('plite-history contract', () => {
       tx.text.insert('Y', { at: { path: [0, 0], offset: 0 } });
     });
 
-    const operation = getHistory(editor).undos[0]?.operations[0];
-
-    if (operation?.type !== 'insert_text') {
-      assert.fail('Expected insert_text to remain in undo history');
-    }
-
-    assert.equal(operation.offset, 4);
-
     undo(editor);
 
     assert.equal(editorString(editor, [0]), 'Yabcdef');
@@ -826,6 +952,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('ab')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -840,6 +967,7 @@ describe('plite-history contract', () => {
     editor.update({ history: 'skip' }, (tx) => {
       tx.text.delete({
         at: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 2 },
         },
@@ -857,75 +985,91 @@ describe('plite-history contract', () => {
   });
 
   it('rebases saved non-main split positions across history-skip text edits', () => {
-    const editor = createEditor({
+    const quote = (children: Descendant[]): Element => ({
+      children,
+      type: 'quote',
+    });
+    const runtime = createEditorRuntime({
       extensions: [history()],
       initialValue: {
         children: [paragraph('main')],
-        roots: { header: [paragraph('abcdef')] },
+        roots: {
+          header: [quote([paragraph('abc'), paragraph('def')])],
+        },
       },
     });
+    const editor = runtime.editor;
+    const headerEditor = createEditorView(runtime, { root: 'header' });
 
-    write(editor, (tx) => {
-      tx.operations.replay([
-        {
-          path: [0, 0],
-          position: 3,
-          properties: {},
-          root: 'header',
-          type: 'split_node',
-        },
-      ]);
+    write(headerEditor, (tx) => {
+      tx.nodes.split({ at: [0], position: 1 });
     });
+
+    assert.equal(getHistory(editor).undos.length, 1);
 
     editor.update({ history: 'skip' }, (tx) => {
       tx.text.insert('Y', {
-        at: { offset: 0, path: [0, 0], root: 'header' },
+        at: { offset: 0, path: [0, 0, 0], root: 'header' },
       });
     });
 
     undo(editor);
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('main')],
+      roots: {
+        header: [quote([paragraph('Yabc'), paragraph('def')])],
+      },
+    });
+
     redo(editor);
 
-    assert.deepEqual(
-      editor.read((state) => state.value()),
-      {
-        children: [paragraph('main')],
-        roots: {
-          header: [
-            {
-              type: 'paragraph',
-              children: [{ text: 'Yabc' }, { text: 'def' }],
-            },
-          ],
-        },
-      }
-    );
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('main')],
+      roots: {
+        header: [quote([paragraph('Yabc')]), quote([paragraph('def')])],
+      },
+    });
   });
 
   it('routes tx undo and redo through history commands', () => {
     const editor = historyTestEditor();
     const commands: string[] = [];
+    const redoCommand = defineCommandType<{
+      root: string;
+      type: 'history_redo';
+    }>('history_redo');
+    const undoCommand = defineCommandType<{
+      root: string;
+      type: 'history_undo';
+    }>('history_undo');
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeUndo = editorRegisterCommand(
-      editor,
-      'history_undo',
-      (context, next) => {
-        commands.push(context.command.type);
-        return next();
-      }
+    const unsubscribeUndo = editor.extend(
+      defineEditorExtension({
+        commands: [
+          undoCommand.handle((context, next) => {
+            commands.push(context.command.type);
+            return next();
+          }),
+        ],
+        name: 'test-history-undo-command',
+      })
     );
-    const unsubscribeRedo = editorRegisterCommand(
-      editor,
-      'history_redo',
-      (context, next) => {
-        commands.push(context.command.type);
-        return next();
-      }
+    const unsubscribeRedo = editor.extend(
+      defineEditorExtension({
+        commands: [
+          redoCommand.handle((context, next) => {
+            commands.push(context.command.type);
+            return next();
+          }),
+        ],
+        name: 'test-history-redo-command',
+      })
     );
 
     write(editor, (tx) => {
@@ -944,6 +1088,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -952,6 +1097,17 @@ describe('plite-history contract', () => {
     });
     undo(editor);
 
+    assert.equal(
+      editor.read((state) => state.history.redos().length),
+      1
+    );
+
+    assert.throws(() => {
+      editor.update((tx) => {
+        tx.history.discardRedo();
+        throw new Error('rollback');
+      });
+    }, ROLLBACK_ERROR_RE);
     assert.equal(
       editor.read((state) => state.history.redos().length),
       1
@@ -972,6 +1128,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -999,6 +1156,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('This is editable plain text')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'This is editable '.length },
       focus: { path: [0, 0], offset: 'This is editable plain '.length },
     });
@@ -1038,6 +1196,7 @@ describe('plite-history contract', () => {
         } as Descendant,
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 'This is '.length },
         focus: { path: [0, 2], offset: ' text'.length },
       }
@@ -1059,10 +1218,47 @@ describe('plite-history contract', () => {
     assert.deepEqual(getVisibleState(editor), before);
   });
 
+  it('does not merge typing into an unrelated multi-range structural batch', () => {
+    const editor = historyTestEditor();
+
+    replace(editor, [paragraph('one'), paragraph('two')], {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+    write(editor, (tx) => {
+      tx.nodes.insert(paragraph('middle'), { at: [1] });
+      tx.nodes.insert(paragraph('tail'), { at: [3] });
+    });
+
+    const ranges: Array<readonly [number, number, number, number]> = [];
+
+    editor.read.lastCommit()?.changes.iterChangedRanges((_root, ...range) => {
+      ranges.push(range);
+    });
+    assert.ok(ranges.length > 1);
+
+    write(editor, (tx) => {
+      tx.text.insert('!');
+    });
+
+    assert.equal(getHistory(editor).undos.length, 2);
+
+    undo(editor);
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      paragraph('one'),
+      paragraph('middle'),
+      paragraph('two'),
+      paragraph('tail'),
+    ]);
+  });
+
   it('uses update policy to push, merge, and skip history batches', () => {
     const pushEditor = historyTestEditor();
 
     replace(pushEditor, [paragraph('')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1079,6 +1275,7 @@ describe('plite-history contract', () => {
     const mergeEditor = historyTestEditor();
 
     replace(mergeEditor, [paragraph('')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1088,6 +1285,7 @@ describe('plite-history contract', () => {
     });
     mergeEditor.update({ history: 'merge' }, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1099,6 +1297,7 @@ describe('plite-history contract', () => {
     const skipEditor = historyTestEditor();
 
     replace(skipEditor, [paragraph('')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1114,6 +1313,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1136,6 +1336,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -1170,6 +1371,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('AAA'), paragraph('BBB')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -1206,6 +1408,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('AAA', { status: 'draft' })], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1240,14 +1443,7 @@ describe('plite-history contract', () => {
     const before = getVisibleState(editor);
 
     write(editor, (tx) => {
-      tx.operations.replay([
-        {
-          type: 'set_node',
-          path: [0, 0],
-          properties: { className: 'token' },
-          newProperties: { className: 'highlight' },
-        },
-      ]);
+      tx.nodes.set({ className: 'highlight' }, { at: [0, 0] });
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1275,6 +1471,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Initial text')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 12 },
       focus: { path: [0, 0], offset: 12 },
     });
@@ -1285,14 +1482,7 @@ describe('plite-history contract', () => {
     assert.equal(getHistory(editor).undos.length, 0);
 
     editor.update((tx) => {
-      tx.operations.replay([
-        {
-          type: 'set_node',
-          path: [0],
-          properties: {},
-          newProperties: { role: 'updated' },
-        },
-      ]);
+      tx.nodes.set({ role: 'updated' }, { at: [0] });
     });
 
     assert.equal(getHistory(editor).undos.length, 1);
@@ -1313,6 +1503,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1335,32 +1526,15 @@ describe('plite-history contract', () => {
     const before = getVisibleState(editor);
 
     editor.update((tx) => {
-      tx.operations.replay([
-        {
-          offset: 0,
-          path: [0, 0],
-          text: 'U',
-          type: 'insert_text',
-        },
-      ]);
+      tx.text.insert('U', { at: { path: [0, 0], offset: 0 } });
     });
     editor.update((tx) => {
-      tx.operations.replay([
-        {
-          newProperties: {
-            anchor: { path: [0, 0], offset: 1 },
-            focus: { path: [0, 0], offset: 1 },
-          },
-          properties: null,
-          type: 'set_selection',
-        },
-        {
-          offset: 1,
-          path: [0, 0],
-          text: 'n',
-          type: 'insert_text',
-        },
-      ]);
+      tx.selection.set({
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      });
+      tx.text.insert('n', { at: { path: [0, 0], offset: 1 } });
     });
 
     assert.equal(getHistory(editor).undos.length, 1);
@@ -1370,13 +1544,15 @@ describe('plite-history contract', () => {
     assert.deepEqual(getVisibleState(editor), before);
   });
 
-  it('undo restores the imported caret when selection import leads a text commit', () => {
+  it('undo restores transaction-start selection when selection import shares a text commit', () => {
     const editor = historyTestEditor();
     const start = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
     const middle = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     };
@@ -1384,19 +1560,8 @@ describe('plite-history contract', () => {
     replace(editor, [paragraph('abcdef')], start);
 
     editor.update((tx) => {
-      tx.operations.replay([
-        {
-          newProperties: middle,
-          properties: start,
-          type: 'set_selection',
-        },
-        {
-          offset: 3,
-          path: [0, 0],
-          text: 'X',
-          type: 'insert_text',
-        },
-      ]);
+      tx.selection.set(middle);
+      tx.text.insert('X', { at: { path: [0, 0], offset: 3 } });
     });
 
     assert.equal(editorString(editor, [0]), 'abcXdef');
@@ -1405,7 +1570,7 @@ describe('plite-history contract', () => {
 
     assert.deepEqual(getVisibleState(editor), {
       children: [paragraph('abcdef')],
-      selection: middle,
+      selection: start,
     });
 
     redo(editor);
@@ -1413,23 +1578,22 @@ describe('plite-history contract', () => {
     assert.deepEqual(getVisibleState(editor), {
       children: [paragraph('abcXdef')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },
     });
   });
 
-  it('redo preserves explicit selection after the first saveable operation', () => {
+  it('redo preserves explicit selection after the document change', () => {
     const editor = historyTestEditor();
     const middle = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     };
-    const afterInsert = {
-      anchor: { path: [0, 0], offset: 4 },
-      focus: { path: [0, 0], offset: 4 },
-    };
     const trailing = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     };
@@ -1437,19 +1601,8 @@ describe('plite-history contract', () => {
     replace(editor, [paragraph('abcdef')], middle);
 
     editor.update((tx) => {
-      tx.operations.replay([
-        {
-          offset: 3,
-          path: [0, 0],
-          text: 'X',
-          type: 'insert_text',
-        },
-        {
-          newProperties: trailing,
-          properties: afterInsert,
-          type: 'set_selection',
-        },
-      ]);
+      tx.text.insert('X', { at: { path: [0, 0], offset: 3 } });
+      tx.selection.set(trailing);
     });
 
     assert.deepEqual(getVisibleState(editor), {
@@ -1476,6 +1629,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('This is editable')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'This is '.length },
       focus: { path: [0, 0], offset: 'This is '.length },
     });
@@ -1500,6 +1654,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('This is editable')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 'This is '.length },
       focus: { path: [0, 0], offset: 'This is '.length },
     });
@@ -1514,34 +1669,21 @@ describe('plite-history contract', () => {
     assert.deepEqual(getVisibleState(editor), before);
   });
 
-  it('does not replay partial set_selection patches during undo after selection is cleared', () => {
+  it('does not replay partial selection range patches after selection is cleared', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
     const before = getVisibleState(editor);
 
     editor.update((tx) => {
-      tx.operations.replay([
-        {
-          offset: 0,
-          path: [0, 0],
-          text: 'A',
-          type: 'insert_text',
-        },
-        {
-          newProperties: {
-            focus: { path: [0, 0], offset: 0 },
-          },
-          properties: {
-            anchor: { path: [0, 0], offset: 1 },
-            focus: { path: [0, 0], offset: 1 },
-          },
-          type: 'set_selection',
-        },
-      ]);
+      tx.text.insert('A', { at: { path: [0, 0], offset: 0 } });
+      tx.selection.setRange({
+        focus: { path: [0, 0], offset: 0 },
+      });
     });
     write(editor, (tx) => {
       tx.selection.clear();
@@ -1556,6 +1698,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Alpha')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     });
@@ -1581,6 +1724,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('abcdef')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -1592,6 +1736,7 @@ describe('plite-history contract', () => {
 
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('abcdef')]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -1601,18 +1746,21 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Hello')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
 
     write(editor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 5 },
       });
     });
     write(editor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1626,6 +1774,7 @@ describe('plite-history contract', () => {
     });
     write(editor, (tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1635,6 +1784,7 @@ describe('plite-history contract', () => {
 
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('Hello')]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1644,6 +1794,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one'), paragraph('two'), paragraph('three')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [2, 0], offset: 3 },
     });
@@ -1668,6 +1819,7 @@ describe('plite-history contract', () => {
       },
     ];
     const selection: Selection = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     };
@@ -1687,10 +1839,11 @@ describe('plite-history contract', () => {
       },
       {
         type: 'paragraph',
-        children: [{ text: '' }, { bold: true, text: 'you' }],
+        children: [{ bold: true, text: 'you' }],
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -1704,6 +1857,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one'), paragraph('two'), paragraph('three')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -1722,6 +1876,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Hello'), paragraph('world!')], {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -1749,6 +1904,7 @@ describe('plite-history contract', () => {
         } as unknown as Descendant,
       ],
       {
+        kind: 'text',
         anchor: { path: [1, 0, 0], offset: 0 },
         focus: { path: [1, 0, 0], offset: 0 },
       }
@@ -1768,6 +1924,7 @@ describe('plite-history contract', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('word')], {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
@@ -1789,6 +1946,7 @@ describe('plite-history contract', () => {
       editor,
       [paragraph('one', { a: true }), paragraph('two', { b: true })],
       {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [1, 0], offset: 2 },
       }
@@ -1816,6 +1974,7 @@ describe('plite-history contract', () => {
         } as unknown as Descendant,
       ],
       {
+        kind: 'text',
         anchor: { path: [0, 0, 0], offset: 2 },
         focus: { path: [0, 0, 0], offset: 2 },
       }

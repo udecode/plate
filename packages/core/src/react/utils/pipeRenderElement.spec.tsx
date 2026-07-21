@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { property, schema, target } from '@platejs/plite';
 import { render } from '@testing-library/react';
 
 import { createBasePlugin } from '../../lib';
@@ -27,6 +28,29 @@ const createFallbackValue = () =>
       type: 'blockquote',
     },
   ] as any;
+
+const BlockquoteSchemaPlugin = createBasePlugin({
+  key: 'blockquoteSchema',
+  schema: {
+    elements: {
+      blockquote: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        groups: ['block'],
+      },
+    },
+  },
+});
+
+const ListStylePropertyPlugin = createBasePlugin({
+  key: 'listStyleProperty',
+  schema: {
+    properties: [
+      schema.elementProperty('listStyleType', property.string(), {
+        target: target.type('p'),
+      }),
+    ],
+  },
+});
 
 const renderPipe = (editor: ReturnType<typeof createPlateEditor>) => {
   const renderElement = pipeRenderElement(editor)!;
@@ -97,6 +121,7 @@ describe('pipeRenderElement', () => {
   it('resolves the node path on the block-id fast path', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
+      nodeId: true,
       plugins: [],
       value: createValue('block-1'),
     } as any);
@@ -107,6 +132,7 @@ describe('pipeRenderElement', () => {
   it('preserves non-string block ids on the block-id fast path', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
+      nodeId: true,
       plugins: [],
       value: [
         {
@@ -129,7 +155,7 @@ describe('pipeRenderElement', () => {
         createBasePlugin({
           key: 'p',
           node: {
-            isElement: true,
+            element: { groups: ['block'] },
             type: 'p',
           },
           render: {
@@ -161,7 +187,7 @@ describe('pipeRenderElement', () => {
         createBasePlugin({
           key: 'p',
           node: {
-            isElement: true,
+            element: { groups: ['block'] },
             type: 'p',
           },
           render: {
@@ -185,8 +211,7 @@ describe('pipeRenderElement', () => {
         createBasePlugin({
           key: 'hr',
           node: {
-            isElement: true,
-            isVoid: true,
+            element: { groups: ['block'], void: 'block' },
             type: 'hr',
           },
           render: {
@@ -253,7 +278,7 @@ describe('pipeRenderElement', () => {
 
   it('passes the node path to renderElement fallback props', () => {
     const editor = createPlateEditor({
-      plugins: [],
+      plugins: [BlockquoteSchemaPlugin],
       value: createFallbackValue(),
     });
     let receivedPath: any = 'unset';
@@ -289,7 +314,7 @@ describe('pipeRenderElement', () => {
         createBasePlugin({
           key: 'p',
           node: {
-            isElement: true,
+            element: { groups: ['block'] },
             props: {
               'data-probe': 'yes',
             },
@@ -336,6 +361,7 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
       plugins: [
+        ListStylePropertyPlugin,
         createBasePlugin({
           inject: {
             nodeProps: {
@@ -366,6 +392,7 @@ describe('pipeRenderElement', () => {
   it('keeps element context for inject.nodeProps transform hooks', () => {
     const editor = createPlateEditor({
       plugins: [
+        ListStylePropertyPlugin,
         createBasePlugin({
           inject: {
             nodeProps: {
@@ -408,6 +435,7 @@ describe('pipeRenderElement', () => {
   it('keeps element store context for inject.nodeProps transform hooks', () => {
     const editor = createPlateEditor({
       plugins: [
+        ListStylePropertyPlugin,
         createBasePlugin({
           inject: {
             nodeProps: {
@@ -449,6 +477,7 @@ describe('pipeRenderElement', () => {
   it('keeps pathless inject.nodeProps on the wrapped directional path', () => {
     const editor = createPlateEditor({
       plugins: [
+        ListStylePropertyPlugin,
         createBasePlugin({
           inject: {
             nodeProps: {
@@ -471,7 +500,7 @@ describe('pipeRenderElement', () => {
         createBasePlugin({
           key: 'p',
           node: {
-            isElement: true,
+            element: { groups: ['block'] },
             type: 'p',
           },
           rules: {
@@ -501,6 +530,7 @@ describe('pipeRenderElement', () => {
   it('keeps pathless inject.nodeProps when active belowNodes wrappers are present', () => {
     const editor = createPlateEditor({
       plugins: [
+        ListStylePropertyPlugin,
         createBasePlugin({
           inject: {
             nodeProps: {
@@ -566,7 +596,7 @@ describe('pipeRenderElement', () => {
         createBasePlugin({
           key: 'p',
           node: {
-            isElement: true,
+            element: { groups: ['block'] },
             type: 'p',
           },
           rules: {
@@ -593,7 +623,7 @@ describe('pipeRenderElement', () => {
           editOnly: true,
           key: 'p',
           node: {
-            isElement: true,
+            element: { groups: ['block'] },
             type: 'p',
           },
         }),

@@ -3,17 +3,21 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import React, { Profiler } from 'react';
 import type {
   Descendant,
-  Element as SlateElement,
-} from '../../../../../packages/slate/src/index.ts';
-import { Editor } from '../../../../../packages/slate/src/internal/index.ts';
+  Element,
+} from '../../../../../packages/plite/src/index.ts';
+import {
+  point as editorPoint,
+  replace as editorReplace,
+  string as editorString,
+} from '../../../../../packages/plite/src/internal/index.ts';
 import {
   createReactEditor,
   Editable,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderTextProps,
-  Slate,
-} from '../../../../../packages/slate-react/src/index.ts';
+  Plite,
+} from '../../../../../packages/plite-react/src/index.ts';
 import { mountApp, now, summarizeMetrics } from '../../shared/react-benchmark';
 
 (globalThis as typeof globalThis & { React?: typeof React }).React = React;
@@ -53,7 +57,7 @@ const createRenderers = (counts: Counts) => {
     attributes,
     children,
     element,
-  }: RenderElementProps<SlateElement>) => {
+  }: RenderElementProps<Element>) => {
     counts.elementRenders += 1;
     return React.createElement(
       element.type === 'heading-one' ? 'h1' : 'p',
@@ -77,7 +81,7 @@ const createRenderers = (counts: Counts) => {
 
 const createMountedEditor = async () => {
   const editor = createReactEditor();
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: createChildren(),
     selection: null,
   });
@@ -95,7 +99,7 @@ const createMountedEditor = async () => {
       ? { renderElement: createRenderers(counts).renderElement }
       : {};
   const app = await mountApp(
-    <Slate editor={editor}>
+    <Plite editor={editor}>
       <Profiler
         id="editable-blocks"
         onRender={(_id, phase, actualDuration) => {
@@ -116,7 +120,7 @@ const createMountedEditor = async () => {
           {...renderers}
         />
       </Profiler>
-    </Slate>
+    </Plite>
   );
 
   const resetProfiler = () => {
@@ -133,7 +137,7 @@ const createMountedEditor = async () => {
 };
 
 const mountedTextCount = (container: Element) =>
-  container.querySelectorAll('[data-slate-node="text"]').length;
+  container.querySelectorAll('[data-plite-node="text"]').length;
 
 const promoteSegment = async ({
   blockIndex,
@@ -146,7 +150,7 @@ const promoteSegment = async ({
 }) => {
   const segmentIndex = Math.floor(blockIndex / segmentSize);
   const partialDOMPlaceholder = container.querySelector(
-    `[data-slate-dom-strategy-placeholder="true"][data-slate-dom-strategy-segment="${segmentIndex}"]`
+    `[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="${segmentIndex}"]`
   );
 
   if (!partialDOMPlaceholder) {
@@ -263,7 +267,7 @@ const measureTyping = (
   }
 
   const profiler = context.readProfiler();
-  const text = Editor.string(context.editor, [blockIndex]);
+  const text = editorString(context.editor, [blockIndex]);
 
   if (!text.startsWith('X'.repeat(typeOps))) {
     throw new Error(`Typing assertion failed for block ${blockIndex}`);
@@ -294,8 +298,8 @@ const measureSelectAll = async () => {
     await React.act(async () => {
       context.editor.update((tx) => {
         tx.selection.set({
-          anchor: Editor.point(context.editor, [], { edge: 'start' }),
-          focus: Editor.point(context.editor, [], { edge: 'end' }),
+          anchor: editorPoint(context.editor, [], { edge: 'start' }),
+          focus: editorPoint(context.editor, [], { edge: 'end' }),
         });
       });
     });
@@ -330,7 +334,7 @@ const result = {
     iterations,
     typeOps,
   },
-  lane: 'slate-react-active-typing-breakdown',
+  lane: 'plite-react-active-typing-breakdown',
   scenarios: {
     middleShelledModelOnly: await measureScenario({
       blockIndex: Math.floor(blocks / 2),

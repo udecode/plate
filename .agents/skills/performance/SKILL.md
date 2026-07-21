@@ -19,7 +19,7 @@ Use this when a Plate plan claims speed, responsiveness, large-document readines
 | Source | Owns | Use in this pass |
 | --- | --- | --- |
 | `vercel-react-best-practices` | React/Next waterfalls, bundles, server/client fetching, rerenders, rendering, JS micro-opts, React runtime primitives | Load exact rule files for local micro-tactics. Do not paste the whole Vercel catalog into the plan. |
-| `react-useeffect` | Effect law, subscriptions, event/effect alternatives | Use when repeated units attach effects, listeners, observers, or store subscriptions. |
+| `react-useeffect` | Effect law, subscriptions, event/effect alternatives | Use when repeated units attach effects, listeners, observers, store subscriptions, or changing React context dependencies. |
 | Chrome DevTools, Lighthouse, web.dev docs | Browser traces, Core Web Vitals, network chains, layout shifts, long tasks | Use when load, hydration, layout, or input latency needs browser proof. |
 | `performance` | Big-O, cache shape, memory pressure, 10x/100x/1000x projections, cohorts, repeated-unit budgets, p95/p99 interactions, memory tags, degradation, native behavior proof, RUM/dashboard gaps | Record the final performance-lane verdict. |
 
@@ -105,7 +105,7 @@ Load only the relevant rule files. These are the unique performance-lane questio
 | [repeated-unit-budget](./rules/repeated-unit-budget.md) | Blocks, lines, rows, leaves, groups, decorations, or islands repeat at scale. |
 | [rare-state-isolation](./rules/rare-state-isolation.md) | Rare UI state is carried by every repeated unit. |
 | [event-delegation-budget](./rules/event-delegation-budget.md) | Thousands of repeated units attach pointer, hover, keyboard, drag, resize, selection, or scroll handlers. |
-| [effect-subscription-budget](./rules/effect-subscription-budget.md) | Repeated units run effects, subscribe to runtime stores, or resubscribe from unstable callbacks. |
+| [effect-subscription-budget](./rules/effect-subscription-budget.md) | Repeated units run effects, subscribe to runtime stores/changing context such as `usePath()`, or resubscribe from unstable callbacks. |
 | [css-layout-hotpath](./rules/css-layout-hotpath.md) | Selectors, layout reads/writes, drag/resize, overlays, or geometry may cause interaction latency. |
 | [interaction-inp-matrix](./rules/interaction-inp-matrix.md) | A plan claims responsiveness from averages, startup time, or one smoke benchmark. |
 | [memory-dom-tagging](./rules/memory-dom-tagging.md) | A mode may improve latency by increasing heap, DOM nodes, components, listeners, subscriptions, caches, or mounted groups. |
@@ -128,7 +128,7 @@ Use this shape for a large-document Plate review:
 - extra rules used: cohort-segmentation, repeated-unit-budget, interaction-inp-matrix, memory-dom-tagging, editor-native-behavior-proof
 - repeated unit: block
 - cohorts: normal 100 blocks; large 1,000 blocks; stress 10,000 blocks; pathological 50,000 nested/mixed blocks
-- budgets: per block <= 1 element component, 0 per-block global listeners, 0 per-block effects unless scoped by id/range, O(1) id/path lookup for hot interactions
+- budgets: per block <= 1 element component, 0 per-block global listeners, 0 per-block effects unless scoped by id/range, 0 reactive path/context dependencies for event-only work, O(1) id/path lookup for hot interactions
 - React/runtime primitives: fast render path and derived subscriptions; transitions only for non-urgent side panels, not editor typing
 - interaction metrics: startup, first type, middle type, range select, paste, undo, table range select by p50/p75/p95/p99
 - trace/CWV proof: Browser trace for load/hydration if route claim is included; editor interaction trace for typing/select/paste latency

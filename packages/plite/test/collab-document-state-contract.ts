@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
-  getCollabStatePatches as editorGetCollabStatePatches,
+  getCollabEffects as editorGetCollabEffects,
   getLastCommit as editorGetLastCommit,
 } from '@platejs/plite/internal';
 
@@ -12,6 +12,7 @@ import {
   type Element,
   defineStateField,
   type EditorUpdatePolicy,
+  valueCodecs,
 } from '@platejs/plite';
 
 const paragraph = (text: string): Element => ({
@@ -24,7 +25,7 @@ const documentTitle = defineStateField({
   collab: 'shared',
   history: 'push',
   initial: () => 'Untitled',
-  persist: true,
+  persist: valueCodecs.string,
 });
 
 const privateNote = defineStateField({
@@ -32,7 +33,7 @@ const privateNote = defineStateField({
   collab: 'local',
   history: 'push',
   initial: () => '',
-  persist: true,
+  persist: valueCodecs.string,
 });
 
 const createDocumentStateEditor = () =>
@@ -41,8 +42,8 @@ const createDocumentStateEditor = () =>
     initialValue: {
       children: [paragraph('body')],
       meta: {
-        [documentTitle.key]: 'Q2 Plan',
-        [privateNote.key]: '',
+        [documentTitle.key]: documentTitle.serialize('Q2 Plan'),
+        [privateNote.key]: privateNote.serialize(''),
       },
     },
   });
@@ -68,7 +69,7 @@ const remoteCollabPolicy = {
 } satisfies EditorUpdatePolicy;
 
 describe('collab document meta contract', () => {
-  it('replays shared state patches remotely without local undo history', () => {
+  it('replays shared effects remotely without local undo history', () => {
     const source = createDocumentStateEditor();
     const remote = createDocumentStateEditor();
 
@@ -78,26 +79,27 @@ describe('collab document meta contract', () => {
 
     const sourceCommit = editorGetLastCommit(source);
     assert(sourceCommit);
-    assert.deepEqual(sourceCommit.operations, []);
-    assert.deepEqual(sourceCommit.statePatches, [
+    assert.equal(sourceCommit.changes.empty, true);
+    assert.deepEqual(sourceCommit.effects, [
       {
-        key: documentTitle.key,
-        previousValue: 'Q2 Plan',
-        value: 'Q3 Plan',
+        type: documentTitle.effect,
+        value: { previousValue: 'Q2 Plan', value: 'Q3 Plan' },
       },
     ]);
     assert.equal(historyUndoCount(source), 1);
 
     remote.update(remoteCollabPolicy, (tx) => {
-      tx.operations.replay(sourceCommit.operations);
-      tx.statePatches.replay(sourceCommit.statePatches);
+      tx.changes.apply(sourceCommit.changes);
+      for (const effect of editorGetCollabEffects(source, sourceCommit)) {
+        tx.effects.emit(effect.type, effect.value);
+      }
     });
 
     const remoteCommit = editorGetLastCommit(remote);
     assert(remoteCommit);
     assert.equal(readTitle(remote), 'Q3 Plan');
-    assert.deepEqual(remoteCommit.operations, []);
-    assert.deepEqual(remoteCommit.statePatches, sourceCommit.statePatches);
+    assert.equal(remoteCommit.changes.empty, true);
+    assert.deepEqual(remoteCommit.effects, sourceCommit.effects);
     assert.deepEqual(remoteCommit.tags, remoteCollabTags);
     assert.equal(historyUndoCount(remote), 0);
     assert.deepEqual(
@@ -106,7 +108,7 @@ describe('collab document meta contract', () => {
     );
   });
 
-  it('exports only shared state patches for collaboration payloads', () => {
+  it('exports only shared effects for collaboration payloads', () => {
     const source = createDocumentStateEditor();
 
     source.update({ tags: ['local-edit', 'collab-export'] }, (tx) => {
@@ -116,23 +118,20 @@ describe('collab document meta contract', () => {
 
     const sourceCommit = editorGetLastCommit(source);
     assert(sourceCommit);
-    assert.deepEqual(sourceCommit.statePatches, [
+    assert.deepEqual(sourceCommit.effects, [
       {
-        key: documentTitle.key,
-        previousValue: 'Q2 Plan',
-        value: 'Q3 Plan',
+        type: documentTitle.effect,
+        value: { previousValue: 'Q2 Plan', value: 'Q3 Plan' },
       },
       {
-        key: privateNote.key,
-        previousValue: '',
-        value: 'draft only',
+        type: privateNote.effect,
+        value: { previousValue: '', value: 'draft only' },
       },
     ]);
-    assert.deepEqual(editorGetCollabStatePatches(source, sourceCommit), [
+    assert.deepEqual(editorGetCollabEffects(source, sourceCommit), [
       {
-        key: documentTitle.key,
-        previousValue: 'Q2 Plan',
-        value: 'Q3 Plan',
+        type: documentTitle.effect,
+        value: { previousValue: 'Q2 Plan', value: 'Q3 Plan' },
       },
     ]);
   });

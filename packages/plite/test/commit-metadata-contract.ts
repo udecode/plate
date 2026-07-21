@@ -12,7 +12,10 @@ import {
 import {
   createEditor,
   type Element,
+  defineEditorExtension,
+  defineEffect,
   defineStateField,
+  defineUpdateAnnotation,
   type EditorUpdatePolicy,
   type EditorUpdateTag,
 } from '@platejs/plite';
@@ -29,14 +32,15 @@ describe('commit metadata contract', () => {
     editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
     });
 
     const before = editorGetSnapshot(editor);
-    const blockRuntimeId = before.index.pathToId['0'];
-    const textRuntimeId = before.index.pathToId['0.0'];
+    const blockRuntimeId = before.index.idAt([0]);
+    const textRuntimeId = before.index.idAt([0, 0]);
 
     assert(blockRuntimeId);
     assert(textRuntimeId);
@@ -48,42 +52,55 @@ describe('commit metadata contract', () => {
     const commit = editorGetLastCommit(editor);
 
     assert(commit);
-    assert.deepEqual(commit.classes, ['text']);
     assert.deepEqual(commit.tags, ['history-push', 'paste']);
     assert.deepEqual(commit.selectionBefore, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
     assert.deepEqual(commit.selectionAfter, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     });
+    assert.equal(Object.isFrozen(commit.selectionBefore), true);
+    assert.equal(Object.isFrozen(commit.selectionBefore?.anchor), true);
+    assert.equal(Object.isFrozen(commit.selectionBefore?.anchor.path), true);
+    assert.equal(Object.isFrozen(commit.selectionAfter), true);
+    assert.equal(Object.isFrozen(commit.selectionAfter?.focus), true);
+    assert.equal(Object.isFrozen(commit.selectionAfter?.focus.path), true);
+    assert.throws(() => {
+      if (commit.selectionBefore) {
+        commit.selectionBefore.anchor.path[0] = 9;
+      }
+    });
+    assert.throws(() => {
+      if (commit.selectionAfter) {
+        commit.selectionAfter.focus.offset = 9;
+      }
+    });
     assert.equal(commit.selectionChanged, true);
-    assert.equal(commit.textChanged, true);
-    assert.equal(commit.snapshotChanged, true);
-    assert.deepEqual(commit.dirtyTextRuntimeIds, [textRuntimeId]);
-    assert.deepEqual(commit.dirtyElementRuntimeIds, [blockRuntimeId]);
-    assert.deepEqual(commit.dirtyTopLevelRuntimeIds, [blockRuntimeId]);
-    assert.deepEqual(commit.dirtyTopLevelRanges, [[0, 0]]);
-    assert.deepEqual(commit.textDirtyRuntimeIds, [textRuntimeId]);
-    assert.deepEqual(commit.structuralDirtyRuntimeIds, []);
-    assert.deepEqual(commit.markDirtyRuntimeIds, []);
-    assert.deepEqual(commit.affectedTextRuntimeIds, [textRuntimeId]);
-    assert.deepEqual(commit.affectedNodeRuntimeIds, [
+    assert.equal(commit.changed.has('document'), true);
+    assert.equal(commit.changed.has('text'), true);
+    assert.equal(commit.changed.has('snapshot'), true);
+    assert.equal(commit.changed.has('structure'), false);
+    assert.equal(commit.changed.has('properties'), false);
+    assert.equal(commit.changed.has('root-order'), false);
+    assert.equal(commit.changed.has('replace'), false);
+    assert.deepEqual(commit.changed.runtimeIds('text'), [textRuntimeId]);
+    assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
+    assert.deepEqual(commit.changed.runtimeIds('node'), [
       blockRuntimeId,
       textRuntimeId,
     ]);
-    assert.deepEqual(commit.affectedProjectionRuntimeIds, [
+    assert.deepEqual(commit.changed.runtimeIds('projection'), [
       blockRuntimeId,
       textRuntimeId,
     ]);
-    assert.deepEqual(
-      commit.affectedSelectionRuntimeIds,
-      commit.selectionImpactRuntimeIds
-    );
-    assert.equal(commit.rootRuntimeIdsChanged, false);
-    assert.equal(commit.topLevelOrderChanged, false);
-    assert.equal(commit.fullDocumentChanged, false);
+    assert.deepEqual(commit.changed.runtimeIds('selection'), [
+      textRuntimeId,
+      blockRuntimeId,
+    ]);
   });
 
   it('types canonical update tags while preserving custom tags', () => {
@@ -99,6 +116,7 @@ describe('commit metadata contract', () => {
     editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -119,7 +137,6 @@ describe('commit metadata contract', () => {
       key: 'local.provenance.last-change',
       history: 'skip',
       initial: () => null,
-      persist: false,
     });
     const editor = createEditor({
       extensions: [localProvenance] as const,
@@ -129,6 +146,7 @@ describe('commit metadata contract', () => {
     editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -176,6 +194,7 @@ describe('commit metadata contract', () => {
     editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -199,29 +218,58 @@ describe('commit metadata contract', () => {
     assert(commit);
     assert.equal(commits.length, 1);
     assert.equal(commits[0], commit);
-    assert.deepEqual(
-      commit.operations.map((operation) => operation.type),
-      ['insert_text', 'insert_text']
-    );
-    assert.deepEqual(commit.classes, ['text']);
+    assert.equal(commit.changes.empty, false);
     assert.deepEqual(commit.selectionBefore, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
     assert.deepEqual(commit.selectionAfter, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
     });
     assert.equal(commit.selectionChanged, true);
-    assert.equal(commit.textChanged, true);
-    assert.deepEqual(commit.dirty.paths, [[], [0], [0, 0]]);
-    assert.deepEqual(commit.dirty.topLevelRange, [0, 0]);
-    assert.deepEqual(commit.dirty.runtimeIds, commit.touchedRuntimeIds);
-    assert.deepEqual(commit.dirtyTextRuntimeIds, commit.touchedRuntimeIds);
-    assert.deepEqual(commit.dirtyTopLevelRanges, [[0, 0]]);
-    assert.equal(commit.rootRuntimeIdsChanged, false);
-    assert.equal(commit.topLevelOrderChanged, false);
-    assert.equal(commit.fullDocumentChanged, false);
+    assert.equal(commit.changed.has('text'), true);
+    assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
+    assert.equal(commit.changed.runtimeIds('text').length, 1);
+    assert.equal(commit.changed.has('root-order'), false);
+    assert.equal(commit.changed.has('replace'), false);
+  });
+
+  it('does not mark effect-only commits as state or snapshot changes', () => {
+    const effect = defineEffect<string>({ key: 'metadata.effect-only' });
+    const editor = createEditor({
+      extensions: [
+        defineEditorExtension({
+          effects: [effect],
+          name: 'metadata-effect-only',
+        }),
+      ] as const,
+    });
+
+    editor.update((tx) => tx.effects.emit(effect, 'saved'));
+
+    const commit = editorGetLastCommit(editor);
+
+    assert(commit);
+    assert.deepEqual(commit.effects, [{ type: effect, value: 'saved' }]);
+    assert.equal(commit.changed.has('state'), false);
+    assert.equal(commit.changed.has('snapshot'), false);
+  });
+
+  it('does not mark annotation-only commits as state or snapshot changes', () => {
+    const origin = defineUpdateAnnotation<string>({ key: 'metadata.origin' });
+    const editor = createEditor();
+
+    editor.update((tx) => tx.annotations.set(origin, 'keyboard'));
+
+    const commit = editorGetLastCommit(editor);
+
+    assert(commit);
+    assert.deepEqual(commit.annotations, { [origin.key]: 'keyboard' });
+    assert.equal(commit.changed.has('state'), false);
+    assert.equal(commit.changed.has('snapshot'), false);
   });
 
   it('marks full-document replacement as broad runtime dirtiness', () => {
@@ -235,31 +283,23 @@ describe('commit metadata contract', () => {
     const commit = editorGetLastCommit(editor);
     const snapshot = editorGetSnapshot(editor);
     const nextRuntimeIds = [
-      snapshot.index.pathToId['0'],
-      snapshot.index.pathToId['0.0'],
+      snapshot.index.idAt([0]),
+      snapshot.index.idAt([0, 0]),
     ];
 
     assert(commit);
-    assert.deepEqual(commit.classes, ['replace']);
-    assert.equal(commit.dirty.wholeDocument, true);
-    assert.equal(commit.dirty.topLevelRange, null);
-    assert.equal(commit.dirtyTextRuntimeIds, null);
-    assert.equal(commit.dirtyElementRuntimeIds, null);
-    assert.equal(commit.dirtyTopLevelRuntimeIds, null);
-    assert.equal(commit.dirtyTopLevelRanges, null);
-    assert.equal(commit.textDirtyRuntimeIds, null);
-    assert.equal(commit.structuralDirtyRuntimeIds, null);
-    assert.deepEqual(commit.markDirtyRuntimeIds, []);
-    assert.deepEqual(commit.affectedTextRuntimeIds, nextRuntimeIds);
-    assert.deepEqual(commit.affectedNodeRuntimeIds, nextRuntimeIds);
-    assert.deepEqual(commit.affectedProjectionRuntimeIds, nextRuntimeIds);
-    assert.equal(commit.affectedSelectionRuntimeIds, null);
-    assert.equal(commit.rootRuntimeIdsChanged, true);
-    assert.equal(commit.topLevelOrderChanged, true);
-    assert.equal(commit.fullDocumentChanged, true);
+    assert.equal(commit.changed.has('document'), true);
+    assert.equal(commit.changed.has('replace'), true);
+    assert.equal(commit.changed.has('structure'), true);
+    assert.equal(commit.changed.has('root-order'), true);
+    assert.deepEqual(commit.changed.runtimeIds('text'), [nextRuntimeIds[1]]);
+    assert.deepEqual(commit.changed.runtimeIds('node'), nextRuntimeIds);
+    assert.deepEqual(commit.changed.runtimeIds('projection'), nextRuntimeIds);
+    assert.deepEqual(commit.changed.runtimeIds('selection'), []);
+    assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
   });
 
-  it('keeps top-level split impact scoped to shifted top-level runtime ids', () => {
+  it('keeps top-level split path impact scoped to shifted top-level runtime ids', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -274,14 +314,15 @@ describe('commit metadata contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
     });
 
     const before = editorGetSnapshot(editor);
-    const tableRuntimeId = before.index.pathToId['1'];
-    const tableRowRuntimeId = before.index.pathToId['1.0'];
+    const tableRuntimeId = before.index.idAt([1]);
+    const tableRowRuntimeId = before.index.idAt([1, 0]);
     const unsubscribe = editorSubscribe(editor, () => {});
 
     assert(tableRuntimeId);
@@ -293,9 +334,9 @@ describe('commit metadata contract', () => {
     const commit = editorGetLastCommit(editor);
 
     assert(commit);
-    assert.equal(commit.topLevelOrderChanged, true);
-    assert.equal(commit.rootRuntimeIdsChanged, true);
-    assert(commit.nodeImpactRuntimeIds?.includes(tableRuntimeId));
-    assert(!commit.nodeImpactRuntimeIds?.includes(tableRowRuntimeId));
+    assert.equal(commit.changed.has('root-order'), true);
+    assert(!commit.changed.runtimeIds('node').includes(tableRuntimeId));
+    assert(commit.changed.runtimeIds('path').includes(tableRuntimeId));
+    assert(!commit.changed.runtimeIds('node').includes(tableRowRuntimeId));
   });
 });

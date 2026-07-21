@@ -23,17 +23,25 @@ describe('withGetFragmentTable', () => {
           <htable>
             <htr>
               <htd>
-                11
-                <anchor />
+                <hp>
+                  11
+                  <anchor />
+                </hp>
               </htd>
-              <htd>12</htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
               <htd>
-                21
-                <focus />
+                <hp>
+                  21
+                  <focus />
+                </hp>
               </htd>
-              <htd>22</htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         </editor>

@@ -1,6 +1,17 @@
-import { createBaseEditor } from '@platejs/core';
+import {
+  createBaseEditor,
+  createBasePlugin,
+  prepareParserPluginContext,
+} from '@platejs/core';
+import { ContentSlice } from '@platejs/plite';
+import { writeHostFragmentData } from '@platejs/plite-dom';
 
 import { MarkdownPlugin } from './MarkdownPlugin';
+
+const BoldPlugin = createBasePlugin({
+  key: 'bold',
+  node: { mark: true },
+});
 
 const createDataTransfer = ({
   files = [],
@@ -17,6 +28,26 @@ const createDataTransfer = ({
   });
 
   return dataTransfer;
+};
+
+const createParserContext = (
+  editor: ReturnType<typeof createBaseEditor>,
+  dataTransfer: DataTransfer,
+  data: string,
+  format = 'text/plain'
+) => {
+  const createContext = prepareParserPluginContext(editor, MarkdownPlugin);
+
+  return editor.read((state) => ({
+    ...createContext(state),
+    data,
+    format,
+    source: {
+      files: dataTransfer.files,
+      getData: (type: string) => dataTransfer.getData(type),
+      types: [...dataTransfer.types],
+    },
+  }));
 };
 
 describe('MarkdownPlugin', () => {
@@ -37,13 +68,10 @@ describe('MarkdownPlugin', () => {
     expect(typeof editor.api.markdown.deserialize).toBe('function');
     expect(typeof editor.api.markdown.deserializeInline).toBe('function');
     expect(typeof editor.api.markdown.serialize).toBe('function');
-    expect(plugin.parser.format).toBe('text/plain');
+    expect(plugin.parser.format).toEqual(['text/plain', 'text/markdown']);
     expect(
       plugin.parser.deserialize?.({
-        ...editor.plugin(MarkdownPlugin),
-        data: '**bold**',
-        dataTransfer: createDataTransfer({}),
-        mimeType: 'text/plain',
+        ...createParserContext(editor, createDataTransfer({}), '**bold**'),
       })
     ).toEqual(editor.api.markdown.deserialize('**bold**'));
   });
@@ -57,10 +85,11 @@ describe('MarkdownPlugin', () => {
 
     expect(
       query({
-        ...editor.plugin(MarkdownPlugin),
-        data: 'plain text',
-        dataTransfer: createDataTransfer({ html: '<p>paste me</p>' }),
-        mimeType: 'text/plain',
+        ...createParserContext(
+          editor,
+          createDataTransfer({ html: '<p>paste me</p>' }),
+          'plain text'
+        ),
       })
     ).toBe(false);
   });
@@ -74,10 +103,11 @@ describe('MarkdownPlugin', () => {
 
     expect(
       query({
-        ...editor.plugin(MarkdownPlugin),
-        data: 'https://platejs.org/docs',
-        dataTransfer: createDataTransfer({}),
-        mimeType: 'text/plain',
+        ...createParserContext(
+          editor,
+          createDataTransfer({}),
+          'https://platejs.org/docs'
+        ),
       })
     ).toBe(false);
   });
@@ -90,14 +120,15 @@ describe('MarkdownPlugin', () => {
     const query = editor.getPlugin(MarkdownPlugin).parser.query!;
 
     expect(
-      query({
-        ...editor.plugin(MarkdownPlugin),
-        data: 'https://platejs.org/docs',
-        dataTransfer: createDataTransfer({
-          files: [new File([''], 'attachment.txt')],
-        }),
-        mimeType: 'text/plain',
-      })
+      query(
+        createParserContext(
+          editor,
+          createDataTransfer({
+            files: [new File([''], 'attachment.txt')],
+          }),
+          'https://platejs.org/docs'
+        )
+      )
     ).toBe(true);
   });
 
@@ -110,11 +141,51 @@ describe('MarkdownPlugin', () => {
 
     expect(
       query({
-        ...editor.plugin(MarkdownPlugin),
-        data: '**bold**',
-        dataTransfer: createDataTransfer({}),
-        mimeType: 'text/plain',
+        ...createParserContext(editor, createDataTransfer({}), '**bold**'),
       })
     ).toBe(true);
+  });
+
+  it('registers Markdown serialization with the host codec registry', () => {
+    const editor = createBaseEditor({ plugins: [MarkdownPlugin] });
+    const data = new DataTransfer();
+    const fragment = editor.api.markdown.deserialize('**bold**');
+
+    writeHostFragmentData(editor, data, ContentSlice.closed(fragment));
+
+    expect(data.getData('text/markdown')).toBe('**bold**\n');
+  });
+
+  it('parses the registered Markdown clipboard format', () => {
+    const editor = createBaseEditor({
+      plugins: [BoldPlugin, MarkdownPlugin],
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
+    const data = new DataTransfer();
+
+    data.setData('text/markdown', '**bold**');
+
+    expect(editor.api.clipboard.insertData(data)).toBe(true);
+    expect(editor.read.children()).toEqual(
+      editor.api.markdown.deserialize('**bold**')
+    );
+  });
+
+  it('round-trips a leaf property through the Markdown host codec', () => {
+    const value = [{ children: [{ bold: true, text: 'bold' }], type: 'p' }];
+    const source = createBaseEditor({
+      plugins: [BoldPlugin, MarkdownPlugin],
+      value,
+    });
+    const target = createBaseEditor({
+      plugins: [BoldPlugin, MarkdownPlugin],
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
+    const data = new DataTransfer();
+
+    writeHostFragmentData(source, data, ContentSlice.closed(value));
+
+    expect(target.api.clipboard.insertData(data)).toBe(true);
+    expect(target.read.children()).toEqual(value);
   });
 });

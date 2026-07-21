@@ -87,9 +87,7 @@ function BaseElementStatic({
 export const ElementStatic = React.memo(
   BaseElementStatic,
   (prev, next) =>
-    (prev.element === next.element ||
-      (prev.element._memo !== undefined &&
-        prev.element._memo === next.element._memo)) &&
+    prev.element === next.element &&
     isElementDecorationsEqual(prev.decorations, next.decorations)
 );
 

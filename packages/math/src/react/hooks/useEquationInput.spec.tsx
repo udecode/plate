@@ -38,33 +38,31 @@ describe('useEquationInput', () => {
     const { useEquationInput } = await import(
       `./useEquationInput?test=${Math.random().toString(36).slice(2)}`
     );
-    const addTag = mock();
     const select = mock();
     const setNodes = mock();
-    const update = mock(
-      (
-        callback: (tx: {
-          nodes: { set: typeof setNodes };
-          selection: { set: typeof select };
-          tags: { add: typeof addTag };
-        }) => void
-      ) =>
-        callback({
-          nodes: { set: setNodes },
-          selection: { set: select },
-          tags: { add: addTag },
-        })
+    const update = Object.assign(
+      mock(() => ({
+        nodes: { set: setNodes },
+        selection: { set: select },
+      })),
+      {
+        nodes: { set: setNodes },
+        selection: { set: select },
+      }
     );
     const onClose = mock();
+    const element = { texExpression: 'x+1', type: 'equation' };
     const beforePoint = { offset: 0, path: [0, 0] };
     const afterPoint = { offset: 0, path: [0, 2] };
+    const after = mock(() => afterPoint);
+    const before = mock(() => beforePoint);
 
-    useElementMock.mockReturnValue({ texExpression: 'x+1', type: 'equation' });
+    useElementMock.mockReturnValue(element);
     useEditorRefMock.mockReturnValue({
       read: {
         points: {
-          after: () => afterPoint,
-          before: () => beforePoint,
+          after,
+          before,
         },
       },
       update,
@@ -106,12 +104,18 @@ describe('useEquationInput', () => {
 
     act(() => result.current.onDismiss());
 
-    expect(addTag).toHaveBeenCalledWith('history-merge');
-    expect(addTag).toHaveBeenCalledWith('focus');
+    expect(update).toHaveBeenCalledWith({ tags: 'history-merge' });
+    expect(update).toHaveBeenCalledWith({ tags: 'focus' });
     expect(setNodes).toHaveBeenCalledWith(
       { texExpression: 'x+2' },
-      { at: { texExpression: 'x+1', type: 'equation' } }
+      { at: element }
     );
+    expect(setNodes).toHaveBeenCalledWith(
+      { texExpression: 'x+1' },
+      { at: element }
+    );
+    expect(before).toHaveBeenCalledWith(element);
+    expect(after).toHaveBeenCalledWith(element);
     expect(select).toHaveBeenNthCalledWith(1, beforePoint);
     expect(select).toHaveBeenNthCalledWith(2, afterPoint);
     expect(onClose).toHaveBeenCalled();

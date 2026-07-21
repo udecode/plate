@@ -1,11 +1,19 @@
 import { createPlateEditor } from '@platejs/core/react';
 
+import {
+  TestBoldPlugin,
+  TestElementPropertiesPlugin,
+} from '../__tests__/testPlugins';
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 import { BlockMenuPlugin } from './BlockMenuPlugin';
 
 const createBlockSelectionEditor = () =>
   createPlateEditor({
-    plugins: [BlockSelectionPlugin],
+    plugins: [
+      BlockSelectionPlugin,
+      TestBoldPlugin,
+      TestElementPropertiesPlugin,
+    ],
     value: [
       {
         id: 'block1',
@@ -32,12 +40,14 @@ describe('BlockSelectionPlugin', () => {
     const editor = createBlockSelectionEditor();
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
 
     expect(runSelectAllShortcut(editor)).toBe(true);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -52,12 +62,14 @@ describe('BlockSelectionPlugin', () => {
 
     editor.plugin(BlockSelectionPlugin).setOption('disableSelectAll', true);
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
 
     expect(runSelectAllShortcut(editor)).toBe(false);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
@@ -105,6 +117,7 @@ describe('BlockSelectionPlugin', () => {
       .setOption('selectedIds', new Set(['block1']));
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
@@ -123,6 +136,7 @@ describe('BlockSelectionPlugin', () => {
     editor.plugin(BlockMenuPlugin).setOption('openId', 'block1');
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });

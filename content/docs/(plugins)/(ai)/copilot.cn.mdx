@@ -287,15 +287,15 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 
 export async function POST(req: NextRequest) {
-  const { 
-    model = 'gpt-4o-mini', 
+  const {
+    model = 'gpt-4o-mini',
     provider = 'openai',
     prompt,
-    system 
+    system
   } = await req.json();
 
   let aiProvider;
-  
+
   switch (provider) {
     case 'anthropic':
       aiProvider = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -445,13 +445,13 @@ export async function POST(req: NextRequest) {
 
 ## 转换
 
-### `tf.copilot.accept()`
+### `editor.update.copilot.accept()`
 
 接受当前建议并将其应用到编辑器内容中。
 
 默认快捷键: `Tab`
 
-### `tf.copilot.acceptNextWord()`
+### `editor.update.copilot.acceptNextWord()`
 
 仅接受当前建议的下一个单词，允许逐步接受建议。
 

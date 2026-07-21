@@ -129,7 +129,7 @@ BlockPlaceholderPlugin.configure({
 4. 块符合查询函数条件
 5. 块类型匹配 placeholders 映射中的键
 
-初始空状态检查使用 `editor.api.isElementStateEmpty`，因此只把 `type` 和插件通过 `node.isMetadataProp` 声明为空的属性视为空状态元数据。
+初始空状态检查使用 `editor.api.isElementStateEmpty`，因此只把 `type` 和通过 `significant: false` 声明的已编译元素属性视为空状态元数据。
 
 <API name="BlockPlaceholderPlugin">
 <APIOptions>

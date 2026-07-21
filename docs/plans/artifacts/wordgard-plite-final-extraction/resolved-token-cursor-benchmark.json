@@ -1,0 +1,1453 @@
+{
+  "artifactVersion": 1,
+  "benchmark": "plite-resolved-token-cursor",
+  "cohorts": {
+    "large": "10,000 depth-3 blocks",
+    "normal": "500 depth-3 blocks",
+    "pathological": "not a timing claim; generated equivalence tests own sparse, empty, and irregular nesting",
+    "stress": "50,000 depth-3 blocks"
+  },
+  "fairness": {
+    "cursor": "one package-private ResolvedTokenCursor reuses the existing immutable TreeIndex; setup is excluded",
+    "legacy": "exact pre-cursor IndexedDocument algorithms over a prebuilt flat entry index and TreeIndex-equivalent positions; setup is excluded",
+    "live": "the checked-out IndexedDocument public query methods, measured with the same prebuilt document and query corpus",
+    "queryOrder": "deterministic monotonically increasing positions and ranges sampled across the full document",
+    "repeatedUnit": "one resolved point, node-start lookup, or small touching-range lookup",
+    "sampleOrder": "all six legacy/cursor/live measurement orders rotate across samples after three untimed warmups"
+  },
+  "gate": {
+    "largeAndStressWin": true,
+    "normalDoesNotRegress": true,
+    "parity": true,
+    "promotePrivateCursor": true,
+    "publicPathApiUnchanged": true,
+    "worstLargeAndStressMedianRatio": 0.0139,
+    "worstLargeAndStressP95Ratio": 0.0151
+  },
+  "memory": {
+    "degradationContract": "none: query answers and public structural path APIs remain identical",
+    "retainedShape": "one cursor and at most document-depth frames; no second per-node index",
+    "transientAllocation": "O(document depth) cursor frames and output paths per lookup; no document-size-proportional query allocation"
+  },
+  "results": [
+    {
+      "cohorts": [
+        {
+          "blocks": 500,
+          "id": "normal",
+          "lanes": {
+            "nodeStartWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.11, 0.07, 0.08, 0.07, 0.08, 0.08, 0.07, 0.07, 0.1, 0.07,
+                  0.08, 0.07, 0.07, 0.07, 0.07
+                ],
+                "mean": 0.08,
+                "median": 0.07,
+                "p75": 0.08,
+                "p95": 0.11,
+                "p99": 0.11,
+                "min": 0.07,
+                "max": 0.11
+              },
+              "legacyMs": {
+                "samples": [
+                  2.07, 2.08, 2.07, 2.69, 2.11, 2.07, 2.03, 2.04, 2.09, 2.11,
+                  2.09, 2.42, 2.04, 2.09, 2.12
+                ],
+                "mean": 2.14,
+                "median": 2.09,
+                "p75": 2.11,
+                "p95": 2.69,
+                "p99": 2.69,
+                "min": 2.03,
+                "max": 2.69
+              },
+              "liveMs": {
+                "samples": [
+                  0.09, 0.07, 0.09, 0.08, 0.09, 0.08, 0.08, 0.07, 0.08, 0.09,
+                  0.09, 0.09, 0.08, 0.07, 0.08
+                ],
+                "mean": 0.08,
+                "median": 0.08,
+                "p75": 0.09,
+                "p95": 0.09,
+                "p99": 0.09,
+                "min": 0.07,
+                "max": 0.09
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0335,
+                "cursorToLegacyP95": 0.0409,
+                "liveToLegacyMedian": 0.0383,
+                "liveToLegacyP95": 0.0335
+              }
+            },
+            "pointWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.2, 0.13, 0.18, 0.12, 0.15, 0.15, 0.14, 0.12, 0.17, 0.11,
+                  0.16, 0.13, 0.18, 0.12, 0.16
+                ],
+                "mean": 0.15,
+                "median": 0.15,
+                "p75": 0.17,
+                "p95": 0.2,
+                "p99": 0.2,
+                "min": 0.11,
+                "max": 0.2
+              },
+              "legacyMs": {
+                "samples": [
+                  4.21, 3.37, 3.33, 3.9, 3.32, 3.66, 3.29, 3.87, 3.45, 3.42,
+                  3.78, 3.29, 3.78, 3.41, 4.31
+                ],
+                "mean": 3.63,
+                "median": 3.45,
+                "p75": 3.87,
+                "p95": 4.31,
+                "p99": 4.31,
+                "min": 3.29,
+                "max": 4.31
+              },
+              "liveMs": {
+                "samples": [
+                  0.15, 0.12, 0.16, 0.14, 0.15, 0.15, 0.14, 0.12, 0.21, 0.13,
+                  0.15, 0.14, 0.14, 0.11, 0.14
+                ],
+                "mean": 0.14,
+                "median": 0.14,
+                "p75": 0.15,
+                "p95": 0.21,
+                "p99": 0.21,
+                "min": 0.11,
+                "max": 0.21
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0435,
+                "cursorToLegacyP95": 0.0464,
+                "liveToLegacyMedian": 0.0406,
+                "liveToLegacyP95": 0.0487
+              }
+            },
+            "touchingRangeWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.11, 0.07, 0.11, 0.07, 0.1, 0.09, 0.09, 0.06, 0.1, 0.06,
+                  0.08, 0.09, 0.07, 0.05, 0.09
+                ],
+                "mean": 0.08,
+                "median": 0.09,
+                "p75": 0.1,
+                "p95": 0.11,
+                "p99": 0.11,
+                "min": 0.05,
+                "max": 0.11
+              },
+              "legacyMs": {
+                "samples": [
+                  1.52, 1.3, 2.33, 1.45, 1.43, 1.22, 1.11, 1.08, 1.85, 1.12,
+                  1.13, 1.13, 1.13, 1.11, 1.68
+                ],
+                "mean": 1.37,
+                "median": 1.22,
+                "p75": 1.52,
+                "p95": 2.33,
+                "p99": 2.33,
+                "min": 1.08,
+                "max": 2.33
+              },
+              "liveMs": {
+                "samples": [
+                  0.08, 0.07, 0.09, 0.1, 0.09, 0.09, 0.09, 0.07, 0.09, 0.08,
+                  0.11, 0.09, 0.07, 0.06, 0.08
+                ],
+                "mean": 0.08,
+                "median": 0.09,
+                "p75": 0.09,
+                "p95": 0.11,
+                "p99": 0.11,
+                "min": 0.06,
+                "max": 0.11
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0738,
+                "cursorToLegacyP95": 0.0472,
+                "liveToLegacyMedian": 0.0738,
+                "liveToLegacyP95": 0.0472
+              }
+            }
+          },
+          "memoryProxy": {
+            "cursorRetainedFramesMax": 3,
+            "flatEntryCountAvoided": 1500,
+            "sourceNodeCount": 1500,
+            "treeNodeCount": 1500
+          },
+          "queryCount": 256,
+          "tokenLength": 15890
+        },
+        {
+          "blocks": 10000,
+          "id": "large",
+          "lanes": {
+            "nodeStartWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.1, 0.05, 0.1, 0.04, 0.1, 0.09, 0.08, 0.04, 0.08, 0.04, 0.09,
+                  0.09, 0.11, 0.06, 0.1
+                ],
+                "mean": 0.08,
+                "median": 0.09,
+                "p75": 0.1,
+                "p95": 0.11,
+                "p99": 0.11,
+                "min": 0.04,
+                "max": 0.11
+              },
+              "legacyMs": {
+                "samples": [
+                  24.51, 22.95, 27.42, 23.05, 24.77, 23.62, 23.92, 22.59, 22.73,
+                  24.01, 24.19, 25.46, 22.45, 24.44, 22.13
+                ],
+                "mean": 23.88,
+                "median": 23.92,
+                "p75": 24.51,
+                "p95": 27.42,
+                "p99": 27.42,
+                "min": 22.13,
+                "max": 27.42
+              },
+              "liveMs": {
+                "samples": [
+                  0.16, 0.11, 0.18, 0.16, 0.17, 0.16, 0.12, 0.05, 0.18, 0.13,
+                  0.19, 0.18, 0.12, 0.08, 0.25
+                ],
+                "mean": 0.15,
+                "median": 0.16,
+                "p75": 0.18,
+                "p95": 0.25,
+                "p99": 0.25,
+                "min": 0.05,
+                "max": 0.25
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0038,
+                "cursorToLegacyP95": 0.004,
+                "liveToLegacyMedian": 0.0067,
+                "liveToLegacyP95": 0.0091
+              }
+            },
+            "pointWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.28, 0.09, 0.28, 0.1, 0.28, 0.26, 0.3, 0.09, 0.28, 0.09,
+                  0.31, 0.25, 0.33, 0.09, 0.29
+                ],
+                "mean": 0.22,
+                "median": 0.28,
+                "p75": 0.29,
+                "p95": 0.33,
+                "p99": 0.33,
+                "min": 0.09,
+                "max": 0.33
+              },
+              "legacyMs": {
+                "samples": [
+                  31.89, 29.87, 30.05, 30.3, 33.54, 34, 33.03, 32.6, 32.02,
+                  32.6, 31.37, 30.83, 32.77, 30.52, 29.84
+                ],
+                "mean": 31.68,
+                "median": 31.89,
+                "p75": 32.77,
+                "p95": 34,
+                "p99": 34,
+                "min": 29.84,
+                "max": 34
+              },
+              "liveMs": {
+                "samples": [
+                  0.26, 0.09, 0.28, 0.29, 0.31, 0.28, 0.28, 0.08, 0.31, 0.26,
+                  0.29, 0.3, 0.27, 0.09, 0.28
+                ],
+                "mean": 0.24,
+                "median": 0.28,
+                "p75": 0.29,
+                "p95": 0.31,
+                "p99": 0.31,
+                "min": 0.08,
+                "max": 0.31
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0088,
+                "cursorToLegacyP95": 0.0097,
+                "liveToLegacyMedian": 0.0088,
+                "liveToLegacyP95": 0.0091
+              }
+            },
+            "touchingRangeWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.14, 0.05, 0.14, 0.05, 0.13, 0.13, 0.14, 0.04, 0.15, 0.04,
+                  0.14, 0.13, 0.17, 0.05, 0.16
+                ],
+                "mean": 0.11,
+                "median": 0.13,
+                "p75": 0.14,
+                "p95": 0.17,
+                "p99": 0.17,
+                "min": 0.04,
+                "max": 0.17
+              },
+              "legacyMs": {
+                "samples": [
+                  8.98, 9.74, 9.03, 9.34, 8.91, 8.89, 9.32, 8.95, 9.69, 9.46,
+                  9.72, 11.14, 11.28, 10.25, 8.87
+                ],
+                "mean": 9.57,
+                "median": 9.34,
+                "p75": 9.74,
+                "p95": 11.28,
+                "p99": 11.28,
+                "min": 8.87,
+                "max": 11.28
+              },
+              "liveMs": {
+                "samples": [
+                  0.12, 0.04, 0.15, 0.12, 0.15, 0.13, 0.13, 0.04, 0.14, 0.13,
+                  0.15, 0.14, 0.14, 0.03, 0.14
+                ],
+                "mean": 0.12,
+                "median": 0.13,
+                "p75": 0.14,
+                "p95": 0.15,
+                "p99": 0.15,
+                "min": 0.03,
+                "max": 0.15
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0139,
+                "cursorToLegacyP95": 0.0151,
+                "liveToLegacyMedian": 0.0139,
+                "liveToLegacyP95": 0.0133
+              }
+            }
+          },
+          "memoryProxy": {
+            "cursorRetainedFramesMax": 3,
+            "flatEntryCountAvoided": 30000,
+            "sourceNodeCount": 30000,
+            "treeNodeCount": 30000
+          },
+          "queryCount": 128,
+          "tokenLength": 328890
+        },
+        {
+          "blocks": 50000,
+          "id": "stress",
+          "lanes": {
+            "nodeStartWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.06, 0.02, 0.06, 0.02, 0.06, 0.05, 0.07, 0.02, 0.06, 0.02,
+                  0.06, 0.05, 0.07, 0.02, 0.07
+                ],
+                "mean": 0.05,
+                "median": 0.06,
+                "p75": 0.06,
+                "p95": 0.07,
+                "p99": 0.07,
+                "min": 0.02,
+                "max": 0.07
+              },
+              "legacyMs": {
+                "samples": [
+                  60.02, 62.18, 62.67, 58.9, 68.05, 72.21, 61.92, 62.44, 53.12,
+                  61.92, 56.61, 56.24, 61.66, 68.87, 63.95
+                ],
+                "mean": 62.05,
+                "median": 61.92,
+                "p75": 63.95,
+                "p95": 72.21,
+                "p99": 72.21,
+                "min": 53.12,
+                "max": 72.21
+              },
+              "liveMs": {
+                "samples": [
+                  0.09, 0.02, 0.09, 0.09, 0.1, 0.1, 0.09, 0.02, 0.1, 0.09, 0.09,
+                  0.1, 0.09, 0.02, 0.11
+                ],
+                "mean": 0.08,
+                "median": 0.09,
+                "p75": 0.1,
+                "p95": 0.11,
+                "p99": 0.11,
+                "min": 0.02,
+                "max": 0.11
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.001,
+                "cursorToLegacyP95": 0.001,
+                "liveToLegacyMedian": 0.0015,
+                "liveToLegacyP95": 0.0015
+              }
+            },
+            "pointWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.17, 0.04, 0.16, 0.05, 0.17, 0.14, 0.15, 0.07, 0.19, 0.04,
+                  0.16, 0.13, 0.15, 0.04, 0.13
+                ],
+                "mean": 0.12,
+                "median": 0.14,
+                "p75": 0.16,
+                "p95": 0.19,
+                "p99": 0.19,
+                "min": 0.04,
+                "max": 0.19
+              },
+              "legacyMs": {
+                "samples": [
+                  97.91, 90.04, 113.87, 85.79, 101.66, 84.05, 83.78, 81.89,
+                  89.78, 82.37, 83.14, 80.54, 91.65, 78.19, 80.87
+                ],
+                "mean": 88.37,
+                "median": 84.05,
+                "p75": 91.65,
+                "p95": 113.87,
+                "p99": 113.87,
+                "min": 78.19,
+                "max": 113.87
+              },
+              "liveMs": {
+                "samples": [
+                  0.15, 0.04, 0.18, 0.15, 0.18, 0.17, 0.15, 0.04, 0.22, 0.16,
+                  0.16, 0.18, 0.14, 0.04, 0.16
+                ],
+                "mean": 0.14,
+                "median": 0.16,
+                "p75": 0.18,
+                "p95": 0.22,
+                "p99": 0.22,
+                "min": 0.04,
+                "max": 0.22
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0017,
+                "cursorToLegacyP95": 0.0017,
+                "liveToLegacyMedian": 0.0019,
+                "liveToLegacyP95": 0.0019
+              }
+            },
+            "touchingRangeWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.07, 0.02, 0.07, 0.02, 0.08, 0.07, 0.08, 0.02, 0.08, 0.02,
+                  0.08, 0.06, 0.08, 0.02, 0.07
+                ],
+                "mean": 0.06,
+                "median": 0.07,
+                "p75": 0.08,
+                "p95": 0.08,
+                "p99": 0.08,
+                "min": 0.02,
+                "max": 0.08
+              },
+              "legacyMs": {
+                "samples": [
+                  27.2, 24.97, 25.83, 23.63, 23.2, 23.44, 23.69, 22.2, 21.41,
+                  20.87, 22.85, 22.77, 23.37, 23.19, 23.04
+                ],
+                "mean": 23.44,
+                "median": 23.2,
+                "p75": 23.69,
+                "p95": 27.2,
+                "p99": 27.2,
+                "min": 20.87,
+                "max": 27.2
+              },
+              "liveMs": {
+                "samples": [
+                  0.07, 0.01, 0.08, 0.07, 0.08, 0.08, 0.07, 0.02, 0.09, 0.07,
+                  0.08, 0.08, 0.07, 0.02, 0.08
+                ],
+                "mean": 0.06,
+                "median": 0.07,
+                "p75": 0.08,
+                "p95": 0.09,
+                "p99": 0.09,
+                "min": 0.01,
+                "max": 0.09
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.003,
+                "cursorToLegacyP95": 0.0029,
+                "liveToLegacyMedian": 0.003,
+                "liveToLegacyP95": 0.0033
+              }
+            }
+          },
+          "memoryProxy": {
+            "cursorRetainedFramesMax": 3,
+            "flatEntryCountAvoided": 150000,
+            "sourceNodeCount": 150000,
+            "treeNodeCount": 150000
+          },
+          "queryCount": 48,
+          "tokenLength": 1688890
+        }
+      ],
+      "run": 1
+    },
+    {
+      "cohorts": [
+        {
+          "blocks": 500,
+          "id": "normal",
+          "lanes": {
+            "nodeStartWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.1, 0.08, 0.15, 0.68, 0.11, 0.1, 0.11, 0.08, 0.09, 0.08,
+                  0.09, 0.1, 0.1, 0.08, 0.09
+                ],
+                "mean": 0.14,
+                "median": 0.1,
+                "p75": 0.11,
+                "p95": 0.68,
+                "p99": 0.68,
+                "min": 0.08,
+                "max": 0.68
+              },
+              "legacyMs": {
+                "samples": [
+                  2.64, 2.58, 3.2, 2.94, 2.76, 3.03, 2.72, 2.61, 2.6, 2.6, 2.6,
+                  2.6, 2.65, 2.59, 2.5
+                ],
+                "mean": 2.71,
+                "median": 2.61,
+                "p75": 2.76,
+                "p95": 3.2,
+                "p99": 3.2,
+                "min": 2.5,
+                "max": 3.2
+              },
+              "liveMs": {
+                "samples": [
+                  0.1, 0.08, 0.1, 0.14, 0.13, 0.12, 0.11, 0.08, 0.1, 0.1, 0.11,
+                  0.1, 0.1, 0.08, 0.11
+                ],
+                "mean": 0.1,
+                "median": 0.1,
+                "p75": 0.11,
+                "p95": 0.14,
+                "p99": 0.14,
+                "min": 0.08,
+                "max": 0.14
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0383,
+                "cursorToLegacyP95": 0.2125,
+                "liveToLegacyMedian": 0.0383,
+                "liveToLegacyP95": 0.0438
+              }
+            },
+            "pointWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.18, 0.14, 0.17, 0.13, 0.17, 0.16, 0.18, 0.13, 0.19, 0.14,
+                  0.18, 0.17, 0.18, 0.12, 0.23
+                ],
+                "mean": 0.17,
+                "median": 0.17,
+                "p75": 0.18,
+                "p95": 0.23,
+                "p99": 0.23,
+                "min": 0.12,
+                "max": 0.23
+              },
+              "legacyMs": {
+                "samples": [
+                  4.09, 4.08, 4.1, 4.06, 4.09, 4.03, 4.1, 4.09, 4.1, 4.07, 4.11,
+                  4.07, 3.96, 3.98, 4.2
+                ],
+                "mean": 4.08,
+                "median": 4.09,
+                "p75": 4.1,
+                "p95": 4.2,
+                "p99": 4.2,
+                "min": 3.96,
+                "max": 4.2
+              },
+              "liveMs": {
+                "samples": [
+                  0.15, 0.13, 0.16, 0.15, 0.17, 0.17, 0.15, 0.13, 0.17, 0.15,
+                  0.18, 0.17, 0.15, 0.12, 0.17
+                ],
+                "mean": 0.15,
+                "median": 0.15,
+                "p75": 0.17,
+                "p95": 0.18,
+                "p99": 0.18,
+                "min": 0.12,
+                "max": 0.18
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0416,
+                "cursorToLegacyP95": 0.0548,
+                "liveToLegacyMedian": 0.0367,
+                "liveToLegacyP95": 0.0429
+              }
+            },
+            "touchingRangeWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.15, 0.15, 0.19, 0.1, 0.12, 0.21, 0.24, 0.15, 0.14, 0.09,
+                  0.13, 0.12, 0.11, 0.08, 0.13
+                ],
+                "mean": 0.14,
+                "median": 0.13,
+                "p75": 0.15,
+                "p95": 0.24,
+                "p99": 0.24,
+                "min": 0.08,
+                "max": 0.24
+              },
+              "legacyMs": {
+                "samples": [
+                  2.66, 1.16, 1.32, 1.19, 1.14, 1.71, 1.38, 1.48, 1.23, 1.69,
+                  1.48, 1.38, 1.22, 1.41, 1.34
+                ],
+                "mean": 1.45,
+                "median": 1.38,
+                "p75": 1.48,
+                "p95": 2.66,
+                "p99": 2.66,
+                "min": 1.14,
+                "max": 2.66
+              },
+              "liveMs": {
+                "samples": [
+                  0.23, 0.11, 0.11, 0.16, 0.12, 0.14, 0.2, 0.1, 0.16, 0.13,
+                  0.17, 0.12, 0.11, 0.08, 0.13
+                ],
+                "mean": 0.14,
+                "median": 0.13,
+                "p75": 0.16,
+                "p95": 0.23,
+                "p99": 0.23,
+                "min": 0.08,
+                "max": 0.23
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0942,
+                "cursorToLegacyP95": 0.0902,
+                "liveToLegacyMedian": 0.0942,
+                "liveToLegacyP95": 0.0865
+              }
+            }
+          },
+          "memoryProxy": {
+            "cursorRetainedFramesMax": 3,
+            "flatEntryCountAvoided": 1500,
+            "sourceNodeCount": 1500,
+            "treeNodeCount": 1500
+          },
+          "queryCount": 256,
+          "tokenLength": 15890
+        },
+        {
+          "blocks": 10000,
+          "id": "large",
+          "lanes": {
+            "nodeStartWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.1, 0.04, 0.13, 0.05, 0.11, 0.11, 0.12, 0.05, 0.12, 0.05,
+                  0.11, 0.14, 0.11, 0.05, 0.1
+                ],
+                "mean": 0.09,
+                "median": 0.11,
+                "p75": 0.12,
+                "p95": 0.14,
+                "p99": 0.14,
+                "min": 0.04,
+                "max": 0.14
+              },
+              "legacyMs": {
+                "samples": [
+                  23.43, 26.12, 31.93, 27.34, 33.09, 26.85, 27.66, 25.69, 26.1,
+                  25.99, 32.48, 28.26, 32.35, 26.38, 26.12
+                ],
+                "mean": 27.98,
+                "median": 26.85,
+                "p75": 31.93,
+                "p95": 33.09,
+                "p99": 33.09,
+                "min": 23.43,
+                "max": 33.09
+              },
+              "liveMs": {
+                "samples": [
+                  0.12, 0.05, 0.2, 0.18, 0.2, 0.21, 0.18, 0.05, 0.18, 0.18,
+                  0.22, 0.2, 0.17, 0.05, 0.14
+                ],
+                "mean": 0.15,
+                "median": 0.18,
+                "p75": 0.2,
+                "p95": 0.22,
+                "p99": 0.22,
+                "min": 0.05,
+                "max": 0.22
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0041,
+                "cursorToLegacyP95": 0.0042,
+                "liveToLegacyMedian": 0.0067,
+                "liveToLegacyP95": 0.0066
+              }
+            },
+            "pointWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.32, 0.11, 0.34, 0.16, 0.31, 0.28, 0.28, 0.1, 0.31, 0.09,
+                  0.31, 0.27, 0.3, 0.12, 0.31
+                ],
+                "mean": 0.24,
+                "median": 0.28,
+                "p75": 0.31,
+                "p95": 0.34,
+                "p99": 0.34,
+                "min": 0.09,
+                "max": 0.34
+              },
+              "legacyMs": {
+                "samples": [
+                  44.28, 48.14, 52.36, 45.64, 38.3, 37.89, 38.37, 37.4, 37.29,
+                  37.45, 36.67, 37.36, 39.15, 35.51, 35.28
+                ],
+                "mean": 40.07,
+                "median": 37.89,
+                "p75": 44.28,
+                "p95": 52.36,
+                "p99": 52.36,
+                "min": 35.28,
+                "max": 52.36
+              },
+              "liveMs": {
+                "samples": [
+                  0.3, 0.09, 0.35, 0.29, 0.29, 0.31, 0.29, 0.08, 0.3, 0.27,
+                  0.31, 0.31, 0.29, 0.1, 0.31
+                ],
+                "mean": 0.26,
+                "median": 0.29,
+                "p75": 0.31,
+                "p95": 0.35,
+                "p99": 0.35,
+                "min": 0.08,
+                "max": 0.35
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0074,
+                "cursorToLegacyP95": 0.0065,
+                "liveToLegacyMedian": 0.0077,
+                "liveToLegacyP95": 0.0067
+              }
+            },
+            "touchingRangeWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.16, 0.04, 0.15, 0.04, 0.15, 0.15, 0.14, 0.04, 0.15, 0.04,
+                  0.14, 0.15, 0.16, 0.05, 0.14
+                ],
+                "mean": 0.11,
+                "median": 0.14,
+                "p75": 0.15,
+                "p95": 0.16,
+                "p99": 0.16,
+                "min": 0.04,
+                "max": 0.16
+              },
+              "legacyMs": {
+                "samples": [
+                  10.4, 10.44, 10.35, 12.62, 10.47, 11.04, 10.91, 10.22, 10.34,
+                  10.3, 10.34, 10.42, 12.06, 10.42, 10.29
+                ],
+                "mean": 10.71,
+                "median": 10.42,
+                "p75": 10.91,
+                "p95": 12.62,
+                "p99": 12.62,
+                "min": 10.22,
+                "max": 12.62
+              },
+              "liveMs": {
+                "samples": [
+                  0.14, 0.05, 0.16, 0.15, 0.17, 0.15, 0.15, 0.04, 0.16, 0.14,
+                  0.16, 0.15, 0.16, 0.04, 0.15
+                ],
+                "mean": 0.13,
+                "median": 0.15,
+                "p75": 0.16,
+                "p95": 0.17,
+                "p99": 0.17,
+                "min": 0.04,
+                "max": 0.17
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0134,
+                "cursorToLegacyP95": 0.0127,
+                "liveToLegacyMedian": 0.0144,
+                "liveToLegacyP95": 0.0135
+              }
+            }
+          },
+          "memoryProxy": {
+            "cursorRetainedFramesMax": 3,
+            "flatEntryCountAvoided": 30000,
+            "sourceNodeCount": 30000,
+            "treeNodeCount": 30000
+          },
+          "queryCount": 128,
+          "tokenLength": 328890
+        },
+        {
+          "blocks": 50000,
+          "id": "stress",
+          "lanes": {
+            "nodeStartWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.08, 0.02, 0.06, 0.02, 0.06, 0.06, 0.07, 0.02, 0.06, 0.02,
+                  0.08, 0.06, 0.06, 0.02, 0.07
+                ],
+                "mean": 0.05,
+                "median": 0.06,
+                "p75": 0.07,
+                "p95": 0.08,
+                "p99": 0.08,
+                "min": 0.02,
+                "max": 0.08
+              },
+              "legacyMs": {
+                "samples": [
+                  67.05, 66.18, 58.52, 55.84, 57.01, 57.86, 66.1, 72.12, 67.67,
+                  68.74, 69.8, 57.84, 55.67, 56.74, 56.63
+                ],
+                "mean": 62.25,
+                "median": 58.52,
+                "p75": 67.67,
+                "p95": 72.12,
+                "p99": 72.12,
+                "min": 55.67,
+                "max": 72.12
+              },
+              "liveMs": {
+                "samples": [
+                  0.08, 0.02, 0.12, 0.08, 0.1, 0.09, 0.09, 0.02, 0.1, 0.08, 0.1,
+                  0.1, 0.08, 0.02, 0.1
+                ],
+                "mean": 0.08,
+                "median": 0.09,
+                "p75": 0.1,
+                "p95": 0.12,
+                "p99": 0.12,
+                "min": 0.02,
+                "max": 0.12
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.001,
+                "cursorToLegacyP95": 0.0011,
+                "liveToLegacyMedian": 0.0015,
+                "liveToLegacyP95": 0.0017
+              }
+            },
+            "pointWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.16, 0.04, 0.15, 0.04, 0.15, 0.17, 0.16, 0.03, 0.16, 0.04,
+                  0.17, 0.15, 0.26, 0.05, 0.17
+                ],
+                "mean": 0.13,
+                "median": 0.15,
+                "p75": 0.17,
+                "p95": 0.26,
+                "p99": 0.26,
+                "min": 0.03,
+                "max": 0.26
+              },
+              "legacyMs": {
+                "samples": [
+                  90.31, 102.07, 102.92, 91.02, 97.47, 96.7, 107.12, 97.88,
+                  90.4, 92.23, 97.1, 95.37, 89.25, 89.21, 89.62
+                ],
+                "mean": 95.24,
+                "median": 95.37,
+                "p75": 97.88,
+                "p95": 107.12,
+                "p99": 107.12,
+                "min": 89.21,
+                "max": 107.12
+              },
+              "liveMs": {
+                "samples": [
+                  0.14, 0.03, 0.15, 0.14, 0.15, 0.16, 0.14, 0.03, 0.15, 0.14,
+                  0.16, 0.16, 0.15, 0.04, 0.16
+                ],
+                "mean": 0.13,
+                "median": 0.15,
+                "p75": 0.16,
+                "p95": 0.16,
+                "p99": 0.16,
+                "min": 0.03,
+                "max": 0.16
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0016,
+                "cursorToLegacyP95": 0.0024,
+                "liveToLegacyMedian": 0.0016,
+                "liveToLegacyP95": 0.0015
+              }
+            },
+            "touchingRangeWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.08, 0.02, 0.08, 0.01, 0.08, 0.07, 0.07, 0.01, 0.08, 0.02,
+                  0.07, 0.07, 0.07, 0.02, 0.08
+                ],
+                "mean": 0.06,
+                "median": 0.07,
+                "p75": 0.08,
+                "p95": 0.08,
+                "p99": 0.08,
+                "min": 0.01,
+                "max": 0.08
+              },
+              "legacyMs": {
+                "samples": [
+                  22.38, 23.2, 23.26, 22.91, 22.8, 23.78, 23.32, 23.71, 27.77,
+                  23.61, 23.14, 25.86, 23.44, 22.91, 23.24
+                ],
+                "mean": 23.69,
+                "median": 23.26,
+                "p75": 23.71,
+                "p95": 27.77,
+                "p99": 27.77,
+                "min": 22.38,
+                "max": 27.77
+              },
+              "liveMs": {
+                "samples": [
+                  0.07, 0.01, 0.07, 0.07, 0.07, 0.08, 0.06, 0.02, 0.08, 0.06,
+                  0.08, 0.12, 0.07, 0.01, 0.07
+                ],
+                "mean": 0.06,
+                "median": 0.07,
+                "p75": 0.08,
+                "p95": 0.12,
+                "p99": 0.12,
+                "min": 0.01,
+                "max": 0.12
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.003,
+                "cursorToLegacyP95": 0.0029,
+                "liveToLegacyMedian": 0.003,
+                "liveToLegacyP95": 0.0043
+              }
+            }
+          },
+          "memoryProxy": {
+            "cursorRetainedFramesMax": 3,
+            "flatEntryCountAvoided": 150000,
+            "sourceNodeCount": 150000,
+            "treeNodeCount": 150000
+          },
+          "queryCount": 48,
+          "tokenLength": 1688890
+        }
+      ],
+      "run": 2
+    },
+    {
+      "cohorts": [
+        {
+          "blocks": 500,
+          "id": "normal",
+          "lanes": {
+            "nodeStartWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.1, 0.08, 0.09, 0.07, 0.08, 0.09, 0.09, 0.07, 0.11, 0.2, 0.1,
+                  0.08, 0.08, 0.07, 0.08
+                ],
+                "mean": 0.09,
+                "median": 0.08,
+                "p75": 0.1,
+                "p95": 0.2,
+                "p99": 0.2,
+                "min": 0.07,
+                "max": 0.2
+              },
+              "legacyMs": {
+                "samples": [
+                  2.74, 2.82, 2.81, 2.67, 2.83, 2.76, 2.72, 2.95, 2.8, 2.63,
+                  2.67, 2.63, 2.53, 2.53, 2.47
+                ],
+                "mean": 2.7,
+                "median": 2.72,
+                "p75": 2.81,
+                "p95": 2.95,
+                "p99": 2.95,
+                "min": 2.47,
+                "max": 2.95
+              },
+              "liveMs": {
+                "samples": [
+                  0.11, 0.1, 0.11, 0.11, 0.11, 0.1, 0.1, 0.07, 0.17, 0.14, 0.12,
+                  0.1, 0.1, 0.07, 0.1
+                ],
+                "mean": 0.11,
+                "median": 0.1,
+                "p75": 0.11,
+                "p95": 0.17,
+                "p99": 0.17,
+                "min": 0.07,
+                "max": 0.17
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0294,
+                "cursorToLegacyP95": 0.0678,
+                "liveToLegacyMedian": 0.0368,
+                "liveToLegacyP95": 0.0576
+              }
+            },
+            "pointWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.16, 0.17, 0.16, 0.12, 0.18, 0.15, 0.21, 0.14, 0.2, 0.15,
+                  0.18, 0.16, 0.17, 0.12, 0.17
+                ],
+                "mean": 0.16,
+                "median": 0.16,
+                "p75": 0.18,
+                "p95": 0.21,
+                "p99": 0.21,
+                "min": 0.12,
+                "max": 0.21
+              },
+              "legacyMs": {
+                "samples": [
+                  4.22, 3.97, 3.97, 4.1, 4.15, 4.07, 6.31, 3.82, 3.8, 3.68,
+                  3.73, 3.77, 3.82, 3.84, 3.82
+                ],
+                "mean": 4.07,
+                "median": 3.84,
+                "p75": 4.1,
+                "p95": 6.31,
+                "p99": 6.31,
+                "min": 3.68,
+                "max": 6.31
+              },
+              "liveMs": {
+                "samples": [
+                  0.16, 0.15, 0.16, 0.15, 0.2, 0.17, 0.18, 0.14, 0.18, 0.17,
+                  0.18, 0.17, 0.16, 0.13, 0.17
+                ],
+                "mean": 0.17,
+                "median": 0.17,
+                "p75": 0.18,
+                "p95": 0.2,
+                "p99": 0.2,
+                "min": 0.13,
+                "max": 0.2
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0417,
+                "cursorToLegacyP95": 0.0333,
+                "liveToLegacyMedian": 0.0443,
+                "liveToLegacyP95": 0.0317
+              }
+            },
+            "touchingRangeWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.11, 0.07, 0.14, 0.07, 0.11, 0.11, 0.09, 0.07, 0.12, 0.07,
+                  0.11, 0.12, 0.11, 0.07, 0.11
+                ],
+                "mean": 0.1,
+                "median": 0.11,
+                "p75": 0.11,
+                "p95": 0.14,
+                "p99": 0.14,
+                "min": 0.07,
+                "max": 0.14
+              },
+              "legacyMs": {
+                "samples": [
+                  1.18, 1.12, 1.27, 1.38, 1.33, 1.34, 1.35, 1.32, 1.32, 1.34,
+                  1.34, 1.5, 1.41, 2.01, 2.04
+                ],
+                "mean": 1.42,
+                "median": 1.34,
+                "p75": 1.41,
+                "p95": 2.04,
+                "p99": 2.04,
+                "min": 1.12,
+                "max": 2.04
+              },
+              "liveMs": {
+                "samples": [
+                  0.11, 0.06, 0.1, 0.09, 0.1, 0.11, 0.09, 0.06, 0.11, 0.15,
+                  0.12, 0.12, 0.1, 0.07, 0.11
+                ],
+                "mean": 0.1,
+                "median": 0.1,
+                "p75": 0.11,
+                "p95": 0.15,
+                "p99": 0.15,
+                "min": 0.06,
+                "max": 0.15
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0821,
+                "cursorToLegacyP95": 0.0686,
+                "liveToLegacyMedian": 0.0746,
+                "liveToLegacyP95": 0.0735
+              }
+            }
+          },
+          "memoryProxy": {
+            "cursorRetainedFramesMax": 3,
+            "flatEntryCountAvoided": 1500,
+            "sourceNodeCount": 1500,
+            "treeNodeCount": 1500
+          },
+          "queryCount": 256,
+          "tokenLength": 15890
+        },
+        {
+          "blocks": 10000,
+          "id": "large",
+          "lanes": {
+            "nodeStartWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.11, 0.05, 0.12, 0.05, 0.08, 0.08, 0.08, 0.05, 0.09, 0.04,
+                  0.09, 0.09, 0.08, 0.04, 0.09
+                ],
+                "mean": 0.08,
+                "median": 0.08,
+                "p75": 0.09,
+                "p95": 0.12,
+                "p99": 0.12,
+                "min": 0.04,
+                "max": 0.12
+              },
+              "legacyMs": {
+                "samples": [
+                  26.56, 30.44, 25.41, 24.25, 23.8, 23.96, 23.65, 23.17, 23.05,
+                  22.97, 23.05, 23.07, 23.21, 23.79, 23.28
+                ],
+                "mean": 24.25,
+                "median": 23.65,
+                "p75": 24.25,
+                "p95": 30.44,
+                "p99": 30.44,
+                "min": 22.97,
+                "max": 30.44
+              },
+              "liveMs": {
+                "samples": [
+                  0.13, 0.07, 0.14, 0.19, 0.14, 0.13, 0.11, 0.04, 0.16, 0.12,
+                  0.16, 0.16, 0.13, 0.05, 0.13
+                ],
+                "mean": 0.12,
+                "median": 0.13,
+                "p75": 0.16,
+                "p95": 0.19,
+                "p99": 0.19,
+                "min": 0.04,
+                "max": 0.19
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0034,
+                "cursorToLegacyP95": 0.0039,
+                "liveToLegacyMedian": 0.0055,
+                "liveToLegacyP95": 0.0062
+              }
+            },
+            "pointWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.37, 0.13, 0.32, 0.1, 0.3, 0.27, 0.31, 0.1, 0.31, 0.09, 0.3,
+                  0.28, 0.35, 0.11, 0.37
+                ],
+                "mean": 0.25,
+                "median": 0.3,
+                "p75": 0.32,
+                "p95": 0.37,
+                "p99": 0.37,
+                "min": 0.09,
+                "max": 0.37
+              },
+              "legacyMs": {
+                "samples": [
+                  41.89, 44.63, 61.62, 43.19, 42.82, 42.56, 38.71, 35.29, 33.63,
+                  33.79, 33.81, 33.89, 33.99, 35.26, 33.82
+                ],
+                "mean": 39.26,
+                "median": 35.29,
+                "p75": 42.82,
+                "p95": 61.62,
+                "p99": 61.62,
+                "min": 33.63,
+                "max": 61.62
+              },
+              "liveMs": {
+                "samples": [
+                  0.32, 0.09, 0.33, 0.31, 0.34, 0.33, 0.28, 0.09, 0.31, 0.28,
+                  0.33, 0.34, 0.38, 0.1, 0.3
+                ],
+                "mean": 0.28,
+                "median": 0.31,
+                "p75": 0.33,
+                "p95": 0.38,
+                "p99": 0.38,
+                "min": 0.09,
+                "max": 0.38
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0085,
+                "cursorToLegacyP95": 0.006,
+                "liveToLegacyMedian": 0.0088,
+                "liveToLegacyP95": 0.0062
+              }
+            },
+            "touchingRangeWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.15, 0.05, 0.17, 0.06, 0.17, 0.15, 0.14, 0.04, 0.16, 0.05,
+                  0.14, 0.15, 0.16, 0.06, 0.15
+                ],
+                "mean": 0.12,
+                "median": 0.15,
+                "p75": 0.16,
+                "p95": 0.17,
+                "p99": 0.17,
+                "min": 0.04,
+                "max": 0.17
+              },
+              "legacyMs": {
+                "samples": [
+                  13.97, 14.11, 13.93, 15.93, 14.4, 12.97, 12.79, 12.87, 12.77,
+                  12.79, 12.94, 12.92, 13.67, 14.93, 12.99
+                ],
+                "mean": 13.6,
+                "median": 12.99,
+                "p75": 14.11,
+                "p95": 15.93,
+                "p99": 15.93,
+                "min": 12.77,
+                "max": 15.93
+              },
+              "liveMs": {
+                "samples": [
+                  0.15, 0.04, 0.16, 0.15, 0.18, 0.15, 0.14, 0.04, 0.16, 0.14,
+                  0.17, 0.16, 0.15, 0.04, 0.15
+                ],
+                "mean": 0.13,
+                "median": 0.15,
+                "p75": 0.16,
+                "p95": 0.18,
+                "p99": 0.18,
+                "min": 0.04,
+                "max": 0.18
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0115,
+                "cursorToLegacyP95": 0.0107,
+                "liveToLegacyMedian": 0.0115,
+                "liveToLegacyP95": 0.0113
+              }
+            }
+          },
+          "memoryProxy": {
+            "cursorRetainedFramesMax": 3,
+            "flatEntryCountAvoided": 30000,
+            "sourceNodeCount": 30000,
+            "treeNodeCount": 30000
+          },
+          "queryCount": 128,
+          "tokenLength": 328890
+        },
+        {
+          "blocks": 50000,
+          "id": "stress",
+          "lanes": {
+            "nodeStartWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.07, 0.02, 0.06, 0.02, 0.07, 0.07, 0.06, 0.02, 0.08, 0.02,
+                  0.07, 0.06, 0.06, 0.02, 0.06
+                ],
+                "mean": 0.05,
+                "median": 0.06,
+                "p75": 0.07,
+                "p95": 0.08,
+                "p99": 0.08,
+                "min": 0.02,
+                "max": 0.08
+              },
+              "legacyMs": {
+                "samples": [
+                  71.67, 65.74, 61.64, 57.77, 58.74, 63.41, 69.73, 67.05, 78.69,
+                  79.37, 75.22, 72.07, 62.76, 60.97, 59.86
+                ],
+                "mean": 66.98,
+                "median": 65.74,
+                "p75": 72.07,
+                "p95": 79.37,
+                "p99": 79.37,
+                "min": 57.77,
+                "max": 79.37
+              },
+              "liveMs": {
+                "samples": [
+                  0.08, 0.02, 0.1, 0.08, 0.08, 0.11, 0.09, 0.02, 0.1, 0.1, 0.13,
+                  0.1, 0.09, 0.02, 0.09
+                ],
+                "mean": 0.08,
+                "median": 0.09,
+                "p75": 0.1,
+                "p95": 0.13,
+                "p99": 0.13,
+                "min": 0.02,
+                "max": 0.13
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0009,
+                "cursorToLegacyP95": 0.001,
+                "liveToLegacyMedian": 0.0014,
+                "liveToLegacyP95": 0.0016
+              }
+            },
+            "pointWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.18, 0.04, 0.24, 0.13, 0.23, 0.15, 0.17, 0.05, 0.19, 0.04,
+                  0.19, 0.21, 0.19, 0.05, 0.24
+                ],
+                "mean": 0.15,
+                "median": 0.18,
+                "p75": 0.21,
+                "p95": 0.24,
+                "p99": 0.24,
+                "min": 0.04,
+                "max": 0.24
+              },
+              "legacyMs": {
+                "samples": [
+                  98.17, 108.71, 123.01, 115.72, 119.41, 118.52, 122.85, 122.92,
+                  108.91, 114.28, 111.15, 121.42, 114.66, 108.32, 129.63
+                ],
+                "mean": 115.84,
+                "median": 115.72,
+                "p75": 122.85,
+                "p95": 129.63,
+                "p99": 129.63,
+                "min": 98.17,
+                "max": 129.63
+              },
+              "liveMs": {
+                "samples": [
+                  0.15, 0.03, 0.17, 0.24, 0.18, 0.19, 0.15, 0.04, 0.24, 0.15,
+                  0.17, 0.18, 0.16, 0.04, 0.18
+                ],
+                "mean": 0.15,
+                "median": 0.17,
+                "p75": 0.18,
+                "p95": 0.24,
+                "p99": 0.24,
+                "min": 0.03,
+                "max": 0.24
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0016,
+                "cursorToLegacyP95": 0.0019,
+                "liveToLegacyMedian": 0.0015,
+                "liveToLegacyP95": 0.0019
+              }
+            },
+            "touchingRangeWalk": {
+              "cursorMs": {
+                "samples": [
+                  0.08, 0.02, 0.17, 0.05, 0.09, 0.07, 0.09, 0.02, 0.15, 0.02,
+                  0.11, 0.08, 0.09, 0.03, 0.08
+                ],
+                "mean": 0.08,
+                "median": 0.08,
+                "p75": 0.09,
+                "p95": 0.17,
+                "p99": 0.17,
+                "min": 0.02,
+                "max": 0.17
+              },
+              "legacyMs": {
+                "samples": [
+                  40.27, 40.8, 44.99, 36.7, 36.78, 36.54, 35.7, 44.03, 37.85,
+                  36.67, 39.39, 40.72, 44.65, 37.48, 38.52
+                ],
+                "mean": 39.4,
+                "median": 38.52,
+                "p75": 40.8,
+                "p95": 44.99,
+                "p99": 44.99,
+                "min": 35.7,
+                "max": 44.99
+              },
+              "liveMs": {
+                "samples": [
+                  0.07, 0.02, 0.08, 0.17, 0.08, 0.1, 0.08, 0.02, 0.08, 0.08,
+                  0.23, 0.08, 0.19, 0.04, 0.09
+                ],
+                "mean": 0.09,
+                "median": 0.08,
+                "p75": 0.1,
+                "p95": 0.23,
+                "p99": 0.23,
+                "min": 0.02,
+                "max": 0.23
+              },
+              "ratios": {
+                "cursorToLegacyMedian": 0.0021,
+                "cursorToLegacyP95": 0.0038,
+                "liveToLegacyMedian": 0.0021,
+                "liveToLegacyP95": 0.0051
+              }
+            }
+          },
+          "memoryProxy": {
+            "cursorRetainedFramesMax": 3,
+            "flatEntryCountAvoided": 150000,
+            "sourceNodeCount": 150000,
+            "treeNodeCount": 150000
+          },
+          "queryCount": 48,
+          "tokenLength": 1688890
+        }
+      ],
+      "run": 3
+    }
+  ],
+  "runs": 3,
+  "samples": 15,
+  "thresholdPolicy": {
+    "largeAndStressMedianRatioMax": 0.8,
+    "largeAndStressP95RatioMax": 0.8,
+    "normalMedianRatioMax": 1.1,
+    "normalP95RatioMax": 1.1,
+    "parityRequired": true
+  }
+}

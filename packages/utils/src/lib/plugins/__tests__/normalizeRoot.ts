@@ -1,6 +1,39 @@
-import type { AnyBasePlugin } from '@platejs/core';
+import { type AnyBasePlugin, createBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
-import type { Selection, Value } from '@platejs/plite';
+import { type Selection, type Value, schema } from '@platejs/plite';
+
+export const fixtureSchemaPlugins = [
+  createBasePlugin({
+    key: 'fixtureH1',
+    node: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        groups: ['block'],
+      },
+      type: 'h1',
+    },
+  }),
+  createBasePlugin({
+    key: 'fixtureH2',
+    node: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        groups: ['block'],
+      },
+      type: 'h2',
+    },
+  }),
+  createBasePlugin({
+    key: 'fixtureElement',
+    node: {
+      element: {
+        content: schema.content.group('block'),
+        groups: ['block'],
+      },
+      type: 'element',
+    },
+  }),
+];
 
 export const normalizeRoot = ({
   plugins,
@@ -12,7 +45,7 @@ export const normalizeRoot = ({
   value: Value;
 }) => {
   const editor = createPlateEditor({
-    plugins,
+    plugins: [...fixtureSchemaPlugins, ...plugins],
     selection,
     ...(value.length > 0 ? { value } : {}),
   });

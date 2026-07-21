@@ -1,11 +1,13 @@
 /** @jsx jsx */
 
 import { jsx } from '../../..';
+import { insertContentSlice } from '../../../support/with-test.js';
 
 jsx;
 
 export const run = (editor, options = {}) => {
-  editor.fragment.insert(
+  insertContentSlice(
+    editor,
     <fragment>
       <block>
         <block>
@@ -34,7 +36,7 @@ export const input = (
     </block>
   </editor>
 );
-// Core policy: insertFragment is structural, not table-grid aware. The first
+// Core policy: slice replacement is structural, not table-grid aware. The first
 // compatible source cell merges into the active cell; later source cells stay
 // as inserted siblings before the existing following cells. Positional grid
 // merge belongs in a table extension.

@@ -14,6 +14,8 @@ import {
   createBasePlugin,
   ElementApi,
   KEYS,
+  NODES,
+  property,
 } from 'platejs';
 
 import {
@@ -71,12 +73,28 @@ const getBlockSuggestionData = (node: Node) =>
 
 const MentionPlugin = createBasePlugin({
   key: KEYS.mention,
-  node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
+  node: {
+    element: {
+      inline: true,
+      properties: {
+        key: property.string(),
+        value: property.string(),
+      },
+      void: 'markable-inline',
+    },
+  },
 });
 
 const InlineEquationPlugin = createBasePlugin({
   key: KEYS.inlineEquation,
-  node: { isElement: true, isInline: true, isVoid: true },
+  node: {
+    element: {
+      inline: true,
+      properties: { texExpression: property.string() },
+      void: 'inline',
+    },
+    type: NODES.inlineEquation,
+  },
 });
 
 const getResolvedSuggestions = (editor: BaseEditor) => {
@@ -296,6 +314,7 @@ describe('buildBlockDiscussionIndex', () => {
         ...plugins,
       ],
       selection: {
+        kind: 'text',
         anchor: { path: [0, 2], offset: 0 },
         focus: { path: [0, 2], offset: 0 },
       },

@@ -47,6 +47,7 @@ const selectEnd = async (
   editor: ReturnType<typeof createPliteBrowserEditorHarness>
 ) => {
   const selection = {
+    kind: 'text',
     anchor: { path: [0, 0], offset: 51 },
     focus: { path: [0, 0], offset: 51 },
   };
@@ -194,6 +195,7 @@ test.describe('shadow-dom example', () => {
       .poll(() => editor.get.text())
       .toBe(`This${text} Editor is rendered within a nested Shadow DOM.`);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: offset + text.length },
       focus: { path: [0, 0], offset: offset + text.length },
     });
@@ -219,6 +221,7 @@ test.describe('shadow-dom example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: 50 },
         focus: { path: [0, 0], offset: 50 },
       });
@@ -290,6 +293,7 @@ test.describe('shadow-dom example', () => {
 
     await editor.assert.text('שלו');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: rtlText.length - 1 },
       focus: { path: [0, 0], offset: rtlText.length - 1 },
     });

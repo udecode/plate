@@ -36,17 +36,17 @@ const ConfiguredPlugin = MyPlugin.configure({
 
 ## 节点插件
 
-节点插件通过`node`属性定义编辑器中的新节点类型，可以是元素（块级或行内）或叶子节点（用于文本级格式）。
+节点插件通过 `node` 属性声明元素和文本属性。
 
 ### 元素
 
-要创建新元素类型，使用`node.isElement`选项：
+使用 `node.element` 声明新元素类型：
 
 ```ts
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
   node: {
-    isElement: true,
+    element: {},
     type: 'p',
   },
 });
@@ -58,23 +58,22 @@ const ParagraphPlugin = createPlatePlugin({
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
   node: {
-    isElement: true,
+    element: {},
     type: 'p',
     component: ParagraphElement,
   },
 });
 ```
 
-### 行内元素、Void元素和叶子节点
+### 行内元素、Void 元素和标记节点
 
-对于行内元素、void元素或叶子节点，使用相应的节点选项：
+元素行为位于 `node.element` 中。使用 `node.mark: true` 声明布尔文本属性：
 
 ```ts
 const LinkPlugin = createPlatePlugin({
   key: 'link',
   node: {
-    isElement: true,
-    isInline: true,
+    element: { inline: true },
     type: 'a',
   },
 });
@@ -82,8 +81,7 @@ const LinkPlugin = createPlatePlugin({
 const ImagePlugin = createPlatePlugin({
   key: 'image',
   node: {
-    isElement: true,
-    isVoid: true,
+    element: { void: 'block' },
     type: 'img',
   },
 });
@@ -91,7 +89,7 @@ const ImagePlugin = createPlatePlugin({
 const BoldPlugin = createPlatePlugin({
   key: 'bold',
   node: {
-    isLeaf: true,
+    mark: true,
   },
 });
 ```
@@ -183,75 +181,35 @@ const TextAlignPlugin = createPlatePlugin({
 }
 ```
 
-### 重写编辑器方法
+### 扩展 API 和事务命令
 
-`overrideEditor`方法提供了一种在保持访问原始实现的同时重写现有编辑器方法的方式。这在您想修改核心编辑器功能行为时特别有用。
-
-```ts
-const CustomPlugin = createPlatePlugin({
-  key: 'custom',
-}).overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
-  // 重写已有编辑器 transform 方法
-  tf: {
-    deleteForward(options) {
-      // 删除前的自定义逻辑
-      console.info('向前删除中...');
-      
-      // 调用原始转换
-      deleteForward(options);
-      
-      // 删除后的自定义逻辑
-      console.info('已向前删除');
-    },
-  },
-  // 重写API方法
-  api: {
-    isInline(element) {
-      // 自定义行内元素检查
-      if (element.type === 'custom-inline') {
-        return true;
-      }
-      
-      // 回退到原始行为
-      return isInline(element);
-    },
-  },
-}));
-```
-
-- 通过解构的 `tf` 和 `api` 参数访问原始方法
-- 现有方法的类型安全重写
-- `tf` 重写和 API 方法保持分离
-- 插件上下文和选项访问
-
-带类型选项的示例：
+使用 `.extendEditorApi()` 添加编辑器级读取或服务，使用 `.extendTx()` 添加插件自己的文档变更。两者保持分离，调用方可以直接看出某个方法是否会修改编辑器。
 
 ```ts
-type CustomConfig = PluginConfig<
-  'custom',
-  { allowDelete: boolean }
->;
+type CustomConfig = PluginConfig<'custom', { allowDelete: boolean }>;
 
 const CustomPlugin = createPlatePlugin<CustomConfig>({
   key: 'custom',
   options: { allowDelete: true },
-}).overrideEditor(({ editor, tf: { deleteForward }, getOptions }) => ({
-  tf: {
-    deleteForward(options) {
-      // 使用类型化选项控制行为
-      if (!getOptions().allowDelete) {
-        return;
-      }
-      
-      deleteForward(options);
+})
+  .extendEditorApi(({ getOptions }) => ({
+    canDelete: () => getOptions().allowDelete,
+  }))
+  .extendTx(({ getOptions }) => (tx) => ({
+    deleteBackward() {
+      if (!getOptions().allowDelete) return;
+
+      tx.text.delete({ reverse: true, unit: 'character' });
     },
-  },
-}));
+  }));
+
+editor.api.canDelete();
+editor.update((tx) => tx.custom.deleteBackward());
 ```
 
 ### 安装 Plite 扩展（高级）
 
-当 Plate 插件需要安装 Plite 底层能力时使用 `extensions`：schema 事实、state 组、tx 组、operation 中间件或运行时服务。
+当 Plate 插件需要安装 Plite 底层能力时使用 `.extendExtension()`：schema、state、tx、command、correction 或运行时服务。
 
 ```ts showLineNumbers
 import { defineEditorExtension } from '@platejs/plite';
@@ -270,14 +228,13 @@ const customState = defineEditorExtension({
 
 const CustomStatePlugin = createPlatePlugin({
   key: 'customState',
-  extensions: [customState],
-});
+}).extendExtension(customState);
 ```
 
-<Callout type="info" title="extensions、overrideEditor 和命令">
-- 使用 `extensions` 安装 Plite 底层能力。
-- 只有在包装已有编辑器行为时使用 `overrideEditor`。
-- 使用 `editor.api` 做读取和服务，使用 `editor.update` 或 `tx` 组做变更。
+<Callout type="info" title="扩展、API 与事务">
+- 使用 `.extendExtension()` 安装 Plite 底层能力。
+- 使用 `.extendApi()` 或 `.extendEditorApi()` 添加读取与服务。
+- 使用 `editor.update.*` 或活动事务中的 `tx` 组执行变更。
 </Callout>
 
 ## 高级插件配置
@@ -414,7 +371,7 @@ const MyPlugin = createPlatePlugin({
 ```ts
 type CodeBlockConfig = PluginConfig<
   // key
-  'code_block',
+  'codeBlock',
   // options
   { syntax: boolean; syntaxPopularFirst: boolean },
   // api
@@ -435,7 +392,8 @@ type CodeBlockConfig = PluginConfig<
 >;
 
 const CodeBlockPlugin = createPlatePlugin<CodeBlockConfig>({
-  key: 'code_block',
+  key: 'codeBlock',
+  node: { type: 'code_block' },
   options: { syntax: true, syntaxPopularFirst: false },
 }).extendEditorApi<CodeBlockConfig['api']>(() => ({
   plugin: {

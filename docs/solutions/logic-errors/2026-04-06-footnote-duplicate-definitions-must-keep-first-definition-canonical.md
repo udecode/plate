@@ -51,8 +51,8 @@ At the package layer:
   definitions only
 - `api.footnote.isDuplicateDefinition({ path })` answers whether a specific
   definition is one of those later duplicates
-- `tf.footnote.normalizeDuplicateDefinition({ path, identifier? })` renumbers a
-  later duplicate definition to an explicit new identifier
+- `editor.update.footnote.normalizeDuplicateDefinition({ path, identifier? })`
+  renumbers a later duplicate definition to an explicit new identifier
 
 At the app layer:
 

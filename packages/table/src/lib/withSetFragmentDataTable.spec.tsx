@@ -114,8 +114,11 @@ describe('withSetFragmentDataTable', () => {
     ) as TestEditor;
     const { clipboard, values } = createClipboard();
     const writeSelection = mock((data: Pick<DataTransfer, 'setData'>) => {
-      data.setData('text/html', '<table>standard html</table>');
-      data.setData('application/x-slate-fragment', 'standard fragment');
+      data.setData(
+        'text/html',
+        '<table data-plite-fragment="standard fragment" data-plite-fragment-format="x-plite-fragment">standard html</table>'
+      );
+      data.setData('application/x-plite-fragment', 'standard fragment');
     });
     const editor = createTableEditor(input, writeSelection);
 
@@ -124,9 +127,12 @@ describe('withSetFragmentDataTable', () => {
     expect(values.get('text/csv')).toBe('11,12\n21,22\n');
     expect(values.get('text/tsv')).toBe('11\t12\n21\t22\n');
     expect(values.get('text/plain')).toBe('11\t12\n21\t22\n');
-    expect(values.get('text/html')).toBe('<table>standard html</table>');
-    expect(values.get('application/x-slate-fragment')).toBe(
+    expect(values.get('text/html')).toBe(
+      '<table data-plite-fragment="standard fragment" data-plite-fragment-format="x-plite-fragment">standard html</table>'
+    );
+    expect(values.get('application/x-plite-fragment')).toBe(
       'standard fragment'
     );
+    expect(values.has('application/x-slate-fragment')).toBe(false);
   });
 });

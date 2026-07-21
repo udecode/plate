@@ -1,6 +1,7 @@
 ---
 title: Plite DOM operation middleware must enter operation roots before path reads
 date: 2026-05-23
+status: superseded
 category: docs/solutions/runtime-errors
 module: plite plite-dom multi-root history
 problem_type: runtime_error
@@ -15,6 +16,10 @@ tags: [plite, plite-dom, multi-root, history, operation-root, middleware]
 ---
 
 # Plite DOM operation middleware must enter operation roots before path reads
+
+> **Superseded architecture record.** Plite DOM no longer intercepts model
+> operations. Canonical changes carry root ownership, while the DOM runtime
+> consumes commit queries and root-scoped mapping services.
 
 ## Problem
 

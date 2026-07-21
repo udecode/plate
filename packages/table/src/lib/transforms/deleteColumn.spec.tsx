@@ -378,8 +378,8 @@ describe('deleteColumn', () => {
     editor.update.remove.tableColumn();
 
     expect(editor.read.text.string([0])).toBe('1222');
-    expect(editor.read.nodes.toArray({ match: { type: 'td' } })).toHaveLength(
-      2
-    );
+    expect(
+      editor.read.nodes.toArray({ at: [], match: { type: 'td' } })
+    ).toHaveLength(2);
   });
 });

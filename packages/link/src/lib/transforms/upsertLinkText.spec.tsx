@@ -1,22 +1,31 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
 const createEditor = () =>
   createBaseEditor({
-    plugins: [BaseLinkPlugin],
+    plugins: [
+      createBasePlugin({
+        key: 'bold',
+        node: { mark: true },
+      }),
+      BaseLinkPlugin,
+    ],
     selection: {
-      anchor: { offset: 3, path: [0, 0, 0] },
-      focus: { offset: 3, path: [0, 0, 0] },
+      kind: 'text',
+      anchor: { offset: 3, path: [0, 1, 0] },
+      focus: { offset: 3, path: [0, 1, 0] },
     },
     value: [
       {
         children: [
+          { text: '' },
           {
             children: [{ bold: true, text: 'old' }, { text: ' tail' }],
             type: 'a',
             url: 'https://example.com',
           },
+          { text: '' },
         ],
         type: 'p',
       },

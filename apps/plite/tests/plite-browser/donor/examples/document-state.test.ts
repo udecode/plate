@@ -13,6 +13,7 @@ const bodyEndPoint = {
   offset: 'Title changes never need invisible nodes.'.length,
 };
 const bodyStartSelection = {
+  kind: 'text',
   anchor: { path: [0, 0], offset: 'The '.length },
   focus: { path: [0, 0], offset: 'The '.length },
 };
@@ -20,6 +21,7 @@ const focusMutationPrefix = 'Focus mutation: ';
 const historicCommitTags = 'history-skip,historic';
 const remoteStateCommitTags = 'collaboration,remote-state,history-skip';
 const focusMutationSelection = {
+  kind: 'text',
   anchor: { path: [0, 0], offset: `${focusMutationPrefix}The `.length },
   focus: { path: [0, 0], offset: `${focusMutationPrefix}The `.length },
 };
@@ -136,8 +138,9 @@ test.describe('document state example', () => {
       const handle = (
         element as HTMLElement & {
           __pliteBrowserHandle?: {
-            applyOperations: (
-              operations: readonly Record<string, unknown>[],
+            insertTextAt: (
+              text: string,
+              at: { offset: number; path: number[]; root?: string },
               policy?: EditorUpdatePolicy
             ) => void;
           };
@@ -148,16 +151,9 @@ test.describe('document state example', () => {
         throw new Error('Missing Plite browser handle');
       }
 
-      handle.applyOperations(
-        [
-          {
-            offset: 0,
-            path: [1, 0],
-            root: 'main',
-            text: 'Remote ',
-            type: 'insert_text',
-          },
-        ],
+      handle.insertTextAt(
+        'Remote ',
+        { offset: 0, path: [1, 0] },
         {
           history: 'skip',
           tags: [
@@ -203,8 +199,9 @@ test.describe('document state example', () => {
     await editor.root.evaluate((element, prefix) => {
       const root = element as HTMLElement & {
         __pliteBrowserHandle?: {
-          applyOperations: (
-            operations: readonly Record<string, unknown>[],
+          insertTextAt: (
+            text: string,
+            at: { offset: number; path: number[]; root?: string },
             policy?: EditorUpdatePolicy
           ) => void;
         };
@@ -219,16 +216,9 @@ test.describe('document state example', () => {
             throw new Error('Missing Plite browser handle');
           }
 
-          handle.applyOperations(
-            [
-              {
-                offset: 0,
-                path: [0, 0],
-                root: 'main',
-                text: prefix,
-                type: 'insert_text',
-              },
-            ],
+          handle.insertTextAt(
+            prefix,
+            { offset: 0, path: [0, 0] },
             {
               history: 'skip',
               tags: [
@@ -263,6 +253,7 @@ test.describe('document state example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: {
           path: [0, 0],
           offset: `${focusMutationPrefix}The typed `.length,
@@ -404,7 +395,7 @@ test.describe('document state example', () => {
     await expect(editor.root).not.toContainText('nodes.p');
     await expect(editor.root).not.toBeFocused();
     await expect.poll(() => editor.get.modelText()).not.toContain('nodes.p');
-    await expect(commitStatus).toContainText('ops:remove_text');
+    await expect(commitStatus).toContainText('changed:document');
     await expect(commitStatus).toContainText(historicCommitTags);
     await expect(page.locator('body')).not.toContainText('Could not set focus');
     expect(pageErrors).toEqual([]);
@@ -501,6 +492,7 @@ test.describe('document state example', () => {
     await expect(editor.root).toHaveAttribute('spellcheck', 'true');
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -509,7 +501,7 @@ test.describe('document state example', () => {
     await expect(editor.root).toContainText(
       'Привет The body is still normal Plite content.'
     );
-    await expect(commitStatus).toContainText('ops:insert_text');
+    await expect(commitStatus).toContainText('changed:document,text');
     await expect(commitStatus).toContainText('state:none');
     await editor.assert.text(
       'Привет The body is still normal Plite content.Title changes never need invisible nodes.'
@@ -562,12 +554,13 @@ test.describe('document state example', () => {
     await expect(titleStatus).toHaveText('title:Q3 Launch Brief');
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
     await editor.insertText('Draft: ');
 
-    await expect(commitStatus).toContainText('ops:insert_text');
+    await expect(commitStatus).toContainText('changed:document,text');
     await expect(commitStatus).toContainText('state:none');
     await expect(titleInput).toHaveValue('Q3 Launch Brief');
     await editor.assert.text(

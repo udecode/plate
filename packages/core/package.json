@@ -36,7 +36,7 @@
   ],
   "scripts": {
     "brl": "plate-pkg p:brl",
-    "build": "plate-pkg p:build",
+    "build": "node ../../tooling/scripts/build-plite-package.mjs",
     "build:watch": "plate-pkg p:build:watch",
     "clean": "plate-pkg p:clean",
     "lint": "plate-pkg p:lint",

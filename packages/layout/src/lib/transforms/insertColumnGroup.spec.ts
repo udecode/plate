@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
-import type { TColumnGroupElement } from '@platejs/utils';
+import { type TColumnGroupElement, NODES } from '@platejs/utils';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 
@@ -17,7 +17,9 @@ describe('insertColumnGroup', () => {
     assert(entry);
     const [columnGroup] = entry;
 
-    expect(columnGroup.type).toBe('column_group');
+    expect(BaseColumnPlugin.key).toBe('columnGroup');
+    expect(BaseColumnPlugin.node.type).toBe(NODES.columnGroup);
+    expect(columnGroup.type).toBe(NODES.columnGroup);
     expect(columnGroup.children).toHaveLength(3);
     expect(columnGroup.children[0].width).toContain('33.3333');
     expect(columnGroup.children[1].width).toContain('33.3333');

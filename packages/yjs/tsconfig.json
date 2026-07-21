@@ -4,6 +4,8 @@
   "exclude": [],
   "compilerOptions": {
     "paths": {
+      "@platejs/core": ["../core/src/index.ts"],
+      "@platejs/core/react": ["../core/src/react/index.ts"],
       "@platejs/browser/browser": ["../browser/src/browser/index.ts"],
       "@platejs/browser/core": ["../browser/src/core/index.ts"],
       "@platejs/browser/playwright": ["../browser/src/playwright/index.ts"],

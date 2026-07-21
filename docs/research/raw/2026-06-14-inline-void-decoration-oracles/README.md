@@ -5,4 +5,3 @@ Raw search inventories for
 
 Large result files stay here; distilled evidence goes in the Slate v2 research
 artifact.
-

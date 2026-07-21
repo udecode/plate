@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 
-import { createEditor } from '../../../../../packages/slate/src/index.ts';
-import { Editor } from '../../../../../packages/slate/src/internal/index.ts';
+import {
+  createEditor,
+  defineEditorSchema,
+  element,
+  schema,
+} from '../../../../../packages/plite/src/index.ts';
+import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const iterations = Number(process.env.NORMALIZATION_BENCH_ITERATIONS || 3);
@@ -12,6 +17,17 @@ const observedBlocks = Number(
   process.env.NORMALIZATION_BENCH_OBSERVED_BLOCKS || 500
 );
 const observedOps = Number(process.env.NORMALIZATION_BENCH_OBSERVED_OPS || 50);
+
+const InlineNormalizationSchema = defineEditorSchema({
+  elements: {
+    inline: element({ inline: true }),
+    paragraph: element({}),
+  },
+  id: 'normalization-benchmark-inline',
+  root: schema.root({ content: schema.content.types(['paragraph']) }),
+  unknown: 'preserve',
+  version: 1,
+});
 
 const createAdjacentTextChildren = (blocks) =>
   Array.from({ length: blocks }, () => ({
@@ -52,12 +68,6 @@ const insertText = (editor, text, options) => {
   });
 };
 
-const normalizeEditor = (editor) => {
-  editor.update(() => {
-    Editor.normalize(editor);
-  });
-};
-
 const measureLane = (setup, run) => {
   const samples = [];
 
@@ -76,17 +86,12 @@ const measureLane = (setup, run) => {
 };
 
 const explicitAdjacentTextNormalizeMs = measureLane(
-  () => {
-    const editor = createEditor();
+  () => createEditor(),
+  (editor) => {
     Editor.replace(editor, {
       children: createAdjacentTextChildren(explicitBlocks),
       selection: null,
-      marks: null,
     });
-    return editor;
-  },
-  (editor) => {
-    normalizeEditor(editor);
     const firstBlock = Editor.getSnapshot(editor).children[0];
     assert.deepEqual(firstBlock?.children, [{ text: 'alphabeta', bold: true }]);
   }
@@ -94,20 +99,13 @@ const explicitAdjacentTextNormalizeMs = measureLane(
 
 const explicitInlineFlattenNormalizeMs = measureLane(
   () => {
-    const editor = createEditor();
-    editor.extend({
-      name: 'normalization-benchmark-inline',
-      elements: [{ type: 'inline', inline: true }],
-    });
+    return createEditor({ extensions: [InlineNormalizationSchema] });
+  },
+  (editor) => {
     Editor.replace(editor, {
       children: createInlineFlattenChildren(explicitBlocks),
       selection: null,
-      marks: null,
     });
-    return editor;
-  },
-  (editor) => {
-    normalizeEditor(editor);
     const firstInline = Editor.getSnapshot(editor).children[0]?.children[1];
     assert.deepEqual(firstInline?.children, [{ text: 'onetwothreefour' }]);
   }
@@ -119,7 +117,6 @@ const observedInsertTextReadAfterEachMs = measureLane(
     Editor.replace(editor, {
       children: createObservedChildren(observedBlocks),
       selection: null,
-      marks: null,
     });
     return editor;
   },
@@ -138,7 +135,7 @@ const observedInsertTextReadAfterEachMs = measureLane(
 );
 
 const summary = {
-  lane: 'normalization-local',
+  lane: 'plite-normalization-local',
   iterations,
   config: {
     explicitBlocks,

@@ -17,6 +17,7 @@ export const test = (editor) =>
     editorPositions(editor, {
       reverse: true,
       at: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [2, 0], offset: 2 },
       },

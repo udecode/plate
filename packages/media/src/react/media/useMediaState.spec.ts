@@ -101,7 +101,10 @@ describe('useMediaState', () => {
     );
 
     useEditorRefMock.mockReturnValue({
-      getType: (key: string) => key,
+      getType: (key: string) =>
+        key === actualUtils.KEYS.mediaEmbed
+          ? actualUtils.NODES.mediaEmbed
+          : key,
     });
     useElementMock.mockReturnValue(element);
     useEditorFocusedMock.mockReturnValue(false);
@@ -130,7 +133,7 @@ describe('useMediaState', () => {
       children: [{ text: '' }],
       provider: 'vimeo',
       sourceUrl: 'https://vimeo.com/1',
-      type: actualUtils.KEYS.mediaEmbed,
+      type: actualUtils.NODES.mediaEmbed,
       url: "javascript:parent.postMessage('plate-media-xss','*')",
     });
 
@@ -144,7 +147,7 @@ describe('useMediaState', () => {
       id: 'attacker-controlled',
       provider: 'youtube',
       sourceUrl: 'https://vimeo.com/1',
-      type: actualUtils.KEYS.mediaEmbed,
+      type: actualUtils.NODES.mediaEmbed,
       url: 'https://player.vimeo.com/video/76979871',
     });
 

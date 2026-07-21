@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 
 import { BaseParagraphPlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
+import { editorCommands } from '@platejs/plite';
 
 import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
@@ -40,6 +41,7 @@ describe('AIChatPlugin', () => {
     const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
@@ -51,10 +53,13 @@ describe('AIChatPlugin', () => {
 
     editor.update((tx) => {
       tx.selection.set({
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
-      tx.text.insert(' ');
+      tx.command(editorCommands.insertText, {
+        text: ' ',
+      });
     });
 
     expect(editor.plugin(AIChatPlugin).getOption('open')).toBe(true);

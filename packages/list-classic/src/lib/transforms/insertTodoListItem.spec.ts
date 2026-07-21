@@ -1,5 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { NODES } from '@platejs/utils';
 
 import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 import { insertTodoListItem } from './insertTodoListItem';
@@ -11,6 +11,7 @@ const createTodoEditor = (offset?: number) =>
       offset === undefined
         ? null
         : {
+            kind: 'text',
             anchor: { offset, path: [0, 0] },
             focus: { offset, path: [0, 0] },
           },
@@ -18,7 +19,7 @@ const createTodoEditor = (offset?: number) =>
       {
         checked: true,
         children: [{ text: 'one' }],
-        type: KEYS.listTodoClassic,
+        type: NODES.listTodoClassic,
       },
     ],
   });

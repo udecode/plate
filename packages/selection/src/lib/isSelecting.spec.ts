@@ -8,6 +8,7 @@ describe('isSelecting', () => {
     const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },

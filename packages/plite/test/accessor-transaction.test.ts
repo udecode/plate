@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   getChildren as editorGetChildren,
-  getSelection as editorGetSelection,
+  getEditorSelectionRoot,
   getSnapshot as editorGetSnapshot,
   isEditor as editorIsEditor,
   replace as editorReplace,
@@ -12,21 +12,14 @@ import {
 
 import {
   createEditor,
-  defineEditorExtension,
+  createEditorRuntime,
+  createEditorView,
+  DocumentChange,
   type Element,
-  type Operation,
+  NodeApi,
+  SelectionApi,
 } from '@platejs/plite';
-import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
-
-const runEditorTransaction = (
-  editor: Parameters<typeof runInternalEditorTransaction>[0],
-  fn: Parameters<typeof runInternalEditorTransaction>[1],
-  options: Parameters<typeof runInternalEditorTransaction>[2] = {}
-) =>
-  runInternalEditorTransaction(editor, fn, {
-    authority: 'explicit',
-    ...options,
-  });
+import { defineTestSchema } from './support/schema';
 
 const paragraph = (
   text: string,
@@ -46,27 +39,6 @@ const replaceChildren = (
   editorReplace(editor, {
     children: clone(children),
     selection: null,
-    marks: null,
-  });
-};
-
-const runManualTransaction = (
-  editor: ReturnType<typeof createEditor>,
-  operations: Operation[]
-) => {
-  runEditorTransaction(editor, (tx) => {
-    for (const operation of clone(operations)) {
-      tx.apply(operation);
-    }
-  });
-};
-
-const setSelection = (
-  editor: ReturnType<typeof createEditor>,
-  selection: NonNullable<ReturnType<typeof editorGetSelection>>
-) => {
-  editor.update((tx) => {
-    tx.selection.set(selection);
   });
 };
 
@@ -75,9 +47,8 @@ const getVisibleState = (editor: ReturnType<typeof createEditor>) => {
 
   return {
     children: snapshot.children,
-    marks: snapshot.marks,
+    runtimeEntries: snapshot.index.entries(),
     selection: snapshot.selection,
-    pathToId: snapshot.index.pathToId,
   };
 };
 
@@ -85,19 +56,9 @@ describe('plite public accessor + transaction boundary', () => {
   it('exposes direct read methods for schema, point, and runtime state', () => {
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'test-schema',
-          elements: [
-            {
-              inline: true,
-              type: 'mention',
-            },
-            {
-              type: 'caption',
-              void: 'block',
-              selectable: false,
-            },
-          ],
+        defineTestSchema('test-schema', {
+          caption: { selectable: false, void: 'block' },
+          mention: { inline: true },
         }),
       ] as const,
     });
@@ -126,7 +87,7 @@ describe('plite public accessor + transaction boundary', () => {
     const editor = createEditor();
     const value = [paragraph('one')];
 
-    editorReplace(editor, { children: value, selection: null, marks: null });
+    editorReplace(editor, { children: value, selection: null });
     const currentValue = editor.read((state) => state.value());
 
     assert.deepEqual(currentValue, { children: value });
@@ -142,7 +103,7 @@ describe('plite public accessor + transaction boundary', () => {
 
     assert.equal('setChildren' in editor, false);
 
-    editorReplace(editor, { children: value, selection: null, marks: null });
+    editorReplace(editor, { children: value, selection: null });
     assert.deepEqual(editorGetChildren(editor), value);
   });
 
@@ -158,22 +119,16 @@ describe('plite public accessor + transaction boundary', () => {
 
     publishedStates.length = 0;
 
-    runEditorTransaction(editor, (transaction) => {
-      editorReplace(editor, {
+    editor.update((tx) => {
+      tx.value.replace({
         children: [paragraph('replacement')],
         selection: null,
-        marks: null,
       });
 
       assert.equal(publishedStates.length, 0);
       assert.equal(editorString(editor, [0]), 'replacement');
 
-      transaction.apply({
-        type: 'set_node',
-        path: [0],
-        properties: {},
-        newProperties: { id: 'p0' },
-      });
+      tx.nodes.set({ id: 'p0' } as never, { at: [0] });
 
       assert.equal(publishedStates.length, 0);
       assert.deepEqual(editorGetChildren(editor), [
@@ -197,157 +152,37 @@ describe('plite public accessor + transaction boundary', () => {
     ]);
   });
 
-  it('applyBatch matches manual transaction for mixed text, selection, and node ops', () => {
-    const children = [paragraph('abcd')];
-    const selection = {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    };
-    const batchEditor = createEditor();
-    const manualEditor = createEditor();
-    const operations: Operation[] = [
-      {
-        type: 'insert_text',
-        path: [0, 0],
-        offset: 1,
-        text: 'X',
-      },
-      {
-        type: 'set_selection',
-        properties: {
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 0 },
-        },
-        newProperties: {
-          anchor: { path: [0, 0], offset: 2 },
-          focus: { path: [0, 0], offset: 2 },
-        },
-      },
-      {
-        type: 'set_node',
-        path: [0],
-        properties: {},
-        newProperties: { id: 'p0' },
-      },
-    ];
+  it('sets the selected suffix after draft replacement and insertion', () => {
+    const editor = createEditor({ initialValue: [paragraph('old')] });
 
-    replaceChildren(batchEditor, children);
-    replaceChildren(manualEditor, children);
-    setSelection(batchEditor, selection);
-    setSelection(manualEditor, selection);
-
-    batchEditor.update((tx) => {
-      tx.operations.replay(clone(operations));
+    editor.update((tx) => {
+      tx.value.replace({
+        children: [paragraph('a')],
+        selection: null,
+      });
+      tx.text.insert('b', { at: { path: [0, 0], offset: 1 } });
+      tx.nodes.set(
+        { suggestion: true },
+        {
+          at: {
+            anchor: { path: [0, 0], offset: 1 },
+            focus: { path: [0, 0], offset: 2 },
+          },
+          match: NodeApi.isText,
+          split: true,
+        }
+      );
     });
-    runManualTransaction(manualEditor, operations);
 
-    assert.deepEqual(
-      getVisibleState(batchEditor),
-      getVisibleState(manualEditor)
-    );
-    assert.deepEqual(editorGetSnapshot(batchEditor).children, [
+    assert.deepEqual(editor.read.children(), [
       {
         type: 'paragraph',
-        id: 'p0',
-        children: [{ text: 'aXbcd' }],
+        children: [{ text: 'a' }, { suggestion: true, text: 'b' }],
       },
-    ]);
-    assert.deepEqual(editorGetSnapshot(batchEditor).selection, {
-      anchor: { path: [0, 0], offset: 2 },
-      focus: { path: [0, 0], offset: 2 },
-    });
-  });
-
-  it('applyBatch matches manual transaction for duplicate exact-path set_node writes', () => {
-    const children = [paragraph('one'), paragraph('two'), paragraph('three')];
-    const batchEditor = createEditor();
-    const manualEditor = createEditor();
-    const operations: Operation[] = [
-      {
-        type: 'set_node',
-        path: [0],
-        properties: {},
-        newProperties: { id: 'blue' },
-      },
-      {
-        type: 'set_node',
-        path: [0],
-        properties: {},
-        newProperties: { id: 'final', role: 'final' },
-      },
-    ];
-
-    replaceChildren(batchEditor, children);
-    replaceChildren(manualEditor, children);
-
-    batchEditor.update((tx) => {
-      tx.operations.replay(clone(operations));
-    });
-    runManualTransaction(manualEditor, operations);
-
-    assert.deepEqual(
-      getVisibleState(batchEditor),
-      getVisibleState(manualEditor)
-    );
-    assert.deepEqual(editorGetSnapshot(batchEditor).children, [
-      {
-        type: 'paragraph',
-        id: 'final',
-        role: 'final',
-        children: [{ text: 'one' }],
-      },
-      paragraph('two'),
-      paragraph('three'),
     ]);
   });
 
-  it('applyBatch matches manual transaction for structural insert, move, and set batches', () => {
-    const children = [paragraph('zero'), paragraph('one')];
-    const batchEditor = createEditor();
-    const manualEditor = createEditor();
-    const operations: Operation[] = [
-      {
-        type: 'insert_node',
-        path: [2],
-        node: paragraph('two'),
-      },
-      {
-        type: 'move_node',
-        path: [2],
-        newPath: [0],
-      },
-      {
-        type: 'set_node',
-        path: [1],
-        properties: {},
-        newProperties: { id: 'shifted' },
-      },
-    ];
-
-    replaceChildren(batchEditor, children);
-    replaceChildren(manualEditor, children);
-
-    batchEditor.update((tx) => {
-      tx.operations.replay(clone(operations));
-    });
-    runManualTransaction(manualEditor, operations);
-
-    assert.deepEqual(
-      getVisibleState(batchEditor),
-      getVisibleState(manualEditor)
-    );
-    assert.deepEqual(editorGetSnapshot(batchEditor).children, [
-      paragraph('two'),
-      {
-        type: 'paragraph',
-        id: 'shifted',
-        children: [{ text: 'zero' }],
-      },
-      paragraph('one'),
-    ]);
-  });
-
-  it('internal transaction rolls back staged changes when a later operation throws', () => {
+  it('internal transaction discards staged changes when a later write throws', () => {
     const editor = createEditor();
 
     replaceChildren(editor, [paragraph('one'), paragraph('two')]);
@@ -355,23 +190,298 @@ describe('plite public accessor + transaction boundary', () => {
     const before = getVisibleState(editor);
 
     assert.throws(() => {
-      runEditorTransaction(editor, (transaction) => {
-        transaction.apply({
-          type: 'set_node',
-          path: [0],
-          properties: {},
-          newProperties: { id: 'blue' },
-        });
-
-        transaction.apply({
-          type: 'set_node',
-          path: [0],
-          properties: {},
-          newProperties: { children: [] },
-        });
+      editor.update((tx) => {
+        tx.nodes.set({ id: 'blue' } as never, { at: [0] });
+        throw new Error('abort transaction');
       });
-    }, /set_node does not update child content/);
+    }, /abort transaction/);
 
     assert.deepEqual(getVisibleState(editor), before);
+  });
+
+  it('publishes structurally shared snapshots and keeps the committed snapshot on abort', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+    const before = editor.read.runtime.snapshot();
+
+    editor.update((tx) => {
+      tx.nodes.set({ id: 'blue' }, { at: [0] });
+    });
+
+    const committed = editor.read.runtime.snapshot();
+
+    assert.notStrictEqual(committed.children, before.children);
+    assert.notStrictEqual(committed.children[0], before.children[0]);
+    assert.strictEqual(committed.children[1], before.children[1]);
+
+    assert.throws(() => {
+      editor.update((tx) => {
+        tx.nodes.set({ id: 'red' }, { at: [1] });
+        throw new Error('abort');
+      });
+    }, /abort/);
+
+    const afterAbort = editor.read.runtime.snapshot();
+
+    assert.strictEqual(afterAbort, committed);
+    assert.strictEqual(afterAbort.children, committed.children);
+  });
+
+  it('uses the frozen committed snapshot as read state', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+    const snapshot = editor.read.runtime.snapshot();
+    const children = editor.read.children();
+
+    assert.strictEqual(children, snapshot.children);
+    assert.equal(Object.isFrozen(children), true);
+    assert.equal(Object.isFrozen(children[0]), true);
+    assert.equal(Object.isFrozen(children[0]!.children), true);
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 3 } });
+    });
+
+    assert.strictEqual(
+      editor.read.children(),
+      editor.read.runtime.snapshot().children
+    );
+  });
+
+  it('publishes one canonical document change that replays to the committed snapshot', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+    const before = editor.read.runtime.snapshot();
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 3 } });
+      tx.nodes.move({ at: [1], to: [0] });
+    });
+
+    const after = editor.read.runtime.snapshot();
+    const commit = editor.read.lastCommit();
+    const changes = (
+      commit as unknown as {
+        changes: {
+          apply: (value: { children: readonly Element[] }) => {
+            children: readonly Element[];
+          };
+        };
+      }
+    ).changes;
+
+    assert.ok(commit);
+    assert.deepEqual(
+      changes.apply({ children: before.children }).children,
+      after.children
+    );
+  });
+
+  it('publishes one atomic document change across roots', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('main')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const before = {
+      children: editor.read.children(),
+      roots: { header: editor.read.root('header') },
+    };
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+      tx.roots.replace('header', [paragraph('updated')]);
+    });
+
+    const after = {
+      children: editor.read.children(),
+      roots: { header: editor.read.root('header') },
+    };
+    const commit = editor.read.lastCommit();
+
+    assert.ok(commit?.changes);
+    assert.deepEqual(commit.changes.apply(before), after);
+  });
+
+  it('classifies mixed text and property changes after canonical serialization', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+    const before = { children: editor.read.children() };
+    const elementRuntimeId = editor.read.runtime.idAt([0]);
+    const textRuntimeId = editor.read.runtime.idAt([0, 0]);
+    const after = {
+      children: [paragraph('one!', { align: 'center' })],
+    };
+    const change = DocumentChange.fromJSON(
+      DocumentChange.between(before, after).toJSON()
+    );
+
+    editor.update((tx) => {
+      tx.changes.apply(change);
+    });
+
+    const commit = editor.read.lastCommit();
+
+    assert.ok(commit);
+    assert.equal(commit.changed.has('text'), true);
+    assert.equal(commit.changed.has('properties'), true);
+    assert.equal(commit.changed.has('structure'), false);
+    assert.equal(editor.read.runtime.idAt([0]), elementRuntimeId);
+    assert.equal(editor.read.runtime.idAt([0, 0]), textRuntimeId);
+  });
+
+  it('rejects a noncanonical direct document change atomically', () => {
+    const before = {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'one' },
+            { code: true, text: 'two' },
+            { text: 'three' },
+          ],
+        },
+      ],
+    };
+    const changed = {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'one' }, { code: true, text: '' }, { text: '' }],
+        },
+      ],
+    };
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      }),
+      initialValue: before.children,
+    });
+
+    assert.throws(
+      () =>
+        editor.update((tx) => {
+          tx.changes.apply(DocumentChange.between(before, changed));
+          tx.selection.set({ path: [0, 0], offset: 3 });
+        }),
+      /canonical editor representation/i
+    );
+
+    assert.deepEqual(editor.read.children(), before.children);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+      kind: 'text',
+    });
+  });
+
+  it('applies a canonical direct document change with an explicit selection', () => {
+    const before = { children: [paragraph('one')] };
+    const changed = { children: [paragraph('one!')] };
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      }),
+      initialValue: before.children,
+    });
+
+    editor.update((tx) => {
+      tx.changes.apply(DocumentChange.between(before, changed));
+      tx.selection.set({ path: [0, 0], offset: 4 });
+    });
+
+    assert.deepEqual(editor.read.children(), changed.children);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 4, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+      kind: 'text',
+    });
+  });
+
+  it('keeps runtime indexes isolated by root', () => {
+    const runtime = createEditorRuntime({
+      initialValue: {
+        children: [paragraph('main')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const main = createEditorView(runtime);
+    const header = createEditorView(runtime, { root: 'header' });
+    const mainRuntimeId = main.read.runtime.idAt([0]);
+    const headerRuntimeId = header.read.runtime.idAt([0]);
+
+    assert.ok(mainRuntimeId);
+    assert.ok(headerRuntimeId);
+    assert.notEqual(mainRuntimeId, headerRuntimeId);
+    assert.deepEqual(main.read.runtime.pathOf(mainRuntimeId), [0]);
+    assert.deepEqual(header.read.runtime.pathOf(headerRuntimeId), [0]);
+    assert.equal(main.read.runtime.pathOf(headerRuntimeId), null);
+    assert.equal(header.read.runtime.pathOf(mainRuntimeId), null);
+
+    let canonicalRuntimeIdDuringHeaderCommit = null;
+    const unsubscribe = runtime.editor.subscribeCommit(() => {
+      canonicalRuntimeIdDuringHeaderCommit = runtime.editor.read.runtime.idAt([
+        0,
+      ]);
+    });
+
+    header.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
+    });
+    unsubscribe();
+
+    assert.equal(canonicalRuntimeIdDuringHeaderCommit, mainRuntimeId);
+  });
+
+  it('scopes explicit selection writes to the editor view root', () => {
+    const runtime = createEditorRuntime({
+      initialValue: {
+        children: [paragraph('main')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const main = createEditorView(runtime);
+    const header = createEditorView(runtime, { root: 'header' });
+
+    header.update((tx) => {
+      tx.selection.set({ path: [0, 0], offset: 2 });
+    });
+
+    const headerCommit = runtime.editor.read.lastCommit();
+
+    assert.equal(headerCommit?.selectionBeforeRoot, undefined);
+    assert.equal(headerCommit?.selectionAfterRoot, 'header');
+    assert.equal(headerCommit?.changed.has('selection', 'header'), true);
+    assert.equal(headerCommit?.changed.has('selection'), false);
+    assert.equal(getEditorSelectionRoot(runtime.editor), 'header');
+    assert.equal(main.read.selection(), null);
+    assert.deepEqual(header.read.selection(), {
+      anchor: { path: [0, 0], root: 'header', offset: 2 },
+      focus: { path: [0, 0], root: 'header', offset: 2 },
+      kind: 'text',
+    });
+
+    main.update((tx) => {
+      tx.selection.set({ path: [0, 0], offset: 1 });
+    });
+
+    const mainCommit = runtime.editor.read.lastCommit();
+
+    assert.equal(mainCommit?.selectionBeforeRoot, 'header');
+    assert.equal(mainCommit?.selectionAfterRoot, undefined);
+    assert.equal(mainCommit?.changed.has('selection', 'header'), true);
+    assert.equal(mainCommit?.changed.has('selection'), true);
+    assert.equal(getEditorSelectionRoot(runtime.editor), 'main');
+    assert.deepEqual(main.read.selection(), {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+      kind: 'text',
+    });
+    assert.equal(header.read.selection(), null);
   });
 });

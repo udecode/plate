@@ -13,7 +13,7 @@ import { createPlateEditor } from '../editor';
 import { toPlatePlugin } from './toPlatePlugin';
 
 type CodeBlockConfig = PluginConfig<
-  'code_block',
+  'codeBlock',
   { syntax: boolean; syntaxPopularFirst: boolean },
   {
     plugin: {
@@ -38,7 +38,7 @@ type CodeBlockConfig2 = CodeBlockConfig & {
 describe('toPlatePlugin', () => {
   const BaseParagraphPlugin = createBasePlugin({
     key: 'p',
-    node: { isElement: true },
+    node: { element: { groups: ['block'] } },
     options: { t: 1 },
     parsers: {
       html: {
@@ -174,7 +174,8 @@ describe('toPlatePlugin type tests', () => {
 
   it('work with CodeBlockConfig for toPlatePlugin', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
-      key: 'code_block',
+      key: 'codeBlock',
+      node: { type: 'code_block' },
       options: { syntax: true, syntaxPopularFirst: false },
     }).extendEditorApi<CodeBlockConfig['api']>(() => ({
       plugin: {
@@ -221,7 +222,7 @@ describe('toPlatePlugin type tests', () => {
     editor.api.plugin.getLanguage();
 
     // Plugin API type checks
-    const pluginApi = editor.plugins.code_block.api;
+    const pluginApi = editor.plugins.codeBlock.api;
     pluginApi.toggleSyntax();
     pluginApi.plugin.getSyntaxState();
     pluginApi.plugin2.setLanguage('ruby');
@@ -236,7 +237,8 @@ describe('toPlatePlugin type tests', () => {
 
   it('work with function-based extension', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
-      key: 'code_block',
+      key: 'codeBlock',
+      node: { type: 'code_block' },
       options: { syntax: true, syntaxPopularFirst: false },
     });
 
@@ -339,7 +341,8 @@ describe('toPlatePlugin type tests', () => {
 describe('toPlatePlugin type tests', () => {
   it('work with CodeBlockConfig for toPlatePlugin', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
-      key: 'code_block',
+      key: 'codeBlock',
+      node: { type: 'code_block' },
       options: { syntax: true, syntaxPopularFirst: false },
     }).extendEditorApi<CodeBlockConfig['api']>(() => ({
       plugin: {
@@ -389,7 +392,7 @@ describe('toPlatePlugin type tests', () => {
     editor.api.plugin.getLanguage();
 
     // Plugin API type checks
-    const pluginApi = editor.plugins.code_block.api;
+    const pluginApi = editor.plugins.codeBlock.api;
     pluginApi.toggleSyntax();
     pluginApi.plugin.getSyntaxState();
     pluginApi.plugin2.setLanguage('ruby');
@@ -404,13 +407,14 @@ describe('toPlatePlugin type tests', () => {
 
   it('work with function-based extension and explicit typing', () => {
     type CodeBlockConfig = PluginConfig<
-      'code_block',
+      'codeBlock',
       { syntax: boolean; syntaxPopularFirst: boolean }
     >;
     type CodeBlockConfig2 = ExtendConfig<CodeBlockConfig, { hotkey: string[] }>;
 
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
-      key: 'code_block',
+      key: 'codeBlock',
+      node: { type: 'code_block' },
       options: { syntax: true, syntaxPopularFirst: false },
     });
 

@@ -2,7 +2,10 @@ import { afterAll, afterEach, beforeAll, expect, mock, test } from 'bun:test';
 import type { Point } from '@platejs/plite';
 
 import type { DOMRange } from '../src';
-import type { DOMEditor as DOMEditorType } from '../src/internal';
+import type {
+  DOMEditor as DOMEditorType,
+  DOMPhaseScheduler,
+} from '../src/internal';
 
 const scrollIntoViewIfNeeded = mock();
 
@@ -10,9 +13,11 @@ mock.module('scroll-into-view-if-needed', () => ({
   default: scrollIntoViewIfNeeded,
 }));
 
-const { DOMEditor } = await import('../src/internal');
+const { DOMEditor, EDITOR_TO_ELEMENT, installEditorDOMPhaseScheduler } =
+  await import('../src/internal');
 
 const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+const originalResolveDOMNode = DOMEditor.resolveDOMNode;
 const originalResolveDOMRange = DOMEditor.resolveDOMRange;
 
 const createDOMRange = () => {
@@ -52,6 +57,7 @@ beforeAll(() => {
 });
 
 afterEach(() => {
+  DOMEditor.resolveDOMNode = originalResolveDOMNode;
   DOMEditor.resolveDOMRange = originalResolveDOMRange;
   scrollIntoViewIfNeeded.mockClear();
 });
@@ -77,6 +83,23 @@ test('scrollIntoView converts a Plite point target into a DOM range', () => {
   expect(leafElement.getBoundingClientRect()).toBe(leafRect);
 });
 
+test('scrollIntoView resolves a Plite path to its mounted DOM node', () => {
+  const element = {} as HTMLElement;
+  const editor = {
+    read: (read: (state: unknown) => unknown) =>
+      read({ nodes: { get: () => [{}, [1]] } }),
+  } as unknown as DOMEditorType;
+
+  DOMEditor.resolveDOMNode = mock(() => element);
+
+  DOMEditor.scrollIntoView(editor, [1]);
+
+  expect(DOMEditor.resolveDOMNode).toHaveBeenCalledWith(editor, {});
+  expect(scrollIntoViewIfNeeded).toHaveBeenCalledWith(element, {
+    scrollMode: 'if-needed',
+  });
+});
+
 test('scrollIntoView accepts a native DOM range target', () => {
   const { domRange, leafElement, leafRect } = createDOMRange();
 
@@ -98,4 +121,39 @@ test('scrollIntoView returns early when the target cannot be mounted', () => {
   DOMEditor.scrollIntoView({} as DOMEditorType, { offset: 0, path: [0, 0] });
 
   expect(scrollIntoViewIfNeeded).not.toHaveBeenCalled();
+});
+
+test('scrollIntoView schedules one root-owned DOM write on the animation frame', () => {
+  const root = document.createElement('div');
+  const editor = {} as DOMEditorType;
+  const schedule = mock(() => () => {});
+  const scheduler: DOMPhaseScheduler = {
+    destroy: () => {},
+    diagnostics: () => ({
+      flushes: 0,
+      lastFlushPhases: [],
+      loopLimitHits: 0,
+      loopRestarts: 0,
+      maxObservedPasses: 0,
+    }),
+    flush: () => {},
+    pending: () => 0,
+    schedule,
+  };
+
+  EDITOR_TO_ELEMENT.set(editor, root);
+  const uninstall = installEditorDOMPhaseScheduler(editor, root, scheduler);
+
+  DOMEditor.scrollIntoView(editor, { offset: 0, path: [0, 0] });
+
+  expect(schedule).toHaveBeenCalledTimes(1);
+  expect(schedule.mock.calls[0]?.[0]).toBe('dom-write');
+  expect(schedule.mock.calls[0]?.[1]).toBe('dom-editor-scroll-into-view');
+  expect(schedule.mock.calls[0]?.[3]).toEqual({
+    key: 'dom-editor-scroll-into-view',
+    timing: 'animation-frame',
+  });
+
+  uninstall();
+  EDITOR_TO_ELEMENT.delete(editor);
 });

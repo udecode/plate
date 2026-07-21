@@ -14,6 +14,12 @@ describe('BaseFontBackgroundColorPlugin', () => {
       nodeKey: 'backgroundColor',
     });
     expect(
+      editor.read.schema.property({
+        key: KEYS.backgroundColor,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('string');
+    expect(
       editor.api.html.deserialize({
         element: '<span style="background-color: rgb(255, 255, 0)">text</span>',
       })
@@ -29,6 +35,7 @@ describe('BaseFontBackgroundColorPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseFontBackgroundColorPlugin],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },

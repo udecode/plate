@@ -1,10 +1,12 @@
-import { createEditor } from '../../../../../packages/slate/src/index.ts';
-import { Editor } from '../../../../../packages/slate/src/internal/index.ts';
+import { createEditor } from '../../../../../packages/plite/src/index.ts';
+import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
-const iterations = Number(process.env.DRIFT_BENCH_ITERATIONS || 5);
-const blockCount = Number(process.env.DRIFT_BENCH_BLOCKS || 120);
-const selectionBlocks = Number(process.env.DRIFT_BENCH_SELECTION_BLOCKS || 24);
+const iterations = Number(process.env.PLITE_NODE_TRANSFORMS_ITERATIONS || 5);
+const blockCount = Number(process.env.PLITE_NODE_TRANSFORMS_BLOCKS || 120);
+const selectionBlocks = Number(
+  process.env.PLITE_NODE_TRANSFORMS_SELECTION_BLOCKS || 24
+);
 
 const createParagraph = (index, text = `block-${index}`) => ({
   type: 'paragraph',
@@ -26,7 +28,6 @@ const createEditorWithChildren = (children = createChildren(blockCount)) => {
   Editor.replace(editor, {
     children,
     selection: null,
-    marks: null,
   });
 
   return editor;
@@ -60,8 +61,9 @@ const insertFragmentMs = measureLane(createEditorWithChildren, (editor) => {
     tx.selection.set({
       anchor: { path, offset: 0 },
       focus: { path, offset: 0 },
+      kind: 'text',
     });
-    tx.fragment.insert(createFragment());
+    tx.fragment.replace(createFragment());
   });
 
   if (Editor.getSnapshot(editor).children.length <= blockCount) {
@@ -95,6 +97,7 @@ const setNodesMs = measureLane(createEditorWithChildren, (editor) => {
       path: [focusIndex, 0],
       offset: Editor.string(editor, [focusIndex]).length,
     },
+    kind: 'text',
   };
 
   write(editor, (tx) => {
@@ -277,7 +280,7 @@ const liftNodesMs = measureLane(
 );
 
 const summary = {
-  lane: 'drift-node-transforms',
+  lane: 'plite-node-transforms',
   iterations,
   config: {
     blockCount,

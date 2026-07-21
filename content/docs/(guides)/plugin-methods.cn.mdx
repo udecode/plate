@@ -165,7 +165,7 @@ const CounterComponent = () => {
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
   node: {
-    isElement: true,
+    element: {},
     type: 'p',
   },
 }).withComponent(ParagraphElement);
@@ -187,7 +187,7 @@ const MyPlugin = createPlatePlugin({
 }));
 
 // 访问插件的API
-editor.api.myPlugin.api.pluginMethod();
+editor.api.myPlugin.pluginMethod();
 ```
 
 ### .extendEditorApi
@@ -237,33 +237,27 @@ const MyPlugin = createPlatePlugin({
 editor.update((tx) => tx.insert.mention());
 ```
 
-### .overrideEditor
+### .extendExtension
 
-`overrideEditor`方法专门用于在不改变插件类型的情况下覆盖现有的编辑器方法：
+使用 `.extendExtension()` 安装需要参与 Plite 运行时阶段的能力，例如 schema、command 或 correction。下面的扩展把结构化换行命令改为软换行：
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-}).overrideEditor(({ editor, tf: { insertText }, api: { isInline } }) => ({
-  tf: {
-    insertText(text, options) {
-      // 覆盖insertText行为
-      insertText(text, options);
-    },
-  },
-  api: {
-    isInline(element) {
-      // 覆盖isInline行为
-      return isInline(element);
-    },
-  },
-}));
+import { editorCommands } from '@platejs/plite';
+
+const SingleLinePlugin = createPlatePlugin({
+  key: 'singleLine',
+}).extendExtension({
+  commands: [
+    editorCommands.insertBreak.handle(({ state }) =>
+      state.transaction((tx) => {
+        tx.break.insertSoft();
+      })
+    ),
+  ],
+});
 ```
 
-- 专门用于覆盖现有的编辑器方法
-- 返回包装在 `tf` 或 `api` 对象中的重写方法
-- 不能添加新方法（使用 `extendApi`、`extendEditorApi`、`extendTx` 或 `extendTxGroup`）
-- 通过上下文提供对原始方法的访问
+普通读取与服务使用 `.extendApi()` 或 `.extendEditorApi()`；插件文档变更使用 `.extendTx()` 或 `.extendTxGroup()`。只有需要参与命令、校正、查询中间件或生命周期时才安装 Plite 扩展。
 
 ### API 与事务命令的区别
 
@@ -306,7 +300,7 @@ const MyPlugin = createPlatePlugin({
     },
   }));
 
-editor.api.myPlugin.api.pluginMethod();
+editor.api.myPlugin.pluginMethod();
 editor.api.multiply(3);
 editor.update((tx) => tx.myPlugin.pluginCommand());
 editor.update((tx) => tx.insert.mention());
@@ -317,8 +311,14 @@ editor.update((tx) => tx.insert.mention());
 要将类型化的Plite插件转换为Plate插件，可以使用`toPlatePlugin`：
 
 ```ts
-const CodeBlockPlugin = toPlatePlugin(createBasePlugin({ key: 'code_block' }), {
-  handlers: {},
-  options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
-});
+const CodeBlockPlugin = toPlatePlugin(
+  createBasePlugin({
+    key: 'codeBlock',
+    node: { type: 'code_block' },
+  }),
+  {
+    handlers: {},
+    options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
+  }
+);
 ```

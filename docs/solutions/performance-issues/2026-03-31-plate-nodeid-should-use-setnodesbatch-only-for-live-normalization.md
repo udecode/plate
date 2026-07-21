@@ -1,14 +1,14 @@
 ---
-title: Plate `nodeId` should use `setNodesBatch` only for live normalization
+title: Plate `nodeId` should queue live normalization in the active transaction
 date: 2026-03-31
 category: docs/solutions/performance-issues
 module: NodeId normalization
 problem_type: performance_issue
 component: tooling
 symptoms:
-  - "Plate had a fast pure initial-value `nodeId` normalization path and a slower live transform path that still called `setNodes` once per node"
-  - "Porting the new Plite-side batch API into Plate risked collapsing those two paths into one abstraction and dragging editor operations into initialization"
-  - "The local `@platejs/plite` wrapper needed a production-safe batch seam without pretending it could transparently reuse Plite private internals"
+  - "Plate has a pure initial-value `nodeId` normalization path and a live path that must publish through the active transaction"
+  - "Applying each missing id through a separate editor update would create unnecessary history and publication work"
+  - "Routing initial-value normalization through editor updates would manufacture runtime work while the plugin already owns the value"
 root_cause: wrong_api
 resolution_type: code_fix
 severity: high
@@ -23,31 +23,27 @@ tags:
   - performance
 ---
 
-# Plate `nodeId` should use `setNodesBatch` only for live normalization
+# Plate `nodeId` should queue live normalization in the active transaction
 
 ## Problem
 
-Plate needed the new batched `set_node` fast path inside its local
-`@platejs/plite` package, but `nodeId` had two different workloads:
+`nodeId` has two different workloads:
 
-- initial-value normalization, where the plugin already owns `editor.children`
-- live normalization, where the plugin intentionally uses editor transforms
+- initial-value normalization, where the plugin already owns the value
+- live normalization, where the plugin uses an active update transaction
 
-Those workloads look similar on paper and they are not the same seam. Reusing
-the public batch API for both would have made initialization noisier and less
-honest.
+Those workloads look similar on paper, but only live normalization belongs in
+an editor transaction. Initialization already owns the value and should stay
+pure.
 
 ## Symptoms
 
 - `nodeId` already had a good pure initial-value path through
-  `transformInitialValue`, but the live `nodeId.normalize()` transform still
-  paid the per-node `setNodes` cost.
-- The new `setNodesBatch` API lived in Plate's local `packages/plite`, not only
-  in the separate `Plate repo root` prototype repo, so the adoption work could happen
-  immediately.
-- Plate's local Plite wrapper does not expose Plite's private dirty-path weak
-  maps, so a direct copy of the upstream prototype would have been half true and
-  half bullshit.
+  `transformInitialValue`.
+- The live `normalize()` transaction method can discover many missing ids in one
+  traversal.
+- Those writes need one history policy and one active transaction, not a
+  separate editor update per node.
 
 ## What Didn't Work
 
@@ -63,72 +59,58 @@ honest.
 
 Keep the abstractions honest.
 
-### 1. Add `editor.tf.setNodesBatch(...)` to `@platejs/plite`
+### 1. Queue live updates in `NodeIdPlugin.extendTx`
 
-The local Plite package now exposes an explicit exact-path batch API. It keeps
-the one-pass tree rewrite from the upstream prototype and records ordinary
-`set_node` operations for history and change detection.
+`NodeIdPlugin.extendTx` gives its `normalize()` method the active transaction.
+The transform traverses the document first and queues each missing id as an
+exact path plus its new properties.
 
-The focused tests live in:
+That keeps discovery separate from mutation without inventing another public
+batch transform.
 
-- [setNodesBatch.spec.tsx](/Users/zbeyens/git/plate-2/packages/plite/src/internal/transforms/setNodesBatch.spec.tsx)
-- [with-history.spec.tsx](/Users/zbeyens/git/plate-2/packages/plite/src/slate-history/with-history.spec.tsx)
+### 2. Apply one history policy
 
-### 2. Keep history behavior explicit
+Before applying the queue, the transform marks the active transaction as
+history-skipped and writes each exact path through the transaction primitive:
 
-`withHistory` now understands `setNodesBatch` as one logical change:
+```ts
+tx.tags.add('history-skip');
 
-- merge into the current undo batch when the current tick is still open
-- start a new batch inside `withNewBatch`
-- honor `withoutSaving`
+for (const { at, props } of updates) {
+  tx.nodes.set(props, { at });
+}
+```
 
-That keeps the batch API fast without pretending it is the same thing as a loop
-of ordinary `apply(...)` calls.
+All id assignments therefore share one transaction, one history decision, and
+one publication boundary.
 
-### 3. Use the batch API only for live `nodeId.normalize()`
+### 3. Keep initial-value normalization pure
 
-The `nodeId` plugin now collects missing-id updates first and applies them with
-one `editor.tf.setNodesBatch(...)` call under `withoutSaving`.
-
-`transformInitialValue` stays on the pure returned-value path, controlled by the
+`transformInitialValue` stays on its returned-value path, controlled by the
 `initialValueIds` option.
 
 That split matters:
 
-- live normalization is a transform problem, so the transform API is the right
-  seam
+- live normalization is transaction work, so the active `tx` is the owner
 - initial normalization is a value-ownership problem, so a pure value transform
-  is the right seam
+  is the owner
 
 ## Why This Works
 
-The speedup comes from rewriting shared ancestors once instead of once per
-`set_node` operation.
+The live path performs ordinary, observable node writes without paying for a
+separate public update around every id. The transaction owns normalization,
+history policy, and publication for the whole queue.
 
-The semantic win comes from not overusing that API. `setNodesBatch` is a
-runtime transform surface. Initial normalization is not.
-
-The local Plate port keeps the fast rewrite, saves history explicitly, and runs
-a local dirty-path normalization queue for the batch. That keeps the feature
-production-safe without lying about access to Plite internals.
-
-The local micro-benchmark kept the real performance win on a flat huge-document
-shape:
-
-| Blocks | `setNodes`  | `setNodesBatch` | Speedup  |
-| ------ | ----------- | --------------- | -------- |
-| `1000` | `18.56 ms`  | `2.63 ms`       | `7.05x`  |
-| `5000` | `118.54 ms` | `4.92 ms`       | `24.10x` |
+The initial-value path never enters that machinery. It returns a normalized
+value directly while the plugin still owns construction.
 
 ## Prevention
 
 - If a plugin already owns `editor.children` during initialization, do not
   route that work back through editor operations just to reuse a runtime API.
-- Keep exact-path batch APIs explicit. They are valuable because they are
-  stricter than broad traversal transforms, not because they hide inside them.
-- When porting upstream transform work into Plate's local Plite wrapper, verify
-  what private Plite machinery is actually reachable from the published package
-  before assuming parity.
+- Collect repeated live writes before mutating, then apply them through the
+  active transaction.
+- Put history policy on that transaction once instead of wrapping every write.
 - Keep focused tests around history behavior. Undo bugs are where "fast"
   optimizations go to die.
 

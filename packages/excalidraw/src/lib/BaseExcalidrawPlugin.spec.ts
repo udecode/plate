@@ -9,10 +9,18 @@ describe('BaseExcalidrawPlugin', () => {
       plugins: [BaseExcalidrawPlugin],
     });
     const plugin = editor.getPlugin(BaseExcalidrawPlugin);
+    const element = { children: [{ text: '' }], type: KEYS.excalidraw };
 
     expect(plugin.key).toBe(KEYS.excalidraw);
-    expect(plugin.node.isElement).toBe(true);
-    expect(plugin.node.isVoid).toBe(true);
+    expect(editor.read.schema.isBlock(element)).toBe(true);
+    expect(editor.read.schema.isVoid(element)).toBe(true);
+    expect(
+      editor.read.schema.property({
+        key: 'data',
+        placement: 'element',
+        type: KEYS.excalidraw,
+      })?.value.kind
+    ).toBe('json');
     expect(editor.getType(KEYS.excalidraw)).toBe(KEYS.excalidraw);
   });
 });

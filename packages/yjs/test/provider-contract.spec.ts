@@ -177,7 +177,6 @@ const createInitialEditor = (): BasePlateEditor => {
 
   editorReplace(editor, {
     children: initialValue(),
-    marks: null,
     selection: null,
   });
 
@@ -382,7 +381,7 @@ describe('@platejs/yjs provider contract', () => {
     cleanup();
   });
 
-  it('does not seed a provider-owned document before provider sync', () => {
+  it('does not seed or import a provider-owned document before provider sync', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
     const root = provider.doc.get('@platejs/plite', Y.XmlElement);
@@ -391,7 +390,7 @@ describe('@platejs/yjs provider contract', () => {
 
     applyProviderDoc(provider, [paragraph('remote')]);
 
-    assert.equal(editorString(editor, [0]), 'remote');
+    assert.equal(editorString(editor, [0]), 'alpha');
 
     provider.emitSync(true);
 
@@ -438,12 +437,21 @@ describe('@platejs/yjs provider contract', () => {
     }
   });
 
-  it('exports local edits after remote content arrives before provider sync', () => {
+  it('imports provider content before exporting local edits after sync', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
     const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     applyProviderDoc(provider, [paragraph('remote')]);
+
+    assert.equal(editorString(editor, [0]), 'alpha');
+    assert.equal(root.length, 1);
+
+    insertFirstBlockTextAtEnd(editor);
+
+    assert.equal(editorString(editor, [0]), 'alpha');
+
+    provider.emitSync(true);
 
     assert.equal(editorString(editor, [0]), 'remote');
     assert.equal(root.length, 1);
@@ -451,11 +459,6 @@ describe('@platejs/yjs provider contract', () => {
     insertFirstBlockTextAtEnd(editor);
 
     assert.equal(editorString(editor, [0]), 'remote!');
-
-    provider.emitSync(true);
-
-    assert.equal(editorString(editor, [0]), 'remote!');
-    assert.equal(root.length, 1);
 
     cleanup();
   });
@@ -536,7 +539,7 @@ describe('@platejs/yjs provider contract', () => {
 
     applyProviderDoc(provider, [paragraph('remote')]);
 
-    assert.equal(editorString(editor, [0]), 'remote');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 1);
 
     provider.emitSync(true);

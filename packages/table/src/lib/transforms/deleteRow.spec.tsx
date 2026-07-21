@@ -57,9 +57,9 @@ describe('deleteRow', () => {
     editor.update.remove.tableRow();
 
     expect(editor.read.text.string([0])).toBe('2122');
-    expect(editor.read.nodes.toArray({ match: { type: 'tr' } })).toHaveLength(
-      1
-    );
+    expect(
+      editor.read.nodes.toArray({ at: [], match: { type: 'tr' } })
+    ).toHaveLength(1);
   });
 
   it('removes the current row when the table has more than one row', () => {

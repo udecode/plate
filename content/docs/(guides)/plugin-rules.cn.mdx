@@ -597,31 +597,24 @@ const plugins = [
 ];
 ```
 
-## 自定义重置逻辑
+## 自定义结构命令
 
-某些插件需要超出标准段落转换的特殊重置行为。你可以覆盖已有的 `resetBlock` transform 方法：
-
-**代码块重置（解包而非转换）：**
+`reset` 规则负责标准段落重置。功能特有的结构变更应放在插件自己的事务组中，让调用方显式执行。
 
 ```tsx
 const CodeBlockPlugin = createPlatePlugin({
-  key: 'code_block',
-  // ... 其他配置
-}).overrideEditor(({ editor, tf: { resetBlock } }) => ({
-  tf: {
-    resetBlock(options) {
-      if (editor.api.block({
-        at: options?.at,
-        match: { type: 'code_block' },
-      })) {
-        unwrapCodeBlock();
-        return;
-      }
-      
-      return resetBlock(options);
-    },
+  key: 'codeBlock',
+  node: {
+    element: {},
+    type: 'code_block',
+  },
+}).extendTx(({ type }) => (tx) => ({
+  unwrap() {
+    tx.nodes.unwrap({ match: { type } });
   },
 }));
+
+editor.update((tx) => tx.codeBlock.unwrap());
 ```
 
 ## 组合规则
@@ -691,48 +684,25 @@ const plugins = [
 
 ## 高级用法
 
-对于超出简单规则的复杂场景，可以使用 [`.overrideEditor`](/docs/plugin-methods#overrideeditor) 覆盖已有编辑器 transform 方法。这让你控制 `resetBlock` 和 `insertExitBreak` 等方法：
+当规则表无法表达核心命令行为时，使用 [`.extendExtension()`](/docs/plugin-methods#extendextension) 安装纯 Plite command handler。下面的单行插件把结构化换行命令转换为软换行：
 
 ```tsx
-const CustomPlugin = createPlatePlugin({
-  key: 'custom',
-  // ... 其他配置
-}).overrideEditor(({ editor, tf: { insertBreak, deleteBackward, resetBlock } }) => ({
-  tf: {
-    insertBreak() {
-      const block = editor.api.block();
-      
-      if (/* 自定义条件 */) {
-        // 自定义行为
-        return;
-      }
-      
-      // 默认行为
-      insertBreak();
-    },
-    
-    deleteBackward(unit) {
-      const block = editor.api.block();
-      
-      if (/* 自定义条件 */) {
-        // 自定义行为
-        return;
-      }
-      
-      deleteBackward(unit);
-    },
-    
-    resetBlock(options) {
-      if (/* 自定义条件 */) {
-        // 自定义行为
-        return true;
-      }
-      
-      return resetBlock(options);
-    },
-  },
-}));
+import { editorCommands } from '@platejs/plite';
+
+const SingleLinePlugin = createPlatePlugin({
+  key: 'singleLine',
+}).extendExtension({
+  commands: [
+    editorCommands.insertBreak.handle(({ state }) =>
+      state.transaction((tx) => {
+        tx.break.insertSoft();
+      })
+    ),
+  ],
+});
 ```
+
+Command handler 对不属于自己的情况返回 `next()`，对已处理的情况返回 `state.transaction(...)`。这样键盘输入、程序化调用和测试共享同一条语义命令链。
 
 ## `rules.selection`
 

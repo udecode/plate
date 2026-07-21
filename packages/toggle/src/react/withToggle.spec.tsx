@@ -1,14 +1,25 @@
 import { createPlateEditor } from '@platejs/core/react';
+import { BaseIndentPlugin } from '@platejs/indent';
 import { KEYS } from '@platejs/utils';
 
 import { TogglePlugin } from './TogglePlugin';
 import { buildToggleIndex } from './toggleIndexAtom';
 
 describe('withToggle', () => {
+  const plugins = [
+    BaseIndentPlugin.configure({
+      options: {
+        targetPluginKeys: [KEYS.p, KEYS.toggle],
+      },
+    }),
+    TogglePlugin,
+  ];
+
   it('inserts an indented paragraph inside an open toggle', () => {
     const editor = createPlateEditor({
-      plugins: [TogglePlugin],
+      plugins,
       selection: {
+        kind: 'text',
         anchor: { offset: 6, path: [0, 0] },
         focus: { offset: 6, path: [0, 0] },
       },
@@ -41,8 +52,9 @@ describe('withToggle', () => {
 
   it('places a new closed-toggle block after hidden children', () => {
     const editor = createPlateEditor({
-      plugins: [TogglePlugin],
+      plugins,
       selection: {
+        kind: 'text',
         anchor: { offset: 6, path: [0, 0] },
         focus: { offset: 6, path: [0, 0] },
       },
@@ -88,7 +100,7 @@ describe('withToggle', () => {
 
   it('marks descendants of closed toggles as non-selectable', () => {
     const editor = createPlateEditor({
-      plugins: [TogglePlugin],
+      plugins,
       value: [
         { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
         {
@@ -106,21 +118,27 @@ describe('withToggle', () => {
 
     const hiddenChild = editor.read.nodes.get([1])?.[0];
 
+    expect(editor.read.schema.element(KEYS.toggle)?.groups).toContain('block');
     expect(hiddenChild && editor.read.schema.isSelectable(hiddenChild)).toBe(
+      true
+    );
+
+    expect(hiddenChild && editor.read.nodes.isSelectable(hiddenChild)).toBe(
       false
     );
 
     editor.api.toggle.toggleIds(['t1'], true);
 
-    expect(hiddenChild && editor.read.schema.isSelectable(hiddenChild)).toBe(
+    expect(hiddenChild && editor.read.nodes.isSelectable(hiddenChild)).toBe(
       true
     );
   });
 
   it('moves past hidden descendants before deleting backward', () => {
     const editor = createPlateEditor({
-      plugins: [TogglePlugin],
+      plugins,
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [2, 0] },
         focus: { offset: 0, path: [2, 0] },
       },
@@ -158,8 +176,9 @@ describe('withToggle', () => {
 
   it('moves past hidden descendants before deleting forward', () => {
     const editor = createPlateEditor({
-      plugins: [TogglePlugin],
+      plugins,
       selection: {
+        kind: 'text',
         anchor: { offset: 6, path: [0, 0] },
         focus: { offset: 6, path: [0, 0] },
       },

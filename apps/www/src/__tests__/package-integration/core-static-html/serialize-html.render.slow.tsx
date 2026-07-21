@@ -78,7 +78,7 @@ describe('core static serializeHtml custom render hooks', () => {
       key: 'test',
       node: {
         isDecoration: false,
-        isLeaf: true,
+        mark: true,
       },
       render: {
         node: ({ children }) => (
@@ -120,7 +120,7 @@ describe('core static serializeHtml custom render hooks', () => {
       key: 'test',
       node: {
         isDecoration: true,
-        isLeaf: true,
+        mark: true,
       },
     });
 
@@ -158,7 +158,7 @@ describe('core static serializeHtml custom render hooks', () => {
       key: 'test',
       node: {
         isDecoration: false,
-        isLeaf: true,
+        mark: true,
       },
     });
 

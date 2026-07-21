@@ -73,6 +73,7 @@ describe('plite-hyperscript smoke contract', () => {
         },
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 1] },
         focus: { offset: 0, path: [0, 1] },
       },

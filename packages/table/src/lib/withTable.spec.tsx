@@ -184,7 +184,7 @@ describe('withTable', () => {
 
     expect(selectAllTable(editor)).toBe(true);
     if (!tableRange) throw new Error('Expected table range');
-    expect(editor.read.selection()).toEqual(tableRange);
+    expect(editor.read.selection()).toEqual({ ...tableRange, kind: 'text' });
   });
 
   it('second selectAll escalates from the table to the whole document', () => {
@@ -211,7 +211,10 @@ describe('withTable', () => {
     expect(selectAllTable(editor)).toBe(true);
     expect(selectAllTable(editor)).toBe(true);
     if (!documentRange) throw new Error('Expected document range');
-    expect(editor.read.selection()).toEqual(documentRange);
+    expect(editor.read.selection()).toEqual({
+      ...documentRange,
+      kind: 'text',
+    });
   });
 
   it('collapses a multi-cell selection before tabbing', () => {
@@ -243,6 +246,7 @@ describe('withTable', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 2, path: [0, 0, 1, 0, 0] },
       focus: { offset: 2, path: [0, 0, 1, 0, 0] },
+      kind: 'text',
     });
   });
 
@@ -271,6 +275,7 @@ describe('withTable', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 1, 0, 0] },
       focus: { offset: 2, path: [0, 0, 1, 0, 0] },
+      kind: 'text',
     });
   });
 
@@ -299,6 +304,7 @@ describe('withTable', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 2, path: [0, 0, 0, 0, 0] },
+      kind: 'text',
     });
   });
 
@@ -481,6 +487,7 @@ describe('withTable', () => {
     const selection = {
       anchor: { offset: 1, path: [0, 0, 0, 0, 0] },
       focus: { offset: 1, path: [0, 0, 0, 0, 0] },
+      kind: 'text' as const,
     };
     editor.update.selection.set(selection);
 
@@ -520,6 +527,7 @@ describe('withTable', () => {
     const selection = {
       anchor: { offset: 1, path: [0, 0, 0, 0, 0] },
       focus: { offset: 1, path: [0, 0, 0, 0, 0] },
+      kind: 'text' as const,
     };
     editor.update.selection.set(selection);
 
@@ -572,6 +580,7 @@ describe('withTable', () => {
     editor.update.selection.set({
       anchor: { offset: 5, path: [0, 0, 0, 0, 0] },
       focus: { offset: 5, path: [0, 0, 0, 0, 0] },
+      kind: 'text',
     });
 
     mockToDOMRange(
@@ -610,6 +619,7 @@ describe('withTable', () => {
     const selection = {
       anchor: { offset: 8, path: [0, 1, 0, 0, 0] },
       focus: { offset: 8, path: [0, 1, 0, 0, 0] },
+      kind: 'text' as const,
     };
     editor.update.selection.set(selection);
 
@@ -667,6 +677,7 @@ describe('withTable', () => {
     const editor = createTableEditor(input);
 
     editor.update.selection.set({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 1, 0, 0, 0] },
       focus: { offset: 1, path: [0, 1, 0, 0, 0] },
     });

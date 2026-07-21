@@ -5,6 +5,8 @@ import {
   closureColumnIndexes,
   isActionableLedgerValue,
   isClosedLedgerValue,
+  removedPlateSchemaFlagsPattern,
+  removedRootMutationFacadePattern,
 } from './check-plite-docs.mjs';
 
 test('classifies actionable research ledger statuses explicitly', () => {
@@ -45,4 +47,42 @@ test('prefers status over decision as the closure column', () => {
     [1]
   );
   assert.deepEqual(closureColumnIndexes(['lead_key', 'decision']), [1]);
+});
+
+test('detects removed root mutation facades in current teaching docs', () => {
+  for (const source of [
+    'editor.tf.insertText("x")',
+    'editor.transforms.insertText("x")',
+    '.overrideEditor(({ api }) => ({ api }))',
+    'tf: { insertText() {} }',
+  ]) {
+    assert.match(source, removedRootMutationFacadePattern, source);
+  }
+
+  for (const source of [
+    'editor.update.text.insert("x")',
+    'editor.update((tx) => tx.text.insert("x"))',
+    '.extendTx(() => (tx) => ({ insertText() {} }))',
+  ]) {
+    assert.doesNotMatch(source, removedRootMutationFacadePattern, source);
+  }
+});
+
+test('detects removed Plate schema flags without banning parser overrides', () => {
+  for (const source of [
+    'node.isElement: true',
+    'node.isLeaf: true',
+    'setting both isElement and isLeaf to true',
+  ]) {
+    assert.match(source, removedPlateSchemaFlagsPattern, source);
+  }
+
+  for (const source of [
+    'node: { element: {} }',
+    'node: { mark: true }',
+    'deserializer: { isElement: true }',
+    'inject: { isLeaf: true }',
+  ]) {
+    assert.doesNotMatch(source, removedPlateSchemaFlagsPattern, source);
+  }
 });

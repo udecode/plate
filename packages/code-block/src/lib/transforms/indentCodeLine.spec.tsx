@@ -38,13 +38,13 @@ describe('indent code line', () => {
     const codeBlock = getElementEntry(editor, [0]);
     const codeLine = getElementEntry(editor, [0, 0]);
 
-    editor.update.nodes.remove({ at: codeLine[0] });
+    editor.update.nodes.remove({ at: codeLine[1] });
 
     const children = editor.read.children();
 
     expect(() => {
       editor.update((tx) => {
-        indentCodeLine(editor, tx, { codeBlock, codeLine });
+        indentCodeLine(tx, { codeBlock, codeLine });
       });
     }).not.toThrow();
     expect(editor.read.children()).toEqual(children);
@@ -86,7 +86,7 @@ describe('indent code line', () => {
       const codeLine = getElementEntry(editor, [0, 0]);
 
       editor.update((tx) => {
-        indentCodeLine(editor, tx, { codeBlock, codeLine });
+        indentCodeLine(tx, { codeBlock, codeLine });
       });
 
       expect(editor.read.children()).toEqual(output.children);
@@ -130,7 +130,7 @@ describe('indent code line', () => {
         const codeLine = getElementEntry(editor, [0, 0]);
 
         editor.update((tx) => {
-          indentCodeLine(editor, tx, { codeBlock, codeLine });
+          indentCodeLine(tx, { codeBlock, codeLine });
         });
 
         expect(editor.read.children()).toEqual(output.children);
@@ -173,7 +173,7 @@ describe('indent code line', () => {
         const codeLine = getElementEntry(editor, [0, 0]);
 
         editor.update((tx) => {
-          indentCodeLine(editor, tx, { codeBlock, codeLine });
+          indentCodeLine(tx, { codeBlock, codeLine });
         });
 
         expect(editor.read.children()).toEqual(output.children);

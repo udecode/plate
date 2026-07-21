@@ -14,7 +14,6 @@ import {
   createEditorRuntime,
   createEditorView,
   type Descendant,
-  defineEditorExtension,
   type Element,
   type Editor,
   type Node,
@@ -23,8 +22,10 @@ import {
   type Path,
   TextApi,
 } from '@platejs/plite';
+import { defineTestSchema } from './support/schema';
 
 const collapsedSelection = (path: number[], offset: number) => ({
+  kind: 'text' as const,
   anchor: { path, offset },
   focus: { path, offset },
 });
@@ -54,7 +55,6 @@ describe('plite transforms contract', () => {
         { type: 'block', children: [{ text: '2' }] },
       ],
       selection: null,
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -82,7 +82,6 @@ describe('plite transforms contract', () => {
         },
       ],
       selection: collapsedSelection([0, 0], 0),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -103,6 +102,89 @@ describe('plite transforms contract', () => {
     assert.deepEqual(after.selection, collapsedSelection([0, 1, 0], 0));
   });
 
+  it('keeps selection inside a nested block moved to the document root', () => {
+    const editor = createEditor({
+      initialSelection: collapsedSelection([0, 1, 0], 0),
+      initialValue: [
+        {
+          type: 'container',
+          children: [
+            { type: 'block', children: [{ text: 'one' }] },
+            { type: 'block', children: [{ text: '' }] },
+          ],
+        },
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.nodes.move({ at: [0, 1], to: [1] });
+    });
+
+    assert.deepEqual(editor.read.selection(), collapsedSelection([1, 0], 0));
+  });
+
+  it('preserves descendant runtime identity after replacing then moving across levels', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'section',
+          children: [paragraph('A'), paragraph('B')],
+        },
+        paragraph('C'),
+      ],
+      selection: null,
+    });
+    const movedTextRuntimeId = editorGetSnapshot(editor).index.idAt([0, 1, 0]);
+
+    assert.ok(movedTextRuntimeId);
+
+    editor.update((tx) => {
+      tx.nodes.move({ at: [0, 1], to: [1] });
+    });
+
+    const movedSnapshot = editorGetSnapshot(editor);
+
+    assert.equal(movedSnapshot.index.idAt([1, 0]), movedTextRuntimeId);
+    assert.deepEqual(movedSnapshot.index.pathOf(movedTextRuntimeId), [1, 0]);
+  });
+
+  it('rebases an implicit selection target through multiple structural moves', () => {
+    const editor = createEditor({
+      initialSelection: {
+        kind: 'text',
+        anchor: { path: [0, 0, 0], offset: 0 },
+        focus: { path: [0, 1, 0], offset: 3 },
+      },
+      initialValue: [
+        {
+          type: 'list',
+          children: [
+            { type: 'item', children: [{ text: 'one' }] },
+            { type: 'item', children: [{ text: 'two' }] },
+          ],
+        },
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.nodes.unwrap({
+        match: (node) => NodeApi.isElement(node) && node.type === 'list',
+        split: true,
+      });
+      tx.nodes.set(
+        { type: 'paragraph' },
+        { match: (node) => NodeApi.isElement(node) && tx.nodes.isBlock(node) }
+      );
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ]);
+  });
+
   it('duplicateNodes duplicates explicit node entries after the last entry', () => {
     const editor = createEditor();
 
@@ -112,7 +194,6 @@ describe('plite transforms contract', () => {
         { type: 'paragraph', children: [{ text: 'two' }] },
       ],
       selection: null,
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -137,7 +218,6 @@ describe('plite transforms contract', () => {
         { type: 'paragraph', children: [{ text: 'two' }] },
       ],
       selection: null,
-      marks: null,
     });
 
     assert.deepEqual(
@@ -162,7 +242,6 @@ describe('plite transforms contract', () => {
         { type: 'paragraph', children: [{ text: 'two' }] },
       ],
       selection: collapsedSelection([0, 0], 1),
-      marks: null,
     });
 
     editor.update.blocks.duplicate();
@@ -184,10 +263,10 @@ describe('plite transforms contract', () => {
         { type: 'paragraph', children: [{ text: 'three' }] },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: 3 },
       },
-      marks: null,
     });
 
     const inserted = {
@@ -226,10 +305,10 @@ describe('plite transforms contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 1], offset: 0 },
         focus: { path: [0, 1], offset: 4 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -262,10 +341,10 @@ describe('plite transforms contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -294,10 +373,10 @@ describe('plite transforms contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 'Styled'.length },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -325,8 +404,10 @@ describe('plite transforms contract', () => {
           children: [{ text: 'existing ' }],
         },
       ],
-      selection: collapsedSelection([0, 0], 'existing '.length),
-      marks: { bold: true },
+      selection: {
+        ...collapsedSelection([0, 0], 'existing '.length),
+        marks: { bold: true },
+      },
     });
 
     editor.update.text.insert('marked');
@@ -355,8 +436,10 @@ describe('plite transforms contract', () => {
           children: [{ text: 'existing ' }],
         },
       ],
-      selection: collapsedSelection([0, 0], 'existing '.length),
-      marks: { bold: true },
+      selection: {
+        ...collapsedSelection([0, 0], 'existing '.length),
+        marks: { bold: true },
+      },
     });
 
     editor.update.text.insert('plain', { marks: false });
@@ -390,10 +473,10 @@ describe('plite transforms contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 1], offset: 0 },
         focus: { path: [0, 2], offset: 1 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -414,9 +497,8 @@ describe('plite transforms contract', () => {
   it('insertText replaces a selection spanning a block void without keeping a void anchor', () => {
     const editor = createEditor();
     editor.extend(
-      defineEditorExtension({
-        elements: [{ type: 'image', void: 'block' }],
-        name: 'block-void-insert-selection-contract',
+      defineTestSchema('block-void-insert-selection-contract', {
+        image: { void: 'block' },
       })
     );
 
@@ -436,10 +518,10 @@ describe('plite transforms contract', () => {
         },
       ] as Element[],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [2, 0], offset: 2 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -460,9 +542,8 @@ describe('plite transforms contract', () => {
   it('mergeNodes does not cross an isolating block boundary', () => {
     const editor = createEditor();
     editor.extend(
-      defineEditorExtension({
-        elements: [{ isolating: true, type: 'callout' }],
-        name: 'isolating-merge-boundary',
+      defineTestSchema('isolating-merge-boundary', {
+        callout: { isolating: true },
       })
     );
 
@@ -475,7 +556,6 @@ describe('plite transforms contract', () => {
         { type: 'paragraph', children: [{ text: 'after' }] },
       ] as Element[],
       selection: collapsedSelection([1, 0], 0),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -493,12 +573,7 @@ describe('plite transforms contract', () => {
 
   it('setNodes can target the selected inline element through match without an explicit path', () => {
     const editor = createEditor();
-    editor.extend(
-      defineEditorExtension({
-        elements: [{ inline: true, type: 'inline' }],
-        name: 'inline',
-      })
-    );
+    editor.extend(defineTestSchema('inline', { inline: { inline: true } }));
 
     editorReplace(editor, {
       children: [
@@ -512,7 +587,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: collapsedSelection([0, 1, 0], 0),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -547,7 +621,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: collapsedSelection([0, 0], 0),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -727,7 +800,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: collapsedSelection([0, 0], 0),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -752,14 +824,13 @@ describe('plite transforms contract', () => {
           {
             type: 'paragraph',
             children: [
-              { text: 'PingCode ' },
+              { bold: true, text: 'PingCode ' },
               { text: 'Wiki' },
-              { text: ' & Worktile' },
+              { italic: true, text: ' & Worktile' },
             ],
           } as Descendant,
         ],
         selection: null,
-        marks: null,
       });
     });
 
@@ -781,9 +852,9 @@ describe('plite transforms contract', () => {
       {
         type: 'paragraph',
         children: [
-          { text: 'PingCode ' },
+          { bold: true, text: 'PingCode ' },
           { diff: true, text: 'Wiki' },
-          { text: ' & Worktile' },
+          { italic: true, text: ' & Worktile' },
         ],
       },
     ]);
@@ -800,7 +871,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: null,
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -832,10 +902,7 @@ describe('plite transforms contract', () => {
     const editor = createEditor();
 
     editor.extend(
-      defineEditorExtension({
-        elements: [{ type: 'mention', void: 'markable-inline' }],
-        name: 'mention',
-      })
+      defineTestSchema('mention', { mention: { void: 'markable-inline' } })
     );
     editorReplace(editor, {
       children: [
@@ -849,7 +916,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: null,
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -863,7 +929,7 @@ describe('plite transforms contract', () => {
           marks: true,
           match: (node, path) => {
             if (!TextApi.isText(node)) return false;
-            const parent = editor.read.nodes.parent(path);
+            const parent = tx.nodes.parent(path);
 
             return !parent || !tx.schema.isInline(parent[0]);
           },
@@ -898,7 +964,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: collapsedSelection([0, 0], 0),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -920,7 +985,6 @@ describe('plite transforms contract', () => {
     editorReplace(editor, {
       children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
       selection: collapsedSelection([0, 0], 0),
-      marks: null,
     });
 
     editor.update.blocks.toggle('blockquote');
@@ -947,7 +1011,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: null,
-      marks: null,
     });
 
     editor.update.blocks.lift({ at: [0, 0] });
@@ -973,7 +1036,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: collapsedSelection([0, 0, 0], 5),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -1027,7 +1089,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: null,
-      marks: null,
     });
 
     assert.throws(() => {
@@ -1046,7 +1107,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: null,
-      marks: null,
     });
 
     assert.throws(() => {
@@ -1072,7 +1132,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: null,
-      marks: null,
     });
 
     assert.throws(() => {
@@ -1095,7 +1154,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: null,
-      marks: null,
     });
 
     editorRemoveNodes(editor, {
@@ -1116,12 +1174,7 @@ describe('plite transforms contract', () => {
 
   it('setNodes can target the highest matching inline when mode is highest', () => {
     const editor = createEditor();
-    editor.extend(
-      defineEditorExtension({
-        elements: [{ inline: true, type: 'inline' }],
-        name: 'inline',
-      })
-    );
+    editor.extend(defineTestSchema('inline', { inline: { inline: true } }));
 
     editorReplace(editor, {
       children: [
@@ -1142,7 +1195,6 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: collapsedSelection([0, 1, 1, 0], 0),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -1184,7 +1236,6 @@ describe('plite transforms contract', () => {
     editorReplace(editor, {
       children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
       selection: collapsedSelection([0, 0], 0),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -1202,7 +1253,6 @@ describe('plite transforms contract', () => {
     editorReplace(editor, {
       children: [{ type: 'blockquote', children: [{ text: 'one' }] }],
       selection: collapsedSelection([0, 0], 0),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -1220,7 +1270,6 @@ describe('plite transforms contract', () => {
     editorReplace(editor, {
       children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
       selection: collapsedSelection([0, 0], 0),
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -1252,10 +1301,10 @@ describe('plite transforms contract', () => {
         { type: 'block', children: [{ text: 'two' }] },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [1, 0], offset: 1 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -1289,10 +1338,10 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -1338,10 +1387,10 @@ describe('plite transforms contract', () => {
         } as Descendant,
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0, 0, 0], offset: 0 },
         focus: { path: [0, 0, 0, 0], offset: 0 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -1365,10 +1414,10 @@ describe('plite transforms contract', () => {
         { type: 'block', children: [{ text: 'two' }] },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [1, 0], offset: 2 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
@@ -1383,37 +1432,26 @@ describe('plite transforms contract', () => {
       { type: 'block', children: [{ text: 'two' }] },
     ]);
     assert.deepEqual(after.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 2 },
     });
-    assert.equal(after.marks, null);
   });
 
   it('liftNodes can target inside a void element when voids is true', () => {
     const editor = createEditor();
     editor.extend(
-      defineEditorExtension({
-        elements: [
-          {
-            type: 'void-flag',
-            match: (element) => element.void === true,
-            void: 'block',
-          },
-        ],
-        name: 'void-flag',
-      })
+      defineTestSchema('void-flag', { 'void-block': { void: 'block' } })
     );
 
     editorReplace(editor, {
       children: [
         {
-          type: 'block',
-          void: true,
+          type: 'void-block',
           children: [{ type: 'block', children: [{ text: 'word' }] }],
         } as Descendant,
       ],
       selection: null,
-      marks: null,
     });
 
     editor.update((tx) => {

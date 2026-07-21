@@ -23,6 +23,16 @@ describe('BaseCalloutPlugin', () => {
         start: 'reset',
       },
     });
+    expect(
+      editor.read.schema.property({
+        key: 'variant',
+        placement: 'element',
+        type: 'callout',
+      })?.value.kind
+    ).toBe('string');
+    expect(editor.read.schema.isElementTypeInGroup('callout', 'block')).toBe(
+      true
+    );
 
     editor.update.callout.insert({ variant: 'info' });
 

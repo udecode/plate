@@ -9,10 +9,7 @@ import {
   setYjsAttribute,
 } from '../src/core/attributes';
 import { createYjsNodes, readPliteValueFromYjs } from '../src/core/document';
-import {
-  createSplitElement,
-  setYjsNodeAttributes,
-} from '../src/core/replacement';
+import { setYjsNodeAttributes } from '../src/core/replacement';
 
 const internalYjsAttributeKeys = [
   'plite:yjs-hidden',
@@ -21,6 +18,7 @@ const internalYjsAttributeKeys = [
   'plite:yjs-split-undo-text',
   'plite:yjs-virtual-child-id',
   'plite:yjs-virtual-placeholder',
+  'plite:yjs-set:spoof',
 ] as const;
 
 describe('@platejs/yjs attribute contract', () => {
@@ -119,6 +117,38 @@ describe('@platejs/yjs attribute contract', () => {
     assert.equal(updates, 0);
   });
 
+  it('encodes schema set properties as canonical per-value Yjs attributes', () => {
+    const doc = new Y.Doc();
+    const root = doc.get('@platejs/plite', Y.XmlElement);
+    const [text] = createYjsNodes(
+      [
+        {
+          commentIds: ['z', 1, true, { b: 2, a: 1 }, 'a'],
+          text: 'alpha',
+        },
+      ],
+      (_node, key) => key === 'commentIds'
+    );
+
+    assert.ok(text instanceof Y.XmlText);
+    root.insert(0, [text]);
+
+    const attributes = getYjsAttributes(text);
+
+    assert.equal(Object.hasOwn(attributes, 'commentIds'), false);
+    assert.equal(
+      Object.keys(attributes).filter((key) => key.startsWith('plite:yjs-set:'))
+        .length,
+      5
+    );
+    assert.deepEqual(readPliteValueFromYjs(root), [
+      {
+        commentIds: [true, 1, 'a', 'z', { a: 1, b: 2 }],
+        text: 'alpha',
+      },
+    ]);
+  });
+
   it('rejects Plite-authored attributes reserved for internal Yjs state', () => {
     for (const key of internalYjsAttributeKeys) {
       const element = {
@@ -137,19 +167,5 @@ describe('@platejs/yjs attribute contract', () => {
         new RegExp(`Cannot set internal Yjs attribute "${key}"`)
       );
     }
-  });
-
-  it('rejects split-created element properties reserved for internal Yjs state', () => {
-    const original = new Y.XmlElement('paragraph');
-
-    assert.throws(
-      () =>
-        createSplitElement(
-          original,
-          { 'plite:yjs-hidden': true, type: 'paragraph' },
-          []
-        ),
-      /Cannot set internal Yjs attribute "plite:yjs-hidden"/
-    );
   });
 });

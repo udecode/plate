@@ -29,17 +29,18 @@ const getCell = (
 };
 
 describe('getTableCellSize', () => {
-  it('falls back to zero width and height when the cell has no row parent', () => {
+  it('falls back to zero width and height for a detached cell', () => {
     const input = (
       <editor>
-        <htd>
-          <hp>orphan</hp>
-        </htd>
+        <hp>document</hp>
       </editor>
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const element = getCell(editor, [0]);
+    const element = {
+      children: [{ children: [{ text: 'detached' }], type: 'p' }],
+      type: 'td',
+    } as TTableCellElement;
 
     expect(getTableCellSize(editor, { element })).toEqual({
       minHeight: 0,

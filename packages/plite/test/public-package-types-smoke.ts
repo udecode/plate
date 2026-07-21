@@ -20,6 +20,13 @@ type PublicPackageModules = [
 type PublicPackageNamedExports = [
   typeof import('@platejs/plite').createEditor,
   typeof import('@platejs/plite').createEditorRuntime,
+  typeof import('@platejs/plite').ContentSlice,
+  typeof import('@platejs/plite').defineEditorSchema,
+  typeof import('@platejs/plite').definePropertyPolicy,
+  typeof import('@platejs/plite').element,
+  typeof import('@platejs/plite').property,
+  typeof import('@platejs/plite').schema,
+  typeof import('@platejs/plite').target,
   typeof import('@platejs/plite').above,
   typeof import('@platejs/plite').after,
   typeof import('@platejs/plite').before,
@@ -72,7 +79,6 @@ type PublicPackageNamedExports = [
   typeof import('@platejs/plite-dom').isVoid,
   typeof import('@platejs/plite-dom').keyToDataAttribute,
   typeof import('@platejs/plite-dom/internal').DOMEditor,
-  typeof import('@platejs/plite-dom/internal').installDOM,
   typeof import('@platejs/plite-history').History,
   typeof import('@platejs/plite-history').history,
   typeof import('@platejs/plite-hyperscript').createHyperscript,
@@ -87,21 +93,24 @@ type PublicPackageNamedExports = [
 ];
 
 type PublicPackageNamedTypeExports = [
+  import('@platejs/plite').Anchor<import('@platejs/plite').Range>,
+  import('@platejs/plite').ContentSlice,
   import('@platejs/plite').Descendant,
   import('@platejs/plite').Editor,
   import('@platejs/plite').EditorCommit,
   import('@platejs/plite').EditorRead,
   import('@platejs/plite').EditorReadMethods,
+  import('@platejs/plite').EditorStateSchemaApi,
   import('@platejs/plite').EditorUpdateTransaction,
   import('@platejs/plite').EditorUpdate,
   import('@platejs/plite').EditorUpdateMethods,
   import('@platejs/plite').Element,
   import('@platejs/plite').Node,
-  import('@platejs/plite').Operation,
+  import('@platejs/plite').DocumentChange,
   import('@platejs/plite').Path,
   import('@platejs/plite').Point,
+  import('@platejs/plite').PropertyPolicyInput<number>,
   import('@platejs/plite').Range,
-  import('@platejs/plite').RangeRef,
   import('@platejs/plite').Text,
   import('@platejs/plite').Value,
   import('@platejs/yjs').YjsExtensionOptions,
@@ -141,7 +150,6 @@ type PublicPackageNamedTypeExports = [
 ];
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
-type ExpectFalse<T extends false> = T;
 type FirstArgument<T> = T extends (
   value: infer TInput,
   ...args: infer _Rest
@@ -160,7 +168,6 @@ type IsUnknownPredicateInput<T> =
 type ExpectTrue<T extends true> = T;
 type ExpectAssignable<TExpected, _TActual extends TExpected> = true;
 declare const editor: import('@platejs/plite').Editor;
-declare const tx: import('@platejs/plite').EditorUpdateTransaction;
 type _PublicEditorLifecycleMethods = [
   ExpectAssignable<string, ReturnType<typeof editor.read.text.string>>,
   ExpectAssignable<
@@ -180,18 +187,15 @@ type _PublicEditorLifecycleMethods = [
     ReturnType<typeof editor.update.nodes.replaceChildren>
   >,
   ExpectAssignable<void, ReturnType<typeof editor.update.marks.toggle>>,
-  ExpectFalse<IsAny<ReturnType<typeof editor.update.refs.range>>>,
-  ExpectAssignable<
-    import('@platejs/plite').RangeRef,
-    ReturnType<typeof editor.update.refs.range>
-  >,
-  ExpectFalse<IsAny<ReturnType<typeof tx.refs.range>>>,
-  ExpectAssignable<
-    import('@platejs/plite').RangeRef,
-    ReturnType<typeof tx.refs.range>
-  >,
 ];
 type PublicUnknownPredicateInputs = [
+  ExpectTrue<
+    IsUnknownPredicateInput<
+      FirstArgument<
+        import('@platejs/plite').PropertyPolicyInput<number>['validate']
+      >
+    >
+  >,
   ExpectTrue<
     IsUnknownPredicateInput<
       FirstArgument<typeof import('@platejs/plite').isEditor>
@@ -235,18 +239,6 @@ type PublicUnknownPredicateInputs = [
   ExpectTrue<
     IsUnknownPredicateInput<
       FirstArgument<typeof import('@platejs/plite').NodeApi.isNodeList>
-    >
-  >,
-  ExpectTrue<
-    IsUnknownPredicateInput<
-      FirstArgument<typeof import('@platejs/plite').OperationApi.isOperation>
-    >
-  >,
-  ExpectTrue<
-    IsUnknownPredicateInput<
-      FirstArgument<
-        typeof import('@platejs/plite').OperationApi.isOperationList
-      >
     >
   >,
   ExpectTrue<
@@ -318,6 +310,69 @@ type PublicUnknownPredicateInputs = [
 
 // @ts-expect-error plite-browser is intentionally subpath-only.
 type _PliteBrowserRootModule = typeof import('@platejs/browser');
+
+declare const documentChange: import('@platejs/plite').DocumentChange;
+declare const createEditorView: typeof import('@platejs/plite').createEditorView;
+declare const commit: import('@platejs/plite').EditorCommit;
+declare const facet: import('@platejs/plite').EditorFacet<number>;
+declare const runtime: import('@platejs/plite').EditorRuntime;
+declare const slice: import('@platejs/plite').ContentSlice;
+declare const publicParent: import('@platejs/plite').Element;
+declare const transaction: import('@platejs/plite').EditorUpdateTransaction;
+
+documentChange.mapPosition(0);
+documentChange.mapPosition(0, { root: 'header' });
+// @ts-expect-error the primary document is selected by omitting root
+documentChange.mapPosition(0, { root: 'main' });
+
+editor.read((state) => state.root('header'));
+// @ts-expect-error the primary document is read with state.children()
+editor.read((state) => state.root('main'));
+editor.read((state) =>
+  state.slice.fitContent(slice, { parent: publicParent, root: 'header' })
+);
+// @ts-expect-error the primary fit context is selected by omitting root
+editor.read((state) =>
+  state.slice.fitContent(slice, { parent: publicParent, root: 'main' })
+);
+editor.read((state) => state.schema.createDefaultRootChild('header'));
+// @ts-expect-error the primary schema root is selected by omitting root
+editor.read((state) => state.schema.createDefaultRootChild('main'));
+
+transaction.roots.create('header', []);
+transaction.roots.replace('header', []);
+transaction.roots.delete('header');
+// @ts-expect-error the primary document is not a named transaction root
+transaction.roots.create('main', []);
+// @ts-expect-error the primary document is not a named transaction root
+transaction.roots.replace('main', []);
+// @ts-expect-error the primary document is not a named transaction root
+transaction.roots.delete('main');
+
+createEditorView(runtime, { root: 'header' });
+// @ts-expect-error the primary view is selected by omitting root
+createEditorView(runtime, { root: 'main' });
+
+commit.changed.has('document', 'header');
+commit.changed.paths('header');
+commit.changed.runtimeIds('node', 'header');
+commit.changed.topLevelRanges('header');
+// @ts-expect-error the primary commit root is selected by omitting root
+commit.changed.has('document', 'main');
+// @ts-expect-error the primary commit root is selected by omitting root
+commit.changed.paths('main');
+// @ts-expect-error the primary commit root is selected by omitting root
+commit.changed.runtimeIds('node', 'main');
+// @ts-expect-error the primary commit root is selected by omitting root
+commit.changed.topLevelRanges('main');
+
+facet.compute(() => 1, {
+  dependencies: [{ kind: 'document', root: 'header' }],
+});
+// @ts-expect-error the primary facet dependency is selected by omitting root
+facet.compute(() => 1, {
+  dependencies: [{ kind: 'document', root: 'main' }],
+});
 
 const acceptsPublicPackageModules = <_T extends PublicPackageModules>() => true;
 const acceptsPublicPackageNamedExports = <

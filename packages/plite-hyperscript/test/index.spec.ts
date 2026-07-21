@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { jsx as pliteJsx } from '../src';
+import { createHyperscript, jsx as pliteJsx } from '../src';
 
 type FixtureModule = {
   input: Record<string, unknown> | unknown[];
@@ -104,15 +104,42 @@ describe('@platejs/plite-hyperscript', () => {
     });
   });
 
+  it('drops JSX development metadata from editor data', () => {
+    const h = createHyperscript({
+      elements: {
+        paragraph: { type: 'paragraph' },
+      },
+    });
+
+    expect(
+      h(
+        'paragraph',
+        {
+          __self: undefined,
+          __source: {
+            columnNumber: 3,
+            fileName: 'fixture.tsx',
+            lineNumber: 2,
+          },
+        },
+        'hello'
+      )
+    ).toEqual({
+      type: 'paragraph',
+      children: [{ text: 'hello' }],
+    });
+  });
+
   it('does not let selection props overwrite child points', () => {
     expect(
       pliteJsx(
         'selection',
-        { anchor: null, focus: null },
+        { kind: 'text', anchor: null, focus: null },
         pliteJsx('anchor', { offset: 1, path: [0, 0] }),
         pliteJsx('focus', { offset: 2, path: [0, 0] })
       )
     ).toEqual({
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });

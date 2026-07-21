@@ -1,4 +1,7 @@
-import { createTestEditor } from '../__tests__/createTestEditor';
+import {
+  createTestEditor,
+  getTestMarkdownRuntime,
+} from '../__tests__/createTestEditor';
 import { columnRules } from './columnRules';
 
 describe('columnRules', () => {
@@ -22,7 +25,7 @@ describe('columnRules', () => {
         type: 'mdxJsxFlowElement',
       },
       {},
-      { editor }
+      { runtime: getTestMarkdownRuntime(editor) }
     );
 
     expect(result).toMatchObject({
@@ -49,7 +52,7 @@ describe('columnRules', () => {
         id: 'ignore-me',
         type: 'column_group',
       },
-      { editor, rules: {} }
+      { rules: {}, runtime: getTestMarkdownRuntime(editor) }
     );
 
     expect(result).toEqual({

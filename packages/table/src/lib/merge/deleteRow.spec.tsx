@@ -219,7 +219,7 @@ describe('deleteTableMergeRow', () => {
     ]);
   });
 
-  it('removes the whole table when the only row is deleted', () => {
+  it('replaces the table with the default block when its only row is deleted', () => {
     const input = (
       <editor>
         <htable>
@@ -239,6 +239,14 @@ describe('deleteTableMergeRow', () => {
 
     editor.update.remove.tableRow();
 
-    expect(editor.read.children()).toEqual([]);
+    expect(editor.read.children()).toMatchObject(
+      (
+        <editor>
+          <hp>
+            <htext />
+          </hp>
+        </editor>
+      ).children
+    );
   });
 });

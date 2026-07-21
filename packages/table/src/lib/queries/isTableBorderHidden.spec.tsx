@@ -65,8 +65,9 @@ describe('isTableBorderHidden', () => {
   it('returns false if left border is not hidden', () => {
     const editor = createEditorInstance(input);
     editor.update.selection.set({
-      anchor: { offset: 0, path: [0, 0, 0] },
-      focus: { offset: 0, path: [0, 0, 0] },
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 0, 0, 0] },
     });
     const hidden = isTableBorderHidden(editor, 'left');
     expect(hidden).toBe(false);
@@ -75,8 +76,9 @@ describe('isTableBorderHidden', () => {
   it('returns false if top border is not hidden', () => {
     const editor = createEditorInstance(input);
     editor.update.selection.set({
-      anchor: { offset: 0, path: [0, 1, 0] },
-      focus: { offset: 0, path: [0, 1, 0] },
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 1, 0, 0, 0] },
+      focus: { offset: 0, path: [0, 1, 0, 0, 0] },
     });
     const hidden = isTableBorderHidden(editor, 'top');
     expect(hidden).toBe(false);

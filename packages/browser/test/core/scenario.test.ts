@@ -36,6 +36,7 @@ describe('scenario helpers', () => {
         kind: 'select',
         label: 'select',
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -463,6 +464,7 @@ describe('scenario helpers', () => {
       kind: 'select',
       label: 'select-word',
       selection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 5 },
       },
@@ -480,6 +482,7 @@ describe('scenario helpers', () => {
         kind: 'select',
         label: 'select-word',
         selection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 5 },
         },
@@ -620,15 +623,9 @@ describe('scenario helpers', () => {
         path: [1],
       },
       {
-        kind: 'applyOperations',
+        change: { changes: {}, version: 2 },
+        kind: 'applyChange',
         label: 'remote-remove-image',
-        operations: [
-          {
-            type: 'remove_node',
-            path: [1],
-            node: { type: 'image', url: 'image.png', children: [{ text: '' }] },
-          },
-        ],
         tag: 'remote-import',
       },
       {
@@ -658,6 +655,7 @@ describe('scenario helpers', () => {
           noDoubleSelectionHighlight: true,
           selectedText: 'alpha',
           selection: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 5 },
           },
@@ -693,7 +691,7 @@ describe('scenario helpers', () => {
       'assertLocatorText',
       'clickSelector',
       'captureRuntimeId',
-      'applyOperations',
+      'applyChange',
       'assertCapturedRuntimeIdPath',
       'assertLastCommitTags',
       'assertWindowSelectionText',
@@ -761,19 +759,23 @@ describe('scenario helpers', () => {
         },
         markButtonTestId: 'mark-button-bold',
         markSelection: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 8 },
           focus: { path: [0, 0], offset: 16 },
         },
         selectedText: 'editable',
         selectionAfterArrowLeft: {
+          kind: 'text',
           anchor: { path: [0, 1], offset: 7 },
           focus: { path: [0, 1], offset: 7 },
         },
         selectionAfterCollapse: {
+          kind: 'text',
           anchor: { path: [0, 1], offset: 8 },
           focus: { path: [0, 1], offset: 8 },
         },
         selectionAfterInsert: {
+          kind: 'text',
           anchor: { path: [0, 1], offset: 9 },
           focus: { path: [0, 1], offset: 9 },
         },
@@ -816,10 +818,12 @@ describe('scenario helpers', () => {
 
   test('creates replayable generated command-family gauntlet helpers', () => {
     const collapsed = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     };
     const selected = {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     };
@@ -956,19 +960,23 @@ describe('scenario helpers', () => {
       },
       followUpText: '!',
       pasteSelection: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       },
       pastedText: 'Paste',
       selectionAfterDeleteAfterPaste: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },
       selectionAfterFollowUp: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 5 },
       },
       selectionAfterPaste: {
+        kind: 'text',
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 5 },
       },
@@ -978,6 +986,7 @@ describe('scenario helpers', () => {
       textAfterPaste: 'Paste text',
       wordDeleteIterations: 2,
       wordDeleteSelection: {
+        kind: 'text',
         anchor: { path: [0, 1], offset: 4 },
         focus: { path: [0, 1], offset: 4 },
       },

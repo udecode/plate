@@ -3,6 +3,7 @@
 import { createBaseEditor } from '@platejs/core';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
+import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { isSelectionAtCodeBlockStart } from './isSelectionAtCodeBlockStart';
 
 jsxt;
@@ -10,7 +11,11 @@ jsxt;
 describe('isSelectionAtCodeBlockStart', () => {
   const run = (input: TestEditor) =>
     isSelectionAtCodeBlockStart(
-      createBaseEditor({ selection: input.selection, value: input.children })
+      createBaseEditor({
+        plugins: [BaseCodeBlockPlugin],
+        selection: input.selection,
+        value: input.children,
+      })
     );
 
   it.each([

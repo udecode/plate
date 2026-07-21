@@ -12,6 +12,7 @@ const createPlainEditor = (text: string, offset = text.length) =>
   createBaseEditor({
     plugins: [BaseParagraphPlugin, ...LinkKit, ...AutoformatKit],
     selection: {
+      kind: 'text',
       anchor: { offset, path: [0, 0] },
       focus: { offset, path: [0, 0] },
     },
@@ -51,6 +52,7 @@ describe('AutoformatKit link automd', () => {
       type: 'p',
     });
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });

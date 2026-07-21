@@ -3,9 +3,11 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
+  defineCommand,
   defineEditorExtension,
   defineStateField,
   type Element,
+  type EditorUpdateTag,
   txOnly,
 } from '@platejs/plite';
 
@@ -55,6 +57,7 @@ describe('update policy contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -74,6 +77,7 @@ describe('update policy contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -104,6 +108,7 @@ describe('update policy contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -128,6 +133,7 @@ describe('update policy contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -148,12 +154,74 @@ describe('update policy contract', () => {
     ]);
   });
 
+  it('keeps outer update tags visible through command spec continuations', () => {
+    const handlerTags: EditorUpdateTag[][] = [];
+    const definitionTags: EditorUpdateTag[][] = [];
+    const command = defineCommand<{
+      text: string;
+      type: 'update-policy.insert';
+    }>({
+      run: ({ command, state, tags }) => {
+        const inferredTags: readonly EditorUpdateTag[] = tags;
+
+        assert.equal(Object.isFrozen(inferredTags), true);
+        assert.throws(
+          () => Array.prototype.push.call(inferredTags, 'mutated'),
+          TypeError
+        );
+        definitionTags.push([...inferredTags]);
+
+        return state.transaction((tx) => tx.text.insert(command.text));
+      },
+      type: 'update-policy.insert',
+    });
+    const extension = defineEditorExtension({
+      commands: [
+        command.handle(
+          ({ state }, next) =>
+            next.after(
+              state.transaction((tx) => tx.tags.add('command-prefix'))
+            ),
+          { priority: 2 }
+        ),
+        command.handle(({ tags }, next) => {
+          const inferredTags: readonly EditorUpdateTag[] = tags;
+
+          assert.equal(Object.isFrozen(inferredTags), true);
+          handlerTags.push([...inferredTags]);
+          return next();
+        }),
+      ],
+      name: 'update-policy.command-tag-observer',
+    });
+
+    const editor = createEditor({ extensions: [extension] as const });
+    replaceEditorValue(editor, {
+      children: [paragraph('one')],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
+
+    editor.update({ tags: 'outer-policy' }).command(command, { text: '!' });
+
+    assert.deepEqual(handlerTags, [['outer-policy', 'command-prefix']]);
+    assert.deepEqual(definitionTags, [['outer-policy', 'command-prefix']]);
+    assert.deepEqual(editor.read.lastCommit()?.tags, [
+      'outer-policy',
+      'command-prefix',
+    ]);
+  });
+
   it('rejects history policy before mutation when history is not installed', () => {
     const editor = createEditor();
 
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -174,7 +242,7 @@ describe('update policy contract', () => {
     assert.equal(editor.read.runtime.snapshot().version, version);
   });
 
-  it('rejects nested public updates and rolls back the outer transaction', () => {
+  it('rejects nested public updates and discards the outer draft', () => {
     const editor = createEditor({
       extensions: [historyCapability] as const,
     });
@@ -182,6 +250,7 @@ describe('update policy contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -216,6 +285,7 @@ describe('update policy contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -304,6 +374,7 @@ describe('update policy contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -326,6 +397,7 @@ describe('update policy contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -345,6 +417,7 @@ describe('update policy contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },

@@ -10,6 +10,7 @@ import {
 } from '@platejs/plite/internal';
 
 import { createEditor, type Descendant, type Element } from '@platejs/plite';
+import { defineTestSchema } from './support/schema';
 import { replaceEditorValue } from './support/snapshot';
 
 const paragraph = (text: string, props: Record<string, unknown> = {}) =>
@@ -22,6 +23,7 @@ const paragraph = (text: string, props: Record<string, unknown> = {}) =>
 describe('state/tx public API contract', () => {
   it('initializes document meta during editor creation', () => {
     const selection = {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     };
@@ -32,7 +34,6 @@ describe('state/tx public API contract', () => {
 
     const state = editor.read((state) => ({
       lastCommit: state.lastCommit(),
-      operations: state.operations(),
       selection: state.selection(),
       value: state.value(),
     }));
@@ -42,26 +43,33 @@ describe('state/tx public API contract', () => {
       editor.read((state) => state.children()),
       [paragraph('one')]
     );
+    const primaryRoot: string = 'main';
+
     assert.throws(
-      () => editor.read((state) => state.root('main')),
+      () => editor.read((state) => state.root(primaryRoot)),
       /Use editor\.read\.children/
     );
     assert.deepEqual(state.selection, selection);
-    assert.deepEqual(state.operations, []);
     assert.equal(state.lastCommit, null);
   });
 
   it('rejects public main root locations', () => {
     const editor = createEditor({ initialValue: [paragraph('body')] });
     const mainPoint = { path: [0, 0], offset: 4, root: 'main' };
-    const mainRange = { anchor: mainPoint, focus: mainPoint };
+    const mainRange = {
+      anchor: mainPoint,
+      focus: mainPoint,
+      kind: 'text' as const,
+    };
     const mainMixedRange = {
       anchor: mainPoint,
       focus: { path: [0, 0], offset: 0, root: 'header' },
+      kind: 'text' as const,
     };
     const mixedRange = {
       anchor: { path: [0, 0], offset: 0, root: 'header' },
       focus: { path: [0, 0], offset: 4, root: 'footer' },
+      kind: 'text' as const,
     };
 
     assert.throws(
@@ -178,6 +186,7 @@ describe('state/tx public API contract', () => {
   it('replaces a mounted document and clears selection in one transaction', () => {
     const editor = createEditor({
       initialSelection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
@@ -193,20 +202,44 @@ describe('state/tx public API contract', () => {
 
     const state = editor.read((state) => ({
       lastCommit: state.lastCommit(),
-      operations: state.operations(),
       selection: state.selection(),
       value: state.value(),
     }));
 
     assert.deepEqual(state.value, { children: [paragraph('two')] });
     assert.deepEqual(state.selection, null);
-    assert.equal(state.operations.length, 0);
-    assert.equal(state.lastCommit?.childrenChanged, true);
-    assert.equal(state.lastCommit?.fullDocumentChanged, true);
+    assert.equal(state.lastCommit?.changes.empty, false);
+    assert.equal(state.lastCommit?.changed.has('document'), true);
+    assert.equal(state.lastCommit?.changed.has('replace'), true);
     assert.equal(state.lastCommit?.selectionChanged, true);
   });
 
-  it('replaces a mounted document with start/end selection intents', () => {
+  it('shares unchanged root nodes while detaching replacement input', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+    const before = editor.read.children();
+    const appended = paragraph('three');
+
+    editor.update.value.replace({
+      children: [paragraph('one'), before[1]!, appended],
+      selection: null,
+    });
+
+    const after = editor.read.children();
+
+    assert.notEqual(after, before);
+    assert.equal(after[0], before[0]);
+    assert.equal(after[1], before[1]);
+    assert.notEqual(after[2], appended);
+    assert.deepEqual(after, [
+      paragraph('one'),
+      paragraph('two'),
+      paragraph('three'),
+    ]);
+  });
+
+  it('replaces a mounted document with start/end selection shortcuts', () => {
     const editor = createEditor({
       initialValue: [paragraph('one')],
     });
@@ -217,6 +250,7 @@ describe('state/tx public API contract', () => {
     });
 
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -227,6 +261,7 @@ describe('state/tx public API contract', () => {
     });
 
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -240,14 +275,144 @@ describe('state/tx public API contract', () => {
     editor.update.value.replace({
       children: [paragraph('nested')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0], offset: 0 },
         focus: { path: [0], offset: 0 },
       },
     });
 
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
+    });
+  });
+
+  it('keeps a replacement selection after an inline during canonicalization', () => {
+    const editor = createEditor({
+      extensions: [
+        {
+          ...defineTestSchema('inline-schema-definition', {
+            inline: { inline: true },
+          }),
+          name: 'inline-schema',
+        },
+      ],
+      initialValue: [paragraph('seed')],
+    });
+
+    editor.update.value.replace({
+      children: [
+        {
+          children: [
+            { children: [{ text: '' }], type: 'inline' },
+            { text: '' },
+            { text: 'after' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 1] },
+        focus: { offset: 0, path: [0, 1] },
+      },
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [
+      {
+        children: [
+          { text: '' },
+          { children: [{ text: '' }], type: 'inline' },
+          { text: 'after' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+    assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 2] },
+      focus: { offset: 0, path: [0, 2] },
+    });
+  });
+
+  it('keeps a replacement selection before an inline during canonicalization', () => {
+    const editor = createEditor({
+      extensions: [
+        {
+          ...defineTestSchema('inline-schema-definition', {
+            inline: { inline: true },
+          }),
+          name: 'inline-schema',
+        },
+      ],
+      initialValue: [paragraph('seed')],
+    });
+
+    editor.update.value.replace({
+      children: [
+        {
+          children: [
+            { text: 'before' },
+            { text: '' },
+            { children: [{ text: '' }], type: 'inline' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 1] },
+        focus: { offset: 0, path: [0, 1] },
+      },
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [
+      {
+        children: [
+          { text: 'before' },
+          { children: [{ text: '' }], type: 'inline' },
+          { text: '' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+    assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
+      anchor: { offset: 6, path: [0, 0] },
+      focus: { offset: 6, path: [0, 0] },
+    });
+  });
+
+  it('keeps a replacement selection in the retained side of joined text', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('seed')],
+    });
+
+    editor.update.value.replace({
+      children: [
+        {
+          children: [{ text: 'a' }, { text: 'b' }],
+          type: 'paragraph',
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [
+      {
+        children: [{ text: 'ab' }],
+        type: 'paragraph',
+      },
+    ]);
+    assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
     });
   });
 
@@ -272,10 +437,10 @@ describe('state/tx public API contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one'), paragraph('two')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     return editor;
@@ -297,6 +462,7 @@ describe('state/tx public API contract', () => {
     assert.equal(state.isVoid, false);
     assert.equal(state.text, 'onetwo');
     assert.deepEqual(state.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -311,10 +477,10 @@ describe('state/tx public API contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one'), paragraph('two')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     const fragments = editor.read((state) => ({
@@ -330,6 +496,7 @@ describe('state/tx public API contract', () => {
     assert.deepEqual(fragments.selected, [paragraph('one')]);
     assert.deepEqual(fragments.explicit, [paragraph('two')]);
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -345,7 +512,6 @@ describe('state/tx public API contract', () => {
 
     const state = editor.read((state) => ({
       lastCommit: state.lastCommit(),
-      operations: state.operations(),
       path: state.runtime.pathOf(firstTextRuntimeId!),
       snapshot: state.runtime.snapshot(),
       valueHasSnapshot: 'snapshot' in state.value,
@@ -357,16 +523,16 @@ describe('state/tx public API contract', () => {
       paragraph('two'),
     ]);
     assert.deepEqual(state.snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
-    assert.deepEqual(state.operations, []);
-    assert.equal(state.lastCommit?.classes.includes('replace'), true);
-    assert.equal(state.lastCommit?.operations.length, 0);
+    assert.equal(state.lastCommit?.changed.has('replace'), true);
+    assert.equal(state.lastCommit?.changes.empty, false);
     assert.deepEqual(state.path, [0, 0]);
   });
 
-  it('invalidates runtime index caches when a failed transaction rolls back inserted nodes', () => {
+  it('invalidates runtime index caches when a failed transaction discards inserted nodes', () => {
     const editor = createSeededEditor();
     let insertedRuntimeId: string | null = null;
 
@@ -374,9 +540,9 @@ describe('state/tx public API contract', () => {
       editor.update((tx) => {
         tx.nodes.insert(paragraph('draft'), { at: [1] });
         insertedRuntimeId = tx.runtime.idAt([1]);
-        throw new Error('rollback');
+        throw new Error('discard');
       });
-    }, /rollback/);
+    }, /discard/);
 
     assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
@@ -404,7 +570,6 @@ describe('state/tx public API contract', () => {
       tx.value.replace({
         children: [paragraph('fresh')],
         selection: null,
-        marks: null,
       });
     });
 
@@ -422,6 +587,7 @@ describe('state/tx public API contract', () => {
   it('keeps cached runtime ids path-stable across text-only transactions', () => {
     const editor = createSeededEditor();
     const textRuntimeId = editor.read((state) => state.runtime.idAt([1, 0]));
+    const beforeIndex = editorGetSnapshot(editor).index;
 
     assert.equal(typeof textRuntimeId, 'string');
 
@@ -435,6 +601,7 @@ describe('state/tx public API contract', () => {
     }));
 
     assert.deepEqual(state.path, [1, 0]);
+    assert.equal(editorGetSnapshot(editor).index, beforeIndex);
     assert.deepEqual(state.value, {
       children: [paragraph('one'), paragraph('two!')],
     });
@@ -463,6 +630,7 @@ describe('state/tx public API contract', () => {
       assert.deepEqual(tx.runtime.pathOf(firstBlockRuntimeId!), [2]);
 
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [2, 0], offset: 1 },
         focus: { path: [2, 0], offset: 1 },
       });
@@ -471,7 +639,9 @@ describe('state/tx public API contract', () => {
       assert.deepEqual(tx.runtime.pathOf(secondTextRuntimeId!), [0, 0]);
       assert.deepEqual(tx.runtime.pathOf(firstBlockRuntimeId!), [2]);
 
-      tx.fragment.insert([paragraph('fragment')], { at: [1] });
+      tx.fragment.replace([paragraph('fragment')], {
+        at: [1],
+      });
       fragmentRuntimeId = tx.runtime.idAt([1]);
 
       assert.equal(typeof fragmentRuntimeId, 'string');
@@ -560,6 +730,7 @@ describe('state/tx public API contract', () => {
       tx.text.insert('!');
       tx.nodes.set({ role: 'edited' }, { at: [0] });
       tx.selection.set({
+        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 3 },
       });
@@ -570,6 +741,7 @@ describe('state/tx public API contract', () => {
 
     assert.equal(draftText, 'one!two');
     assert.deepEqual(draftSelection, {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 3 },
     });
@@ -588,15 +760,15 @@ describe('state/tx public API contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one'), paragraph('two')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
 
     editor.update((tx) => {
       before = tx.fragment();
-      tx.fragment.insert([paragraph('z')]);
+      tx.fragment.replace([paragraph('z')]);
       after = tx.fragment({
         at: {
           anchor: { path: [0, 0], offset: 0 },
@@ -627,6 +799,7 @@ describe('state/tx public API contract', () => {
     assert.equal(hasRootBreak, false);
     assert.equal(editorString(editor, []), 'onztwo');
     assert.deepEqual(editorGetSelection(editor), {
+      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     });
@@ -640,10 +813,11 @@ describe('state/tx public API contract', () => {
       txValueHasSnapshot = 'snapshot' in tx.value;
       tx.value.replace({
         children: [paragraph('replacement')],
-        marks: { bold: true },
         selection: {
+          kind: 'text' as const,
           anchor: { path: [0, 0], offset: 11 },
           focus: { path: [0, 0], offset: 11 },
+          marks: { bold: true },
         },
       });
     });
@@ -652,14 +826,15 @@ describe('state/tx public API contract', () => {
     const snapshot = editorGetSnapshot(editor);
 
     assert.deepEqual(snapshot.children, [paragraph('replacement')]);
-    assert.deepEqual(snapshot.marks, { bold: true });
     assert.deepEqual(snapshot.selection, {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 11 },
       focus: { path: [0, 0], offset: 11 },
+      marks: { bold: true },
     });
   });
 
-  it('routes tx writes through the internal transform registry', () => {
+  it('routes tx writes through the isolated transaction draft', () => {
     const editor = createSeededEditor();
     let primitiveCalls = 0;
     const staleInsertTextKey = `insert${'Text'}`;
@@ -696,10 +871,10 @@ describe('state/tx public API contract', () => {
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
     editor.update((tx) => {
       tx.marks.set({ bold: true });
@@ -721,10 +896,10 @@ describe('state/tx public API contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
     editor.update((tx) => {
       tx.marks.set({});
@@ -746,10 +921,10 @@ describe('state/tx public API contract', () => {
         },
       ],
       selection: {
+        kind: 'text' as const,
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
-      marks: null,
     });
     editor.update((tx) => {
       tx.marks.set(null);
@@ -764,21 +939,14 @@ describe('state/tx public API contract', () => {
     ]);
   });
 
-  it('replays operation batches through the update transaction', () => {
+  it('applies text changes through the update transaction', () => {
     const editor = createSeededEditor();
 
     editor.update((tx) => {
-      tx.operations.replay([
-        {
-          offset: 3,
-          path: [0, 0],
-          text: '!',
-          type: 'insert_text',
-        },
-      ]);
+      tx.text.insert('!', { at: { path: [0, 0], offset: 3 } });
     });
 
     assert.equal(editorString(editor, []), 'one!two');
-    assert.equal(editorGetLastCommit(editor)?.operations.length, 1);
+    assert.equal(editorGetLastCommit(editor)?.changed.has('text'), true);
   });
 });

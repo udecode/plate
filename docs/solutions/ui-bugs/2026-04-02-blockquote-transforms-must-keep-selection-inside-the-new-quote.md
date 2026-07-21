@@ -44,12 +44,12 @@ That mismatch broke the editing flow: inserting or converting a quote created th
 
 ## Solution
 
-Fix the shared `apps/www` editor transform seam instead of patching one UI caller at a time.
+Fix the shared `apps/www` editor transform helper instead of patching one UI caller at a time.
 
-- Add a `createBlockquote(...)` helper that inserts a container quote with an inner paragraph.
-- Add `selectBlockquoteStart(...)` so quote insertion explicitly selects the nested paragraph start.
-- Special-case `insertBlock(editor, KEYS.blockquote)` to insert the container shape and select `[path, 0, 0]`.
-- Special-case `setBlockType(editor, KEYS.blockquote)` to call `editor.tf.toggleBlock(type, { wrap: true })` instead of flat `setNodes`.
+- Add a `createBlockquote(...)` helper that builds a container quote with an inner paragraph.
+- Group quote insertion, source cleanup, nested-point lookup, and selection in one `editor.update((tx) => ...)`.
+- Special-case `setBlockType(editor, KEYS.blockquote)` with `tx.nodes.wrap(...)` instead of flat `setNodes`.
+- Use `editor.plugin(BaseBlockquotePlugin).update.toggle()` when the caller wants the package-owned toggle command.
 - Route block-context-menu quote conversion through `setBlockType(...)` so it uses the same fixed path.
 - Add regressions for quote insert and quote conversion selection behavior.
 
@@ -59,8 +59,21 @@ The important transform seams became:
 if (type === KEYS.blockquote) {
   const insertPath = PathApi.next(path);
 
-  editor.tf.insertNodes(createBlockquote(editor), { at: insertPath });
-  selectBlockquoteStart(editor, insertPath);
+  editor.update((tx) => {
+    tx.nodes.insert(createBlockquote(), { at: insertPath });
+
+    if (!isSameBlockType && isCurrentBlockEmpty) {
+      editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
+        tx.nodes.remove({ at: path });
+      });
+    }
+
+    const start = tx.points.start(
+      (isCurrentBlockEmpty && !isSameBlockType ? path : insertPath).concat([0])
+    );
+
+    if (start) tx.selection.set(start);
+  });
 
   return;
 }
@@ -68,13 +81,25 @@ if (type === KEYS.blockquote) {
 
 ```ts
 if (type === KEYS.blockquote) {
-  editor.tf.toggleBlock(type, {
-    ...(at ? { at } : {}),
-    wrap: true,
-  });
+  const isActive =
+    node.type === type ||
+    !!tx.nodes.above({
+      at: path,
+      match: { type },
+    });
+
+  if (!isActive) {
+    tx.nodes.wrap({ children: [], type } as Element, { at: path });
+  }
 
   return;
 }
+```
+
+For a real toggle rather than idempotent conversion, call the plugin command:
+
+```ts
+editor.plugin(BaseBlockquotePlugin).update.toggle();
 ```
 
 ## Why This Works
@@ -84,7 +109,7 @@ if (type === KEYS.blockquote) {
 - the nested paragraph child
 - the nested selection path inside that paragraph
 
-The core wrap transform already knew how to do that. The app helpers did not. Once the app seam stopped creating flat quotes and stopped using flat block conversion, selection stayed anchored inside the new quote.
+The package-owned toggle and the app's grouped transaction both preserve that structure. Once the app helper stopped creating flat quotes and moved insertion plus selection into one transaction, selection stayed anchored inside the new quote.
 
 ## Prevention
 

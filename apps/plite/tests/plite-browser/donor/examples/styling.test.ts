@@ -141,12 +141,16 @@ test.describe('styling example', () => {
 
     await page.keyboard.press(
       await editor.root.evaluate(() =>
-        /Mac OS X/.test(navigator.userAgent) ? 'Meta+Z' : 'Control+Z'
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        /Mac OS X/.test(navigator.userAgent)
+          ? 'Meta+Z'
+          : 'Control+Z'
       )
     );
 
     await editor.assert.text(originalText);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: selectionStart },
       focus: { path: [0, 0], offset: selectionEnd },
     });

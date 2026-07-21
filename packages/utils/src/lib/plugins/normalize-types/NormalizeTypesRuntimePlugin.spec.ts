@@ -1,12 +1,14 @@
 import { ParagraphPlugin } from '@platejs/core/react';
 import { createPlateEditor } from '@platejs/core/react';
 
+import { fixtureSchemaPlugins } from '../__tests__/normalizeRoot';
 import { NormalizeTypesPlugin } from './NormalizeTypesPlugin';
 
 describe('NormalizeTypesPlugin Plite runtime', () => {
   it('inserts missing configured nodes', () => {
     const editor = createPlateEditor({
       plugins: [
+        ...fixtureSchemaPlugins,
         NormalizeTypesPlugin.configure({
           options: {
             rules: [
@@ -35,6 +37,7 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
   it('rewrites strict types while preserving children', () => {
     const editor = createPlateEditor({
       plugins: [
+        ...fixtureSchemaPlugins,
         NormalizeTypesPlugin.configure({
           options: {
             rules: [{ path: [0], strictType: 'h1' }],
@@ -58,6 +61,7 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
     };
     const editor = createPlateEditor({
       plugins: [
+        ...fixtureSchemaPlugins,
         NormalizeTypesPlugin.configure({
           options: {
             onError,

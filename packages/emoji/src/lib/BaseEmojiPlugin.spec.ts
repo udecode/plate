@@ -1,6 +1,6 @@
 import type { Emoji } from '@emoji-mart/data';
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
 import { DEFAULT_EMOJI_LIBRARY } from './constants';
@@ -20,11 +20,20 @@ describe('BaseEmojiPlugin', () => {
     });
 
     const inputPlugin = editor.getPlugin(BaseEmojiInputPlugin);
+    const input = { children: [{ text: '' }], type: NODES.emojiInput };
 
+    expect(inputPlugin.key).toBe('emojiInput');
+    expect(inputPlugin.node.type).toBe(NODES.emojiInput);
     expect(inputPlugin.editOnly).toBe(true);
-    expect(inputPlugin.node.isElement).toBe(true);
-    expect(inputPlugin.node.isInline).toBe(true);
-    expect(inputPlugin.node.isVoid).toBe(true);
+    expect(editor.read.schema.isInline(input)).toBe(true);
+    expect(editor.read.schema.isVoid(input)).toBe(true);
+    expect(
+      editor.read.schema.property({
+        key: 'value',
+        placement: 'element',
+        type: NODES.emojiInput,
+      })?.value.kind
+    ).toBe('string');
   });
 
   it('ships the default trigger, library, and node builders', () => {
@@ -54,7 +63,7 @@ describe('BaseEmojiPlugin', () => {
     expect(triggerPreviousCharPattern.test('x')).toBe(false);
     expect(createComboboxInput('')).toEqual({
       children: [{ text: '' }],
-      type: KEYS.emojiInput,
+      type: NODES.emojiInput,
     });
     expect(createEmojiNode(fireEmoji)).toEqual({
       text: '🔥',

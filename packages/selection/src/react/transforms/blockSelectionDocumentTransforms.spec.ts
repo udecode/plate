@@ -1,5 +1,9 @@
 import { createBaseEditor } from '@platejs/core';
 
+import {
+  TestBoldPlugin,
+  TestElementPropertiesPlugin,
+} from '../../__tests__/testPlugins';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { insertBlocksAndSelect } from './insertBlocksAndSelect';
 import { removeBlockSelectionNodes } from './removeBlockSelectionNodes';
@@ -11,7 +15,11 @@ import {
 
 const createBlockSelectionEditor = () =>
   createBaseEditor({
-    plugins: [BlockSelectionPlugin],
+    plugins: [
+      BlockSelectionPlugin,
+      TestBoldPlugin,
+      TestElementPropertiesPlugin,
+    ],
     value: [
       {
         id: 'block1',
@@ -29,11 +37,13 @@ const createBlockSelectionEditor = () =>
 describe('block selection document transforms', () => {
   it('inserts blocks through the editor update API', () => {
     const editor = createBlockSelectionEditor();
+    const insertedCallback = mock();
 
-    editor.update((tx) => {
+    editor.update((tx, context) => {
       insertBlocksAndSelect(
         editor,
         tx,
+        context,
         [
           {
             id: 'block3',
@@ -41,7 +51,7 @@ describe('block selection document transforms', () => {
             type: 'p',
           },
         ],
-        { at: [1] }
+        { at: [1], insertedCallback }
       );
     });
 
@@ -50,6 +60,46 @@ describe('block selection document transforms', () => {
       'block3',
       'block2',
     ]);
+    expect(insertedCallback).toHaveBeenCalledTimes(1);
+    expect(
+      editor.plugin(BlockSelectionPlugin).getOption('selectedIds')
+    ).toEqual(new Set(['block3']));
+  });
+
+  it('does not publish insert callbacks or plugin state on rollback', () => {
+    const editor = createBlockSelectionEditor();
+    const insertedCallback = mock();
+    const selectedIds = editor
+      .plugin(BlockSelectionPlugin)
+      .getOption('selectedIds');
+
+    expect(() =>
+      editor.update((tx, context) => {
+        insertBlocksAndSelect(
+          editor,
+          tx,
+          context,
+          [
+            {
+              id: 'block3',
+              children: [{ text: 'Three' }],
+              type: 'p',
+            },
+          ],
+          { at: [1], insertedCallback }
+        );
+        throw new Error('rollback');
+      })
+    ).toThrow('rollback');
+
+    expect(insertedCallback).not.toHaveBeenCalled();
+    expect(editor.read.children().map((node: any) => node.id)).toEqual([
+      'block1',
+      'block2',
+    ]);
+    expect(editor.plugin(BlockSelectionPlugin).getOption('selectedIds')).toBe(
+      selectedIds
+    );
   });
 
   it('removes selected blocks through the editor update API', () => {
@@ -81,6 +131,24 @@ describe('block selection document transforms', () => {
 
     expect(editor.read.children()[0].align).toBe('center');
     expect(editor.read.children()[1].align).toBeUndefined();
+  });
+
+  it('sets a selected block inserted earlier in the same transaction', () => {
+    const editor = createBlockSelectionEditor();
+
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block3']));
+
+    editor.update((tx) => {
+      tx.nodes.insert(
+        { id: 'block3', children: [{ text: 'Three' }], type: 'p' },
+        { at: [1] }
+      );
+      setBlockSelectionNodes(editor, tx, { align: 'center' } as any);
+    });
+
+    expect(editor.read.children()[1].align).toBe('center');
   });
 
   it('sets selected block indentation through the editor update API', () => {

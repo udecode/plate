@@ -1,91 +1,78 @@
 import * as copyToClipboardModule from 'copy-to-clipboard';
-import type { NodeEntry } from '@platejs/plite';
+import { NodeApi, type NodeEntry } from '@platejs/plite';
+import * as PliteDOM from '@platejs/plite-dom';
 import type { TIdElement } from '@platejs/utils';
 
 import { copySelectedBlocks } from './copySelectedBlocks';
-
-type DataTransferMock = DataTransfer & {
-  getData: AnyTestMock;
-  setData: AnyTestMock;
-};
 
 type CopyOptions = {
   onCopy?: (dataTransfer: DataTransfer) => void;
 };
 
-const createDataTransfer = (): DataTransferMock =>
-  ({
-    getData: mock((type: string) => {
-      if (type === 'text/plain') return 'mock plain text';
-      if (type === 'text/html') return '<p>mock html</p>';
-
-      return '';
+const createDataTransfer = () => {
+  const values = new Map<string, string>();
+  const data = {
+    get types() {
+      return [...values.keys()];
+    },
+    getData: mock((type: string) => values.get(type) ?? ''),
+    setData: mock((type: string, value: string) => {
+      values.set(type, value);
     }),
-    setData: mock(),
-  }) as DataTransferMock;
+  } as unknown as DataTransfer;
 
-const createCopyEditor = (entries: NodeEntry<TIdElement>[]) => {
-  const selectedIds = new Set(entries.map(([node]) => node.id as string));
-  const writeSelection = mock((data: DataTransfer) => {
-    data.setData('text/plain', 'mock plain text');
-    data.setData('text/html', '<p>mock html</p>');
-  });
+  return { data, values };
+};
+
+const createCopyEditor = (
+  entries: NodeEntry<TIdElement>[],
+  documentEntries = entries
+) => {
   const selection = {
-    clear: mock(),
-    set: mock(),
+    anchor: { offset: 0, path: [0, 0] },
+    focus: { offset: 0, path: [0, 0] },
+    kind: 'text' as const,
   };
-  const update = Object.assign(
-    (fn: (tx: { selection: typeof selection }) => void) => fn({ selection }),
-    { selection }
+  const stateView = {
+    nodes: {
+      get: (path: number[]) =>
+        documentEntries.find(
+          ([, entryPath]) => entryPath.join('.') === path.join('.')
+        ),
+      isEmpty: (node: TIdElement) => NodeApi.string(node).length === 0,
+    },
+    points: {
+      end: (path: number[]) => ({
+        offset: NodeApi.string(
+          documentEntries.find(([, p]) => p[0] === path[0])![0]
+        ).length,
+        path: [...path, 0],
+      }),
+      start: (path: number[]) => ({ offset: 0, path: [...path, 0] }),
+    },
+  };
+  const read = Object.assign(
+    (reader: (state: typeof stateView) => unknown) => reader(stateView),
+    { nodes: stateView.nodes, selection: () => selection }
   );
 
   return {
-    api: {
-      blockSelection: {
-        getNodes: () => entries,
-      },
-      clipboard: { writeSelection },
-    },
-    getPlugin: () => ({ node: { type: 'p' } }),
+    api: { dom: { getWindow: () => window } },
     plugin: () => ({
-      api: {
-        getNodes: () => entries,
-      },
-      getOptions: () => ({ selectedIds }),
-      setOption: mock(),
+      api: { getNodes: () => entries },
     }),
-    read: {
-      nodes: {
-        get: (path: number[]) =>
-          entries.find(
-            ([, entryPath]) => entryPath.join('.') === path.join('.')
-          ),
-        isEmpty: (node: TIdElement) =>
-          node.children.every(
-            (child) =>
-              'text' in child &&
-              typeof child.text === 'string' &&
-              child.text.length === 0
-          ),
-      },
-      points: {
-        after: () => ({ offset: 0, path: [0, 0] }),
-        end: (path: number[]) => ({ offset: 0, path: [...path, 0] }),
-        start: (path: number[]) => ({ offset: 0, path: [...path, 0] }),
-      },
-      selection: () => ({
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      }),
-    },
-    setOption: mock(),
-    update,
+    read,
+    update: mock(),
   } as any;
 };
+
+const decodeSlice = (encoded: string) =>
+  JSON.parse(decodeURIComponent(window.atob(encoded))).slice;
 
 describe('copySelectedBlocks', () => {
   let copyToClipboardSpy: AnyTestMock;
   let copyToClipboardMock: ReturnType<typeof mock>;
+  let writeDOMRangeDataSpy: AnyTestMock;
 
   beforeEach(() => {
     copyToClipboardMock = mock();
@@ -98,154 +85,133 @@ describe('copySelectedBlocks', () => {
         options?: CopyOptions
       ) => boolean
     );
+    writeDOMRangeDataSpy = spyOn(
+      PliteDOM,
+      'writeDOMRangeData'
+    ).mockImplementation((editor, data, range) => {
+      const entry = editor.read.nodes.get(range.anchor.path.slice(0, 1)) as
+        | NodeEntry<TIdElement>
+        | undefined;
+      const text = entry ? NodeApi.string(entry[0]) : '';
+
+      data.setData('text/plain', text);
+      data.setData(
+        'text/html',
+        `<p data-plite-fragment="block" data-plite-fragment-format="x-plite-fragment">${text}</p>`
+      );
+
+      return data;
+    });
   });
 
   afterEach(() => {
     copyToClipboardSpy.mockRestore();
+    writeDOMRangeDataSpy.mockRestore();
   });
 
-  it('copies selected blocks and writes placeholder HTML for empty blocks', () => {
-    const editor = createCopyEditor([
-      [
-        {
-          id: 'block1',
-          children: [{ text: 'First block' }],
-          type: 'p',
-        },
-        [0],
-      ],
-      [
-        {
-          id: 'block2',
-          children: [{ text: '' }],
-          type: 'p',
-        },
-        [1],
-      ],
-      [
-        {
-          id: 'block3',
-          children: [{ text: '   ' }],
-          type: 'p',
-        },
-        [2],
-      ],
-      [
-        {
-          id: 'block4',
-          children: [{ text: 'Last block' }],
-          type: 'p',
-        },
-        [3],
-      ],
-    ]);
-    const dataTransfer = createDataTransfer();
+  it('writes one exact Plite slice while preserving model selection', () => {
+    const entries = [
+      [{ id: 'block1', children: [{ text: 'First block' }], type: 'p' }, [0]],
+      [{ id: 'block2', children: [{ text: '' }], type: 'p' }, [1]],
+      [{ id: 'block3', children: [{ text: 'Last block' }], type: 'p' }, [2]],
+    ] satisfies NodeEntry<TIdElement>[];
+    const editor = createCopyEditor(entries);
+    const { data, values } = createDataTransfer();
+    const selection = editor.read.selection();
+
     copyToClipboardMock.mockImplementation(
       (_text: string, options?: CopyOptions) => {
-        options?.onCopy?.(dataTransfer);
+        options?.onCopy?.(data);
 
         return true;
       }
     );
 
     expect(copySelectedBlocks(editor)).toBe(true);
-    expect(editor.api.clipboard.writeSelection).toHaveBeenCalledTimes(3);
-    expect(dataTransfer.setData).toHaveBeenCalledWith(
-      'text/plain',
-      expect.any(String)
-    );
-
-    const htmlCall = dataTransfer.setData.mock.calls
-      .filter((call) => call[0] === 'text/html')
-      .at(-1);
-    expect(htmlCall).toBeDefined();
-    expect(htmlCall![1]).toContain('<p></p>');
-    expect((htmlCall![1].match(/<div>/g) || []).length).toBe(4);
-    expect(dataTransfer.setData).toHaveBeenCalledWith(
-      'application/x-slate-fragment',
-      expect.any(String)
-    );
+    expect(editor.update).not.toHaveBeenCalled();
+    expect(editor.read.selection()).toBe(selection);
+    expect(writeDOMRangeDataSpy).toHaveBeenCalledTimes(2);
+    expect(values.get('text/plain')).toBe('First block\n\nLast block\n');
+    expect(values.get('text/html')).toContain('<p></p>');
+    expect(values.get('text/html')).toContain('data-plite-fragment=');
+    expect(
+      values.get('text/html')!.match(/data-plite-fragment=/g)
+    ).toHaveLength(1);
+    expect(decodeSlice(values.get('application/x-plite-fragment')!)).toEqual({
+      content: entries.map(([node]) => node),
+      openEnd: 0,
+      openStart: 0,
+    });
+    expect(values.has('application/x-slate-fragment')).toBe(false);
   });
 
-  it('copies selected blocks with content', () => {
-    const editor = createCopyEditor([
-      [
-        {
-          id: 'block1',
-          children: [{ text: 'First block' }],
-          type: 'p',
-        },
-        [0],
-      ],
-      [
-        {
-          id: 'block2',
-          children: [{ text: 'Second block' }],
-          type: 'p',
-        },
-        [1],
-      ],
-    ]);
-    const dataTransfer = createDataTransfer();
-    copyToClipboardMock.mockImplementation(
-      (_text: string, options?: CopyOptions) => {
-        options?.onCopy?.(dataTransfer);
+  it('writes directly to provided clipboard data without synthetic copy', () => {
+    const entries = [
+      [{ id: 'block1', children: [{ text: 'First block' }], type: 'p' }, [0]],
+      [{ id: 'block2', children: [{ text: 'Second block' }], type: 'p' }, [1]],
+    ] satisfies NodeEntry<TIdElement>[];
+    const editor = createCopyEditor(entries);
+    const { data, values } = createDataTransfer();
 
-        return true;
-      }
-    );
-
-    expect(copySelectedBlocks(editor)).toBe(true);
-    expect(editor.api.clipboard.writeSelection).toHaveBeenCalledTimes(2);
-    expect(dataTransfer.setData).toHaveBeenCalledWith(
-      'text/plain',
-      expect.any(String)
-    );
-    expect(dataTransfer.setData).toHaveBeenCalledWith(
-      'text/html',
-      expect.any(String)
-    );
-    expect(dataTransfer.setData).toHaveBeenCalledWith(
-      'application/x-slate-fragment',
-      expect.any(String)
-    );
-  });
-
-  it('writes to provided clipboard data without starting a synthetic copy', () => {
-    const editor = createCopyEditor([
-      [
-        {
-          id: 'block1',
-          children: [{ text: 'First block' }],
-          type: 'p',
-        },
-        [0],
-      ],
-      [
-        {
-          id: 'block2',
-          children: [{ text: 'Second block' }],
-          type: 'p',
-        },
-        [1],
-      ],
-    ]);
-    const dataTransfer = createDataTransfer();
-
-    expect(copySelectedBlocks(editor, dataTransfer)).toBe(true);
+    expect(copySelectedBlocks(editor, data)).toBe(true);
     expect(copyToClipboardMock).not.toHaveBeenCalled();
-    expect(editor.api.clipboard.writeSelection).toHaveBeenCalledTimes(2);
-    expect(dataTransfer.setData).toHaveBeenCalledWith(
-      'text/plain',
-      expect.any(String)
+    expect(editor.update).not.toHaveBeenCalled();
+    expect(values.get('text/plain')).toBe('First block\nSecond block\n');
+    expect(values.get('application/x-plite-fragment')).not.toBe('');
+  });
+
+  it('preserves collapsed table rows in the exact Plite slice', () => {
+    const firstRow = {
+      children: [
+        {
+          children: [{ text: 'one' }],
+          id: 'cell1',
+          type: 'td',
+        },
+      ],
+      id: 'row1',
+      type: 'tr',
+    };
+    const secondRow = {
+      children: [
+        {
+          children: [{ text: 'two' }],
+          id: 'cell2',
+          type: 'td',
+        },
+      ],
+      id: 'row2',
+      type: 'tr',
+    };
+    const selectedTable = {
+      children: [firstRow],
+      id: 'table1',
+      type: 'table',
+    };
+    const documentTable = {
+      ...selectedTable,
+      children: [firstRow, secondRow],
+    };
+    const editor = createCopyEditor(
+      [[selectedTable, [0]]],
+      [[documentTable, [0]]]
     );
-    expect(dataTransfer.setData).toHaveBeenCalledWith(
-      'text/html',
-      expect.any(String)
-    );
-    expect(dataTransfer.setData).toHaveBeenCalledWith(
-      'application/x-slate-fragment',
-      expect.any(String)
-    );
+    const { data, values } = createDataTransfer();
+
+    expect(copySelectedBlocks(editor, data)).toBe(true);
+    expect(decodeSlice(values.get('application/x-plite-fragment')!)).toEqual({
+      content: [selectedTable],
+      openEnd: 0,
+      openStart: 0,
+    });
+  });
+
+  it('returns false without writing when no blocks are selected', () => {
+    const editor = createCopyEditor([]);
+    const { data, values } = createDataTransfer();
+
+    expect(copySelectedBlocks(editor, data)).toBe(false);
+    expect(values.size).toBe(0);
+    expect(editor.update).not.toHaveBeenCalled();
   });
 });

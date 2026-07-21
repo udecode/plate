@@ -1,12 +1,13 @@
 import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 
 import { BaseAIPlugin } from '../BaseAIPlugin';
-import { aiBatchField, withAIBatch } from './withAIBatch';
+import { aiBatchEffect, withAIBatch } from './withAIBatch';
 
 const createEditor = () =>
   createBaseEditor({
     plugins: [BaseParagraphPlugin, BaseAIPlugin],
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
@@ -24,8 +25,8 @@ describe('withAIBatch', () => {
     const [batch] = editor.read.history.undos();
 
     expect(editor.read.text.string([])).toBe('ai');
-    expect(batch?.statePatches).toContainEqual(
-      expect.objectContaining({ key: aiBatchField.key })
+    expect(batch?.effects).toContainEqual(
+      expect.objectContaining({ type: aiBatchEffect, value: -1 })
     );
   });
 
@@ -54,8 +55,8 @@ describe('withAIBatch', () => {
     withAIBatch(editor, () => {});
 
     expect(editor.read.history.undos()).toHaveLength(1);
-    expect(editor.read.history.undos()[0]?.statePatches).toContainEqual(
-      expect.objectContaining({ key: aiBatchField.key })
+    expect(editor.read.history.undos()[0]?.effects).toContainEqual(
+      expect.objectContaining({ type: aiBatchEffect, value: -1 })
     );
   });
 

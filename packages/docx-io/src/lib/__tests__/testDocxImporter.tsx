@@ -14,6 +14,7 @@ import {
   createBasePlugin,
   deserializeHtml,
 } from '@platejs/core';
+import { property, schema } from '@platejs/plite';
 import { jsx, type TestEditor } from '@platejs/test-utils';
 import { KEYS } from '@platejs/utils';
 import mammoth from 'mammoth';
@@ -25,7 +26,16 @@ jsx;
 
 const TestLinkPlugin = createBasePlugin({
   key: KEYS.link,
-  node: { isElement: true, isInline: true },
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+      properties: {
+        target: property.string(),
+        url: property.string(),
+      },
+    },
+  },
   parsers: {
     html: {
       deserializer: {
@@ -48,19 +58,41 @@ const TestLinkPlugin = createBasePlugin({
 
 const TestTableRowPlugin = createBasePlugin({
   key: KEYS.tr,
-  node: { isContainer: true, isElement: true, isStrictSiblings: true },
+  node: {
+    element: {
+      content: schema.content.type(KEYS.td, {
+        default: { type: KEYS.td },
+        min: 1,
+      }),
+    },
+  },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'TR' }] } } },
 });
 
 const TestTableCellPlugin = createBasePlugin({
   key: KEYS.td,
-  node: { isContainer: true, isElement: true, isStrictSiblings: true },
+  node: {
+    element: {
+      content: schema.content.group('block', {
+        default: { type: KEYS.p },
+        min: 1,
+      }),
+    },
+  },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'TD' }] } } },
 });
 
 const TestTablePlugin = createBasePlugin({
   key: KEYS.table,
-  node: { isContainer: true, isElement: true },
+  node: {
+    element: {
+      content: schema.content.type(KEYS.tr, {
+        default: { type: KEYS.tr },
+        min: 1,
+      }),
+      groups: ['block'],
+    },
+  },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'TABLE' }] } } },
   plugins: [TestTableRowPlugin, TestTableCellPlugin],
 });

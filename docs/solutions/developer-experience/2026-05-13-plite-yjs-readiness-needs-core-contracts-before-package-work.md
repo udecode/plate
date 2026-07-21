@@ -1,6 +1,7 @@
 ---
 title: Plite Yjs readiness needs core contracts before package work
 date: 2026-05-13
+status: superseded
 category: docs/solutions/developer-experience
 module: plite collaboration substrate
 problem_type: developer_experience
@@ -16,6 +17,11 @@ tags: [plite, yjs, collaboration, selection, benchmarks, issue-ledger]
 ---
 
 # Plite Yjs readiness needs core contracts before package work
+
+> **Superseded architecture record.** This article predates the event-native
+> Yjs to `DocumentChange` bridge and keyed shared-effect log. Current adapters
+> export `commit.changes` and import canonical changes through
+> `tx.changes.apply(...)`.
 
 ## Problem
 

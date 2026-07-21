@@ -18,8 +18,8 @@ const createTextEditor = (text = 'abcd') => {
 
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text }] }],
-    marks: null,
     selection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 3 },
     },

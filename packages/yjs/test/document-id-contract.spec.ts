@@ -10,6 +10,20 @@ import {
 } from '../src/core/document';
 
 describe('@platejs/yjs document id contract', () => {
+  it('reads raw empty roots unless a schema supplies their required content', () => {
+    const doc = new Y.Doc();
+    const root = doc.get('@platejs/plite', Y.XmlElement);
+
+    assert.deepEqual(readPliteValueFromYjs(root), []);
+    assert.deepEqual(readPliteValueFromYjs(root, []), []);
+    assert.deepEqual(
+      readPliteValueFromYjs(root, [
+        { children: [{ text: '' }], type: 'schema-block' },
+      ]),
+      [{ children: [{ text: '' }], type: 'schema-block' }]
+    );
+  });
+
   it('resolves empty paths to the Yjs root', () => {
     const doc = new Y.Doc();
     const root = doc.get('@platejs/plite', Y.XmlElement);

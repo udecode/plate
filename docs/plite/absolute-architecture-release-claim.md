@@ -8,18 +8,18 @@ status: active
 
 ## Current Claim
 
-Plite keeps Plite's JSON-like model and operation stream, and uses a
-Lexical-style read/update lifecycle, ProseMirror-style transaction and DOM
-selection authority, Tiptap-style extension ergonomics, and a React 19.2
-runtime built around live reads, dirty commits, semantic islands, projection
-sources, and strict browser conformance proof.
+Plite keeps a JSON-like document model and uses a Lexical-style read/update
+lifecycle, ProseMirror-style transaction and DOM selection authority,
+Tiptap-style extension ergonomics, and a React 19.2 runtime built around live
+reads, canonical changes, semantic islands, projection sources, and strict
+browser conformance proof.
 
 This is the public runtime shape:
 
 ```ts
 editor.read((state) => {
   const selection = state.selection()
-  const children = state.value().roots.main ?? []
+  const children = state.children()
 })
 
 editor.update((tx) => {
@@ -34,7 +34,7 @@ Transaction groups are the normal authoring API:
 - `tx.text.insert`
 - `tx.text.delete`
 - `tx.nodes.insert`
-- `tx.fragment.insert`
+- `tx.slice.replace`
 - `tx.nodes.set`
 - `tx.nodes.remove`
 - `tx.nodes.unwrap`
@@ -50,8 +50,8 @@ public teaching surface.
 editor.update
   -> one transaction
   -> implicit target resolution when a primitive omits `at`
-  -> operation production
-  -> EditorCommit
+  -> canonical DocumentChange
+  -> EditorCommit with lazy `changed` queries
   -> history / collaboration / React / DOM repair consumers
 ```
 
@@ -62,17 +62,28 @@ Rules:
 - `tx.resolveTarget()` is internal engine-room API.
 - A primitive with explicit `at` never imports DOM selection.
 - A primitive without explicit `at` uses the active transaction target.
-- Operations remain the collaboration truth.
-- `EditorCommit` remains the local runtime truth.
-- React consumes commit dirtiness and live reads; React does not own model or
-  operation truth.
+- `DocumentChange` is document mutation and mapping truth.
+- `EditorCommit` carries the canonical change plus transaction metadata for
+  local consumers.
+- React consumes lazy `commit.changed` queries and live reads; React does not
+  own model or change truth.
+
+Pure typed commands evaluate committed state into `false | TransactionSpec`.
+Executing the spec publishes its canonical `DocumentChange` through the same
+transaction boundary; commands never emit a parallel operation stream.
+
+External parsed or clipboard content enters as a `ContentSlice` through
+`tx.slice.replace(...)`. Closed application content uses
+`tx.fragment.replace(...)`. The compiled schema fits containment, wrapping,
+defaults, and open edges before the transaction publishes one change.
 
 ## Extension Contract
 
-Extensions add named `editor`, `state`, and `tx` groups.
+Extensions add named `state`, `tx`, and `api` groups, typed commands, schema,
+state fields, effects, facets, and corrections.
 
 ```ts
-editor.extend(defineEditorExtension({
+const todo = defineEditorExtension({
   name: 'todo',
   tx: {
     todo(tx) {
@@ -83,11 +94,20 @@ editor.extend(defineEditorExtension({
       }
     },
   },
-}))
+})
+
+const editor = createEditor({ extensions: [todo] as const })
 ```
 
 Extension groups compose through the read/update runtime. Direct method
 replacement is not the public extension model.
+
+Extension declarations compile into a detached immutable candidate.
+`validateConfiguration` checks that candidate before synchronous activation;
+`activate` registers cleanup, and `onReady` runs only after publication.
+Runtime replacement uses a named slot through
+`tx.extensions.reconfigure(...)`, so configuration and document changes publish
+atomically.
 
 ## Hard Cuts
 
@@ -97,7 +117,6 @@ These are not primary public API:
 - mutable `editor.selection`
 - mutable `editor.children`
 - mutable `editor.marks`
-- mutable `editor.operations`
 - direct `editor.apply` as an extension point
 - direct `editor.onChange` as an extension point
 - command policy objects
@@ -105,9 +124,9 @@ These are not primary public API:
 - child-count chunking
 - `decorate` as the primary overlay API
 
-Internal storage and compatibility mirrors exist only where package/runtime code
-still requires them. Public docs, examples, and plugin guidance must use
-read/update, state groups, tx groups, editor groups, commit listeners, and
+Private runtime storage exists only behind the canonical change engine. Public
+docs, examples, and plugin guidance must use
+read/update, state groups, tx groups, API groups, commit listeners, and
 projection sources.
 
 ## Browser Editing Claim
@@ -176,8 +195,8 @@ device gate explicitly runs.
 React 19.2 runtime proof is based on:
 
 - selector-first live reads
-- dirty runtime ids and dirty top-level ranges
-- `EditorCommit` metadata
+- lazy `commit.changed.runtimeIds(...)` and `topLevelRanges(...)` queries
+- canonical `EditorCommit` metadata
 - source-scoped projection invalidation
 - semantic islands
 - direct DOM text sync as a capability with React fallback

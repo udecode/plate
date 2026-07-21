@@ -1,12 +1,15 @@
 import { act, type RenderResult, render } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import { createContext, type ReactNode, useContext } from 'react';
 import {
   createEditorRuntime,
   createEditorView,
   createEditor as createBaseEditor,
   type Descendant,
+  defineEditorSchema,
+  element,
   NodeApi,
   type Path,
+  schema,
   TextApi,
 } from '@platejs/plite';
 import {
@@ -26,6 +29,7 @@ import {
   useDecorationSelector,
   usePliteProjectionEntries,
 } from '../src';
+import { toPliteRangeDecorations } from '../src/decoration-source';
 import {
   createDecorationSource,
   createRangeDecorationSource,
@@ -51,6 +55,32 @@ type SegmentLike = {
 
 type RenderedProjectionEditor = RenderResult & {
   store: PliteDecorationSource<Record<string, unknown>>;
+};
+
+const LeafRenderContext = createContext('leaf');
+
+const inlineLinkSchema = defineEditorSchema({
+  elements: { link: element({ inline: true }) },
+  id: 'inline-decoration-boundary',
+  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  unknown: 'preserve',
+  version: 1,
+});
+
+const HookedLeaf = ({
+  attributes,
+  children,
+}: {
+  attributes: Record<string, unknown>;
+  children: ReactNode;
+}) => {
+  const label = useContext(LeafRenderContext);
+
+  return (
+    <span {...attributes} data-hooked-leaf={label}>
+      {children}
+    </span>
+  );
 };
 
 const createEditor = () => createReactEditor(createBaseEditor());
@@ -136,6 +166,7 @@ const findTextRangesByText = (
               data: { bold: true },
               key: `text:${path.join('.')}`,
               range: {
+                kind: 'text',
                 anchor: { path, offset: 0 },
                 focus: { path, offset: node.text.length },
               },
@@ -148,6 +179,27 @@ const findTextRangesByText = (
   });
 
 describe('plite-react projections and selection contract', () => {
+  test('preserves legacy decorated-range data in projection slices', () => {
+    const range = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+      search_highlight: true,
+    };
+
+    expect(
+      toPliteRangeDecorations([range], { id: 'legacy-decoration' })
+    ).toEqual([
+      {
+        data: { search_highlight: true },
+        key: 'legacy-decoration:0.0:0:0.0:4:0',
+        range: {
+          anchor: range.anchor,
+          focus: range.focus,
+        },
+      },
+    ]);
+  });
+
   test('projection refresh bridge forces a render before exporting projection selection', () => {
     const inputController = createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
@@ -305,6 +357,7 @@ describe('plite-react projections and selection contract', () => {
                   {
                     data: { search: true },
                     range: {
+                      kind: 'text',
                       anchor: { path, offset: 0 },
                       focus: { path, offset: 5 },
                     },
@@ -341,6 +394,7 @@ describe('plite-react projections and selection contract', () => {
                   {
                     data: { external: true },
                     range: {
+                      kind: 'text',
                       anchor: { path, offset: 0 },
                       focus: { path, offset: 5 },
                     },
@@ -369,13 +423,56 @@ describe('plite-react projections and selection contract', () => {
     ]);
   });
 
+  test('isolates renderLeaf hooks when decoration segments change', async () => {
+    const editor = createEditor();
+    let highlighted = false;
+
+    editorReplace(editor, {
+      children: [{ children: [{ text: 'Hello world!' }] }],
+      selection: null,
+    });
+
+    const rendered = render(
+      <Plite editor={editor}>
+        <Editable
+          decorate={([node, path]) =>
+            highlighted && TextApi.isText(node)
+              ? [
+                  {
+                    data: { search: true },
+                    range: {
+                      kind: 'text',
+                      anchor: { path, offset: 0 },
+                      focus: { path, offset: 5 },
+                    },
+                  },
+                ]
+              : []
+          }
+          renderLeaf={HookedLeaf}
+        />
+      </Plite>
+    );
+
+    expect(
+      rendered.container.querySelectorAll('[data-hooked-leaf]')
+    ).toHaveLength(1);
+
+    highlighted = true;
+
+    await act(async () => {
+      editor.api.react.refreshDecorations();
+    });
+
+    expect(
+      rendered.container.querySelectorAll('[data-hooked-leaf]')
+    ).toHaveLength(2);
+  });
+
   test('projects decorations across inline element boundaries', () => {
     const editor = createEditor();
 
-    editor.extend({
-      elements: [{ inline: true, type: 'link' }],
-      name: 'inline-decoration-boundary',
-    });
+    editor.extend(inlineLinkSchema);
     editorReplace(editor, {
       children: [
         {
@@ -405,6 +502,7 @@ describe('plite-react projections and selection contract', () => {
                 {
                   data: { search: true },
                   range: {
+                    kind: 'text',
                     anchor: { path, offset: 2 },
                     focus: { path, offset: 3 },
                   },
@@ -417,6 +515,7 @@ describe('plite-react projections and selection contract', () => {
                 {
                   data: { search: true },
                   range: {
+                    kind: 'text',
                     anchor: { path, offset: 0 },
                     focus: { path, offset: 2 },
                   },
@@ -464,6 +563,7 @@ describe('plite-react projections and selection contract', () => {
           data: { bold: true },
           key: 'bold',
           range: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 11 },
           },
@@ -472,6 +572,7 @@ describe('plite-react projections and selection contract', () => {
           data: { italic: true },
           key: 'italic',
           range: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 6 },
             focus: { path: [0, 0], offset: 12 },
           },
@@ -498,6 +599,7 @@ describe('plite-react projections and selection contract', () => {
           data: { widget: true },
           key: 'widget',
           range: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 3 },
             focus: { path: [0, 0], offset: 3 },
           },
@@ -529,6 +631,7 @@ describe('plite-react projections and selection contract', () => {
           data: { comment: true },
           key: 'comment',
           range: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 11 },
           },
@@ -537,6 +640,7 @@ describe('plite-react projections and selection contract', () => {
           data: { spelling: true },
           key: 'spelling',
           range: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 6 },
             focus: { path: [0, 0], offset: 12 },
           },
@@ -629,6 +733,7 @@ describe('plite-react projections and selection contract', () => {
           data: { bold: true },
           key: 'bold',
           range: {
+            kind: 'text',
             anchor: { path: [0, 1], offset: 0 },
             focus: { path: [1, 0], offset: 3 },
           },
@@ -637,6 +742,7 @@ describe('plite-react projections and selection contract', () => {
           data: { italic: true },
           key: 'italic',
           range: {
+            kind: 'text',
             anchor: { path: [0, 2], offset: 0 },
             focus: { path: [0, 2], offset: 3 },
           },
@@ -645,6 +751,7 @@ describe('plite-react projections and selection contract', () => {
           data: { underline: true },
           key: 'underline',
           range: {
+            kind: 'text',
             anchor: { path: [1, 0], offset: 0 },
             focus: { path: [1, 0], offset: 3 },
           },
@@ -691,6 +798,7 @@ describe('plite-react projections and selection contract', () => {
             data: { bold: true },
             key: 'bold',
             range: {
+              kind: 'text',
               anchor: { path: [0, 0, 0], offset: 0 },
               focus: { path: [0, 0, 0], offset: text.text.length },
             },
@@ -702,6 +810,7 @@ describe('plite-react projections and selection contract', () => {
             data: { italic: true },
             key: 'italic',
             range: {
+              kind: 'text',
               anchor: { path: [0, 0, 0], offset: 0 },
               focus: { path: [0, 0, 0], offset: text.text.length },
             },
@@ -730,6 +839,7 @@ describe('plite-react projections and selection contract', () => {
       editor.update((tx) => {
         tx.text.insert('b', {
           at: {
+            kind: 'text',
             anchor: { path: [0, 0, 0], offset: 8 },
             focus: { path: [0, 0, 0], offset: 9 },
           },
@@ -783,8 +893,8 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.pathToId['0.0'];
-    const secondRuntimeId = snapshot.index.pathToId['1.0'];
+    const firstRuntimeId = snapshot.index.idAt([0, 0]);
+    const secondRuntimeId = snapshot.index.idAt([1, 0]);
 
     if (!firstRuntimeId || !secondRuntimeId) {
       throw new Error('Expected runtime ids for mapped projection proof');
@@ -813,6 +923,7 @@ describe('plite-react projections and selection contract', () => {
                     data: { blockIndex },
                     key: `mapped:${child.text}`,
                     range: {
+                      kind: 'text',
                       anchor: { path, offset: 0 },
                       focus: { path, offset: child.text.length },
                     },
@@ -889,9 +1000,9 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.pathToId['0.0.0'];
-    const movedRuntimeId = snapshot.index.pathToId['0.1.0'];
-    const trailingRuntimeId = snapshot.index.pathToId['1.0'];
+    const firstRuntimeId = snapshot.index.idAt([0, 0, 0]);
+    const movedRuntimeId = snapshot.index.idAt([0, 1, 0]);
+    const trailingRuntimeId = snapshot.index.idAt([1, 0]);
 
     if (!firstRuntimeId || !movedRuntimeId || !trailingRuntimeId) {
       throw new Error('Expected runtime ids for nested move projection proof');
@@ -965,8 +1076,8 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.pathToId['0.0'];
-    const secondRuntimeId = snapshot.index.pathToId['1.0'];
+    const firstRuntimeId = snapshot.index.idAt([0, 0]);
+    const secondRuntimeId = snapshot.index.idAt([1, 0]);
 
     if (!firstRuntimeId || !secondRuntimeId) {
       throw new Error('Expected runtime ids for projection subscription proof');
@@ -988,6 +1099,7 @@ describe('plite-react projections and selection contract', () => {
                   data: { highlight: true },
                   key: `starts-with-b:${path.join('.')}`,
                   range: {
+                    kind: 'text',
                     anchor: { path, offset: 0 },
                     focus: { path, offset: child.text.length },
                   },
@@ -1031,6 +1143,7 @@ describe('plite-react projections and selection contract', () => {
       editor.update((tx) => {
         tx.text.insert('!', {
           at: {
+            kind: 'text',
             anchor: { path: [1, 0], offset: 1 },
             focus: { path: [1, 0], offset: 1 },
           },
@@ -1054,8 +1167,8 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.pathToId['0.0'];
-    const secondRuntimeId = snapshot.index.pathToId['1.0'];
+    const firstRuntimeId = snapshot.index.idAt([0, 0]);
+    const secondRuntimeId = snapshot.index.idAt([1, 0]);
 
     if (!firstRuntimeId || !secondRuntimeId) {
       throw new Error('Expected runtime ids for decoration selector proof');
@@ -1077,6 +1190,7 @@ describe('plite-react projections and selection contract', () => {
                   data: { label: child.text },
                   key: `label:${path.join('.')}`,
                   range: {
+                    kind: 'text',
                     anchor: { path, offset: 0 },
                     focus: { path, offset: child.text.length },
                   },
@@ -1116,6 +1230,7 @@ describe('plite-react projections and selection contract', () => {
       editor.update((tx) => {
         tx.text.insert('!', {
           at: {
+            kind: 'text',
             anchor: { path: [1, 0], offset: 1 },
             focus: { path: [1, 0], offset: 1 },
           },
@@ -1131,6 +1246,7 @@ describe('plite-react projections and selection contract', () => {
       editor.update((tx) => {
         tx.text.insert('!', {
           at: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 1 },
             focus: { path: [0, 0], offset: 1 },
           },
@@ -1156,7 +1272,7 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.pathToId['0.0'];
+    const firstRuntimeId = snapshot.index.idAt([0, 0]);
 
     if (!firstRuntimeId) {
       throw new Error('Expected runtime id for source recompute proof');
@@ -1177,6 +1293,7 @@ describe('plite-react projections and selection contract', () => {
             data: { scoped: true },
             key: 'first-text',
             range: {
+              kind: 'text',
               anchor: { path: [0, 0], offset: 0 },
               focus: { path: [0, 0], offset: firstText.text.length },
             },
@@ -1196,6 +1313,7 @@ describe('plite-react projections and selection contract', () => {
       editor.update((tx) => {
         tx.text.insert('!', {
           at: {
+            kind: 'text',
             anchor: { path: [1, 0], offset: 1 },
             focus: { path: [1, 0], offset: 1 },
           },
@@ -1210,6 +1328,7 @@ describe('plite-react projections and selection contract', () => {
       editor.update((tx) => {
         tx.text.insert('!', {
           at: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 1 },
             focus: { path: [0, 0], offset: 1 },
           },
@@ -1232,8 +1351,8 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.pathToId['0.0'];
-    const secondRuntimeId = snapshot.index.pathToId['1.0'];
+    const firstRuntimeId = snapshot.index.idAt([0, 0]);
+    const secondRuntimeId = snapshot.index.idAt([1, 0]);
 
     if (!firstRuntimeId || !secondRuntimeId) {
       throw new Error('Expected runtime ids for scoped projection read proof');
@@ -1247,7 +1366,7 @@ describe('plite-react projections and selection contract', () => {
         sourceScopes.push(readRuntimeScope);
 
         return (readRuntimeScope ?? []).map((runtimeId) => {
-          const path = nextSnapshot.index.idToPath[runtimeId];
+          const path = nextSnapshot.index.pathOf(runtimeId);
           const text = NodeApi.get(
             { children: nextSnapshot.children } as never,
             path
@@ -1256,6 +1375,7 @@ describe('plite-react projections and selection contract', () => {
           return {
             key: runtimeId,
             range: {
+              kind: 'text',
               anchor: { path, offset: 0 },
               focus: { path, offset: text.text.length },
             },
@@ -1287,7 +1407,7 @@ describe('plite-react projections and selection contract', () => {
       selection: null,
     });
 
-    const firstBlockRuntimeId = editorGetSnapshot(editor).index.pathToId['0'];
+    const firstBlockRuntimeId = editorGetSnapshot(editor).index.idAt([0]);
 
     if (!firstBlockRuntimeId) {
       throw new Error('Expected block runtime id for scoped decorate proof');
@@ -1339,6 +1459,7 @@ describe('plite-react projections and selection contract', () => {
             data: { text: true },
             key: 'text-source',
             range: {
+              kind: 'text',
               anchor: { path: [0, 0], offset: 0 },
               focus: {
                 path: [0, 0],
@@ -1359,6 +1480,7 @@ describe('plite-react projections and selection contract', () => {
         editor.update((tx) => {
           tx.text.insert('!', {
             at: {
+              kind: 'text',
               anchor: { path: [0, 0], offset: 1 },
               focus: { path: [0, 0], offset: 1 },
             },
@@ -1385,11 +1507,11 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const anchorTextRuntimeId = snapshot.index.pathToId['0.0'];
-    const focusTextRuntimeId = snapshot.index.pathToId['4.0'];
-    const mountedBlockRuntimeId = snapshot.index.pathToId['2'];
-    const mountedTextRuntimeId = snapshot.index.pathToId['2.0'];
-    const unmountedTextRuntimeId = snapshot.index.pathToId['1.0'];
+    const anchorTextRuntimeId = snapshot.index.idAt([0, 0]);
+    const focusTextRuntimeId = snapshot.index.idAt([4, 0]);
+    const mountedBlockRuntimeId = snapshot.index.idAt([2]);
+    const mountedTextRuntimeId = snapshot.index.idAt([2, 0]);
+    const unmountedTextRuntimeId = snapshot.index.idAt([1, 0]);
 
     if (
       !anchorTextRuntimeId ||
@@ -1408,6 +1530,7 @@ describe('plite-react projections and selection contract', () => {
           data: { selected: true },
           key: 'wide-selection',
           range: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 1 },
             focus: { path: [4, 0], offset: 2 },
           },
@@ -1478,6 +1601,7 @@ describe('plite-react projections and selection contract', () => {
                 data: { header: true },
                 key: 'header-view-source',
                 range: {
+                  kind: 'text',
                   anchor: { path: [0, 0], offset: 0 },
                   focus: { path: [0, 0], offset: text.text.length },
                 },
@@ -1498,6 +1622,7 @@ describe('plite-react projections and selection contract', () => {
       headerEditor.update((tx) => {
         tx.text.insert('!', {
           at: {
+            kind: 'text',
             anchor: { path: [0, 0], offset: 6 },
             focus: { path: [0, 0], offset: 6 },
           },
@@ -1550,6 +1675,7 @@ describe('plite-react projections and selection contract', () => {
                 data: { scoped: true },
                 key: 'targeted-source',
                 range: {
+                  kind: 'text',
                   anchor: { path: [0, 0], offset: 0 },
                   focus: { path: [0, 0], offset: 1 },
                 },
@@ -1674,6 +1800,7 @@ describe('plite-react projections and selection contract', () => {
               {
                 key: 'selection-sensitive',
                 range: {
+                  kind: 'text',
                   anchor: { path: [0, 0], offset: 0 },
                   focus: { path: [0, 0], offset: 1 },
                 },
@@ -1735,6 +1862,7 @@ describe('plite-react projections and selection contract', () => {
         data: metadata,
         key: 'non-json-metadata',
         range: {
+          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 1 },
         },

@@ -13,7 +13,6 @@ import {
   type Element,
   defineEditorExtension,
   type EditorCommitHandler,
-  type EditorUpdateTransaction,
 } from '@platejs/plite';
 
 const paragraph = (text: string): Element => ({
@@ -23,7 +22,7 @@ const paragraph = (text: string): Element => ({
 
 type ViewAfterCommitEvent = {
   editor: unknown;
-  root: string;
+  root: string | undefined;
   snapshotText: string;
   text: string;
 };
@@ -33,8 +32,8 @@ const seedEditor = <TEditor extends ReturnType<typeof createEditor>>(
 ) => {
   editorReplace(editor, {
     children: [paragraph('one')],
-    marks: null,
     selection: {
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     },
@@ -50,7 +49,7 @@ describe('editor.update afterCommit', () => {
 
     editor.update((tx, { afterCommit }) => {
       afterCommit(({ commit, snapshot }) => {
-        assert.equal(commit.operations.length, 1);
+        assert.equal(commit.changed.has('text'), true);
         assert.equal(snapshot.version, commit.version);
         events.push(`after:${editorString(editor, [])}`);
       });
@@ -76,7 +75,7 @@ describe('editor.update afterCommit', () => {
     assert.equal(editorString(editor, []), 'one');
   });
 
-  it('drops registered effects when an update rolls back', () => {
+  it('drops registered effects when an update discards its draft', () => {
     const editor = seedEditor();
     const events: string[] = [];
 
@@ -148,18 +147,14 @@ describe('editor.update afterCommit', () => {
     const editor = seedEditor(
       createEditor({
         extensions: [
-          defineEditorExtension({
+          defineEditorExtension()({
             name: 'nested-on-commit',
             onCommit({ commit, editor }) {
               if (
-                commit.operations.some(
-                  (operation) =>
-                    operation.type === 'insert_text' &&
-                    'text' in operation &&
-                    operation.text === '!'
-                )
+                commit.changed.has('text') &&
+                editorString(editor, []) === 'one!'
               ) {
-                editor.update((tx: EditorUpdateTransaction) => {
+                editor.update((tx) => {
                   tx.text.insert('?');
                 });
               }

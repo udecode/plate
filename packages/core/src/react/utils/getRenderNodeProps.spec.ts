@@ -1,3 +1,5 @@
+import { property, schema, target } from '@platejs/plite';
+
 import { createBasePlugin } from '../../lib';
 import { createPlateEditor } from '../editor/withPlate';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -45,7 +47,7 @@ describe('getRenderNodeProps', () => {
       key: 'p',
       node: {
         dangerouslyAllowAttributes: ['target'],
-        isElement: true,
+        element: { groups: ['block'] },
         props: (({ editor }: any) => ({
           'data-has-editor': editor ? 'yes' : 'no',
           title: undefined,
@@ -62,6 +64,13 @@ describe('getRenderNodeProps', () => {
         },
       },
       key: 'align',
+      schema: {
+        properties: [
+          schema.elementProperty('align', property.string(), {
+            target: target.type('p'),
+          }),
+        ],
+      },
     });
     const editor = createPlateEditor({
       navigationFeedback: false,

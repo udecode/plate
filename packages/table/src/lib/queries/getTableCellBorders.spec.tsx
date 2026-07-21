@@ -29,42 +29,18 @@ const getCell = (
 };
 
 describe('getTableCellBorders', () => {
-  it('falls back to bottom and right defaults when the cell has no row parent', () => {
+  it('falls back to bottom and right defaults for a detached cell', () => {
     const input = (
       <editor>
-        <htd>
-          <hp>orphan</hp>
-        </htd>
+        <hp>document</hp>
       </editor>
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const element = getCell(editor, [0]);
-
-    expect(
-      getTableCellBorders(editor, {
-        defaultBorder: { color: 'gray', size: 2, style: 'solid' },
-        element,
-      })
-    ).toEqual({
-      bottom: { color: 'gray', size: 2, style: 'solid' },
-      right: { color: 'gray', size: 2, style: 'solid' },
-    });
-  });
-
-  it('falls back to bottom and right defaults when the row has no table parent', () => {
-    const input = (
-      <editor>
-        <htr>
-          <htd>
-            <hp>orphan</hp>
-          </htd>
-        </htr>
-      </editor>
-    ) as TestEditor;
-
-    const editor = createTableEditor(input);
-    const element = getCell(editor, [0, 0]);
+    const element = {
+      children: [{ children: [{ text: 'detached' }], type: 'p' }],
+      type: 'td',
+    } as TTableCellElement;
 
     expect(
       getTableCellBorders(editor, {

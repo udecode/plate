@@ -56,6 +56,7 @@ describe('basic block input rules', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0, 0] },
         focus: { offset: 1, path: [0, 0, 0] },
       },
@@ -81,6 +82,7 @@ describe('basic block input rules', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 0, 0] },
     });
@@ -95,6 +97,7 @@ describe('basic block input rules', () => {
         }),
       ],
       selection: {
+        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },

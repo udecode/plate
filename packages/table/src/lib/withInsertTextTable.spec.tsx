@@ -10,11 +10,11 @@ jsxt;
 
 describe('withInsertTextTable', () => {
   // https://github.com/udecode/editor-protocol/issues/65
-  describe('cell child is a text', () => {
+  describe('typing over a multi-cell selection', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('wraps the children into a p (disableMerge: $disableMerge)', ({
+    ])('clears the selected cells and inserts into the focus cell (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -76,7 +76,6 @@ describe('withInsertTextTable', () => {
         value: input.children,
       });
 
-      editor.update.fragment.delete();
       editor.update.text.insert('e');
       expect(editor.read.children()).toMatchObject(output.children!);
     });

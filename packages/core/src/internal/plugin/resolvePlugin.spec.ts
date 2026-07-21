@@ -105,21 +105,24 @@ describe('resolvePlugin', () => {
       createBasePlugin({
         key: 'invalid',
         node: {
-          isElement: true,
-          isLeaf: true,
+          element: {},
+          mark: true,
         },
       }) as any
     );
 
     expect(errorLogger).toHaveBeenCalledWith(
-      'Plugin invalid cannot be both an element and a leaf.',
+      'Plugin invalid cannot declare both node.element and node.mark.',
       'PLUGIN_NODE_TYPE',
       undefined
     );
   });
 
   it('does not mutate the configured plugin between editor instances', () => {
-    const configured = createBasePlugin({ key: 'p' }).configure({
+    const configured = createBasePlugin({
+      key: 'p',
+      node: { element: { groups: ['block'] }, type: 'p' },
+    }).configure({
       inputRules: [
         {
           apply: () => true,

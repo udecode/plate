@@ -25,40 +25,60 @@ const blocks = Number(process.env.CORE_HUGE_BENCH_BLOCKS || 1000);
 const typeOps = Number(process.env.CORE_HUGE_BENCH_TYPE_OPS || 20);
 const profile = process.env.CORE_HUGE_BENCH_PROFILE === '1';
 const currentOnly = process.env.CORE_HUGE_BENCH_CURRENT_ONLY === '1';
+const skipBuild = process.env.CORE_HUGE_BENCH_SKIP_BUILD === '1';
 const replacementText = 'replacement marker';
 
 const benchmarkSource = `
 import assert from 'node:assert/strict';
 
-let Slate;
-let SlateInternal = {};
+let Core;
+let CoreInternal = {};
+let isPlite = false;
 
 try {
-  Slate = await import('../../packages/slate/src/index.ts');
-  SlateInternal = await import('../../packages/slate/src/internal/index.ts');
+  Core = await import('@platejs/plite');
+  CoreInternal = await import('@platejs/plite/internal');
+  isPlite = true;
 } catch {
-  Slate = await import('@platejs/slate');
-
   try {
-    SlateInternal = await import('@platejs/slate/internal');
-  } catch {}
+    Core = await import('../../packages/slate/src/index.ts');
+    CoreInternal = await import('../../packages/slate/src/internal/index.ts');
+  } catch {
+    try {
+      Core = await import('slate');
+    } catch {
+      Core = await import('@platejs/slate');
+    }
+
+    try {
+      CoreInternal = await import('@platejs/slate/internal');
+    } catch {}
+  }
 }
 
-let SlateHistory = {};
+let History = {};
 
 try {
-  SlateHistory = await import('../../packages/slate-history/src/index.ts');
+  History = await import('@platejs/plite-history');
 } catch {
   try {
-    SlateHistory = await import('@platejs/slate-history');
-  } catch {}
+    History = await import('../../packages/slate-history/src/index.ts');
+  } catch {
+    try {
+      History = await import('slate-history');
+    } catch {
+      try {
+        History = await import('@platejs/slate-history');
+      } catch {}
+    }
+  }
 }
 
-const { createEditor } = Slate;
-const Editor = Slate.Editor ?? SlateInternal.Editor;
-const legacyTransforms = Slate.Transforms;
-const historyExtension = SlateHistory.history;
-const legacyWithHistory = SlateHistory.withHistory;
+const { createEditor } = Core;
+const Editor = Core.Editor ?? CoreInternal.Editor ?? CoreInternal;
+const legacyTransforms = Core.Transforms;
+const historyExtension = History.history;
+const legacyWithHistory = History.withHistory;
 
 const iterations = Number(process.env.CORE_HUGE_BENCH_ITERATIONS || 3);
 const blocks = Number(process.env.CORE_HUGE_BENCH_BLOCKS || 1000);
@@ -69,13 +89,15 @@ const replacementText = ${JSON.stringify(replacementText)};
 let profileEvents = [];
 
 if (profile) {
-  globalThis.__SLATE_REACT_RENDER_PROFILER__ = {
+  const profiler = {
     record(event) {
       if (event?.kind === 'core-time') {
         profileEvents.push(event);
       }
     },
   };
+  globalThis.__PLITE_REACT_RENDER_PROFILER__ = profiler;
+  globalThis.__SLATE_REACT_RENDER_PROFILER__ = profiler;
 }
 
 const now = () => performance.now();
@@ -207,7 +229,7 @@ const getSelection = (editor) =>
 const select = (editor, target) => {
   if (typeof editor.update === 'function') {
     editor.update((tx) => {
-      tx.selection.set(target);
+      tx.selection.set(isPlite ? { ...target, kind: 'text' } : target);
     });
     return;
   }
@@ -454,9 +476,12 @@ const legacyPackageManager = currentOnly
   ? null
   : await parsePackageManager(legacyRepo);
 
-await buildRepo(currentRepo, currentPackageManager, './packages/slate');
-if (legacyPackageManager) {
-  await buildRepo(legacyRepo, legacyPackageManager, './packages/slate');
+if (!skipBuild) {
+  await buildRepo(currentRepo, currentPackageManager, './packages/plite');
+  await buildRepo(currentRepo, currentPackageManager, './packages/plite-history');
+  if (legacyPackageManager) {
+    await buildRepo(legacyRepo, legacyPackageManager, './packages/slate');
+  }
 }
 
 const env = {
@@ -490,6 +515,7 @@ const summary = {
     blocks,
     currentOnly,
     profile,
+    skipBuild,
     typeOps,
   },
   current: current.lanes,

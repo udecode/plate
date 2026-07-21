@@ -1,4 +1,7 @@
-import { createTestEditor } from '../__tests__/createTestEditor';
+import {
+  createTestEditor,
+  getTestMarkdownRuntime,
+} from '../__tests__/createTestEditor';
 import { mdastToSlate } from './mdastToSlate';
 
 describe('mdastToSlate', () => {
@@ -29,7 +32,7 @@ describe('mdastToSlate', () => {
           type: 'root',
         },
         {
-          editor,
+          runtime: getTestMarkdownRuntime(editor),
           splitLineBreaks: true,
         }
       )

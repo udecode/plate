@@ -13,12 +13,12 @@ describe('NormalizeTypesPlugin', () => {
     {
       input: (
         <editor>
-          <element />
+          <element type="element" />
         </editor>
       ) as TestEditor,
       output: (
         <editor>
-          <element>
+          <element type="element">
             <hh1>
               <htext />
             </hh1>

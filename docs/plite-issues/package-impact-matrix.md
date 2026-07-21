@@ -88,7 +88,7 @@ Strong take:
 At least `19` explicitly-tagged issues in the ledger land on this seam. The macro clusters spread them across React runtime, performance, selection, API shape, and collaboration, but ownership is still clear.
 
 **Primary owner:** `slate-react-v2`  
-**Secondary owner:** `plite`  
+**Secondary owner:** `plite`
 **Tertiary owner:** `slate-dom-v2` when the failure crosses into DOM selection or range translation
 
 Why:

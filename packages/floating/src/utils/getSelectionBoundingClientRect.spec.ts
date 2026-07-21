@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { PlateTest, createPlateEditor } from '@platejs/core/react';
+import type { TextSelection } from '@platejs/plite';
 import { act, render } from '@testing-library/react';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
@@ -18,9 +19,10 @@ describe('getSelectionBoundingClientRect', () => {
 
   it('returns the default rect for a collapsed selection', () => {
     const selection = {
+      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
-    };
+    } satisfies TextSelection;
     const editor = createPlateEditor({
       selection,
       value: [{ children: [{ text: 'a' }], type: 'p' }],
@@ -39,9 +41,10 @@ describe('getSelectionBoundingClientRect', () => {
       top: 4,
     });
     const selection = {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
-    };
+    } satisfies TextSelection;
     const editor = createPlateEditor({
       selection,
       value: [{ children: [{ text: 'ab' }], type: 'p' }],

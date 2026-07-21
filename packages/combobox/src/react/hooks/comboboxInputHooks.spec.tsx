@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import type React from 'react';
 
 import * as actualCoreReact from '@platejs/core/react';
-import { type Element, ElementApi } from '@platejs/plite';
+import { type Element, ElementApi, schema } from '@platejs/plite';
 
 const useEditorRefMock = mock();
 const useElementMock = mock();
@@ -14,6 +14,18 @@ mock.module('@platejs/core/react', () => ({
   useElement: useElementMock,
   useElementSelected: useElementSelectedMock,
 }));
+
+const ComboboxInputPlugin = actualCoreReact.createPlatePlugin({
+  key: 'mentionInput',
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', max: 1, min: 1 }),
+      inline: true,
+      void: 'inline',
+    },
+    type: 'mention_input',
+  },
+});
 
 describe('combobox input hooks', () => {
   beforeEach(() => {
@@ -36,21 +48,26 @@ describe('combobox input hooks', () => {
       type: 'mention_input',
     } satisfies Element;
     const editor = actualCoreReact.createPlateEditor({
+      plugins: [ComboboxInputPlugin],
       selection: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 1, 0] },
+        focus: { offset: 0, path: [0, 1, 0] },
       },
-      value: [inputElement, { children: [{ text: 'after' }], type: 'p' }],
+      value: [
+        { children: [inputElement], type: 'p' },
+        { children: [{ text: 'after' }], type: 'p' },
+      ],
     });
-    const element = editor.read.children()[0];
+    const element = editor.read.nodes.get<Element>([0, 1])?.[0];
 
-    if (!ElementApi.isElement(element)) {
+    if (!element || !ElementApi.isElement(element)) {
       throw new TypeError('Expected a live combobox input element');
     }
 
-    useElementMock.mockReturnValue(element);
     useElementSelectedMock.mockReturnValue(true);
     useEditorRefMock.mockReturnValue(editor);
+    useElementMock.mockReturnValue(element);
 
     const ref = { current: document.createElement('input') };
     const { result } = renderHook(() =>
@@ -63,11 +80,12 @@ describe('combobox input hooks', () => {
 
     result.current.props.onBlur();
 
-    expect(editor.read.children()).toHaveLength(1);
-    expect(editor.read.children()[0]).toEqual({
-      children: [{ text: 'after' }],
-      type: 'p',
-    });
+    expect(editor.read.children()).toHaveLength(2);
+    expect(editor.read.text.string([0])).toBe('');
+    expect(editor.read.text.string([1])).toBe('after');
+    expect(editor.read.nodes.some({ match: { type: 'mention_input' } })).toBe(
+      false
+    );
     expect(onCancelInput).toHaveBeenCalledWith('blur');
   });
 
@@ -82,24 +100,29 @@ describe('combobox input hooks', () => {
     );
     const onCancelInput = mock();
     const editor = actualCoreReact.createPlateEditor({
+      plugins: [ComboboxInputPlugin],
       selection: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 1, 0] },
+        focus: { offset: 0, path: [0, 1, 0] },
       },
       value: [
-        { children: [{ text: '' }], type: 'mention_input' },
+        {
+          children: [{ children: [{ text: '' }], type: 'mention_input' }],
+          type: 'p',
+        },
         { children: [{ text: 'after' }], type: 'p' },
       ],
     });
-    const element = editor.read.children()[0];
+    const element = editor.read.nodes.get<Element>([0, 1])?.[0];
 
-    if (!ElementApi.isElement(element)) {
+    if (!element || !ElementApi.isElement(element)) {
       throw new TypeError('Expected a live combobox input element');
     }
 
-    useElementMock.mockReturnValue(element);
     useElementSelectedMock.mockReturnValue(true);
     useEditorRefMock.mockReturnValue(editor);
+    useElementMock.mockReturnValue(element);
 
     const { result } = renderHook(() =>
       useComboboxInput({
@@ -115,11 +138,12 @@ describe('combobox input hooks', () => {
       which,
     } as unknown as React.KeyboardEvent<HTMLElement>);
 
-    expect(editor.read.children()).toHaveLength(1);
-    expect(editor.read.children()[0]).toEqual({
-      children: [{ text: 'after' }],
-      type: 'p',
-    });
+    expect(editor.read.children()).toHaveLength(2);
+    expect(editor.read.text.string([0])).toBe('');
+    expect(editor.read.text.string([1])).toBe('after');
+    expect(editor.read.nodes.some({ match: { type: 'mention_input' } })).toBe(
+      false
+    );
     expect(onCancelInput).toHaveBeenCalledWith(cause);
   });
 
@@ -129,6 +153,7 @@ describe('combobox input hooks', () => {
     );
     const editor = actualCoreReact.createPlateEditor({
       selection: {
+        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
@@ -141,9 +166,9 @@ describe('combobox input hooks', () => {
     }
 
     editor.update.text.insert('b');
-    useElementMock.mockReturnValue(element);
     useElementSelectedMock.mockReturnValue(true);
     useEditorRefMock.mockReturnValue(editor);
+    useElementMock.mockReturnValue(element);
 
     const { result } = renderHook(() =>
       useComboboxInput({

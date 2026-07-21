@@ -133,8 +133,10 @@ describe('withDeleteTable', () => {
             <htable>
               <htr>
                 <htd>
-                  <anchor />
-                  11
+                  <hp>
+                    <anchor />
+                    11
+                  </hp>
                 </htd>
                 <htd>
                   <hp>12</hp>
@@ -142,8 +144,10 @@ describe('withDeleteTable', () => {
               </htr>
               <htr>
                 <htd>
-                  21
-                  <focus />
+                  <hp>
+                    21
+                    <focus />
+                  </hp>
                 </htd>
                 <htd>
                   <hp>22</hp>

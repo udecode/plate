@@ -10,6 +10,7 @@ import {
   removeYjsChild,
 } from '../src/core/document';
 import {
+  assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
   createSeededYjsPeers,
@@ -17,7 +18,6 @@ import {
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
-  getYjsTrace,
   type Peer,
   paragraph,
   redoYjsPeerAndSync,
@@ -138,45 +138,30 @@ describe('@platejs/yjs remove_node collaboration contract', () => {
     );
   });
 
-  it('applies local offline remove_node without a root snapshot fallback', () => {
+  it('applies a local offline removal as a canonical change', () => {
     const peer = createPeer('b');
 
     disconnectAndClearYjsTrace(peer);
     removeMiddleBlock(peer);
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha', 'gamma']);
-    assert.deepEqual(getYjsTrace(peer), [
-      { mode: 'operation', operationType: 'remove_node' },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
-  it('removes virtual moved content from its visible parent', () => {
+  it('removes moved content from its destination parent', () => {
     const peer = createPeer('b', undefined, [
       { type: 'quote', children: [paragraph('left')] },
       { type: 'quote', children: [] },
       paragraph('moved'),
     ]);
 
-    peer.editor.update.operations.replay([
-      {
-        newPath: [1, 0],
-        path: [2],
-        type: 'move_node',
-      },
-    ]);
+    peer.editor.update.nodes.move({ at: [2], to: [1, 0] });
 
     disconnectAndClearYjsTrace(peer);
     peer.editor.update.nodes.remove({ at: [1, 0] });
 
     assert.deepEqual(getPeerTopLevelTexts(peer), ['left', '']);
-    assert.deepEqual(getYjsTrace(peer), [
-      {
-        fallback: 'virtual-unwrap-wrapper-remove',
-        mode: 'traceable-fallback',
-        operationType: 'remove_node',
-      },
-      { mode: 'operation', operationType: 'insert_node' },
-    ]);
+    assertCanonicalYjsTrace(peer);
   });
 
   it('preserves concurrent remote sibling edits when an offline remove_node reconnects', () => {
@@ -207,7 +192,7 @@ describe('@platejs/yjs remove_node collaboration contract', () => {
     assertPeerTexts(peers, ['alpha', 'gamma']);
   });
 
-  it('undoes and redoes only the local remove_node intent after reconnect', () => {
+  it('undoes and redoes only the local removal after reconnect', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
 

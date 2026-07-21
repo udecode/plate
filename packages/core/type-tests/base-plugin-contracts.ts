@@ -2,10 +2,12 @@
 import {
   HistoryPlugin,
   type ExtendConfig,
+  type ParserOptions,
   type PluginConfig,
   createBaseEditor,
   createBasePlugin,
   getEditorPlugin,
+  prepareInsertDataQuery,
 } from '@platejs/core';
 import { defineEditorExtension } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
@@ -105,6 +107,10 @@ const InlineHistoryPlugin = createBasePlugin({
 const basePlateEditor = createBaseEditor({
   plugins: [BoldPlugin, ConfiguredCalloutPlugin, FactoryExtensionPlugin],
 });
+declare const parserOptions: ParserOptions;
+const queryBoldInsertData = prepareInsertDataQuery(basePlateEditor, BoldPlugin);
+
+basePlateEditor.read((state) => queryBoldInsertData(state, parserOptions));
 
 const inlineHistoryEditor = createBaseEditor({
   plugins: [InlineHistoryPlugin],

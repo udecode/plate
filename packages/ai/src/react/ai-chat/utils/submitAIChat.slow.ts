@@ -17,6 +17,7 @@ const createEditor = (sendMessage: ReturnType<typeof mock>) => {
       AIChatPlugin,
     ],
     selection: {
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },

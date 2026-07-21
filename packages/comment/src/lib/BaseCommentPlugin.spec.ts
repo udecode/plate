@@ -1,17 +1,110 @@
-import { createBaseEditor } from '@platejs/core';
-import type { Selection, Value } from '@platejs/plite';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import { schema, type Selection, type Value } from '@platejs/plite';
 import type { TCommentText } from '@platejs/utils';
 
 import { BaseCommentPlugin } from './BaseCommentPlugin';
 
+const CommentTargetPlugin = createBasePlugin({
+  key: 'commentTarget',
+  node: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['block'],
+    },
+  },
+});
+
 const createCommentEditor = (value: Value, selection: Selection = null) =>
   createBaseEditor({
-    plugins: [BaseCommentPlugin],
+    plugins: [BaseParagraphPlugin, CommentTargetPlugin, BaseCommentPlugin],
     selection,
     value,
   });
 
 describe('BaseCommentPlugin', () => {
+  it('compiles exact and namespaced comment lifecycle laws', () => {
+    const text = {
+      comment: true,
+      commentTransient: true,
+      comment_one: false,
+      text: 'a',
+    };
+    const editor = createCommentEditor([{ children: [text], type: 'p' }]);
+    const paragraph = { children: [{ text: '' }], type: 'p' };
+
+    expect(
+      editor.read.schema.property({
+        key: 'comment',
+        placement: 'text',
+        type: 'p',
+      })
+    ).toMatchObject({
+      lifecycle: {
+        split: 'preserve',
+        typeChange: 'preserve-if-allowed',
+      },
+      merge: 'replace',
+      value: { kind: 'boolean' },
+    });
+    expect(
+      editor.read.schema.property({
+        key: 'comment_one',
+        placement: 'text',
+        type: 'p',
+      })
+    ).toMatchObject({
+      lifecycle: {
+        split: 'preserve',
+        typeChange: 'preserve-if-allowed',
+      },
+      merge: 'replace',
+      value: { kind: 'boolean' },
+    });
+    expect(
+      editor.read.schema.property({
+        key: 'commentTransient',
+        placement: 'text',
+        type: 'p',
+      })
+    ).toMatchObject({ value: { kind: 'boolean' } });
+    expect(
+      editor.read.schema.property({
+        key: 'comment_one',
+        placement: 'text',
+        type: paragraph.type,
+      })
+    ).not.toBeNull();
+    expect(
+      editor.read.schema.property({
+        key: 'comment_one',
+        placement: 'text',
+        type: 'missing',
+      })
+    ).toBeNull();
+
+    editor.update.nodes.set({ type: 'commentTarget' }, { at: [0] });
+
+    expect(editor.read.nodes.get<TCommentText>([0, 0])?.[0]).toMatchObject(
+      text
+    );
+
+    editor.update.selection.set({
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    });
+    editor.update.marks.add('comment_one', true);
+
+    expect(editor.read.nodes.get<TCommentText>([0, 0])?.[0]).toMatchObject({
+      ...text,
+      comment_one: true,
+    });
+  });
+
   it('finds comment nodes across the document', () => {
     const editor = createCommentEditor([
       {
@@ -74,6 +167,7 @@ describe('BaseCommentPlugin', () => {
     const editor = createCommentEditor(
       [{ children: [{ text: 'ab' }], type: 'p' }],
       {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       }
@@ -104,6 +198,7 @@ describe('BaseCommentPlugin', () => {
         },
       ],
       {
+        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       }

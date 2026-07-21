@@ -7,7 +7,7 @@ import {
   createBasePlugin,
   type PluginConfig,
 } from '@platejs/core';
-import type { Element } from '@platejs/plite';
+import { type Element, property, schema } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import type { TriggerComboboxPluginOptions } from './types';
@@ -20,8 +20,19 @@ const ExampleComboboxPlugin = createBasePlugin<ExampleComboboxConfig>({
   key: 'exampleCombobox',
   plugins: [
     createBasePlugin({
-      key: 'mention_input',
-      node: { isElement: true, isInline: true, isVoid: true },
+      key: 'mentionInput',
+      node: {
+        element: {
+          content: schema.content.text({ default: 'text', max: 1, min: 1 }),
+          inline: true,
+          properties: {
+            trigger: property.string(),
+            userId: property.string(),
+          },
+          void: 'inline',
+        },
+        type: 'mention_input',
+      },
     }),
   ],
 }).extendExtension(withTriggerCombobox);
@@ -59,6 +70,17 @@ const plugins = [
 const RegexComboboxPlugin =
   ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
     key: 'regexCombobox',
+    node: {
+      element: {
+        content: schema.content.text({ default: 'text', max: 1, min: 1 }),
+        inline: true,
+        properties: {
+          trigger: property.string(),
+          userId: property.string(),
+        },
+        void: 'inline',
+      },
+    },
     options: {
       trigger: /[@#]/,
       triggerPreviousCharPattern: /^$|^[\s"']$/,
@@ -268,13 +290,17 @@ describe('withTriggerCombobox', () => {
     editor.update.text.insert('@');
 
     expect(editor.read.children()).toEqual([
-      <hp>
-        <htext />
-      </hp>,
       {
-        children: [{ text: '' }],
-        type: 'exampleCombobox',
-        userId: 'user-1',
+        children: [
+          { text: '' },
+          {
+            children: [{ text: '' }],
+            type: 'exampleCombobox',
+            userId: 'user-1',
+          },
+          { text: '' },
+        ],
+        type: 'p',
       },
     ]);
   });

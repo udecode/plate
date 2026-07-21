@@ -1,9 +1,10 @@
 ---
-title: 位置引用
-description: Plite 中的路径、点、范围和书签引用。
+title: 锚点
+description: Plite 中可随文档变更映射的路径、点和范围。
 ---
 
-在 `editor.update` 中通过 `tx.refs.path`、`tx.refs.point` 和
-`tx.refs.range` 创建可变位置引用。持久锚点使用书签。
+通过 `editor.anchor(value, options)` 创建锚点。每次提交
+`DocumentChange` 时，锚点都会映射其路径、点或范围；调用 `release()`
+后停止跟踪。
 
-完整参考见 [Locations reference](/docs/plite/api/locations)。
+完整参考见 [Anchor API](/docs/plite/api/locations/anchor)。

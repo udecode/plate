@@ -1,7 +1,10 @@
-import type { Range } from 'platejs';
+import { createBaseEditor, type Range, type Value } from 'platejs';
 
-import { createTestEditor } from './__tests__/createTestEditor';
 import { aiCommentToRange } from '../../../../../../packages/ai/src/react/ai/utils/aiCommentToRange';
+import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+
+const createTestEditor = (value: Value) =>
+  createBaseEditor({ plugins: BaseEditorKit, value });
 
 describe('applyAIReview', () => {
   it('apply the AI review to the editor', () => {

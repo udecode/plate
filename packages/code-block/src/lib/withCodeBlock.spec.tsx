@@ -84,7 +84,7 @@ describe('insert break', () => {
       expect(output.selection).toEqual(editor.read.selection());
     });
 
-    it('keeps leading whitespace when splitting inside indentation', () => {
+    it('preserves the indentation level when splitting inside whitespace', () => {
       const input = (
         <editor>
           <hcodeblock>
@@ -100,8 +100,9 @@ describe('insert break', () => {
       const output = (
         <editor>
           <hcodeblock>
-            <hcodeline>{'      '}</hcodeline>
+            <hcodeline>{'  '}</hcodeline>
             <hcodeline>
+              {'  '}
               <cursor />
               {'  '}before
             </hcodeline>
@@ -145,7 +146,7 @@ describe('resetBlock', () => {
 
     const editor = createEditor({ input });
 
-    editor.update.code_block.resetBlock();
+    editor.update.codeBlock.resetBlock();
 
     expect(editor.read.children()).toEqual(output.children);
   });
@@ -250,9 +251,10 @@ describe('selectAll', () => {
 
     const editor = createEditor({ input });
 
-    editor.update.code_block.selectAll();
+    editor.update.codeBlock.selectAll();
 
     expect(editor.read.selection()).toEqual({
+      kind: 'text',
       anchor: { offset: 0, path: [0, 0, 0] },
       focus: { offset: 5, path: [0, 1, 0] },
     });
@@ -277,10 +279,8 @@ describe('selectAll', () => {
 
     const editor = createEditor({ input });
 
-    expect(editor.runtime.shortcuts['code_block.selectAll']?.keys).toBe(
-      'mod+a'
-    );
-    expect(editor.update.code_block.selectAll()).toBe(false);
+    expect(editor.runtime.shortcuts['codeBlock.selectAll']?.keys).toBe('mod+a');
+    expect(editor.update.codeBlock.selectAll()).toBe(false);
     expect(input.selection).toEqual(editor.read.selection());
   });
 });
@@ -319,7 +319,7 @@ describe('tab', () => {
 
     const editor = createEditor({ input });
 
-    expect(editor.update.code_block.tab({ reverse: false })).toBe(true);
+    expect(editor.update.codeBlock.tab({ reverse: false })).toBe(true);
     expect(editor.read.children()).toEqual(output.children);
   });
 
@@ -350,7 +350,7 @@ describe('tab', () => {
 
     const editor = createEditor({ input });
 
-    expect(editor.update.code_block.tab({ reverse: true })).toBe(true);
+    expect(editor.update.codeBlock.tab({ reverse: true })).toBe(true);
     expect(editor.read.children()).toEqual(output.children);
   });
 
@@ -381,7 +381,7 @@ describe('tab', () => {
 
     const editor = createEditor({ input });
 
-    expect(editor.update.code_block.tab()).toBe(true);
+    expect(editor.update.codeBlock.tab()).toBe(true);
     expect(editor.read.children()).toEqual(output.children);
     expect(output.selection).toEqual(editor.read.selection());
   });

@@ -4,6 +4,7 @@ import { createBaseEditor } from '@platejs/core';
 
 import { jsxt } from '@platejs/test-utils';
 
+import { BaseListPlugin } from '../BaseListPlugin';
 import { getListItemEntry } from './getListItemEntry';
 
 jsxt;
@@ -13,15 +14,16 @@ it('returns the current list and list item for a top-level list selection', () =
     <editor>
       <hul>
         <hli>
-          <hp>
+          <hlic>
             1
             <cursor />
-          </hp>
+          </hlic>
         </hli>
       </hul>
     </editor>
   ) as any;
   const editor = createBaseEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
@@ -31,10 +33,10 @@ it('returns the current list and list item for a top-level list selection', () =
       (
         <hul>
           <hli>
-            <hp>
+            <hlic>
               1
               <cursor />
-            </hp>
+            </hlic>
           </hli>
         </hul>
       ) as any,
@@ -43,10 +45,10 @@ it('returns the current list and list item for a top-level list selection', () =
     listItem: [
       (
         <hli>
-          <hp>
+          <hlic>
             1
             <cursor />
-          </hp>
+          </hlic>
         </hli>
       ) as any,
       [0, 0],
@@ -59,13 +61,13 @@ it('returns the nearest nested list and list item for a nested selection', () =>
     <editor>
       <hul>
         <hli>
-          <hp>1</hp>
+          <hlic>1</hlic>
           <hul>
             <hli>
-              <hp>
+              <hlic>
                 2
                 <cursor />
-              </hp>
+              </hlic>
             </hli>
           </hul>
         </hli>
@@ -73,6 +75,7 @@ it('returns the nearest nested list and list item for a nested selection', () =>
     </editor>
   ) as any;
   const editor = createBaseEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
@@ -82,10 +85,10 @@ it('returns the nearest nested list and list item for a nested selection', () =>
       (
         <hul>
           <hli>
-            <hp>
+            <hlic>
               2
               <cursor />
-            </hp>
+            </hlic>
           </hli>
         </hul>
       ) as any,
@@ -94,10 +97,10 @@ it('returns the nearest nested list and list item for a nested selection', () =>
     listItem: [
       (
         <hli>
-          <hp>
+          <hlic>
             2
             <cursor />
-          </hp>
+          </hlic>
         </hli>
       ) as any,
       [0, 0, 1, 0],
@@ -110,18 +113,18 @@ it('uses the focus path for expanded selections', () => {
     <editor>
       <hul>
         <hli>
-          <hp>
+          <hlic>
             aa
             <focus />
             aa
-          </hp>
+          </hlic>
           <hul>
             <hli>
-              <hp>
+              <hlic>
                 bb
                 <anchor />
                 bb
-              </hp>
+              </hlic>
             </hli>
           </hul>
         </hli>
@@ -129,6 +132,7 @@ it('uses the focus path for expanded selections', () => {
     </editor>
   ) as any;
   const editor = createBaseEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
@@ -138,10 +142,10 @@ it('uses the focus path for expanded selections', () => {
       (
         <hul>
           <hli>
-            <hp>aaaa</hp>
+            <hlic>aaaa</hlic>
             <hul>
               <hli>
-                <hp>bbbb</hp>
+                <hlic>bbbb</hlic>
               </hli>
             </hul>
           </hli>
@@ -152,18 +156,18 @@ it('uses the focus path for expanded selections', () => {
     listItem: [
       (
         <hli>
-          <hp>
+          <hlic>
             aa
             <focus />
             aa
-          </hp>
+          </hlic>
           <hul>
             <hli>
-              <hp>
+              <hlic>
                 bb
                 <anchor />
                 bb
-              </hp>
+              </hlic>
             </hli>
           </hul>
         </hli>
@@ -178,7 +182,7 @@ it('returns undefined when the selection is outside of a list item', () => {
     <editor>
       <hul>
         <hli>
-          <hp>1</hp>
+          <hlic>1</hlic>
         </hli>
       </hul>
       <hp>
@@ -187,6 +191,7 @@ it('returns undefined when the selection is outside of a list item', () => {
     </editor>
   ) as any;
   const editor = createBaseEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });

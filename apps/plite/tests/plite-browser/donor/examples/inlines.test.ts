@@ -82,7 +82,12 @@ const normalizeInlineSelectionText = (text: string) =>
     .replace(/\s+([,!.])/g, '$1')
     .trim();
 
-test.describe('Inlines example', () => {
+test.describe('Inlines example', {
+  annotation: {
+    description: 'context-heavy',
+    type: 'plite-browser-profile',
+  },
+}, () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/plite/inlines');
     await expect(page.getByRole('textbox')).toBeVisible();
@@ -160,6 +165,7 @@ test.describe('Inlines example', () => {
       await dialog.accept(url);
     });
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: beforeSelectedText.length },
       focus: {
         path: [0, 0],
@@ -201,6 +207,7 @@ test.describe('Inlines example', () => {
       await dialog.accept(url);
     });
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: {
         path: [0, 0],
         offset: beforeSelectedText.length + selectedText.length,
@@ -241,6 +248,7 @@ test.describe('Inlines example', () => {
     const selectedText = 'inline nodes';
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: beforeSelectedText.length },
       focus: {
         path: [0, 0],
@@ -376,6 +384,7 @@ test.describe('Inlines example', () => {
     await expect(link).toHaveCount(1);
     await expect(link).toContainText('https://example.com');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -405,6 +414,7 @@ test.describe('Inlines example', () => {
     });
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 'hyperlink'.length },
       focus: { path: [0, 1, 0], offset: 'hyperlink'.length },
     });
@@ -416,6 +426,7 @@ test.describe('Inlines example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 1, 0], offset: 'hyperlink inside'.length },
         focus: { path: [0, 1, 0], offset: 'hyperlink inside'.length },
       });
@@ -445,6 +456,7 @@ test.describe('Inlines example', () => {
       );
 
       await editor.selection.selectDOM({
+        kind: 'text',
         anchor: { path: [0, 1, 0], offset: 'hyperlink'.length },
         focus: { path: [0, 1, 0], offset: 'hyperlink'.length },
       });
@@ -487,6 +499,7 @@ test.describe('Inlines example', () => {
     });
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 2], offset: 0 },
       focus: { path: [0, 2], offset: 0 },
     });
@@ -525,6 +538,7 @@ test.describe('Inlines example', () => {
     const insertedText = 'before ';
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: beforeLinkText.length },
       focus: { path: [0, 0], offset: beforeLinkText.length },
     });
@@ -543,6 +557,7 @@ test.describe('Inlines example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: {
           path: [0, 0],
           offset: beforeLinkText.length + insertedText.length,
@@ -576,6 +591,7 @@ test.describe('Inlines example', () => {
       'In addition to block nodes, you can create inline nodes. Here is a ';
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: beforeLinkText.length },
     });
@@ -612,12 +628,14 @@ test.describe('Inlines example', () => {
       'In addition to block nodes, you can create inline nodes. Here is a ';
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 0], offset: beforeLinkText.length },
       focus: { path: [0, 0], offset: beforeLinkText.length },
     });
     await editor.clipboard.pasteText('before ');
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 2], offset: 0 },
       focus: { path: [0, 2], offset: 0 },
     });
@@ -651,6 +669,7 @@ test.describe('Inlines example', () => {
     const link = editor.root.locator('a').first();
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 1 },
     });
@@ -682,6 +701,7 @@ test.describe('Inlines example', () => {
     let link = editor.root.locator('a').first();
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 1 },
     });
@@ -693,6 +713,7 @@ test.describe('Inlines example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 0], offset: beforeLinkText.length + 2 },
         focus: { path: [0, 0], offset: beforeLinkText.length + 2 },
       });
@@ -711,6 +732,7 @@ test.describe('Inlines example', () => {
     link = editor.root.locator('a').first();
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 'hyperlin'.length },
       focus: { path: [0, 1, 0], offset: 'hyperlink'.length },
     });
@@ -722,6 +744,7 @@ test.describe('Inlines example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: { path: [0, 2], offset: 2 },
         focus: { path: [0, 2], offset: 2 },
       });
@@ -842,6 +865,7 @@ test.describe('Inlines example', () => {
     const selectedBeforeLinkText = 'Here is a ';
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: {
         path: [0, 0],
         offset: beforeLinkText.length - selectedBeforeLinkText.length,
@@ -868,6 +892,7 @@ test.describe('Inlines example', () => {
     const selectedAfterLinkText = ', and here';
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 2], offset: 0 },
       focus: { path: [0, 2], offset: selectedAfterLinkText.length },
     });
@@ -898,6 +923,7 @@ test.describe('Inlines example', () => {
     });
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 'hyper'.length },
     });
@@ -917,6 +943,7 @@ test.describe('Inlines example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
+        kind: 'text',
         anchor: {
           path: [0, 0],
           offset: beforeLinkText.length + 'replaced'.length,
@@ -945,6 +972,7 @@ test.describe('Inlines example', () => {
     const initialLinkCount = await editor.root.locator('a').count();
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 2 },
       focus: { path: [0, 1, 0], offset: 5 },
     });
@@ -983,6 +1011,7 @@ test.describe('Inlines example', () => {
       'In addition to block nodes, you can create inline nodes. Here is a ';
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: beforeLinkText.length },
     });
@@ -1116,6 +1145,7 @@ test.describe('Inlines example', () => {
 
       runtimeErrors.assertNone();
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 2], offset: 0 },
         focus: { path: [1, 2], offset: 0 },
       });
@@ -1171,6 +1201,7 @@ test.describe('Inlines example', () => {
         )
         .toContain('Finally, here is our favorite dog video. tail');
       await editor.assert.selection({
+        kind: 'text',
         anchor: { path: [1, 2], offset: ' tail'.length },
         focus: { path: [1, 2], offset: ' tail'.length },
       });
@@ -1202,6 +1233,7 @@ test.describe('Inlines example', () => {
     await expect(trailingLink).toHaveCount(1);
     await page.locator('[data-plite-editor] p').nth(1).click({ clickCount: 3 });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
     });
@@ -1239,6 +1271,7 @@ test.describe('Inlines example', () => {
     await expect(trailingLink).toHaveCount(1);
     await page.locator('[data-plite-editor] p').nth(1).click({ clickCount: 3 });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
     });
@@ -1290,7 +1323,10 @@ test.describe('Inlines example', () => {
 
     await page.keyboard.press(
       await editor.root.evaluate(() =>
-        /Mac OS X/.test(navigator.userAgent) ? 'Meta+Z' : 'Control+Z'
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        /Mac OS X/.test(navigator.userAgent)
+          ? 'Meta+Z'
+          : 'Control+Z'
       )
     );
 
@@ -1298,6 +1334,7 @@ test.describe('Inlines example', () => {
       .poll(async () => (await editor.get.blockTexts())[1])
       .toContain('There are two ways to add links. You');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [1, 0], offset: selectionStart },
       focus: { path: [1, 0], offset: selectionEnd },
     });
@@ -1321,6 +1358,11 @@ test.describe('Inlines example', () => {
         offset: text.length,
         path: [0, 1, 0],
       });
+    } else {
+      await editor.dom.collapseAtTextPath({
+        offset: 0,
+        path: [0, 1, 0],
+      });
     }
 
     await editor.selection.dragTextRange({
@@ -1339,7 +1381,10 @@ test.describe('Inlines example', () => {
 
     await page.keyboard.press(
       await editor.root.evaluate(() =>
-        /Mac OS X/.test(navigator.userAgent) ? 'Meta+Z' : 'Control+Z'
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        /Mac OS X/.test(navigator.userAgent)
+          ? 'Meta+Z'
+          : 'Control+Z'
       )
     );
 
@@ -1347,15 +1392,18 @@ test.describe('Inlines example', () => {
     const expectedSelection =
       testInfo.project.name === 'firefox'
         ? {
+            kind: 'text',
             anchor: { path: [0, 1, 0], offset: text.length },
             focus: { path: [0, 1, 0], offset: 0 },
           }
         : {
+            kind: 'text',
             anchor: { path: [0, 1, 0], offset: 0 },
             focus: { path: [0, 1, 0], offset: text.length },
           };
 
     await editor.assert.selection({
+      kind: 'text',
       anchor: expectedSelection.anchor,
       focus: expectedSelection.focus,
     });
@@ -1378,6 +1426,7 @@ test.describe('Inlines example', () => {
     const beforeButtonText = ', and here is a more unusual inline: an ';
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 2], offset: beforeButtonText.length },
       focus: { path: [0, 2], offset: beforeButtonText.length },
     });
@@ -1393,6 +1442,7 @@ test.describe('Inlines example', () => {
       'In addition to block nodes, you can create inline nodes. Here is a hyperlink, and here is a more unusual inline: an plain editable button! Here is a read-only inline: .'
     );
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 2], offset: beforeButtonText.length + 6 },
       focus: { path: [0, 2], offset: beforeButtonText.length + 6 },
     });
@@ -1415,6 +1465,7 @@ test.describe('Inlines example', () => {
     const buttonText = 'editable button';
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 3, 0], offset: 0 },
       focus: { path: [0, 3, 0], offset: buttonText.length },
     });
@@ -1426,6 +1477,7 @@ test.describe('Inlines example', () => {
       )
       .toContain(`${beforeButtonText}! Here is a read-only inline`);
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 3, 0], offset: 0 },
       focus: { path: [0, 3, 0], offset: 0 },
     });
@@ -1464,18 +1516,21 @@ test.describe('Inlines example', () => {
     await editor.selection.collapse({ path: [0, 6], offset: 0 });
     await editor.focus();
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 6], offset: 0 },
       focus: { path: [0, 6], offset: 0 },
     });
 
     await editor.root.press('ArrowLeft');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 4], offset: beforeBadgeText.length },
       focus: { path: [0, 4], offset: beforeBadgeText.length },
     });
 
     await editor.root.press('ArrowRight');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 6], offset: 0 },
       focus: { path: [0, 6], offset: 0 },
     });
@@ -1523,6 +1578,7 @@ test.describe('Inlines example', () => {
 
     await editor.root.press('ArrowRight');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 0 },
     });
@@ -1534,24 +1590,28 @@ test.describe('Inlines example', () => {
 
     await editor.root.press('ArrowRight');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 1 },
       focus: { path: [0, 1, 0], offset: 1 },
     });
 
     await editor.root.press('ArrowLeft');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 0 },
     });
 
     await editor.root.press('ArrowLeft');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: beforeLinkText.length },
       focus: { path: [0, 0], offset: beforeLinkText.length },
     });
 
     await editor.root.press('ArrowLeft');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 0], offset: beforeLinkText.length - 1 },
       focus: { path: [0, 0], offset: beforeLinkText.length - 1 },
     });
@@ -1585,6 +1645,7 @@ test.describe('Inlines example', () => {
       )
       .toContain(`${beforeBadgeText}${pastedText}Approved.`);
     await editor.assert.selection({
+      kind: 'text',
       anchor: {
         path: [0, 4],
         offset: beforeBadgeText.length + pastedText.length,
@@ -1616,12 +1677,14 @@ test.describe('Inlines example', () => {
     await editor.type('a');
     await editor.root.press('Backspace');
     await editor.assert.selection({
+      kind: 'text',
       anchor: beforeBadgePoint,
       focus: beforeBadgePoint,
     });
 
     await editor.root.press('ArrowRight');
     await editor.assert.selection({
+      kind: 'text',
       anchor: afterBadgePoint,
       focus: afterBadgePoint,
     });
@@ -1677,6 +1740,7 @@ test.describe('Inlines example', () => {
     });
 
     await editor.selection.select({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 0 },
       focus: { path: [0, 1, 0], offset: 'hyperlink'.length },
     });
@@ -1804,10 +1868,12 @@ test.describe('Inlines example', () => {
     });
 
     await editor.selection.selectDOM({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 'hyper'.length },
       focus: { path: [0, 2], offset: 0 },
     });
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 'hyper'.length },
       focus: { path: [0, 2], offset: 0 },
     });
@@ -1827,6 +1893,7 @@ test.describe('Inlines example', () => {
       )
       .toContain('Here is a hyper, and here is');
     await editor.assert.selection({
+      kind: 'text',
       anchor: { path: [0, 1, 0], offset: 'hyper'.length },
       focus: { path: [0, 1, 0], offset: 'hyper'.length },
     });
@@ -1864,6 +1931,7 @@ test.describe('Inlines example', () => {
         },
         replacementText: 'LINK',
         selection: {
+          kind: 'text',
           anchor: { path: [0, 1, 0], offset: 0 },
           focus: { path: [0, 1, 0], offset: 'hyperlink'.length },
         },
