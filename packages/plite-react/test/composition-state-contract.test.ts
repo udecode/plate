@@ -12,7 +12,7 @@ import {
 import { describe, expect, it, vi } from 'vitest';
 
 import {
-  applyEditableCompositionEnd,
+  applyEditableCompositionEnd as applyEditableCompositionEndRuntime,
   applyEditableCompositionStart,
   applyEditableCompositionUpdate,
   commitChromeCompositionEndFallback,
@@ -99,6 +99,27 @@ const createInputController = (
     state: createEditableInputControllerState(),
   });
 
+type ApplyEditableCompositionEndOptions = Parameters<
+  typeof applyEditableCompositionEndRuntime
+>[0];
+
+const applyEditableCompositionEnd = (
+  options: Omit<
+    ApplyEditableCompositionEndOptions,
+    'requestModelSelectionExportAfterRender'
+  > &
+    Partial<
+      Pick<
+        ApplyEditableCompositionEndOptions,
+        'requestModelSelectionExportAfterRender'
+      >
+    >
+) =>
+  applyEditableCompositionEndRuntime({
+    requestModelSelectionExportAfterRender: () => {},
+    ...options,
+  });
+
 describe('composition state', () => {
   it('predeletes expanded native composition selections before input commits', () => {
     const editor = createTextEditor();
@@ -148,6 +169,7 @@ describe('composition state', () => {
       Parameters<typeof applyEditableCompositionEnd>[0]['runOwnedDOMMutation']
     > = vi.fn((callback) => callback());
     const inputController = createInputController(scheduleTask);
+    const requestModelSelectionExportAfterRender = vi.fn();
     const setIsComposing = vi.fn();
     const setComposing: EditableCompositionStateSetter = (nextValue) => {
       setEditableComposingState({
@@ -167,6 +189,7 @@ describe('composition state', () => {
         editor,
         event,
         inputController,
+        requestModelSelectionExportAfterRender,
         runOwnedDOMMutation,
         scheduleTask,
         setComposing,
@@ -216,6 +239,110 @@ describe('composition state', () => {
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       });
+      expect(requestModelSelectionExportAfterRender).toHaveBeenCalledOnce();
+      expect(inputController.state.modelSelectionPreference).toEqual({
+        preferModelSelection: true,
+        reason: 'composition',
+        selectionSource: 'model-owned',
+      });
+      expect(inputController.state.modelOwnedTextInputGuard).toBe(1);
+    } finally {
+      hasSelectableTarget.mockRestore();
+    }
+  });
+
+  it('keeps the new composition intent when start flushes the previous pending end', () => {
+    const editor = createTextEditor();
+    const inputController = createInputController(() => () => {});
+    const setComposing: EditableCompositionStateSetter = (nextValue) => {
+      setEditableComposingState({
+        editor,
+        inputController,
+        nextValue,
+        setIsComposing: vi.fn(),
+      });
+    };
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+
+    setComposing(true);
+    inputController.state.activeIntent = 'composition';
+
+    try {
+      applyEditableCompositionEnd({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent('文', 'a文d'),
+        inputController,
+        runOwnedDOMMutation: (callback) => callback(),
+        scheduleTask: inputController.scheduleTask!,
+        setComposing,
+      });
+      expect(inputController.state.pendingCompositionEnd).toMatchObject({
+        ownership: 'plite',
+        phase: 'end-pending',
+      });
+
+      applyEditableCompositionStart({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent(),
+        inputController,
+        setComposing,
+      });
+
+      expect(inputController.state.activeIntent).toBe('composition');
+      expect(inputController.state.compositionSession).toEqual({
+        modelCommitted: false,
+        text: null,
+      });
+      expect(inputController.state.isComposing).toBe(true);
+    } finally {
+      hasSelectableTarget.mockRestore();
+    }
+  });
+
+  it('clears a duplicate compositionend intent behind a settled tombstone', () => {
+    const editor = createTextEditor();
+    const inputController = createInputController();
+    const tombstone = {
+      cancel: vi.fn(),
+      data: '文',
+      inputTypes: ['insertFromComposition', 'insertText'] as const,
+      ownership: 'settled',
+      phase: 'settled',
+    } as const;
+    const setComposing: EditableCompositionStateSetter = (nextValue) => {
+      setEditableComposingState({
+        editor,
+        inputController,
+        nextValue,
+        setIsComposing: vi.fn(),
+      });
+    };
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+
+    setComposing(true);
+    inputController.state.activeIntent = 'composition';
+    inputController.state.pendingCompositionEnd = tombstone;
+
+    try {
+      applyEditableCompositionEnd({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent('文', 'a文d'),
+        inputController,
+        runOwnedDOMMutation: (callback) => callback(),
+        scheduleTask: () => () => {},
+        setComposing,
+      });
+
+      expect(inputController.state.activeIntent).toBeNull();
+      expect(inputController.state.pendingCompositionEnd).toBe(tombstone);
+      expect(tombstone.cancel).not.toHaveBeenCalled();
     } finally {
       hasSelectableTarget.mockRestore();
     }
@@ -1428,6 +1555,7 @@ describe('composition state', () => {
     EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, { bold: true });
     EDITOR_TO_USER_MARKS.set(editor, { italic: true });
     beginEditableCompositionSession(inputController);
+    inputController.state.activeIntent = 'composition';
 
     try {
       applyEditableCompositionEnd({
@@ -1441,6 +1569,7 @@ describe('composition state', () => {
       });
 
       expect(scheduleTask).not.toHaveBeenCalled();
+      expect(inputController.state.activeIntent).toBeNull();
       expect(inputController.state.compositionSession).toBeNull();
       expect(EDITOR_TO_PENDING_INSERTION_MARKS.has(editor)).toBe(false);
       expect(EDITOR_TO_USER_MARKS.has(editor)).toBe(false);
@@ -1463,6 +1592,7 @@ describe('composition state', () => {
     const setComposing = vi.fn();
 
     platform.android = true;
+    inputController.state.activeIntent = 'composition';
     inputController.state.isComposing = true;
 
     try {
@@ -1479,6 +1609,7 @@ describe('composition state', () => {
       expect(manager.handleCompositionEnd).toHaveBeenCalledOnce();
       expect(scheduleTask).not.toHaveBeenCalled();
       expect(setComposing).not.toHaveBeenCalled();
+      expect(inputController.state.activeIntent).toBeNull();
       expect(inputController.state.pendingCompositionEnd).toBeNull();
       expect(editorString(editor, [])).toBe('abcd');
     } finally {

@@ -84,8 +84,8 @@ const privateSchemaGroupOwners = new Set([
   'packages/core/src/internal/plugin/compilePlateModel.ts',
 ]);
 const allowedSchemaFactoryBindings = new Set([
-  'config',
   'key',
+  'options',
   'own',
   'plugins',
   'targetPluginKeys',
@@ -108,7 +108,7 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts', 10],
 ]);
 const intentionalExplicitSchemaFactoryCounts = new Map([
-  ['packages/core/src/internal/plugin/compilePlateModel.spec.ts', 2],
+  ['packages/core/src/internal/plugin/compilePlateModel.spec.ts', 1],
   ['packages/core/src/lib/plugin/createBasePlugin.spec.ts', 1],
   ['packages/core/src/lib/plugin/createBasePlugin.typed.spec.ts', 1],
 ]);
@@ -137,7 +137,7 @@ const intentionalNamedSchemaLineages = new Map([
   ],
   [
     'packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts',
-    new Map([['plate:yjs-api-test@1', 5]]),
+    new Map([['plate:yjs-api-test@1', 2]]),
   ],
   ['packages/yjs/README.md', new Map([['yjs-example@1', 1]])],
 ]);
@@ -415,6 +415,20 @@ const isPluginFactoryCall = (node) => {
   return pluginConfigurationMethods.has(getPropertyName(node.callee.property));
 };
 
+const isPlatePluginFactoryCall = (node) => {
+  if (node?.type !== 'CallExpression') return false;
+
+  if (node.callee.type === 'Identifier') {
+    return /Plugin$/.test(node.callee.name);
+  }
+
+  if (node.callee.type !== 'MemberExpression' || node.callee.computed) {
+    return false;
+  }
+
+  return pluginConfigurationMethods.has(getPropertyName(node.callee.property));
+};
+
 const isDirectPluginDeclarationObject = (ancestors) => {
   const objectIndex = ancestors.length - 1;
 
@@ -426,6 +440,30 @@ const isDirectPluginDeclarationObject = (ancestors) => {
     if (ancestor.type === 'CallExpression') {
       return (
         isPluginFactoryCall(ancestor) &&
+        !ancestors
+          .slice(index + 1, objectIndex)
+          .some(
+            (item) =>
+              item.type === 'ArrayExpression' || item.type === 'ObjectProperty'
+          )
+      );
+    }
+  }
+
+  return false;
+};
+
+const isDirectPlatePluginDeclarationObject = (ancestors) => {
+  const objectIndex = ancestors.length - 1;
+
+  if (ancestors[objectIndex]?.type !== 'ObjectExpression') return false;
+
+  for (let index = objectIndex - 1; index >= 0; index--) {
+    const ancestor = ancestors[index];
+
+    if (ancestor.type === 'CallExpression') {
+      return (
+        isPlatePluginFactoryCall(ancestor) &&
         !ancestors
           .slice(index + 1, objectIndex)
           .some(
@@ -489,22 +527,6 @@ const hasExpectError = (source, node) => {
   return source
     .slice(Math.max(0, previousLineStart), node.start)
     .includes('@ts-expect-error');
-};
-
-const containsFunction = (node) => {
-  if (!node || typeof node !== 'object') return false;
-  if (isFunction(node)) return true;
-
-  for (const [key, value] of Object.entries(node)) {
-    if (['comments', 'errors', 'extra', 'loc', 'tokens'].includes(key))
-      continue;
-    if (Array.isArray(value) && value.some(containsFunction)) return true;
-    if (value && typeof value === 'object' && containsFunction(value)) {
-      return true;
-    }
-  }
-
-  return false;
 };
 
 const readCallName = (callee) => {
@@ -709,20 +731,14 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         );
       }
 
-      if (
-        key === 'config' &&
-        node.value?.type === 'ObjectExpression' &&
-        isDirectPluginDeclarationObject(ancestors) &&
-        containsFunction(node.value) &&
-        !hasExpectError(source, node)
-      ) {
-        report(node, 'immutable plugin config must not contain functions');
+      if (key === 'config' && isDirectPlatePluginDeclarationObject(ancestors)) {
+        report(node, 'Plate plugin values belong in options');
       }
 
       if (
         key === 'schema' &&
         isFunction(node.value) &&
-        isDirectPluginDeclarationObject(ancestors)
+        isDirectPlatePluginDeclarationObject(ancestors)
       ) {
         const parameter = node.value.params?.[0];
 

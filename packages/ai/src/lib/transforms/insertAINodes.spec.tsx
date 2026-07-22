@@ -13,14 +13,14 @@ const createEditor = (input: TestEditor) =>
   createBaseEditor({
     plugins: [BaseParagraphPlugin, BaseAIPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 describe('insertAINodes', () => {
   it('does nothing without a selection or explicit target', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin],
-      value: [{ type: 'p', children: [{ text: 'one' }] }],
+      initialValue: [{ type: 'p', children: [{ text: 'one' }] }],
     });
     const before = structuredClone(editor.read.children());
 

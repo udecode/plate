@@ -126,7 +126,7 @@ export interface TextInterface {
 }
 
 // eslint-disable-next-line no-redeclare
-export const TextApi: TextInterface = {
+export const TextApi: Readonly<TextInterface> = Object.freeze({
   equals(text: Text, another: Text, options: TextEqualsOptions = {}): boolean {
     const { loose = false } = options;
 
@@ -264,4 +264,4 @@ export const TextApi: TextInterface = {
 
     return leaves;
   },
-};
+});

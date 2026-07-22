@@ -1,5 +1,5 @@
 import { BoldPlugin } from '@platejs/basic-nodes/react';
-import { property, schema } from '@platejs/plite';
+import { property, schema } from 'platejs';
 
 import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
 import {

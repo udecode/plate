@@ -1,13 +1,13 @@
 import { renderHook } from '@testing-library/react';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useEditorSelectorMock = mock();
 const useReadOnlyMock = mock();
 const isActiveMock = mock();
 const toggleListMock = mock();
 
 mock.module('@platejs/core/react', () => ({
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   useEditorSelector: useEditorSelectorMock,
 }));
 
@@ -30,7 +30,7 @@ const { useTodoListToolbarButton, useTodoListToolbarButtonState } =
 
 describe('list hooks', () => {
   beforeEach(() => {
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     useEditorSelectorMock.mockReset();
     useReadOnlyMock.mockReset();
     isActiveMock.mockReset();
@@ -49,7 +49,7 @@ describe('list hooks', () => {
       }),
     };
     isActiveMock.mockReturnValue(true);
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     useEditorSelectorMock.mockImplementation((selector: any) =>
       selector(editor)
     );
@@ -88,7 +88,7 @@ describe('list hooks', () => {
         })
     );
 
-    useEditorRefMock.mockReturnValue({
+    useEditorMock.mockReturnValue({
       update,
     });
     useReadOnlyMock.mockReturnValue(false);
@@ -113,7 +113,7 @@ describe('list hooks', () => {
     };
 
     isActiveMock.mockReturnValue(true);
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     useEditorSelectorMock.mockImplementation((selector: any) =>
       selector(editor)
     );

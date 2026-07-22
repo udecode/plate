@@ -62,7 +62,7 @@ const createEditor = ({
       anchor: { offset: offset ?? text.length, path: [0, 0] },
       focus: { offset: offset ?? text.length, path: [0, 0] },
     },
-    value: [{ children: [{ text }], type: 'p' }],
+    initialValue: [{ children: [{ text }], type: 'p' }],
   } as any);
 
 const insertText = (editor: ReturnType<typeof createEditor>, text: string) => {

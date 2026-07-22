@@ -1,4 +1,4 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, HtmlPlugin } from '@platejs/core';
 import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseAudioPlugin } from './BaseAudioPlugin';
@@ -70,7 +70,7 @@ describe('Base media plugin contracts', () => {
         BaseImagePlugin,
         BaseMediaEmbedPlugin,
       ],
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           type: KEYS.img,
@@ -131,7 +131,9 @@ describe('Base media plugin contracts', () => {
     });
 
     expect(
-      editor.api.html.deserialize({ element: '<img alt="missing" />' })
+      editor
+        .plugin(HtmlPlugin)
+        .api.deserialize({ element: '<img alt="missing" />' })
     ).toEqual([]);
   });
 
@@ -152,7 +154,7 @@ describe('Base media plugin contracts', () => {
           anchor: { offset: 0, path: [1, 0] },
           focus: { offset: 0, path: [1, 0] },
         },
-        value: [
+        initialValue: [
           {
             children: [{ text: '' }],
             type,

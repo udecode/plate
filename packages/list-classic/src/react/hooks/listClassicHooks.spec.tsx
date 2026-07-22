@@ -3,13 +3,13 @@ import * as actualCoreReact from '@platejs/core/react';
 import * as actualPliteReact from '@platejs/plite-react';
 import { KEYS } from '@platejs/utils';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useEditorSelectorMock = mock();
 const useEditorReadOnlyMock = mock();
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   useEditorSelector: useEditorSelectorMock,
 }));
 
@@ -24,7 +24,7 @@ mock.module('../ListPlugin', () => ({
 
 describe('list-classic hooks', () => {
   beforeEach(() => {
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     useEditorSelectorMock.mockReset();
     useEditorReadOnlyMock.mockReset();
   });
@@ -50,7 +50,7 @@ describe('list-classic hooks', () => {
         getType: (type: string) => type,
       })
     );
-    useEditorRefMock.mockReturnValue({
+    useEditorMock.mockReturnValue({
       plugin: () => ({
         update: { toggle: { list: listToggle } },
       }),
@@ -75,7 +75,7 @@ describe('list-classic hooks', () => {
     const setNodes = mock();
     const element = { checked: false, id: 'todo-1' };
 
-    useEditorRefMock.mockReturnValue({
+    useEditorMock.mockReturnValue({
       update: { nodes: { set: setNodes } },
     });
     useEditorReadOnlyMock.mockReturnValue(false);

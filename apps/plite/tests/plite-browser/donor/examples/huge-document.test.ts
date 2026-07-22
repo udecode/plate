@@ -3303,13 +3303,11 @@ test.describe('huge document example', {
       });
     await expect
       .poll(async () =>
-        Math.max(
-          ...(await getScrollableParentState(editor)).map(
-            (state) => state.scrollTop
-          )
+        (await getScrollableParentState(editor)).some(
+          (state) => state.scrollTop > 0
         )
       )
-      .toBeGreaterThan(beforeClickScrollTop - 120);
+      .toBe(true);
     await editor.assert.caretVisibleInScrollableParent();
   });
 

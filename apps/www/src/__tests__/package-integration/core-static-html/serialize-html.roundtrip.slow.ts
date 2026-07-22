@@ -1,4 +1,5 @@
-import { serializeHtml } from 'platejs/static';
+import { HtmlPlugin } from 'platejs';
+import { renderStaticHtml } from 'platejs/static';
 
 import { alignValue } from '@/registry/examples/values/align-value';
 import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
@@ -14,7 +15,7 @@ import { tocPlaygroundValue } from '@/registry/examples/values/toc-value';
 
 import { createStaticEditor } from './create-static-editor';
 
-describe('core static serializeHtml roundtrip', () => {
+describe('core static renderStaticHtml roundtrip', () => {
   it('roundtrips editor values through html deserialization', async () => {
     const editor = createStaticEditor([
       ...basicBlocksValue,
@@ -30,9 +31,9 @@ describe('core static serializeHtml roundtrip', () => {
       ...listValue,
     ]);
 
-    const html = await serializeHtml(editor);
+    const html = await renderStaticHtml(editor);
 
-    const nodes = editor.api.html.deserialize({
+    const nodes = editor.plugin(HtmlPlugin).api.deserialize({
       collapseWhiteSpace: false,
       element: html,
     });

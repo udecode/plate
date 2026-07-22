@@ -18,7 +18,7 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
           },
         }),
       ],
-      value: [{ children: [], type: 'element' }],
+      initialValue: [{ children: [], type: 'element' }],
     });
 
     editor.update.value.repair();
@@ -44,7 +44,7 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
           },
         }),
       ],
-      value: [{ children: [{ text: 'title' }], type: 'h2' }],
+      initialValue: [{ children: [{ text: 'title' }], type: 'h2' }],
     });
 
     editor.update.value.repair();
@@ -69,7 +69,7 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
           },
         }),
       ],
-      value: [{ children: [{ text: 'x' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
     });
 
     editor.update.value.repair();

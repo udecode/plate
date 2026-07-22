@@ -1,13 +1,11 @@
 /** @jsx jsxt */
 
 import {
-  acceptSuggestion,
+  type BaseSuggestionConfig,
   BaseSuggestionPlugin,
-  getSuggestionKey,
-  rejectSuggestion,
 } from '@platejs/suggestion';
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
-import { createBaseEditor } from 'platejs';
+import { type BaseEditor, createBaseEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
@@ -17,7 +15,7 @@ const createEditor = (input: TestEditorFixture) =>
   createBaseEditor({
     plugins: BaseEditorKit,
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   } as any);
 
 const deleteBackwardCharacter = (editor: ReturnType<typeof createEditor>) => {
@@ -126,8 +124,8 @@ describe('suggestion link integration', () => {
       focus: { offset: 1, path: [0, 1, 0] },
     });
 
-    acceptSuggestion(editor, {
-      keyId: getSuggestionKey('1'),
+    (editor as BaseEditor<any, BaseSuggestionConfig>).update.suggestion.accept({
+      keyId: editor.plugin(BaseSuggestionPlugin).api.key('1'),
       suggestionId: '1',
     } as any);
 
@@ -164,7 +162,7 @@ describe('suggestion link integration', () => {
 
     const editor = createEditor(input);
 
-    rejectSuggestion(editor, {
+    (editor as BaseEditor<any, BaseSuggestionConfig>).update.suggestion.reject({
       keyId: 'suggestion_1',
       suggestionId: '1',
     } as any);

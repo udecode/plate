@@ -1,7 +1,7 @@
 import { runInNewContext } from 'node:vm';
 
 import { act, render } from '@testing-library/react';
-import React from 'react';
+import React, { startTransition, Suspense, useLayoutEffect } from 'react';
 import { createEditor } from '@platejs/plite';
 import {
   getPathByRuntimeId as editorGetPathByRuntimeId,
@@ -102,19 +102,18 @@ const ProjectedWidgetHarness = ({
   editor: ReturnType<typeof createEditor>;
   labels: readonly string[];
 }) => {
-  const widgetStore = usePliteWidgetStore(editor, {
-    deps: [labels],
-    project: () =>
-      labels.map((label) => ({
-        anchor: {
-          type: 'selection' as const,
-        },
-        data: {
-          label,
-        },
-        id: 'toolbar-widget',
-      })),
-  });
+  const widgetStore = usePliteWidgetStore(
+    editor,
+    labels.map((label) => ({
+      anchor: {
+        type: 'selection' as const,
+      },
+      data: {
+        label,
+      },
+      id: 'toolbar-widget',
+    }))
+  );
   const toolbarWidget = usePliteWidget(widgetStore, 'toolbar-widget');
 
   return (
@@ -139,19 +138,18 @@ const ProjectedWidgetSnapshotHarness = ({
   editor: ReturnType<typeof createEditor>;
   labels: readonly string[];
 }) => {
-  const widgetStore = usePliteWidgetStore(editor, {
-    deps: [labels],
-    project: () =>
-      labels.map((label) => ({
-        anchor: {
-          type: 'selection' as const,
-        },
-        data: {
-          label,
-        },
-        id: 'toolbar-widget',
-      })),
-  });
+  const widgetStore = usePliteWidgetStore(
+    editor,
+    labels.map((label) => ({
+      anchor: {
+        type: 'selection' as const,
+      },
+      data: {
+        label,
+      },
+      id: 'toolbar-widget',
+    }))
+  );
   const widgetSnapshot = usePliteWidgets(widgetStore);
 
   return (
@@ -163,9 +161,9 @@ const ProjectedWidgetSnapshotHarness = ({
               .map((id) => {
                 const widget = widgetSnapshot.byId.get(id)!;
 
-                return `${widget.id}:${
-                  widget.visible ? 'visible' : 'hidden'
-                }:${widget.data?.label ?? 'none'}`;
+                return `${widget.id}:${widget.visible ? 'visible' : 'hidden'}:${
+                  widget.data?.label ?? 'none'
+                }`;
               })
               .join('|')}
       </span>
@@ -180,38 +178,36 @@ const ProjectedAnnotationWidgetHarness = ({
   editor: ReturnType<typeof createEditor>;
   labels: readonly string[];
 }) => {
-  const annotationStore = usePliteAnnotationStore(editor, {
-    deps: [labels],
-    project: () =>
-      labels.map((label) => ({
-        anchor: {
-          resolve: () => ({
-            kind: 'text',
-            anchor: { path: [0, 0], offset: 0 },
-            focus: { path: [0, 0], offset: 4 },
-          }),
-        },
-        data: {
-          label,
-        },
-        id: 'comment-1',
-      })),
-  });
-  const widgetStore = usePliteWidgetStore(editor, {
-    annotationStore,
-    deps: [labels],
-    project: () =>
-      labels.map((label) => ({
-        anchor: {
-          annotationId: 'comment-1',
-          type: 'annotation' as const,
-        },
-        data: {
-          label,
-        },
-        id: 'comment-widget',
-      })),
-  });
+  const annotationStore = usePliteAnnotationStore(
+    editor,
+    labels.map((label) => ({
+      anchor: {
+        resolve: () => ({
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 4 },
+        }),
+      },
+      data: {
+        label,
+      },
+      id: 'comment-1',
+    }))
+  );
+  const widgetStore = usePliteWidgetStore(
+    editor,
+    labels.map((label) => ({
+      anchor: {
+        annotationId: 'comment-1',
+        type: 'annotation' as const,
+      },
+      data: {
+        label,
+      },
+      id: 'comment-widget',
+    })),
+    { annotationStore }
+  );
   const widgetSnapshot = usePliteWidgets(widgetStore);
 
   return (
@@ -223,9 +219,9 @@ const ProjectedAnnotationWidgetHarness = ({
               .map((id) => {
                 const widget = widgetSnapshot.byId.get(id)!;
 
-                return `${widget.id}:${
-                  widget.visible ? 'visible' : 'hidden'
-                }:${widget.data?.label ?? 'none'}`;
+                return `${widget.id}:${widget.visible ? 'visible' : 'hidden'}:${
+                  widget.data?.label ?? 'none'
+                }`;
               })
               .join('|')}
       </span>
@@ -343,6 +339,182 @@ describe('plite-react widget layer contract', () => {
     expect(mounted.container.querySelector('#widget-state')?.textContent).toBe(
       'toolbar-widget:visible:Updated'
     );
+  });
+
+  test('an abandoned widget-store render cannot publish data or error options', () => {
+    const editor = createEditor();
+    const suspended = new Promise<never>(() => {});
+    const committedOnError = vi.fn();
+    const abandonedOnError = vi.fn();
+    let shouldThrow = false;
+    let abandonedDataReadCount = 0;
+    let abandonedRenderCount = 0;
+    let committedStore: ReturnType<typeof usePliteWidgetStore> | null = null;
+    const abandonedStores = new Set<ReturnType<typeof usePliteWidgetStore>>();
+
+    editorReplace(editor, {
+      children: createChildren(),
+      selection: null,
+    });
+
+    const widgets = (
+      label: string
+    ): readonly PliteWidget<{ label: string }>[] => [
+      {
+        anchor: { type: 'selection' },
+        get data() {
+          if (label === 'abandoned') abandonedDataReadCount += 1;
+          if (shouldThrow) throw new Error('widget source failed');
+
+          return { label };
+        },
+        id: 'toolbar-widget',
+      },
+    ];
+    const HookProbe = ({ abandoned }: { abandoned: boolean }) => {
+      const store = usePliteWidgetStore(
+        editor,
+        widgets(abandoned ? 'abandoned' : 'committed'),
+        {
+          id: abandoned ? 'abandoned' : 'committed',
+          onError: abandoned ? abandonedOnError : committedOnError,
+        }
+      );
+
+      useLayoutEffect(() => {
+        committedStore = store;
+      }, [store]);
+
+      if (abandoned) {
+        abandonedRenderCount += 1;
+        abandonedStores.add(store);
+        throw suspended;
+      }
+
+      return null;
+    };
+    const tree = (abandoned: boolean) => (
+      <Suspense fallback={null}>
+        <HookProbe abandoned={abandoned} />
+      </Suspense>
+    );
+    const mounted = render(tree(false));
+
+    act(() => {
+      startTransition(() => {
+        mounted.rerender(tree(true));
+      });
+    });
+
+    expect(abandonedRenderCount).toBeGreaterThan(0);
+    expect(abandonedDataReadCount).toBe(0);
+    expect(
+      [...abandonedStores].every((store) => store !== committedStore)
+    ).toBe(true);
+
+    act(() => {
+      editor.update((tx) => {
+        tx.selection.set({
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 4 },
+        });
+      });
+    });
+    expect(abandonedDataReadCount).toBe(0);
+
+    act(() => {
+      committedStore?.refresh();
+    });
+    expect(committedStore?.getWidget('toolbar-widget')?.data?.label).toBe(
+      'committed'
+    );
+
+    shouldThrow = true;
+    act(() => {
+      committedStore?.refresh();
+    });
+    expect(committedOnError).toHaveBeenCalledOnce();
+    expect(abandonedOnError).not.toHaveBeenCalled();
+
+    mounted.unmount();
+    abandonedStores.forEach((store) => {
+      store.destroy();
+    });
+  });
+
+  test('widget-store inputs publish before child layout refreshes', () => {
+    const editor = createEditor();
+    const firstOnError = vi.fn();
+    const secondOnError = vi.fn();
+    let shouldThrow = false;
+    let observedLabel: string | undefined;
+
+    editorReplace(editor, {
+      children: createChildren(),
+      selection: null,
+    });
+
+    const widgets = (
+      label: string
+    ): readonly PliteWidget<{ label: string }>[] => [
+      {
+        anchor: { type: 'selection' },
+        get data() {
+          if (shouldThrow) throw new Error('widget source failed');
+
+          return { label };
+        },
+        id: 'toolbar-widget',
+      },
+    ];
+    const RefreshFromChildLayout = ({
+      enabled,
+      store,
+    }: {
+      enabled: boolean;
+      store: ReturnType<typeof usePliteWidgetStore>;
+    }) => {
+      useLayoutEffect(() => {
+        if (!enabled) return;
+
+        store.refresh();
+        observedLabel = store.getWidget('toolbar-widget')?.data?.label;
+        shouldThrow = true;
+        store.refresh();
+      }, [enabled, store]);
+
+      return null;
+    };
+    const HookProbe = ({
+      label,
+      onError,
+      refresh,
+    }: {
+      label: string;
+      onError: (error: unknown) => void;
+      refresh: boolean;
+    }) => {
+      const store = usePliteWidgetStore(editor, widgets(label), {
+        id: 'committed',
+        onError,
+      });
+
+      return <RefreshFromChildLayout enabled={refresh} store={store} />;
+    };
+    const mounted = render(
+      <HookProbe label="first" onError={firstOnError} refresh={false} />
+    );
+
+    mounted.rerender(
+      <HookProbe label="second" onError={secondOnError} refresh />
+    );
+
+    expect(observedLabel).toBe('second');
+    expect(firstOnError).not.toHaveBeenCalled();
+    expect(secondOnError).toHaveBeenCalledOnce();
+
+    mounted.unmount();
   });
 
   test('widget hook projector options refresh from empty to populated', async () => {

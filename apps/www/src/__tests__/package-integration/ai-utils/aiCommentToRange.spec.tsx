@@ -6,7 +6,7 @@ import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 const createTestEditor = (value: Value) =>
   createBaseEditor({
     plugins: BaseEditorKit,
-    value,
+    initialValue: value,
   });
 
 describe('applyAIReview', () => {

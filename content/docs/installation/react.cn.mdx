@@ -289,7 +289,7 @@ export default function App() {
   return (
     <Plate
       editor={editor}
-      onChange={({ value }) => {
+      onValueChange={({ value }) => {
         localStorage.setItem('installation-react-demo', JSON.stringify(value));
       }}
     >

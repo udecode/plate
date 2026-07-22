@@ -5,7 +5,7 @@ description: 一个支持 RSC/SSR 的最小化、记忆化、只读版本的 Pla
 
 `<PlateStatic>` 是一个**快速、只读**的 React 组件，用于渲染 Plate 内容，针对**服务端**或 **React Server Component**（RSC）环境进行了优化。它避免了客户端编辑逻辑，并对节点渲染进行记忆化处理，相比在只读模式下使用 [`<Plate>`](/docs/api/core/plate-components) 具有更好的性能。
 
-它是 [`serializeHtml`](/docs/api/core/plate-plugin#serializehtml) 用于 HTML 导出的核心部分，非常适合任何需要非交互式、展示性 Plate 内容视图的服务端或 RSC 场景。
+它也供 `renderStaticHtml` 用 React DOM Server 渲染静态 Plate tree。这个函数不是语义 HTML codec。
 
 ## 主要优势
 
@@ -284,13 +284,13 @@ export default async function Page() {
 ```
 这会在服务器上将内容渲染为 HTML，`PlateStatic` 本身不需要客户端 JavaScript 包。
 
-## 与 `serializeHtml` 配合使用
+## 与 `renderStaticHtml` 配合使用
 
-要生成完整的 HTML 字符串（例如用于电子邮件、PDF 或外部系统），请使用 `serializeHtml`。它内部使用了 `<PlateStatic>`。
+要把静态 Plate React tree 渲染为 HTML 字符串，请使用 `renderStaticHtml`。它内部使用 `<PlateStatic>`；语义 HTML 解析由 `HtmlPlugin` 负责。
 
 ```ts title="lib/html-serializer.ts"
 import { createBaseEditor } from 'platejs';
-import { serializeHtml } from 'platejs/static';
+import { renderStaticHtml } from 'platejs/static';
 import { staticComponents } from '@/components/static-components';
 // import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes';
 
@@ -298,10 +298,10 @@ async function getDocumentAsHtml(value: any[]) {
   const editor = createBaseEditor({
     plugins: [/* ...your base plugins... */],
     components: staticComponents,
-    value,
+    initialValue: value,
   });
 
-  const html = await serializeHtml(editor, {
+  const html = await renderStaticHtml(editor, {
     // editorComponent: PlateStatic, // Optional: Defaults to PlateStatic
     props: { className: 'prose max-w-none' }, // Example: Pass props to the root div
   });

@@ -208,14 +208,12 @@ export const useRootRuntimeIds = () => {
     [root]
   );
 
-  return useEditorSelector(
-    selector,
-    (left, right) => left != null && sameRuntimeIds(left as RuntimeId[], right),
-    {
-      profileId: 'root-runtime-ids',
-      shouldUpdate,
-    }
-  );
+  return useEditorSelector(selector, {
+    equalityFn: (left, right) =>
+      left != null && sameRuntimeIds(left as RuntimeId[], right),
+    profileId: 'root-runtime-ids',
+    shouldUpdate,
+  });
 };
 
 export const useRootDocumentEpoch = () => {
@@ -244,7 +242,8 @@ export const useRootDocumentEpoch = () => {
     [root]
   );
 
-  return useEditorSelector(selector, Object.is, {
+  return useEditorSelector(selector, {
+    equalityFn: Object.is,
     profileId: 'root-document-epoch',
     shouldUpdate,
   });
@@ -277,7 +276,8 @@ export const useTopLevelSelectionIndex = (enabled: boolean) => {
     [enabled, root]
   );
 
-  return useEditorSelector(selector, Object.is, {
+  return useEditorSelector(selector, {
+    equalityFn: Object.is,
     profileId: 'top-level-selection-index',
     shouldUpdate,
   });
@@ -324,7 +324,8 @@ export const useSelectionPaths = (enabled: boolean) => {
     [enabled, root]
   );
 
-  return useEditorSelector(selector, sameSelectionPaths, {
+  return useEditorSelector(selector, {
+    equalityFn: sameSelectionPaths,
     profileId: 'selection-paths',
     shouldUpdate,
   });
@@ -352,7 +353,8 @@ export const usePlaceholderValue = (placeholder?: ReactNode) => {
     [root]
   );
 
-  return useEditorSelector(selector, Object.is, {
+  return useEditorSelector(selector, {
+    equalityFn: Object.is,
     profileId: 'placeholder',
     shouldUpdate,
   });
@@ -369,8 +371,8 @@ export const useEditableRootCommitWakeup = () => {
   useEditorSelector(
     (editor: ReactRuntimeEditor) =>
       editor.read((state) => state.lastCommit()?.version ?? 0),
-    Object.is,
     {
+      equalityFn: Object.is,
       profileId: 'editable-root-commit',
       shouldUpdate,
     }

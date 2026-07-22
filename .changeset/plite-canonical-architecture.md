@@ -15,3 +15,9 @@
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
 - Add document replacement, block-relative insertion, live location targets, property matchers, and explicit selection predicates
 - Add explicit document repair and mutually exclusive mark toggles
+- Initialize editors synchronously through `initialValue` or an editor-context callback and publish non-cancellable commit contexts with the resulting immutable snapshot
+- Freeze pure descriptor namespaces and infer serializable JSON properties from `property.json({ policy })`
+
+**Migration:** Replace `@platejs/slate` with `@platejs/plite` and migrate Slate
+transforms and operations to `editor.read`, `editor.update`, or active
+transaction APIs.

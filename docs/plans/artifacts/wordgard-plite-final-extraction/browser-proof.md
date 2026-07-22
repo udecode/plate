@@ -30,13 +30,13 @@ cell stays pending until that exact route has been exercised.
 | Route | Action | Expected visible outcome | Console/server requests | Visual proof | Status |
 | --- | --- | --- | --- | --- | --- |
 | `/examples/plite/richtext` | Select text in the first editor block, click `[data-test-id="mark-button-bold"]`, type `!`, then undo | The selection renders in `<strong>`, typing lands at the visible caret, and undo restores the prior text without losing focus | Pending | Pending | pending |
-| `/examples/plite/paste-html` | Dispatch route-local `text/html` through the mounted textbox with `<h1>Paste heading</h1><p><strong>Bold leaf</strong></p>`, then type `!` | A heading and bold leaf render as fitted editor nodes; follow-up typing remains editable | Pending | Pending | pending |
+| `/examples/plite/paste-html` | Select and clear the existing document, dispatch route-local `text/html` through the mounted textbox with `<h1>Paste heading</h1><p><strong>Bold leaf</strong></p>`, then type `!` | Exactly one heading and one paragraph render as fitted editor nodes, the paragraph leaf stays bold, and follow-up typing remains editable | Pending | Pending | pending |
 | `/examples/plite/tables` | Collapse the selection after `9` in the last table cell, then type `X` | The table remains intact, the last cell reads `9X`, and no extra root block appears | Pending | Pending | pending |
-| `/examples/plite/multi-root-document` | Edit `#multi-root-header`, `#multi-root-body`, `#multi-root-footer`, and `[aria-label="Document title"]`, then use the document undo and redo buttons | Each named root/status updates independently; title state commits; undo and redo do not move content across roots | Pending | Pending | pending |
-| `/examples/plite/yjs-collaboration` | Click `[data-test-id="yjs-peer-a-insert-text"]`, then inspect both peer surfaces | The local edit appears in the connected peer and both collaboration surfaces remain mounted | Pending | Pending | pending |
+| `/examples/plite/multi-root-document` | Type a distinct marker into `#multi-root-header`, `#multi-root-body`, and `#multi-root-footer`; fill `[aria-label="Document title"]`; then use `Undo document change` and `Redo document change`, recording every root/status after each transition | Each named root/status updates independently; title state commits; undo and redo restore only the expected latest step and never move content across roots | Pending | Pending | pending |
+| `/examples/plite/yjs-collaboration` | Click `[data-test-id="yjs-peer-a-insert-text"]`, then inspect all four peer surfaces | The local edit appears in peers A-D, peer A records one undo item, and all four collaboration surfaces remain connected | Pending | Pending | pending |
 | `/examples/plite/shadow-dom` | Focus the textbox inside `[data-cy="outer-shadow-root"]` and type a marker | Text changes inside the shadow-owned editor; focus and selection remain inside that root | Pending | Pending | pending |
-| `/examples/plite/huge-document?blocks=100&strategy=staged` | Confirm staged controls and metrics, type in a mounted block, scroll `#huge-document-editor`, then type again | The staged strategy remains active, mounted-block metrics are nonzero, edits survive scrolling, and the visible editor window has no blank or overlapping blocks | Pending | Pending | pending |
-| `/examples/plite/pagination` | Focus `[data-plite-paged-editable]` inside `[data-testid="pagination-viewport"]`, type a marker, scroll across a page boundary, then continue typing | Pages remain visually separated, caret ownership survives the scroll, and content does not overlap or jump to another page | Pending | Pending | pending |
+| `/examples/plite/huge-document?blocks=100&strategy=staged` | Confirm staged controls and metrics, type in the first mounted block, scroll `#huge-document-editor`, explicitly select a visible post-scroll block, then type again | The staged strategy remains active, mounted-block metrics are nonzero, both model edits survive scrolling, and visible blocks have positive non-overlapping rectangles | Pending | Pending | pending |
+| `/examples/plite/pagination` | Type in the first block of `[data-plite-paged-editable-editor] [contenteditable="true"]`, scroll `[data-testid="pagination-viewport"]` across a page boundary, explicitly select a visible post-scroll block, then continue typing | Pages remain visually separated, both model edits persist, selection belongs to the post-scroll block, multiple `[data-plite-page-surface]` elements render, and page rectangles do not overlap | Pending | Pending | pending |
 
 ## `apps/www` Browser matrix
 
@@ -44,14 +44,14 @@ cell stays pending until that exact route has been exercised.
 | --- | --- | --- | --- | --- | --- |
 | `/blocks/basic-marks-demo` | Confirm rendered strong, emphasis, and underline marks; collapse the selection, press `Meta+B`, and type a marker | Existing marks render correctly and the marker is inserted with bold active at the visible caret | Pending | Pending | pending |
 | `/blocks/indent-demo` | Focus the paragraph beginning `Easily control`, confirm `margin-left: 24px`, press `Tab`, then `Shift+Tab` | The paragraph moves from 24px to 48px and back to 24px without losing focus | Pending | Pending | pending |
-| `/blocks/table-demo` | Focus the first body cell, dispatch a route-local 2x2 HTML-table paste, then type in the final pasted cell | The pasted table is fitted into the editor, keeps its 2x2 structure, and the final cell remains editable | Pending | Pending | pending |
+| `/blocks/table-demo` | Focus the first body cell and dispatch a route-local 2x2 HTML-table paste containing `A1`, `B1`, `A2`, and `B2`; then type in the `B2` cell | The four values replace the matching rectangle inside the existing 4x4 table, all 16 cells and untouched values remain intact, and the `B2` cell remains editable | Pending | Pending | pending |
 | `/blocks/media-demo` | Change the first caption textarea from `Image caption` to `Image caption browser` | The media stays mounted and the visible caption reads `Image caption browser` | Pending | Pending | pending |
 | `/blocks/list-demo` | Place the caret after `Disc 1`, press `Enter`, and type `Browser list` | A new list item containing `Browser list` appears beneath `Disc 1` | Pending | Pending | pending |
 | `/blocks/list-classic-demo` | Place the caret after `Dogs`, press `Enter`, type `Foxes`, then press `Tab` | `Foxes` is created as a new classic-list item and indents without corrupting adjacent items | Pending | Pending | pending |
 | `/blocks/code-block-demo` | Place the caret after the first JavaScript line, press `Enter`, and type `// Browser`; inspect the first `pre` and language combobox | The comment appears on a new code line, the first code block remains a `pre`, and the combobox reads `JavaScript` | Pending | Pending | pending |
-| `/blocks/discussion-demo` | Assert `ins.plite-suggestion`, `del.plite-suggestion`, and `.plite-comment`, then click a suggestion and a comment | Insertions, deletions, and comments render; their interactive surfaces open without unmounting the editor | Pending | Pending | pending |
+| `/blocks/discussion-demo` | Assert `ins.plite-suggestion`, `del.plite-suggestion`, and `.plite-comment`; click insertion text `suggestions`, then comment text `comments` | The suggestion popover contains `Add:` and `suggestions`; the comment popover contains `Comments are a great way to provide feedback and discuss changes.`; the editor stays mounted | Pending | Pending | pending |
 | `/blocks/ai-demo` | Focus the editor, press `Meta+J`, inspect the `Ask AI anything...` input, then press `Escape` without submitting | The AI command surface opens with the expected input and closes cleanly without issuing an AI request | Pending | Pending | pending |
-| `/blocks/link-demo` | Click the `hyperlinks` link, choose `Edit link`, fill the `Paste link` field, then press `Enter` | The link editor opens, accepts the value, closes on submit, and the editor remains interactive | Pending | Pending | pending |
+| `/blocks/link-demo` | Click the `hyperlinks` link, choose `Edit link`, fill the `Paste link` field with `https://example.com/browser-proof`, then press `Enter` | The link editor opens, closes on submit, the anchor has the exact new `href`, and the editor remains interactive | Pending | Pending | pending |
 
 ## Native Chrome clipboard matrix
 
@@ -60,6 +60,20 @@ cell stays pending until that exact route has been exercised.
 | `/examples/plite/plaintext` | In Chrome, select offsets 8–16 (`editable`), press native `Meta+C`, read the system clipboard, press native `Meta+X`, then native `Meta+V` | Clipboard text is exactly `editable`; cut changes the editor to `This is  plain text, just like a <textarea>!`; paste restores the original sentence | Pending | Pending | pending |
 
 ## Evidence ledger
+
+Screenshot contract:
+
+- Capture one post-action screenshot for every route.
+- Also capture richtext while bold is visible and after undo; indent at 48px and
+  after restoring 24px; both discussion popovers; the open AI surface; the open
+  link form and submitted link; plaintext after cut and after paste; huge-document
+  controls with its visible scroller; and pagination with at least two page
+  surfaces visible.
+- Record clipboard contents, computed margins, rectangle coordinates, focus and
+  selection ownership, console errors, and server-side 4xx/5xx responses as text.
+  Screenshots are not evidence for those exact values.
+- Treat third-party Unsplash or DiceBear failures separately from localhost
+  failures on media and discussion routes.
 
 - In-app Browser binding and tab: pending
 - Chrome binding and tab: pending

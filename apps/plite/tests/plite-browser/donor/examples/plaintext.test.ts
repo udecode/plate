@@ -678,8 +678,14 @@ test.describe('plaintext example', () => {
   });
 
   test('imports document.execCommand insertText into editor state', async ({
+    browserName,
     page,
   }) => {
+    test.skip(
+      browserName === 'firefox',
+      'Firefox rejects script-driven execCommand insertText'
+    );
+
     const editor = await openExample(page, 'plite/plaintext', {
       ready: {
         editor: 'visible',

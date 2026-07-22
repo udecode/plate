@@ -1,7 +1,7 @@
 import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 import {
   BaseSuggestionPlugin,
-  getTransientSuggestionKey,
+  SUGGESTION_TRANSIENT_KEY,
 } from '@platejs/suggestion';
 
 import { BaseAIPlugin } from '../BaseAIPlugin';
@@ -27,7 +27,7 @@ const createEditor = () =>
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
-    value: [{ children: [{ text: '' }], type: 'p' }],
+    initialValue: [{ children: [{ text: '' }], type: 'p' }],
   });
 
 describe('undoAI', () => {
@@ -58,7 +58,7 @@ describe('undoAI', () => {
 
     withAIBatch(editor, (tx) => {
       tx.nodes.insert(
-        { [getTransientSuggestionKey()]: true, text: 'suggestion' },
+        { [SUGGESTION_TRANSIENT_KEY]: true, text: 'suggestion' },
         { at: [0, 1] }
       );
     });
@@ -78,7 +78,7 @@ describe('undoAI', () => {
       editor,
       (tx) => {
         tx.nodes.insert(
-          { [getTransientSuggestionKey()]: true, text: 'first' },
+          { [SUGGESTION_TRANSIENT_KEY]: true, text: 'first' },
           { at: [0, 1] }
         );
       },
@@ -86,7 +86,7 @@ describe('undoAI', () => {
     );
     withAIBatch(editor, (tx) => {
       tx.nodes.insert(
-        { [getTransientSuggestionKey()]: true, text: ' second' },
+        { [SUGGESTION_TRANSIENT_KEY]: true, text: ' second' },
         { at: [0, 1] }
       );
     });

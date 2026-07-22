@@ -149,14 +149,12 @@ const LintingPanel = ({
   sourceLabel: string;
 }) => {
   const editor = useEditor();
-  const diagnostics = useEditorState(
-    (state) =>
-      lintMode === 'off'
-        ? NO_LINT_ISSUES
-        : collectLintIssues(state.value().children, {
-            includeServerDiagnostics: lintMode === 'server',
-          }),
-    { deps: [lintMode] }
+  const diagnostics = useEditorState((state) =>
+    lintMode === 'off'
+      ? NO_LINT_ISSUES
+      : collectLintIssues(state.value().children, {
+          includeServerDiagnostics: lintMode === 'server',
+        })
   );
 
   const collectFromEditor = (mode: LintMode) =>
@@ -303,9 +301,9 @@ const LintingExample = () => {
   const [sourceLabel, setSourceLabel] = useState('idle');
 
   const lintingSource = usePliteRangeDecorationSource<LintIssue>(editor, {
-    deps: [lintMode],
     id: 'linting',
     dirtiness: ['text', 'external'],
+    revision: lintMode,
     read: ({ snapshot }): readonly PliteRangeDecoration<LintIssue>[] =>
       lintMode === 'off'
         ? []

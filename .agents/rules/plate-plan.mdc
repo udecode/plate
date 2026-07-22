@@ -23,11 +23,17 @@ Choose one mode from the arguments. Default to `--standard`.
   phases continuously in the current activation unless interrupted or blocked.
 - `--deep`: use the standard workflow and add only the research, benchmarks,
   or red-team work justified by the named risk. Do not add more lifecycle
-  phases or generic research.
+  phases or generic research. A user-named reference architecture and
+  TARGET-specific exhaustive comparison is justified work, not a generic
+  editor checklist.
 
 A plan path does not by itself authorize implementation. Execution starts only
 when the user explicitly accepts a ready plan and invokes `plate-plan` against
 that exact path. Create a new one-shot execution goal for the accepted plan.
+
+A named-reference audit must declare its TARGET and primary owner before broad
+source traversal. Infer them only when the named surface makes both unambiguous;
+otherwise keep the missing TARGET as an open gate instead of inventing scope.
 
 ## Ownership
 
@@ -39,8 +45,11 @@ their full ownership tables in the plan.
   proof infrastructure.
 - Plate owns product plugins, feature workflows, kits, registry code,
   app-facing docs/examples, and opinionated UX.
-- When a Plate API duplicates or conflicts with Plite, Plite wins. Cut or rename
-  Plate; do not bend Plite or keep a compatibility alias.
+- When a Plate API duplicates an adequate Plite primitive, Plite wins. Cut or
+  rename Plate; do not keep a compatibility alias. When Plate exposes a better
+  generic primitive or a real substrate gap, route the decision to Plite Plan
+  and fix the substrate instead of preserving Plate glue or blindly defending
+  the current Plite shape.
 - Keep a Plate API only when it serves a distinct product job with a distinct
   namespace and adoption story.
 
@@ -48,8 +57,15 @@ their full ownership tables in the plan.
 
 - Current checkout wins. Source every current API, export, docs, test, and
   dependency claim from live owners.
-- Prefer the smallest public break set that produces one clean architecture.
-  No public aliases, runtime shims, dual signatures, or docs for old names.
+- Choose the highest-value coherent target architecture under Plate and
+  Plite's actual requirements. Breaking scope is a cost, never an architectural
+  constraint or veto. Preserve an existing public shape only when replacing it
+  provides no material semantic, compositional, typing, performance,
+  ownership, failure-isolation, or DX value. After selecting the target,
+  minimize incidental breakage and use break size only to choose between
+  otherwise equivalent designs. Never narrow a superior target into a
+  compromised hybrid. No public aliases, runtime shims, dual signatures, or
+  docs for old names.
 - A private bridge is exceptional. Name its owner, non-public proof, deletion
   trigger, and removal gate in the decision row.
 - Planning edits only planning, research, vision, behavior-law, migration, and
@@ -93,7 +109,11 @@ Plate-specific proof.
    mode names a research question.
 
 Do not scan every Plate or Plite package by default. Expand owner by owner when
-evidence requires it.
+evidence requires it. For an explicitly exhaustive named-reference comparison,
+first define the TARGET boundary and coverage manifest, then follow only the
+transitive owners and consumers whose behavior, types, lifecycle, persistence,
+performance, or ownership could change. Full accounting does not authorize a
+generic repository scan.
 
 ## Three Phases
 
@@ -111,15 +131,23 @@ Use one concept-level decision ledger:
 | Surface | Current | Target | Owner | Reason | Adoption | Proof | Risk | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
-Verdicts: `keep`, `cut`, `rename`, `move`, `bridge`, `defer`, or `gate`.
+Verdicts: `keep`, `cut`, `rearchitect`, `rename`, `move`, `bridge`, `defer`, or
+`gate`.
 
 - Use one row per user-facing concept or runtime responsibility, not one row per
   exported symbol.
-- Put conflict, boundary, minimal-break, objection, rejected-alternative, and
-  bridge answers in the same row when they describe the same decision.
+- Put conflict, boundary, architectural value of the break, objection,
+  rejected-alternative, and bridge answers in the same row when they describe
+  the same decision.
+- For an external architecture comparison, extend this same ledger with
+  `Reference` and `Comparison` columns instead of creating a duplicate ledger.
+  Comparative classifications are `superior`, `inferior`, `equivalent`, or
+  `different tradeoff`; the local verdict remains independent.
 - A break row must name callers, docs/example adoption, and proof.
 - `defer` must name missing evidence and the next owner.
 - Prefer delete, merge, or inline over wrappers and file churn.
+- Rank worthwhile changes by long-term architectural value. Order execution
+  slices separately by dependency; implementation order is not the value rank.
 
 ### 3. Prove And Hand Off
 
@@ -140,6 +168,15 @@ Add only what the scope triggers:
   blast radius, rollback/hard-cut answer, and focused proof.
 - External research: record the mechanism accepted or rejected and its local
   consequence. A bibliography is not evidence.
+- Named Wordgard comparison: treat Wordgard as the primary contemporary
+  reference architecture for the declared TARGET, not as an ordinary donor.
+  Inventory every relevant mechanism inside the TARGET graph and resolve each
+  as adopted, surpassed, rejected, or deferred with exact evidence. Migration
+  cost alone is not a rejection reason. Wordgard receives no automatic pass
+  where Plite's JSON-native data, structural typing, multi-root model, Plate
+  extensibility, collaboration, React, or browser requirements expose a weaker
+  tradeoff. Slate and other editors remain behavioral, ergonomic, or
+  provenance evidence rather than target architecture.
 - Issue or PR provenance: include only for issue-backed work or when the plan
   changes a public claim.
 - Docs, registry, browser, release, behavior-law, or collaboration rows: include

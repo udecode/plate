@@ -602,7 +602,7 @@ const plugins = [
 `reset` 规则负责标准段落重置。功能特有的结构变更应放在插件自己的事务组中，让调用方显式执行。
 
 ```tsx
-import { schema } from '@platejs/plite';
+import { schema } from 'platejs';
 
 const CodeBlockPlugin = createPlatePlugin({
   key: 'codeBlock',
@@ -689,7 +689,7 @@ const plugins = [
 当规则表无法表达核心命令行为时，使用 [`.extendExtension()`](/docs/plugin-methods#extendextension) 安装纯 Plite command handler。下面的单行插件把结构化换行命令转换为软换行：
 
 ```tsx
-import { editorCommands } from '@platejs/plite';
+import { editorCommands } from 'platejs';
 
 const SingleLinePlugin = createPlatePlugin({
   key: 'singleLine',

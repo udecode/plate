@@ -120,7 +120,7 @@ describe('BaseListPlugin schema', () => {
       plugins: [
         EmbedPlugin,
         BaseListPlugin.configure({
-          config: { validLiChildren: [EmbedPlugin] },
+          options: { validLiChildren: [EmbedPlugin] },
         }),
       ],
     });

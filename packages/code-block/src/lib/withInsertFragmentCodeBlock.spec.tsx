@@ -18,7 +18,7 @@ const editorTest = (
   const editor = createBaseEditor({
     plugins: [BaseParagraphPlugin, CodeBlockPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   editor.update.fragment.replace(fragment, options);
@@ -125,7 +125,7 @@ describe('pasting a code block', () => {
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
       const fragment = (
         <fragment>

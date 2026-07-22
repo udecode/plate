@@ -9,26 +9,17 @@ import { createBasePlugin } from './createBasePlugin';
 const assertTypedSchemaContributions = () => {
   type SchemaConfig = PluginConfig<
     'validSchema',
-    {},
-    {},
-    {},
-    {},
-    {},
-    readonly [],
-    { targetPluginKeys: string[] }
+    { targetTypes: string[] }
   >;
 
   createBasePlugin<SchemaConfig>({
-    config: { targetPluginKeys: ['cell', 'header'] },
     key: 'validSchema',
-    schema: ({ config }) => {
-      // @ts-expect-error schema callback config is deeply readonly
-      config.targetPluginKeys.push('paragraph');
-
+    options: { targetTypes: ['cell', 'header'] },
+    schema: ({ options }) => {
       return {
         properties: [
           schema.elementProperty('status', property.string(), {
-            target: target.types(config.targetPluginKeys),
+            target: target.types(options.targetTypes),
           }),
         ],
       };
@@ -76,6 +67,147 @@ const assertTypedNodeSchemas = () => {
 };
 
 void assertTypedNodeSchemas;
+
+const assertTypedContextualConfiguration = () => {
+  const BasePlugin = createBasePlugin<
+    PluginConfig<'baseContextual', { enabled: boolean }>
+  >({
+    key: 'baseContextual',
+    options: { enabled: false },
+  });
+
+  BasePlugin.configure(({ editor, plugin }) => {
+    editor.id satisfies string;
+    plugin.key satisfies 'baseContextual';
+
+    return { options: { enabled: true } };
+  });
+
+  // @ts-expect-error contextual configure cannot add option fields
+  BasePlugin.configure(() => ({ options: { missing: true } }));
+  // @ts-expect-error contextual configure cannot define model fields
+  BasePlugin.configure(() => ({ type: 'other' }));
+
+  const PlatePlugin = createPlatePlugin<
+    PluginConfig<'plateContextual', { enabled: boolean }>
+  >({
+    key: 'plateContextual',
+    options: { enabled: false },
+  });
+
+  PlatePlugin.configure(({ editor, plugin }) => {
+    editor.id satisfies string;
+    plugin.key satisfies 'plateContextual';
+
+    return { options: { enabled: true } };
+  });
+
+  // @ts-expect-error contextual configure cannot add option fields
+  PlatePlugin.configure(() => ({ options: { missing: true } }));
+  // @ts-expect-error contextual configure cannot define model fields
+  PlatePlugin.configure(() => ({ schema: null }));
+};
+
+void assertTypedContextualConfiguration;
+
+const assertTypedPlateShortcutTargets = () => {
+  createPlatePlugin({
+    key: 'missingInitialShortcutTarget',
+    // @ts-expect-error initial shortcuts without a command require a handler
+    shortcuts: {
+      missing: { keys: 'mod+m' },
+    },
+  });
+
+  createPlatePlugin<
+    PluginConfig<
+      'explicitShortcutConfig',
+      {},
+      {},
+      { explicitShortcutConfig: { run: () => boolean } }
+    >
+  >({
+    key: 'explicitShortcutConfig',
+    // @ts-expect-error explicitly typed factories declare shortcuts after capabilities
+    shortcuts: { run: { keys: 'mod+r' } },
+  });
+
+  const Plugin = createPlatePlugin({ key: 'plateShortcutTargets' })
+    .extendTx(() => () => ({
+      both: () => true,
+      update: () => true,
+    }))
+    .extendApi(() => ({
+      api: () => true,
+      both: () => true,
+    }));
+
+  Plugin.extend({
+    shortcuts: {
+      api: { keys: 'mod+a' },
+      both: { keys: 'mod+b', target: 'api' },
+      custom: { handler: () => true, keys: 'mod+c' },
+      update: { keys: 'mod+u' },
+    },
+  });
+
+  Plugin.extend({
+    shortcuts: {
+      // @ts-expect-error update/API collisions require an explicit target
+      both: { keys: 'mod+b' },
+    },
+  });
+  Plugin.extend({
+    shortcuts: {
+      // @ts-expect-error unknown commands require a custom handler
+      missing: { keys: 'mod+m' },
+    },
+  });
+  Plugin.extend({
+    shortcuts: {
+      // @ts-expect-error API-only commands cannot target update
+      api: { keys: 'mod+a', target: 'update' },
+    },
+  });
+  Plugin.extend({
+    shortcuts: {
+      // @ts-expect-error custom handlers reject automatic command targets
+      invalidHandlerTarget: {
+        handler: () => true,
+        keys: 'mod+i',
+        target: 'api',
+      },
+    },
+  });
+
+  const ApiScopeCollisionPlugin = Plugin.extendEditorApi(() => ({
+    api: () => true,
+  }));
+
+  ApiScopeCollisionPlugin.extend({
+    shortcuts: {
+      // @ts-expect-error plugin/editor API collisions require a custom handler
+      api: { keys: 'mod+a', target: 'api' },
+    },
+  });
+};
+
+void assertTypedPlateShortcutTargets;
+
+const assertTypedRenderOwnership = () => {
+  const CustomNode: NodeComponent = () => null;
+
+  createBasePlugin({
+    key: 'intrinsicRender',
+    // @ts-expect-error custom renderers belong in withComponent
+    render: {
+      as: CustomNode,
+    },
+  });
+  createBasePlugin({ key: 'customRender' }).withComponent(CustomNode);
+};
+
+void assertTypedRenderOwnership;
 
 describe('createBasePlugin', () => {
   it('create a plugin with explicit types and cover various scenarios', () => {
@@ -198,7 +330,7 @@ describe('createBasePlugin', () => {
     const resolvedMultiExtended = resolvePluginTest(multiExtendedPlugin);
     expect(resolvedMultiExtended.type).toBe('secondExtend');
     expect(resolvedMultiExtended.options).toEqual({
-      optionA: 'initial',
+      optionA: 'firstConfigure',
       optionB: 30,
     });
   });

@@ -8,7 +8,7 @@ describe('insertColumnGroup', () => {
   it('insert a column group with evenly sized columns', () => {
     const editor = createBaseEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: [{ children: [{ text: 'Before' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'Before' }], type: 'p' }],
     });
 
     editor.update.column.insertGroup({ at: [1], columns: 3 });
@@ -30,7 +30,7 @@ describe('insertColumnGroup', () => {
   it('select the first inserted block when asked', () => {
     const editor = createBaseEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: [{ children: [{ text: 'Before' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'Before' }], type: 'p' }],
     });
 
     editor.update.column.insertGroup({ at: [1], columns: 2, select: true });

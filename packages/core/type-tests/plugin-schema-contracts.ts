@@ -1,5 +1,4 @@
 import {
-  definePropertyPolicy,
   type EditorSchemaProperty,
   type PropertyJsonValue,
   property,
@@ -11,15 +10,10 @@ import {
   type AnyBasePlugin,
   createBaseEditor,
   createBasePlugin,
-  definePluginHostPolicy,
   type ExtendConfig,
-  getPluginHostPolicyResource,
-  type ImmutablePluginConfiguration,
   type InferConfig,
   type InferPluginDocumentType,
-  isPluginHostPolicy,
   NodeIdPlugin,
-  type PluginHostPolicy,
   type PluginConfig,
   type PluginReference,
 } from '@platejs/core';
@@ -31,54 +25,6 @@ import {
   toPlatePlugin,
 } from '@platejs/core/react';
 
-const HostPolicy = definePluginHostPolicy({
-  id: 'plate-test:core:host-policy-type',
-  resource: {
-    parse: (value: string) => value.toUpperCase(),
-    rules: ['paragraph'] as const,
-  },
-  version: 1,
-});
-const ConfigPropertyPolicy = definePropertyPolicy({
-  id: 'plate-test:core:immutable-plugin-config',
-  validate: (value): value is string => typeof value === 'string',
-  version: 1,
-});
-const exactHostPolicy: PluginHostPolicy<{
-  parse: (value: string) => string;
-  rules: readonly ['paragraph'];
-}> = HostPolicy;
-const parsedHostPolicyValue: string =
-  getPluginHostPolicyResource(HostPolicy).parse('plate');
-const unknownHostPolicy: unknown = HostPolicy;
-
-if (isPluginHostPolicy(unknownHostPolicy)) {
-  const hostPolicyId: string = unknownHostPolicy.id;
-
-  void hostPolicyId;
-}
-
-// @ts-expect-error Host policy identity is nominal, not structurally forgeable.
-const forgedHostPolicy: PluginHostPolicy<{ value: number }> = {
-  id: 'plate-test:core:forged-host-policy',
-  version: 1,
-};
-
-void exactHostPolicy;
-void forgedHostPolicy;
-void parsedHostPolicyValue;
-
-declare const immutablePluginConfigSymbol: symbol;
-
-// @ts-expect-error bigint is not a valid immutable plugin config value.
-const invalidBigintPluginConfig: ImmutablePluginConfiguration<bigint> = 1n;
-// @ts-expect-error symbols are not valid immutable plugin config values.
-const invalidSymbolPluginConfig: ImmutablePluginConfiguration<symbol> =
-  immutablePluginConfigSymbol;
-
-void invalidBigintPluginConfig;
-void invalidSymbolPluginConfig;
-
 const TargetPlugin = createBasePlugin({
   key: 'schemaTarget',
   schema: {
@@ -89,54 +35,6 @@ const TargetPlugin = createBasePlugin({
   type: 'schema-target',
 });
 
-const ImmutableConfigPlugin = createBasePlugin({
-  config: {
-    count: 1,
-    enabled: true,
-    hostPolicy: HostPolicy,
-    label: 'schema-target',
-    nullable: null,
-    optional: undefined,
-    policy: ConfigPropertyPolicy,
-    targets: [TargetPlugin],
-  },
-  key: 'immutableConfig',
-});
-const exactImmutableConfigCount: number = ImmutableConfigPlugin.config.count;
-const exactImmutableConfigEnabled: boolean =
-  ImmutableConfigPlugin.config.enabled;
-const exactImmutableConfigHostPolicy: typeof HostPolicy =
-  ImmutableConfigPlugin.config.hostPolicy;
-const exactImmutableConfigLabel: string = ImmutableConfigPlugin.config.label;
-const exactImmutableConfigPolicy: typeof ConfigPropertyPolicy =
-  ImmutableConfigPlugin.config.policy;
-const exactImmutableConfigTarget: PluginReference<
-  'schemaTarget',
-  'schema-target'
-> = ImmutableConfigPlugin.config.targets[0];
-
-createBasePlugin({
-  // @ts-expect-error plugin descriptors reject bigint config values.
-  config: {
-    invalid: 1n,
-  },
-  key: 'invalidBigintConfig',
-});
-
-createBasePlugin({
-  // @ts-expect-error plugin descriptors reject symbol config values.
-  config: {
-    invalid: immutablePluginConfigSymbol,
-  },
-  key: 'invalidSymbolConfig',
-});
-
-void exactImmutableConfigCount;
-void exactImmutableConfigEnabled;
-void exactImmutableConfigHostPolicy;
-void exactImmutableConfigLabel;
-void exactImmutableConfigPolicy;
-void exactImmutableConfigTarget;
 type ExtendedTargetConfig = ExtendConfig<
   InferConfig<typeof TargetPlugin>,
   { enabled: boolean }
@@ -147,22 +45,16 @@ const exactExtendedTargetDocumentType: 'schema-target' =
 const ConfiguredTargetPlugin = TargetPlugin.configure({
   type: 'configured-schema-target',
 });
-declare const configuredTargetConfiguration: ImmutablePluginConfiguration<{
-  targets: readonly [typeof ConfiguredTargetPlugin];
-}>;
 const configuredTargetType: 'configured-schema-target' =
   ConfiguredTargetPlugin.type;
 const configuredTargetReference: PluginReference<
   'schemaTarget',
   'configured-schema-target'
-> = configuredTargetConfiguration.targets[0];
-declare const canonicalTargetReferenceConfiguration: ImmutablePluginConfiguration<{
-  target: PluginReference<'schemaTarget', 'configured-schema-target'>;
-}>;
+> = ConfiguredTargetPlugin;
 const canonicalTargetReference: PluginReference<
   'schemaTarget',
   'configured-schema-target'
-> = canonicalTargetReferenceConfiguration.target;
+> = configuredTargetReference;
 const configuredTargetEditor = createBaseEditor({
   plugins: [ConfiguredTargetPlugin],
 });
@@ -190,35 +82,29 @@ noSchemaEditor.read.schema.element(NoSchemaPlugin);
 noSchemaEditor.read.schema.createAndFill(NoSchemaPlugin);
 
 const ConfiguredPropertyPlugin = createBasePlugin({
-  config: {
-    prefix: 'configured',
-    targets: [TargetPlugin] as const,
-  },
   host: {
     dangerouslyAllowAttributes: ['data-owner'],
   },
   key: 'configuredProperty',
-  schema: ({ config, own, plugins, type }) => {
-    const prefix: string = config.prefix;
-    const targetPlugin: PluginReference<'schemaTarget'> = config.targets[0];
+  options: { prefix: 'configured' },
+  schema: ({ options, own, plugins, targetPluginKeys, type }) => {
+    const prefix: string = options.prefix;
+    const targetPluginKey: string = targetPluginKeys[0];
     const ownedType: string = type;
 
-    // @ts-expect-error Schema factories cannot read mutable runtime options.
-    const runtimeOptions = config.options;
-
     void prefix;
-    void targetPlugin;
+    void targetPluginKey;
     void ownedType;
-    void runtimeOptions;
 
     return {
       properties: [
         own.elementProperty(property.string(), {
-          target: target.types(plugins.elementTypes(config.targets)),
+          target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
         }),
       ],
     };
   },
+  targetPluginKeys: [TargetPlugin.key],
   type: 'configured-property',
 });
 
@@ -271,18 +157,12 @@ const UninstalledElementPropertyPlugin = createBasePlugin({
   type: 'uninstalled-schema-element-property',
 });
 
-const configuredPrefix: string = ConfiguredPropertyPlugin.config.prefix;
-const configuredTarget: PluginReference<'schemaTarget'> =
-  ConfiguredPropertyPlugin.config.targets[0];
+const configuredPrefix: string = ConfiguredPropertyPlugin.options.prefix;
+const configuredTargetPluginKey: string =
+  ConfiguredPropertyPlugin.targetPluginKeys[0];
 
-// @ts-expect-error Plugin config is immutable after descriptor construction.
-ConfiguredPropertyPlugin.config.prefix = 'changed';
-// @ts-expect-error Nested plugin config arrays are immutable.
-ConfiguredPropertyPlugin.config.targets.push(TargetPlugin);
-// @ts-expect-error Plugin references expose immutable identity only.
-ConfiguredPropertyPlugin.config.targets[0].type = 'changed';
-// @ts-expect-error Plugin references do not expose mutable plugin config.
-ConfiguredPropertyPlugin.config.targets[0].config.prefix = 'changed';
+// @ts-expect-error Plugin target keys are immutable.
+ConfiguredPropertyPlugin.targetPluginKeys.push(TargetPlugin.key);
 
 const editor = createBaseEditor({
   plugins: [
@@ -383,16 +263,18 @@ export const inferenceTreeEditor = createBaseEditor({
 const inferenceTreeValue: Value = [];
 export const inferenceTreePlateEditor = createPlateEditor({
   plugins: [InferenceTreePlugin],
-  value: inferenceTreeValue,
+  initialValue: inferenceTreeValue,
 });
 export const broadInferenceTreePlateEditor: PlateEditor<
   Value,
   PlateCorePlugin
 > = inferenceTreePlateEditor;
-export const exactDependencyApiResult: 'dependency' =
-  inferenceTreeEditor.api.schemaDependencyInference.readDependencyInference();
-export const exactNestedApiResult: 'nested' =
-  inferenceTreeEditor.api.schemaNestedInference.readNestedInference();
+export const exactDependencyApiResult: 'dependency' = inferenceTreeEditor
+  .plugin(DependencyInferencePlugin)
+  .api.readDependencyInference();
+export const exactNestedApiResult: 'nested' = inferenceTreeEditor
+  .plugin(NestedInferencePlugin)
+  .api.readNestedInference();
 export const exactDependencyUpdate: () => undefined =
   inferenceTreeEditor.update.schemaDependencyInference.writeDependencyInference;
 export const exactNestedUpdate: () => undefined =
@@ -603,26 +485,21 @@ editor.read.schema.handle<
   typeof UninstalledElementPropertyPlugin
 >(TargetPlugin);
 
-editor.configure(
-  ConfiguredPropertyPlugin,
-  { prefix: 'next' },
-  {
-    migrate({ document, next }) {
-      next.validateDocument(document);
-
-      return document;
-    },
-  }
-);
-editor.configure(ConfiguredPropertyPlugin, {
-  // @ts-expect-error Plugin references are descriptors, not magic key strings.
-  targets: ['schemaTarget'],
+ConfiguredPropertyPlugin.configure({ options: { prefix: 'next' } });
+ConfiguredPropertyPlugin.configure({
+  targetPluginKeys: [TargetPlugin.key],
 });
-editor.configure(ConfiguredPropertyPlugin, {
-  // @ts-expect-error Configuration values retain their plugin-owned types.
-  prefix: 42,
+ConfiguredPropertyPlugin.configure({
+  // @ts-expect-error Plugin target keys are strings.
+  targetPluginKeys: [42],
 });
-editor.configure(ConfiguredPropertyPlugin, {
+ConfiguredPropertyPlugin.configure({
+  options: {
+    // @ts-expect-error Configuration values retain their plugin-owned types.
+    prefix: 42,
+  },
+});
+ConfiguredPropertyPlugin.configure({
   // @ts-expect-error Configuration is exact to the plugin descriptor.
   unknown: true,
 });
@@ -672,7 +549,7 @@ createBasePlugin({
 
 void configuredPrefix;
 void configuredProperty;
-void configuredTarget;
+void configuredTargetPluginKey;
 void configuredDeepReference;
 void exactInferredChildPlugin;
 void explicitChildReference;

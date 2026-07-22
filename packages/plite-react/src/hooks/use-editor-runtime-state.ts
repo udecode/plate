@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import type {
   Editor,
   EditorCommit,
@@ -15,7 +15,6 @@ export interface EditorRuntimeStateSelectorOptions<
   T,
   TEditor extends Editor<any, any> = Editor<any, any>,
 > {
-  deps?: readonly unknown[];
   equalityFn?: (a: T | null, b: T) => boolean;
   shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;
 }
@@ -37,12 +36,10 @@ export function useEditorRuntimeState<
     state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
   ) => T,
   {
-    deps,
     equalityFn = refEquality,
     shouldUpdate,
   }: EditorRuntimeStateSelectorOptions<T, TEditor> = {}
 ): T {
-  const selectorDeps = deps ? [editor, ...deps] : [editor, selector];
   const readSelectedState = useCallback(
     () =>
       editor.read((state) =>
@@ -50,23 +47,31 @@ export function useEditorRuntimeState<
           state as EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
         )
       ),
-    // `deps` intentionally owns inline selector closure freshness.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    selectorDeps
+    [editor, selector]
   );
   const [selectedState, update] = useGenericSelector(
     readSelectedState,
     equalityFn
   );
+  const shouldUpdateRef = useRef(shouldUpdate);
+
+  useIsomorphicLayoutEffect(() => {
+    const changed = shouldUpdateRef.current !== shouldUpdate;
+
+    shouldUpdateRef.current = shouldUpdate;
+
+    if (changed) update();
+  }, [shouldUpdate, update]);
+
   const updateWithCommit = useCallback(
     (change: EditorCommit<ValueOf<TEditor>>) => {
-      if (shouldUpdate && !shouldUpdate(change)) {
+      if (shouldUpdateRef.current && !shouldUpdateRef.current(change)) {
         return;
       }
 
       update();
     },
-    [shouldUpdate, update]
+    [update]
   );
 
   useIsomorphicLayoutEffect(() => {

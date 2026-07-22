@@ -12,7 +12,7 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 export function PlateEditor() {
   const editor = usePlateEditor({
     plugins: EditorKit,
-    value,
+    initialValue: value,
   });
 
   return (

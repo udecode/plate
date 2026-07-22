@@ -4,15 +4,6 @@ export type ProofEvidenceClass =
   | 'automated-proxy'
   | 'manual-device-blocking';
 
-/** Stable mobile proof scenario identifiers used by browser transports. */
-export type BrowserMobileScenarioId =
-  | 'setup'
-  | 'placeholder-input'
-  | 'edge-input'
-  | 'split-join'
-  | 'empty-rebuild'
-  | 'remove-range';
-
 /** Debug shape extracted from a rendered placeholder marker. */
 export type DebugPlaceholderShape = {
   hasBr: boolean;

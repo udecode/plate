@@ -87,7 +87,7 @@ const editor = createPlateEditor({
     // ...其他插件,
     BlockquotePlugin.configure({
       render: { node: BlockquoteElement },
-      shortcuts: { toggle: 'mod+shift+.' },
+      shortcuts: { toggle: { keys: 'mod+shift+.' } },
     }),
   ],
 });

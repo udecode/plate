@@ -9,7 +9,7 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 export function PlateEditor() {
   const editor = usePlateEditor({
     plugins: BasicNodesKit,
-    value,
+    initialValue: value,
   });
 
   return (

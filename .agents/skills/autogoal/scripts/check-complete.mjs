@@ -9,7 +9,7 @@ const GATE_SECTION_NAMES = ['Start Gates', 'Completion Gates'];
 const HEADING_PATTERN = /^#{1,6}\s+\S/;
 const HTML_COMMENT_PATTERN = /<!--[\s\S]*?-->/g;
 const NEWLINE_PATTERN = /\r?\n/;
-const OPEN_STATUS_PATTERN = /^(pending|in[_ -]?progress|todo|open)$/i;
+const OPEN_STATUS_PATTERN = /^(active|pending|in[_ -]?progress|todo|open)$/i;
 const PHASE_HEADER_PATTERN = /^phase$/i;
 const PLACEHOLDER_ONLY_PATTERN = /^(?:-\s*)?(?:pending|none yet)\.?$/i;
 const RULE_ONLY_LINE_PATTERN = /^\s*[-|]+\s*$/gm;
@@ -17,6 +17,12 @@ const SECTION_START_PATTERN = /^[A-Z][A-Za-z /-]+:\s*$/;
 const TABLE_MARKDOWN_SEPARATOR_CELL_PATTERN = /^:?-+:?$/;
 const TABLE_SEPARATOR_PATTERN = /^-+$/;
 const TODO_PATTERN = /\b(TODO|TBD)\b/i;
+const UNRESOLVED_GATE_EVIDENCE_PATTERNS = [
+  /\bintentionally deferred\b/i,
+  /\bnot (?:complete|prepared|produced|run)(?: yet)?\b/i,
+  /\bpending (?:broad|browser|closure|execution|final|implementation|repository)\b/i,
+  /\b(?:benchmark|browser|closure|gate|gates|handoff|implementation|matrix|proof|rebuild|rerun|review|verification|work)\b.{0,80}\b(?:are|is|remain|remains|still)\s+(?:incomplete|open|pending|required)\b/i,
+];
 
 const args = parseArgs(process.argv.slice(2));
 
@@ -196,6 +202,10 @@ function checkGateSections(content) {
 
       if (!hasConcreteContent(row.evidence || '')) {
         failures.push(`${sectionName} ${label} must record evidence or reason`);
+      } else if (hasUnresolvedGateEvidence(row.evidence)) {
+        failures.push(
+          `${sectionName} ${label} still records unresolved evidence`
+        );
       }
 
       for (const [column, value] of Object.entries(row)) {
@@ -210,6 +220,12 @@ function checkGateSections(content) {
   }
 
   return failures;
+}
+
+function hasUnresolvedGateEvidence(value) {
+  return UNRESOLVED_GATE_EVIDENCE_PATTERNS.some((pattern) =>
+    pattern.test(value)
+  );
 }
 
 function getSectionBlock(content, label) {

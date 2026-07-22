@@ -3,14 +3,14 @@ import React from 'react';
 import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const usePlateValueMock = mock();
 const usePluginOptionMock = mock();
 const useIsomorphicLayoutEffectMock = mock((effect: () => void) => effect());
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   usePlateValue: usePlateValueMock,
   usePluginOption: usePluginOptionMock,
 }));
@@ -24,14 +24,14 @@ const loadModule = async () => import('./useCursorOverlay');
 describe('useCursorOverlay', () => {
   afterEach(() => {
     mock.restore();
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     usePlateValueMock.mockReset();
     usePluginOptionMock.mockReset();
     useIsomorphicLayoutEffectMock.mockClear();
   });
 
   it('returns empty cursor overlays when the container is missing', async () => {
-    useEditorRefMock.mockReturnValue({});
+    useEditorMock.mockReturnValue({});
     usePlateValueMock.mockReturnValue({ current: null });
     usePluginOptionMock.mockReturnValue(undefined);
 
@@ -93,7 +93,7 @@ describe('useCursorOverlay', () => {
       value: 4,
     });
 
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     usePlateValueMock.mockReturnValue({ current: container });
     usePluginOptionMock.mockReturnValue({
       a: {

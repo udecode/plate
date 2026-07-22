@@ -39,14 +39,19 @@ export type {
   EditableDOMCoverageBoundaryPlaceholderContext,
   EditableDOMCoverageBoundaryProps,
   EditableDOMCoverageBoundaryScope,
-  EditableDOMStrategyLayout,
   EditableElementSlots,
   EditableProps,
   RenderElementProps,
   RenderVoidProps,
 } from './components/editable-text-blocks';
 export { Editable } from './components/editable-text-blocks';
-export { Plite, type PliteChange, type PliteProps } from './components/plite';
+export {
+  Plite,
+  type PliteCommitContext,
+  type PliteProps,
+  type PliteSelectionChangeContext,
+  type PliteValueChangeContext,
+} from './components/plite';
 export { PliteElement } from './components/plite-element';
 export { PliteLeaf } from './components/plite-leaf';
 export { PlitePlaceholder } from './components/plite-placeholder';
@@ -62,6 +67,9 @@ export type {
 export type {
   DOMStrategyOptions,
   DOMStrategyType,
+  DOMStrategyVirtualizedLayout,
+  VirtualizedPageLayoutItem,
+  VirtualizedTopLevelLayoutItem,
 } from './dom-strategy/create-segment-plan';
 export type { DOMTextSyncOptions } from './dom-text-sync';
 export {
@@ -101,7 +109,7 @@ export {
   useEditorViewState,
 } from './hooks/use-editor-view-state';
 // Hooks
-export { useElement } from './hooks/use-element';
+export { useElement, useOptionalElement } from './hooks/use-element';
 export { useElementPath } from './hooks/use-element-path';
 export {
   type UseElementSelectedMode,
@@ -116,7 +124,7 @@ export {
   useTextSelector,
 } from './hooks/use-node-selector';
 export {
-  type PliteAnnotationStoreProjector,
+  type UsePliteAnnotationStoreOptions,
   usePliteAnnotationStore,
 } from './hooks/use-plite-annotation-store';
 export {
@@ -163,13 +171,14 @@ export {
   type PliteRuntimeProps,
   type PliteRuntimeStateSelectorOptions,
   type PliteRuntimeValue,
-  type UsePliteCommandCallbackOptions,
+  type PliteCommandDispatcher,
+  type UsePliteCommandOptions,
   type UsePliteRootEditorOptions,
   type UsePliteRootEffectOptions,
   type UsePliteRuntimeOptions,
   usePliteActiveEditor,
   usePliteActiveRoot,
-  usePliteCommandCallback,
+  usePliteCommand,
   usePliteRootEditor,
   usePliteRootEffect,
   usePliteRootState,
@@ -177,7 +186,7 @@ export {
   usePliteRuntimeState,
 } from './hooks/use-plite-runtime';
 export {
-  type PliteWidgetStoreProjector,
+  type UsePliteWidgetStoreOptions,
   usePliteWidgetStore,
 } from './hooks/use-plite-widget-store';
 export { usePliteWidget, usePliteWidgets } from './hooks/use-plite-widgets';

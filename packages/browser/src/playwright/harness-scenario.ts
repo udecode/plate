@@ -23,17 +23,26 @@ import { assertDOMCaretExpectation } from './selection-snapshots';
 import type { SurfaceTarget } from './surface';
 import type {
   PliteBrowserEditorHarness,
+  PliteBrowserNumberBudget,
   PliteBrowserTraceEntry,
 } from './types';
 
 const assertNumberBudget = (
   actual: number,
-  expected: { exact?: number; max?: number; min?: number } | number,
+  expected: PliteBrowserNumberBudget,
   label: string
 ) => {
   if (typeof expected === 'number') {
     expect(actual, label).toBe(expected);
     return;
+  }
+
+  if (
+    expected.exact === undefined &&
+    expected.min === undefined &&
+    expected.max === undefined
+  ) {
+    throw new TypeError(`${label} budget must contain an expectation.`);
   }
 
   if (expected.exact !== undefined) {
@@ -58,7 +67,44 @@ export const createEditorHarnessScenario = ({
   root: Locator;
   surface: SurfaceTarget;
 }): PliteBrowserEditorHarness['scenario'] => ({
+  runImperative: async (scenarioName, run) => {
+    if (scenarioName.length === 0) {
+      throw new Error('Imperative browser scenario name cannot be empty.');
+    }
+
+    const steps: PliteBrowserTraceEntry[] = [];
+
+    await run(
+      Object.freeze({
+        step: async (label, action) => {
+          if (label.length === 0) {
+            throw new Error(
+              'Imperative browser scenario step label cannot be empty.'
+            );
+          }
+
+          await action();
+          steps.push(
+            await getHarness().trace.snapshot(label, steps.length)
+          );
+        },
+      })
+    );
+
+    return Object.freeze({
+      kind: 'imperative-scenario',
+      name: scenarioName,
+      reducible: false,
+      releaseGateCapable: false,
+      replayable: false,
+      steps: Object.freeze(steps),
+    });
+  },
   run: async (scenarioName, steps, options = {}) => {
+    const replay = createScenarioReplay(steps);
+    const reductionCandidates = createScenarioReductionCandidates(steps).map(
+      summarizeScenarioReductionCandidate
+    );
     const trace: PliteBrowserTraceEntry[] = [];
     const capturedRuntimeIds = new Map<string, string>();
     const runtimeErrors =
@@ -221,11 +267,25 @@ export const createEditorHarnessScenario = ({
                 { afterSelector: step.afterSelector }
               );
 
-            assertNumberBudget(
-              gap,
-              { max: step.max, min: step.min },
-              'locator vertical gap'
-            );
+            if (step.max !== undefined) {
+              assertNumberBudget(
+                gap,
+                step.min === undefined
+                  ? { max: step.max }
+                  : { max: step.max, min: step.min },
+                'locator vertical gap'
+              );
+            } else if (step.min !== undefined) {
+              assertNumberBudget(
+                gap,
+                { min: step.min },
+                'locator vertical gap'
+              );
+            } else {
+              throw new TypeError(
+                'locator vertical gap must contain an expectation.'
+              );
+            }
             break;
           }
           case 'assertLocatorVerticalOffset': {
@@ -254,11 +314,25 @@ export const createEditorHarnessScenario = ({
                 { innerSelector: step.innerSelector }
               );
 
-            assertNumberBudget(
-              offset,
-              { max: step.max, min: step.min },
-              'locator vertical offset'
-            );
+            if (step.max !== undefined) {
+              assertNumberBudget(
+                offset,
+                step.min === undefined
+                  ? { max: step.max }
+                  : { max: step.max, min: step.min },
+                'locator vertical offset'
+              );
+            } else if (step.min !== undefined) {
+              assertNumberBudget(
+                offset,
+                { min: step.min },
+                'locator vertical offset'
+              );
+            } else {
+              throw new TypeError(
+                'locator vertical offset must contain an expectation.'
+              );
+            }
             break;
           }
           case 'assertModelSelectionExpanded':
@@ -319,7 +393,7 @@ export const createEditorHarnessScenario = ({
               step.budget.byKind ?? {}
             ) as [
               PliteReactRenderKind,
-              { exact?: number; max?: number; min?: number } | number,
+              PliteBrowserNumberBudget,
             ][]) {
               assertNumberBudget(
                 snapshot.byKind[kind] ?? 0,
@@ -389,6 +463,20 @@ export const createEditorHarnessScenario = ({
           case 'assertLastCommit':
             await expect.poll(() => getHarness().get.lastCommit()).toBeTruthy();
             break;
+          case 'assertLastCommitIncludesTags': {
+            await expect
+              .poll(async () => {
+                const lastCommit = (await getHarness().get.lastCommit()) as {
+                  tags?: readonly string[];
+                } | null;
+
+                return step.tags.every((tag) =>
+                  lastCommit?.tags?.includes(tag)
+                );
+              })
+              .toBe(true);
+            break;
+          }
           case 'assertLastCommitTags': {
             await expect
               .poll(async () => {
@@ -399,18 +487,6 @@ export const createEditorHarnessScenario = ({
                 return lastCommit?.tags;
               })
               .toEqual(step.tags);
-            break;
-          }
-          case 'assertLastCommitCommand': {
-            await expect
-              .poll(async () => {
-                const lastCommit = (await getHarness().get.lastCommit()) as {
-                  command?: { origin?: string; type?: string } | null;
-                } | null;
-
-                return lastCommit?.command;
-              })
-              .toEqual(step.command);
             break;
           }
           case 'assertModelText':
@@ -494,9 +570,6 @@ export const createEditorHarnessScenario = ({
               text: step.text,
               transport: step.transport,
             });
-            break;
-          case 'custom':
-            await step.run(getHarness());
             break;
           case 'deleteBackward':
             await getHarness().deleteBackward();
@@ -671,6 +744,15 @@ export const createEditorHarnessScenario = ({
             await getHarness().press(hotkey);
             break;
           }
+          default: {
+            const unsupportedStep = step as { kind?: unknown };
+
+            throw new TypeError(
+              `Unsupported browser scenario step: ${JSON.stringify(
+                unsupportedStep.kind
+              )}`
+            );
+          }
         }
 
         runtimeErrors?.assertNone();
@@ -682,10 +764,8 @@ export const createEditorHarnessScenario = ({
       const result = {
         metadata: normalizeScenarioMetadata(options.metadata),
         name: scenarioName,
-        replay: createScenarioReplay(steps),
-        reductionCandidates: createScenarioReductionCandidates(steps).map(
-          summarizeScenarioReductionCandidate
-        ),
+        replay,
+        reductionCandidates,
         trace,
       };
 

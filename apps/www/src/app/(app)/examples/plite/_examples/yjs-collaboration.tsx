@@ -1499,15 +1499,15 @@ const PeerPanel = ({
   return (
     <Plite
       editor={editor}
-      onChange={(_value, change) => {
+      onCommit={({ commit }) => {
         if (network.syncing && hasCanonicalSnapshot(editor)) {
           clearPeerHistory(peer);
         }
         if (
-          !change.tags.includes('historic') &&
-          !change.tags.includes('yjs-example-test-setup')
+          !commit.tags.includes('historic') &&
+          !commit.tags.includes('yjs-example-test-setup')
         ) {
-          network.recordLocalChange(peer, change.commit);
+          network.recordLocalChange(peer, commit);
         }
         network.syncAll();
       }}

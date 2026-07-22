@@ -25,8 +25,28 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js",
+    "./internal": {
+      "types": "./dist/internal/index.d.ts",
+      "import": "./dist/internal/index.js",
+      "default": "./dist/internal/index.js"
+    },
     "./react": "./dist/react/index.js",
+    "./react/internal": {
+      "types": "./dist/react/internal/index.d.ts",
+      "import": "./dist/react/internal/index.js",
+      "default": "./dist/react/internal/index.js"
+    },
+    "./react/test": {
+      "types": "./dist/react/test-entry.d.ts",
+      "import": "./dist/react/test-entry.js",
+      "default": "./dist/react/test-entry.js"
+    },
     "./static": "./dist/static/index.js",
+    "./static/internal": {
+      "types": "./dist/static/internal/index.d.ts",
+      "import": "./dist/static/internal/index.js",
+      "default": "./dist/static/internal/index.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",

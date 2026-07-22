@@ -56,7 +56,7 @@ export const matchesPliteBrowserKernelTrace = (
   }
   if (
     expected.commandKind !== undefined &&
-    entry.command?.kind !== expected.commandKind
+    (entry.command?.kind ?? null) !== expected.commandKind
   ) {
     return false;
   }

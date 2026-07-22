@@ -9,7 +9,7 @@ describe('getRenderNodeProps', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
       plugins: [],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hello' }],
           type: 'p',
@@ -58,7 +58,7 @@ describe('getRenderNodeProps', () => {
       host: { dangerouslyAllowAttributes: ['target'] },
     });
     const AlignPlugin = createBasePlugin({
-      config: { targetPluginKeys: ['p'] },
+      targetPluginKeys: ['p'],
       inject: {
         nodeProps: {
           nodeKey: 'align',
@@ -77,7 +77,7 @@ describe('getRenderNodeProps', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
       plugins: [ParagraphPlugin, AlignPlugin],
-      value: [
+      initialValue: [
         {
           align: 'center',
           children: [{ text: 'hello' }],

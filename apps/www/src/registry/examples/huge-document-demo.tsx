@@ -290,7 +290,7 @@ const createEditor = ({
 
   return createPlateEditor({
     nodeId: false,
-    value: structuredClone(initialValue),
+    initialValue: structuredClone(initialValue),
   }) as unknown as Editor;
 };
 
@@ -538,7 +538,7 @@ function EnginePane({
   ) : (
     <Plate
       editor={editor as any}
-      onChange={() => {
+      onCommit={() => {
         afterChange.current = true;
       }}
     >

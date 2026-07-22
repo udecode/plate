@@ -5,7 +5,6 @@ export default defineDirectPackageConfig({
     'browser/index': 'src/browser/index.ts',
     'core/index': 'src/core/index.ts',
     'playwright/index': 'src/playwright/index.ts',
-    'transports/index': 'src/transports/index.ts',
   },
   platform: 'node',
 });

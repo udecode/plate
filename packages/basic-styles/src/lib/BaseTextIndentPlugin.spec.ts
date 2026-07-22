@@ -17,7 +17,7 @@ describe('BaseTextIndentPlugin', () => {
     const transformNodeValue = nodeProps.transformNodeValue!;
 
     expect(plugin.inject.isBlock).toBe(true);
-    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
+    expect(plugin.targetPluginKeys).toEqual([KEYS.p]);
     expect(nodeProps).toMatchObject({
       nodeKey: 'textIndent',
       styleKey: 'textIndent',
@@ -39,14 +39,14 @@ describe('BaseTextIndentPlugin', () => {
       type: 'custom-paragraph',
     });
     const TextIndentPlugin = BaseTextIndentPlugin.configure({
-      config: { targetPluginKeys: [KEYS.p] },
+      targetPluginKeys: [KEYS.p],
     });
     const editor = createBaseEditor({
       plugins: [ParagraphPlugin, TextIndentPlugin],
     });
     const plugin = editor.getPlugin(TextIndentPlugin);
 
-    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
+    expect(plugin.targetPluginKeys).toEqual([KEYS.p]);
     expect(
       editor.read.schema.property({
         key: KEYS.textIndent,
@@ -88,7 +88,7 @@ describe('BaseTextIndentPlugin', () => {
   it('applies and clears text indent through the typed tx group', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'One' }],
           type: 'p',

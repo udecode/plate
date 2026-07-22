@@ -46,7 +46,7 @@ export interface PointInterface {
 }
 
 // eslint-disable-next-line no-redeclare
-export const PointApi: PointInterface = {
+export const PointApi: Readonly<PointInterface> = Object.freeze({
   compare(point: Point, another: Point): -1 | 0 | 1 {
     const pointRoot = getPointRoot(point).root;
     const anotherRoot = getPointRoot(another).root;
@@ -91,7 +91,7 @@ export const PointApi: PointInterface = {
       PathApi.isPath(value.path)
     );
   },
-};
+});
 
 /**
  * `PointEntry` objects are returned when iterating over `Point` objects that

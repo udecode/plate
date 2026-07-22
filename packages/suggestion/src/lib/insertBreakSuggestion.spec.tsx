@@ -6,7 +6,6 @@ import { jsxt } from '@platejs/test-utils';
 import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
-import { getInlineSuggestionData } from './utils';
 jsxt;
 
 const suggestionPlugin = BaseSuggestionPlugin.configure({
@@ -45,7 +44,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
@@ -78,16 +77,16 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
 
     editor.update.text.insert('1');
 
-    const data = getInlineSuggestionData(
-      editor.read.children()[1].children[0] as any
-    );
+    const data = editor
+      .plugin(BaseSuggestionPlugin)
+      .api.inlineData(editor.read.children()[1].children[0] as any);
 
     expect(data).toBeDefined();
     expect(data?.id === testLineBreakDataInsert.id).toBeTruthy();
@@ -120,7 +119,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
@@ -154,7 +153,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
@@ -178,7 +177,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
@@ -192,9 +191,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
       ? (editor.read.children()[0].suggestion as TSuggestionElement)
       : undefined;
 
-    const suggestionTextData = getInlineSuggestionData(
-      editor.read.children()[1].children[0] as any
-    );
+    const suggestionTextData = editor
+      .plugin(BaseSuggestionPlugin)
+      .api.inlineData(editor.read.children()[1].children[0] as any);
 
     expect(lineBreakData).toBeDefined();
     expect(suggestionTextData).toBeDefined();
@@ -228,7 +227,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);
@@ -262,7 +261,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);

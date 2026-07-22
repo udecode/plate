@@ -10,7 +10,7 @@ import { formatCodeBlock, isLangSupported, isValidSyntax } from './formatter';
 const createFormatterEditor = (code: string, lang: string) =>
   createBaseEditor({
     plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-    value: [
+    initialValue: [
       {
         children: [{ children: [{ text: code }], type: 'code_line' }],
         lang,
@@ -86,7 +86,7 @@ describe('formatter', () => {
           },
         }),
       ],
-      value: [
+      initialValue: [
         {
           children: [
             {

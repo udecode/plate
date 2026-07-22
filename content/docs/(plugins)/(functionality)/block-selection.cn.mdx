@@ -152,12 +152,12 @@ BlockSelectionPlugin.configure({
 
 ```tsx
 // 1. 直接调用 API
-editor.api.blockSelection.deselect();
+editor.plugin(BlockSelectionPlugin).api.deselect();
 
 // 2. 外部点击处理程序
 const handleClickOutside = (event: MouseEvent) => {
   if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
-    editor.api.blockSelection.deselect();
+    editor.plugin(BlockSelectionPlugin).api.deselect();
   }
 };
 ```

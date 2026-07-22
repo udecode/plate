@@ -156,7 +156,9 @@ Blocked condition:
 Plite Plan state:
 - status: active
 - phase: prove and hand off
-- next: close red-team findings, final package/browser/docs gates, autoreview, and checker
+- next: repair the formatted-leaf insertion boundary regression, resume strict
+  Chromium, then run the canonical clipboard authority on a quiet host and
+  complete the browser matrix
 - handoff: not-prepared
 
 Start Gates:
@@ -186,9 +188,9 @@ Start Gates:
 | Barrel/export impact decision recorded | yes | Public exports changed; repeated `pnpm brl` runs completed 56/56 tasks and preserved the 291-file generated-barrel aggregate hash |
 
 Work Checklist:
-- [ ] Execute and close schema architecture slices 0-13 from the linked
+- [x] Execute and close schema architecture slices 0-13 from the linked
       accepted plan.
-- [ ] Execute and close slice architecture slices 1-14 from the linked
+- [x] Execute and close slice architecture slices 1-14 from the linked
       accepted plan, merged with overlapping schema/compiler/host/adoption
       owners.
 
@@ -270,6 +272,10 @@ closure items above until their linked checker and shared final gates pass):
 - [x] Add a focused affected `check:plite:dev` gate while preserving strict
       `check:plite` and closure-only matrix claims.
 - [x] Remove duplicated package/browser proof and duplicate build preparation.
+- [ ] Preserve the targeted text leaf when inserting at offset zero or the text
+      length: the existing focused iOS-prediction browser law passes repeatedly
+      and strict Chromium resumes without weakening the assertion or adding a
+      redundant implementation-coupled test.
 - [ ] Record before/after wall times and close every optimization packet with
       keep/revert evidence.
 - [ ] After every bounded clipboard correctness run, execute the exact
@@ -286,7 +292,7 @@ closure items above until their linked checker and shared final gates pass):
 - [x] Docs pack: docs lane, target docs, nearest sibling docs, and source owner are recorded.
 - [x] Docs pack: named APIs, imports, options, routes, components, transforms, demos, and previews are source-backed or have a scoped N/A reason.
 - [x] Docs pack: docs use current-state reference voice, not changelog voice.
-- [ ] Docs pack: docs checker validates current links and references and accepts
+- [x] Docs pack: docs checker validates current links and references and accepts
       omitted Plate identity while rejecting partial/nondeterministic identity;
       the previous explicit-identity requirement is obsolete.
 - [x] Browser pack: route, interaction path, and expected visible outcome are recorded before proof in [the active Browser proof](./artifacts/wordgard-plite-final-extraction/browser-proof.md).
@@ -323,7 +329,7 @@ Completion Gates:
 | Plugin page specifics | no | Apply plugin-page kit/manual/API rules only for plugin pages | N/A: this execution changes Plite architecture references and examples, not a plugin documentation page |
 | Browser interaction proof | yes | Exercise target route/interaction with Browser | Not run yet; use the recorded richtext, paste, table, root, collaboration, shadow-DOM, and huge-document routes |
 | Browser console/network check | yes | Record console/network state | Not run yet; capture route-local console and failed-network state with Browser |
-| Browser final proof artifact | yes | Record screenshot/trace/route/native proof | Not produced yet; ordinary app surfaces use Browser and no native Chrome-only claim is expected |
+| Browser final proof artifact | yes | Record screenshot/trace/route/native proof | Not produced yet; ordinary app surfaces use Browser and the plaintext system-clipboard row requires native Chrome proof |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | Hard-cut audits cover intent execution, selection marks, effect descriptors, DOM ownership, codec targets, and release subpaths |
 | Release artifact classification | yes | Classify the user-visible delta | Published package API, types, runtime, codec, persistence, DOM, and collaboration behavior; not registry-only or artifact-free |
 | Published package changeset | yes | Audit one package-owned release note for each final published delta and forbidden release levels | Audit against `origin/main` plus untracked source finds 52 changed published packages and 52 explicit changeset entries, with zero missing; pending changesets contain no removed facade teaching, and `CI=1 pnpm changeset status` passes with no forbidden minor releases |
@@ -341,8 +347,8 @@ Phase / pass table:
 | Slices 5-7 | completed | Detached activation, field/facet resources, effect registry, schema-linked host codecs, selection truth, DOM geometry, and deterministic Unicode words are implemented | Completed slices 8-10 |
 | Slices 8-10 | completed | Causal/event-native Yjs, immutable lazy History, root runtime, integrity observer, and announcements are implemented | Completed slice 11 |
 | Slice 11 | completed | The prior packed-artifact gate passed eight packages/24 then-current subpaths; cursor and overlay kernels were promoted from measured gains; four candidates were rejected from named consumer/browser-policy evidence | Current manifests expose 25 subpaths, so final artifact rerun remains a slice-12 gate |
-| Slice 12 / prove and hand off | in_progress | Adopters, deletions, active docs, barrels, 52/52 changed-package changesets, runtime discovery, Plite, React, History, Yjs fast/slow, transaction-draft, media rollback, and snapshot-selection proof have recorded checkpoints; broad package/browser/release/review/checker closure remains | Freeze source and complete final verified handoff |
-| Proof workflow optimization | in_progress | Plite source-first typecheck is green in 1.98s instead of ~1m55s; Node runner/tooling/affected-map contracts pass 66/66 in 0.48s and bounded www adopter typecheck passes in 7.85s; final Chromium and matrix wall-time proof remain open | Repair the live slice-fit contract, then measure the bounded/resumable Chromium runner and closure matrix after source freeze |
+| Slice 12 / prove and hand off | in_progress | Adopters, deletions, docs, barrels, changesets, release proof, read-only review, Plite 1,371/1,371, React 998/998, DOM 192/192, History, Yjs, Layout, Browser core, and the complete affected package graph are green. Full Chromium now reaches product tests: 576 pass and one formatted-leaf insertion assertion fails before the fail-fast runner leaves 112 unexecuted. Canonical benchmark closure remains open. | Repair the structural text-boundary regression, resume strict Chromium, then run the quiet-host canonical benchmark and browser matrix. |
+| Proof workflow optimization | in_progress | The complete Node-22 affected gate passes in 88.609s: 42.658s typecheck, 4.733s www integration, 32.340s package tests, 0.492s Browser core, 7.742s contracts, and 0.537s resumed Chromium smoke. Workspace fan-out is genuinely bounded at eight; `--parallel` is absent. A localhost-capable Chromium run reaches 582 executed tests in 275.219s instead of failing at server bind. | Fix the one product assertion, measure resumed full Chromium and matrix wall time, and keep the sub-two-minute development result. |
 
 Decision brief:
 - outcome: implement every accepted mandatory packet, resolve every conditional
@@ -988,3 +994,61 @@ Open risks:
   large callbacks even though the event/runtime-ID phase is sparse. Do not hide
   that cost or reintroduce a second mutable document representation during
   closure.
+
+## 2026-07-22 final closure checkpoint
+
+- Package/adopter/release proof is current. `pnpm check:core` passes its full
+  45-package graph in about 17 seconds. `pnpm plite:release:artifacts` passes 10
+  packages, 31 public subpaths, NodeNext, Bundler, runtime import, dependency
+  direction, and bare/named DCE.
+- `plite-layout` caused the 363-file declaration leak by selecting
+  `tsconfig.json` in its release build. The override is deleted, every direct
+  Plite package is contract-checked against `tsconfig.build.json`, the full
+  build passes, and the source-leak audit is green.
+- Browser proof infrastructure is repaired rather than hidden. Deterministic
+  file/directory metadata checkpoints replace fan-out `fs.watch`, failing
+  FSEvents, and descriptor-heavy kqueue; edit-revert and create-delete drift
+  remain detectable, and byte digests are final content truth. The 49/49 runner
+  contracts pass in about 1.5 seconds. The accidental `EBADF` process retry and
+  direct `@parcel/watcher` dependency are deleted.
+- The literal `pnpm --filter www typecheck` wrapper is sandbox-blocked because
+  `tsx` cannot bind its IPC socket. Its exact decomposed work is green: Fumadocs
+  source build, docs source parity, registry source parity, app `tsc`, and
+  package-integration `tsc`.
+- Exact Korean IME managed Chromium reaches proof-server startup and stops on
+  sandbox `listen EPERM` for `127.0.0.1:3102`. Heading-start Chromium, strict
+  `check:plite`, the browser matrix, and interactive Browser/Chrome evidence
+  therefore remain unclaimed; no product failure occurred in that attempt.
+- Formal CLI autoreview is blocked by read-only Codex state. The authorized
+  read-only architecture reviewer is the fallback; accepted findings must be
+  repaired before closure. The registered `clipboard-large-payload` benchmark
+  runs last after that review, followed by all six plan checkers and
+  `git diff --check`.
+- The fallback review found and closed four issues: the native watcher and
+  hanging-close design were deleted; History/Yjs now share a strict persisted
+  identity decoder; Layout rejects negative persisted coordinates and empty
+  stable identifiers. Runner 49/49, Yjs, History 120/120, Layout 52/52, and the
+  five-owner typecheck graph pass after repair.
+- The fallback reviewer completed with no surviving actionable findings. Fresh
+  package proof passes Plite 1,371/1,371 and Plite DOM 192/192 with both
+  typechecks, lint, declaration-leak audit, and diff check green.
+- Clipboard paste construction reuses one schema plan, carries canonical slice
+  authority, and avoids duplicate preview runtime-index mapping. The authority
+  coordinator launches issue, cut, and support workers exactly once in distinct
+  processes and validates their configuration before merging. Its bounded
+  contract passes; an isolated exact-10k run records 49.84/17.49/115.8 ms under
+  the unchanged 60/20/280 ms limits. The canonical artifact is still red under
+  current host load (load average 8.6), so performance closure remains open
+  rather than weakening the gate.
+- The final lazy-slice and schema-cache interaction is closed: structural schema
+  compilation is reused while open `DocumentSlice` tokens remain deferred.
+  Plite passes 1,371/1,371; the complete affected Node-22 gate passes in 88.609
+  seconds, including 53-package typecheck, 47-package tests, Browser core,
+  contracts, and a fingerprint-matching 3/3 Chromium smoke proof.
+- Strict `check:plite` reaches the Browser package and stops before DOM tests on
+  sandbox `listen EPERM` at `::1`; the matrix builds the app in 4.4 seconds and
+  stops before product code on the same denial at `127.0.0.1:3102`. Local
+  matrix scripts no longer perform an unconditional `playwright install`.
+- The canonical clipboard run remains intentionally unexecuted at load average
+  16.3-25.1. The isolated exact-10k evidence remains green; timing budgets and
+  the three-sample authority requirement are unchanged.

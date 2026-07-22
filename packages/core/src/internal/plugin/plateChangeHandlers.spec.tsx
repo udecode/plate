@@ -7,6 +7,7 @@ jsxt;
 
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
+import { subscribePlateChangeCallbacks } from './plateChangeHandlers';
 
 describe('plate change handlers', () => {
   it('dispatches node change handlers from Plite node change events', () => {
@@ -24,7 +25,7 @@ describe('plate change handlers', () => {
     });
     const editor = createBaseEditor({
       plugins: [NodeObserverPlugin],
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
 
     onNodeChange.mockClear();
@@ -53,7 +54,7 @@ describe('plate change handlers', () => {
     });
     const editor = createBaseEditor({
       plugins: [NodeObserverPlugin],
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
 
     onNodeChange.mockClear();
@@ -100,7 +101,7 @@ describe('plate change handlers', () => {
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
 
     onNodeChange.mockClear();
@@ -123,7 +124,7 @@ describe('plate change handlers', () => {
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
 
     onTextChange.mockClear();
@@ -139,5 +140,34 @@ describe('plate change handlers', () => {
       prevText: 'hello',
       text: 'hello!',
     });
+  });
+
+  it('keeps provider observers independent from plugin handler fallback', () => {
+    const pluginHandler = mock(() => true);
+    const providerObserver = mock();
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          handlers: { onTextChange: pluginHandler },
+          key: 'textHandler',
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+    const unsubscribe = subscribePlateChangeCallbacks(editor, {
+      onTextChange: providerObserver,
+    });
+
+    pluginHandler.mockClear();
+    editor.update.text.insert('!', { at: { offset: 5, path: [0, 0] } });
+
+    expect(pluginHandler).toHaveBeenCalledTimes(1);
+    expect(providerObserver).toHaveBeenCalledTimes(1);
+
+    unsubscribe();
+    editor.update.text.insert('?', { at: { offset: 6, path: [0, 0] } });
+
+    expect(pluginHandler).toHaveBeenCalledTimes(2);
+    expect(providerObserver).toHaveBeenCalledTimes(1);
   });
 });

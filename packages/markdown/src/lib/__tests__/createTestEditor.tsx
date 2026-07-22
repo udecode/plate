@@ -15,7 +15,7 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { defineMarkdownConfig, MarkdownPlugin } from '../MarkdownPlugin';
+import { MarkdownPlugin } from '../MarkdownPlugin';
 import type { DeserializeMdOptions } from '../deserializer';
 import type { SerializeMdOptions } from '../serializer';
 
@@ -132,8 +132,7 @@ const testSchemaPlugins = [
 ];
 
 const markdownPlugin = MarkdownPlugin.configure({
-  config: defineMarkdownConfig({
-    id: 'plate-test:markdown:shared-profile',
+  options: {
     plainMarks: [KEYS.suggestion, KEYS.comment],
     remarkPlugins: [
       remarkMath,
@@ -142,8 +141,7 @@ const markdownPlugin = MarkdownPlugin.configure({
       remarkMdx,
       remarkMention,
     ],
-    version: 1,
-  }),
+  },
 });
 
 export const createTestEditor = () =>

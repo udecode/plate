@@ -41,7 +41,7 @@ describe('withInsertBreakList', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.break.insert();
@@ -73,7 +73,7 @@ describe('withInsertBreakList', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.break.insert();
@@ -111,7 +111,7 @@ describe('withInsertBreakList', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.break.insert();

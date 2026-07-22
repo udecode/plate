@@ -15,7 +15,7 @@ describe('moveMiddleColumn', () => {
   it('merge a non-empty middle column into the first column and remove the wrapper', () => {
     const editor = createBaseEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -53,7 +53,7 @@ describe('moveMiddleColumn', () => {
   it('remove an empty middle column and report failure', () => {
     const editor = createBaseEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: [
+      initialValue: [
         {
           children: [
             {

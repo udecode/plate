@@ -1,12 +1,28 @@
-import { useCallback, useMemo, useReducer } from 'react';
+import { useCallback, useMemo, useReducer, useRef } from 'react';
+import { SelectionApi, type Selection } from '@platejs/plite';
 import { EDITOR_TO_FORCE_RENDER } from '@platejs/plite-dom/internal';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
+import { ReactEditor } from '../plugin/react-editor';
 import { createDOMRepairQueue } from './dom-repair-queue';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
   applyEditableRepairRequest,
   type EditableRepairRequest,
 } from './mutation-controller';
+
+type PendingModelSelectionExport = {
+  selection: Selection;
+  version: number;
+};
+
+export const shouldExportPendingModelSelection = (
+  pending: PendingModelSelectionExport,
+  current: PendingModelSelectionExport,
+  focused: boolean
+) =>
+  focused &&
+  current.version === pending.version &&
+  SelectionApi.equals(current.selection, pending.selection);
 
 export const useRuntimeRepairEngine = ({
   runtime,
@@ -20,6 +36,8 @@ export const useRuntimeRepairEngine = ({
   syncDOMSelectionToEditor: () => void;
 }) => {
   const [, forceRender] = useReducer((s) => s + 1, 0);
+  const pendingModelSelectionExportAfterRenderRef =
+    useRef<PendingModelSelectionExport | null>(null);
   const { domPhaseScheduler, editor, inputController } = runtime;
   const domRepairQueue = useMemo(
     () =>
@@ -48,6 +66,27 @@ export const useRuntimeRepairEngine = ({
       }
     });
   }, [editor, forceRender, runtime]);
+
+  useIsomorphicLayoutEffect(() => {
+    const pending = pendingModelSelectionExportAfterRenderRef.current;
+
+    if (!pending) return;
+
+    pendingModelSelectionExportAfterRenderRef.current = null;
+    const current = editor.read.runtime.snapshot();
+
+    if (
+      !shouldExportPendingModelSelection(
+        pending,
+        current,
+        ReactEditor.isFocused(editor)
+      )
+    ) {
+      return;
+    }
+
+    syncDOMSelectionToEditor();
+  });
 
   runtime.domRepairQueueRef.current = domRepairQueue;
 
@@ -86,9 +125,28 @@ export const useRuntimeRepairEngine = ({
     ]
   );
 
+  const requestModelSelectionExportAfterRender = useCallback(() => {
+    const snapshot = editor.read.runtime.snapshot();
+    const pending = {
+      selection: snapshot.selection,
+      version: snapshot.version,
+    };
+
+    pendingModelSelectionExportAfterRenderRef.current = pending;
+    try {
+      requestEditableRepair({ forceRender: true, kind: 'force-render' });
+    } catch (error) {
+      if (pendingModelSelectionExportAfterRenderRef.current === pending) {
+        pendingModelSelectionExportAfterRenderRef.current = null;
+      }
+      throw error;
+    }
+  }, [editor, requestEditableRepair]);
+
   return {
     domRepairQueue,
     forceRender,
     requestEditableRepair,
+    requestModelSelectionExportAfterRender,
   };
 };

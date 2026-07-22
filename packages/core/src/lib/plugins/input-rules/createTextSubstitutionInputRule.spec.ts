@@ -14,7 +14,7 @@ const createEditor = (
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
-    value: [{ children: [{ text: '' }], type: 'p' }],
+    initialValue: [{ children: [{ text: '' }], type: 'p' }],
   } as any);
 
 describe('createTextSubstitutionInputRule', () => {

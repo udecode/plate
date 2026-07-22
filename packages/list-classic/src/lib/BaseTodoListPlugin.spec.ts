@@ -13,7 +13,7 @@ describe('BaseTodoListPlugin', () => {
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },
-      value: [
+      initialValue: [
         {
           checked: true,
           children: [{ text: 'task' }],
@@ -63,7 +63,7 @@ describe('BaseTodoListPlugin', () => {
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },
-      value: [{ children: [{ text: 'task' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'task' }], type: KEYS.p }],
     } as any);
 
     editor.update.break.insert();
@@ -93,7 +93,7 @@ describe('BaseTodoListPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     } as any);
 
     editor.plugin(BaseTodoListPlugin).update.toggle();

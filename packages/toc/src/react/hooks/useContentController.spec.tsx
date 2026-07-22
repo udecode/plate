@@ -4,7 +4,7 @@ import {
   registerSharedTocHookMocks,
   resetSharedTocHookMocks,
   useContentObserverMock,
-  useEditorRefMock,
+  useEditorMock,
 } from './__tests__/tocHookMocks';
 
 describe('useContentController', () => {
@@ -35,7 +35,7 @@ describe('useContentController', () => {
     });
     container.scrollTo = scrollTo;
 
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     useContentObserverMock.mockReturnValue({ activeId: 'h1' });
 
     const { useContentController } = await import(

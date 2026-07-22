@@ -10,7 +10,7 @@ const createEditor = (offset: number) =>
       anchor: { offset, path: [0, 0] },
       focus: { offset, path: [0, 0] },
     },
-    value: [
+    initialValue: [
       { children: [{ text: 'one' }], type: 'p' },
       { children: [{ text: 'two' }], type: 'p' },
     ],

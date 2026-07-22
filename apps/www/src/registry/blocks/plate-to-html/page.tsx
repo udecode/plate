@@ -4,7 +4,7 @@ import { cva } from 'class-variance-authority';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { type Value, normalizeStaticValue } from 'platejs';
-import { createStaticEditor, serializeHtml } from 'platejs/static';
+import { createStaticEditor, renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import {
@@ -61,7 +61,7 @@ export default async function PlateToHtmlBlock() {
 
   const editor = createStaticEditor({
     plugins: BaseEditorKit,
-    value: createValue(),
+    initialValue: createValue(),
   });
 
   const tailwindCss = await getCachedTailwindCss();
@@ -72,7 +72,7 @@ export default async function PlateToHtmlBlock() {
   const theme = 'light';
 
   // Get the editor content HTML using EditorStatic
-  const editorHtml = await serializeHtml(editor, {
+  const editorHtml = await renderStaticHtml(editor, {
     editorComponent: EditorStatic,
     props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
   });

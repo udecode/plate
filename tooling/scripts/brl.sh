@@ -10,9 +10,13 @@ run_barrelsby() {
     if [ ! -f "$dir/index.tsx" ]; then
         local temp_index=""
         local temp_input_rules_index=""
+        local preserve_curated_index=""
 
         if [ -f "$dir/index.ts" ]; then
             temp_index="$dir/.index.ts.brl.bak"
+            if grep -q '@platejs-curated-entrypoint' "$dir/index.ts"; then
+                preserve_curated_index="true"
+            fi
             mv "$dir/index.ts" "$temp_index" || return 1
         fi
 
@@ -29,7 +33,12 @@ run_barrelsby() {
                 return 1
             fi
 
-            [ -n "$temp_index" ] && rm -f "$temp_index"
+            if [ -n "$preserve_curated_index" ]; then
+                rm -f "$dir/index.ts"
+                mv "$temp_index" "$dir/index.ts" || return 1
+            else
+                [ -n "$temp_index" ] && rm -f "$temp_index"
+            fi
             [ -n "$temp_input_rules_index" ] && rm -f "$temp_input_rules_index"
             return 0
         else

@@ -1,13 +1,11 @@
 import {
+  classifyBrowserMobileTransportProof,
   evaluatePlaceholderInput,
   extractAgentBrowserDebugSnapshot,
   extractAppiumDebugSnapshot,
-  parseDebugSnapshot,
-} from '../../src/core/proof';
-import {
-  classifyBrowserMobileTransportProof,
   getBrowserMobileTransportProofMatrix,
-} from '../../src/transports/contracts';
+  parseDebugSnapshot,
+} from '../../src/core';
 
 describe('proof helpers', () => {
   it('extracts debug snapshot from an agent-browser batch result', () => {

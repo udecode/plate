@@ -142,11 +142,12 @@ describe('getEditorPlugin', () => {
     });
     const context = typedEditor.plugin(plugin);
 
-    expect(context.api.editorMethod()).toBe('editor');
     expect(context.api.pluginMethod()).toBe('plugin');
     expect(typedEditor.api.editorMethod()).toBe('editor');
-    expect(typedEditor.api.methodPlugin.pluginMethod()).toBe('plugin');
-    expect((context.api as any).methodPlugin).toBeUndefined();
+    // @ts-expect-error root editor APIs do not leak into plugin portals
+    expect(context.api.editorMethod).toBeUndefined();
+    // @ts-expect-error plugin APIs do not leak into the root editor API
+    expect(typedEditor.api.pluginMethod).toBeUndefined();
   });
 
   it('exposes plugin-owned updates without their key namespace', () => {

@@ -12,7 +12,7 @@ describe('insertCallout', () => {
   it('uses the explicit icon, variant, and passed insert options', () => {
     const editor = createBaseEditor({
       plugins: [BaseCalloutPlugin],
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
     editor.update((tx) => {
@@ -38,7 +38,7 @@ describe('insertCallout', () => {
           type: 'custom-callout',
         }),
       ],
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
     localStorage.setItem(CALLOUT_STORAGE_KEY, '📌');

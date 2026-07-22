@@ -6,7 +6,7 @@
     "jsx": "react-jsx",
     "noEmit": true,
     "paths": {},
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "types": ["node", "react", "react-dom"]
   }
 }

@@ -87,7 +87,7 @@ export const testDocxDeserializer = ({
         JuicePlugin,
       ],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     } as any);
 
     actual.api.clipboard.insertData(

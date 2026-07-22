@@ -314,7 +314,7 @@ export default function MarkdownStreamingDemo() {
   const editor = usePlateEditor(
     {
       plugins: [...CopilotKit, ...EditorKit],
-      value: [{ children: [{ text: '' }], type: KEYS.p }] as Value,
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }] as Value,
     },
     []
   );

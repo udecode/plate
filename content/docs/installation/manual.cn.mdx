@@ -338,7 +338,7 @@ export default function App() {
   return (
     <Plate
       editor={editor}
-      onChange={({ value }) => {
+      onValueChange={({ value }) => {
         localStorage.setItem('plate-manual-demo', JSON.stringify(value));
       }}
     >

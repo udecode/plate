@@ -333,21 +333,22 @@ export type EditorFacetDocumentDependency<TRoot extends RootKey = RootKey> =
   }>;
 
 /** Explicit state inputs that can invalidate a computed editor facet provider. */
-export type EditorFacetDependency =
+export type EditorFacetDependency<TRoot extends RootKey = RootKey> =
   | 'document'
   | 'schema'
   | 'selection'
   | EditorFacet<any, any>
-  | EditorFacetDocumentDependency
+  | EditorFacetDocumentDependency<TRoot>
   | EditorStateField<any>;
 
-export type EditorFacetComputeOptions = Readonly<{
-  /**
-   * Inputs read by the provider. Omit this to preserve whole-editor revision
-   * invalidation. An empty list computes the provider once per registration.
-   */
-  dependencies: readonly EditorFacetDependency[];
-}>;
+export type EditorFacetComputeOptions<TRoot extends RootKey = RootKey> =
+  Readonly<{
+    /**
+     * Inputs read by the provider. Omit this to preserve whole-editor revision
+     * invalidation. An empty list computes the provider once per registration.
+     */
+    dependencies: readonly EditorFacetDependency<TRoot>[];
+  }>;
 
 export type EditorFacetProvider<TInput = any> = Readonly<{
   compute?: (state: EditorStateView) => TInput;
@@ -360,9 +361,9 @@ export type EditorFacet<TInput, TOutput = readonly TInput[]> = Readonly<{
   combine: (inputs: readonly TInput[]) => TOutput;
   compare: (left: TOutput, right: TOutput) => boolean;
   compareInput: (left: TInput, right: TInput) => boolean;
-  compute: (
+  compute: <const TRoot extends RootKey>(
     compute: (state: EditorStateView) => TInput,
-    options?: EditorFacetComputeOptions
+    options?: EditorFacetComputeOptions<TRoot>
   ) => EditorFacetProvider<TInput>;
   default: TOutput;
   key: string;
@@ -1296,9 +1297,7 @@ export interface BaseEditor<
   ) => EditorApiValueFromExtension<TExtension>;
   read: EditorRead<V, TExtensions>;
   subscribe: (listener: SnapshotListener<any>) => () => void;
-  subscribeCommit: (
-    listener: (commit: EditorCommit<any>) => void
-  ) => () => void;
+  subscribeCommit: (listener: EditorCommitListener<any>) => () => void;
   update: EditorUpdate<V, TExtensions>;
   extend: (
     extension: EditorExtensionInput<any>,
@@ -1767,7 +1766,7 @@ export type EditorCommand<
   id: string;
 }>;
 
-/** @internal Minimal type carrier shared by every semantic command. */
+/** Minimal descriptor shape shared by every semantic editor command. */
 export type EditorCommandDescriptor = Readonly<{
   readonly [EDITOR_COMMAND_TYPES]: Readonly<{
     editor: unknown;
@@ -1776,7 +1775,7 @@ export type EditorCommandDescriptor = Readonly<{
   id: string;
 }>;
 
-/** @internal Input accepted by one semantic command descriptor. */
+/** Input accepted by one semantic command descriptor. */
 export type EditorCommandInput<TCommand extends EditorCommandDescriptor> =
   TCommand[typeof EDITOR_COMMAND_TYPES]['input'];
 
@@ -1800,7 +1799,7 @@ export type EditorCommandCapabilities<TEditor> =
       }>
     : never;
 
-/** @internal Command accepted only when the actual editor meets its requirement. */
+/** A command accepted only when the actual editor meets its requirements. */
 export type CompatibleEditorCommand<
   TEditor,
   TCommand extends EditorCommandDescriptor,
@@ -3159,7 +3158,7 @@ export interface EditorStaticApi {
 
   subscribeCommit: <V extends Value>(
     editor: Editor<V>,
-    listener: (commit: EditorCommit<V>) => void
+    listener: EditorCommitListener<V>
   ) => () => void;
 
   subscribeSource: <V extends Value>(

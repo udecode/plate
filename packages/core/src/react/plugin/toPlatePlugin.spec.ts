@@ -108,11 +108,11 @@ describe('toPlatePlugin', () => {
 
   it('add new handlers and API methods', () => {
     const mockOnKeyDown = mock();
-    const mockOnChange = mock();
+    const mockOnNodeChange = mock();
 
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
       handlers: {
-        onChange: mockOnChange,
+        onNodeChange: mockOnNodeChange,
         onKeyDown: mockOnKeyDown,
       },
     }).extendEditorApi(() => ({
@@ -125,7 +125,10 @@ describe('toPlatePlugin', () => {
     const resolvedPlugin = editor.plugins.p as any;
 
     expect(resolvedPlugin.handlers).toHaveProperty('onKeyDown', mockOnKeyDown);
-    expect(resolvedPlugin.handlers).toHaveProperty('onChange', mockOnChange);
+    expect(resolvedPlugin.handlers).toHaveProperty(
+      'onNodeChange',
+      mockOnNodeChange
+    );
     expect(editor.api.customMethod()).toBe('custom result');
   });
 

@@ -43,7 +43,7 @@ describe('li list unwrapping', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -85,7 +85,7 @@ describe('li list unwrapping', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -130,7 +130,7 @@ describe('li list unwrapping', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -181,7 +181,7 @@ describe('li list unwrapping', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {

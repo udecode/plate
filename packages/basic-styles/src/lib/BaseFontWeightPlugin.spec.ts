@@ -1,4 +1,4 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, HtmlPlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseFontWeightPlugin } from './BaseFontWeightPlugin';
@@ -17,7 +17,7 @@ describe('BaseFontWeightPlugin', () => {
       'string'
     );
     expect(
-      editor.api.html.deserialize({
+      editor.plugin(HtmlPlugin).api.deserialize({
         element: '<span style="font-weight: 700">text</span>',
       })
     ).toMatchObject([
@@ -36,7 +36,7 @@ describe('BaseFontWeightPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
 
     editor.update.fontWeight.set('bold');

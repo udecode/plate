@@ -13,6 +13,12 @@ Plate 插件是通过 `Plate` 组件的 [plugins](/docs/api/core/plate-component
 Plate 用于在 `editor.plugins` 中按 key 存储插件的唯一标识符。
 </APIItem>
 
+<APIItem name="targetPluginKeys" type="readonly string[]">
+插件的 schema 和 host 行为所针对的插件 key。
+
+- **默认值:** `[]`
+</APIItem>
+
 <APIItem name="api" type="Record<string, Function>">
 插件提供的 API 函数对象。这些函数可通过 `editor.api[key]` 访问。
 </APIItem>
@@ -22,14 +28,9 @@ Plate 用于在 `editor.plugins` 中按 key 存储插件的唯一标识符。
 </APIItem>
 
 <APIItem name="options" type="Record<string, any>">
-插件拥有的可变运行时状态。通过插件 selector 读取，并使用 `setOption` 或
-`setOptions` 更新。
-</APIItem>
-
-<APIItem name="config" type="ImmutablePluginConfiguration<C['config']>">
-用于编译插件描述符、schema、parser 和 host codec 的不可变值。通过
-`.configure({ config: { ... } })` 设置。Schema 工厂接收冻结后的配置；可变运行时状态属于
-`options`。
+插件拥有的值，用于 schema 工厂、parser、host codec 与运行时行为。通过
+`.configure({ options: { ... } })` 设置描述符值；通过 `getOptions`、
+`setOption` 或 `setOptions` 读取或更新实时值。更新 options 不会重新编译 schema。
 </APIItem>
 
 <APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
@@ -118,12 +119,7 @@ Plate 用于向任何节点组件注入 props 的属性。
 允许其他插件注入代码的属性。
 </APISubListItem>
 <APISubListItem parent="inject" name="targetPluginToInject" type="function" optional>
-返回要注入到 targetPlugins 指定的其他插件 `inject.plugins` 中的插件配置的函数。
-</APISubListItem>
-<APISubListItem parent="inject" name="targetPlugins" type="string[]" optional>
-`InjectNodeProps` 和 `targetPluginToInject` 函数使用的插件 keys。
-
-- **默认值:** `[ParagraphPlugin.key]`
+返回要注入到 `targetPluginKeys` 中每个已安装且已启用的顶层目标的插件配置。
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -136,7 +132,8 @@ Plate 用于向任何节点组件注入 props 的属性。
 
 <APIItem name="schema" type="PluginSchema<C> | null">
 声明插件的 Plite 模型。元素语法使用 `schema.element`，类型化文本属性描述符使用
-`schema.mark`，跨节点属性使用 `schema.properties`。Schema 工厂只能读取不可变插件配置。
+`schema.mark`，跨节点属性使用 `schema.properties`。Schema 工厂接收编译时使用的插件
+`options` 快照。
 布尔文本属性使用 `property.boolean({ default: false, omitDefault: true })`。
 </APIItem>
 
@@ -394,12 +391,12 @@ editOnly: {
 <API name="Methods">
 <APIMethods>
 <APIItem name="configure" type="(config: PlatePluginConfig) => PlatePlugin">
-返回应用不可变定义更新后的新插件描述符。参数始终是对象。需要读取已解析编辑器上下文时，
+返回应用定义更新后的新插件描述符。参数始终是对象。需要读取已解析编辑器上下文时，
 使用 `.extend((ctx) => config)`。
 
 ```ts
 HeadingPlugin.configure({
-  config: { levels: [1, 2, 3] },
+  options: { levels: [1, 2, 3] },
 });
 ```
 
@@ -537,8 +534,8 @@ HeadingPlugin.configure({
 <API name="GenericTypes">
 <APIAttributes>
 <APIItem name="C" type="AnyPluginConfig = PluginConfig">
-表示插件契约，包括 `key`、不可变 `config`、运行时 `options`、`api`、`tx`、
-selectors、dependencies、嵌套 plugins 和 schema 推断。
+表示插件契约，包括 `key`、`options`、`api`、`tx`、selectors、dependencies、
+嵌套 plugins 和 schema 推断。
 </APIItem>
 </APIAttributes>
 </API>

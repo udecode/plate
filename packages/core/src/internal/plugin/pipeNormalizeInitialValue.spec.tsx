@@ -34,7 +34,7 @@ describe('pipeNormalizeInitialValue', () => {
     it('transforms the initial value once', () => {
       const editor = createBaseEditor({
         plugins,
-        value: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+        initialValue: [{ children: [{ text: '' }], count: 0, type: 'p' }],
       });
 
       expect(editor.read.children()).toEqual([
@@ -47,7 +47,7 @@ describe('pipeNormalizeInitialValue', () => {
     it('transforms the initial value once', () => {
       const editor = createBaseEditor({
         plugins,
-        value: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+        initialValue: [{ children: [{ text: '' }], count: 0, type: 'p' }],
       });
 
       expect(editor.read.children()).toEqual([
@@ -60,7 +60,7 @@ describe('pipeNormalizeInitialValue', () => {
     it('uses the provided value and transforms it once', () => {
       const editor = createBaseEditor({
         plugins,
-        value: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+        initialValue: [{ children: [{ text: '' }], count: 0, type: 'p' }],
       });
 
       expect(editor.read.children()).toEqual([
@@ -77,7 +77,7 @@ describe('pipeNormalizeInitialValue', () => {
         ];
         const editor = createBaseEditor({
           plugins,
-          value: children,
+          initialValue: children,
         });
 
         expect(editor.read.children()).toEqual([
@@ -88,7 +88,9 @@ describe('pipeNormalizeInitialValue', () => {
       it('keeps the current editor value when children are empty', () => {
         const editor = createBaseEditor({
           plugins,
-          value: [{ children: [{ text: 'Factory' }], count: 0, type: 'p' }],
+          initialValue: [
+            { children: [{ text: 'Factory' }], count: 0, type: 'p' },
+          ],
         });
 
         expect(editor.read.children()).toEqual([
@@ -107,7 +109,7 @@ describe('pipeNormalizeInitialValue', () => {
         const editor = createBaseEditor({
           plugins,
           selection,
-          value: [{ children: [{ text: 'A' }], count: 0, type: 'p' }],
+          initialValue: [{ children: [{ text: 'A' }], count: 0, type: 'p' }],
         });
 
         expect(editor.read.selection()).toEqual(selection);
@@ -116,7 +118,7 @@ describe('pipeNormalizeInitialValue', () => {
       it('auto-select start when autoSelect is "start"', () => {
         const editor = createBaseEditor({
           autoSelect: 'start',
-          value: [{ children: [{ text: 'Test' }], type: 'p' }],
+          initialValue: [{ children: [{ text: 'Test' }], type: 'p' }],
         });
 
         expect(editor.read.selection()).toEqual({
@@ -129,7 +131,7 @@ describe('pipeNormalizeInitialValue', () => {
       it('auto-select end when autoSelect is true', () => {
         const editor = createBaseEditor({
           autoSelect: true,
-          value: [{ children: [{ text: 'Test' }], type: 'p' }],
+          initialValue: [{ children: [{ text: 'Test' }], type: 'p' }],
         });
 
         expect(editor.read.selection()).toEqual({
@@ -176,7 +178,7 @@ describe('pipeNormalizeInitialValue', () => {
         }),
       ],
       readOnly: true,
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
 
     callCount = 0;

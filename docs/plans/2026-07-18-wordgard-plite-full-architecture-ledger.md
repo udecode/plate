@@ -405,3 +405,19 @@ Open risks:
   fast paths, destructive schema fitting around paste/table/void/IME, mixed
   configuration revisions, and view-layer over-generalization. Each has a
   focused slice gate above; none is an unresolved planning decision.
+
+## 2026-07-22 execution reconciliation
+
+The ledger's architecture decisions are fully adopted in source. Fresh
+repository proof passes `check:core`, the 10-package/31-subpath packed consumer,
+the full Plite release build, source declaration-leak audit, and 49/49 browser
+runner contracts. No further Wordgard mechanism is awaiting an architecture
+decision. The parent execution goal remains open only for the final registered
+benchmark, source review closure, and browser/matrix proof; managed Chromium is
+currently stopped by sandbox `listen EPERM` before product code runs.
+
+The source review is closed with no surviving actionable findings. Plite and
+Plite DOM pass 1,369 and 192 tests plus both typechecks. The remaining benchmark
+owner is structurally repaired with three fresh worker processes, explicit
+warmup policy, unchanged budgets, and zero retries; only a canonical artifact
+under acceptable host load and the sandbox-blocked browser matrix remain open.

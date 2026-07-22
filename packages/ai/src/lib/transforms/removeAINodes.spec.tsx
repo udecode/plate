@@ -7,7 +7,7 @@ describe('removeAINodes', () => {
   it('removes only text nodes marked with ai', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin],
-      value: [
+      initialValue: [
         {
           type: 'p',
           children: [{ ai: true, text: 'one' }, { text: ' two' }],
@@ -28,7 +28,7 @@ describe('removeAINodes', () => {
   it('removes only the explicit matching target', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin],
-      value: [
+      initialValue: [
         { type: 'p', children: [{ ai: true, text: 'one' }] },
         { type: 'p', children: [{ ai: true, text: 'two' }] },
       ],
@@ -45,7 +45,7 @@ describe('removeAINodes', () => {
   it('removes AI nodes inserted earlier in the active transaction', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin],
-      value: [{ type: 'p', children: [{ text: 'one' }] }],
+      initialValue: [{ type: 'p', children: [{ text: 'one' }] }],
     });
 
     editor.update((tx) => {

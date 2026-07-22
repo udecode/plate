@@ -145,7 +145,7 @@ describe('selection cursor overlay queries', () => {
   describe('getSelectionRects', () => {
     it('returns an empty array when the DOM range is missing', () => {
       const editor = createBaseEditor({
-        value: [{ children: [{ text: 'one' }], type: KEYS.p }],
+        initialValue: [{ children: [{ text: 'one' }], type: KEYS.p }],
       });
 
       spyOn(editor.api.dom, 'resolveDOMRange').mockReturnValue(
@@ -166,7 +166,7 @@ describe('selection cursor overlay queries', () => {
 
     it('returns an empty array when a selected text node has no parent element', () => {
       const editor = createBaseEditor({
-        value: [{ children: [{ text: 'one' }], type: KEYS.p }],
+        initialValue: [{ children: [{ text: 'one' }], type: KEYS.p }],
       });
 
       const textNode = editor.read.children()[0].children[0];

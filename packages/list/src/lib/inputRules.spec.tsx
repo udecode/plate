@@ -32,7 +32,7 @@ describe('list input rules', () => {
         anchor: { offset, path: [0, 0] },
         focus: { offset, path: [0, 0] },
       },
-      value: [{ children: [{ text }], type: 'p' }],
+      initialValue: [{ children: [{ text }], type: 'p' }],
     } as any);
 
   it('creates a bullet list item when markdown group is enabled', () => {

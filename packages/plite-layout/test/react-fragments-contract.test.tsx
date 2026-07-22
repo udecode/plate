@@ -46,7 +46,7 @@ describe('usePliteLayoutFragments', () => {
       ],
     });
     const page = { margins: 96, preset: 'a4' } as const;
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({ defaults, element, path, pageSettings }) {
         if (element.type !== 'table') {
@@ -73,7 +73,7 @@ describe('usePliteLayoutFragments', () => {
         };
       },
       page,
-    }));
+    });
     const renderElement = (props: RenderElementProps) => {
       if (props.element.type !== 'table') {
         return <div {...props.attributes}>{props.children}</div>;

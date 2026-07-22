@@ -12,7 +12,7 @@ const createColumnRuntimeEditor = ({
 }) =>
   createBaseEditor({
     selection,
-    value,
+    initialValue: value,
     plugins: [BaseColumnPlugin],
   });
 

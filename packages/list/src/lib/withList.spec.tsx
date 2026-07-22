@@ -55,7 +55,7 @@ describe('normalizeList', () => {
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
         shouldNormalizeEditor: true,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.deleteBackward();
@@ -108,7 +108,7 @@ describe('normalizeList', () => {
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
         shouldNormalizeEditor: true,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.deleteBackward();
@@ -161,7 +161,7 @@ describe('normalizeList', () => {
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
         shouldNormalizeEditor: true,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.deleteForward();
@@ -193,7 +193,7 @@ describe('keyboard handling', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.break.insert();
@@ -224,7 +224,7 @@ describe('keyboard handling', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.break.insert();
@@ -257,7 +257,7 @@ describe('keyboard handling', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.break.insert();
@@ -289,7 +289,7 @@ describe('keyboard handling', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.deleteBackward();
@@ -326,7 +326,7 @@ describe('keyboard handling', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.deleteBackward();
@@ -347,7 +347,7 @@ describe('keyboard handling', () => {
           anchor: { offset: 0, path: [0, 1, 0] },
           focus: { offset: 0, path: [0, 1, 0] },
         },
-        value: [
+        initialValue: [
           {
             children: [
               { text: '' },
@@ -407,7 +407,7 @@ describe('keyboard handling', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       expect(editor.update.indent.tab()).toBe(true);
@@ -437,7 +437,7 @@ describe('keyboard handling', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       expect(editor.update.indent.untab()).toBe(true);
@@ -451,7 +451,7 @@ describe('apply override', () => {
   it('coerces ambiguous styles across a batched insert', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin, BaseIndentPlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'a' }],
           indent: 1,
@@ -489,7 +489,7 @@ describe('apply override', () => {
   it('coerces lower-roman inserts to lower-alpha when the previous sibling is alpha', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin, BaseIndentPlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'a' }],
           indent: 1,
@@ -519,7 +519,7 @@ describe('apply override', () => {
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: '12' }],
           indent: 1,

@@ -19,7 +19,7 @@ const editor = {
 const updateMock = mock();
 
 mock.module('@platejs/core/react', () => ({
-  useEditorRef: () => editor,
+  useEditor: () => editor,
   useEditorSelector: <T,>(selector: (currentEditor: typeof editor) => T): T =>
     selector(editor),
 }));

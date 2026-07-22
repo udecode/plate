@@ -83,7 +83,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     UnderlinePlugin.configure({
-      shortcuts: { toggle: 'mod+u' },
+      shortcuts: { toggle: { keys: 'mod+u' } },
     }),
   ],
 });

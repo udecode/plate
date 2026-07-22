@@ -42,7 +42,7 @@ describe('getHeadingList', () => {
   it('returns titled headings with depth, path, and id', () => {
     const editor = createBaseEditor({
       plugins: [BaseTocPlugin, TestHeadingsPlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Title' }],
           id: 'a',
@@ -99,7 +99,7 @@ describe('getHeadingList', () => {
         BaseTocPlugin.configure({ options: { queryHeading } }),
         TestHeadingsPlugin,
       ],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Ignored' }],
           id: 'a',

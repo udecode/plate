@@ -41,7 +41,7 @@ describe('deleteColumn', () => {
       nodeId: true,
       plugins: getTestTablePlugins({ disableMerge }),
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.remove.tableColumn();
@@ -104,7 +104,7 @@ describe('deleteColumn', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.remove.tableColumn();
@@ -162,7 +162,7 @@ describe('deleteColumn', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.remove.tableColumn();
@@ -220,7 +220,7 @@ describe('deleteColumn', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.remove.tableColumn();
@@ -286,7 +286,7 @@ describe('deleteColumn', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.remove.tableColumn();
@@ -326,7 +326,7 @@ describe('deleteColumn', () => {
       nodeId: true,
       plugins: getTestTablePlugins({ disableMerge: true }),
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.remove.tableColumn();
@@ -373,7 +373,7 @@ describe('deleteColumn', () => {
       nodeId: true,
       plugins: getTestTablePlugins({ disableMerge: true }),
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
     editor.update.remove.tableColumn();
 

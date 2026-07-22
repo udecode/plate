@@ -7,6 +7,10 @@ import { render } from '@testing-library/react';
 
 import { createBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
+import {
+  PlateElement,
+  type PlateElementProps,
+} from '../components/plate-nodes';
 import { PlateRoot } from '../components/PlateRoot';
 import type { PlateEditor } from '../editor/PlateEditor';
 import { createPlateEditor } from '../editor/withPlate';
@@ -78,7 +82,7 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
       plugins: [],
-      value: createValue(),
+      initialValue: createValue(),
     } as any);
 
     const { container } = renderPipe(editor);
@@ -93,7 +97,7 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
       plugins: [],
-      value: createValue(),
+      initialValue: createValue(),
     } as any);
 
     expect(() => renderPipeBare(editor)).not.toThrow();
@@ -104,7 +108,7 @@ describe('pipeRenderElement', () => {
       navigationFeedback: false,
       nodeId: true,
       plugins: [],
-      value: createValue('block-1'),
+      initialValue: createValue('block-1'),
     } as any);
 
     expect(() => renderPipeBare(editor)).not.toThrow();
@@ -115,7 +119,7 @@ describe('pipeRenderElement', () => {
       navigationFeedback: false,
       nodeId: true,
       plugins: [],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Body' }],
           id: 123,
@@ -146,7 +150,7 @@ describe('pipeRenderElement', () => {
           },
         }),
       ],
-      value: createValue(),
+      initialValue: createValue(),
     });
 
     const { container } = renderPipe(editor);
@@ -155,14 +159,19 @@ describe('pipeRenderElement', () => {
     expect(element?.tagName).toBe('ARTICLE');
   });
 
-  it('keeps element context for custom render.as components', () => {
-    const CustomElement = ({ children, ...props }: any) => {
+  it('keeps element context for custom node components', () => {
+    const CustomElement = (props: PlateElementProps) => {
       const path = usePath();
 
       return (
-        <section {...props} data-context-path={path.join(',')}>
-          {children}
-        </section>
+        <PlateElement
+          {...props}
+          as="section"
+          attributes={{
+            ...props.attributes,
+            'data-context-path': path.join(','),
+          }}
+        />
       );
     };
     const editor = createPlateEditor({
@@ -175,19 +184,16 @@ describe('pipeRenderElement', () => {
               content: schema.content.open({ default: 'text', min: 1 }),
             },
           },
-          render: {
-            as: CustomElement,
-          },
-        }),
+        }).withComponent(CustomElement),
       ],
-      value: createValue(),
+      initialValue: createValue(),
     });
 
     const { container } = renderPipe(editor);
     const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element?.tagName).toBe('SECTION');
-    expect(element).toHaveAttribute('data-context-path', '0');
+    expect(element?.getAttribute('data-context-path')).toBe('0');
   });
 
   it('preserves Plite children for void render.as tags on the fast path', () => {
@@ -202,7 +208,7 @@ describe('pipeRenderElement', () => {
           },
         }),
       ],
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           type: 'hr',
@@ -251,7 +257,7 @@ describe('pipeRenderElement', () => {
           },
         }),
       ],
-      value: createValue(),
+      initialValue: createValue(),
     });
 
     const { getByTestId } = renderPipe(editor);
@@ -277,7 +283,7 @@ describe('pipeRenderElement', () => {
           },
         }),
       ],
-      value: createValue(),
+      initialValue: createValue(),
     });
 
     const { container } = renderPipe(editor);
@@ -304,7 +310,7 @@ describe('pipeRenderElement', () => {
           },
         }),
       ],
-      value: createValue(),
+      initialValue: createValue(),
     } as any);
 
     const { container } = renderPipe(editor);
@@ -318,7 +324,7 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
-          config: { targetPluginKeys: ['p'] },
+          targetPluginKeys: ['p'],
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -329,7 +335,7 @@ describe('pipeRenderElement', () => {
           key: 'list',
         }),
       ],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Body' }],
           listStyleType: 'disc',
@@ -349,7 +355,7 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
-          config: { targetPluginKeys: ['p'] },
+          targetPluginKeys: ['p'],
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -371,7 +377,7 @@ describe('pipeRenderElement', () => {
           key: 'hook-inject',
         }),
       ],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Body' }],
           listStyleType: 'disc',
@@ -392,17 +398,14 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
-          config: { targetPluginKeys: ['p'] },
+          targetPluginKeys: ['p'],
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
               query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
               transformProps: ({ props }) => {
                 // eslint-disable-next-line react-hooks/rules-of-hooks
-                const type = useElementSelector(
-                  ([element]) => element.type,
-                  []
-                );
+                const type = useElementSelector(([element]) => element.type);
 
                 return {
                   ...props,
@@ -414,7 +417,7 @@ describe('pipeRenderElement', () => {
           key: 'selector-inject',
         }),
       ],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Body' }],
           listStyleType: 'disc',
@@ -434,7 +437,7 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
-          config: { targetPluginKeys: ['p'] },
+          targetPluginKeys: ['p'],
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -467,7 +470,7 @@ describe('pipeRenderElement', () => {
           },
         }),
       ],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Body' }],
           listStyleType: 'disc',
@@ -489,7 +492,7 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
-          config: { targetPluginKeys: ['p'] },
+          targetPluginKeys: ['p'],
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -528,7 +531,7 @@ describe('pipeRenderElement', () => {
           },
         }),
       ],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Body' }],
           listStyleType: 'disc',
@@ -565,7 +568,7 @@ describe('pipeRenderElement', () => {
           },
         }),
       ],
-      value: createValue(),
+      initialValue: createValue(),
     });
 
     const { container } = renderPipe(editor);
@@ -590,7 +593,7 @@ describe('pipeRenderElement', () => {
         }),
       ],
       readOnly: true,
-      value: createValue(),
+      initialValue: createValue(),
     });
 
     const { container } = renderPipe(editor);

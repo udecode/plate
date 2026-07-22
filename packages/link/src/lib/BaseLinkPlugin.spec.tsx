@@ -1,4 +1,5 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, HtmlPlugin } from '@platejs/core';
+import { getPlateRuntime } from '@platejs/core/internal';
 import { NodeApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
@@ -12,7 +13,7 @@ describe('BaseLinkPlugin', () => {
 
   it('parses valid anchors with a default target', () => {
     const editor = createEditor();
-    const fragment = editor.api.html.deserialize({
+    const fragment = editor.plugin(HtmlPlugin).api.deserialize({
       element: '<a href="https://example.com">Link</a>',
     });
     const link = Array.from(
@@ -30,7 +31,7 @@ describe('BaseLinkPlugin', () => {
 
   it('rejects missing and unsafe href values', () => {
     const editor = createEditor();
-    const fragment = editor.api.html.deserialize({
+    const fragment = editor.plugin(HtmlPlugin).api.deserialize({
       element: '<a>No href</a><a href="javascript:alert(1)">Bad</a>',
     });
     const hasLink = Array.from(
@@ -44,6 +45,8 @@ describe('BaseLinkPlugin', () => {
   it('registers no input rules by default', () => {
     const editor = createEditor();
 
-    expect(editor.runtime.inputRules.plugins[KEYS.link].rules).toEqual([]);
+    expect(getPlateRuntime(editor).inputRules.plugins[KEYS.link].rules).toEqual(
+      []
+    );
   });
 });

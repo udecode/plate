@@ -106,7 +106,7 @@ const createTestEditor = (input: TestEditor) =>
       MarkdownPlugin,
     ],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 describe('getMarkdown', () => {

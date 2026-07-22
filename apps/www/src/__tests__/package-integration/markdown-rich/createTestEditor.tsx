@@ -41,7 +41,6 @@ import remarkMath from 'remark-math';
 
 import {
   MarkdownPlugin,
-  defineMarkdownConfig,
 } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
 import {
   remarkMdx,
@@ -49,8 +48,7 @@ import {
 } from '../../../../../../packages/markdown/src/lib/plugins';
 
 const markdownPlugin = MarkdownPlugin.configure({
-  config: defineMarkdownConfig({
-    id: 'plate-www:test:markdown-rich',
+  options: {
     plainMarks: [KEYS.suggestion, KEYS.comment],
     remarkPlugins: [
       remarkMath,
@@ -59,8 +57,7 @@ const markdownPlugin = MarkdownPlugin.configure({
       remarkMdx,
       remarkMention,
     ],
-    version: 1,
-  }),
+  },
 });
 
 export const createTestEditor = (plugins: any[] = []) =>

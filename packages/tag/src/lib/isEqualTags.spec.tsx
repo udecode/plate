@@ -8,7 +8,7 @@ describe('isEqualTags', () => {
   it('treats matching tag values as equal regardless of order', () => {
     const editor = createBaseEditor({
       plugins: [BaseTagPlugin],
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -37,7 +37,7 @@ describe('isEqualTags', () => {
   it('returns false for different tag sets and true for empty ones', () => {
     const editor = createBaseEditor({
       plugins: [BaseTagPlugin],
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -53,7 +53,7 @@ describe('isEqualTags', () => {
     });
     const emptyEditor = createBaseEditor({
       plugins: [BaseTagPlugin],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
 
     expect(isEqualTags(editor, [{ value: 'beta' }])).toBe(false);

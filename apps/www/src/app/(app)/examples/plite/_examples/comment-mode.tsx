@@ -4,6 +4,7 @@ import {
   type PointerEvent,
   type SetStateAction,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -83,7 +84,9 @@ const isCollapsed = (range: Range | null) =>
 
 const formatRange = (range: Range | null) =>
   range
-    ? `${range.anchor.path.join('.')}:${range.anchor.offset}|${range.focus.path.join('.')}:${range.focus.offset}`
+    ? `${range.anchor.path.join('.')}:${
+        range.anchor.offset
+      }|${range.focus.path.join('.')}:${range.focus.offset}`
     : 'none';
 
 const commentVisualState = (
@@ -287,10 +290,8 @@ const CommentModePane = ({
     CommentData,
     CommentProjection
   >();
-  const widgetStore = usePliteWidgetStore(editor, {
-    annotationStore,
-    deps: [comments],
-    project: () =>
+  const widgets = useMemo(
+    () =>
       comments.map((comment) => ({
         anchor: {
           annotationId: comment.id,
@@ -302,6 +303,10 @@ const CommentModePane = ({
         },
         id: `${comment.id}-widget`,
       })),
+    [comments]
+  );
+  const widgetStore = usePliteWidgetStore(editor, widgets, {
+    annotationStore,
   });
   const widgetSnapshot = usePliteWidgets(widgetStore);
   const commentsRef = useRef(comments);
@@ -582,20 +587,18 @@ const CommentModeExample = () => {
   const [comments, setComments] = useState<CommentThread[]>([]);
   const [documentWrites, setDocumentWrites] = useState(0);
   const [commentWrites, setCommentWrites] = useState(0);
+  const annotations = useMemo(
+    () => createCommentAnnotations(comments),
+    [comments]
+  );
   const writerAnnotationStore = usePliteAnnotationStore<
     CommentData,
     CommentProjection
-  >(writerEditor, {
-    deps: [comments],
-    project: () => createCommentAnnotations(comments),
-  });
+  >(writerEditor, annotations);
   const commentAnnotationStore = usePliteAnnotationStore<
     CommentData,
     CommentProjection
-  >(commentEditor, {
-    deps: [comments],
-    project: () => createCommentAnnotations(comments),
-  });
+  >(commentEditor, annotations);
 
   const syncCommentModeFromDocument = (value: Value) => {
     commentEditor.update.value.replace({
@@ -662,7 +665,7 @@ const CommentModeExample = () => {
         <Plite
           annotationStore={writerAnnotationStore}
           editor={writerEditor}
-          onValueChange={handleWriterValueChange}
+          onValueChange={({ value }) => handleWriterValueChange(value)}
         >
           <WriterPane editor={writerEditor} />
         </Plite>

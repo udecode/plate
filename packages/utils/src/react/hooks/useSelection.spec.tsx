@@ -26,7 +26,7 @@ const createWrapper = (editor: PlateEditor) =>
 describe('useSelection hooks', () => {
   it('reports no active selection as not expanded and not in blocks', () => {
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     const wrapper = createWrapper(editor);
@@ -63,7 +63,7 @@ describe('useSelection hooks', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     const wrapper = createWrapper(editor);
@@ -100,7 +100,7 @@ describe('useSelection hooks', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: 'one' }], type: 'p' },
         { children: [{ text: 'two' }], type: 'p' },
       ],

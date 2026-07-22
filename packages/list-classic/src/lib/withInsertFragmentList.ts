@@ -16,7 +16,7 @@ import {
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type { ListPluginConfiguration } from './BaseListPlugin';
+import type { ListPluginOptions } from './BaseListPlugin';
 
 import { getPropsIfTaskListLiNode, isListRoot } from './queries';
 
@@ -25,13 +25,13 @@ export const withInsertFragmentList = ({
   plugin,
 }: {
   editor: BaseEditor;
-  plugin: { config: ListPluginConfiguration };
+  plugin: { options: ListPluginOptions };
 }): PlateEditorExtension => {
   const listItemType = editor.getType(KEYS.li);
   const listItemContentType = editor.getType(KEYS.lic);
   const validListItemContentTypes = new Set([
     listItemContentType,
-    ...(plugin.config.validLiChildren ?? []).map(({ key }) =>
+    ...(plugin.options.validLiChildren ?? []).map(({ key }) =>
       editor.getType(key)
     ),
   ]);

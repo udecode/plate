@@ -21,8 +21,6 @@ const requiredOutputs = [
   'browser/index.d.ts',
   'playwright/index.js',
   'playwright/index.d.ts',
-  'transports/index.js',
-  'transports/index.d.ts',
 ].map((outputPath) => path.join(browserRoot, 'dist', outputPath));
 const manifestPath = path.join(browserRoot, 'dist/.plite-browser-build.json');
 const manifestVersion = 4;

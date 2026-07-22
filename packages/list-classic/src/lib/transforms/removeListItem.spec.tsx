@@ -109,7 +109,7 @@ it('moves the removed item children into the previous sublist', () => {
   const editor = createBaseEditor({
     plugins: ListSchemaPlugins,
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   const list = editor.read.nodes.find({ at: [], match: { id: '1' } }) as any;

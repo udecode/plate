@@ -253,7 +253,7 @@ Why later:
 
 ### 2. Explicit Hook Ordering Rules
 
-If `withExtension(...)` ever grows into a real hook surface, Tiptap’s
+If imperative scenario callbacks ever gain ordered hooks, Tiptap’s
 `dispatchTransaction` tests are the warning:
 
 - ordering must be explicit

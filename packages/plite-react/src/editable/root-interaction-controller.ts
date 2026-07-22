@@ -8,10 +8,12 @@ import {
 import {
   PathApi,
   type Point,
+  PointApi,
   type Range,
   RangeApi,
   type RootKey,
   type Selection,
+  SelectionApi,
   TextApi,
 } from '@platejs/plite';
 
@@ -128,6 +130,30 @@ export type RootInteractionController = {
   onMouseDownCapture: MouseEventHandler<HTMLElement>;
   onMouseMoveCapture: MouseEventHandler<HTMLElement>;
   onMouseUpCapture: MouseEventHandler<HTMLElement>;
+};
+
+export const shouldRestoreMouseUpDOMSelection = ({
+  currentSelection,
+  replaySelection,
+  sameDocument,
+  sameInteraction,
+}: {
+  currentSelection: Selection;
+  replaySelection: Selection;
+  sameDocument: boolean;
+  sameInteraction: boolean;
+}) => {
+  if (!sameDocument || !sameInteraction) return false;
+  if (SelectionApi.equals(currentSelection, replaySelection)) return true;
+
+  return (
+    currentSelection?.kind === 'text' &&
+    replaySelection?.kind === 'text' &&
+    RangeApi.isExpanded(replaySelection) &&
+    RangeApi.isBackward(replaySelection) &&
+    RangeApi.isCollapsed(currentSelection) &&
+    PointApi.equals(currentSelection.anchor, replaySelection.focus)
+  );
 };
 
 type PendingRootInteraction = {
@@ -1063,6 +1089,7 @@ export const useRootInteractionController = ({
   const pendingInteractionRef = useRef<PendingRootInteraction>(
     ignoreInteraction()
   );
+  const interactionEpochRef = useRef(0);
   const pendingDragAutoScrollRef = useRef<PendingDragAutoScroll | null>(null);
   useEffect(
     () => () => {
@@ -1266,6 +1293,8 @@ export const useRootInteractionController = ({
         if (disabled || event.defaultPrevented) {
           return;
         }
+
+        interactionEpochRef.current += 1;
 
         stopDragAutoScroll(pendingDragAutoScrollRef);
 
@@ -1647,6 +1676,68 @@ export const useRootInteractionController = ({
       const { action: pendingAction } = pendingInteraction;
       const projectedDrag = pendingProjectedDrag;
       pendingProjectedDrag = null;
+      const currentTarget = event.currentTarget;
+      const pointerMoved = hasPointerMoved(pendingInteraction, event);
+      const importExpandedDOMSelection = () => {
+        const expandedDOMSelection =
+          getExpandedDOMSelectionInTarget(currentTarget);
+
+        if (!expandedDOMSelection) return 'none' as const;
+
+        selectionBridge?.importDOMSelection();
+        if (
+          shouldReplayMouseUpDOMSelection({
+            hasExpandedDOMRange: true,
+            isFirefox: needsMouseUpDOMSelectionReplay(currentTarget),
+            nativeSelectedTextClick: pendingInteraction.nativeSelectedTextClick,
+            pointerMoved,
+          })
+        ) {
+          const replaySnapshot = editor.read.runtime.snapshot();
+          const replayInteractionEpoch = interactionEpochRef.current;
+
+          const scheduled = scheduleInteractionFrame(
+            'root-interaction-selection-replay',
+            () => {
+              const currentSnapshot = editor.read.runtime.snapshot();
+
+              if (
+                !shouldRestoreMouseUpDOMSelection({
+                  currentSelection: currentSnapshot.selection,
+                  replaySelection: replaySnapshot.selection,
+                  sameDocument:
+                    currentSnapshot.children === replaySnapshot.children,
+                  sameInteraction:
+                    interactionEpochRef.current === replayInteractionEpoch,
+                })
+              ) {
+                return;
+              }
+
+              if (
+                !hasExpandedDOMSelectionInTarget(currentTarget) &&
+                !restoreDOMSelectionInTarget(
+                  currentTarget,
+                  expandedDOMSelection
+                )
+              ) {
+                return;
+              }
+
+              selectionBridge?.importDOMSelection();
+            },
+            { target: currentTarget }
+          );
+
+          if (!scheduled) {
+            return 'imported' as const;
+          }
+
+          return 'replay' as const;
+        }
+
+        return 'imported' as const;
+      };
 
       if (
         projectedDrag &&
@@ -1661,7 +1752,6 @@ export const useRootInteractionController = ({
       }
 
       if (pendingAction.type === 'ignore') {
-        const currentTarget = event.currentTarget;
         const target = resolveRootInteractionTarget({
           currentTarget,
           target: event.target,
@@ -1669,36 +1759,17 @@ export const useRootInteractionController = ({
         const nativeEditableTextTarget =
           target.kind === 'native-editable' &&
           !!target.target.closest(NATIVE_EDITABLE_TEXT_TARGET);
-        const expandedDOMSelection =
-          getExpandedDOMSelectionInTarget(currentTarget);
-        const pointerMoved = hasPointerMoved(pendingInteraction, event);
 
-        if (!disabled && (nativeEditableTextTarget || expandedDOMSelection)) {
-          selectionBridge?.importDOMSelection();
+        if (!disabled) {
+          const expandedSelectionImport = importExpandedDOMSelection();
+
           if (
-            expandedDOMSelection &&
-            shouldReplayMouseUpDOMSelection({
-              hasExpandedDOMRange: true,
-              isFirefox: needsMouseUpDOMSelectionReplay(currentTarget),
-              nativeSelectedTextClick:
-                pendingInteraction.nativeSelectedTextClick,
-              pointerMoved,
-            })
+            nativeEditableTextTarget &&
+            expandedSelectionImport !== 'replay'
           ) {
-            scheduleInteractionFrame(
-              'root-interaction-selection-replay',
-              () => {
-                if (!hasExpandedDOMSelectionInTarget(currentTarget)) {
-                  restoreDOMSelectionInTarget(
-                    currentTarget,
-                    expandedDOMSelection
-                  );
-                  selectionBridge?.importDOMSelection();
-                }
-              },
-              { target: currentTarget }
-            );
-          } else if (nativeEditableTextTarget) {
+            if (expandedSelectionImport === 'none') {
+              selectionBridge?.importDOMSelection();
+            }
             scheduleInteractionFrame(
               'root-interaction-selection-import',
               () => {
@@ -1725,9 +1796,8 @@ export const useRootInteractionController = ({
 
       if (
         pendingAction.type === 'place-native-editable' &&
-        hasExpandedDOMSelectionInTarget(event.currentTarget)
+        importExpandedDOMSelection() !== 'none'
       ) {
-        selectionBridge?.importDOMSelection();
         return;
       }
 
@@ -1735,8 +1805,6 @@ export const useRootInteractionController = ({
       const eventRange = focusEditor.api.dom.resolveEventRange(
         event.nativeEvent
       );
-      const pointerMoved = hasPointerMoved(pendingInteraction, event);
-
       if (
         canApplyCoordinateDragSelection(pendingInteraction) &&
         eventRange &&

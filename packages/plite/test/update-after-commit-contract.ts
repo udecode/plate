@@ -179,6 +179,84 @@ describe('editor.update afterCommit', () => {
     assert.deepEqual(versions, ['commit:2:snapshot:2:live:3']);
   });
 
+  it('keeps an extension onCommit snapshot tied to its commit during nested updates', () => {
+    const versions: string[] = [];
+    const editor = seedEditor(
+      createEditor({
+        extensions: [
+          defineEditorExtension({
+            name: 'nested-on-commit-snapshot',
+            onCommit({ commit, editor, snapshot }) {
+              if (
+                commit.changed.has('text') &&
+                editorString(editor, []) === 'one!'
+              ) {
+                editor.update((tx) => {
+                  tx.text.insert('?');
+                });
+                versions.push(
+                  `commit:${commit.version}:snapshot:${snapshot.version}:live:${editorGetSnapshot(editor).version}`
+                );
+              }
+            },
+          }),
+        ] as const,
+      })
+    );
+
+    editor.update((tx) => {
+      tx.text.insert('!');
+    });
+
+    assert.equal(editorString(editor, []), 'one!?');
+    assert.deepEqual(versions, ['commit:2:snapshot:2:live:3']);
+  });
+
+  it('keeps a named-root extension snapshot scoped and stable during nested updates', () => {
+    const runtime = createEditorRuntime({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const headerEditor = createEditorView(runtime, { root: 'header' });
+    const events: string[] = [];
+
+    headerEditor.extend(
+      defineEditorExtension({
+        name: 'nested-named-root-on-commit-snapshot',
+        onCommit({ commit, editor, snapshot }) {
+          const [block] = snapshot.children as {
+            children: { text: string }[];
+          }[];
+          const snapshotText = block?.children[0]?.text ?? '';
+
+          if (
+            !commit.changed.has('text', 'header') ||
+            snapshotText !== 'header!'
+          ) {
+            return;
+          }
+
+          editor.update((tx) => {
+            tx.text.insert('?', { at: { path: [0, 0], offset: 7 } });
+          });
+          events.push(
+            `commit:${commit.version}:snapshot:${snapshot.version}:${snapshotText}:live:${editorGetSnapshot(editor).version}:${editor.read((state) => state.text.string([]))}`
+          );
+        },
+      })
+    );
+
+    headerEditor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
+    });
+
+    assert.equal(editorString(runtime.editor, []), 'body');
+    assert.equal(editorString(headerEditor, []), 'header!?');
+    assert.deepEqual(events, ['commit:2:snapshot:2:header!:live:3:header!?']);
+  });
+
   it('runs update-local effects after extension onCommit listeners', () => {
     const events: string[] = [];
     const editor = seedEditor(

@@ -11,13 +11,42 @@ import {
 import {
   createEditor,
   ElementApi,
+  LocationApi,
   NodeApi,
+  PathApi,
   PointApi,
   RangeApi,
+  SelectionApi,
+  SpanApi,
   TextApi,
 } from '@platejs/plite';
 
+const typeOnly = (_callback: () => void) => {};
+
+typeOnly(() => {
+  // @ts-expect-error pure API namespaces are immutable
+  ElementApi.isElement = () => false;
+  // @ts-expect-error pure API namespaces are immutable
+  SelectionApi.isSelection = () => false;
+});
+
 describe('plite interfaces contract', () => {
+  it('freezes every pure public API namespace', () => {
+    for (const api of [
+      ElementApi,
+      LocationApi,
+      NodeApi,
+      PathApi,
+      PointApi,
+      RangeApi,
+      SelectionApi,
+      SpanApi,
+      TextApi,
+    ]) {
+      assert.equal(Object.isFrozen(api), true);
+    }
+  });
+
   it('treats editors as nodes, not elements', () => {
     const editor = createEditor();
 

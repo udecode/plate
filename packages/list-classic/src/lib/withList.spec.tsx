@@ -30,7 +30,7 @@ const testInsertText = (
   const editor = createBaseEditor({
     plugins: [BaseBlockquotePlugin, BaseListPlugin.configure(listConfig)],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   editor.update.text.insert('o');
@@ -42,7 +42,7 @@ const testDeleteBackward = (input: any, expected: any) => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   editor.update.text.deleteBackward();
@@ -54,7 +54,7 @@ const testDeleteForward = (input: any, expected: any) => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   editor.update.text.deleteForward();
@@ -100,7 +100,7 @@ describe('withList', () => {
         ) as TestEditor;
 
         testInsertText(input, expected, {
-          config: {
+          options: {
             validLiChildren: [BaseParagraphPlugin, BaseBlockquotePlugin],
           },
         });

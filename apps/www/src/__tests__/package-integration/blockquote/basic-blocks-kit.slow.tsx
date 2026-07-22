@@ -25,7 +25,7 @@ const createEditor = ({
       anchor: { offset, path },
       focus: { offset, path },
     },
-    value,
+    initialValue: value,
   } as any);
 
 const insertText = (editor: ReturnType<typeof createEditor>, text: string) => {

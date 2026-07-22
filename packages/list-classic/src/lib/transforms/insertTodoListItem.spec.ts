@@ -15,7 +15,7 @@ const createTodoEditor = (offset?: number) =>
             anchor: { offset, path: [0, 0] },
             focus: { offset, path: [0, 0] },
           },
-    value: [
+    initialValue: [
       {
         checked: true,
         children: [{ text: 'one' }],

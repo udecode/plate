@@ -8,7 +8,7 @@ describe('someToggle', () => {
   it('returns false when the editor has no selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseTogglePlugin],
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     expect(someToggle(editor)).toBe(false);
@@ -22,7 +22,7 @@ describe('someToggle', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'one' }],
           type: KEYS.toggle,
@@ -42,7 +42,7 @@ describe('someToggle', () => {
         anchor: { offset: 1, path: [1, 0] },
         focus: { offset: 1, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'one' }],
           type: KEYS.toggle,

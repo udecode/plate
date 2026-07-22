@@ -12,7 +12,7 @@ describe('single-block runtime plugins', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: 'first' }], type: 'p' },
         { children: [{ text: 'second' }], type: 'p' },
         { children: [{ text: 'third' }], type: 'p' },
@@ -40,7 +40,7 @@ describe('single-block runtime plugins', () => {
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: 'first\n' }], type: 'p' },
         { children: [{ text: 'second\rthird' }], type: 'p' },
       ],

@@ -68,7 +68,7 @@ export const restoreDOMSelectionInTarget = (
     !target.contains(snapshot.anchorNode) ||
     !target.contains(snapshot.focusNode)
   ) {
-    return;
+    return false;
   }
 
   const rootNode = target.getRootNode() as Document | ShadowRoot;
@@ -78,7 +78,7 @@ export const restoreDOMSelectionInTarget = (
       : target.ownerDocument.getSelection();
 
   if (!selection) {
-    return;
+    return false;
   }
 
   selection.removeAllRanges();
@@ -88,6 +88,8 @@ export const restoreDOMSelectionInTarget = (
     snapshot.focusNode,
     snapshot.focusOffset
   );
+
+  return true;
 };
 
 export const isPointInsideDOMSelection = ({

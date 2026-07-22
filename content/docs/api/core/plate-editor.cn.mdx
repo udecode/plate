@@ -134,7 +134,7 @@ export function useBasicEditor() {
 | Normalization guard | 包装 `normalizeNode`，让 `editor.api.shouldNormalizeNode(entry)` 可以跳过一次 normalization。 |
 | 初始值 | 除非 `skipInitialization` 为 `true`，否则通过运行时 update 路径初始化 value 和 selection。 |
 
-`value` 接受 Plate value、HTML 字符串，或返回 value 的函数。初始化完成后，`onReady` 会收到 `{ editor, isAsync, value }`。
+`initialValue` 接受 Plate value 或同步返回 value 的函数。远程数据应在创建编辑器前加载。解码器需要已编译的插件模型时，使用回调形式。
 
 ## Core API
 
@@ -154,7 +154,7 @@ export function useBasicEditor() {
   <APIItem name="editor.api.debug.error" type="(message: unknown, type?: DebugErrorType, details?: any) => void">
     开发环境默认抛出 `PlateError`。用 `DebugPlugin` 配置 logging 或 `throwErrors`。
   </APIItem>
-  <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredKey }) => Descendant[]">
+  <APIItem name="editor.plugin(HtmlPlugin).api.deserialize" type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredKey }) => Descendant[]">
     将 HTML 反序列化为 Plate nodes。HTML parser 插件会在 `text/html` paste 路径调用它。
   </APIItem>
   <APIItem name="editor.api.react.refreshDecorations" type="(options?: PliteProjectionStoreRefreshOptions) => void">

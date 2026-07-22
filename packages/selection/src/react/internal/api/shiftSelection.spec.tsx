@@ -22,7 +22,7 @@ describe('shiftSelection', () => {
     beforeEach(() => {
       editor = createPlateEditor({
         plugins: [BlockSelectionPlugin],
-        value: [
+        initialValue: [
           {
             id: 'block1',
             children: [{ text: 'Block One' }],
@@ -135,7 +135,7 @@ describe('shiftSelection', () => {
     beforeEach(() => {
       editor = createPlateEditor({
         plugins: [BlockSelectionPlugin, TestDivPlugin],
-        value: [
+        initialValue: [
           {
             id: 'parent1',
             children: [
@@ -266,7 +266,7 @@ describe('shiftSelection', () => {
           TestTableRowPlugin,
           TestTableCellPlugin,
         ],
-        value: [
+        initialValue: [
           {
             id: 'table1',
             children: [
@@ -467,7 +467,7 @@ describe('shiftSelection', () => {
       // Let's select block2 only, no anchor set => SHIFT+DOWN => anchor=top-most => block2 => expand => block3.
       editor = createPlateEditor({
         plugins: [BlockSelectionPlugin],
-        value: [
+        initialValue: [
           { id: 'block1', children: [{ text: 'One' }], type: 'p' },
           { id: 'block2', children: [{ text: 'Two' }], type: 'p' },
           { id: 'block3', children: [{ text: 'Three' }], type: 'p' },

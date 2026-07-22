@@ -72,6 +72,7 @@ type EditableRepairRuntime = {
   domRepairQueue: DOMRepairQueue;
   forceRender: () => void;
   requestEditableRepair: (request: EditableRepairRequest) => void;
+  requestModelSelectionExportAfterRender: () => void;
 };
 
 type EditableKernelTraceRuntime = ReturnType<
@@ -247,6 +248,8 @@ export const useEditableEventRuntime = ({
     onCompositionStart: callbacks.onCompositionStart,
     onCompositionUpdate: callbacks.onCompositionUpdate,
     readOnly,
+    requestModelSelectionExportAfterRender:
+      eventCore.repair.requestModelSelectionExportAfterRender,
     runtime,
     setComposing: eventCore.composition.setComposing,
     trace: eventCore.trace,

@@ -13,9 +13,7 @@ import { isInClosedToggle } from './isInClosedToggle';
 describe('toggle queries', () => {
   const plugins = [
     BaseIndentPlugin.configure({
-      config: {
-        targets: [BaseParagraphPlugin, TogglePlugin],
-      },
+      targetPluginKeys: [BaseParagraphPlugin.key, TogglePlugin.key],
     }),
     TogglePlugin,
   ];
@@ -29,7 +27,7 @@ describe('toggle queries', () => {
   it('finds the last top-level entry enclosed by a toggle id', () => {
     const editor = createPlateEditor({
       plugins,
-      value,
+      initialValue: value,
     });
 
     expect(getLastEntryEnclosedInToggle(editor, 't1')).toEqual([value[2], [2]]);
@@ -38,7 +36,7 @@ describe('toggle queries', () => {
   it('detects hidden ids and closed toggle state from the toggle index', () => {
     const editor = createPlateEditor({
       plugins,
-      value,
+      initialValue: value,
     });
     const toggleIndex = buildToggleIndex(editor.read.children());
 
@@ -50,7 +48,7 @@ describe('toggle queries', () => {
     expect(getEnclosingToggleIds(editor, 'p1')).toEqual(['t1']);
     expect(isInClosedToggle(editor, 'p1')).toBe(true);
 
-    editor.api.toggle.toggleIds(['t1'], true);
+    editor.plugin(TogglePlugin).api.toggleIds(['t1'], true);
 
     expect(isInClosedToggle(editor, 'p1')).toBe(false);
   });

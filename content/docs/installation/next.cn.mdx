@@ -297,7 +297,7 @@ export default function MyEditorPage() {
   return (
     <Plate
       editor={editor}
-      onChange={({ value }) => {
+      onValueChange={({ value }) => {
         localStorage.setItem('installation-next-demo', JSON.stringify(value));
       }}
     >

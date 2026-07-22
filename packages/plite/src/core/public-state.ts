@@ -6080,7 +6080,7 @@ export const notifyListeners = (editor: Editor, change?: EditorCommit) => {
 
       profileCoreDuration('notify-commit-listeners', () => {
         for (const listener of getCommitListeners(editor) ?? []) {
-          listener(change);
+          listener(change, getSnapshotForListeners());
         }
       });
     }

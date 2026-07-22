@@ -1,5 +1,5 @@
 import { createBasePlugin } from '@platejs/core';
-import { NodeApi } from '@platejs/plite';
+import { editorCommands, NodeApi } from '@platejs/plite';
 
 import { KEYS } from '../../plate-keys';
 
@@ -11,50 +11,46 @@ export const SingleBlockPlugin = createBasePlugin({
       [KEYS.trailingBlock]: false,
     },
   },
-}).extendExtension(({ editor }) => ({
-  normalizers: {
-    editor({ next, tx }) {
-      const children = editor.read.children();
+}).extendExtension({
+  commands: ({ handle }) => [
+    handle(editorCommands.insertBreak, ({ state }) =>
+      state.transaction((tx) => {
+        tx.break.insertSoft();
+      })
+    ),
+  ],
+  corrections: [
+    {
+      event: 'children',
+      query: 'root',
+      correct({ tx }) {
+        const children = tx.nodes.children();
 
-      if (children.length > 1) {
-        const secondNode = children[1];
-        const secondText = NodeApi.string(secondNode);
+        if (children.length > 1) {
+          const secondNode = children[1];
+          const secondText = NodeApi.string(secondNode);
+          const [lastNode, relativePath] = NodeApi.last(children[0], []);
 
-        if (secondText.length === 0) {
-          const firstBlockEnd = editor.read.points.end([0]);
-
-          if (!firstBlockEnd) {
-            next();
+          if (!NodeApi.isText(lastNode)) {
             return;
           }
+          const firstBlockEnd = {
+            offset: lastNode.text.length,
+            path: [0, ...relativePath],
+          };
 
+          if (secondText.length === 0) {
+            tx.nodes.remove({ at: [1] });
+          } else {
+            tx.nodes.merge({
+              at: [1],
+              match: (_, path) => path.length === 1,
+            });
+          }
           tx.text.insert('\n', { at: firstBlockEnd });
-          tx.nodes.remove({ at: [1] });
           return;
         }
-
-        const secondBlockStart = editor.read.points.start([1]);
-
-        if (!secondBlockStart) {
-          next();
-          return;
-        }
-
-        tx.text.insert('\n', { at: secondBlockStart });
-        tx.nodes.merge({
-          at: [1],
-          match: (_, path) => path.length === 1,
-        });
-        return;
-      }
-
-      next();
+      },
     },
-  },
-  transforms: {
-    insertBreak({ tx }) {
-      tx.break.insertSoft();
-      return true;
-    },
-  },
-}));
+  ],
+});

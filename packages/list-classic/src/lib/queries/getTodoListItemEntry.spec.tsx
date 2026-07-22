@@ -52,7 +52,7 @@ const createTodoEditor = ({
   createBaseEditor({
     plugins: [TodoRootPlugin, BaseTodoListPlugin],
     selection: at,
-    value,
+    initialValue: value,
   });
 
 describe('getTodoListItemEntry', () => {

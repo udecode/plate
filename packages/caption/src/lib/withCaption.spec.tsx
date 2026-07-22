@@ -1,4 +1,8 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import {
+  type BaseEditor,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
 import { schema, type Selection, type Value } from '@platejs/plite';
 
 import { BaseCaptionPlugin } from './BaseCaptionPlugin';
@@ -17,17 +21,14 @@ const createCaptionEditor = (value: Value, selection: Selection = null) =>
     plugins: [
       MediaPlugin,
       BaseCaptionPlugin.configure({
-        config: { targetPluginKeys: ['media'] },
+        targetPluginKeys: ['media'],
       }),
     ],
     selection,
-    value,
+    initialValue: value,
   });
 
-const runShortcut = (
-  editor: ReturnType<typeof createCaptionEditor>,
-  name: string
-) =>
+const runShortcut = (editor: BaseEditor, name: string) =>
   editor.runtime.shortcuts[`caption.${name}`]?.handler?.({
     editor,
     event: {
@@ -190,7 +191,7 @@ describe('withCaption', () => {
       plugins: [
         MediaPlugin,
         BaseCaptionPlugin.configure({
-          config: { targetPluginKeys: ['media'] },
+          targetPluginKeys: ['media'],
         }),
       ],
       selection: {
@@ -198,10 +199,46 @@ describe('withCaption', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'plain' }],
           type: 'p',
+        },
+      ],
+    });
+
+    expect(runShortcut(editor, 'focusCaptionForward')).toBe(false);
+    expect(
+      editor.plugin(BaseCaptionPlugin).getOption('focusEndPath')
+    ).toBeNull();
+  });
+
+  it('does not match an unrelated type that collides with a missing target key', () => {
+    const TypeCollisionPlugin = createBasePlugin({
+      key: 'unrelatedGhost',
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', max: 1, min: 1 }),
+        },
+      },
+      type: 'ghost',
+    });
+    const editor = createBaseEditor({
+      plugins: [
+        TypeCollisionPlugin,
+        BaseCaptionPlugin.configure({
+          targetPluginKeys: ['ghost'],
+        }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [
+        {
+          children: [{ text: 'not a caption target' }],
+          type: 'ghost',
         },
       ],
     });

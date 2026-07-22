@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import {
   registerSharedTocHookMocks,
   resetSharedTocHookMocks,
-  useEditorRefMock,
+  useEditorMock,
   useEditorSelectorMock,
 } from './__tests__/tocHookMocks';
 
@@ -47,7 +47,7 @@ describe('useContentObserver', () => {
     headingEl.id = 'h1';
 
     useEditorSelectorMock.mockReturnValue([{ id: 'h1', path: [0] }]);
-    useEditorRefMock.mockReturnValue({
+    useEditorMock.mockReturnValue({
       api: {
         dom: { resolveDOMNode: () => headingEl },
       },

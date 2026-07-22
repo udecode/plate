@@ -48,6 +48,20 @@ describe('plite-react primitives contract', () => {
     expect(textElement?.textContent).toBe('beta');
   });
 
+  test('EditableText preserves leaf DOM identity when text length changes', () => {
+    const rendered = render(<EditableText text="alpha" />);
+    const leaf = rendered.container.querySelector('[data-plite-leaf="true"]');
+    const text = rendered.container.querySelector('[data-plite-string]');
+
+    rendered.rerender(<EditableText text="Zalpha" />);
+
+    expect(rendered.container.querySelector('[data-plite-leaf="true"]')).toBe(
+      leaf
+    );
+    expect(rendered.container.querySelector('[data-plite-string]')).toBe(text);
+    expect(text?.textContent).toBe('Zalpha');
+  });
+
   test('PliteText and PliteLeaf own the text-node shape', () => {
     const ref = React.createRef<HTMLSpanElement>();
     const rendered = render(

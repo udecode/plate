@@ -87,7 +87,7 @@ export function EditableVoidElement({ children, ...props }: PlateElementProps) {
 export default function EditableVoidsDemo() {
   const editor = usePlateEditor({
     plugins: [...EditorKit, EditableVoidPlugin],
-    value: editableVoidsValue,
+    initialValue: editableVoidsValue,
   });
 
   return (

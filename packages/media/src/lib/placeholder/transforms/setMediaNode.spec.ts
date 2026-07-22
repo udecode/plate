@@ -7,7 +7,7 @@ describe('setMediaNode', () => {
   it('sets media props through the update boundary', () => {
     const editor = createBaseEditor({
       plugins: [BaseImagePlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           type: 'img',

@@ -22,7 +22,7 @@ describe('OverridePlugin', () => {
     });
     const editor = createBaseEditor({
       plugins: [CalloutPlugin, TonePlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'typed', tone: 'quiet' }],
           type: 'callout',
@@ -39,13 +39,15 @@ describe('OverridePlugin', () => {
     expect(() =>
       createBaseEditor({
         plugins: [CalloutPlugin],
-        value: [{ children: [{ text: 'unknown' }], type: 'missing' }],
+        initialValue: [{ children: [{ text: 'unknown' }], type: 'missing' }],
       })
     ).toThrow(/unknown editor element type "missing"/i);
     expect(() =>
       createBaseEditor({
         plugins: [TonePlugin],
-        value: [{ children: [{ text: 'invalid', tone: true }], type: 'p' }],
+        initialValue: [
+          { children: [{ text: 'invalid', tone: true }], type: 'p' },
+        ],
       })
     ).toThrow(/text property "tone".*string/i);
   });
@@ -62,7 +64,7 @@ describe('OverridePlugin', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: '' }], type: 'void' },
         { children: [{ text: 'after' }], type: 'p' },
       ],
@@ -93,7 +95,7 @@ describe('OverridePlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: '' }], type: 'void' },
         { children: [{ text: 'after' }], type: 'p' },
       ],
@@ -131,7 +133,7 @@ describe('OverridePlugin', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'foo\n' }], type: 'callout' }],
+      initialValue: [{ children: [{ text: 'foo\n' }], type: 'callout' }],
     });
 
     insertBreak(editor);
@@ -158,7 +160,7 @@ describe('OverridePlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'foo' }], type: 'callout' }],
+      initialValue: [{ children: [{ text: 'foo' }], type: 'callout' }],
     });
 
     insertBreak(editor);
@@ -185,7 +187,7 @@ describe('OverridePlugin', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: '' }], type: 'callout' },
         { children: [{ text: 'after' }], type: 'p' },
       ],
@@ -217,7 +219,7 @@ describe('OverridePlugin', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: '' }], type: 'callout' },
         { children: [{ text: 'after' }], type: 'p' },
       ],

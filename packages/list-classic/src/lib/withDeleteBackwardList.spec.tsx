@@ -45,7 +45,7 @@ describe('li > lic * 2 with selection at second child start', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.deleteBackward();
@@ -86,7 +86,7 @@ describe('li with selection at start', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.deleteBackward();
@@ -147,7 +147,7 @@ describe('list + sublist where second item has multiple children', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.deleteBackward();

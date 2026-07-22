@@ -47,7 +47,7 @@ export default function PlaygroundDemo({
           },
         }),
       ],
-      value,
+      initialValue: value,
     },
     [id, locale]
   );

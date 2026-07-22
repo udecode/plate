@@ -7,7 +7,7 @@ import { BaseColumnPlugin } from '../BaseColumnPlugin';
 const createEditor = (value = twoColumns) =>
   createBaseEditor({
     plugins: [BaseColumnPlugin],
-    value,
+    initialValue: value,
   });
 
 const getColumnGroup = (editor: ReturnType<typeof createEditor>) => {

@@ -165,7 +165,7 @@ describe('plite-react DOM capability contract', () => {
   test('editor.api.dom.focus reports a selection change without a value change', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createReactEditor({ initialValue });
-    const onChange = jest.fn();
+    const onCommit = jest.fn();
     const onSelectionChange = jest.fn();
     const onValueChange = jest.fn();
 
@@ -173,7 +173,7 @@ describe('plite-react DOM capability contract', () => {
       render(
         <Plite
           editor={editor}
-          onChange={onChange}
+          onCommit={onCommit}
           onSelectionChange={onSelectionChange}
           onValueChange={onValueChange}
         >
@@ -197,17 +197,18 @@ describe('plite-react DOM capability contract', () => {
       focus: { path: [0, 0], offset: 0 },
     };
 
-    expect(onChange).toHaveBeenCalledWith(
-      initialValue,
+    expect(onCommit).toHaveBeenCalledWith(
       expect.objectContaining({
-        selection: expectedSelection,
-        selectionChanged: true,
-        valueChanged: false,
+        editor,
+        snapshot: expect.objectContaining({ selection: expectedSelection }),
       })
     );
     expect(onSelectionChange).toHaveBeenCalledWith(
-      expectedSelection,
-      expect.objectContaining({ selectionChanged: true })
+      expect.objectContaining({
+        editor,
+        selection: expectedSelection,
+        snapshot: expect.objectContaining({ selection: expectedSelection }),
+      })
     );
     expect(onValueChange).not.toHaveBeenCalled();
   });

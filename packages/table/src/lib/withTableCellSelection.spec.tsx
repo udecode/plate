@@ -62,7 +62,7 @@ const createTableEditor = (
   createPlateEditor({
     plugins: getTestTablePlugins(options),
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 describe('withTableCellSelection', () => {

@@ -14,7 +14,7 @@ import {
   Settings,
   Wand2Icon,
 } from 'lucide-react';
-import { useEditorRef } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -216,7 +216,7 @@ export const models: Model[] = [
 ];
 
 export function SettingsDialog() {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   const [tempModel, setTempModel] = React.useState(models[7]);
   const [tempKeys, setTempKeys] = React.useState<Record<string, string>>({

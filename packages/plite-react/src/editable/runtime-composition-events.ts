@@ -23,6 +23,7 @@ export const useRuntimeCompositionEvents = ({
   onCompositionStart,
   onCompositionUpdate,
   readOnly,
+  requestModelSelectionExportAfterRender,
   runtime,
   setComposing,
   trace,
@@ -34,6 +35,7 @@ export const useRuntimeCompositionEvents = ({
   onCompositionStart?: CompositionHandler;
   onCompositionUpdate?: CompositionHandler;
   readOnly: boolean;
+  requestModelSelectionExportAfterRender: () => void;
   runtime: EditableDOMRuntime;
   setComposing: EditableEventRuntime['composition']['setComposing'];
   trace: EditableEventRuntime['trace'];
@@ -60,6 +62,7 @@ export const useRuntimeCompositionEvents = ({
           inputController,
           onCompositionEnd,
           readOnly,
+          requestModelSelectionExportAfterRender,
           runOwnedDOMMutation: (callback) => {
             runtime.runOwnedDOMMutation('composition', callback);
           },
@@ -74,6 +77,7 @@ export const useRuntimeCompositionEvents = ({
       inputController,
       onCompositionEnd,
       readOnly,
+      requestModelSelectionExportAfterRender,
       runtime,
       setComposing,
       trace,
@@ -90,7 +94,9 @@ export const useRuntimeCompositionEvents = ({
         event,
         inputController,
       });
-      inputController.state.activeIntent = decision.intent;
+      if (decision.intent !== 'composition') {
+        inputController.state.activeIntent = decision.intent;
+      }
       trace.recordKernelEventTrace({
         family: 'compositionstart',
         intent: decision.intent,
@@ -131,7 +137,9 @@ export const useRuntimeCompositionEvents = ({
         event,
         inputController,
       });
-      inputController.state.activeIntent = decision.intent;
+      if (decision.intent !== 'composition') {
+        inputController.state.activeIntent = decision.intent;
+      }
       trace.recordKernelEventTrace({
         family: 'compositionupdate',
         intent: decision.intent,

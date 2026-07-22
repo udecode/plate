@@ -44,7 +44,7 @@ it('uses custom hotkey handler for bold', () => {
       }),
     ],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   (editor.getPlugin(BoldPlugin) as any).handlers?.onKeyDown?.({
@@ -132,6 +132,7 @@ describe('extend method with shortcuts', () => {
     }).configure({
       shortcuts: {
         bold: {
+          handler: originalCallback,
           keys: 'mod+bb',
         },
       },

@@ -9,11 +9,7 @@ import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 import type React from 'react';
-import {
-  useSyncExternalStore,
-  type ChangeEvent,
-  type PointerEvent,
-} from 'react';
+import type { ChangeEvent, PointerEvent } from 'react';
 import { type Descendant, NodeApi } from '@platejs/plite';
 import { isHotkey } from '@platejs/plite-dom';
 import {
@@ -102,13 +98,7 @@ const editor = usePliteEditor<CustomValue>({ initialValue })`),
     },
   ];
   const editor = usePliteEditor({ initialValue });
-  const commitVersion = useSyncExternalStore(
-    (listener) => editor.subscribeCommit(listener),
-    () => editor.read.lastCommit()?.version ?? 0,
-    () => 0
-  );
   const codeHighlightingSource = usePliteRangeDecorationSource(editor, {
-    deps: [commitVersion],
     id: 'code-highlighting',
     dirtiness: 'always',
     read: ({ snapshot }) => collectCodeRanges(snapshot.children),

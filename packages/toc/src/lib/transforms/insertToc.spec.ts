@@ -8,7 +8,7 @@ describe('insertToc', () => {
   it('inserts the default toc node shape', () => {
     const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'a' }],
           type: KEYS.p,
@@ -33,7 +33,7 @@ describe('insertToc', () => {
   it('respects the configured node type', () => {
     const editor = createBaseEditor({
       plugins: [BaseTocPlugin.configure({ type: 'custom-toc' })],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'a' }],
           type: KEYS.p,

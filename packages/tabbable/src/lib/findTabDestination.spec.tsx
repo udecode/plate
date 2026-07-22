@@ -41,7 +41,7 @@ describe('findTabDestination', () => {
   const editor = createBaseEditor({
     plugins: [MyVoidPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   const getNode = (path: Path): Node => {
@@ -125,7 +125,7 @@ describe('findTabDestination', () => {
         anchor: { offset: 0, path },
         focus: { offset: 0, path },
       },
-      value: input.children,
+      initialValue: input.children,
     });
 
   it('focuses the next tabbable after the selection', () => {

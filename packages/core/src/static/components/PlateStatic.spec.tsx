@@ -56,7 +56,7 @@ const createEditor = ({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
-    value,
+    initialValue: value,
   });
 
 const createEditorWithMultipleElements = ({
@@ -88,7 +88,7 @@ const createEditorWithMultipleElements = ({
       }),
       RevisionPlugin,
     ],
-    value,
+    initialValue: value,
   });
 
 const replaceRoot = (editor: BaseEditor, children: Value) => {
@@ -259,7 +259,7 @@ describe('PlateStatic Memoization', () => {
             },
           }),
         ],
-        value: [
+        initialValue: [
           {
             children: [
               {
@@ -290,7 +290,7 @@ describe('PlateStatic Memoization', () => {
     });
     const editor = createBaseEditor({
       plugins: [TonePlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hi', tone: 'red' }],
           type: 'p',

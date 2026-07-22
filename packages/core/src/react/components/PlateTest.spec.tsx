@@ -38,7 +38,7 @@ describe('PlateTest', () => {
               id: 'plate-test:core:react-components-platetest:editor-1',
               version: 1,
             }}
-            value={value}
+            initialValue={value}
           />
         );
       });

@@ -13,7 +13,7 @@ const mathPlugins = [BaseParagraphPlugin, ...BaseMathKit] as const;
 const createMathEditor = (value: Value) =>
   createBaseEditor({
     plugins: mathPlugins,
-    value,
+    initialValue: value,
   });
 
 describe('BaseMathKit', () => {

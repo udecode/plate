@@ -139,7 +139,7 @@ export interface PathInterface {
 }
 
 // eslint-disable-next-line no-redeclare
-export const PathApi: PathInterface = {
+export const PathApi: Readonly<PathInterface> = Object.freeze({
   ancestors(path: Path, options: PathAncestorsOptions = {}): Path[] {
     const { reverse = false } = options;
     let paths = PathApi.levels(path, options);
@@ -334,4 +334,4 @@ export const PathApi: PathInterface = {
 
     return path.slice(ancestor.length);
   },
-};
+});

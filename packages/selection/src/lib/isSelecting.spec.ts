@@ -12,7 +12,7 @@ describe('isSelecting', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
     });
 
     expect(isSelecting(editor)).toBe(true);
@@ -21,7 +21,7 @@ describe('isSelecting', () => {
   it('returns true when block selection says some blocks are being selected', () => {
     const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
-      value: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
     });
 
     editor
@@ -34,7 +34,7 @@ describe('isSelecting', () => {
   it('returns false when neither selection state is active', () => {
     const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
-      value: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
     });
 
     expect(isSelecting(editor)).toBe(false);

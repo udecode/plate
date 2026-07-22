@@ -87,7 +87,7 @@ describe('CodeBlockPlugin', () => {
           }),
         ],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.api.clipboard.insertData(
@@ -124,7 +124,7 @@ describe('CodeBlockPlugin', () => {
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.api.clipboard.insertData(
@@ -166,7 +166,7 @@ describe('CodeBlockPlugin', () => {
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.deleteBackward();
@@ -191,7 +191,7 @@ describe('CodeBlockPlugin operations', () => {
           options: { lowlight: createLowlight() },
         }),
       ],
-      value: input.children,
+      initialValue: input.children,
     });
     const refreshDecorations = mock();
 
@@ -217,7 +217,7 @@ describe('CodeBlockPlugin operations', () => {
           options: { lowlight: createLowlight() },
         }),
       ],
-      value: input.children,
+      initialValue: input.children,
     });
     const refreshDecorations = mock();
 
@@ -244,7 +244,7 @@ describe('CodeBlockPlugin operations', () => {
         }),
         TestCodeBlockPropertyPlugin,
       ],
-      value: input.children,
+      initialValue: input.children,
     });
     const refreshDecorations = mock();
 
@@ -265,7 +265,7 @@ describe('CodeBlockPlugin operations', () => {
     ];
     const source = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      value,
+      initialValue: value,
     });
 
     source.update.nodes.set({ lang: 'json' }, { at: [0] });
@@ -280,7 +280,7 @@ describe('CodeBlockPlugin operations', () => {
           options: { lowlight: createLowlight() },
         }),
       ],
-      value,
+      initialValue: value,
     });
     const refreshDecorations = mock();
 

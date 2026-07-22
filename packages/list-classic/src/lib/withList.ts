@@ -1,4 +1,9 @@
-import type { BaseEditor, PlatePluginTxGroup } from '@platejs/core';
+import type {
+  AnyPluginConfig,
+  BaseEditor,
+  BasePlugin,
+  PlatePluginTxGroup,
+} from '@platejs/core';
 import { RangeApi, SelectionApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
@@ -15,16 +20,15 @@ import {
   toggleTaskList,
 } from './transforms';
 
-type ListTransactionContext = {
+type ListTransactionContext<C extends AnyPluginConfig> = {
   editor: BaseEditor;
   getOptions: () => ListPluginOptions;
+  plugin: BasePlugin<C>;
 };
 
-export const withList =
-  ({
-    editor,
-    getOptions,
-  }: ListTransactionContext): PlatePluginTxGroup<ListPluginTransaction> =>
+export const withList = <C extends AnyPluginConfig>(
+  { editor, getOptions }: ListTransactionContext<C>
+): PlatePluginTxGroup<ListPluginTransaction, C> =>
   (tx) => {
     const apply = (reverse: boolean) => {
       const selection = tx.selection();

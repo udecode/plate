@@ -92,7 +92,7 @@ export function EditorClient({ value }: { value: Value }) {
       },
     },
     plugins: EditorKit,
-    value,
+    initialValue: value,
   });
 
   return (
@@ -105,7 +105,7 @@ export function EditorClient({ value }: { value: Value }) {
 export const EditorViewClient = ({ value }: { value: Value }) => {
   const editor = usePlateViewEditor({
     plugins: BaseEditorKit,
-    value,
+    initialValue: value,
   });
 
   return <EditorView variant="none" editor={editor} />;

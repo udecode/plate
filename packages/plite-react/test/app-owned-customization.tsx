@@ -101,13 +101,12 @@ describe('plite-react app-owned customization', () => {
     ).toBe('alpha');
   });
 
-  test('usePliteDecorationSource refreshes from explicit deps', async () => {
+  test('usePliteDecorationSource refreshes from an explicit revision', async () => {
     const editor = createReactEditor({ initialValue: createChildren() });
     const sources: PliteDecorationSource<{ token: string }>[] = [];
 
     const Probe = ({ token }: { token: string }) => {
       const source = usePliteDecorationSource<{ token: string }>(editor, {
-        deps: [token],
         dirtiness: ['text', 'node'],
         id: 'hook-deps-source',
         read: () => [
@@ -121,6 +120,7 @@ describe('plite-react app-owned customization', () => {
             },
           },
         ],
+        revision: token,
       });
 
       sources.push(source);
@@ -158,18 +158,18 @@ describe('plite-react app-owned customization', () => {
     ).toBe('alpha');
   });
 
-  test('usePliteRangeDecorationSource maps ranges and refreshes from deps', async () => {
+  test('usePliteRangeDecorationSource maps ranges and refreshes from a revision', async () => {
     const editor = createReactEditor({ initialValue: createChildren() });
     const sources: PliteDecorationSource<{ token: string }>[] = [];
 
     const Probe = ({ token }: { token: string }) => {
       const source = usePliteRangeDecorationSource<{ token: string }>(editor, {
         data: { token },
-        deps: [token],
         dirtiness: ['text', 'node'],
         id: 'range-hook-source',
         read: ({ snapshot }) =>
           NodeApi.findTextRanges({ children: snapshot.children }, 'alpha'),
+        revision: token,
       });
 
       sources.push(source);

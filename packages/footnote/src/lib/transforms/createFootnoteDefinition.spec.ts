@@ -17,7 +17,7 @@ describe('createFootnoteDefinition', () => {
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hello' }],
           type: KEYS.p,
@@ -56,7 +56,7 @@ describe('createFootnoteDefinition', () => {
         BaseFootnoteReferencePlugin,
         BaseFootnoteDefinitionPlugin,
       ] as const,
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hello' }],
           type: KEYS.p,
@@ -91,7 +91,7 @@ describe('createFootnoteDefinition', () => {
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hello' }],
           type: KEYS.p,

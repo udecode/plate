@@ -35,7 +35,7 @@ describe('toggle code block', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -71,7 +71,7 @@ describe('toggle code block', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -113,7 +113,7 @@ describe('toggle code block', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -147,7 +147,7 @@ describe('toggle code block', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -168,7 +168,7 @@ describe('toggle code block', () => {
     ) as TestEditor;
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {

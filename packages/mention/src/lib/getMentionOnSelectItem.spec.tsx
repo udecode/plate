@@ -18,7 +18,7 @@ describe('getMentionOnSelectItem', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'hi' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hi' }], type: 'p' }],
     });
 
     getMentionOnSelectItem()(editor, { key: 'u1', text: 'Ada' }, 'ad');
@@ -52,7 +52,7 @@ describe('getMentionOnSelectItem', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
 
     getMentionOnSelectItem()(editor, { key: 'u1', text: 'Ada' }, 'ad');

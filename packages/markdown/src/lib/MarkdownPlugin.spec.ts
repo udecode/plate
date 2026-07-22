@@ -1,13 +1,12 @@
 import {
   createBaseEditor,
   createBasePlugin,
-  getPluginHostPolicyResource,
   prepareParserPluginContext,
 } from '@platejs/core';
 import { ContentSlice, property } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 
-import { defineMarkdownConfig, MarkdownPlugin } from './MarkdownPlugin';
+import { MarkdownPlugin } from './MarkdownPlugin';
 
 const BoldPlugin = createBasePlugin({
   key: 'bold',
@@ -54,19 +53,17 @@ const createParserContext = (
 };
 
 describe('MarkdownPlugin', () => {
-  it('rebinds an immutable host policy without changing document schema identity', () => {
+  it('reads live codec options without changing document schema identity', () => {
     const remarkPlugin = () => undefined;
-    const remarkPlugins = [remarkPlugin];
-    const firstConfig = defineMarkdownConfig({
-      id: 'plate-test:markdown:host-policy',
-      remarkPlugins,
-      remarkStringifyOptions: { bullet: '+' },
-      version: 1,
-    });
-
-    remarkPlugins.pop();
     const editor = createBaseEditor({
-      plugins: [MarkdownPlugin.configure({ config: firstConfig })],
+      plugins: [
+        MarkdownPlugin.configure({
+          options: {
+            remarkPlugins: [remarkPlugin],
+            remarkStringifyOptions: { bullet: '+' },
+          },
+        }),
+      ],
     });
     const value = [
       {
@@ -77,7 +74,6 @@ describe('MarkdownPlugin', () => {
       },
     ];
     const identity = editor.read.schema.identity();
-    const firstProfile = editor.getPlugin(MarkdownPlugin).config.profile;
     const serializeHost = () => {
       const data = new DataTransfer();
 
@@ -86,47 +82,23 @@ describe('MarkdownPlugin', () => {
       return data.getData('text/markdown');
     };
 
-    expect(Object.isFrozen(firstProfile)).toBe(true);
-    expect(JSON.stringify(firstProfile)).toBe(
-      '{"id":"plate-test:markdown:host-policy","version":1}'
-    );
-    expect(getPluginHostPolicyResource(firstProfile).remarkPlugins[0]).toBe(
+    expect(editor.plugin(MarkdownPlugin).getOptions().remarkPlugins?.[0]).toBe(
       remarkPlugin
     );
-    expect(editor.api.markdown.serialize({ value })).toBe('+ Item\n');
+    expect(editor.plugin(MarkdownPlugin).api.serialize({ value })).toBe(
+      '+ Item\n'
+    );
     expect(serializeHost()).toBe('+ Item\n');
 
-    Reflect.apply(editor.plugin(MarkdownPlugin).setOptions, undefined, [
-      { remarkStringifyOptions: { bullet: '-' } },
-    ]);
-
-    expect(editor.api.markdown.serialize({ value })).toBe('+ Item\n');
-    expect(serializeHost()).toBe('+ Item\n');
-    expect(editor.read.schema.identity()).toEqual(identity);
-
-    const secondConfig = defineMarkdownConfig({
-      id: 'plate-test:markdown:host-policy',
+    editor.plugin(MarkdownPlugin).setOptions({
       remarkStringifyOptions: { bullet: '*' },
-      version: 1,
     });
 
-    editor.configure(MarkdownPlugin, secondConfig);
-
-    expect(editor.getPlugin(MarkdownPlugin).config.profile).not.toBe(
-      firstProfile
+    expect(editor.plugin(MarkdownPlugin).api.serialize({ value })).toBe(
+      '* Item\n'
     );
-    expect(editor.api.markdown.serialize({ value })).toBe('* Item\n');
     expect(serializeHost()).toBe('* Item\n');
     expect(editor.read.schema.identity()).toEqual(identity);
-  });
-
-  it('requires explicit host policy identity', () => {
-    expect(() => defineMarkdownConfig({ id: '', version: 1 })).toThrow(
-      'id cannot be empty'
-    );
-    expect(() =>
-      defineMarkdownConfig({ id: 'plate-test:markdown:invalid', version: 0 })
-    ).toThrow('version must be a positive integer');
   });
 
   it('exposes default options, bound markdown api, and text parser deserialization', () => {
@@ -135,8 +107,7 @@ describe('MarkdownPlugin', () => {
     });
     const plugin = editor.getPlugin(MarkdownPlugin);
 
-    expect(editor.plugin(MarkdownPlugin).getOptions()).toEqual({});
-    expect(getPluginHostPolicyResource(plugin.config.profile)).toMatchObject({
+    expect(editor.plugin(MarkdownPlugin).getOptions()).toMatchObject({
       allowedNodes: null,
       disallowedNodes: null,
       plainMarks: null,
@@ -144,15 +115,19 @@ describe('MarkdownPlugin', () => {
       remarkStringifyOptions: null,
       rules: null,
     });
-    expect(typeof editor.api.markdown.deserialize).toBe('function');
-    expect(typeof editor.api.markdown.deserializeInline).toBe('function');
-    expect(typeof editor.api.markdown.serialize).toBe('function');
+    expect(typeof editor.plugin(MarkdownPlugin).api.deserialize).toBe(
+      'function'
+    );
+    expect(typeof editor.plugin(MarkdownPlugin).api.deserializeInline).toBe(
+      'function'
+    );
+    expect(typeof editor.plugin(MarkdownPlugin).api.serialize).toBe('function');
     expect(plugin.parser.format).toEqual(['text/plain', 'text/markdown']);
     expect(
       plugin.parser.deserialize?.({
         ...createParserContext(editor, createDataTransfer({}), '**bold**'),
       })
-    ).toEqual(editor.api.markdown.deserialize('**bold**'));
+    ).toEqual(editor.plugin(MarkdownPlugin).api.deserialize('**bold**'));
   });
 
   it('skips plain-text parsing when html is present', () => {
@@ -230,7 +205,7 @@ describe('MarkdownPlugin', () => {
       plugins: [MarkdownPlugin],
     });
     const data = new DataTransfer();
-    const fragment = editor.api.markdown.deserialize('**bold**');
+    const fragment = editor.plugin(MarkdownPlugin).api.deserialize('**bold**');
 
     writeHostFragmentData(editor, data, ContentSlice.closed(fragment));
 
@@ -240,7 +215,7 @@ describe('MarkdownPlugin', () => {
   it('parses the registered Markdown clipboard format', () => {
     const editor = createBaseEditor({
       plugins: [BoldPlugin, MarkdownPlugin],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
     const data = new DataTransfer();
 
@@ -248,7 +223,7 @@ describe('MarkdownPlugin', () => {
 
     expect(editor.api.clipboard.insertData(data)).toBe(true);
     expect(editor.read.children()).toEqual(
-      editor.api.markdown.deserialize('**bold**')
+      editor.plugin(MarkdownPlugin).api.deserialize('**bold**')
     );
   });
 
@@ -256,11 +231,11 @@ describe('MarkdownPlugin', () => {
     const value = [{ children: [{ bold: true, text: 'bold' }], type: 'p' }];
     const source = createBaseEditor({
       plugins: [BoldPlugin, MarkdownPlugin],
-      value,
+      initialValue: value,
     });
     const target = createBaseEditor({
       plugins: [BoldPlugin, MarkdownPlugin],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
     const data = new DataTransfer();
 

@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   const editor = createBaseEditor({
     plugins: BaseEditorKit,
     selection,
-    value: children,
+    initialValue: children,
   });
 
   const apiKey = key || process.env.AI_GATEWAY_API_KEY;

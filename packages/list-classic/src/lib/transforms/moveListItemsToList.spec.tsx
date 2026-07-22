@@ -75,7 +75,7 @@ it('moves sublist items into the target list', () => {
   const editor = createBaseEditor({
     plugins: ListSchemaPlugins,
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   const fromListItem = editor.read.nodes.find({

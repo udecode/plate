@@ -3,6 +3,7 @@ import {
   createEditorUpdateApi,
 } from './core/editor-lifecycle-api';
 import { createCommandDispatch } from './core/command-registry';
+import { getEditorCommitSnapshot } from './core/commit';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -57,7 +58,7 @@ import type {
   Value,
 } from './interfaces/editor';
 import { RangeApi } from './interfaces/range';
-import { getRangeRoot, withImplicitRangeRoot } from './internal/root-location';
+import { withImplicitRangeRoot } from './internal/root-location';
 import {
   MAIN_ROOT_KEY,
   toInternalRoot,
@@ -686,18 +687,14 @@ const withViewUpdateContext = <V extends Value>(
   Object.freeze({
     afterCommit(handler) {
       baseContext.afterCommit((context) => {
-        const selectionRoot = context.snapshot.selection
-          ? (getRangeRoot(context.snapshot.selection).root ?? MAIN_ROOT_KEY)
-          : viewState.root;
-        const snapshot = withViewSnapshot(
-          context.snapshot,
-          viewState,
-          selectionRoot
-        );
         const viewContext = {
           commit: context.commit,
           editor: getViewEditor() ?? editor,
-          snapshot,
+          snapshot: withViewSnapshot(
+            getEditorCommitSnapshot(context.commit, viewState.root),
+            viewState,
+            viewState.root
+          ),
         } as EditorCommitContext<Editor<V>>;
 
         handler(viewContext);
@@ -809,23 +806,49 @@ const createViewRuntime = <V extends Value>(
     subscribe: (listener) =>
       baseRuntime.subscribe((_snapshot, change) => {
         listener(
-          withViewSnapshot(
-            withRootRead(editor, viewState, () => baseRuntime.getSnapshot()),
-            viewState,
-            getCurrentSelectionRoot(editor)
-          ),
+          change
+            ? withViewSnapshot(
+                getEditorCommitSnapshot(change, viewState.root),
+                viewState,
+                viewState.root
+              )
+            : withViewSnapshot(
+                withRootRead(editor, viewState, () =>
+                  baseRuntime.getSnapshot()
+                ),
+                viewState,
+                getCurrentSelectionRoot(editor)
+              ),
           change
         );
       }),
-    subscribeCommit: (listener) => baseRuntime.subscribeCommit(listener),
+    subscribeCommit: (listener) =>
+      baseRuntime.subscribeCommit((change) => {
+        listener(
+          change,
+          withViewSnapshot(
+            getEditorCommitSnapshot(change, viewState.root),
+            viewState,
+            viewState.root
+          )
+        );
+      }),
     subscribeSource: (source, listener) =>
       baseRuntime.subscribeSource(source, (_snapshot, change) => {
         listener(
-          withViewSnapshot(
-            withRootRead(editor, viewState, () => baseRuntime.getSnapshot()),
-            viewState,
-            getCurrentSelectionRoot(editor)
-          ),
+          change
+            ? withViewSnapshot(
+                getEditorCommitSnapshot(change, viewState.root),
+                viewState,
+                viewState.root
+              )
+            : withViewSnapshot(
+                withRootRead(editor, viewState, () =>
+                  baseRuntime.getSnapshot()
+                ),
+                viewState,
+                getCurrentSelectionRoot(editor)
+              ),
           change
         );
       }),

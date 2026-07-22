@@ -1,5 +1,4 @@
 import type { Descendant, Element, Text } from '@platejs/plite';
-import type { UnknownObject } from '@udecode/utils';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Elements
@@ -18,7 +17,7 @@ export interface TCalloutElement extends Element {
     | 'warning';
 }
 
-export type TTagProps = { value: string } & UnknownObject;
+export type TTagProps = { value: string };
 
 export type TTagElement = Element & TTagProps;
 
@@ -137,7 +136,7 @@ export type TTextAlignProps = {
 
 export type TResizableProps = {
   align?: 'center' | 'left' | 'right';
-  width?: number;
+  width?: number | string;
 };
 
 export type TResizableElement = Element & TResizableProps;
@@ -248,8 +247,8 @@ export type TUpdateSuggestionData = {
   createdAt: number;
   type: 'update';
   userId: string;
-  newProperties?: any;
-  properties?: any;
+  newProperties?: Record<string, unknown>;
+  properties?: Record<string, unknown>;
 };
 
 export type EmptyText = {

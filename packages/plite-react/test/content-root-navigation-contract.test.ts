@@ -2,7 +2,6 @@ import {
   createEditorRuntime,
   createEditorView,
   defineEditorSchema,
-  NodeApi,
   schema,
   type Point,
 } from '@platejs/plite';
@@ -239,15 +238,46 @@ describe('content root navigation', () => {
         },
       },
     });
-    const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
-    const isElement = vi.spyOn(NodeApi, 'isElement');
+    const mainEditor = createEditorView(
+      runtime
+    ) as unknown as ReactRuntimeEditor;
+    const indexedReads: number[] = [];
+    const editor = Object.create(mainEditor) as ReactRuntimeEditor;
+    const read: ReactRuntimeEditor['read'] = (reader) =>
+      mainEditor.read((state) => {
+        const value = state.value();
+        const children = new Proxy(value.children, {
+          get(target, property, receiver) {
+            if (typeof property === 'string' && /^\d+$/.test(property)) {
+              const index = Number(property);
+
+              indexedReads.push(index);
+              if (index !== 1) {
+                throw new Error(
+                  `content-root lookup scanned non-owner index ${index}`
+                );
+              }
+            }
+
+            return Reflect.get(target, property, receiver);
+          },
+        });
+        const guardedState = Object.create(state) as typeof state;
+
+        Object.defineProperty(guardedState, 'value', {
+          value: () => ({ ...value, children }),
+        });
+
+        return reader(guardedState);
+      });
+
+    Object.defineProperty(editor, 'read', { value: read });
 
     expect(findContentRootOwners(editor)).toEqual([
       { childRoot: 'card:body', ownerPath: [1], ownerRoot: 'main' },
       { childRoot: 'card:caption', ownerPath: [1], ownerRoot: 'main' },
     ]);
-    expect(isElement).toHaveBeenCalledTimes(1);
-    isElement.mockRestore();
+    expect(indexedReads).toEqual([1]);
   });
 
   it('does not exit a content root from the start of its last block on ArrowDown', () => {

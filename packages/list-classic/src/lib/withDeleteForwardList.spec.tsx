@@ -44,7 +44,7 @@ describe('p (empty) + list when selection not in list', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.deleteForward();
@@ -78,7 +78,7 @@ describe('p /w text + list when selection not in list', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.deleteForward();
@@ -118,7 +118,7 @@ describe('p /w text + list when selection not in list', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.deleteForward();
@@ -174,7 +174,7 @@ describe('p /w text + list when selection not in list', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.deleteForward();
@@ -228,7 +228,7 @@ describe('list + list when selection is at the end of the first list', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.deleteForward();
@@ -277,7 +277,7 @@ describe('list where second item has multiple children', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.deleteForward();
@@ -338,7 +338,7 @@ describe('list + sublist where second item has multiple children', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.deleteForward();

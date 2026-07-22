@@ -1540,7 +1540,7 @@ describe('schema compiler', () => {
           paragraph: {
             content: schema.content.text(),
             properties: {
-              labels: property.set(property.typed(Item)),
+              labels: property.set(property.json({ policy: Item })),
             },
           } as const,
         },

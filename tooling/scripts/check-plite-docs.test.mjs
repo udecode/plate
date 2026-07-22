@@ -7,7 +7,6 @@ import {
   isClosedLedgerValue,
   isCurrentSchemaAdoptionDoc,
   removedCaptionTargetOptionsPattern,
-  removedHeadingLevelsOptionsPattern,
   removedPlateNodeBagPattern,
   removedPlateSchemaFlagsPattern,
   removedRootMutationFacadePattern,
@@ -152,19 +151,5 @@ test('detects caption targets stored in runtime query options', () => {
   assert.doesNotMatch(
     'targetPluginKeys: [KEYS.img]',
     removedCaptionTargetOptionsPattern
-  );
-});
-
-test('detects heading levels stored in runtime options', () => {
-  for (const source of [
-    'BaseHeadingPlugin.configure({ options: { levels: 3 } })',
-    'HeadingPlugin options.levels selects enabled levels',
-  ]) {
-    assert.match(source, removedHeadingLevelsOptionsPattern);
-  }
-
-  assert.doesNotMatch(
-    'BaseHeadingPlugin.configure({ config: { levels: 3 } })',
-    removedHeadingLevelsOptionsPattern
   );
 });

@@ -110,7 +110,6 @@ const editor = createPlateEditor({
 import { CopilotPlugin } from '@platejs/ai/react';
 import {
   MarkdownPlugin,
-  defineMarkdownConfig,
   serializeMd,
   stripMarkdown,
 } from '@platejs/markdown';
@@ -119,11 +118,9 @@ import { GhostText } from '@/components/ui/ghost-text';
 const plugins = [
   // ...其他插件,
   MarkdownPlugin.configure({
-    config: defineMarkdownConfig({
-      id: 'copilot-example:markdown',
+    options: {
       remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
-      version: 1,
-    }),
+    },
   }),
   CopilotPlugin.extend(({ api }) => ({
     options: {

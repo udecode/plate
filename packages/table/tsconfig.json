@@ -4,6 +4,7 @@
     "paths": {
       "@platejs/core": ["../core/src/index.ts"],
       "@platejs/core/react": ["../core/src/react/index.ts"],
+      "@platejs/core/react/internal": ["../core/src/react/internal/index.ts"],
       "@platejs/plite": ["../plite/src/index.ts"],
       "@platejs/plite-hyperscript": ["../plite-hyperscript/src/index.ts"],
       "@platejs/plite/internal": ["../plite/src/internal/index.ts"],

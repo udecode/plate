@@ -1,14 +1,14 @@
 import React from 'react';
 
-import { property } from '@platejs/plite';
+import { property } from 'platejs';
 import { createBaseEditor, createBasePlugin } from 'platejs';
-import { serializeHtml } from 'platejs/static';
+import { renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
 import { createStaticEditor } from './create-static-editor';
 
-describe('core static serializeHtml custom render hooks', () => {
+describe('core static renderStaticHtml custom render hooks', () => {
   it('renders belowNodes output around children', async () => {
     const renderBelowPlugin = createBasePlugin({
       key: 'test-list',
@@ -26,7 +26,7 @@ describe('core static serializeHtml custom render hooks', () => {
 
     const editor = createBaseEditor({
       plugins: [...BaseEditorKit, renderBelowPlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'test render below' }],
           type: 'p',
@@ -34,7 +34,7 @@ describe('core static serializeHtml custom render hooks', () => {
       ],
     });
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -61,7 +61,7 @@ describe('core static serializeHtml custom render hooks', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -93,7 +93,7 @@ describe('core static serializeHtml custom render hooks', () => {
 
     const editor = createBaseEditor({
       plugins: [...BaseEditorKit, testPlugin],
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -106,7 +106,7 @@ describe('core static serializeHtml custom render hooks', () => {
       ],
     });
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -132,7 +132,7 @@ describe('core static serializeHtml custom render hooks', () => {
 
     const editor = createBaseEditor({
       plugins: [testPlugin],
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -145,7 +145,7 @@ describe('core static serializeHtml custom render hooks', () => {
       ],
     });
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -171,7 +171,7 @@ describe('core static serializeHtml custom render hooks', () => {
 
     const editor = createBaseEditor({
       plugins: [testPlugin],
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -184,7 +184,7 @@ describe('core static serializeHtml custom render hooks', () => {
       ],
     });
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });

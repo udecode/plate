@@ -9,7 +9,7 @@ export const heightToTopMock = mock(() => 40);
 export const useContentControllerMock = mock();
 export const useContentObserverMock = mock();
 export const useEditorPluginMock = mock();
-export const useEditorRefMock = mock();
+export const useEditorMock = mock();
 export const useEditorSelectorMock = mock();
 export const useEditorScrollElementMock = mock();
 export const useTocControllerMock = mock();
@@ -19,7 +19,7 @@ export const registerSharedTocHookMocks = () => {
     ...actualPlatejsReact,
     useEditorScrollElement: useEditorScrollElementMock,
     useEditorPlugin: useEditorPluginMock,
-    useEditorRef: useEditorRefMock,
+    useEditor: useEditorMock,
     useEditorSelector: useEditorSelectorMock,
   }));
 
@@ -45,7 +45,7 @@ export const resetSharedTocHookMocks = () => {
   useContentControllerMock.mockReset();
   useContentObserverMock.mockReset();
   useEditorPluginMock.mockReset();
-  useEditorRefMock.mockReset();
+  useEditorMock.mockReset();
   useEditorSelectorMock.mockReset();
   useEditorScrollElementMock.mockReset();
   useTocControllerMock.mockReset();

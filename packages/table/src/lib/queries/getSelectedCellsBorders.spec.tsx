@@ -47,7 +47,7 @@ const createEditor = () =>
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 const getCell = (editor: ReturnType<typeof createEditor>, path: number[]) => {
@@ -73,7 +73,7 @@ describe('getSelectedCellsBorders', () => {
     ];
     const outside = createPlateEditor({
       plugins: getTestTablePlugins(),
-      value: outsideValue,
+      initialValue: outsideValue,
     });
 
     expect(getSelectedCellsBorders(outside)).toEqual({

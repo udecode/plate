@@ -8,6 +8,10 @@ import React from 'react';
 import { flushSync } from 'react-dom';
 import type { Path, RuntimeId } from '@platejs/plite';
 
+import type {
+  VirtualizedPageLayoutItem,
+  VirtualizedTopLevelLayoutItem,
+} from './create-segment-plan';
 import type { MountedTopLevelRange } from './dom-strategy-commands';
 
 export type DOMStrategyVirtualizedConfig = {
@@ -24,25 +28,6 @@ export type VirtualizedTopLevelItem = {
   size: number;
   start: number;
   width?: number;
-};
-
-export type VirtualizedTopLevelLayoutItem = {
-  index: number;
-  left?: number;
-  size: number;
-  start: number;
-  width?: number;
-};
-
-export type VirtualizedPageLayoutItem = {
-  fragmentPaths?: readonly Path[];
-  index: number;
-  key: string;
-  pageIndexes: readonly number[];
-  size: number;
-  start: number;
-  topLevelIndexes: readonly number[];
-  unitPaths?: readonly Path[];
 };
 
 export type VirtualizedMissingTopLevelRange = {

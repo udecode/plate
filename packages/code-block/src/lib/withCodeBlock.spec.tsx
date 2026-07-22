@@ -11,7 +11,7 @@ const createEditor = ({ input }: { input: TestEditor }) =>
   createBaseEditor({
     plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 describe('insert break', () => {

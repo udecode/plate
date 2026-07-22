@@ -26,13 +26,14 @@ We moved `date-node` off direct suggestion helpers and into suggestion-driven no
 - Inline date suggestion tests still passed, which made the failure easy to miss until full app build
 
 ## What Didn't Work
-- Adding a `targetPlugins: [KEYS.date]` guard alone. `inject.nodeProps` still visits text nodes, and `targetPlugins` only filters when an element type exists.
+- Adding a `targetPluginKeys: [KEYS.date]` guard alone. `inject.nodeProps` still visits text nodes, and `targetPluginKeys` only filters when an element type exists.
 - Using a typed no-op `transformProps` without an explicit `element` guard. Runtime prerender still reached the helper with `element === undefined`.
 
 ## Solution
 Constrain the suggestion injection to elements and keep the date component generic:
 
 ```ts
+targetPluginKeys: [KEYS.date],
 inject: {
   isElement: true,
   nodeProps: {
@@ -53,7 +54,6 @@ inject: {
     },
     transformStyle: () => ({}) as CSSStyleDeclaration,
   },
-  targetPlugins: [KEYS.date],
 },
 ```
 

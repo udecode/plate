@@ -46,8 +46,6 @@ import { DOMStrategySegmentPlaceholder } from '../dom-strategy/segment-placehold
 import {
   getVirtualizerScrollElement,
   useVirtualizedRootPlan,
-  type VirtualizedPageLayoutItem,
-  type VirtualizedTopLevelLayoutItem,
 } from '../dom-strategy/use-virtualized-root-plan';
 import { DOMStrategyVirtualizedRangeBoundary } from '../dom-strategy/virtualized-range-boundary';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
@@ -648,16 +646,6 @@ export type EditableDecorate<T = unknown> = (
   editor?: Editor
 ) => readonly EditableDecoration<T>[];
 
-export type EditableDOMStrategyLayout = {
-  getVirtualizedPageItems?: () => readonly VirtualizedPageLayoutItem[] | null;
-  getVisibleVirtualizedPageItems?: () =>
-    | readonly VirtualizedPageLayoutItem[]
-    | null;
-  getVirtualizedTopLevelItems?: () =>
-    | readonly VirtualizedTopLevelLayoutItem[]
-    | null;
-};
-
 export type EditableProps<
   T = unknown,
   TElement extends PliteElementNode = PliteElementNode,
@@ -684,7 +672,6 @@ export type EditableProps<
    * must use the object form: `{ type: 'virtualized', ... }`.
    */
   domStrategy?: DOMStrategyOptions | null;
-  domStrategyLayout?: EditableDOMStrategyLayout | null;
   onBeforeInput?: React.FormEventHandler<HTMLDivElement>;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onKeyDown?: EditableKeyDownHandler;
@@ -1085,7 +1072,6 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   id,
   maxLength,
   domStrategy,
-  domStrategyLayout,
   onBeforeInput,
   onDOMBeforeInput,
   onKeyDown,
@@ -1302,12 +1288,11 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   );
   const virtualizedScrollRootReady =
     virtualizedDOMStrategyConfig != null && virtualizedScrollElement != null;
-  const virtualizedPageItems =
-    domStrategyLayout?.getVirtualizedPageItems?.() ?? null;
+  const virtualizedPageItems = virtualizedDOMStrategyOptions?.layout?.pageItems;
   const visibleVirtualizedPageItems =
-    domStrategyLayout?.getVisibleVirtualizedPageItems?.() ?? null;
+    virtualizedDOMStrategyOptions?.layout?.visiblePageItems;
   const virtualizedLayoutItems =
-    domStrategyLayout?.getVirtualizedTopLevelItems?.() ?? null;
+    virtualizedDOMStrategyOptions?.layout?.topLevelItems;
   const virtualizedPlan = useVirtualizedRootPlan({
     config: enableVirtualizedRendering ? virtualizedDOMStrategyConfig : null,
     enabled: enableVirtualizedRendering && virtualizedScrollRootReady,
@@ -1840,7 +1825,9 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                     : null
             }
             id={id}
-            ignoreBlankEditableRootClicks={domStrategyLayout != null}
+            ignoreBlankEditableRootClicks={
+              virtualizedDOMStrategyOptions?.layout != null
+            }
             onBeforeInput={onBeforeInput}
             onDOMBeforeInput={onDOMBeforeInput}
             onDOMStrategyMetrics={onDOMStrategyMetrics}

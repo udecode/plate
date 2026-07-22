@@ -3942,7 +3942,11 @@ test.describe('On richtext example', () => {
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
-    await editor.assert.domCaret({ offset: 1, text: 'Z is editable ' });
+    await editor.assert.collapsedModelDOMSelection({
+      offset: 1,
+      path: [0, 0],
+      text: 'Z is editable ',
+    });
   });
 
   test('keeps caret editable after browser Delete deletes selected range', async ({
@@ -3993,7 +3997,11 @@ test.describe('On richtext example', () => {
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
-    await editor.assert.domCaret({ offset: 1, text: 'Z is editable ' });
+    await editor.assert.collapsedModelDOMSelection({
+      offset: 1,
+      path: [0, 0],
+      text: 'Z is editable ',
+    });
   });
 
   test('keeps selection synchronized after browser ArrowLeft and ArrowRight', async ({

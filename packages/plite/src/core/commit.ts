@@ -5,6 +5,7 @@ import type {
   EditorCommitRuntimeChangeKind,
   EditorDocumentValue,
   Editor,
+  EditorSnapshot,
   RootKey,
   RuntimeId,
   Selection,
@@ -74,6 +75,67 @@ type CommitInput<V extends Value> = Omit<
   replace?: boolean;
   selectionAfterRoot: RootKey;
   selectionBeforeRoot: RootKey;
+};
+
+type EditorCommitSnapshotSource = Readonly<{
+  editor: Editor;
+  value: JsonEditorValue;
+}>;
+
+const EDITOR_COMMIT_SNAPSHOT_SOURCES = new WeakMap<
+  EditorCommit,
+  EditorCommitSnapshotSource
+>();
+const EDITOR_COMMIT_ROOT_SNAPSHOTS = new WeakMap<
+  EditorCommit,
+  Map<RootKey, EditorSnapshot>
+>();
+
+/** @internal Return the immutable post-commit snapshot for one document root. */
+export const getEditorCommitSnapshot = <V extends Value>(
+  commit: EditorCommit<V>,
+  root: RootKey = 'main'
+): EditorSnapshot<V> => {
+  if (root === 'main') return commit.after;
+
+  const source = EDITOR_COMMIT_SNAPSHOT_SOURCES.get(commit);
+
+  if (!source) {
+    throw new Error('Editor commit snapshot source is unavailable.');
+  }
+  let snapshots = EDITOR_COMMIT_ROOT_SNAPSHOTS.get(commit);
+
+  if (!snapshots) {
+    snapshots = new Map([['main', commit.after]]);
+    EDITOR_COMMIT_ROOT_SNAPSHOTS.set(commit, snapshots);
+  }
+  const cached = snapshots.get(root);
+
+  if (cached) return cached as EditorSnapshot<V>;
+  const children = valueRoot(source.value, root) as V;
+  let index: SnapshotIndex | undefined;
+  const snapshot = {
+    children,
+    selection:
+      toInternalRoot(commit.selectionAfterRoot) === root
+        ? commit.selectionAfter
+        : null,
+    version: commit.version,
+  };
+
+  Object.defineProperty(snapshot, 'index', {
+    enumerable: true,
+    get: () =>
+      (index ??= buildOwnedSnapshotIndex(
+        children as readonly Descendant[],
+        source.editor
+      )),
+  });
+  const frozen = Object.freeze(snapshot) as EditorSnapshot<V>;
+
+  snapshots.set(root, frozen);
+
+  return frozen;
 };
 
 const valueRoot = (value: JsonEditorValue, root: RootKey) =>
@@ -947,6 +1009,11 @@ export const createEditorCommit = <V extends Value>(
     enumerable: true,
     get: () =>
       (inverseChanges ??= body.changes.invert(beforeValue as JsonEditorValue)),
+  });
+
+  EDITOR_COMMIT_SNAPSHOT_SOURCES.set(commit, {
+    editor,
+    value: afterValue as JsonEditorValue,
   });
 
   return Object.freeze(commit);

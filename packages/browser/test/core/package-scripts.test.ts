@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 import * as PliteBrowserBrowser from '../../src/browser';
 import * as PliteBrowserCore from '../../src/core';
 import * as PliteBrowserPlaywright from '../../src/playwright';
-import * as PliteBrowserTransports from '../../src/transports';
 
 const expectedPliteBrowserRuntimeSubpathExports = {
   browser: [
@@ -20,6 +19,7 @@ const expectedPliteBrowserRuntimeSubpathExports = {
     'PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS',
     'assertPliteBrowserFirstPartyParityContracts',
     'assertPliteBrowserReleaseProof',
+    'classifyBrowserMobileTransportProof',
     'createBrowserMobileReleaseProofArtifact',
     'createPersistentBrowserSoakProofArtifact',
     'createReleaseDisciplineProofArtifact',
@@ -29,6 +29,7 @@ const expectedPliteBrowserRuntimeSubpathExports = {
     'evaluatePlaceholderInput',
     'extractAgentBrowserDebugSnapshot',
     'extractAppiumDebugSnapshot',
+    'getBrowserMobileTransportProofMatrix',
     'isCollapsed',
     'parseAgentBrowserBatch',
     'parseDebugSnapshot',
@@ -44,9 +45,11 @@ const expectedPliteBrowserRuntimeSubpathExports = {
     'attachPageScreenshot',
     'attachPliteBrowserJsonArtifact',
     'attachPliteBrowserSelectionScreenshot',
+    'browserStep',
     'classifyScenarioTransportClaim',
     'createScenarioReductionCandidates',
     'createScenarioReplay',
+    'decodeScenarioReplay',
     'createPliteBrowserClipboardPasteGauntlet',
     'createPliteBrowserCompositionGauntlet',
     'createPliteBrowserDestructiveEditingGauntlet',
@@ -66,7 +69,6 @@ const expectedPliteBrowserRuntimeSubpathExports = {
     'createPliteBrowserWarmLoopSteps',
     'createPliteBrowserWarmToolbarArrowGauntlet',
     'definePliteBrowserFeatureContract',
-    'evaluatePliteBrowserHandle',
     'findPliteBrowserKernelTraceEntry',
     'getPliteBrowserEditable',
     'getIllegalKernelTransitions',
@@ -93,30 +95,7 @@ const expectedPliteBrowserRuntimeSubpathExports = {
     'takePliteBrowserRenderStateSnapshot',
     'withExclusiveClipboardAccess',
   ],
-  transports: [
-    'AGENT_BROWSER_IOS_DEVICE_DEFAULT',
-    'AGENT_BROWSER_IOS_SESSION_DEFAULT',
-    'ANDROID_SDK_ROOT_DEFAULT',
-    'APPIUM_ANDROID_EMULATOR_DEFAULT',
-    'APPIUM_IOS_DEVICE_DEFAULT',
-    'buildAgentBrowserIosBatch',
-    'classifyBrowserMobileTransportProof',
-    'createAgentBrowserIosDescriptor',
-    'createAppiumAndroidDescriptor',
-    'createAppiumIosDescriptor',
-    'createAppiumIosSessionPayload',
-    'createAppiumSessionPayload',
-    'createBrowserMobileUrl',
-    'getBrowserMobileTransportProofMatrix',
-    'resolveBrowserMobileSurface',
-  ],
 };
-
-const transportSourceFiles = [
-  'agent-browser.ts',
-  'appium.ts',
-  'contracts.ts',
-] as const;
 
 describe('package scripts', () => {
   test('keeps public subpath runtime values exact', () => {
@@ -124,19 +103,17 @@ describe('package scripts', () => {
       browser: Object.keys(PliteBrowserBrowser).sort(),
       core: Object.keys(PliteBrowserCore).sort(),
       playwright: Object.keys(PliteBrowserPlaywright).sort(),
-      transports: Object.keys(PliteBrowserTransports).sort(),
     }).toEqual({
       browser: expectedPliteBrowserRuntimeSubpathExports.browser.toSorted(),
       core: expectedPliteBrowserRuntimeSubpathExports.core.toSorted(),
       playwright: expectedPliteBrowserRuntimeSubpathExports.playwright.toSorted(),
-      transports: expectedPliteBrowserRuntimeSubpathExports.transports.toSorted(),
     });
   });
 
   test('keeps public subpath exports documented in source', () => {
     const missing: string[] = [];
 
-    for (const subpath of ['browser', 'core', 'playwright', 'transports']) {
+    for (const subpath of ['browser', 'core', 'playwright']) {
       const sourceRoot = fileURLToPath(
         new URL(`../../src/${subpath}/`, import.meta.url)
       );
@@ -235,34 +212,6 @@ describe('package scripts', () => {
     expect(missing).toEqual([]);
   });
 
-  test('keeps transport exports documented in source', () => {
-    const missing: string[] = [];
-
-    for (const file of transportSourceFiles) {
-      const source = readFileSync(
-        fileURLToPath(new URL(`../../src/transports/${file}`, import.meta.url)),
-        'utf8'
-      );
-
-      for (const match of source.matchAll(
-        /export\s+(?:type|interface|const|function|class)\s+([A-Za-z0-9_]+)/g
-      )) {
-        const [declaration, name] = match;
-        const declarationIndex = match.index ?? source.indexOf(declaration);
-        const beforeDeclaration = source.slice(
-          Math.max(0, declarationIndex - 600),
-          declarationIndex
-        );
-
-        if (!/\/\*\*[\s\S]*?\*\/\s*$/.test(beforeDeclaration)) {
-          missing.push(`${file}/${name}: missing immediate source JSDoc`);
-        }
-      }
-    }
-
-    expect(missing).toEqual([]);
-  });
-
   test('does not rerun selection browser tests from the aggregate test script', () => {
     const packageJsonPath = fileURLToPath(
       new URL('../../package.json', import.meta.url)
@@ -352,16 +301,12 @@ describe('package scripts', () => {
       './core',
       './package.json',
       './playwright',
-      './transports',
     ]);
     expect(tsdownConfig).not.toContain("index: 'src/index.ts'");
     expect(tsdownConfig).toContain("'core/index': 'src/core/index.ts'");
     expect(tsdownConfig).toContain("'browser/index': 'src/browser/index.ts'");
     expect(tsdownConfig).toContain(
       "'playwright/index': 'src/playwright/index.ts'"
-    );
-    expect(tsdownConfig).toContain(
-      "'transports/index': 'src/transports/index.ts'"
     );
   });
 
@@ -395,7 +340,9 @@ describe('package scripts', () => {
     }
 
     expect(readme).toContain('@platejs/browser/playwright');
-    expect(readme).toContain('@platejs/browser/transports');
+    expect(readme).toContain(
+      'Raw-device identity belongs to the executable device runner'
+    );
     expect(readme).not.toContain('DOM selection and zero-width helpers');
   });
 });

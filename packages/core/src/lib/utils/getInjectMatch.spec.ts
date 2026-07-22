@@ -37,7 +37,7 @@ const LinkPlugin = createBasePlugin({
 const createMatchEditor = (plugin: AnyBasePlugin) =>
   createBaseEditor({
     plugins: [ParagraphPlugin, QuotePlugin, LinkPlugin, plugin],
-    value: [
+    initialValue: [
       {
         children: [{ children: [{ text: 'nested' }], type: 'paragraph-test' }],
         type: 'quote',
@@ -101,12 +101,16 @@ describe('getInjectMatch', () => {
 
   it('respects targetPluginKeys and excludePlugins', () => {
     const targetPlugin = createBasePlugin({
-      config: { targetPluginKeys: ['paragraph'] },
+      targetPluginKeys: ['paragraph'],
       key: 'targetFilter',
     });
     const excludePlugin = createBasePlugin({
       inject: { excludePlugins: ['quote'] },
       key: 'excludeFilter',
+    });
+    const missingTargetPlugin = createBasePlugin({
+      key: 'missingTargetFilter',
+      targetPluginKeys: ['missingOptionalPlugin'],
     });
 
     const targetEditor = createMatchEditor(targetPlugin);
@@ -118,6 +122,11 @@ describe('getInjectMatch', () => {
     const excludeMatch = getInjectMatch(
       excludeEditor,
       excludeEditor.getPlugin(excludePlugin)
+    );
+    const missingTargetEditor = createMatchEditor(missingTargetPlugin);
+    const missingTargetMatch = getInjectMatch(
+      missingTargetEditor,
+      missingTargetEditor.getPlugin(missingTargetPlugin)
     );
 
     expect(
@@ -138,6 +147,12 @@ describe('getInjectMatch', () => {
         [0]
       )
     ).toBe(true);
+    expect(
+      missingTargetMatch(
+        { children: [{ text: 'leaf' }], type: 'paragraph-test' } as any,
+        [0]
+      )
+    ).toBe(false);
   });
 
   it('respects excludeBelowPlugins and maxLevel', () => {

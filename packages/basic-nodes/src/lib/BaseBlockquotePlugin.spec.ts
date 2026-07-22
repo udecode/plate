@@ -12,7 +12,7 @@ describe('BaseBlockquotePlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'Quote' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'Quote' }], type: 'p' }],
     });
     const before = { children: editor.read.children() };
 
@@ -52,7 +52,7 @@ describe('BaseBlockquotePlugin', () => {
         anchor: { offset: 2, path: [0, 0, 0] },
         focus: { offset: 2, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: 'Quote' }], type: KEYS.p },
@@ -89,7 +89,7 @@ describe('BaseBlockquotePlugin', () => {
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 3, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -132,7 +132,7 @@ describe('BaseBlockquotePlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'One' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'One' }], type: KEYS.p }],
     });
 
     expect(editor.update.blockquote.untab()).toBe(false);
@@ -149,7 +149,7 @@ describe('BaseBlockquotePlugin', () => {
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -180,7 +180,7 @@ describe('BaseBlockquotePlugin', () => {
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             {

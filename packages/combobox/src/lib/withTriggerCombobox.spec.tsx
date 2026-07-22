@@ -109,7 +109,7 @@ const createEditorWithCombobox = (
   return createBaseEditor({
     plugins: editorPlugins,
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 };
 

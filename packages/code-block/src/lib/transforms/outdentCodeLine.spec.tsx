@@ -42,7 +42,7 @@ describe('outdent code line', () => {
       const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const codeBlock = getElementEntry(editor, [0]);
@@ -77,7 +77,7 @@ describe('outdent code line', () => {
       const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const codeBlock = getElementEntry(editor, [0]);

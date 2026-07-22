@@ -30,7 +30,6 @@ Current public `@platejs/browser` shape in the Plate repo:
 - `@platejs/browser/core`
 - `@platejs/browser/browser`
 - `@platejs/browser/playwright`
-- `@platejs/browser/transports`
 
 Strengths:
 

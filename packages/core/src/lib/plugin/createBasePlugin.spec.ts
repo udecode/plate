@@ -34,11 +34,14 @@ const resolveEditorExtensions = (plugin: AnyBasePlugin) => {
 };
 
 describe('createBasePlugin', () => {
-  it('stores no-config descriptors as frozen empty configuration', () => {
-    const plugin = createBasePlugin({ key: 'no-config' });
+  it('freezes compile-time target keys', () => {
+    const plugin = createBasePlugin({
+      key: 'no-config',
+      targetPluginKeys: ['paragraph'],
+    });
 
-    expect(plugin.config).toEqual({});
-    expect(Object.isFrozen(plugin.config)).toBe(true);
+    expect(plugin.targetPluginKeys).toEqual(['paragraph']);
+    expect(Object.isFrozen(plugin.targetPluginKeys)).toBe(true);
   });
 
   it('preserves immutable property policies through plugin resolution', () => {
@@ -71,27 +74,21 @@ describe('createBasePlugin', () => {
     expect(resolvedPolicy?.validate(-1)).toBe(false);
   });
 
-  it('contextually types schema factories over immutable config', () => {
+  it('contextually types schema factories over options', () => {
     type Config = PluginConfig<
       'typed-node-schema',
-      {},
-      {},
-      {},
-      {},
-      {},
-      readonly [],
-      { targetPluginKeys: string[] }
+      { targetTypes: string[] }
     >;
 
     const plugin = createBasePlugin<Config>({
-      config: { targetPluginKeys: ['p'] },
       key: 'typed-node-schema',
-      schema: ({ config, key, type }) => ({
+      options: { targetTypes: ['p'] },
+      schema: ({ key, options, type }) => ({
         properties: [
           schema.elementProperty(
             schema.key.prefix(`${key}:${type}:`),
             property.json(),
-            { target: target.types(config.targetPluginKeys) }
+            { target: target.types(options.targetTypes) }
           ),
         ],
       }),
@@ -112,7 +109,7 @@ describe('createBasePlugin', () => {
   });
 
   describe('extend', () => {
-    it('keeps semantic identity while merging runtime config', () => {
+    it('keeps semantic identity while merging runtime options', () => {
       const plugin = resolvePluginTest(
         createBasePlugin({ key: 'a', type: 'a' }).extend({
           inject: {
@@ -301,6 +298,24 @@ describe('createBasePlugin', () => {
         });
 
       expect(1).toBe(1);
+    });
+
+    it('contextually types declared explicit tx groups', () => {
+      type DeclaredTxConfig = PluginConfig<
+        'sourcePlugin',
+        {},
+        {},
+        { foreignTx: { replace: (text: string) => number } }
+      >;
+
+      const plugin = createBasePlugin<DeclaredTxConfig>({
+        key: 'sourcePlugin',
+      }).extendTxGroup('foreignTx', () => () => ({
+        replace: (text) => text.length,
+      }));
+      const editor = createBaseEditor({ plugins: [plugin] });
+
+      expect(editor.update.foreignTx.replace('text')).toBe(4);
     });
 
     it('adds editor extensions with plugin-derived names', () => {
@@ -550,16 +565,65 @@ describe('createBasePlugin', () => {
       });
     });
 
-    it('keeps only the last configure result when configure is chained', () => {
+    it('applies chained object configuration layers in order', () => {
       const configured = basePlugin
         .configure({ options: { optionA: 'first change' } })
         .configure({ options: { optionB: 30 } })
         .configure({ options: { optionB: 40 } });
 
       expect(resolvePluginTest(configured).options).toEqual({
-        optionA: 'initial',
+        optionA: 'first change',
         optionB: 40,
       });
+    });
+
+    it('resolves contextual configuration per editor before extensions', () => {
+      const plugin = createBasePlugin<
+        PluginConfig<'contextual', { editorId: string; value: string }>
+      >({
+        key: 'contextual',
+        options: { editorId: '', value: 'initial' },
+      })
+        .configure({ options: { value: 'static' } })
+        .configure(({ editor }) => ({
+          options: { editorId: editor.id },
+        }))
+        .extend(({ getOptions }) => ({
+          options: { value: `${getOptions().value}:extended` },
+        }));
+      const first = createBaseEditor({ id: 'first', plugins: [plugin] });
+      const second = createBaseEditor({ id: 'second', plugins: [plugin] });
+
+      expect(first.plugin(plugin).getOptions()).toEqual({
+        editorId: 'first',
+        value: 'static:extended',
+      });
+      expect(second.plugin(plugin).getOptions()).toEqual({
+        editorId: 'second',
+        value: 'static:extended',
+      });
+    });
+
+    it('applies contextual configuration layers in order', () => {
+      const plugin = basePlugin
+        .configure({ options: { optionA: 'static' } })
+        .configure(() => ({ options: { optionB: 20 } }))
+        .configure(() => ({ options: { optionB: 30 } }));
+
+      expect(resolvePluginTest(plugin).options).toEqual({
+        optionA: 'static',
+        optionB: 30,
+      });
+    });
+
+    it('rejects model fields from untyped configure callbacks', () => {
+      const plugin = (basePlugin.configure as any)(() => ({
+        schema: { mark: property.boolean() },
+      }));
+
+      expect(() => createBaseEditor({ plugins: [plugin] })).toThrow(
+        'configure callbacks cannot define `schema`'
+      );
     });
 
     it('reads the declared type inside parser callbacks', () => {
@@ -733,15 +797,14 @@ describe('createBasePlugin', () => {
 
     it('configures deeply nested plugins', () => {
       const grandchild = createBasePlugin({
-        config: { selectable: true },
         key: 'c',
-        schema: ({ config }) => ({
+        options: { a: 1, selectable: true },
+        schema: ({ options }) => ({
           element: {
             content: schema.content.open({ default: 'text', min: 1 }),
-            selectable: config.selectable,
+            selectable: options.selectable,
           },
         }),
-        options: { a: 1 },
       });
 
       const child = createBasePlugin({
@@ -755,8 +818,7 @@ describe('createBasePlugin', () => {
             key: 'a',
             plugins: [child],
           }).configurePlugin(grandchild, {
-            config: { selectable: false },
-            options: { a: 2 },
+            options: { a: 2, selectable: false },
           }),
         ],
       });

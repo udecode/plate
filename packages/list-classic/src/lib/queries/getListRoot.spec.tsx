@@ -38,7 +38,7 @@ it('returns the top-most list containing the current selection', () => {
   const editor = createBaseEditor({
     plugins: [SchemaOnlyNodeIdPlugin, BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   const sublist = getListRoot(editor, input.selection);

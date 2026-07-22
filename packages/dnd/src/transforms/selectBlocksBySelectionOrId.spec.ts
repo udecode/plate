@@ -15,7 +15,7 @@ describe('selectBlocksBySelectionOrId', () => {
 
   it('selects all selected blocks when the target is in the selection', () => {
     const editor = createPlateEditor({
-      value: [
+      initialValue: [
         { children: [{ text: 'one' }], id: 'block-1', type: 'p' },
         { children: [{ text: 'two' }], id: 'block-2', type: 'p' },
       ],
@@ -38,7 +38,7 @@ describe('selectBlocksBySelectionOrId', () => {
 
   it('selects the target block when it is outside the selection', () => {
     const editor = createPlateEditor({
-      value: [
+      initialValue: [
         { children: [{ text: 'one' }], id: 'block-1', type: 'p' },
         { children: [{ text: 'two' }], id: 'block-2', type: 'p' },
       ],

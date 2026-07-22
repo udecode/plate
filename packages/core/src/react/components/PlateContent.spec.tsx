@@ -9,7 +9,7 @@ import { act, render, waitFor } from '@testing-library/react';
 
 import { createBasePlugin } from '../../lib';
 import { createPlateEditor } from '../editor';
-import { useEditorRef } from '../stores';
+import { useEditor } from '../stores';
 import { Plate } from './Plate';
 import { PlateContainer } from './PlateContainer';
 import { PlateContent } from './PlateContent';
@@ -76,16 +76,16 @@ const AtomicParserBPlugin = createBasePlugin({
 });
 
 const AtomicConfigurationPlugin = createBasePlugin({
-  config: { variant: 'a' as 'a' | 'b' },
   key: 'atomicConfiguration',
-}).extend(({ plugin }) => ({
+  options: { variant: 'a' as 'a' | 'b' },
+}).extend(({ getOptions }) => ({
   plugins: [
-    plugin.config.variant === 'a' ? AtomicParserAPlugin : AtomicParserBPlugin,
+    getOptions().variant === 'a' ? AtomicParserAPlugin : AtomicParserBPlugin,
   ],
 }));
 
 const ReadOnlyProbe = () => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
 
   return <span data-testid="read-only">{String(readOnly)}</span>;
@@ -94,7 +94,7 @@ const ReadOnlyProbe = () => {
 describe('PlateContent', () => {
   it('renders inside the Plate container without mutating editor runtime', () => {
     const editor = createPlateEditor({
-      value,
+      initialValue: value,
     });
     const { getByTestId } = render(
       <Plate editor={editor}>
@@ -112,7 +112,7 @@ describe('PlateContent', () => {
 
   it('syncs readOnly and disabled into the Plite view state', async () => {
     const editor = createPlateEditor({
-      value,
+      initialValue: value,
     });
 
     const Shell = ({
@@ -148,10 +148,10 @@ describe('PlateContent', () => {
     });
   });
 
-  it('routes store node and text handlers through Plite change events', async () => {
+  it('keeps node and text observers active for the Plate provider lifetime', async () => {
     const editor = createPlateEditor({
       plugins: [VariantPlugin],
-      value,
+      initialValue: value,
     });
     const onNodeChange = mock();
     const onTextChange = mock();
@@ -162,7 +162,7 @@ describe('PlateContent', () => {
         onNodeChange={onNodeChange}
         onTextChange={onTextChange}
       >
-        <PlateContent />
+        <span>provider only</span>
       </Plate>
     );
 
@@ -179,9 +179,82 @@ describe('PlateContent', () => {
     });
   });
 
+  it('publishes canonical commit, value, and selection contexts for the provider lifetime', async () => {
+    const editor = createPlateEditor({
+      initialValue: value,
+    });
+    const onCommit = mock();
+    const onSelectionChange = mock();
+    const onValueChange = mock();
+
+    render(
+      <Plate
+        editor={editor}
+        onCommit={onCommit}
+        onSelectionChange={onSelectionChange}
+        onValueChange={onValueChange}
+      >
+        <span>provider only</span>
+      </Plate>
+    );
+
+    onCommit.mockClear();
+    onSelectionChange.mockClear();
+    onValueChange.mockClear();
+
+    act(() => {
+      editor.update.text.insert('!', {
+        at: { offset: 3, path: [0, 0] },
+      });
+    });
+
+    const valueContext = onCommit.mock.calls.at(-1)?.[0];
+
+    expect(valueContext).toEqual(
+      expect.objectContaining({
+        commit: expect.objectContaining({
+          changed: expect.any(Object),
+          changes: expect.any(Object),
+        }),
+        editor,
+        snapshot: expect.objectContaining({
+          children: [{ children: [{ text: 'one!' }], type: 'p' }],
+          selection: null,
+        }),
+      })
+    );
+    expect(onValueChange).toHaveBeenCalledWith({
+      ...valueContext,
+      value: valueContext.snapshot.children,
+    });
+    expect(onSelectionChange).not.toHaveBeenCalled();
+
+    onCommit.mockClear();
+    onSelectionChange.mockClear();
+    onValueChange.mockClear();
+
+    const selection = {
+      kind: 'text' as const,
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    };
+
+    act(() => {
+      editor.update.selection.set(selection);
+    });
+
+    const selectionContext = onCommit.mock.calls.at(-1)?.[0];
+
+    expect(onSelectionChange).toHaveBeenCalledWith({
+      ...selectionContext,
+      selection,
+    });
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
   it('focuses the editor end when autoFocusOnEditable flips readOnly off', async () => {
     const editor = createPlateEditor({
-      value,
+      initialValue: value,
     });
     const focus = spyOn(HTMLElement.prototype, 'focus').mockImplementation(
       () => {}
@@ -214,7 +287,7 @@ describe('PlateContent', () => {
   it('mounts PlateContent under the public Plate store provider', async () => {
     const editor = createPlateEditor({
       id: 'runtime-plate',
-      value,
+      initialValue: value,
     });
 
     const { getByTestId } = render(
@@ -235,7 +308,7 @@ describe('PlateContent', () => {
   it('routes public PlateContent through the v2 runtime editor branch', async () => {
     const editor = createPlateEditor({
       id: 'runtime-plate-content',
-      value,
+      initialValue: value,
     });
 
     const { getByTestId } = render(
@@ -263,12 +336,13 @@ describe('PlateContent', () => {
     });
   });
 
-  it('publishes configured schema, codecs, and mounted renderers together', async () => {
+  it('publishes configured options, codecs, and mounted renderers together', async () => {
     const editor = createPlateEditor({
-      plugins: [AtomicConfigurationPlugin],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      plugins: [
+        AtomicConfigurationPlugin.configure({ options: { variant: 'b' } }),
+      ],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
-    const beforeFingerprint = editor.read.schema.identity()?.fingerprint;
     const { container, getByTestId, queryByTestId } = render(
       <Plate editor={editor}>
         <PlateContainer>
@@ -277,28 +351,12 @@ describe('PlateContent', () => {
       </Plate>
     );
 
-    expect(getByTestId('renderer-a')).toBeInTheDocument();
-    expect(getByTestId('container-renderer-a')).toBeInTheDocument();
-    expect(getByTestId('plite-renderer-a')).toBeInTheDocument();
-    expect(queryByTestId('renderer-b')).not.toBeInTheDocument();
-    expect(queryByTestId('container-renderer-b')).not.toBeInTheDocument();
-    expect(queryByTestId('plite-renderer-b')).not.toBeInTheDocument();
-
-    act(() => {
-      editor.configure(AtomicConfigurationPlugin, { variant: 'b' });
-    });
-
-    await waitFor(() => {
-      expect(queryByTestId('renderer-a')).not.toBeInTheDocument();
-      expect(queryByTestId('container-renderer-a')).not.toBeInTheDocument();
-      expect(queryByTestId('plite-renderer-a')).not.toBeInTheDocument();
-      expect(getByTestId('renderer-b')).toBeInTheDocument();
-      expect(getByTestId('container-renderer-b')).toBeInTheDocument();
-      expect(getByTestId('plite-renderer-b')).toBeInTheDocument();
-    });
-    expect(editor.read.schema.identity()?.fingerprint).not.toBe(
-      beforeFingerprint
-    );
+    expect(queryByTestId('renderer-a')).not.toBeInTheDocument();
+    expect(queryByTestId('container-renderer-a')).not.toBeInTheDocument();
+    expect(queryByTestId('plite-renderer-a')).not.toBeInTheDocument();
+    expect(getByTestId('renderer-b')).toBeInTheDocument();
+    expect(getByTestId('container-renderer-b')).toBeInTheDocument();
+    expect(getByTestId('plite-renderer-b')).toBeInTheDocument();
 
     let inserted = false;
 

@@ -31,7 +31,7 @@ describe('basic block input rules', () => {
         }),
       ],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.insert(' ');
@@ -60,7 +60,7 @@ describe('basic block input rules', () => {
         anchor: { offset: 1, path: [0, 0, 0] },
         focus: { offset: 1, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: '>hello' }], type: KEYS.p }],
           type: KEYS.blockquote,
@@ -101,7 +101,7 @@ describe('basic block input rules', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      value: [{ children: [{ text: '--' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '--' }], type: KEYS.p }],
     });
 
     editor.update.text.insert('-');

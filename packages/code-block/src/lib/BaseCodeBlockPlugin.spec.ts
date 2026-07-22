@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
-import { pipeDecorate } from '@platejs/core/static';
+import { pipeDecorate } from '@platejs/core/static/internal';
 import type { DecoratedRange, Element } from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
 import { KEYS, NODES } from '@platejs/utils';
@@ -26,7 +26,7 @@ describe('BaseCodeBlockPlugin', () => {
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: '' }], type: 'code_line' }],
           type: 'code_block',
@@ -40,7 +40,7 @@ describe('BaseCodeBlockPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
     const html = new Map([['text/html', '<p>pasted</p>']]);
 
@@ -149,7 +149,7 @@ describe('BaseCodeBlockPlugin', () => {
           options: { lowlight: createLowlight() },
         }),
       ],
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: 'const value = 1;' }], type: 'code_line' },

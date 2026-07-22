@@ -24,7 +24,7 @@ const createEditor = (input: TestEditor) =>
   createBaseEditor({
     plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 const createEditorWithParser = (input: TestEditor) =>
@@ -35,7 +35,7 @@ const createEditorWithParser = (input: TestEditor) =>
       BaseCommentParserPlugin,
     ],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 describe('when pasting text into a code block', () => {
@@ -225,7 +225,7 @@ describe('when pasting text into a code block', () => {
         MixedSelectionParserPlugin,
       ],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
     const data = createDataTransfer(
       new Map([['text/plain', 'const a = 1;\nconst b = 2;']])

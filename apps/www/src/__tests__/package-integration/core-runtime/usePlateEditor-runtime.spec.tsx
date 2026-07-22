@@ -28,7 +28,7 @@ describe('usePlateEditor Plite runtime route', () => {
     const Probe = () => {
       const editor = usePlateEditor({
         plugins: [TxPlugin],
-        value,
+        initialValue: value,
       });
       const assertTxInference = () => {
         editor.update((tx) => {
@@ -67,7 +67,7 @@ describe('usePlateEditor Plite runtime route', () => {
 
     const editor = createPlateEditor({
       plugins: [TxPlugin],
-      value,
+      initialValue: value,
     });
     const assertTxInference = () => {
       editor.update((tx) => {

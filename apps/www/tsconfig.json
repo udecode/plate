@@ -18,7 +18,17 @@
       "@platejs/combobox/react": ["../../packages/combobox/src/react"],
       "@platejs/comment/react": ["../../packages/comment/src/react"],
       "@platejs/core/react": ["../../packages/core/src/react"],
+      "@platejs/core/react/internal": [
+        "../../packages/core/src/react/internal"
+      ],
+      "@platejs/core/react/test": [
+        "../../packages/core/src/react/test-entry.ts"
+      ],
       "@platejs/core/static": ["../../packages/core/src/static"],
+      "@platejs/core/static/internal": [
+        "../../packages/core/src/static/internal"
+      ],
+      "@platejs/core/internal": ["../../packages/core/src/internal"],
       "@platejs/date/react": ["../../packages/date/src/react"],
       "@platejs/emoji/react": ["../../packages/emoji/src/react"],
       "@platejs/excalidraw/react": ["../../packages/excalidraw/src/react"],
@@ -38,7 +48,6 @@
       "@platejs/browser/browser": ["../../packages/browser/src/browser"],
       "@platejs/browser/core": ["../../packages/browser/src/core"],
       "@platejs/browser/playwright": ["../../packages/browser/src/playwright"],
-      "@platejs/browser/transports": ["../../packages/browser/src/transports"],
       "@platejs/plite": ["../../packages/plite/src/index.ts"],
       "@platejs/plite/internal": ["../../packages/plite/src/internal/index.ts"],
       "@platejs/plite-dom": ["../../packages/plite-dom/src/index.ts"],

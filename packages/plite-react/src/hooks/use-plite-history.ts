@@ -164,7 +164,6 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
 
   const historyRootSelector = useMemo(() => createHistoryRootSelector(), []);
   const historyRoot = usePliteRuntimeState(historyRootSelector, {
-    deps: [historyRootSelector],
     equalityFn: nullableRootKeyEquality,
     shouldUpdate: (change) => Boolean(change?.selectionChanged),
   });
@@ -177,7 +176,6 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
     getMountedViewEditor,
   } = useRequiredPliteRuntimeContext();
   const availability = usePliteRuntimeState(selectHistoryAvailability, {
-    deps: [],
     equalityFn: historyAvailabilityEquality,
   });
 

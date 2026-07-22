@@ -8,7 +8,7 @@ import type { Shortcuts } from '../plugin';
 import * as storesModule from '../stores';
 import { EditorHotkeysEffect } from './EditorHotkeysEffect';
 
-let useEditorRefSpy: ReturnType<typeof spyOn>;
+let useEditorSpy: ReturnType<typeof spyOn>;
 let useHotkeysSpy: ReturnType<typeof spyOn>;
 
 const SimpleComponent = ({ id }: { id?: string }) => {
@@ -30,7 +30,7 @@ describe('EditorHotkeysEffect', () => {
     editor = createPlateEditor({
       shortcuts,
     });
-    useEditorRefSpy.mockReturnValue(editor);
+    useEditorSpy.mockReturnValue(editor);
   };
 
   beforeEach(() => {
@@ -48,9 +48,7 @@ describe('EditorHotkeysEffect', () => {
     });
 
     // Set up spies
-    useEditorRefSpy = spyOn(storesModule, 'useEditorRef').mockReturnValue(
-      editor
-    );
+    useEditorSpy = spyOn(storesModule, 'useEditor').mockReturnValue(editor);
     setHotkeyRefMock = mock();
     useHotkeysSpy = spyOn(reactHotkeysModule, 'useHotkeys').mockReturnValue(
       setHotkeyRefMock
@@ -58,7 +56,7 @@ describe('EditorHotkeysEffect', () => {
   });
 
   afterEach(() => {
-    useEditorRefSpy?.mockRestore();
+    useEditorSpy?.mockRestore();
     useHotkeysSpy?.mockRestore();
   });
 

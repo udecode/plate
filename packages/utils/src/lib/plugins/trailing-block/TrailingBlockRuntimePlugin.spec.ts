@@ -16,7 +16,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
           options: { level: 0, type: 'p' },
         }),
       ],
-      value: [
+      initialValue: [
         { children: [{ text: 'one' }], type: 'h1' },
         { children: [{ text: 'two' }], type: 'h1' },
       ],
@@ -39,7 +39,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
           options: { level: 1, type: 'p' },
         }),
       ],
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: 'one' }], type: 'h1' },
@@ -76,7 +76,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
           },
         }),
       ],
-      value: [{ children: [{ text: 'one' }], type: 'h1' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'h1' }],
     });
 
     editor.update.value.repair();
@@ -102,7 +102,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
           options: { insert, level: 0, type: 'p' },
         }),
       ],
-      value: [{ children: [{ text: 'one' }], type: 'h1' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'h1' }],
     });
 
     editor.update.value.repair();

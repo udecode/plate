@@ -9,7 +9,7 @@ import {
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { useEditorSelector } from './use-editor-selector';
-import { useOptionalElementContext } from './use-element';
+import { useOptionalElement } from './use-element';
 
 /** Selection match mode for `useElementSelected`. */
 export type UseElementSelectedMode = 'collapsed' | 'intersects';
@@ -25,7 +25,7 @@ export const useElementSelected = ({
   at: path,
   mode = 'intersects',
 }: UseElementSelectedOptions = {}): boolean => {
-  const element = useOptionalElementContext();
+  const element = useOptionalElement();
   const contextPath = useContext(ElementPathContext);
   const runtimeId = useContext(NodeRuntimeIdContext);
 
@@ -75,7 +75,7 @@ export const useElementSelected = ({
     [path, runtimeId]
   );
 
-  return useEditorSelector(selector, undefined, {
+  return useEditorSelector(selector, {
     deferred: true,
     profileId: 'element-selected',
     shouldUpdate,

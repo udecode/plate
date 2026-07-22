@@ -51,7 +51,7 @@ describe('withGetFragmentTable', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const fragment = editor.read.fragment();
@@ -95,7 +95,7 @@ describe('withGetFragmentTable', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const fragment = editor.read.fragment();

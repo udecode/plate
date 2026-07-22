@@ -254,7 +254,15 @@ const areAnnotationProjectionEntriesEqual = (
   left.end === right.end &&
   areAnnotationProjectionDataEqual(left.data, right.data);
 
-export function createPliteAnnotationStore<
+/** @internal Commit-activated annotation store used by React ownership hooks. */
+export type ActivatablePliteAnnotationStore<
+  TData = unknown,
+  TProjection extends Record<string, unknown> = Record<string, unknown>,
+> = PliteAnnotationStore<TData, TProjection> & {
+  activate: () => void;
+};
+
+const createPliteAnnotationStoreInternal = <
   TData = unknown,
   TProjection extends Record<string, unknown> = Record<string, unknown>,
 >(
@@ -262,8 +270,9 @@ export function createPliteAnnotationStore<
   source:
     | readonly PliteAnnotation<TData, TProjection>[]
     | (() => readonly PliteAnnotation<TData, TProjection>[]),
-  options: PliteAnnotationStoreOptions = {}
-): PliteAnnotationStore<TData, TProjection> {
+  options: PliteAnnotationStoreOptions,
+  dormant: boolean
+): ActivatablePliteAnnotationStore<TData, TProjection> => {
   const getAnnotations = typeof source === 'function' ? source : () => source;
   const faultBoundary = createViewSourceFaultBoundary({
     id: options.id ?? 'annotations',
@@ -316,7 +325,12 @@ export function createPliteAnnotationStore<
         };
       },
     });
-  const initialAnnotationsResult = faultBoundary.run('read', getAnnotations);
+  const initialAnnotationsResult = dormant
+    ? ({
+        ok: true,
+        value: [] as readonly PliteAnnotation<TData, TProjection>[],
+      } as const)
+    : faultBoundary.run('read', getAnnotations);
   const initialMappedResult = initialAnnotationsResult.ok
     ? faultBoundary.run('resolve', () =>
         createMappedSource(initialAnnotationsResult.value)
@@ -353,6 +367,8 @@ export function createPliteAnnotationStore<
     annotationProjectCount: mappedProjectCount,
     annotationResolveCount: mappedResolveCount,
   }) as PliteAnnotationStoreMetrics;
+  let activated = !dormant;
+  let destroyed = false;
 
   const refreshCandidates = (
     candidateAnnotationIds: readonly string[] | null = null,
@@ -438,30 +454,37 @@ export function createPliteAnnotationStore<
     }
   };
 
-  const unsubscribeEditor = editorSubscribeCommit(editor, (change) => {
-    if (!shouldRefreshForEditorChange(change)) return;
+  const subscribeToEditor = () =>
+    editorSubscribeCommit(editor, (change) => {
+      if (destroyed || !shouldRefreshForEditorChange(change)) return;
 
-    const candidateAnnotationIds = change
-      ? Array.from(
-          new Set([
-            ...mappedSource.getIdsForOutputKeys(
-              change.changed.runtimeIdsAll('decoration')
-            ),
-            ...(change.changed.hasAny('document')
-              ? mappedSource.getIdsWithoutOutputs()
-              : []),
-          ])
-        )
-      : null;
+      const candidateAnnotationIds = change
+        ? Array.from(
+            new Set([
+              ...mappedSource.getIdsForOutputKeys(
+                change.changed.runtimeIdsAll('decoration')
+              ),
+              ...(change.changed.hasAny('document')
+                ? mappedSource.getIdsWithoutOutputs()
+                : []),
+            ])
+          )
+        : null;
 
-    if (candidateAnnotationIds && candidateAnnotationIds.length === 0) {
-      return;
-    }
+      if (candidateAnnotationIds && candidateAnnotationIds.length === 0) {
+        return;
+      }
 
-    refreshCandidates(candidateAnnotationIds, candidateAnnotationIds === null);
-  });
+      refreshCandidates(
+        candidateAnnotationIds,
+        candidateAnnotationIds === null
+      );
+    });
+  let unsubscribeEditor = activated ? subscribeToEditor() : null;
 
   const refresh = (options: PliteAnnotationRefreshOptions = {}) => {
+    if (!activated || destroyed) return;
+
     if (options.ids && options.ids.length === 0) {
       return;
     }
@@ -470,8 +493,18 @@ export function createPliteAnnotationStore<
   };
 
   return {
+    activate() {
+      if (activated || destroyed) return;
+
+      activated = true;
+      refreshCandidates(null, true);
+      unsubscribeEditor = subscribeToEditor();
+    },
     destroy() {
-      unsubscribeEditor();
+      if (destroyed) return;
+
+      destroyed = true;
+      unsubscribeEditor?.();
       annotationsStore.destroy();
       projectionsStore.destroy();
     },
@@ -505,6 +538,8 @@ export function createPliteAnnotationStore<
     },
     refresh,
     retry() {
+      if (!activated || destroyed) return;
+
       faultBoundary.activate();
       refreshCandidates(null, true);
     },
@@ -515,4 +550,29 @@ export function createPliteAnnotationStore<
       return annotationsStore.subscribeKey(id, listener);
     },
   };
+};
+
+export function createPliteAnnotationStore<
+  TData = unknown,
+  TProjection extends Record<string, unknown> = Record<string, unknown>,
+>(
+  editor: EditorType,
+  source:
+    | readonly PliteAnnotation<TData, TProjection>[]
+    | (() => readonly PliteAnnotation<TData, TProjection>[]),
+  options: PliteAnnotationStoreOptions = {}
+): PliteAnnotationStore<TData, TProjection> {
+  return createPliteAnnotationStoreInternal(editor, source, options, false);
 }
+
+/** @internal Create an inert candidate for commit-owned React activation. */
+export const createDormantPliteAnnotationStore = <
+  TData = unknown,
+  TProjection extends Record<string, unknown> = Record<string, unknown>,
+>(
+  editor: EditorType,
+  source:
+    | readonly PliteAnnotation<TData, TProjection>[]
+    | (() => readonly PliteAnnotation<TData, TProjection>[]),
+  options: PliteAnnotationStoreOptions = {}
+) => createPliteAnnotationStoreInternal(editor, source, options, true);

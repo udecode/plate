@@ -18,7 +18,7 @@ const editorTest = (input: any, fragment: any, expected: any) => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   editor.update.fragment.replace(fragment);
@@ -757,7 +757,7 @@ describe('when pasting ul > 2 li fragment', () => {
         const editor = createBaseEditor({
           plugins: [BaseListPlugin],
           selection: input.selection,
-          value: input.children,
+          initialValue: input.children,
         });
         const seen: unknown[] = [];
 

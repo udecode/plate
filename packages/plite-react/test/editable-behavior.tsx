@@ -97,13 +97,13 @@ describe('plite-react editable behavior', () => {
     expect((editable as HTMLElement).style.zIndex).toBe('');
   });
 
-  test('calls onChange and onSelectionChange when editor selection changes', async () => {
+  test('calls onCommit and onSelectionChange when editor selection changes', async () => {
     const initialValue = [
       { type: 'block', children: [{ text: 'te' }] },
       { type: 'block', children: [{ text: 'st' }] },
     ];
     const editor = createReactEditor({ initialValue });
-    const onChange = jest.fn();
+    const onCommit = jest.fn();
     const onSelectionChange = jest.fn();
     const onValueChange = jest.fn();
 
@@ -111,7 +111,7 @@ describe('plite-react editable behavior', () => {
       render(
         <Plite
           editor={editor}
-          onChange={onChange}
+          onCommit={onCommit}
           onSelectionChange={onSelectionChange}
           onValueChange={onValueChange}
         >
@@ -132,25 +132,26 @@ describe('plite-react editable behavior', () => {
       focus: { path: [0, 0], offset: 2 },
     };
 
-    expect(onChange).toHaveBeenCalledWith(
-      initialValue,
+    expect(onCommit).toHaveBeenCalledWith(
       expect.objectContaining({
-        selection: expectedSelection,
-        selectionChanged: true,
-        valueChanged: false,
+        editor,
+        snapshot: expect.objectContaining({ selection: expectedSelection }),
       })
     );
     expect(onSelectionChange).toHaveBeenCalledWith(
-      expectedSelection,
-      expect.objectContaining({ selectionChanged: true })
+      expect.objectContaining({
+        editor,
+        selection: expectedSelection,
+        snapshot: expect.objectContaining({ selection: expectedSelection }),
+      })
     );
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
-  test('calls onChange and onValueChange when editor children change', async () => {
+  test('calls onCommit and onValueChange when editor children change', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createReactEditor({ initialValue });
-    const onChange = jest.fn();
+    const onCommit = jest.fn();
     const onSelectionChange = jest.fn();
     const onValueChange = jest.fn();
 
@@ -158,7 +159,7 @@ describe('plite-react editable behavior', () => {
       render(
         <Plite
           editor={editor}
-          onChange={onChange}
+          onCommit={onCommit}
           onSelectionChange={onSelectionChange}
           onValueChange={onValueChange}
         >
@@ -177,16 +178,14 @@ describe('plite-react editable behavior', () => {
       { type: 'block', children: [{ text: 'testHello word!' }] },
     ];
 
-    expect(onChange).toHaveBeenCalledWith(
-      expectedValue,
+    expect(onCommit).toHaveBeenCalledWith(
       expect.objectContaining({
-        selectionChanged: false,
-        valueChanged: true,
+        editor,
+        snapshot: expect.objectContaining({ children: expectedValue }),
       })
     );
     expect(onValueChange).toHaveBeenCalledWith(
-      expectedValue,
-      expect.objectContaining({ valueChanged: true })
+      expect.objectContaining({ editor, value: expectedValue })
     );
     expect(onSelectionChange).not.toHaveBeenCalled();
   });
@@ -194,14 +193,14 @@ describe('plite-react editable behavior', () => {
   test('calls value callbacks when setNodes changes text shape', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createReactEditor({ initialValue });
-    const onChange = jest.fn();
+    const onCommit = jest.fn();
     const onValueChange = jest.fn();
 
     act(() => {
       render(
         <Plite
           editor={editor}
-          onChange={onChange}
+          onCommit={onCommit}
           onValueChange={onValueChange}
         >
           <Editable />
@@ -222,14 +221,14 @@ describe('plite-react editable behavior', () => {
       });
     });
 
-    expect(onChange).toHaveBeenCalled();
+    expect(onCommit).toHaveBeenCalled();
     expect(onValueChange).toHaveBeenCalled();
   });
 
   test('Editable onKeyDown receives editor context for UI hotkeys', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createReactEditor({ initialValue });
-    const onChange = jest.fn();
+    const onCommit = jest.fn();
     const onKeyDown = jest.fn((event, context) => {
       if (event.key !== 'x') {
         return;
@@ -245,7 +244,7 @@ describe('plite-react editable behavior', () => {
     let rendered!: ReturnType<typeof render>;
     act(() => {
       rendered = render(
-        <Plite editor={editor} onChange={onChange}>
+        <Plite editor={editor} onCommit={onCommit}>
           <Editable onKeyDown={onKeyDown} />
         </Plite>
       );
@@ -266,9 +265,13 @@ describe('plite-react editable behavior', () => {
       expect.objectContaining({ key: 'x' }),
       { editor }
     );
-    expect(onChange).toHaveBeenCalledWith(
-      [{ type: 'block', children: [{ text: 'testx' }] }],
-      expect.objectContaining({ valueChanged: true })
+    expect(onCommit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        editor,
+        snapshot: expect.objectContaining({
+          children: [{ type: 'block', children: [{ text: 'testx' }] }],
+        }),
+      })
     );
   });
 

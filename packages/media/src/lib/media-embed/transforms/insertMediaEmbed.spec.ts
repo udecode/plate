@@ -8,7 +8,7 @@ describe('insertMediaEmbed', () => {
   it('does nothing without a selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
     insertMediaEmbed(editor, { url: 'https://platejs.org/embed' });
@@ -24,7 +24,7 @@ describe('insertMediaEmbed', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
     insertMediaEmbed(editor, { url: 'https://platejs.org/embed' });
@@ -39,7 +39,7 @@ describe('insertMediaEmbed', () => {
   it('inserts after an explicit block target without a selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
     insertMediaEmbed(editor, { url: 'https://platejs.org/embed' }, { at: [0] });

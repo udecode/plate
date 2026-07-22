@@ -48,7 +48,7 @@ export default function FindReplaceDemo() {
           render: { node: SearchHighlightLeaf },
         }),
       ],
-      value: findReplaceValue,
+      initialValue: findReplaceValue,
     },
     []
   );

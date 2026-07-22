@@ -201,31 +201,46 @@ const HiddenContentBlocksExample = () => {
   );
   const setAccordionOpen = useCallback(
     (value: boolean) => {
-      void setHiddenContentControls({ accordionOpen: value });
+      void setHiddenContentControls((current) => ({
+        ...current,
+        accordionOpen: value,
+      }));
     },
     [setHiddenContentControls]
   );
   const setCollapsibleOpen = useCallback(
     (value: boolean) => {
-      void setHiddenContentControls({ collapsibleOpen: value });
+      void setHiddenContentControls((current) => ({
+        ...current,
+        collapsibleOpen: value,
+      }));
     },
     [setHiddenContentControls]
   );
   const setActiveTab = useCallback(
     (value: HiddenBlocksState['activeTab']) => {
-      void setHiddenContentControls({ activeTab: value });
+      void setHiddenContentControls((current) => ({
+        ...current,
+        activeTab: value,
+      }));
     },
     [setHiddenContentControls]
   );
   const setSelectionPolicy = useCallback(
     (value: DOMCoverageSelectionPolicy) => {
-      void setHiddenContentControls({ selectionPolicy: value });
+      void setHiddenContentControls((current) => ({
+        ...current,
+        selectionPolicy: value,
+      }));
     },
     [setHiddenContentControls]
   );
   const setCopyPolicy = useCallback(
     (value: DOMCoverageCopyPolicy) => {
-      void setHiddenContentControls({ copyPolicy: value });
+      void setHiddenContentControls((current) => ({
+        ...current,
+        copyPolicy: value,
+      }));
     },
     [setHiddenContentControls]
   );

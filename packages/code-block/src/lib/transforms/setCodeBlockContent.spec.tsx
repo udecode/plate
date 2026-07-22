@@ -10,7 +10,7 @@ describe('setCodeBlockContent', () => {
   it('replaces code block children with code lines', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      value: [
+      initialValue: [
         {
           children: [
             {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type {
   Anchor,
   createEditor,
@@ -190,7 +190,12 @@ const ProjectionRow = ({
             }
 
             return [
-              `${id}:${toBlockOffset(row, annotation.range.anchor)}-${toBlockOffset(row, annotation.range.focus)}:${annotation.data?.kind ?? 'unknown'}:${annotation.data?.tone ?? 'none'}`,
+              `${id}:${toBlockOffset(
+                row,
+                annotation.range.anchor
+              )}-${toBlockOffset(row, annotation.range.focus)}:${
+                annotation.data?.kind ?? 'unknown'
+              }:${annotation.data?.tone ?? 'none'}`,
             ];
           })
           .join('|') || 'none';
@@ -246,7 +251,10 @@ const formatAnnotationRange = (
   rows: BlockRowDescriptor[]
 ) =>
   range
-    ? `${formatPointInRows(rows, range.anchor)}|${formatPointInRows(rows, range.focus)}`
+    ? `${formatPointInRows(rows, range.anchor)}|${formatPointInRows(
+        rows,
+        range.focus
+      )}`
     : 'none';
 
 const AnnotationSidebar = () => {
@@ -272,7 +280,9 @@ const AnnotationSidebar = () => {
               .map((id) => {
                 const annotation = snapshot.byId.get(id)!;
 
-                return `${annotation.id}:${annotation.data?.label ?? 'none'}:${formatAnnotationRange(annotation.range, rows)}`;
+                return `${annotation.id}:${
+                  annotation.data?.label ?? 'none'
+                }:${formatAnnotationRange(annotation.range, rows)}`;
               })
               .join('|')}
       </span>
@@ -311,7 +321,9 @@ const WidgetPanel = ({
               .map((id) => {
                 const widget = snapshot.byId.get(id)!;
 
-                return `${widget.id}:${widget.anchor.type}:${widget.visible ? 'visible' : 'hidden'}:${widget.data?.label ?? 'none'}`;
+                return `${widget.id}:${widget.anchor.type}:${
+                  widget.visible ? 'visible' : 'hidden'
+                }:${widget.data?.label ?? 'none'}`;
               })
               .join('|')}
       </span>
@@ -346,21 +358,25 @@ const AnchoredProjectionContent = ({
       getBlockRowByText(editor.read.children(), (text) =>
         text.includes('alpha')
       ) ?? null,
-    (left, right) =>
-      left != null &&
-      right != null &&
-      left.text === right.text &&
-      left.path.join('.') === right.path.join('.')
+    {
+      equalityFn: (left, right) =>
+        left != null &&
+        right != null &&
+        left.text === right.text &&
+        left.path.join('.') === right.path.join('.'),
+    }
   );
   const betaRow = useEditorSelector(
     (editor) =>
       getBlockRowByText(editor.read.children(), (text) => text === 'beta') ??
       null,
-    (left, right) =>
-      left != null &&
-      right != null &&
-      left.text === right.text &&
-      left.path.join('.') === right.path.join('.')
+    {
+      equalityFn: (left, right) =>
+        left != null &&
+        right != null &&
+        left.text === right.text &&
+        left.path.join('.') === right.path.join('.'),
+    }
   );
 
   return (
@@ -481,9 +497,8 @@ const AnchoredProjectionContent = ({
 const PersistentAnnotationAnchorsExample = () => {
   const editor = usePliteEditor({ initialValue: createChildren() });
   const [annotation, setAnnotation] = useState<Anchor<Range> | null>(null);
-  const annotationStore = usePliteAnnotationStore(editor, {
-    deps: [annotation],
-    project: () =>
+  const annotations = useMemo(
+    () =>
       annotation
         ? [
             {
@@ -501,11 +516,11 @@ const PersistentAnnotationAnchorsExample = () => {
             },
           ]
         : [],
-  });
-  const widgetStore = usePliteWidgetStore(editor, {
-    annotationStore,
-    deps: [annotation],
-    project: () =>
+    [annotation]
+  );
+  const annotationStore = usePliteAnnotationStore(editor, annotations);
+  const widgets = useMemo(
+    () =>
       annotation
         ? [
             {
@@ -520,6 +535,10 @@ const PersistentAnnotationAnchorsExample = () => {
             },
           ]
         : [],
+    [annotation]
+  );
+  const widgetStore = usePliteWidgetStore(editor, widgets, {
+    annotationStore,
   });
 
   return (

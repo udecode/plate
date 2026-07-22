@@ -53,12 +53,23 @@ if (fs.existsSync(STATIC_INPUT_FILE_PATH)) {
 // Disable sourcemaps in CI to speed up builds
 const enableSourcemaps = !process.env.CI;
 
-export const createPlatePackageConfig = ({ directDeclarations = false } = {}) =>
+export const createPlatePackageConfig = ({
+  additionalEntries = [],
+  directDeclarations = false,
+}: {
+  additionalEntries?: string[];
+  directDeclarations?: boolean;
+} = {}) =>
   defineConfig((opts) => {
     const config = {
       ...opts,
       deps: { neverBundle: true },
-      entry,
+      entry: [
+        ...entry,
+        ...additionalEntries.map((input) =>
+          convertPathToPattern(path.join(PACKAGE_ROOT_PATH, input))
+        ),
+      ],
       platform: 'neutral',
       tsconfig: 'tsconfig.build.json',
       sourcemap: enableSourcemaps,

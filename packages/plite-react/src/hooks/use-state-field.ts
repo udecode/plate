@@ -49,7 +49,6 @@ export function useStateFieldValue<
 ): TValue {
   return useEditorState<TValue, TEditor>((state) => state.getField(field), {
     ...options,
-    deps: [field],
     shouldUpdate: (change) =>
       Boolean(change?.dirtyStateKeys.includes(field.key)),
   });

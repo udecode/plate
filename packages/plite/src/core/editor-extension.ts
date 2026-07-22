@@ -30,6 +30,7 @@ import {
   DocumentChangeBuilder,
   type JsonEditorValue,
 } from './document-change';
+import { getEditorCommitSnapshot } from './commit';
 import { registerCommandInRegistry } from './command-registry';
 import { createCommandRegistration } from './command-definition';
 import {
@@ -657,6 +658,13 @@ export const resolveInstalledEditorExtension = (
   return installed === canonical ? installed : undefined;
 };
 
+/** @internal Read the resolved API map for one installed extension name. */
+export const getInstalledEditorExtensionApi = (
+  editor: Editor,
+  name: string
+): EditorExtensionApiMap | undefined =>
+  getExtensionState(editor).records.get(name)?.api ?? undefined;
+
 /** @internal Read the exact descriptor installed for one extension name. */
 export const getInstalledEditorExtension = (
   editor: Editor,
@@ -899,11 +907,14 @@ const registerExtensionSlots = <TEditor extends Editor>(
 
     if (slots.onCommit) {
       cleanups.push(
-        registerCommitListenerInRegistry(registry, (commit, snapshot) => {
+        registerCommitListenerInRegistry(registry, (commit) => {
           slots.onCommit?.({
             commit,
             editor,
-            snapshot,
+            snapshot: getEditorCommitSnapshot(
+              commit,
+              getEditorRuntimeRoot(editor)
+            ),
           } as EditorCommitContext<TEditor>);
         })
       );

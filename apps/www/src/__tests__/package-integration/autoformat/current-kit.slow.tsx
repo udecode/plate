@@ -21,7 +21,7 @@ const createCurrentKitEditor = ({
   createBaseEditor({
     plugins: [...plugins, ...AutoformatKit],
     selection,
-    value,
+    initialValue: value,
   } as any);
 
 const insertText = (

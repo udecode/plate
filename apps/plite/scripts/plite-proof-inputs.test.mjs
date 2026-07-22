@@ -102,6 +102,7 @@ test('browser run identity covers its server, build owners, and built runtime', 
     'apps/plite/scripts/build-app-if-stale.mjs',
     'apps/plite/scripts/build-browser-if-stale.mjs',
     'apps/plite/scripts/plite-proof-inputs.mjs',
+    'apps/plite/scripts/plite-static-server.mjs',
     'apps/plite/scripts/run-plite-browser.mjs',
     'apps/plite/scripts/serve.mjs',
     'packages/browser/src',
@@ -222,6 +223,40 @@ test('proof monitor catches transient source changes and new files', async () =>
   } finally {
     await additionMonitor.close();
     fs.rmSync(additionRoot, { force: true, recursive: true });
+  }
+});
+
+test('proof monitor ignores writes inside an existing ignored directory', async () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'plite-proof-monitor-ignored-')
+  );
+  const sourceRoot = path.join(root, 'source');
+  const ignoredRoot = path.join(sourceRoot, '.tmp');
+  const sourceFile = path.join(sourceRoot, 'input.ts');
+
+  fs.mkdirSync(ignoredRoot, { recursive: true });
+  fs.writeFileSync(sourceFile, 'before');
+  const monitor = createProofIntegrityMonitor({
+    sourceEntries: [sourceRoot],
+  });
+
+  try {
+    await waitForMonitorReady(monitor);
+    fs.writeFileSync(path.join(ignoredRoot, 'scratch.mjs'), 'ignored');
+
+    assert.equal(await monitor.checkpoint(), null);
+
+    fs.writeFileSync(sourceFile, 'during');
+    const change = await waitForChange(monitor);
+
+    assert.equal(change?.kind, 'source');
+    assert.ok(
+      change?.path === sourceFile || change?.path === sourceRoot,
+      change?.path
+    );
+  } finally {
+    await monitor.close();
+    fs.rmSync(root, { force: true, recursive: true });
   }
 });
 

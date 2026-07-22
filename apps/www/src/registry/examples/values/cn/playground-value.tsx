@@ -344,7 +344,7 @@ export const playgroundValue: Value = [
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -367,7 +367,7 @@ export const playgroundValue: Value = [
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -390,7 +390,7 @@ export const playgroundValue: Value = [
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -415,7 +415,7 @@ export const playgroundValue: Value = [
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -438,7 +438,7 @@ export const playgroundValue: Value = [
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -461,7 +461,7 @@ export const playgroundValue: Value = [
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -484,7 +484,7 @@ export const playgroundValue: Value = [
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -533,7 +533,7 @@ export const playgroundValue: Value = [
     type: 'p',
   },
   {
-    attributes: { align: 'center' },
+    align: 'center',
     caption: [
       {
         children: [{ text: '带有说明的图片提供上下文。' }],

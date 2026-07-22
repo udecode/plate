@@ -475,7 +475,7 @@ const RenderEditableText = <T,>({
           const leafAttributes = getLeafAttributes(leafPosition);
 
           return (
-            <React.Fragment key={`${segment.start}:${segment.end}:${index}`}>
+            <React.Fragment key={`segment-${index}`}>
               {renderLeaf ? (
                 <RenderCallback
                   props={{

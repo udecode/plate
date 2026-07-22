@@ -1,4 +1,4 @@
-import { useEditorRef } from '@platejs/core/react';
+import { useEditor } from '@platejs/core/react';
 import { useEditorReadOnly } from '@platejs/plite-react';
 
 import type { TTodoListItemElement } from '../../lib';
@@ -8,7 +8,7 @@ export const useTodoListElementState = ({
 }: {
   element: TTodoListItemElement;
 }): any => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const { checked } = element;
   const readOnly = useEditorReadOnly();
 
@@ -24,7 +24,7 @@ export const useTodoListElement = (
   state: ReturnType<typeof useTodoListElementState>
 ) => {
   const { checked, element, readOnly } = state;
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return {
     checkboxProps: {

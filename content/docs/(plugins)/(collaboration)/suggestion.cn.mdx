@@ -200,10 +200,10 @@ const editor = createPlateEditor({
 使用插件API控制建议模式：
 
 ```tsx
-import { useEditorRef, usePluginOption } from 'platejs/react';
+import { useEditor, usePluginOption } from 'platejs/react';
 
 function SuggestionToolbar() {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const isSuggesting = usePluginOption(suggestionPlugin, 'isSuggesting');
 
   const toggleSuggesting = () => {
@@ -272,93 +272,60 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-## API
+## 插件 API
 
-### `api.suggestion.dataList`
+建议查询和值辅助方法位于已安装的插件上，使编辑器类型、插件选项和 schema
+保持在类型推断路径中。
 
-从文本节点获取建议数据。
+```tsx
+const { api } = editor.plugin(BaseSuggestionPlugin);
+const suggestions = api.nodes();
+const descriptions = api.activeDescriptions();
+```
 
-<API name="dataList">
-<APIParameters>
-  <APIItem name="node" type="TSuggestionText">
-    建议文本节点。
-  </APIItem>
-</APIParameters>
-<APIReturns type="TInlineSuggestionData[]">
-  建议数据数组。
-</APIReturns>
-</API>
+| 方法 | 说明 |
+| --- | --- |
+| `api.activeDescriptions()` | 返回当前建议描述。 |
+| `api.createFragment(fragment, at, state?)` | 为片段添加插入建议数据。 |
+| `api.dataList(node)` | 返回文本节点上的所有内联建议记录。 |
+| `api.findProps(options)` | 复用或创建更新所需的 ID 和时间戳。 |
+| `api.getProps(node, options?)` | 构建节点的建议属性。 |
+| `api.inlineData(node)` | 返回当前内联建议记录。 |
+| `api.isBlockSuggestion(node)` | 将节点收窄为区块建议。 |
+| `api.isCurrentUser(node)` | 根据 `currentUserId` 检查建议归属。 |
+| `api.isTracking(tags)` | 检查建议中间件是否追踪更新。 |
+| `api.key(id?)` / `api.keyId(node)` / `api.keys(node)` | 读取和构建内联建议键。 |
+| `api.node(options?)` / `api.nodes(options?)` | 查找一个或全部建议条目。 |
+| `api.nodeEntries(id, options?)` | 查找建议 ID 对应的内联条目。 |
+| `api.nodeId(node)` | 返回节点的建议 ID。 |
+| `api.skipDeletes(node)` | 返回不含删除建议的文本。 |
+| `api.suggestionData(node)` | 返回内联或区块建议数据。 |
+| `api.untracked(fn)` | 同步运行操作且不递归创建建议。 |
+| `api.userId(node)` / `api.userIds(node)` | 返回建议作者 ID。 |
 
-### `api.suggestion.isBlockSuggestion`
+## 更新方法
 
-检查节点是否为区块建议元素。
+建议转换方法安装在编辑器上：
 
-<API name="isBlockSuggestion">
-<APIParameters>
-  <APIItem name="node" type="Element">
-    要检查的节点。
-  </APIItem>
-</APIParameters>
-<APIReturns type="node is TSuggestionElement">
-  是否为区块建议。
-</APIReturns>
-</API>
+```tsx
+editor.update.suggestion.accept(description);
+editor.update.suggestion.reject(description);
+```
 
-### `api.suggestion.node`
+| 更新方法 | 说明 |
+| --- | --- |
+| `editor.update.suggestion.accept(description)` | 应用已解析的建议。 |
+| `editor.update.suggestion.reject(description)` | 丢弃已解析的建议。 |
+| `editor.update.suggestion.addMark(key, value)` | 以建议形式添加标记。 |
+| `editor.update.suggestion.removeMark(key, previousValue?)` | 以建议形式移除标记。 |
+| `editor.update.suggestion.delete(at, options?)` | 记录范围删除。 |
+| `editor.update.suggestion.deleteFragment(options?)` | 记录当前选区删除。 |
+| `editor.update.suggestion.insertFragment(fragment, insertContent?)` | 插入建议片段。 |
+| `editor.update.suggestion.insertText(text)` | 插入建议文本。 |
+| `editor.update.suggestion.removeNodes(nodes)` | 记录节点删除。 |
+| `editor.update.suggestion.setNodes(options?)` | 记录节点属性更新。 |
 
-获取建议节点条目。
-
-<API name="node">
-<APIOptions type="object & { id?: string; isText?: boolean }" optional>
-  查找节点的选项。
-</APIOptions>
-<APIReturns type="NodeEntry<TSuggestionElement | TSuggestionText> | undefined">
-  找到的建议节点条目。
-</APIReturns>
-</API>
-
-### `api.suggestion.nodeId`
-
-从节点获取建议ID。
-
-<API name="nodeId">
-<APIParameters>
-  <APIItem name="node" type="Element | TSuggestionText">
-    要获取ID的节点。
-  </APIItem>
-</APIParameters>
-<APIReturns type="string | undefined">
-  找到的建议ID。
-</APIReturns>
-</API>
-
-### `api.suggestion.nodes`
-
-获取所有匹配选项的建议节点条目。
-
-<API name="nodes">
-<APIOptions type="object" optional>
-  查找节点的选项。
-</APIOptions>
-<APIReturns type="NodeEntry<Element | TSuggestionText>[]">
-  建议节点条目数组。
-</APIReturns>
-</API>
-
-### `api.suggestion.suggestionData`
-
-从节点获取建议数据。
-
-<API name="suggestionData">
-<APIParameters>
-  <APIItem name="node" type="Element | TSuggestionText">
-    要获取建议数据的节点。
-  </APIItem>
-</APIParameters>
-<APIReturns type="TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined">
-  找到的建议数据。
-</APIReturns>
-</API>
+## 更新策略
 
 ### `SuggestionUpdatePolicy.skip`
 

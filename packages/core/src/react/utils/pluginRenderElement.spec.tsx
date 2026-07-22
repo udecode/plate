@@ -58,7 +58,7 @@ describe('pluginRenderElement', () => {
   it('renders the default paragraph element with the paragraph plugin class', () => {
     const editor = createPlateEditor({
       plugins: [MarkerPlugin],
-      value: createValue(),
+      initialValue: createValue(),
     });
 
     const { container } = renderPlugin(editor);
@@ -97,7 +97,7 @@ describe('pluginRenderElement', () => {
           },
         }),
       ],
-      value: createValue(),
+      initialValue: createValue(),
     });
 
     const { getByTestId } = renderPlugin(editor);
@@ -122,7 +122,7 @@ describe('pluginRenderElement', () => {
       });
     const editor = createPlateEditor({
       plugins: [MarkerPlugin, WrapperPlugin],
-      value: createValue(),
+      initialValue: createValue(),
     });
 
     const { getByTestId } = renderPlugin(editor);
@@ -142,7 +142,7 @@ describe('pluginRenderElement', () => {
           },
         }),
       ],
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           type: 'hr',

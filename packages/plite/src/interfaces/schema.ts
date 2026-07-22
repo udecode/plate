@@ -74,15 +74,10 @@ export type PropertySetOptions<TItem> = Readonly<{
   significant?: boolean;
 }>;
 
-export type PropertyJsonOptions = Readonly<{
-  default?: PropertyJsonValue;
-  omitDefault?: boolean;
-  significant?: boolean;
-}>;
-
-export type PropertyTypedOptions<TValue> = Readonly<{
+export type PropertyJsonOptions<TValue = PropertyJsonValue> = Readonly<{
   default?: TValue;
   omitDefault?: boolean;
+  policy?: PropertyPolicy<TValue>;
   significant?: boolean;
 }>;
 

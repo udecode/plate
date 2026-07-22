@@ -3,18 +3,14 @@ import { KEYS } from '@platejs/utils';
 
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
-import {
-  BLOCK_CONTEXT_MENU_ID,
-  type BlockMenuConfig,
-  BlockMenuPlugin,
-} from './BlockMenuPlugin';
+import { BLOCK_CONTEXT_MENU_ID, BlockMenuPlugin } from './BlockMenuPlugin';
 
 const BlockSelectionApiFixture = createPlatePlugin<BlockSelectionConfig>({
   key: KEYS.blockSelection,
   options: {
     selectedIds: new Set<string>(),
   },
-}).extendApi<Partial<BlockSelectionConfig['api']['blockSelection']>>(
+}).extendApi<Pick<BlockSelectionConfig['pluginApi'], 'set'>>(
   ({ setOption }) => ({
     set: (id) => {
       setOption('selectedIds', new Set(Array.isArray(id) ? id : [id]));
@@ -27,23 +23,23 @@ describe('BlockMenuPlugin', () => {
     const editor = createPlateEditor({
       plugins: [BlockSelectionApiFixture, BlockMenuPlugin],
     });
-    const api = editor.api as BlockMenuConfig['api'];
+    const api = editor.plugin(BlockMenuPlugin).api;
 
-    api.blockMenu.show('block-a', { x: 12, y: 34 });
+    api.show('block-a', { x: 12, y: 34 });
 
     expect(editor.plugin(BlockMenuPlugin).getOptions()).toMatchObject({
       openId: 'block-a',
       position: { x: 12, y: 34 },
     });
 
-    api.blockMenu.hide();
+    api.hide();
 
     expect(editor.plugin(BlockMenuPlugin).getOptions()).toMatchObject({
       openId: null,
       position: { x: -10_000, y: -10_000 },
     });
 
-    api.blockMenu.showContextMenu('block-b', { x: 56, y: 78 });
+    api.showContextMenu('block-b', { x: 56, y: 78 });
 
     expect(editor.plugin(BlockMenuPlugin).getOptions()).toMatchObject({
       openId: BLOCK_CONTEXT_MENU_ID,

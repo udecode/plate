@@ -7,8 +7,8 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 const pointAnchorReleaseMock = mock();
 const insertTextMock = mock();
 const useComboboxInputMock = mock();
-const useEditorRefMock = mock();
-const useNodePathMock = mock();
+const useEditorMock = mock();
+const usePathMock = mock();
 
 const store = {
   first: () => null,
@@ -75,8 +75,8 @@ mock.module('platejs/react', () => ({
         ref.current = value;
       });
     },
-  useEditorRef: useEditorRefMock,
-  useNodePath: useNodePathMock,
+  useEditor: useEditorMock,
+  usePath: usePathMock,
 }));
 
 mock.module('@/lib/utils', () => ({
@@ -90,8 +90,8 @@ describe('InlineCombobox', () => {
     insertTextMock.mockReset();
     pointAnchorReleaseMock.mockReset();
     useComboboxInputMock.mockReset();
-    useEditorRefMock.mockReset();
-    useNodePathMock.mockReset();
+    useEditorMock.mockReset();
+    usePathMock.mockReset();
     store.setActiveId.mockReset();
 
     pointAnchorValue = { offset: 1, path: [0, 0] };
@@ -109,8 +109,8 @@ describe('InlineCombobox', () => {
       };
     });
 
-    useNodePathMock.mockReturnValue([0]);
-    useEditorRefMock.mockReturnValue({
+    usePathMock.mockReturnValue([0]);
+    useEditorMock.mockReturnValue({
       anchor: () => pointAnchor,
       read: {
         points: {

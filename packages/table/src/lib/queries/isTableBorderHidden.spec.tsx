@@ -14,7 +14,7 @@ const createEditorInstance = ({ children, selection }: TestEditor) =>
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection,
-    value: children,
+    initialValue: children,
   });
 
 describe('isTableBorderHidden', () => {

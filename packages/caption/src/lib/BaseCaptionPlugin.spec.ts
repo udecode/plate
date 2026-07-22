@@ -14,7 +14,7 @@ describe('BaseCaptionPlugin', () => {
       focusStartPath: null,
       visibleId: null,
     });
-    expect(plugin.config.targetPluginKeys).toEqual([]);
+    expect(plugin.targetPluginKeys).toEqual([]);
 
     editor.plugin(BaseCaptionPlugin).setOption('visibleId', 'caption-1');
 

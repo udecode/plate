@@ -13,6 +13,7 @@ import type {
 import {
   createScenarioReductionCandidates,
   createScenarioReplay,
+  decodeScenarioReplay,
   summarizeScenarioReductionCandidate,
 } from '@platejs/browser/playwright';
 
@@ -35,9 +36,15 @@ export type StressArtifact = {
   seed: string;
   surface?: EditorSurfaceOptions;
   status: StressArtifactStatus;
-  steps: Record<string, unknown>[];
   traceSummary?: StressTraceSummary;
-  version: 1;
+  version: 2;
+};
+
+type StressReplayArtifact = Pick<
+  StressArtifact,
+  'family' | 'id' | 'replay' | 'route' | 'surface' | 'version'
+> & {
+  reductionCandidates?: Pick<StressReductionCandidate, 'label' | 'replay'>[];
 };
 
 export type StressReductionCandidate =
@@ -214,14 +221,13 @@ export const createStressArtifact = ({
     seed: stressCase.seed,
     surface: stressCase.surface,
     status,
-    steps: replay.steps.map((step) => step.value),
     traceSummary: result
       ? {
           finalLabel: lastTraceEntry?.label ?? null,
           stepCount: result.trace.length,
         }
       : undefined,
-    version: 1,
+    version: 2,
   };
 };
 
@@ -233,35 +239,95 @@ export const writeStressArtifact = (
   writeFileSync(artifactPath, JSON.stringify(artifact, null, 2));
 };
 
-export const readStressArtifact = (artifactPath: string): StressArtifact => {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
+
+const decodeStressSurface = (
+  value: unknown,
+  artifactPath: string
+): EditorSurfaceOptions | undefined => {
+  if (value === undefined) return;
+  if (
+    !isRecord(value) ||
+    Object.keys(value).some((key) => key !== 'frame' && key !== 'scope') ||
+    (value.frame !== undefined && typeof value.frame !== 'string') ||
+    (value.scope !== undefined && typeof value.scope !== 'string')
+  ) {
+    throw new Error(
+      `Stress replay artifact has an invalid surface: ${artifactPath}`
+    );
+  }
+
+  return {
+    ...(value.frame === undefined ? {} : { frame: value.frame }),
+    ...(value.scope === undefined ? {} : { scope: value.scope }),
+  };
+};
+
+export const readStressArtifact = (
+  artifactPath: string
+): StressReplayArtifact => {
   const artifact = JSON.parse(readFileSync(artifactPath, 'utf8')) as unknown;
 
-  if (!artifact || typeof artifact !== 'object') {
+  if (!isRecord(artifact)) {
     throw new Error(`Stress replay artifact is not an object: ${artifactPath}`);
   }
 
-  const record = artifact as Partial<StressArtifact>;
-
   if (
-    record.version !== 1 ||
-    typeof record.route !== 'string' ||
-    typeof record.family !== 'string' ||
-    !Array.isArray(record.steps)
+    artifact.version !== 2 ||
+    typeof artifact.id !== 'string' ||
+    typeof artifact.route !== 'string' ||
+    typeof artifact.family !== 'string'
   ) {
     throw new Error(
       `Stress replay artifact has an unsupported shape: ${artifactPath}`
     );
   }
 
-  return record as StressArtifact;
+  let reductionCandidates: StressReplayArtifact['reductionCandidates'];
+
+  if (artifact.reductionCandidates !== undefined) {
+    if (!Array.isArray(artifact.reductionCandidates)) {
+      throw new Error(
+        `Stress replay artifact has invalid reduction candidates: ${artifactPath}`
+      );
+    }
+
+    reductionCandidates = artifact.reductionCandidates.map(
+      (candidate, index) => {
+        if (!isRecord(candidate) || typeof candidate.label !== 'string') {
+          throw new Error(
+            `Stress replay artifact has invalid reduction candidate ${index}: ${artifactPath}`
+          );
+        }
+
+        return {
+          label: candidate.label,
+          replay: decodeScenarioReplay(candidate.replay),
+        };
+      }
+    );
+  }
+
+  return {
+    family: artifact.family,
+    id: artifact.id,
+    replay: decodeScenarioReplay(artifact.replay),
+    route: artifact.route,
+    ...(reductionCandidates === undefined ? {} : { reductionCandidates }),
+    ...(artifact.surface === undefined
+      ? {}
+      : { surface: decodeStressSurface(artifact.surface, artifactPath) }),
+    version: 2,
+  };
 };
 
 export const artifactStepsToScenarioSteps = (
-  artifact: StressArtifact,
+  artifact: StressReplayArtifact,
   { reductionLabel }: { reductionLabel?: string } = {}
 ): PliteBrowserScenarioStep[] => {
   if (!reductionLabel) {
-    return artifact.steps as PliteBrowserScenarioStep[];
+    return artifact.replay.steps.map((step) => step.value);
   }
 
   const candidate = artifact.reductionCandidates?.find(
@@ -278,13 +344,5 @@ export const artifactStepsToScenarioSteps = (
     );
   }
 
-  if (!candidate.replay.replayable) {
-    throw new Error(
-      `Stress reduction candidate "${reductionLabel}" is not replayable.`
-    );
-  }
-
-  return candidate.replay.steps.map(
-    (step) => step.value
-  ) as PliteBrowserScenarioStep[];
+  return candidate.replay.steps.map((step) => step.value);
 };

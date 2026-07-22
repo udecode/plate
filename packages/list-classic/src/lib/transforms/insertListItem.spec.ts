@@ -15,7 +15,7 @@ const createListEditor = (offset?: number) =>
             anchor: { offset, path: [0, 0, 0] },
             focus: { offset, path: [0, 0, 0] },
           },
-    value: [
+    initialValue: [
       {
         children: [
           {

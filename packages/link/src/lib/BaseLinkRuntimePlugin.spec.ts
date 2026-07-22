@@ -11,7 +11,7 @@ const createEditor = (value: Value) =>
       anchor: { offset: 4, path: [0, 1, 0] },
       focus: { offset: 4, path: [0, 1, 0] },
     },
-    value,
+    initialValue: value,
   });
 
 describe('BaseLinkPlugin Plite runtime', () => {

@@ -27,7 +27,7 @@ const createTableEditor = (
         : []),
     ],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 const createClipboard = () => {

@@ -43,7 +43,7 @@ const createEditor = () =>
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
-    value: [createParagraph('start'), createParagraph('untouched')],
+    initialValue: [createParagraph('start'), createParagraph('untouched')],
   });
 
 const InlineFixturePlugin = createBasePlugin({

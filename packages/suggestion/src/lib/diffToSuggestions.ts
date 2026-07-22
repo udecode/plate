@@ -9,8 +9,6 @@ import { KEYS } from '@platejs/utils';
 import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
-import { getSuggestionProps } from './transforms';
-import { getSuggestionKey } from './utils';
 
 export function diffToSuggestions<E extends BaseEditor>(
   editor: E,
@@ -18,13 +16,17 @@ export function diffToSuggestions<E extends BaseEditor>(
   doc1: Descendant[],
   {
     getDeleteProps = (node) =>
-      getSuggestionProps(editor, node, {
+      editor.plugin(BaseSuggestionPlugin).api.getProps(node, {
         suggestionDeletion: true,
       }),
-    getInsertProps = (node) => getSuggestionProps(editor, node),
-    getUpdateProps = (node, _properties, newProperties) =>
-      getSuggestionProps(editor, node, {
-        suggestionUpdate: newProperties,
+    getInsertProps = (node) =>
+      editor.plugin(BaseSuggestionPlugin).api.getProps(node),
+    getUpdateProps = (node, properties, newProperties) =>
+      editor.plugin(BaseSuggestionPlugin).api.getProps(node, {
+        suggestionUpdate: {
+          newProperties: withoutUndefined(newProperties),
+          properties: withoutUndefined(properties),
+        },
       }),
     isInline = editor.read.schema.isInline,
     ...options
@@ -59,6 +61,11 @@ export function diffToSuggestions<E extends BaseEditor>(
   return traverseNodes(values) as ValueOf<E>;
 }
 
+const withoutUndefined = (properties: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(properties).filter(([, value]) => value !== undefined)
+  );
+
 /**
  * Unifies the ID of adjacent insert and remove suggestions. When an insert
  * suggestion follows a remove suggestion, the insert suggestion inherits the ID
@@ -85,7 +92,7 @@ function unifyAdjacentSuggestionIds<E extends BaseEditor>(
         // Create a new node with the updated suggestion data
         const updatedNode = {
           ...node,
-          [getSuggestionKey(previousData.id)]: {
+          [api.key(previousData.id)]: {
             ...currentNodeData,
             id: previousData.id,
             createdAt: previousData.createdAt,
@@ -93,7 +100,7 @@ function unifyAdjacentSuggestionIds<E extends BaseEditor>(
         };
 
         // Remove the original insert suggestion key to avoid duplication
-        const key = getSuggestionKey(currentNodeData.id);
+        const key = api.key(currentNodeData.id);
         delete updatedNode[key];
 
         return updatedNode;

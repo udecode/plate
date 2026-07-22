@@ -2,6 +2,8 @@ export type { Editor, Value } from '../interfaces/editor';
 
 export { failInvariant } from './fail-invariant';
 
+export { getEditorCommitSnapshot } from '../core/commit';
+
 export {
   above,
   addMark,

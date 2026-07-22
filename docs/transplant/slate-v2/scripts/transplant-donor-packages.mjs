@@ -117,7 +117,6 @@ const sourceFirstPaths = {
   '@platejs/browser/browser': ['../browser/src/browser/index.ts'],
   '@platejs/browser/core': ['../browser/src/core/index.ts'],
   '@platejs/browser/playwright': ['../browser/src/playwright/index.ts'],
-  '@platejs/browser/transports': ['../browser/src/transports/index.ts'],
   '@platejs/slate': ['../slate/src/index.ts'],
   '@platejs/slate/internal': ['../slate/src/internal/index.ts'],
   '@platejs/slate-dom': ['../slate-dom/src/index.ts'],

@@ -23,7 +23,7 @@ const replacedValue = [
 
 export default function ControlledEditorDemo() {
   const editor = usePlateEditor({
-    value: initialValue,
+    initialValue,
   });
 
   return (

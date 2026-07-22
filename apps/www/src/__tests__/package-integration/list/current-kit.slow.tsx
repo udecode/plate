@@ -19,7 +19,7 @@ describe('ListKit current contract', () => {
         BaseImagePlugin,
         ...ListKit,
       ],
-      value: [{ children: [{ text: '-' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '-' }], type: 'p' }],
     });
 
     editor.update.selection.set({

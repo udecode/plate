@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-22-plugin-portal-wiring",
+      "href": "/registry/changelog/2026-07-22-plugin-portal-wiring.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use typed plugin portals",
+      "change": {
+        "type": "source",
+        "date": "2026-07-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["footnote-node", "table-node", "table-node-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-16-list-toolbar-wiring",
       "href": "/registry/changelog/2026-07-16-list-toolbar-wiring.json",
       "status": "draft",

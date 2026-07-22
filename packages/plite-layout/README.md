@@ -9,12 +9,12 @@ page virtualization that keeps Plite as the document model.
 ```tsx
 import { createPliteLayout } from '@platejs/plite-layout'
 
-const layout = createPliteLayout(editor, () => ({
+const layout = createPliteLayout(editor, {
   page: {
     margins: 72,
     preset: 'letter',
   },
-}))
+})
 ```
 
 For React page surfaces, use `plite-layout/react`.

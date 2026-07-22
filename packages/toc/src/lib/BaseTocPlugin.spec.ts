@@ -49,7 +49,7 @@ describe('BaseTocPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           type: KEYS.toc,
@@ -84,7 +84,7 @@ describe('BaseTocPlugin', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           type: KEYS.toc,
@@ -114,7 +114,7 @@ describe('BaseTocPlugin', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           type: KEYS.toc,
@@ -143,7 +143,7 @@ describe('BaseTocPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           type: KEYS.toc,

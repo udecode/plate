@@ -1,4 +1,5 @@
-import { createPlateEditor, pipeHandler } from '@platejs/core/react';
+import { createPlateEditor } from '@platejs/core/react';
+import { pipeHandler } from '@platejs/core/react/internal';
 import { KEYS } from '@platejs/utils';
 
 import { PlaceholderPlugin } from './PlaceholderPlugin';
@@ -53,7 +54,7 @@ describe('PlaceholderPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
     const event = {
       clipboardData: {
@@ -79,7 +80,7 @@ describe('PlaceholderPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
     editor
@@ -102,7 +103,7 @@ describe('PlaceholderPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
     const file = new File(['image'], 'image.png', { type: 'image/png' });
 

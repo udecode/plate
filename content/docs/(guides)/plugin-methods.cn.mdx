@@ -19,10 +19,10 @@ const ConfiguredPlugin = MyPlugin.configure({
 });
 ```
 
-需要读取运行时上下文时，请使用 `.extend()`：
+现有字段依赖运行时上下文时，可以使用 `.configure()` 的回调形式：
 
 ```ts
-const ConfiguredPlugin = MyPlugin.extend(({ getOptions }) => ({
+const ConfiguredPlugin = MyPlugin.configure(({ getOptions }) => ({
   options: {
     ...getOptions(),
     myOption: `${getOptions().myOption} + extra`,
@@ -32,7 +32,7 @@ const ConfiguredPlugin = MyPlugin.extend(({ getOptions }) => ({
 
 - 用于修改插件的现有属性
 - 不会向插件添加新属性
-- 最后应用的配置会被编辑器使用
+- 多次调用会按声明顺序组合，后面的重叠字段优先
 - 不返回扩展类型，保持原始插件类型
 
 ### .configurePlugin
@@ -113,9 +113,9 @@ const TablePlugin = createPlatePlugin({
 
 虽然这两种方法都可以用于修改插件配置，但存在一些关键差异：
 
-1. 链式调用：`.extend`支持链式调用，而`.configure`不支持
-2. 类型扩展：`.extend`返回具有扩展类型的新插件实例，而`.configure`保持原始类型
-3. 新属性：`.extend`可以向插件配置添加新属性，而`.configure`仅修改现有属性
+1. 类型扩展：`.extend`返回具有扩展类型的新插件实例，而`.configure`保持原始类型
+2. 新属性：`.extend`可以向插件配置添加新属性，而`.configure`仅修改现有属性
+3. 解析时机：`.configure` 的静态配置与回调配置进入同一个有序配置管线，`.extend` 的附加层在其后运行
 
 根据是否需要扩展插件类型和功能（使用`.extend`）或仅修改现有配置（使用`.configure`）来选择适当的方法。
 
@@ -162,7 +162,7 @@ const CounterComponent = () => {
 `withComponent`方法允许你设置或替换与插件关联的组件。
 
 ```ts
-import { schema } from '@platejs/plite';
+import { schema } from 'platejs';
 
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
@@ -175,7 +175,7 @@ const ParagraphPlugin = createPlatePlugin({
 
 ## API 和事务命令
 
-插件可以定义自己的 API 方法和事务命令。API 合并到 `editor.api`；事务命令在 `editor.update((tx) => ...)` 内使用。
+插件可以定义自己的 API 方法和事务命令。插件专属 API 通过 `editor.plugin(Plugin).api` 访问，编辑器级 API 位于 `editor.api`；事务命令在 `editor.update((tx) => ...)` 内使用。
 
 ### .extendApi
 
@@ -188,8 +188,8 @@ const MyPlugin = createPlatePlugin({
   pluginMethod: () => 'plugin method result',
 }));
 
-// 访问插件的API
-editor.api.myPlugin.pluginMethod();
+// 访问插件的 API
+editor.plugin(MyPlugin).api.pluginMethod();
 ```
 
 ### .extendEditorApi
@@ -244,7 +244,7 @@ editor.update((tx) => tx.insert.mention());
 使用 `.extendExtension()` 安装需要参与 Plite 运行时阶段的能力，例如 schema、command 或 correction。下面的扩展把结构化换行命令改为软换行：
 
 ```ts
-import { editorCommands } from '@platejs/plite';
+import { editorCommands } from 'platejs';
 
 const SingleLinePlugin = createPlatePlugin({
   key: 'singleLine',
@@ -302,7 +302,7 @@ const MyPlugin = createPlatePlugin({
     },
   }));
 
-editor.api.myPlugin.pluginMethod();
+editor.plugin(MyPlugin).api.pluginMethod();
 editor.api.multiply(3);
 editor.update((tx) => tx.myPlugin.pluginCommand());
 editor.update((tx) => tx.insert.mention());
@@ -313,7 +313,7 @@ editor.update((tx) => tx.insert.mention());
 要将类型化的Plite插件转换为Plate插件，可以使用`toPlatePlugin`：
 
 ```ts
-import { schema } from '@platejs/plite';
+import { schema } from 'platejs';
 
 const CodeBlockPlugin = toPlatePlugin(
   createBasePlugin({

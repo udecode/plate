@@ -45,9 +45,9 @@ Two separate mistakes:
 
 1. `pipeRenderElement(...)` computed injected attributes for the plain fast
    path, but passed raw attributes into the wrapped fallback path
-2. `BaseListPlugin` narrowed unordered list-item injection to `targetPlugins:
-   [KEYS.p]`, even though list semantics in this repo apply to non-paragraph
-   blocks too
+2. `BaseListPlugin` narrowed unordered list-item injection to
+   `targetPluginKeys: [KEYS.p]`, even though list semantics in this repo apply
+   to non-paragraph blocks too
 
 ## Fix
 

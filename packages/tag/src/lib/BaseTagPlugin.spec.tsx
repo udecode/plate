@@ -12,7 +12,7 @@ describe('BaseTagPlugin', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
     const tag = { children: [{ text: '' }], type: KEYS.tag };
 

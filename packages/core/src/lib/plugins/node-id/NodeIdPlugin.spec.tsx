@@ -187,7 +187,7 @@ describe('normalizeNodeIdWithEditor', () => {
     const editor = createBaseEditor({
       nodeId: false,
       plugins: [TestLinkPlugin],
-      value: input.children,
+      initialValue: input.children,
     });
 
     const output = normalizeNodeIdWithEditor(editor, input.children, {
@@ -217,7 +217,7 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value: input.children,
+      initialValue: input.children,
     });
 
     expect(editor.read.children()[0].id).toBe(1);
@@ -239,7 +239,7 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value,
+      initialValue: value,
     });
 
     expect(editor.read.children()[0].id).toBe(1);
@@ -267,7 +267,7 @@ describe('NodeIdPlugin', () => {
         }),
         TestLinkPlugin,
       ],
-      value: input.children,
+      initialValue: input.children,
     });
 
     expect(editor.read.children()[0].id).toBe(1);
@@ -292,7 +292,7 @@ describe('NodeIdPlugin', () => {
         }),
         TestLinkPlugin,
       ],
-      value: input.children,
+      initialValue: input.children,
     });
 
     expect(editor.read.children()[0].id).toBe(1);
@@ -317,7 +317,7 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value: input.children,
+      initialValue: input.children,
     });
 
     expect(editor.read.children()[0].id).toBe(1);
@@ -343,7 +343,7 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value: input.children,
+      initialValue: input.children,
     });
 
     expect(editor.read.children()[0].id).toBeUndefined();
@@ -363,16 +363,14 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          config: {
-            idKey: 'foo',
-          },
           options: {
             idCreator: createIdFactory(),
+            idKey: 'foo',
             initialValueIds: 'if-needed',
           },
         }),
       ],
-      value: input.children,
+      initialValue: input.children,
     });
 
     expect(editor.read.children()[0].foo).toBe('first');
@@ -395,7 +393,9 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value: [{ children: [{ text: 'existing' }], id: 'taken-id', type: 'p' }],
+      initialValue: [
+        { children: [{ text: 'existing' }], id: 'taken-id', type: 'p' },
+      ],
     });
 
     editor.update((tx) => {
@@ -427,7 +427,7 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value: [
+      initialValue: [
         { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
       ],
     });
@@ -459,7 +459,7 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value: [
+      initialValue: [
         { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
       ],
     });
@@ -492,7 +492,7 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value: [
+      initialValue: [
         { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
       ],
     });
@@ -535,7 +535,7 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value: [
+      initialValue: [
         { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
       ],
     });
@@ -567,7 +567,9 @@ describe('NodeIdPlugin', () => {
         }),
         TestHeadingPlugin,
       ],
-      value: [{ children: [{ text: 'existing' }], id: 'existing', type: 'p' }],
+      initialValue: [
+        { children: [{ text: 'existing' }], id: 'existing', type: 'p' },
+      ],
     });
 
     editor.update((tx) => {
@@ -593,7 +595,7 @@ describe('NodeIdPlugin', () => {
         }),
         TestMarkLikePlugin,
       ],
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
 
     editor.update((tx) => {
@@ -624,7 +626,7 @@ describe('NodeIdPlugin', () => {
         }),
         TestBlockquotePlugin,
       ],
-      value: [
+      initialValue: [
         { children: [{ text: 'existing a' }], id: 'taken-a', type: 'p' },
         { children: [{ text: 'existing b' }], id: 'taken-b', type: 'p' },
       ],
@@ -678,7 +680,7 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value: [
+      initialValue: [
         { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
         {
           children: [{ text: 'before' }, { text: 'after' }],
@@ -724,7 +726,9 @@ describe('NodeIdPlugin', () => {
           },
         }),
       ],
-      value: [{ children: [{ text: 'before' }, { text: 'after' }], type: 'p' }],
+      initialValue: [
+        { children: [{ text: 'before' }, { text: 'after' }], type: 'p' },
+      ],
     });
 
     const before = editor.read.value();

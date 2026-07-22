@@ -54,9 +54,9 @@ const SearchHighlightingExample = () => {
     editor,
     {
       data: { highlight: true },
-      deps: [search],
       id: 'search-highlighting',
       dirtiness: 'text',
+      revision: search,
       read: ({ snapshot }) =>
         search
           ? NodeApi.findTextRanges({ children: snapshot.children }, search, {

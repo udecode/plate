@@ -15,7 +15,7 @@ function WithPlate({ id, value }: { id: string; value: Value }) {
     id,
     // components: PlateUI,
     // plugins: [BasicBlocksPlugin, BasicMarksPlugin],
-    value,
+    initialValue: value,
   });
 
   return (

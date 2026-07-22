@@ -61,10 +61,15 @@ type ExplicitPluginConfig = PluginConfig<
   {
     enabled: boolean;
   },
+  {},
+  {},
+  {},
+  {},
+  readonly [],
+  readonly [],
+  never,
   {
-    explicitPlugin: {
-      isEnabled: () => boolean;
-    };
+    isEnabled: () => boolean;
   }
 >;
 
@@ -73,11 +78,9 @@ const ExplicitPlugin = createPlatePlugin<ExplicitPluginConfig>({
   options: {
     enabled: false,
   },
-}).extendApi<ExplicitPluginConfig['api']['explicitPlugin']>(
-  ({ getOptions }) => ({
-    isEnabled: () => getOptions().enabled,
-  })
-);
+}).extendApi<ExplicitPluginConfig['pluginApi']>(({ getOptions }) => ({
+  isEnabled: () => getOptions().enabled,
+}));
 
 const ReactFactoryExtensionPlugin = createPlatePlugin({
   key: 'reactFactoryExtension',
@@ -104,13 +107,9 @@ const nestedFloating: boolean = plateEditor.api.plugin.isFloating();
 const mentionTrigger: '@' = plateEditor.api.getTrigger();
 const createdFloating: boolean = createdPlateEditor.api.toggleFloating();
 const createdMentionTrigger: '@' = createdPlateEditor.api.getTrigger();
-const explicitPluginEnabled: boolean =
-  createdPlateEditor.api.explicitPlugin.isEnabled();
 const explicitPluginPortalEnabled: boolean = createdPlateEditor
   .plugin(ExplicitPlugin)
   .api.isEnabled();
-const explicitPluginPortalRootEnabled: boolean =
-  createdPlateEditor.api.explicitPlugin.isEnabled();
 const toolbarFloating: boolean = createdPlateEditor
   .plugin(ToolbarPlugin)
   .getOptions().floating;
@@ -121,9 +120,7 @@ const createdMentionOption: '@' = createdPlateEditor
 void createdFloating;
 void createdMentionOption;
 void createdMentionTrigger;
-void explicitPluginEnabled;
 void explicitPluginPortalEnabled;
-void explicitPluginPortalRootEnabled;
 void floating;
 void mentionTrigger;
 void nestedFloating;
@@ -136,6 +133,8 @@ plateEditor.api.notReal();
 createdPlateEditor.api.plugin.isFloating(true);
 
 const explicitPluginPortalApi = createdPlateEditor.plugin(ExplicitPlugin).api;
+// @ts-expect-error plugin portal APIs do not leak into the root editor API
+createdPlateEditor.api.explicitPlugin.isEnabled();
 // @ts-expect-error plugin portal API is scoped, not wrapped by plugin key
 explicitPluginPortalApi.explicitPlugin.isEnabled();
 

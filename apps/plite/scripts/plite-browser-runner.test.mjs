@@ -18,7 +18,9 @@ import {
   createBrowserRunSummary,
   createProjectExecutionPlan,
   createTestUnits,
+  DEFAULT_UNIT_WORKERS,
   fingerprintBrowserUnit,
+  formatIntegrityFailureDetails,
   getDefaultMaxTestsPerProcess,
   getSelectionUniverseSelectors,
   MAX_BROWSER_WORKERS,
@@ -30,6 +32,7 @@ import {
   resolveTimeoutMs,
   resolveReusableProofState,
   runProjectPool,
+  runProjectWaves,
   selectUnitsForJob,
   validateCompletedUnit,
   validateUnitResult,
@@ -73,6 +76,24 @@ test('requires the repository Node major for browser proof', () => {
     () => assertBrowserNodeVersion('current', 'v22'),
     /Runtime version must be a Node major or semantic version/
   );
+});
+
+test('reports the exact integrity invalidation path and event', () => {
+  assert.equal(
+    formatIntegrityFailureDetails(
+      {
+        eventType: 'update',
+        path: '/repo/packages/core/src/internal/plugin/resolvePlugin.ts',
+      },
+      '/repo'
+    ),
+    ': packages/core/src/internal/plugin/resolvePlugin.ts (update)'
+  );
+  assert.equal(
+    formatIntegrityFailureDetails({ path: '/repo' }, '/repo'),
+    ': .'
+  );
+  assert.equal(formatIntegrityFailureDetails({}, '/repo'), '');
 });
 
 test('bounds normal browser processes by exact discovered locations', () => {
@@ -413,8 +434,11 @@ test('limits scoped universe discovery to exact discovered files', () => {
 
 test('bounds parallel browser projects inside one worker budget', () => {
   assert.deepEqual(
-    createProjectExecutionPlan(['chromium', 'firefox', 'mobile', 'webkit'], 8),
-    { concurrency: 2, unitWorkers: 4 }
+    createProjectExecutionPlan(
+      ['chromium', 'firefox', 'mobile', 'webkit'],
+      DEFAULT_UNIT_WORKERS
+    ),
+    { concurrency: 2, unitWorkers: 2 }
   );
   assert.deepEqual(createProjectExecutionPlan(['chromium', 'firefox'], 8, 1), {
     concurrency: 1,
@@ -556,6 +580,36 @@ test('project pool executes every project exactly once', async () => {
     }),
     /project concurrency must be a positive integer/
   );
+});
+
+test('project waves release one engine generation before starting the next', async () => {
+  const completions = new Map();
+  const started = [];
+  const run = runProjectWaves({
+    concurrency: 2,
+    projects: ['chromium', 'firefox', 'mobile', 'webkit'],
+    runProject: (project) => {
+      started.push(project);
+
+      return new Promise((resolve) => completions.set(project, resolve));
+    },
+    stopSiblings: () => {},
+  });
+
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(started, ['chromium', 'firefox']);
+
+  completions.get('chromium')(0);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(started, ['chromium', 'firefox']);
+
+  completions.get('firefox')(0);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(started, ['chromium', 'firefox', 'mobile', 'webkit']);
+
+  completions.get('mobile')(0);
+  completions.get('webkit')(0);
+  assert.equal(await run, 0);
 });
 
 test('project pool fail-fast terminates a live sibling process', {

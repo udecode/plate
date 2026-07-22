@@ -15,13 +15,13 @@ describe('extendEditorApi method', () => {
         createBasePlugin({
           key: 'testPlugin',
         })
-          .extendEditorApi(({ editor, plugin }) => {
+          .extendEditorApi(({ api, editor }) => {
             api1 = editor.api;
-            pluginApi1 = plugin.api;
+            pluginApi1 = api;
 
             return { method1: () => 1 };
           })
-          .extendEditorApi(({ editor, plugin: { api } }) => {
+          .extendEditorApi(({ api, editor }) => {
             expect(api1).toBe(editor.api);
             expect(pluginApi1).toBe(api);
 
@@ -53,9 +53,9 @@ describe('extendEditorApi method', () => {
     }));
 
     const furtherExtendedPlugin = extendedPlugin.extendEditorApi(
-      ({ getOptions, plugin: { api }, setOption }) => ({
+      ({ editor, getOptions, setOption }) => ({
         getTotal: (factor: number) =>
-          api.multiply(factor) + getOptions().baseValue,
+          editor.api.multiply(factor) + getOptions().baseValue,
         increment: (amount: number) => {
           setOption('baseValue', getOptions().baseValue + amount);
         },
@@ -98,8 +98,8 @@ describe('extendEditorApi method', () => {
           baseValue: 20,
         },
       })
-      .extendEditorApi(({ plugin: { api, options } }) => ({
-        anotherMethod: () => api.sampleMethod(1) + options.baseValue,
+      .extendEditorApi(({ editor, plugin: { options } }) => ({
+        anotherMethod: () => editor.api.sampleMethod(1) + options.baseValue,
       }));
 
     const editor = createBaseEditor({
@@ -126,8 +126,8 @@ describe('extendEditorApi method', () => {
       .extendEditorApi(() => ({
         method2: () => 2,
       }))
-      .extendEditorApi(({ plugin: { api } }) => ({
-        method3: () => api.method1() + api.method2(),
+      .extendEditorApi(({ editor }) => ({
+        method3: () => editor.api.method1() + editor.api.method2(),
       }));
 
     const editor = createBaseEditor({
@@ -146,13 +146,13 @@ describe('extendEditorApi method', () => {
         baseValue: 10,
       },
     })
-      .extendEditorApi(() => ({
+      .extendApi(() => ({
         method1: () => 1,
       }))
-      .extendEditorApi(() => ({
+      .extendApi(() => ({
         method2: () => 2,
       }))
-      .extendEditorApi(({ plugin: { api } }) => ({
+      .extendApi(({ api }) => ({
         method3: () => api.method1() + api.method2(),
       }));
 
@@ -175,9 +175,9 @@ describe('extendEditorApi method', () => {
       key: 'testPlugin',
       options: { baseValue: 10 },
     })
-      .extendEditorApi(() => ({ method1: () => 1 }))
-      .extendEditorApi(() => ({ method2: () => 2 }))
-      .extendEditorApi(({ plugin: { api } }) => ({
+      .extendApi(() => ({ method1: () => 1 }))
+      .extendApi(() => ({ method2: () => 2 }))
+      .extendApi(({ api }) => ({
         method3: () => api.method1() + api.method2(),
       }));
 
@@ -200,13 +200,13 @@ describe('extendEditorApi method', () => {
   it('allow overriding plugin APIs', () => {
     const basePlugin = createBasePlugin({
       key: 'basePlugin',
-    }).extendEditorApi(() => ({
+    }).extendApi(() => ({
       method: () => 'base',
     }));
 
     const overridePlugin = createBasePlugin({
       key: 'overridePlugin',
-    }).extendEditorApi(({ editor }) => {
+    }).extendApi(({ editor }) => {
       const { method } = getEditorPlugin(editor, basePlugin).api;
 
       return {
@@ -218,7 +218,7 @@ describe('extendEditorApi method', () => {
       plugins: [basePlugin, overridePlugin],
     });
 
-    expect(editor.api.method()).toBe('override base');
+    expect(editor.plugin(overridePlugin).api.method()).toBe('override base');
   });
 
   it('merge nested API properties', () => {
@@ -250,9 +250,9 @@ describe('extendEditorApi method', () => {
         method: () => 'plugin1' as string,
         scoped: () => 'scoped1' as string,
       }))
-      .extendEditorApi(({ editor, plugin }) => {
-        // This should access the current plugin's scoped api method
-        const currentScoped = plugin.api.scoped;
+      .extendApi(() => ({ scoped: () => 'plugin-scoped1' as string }))
+      .extendEditorApi(({ api, editor }) => {
+        const currentScoped = api.scoped;
 
         return {
           method: () => 'plugin2',
@@ -277,8 +277,10 @@ describe('extendEditorApi method', () => {
     });
 
     expect(editor.api.method()).toBe('plugin3'); // Overridden by plugin2
-    expect(getEditorPlugin(editor, plugin1).api.scoped()).toBe('scoped2'); // From plugin1, not overridden
-    expect(editor.api.testMethod()).toBe('plugin3-scoped1');
+    expect(getEditorPlugin(editor, plugin1).api.scoped()).toBe(
+      'plugin-scoped1'
+    );
+    expect(editor.api.testMethod()).toBe('plugin3-plugin-scoped1');
   });
 
   it('comprehensively handles nested and overridden editor APIs', () => {
@@ -295,25 +297,23 @@ describe('extendEditorApi method', () => {
         },
         standalone: () => 'base',
       }))
-      .extendEditorApi(({ plugin: { api } }) => ({
+      .extendEditorApi(({ editor }) => ({
         level1: {
-          method3: () => api.level1.method1() + api.level1.method2(2),
+          method3: () =>
+            editor.api.level1.method1() + editor.api.level1.method2(2),
         },
         override: () => 'original',
       }))
-      .extendEditorApi(({ getOptions, plugin: { api } }) => ({
-        combined: () => api.level1.method3() + getOptions().baseValue,
+      .extendEditorApi(({ editor, getOptions }) => ({
+        combined: () => editor.api.level1.method3() + getOptions().baseValue,
       }));
 
     const overridePlugin = createBasePlugin({
+      dependencies: [basePlugin],
       key: 'overridePlugin',
-    }).extendEditorApi(({ editor }) => {
-      const baseApi = getEditorPlugin(editor, basePlugin).api;
-
-      return {
-        override: () => `overridden: ${baseApi.standalone()}`,
-      };
-    });
+    }).extendEditorApi(({ editor }) => ({
+      override: () => `overridden: ${editor.api.standalone()}`,
+    }));
 
     const editor = createBaseEditor({
       plugins: [basePlugin, overridePlugin],
@@ -335,10 +335,11 @@ describe('extendEditorApi method', () => {
 
     const context = editor.plugin(basePlugin);
 
-    expect(context.api.level1.method1()).toBe(10);
-    expect(Object.isFrozen(context.api.level1)).toBe(true);
+    // @ts-expect-error root editor APIs do not leak into plugin portals
+    expect(context.api.level1).toBeUndefined();
+    expect(Object.isFrozen(editor.api.level1)).toBe(true);
     expect(() => {
-      context.api.level1.method1 = () => 100;
+      editor.api.level1.method1 = () => 100;
     }).toThrow();
 
     context.setOption('baseValue', 20);
@@ -348,6 +349,37 @@ describe('extendEditorApi method', () => {
 });
 
 describe('extendApi method', () => {
+  it('keeps descriptor declarations separate from the installed plugin portal', () => {
+    const testPlugin = createBasePlugin({
+      api: {
+        rootMethod: () => 'root',
+      },
+      key: 'testPlugin',
+    })
+      .extend({
+        api: {
+          testPlugin: {
+            sameKeyRootMethod: () => 'same-key-root',
+          },
+        },
+      })
+      .extendApi(() => ({
+        pluginMethod: () => 'plugin',
+      }));
+
+    expect(Object.hasOwn(testPlugin, 'api')).toBe(false);
+    expect(Reflect.get(testPlugin, 'api')).toBeUndefined();
+
+    const editor = createBaseEditor({ plugins: [testPlugin] });
+
+    expect(editor.api.rootMethod()).toBe('root');
+    expect(editor.api.testPlugin.sameKeyRootMethod()).toBe('same-key-root');
+    expect(editor.plugin(testPlugin).api.pluginMethod()).toBe('plugin');
+    expect(Reflect.get(editor.plugin(testPlugin).api, 'rootMethod')).toBe(
+      undefined
+    );
+  });
+
   it('extend plugin-specific API without affecting global API', () => {
     const testPlugin = createBasePlugin({
       key: 'testPlugin',
@@ -364,7 +396,8 @@ describe('extendApi method', () => {
     });
 
     expect(editor.api.globalMethod()).toBe('global');
-    expect(editor.api.testPlugin.pluginMethod()).toBe('plugin');
+    expect(editor.plugin(testPlugin).api.pluginMethod()).toBe('plugin');
+    expect(Reflect.get(editor.api, 'testPlugin')).toBeUndefined();
 
     // @ts-expect-error plugin-specific APIs do not leak into editor.api
     const pluginMethod = editor.api.pluginMethod;
@@ -389,9 +422,9 @@ describe('extendApi method', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.api.testPlugin.method1()).toBe(1);
-    expect(editor.api.testPlugin.method2()).toBe(2);
-    expect(editor.api.testPlugin.method3()).toBe(3);
+    expect(editor.plugin(testPlugin).api.method1()).toBe(1);
+    expect(editor.plugin(testPlugin).api.method2()).toBe(2);
+    expect(editor.plugin(testPlugin).api.method3()).toBe(3);
   });
 
   it('allow access to plugin options in extendApi', () => {
@@ -408,7 +441,7 @@ describe('extendApi method', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.api.testPlugin.getValue()).toBe(10);
+    expect(editor.plugin(testPlugin).api.getValue()).toBe(10);
   });
 
   it('allow interaction between global and plugin-specific APIs', () => {
@@ -426,7 +459,7 @@ describe('extendApi method', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.api.testPlugin.pluginMethod()).toBe(10);
+    expect(editor.plugin(testPlugin).api.pluginMethod()).toBe(10);
   });
 
   it('maintain separate contexts for different plugins', () => {
@@ -446,8 +479,8 @@ describe('extendApi method', () => {
       plugins: [plugin1, plugin2],
     });
 
-    expect(editor.api.plugin1.method()).toBe('plugin1');
-    expect(editor.api.plugin2.method()).toBe('plugin2');
+    expect(editor.plugin(plugin1).api.method()).toBe('plugin1');
+    expect(editor.plugin(plugin2).api.method()).toBe('plugin2');
   });
 
   it('allow overriding plugin-specific APIs', () => {
@@ -471,8 +504,8 @@ describe('extendApi method', () => {
       plugins: [basePlugin, overridePlugin],
     });
 
-    expect(editor.api.basePlugin.method()).toBe('base');
-    expect(editor.api.overridePlugin.method()).toBe('override base');
+    expect(editor.plugin(basePlugin).api.method()).toBe('base');
+    expect(editor.plugin(overridePlugin).api.method()).toBe('override base');
   });
 
   it('handle complex scenarios with both extendEditorApi and extendApi', () => {
@@ -488,8 +521,9 @@ describe('extendApi method', () => {
       .extendApi(({ getOptions }) => ({
         pluginMethod: () => getOptions().baseValue,
       }))
-      .extendEditorApi(({ api }) => ({
-        combinedMethod: () => `${api.globalMethod()}-${api.pluginMethod()}`,
+      .extendEditorApi(({ api, editor }) => ({
+        combinedMethod: () =>
+          `${editor.api.globalMethod()}-${api.pluginMethod()}`,
       }));
 
     const editor = createBaseEditor({
@@ -497,7 +531,7 @@ describe('extendApi method', () => {
     });
 
     expect(editor.api.globalMethod()).toBe('global');
-    expect(editor.api.testPlugin.pluginMethod()).toBe(5);
+    expect(editor.plugin(testPlugin).api.pluginMethod()).toBe(5);
     expect(editor.api.combinedMethod()).toBe('global-5');
   });
 });

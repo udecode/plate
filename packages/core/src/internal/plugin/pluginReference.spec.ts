@@ -4,14 +4,11 @@ import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { createPlatePlugin, toPlatePlugin } from '../../react/plugin';
 import {
-  freezePluginConfiguration,
   isNominalPluginDescriptor,
   isNominalPluginReference,
-  isNominalPluginReferenceSnapshot,
 } from '../utils/mergePlugins';
 
 type NominalPluginOutput = Readonly<{
-  config: unknown;
   key: string;
   plugins: readonly NominalPluginOutput[];
   type: string;
@@ -19,17 +16,7 @@ type NominalPluginOutput = Readonly<{
 
 const expectReusableReference = (plugin: NominalPluginOutput) => {
   expect(isNominalPluginDescriptor(plugin)).toBe(true);
-  expect(Object.isFrozen(plugin.config)).toBe(true);
-
-  const first = freezePluginConfiguration({ target: plugin });
-  const second = freezePluginConfiguration({ target: first.target });
-
-  expect(first.target).toEqual({ key: plugin.key, type: plugin.type });
-  expect(Reflect.ownKeys(first.target)).toEqual(['key', 'type']);
-  expect(Object.isFrozen(first.target)).toBe(true);
-  expect(isNominalPluginReferenceSnapshot(first.target)).toBe(true);
-  expect(isNominalPluginReference(first.target)).toBe(true);
-  expect(second.target).toBe(first.target);
+  expect(isNominalPluginReference(plugin)).toBe(true);
 };
 
 const expectNominalPluginTree = (plugin: NominalPluginOutput) => {
@@ -46,26 +33,20 @@ describe('plugin references', () => {
     const ConfiguredTargetPlugin = TargetPlugin.configure({
       type: 'configured-reference-type',
     });
-    const snapshot = freezePluginConfiguration({
-      target: ConfiguredTargetPlugin,
-    });
 
     expect(ConfiguredTargetPlugin.type).toBe('configured-reference-type');
-    expect(snapshot.target).toEqual({
-      key: 'configuredReferenceTarget',
-      type: 'configured-reference-type',
-    });
+    expect(isNominalPluginReference(ConfiguredTargetPlugin)).toBe(true);
   });
 
   it('keeps every public factory and method result nominal', () => {
     const BasePlugin = createBasePlugin({
-      config: { nested: { value: 1 } },
       key: 'baseReference',
+      options: { nested: { value: 1 } },
     });
     const baseOutputs: NominalPluginOutput[] = [
       BasePlugin,
       BasePlugin.clone(),
-      BasePlugin.configure({ config: { nested: { value: 2 } } }),
+      BasePlugin.configure({ options: { nested: { value: 2 } } }),
       BasePlugin.extend({ priority: 101 }),
       BasePlugin.extend(() => ({ priority: 102 })),
       BasePlugin.extendEditorApi(() => ({ nominalEditorApi: () => true })),
@@ -83,14 +64,14 @@ describe('plugin references', () => {
     const PlatePlugin = toPlatePlugin(BasePlugin);
     const plateOutputs: NominalPluginOutput[] = [
       createPlatePlugin({
-        config: { nested: { value: 1 } },
         key: 'plateReference',
+        options: { nested: { value: 1 } },
       }),
       PlatePlugin,
       toPlatePlugin(BasePlugin, { priority: 105 }),
       toPlatePlugin(BasePlugin, () => ({ priority: 106 })),
       PlatePlugin.clone(),
-      PlatePlugin.configure({ config: { nested: { value: 3 } } }),
+      PlatePlugin.configure({ options: { nested: { value: 3 } } }),
       PlatePlugin.extend({ priority: 103 }),
       PlatePlugin.extend(() => ({ priority: 104 })),
       PlatePlugin.extendEditorApi(() => ({ nominalEditorApi: () => true })),
@@ -147,16 +128,14 @@ describe('plugin references', () => {
 
     trees.forEach(expectNominalPluginTree);
 
-    const editor = createBaseEditor({
-      plugins: [trees[0]],
-    });
+    const editor = createBaseEditor({ plugins: [trees[0]] });
 
     expectNominalPluginTree(editor.getPlugin(ParentPlugin));
     expectReusableReference(editor.getPlugin(GrandchildPlugin));
     expectReusableReference(editor.plugin(ParentPlugin).plugin);
   });
 
-  it('reuses genuine snapshots and rejects spread-forged identities', () => {
+  it('accepts genuine option references and rejects spread-forged identities', () => {
     const TargetPlugin = createBasePlugin({
       key: 'referenceTarget',
       schema: {
@@ -166,57 +145,41 @@ describe('plugin references', () => {
       },
       type: 'reference-target',
     });
-    const FirstOwnerPlugin = createBasePlugin({
-      config: { target: TargetPlugin },
-      key: 'firstReferenceOwner',
-    });
-    const ReusedOwnerPlugin = createBasePlugin({
-      config: { target: FirstOwnerPlugin.config.target },
-      key: 'reusedReferenceOwner',
-      schema: ({ config, own, plugins }) => ({
+    const OwnerPlugin = createBasePlugin({
+      key: 'referenceOwner',
+      options: { target: TargetPlugin },
+      schema: ({ options, own, plugins }) => ({
         properties: [
           own.elementProperty(property.string(), {
-            target: target.type(plugins.elementType(config.target)),
+            target: target.type(plugins.elementType(options.target)),
           }),
         ],
       }),
-      type: 'reused-reference-owner',
+      type: 'reference-owner',
     });
 
-    expect(ReusedOwnerPlugin.config.target).toBe(
-      FirstOwnerPlugin.config.target
-    );
+    expect(OwnerPlugin.options.target).toBe(TargetPlugin);
     expect(() =>
-      createBaseEditor({
-        plugins: [TargetPlugin, ReusedOwnerPlugin],
-      })
+      createBaseEditor({ plugins: [TargetPlugin, OwnerPlugin] })
     ).not.toThrow();
 
-    const forgedSnapshot = { ...FirstOwnerPlugin.config.target };
+    const forgedReference = { ...TargetPlugin };
     const ForgedOwnerPlugin = createBasePlugin({
-      config: { target: forgedSnapshot },
       key: 'forgedReferenceOwner',
-      schema: ({ config, own, plugins }) => ({
+      options: { target: forgedReference },
+      schema: ({ options, own, plugins }) => ({
         properties: [
           own.elementProperty(property.string(), {
-            target: target.type(plugins.elementType(config.target)),
+            target: target.type(plugins.elementType(options.target)),
           }),
         ],
       }),
       type: 'forged-reference-owner',
     });
 
-    expect(isNominalPluginReference(forgedSnapshot)).toBe(false);
+    expect(isNominalPluginReference(forgedReference)).toBe(false);
     expect(() =>
-      createBaseEditor({
-        plugins: [TargetPlugin, ForgedOwnerPlugin],
-      })
+      createBaseEditor({ plugins: [TargetPlugin, ForgedOwnerPlugin] })
     ).toThrow('references an invalid plugin descriptor');
-    expect(() =>
-      createBasePlugin({
-        config: { target: { ...TargetPlugin } },
-        key: 'spreadReferenceOwner',
-      })
-    ).toThrow('Move functions and runtime resources to options');
   });
 });

@@ -10,5 +10,5 @@ export const createStaticEditor = (
   createBaseEditor({
     ...options,
     plugins: BaseEditorKit,
-    value,
+    initialValue: value,
   });

@@ -1,97 +1,84 @@
-import { useMemo, useRef, useState } from 'react';
+import { useInsertionEffect, useMemo, useRef } from 'react';
 import type { Editor } from '@platejs/plite';
 
 import type { PliteAnnotationStore } from '../annotation-store';
 import {
-  createPliteWidgetStore,
+  createDormantPliteWidgetStore,
   type PliteWidget,
   type PliteWidgetStore,
 } from '../widget-store';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import type { PliteViewSourceErrorSink } from '../view-source';
 
-/** React-state projector used to refresh a widget store. */
-export type PliteWidgetStoreProjector<
-  T extends Record<string, unknown>,
-  TAnnotation extends Record<string, unknown>,
+/** Options for a React-owned widget store. */
+export type UsePliteWidgetStoreOptions<
+  TAnnotation extends Record<string, unknown> = Record<string, unknown>,
 > = {
   annotationStore?: PliteAnnotationStore<TAnnotation> | null;
-  deps: readonly unknown[];
   id?: string;
   onError?: PliteViewSourceErrorSink;
-  project: () => readonly PliteWidget<T>[];
+  /** Explicit invalidation token for a mutable external widget source. */
+  revision?: unknown;
 };
 
-const isPliteWidgetStoreProjector = <
-  T extends Record<string, unknown>,
-  TAnnotation extends Record<string, unknown>,
->(
-  value: readonly PliteWidget<T>[] | PliteWidgetStoreProjector<T, TAnnotation>
-): value is PliteWidgetStoreProjector<T, TAnnotation> => !Array.isArray(value);
-
-/**
- * Create a widget store from static widgets or an explicit React-state
- * projector.
- */
-export function usePliteWidgetStore<
+const createWidgetStoreOwner = <
   T extends Record<string, unknown>,
   TAnnotation extends Record<string, unknown>,
 >(
   editor: Editor,
-  widgetsOrOptions:
-    | readonly PliteWidget<T>[]
-    | PliteWidgetStoreProjector<T, TAnnotation>,
-  annotationStoreArg?: PliteAnnotationStore<TAnnotation> | null
-): PliteWidgetStore<T, TAnnotation> {
-  const widgetDeps = isPliteWidgetStoreProjector(widgetsOrOptions)
-    ? widgetsOrOptions.deps
-    : [widgetsOrOptions];
-  const widgets = useMemo(
-    () =>
-      isPliteWidgetStoreProjector(widgetsOrOptions)
-        ? widgetsOrOptions.project()
-        : widgetsOrOptions,
-    // `deps` intentionally owns projector closure freshness.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    widgetDeps
+  widgets: readonly PliteWidget<T>[],
+  options: UsePliteWidgetStoreOptions<TAnnotation>
+) => {
+  const widgetsCell = { current: widgets };
+  const optionsCell = { current: options };
+  const store = createDormantPliteWidgetStore(
+    editor,
+    () => widgetsCell.current,
+    options.annotationStore,
+    {
+      id: options.id,
+      onError: (error) => optionsCell.current.onError?.(error),
+    }
   );
-  const annotationStore = isPliteWidgetStoreProjector(widgetsOrOptions)
-    ? widgetsOrOptions.annotationStore
-    : annotationStoreArg;
-  const sourceId = isPliteWidgetStoreProjector(widgetsOrOptions)
-    ? widgetsOrOptions.id
-    : undefined;
-  const onError = isPliteWidgetStoreProjector(widgetsOrOptions)
-    ? widgetsOrOptions.onError
-    : undefined;
-  const [widgetsCell] = useState(() => ({ current: widgets }));
 
-  const store = useMemo(
-    () =>
-      createPliteWidgetStore(
-        editor,
-        () => widgetsCell.current,
-        annotationStore,
-        {
-          id: sourceId,
-          onError,
-        }
-      ),
-    [annotationStore, editor, onError, sourceId, widgetsCell]
+  return { optionsCell, store, widgetsCell };
+};
+
+/**
+ * Create a widget store from a React-owned widget value.
+ *
+ * New array identities refresh automatically. Pass `revision` only when an
+ * external mutable source changes without producing a new array.
+ */
+export function usePliteWidgetStore<
+  T extends Record<string, unknown> = Record<string, unknown>,
+  TAnnotation extends Record<string, unknown> = Record<string, unknown>,
+>(
+  editor: Editor,
+  widgets: readonly PliteWidget<T>[],
+  options: UsePliteWidgetStoreOptions<TAnnotation> = {}
+): PliteWidgetStore<T, TAnnotation> {
+  const annotationStore = options.annotationStore;
+  const sourceId = options.id;
+  // Data and callbacks seed a new owner, then publish only after commit.
+  const owner = useMemo(
+    () => createWidgetStoreOwner(editor, widgets, options),
+    [annotationStore, editor, sourceId]
   );
+  const { optionsCell, store, widgetsCell } = owner;
   const storeRef = useRef(store);
   const effectVersionRef = useRef(0);
 
-  storeRef.current = store;
-
-  if (widgetsCell.current !== widgets) {
+  useInsertionEffect(() => {
     widgetsCell.current = widgets;
-  }
+    optionsCell.current = options;
+    storeRef.current = store;
+    store.activate();
+  }, [options, optionsCell, store, widgets, widgetsCell]);
 
   useIsomorphicLayoutEffect(() => {
-    widgetsCell.current = widgets;
     store.refresh();
-  }, [store, widgets, widgetsCell]);
+  }, [options.revision, store, widgets, widgetsCell]);
 
   useIsomorphicLayoutEffect(() => {
     const effectVersion = ++effectVersionRef.current;

@@ -20,7 +20,7 @@ describe('NavigationFeedbackPlugin', () => {
 
   it('updates navigation highlight attributes without a selection change', async () => {
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     const initialSelection = editor.read.selection();
 
@@ -82,7 +82,7 @@ describe('NavigationFeedbackPlugin', () => {
   it('uses the top-level navigationFeedback option on createPlateEditor', () => {
     const editor = createPlateEditor({
       navigationFeedback: { duration: 1200 },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     expect(editor.plugin(NavigationFeedbackPlugin).getOption('duration')).toBe(

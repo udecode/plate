@@ -13,7 +13,7 @@ describe('insertDate', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hi' }],
           type: KEYS.p,
@@ -56,7 +56,7 @@ describe('insertDate', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'x' }],
           type: KEYS.p,
@@ -87,7 +87,7 @@ describe('insertDate', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'a' },
@@ -138,7 +138,7 @@ describe('insertDate', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'x' }],
           type: KEYS.p,

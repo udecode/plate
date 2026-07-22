@@ -48,7 +48,7 @@ describe('getEdgeNodes', () => {
       const [editor] = await createPlateTestEditor({
         plugins: [TestBoldPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const [before, after] = getEdgeNodes(editor)!;
@@ -73,7 +73,7 @@ describe('getEdgeNodes', () => {
       const [editor] = await createPlateTestEditor({
         plugins: [TestBoldPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const [before, after] = getEdgeNodes(editor)!;
@@ -96,7 +96,7 @@ describe('getEdgeNodes', () => {
 
       const [editor] = await createPlateTestEditor({
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const [before, after] = getEdgeNodes(editor)!;
@@ -119,7 +119,7 @@ describe('getEdgeNodes', () => {
 
       const [editor] = await createPlateTestEditor({
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const [before, after] = getEdgeNodes(editor)!;
@@ -147,7 +147,7 @@ describe('getEdgeNodes', () => {
       const [editor] = await createPlateTestEditor({
         plugins: [TestLinkPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const [before, after] = getEdgeNodes(editor)!;
@@ -181,7 +181,7 @@ describe('getEdgeNodes', () => {
       const [editor] = await createPlateTestEditor({
         plugins: [TestLinkPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const [before, after] = getEdgeNodes(editor)!;

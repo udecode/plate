@@ -11,7 +11,7 @@ describe('withImageEmbed', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'test' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'test' }], type: 'p' }],
     });
 
     const data = {

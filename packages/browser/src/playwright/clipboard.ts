@@ -162,6 +162,7 @@ export const copyPayloadThroughEvent = async (
 
     return {
       html: data.getData('text/html') || null,
+      markdown: data.getData('text/markdown') || null,
       pliteFragment: data.getData('application/x-plite-fragment') || null,
       text: data.getData('text/plain'),
       types: Array.from(data.types),
@@ -186,11 +187,120 @@ export const cutPayloadThroughEvent = async (
 
     return {
       html: data.getData('text/html') || null,
+      markdown: data.getData('text/markdown') || null,
       pliteFragment: data.getData('application/x-plite-fragment') || null,
       text: data.getData('text/plain'),
       types: Array.from(data.types),
     };
   });
+
+const captureNativeClipboardPayload = async (
+  root: Locator,
+  eventName: 'copy' | 'cut'
+): Promise<ClipboardPayloadSnapshot> => {
+  const snapshotKey = `__pliteNativeClipboardPayload_${eventName}_${Date.now()}_${Math.random()}`;
+
+  await root.evaluate(
+    (element: HTMLElement, { eventName, snapshotKey }) => {
+      const ownerWindow = element.ownerDocument.defaultView;
+
+      if (!ownerWindow) {
+        throw new Error('The editor surface has no owner window');
+      }
+
+      const snapshots = ownerWindow as unknown as Record<string, unknown>;
+      const capture: {
+        listener: EventListener;
+        payload: ClipboardPayloadSnapshot | null;
+      } = {
+        listener: () => {},
+        payload: null,
+      };
+
+      capture.listener = (event) => {
+        const data = (event as ClipboardEvent).clipboardData;
+
+        capture.payload = data
+          ? {
+              html: data.getData('text/html') || null,
+              markdown: data.getData('text/markdown') || null,
+              pliteFragment:
+                data.getData('application/x-plite-fragment') || null,
+              text: data.getData('text/plain'),
+              types: Array.from(data.types),
+            }
+          : {
+              html: null,
+              markdown: null,
+              pliteFragment: null,
+              text: '',
+              types: [],
+            };
+      };
+      snapshots[snapshotKey] = capture;
+      ownerWindow.addEventListener(eventName, capture.listener, { once: true });
+    },
+    { eventName, snapshotKey }
+  );
+
+  try {
+    await root.press(
+      eventName === 'copy' ? 'ControlOrMeta+C' : 'ControlOrMeta+X'
+    );
+
+    for (let attempt = 0; attempt < 50; attempt++) {
+      const payload = await root.evaluate((element: HTMLElement, key) => {
+        const ownerWindow = element.ownerDocument.defaultView;
+
+        if (!ownerWindow) return null;
+
+        const capture = (
+          ownerWindow as unknown as Record<
+            string,
+            { payload?: ClipboardPayloadSnapshot | null } | undefined
+          >
+        )[key];
+
+        return capture?.payload ?? null;
+      }, snapshotKey);
+
+      if (payload) {
+        return payload as ClipboardPayloadSnapshot;
+      }
+
+      await sleep(20);
+    }
+
+    throw new Error(`No native ${eventName} event reached the editor window`);
+  } finally {
+    await root.evaluate(
+      (element: HTMLElement, { eventName, snapshotKey }) => {
+        const ownerWindow = element.ownerDocument.defaultView;
+
+        if (!ownerWindow) return;
+
+        const snapshots = ownerWindow as unknown as Record<string, unknown>;
+        const capture = snapshots[snapshotKey] as
+          | { listener?: EventListener }
+          | undefined;
+
+        if (capture?.listener) {
+          ownerWindow.removeEventListener(eventName, capture.listener);
+        }
+        delete snapshots[snapshotKey];
+      },
+      { eventName, snapshotKey }
+    );
+  }
+};
+
+/** Capture the payload written by the editor during a real copy shortcut. */
+export const copyPayloadThroughNativeEvent = async (root: Locator) =>
+  captureNativeClipboardPayload(root, 'copy');
+
+/** Capture the payload written by the editor during a real cut shortcut. */
+export const cutPayloadThroughNativeEvent = async (root: Locator) =>
+  captureNativeClipboardPayload(root, 'cut');
 
 export const pastePayloadThroughEvent = async (
   root: Locator,

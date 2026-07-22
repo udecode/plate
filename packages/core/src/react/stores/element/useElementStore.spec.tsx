@@ -2,20 +2,21 @@
 
 import React from 'react';
 
-import type { Element } from '@platejs/plite';
+import { property, type Element } from '@platejs/plite';
 
 import { act, render } from '@testing-library/react';
 
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
+import { createBasePlugin } from '../../../lib';
 import { DebugPlugin } from '../../../lib/plugins/debug/DebugPlugin';
-import { useElement } from './useElement';
+import { useElement, useOptionalElement } from './useElement';
 import {
   ElementProvider,
   useElementStore,
   runElementContext,
 } from './useElementStore';
-import { usePath } from './usePath';
+import { useOptionalPath } from './usePath';
 
 describe('ElementProvider', () => {
   const PlateWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -42,6 +43,19 @@ describe('ElementProvider', () => {
     age: number;
     type: 'age';
   }
+
+  const NamePlugin = createBasePlugin({
+    key: 'name',
+    schema: { element: { properties: { name: property.string() } } },
+  });
+  const AgePlugin = createBasePlugin({
+    key: 'age',
+    schema: { element: { properties: { age: property.number() } } },
+  });
+  const MissingPlugin = createBasePlugin({
+    key: 'missing',
+    schema: { element: {} },
+  });
 
   const makeNameElement = (name: string): NameElement => ({
     children: [],
@@ -117,42 +131,44 @@ describe('ElementProvider', () => {
   };
 
   const NameElementConsumer = ({ label = '' }: ConsumerProps) => {
-    const element = useElement<NameElement>('name');
+    const element = useElement(NamePlugin);
 
     return <div>{label + element.name}</div>;
   };
 
   const AgeElementConsumer = ({ label = '' }: ConsumerProps) => {
-    const element = useElement<AgeElement>('age');
+    const element = useElement(AgePlugin);
 
     return <div>{label + element.age}</div>;
   };
 
-  const TypeConsumer = ({
-    label = '',
-    type,
-  }: ConsumerProps & { type?: 'age' | 'name' }) => {
-    const element = useElement(type);
+  const TypeConsumer = ({ label = '' }: ConsumerProps) => {
+    const element = useElement();
 
     return <div>{label + element.type}</div>;
   };
 
-  const JsonConsumer = ({
-    label = '',
-    type,
-  }: ConsumerProps & { type?: 'age' | 'name' }) => {
-    const element = useElement(type);
+  const OptionalTypeConsumer = ({ label = '' }: ConsumerProps) => {
+    const element = useOptionalElement(MissingPlugin);
 
-    return <div>{label + JSON.stringify(element)}</div>;
+    return <div>{label + (element?.type ?? 'none')}</div>;
   };
 
   const PathConsumer = ({
     label = '',
-    type,
-  }: ConsumerProps & { type?: string }) => {
-    const path = usePath(type);
+    plugin,
+  }: ConsumerProps & {
+    plugin: typeof AgePlugin | typeof MissingPlugin | typeof NamePlugin;
+  }) => {
+    const path = useOptionalPath(plugin);
 
     return <div>{label + JSON.stringify(path)}</div>;
+  };
+
+  const OptionalJsonConsumer = () => {
+    const element = useOptionalElement();
+
+    return <div>{JSON.stringify(element)}</div>;
   };
 
   const AgeStoreConsumer = ({ label = '' }: ConsumerProps) => {
@@ -181,8 +197,8 @@ describe('ElementProvider', () => {
         scope: 'age',
       },
       () => {
-        const matchingName = useElement<NameElement>('name');
-        const fallback = useElement();
+        const matchingName = useElement(NamePlugin);
+        const fallback = useElement<AgeElement>();
 
         return (
           <div>
@@ -215,18 +231,18 @@ describe('ElementProvider', () => {
     (expect(getByText('Type: age')) as any).toBeInTheDocument();
   });
 
-  it('returns the first ancestor of any type if given type does not match', () => {
+  it('does not fall back when an explicit descriptor is absent', () => {
     const { getByText } = render(
       <PlateWrapper>
         <NameElementProvider name="John">
           <NameElementProvider name="Jane">
-            <TypeConsumer label="Type: " type="age" />
+            <OptionalTypeConsumer label="Type: " />
           </NameElementProvider>
         </NameElementProvider>
       </PlateWrapper>
     );
 
-    (expect(getByText('Type: name')) as any).toBeInTheDocument();
+    (expect(getByText('Type: none')) as any).toBeInTheDocument();
   });
 
   it('does not let render-time element context shadow a matching provider scope', () => {
@@ -241,15 +257,15 @@ describe('ElementProvider', () => {
     (expect(getByText('Name: John; Fallback: age')) as any).toBeInTheDocument();
   });
 
-  it('returns the nearest matching scoped path and otherwise falls back to the nearest provider path', () => {
+  it('returns the nearest matching scoped path without descriptor fallback', () => {
     const { getByText } = render(
       <PlateWrapper>
         <NameElementProvider name="John">
           <AgeElementProvider age={20}>
             <NameElementProvider name="Jane">
-              <PathConsumer label="Name path: " type="name" />
-              <PathConsumer label="Age path: " type="age" />
-              <PathConsumer label="Fallback path: " type="missing" />
+              <PathConsumer label="Name path: " plugin={NamePlugin} />
+              <PathConsumer label="Age path: " plugin={AgePlugin} />
+              <PathConsumer label="Missing path: " plugin={MissingPlugin} />
             </NameElementProvider>
           </AgeElementProvider>
         </NameElementProvider>
@@ -258,7 +274,7 @@ describe('ElementProvider', () => {
 
     (expect(getByText('Name path: [0]')) as any).toBeInTheDocument();
     (expect(getByText('Age path: [1]')) as any).toBeInTheDocument();
-    (expect(getByText('Fallback path: [0]')) as any).toBeInTheDocument();
+    (expect(getByText('Missing path: null')) as any).toBeInTheDocument();
   });
 
   it('propagates updated elements to consumers', () => {
@@ -320,12 +336,12 @@ describe('ElementProvider', () => {
     (expect(getByText('Age store: 30')) as any).toBeInTheDocument();
   });
 
-  it('returns empty object if no ancestor exists', () => {
+  it('returns null from the optional hook if no ancestor exists', () => {
     const { getByText } = render(
       <PlateWrapper>
-        <JsonConsumer />
+        <OptionalJsonConsumer />
       </PlateWrapper>
     );
-    (expect(getByText('{}')) as any).toBeInTheDocument();
+    (expect(getByText('null')) as any).toBeInTheDocument();
   });
 });

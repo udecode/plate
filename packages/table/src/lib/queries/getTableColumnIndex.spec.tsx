@@ -15,7 +15,7 @@ const createTableEditor = (input: TestEditor) =>
   createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
-    value: input.children,
+    initialValue: input.children,
   });
 
 const getCell = (editor: ReturnType<typeof createTableEditor>) => {

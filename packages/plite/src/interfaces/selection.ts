@@ -67,7 +67,7 @@ const equalValue = (left: unknown, right: unknown): boolean => {
   );
 };
 
-export const SelectionApi = {
+export const SelectionApi = Object.freeze({
   equals(left: Selection, right: Selection): boolean {
     return equalValue(left, right);
   },
@@ -103,4 +103,4 @@ export const SelectionApi = {
   ): TextSelection {
     return { ...range, ...options, kind: 'text' };
   },
-};
+});

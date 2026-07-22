@@ -207,7 +207,7 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('refreshes remote cursor decorations when decoration deps change', () => {
+  it('refreshes remote cursor decorations when their revision changes', () => {
     const awareness = new FakeAwareness(4);
     const peer = createYjsReactPeer({
       awareness,
@@ -227,7 +227,7 @@ describe('@platejs/yjs react contract', () => {
         LabelDecorationData
       >(editor, {
         decorate: (cursor) => ({ clientId: cursor.clientId, label }),
-        deps: [label],
+        revision: label,
       });
 
       useEffect(() => {
@@ -388,7 +388,7 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('refreshes remote cursor overlay data when overlay deps change', () => {
+  it('refreshes remote cursor overlay data when its revision changes', () => {
     const awareness = new FakeAwareness(5);
     const peer = createYjsReactPeer({
       awareness,
@@ -407,7 +407,7 @@ describe('@platejs/yjs react contract', () => {
         { label: string }
       >(editor, {
         data: () => ({ label }),
-        deps: [label],
+        revision: label,
       });
 
       useEffect(() => {
@@ -456,7 +456,7 @@ describe('@platejs/yjs react contract', () => {
         data: (cursor) => ({
           cursor: { clientId: cursor.clientId, label },
         }),
-        deps: [label],
+        revision: label,
       });
 
       useEffect(() => {

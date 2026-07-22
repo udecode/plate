@@ -55,10 +55,10 @@ it('indent single list item (start of item)', () => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
-  editor.update.listClassic.tab();
+  editor.plugin(BaseListPlugin).update.tab();
   expect(editor.read.children()).toEqual(output.children);
 });
 
@@ -109,10 +109,10 @@ it('indent single list item (end of item)', () => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
-  editor.update.listClassic.tab();
+  editor.plugin(BaseListPlugin).update.tab();
   expect(editor.read.children()).toEqual(output.children);
 });
 
@@ -177,10 +177,10 @@ it('indent multiple list items (start/end)', () => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
-  editor.update.listClassic.tab();
+  editor.plugin(BaseListPlugin).update.tab();
   expect(editor.read.children()).toEqual(output.children);
 });
 
@@ -245,10 +245,10 @@ it('un-indent multiple list items (start/end)', () => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
-  editor.update.listClassic.untab();
+  editor.plugin(BaseListPlugin).update.untab();
   expect(editor.read.children()).toEqual(output.children);
 });
 
@@ -315,10 +315,10 @@ it('un-indent multiple list items (start/out)', () => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
-  editor.update.listClassic.untab();
+  editor.plugin(BaseListPlugin).update.untab();
   expect(editor.read.children()).toEqual(output.children);
 });
 
@@ -378,10 +378,10 @@ it('unhang before indentation', () => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
-  editor.update.listClassic.tab();
+  editor.plugin(BaseListPlugin).update.tab();
   expect(editor.read.children()).toEqual(output.children);
 });
 
@@ -398,16 +398,16 @@ it('does not not adjust selection length when unhanging ranges', () => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   const selectionBefore = editor.read.selection();
 
-  editor.update.listClassic.tab();
+  editor.plugin(BaseListPlugin).update.tab();
   expect(editor.read.selection()).toEqual(selectionBefore);
 
   // Do the same with shift tab.
-  editor.update.listClassic.untab();
+  editor.plugin(BaseListPlugin).update.untab();
   expect(editor.read.selection()).toEqual(selectionBefore);
 });
 
@@ -454,10 +454,10 @@ it('convert top-level list item into body upon unindent if enableResetOnShiftTab
       BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
-  editor.update.listClassic.untab();
+  editor.plugin(BaseListPlugin).update.untab();
   expect(editor.read.children()).toEqual(output.children);
 });
 
@@ -502,10 +502,10 @@ it('convert top-level (first) list item into body upon unindent if enableResetOn
       BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
-  editor.update.listClassic.untab();
+  editor.plugin(BaseListPlugin).update.untab();
   expect(editor.read.children()).toEqual(output.children);
 });
 
@@ -550,10 +550,10 @@ it('convert top-level (last) list item into body upon unindent if enableResetOnS
       BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
-  editor.update.listClassic.untab();
+  editor.plugin(BaseListPlugin).update.untab();
   expect(editor.read.children()).toEqual(output.children);
 });
 
@@ -599,9 +599,9 @@ it('does not convert top-level list item into body upon unindent if enableResetO
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
-  editor.update.listClassic.untab();
+  editor.plugin(BaseListPlugin).update.untab();
   expect(editor.read.children()).toEqual(output.children);
 });

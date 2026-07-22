@@ -8,7 +8,7 @@ import {
   parseMediaUrl,
 } from '../../lib/media/parseMediaUrl';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useElementMock = mock();
 const useEditorFocusedMock = mock();
 const useEditorReadOnlyMock = mock();
@@ -22,7 +22,7 @@ mock.module('@platejs/plite-react', () => ({
 
 mock.module('@platejs/core/react', () => ({
   ...actualPlatejsReact,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   useElement: useElementMock,
 }));
 
@@ -100,7 +100,7 @@ describe('useMediaState', () => {
       `./useMediaState?test=${Math.random().toString(36).slice(2)}`
     );
 
-    useEditorRefMock.mockReturnValue({
+    useEditorMock.mockReturnValue({
       getType: (key: string) =>
         key === actualUtils.KEYS.mediaEmbed
           ? actualUtils.NODES.mediaEmbed
@@ -117,7 +117,7 @@ describe('useMediaState', () => {
   };
 
   beforeEach(() => {
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     useElementMock.mockReset();
     useEditorFocusedMock.mockReset();
     useEditorReadOnlyMock.mockReset();

@@ -10,7 +10,7 @@ describe('BaseCalloutPlugin', () => {
 
     const editor = createBaseEditor({
       plugins: [BaseCalloutPlugin],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
     const plugin = editor.getPlugin(BaseCalloutPlugin);
     const callout = editor.read.schema.handle(BaseCalloutPlugin);

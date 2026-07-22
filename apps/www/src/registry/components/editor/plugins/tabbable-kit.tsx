@@ -1,12 +1,15 @@
 'use client';
 
 import { TabbablePlugin } from '@platejs/tabbable/react';
-import { ElementApi, KEYS } from 'platejs';
+import { ElementApi, getPluginTypes, KEYS } from 'platejs';
 
-export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
-  node: {
-    isElement: true,
+export const TabbableKit = TabbablePlugin.configure({
+  override: {
+    enabled: {
+      indent: false,
+    },
   },
+}).configure(({ editor }) => ({
   options: {
     query: () => {
       if (
@@ -20,17 +23,15 @@ export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
         match: (n) =>
           !!(
             (ElementApi.isElement(n) &&
-              [KEYS.codeBlock, KEYS.li, KEYS.listTodoClassic, KEYS.table].some(
-                (type) => type === n.type
-              )) ||
+              getPluginTypes(editor, [
+                KEYS.codeBlock,
+                KEYS.li,
+                KEYS.listTodoClassic,
+                KEYS.table,
+              ]).includes(n.type)) ||
             (ElementApi.isElement(n) && n.listStyleType)
           ),
       });
-    },
-  },
-  override: {
-    enabled: {
-      indent: false,
     },
   },
 }));

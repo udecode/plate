@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { PlateTest, createPlateEditor } from '@platejs/core/react';
+import { createPlateEditor } from '@platejs/core/react';
+import { PlateTest } from '@platejs/core/react/test';
 import { act, render } from '@testing-library/react';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
@@ -45,7 +46,7 @@ describe('getRangeBoundingClientRect', () => {
       top: 8,
     });
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'a' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
     });
     const range = {
       kind: 'text',

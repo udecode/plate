@@ -88,7 +88,7 @@ describe('when there is toListItem sublist', () => {
     const editor = createBaseEditor({
       plugins: ListSchemaPlugins,
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     const fromListItem = editor.read.nodes.find({
@@ -116,7 +116,7 @@ describe('when there is toListItem sublist', () => {
     const editor = createBaseEditor({
       plugins: ListSchemaPlugins,
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     const fromListItem = editor.read.nodes.find({
@@ -216,7 +216,7 @@ describe('when there is no list in toListItem', () => {
     const editor = createBaseEditor({
       plugins: ListSchemaPlugins,
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     const fromListItem = editor.read.nodes.find({

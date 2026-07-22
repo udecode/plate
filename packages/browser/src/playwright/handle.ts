@@ -1,14 +1,33 @@
 import type { Locator } from '@playwright/test';
 
 import { PLITE_BROWSER_HANDLE_KEY } from './constants';
+import type { SelectionSnapshot } from './types';
 
-/** Evaluate a method exposed by the mounted Plite browser handle. */
-export const evaluatePliteBrowserHandle = async <T>(
+type PliteBrowserHarnessHandle = {
+  deleteBackward: () => void;
+  deleteForward: () => void;
+  deleteFragment: () => void;
+  getBlockText: (index: number) => string | null;
+  getBlockTexts: () => string[];
+  getText: () => string;
+  importDOMSelection: () => SelectionSnapshot | null;
+  insertBreak: () => void;
+  insertText: (text: string) => void;
+  redo: () => void;
+  undo: () => void;
+};
+
+type PliteBrowserHarnessHandleMethod = keyof PliteBrowserHarnessHandle;
+
+/** @internal Typed evaluator used only behind the curated editor harness. */
+export const evaluateHarnessHandle = async <
+  TMethod extends PliteBrowserHarnessHandleMethod,
+>(
   root: Locator,
-  method: string,
-  args: readonly unknown[] = [],
+  method: TMethod,
+  args?: Parameters<PliteBrowserHarnessHandle[TMethod]>,
   errorMessage = `This editor surface does not expose ${method}`
-): Promise<T> =>
+): Promise<ReturnType<PliteBrowserHarnessHandle[TMethod]>> =>
   root.evaluate(
     (
       element: HTMLElement,
@@ -33,5 +52,5 @@ export const evaluatePliteBrowserHandle = async <T>(
 
       return fn(...args);
     },
-    { args, errorMessage, key: PLITE_BROWSER_HANDLE_KEY, method }
-  ) as Promise<T>;
+    { args: args ?? [], errorMessage, key: PLITE_BROWSER_HANDLE_KEY, method }
+  ) as Promise<ReturnType<PliteBrowserHarnessHandle[TMethod]>>;

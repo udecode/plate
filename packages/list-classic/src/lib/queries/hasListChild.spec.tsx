@@ -55,7 +55,7 @@ it.each([
   const editor = createBaseEditor({
     plugins: [SchemaOnlyNodeIdPlugin, BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
   const listItem = editor.read.nodes.find({ at: [], match: { id: '2' } });
 

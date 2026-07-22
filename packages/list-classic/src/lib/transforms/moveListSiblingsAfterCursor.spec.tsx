@@ -48,7 +48,7 @@ describe('moveListSiblingsAfterCursor', () => {
 
     const editor = createBaseEditor({
       plugins: ListSchemaPlugins,
-      value: input.children,
+      initialValue: input.children,
     });
 
     let result = false;
@@ -107,7 +107,7 @@ describe('moveListSiblingsAfterCursor', () => {
 
     const editor = createBaseEditor({
       plugins: ListSchemaPlugins,
-      value: input.children,
+      initialValue: input.children,
     });
 
     let result = true;

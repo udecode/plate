@@ -26,7 +26,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
         }),
       ],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.insert('`');
@@ -55,7 +55,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      value: [{ children: [{ text: '``' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '``' }], type: 'p' }],
     });
 
     editor.update.text.insert('`');
@@ -90,7 +90,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
         }),
       ],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.selection.set({

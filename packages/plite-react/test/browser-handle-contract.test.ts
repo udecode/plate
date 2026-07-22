@@ -420,4 +420,16 @@ test('browser handle selectAll marks partial-DOM-backed selections', () => {
     },
     selectionSource: 'partial-dom-backed',
   });
+  const trace = element.__pliteBrowserHandle?.getKernelTrace().at(-1);
+
+  expect(trace).toMatchObject({
+    command: { kind: 'select-all' },
+    commandDefinition: { kind: 'select-all', modelOwned: true },
+    selectionPolicy: {
+      kind: 'partial-dom',
+      reason: 'partial-dom-backed',
+    },
+    selectionSource: 'partial-dom-backed',
+  });
+  expect(Object.hasOwn(trace ?? {}, 'intents')).toBe(false);
 });

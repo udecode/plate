@@ -20,6 +20,7 @@ import {
   DEFAULT_PROJECT_CONCURRENCY,
   DEFAULT_UNIT_WORKERS,
   fingerprintBrowserUnit,
+  formatIntegrityFailureDetails,
   getSelectionUniverseSelectors,
   MAX_BROWSER_WORKERS,
   parseJob,
@@ -28,7 +29,7 @@ import {
   resolveMaxTestsPerProcess,
   resolveTimeoutMs,
   resolveReusableProofState,
-  runProjectPool,
+  runProjectWaves,
   selectUnitsForJob,
   validateUnitResult,
   verifyExactCoverage,
@@ -967,7 +968,7 @@ const runManagedProject = async (
     });
     console.error(
       state.status === 'invalid'
-        ? `${project} stopped at ${failure.phase}; proof state was invalidated`
+        ? `${project} stopped at ${failure.phase}; proof state was invalidated${formatIntegrityFailureDetails(failure, repoRoot)}`
         : `${project} stopped at ${failure.phase}; successful bounded batches remain resumable`
     );
 
@@ -1166,7 +1167,7 @@ const runMatrix = async (selectors = []) => {
       `${execution.concurrency} and ${execution.unitWorkers} workers per project`
   );
 
-  return runProjectPool({
+  return runProjectWaves({
     concurrency: execution.concurrency,
     projects,
     runProject: (project, projectRun) =>

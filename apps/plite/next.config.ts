@@ -41,7 +41,6 @@ const WORKSPACE_ALIAS_SUBPATHS = [
   'playwright',
   'react',
   'static',
-  'transports',
 ];
 
 const addAliasEntries = (

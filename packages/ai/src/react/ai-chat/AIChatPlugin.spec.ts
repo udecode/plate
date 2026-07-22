@@ -21,7 +21,7 @@ describe('AIChatPlugin', () => {
   it('clears internal streaming state when stop is called', () => {
     const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      value: [{ children: [{ text: 'x' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
     });
 
     editor.plugin(AIChatPlugin).setOption('streaming', true);
@@ -45,7 +45,7 @@ describe('AIChatPlugin', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: '' }], type: 'p' },
         { children: [{ text: 'occupied' }], type: 'p' },
       ],

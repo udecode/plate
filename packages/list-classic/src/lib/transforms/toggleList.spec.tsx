@@ -27,7 +27,7 @@ const runToggleList = (
   const editor = createBaseEditor({
     plugins,
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   editor.update((tx) => {
@@ -43,7 +43,7 @@ describe('toggleList', () => {
   it('does nothing when the editor has no selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
-      value: [{ children: [{ text: 'plain' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'plain' }], type: KEYS.p }],
     });
 
     const before = JSON.stringify(editor.read.children());
@@ -134,7 +134,7 @@ describe('toggleList', () => {
       const editor = runToggleList(input, [
         BaseImagePlugin,
         BaseListPlugin.configure({
-          config: {
+          options: {
             validLiChildren: [BaseImagePlugin],
           },
         }),
@@ -167,7 +167,7 @@ describe('toggleList', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update((tx) => {

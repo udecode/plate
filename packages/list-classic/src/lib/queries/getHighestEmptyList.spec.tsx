@@ -12,7 +12,7 @@ jsxt;
 describe('getHighestEmptyList', () => {
   it('returns undefined when the path is not inside a list', () => {
     const editor = createBaseEditor({
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     expect(getHighestEmptyList(editor, { liPath: [0] })).toBeUndefined();
@@ -33,7 +33,7 @@ describe('getHighestEmptyList', () => {
     ) as any;
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
-      value: input.children,
+      initialValue: input.children,
     });
 
     expect(getHighestEmptyList(editor, { liPath: [0, 1] })).toEqual([0, 1]);
@@ -59,7 +59,7 @@ describe('getHighestEmptyList', () => {
     ) as any;
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
-      value: input.children,
+      initialValue: input.children,
     });
 
     expect(getHighestEmptyList(editor, { liPath: [0, 0, 1, 0] })).toEqual([
@@ -87,7 +87,7 @@ describe('getHighestEmptyList', () => {
     ) as any;
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
-      value: input.children,
+      initialValue: input.children,
     });
 
     expect(

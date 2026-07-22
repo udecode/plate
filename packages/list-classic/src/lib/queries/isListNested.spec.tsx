@@ -39,7 +39,7 @@ describe('when the list is nested', () => {
     const editor = createBaseEditor({
       plugins: [SchemaOnlyNodeIdPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     const list = editor.read.nodes.find({ match: { id: '21' } });
@@ -63,7 +63,7 @@ describe('when the list is not nested', () => {
     const editor = createBaseEditor({
       plugins: [SchemaOnlyNodeIdPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     const list = editor.read.nodes.find({ match: { id: '1' } });

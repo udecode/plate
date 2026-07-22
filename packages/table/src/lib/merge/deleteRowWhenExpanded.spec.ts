@@ -14,7 +14,7 @@ describe('deleteRowWhenExpanded', () => {
         focus: { offset: 2, path: [0, 0, 1, 0, 0] },
         kind: 'text',
       },
-      value: [
+      initialValue: [
         {
           children: [
             {

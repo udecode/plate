@@ -36,7 +36,7 @@ describe('insertEmoji', () => {
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hi ' }],
           type: 'p',
@@ -67,7 +67,7 @@ describe('insertEmoji', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'x' }],
           type: 'p',
@@ -107,7 +107,7 @@ describe('insertEmoji', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'x' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
     });
 
     insertEmoji(editor, fireEmoji);

@@ -81,7 +81,7 @@ describe('insertTableRow', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.insert.tableRow({ select: true });
@@ -163,7 +163,7 @@ describe('insertTableRow', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.insert.tableRow({ at: [0, 0], select: true });
@@ -245,7 +245,7 @@ describe('insertTableRow', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.insert.tableRow({ before: true, select: true });

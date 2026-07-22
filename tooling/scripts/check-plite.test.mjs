@@ -622,6 +622,7 @@ test('root scripts keep source-first typecheck and strict browser closure separa
     'benchmarks/editor/benchmarks/plite-fit-content-locality-benchmark.test.ts',
     'benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts',
     'pnpm plite:bench:targets:check',
+    'pnpm plite:public-types',
   ]) {
     assert.match(
       scripts['check:plite:contracts'],
@@ -631,6 +632,10 @@ test('root scripts keep source-first typecheck and strict browser closure separa
   assert.doesNotMatch(
     scripts['check:plite:contracts'],
     /plite:bench:targets:run/u
+  );
+  assert.equal(
+    scripts['plite:public-types'],
+    'pnpm plite:packages:build && tsc --project packages/plite/test/tsconfig.public-package-types.json --noEmit'
   );
   assert.doesNotMatch(scripts['plite:typecheck'], /\b(?:build|turbo)\b/);
   assert.equal(scripts['test:plite'], 'pnpm plite:test');

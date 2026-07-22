@@ -9,9 +9,8 @@ import { cleanDocx } from '@platejs/docx';
 import { htmlToDocxBlob, preprocessMammothHtml } from '@platejs/docx-io';
 import { jsx } from '@platejs/test-utils';
 import mammoth from 'mammoth';
-import type { Value } from 'platejs';
-import { createBaseEditor } from 'platejs';
-import { serializeHtml } from 'platejs/static';
+import { createBaseEditor, HtmlPlugin, type Value } from 'platejs';
+import { renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-kit';
@@ -21,7 +20,7 @@ jsx;
 const createTestEditor = (value?: Value) =>
   createBaseEditor({
     plugins: [...BaseEditorKit, ...DocxExportKit],
-    value,
+    initialValue: value,
   });
 
 const readDocxFixture = (filename: string): Buffer => {
@@ -42,11 +41,13 @@ const importDocxBuffer = async (
   const cleanedHtml = cleanDocx(preprocessedHtml, '');
   const doc = new DOMParser().parseFromString(cleanedHtml, 'text/html');
 
-  return editor.api.html.deserialize({ element: doc.body }) as PliteNode[];
+  return editor
+    .plugin(HtmlPlugin)
+    .api.deserialize({ element: doc.body }) as PliteNode[];
 };
 
 const exportNodesToDocx = async (nodes: PliteNode[]): Promise<Buffer> => {
-  const html = await serializeHtml(createTestEditor(nodes as Value));
+  const html = await renderStaticHtml(createTestEditor(nodes as Value));
   const blob = await htmlToDocxBlob(html);
 
   return Buffer.from(await blob.arrayBuffer());

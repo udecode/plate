@@ -286,14 +286,14 @@ description: \@platejs/core 的 API 参考文档。
 </APIReturns>
 </API>
 
-### `useEditorRef`
+### `useEditor`
 
-获取 Plate 编辑器引用而不重新渲染。返回的编辑器对象增强了 `store` 属性，提供对 Plate 存储的访问。
+获取活动 Plate editor 而不重新渲染。返回值包含 `store`。没有匹配的活动 editor 时抛出错误。
 
-<API name="useEditorRef">
+<API name="useEditor">
 <APIParameters>
-  <APIItem name="id" type="string" optional>
-    用于访问嵌套编辑器的编辑器 ID。未提供时，返回 React 树中最近的编辑器实例。仅在处理嵌套编辑器时使用此参数以定位特定范围。
+  <APIItem name="options" type="{ id?: string }" optional>
+    用于显式 controller scope 的 editor ID。省略时查找最近、活动或第一个 primary controller editor。
   </APIItem>
 </APIParameters>
 
@@ -301,6 +301,10 @@ description: \@platejs/core 的 API 参考文档。
   带有附加存储的编辑器引用。
 </APIReturns>
 </API>
+
+### `useActiveEditor`
+
+没有活动 editor 是合法 UI state 时使用 `useActiveEditor({ id? })`。它返回与 `useEditor()` 相同的 editor-and-store value，没有匹配 editor 时返回 `null`。
 
 ### `useEditorSelector`
 
@@ -310,9 +314,6 @@ description: \@platejs/core 的 API 参考文档。
 <APIParameters>
   <APIItem name="selector" type="(editor: PlateEditor<V>, prev?: T) => T">
     选择器函数。
-  </APIItem>
-  <APIItem name="deps" type="DependencyList">
-    选择器函数的依赖项列表。
   </APIItem>
   <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
     选择器函数的选项。
@@ -510,37 +511,26 @@ description: \@platejs/core 的 API 参考文档。
 </APIReturns>
 </API>
 
-### `useNodePath`
-
-返回编辑器中节点的路径。
-
-<API name="useNodePath">
-<APIParameters>
-  <APIItem name="node" type="Node">
-    要查找路径的节点。
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  表示节点在编辑器树结构中位置的记忆化 Path 数组。
-</APIReturns>
-</API>
-
 ### `usePath`
 
-获取最近元素的记忆化路径。
+获取最近元素的实时路径。匹配的元素 Provider 不存在时会抛出错误。
 
 <API name="usePath">
 <APIParameters>
-  <APIItem name="pluginKey" type="string" optional>
-    要获取路径的插件键。
+  <APIItem name="plugin" type="PlateElementDescriptor" optional>
+    用于选择元素 Provider 的插件描述符。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
-  元素的路径，如果在节点组件上下文之外使用则返回 `undefined`。
+  当前元素的路径。
 </APIReturns>
-</API>  
+</API>
+
+### `useOptionalPath`
+
+当元素 Provider 可以不存在时使用 `useOptionalPath(Plugin)`。它返回
+`null`，不会从任意节点对象构造路径。
 
 ### `usePluginOption`
 
@@ -624,20 +614,28 @@ const state = useEditorPluginOption(editor, plugin, 'state');
 
 ### `useElement`
 
-通过插件键获取元素。
+获取当前 element。传 plugin descriptor 可推断配置后的 schema element type；可复用组件也可以传 generic element type。缺少匹配 provider 时抛出错误。
 
 <API name="useElement">
 <APIParameters>
-  <APIItem name="pluginKey" type="string" optional>
-    要获取元素的插件键。
-    - **默认值:** `'element'`
+  <APIItem name="plugin" type="PlateElementDescriptor" optional>
+    用于推断 element provider 和 schema type 的 plugin descriptor。
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  类型为 `T extends Element` 的元素，如果在节点组件上下文之外使用则返回空对象。
+<APIReturns type="PlateElementForDescriptor<TPlugin> | TElement">
+  当前 element。
 </APIReturns>
 </API>
+
+```tsx
+const quote = useElement(BlockquotePlugin);
+const generic = useElement<MyElement>();
+```
+
+### `useOptionalElement`
+
+provider 可以缺失时使用 `useOptionalElement(Plugin)` 或 `useOptionalElement<TElement>()`。它返回 `null`，不返回 placeholder element。
 
 ## 核心插件
 
@@ -733,7 +731,7 @@ const CustomMetadataPlugin = createBasePlugin({
     应用于组件的 CSS 类。
   </APIItem>
   <APIItem name="editor" type="E">
-    编辑器实例。也可使用 `useEditorRef` hook 获取。
+    编辑器实例。也可使用严格的 `useEditor` hook 获取。
   </APIItem>
   <APIItem name="element" type="Element">
     元素节点。也可使用 `useElement` hook 获取。

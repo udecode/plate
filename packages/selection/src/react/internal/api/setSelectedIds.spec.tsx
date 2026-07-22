@@ -17,7 +17,7 @@ const createTestEditor = () =>
       TestTableRowPlugin,
       TestTableCellPlugin,
     ],
-    value: [
+    initialValue: [
       {
         id: 'existing',
         children: [{ text: 'Existing' }],

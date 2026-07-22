@@ -129,10 +129,10 @@ const editor = createPlateEditor({
 - 若您渲染自定义滚动容器，使用 `useEditorScrollElementRef(editor)` 注册它。
 
 ```tsx
-import { useEditorRef, useEditorScrollElementRef } from 'platejs/react';
+import { useEditor, useEditorScrollElementRef } from 'platejs/react';
 
 function Layout() {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const scrollRef = useEditorScrollElementRef(editor);
 
   return (

@@ -3,6 +3,14 @@
     "paths": {
       "platejs": ["./packages/plate/src/index.tsx"],
       "platejs/*": ["./packages/plate/src/*"],
+      "@platejs/core/internal": ["./packages/core/src/internal/index.ts"],
+      "@platejs/core/react/internal": [
+        "./packages/core/src/react/internal/index.ts"
+      ],
+      "@platejs/core/react/test": ["./packages/core/src/react/test-entry.ts"],
+      "@platejs/core/static/internal": [
+        "./packages/core/src/static/internal/index.ts"
+      ],
       "@platejs/*": [
         "./packages/*/src/index.ts",
         "./packages/*/src/index.tsx",

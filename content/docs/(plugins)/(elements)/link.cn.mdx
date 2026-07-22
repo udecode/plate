@@ -213,251 +213,45 @@ LinkPlugin.configure({
 </APIOptions>
 </API>
 
-## 转换操作
+## 更新方法
 
-### `editor.update.link.insert`
+`LinkPlugin` 将链接更新方法安装到编辑器上。配置后的编辑器会推断参数类型，
+无需传入编辑器或事务对象。
 
-向编辑器中插入链接节点。
+```tsx
+editor.update.link.upsert({ url: 'https://platejs.org', text: 'Plate' });
+editor.update.link.unwrap({ split: true });
+```
 
-<API name="insert.link">
-<APIParameters>
-  <APIItem name="options" type="object">
-    插入链接的选项。
-  </APIItem>
-</APIParameters>
-<APIOptions type="InsertLinkOptions">
-  <APIItem name="createLinkNodeOptions" type="CreateLinkNodeOptions">
-    创建链接节点的选项。
-  </APIItem>
-  <APIItem name="insertOptions" type="object" optional>
-    插入节点的附加选项。
-  </APIItem>
- </APIOptions>
-</API>
+| 更新方法 | 说明 |
+| --- | --- |
+| `editor.update.link.insert(node, options?)` | 插入链接节点。 |
+| `editor.update.link.unwrap(options?)` | 解包匹配的链接；`split` 仅更新选中部分。 |
+| `editor.update.link.upsert(options)` | 在选区插入或更新链接，并验证 URL。 |
+| `editor.update.link.upsertText(options)` | 替换选区上方链接的文本。 |
+| `editor.update.link.wrap(options)` | 将选中文本包裹为链接。 |
 
-## API
+## 插件 API
 
-### `api.floatingLink.hide`
+通过已安装的插件读取链接行为：
 
-隐藏浮动链接并重置其状态。
+```tsx
+const { api } = editor.plugin(LinkPlugin);
 
-### `api.floatingLink.reset`
+if (api.validateUrl(url)) {
+  editor.update.link.upsert({ url });
+}
+```
 
-重置浮动链接状态但不改变 openEditorId。
-
-### `api.floatingLink.show`
-
-为指定模式和编辑器ID显示浮动链接。
-
-<API name="floatingLink.show">
-<APIParameters>
-<APIItem name="mode" type="FloatingLinkMode">
-设置浮动链接的模式（'edit' 或 'insert'）。
-</APIItem>
-<APIItem name="editorId" type="string">
-应显示浮动链接的编辑器ID。
-</APIItem>
-</APIParameters>
-</API>
-
-### `api.link.getAttributes`
-
-获取链接元素的属性。
-
-<API name="link.getAttributes">
-<APIParameters>
-<APIItem name="element" type="TLinkElement">
-要获取属性的链接元素。
-</APIItem>
-</APIParameters>
-
-<APIReturns type="React.AnchorHTMLAttributes<HTMLAnchorElement>">
-链接元素的HTML属性。
-</APIReturns>
-</API>
-
-### `api.link.submitFloatingLink`
-
-如果URL有效则插入链接，关闭浮动链接并聚焦编辑器。
-
-<APIReturns type="boolean">
-如果链接成功插入则返回 `true`。
-</APIReturns>
-
-### `insertLink`
-
-向编辑器中插入链接节点。
-
-<API name="insertLink">
-<APIParameters>
-  <APIItem name="createLinkNodeOptions" type="CreateLinkNodeOptions">
-    创建链接节点的选项。
-  </APIItem>
-  <APIItem name="options" type="object" optional>
-    节点插入的附加选项。
-  </APIItem>
-</APIParameters>
-</API>
-
-### `submitFloatingLink`
-
-如果URL有效则插入链接，关闭浮动链接并聚焦编辑器。
-
-- 如果URL有效则插入链接
-- 如果文本为空则使用URL作为文本
-- 关闭浮动链接
-- 聚焦编辑器
-
-<API name="submitFloatingLink">
-<APIReturns type="boolean">
-如果链接被插入则返回 `true`。
-</APIReturns>
-</API>
-
-### `triggerFloatingLink`
-
-触发浮动链接。
-
-<API name="triggerFloatingLink">
-<APIOptions type="object">
-<APIItem name="focused" type="boolean" optional>
-  浮动链接是否应被聚焦。
-</APIItem>
-</APIOptions>
-</API>
-
-### `triggerFloatingLinkEdit`
-
-触发浮动链接编辑。
-
-<API name="triggerFloatingLinkEdit">
-<APIReturns type="boolean">
-如果链接被编辑则返回 `true`。
-</APIReturns>
-</API>
-
-### `triggerFloatingLinkInsert`
-
-触发浮动链接。以下情况不触发：
-- 选择跨多个块
-- 选择包含多个叶子节点
-- 最低层级选择不是文本
-- 选择包含链接节点
-
-<API name="triggerFloatingLinkInsert">
-<APIOptions type="TriggerFloatingLinkOptions">
-  <APIItem name="focused" type="boolean" optional>
-    浮动链接是否应被聚焦。
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="boolean">
-  如果链接被插入则返回 `true`。
-</APIReturns>
-</API>
-
-### `unwrapLink`
-
-解包链接节点。
-
-<API name="unwrapLink">
-<APIOptions type="UnwrapLinkOptions">
-  <APIItem name="split" type="boolean" optional>
-    如果为 `true`，当选择在链接内部时分割节点。
-  </APIItem>
-</APIOptions>
-</API>
-
-### `upsertLink`
-
-插入或更新链接节点。行为取决于当前选择和选项：
-
-- 如果选择在链接中或不是URL：
-  - 当 `insertTextInLink: true` 时，在链接中插入URL作为文本
-  - 否则，如果 `text` 为空，则设置为URL
-  - 除非 `skipValidation: true`，否则验证URL
-- 如果选择已展开或链接中 `update: true`：
-  - 移除链接节点并获取链接文本
-- 然后：
-  - 插入带有更新URL和目标的链接节点
-  - 如果提供 `text`，则替换链接文本
-
-<API name="upsertLink">
-<APIParameters>
-  <APIItem name="options" type="UpsertLinkOptions">
-    更新链接的选项。
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="UpsertLinkOptions">
-  <APIItem name="url" type="string">
-    链接的URL。
-  </APIItem>
-  <APIItem name="text" type="string" optional>
-    链接的文本内容。
-  </APIItem>
-  <APIItem name="target" type="string" optional>
-    链接的目标属性。
-  </APIItem>
-  <APIItem name="insertTextInLink" type="boolean" optional>
-    如果为 `true`，在链接中插入URL作为文本。
-  </APIItem>
-  <APIItem name="insertNodesOptions" type="object" optional>
-    插入节点的选项。
-  </APIItem>
-  <APIItem name="skipValidation" type="boolean" optional>
-    如果为 `true`，跳过URL验证。
-    - **默认值:** `false`
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="boolean">
-  如果链接被插入或更新则返回 `true`。
-</APIReturns>
-</API>
-
-### `upsertLinkText`
-
-如果文本与上方链接文本不同，则用新文本节点替换链接子节点。新文本节点具有与链接中第一个文本节点相同的标记。
-
-<API name="upsertLinkText">
-<APIOptions type="UpsertLinkTextOptions">
-      <APIItem name="text" type="string" optional>
-        用于替换链接子节点的新文本。
-      </APIItem>
-</APIOptions>
-</API>
-
-### `validateUrl`
-
-根据插件选项验证URL。
-
-<API name="validateUrl">
-<APIOptions type="ValidateUrlOptions">
-  <APIItem name="url" type="string">
-    要验证的URL。
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="boolean">
-  如果URL有效则返回 `true`。
-</APIReturns>
-</API>
-
-### `wrapLink`
-
-用分割方式包裹链接节点。
-
-<API name="wrapLink">
-<APIOptions type="WrapLinkOptions">
-  <APIItem name="url" type="string">
-    链接的URL。
-  </APIItem>
-  <APIItem name="target" type="string" optional>
-    链接的目标属性。
-  </APIItem>
-</APIOptions>
-</API>
+| 方法 | 说明 |
+| --- | --- |
+| `api.getAttributes(link)` | 返回链接元素经过清理的锚点属性。 |
+| `api.validateUrl(url)` | 根据插件配置和运行时 `isUrl` 选项验证 URL。 |
+| `api.encodeUrl(url)` / `api.decodeUrl(url)` | 转换浮动链接输入，遇到错误转义时不会抛出异常。 |
+| `api.show(mode, editorId)` / `api.hide()` / `api.reset()` | 控制浮动链接状态。 |
+| `api.submit()` | 验证并更新浮动链接表单值。 |
+| `api.trigger(options?)` | 打开插入模式，或编辑当前链接。 |
+| `api.triggerEdit()` / `api.triggerInsert(options?)` | 运行指定的浮动链接触发器。 |
 
 ### `CreateLinkNodeOptions`
 

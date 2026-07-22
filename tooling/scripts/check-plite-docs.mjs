@@ -88,8 +88,6 @@ const removedSchemaTargetOptionsPattern =
   /\boptions\s*:\s*\{[^}\n]*\btargetPluginKeys\b/;
 const removedCaptionTargetOptionsPattern =
   /\boptions\s*:\s*\{\s*query\s*:\s*\{\s*allow\s*:/;
-const removedHeadingLevelsOptionsPattern =
-  /\boptions\.levels\b|\boptions\s*:\s*\{\s*levels\s*:/;
 const staleTeachingPatterns = [
   {
     pattern:
@@ -113,10 +111,6 @@ const deletedArchitecturePatterns = [
     pattern: removedCaptionTargetOptionsPattern,
     reason:
       'caption target plugin descriptors belong in top-level targetPluginKeys',
-  },
-  {
-    pattern: removedHeadingLevelsOptionsPattern,
-    reason: 'heading levels belong in immutable config.levels',
   },
   {
     pattern: removedRootMutationFacadePattern,
@@ -591,6 +585,5 @@ export {
   removedPlateSchemaFlagsPattern,
   removedRootMutationFacadePattern,
   removedCaptionTargetOptionsPattern,
-  removedHeadingLevelsOptionsPattern,
   removedSchemaTargetOptionsPattern,
 };

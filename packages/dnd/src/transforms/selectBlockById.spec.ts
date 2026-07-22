@@ -15,7 +15,7 @@ describe('selectBlockById', () => {
 
   it('selects the block range and focuses the editor', () => {
     const editor = createBaseEditor({
-      value: [{ children: [{ text: 'block' }], id: 'a', type: 'p' }],
+      initialValue: [{ children: [{ text: 'block' }], id: 'a', type: 'p' }],
     });
     spyOn(editor.api.dom, 'focus').mockImplementation(() => {});
 

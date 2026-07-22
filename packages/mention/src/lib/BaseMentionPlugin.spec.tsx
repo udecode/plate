@@ -14,7 +14,7 @@ describe('BaseMentionPlugin', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
     const plugin = editor.getPlugin(BaseMentionPlugin);
     const inputPlugin = editor.getPlugin(BaseMentionInputPlugin);
@@ -67,7 +67,7 @@ describe('BaseMentionPlugin', () => {
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'hi ' },
@@ -107,7 +107,7 @@ describe('BaseMentionPlugin', () => {
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'hi ' },
@@ -147,7 +147,7 @@ describe('BaseMentionPlugin', () => {
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'hi ' },
@@ -181,7 +181,7 @@ describe('BaseMentionPlugin', () => {
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'hi ' },

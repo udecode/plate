@@ -3,7 +3,7 @@
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { LinkPlugin } from '@platejs/link/react';
 import { ImagePlugin } from '@platejs/media/react';
-import { schema } from '@platejs/plite';
+import { schema } from 'platejs';
 import { TablePlugin } from '@platejs/table/react';
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 

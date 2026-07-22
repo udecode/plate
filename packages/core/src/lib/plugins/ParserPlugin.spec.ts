@@ -57,7 +57,7 @@ describe('ParserPlugin', () => {
     });
     const editor = createBaseEditor({
       plugins: [BoldPlugin],
-      value: [createParagraph('')],
+      initialValue: [createParagraph('')],
     });
 
     const inserted = editor.api.clipboard.insertData({
@@ -89,7 +89,7 @@ describe('ParserPlugin', () => {
       },
     });
     const editor = createPlateEditor({
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
       plugins: [PlainPlugin],
     });
 
@@ -118,7 +118,7 @@ describe('ParserPlugin', () => {
     });
     const initialValue = [createParagraph('initial')];
     const editor = createPlateEditor({
-      value: initialValue,
+      initialValue,
       plugins: [PlainPlugin],
     });
     const dataTransfer = {
@@ -151,7 +151,7 @@ describe('ParserPlugin', () => {
     });
     const editor = createBaseEditor({
       plugins: [PlainPlugin],
-      value: [createParagraph('initial')],
+      initialValue: [createParagraph('initial')],
     });
 
     const inserted = editor.api.clipboard.insertData({
@@ -170,7 +170,7 @@ describe('ParserPlugin', () => {
 
   it('falls back to plain text insertData on the base editor route', () => {
     const editor = createBaseEditor({
-      value: [createParagraph('initial')],
+      initialValue: [createParagraph('initial')],
     });
 
     const inserted = editor.api.clipboard.insertData({
@@ -198,7 +198,7 @@ describe('ParserPlugin', () => {
     });
     const editor = createBaseEditor({
       plugins: [EmptyParserPlugin, PlainPlugin],
-      value: [createParagraph('initial')],
+      initialValue: [createParagraph('initial')],
     });
 
     const inserted = editor.api.clipboard.insertData({

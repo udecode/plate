@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import * as actualCore from '@platejs/core';
 import * as actualCoreReact from '@platejs/core/react';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useElementMock = mock();
 mock.module('@platejs/core', () => ({
   ...actualCore,
@@ -20,13 +20,13 @@ mock.module('@platejs/core', () => ({
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   useElement: useElementMock,
 }));
 
 describe('useEquationInput', () => {
   beforeEach(() => {
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     useElementMock.mockReset();
   });
 
@@ -58,7 +58,7 @@ describe('useEquationInput', () => {
     const before = mock(() => beforePoint);
 
     useElementMock.mockReturnValue(element);
-    useEditorRefMock.mockReturnValue({
+    useEditorMock.mockReturnValue({
       read: {
         points: {
           after,

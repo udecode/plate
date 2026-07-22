@@ -19,7 +19,7 @@ describe('setBorderSize', () => {
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
   describe('when in cell 11', () => {

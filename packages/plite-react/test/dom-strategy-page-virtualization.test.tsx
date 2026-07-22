@@ -41,34 +41,31 @@ const createPageVirtualizedLayout = (
   );
 
   return {
-    getVirtualizedPageItems: () => pageItems,
-    getVisibleVirtualizedPageItems: options.visiblePageIndexes
-      ? () =>
-          pageItems.filter((item) =>
-            options.visiblePageIndexes!.includes(item.index)
-          )
+    pageItems,
+    topLevelItems: Array.from({ length: count }, (_, index) => ({
+      index,
+      size: 20,
+      start: index * 20,
+    })),
+    visiblePageItems: options.visiblePageIndexes
+      ? pageItems.filter((item) =>
+          options.visiblePageIndexes!.includes(item.index)
+        )
       : undefined,
-    getVirtualizedTopLevelItems: () =>
-      Array.from({ length: count }, (_, index) => ({
-        index,
-        size: 20,
-        start: index * 20,
-      })),
   };
 };
 
 const createSplitTableVirtualizedLayout = () => ({
-  getVirtualizedPageItems: () =>
-    [0, 1, 2].map((index) => ({
-      index,
-      key: `table-page-${index}`,
-      pageIndexes: [index],
-      size: 100,
-      start: index * 100,
-      topLevelIndexes: index === 0 ? [0, 1] : [1],
-      unitPaths: [[1, index]],
-    })),
-  getVirtualizedTopLevelItems: () => [
+  pageItems: [0, 1, 2].map((index) => ({
+    index,
+    key: `table-page-${index}`,
+    pageIndexes: [index],
+    size: 100,
+    start: index * 100,
+    topLevelIndexes: index === 0 ? [0, 1] : [1],
+    unitPaths: [[1, index]],
+  })),
+  topLevelItems: [
     {
       index: 0,
       size: 20,
@@ -112,11 +109,11 @@ test('Editable domStrategy virtualized mode uses page layout items as the retain
     <TestEditorSurface
       domStrategy={{
         estimatedBlockSize: 20,
+        layout: createPageVirtualizedLayout(6),
         overscan: 0,
         threshold: 1,
         type: 'virtualized',
       }}
-      domStrategyLayout={createPageVirtualizedLayout(6)}
       editor={editor}
       id="dom-strategy-page-virtualized"
       style={{ height: 100, overflowY: 'auto' }}
@@ -169,13 +166,13 @@ test('Editable domStrategy virtualized mode retains expanded selection endpoints
     <TestEditorSurface
       domStrategy={{
         estimatedBlockSize: 20,
+        layout: createPageVirtualizedLayout(8, {
+          visiblePageIndexes: [1],
+        }),
         overscan: 0,
         threshold: 1,
         type: 'virtualized',
       }}
-      domStrategyLayout={createPageVirtualizedLayout(8, {
-        visiblePageIndexes: [1],
-      })}
       editor={editor}
       id="dom-strategy-expanded-selection-retention"
       style={{ height: 100, overflowY: 'auto' }}
@@ -234,8 +231,7 @@ test('Editable domStrategy virtualized mode retains expanded selection endpoints
 });
 
 test('Editable domStrategy virtualized mode maps a selected split-table row path to its page item', () => {
-  const pageItems =
-    createSplitTableVirtualizedLayout().getVirtualizedPageItems();
+  const pageItems = createSplitTableVirtualizedLayout().pageItems;
 
   expect(createPageItemIndexesForPath(pageItems, [1])).toEqual([0, 1, 2]);
   expect(createPageItemIndexesForPath(pageItems, [1, 2, 0, 0])).toEqual([2]);
@@ -256,13 +252,13 @@ test('Editable domStrategy virtualized mode can share a layout-owned visible pag
     <TestEditorSurface
       domStrategy={{
         estimatedBlockSize: 20,
+        layout: createPageVirtualizedLayout(6, {
+          visiblePageIndexes: [2],
+        }),
         overscan: 0,
         threshold: 1,
         type: 'virtualized',
       }}
-      domStrategyLayout={createPageVirtualizedLayout(6, {
-        visiblePageIndexes: [2],
-      })}
       editor={editor}
       id="dom-strategy-shared-page-window"
       style={{ height: 100, overflowY: 'auto' }}
@@ -305,11 +301,11 @@ test('Editable domStrategy virtualized mode can use an outer scroll container', 
       <TestEditorSurface
         domStrategy={{
           estimatedBlockSize: 20,
+          layout: createPageVirtualizedLayout(4),
           overscan: 0,
           threshold: 1,
           type: 'virtualized',
         }}
-        domStrategyLayout={createPageVirtualizedLayout(4)}
         editor={editor}
         id="dom-strategy-outer-scroll-virtualized"
       />
@@ -346,11 +342,11 @@ test('Editable domStrategy metrics do not re-emit unchanged virtualized metrics 
         <TestEditorSurface
           domStrategy={{
             estimatedBlockSize: 20,
+            layout: createPageVirtualizedLayout(4),
             overscan: 0,
             threshold: 1,
             type: 'virtualized',
           }}
-          domStrategyLayout={createPageVirtualizedLayout(4)}
           editor={editor}
           id="dom-strategy-metrics-loop"
           onDOMStrategyMetrics={(nextMetrics) => {

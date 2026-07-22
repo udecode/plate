@@ -30,7 +30,7 @@ describe('BaseIndentPlugin Plite runtime', () => {
           options: { indentMax: 2 },
         }),
       ],
-      value,
+      initialValue: value,
     });
 
     editor.update.value.repair();
@@ -50,7 +50,7 @@ describe('BaseIndentPlugin Plite runtime', () => {
     try {
       createPlateEditor({
         plugins: [BaseParagraphPlugin, QuotePlugin, BaseIndentPlugin],
-        value,
+        initialValue: value,
       });
     } catch (error) {
       thrown = error;

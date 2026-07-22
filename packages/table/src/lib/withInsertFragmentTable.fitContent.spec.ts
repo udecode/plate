@@ -23,7 +23,7 @@ describe('withInsertFragmentTable fitContent', () => {
           focus: { offset: 3, path: [0, 0] },
           kind: 'text',
         },
-        value: [{ children: [{ text: 'one' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
       });
       const table = {
         children: [
@@ -102,7 +102,7 @@ describe('withInsertFragmentTable fitContent', () => {
         focus: { offset: 1, path: [0, 0, 0, 0, 0] },
         kind: 'text',
       },
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -134,7 +134,7 @@ describe('withInsertFragmentTable fitContent', () => {
         focus: { offset: 1, path: [0, 2, 0, 0, 0] },
         kind: 'text',
       },
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -187,7 +187,7 @@ describe('withInsertFragmentTable fitContent', () => {
         focus: { offset: 0, path: [0, 0, 0, 0, 0] },
         kind: 'text',
       },
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -236,7 +236,7 @@ describe('withInsertFragmentTable fitContent', () => {
         focus: { offset: 1, path: [0, 0, 1, 0, 0] },
         kind: 'text',
       },
-      value: [
+      initialValue: [
         {
           children: [
             {

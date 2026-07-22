@@ -47,7 +47,7 @@ const renderWithStore = ({
 describe('PlateElement', () => {
   it('renders elements without ids outside a Plate store', () => {
     const editor = createPlateEditor({
-      value: [createElement()],
+      initialValue: [createElement()],
     });
     const { container } = render(<PlateElement {...createProps(editor)} />);
     const element = container.querySelector('[data-plite-node="element"]');
@@ -59,7 +59,7 @@ describe('PlateElement', () => {
   it('does not render data-block-id in server output', () => {
     const editor = createPlateEditor({
       nodeId: true,
-      value: [createElement('block-1')],
+      initialValue: [createElement('block-1')],
     });
     const html = renderToString(
       <PlateElement {...createProps(editor, 'block-1')} />
@@ -71,7 +71,7 @@ describe('PlateElement', () => {
   it('renders data-block-id after the editor is mounted', () => {
     const editor = createPlateEditor({
       nodeId: true,
-      value: [createElement('block-1')],
+      initialValue: [createElement('block-1')],
     });
     const { container } = renderWithStore({ editor, isMounted: true });
     const element = container.querySelector('[data-plite-node="element"]');
@@ -82,7 +82,7 @@ describe('PlateElement', () => {
 
   it('keeps the Plite attributes ref on the fast path', () => {
     const editor = createPlateEditor({
-      value: [createElement()],
+      initialValue: [createElement()],
     });
     const attributeRef = mock();
 
@@ -98,7 +98,7 @@ describe('PlateElement', () => {
 
   it('composes forwarded refs when merged attributes are needed', () => {
     const editor = createPlateEditor({
-      value: [createElement()],
+      initialValue: [createElement()],
     });
     const attributeRef = mock();
     const forwardedRef = React.createRef<HTMLDivElement>();

@@ -12,7 +12,7 @@ const createListEditor = (input: TestEditor) =>
   createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 describe('withInsertBreakList', () => {

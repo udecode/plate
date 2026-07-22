@@ -2,7 +2,6 @@ import { createBaseEditor } from '@platejs/core';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { diffToSuggestions } from './diffToSuggestions';
-import { getInlineSuggestionData } from './utils/getSuggestionId';
 
 const createSuggestionEditor = () =>
   createBaseEditor({
@@ -31,7 +30,11 @@ describe('diffToSuggestions', () => {
       suggestion: true,
       text: 'b',
     });
-    expect(getInlineSuggestionData(value[0].children[1] as any)).toMatchObject({
+    expect(
+      editor
+        .plugin(BaseSuggestionPlugin)
+        .api.inlineData(value[0].children[1] as any)
+    ).toMatchObject({
       type: 'insert',
       userId: 'user-1',
     });
@@ -48,8 +51,12 @@ describe('diffToSuggestions', () => {
 
     const removed = value[0].children[1];
     const inserted = value[0].children[2];
-    const removedData = getInlineSuggestionData(removed as any)!;
-    const insertedData = getInlineSuggestionData(inserted as any)!;
+    const removedData = editor
+      .plugin(BaseSuggestionPlugin)
+      .api.inlineData(removed as any)!;
+    const insertedData = editor
+      .plugin(BaseSuggestionPlugin)
+      .api.inlineData(inserted as any)!;
 
     expect(removed).toMatchObject({ suggestion: true, text: 'b' });
     expect(inserted).toMatchObject({ suggestion: true, text: 'c' });
@@ -84,7 +91,9 @@ describe('diffToSuggestions', () => {
       suggestion: true,
       text: 'b',
     });
-    expect(getInlineSuggestionData(inserted)).toMatchObject({
+    expect(
+      editor.plugin(BaseSuggestionPlugin).api.inlineData(inserted)
+    ).toMatchObject({
       type: 'insert',
       userId: 'user-1',
     });
@@ -105,18 +114,18 @@ describe('diffToSuggestions', () => {
       ]
     );
 
-    const firstRemovedData = getInlineSuggestionData(
-      value[0].children[1] as any
-    )!;
-    const firstInsertedData = getInlineSuggestionData(
-      value[0].children[2] as any
-    )!;
-    const secondRemovedData = getInlineSuggestionData(
-      value[1].children[1] as any
-    )!;
-    const secondInsertedData = getInlineSuggestionData(
-      value[1].children[2] as any
-    )!;
+    const firstRemovedData = editor
+      .plugin(BaseSuggestionPlugin)
+      .api.inlineData(value[0].children[1] as any)!;
+    const firstInsertedData = editor
+      .plugin(BaseSuggestionPlugin)
+      .api.inlineData(value[0].children[2] as any)!;
+    const secondRemovedData = editor
+      .plugin(BaseSuggestionPlugin)
+      .api.inlineData(value[1].children[1] as any)!;
+    const secondInsertedData = editor
+      .plugin(BaseSuggestionPlugin)
+      .api.inlineData(value[1].children[2] as any)!;
 
     expect(firstInsertedData.id).toBe(firstRemovedData.id);
     expect(secondInsertedData.id).toBe(secondRemovedData.id);

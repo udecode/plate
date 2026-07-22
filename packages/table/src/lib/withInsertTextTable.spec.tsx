@@ -73,7 +73,7 @@ describe('withInsertTextTable', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.insert('e');

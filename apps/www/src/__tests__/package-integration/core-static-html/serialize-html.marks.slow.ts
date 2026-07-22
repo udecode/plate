@@ -1,8 +1,8 @@
-import { serializeHtml } from 'platejs/static';
+import { renderStaticHtml } from 'platejs/static';
 
 import { createStaticEditor } from './create-static-editor';
 
-describe('core static serializeHtml mark rendering', () => {
+describe('core static renderStaticHtml mark rendering', () => {
   it('renders bold text', async () => {
     const editor = createStaticEditor([
       {
@@ -15,7 +15,7 @@ describe('core static serializeHtml mark rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -37,7 +37,7 @@ describe('core static serializeHtml mark rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -59,7 +59,7 @@ describe('core static serializeHtml mark rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -81,7 +81,7 @@ describe('core static serializeHtml mark rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -103,7 +103,7 @@ describe('core static serializeHtml mark rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -125,7 +125,7 @@ describe('core static serializeHtml mark rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -147,7 +147,7 @@ describe('core static serializeHtml mark rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -169,7 +169,7 @@ describe('core static serializeHtml mark rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -191,7 +191,7 @@ describe('core static serializeHtml mark rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });

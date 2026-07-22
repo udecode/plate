@@ -16,7 +16,7 @@ describe('BaseTabbablePlugin', () => {
   it('ships the default options and delegates tabbable checks to the schema', () => {
     const editor = createBaseEditor({
       plugins: [BaseVoidPlugin, BaseTabbablePlugin],
-      value: [
+      initialValue: [
         { children: [{ text: '' }], type: 'void' },
         { children: [{ text: 'a' }], type: 'p' },
       ],

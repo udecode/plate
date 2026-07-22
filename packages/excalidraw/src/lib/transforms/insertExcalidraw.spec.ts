@@ -8,7 +8,7 @@ describe('insertExcalidraw', () => {
   it('does nothing without a selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseExcalidrawPlugin],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
 
     editor.update.excalidraw.insert();
@@ -19,7 +19,7 @@ describe('insertExcalidraw', () => {
   it('inserts after an explicit block target without a selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseExcalidrawPlugin],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
 
     editor.update.excalidraw.insert({}, { at: [0] });
@@ -42,7 +42,7 @@ describe('insertExcalidraw', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
 
     editor.update((tx) => {

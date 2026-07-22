@@ -11,6 +11,8 @@ import {
   type EditorExtension,
   type EditorExtensionInput,
   type PropertyPolicy,
+  type PropertyJsonValue,
+  type PropertyValueOf,
   property,
   schema,
   type SchemaContentRule,
@@ -82,7 +84,7 @@ describe('schema declaration builders', () => {
     };
 
     assert.throws(
-      () => property.typed(forged as never),
+      () => property.json({ policy: forged as never }),
       /definePropertyPolicy/
     );
     assert.throws(
@@ -110,7 +112,7 @@ describe('schema declaration builders', () => {
         typeof value.id === 'string',
       version: 1,
     });
-    const Comments = property.set(property.typed(Comment), {
+    const Comments = property.set(property.json({ policy: Comment }), {
       default: [{ id: 'b' }, { id: 'a' }, { id: 'b' }],
       omitDefault: true,
     });
@@ -555,11 +557,47 @@ describe('schema declaration builders', () => {
       // @ts-expect-error only the complete schema definition owns the primary root
       root: { content: schema.content.text() },
     };
+    const Payload = definePropertyPolicy<{ id: string }>({
+      id: 'payload',
+      validate: (value): value is { id: string } =>
+        typeof value === 'object' && value !== null && 'id' in value,
+      version: 1,
+    });
+    const payload = property.json({ policy: Payload });
+    const unconstrained = property.json({ significant: false });
+    const explicitJson = property.json<{ id: string }>();
+    const inferredJson = property.json({ default: { id: 'json' } });
+    const unconstrainedValue: PropertyValueOf<typeof unconstrained> = {
+      id: 'json',
+    };
+    const explicitJsonValue: PropertyValueOf<typeof explicitJson> = {
+      id: 'explicit',
+    };
+    const inferredJsonValue: PropertyValueOf<typeof inferredJson> = {
+      id: 'inferred',
+    };
+    const jsonValue: PropertyJsonValue = unconstrainedValue;
+    const validPayload: PropertyValueOf<typeof payload> = { id: 'ok' };
+    // @ts-expect-error property.json infers its value from the policy
+    const invalidPayload: PropertyValueOf<typeof payload> = 'wrong';
+    // @ts-expect-error unconstrained property.json still accepts JSON only
+    const invalidJson: PropertyValueOf<typeof unconstrained> = () => {};
+    // @ts-expect-error explicit no-policy generics must describe JSON values
+    property.json<Date>();
+    // @ts-expect-error default inference cannot widen no-policy JSON to Date
+    property.json({ default: new Date(0) });
 
     void contribution;
+    void explicitJsonValue;
     void forgedPolicy;
+    void inferredJsonValue;
     void invalidContribution;
+    void invalidJson;
     void invalidRootContribution;
+    void invalidPayload;
+    void jsonValue;
+    void unconstrainedValue;
+    void validPayload;
     definePropertyPolicy<{ id: string }>({
       id: 'unsafe-property-access',
       validate: (value): value is { id: string } => {

@@ -679,6 +679,7 @@ export const applyEditableCompositionEnd = ({
   inputController,
   onCompositionEnd,
   readOnly = false,
+  requestModelSelectionExportAfterRender,
   runOwnedDOMMutation,
   scheduleTask,
   setComposing,
@@ -689,11 +690,19 @@ export const applyEditableCompositionEnd = ({
   inputController: EditableInputController;
   onCompositionEnd?: EditableCompositionHandler;
   readOnly?: boolean;
+  requestModelSelectionExportAfterRender: () => void;
   runOwnedDOMMutation: (callback: () => void) => void;
   scheduleTask: NonNullable<EditableInputController['scheduleTask']>;
   setComposing: EditableCompositionStateSetter;
 }) => {
+  const clearCompositionIntent = () => {
+    if (inputController.state.activeIntent === 'composition') {
+      inputController.state.activeIntent = null;
+    }
+  };
+
   if (isCompositionEventTargetInput({ event })) {
+    clearCompositionIntent();
     return;
   }
   if (
@@ -705,6 +714,7 @@ export const applyEditableCompositionEnd = ({
       setComposing,
     })
   ) {
+    clearCompositionIntent();
     return;
   }
   if (ReactEditor.hasSelectableTarget(editor, event.target)) {
@@ -723,15 +733,20 @@ export const applyEditableCompositionEnd = ({
         }
       } finally {
         inputController.state.compositionSession = null;
+        clearCompositionIntent();
       }
     };
 
     if (IS_ANDROID || !wasComposing) {
       clearEditableCompositionRuntimeState(editor);
       inputController.state.compositionSession = null;
+      clearCompositionIntent();
       return;
     }
     if (inputController.state.pendingCompositionEnd) {
+      if (inputController.state.pendingCompositionEnd.ownership === 'settled') {
+        clearCompositionIntent();
+      }
       return;
     }
 
@@ -813,6 +828,7 @@ export const applyEditableCompositionEnd = ({
         failures.attempt(() => {
           inputController.state.selectionChangeOrigin = 'programmatic-export';
         });
+        failures.attempt(requestModelSelectionExportAfterRender);
       }
 
       failures.throwIfAny();
@@ -837,7 +853,11 @@ export const applyEditableCompositionEnd = ({
       scheduleTask,
       settledData: compositionText ?? '',
     });
+
+    return;
   }
+
+  clearCompositionIntent();
 };
 
 export const applyEditableCompositionStart = ({
@@ -893,7 +913,10 @@ export const applyEditableCompositionStart = ({
 
     const marks = editor.read((state) => state.marks());
 
-    if (inputController) beginEditableCompositionSession(inputController);
+    if (inputController) {
+      beginEditableCompositionSession(inputController);
+      inputController.state.activeIntent = 'composition';
+    }
 
     setComposing(true);
 
@@ -942,13 +965,21 @@ export const applyEditableCompositionUpdate = ({
     return;
   }
 
-  if (
-    ReactEditor.hasSelectableTarget(editor, event.target) &&
-    !isCompositionEventHandled({ event, handler: onCompositionUpdate }) &&
-    !ReactEditor.isComposing(editor)
-  ) {
-    if (inputController) beginEditableCompositionSession(inputController);
-    setComposing(true);
+  if (ReactEditor.hasSelectableTarget(editor, event.target)) {
+    const compositionUpdateIsExternallyOwned = isCompositionEventHandled({
+      event,
+      handler: onCompositionUpdate,
+    });
+
+    if (!compositionUpdateIsExternallyOwned) {
+      if (inputController) {
+        inputController.state.activeIntent = 'composition';
+      }
+      if (!ReactEditor.isComposing(editor)) {
+        if (inputController) beginEditableCompositionSession(inputController);
+        setComposing(true);
+      }
+    }
   }
 
   const compositionText = getCompositionEventText(event);

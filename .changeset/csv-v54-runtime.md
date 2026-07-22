@@ -2,18 +2,24 @@
 "@platejs/csv": major
 ---
 
-- Move `CsvPlugin` to the Plite plugin runtime while preserving typed CSV deserialization through `editor.api.csv.deserialize`
-- Bind CSV parser settings through versioned immutable `defineCsvConfig` policies
+- Move `CsvPlugin` to the Plite plugin runtime with typed CSV deserialization
+  through `editor.plugin(CsvPlugin).api.deserialize`
+- Configure CSV parser behavior through `CsvPlugin.options`
 
-**Migration:** Move CSV settings from mutable options into an immutable policy:
+**Migration:** Configure CSV settings through `options` and scope API access to
+the plugin portal:
 
 ```tsx
 CsvPlugin.configure({
-  config: defineCsvConfig({
-    id: 'app:csv',
-    version: 1,
+  options: {
     errorTolerance: 0.1,
     parseOptions: { header: true },
-  }),
+  },
 });
+
+// Before
+editor.api.csv.deserialize({ data });
+
+// After
+editor.plugin(CsvPlugin).api.deserialize({ data });
 ```

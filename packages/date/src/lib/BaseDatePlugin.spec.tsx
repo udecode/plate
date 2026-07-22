@@ -51,7 +51,7 @@ describe('BaseDatePlugin', () => {
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'hi ' },
@@ -90,7 +90,7 @@ describe('BaseDatePlugin', () => {
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'hi ' },
@@ -129,7 +129,7 @@ describe('BaseDatePlugin', () => {
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'hi ' },
@@ -162,7 +162,7 @@ describe('BaseDatePlugin', () => {
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'hi ' },

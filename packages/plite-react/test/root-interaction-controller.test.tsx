@@ -291,7 +291,10 @@ describe('root interaction controller', () => {
 
     render(
       <Plite editor={editor}>
-        <Editable aria-label="Main editor" domStrategyLayout={{}} />
+        <Editable
+          aria-label="Main editor"
+          domStrategy={{ layout: {}, type: 'virtualized' }}
+        />
       </Plite>
     );
 
@@ -312,7 +315,10 @@ describe('root interaction controller', () => {
 
     render(
       <Plite editor={editor}>
-        <Editable aria-label="Main editor" domStrategyLayout={{}} />
+        <Editable
+          aria-label="Main editor"
+          domStrategy={{ layout: {}, type: 'virtualized' }}
+        />
       </Plite>
     );
 
@@ -581,7 +587,10 @@ describe('root interaction controller', () => {
 
     render(
       <Plite editor={editor}>
-        <Editable aria-label="Main editor" domStrategyLayout={{}} />
+        <Editable
+          aria-label="Main editor"
+          domStrategy={{ layout: {}, type: 'virtualized' }}
+        />
       </Plite>
     );
 

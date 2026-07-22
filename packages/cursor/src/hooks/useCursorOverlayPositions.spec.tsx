@@ -2,14 +2,14 @@ import { renderHook } from '@testing-library/react';
 import { createBaseEditor } from '@platejs/core';
 import type { Range } from '@platejs/plite';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useIsomorphicLayoutEffectMock = mock((effect: () => void) => effect());
 const getCursorOverlayStateMock = mock();
 const getSelectionRectsMock = mock();
 const useRefreshOnResizeMock = mock();
 
 mock.module('@platejs/core/react', () => ({
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
 }));
 
 mock.module('@udecode/react-utils', () => ({
@@ -30,7 +30,7 @@ mock.module('./useRefreshOnResize', () => ({
 
 describe('useCursorOverlayPositions', () => {
   beforeEach(() => {
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     getCursorOverlayStateMock.mockReset();
     getSelectionRectsMock.mockReset();
     useRefreshOnResizeMock.mockReset();
@@ -51,7 +51,7 @@ describe('useCursorOverlayPositions', () => {
     } satisfies Range;
     const editor = createBaseEditor();
 
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     getSelectionRectsMock.mockReturnValue([
       { height: 10, left: 1, top: 2, width: 10 },
     ]);
@@ -103,7 +103,7 @@ describe('useCursorOverlayPositions', () => {
     } satisfies Range;
     const editor = createBaseEditor();
 
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     getSelectionRectsMock.mockReturnValue([]);
     getCursorOverlayStateMock.mockReturnValue([]);
 

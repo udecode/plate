@@ -1,16 +1,14 @@
 import type {
   Editor,
   EditorCommit,
+  EditorCommitListener,
   EditorCommitSource,
   SnapshotListener,
   Value,
 } from '../interfaces/editor';
 
 const LISTENERS = new WeakMap<Editor, Set<SnapshotListener>>();
-const COMMIT_LISTENERS = new WeakMap<
-  Editor,
-  Set<(commit: EditorCommit) => void>
->();
+const COMMIT_LISTENERS = new WeakMap<Editor, Set<EditorCommitListener>>();
 const SOURCE_LISTENERS = new WeakMap<
   Editor,
   Map<EditorCommitSource, Set<SnapshotListener>>
@@ -106,11 +104,11 @@ export const subscribe = <V extends Value>(
 
 export const subscribeCommit = <V extends Value>(
   editor: Editor<V>,
-  listener: (commit: EditorCommit<V>) => void
+  listener: EditorCommitListener<V>
 ) => {
-  const typedListener = listener as (commit: EditorCommit) => void;
+  const typedListener = listener as EditorCommitListener;
   const listeners =
-    COMMIT_LISTENERS.get(editor) ?? new Set<(commit: EditorCommit) => void>();
+    COMMIT_LISTENERS.get(editor) ?? new Set<EditorCommitListener>();
   listeners.add(typedListener);
   COMMIT_LISTENERS.set(editor, listeners);
 

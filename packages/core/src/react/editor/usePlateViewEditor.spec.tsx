@@ -16,7 +16,7 @@ describe('usePlateViewEditor', () => {
   beforeEach(() => {
     mockCreateStaticEditor = mock((options) => ({
       id: options?.id || 'test-editor',
-      children: options?.value || [],
+      children: options?.initialValue || [],
       plugins: options?.plugins || [],
       ...options,
     }));
@@ -45,7 +45,7 @@ describe('usePlateViewEditor', () => {
         enabled: true as const,
         id: 'custom-id',
         plugins: [createBasePlugin({ key: 'test' })],
-        value: [{ children: [{ text: 'Hello' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'Hello' }], type: 'p' }],
       };
 
       const { result } = renderHook(() => usePlateViewEditor(options));
@@ -173,7 +173,7 @@ describe('usePlateViewEditor', () => {
 
     it('does not recreate editor when non-dependency options change', () => {
       const { rerender, result } = renderHook(
-        ({ value }) => usePlateViewEditor({ value }),
+        ({ value }) => usePlateViewEditor({ initialValue: value }),
         {
           initialProps: {
             value: [{ children: [{ text: 'Initial' }], type: 'p' }],
@@ -284,7 +284,7 @@ describe('usePlateViewEditor', () => {
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 7, path: [0, 0] },
         },
-        value: [{ children: [{ text: 'Complex' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'Complex' }], type: 'p' }],
       };
 
       const { result } = renderHook(() => usePlateViewEditor(complexOptions));

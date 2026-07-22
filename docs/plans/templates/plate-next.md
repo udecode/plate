@@ -104,10 +104,10 @@ Constraints:
   the named package, unrelated packages, generated registries, or broad repo
   surfaces unless the user explicitly broadens scope with `all packages`,
   `current tree`, `full-loop`, `sweep`, or the broader owner name.
-- Review-mode rename freeze: keep current `HEAD` names/paths while behavior and
-  API drift are under review. Put desirable later renames in
-  `docs/plans/pre-renaming.md`; do not turn the active diff into Added/Deleted
-  rename soup unless the user explicitly asks for a rename pass.
+- Implementation topology is not frozen. Rename, merge, or delete internal
+  helper files, exports, and proof filenames when the active packet restores a
+  durable owner. Reject cosmetic synonym churn, but do not preserve one-use
+  topology or defer it to `pre-renaming.md` merely to reduce diff noise.
 - Extracted-file recovery gate: every untracked/extracted Core/Plate source,
   spec, type-test, and config file in scope must be inventoried and classified
   as `recover-main-owner`, `merge-existing-owner`, `move-to-plite`,
@@ -125,6 +125,23 @@ Constraints:
 - Public type/plugin/editor files touched while a forbidden bridge remains are
   capped at `75`.
 - If a helper exists only because migration was hard, cut it.
+- Colocation has no line ceiling. A large coherent plugin owner is preferable
+  to `transforms/`, `queries/`, `utils/`, `helpers/`, `with*`, `decorate*`, or
+  similar one-use files. In package review, inventory every such production
+  file and every standalone production function accepting `tx`; inline/delete
+  single-owner rows or record concrete multiple-consumer/independent-boundary
+  evidence.
+- React colocation is family-owned. One component family belongs in one
+  `<Family>.tsx` file; one hook family belongs in one `use<Family>.ts` file.
+  Related exported primitives/state/behavior hooks may share that file.
+  Sibling use inside the family is internal composition, not independent
+  reuse. Keep feature-package React roots flat by default and reject
+  `components/`, `hooks/`, nested family folders, or nested barrels that only
+  classify one owner.
+- A separate React file needs reuse across durable families, a standalone
+  public owner, or an independent provider/store/lifecycle boundary. A public
+  export name, file size, or two sibling consumers inside one family is not
+  enough.
 - Do not use a narrow representative file to close a broad Core sweep.
 - Package review mode is review-first, not migration-first. Freeze scope to the
   named package plus the smallest Plite/Core owner needed to remove a blocker.
@@ -185,6 +202,12 @@ Constraints:
   middleware, or other active transaction callback. The callback must receive
   and use the active `tx`; `withoutNormalizing` callbacks should be
   `({ tx }) => { ... }`.
+- Lexical transaction ownership law: do not extract single-owner plugin logic
+  into `foo(editor, tx, ...)`, `fooWithTx(...)`, or paired one-shot/tx
+  wrappers. Inline it in the plugin tx group, command, correction, or
+  middleware callback so `tx` and plugin context infer lexically. A separate
+  transaction-accepting function needs multiple production consumers or a real
+  independent algorithm boundary, recorded in the package rows.
 - Plugin export inference law: plugin constants should infer from
   `createBasePlugin`, `createPlatePlugin`, `toPlatePlugin`, and chained
   `.extend*` methods. Do not annotate exports as `BasePlugin<Config>` /
@@ -217,9 +240,9 @@ Constraints:
   remains the render-subscription path. Key+generic fallbacks need an owner
   reason: plugin self-definition cycle, React hook/component imported by the
   plugin itself, non-React layer that must not import a React plugin, or
-  intentionally decoupled cross-package code. Plugin-owned helper graphs should
-  receive plugin context (`api`, `getOption`, `getOptions`, `setOption`, `tx`)
-  or be thin wrappers over the typed plugin API/tx group.
+  intentionally decoupled cross-package code. Inline single-owner plugin
+  behavior in the builder context. Only a proven shared or independent helper
+  should receive a narrow plugin context or required `tx` parameter.
 
 Boundaries:
 - allowed edit scope: pending
@@ -292,6 +315,10 @@ Work Checklist:
       closed as `keep-in-plate`.
 - [ ] For package review mode, the package file checklist is generated before
       implementation, with one checkbox per reviewed file.
+- [ ] For package review mode, every production `transforms/`, `queries/`,
+      `utils/`, `helpers/`, `with*`, `decorate*`, similar helper file, and
+      standalone `tx`-parameter function has an owner-topology row; every
+      survivor has multiple-production-consumer or independent-boundary proof.
 - [ ] For package review mode, every package file row is either checked at
       score `100` with evidence or left unchecked with deferral reason, owner,
       proof needed, and next action for user review.
@@ -358,6 +385,7 @@ Completion Gates:
 | Plite/Plate gap ledger | pending | Record blockers or N/A when no gap blocks the target | pending |
 | Related scoped sweep after correction | pending | For each correction, run and record same-class search/review results inside the active scope | pending |
 | Package file checklist | pending | Record manifest command, row counts, score-100 rows, unchecked/deferred rows, and proof per file when package review applies | pending |
+| Helper topology / lexical tx ownership | pending | Audit every helper directory/file and standalone tx-parameter function; inline/delete single-owner rows or prove reuse/independent ownership | pending |
 | Package/API proof | pending | Run focused typecheck/test/build or record N/A | pending |
 | Shared Core gate coverage | pending | Add Core-adjacent reviewed packages to `tooling/scripts/check-core.mjs`, or record why N/A | pending |
 | Non-Core package error triage | pending | If a proof command reports non-Core failures, classify as named/touched/Core-regression or out-of-scope package drift | pending |

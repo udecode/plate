@@ -83,7 +83,7 @@ describe('transactional extension configuration', () => {
     );
   });
 
-  it('bootstraps one complete schema only on an untouched implicit editor', () => {
+  it('bootstraps one complete schema only on an unchanged editor', () => {
     const articleSchema = defineEditorSchema({
       elements: {
         paragraph: {
@@ -119,7 +119,7 @@ describe('transactional extension configuration', () => {
     assert.equal(commits, 0);
     assert.throws(
       () => initializeEditorExtensions(editor, articleSchema),
-      /without an explicit initial document|already initialized/u
+      /without an installed schema|already initialized/u
     );
 
     const updated = createEditor();
@@ -127,7 +127,7 @@ describe('transactional extension configuration', () => {
     updated.update((tx) => tx.nodes.insert(paragraph('written')));
     assert.throws(
       () => initializeEditorExtensions(updated, articleSchema),
-      /untouched empty document/u
+      /unchanged document/u
     );
   });
 
@@ -148,7 +148,7 @@ describe('transactional extension configuration', () => {
         paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
           properties: {
-            guard: property.typed(Guard, { default: 'valid' }),
+            guard: property.json({ default: 'valid', policy: Guard }),
           },
         },
       },
@@ -195,7 +195,7 @@ describe('transactional extension configuration', () => {
     assert.equal(editor.read.lastCommit(), null);
   });
 
-  it('validates explicit initial documents without fitting or rewriting them', () => {
+  it('validates explicit initial documents without rewriting them', () => {
     const articleSchema = defineEditorSchema({
       elements: {
         paragraph: { content: schema.content.text() },
@@ -221,11 +221,13 @@ describe('transactional extension configuration', () => {
       initialValue: [paragraph('preserve')],
     });
 
-    assert.throws(
-      () => initializeEditorExtensions(explicitEditor, articleSchema),
-      /without an explicit initial document/u
-    );
+    initializeEditorExtensions(explicitEditor, articleSchema);
+
     assert.deepEqual(explicitEditor.read.children(), [paragraph('preserve')]);
+    assert.equal(
+      namedIdentity(explicitEditor.read.schema.identity()).id,
+      'explicit-schema-bootstrap'
+    );
   });
 
   it('publishes a dynamic extension migration and schema atomically', () => {
@@ -905,7 +907,7 @@ describe('transactional extension configuration', () => {
         elements: {
           paragraph: {
             content: schema.content.text(),
-            properties: { tone: property.typed(Tone) },
+            properties: { tone: property.json({ policy: Tone }) },
           },
         },
         id: 'schema-policy-rebind',
@@ -969,7 +971,7 @@ describe('transactional extension configuration', () => {
         elements: {
           paragraph: {
             content: schema.content.text(),
-            properties: { tone: property.typed(Tone) },
+            properties: { tone: property.json({ policy: Tone }) },
           },
         },
         id: 'schema-policy-rebind-rollback',

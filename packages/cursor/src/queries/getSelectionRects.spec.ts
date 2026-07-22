@@ -2,7 +2,8 @@ import React from 'react';
 
 import type { Range } from '@platejs/plite';
 
-import { PlateTest, createPlateEditor } from '@platejs/core/react';
+import { createPlateEditor } from '@platejs/core/react';
+import { PlateTest } from '@platejs/core/react/test';
 import { act, render } from '@testing-library/react';
 
 import { getSelectionRects } from './getSelectionRects';
@@ -38,7 +39,7 @@ describe('getSelectionRects', () => {
 
   it('returns an empty array when a mapped DOM text node is detached', async () => {
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'a' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
     });
 
     await act(async () => {
@@ -71,7 +72,7 @@ describe('getSelectionRects', () => {
 
   it('collects start, middle, and end rects with offsets applied', async () => {
     const editor = createPlateEditor({
-      value: [
+      initialValue: [
         { children: [{ text: 'a' }], type: 'p' },
         { children: [{ text: 'b' }], type: 'p' },
         { children: [{ text: 'c' }], type: 'p' },

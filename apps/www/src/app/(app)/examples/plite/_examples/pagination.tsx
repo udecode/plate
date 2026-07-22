@@ -703,7 +703,9 @@ const createRichMarkdownStressSection = (index: number): Value => {
               text: Array.from(
                 { length: 40 },
                 (_, lineIndex) =>
-                  `const section${index + 1}_${lineIndex + 1} = layout.pages[${index + lineIndex}]`
+                  `const section${index + 1}_${lineIndex + 1} = layout.pages[${
+                    index + lineIndex
+                  }]`
               ).join('\n'),
             },
           ],
@@ -714,7 +716,9 @@ const createRichMarkdownStressSection = (index: number): Value => {
             type: 'block-quote',
             children: [
               {
-                text: `${richMarkdownStressQuotes[index % richMarkdownStressQuotes.length]!} ${getRichMarkdownStressText(index, 1)}`,
+                text: `${richMarkdownStressQuotes[
+                  index % richMarkdownStressQuotes.length
+                ]!} ${getRichMarkdownStressText(index, 1)}`,
               },
             ],
           }
@@ -725,7 +729,9 @@ const createRichMarkdownStressSection = (index: number): Value => {
               type: 'check-list-item',
               children: [
                 {
-                  text: `${richMarkdownStressTasks[index % richMarkdownStressTasks.length]!} ${getRichMarkdownStressText(index, 2)}`,
+                  text: `${richMarkdownStressTasks[
+                    index % richMarkdownStressTasks.length
+                  ]!} ${getRichMarkdownStressText(index, 2)}`,
                 },
               ],
             }
@@ -734,7 +740,9 @@ const createRichMarkdownStressSection = (index: number): Value => {
               type: 'paragraph',
               children: [
                 {
-                  text: `${richMarkdownStressTitles[index % richMarkdownStressTitles.length]!} ${index + 1}. ${getRichMarkdownStressText(index, 0)} `,
+                  text: `${richMarkdownStressTitles[
+                    index % richMarkdownStressTitles.length
+                  ]!} ${index + 1}. ${getRichMarkdownStressText(index, 0)} `,
                 },
                 { text: 'Layout proof', bold: true },
                 {
@@ -750,7 +758,12 @@ const createRichMarkdownStressSection = (index: number): Value => {
       type: 'paragraph',
       children: [
         {
-          text: `${richMarkdownStressTitles[(index + 1) % richMarkdownStressTitles.length]!} continuation ${index + 1}. ${getRichMarkdownStressText(index, 3)}`,
+          text: `${richMarkdownStressTitles[
+            (index + 1) % richMarkdownStressTitles.length
+          ]!} continuation ${index + 1}. ${getRichMarkdownStressText(
+            index,
+            3
+          )}`,
         },
       ],
     },
@@ -759,7 +772,9 @@ const createRichMarkdownStressSection = (index: number): Value => {
       type: 'paragraph',
       children: [
         {
-          text: `${richMarkdownStressTitles[(index + 2) % richMarkdownStressTitles.length]!} notes ${index + 1}. ${getRichMarkdownStressText(index, 5)}`,
+          text: `${richMarkdownStressTitles[
+            (index + 2) % richMarkdownStressTitles.length
+          ]!} notes ${index + 1}. ${getRichMarkdownStressText(index, 5)}`,
         },
       ],
     },
@@ -982,7 +997,9 @@ const renderTableChildrenWindow = ({
       renderedChildren.push(
         <Fragment key={`hidden-${nextIndex}-${range.start - 1}`}>
           {slots.contentBoundary({
-            boundaryId: `pagination-table-hidden:${nextIndex}-${range.start - 1}`,
+            boundaryId: `pagination-table-hidden:${nextIndex}-${
+              range.start - 1
+            }`,
             copyPolicy: 'model',
             findPolicy: 'native',
             mounted: false,
@@ -1564,7 +1581,6 @@ const PaginationSurface = ({
             .join('|');
     },
     {
-      deps: [domStrategyMode],
       shouldUpdate: (change) => {
         if (domStrategyMode !== 'virtualized') {
           return false;

@@ -23,7 +23,7 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  value: [
+  initialValue: [
     {
       type: 'p',
       children: [{ text: '你好，Plate!' }],
@@ -36,8 +36,11 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [BoldPlugin, ItalicPlugin],
-  value: '<p>这是<b>加粗</b>和<i>斜体</i>文本！</p>',
+  plugins: [HtmlPlugin, BoldPlugin, ItalicPlugin],
+  initialValue: ({ editor }) =>
+    editor.plugin(HtmlPlugin).api.deserialize({
+      element: '<p>这是<b>加粗</b>和<i>斜体</i>文本！</p>',
+    }),
 });
 ```
 
@@ -339,7 +342,7 @@ editor.update((tx) => {
 
 ```ts
 import type { Element, Text } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import { type PlateEditor, useEditor } from 'platejs/react';
 
 // 定义自定义元素类型
 interface ParagraphElement extends Element {
@@ -368,7 +371,7 @@ export type MyValue = MyRootBlock[];
 // 定义自定义编辑器类型
 export type MyEditor = PlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
 
-export const useMyEditorRef = () => useEditorRef<MyEditor>();
+export const useMyEditor = () => useEditor<MyEditor>();
 
 // 使用
 const value: MyValue = [{

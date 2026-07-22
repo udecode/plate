@@ -1,6 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import {
+  copyPayloadThroughNativeEvent,
   copyPayloadThroughEvent,
+  cutPayloadThroughNativeEvent,
   cutPayloadThroughEvent,
   insertDataThroughHandle,
   pastePayloadThroughEvent,
@@ -48,7 +50,15 @@ export const createEditorHarnessClipboard = ({
   readHtml: async () =>
     withExclusiveClipboardAccess(async () => readClipboardHtml(surface)),
   copyEventPayload: async () => copyPayloadThroughEvent(root),
+  copyNativeEventPayload: async () =>
+    withExclusiveClipboardAccess(async () =>
+      copyPayloadThroughNativeEvent(root)
+    ),
   cutEventPayload: async () => cutPayloadThroughEvent(root),
+  cutNativeEventPayload: async () =>
+    withExclusiveClipboardAccess(async () =>
+      cutPayloadThroughNativeEvent(root)
+    ),
   copyPayload: async () =>
     withExclusiveClipboardAccess(async () => {
       await root.press('ControlOrMeta+C');

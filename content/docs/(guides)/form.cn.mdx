@@ -13,7 +13,7 @@ description: 如何将 Plate 编辑器与 react-hook-form 集成。
 
 但是，请注意关于**完全控制**编辑器值的警告。Plate 强烈推荐使用非受控模型。如果您过于频繁地替换编辑器的内部状态，可能会破坏**选择**、**历史记录**或导致性能问题。推荐的模式是将编辑器视为非受控的，但在特定事件上仍然**同步**表单数据。
 
-## 方法 1：在 `onChange` 时同步
+## 方法 1：在 `onValueChange` 时同步
 
 这是最直接的方法：每次编辑器更改时，更新表单字段的值。对于小型文档或不频繁的更改，这通常是可以接受的。
 
@@ -56,7 +56,7 @@ export function RHFEditorForm() {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Plate
         editor={editor}
-        onChange={({ value }) => {
+        onValueChange={({ value }) => {
           // 将编辑器更改同步到表单
           setValue('content', value);
         }}
@@ -73,7 +73,7 @@ export function RHFEditorForm() {
 **注意事项**：
 1. **`defaultValues.content`**：您的初始编辑器内容。
 2. **`register('content')`**：向 RHF 表明该字段被跟踪。
-3. **`onChange({ value })`**：每次调用 `setValue('content', value)`。
+3. **`onValueChange({ value })`**：每次调用 `setValue('content', value)`。
 
 如果您处理大型文档或快速输入，请考虑使用防抖或切换到 `onBlur` 方法来减少表单更新。
 
@@ -126,7 +126,7 @@ export function EditorForm() {
               <FormControl>
                 <Plate
                   editor={editor}
-                  onChange={({ value }) => {
+                  onValueChange={({ value }) => {
                     // 同步到表单
                     field.onChange(value);
                   }}
@@ -209,7 +209,7 @@ function MyForm() {
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <Plate
         editor={editor}
-        onChange={({ value }) => form.setValue('content', value)}
+        onValueChange={({ value }) => form.setValue('content', value)}
       >
         <PlateContent />
       </Plate>
@@ -234,7 +234,7 @@ function MyForm() {
 }
 ```
 
-- **`onChange`** -> 更新表单状态
+- **`onValueChange`** -> 更新表单状态
 - **重置** -> 重置表单后，用重置后的表单值替换编辑器内容。
 
 ## 从 shadcn Textarea 迁移到 Plate
@@ -325,7 +325,7 @@ export function EditorField({
 }: EditorFieldProps) {
   // 使用提供的初始 `value` 创建编辑器实例。
   const editor = usePlateEditor({
-    value: value ?? [
+    initialValue: value ?? [
       { type: "p", children: [{ text: "" }] }, // 默认空段落
     ],
   });
@@ -333,7 +333,7 @@ export function EditorField({
   return (
     <Plate
       editor={editor}
-      onChange={({ value }) => {
+      onValueChange={({ value }) => {
         // 通过 onChange prop 将更改同步回调用者
         onChange?.(value);
       }}

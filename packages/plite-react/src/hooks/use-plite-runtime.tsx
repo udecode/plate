@@ -10,7 +10,10 @@ import React, {
 } from 'react';
 import ReactDOM from 'react-dom';
 import {
+  type CompatibleEditorCommand,
   createEditorView,
+  type EditorCommandDescriptor,
+  type EditorCommandInput,
   type EditorCommit,
   type EditorStateView,
   type EditorView,
@@ -37,6 +40,7 @@ import {
   createInternalClipboardApi,
   setEditorRuntime,
   getLastCommit as editorGetLastCommit,
+  getSnapshot as editorGetSnapshot,
 } from '../editable/runtime-editor-api';
 import {
   type ReactRuntimeEditor,
@@ -109,7 +113,9 @@ const getExtensionCapabilityName = (extension: ExtensionLike) => {
 };
 
 const getContentRootOwnerKey = (owner: PliteContentRootOwner) =>
-  `${owner.ownerRoot}\u0000${owner.ownerPath.join('.')}\u0000${owner.childRoot}`;
+  `${owner.ownerRoot}\u0000${owner.ownerPath.join('.')}\u0000${
+    owner.childRoot
+  }`;
 
 const createReactApi = (
   editor: object,
@@ -241,7 +247,7 @@ export type PliteRuntimeStateSelectorOptions<
   TRuntime extends PliteRuntimeValue<any, any> = PliteRuntimeValue<any, any>,
 > = Pick<
   EditorStateSelectorOptions<T, TRuntime['editor']>,
-  'deferred' | 'deps' | 'equalityFn' | 'shouldUpdate'
+  'deferred' | 'equalityFn' | 'shouldUpdate'
 >;
 
 export const PliteRuntimeContext = createContext<PliteRuntimeContextValue<
@@ -655,7 +661,7 @@ function OwnedPliteRuntime<
     const latestCommit = editorGetLastCommit(runtime.editor);
 
     if (latestCommit && latestCommit.version > lastCommitVersionRef.current) {
-      onContextChange(latestCommit);
+      onContextChange(latestCommit, editorGetSnapshot(runtime.editor));
     }
 
     return unsubscribe;
@@ -724,7 +730,7 @@ function OwnedPliteRuntime<
  *
  * Use this for toolbar, sidebar, and shell UI that reads the whole editor
  * runtime. Use `usePliteRootState` for root-scoped UI in multi-root editors.
- * Pass `deps` when the selector closes over props, and `shouldUpdate` when a
+ * Inline selectors observe current render values. Use `shouldUpdate` when a
  * commit can be skipped before the selector runs.
  */
 export function usePliteRuntimeState<
@@ -739,13 +745,11 @@ export function usePliteRuntimeState<
   ) => T,
   {
     deferred,
-    deps,
     equalityFn = refEquality,
     shouldUpdate,
   }: PliteRuntimeStateSelectorOptions<T, TRuntime> = {}
 ): T {
   const { runtime, selectorContext } = useRequiredPliteRuntimeContext();
-  const selectorDeps = deps ?? [selector];
   const stateSelector = useCallback(
     () =>
       runtime.read((state) =>
@@ -756,27 +760,37 @@ export function usePliteRuntimeState<
           >
         )
       ),
-    // `deps` intentionally owns inline selector closure freshness.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [runtime, ...selectorDeps]
+    [runtime, selector]
   );
   const [selectedState, update] = useGenericSelector(stateSelector, equalityFn);
+  const shouldUpdateRef = useRef(shouldUpdate);
+
+  useIsomorphicLayoutEffect(() => {
+    const changed = shouldUpdateRef.current !== shouldUpdate;
+
+    shouldUpdateRef.current = shouldUpdate;
+
+    if (changed) update();
+  }, [shouldUpdate, update]);
+
+  const shouldUpdateCommit = useCallback(
+    (change?: EditorCommit) =>
+      shouldUpdateRef.current?.(
+        change as EditorCommit<ValueOf<TRuntime['editor']>> | undefined
+      ) ?? true,
+    []
+  );
 
   useIsomorphicLayoutEffect(() => {
     const unsubscribe = selectorContext.addEventListener(update, {
       deferred,
-      shouldUpdate: shouldUpdate
-        ? (change) =>
-            shouldUpdate(
-              change as EditorCommit<ValueOf<TRuntime['editor']>> | undefined
-            )
-        : undefined,
+      shouldUpdate: shouldUpdateCommit,
     });
 
     update();
 
     return unsubscribe;
-  }, [deferred, selectorContext, shouldUpdate, update]);
+  }, [deferred, selectorContext, shouldUpdateCommit, update]);
 
   return selectedState;
 }
@@ -803,7 +817,6 @@ export function usePliteRootState<
   ) => T,
   {
     deferred,
-    deps,
     equalityFn = refEquality,
     shouldUpdate,
   }: PliteRuntimeStateSelectorOptions<T, TRuntime> = {}
@@ -816,7 +829,6 @@ export function usePliteRootState<
 
   const { getView, selectorContext } = useRequiredPliteRuntimeContext();
   const internalRoot = root ?? MAIN_ROOT_KEY;
-  const selectorDeps = deps ?? [selector];
   const stateSelector = useCallback(
     () =>
       getView({ root }).read((state) =>
@@ -827,24 +839,32 @@ export function usePliteRootState<
           >
         )
       ),
-    // `deps` owns inline selector closure freshness; `root` is a hook input.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [getView, root, ...selectorDeps]
+    [getView, root, selector]
   );
   const [selectedState, update] = useGenericSelector(stateSelector, equalityFn);
+  const shouldUpdateRef = useRef(shouldUpdate);
+
+  useIsomorphicLayoutEffect(() => {
+    const changed = shouldUpdateRef.current !== shouldUpdate;
+
+    shouldUpdateRef.current = shouldUpdate;
+
+    if (changed) update();
+  }, [shouldUpdate, update]);
+
   const shouldUpdateView = useCallback(
     (change?: EditorCommit) => {
       if (!isRootAffected(internalRoot, change)) {
         return false;
       }
 
-      return shouldUpdate
-        ? shouldUpdate(
+      return shouldUpdateRef.current
+        ? shouldUpdateRef.current(
             change as EditorCommit<ValueOf<TRuntime['editor']>> | undefined
           )
         : true;
     },
-    [internalRoot, shouldUpdate]
+    [internalRoot]
   );
 
   useIsomorphicLayoutEffect(() => {
@@ -863,7 +883,6 @@ export function usePliteRootState<
 
 const usePliteInternalActiveRoot = (): RootKey =>
   usePliteRuntimeState(selectActiveRoot, {
-    deps: [],
     equalityFn: rootKeyEquality,
     shouldUpdate: selectionChanged,
   });
@@ -871,7 +890,6 @@ const usePliteInternalActiveRoot = (): RootKey =>
 /** Read the root key that currently owns the editor selection. */
 export function usePliteActiveRoot(): RootKey | undefined {
   return usePliteRuntimeState(selectPublicActiveRoot, {
-    deps: [],
     equalityFn: rootKeyEquality,
     shouldUpdate: selectionChanged,
   });
@@ -950,8 +968,8 @@ export type UsePliteRootEffectOptions<TRoot extends RootKey = RootKey> = {
 /** Focus behavior before or after root command callbacks. */
 export type PliteCommandFocusPolicy = 'none' | 'preserve' | 'restore-root';
 
-/** Options for `usePliteCommandCallback`. */
-export type UsePliteCommandCallbackOptions<TRoot extends RootKey = RootKey> = {
+/** Options for `usePliteCommand`. */
+export type UsePliteCommandOptions<TRoot extends RootKey = RootKey> = {
   focus?: PliteCommandFocusPolicy;
   root?: NamedRootKey<TRoot>;
 };
@@ -1046,35 +1064,42 @@ export function usePliteRootEffect<
   );
 }
 
+type PliteCommandArgs<TCommand extends EditorCommandDescriptor> = [
+  EditorCommandInput<TCommand>,
+] extends [void]
+  ? [] | [input: EditorCommandInput<TCommand>]
+  : [input: EditorCommandInput<TCommand>];
+
+/** Typed dispatcher returned for one semantic command descriptor. */
+export type PliteCommandDispatcher<TCommand extends EditorCommandDescriptor> = (
+  ...input: PliteCommandArgs<TCommand>
+) => boolean;
+
 /**
- * Create a stable callback that resolves the mounted root editor at call time.
+ * Bind one semantic command to the mounted editor for a root.
  *
- * Use this for toolbar and shell commands that should run against the currently
- * mounted root editor. Pass `root` for a known root, `focus: 'restore-root'` to
- * return focus before running, or `focus: 'none'` to leave focus untouched.
+ * Command input belongs to the returned dispatcher, so event-time data never
+ * becomes hook configuration. Pass `root` for a known root and use
+ * `focus: 'restore-root'` when the command should first restore editor focus.
  */
-export function usePliteCommandCallback<
-  TArgs extends unknown[],
-  TResult,
+export function usePliteCommand<
+  TCommand extends EditorCommandDescriptor,
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
   const TRoot extends RootKey = RootKey,
 >(
-  callback: (
-    editor: PliteRootEditor<V, TExtensions>,
-    ...args: TArgs
-  ) => TResult,
-  options: UsePliteCommandCallbackOptions<TRoot> = {}
-): (...args: TArgs) => TResult {
+  command: TCommand &
+    CompatibleEditorCommand<ReactEditorType<V, TExtensions>, TCommand>,
+  options: UsePliteCommandOptions<TRoot> = {}
+): PliteCommandDispatcher<TCommand> {
   const { focus = 'preserve', root } = options;
   const resolvedRoot = usePliteResolvedRoot(root);
   const publicRoot = toPublicRootOption(resolvedRoot);
   const context = useRequiredPliteRuntimeContext();
   const fallbackEditor = usePliteRootEditor<V, TExtensions>(publicRoot);
-  const callbackCell = useLatestCallbackCell(callback);
 
   return useCallback(
-    (...args: TArgs) => {
+    (...input: PliteCommandArgs<TCommand>) => {
       const mountedEditor =
         context.getMountedViewEditor(resolvedRoot) ?? fallbackEditor;
       const commandEditor = mountedEditor as PliteRootEditor<V, TExtensions>;
@@ -1083,8 +1108,10 @@ export function usePliteCommandCallback<
         focusPliteEditable(commandEditor);
       }
 
-      return callbackCell.current(commandEditor, ...args);
+      const typedEditor: ReactEditorType<V, TExtensions> = commandEditor;
+
+      return typedEditor.update.command<TCommand>(command, ...input);
     },
-    [callbackCell, context, fallbackEditor, focus, resolvedRoot]
+    [command, context, fallbackEditor, focus, resolvedRoot]
   );
 }

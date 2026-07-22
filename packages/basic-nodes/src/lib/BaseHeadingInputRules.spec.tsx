@@ -77,7 +77,7 @@ describe('heading input rules', () => {
     const editor = createBaseEditor({
       plugins: [plugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.insert(' ');

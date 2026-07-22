@@ -44,23 +44,21 @@ const editor = createPlateEditor({
 ### Configure Plugin
 
 ```tsx
-import { CsvPlugin, defineCsvConfig } from '@platejs/csv';
+import { CsvPlugin } from '@platejs/csv';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     CsvPlugin.configure({
-      config: defineCsvConfig({
+      options: {
         errorTolerance: 0.1,
-        id: 'csv-example:parser',
         parseOptions: {
           header: true,
           skipEmptyLines: true,
           delimiter: ',',
         },
-        version: 1,
-      }),
+      },
     }),
   ],
 });
@@ -70,9 +68,7 @@ const editor = createPlateEditor({
 - `parseOptions`: Configuration passed to PapaParse library for CSV parsing
 - `parseOptions.header`: Treat first row as headers (default: `true`)
 
-`defineCsvConfig` 创建不可变、带版本的解析策略。容错率或解析行为变化时递增
-`version`。单次反序列化可以覆盖 PapaParse 字段，但不能覆盖
-`errorTolerance`。
+单次反序列化可以覆盖 PapaParse 字段，但不能覆盖 `errorTolerance`。
 
 </Steps>
 
@@ -88,13 +84,13 @@ const csvData = `Name,Age,City
 John,30,New York
 Jane,25,Boston`;
 
-const nodes = editor.api.csv.deserialize({ data: csvData });
+const nodes = editor.plugin(CsvPlugin).api.deserialize({ data: csvData });
 ```
 
 某次转换需要局部覆盖时，直接传入 PapaParse 字段：
 
 ```tsx
-const nodes = editor.api.csv.deserialize({
+const nodes = editor.plugin(CsvPlugin).api.deserialize({
   data: csvData,
   delimiter: ';',
   skipEmptyLines: true,
@@ -107,18 +103,12 @@ const nodes = editor.api.csv.deserialize({
 
 Plugin for CSV deserialization functionality.
 
-### defineCsvConfig
+### CsvPluginOptions
 
-创建供 `CsvPlugin.configure({ config })` 使用的不可变 CSV 解析策略。
+通过 `CsvPlugin.configure({ options })` 传入 CSV 解析行为。
 
-<API name="defineCsvConfig">
-<APIOptions type="CsvProfileInput">
-  <APIItem name="id" type="string">
-    由应用维护的稳定 CSV 策略标识。
-  </APIItem>
-  <APIItem name="version" type="number">
-    正整数版本。解析行为变化时递增。
-  </APIItem>
+<API name="CsvPluginOptions">
+<APIOptions type="CsvPluginOptions">
   <APIItem name="errorTolerance" type="number" optional>
     The tolerance for errors in the CSV data, represented as a percentage in decimal form. This value is calculated as the ratio of errors to the total number of rows.
 
@@ -145,7 +135,7 @@ Takes a CSV (Comma Separated Values) string and converts it into a Plate compati
     The CSV data string to be deserialized.
   </APIItem>
   <APIItem name="...parseOptions" type="CsvParseOptions" optional>
-    PapaParse 字段与 `data` 同级传入，并在本次调用中覆盖不可变策略的
+    PapaParse 字段与 `data` 同级传入，并在本次调用中覆盖插件的
     `parseOptions`。`download` 和 `worker` 始终禁用。详见 [PapaParse
     文档](https://www.papaparse.com/docs#config)。
   </APIItem>

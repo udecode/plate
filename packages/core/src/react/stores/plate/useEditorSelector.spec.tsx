@@ -9,7 +9,7 @@ import { useEditorSelector } from './useEditorSelector';
 describe('useEditorSelector', () => {
   it('skips rerenders when equalityFn treats the derived value as unchanged', async () => {
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     const renderValues: number[] = [];
 
@@ -21,7 +21,6 @@ describe('useEditorSelector', () => {
       () => {
         const value = useEditorSelector(
           (nextEditor) => nextEditor.read.children().length,
-          [],
           { equalityFn: (a, b) => a === b }
         );
 

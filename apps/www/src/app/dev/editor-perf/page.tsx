@@ -35,28 +35,18 @@ import {
   type Value,
 } from 'platejs';
 import {
-  BelowRootNodes,
   Editable,
-  ElementProvider,
   Plate,
   PlateContent,
   PlateElement,
   PlateLeaf,
   Plite,
   createPlatePlugin,
-  createAtomStore,
-  createZustandStore,
   createPlateEditor,
-  getRenderNodeProps,
-  pluginRenderElement,
-  pluginRenderLeaf,
-  pipeRenderElement,
-  pipeRenderLeaf,
-  pipeRenderText,
   useEditableProps,
   useEditorReadOnly,
   useEditorMounted,
-  useEditorRef,
+  useEditor,
   useEditorSelector,
   useEditorState,
   useEditorValue,
@@ -68,6 +58,18 @@ import {
   usePluginOption,
   type PlateEditor,
 } from 'platejs/react';
+import { BelowRootNodes } from '@platejs/core/react/internal';
+import {
+  ElementProvider,
+  createAtomStore,
+  createZustandStore,
+  getRenderNodeProps,
+  pipeRenderElement,
+  pipeRenderLeaf,
+  pipeRenderText,
+  pluginRenderElement,
+  pluginRenderLeaf,
+} from '@platejs/core/react/internal';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -1013,13 +1015,10 @@ function BenchRenderNodeSelectorElementFromProvider({
   attributes: Record<string, unknown>;
   children: React.ReactNode;
 }) {
-  const selected = useElementSelector(
-    ([element, path]) => ({
-      pathDepth: path.length,
-      type: element?.type,
-    }),
-    []
-  );
+  const selected = useElementSelector(([element, path]) => ({
+    pathDepth: path.length,
+    type: element?.type,
+  }));
 
   return (
     <p
@@ -1187,7 +1186,7 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'The plain element-pipe fast path, but with a precomputed path map instead of useNodePath. This isolates the remaining path-hook tax after getRenderNodeProps is out of the way.',
+      'The plain element-pipe fast path, but with a precomputed path map. This isolates the remaining path lookup tax after getRenderNodeProps is out of the way.',
     id: 'editable-element-pipe-plugin-precomputed-path',
     label: 'Editable + fast pipe (precomputed path)',
   },
@@ -1883,7 +1882,7 @@ function createScenarioMountedEditor({
   return createPlateEditor({
     nodeId: getNodeIdOption({ mode: scenario.nodeId }) as any,
     plugins: getScenarioPlugins(scenario.plugins),
-    value,
+    initialValue: value,
   }) as unknown as Editor;
 }
 
@@ -1900,7 +1899,7 @@ function createPlateDissectionEditor({
   return createPlateEditor({
     nodeId: getNodeIdOption({ counter, mode: caseItem.nodeId }) as any,
     plugins: getScenarioPlugins(caseItem.plugins),
-    value,
+    initialValue: value,
   });
 }
 
@@ -1913,7 +1912,7 @@ function createFanoutEditor({
   return createPlateEditor({
     nodeId: false,
     plugins: [BenchmarkOptionPlugin],
-    value,
+    initialValue: value,
   });
 }
 
@@ -1930,7 +1929,7 @@ function createCoreMountEditor({
   return createPlateEditor({
     nodeId: getNodeIdOption({ mode: nodeId }) as any,
     plugins: getScenarioPlugins(plugins),
-    value,
+    initialValue: value,
   });
 }
 
@@ -1945,7 +1944,7 @@ function createPluginCensusMountedEditor({
   return createPlateEditor({
     nodeId: false,
     plugins: getScenarioPlugins(plugins),
-    value,
+    initialValue: value,
   }) as unknown as Editor;
 }
 
@@ -2190,7 +2189,7 @@ function SlateScenarioEditor({
 
   return (
     <div ref={containerRef} className="h-full overflow-auto p-4">
-      <PliteRuntime editor={editor as any} onChange={() => {}}>
+      <PliteRuntime editor={editor as any}>
         <Editable
           className="min-h-[70vh] outline-none"
           domStrategy={getBenchmarkDOMStrategy(config)}
@@ -2220,7 +2219,7 @@ function PlateScenarioEditor({
   const editor = usePlateEditor({
     nodeId: scenario.nodeId === false ? false : undefined,
     plugins: getScenarioPlugins(scenario.plugins),
-    value,
+    initialValue: value,
   });
 
   React.useImperativeHandle(
@@ -2284,7 +2283,7 @@ function PrebuiltScenarioEditor({
   if (scenario.kind === 'slate') {
     return (
       <div className="h-full overflow-auto p-4">
-        <PliteRuntime editor={editor as any} onChange={() => {}}>
+        <PliteRuntime editor={editor as any}>
           <Editable
             className="min-h-[70vh] outline-none"
             domStrategy={getBenchmarkDOMStrategy(config)}
@@ -2332,7 +2331,7 @@ function PluginCensusEditorSurface({
   if (scenarioId === 'slate') {
     return (
       <div className="h-full overflow-auto p-4">
-        <PliteRuntime editor={editor as any} onChange={() => {}}>
+        <PliteRuntime editor={editor as any}>
           <Editable
             className="min-h-[70vh] outline-none"
             domStrategy={getBenchmarkDOMStrategy(config)}
@@ -2359,9 +2358,9 @@ function PluginCensusEditorSurface({
 }
 
 function EditorStateSubscriber() {
-  const editor = useEditorState();
+  const blockCount = useEditorState((state) => state.children().length);
 
-  consume(editor.read.children().length);
+  consume(blockCount);
 
   return null;
 }
@@ -2377,7 +2376,6 @@ function EditorValueSubscriber() {
 function EditorSelectorSubscriber() {
   const blockCount = useEditorSelector(
     (editor) => editor.read.children().length,
-    [],
     {
       equalityFn: (a, b) => a === b,
     }
@@ -2397,16 +2395,15 @@ function PluginOptionSubscriber() {
 }
 
 function MixedSubscriber() {
-  const editor = useEditorState();
+  const stateBlockCount = useEditorState((state) => state.children().length);
   const value = useEditorValue();
   const blockCount = useEditorSelector(
     (nextEditor) => nextEditor.read.children().length,
-    [],
     { equalityFn: (a, b) => a === b }
   );
   const enabled = usePluginOption(BenchmarkOptionPlugin, 'enabled');
 
-  consume(editor.read.children().length, value.length, blockCount, enabled);
+  consume(stateBlockCount, value.length, blockCount, enabled);
 
   return null;
 }
@@ -2563,7 +2560,7 @@ function MinimalEditableMount({
   config: BenchmarkConfig;
   id?: string;
 }) {
-  const editor = useEditorRef(id);
+  const editor = useEditor({ id });
   const renderElement = React.useCallback(
     (props: RenderElementProps) => (
       <BenchmarkElement
@@ -2661,7 +2658,7 @@ function BenchmarkEditableMount({
   pipeLeafText?: boolean;
   precomputedElementPluginPath?: boolean;
 }) {
-  const editor = useEditorRef(id);
+  const editor = useEditor({ id });
   const pathMap = React.useMemo(
     () => buildElementPathMap((editor.read.children() ?? []) as Value),
     [editor]
@@ -5585,7 +5582,7 @@ export default function EditorPerfPage() {
               duplicateScanStats,
               mode: caseItem.nodeId,
             }) as any,
-            value,
+            initialValue: value,
           });
           const idCountBeforeInsert = idCounter.count;
 

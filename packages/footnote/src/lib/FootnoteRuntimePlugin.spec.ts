@@ -19,7 +19,7 @@ const createFootnoteRuntimeEditor = ({
       BaseFootnoteDefinitionPlugin,
     ] as const,
     selection,
-    value,
+    initialValue: value,
   });
 
 describe('BaseFootnoteReferencePlugin Plite runtime', () => {

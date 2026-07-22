@@ -41,7 +41,7 @@ describe('useMarkToolbarButton', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     editor.update.marks.add('bold', true);
@@ -68,7 +68,7 @@ describe('useMarkToolbarButton', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     editor.update.marks.add('italic', true);
@@ -115,7 +115,7 @@ describe('useMarkToolbarButton', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     editor.update.marks.add('bold', true);
@@ -151,7 +151,7 @@ describe('useMarkToolbarButton', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     editor.update.marks.add('superscript', true);
@@ -181,7 +181,7 @@ describe('useMarkToolbarButton', () => {
   it('prevents the default mouse down behavior', () => {
     const editor = createPlateEditor({
       plugins: [MarksPlugin],
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     const preventDefault = mock();
 

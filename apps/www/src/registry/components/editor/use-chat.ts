@@ -19,7 +19,7 @@ import { TablePlugin } from '@platejs/table/react';
 import { type Range, type Value, NodeApi, TextApi } from '@platejs/plite';
 import { type UIMessage, DefaultChatTransport } from 'ai';
 import { KEYS, nanoid } from 'platejs';
-import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
+import { type PlateEditor, useEditor, usePluginOption } from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
 
@@ -190,7 +190,7 @@ function createChatTransport({
 }
 
 export const useChat = () => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const options = usePluginOption(aiChatPlugin, 'chatOptions');
 
   // remove when you implement the route /api/ai/command
@@ -1638,7 +1638,11 @@ const createCommentChunks = (editor: PlateEditor) => {
       return [
         {
           delay: faker.number.int({ max: 500, min: 200 }),
-          texts: `{"id":"${nanoid()}","data":{"comment":{"blockId":"${block.id}","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${i === indexes.length - 1 ? 'finished' : 'streaming'}"},"type":"data-comment"}`,
+          texts: `{"id":"${nanoid()}","data":{"comment":{"blockId":"${
+            block.id
+          }","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${
+            i === indexes.length - 1 ? 'finished' : 'streaming'
+          }"},"type":"data-comment"}`,
         },
       ];
     })
@@ -1691,7 +1695,9 @@ const createTableCellChunks = (editor: PlateEditor) => {
   const chunks = cellIds.map((cellId, i) => [
     {
       delay: faker.number.int({ max: 300, min: 100 }),
-      texts: `{"id":"${nanoid()}","data":{"cellUpdate":{"id":"${cellId}","content":"${faker.lorem.sentence()}"},"status":"${i === cellIds.length - 1 ? 'finished' : 'streaming'}"},"type":"data-table"}`,
+      texts: `{"id":"${nanoid()}","data":{"cellUpdate":{"id":"${cellId}","content":"${faker.lorem.sentence()}"},"status":"${
+        i === cellIds.length - 1 ? 'finished' : 'streaming'
+      }"},"type":"data-table"}`,
     },
   ]);
 

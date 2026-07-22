@@ -1,5 +1,5 @@
 import { KEYS } from '@platejs/utils';
-import { useEditorRef, useEditorSelector } from '@platejs/core/react';
+import { useEditor, useEditorSelector } from '@platejs/core/react';
 
 import { ListPlugin } from '../ListPlugin';
 
@@ -9,8 +9,7 @@ export const useListToolbarButtonState = ({
   const pressed = useEditorSelector(
     (editor) =>
       !!editor.read.selection() &&
-      editor.read.nodes.some({ match: { type: editor.getType(nodeType) } }),
-    [nodeType]
+      editor.read.nodes.some({ match: { type: editor.getType(nodeType) } })
   );
 
   return {
@@ -22,7 +21,7 @@ export const useListToolbarButtonState = ({
 export const useListToolbarButton = (
   state: ReturnType<typeof useListToolbarButtonState>
 ) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return {
     props: {

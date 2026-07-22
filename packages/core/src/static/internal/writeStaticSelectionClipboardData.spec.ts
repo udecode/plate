@@ -92,7 +92,7 @@ describe('writeStaticSelectionClipboardData', () => {
   it('writes Plite fragment from rendered static DOM', () => {
     const editor = createStaticEditor({
       nodeId: true,
-      value: [
+      initialValue: [
         {
           id: 'block-1',
           children: [{ text: 'Alpha' }],

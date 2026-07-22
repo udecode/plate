@@ -9,6 +9,10 @@ const appBuildScript = path.join(scriptRoot, 'build-app-if-stale.mjs');
 const browserBuildScript = path.join(scriptRoot, 'build-browser-if-stale.mjs');
 const browserRunnerScript = path.join(scriptRoot, 'run-plite-browser.mjs');
 const browserServerScript = path.join(scriptRoot, 'serve.mjs');
+const browserStaticServerScript = path.join(
+  scriptRoot,
+  'plite-static-server.mjs'
+);
 const boundedProcessScript = path.join(
   scriptRoot,
   '../../../tooling/scripts/run-bounded-process.mjs'
@@ -115,6 +119,7 @@ export const browserRunEntries = [
   ...browserPlanEntries,
   browserRunnerScript,
   browserServerScript,
+  browserStaticServerScript,
   path.join(appRoot, 'scripts/plite-browser-runner.mjs'),
   proofInputsScript,
   path.join(repoRoot, 'packages/browser/dist'),

@@ -8,11 +8,11 @@ import type {
   PropertyJsonValue,
   PropertyNumberDescriptor,
   PropertyBooleanDescriptor,
+  PropertyPolicy,
   PropertyPolicyInput,
   PropertySetDescriptor,
   PropertySetOptions,
   PropertyStringDescriptor,
-  PropertyTypedOptions,
   PropertyValueDescriptor,
   PropertyValueKind,
   PropertyValueOf,
@@ -33,7 +33,6 @@ import type {
   SchemaTextProperty,
   SchemaTextPropertyOptions,
 } from '../interfaces/schema';
-import type { PropertyPolicy } from '../interfaces/property-policy';
 import { isPropertyPolicyToken } from '../interfaces/property-policy';
 import { cloneFrozen } from './clone';
 
@@ -380,49 +379,52 @@ const defineSet = <TItemDescriptor extends PropertyValueDescriptor>(
   ) as PropertySetDescriptor<TItemDescriptor>;
 };
 
-const defineJson = (
-  options: PropertyJsonOptions = {}
-): PropertyJsonDescriptor<PropertyJsonValue> => {
+type PropertyJsonOptionsWithoutPolicy<TValue extends PropertyJsonValue> = Omit<
+  PropertyJsonOptions<TValue>,
+  'policy'
+> &
+  Readonly<{
+    policy?: never;
+  }>;
+
+type PropertyJsonOptionsWithPolicy<TValue> = Omit<
+  PropertyJsonOptions<TValue>,
+  'policy'
+> &
+  Readonly<{
+    policy: PropertyPolicy<TValue>;
+  }>;
+
+function defineJson<TValue extends PropertyJsonValue = PropertyJsonValue>(
+  options?: PropertyJsonOptionsWithoutPolicy<TValue>
+): PropertyJsonDescriptor<TValue>;
+function defineJson<TValue>(
+  options: PropertyJsonOptionsWithPolicy<TValue>
+): PropertyJsonDescriptor<TValue>;
+function defineJson<TValue = PropertyJsonValue>(
+  options: PropertyJsonOptions<TValue> = {}
+): PropertyJsonDescriptor<TValue> {
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['default', 'omitDefault', 'significant'],
+    ['default', 'omitDefault', 'policy', 'significant'],
     'property.json'
   );
 
   return defineValue('json', options);
-};
-
-const defineTyped = <TValue>(
-  policy: PropertyPolicy<TValue>,
-  options: PropertyTypedOptions<TValue> = {}
-): PropertyJsonDescriptor<TValue> => {
-  assertOnlyKeys(
-    options as Readonly<Record<string, unknown>>,
-    ['default', 'omitDefault', 'significant'],
-    'property.typed'
-  );
-
-  return defineValue('json', { ...options, policy });
-};
+}
 
 /** Shared JSON property value builders. */
 type PropertyBuilderApi = Readonly<{
   boolean: (
     options?: PropertyValueOptions<boolean>
   ) => PropertyBooleanDescriptor;
-  json: (
-    options?: PropertyJsonOptions
-  ) => PropertyJsonDescriptor<PropertyJsonValue>;
+  json: typeof defineJson;
   number: (options?: PropertyValueOptions<number>) => PropertyNumberDescriptor;
   set: <TItemDescriptor extends PropertyValueDescriptor>(
     item: TItemDescriptor,
     options?: PropertySetOptions<PropertyValueOf<TItemDescriptor>>
   ) => PropertySetDescriptor<TItemDescriptor>;
   string: (options?: PropertyValueOptions<string>) => PropertyStringDescriptor;
-  typed: <TValue>(
-    policy: PropertyPolicy<TValue>,
-    options?: PropertyTypedOptions<TValue>
-  ) => PropertyJsonDescriptor<TValue>;
 }>;
 
 export const property: PropertyBuilderApi = Object.freeze({
@@ -434,7 +436,6 @@ export const property: PropertyBuilderApi = Object.freeze({
   set: defineSet,
   string: (options: PropertyValueOptions<string> = {}) =>
     defineValue('string', options) as PropertyStringDescriptor,
-  typed: defineTyped,
 });
 
 const freezeStringSet = (

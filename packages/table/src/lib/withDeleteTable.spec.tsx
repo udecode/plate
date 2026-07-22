@@ -30,7 +30,7 @@ describe('withDeleteTable', () => {
       const editor = createPlateEditor({
         plugins: getTestTablePlugins(),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.deleteBackward({ unit: 'character' });
@@ -56,7 +56,7 @@ describe('withDeleteTable', () => {
       const editor = createPlateEditor({
         plugins: getTestTablePlugins(),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.deleteForward({ unit: 'character' });
@@ -83,7 +83,7 @@ describe('withDeleteTable', () => {
       const editor = createPlateEditor({
         plugins: getTestTablePlugins(),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.deleteBackward({ unit: 'character' });
@@ -110,7 +110,7 @@ describe('withDeleteTable', () => {
       const editor = createPlateEditor({
         plugins: getTestTablePlugins(),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.text.deleteForward({ unit: 'character' });
@@ -192,7 +192,7 @@ describe('withDeleteTable', () => {
           nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
-          value: input.children,
+          initialValue: input.children,
         });
 
         editor.update.fragment.delete();
@@ -223,7 +223,7 @@ describe('withDeleteTable', () => {
     const editor = createPlateEditor({
       plugins: getTestTablePlugins(),
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.fragment.delete();
@@ -281,7 +281,7 @@ describe('withDeleteTable', () => {
     const editor = createBaseEditor({
       plugins: [...getTestTablePlugins(), RootOwnerPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {

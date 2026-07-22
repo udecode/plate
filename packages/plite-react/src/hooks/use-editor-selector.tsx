@@ -28,9 +28,11 @@ export type EditorSelectorContextValue = {
 
 /** Commit-subscription options for selectors that read from the editor. */
 export interface EditorSelectorOptions<
+  T = unknown,
   TEditor extends Editor<any, any> = Editor<any, any>,
 > {
   deferred?: boolean;
+  equalityFn?: (a: T | null, b: T) => boolean;
   includeRootOrderChanges?: boolean;
   profileId?: string;
   runtimeEventSource?: 'node' | 'path' | 'render';
@@ -45,7 +47,6 @@ export interface EditorStateSelectorOptions<
   TEditor extends Editor<any, any> = Editor<any, any>,
 > {
   deferred?: boolean;
-  deps?: readonly unknown[];
   equalityFn?: (a: T | null, b: T) => boolean;
   shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;
 }
@@ -102,16 +103,16 @@ export function useEditorSelector<
   TEditor extends Editor<any, any> = Editor<any, any>,
 >(
   selector: (editor: TEditor) => T,
-  equalityFn: (a: T | null, b: T) => boolean = refEquality,
   {
     deferred,
+    equalityFn = refEquality,
     includeRootOrderChanges,
     profileId,
     runtimeEventSource,
     runtimeId,
     runtimeIds,
     shouldUpdate,
-  }: EditorSelectorOptions<TEditor> = {}
+  }: EditorSelectorOptions<T, TEditor> = {}
 ): T {
   const { addEventListener } = useRequiredEditorSelectorContext();
 
@@ -125,12 +126,22 @@ export function useEditorSelector<
     equalityFn
   );
   const updateFromCommit = useCallback(() => update(), [update]);
+  const shouldUpdateRef = useRef(shouldUpdate);
+
+  useIsomorphicLayoutEffect(() => {
+    const changed = shouldUpdateRef.current !== shouldUpdate;
+
+    shouldUpdateRef.current = shouldUpdate;
+
+    if (changed) update();
+  }, [shouldUpdate, update]);
+
   const shouldUpdateWithEditor = useCallback(
     (change?: EditorCommit) =>
-      shouldUpdate
-        ? shouldUpdate(change as EditorCommit<ValueOf<TEditor>> | undefined)
-        : true,
-    [shouldUpdate]
+      shouldUpdateRef.current?.(
+        change as EditorCommit<ValueOf<TEditor>> | undefined
+      ) ?? true,
+    []
   );
 
   useIsomorphicLayoutEffect(() => {
@@ -141,7 +152,7 @@ export function useEditorSelector<
       runtimeEventSource,
       runtimeId,
       runtimeIds,
-      shouldUpdate: shouldUpdate ? shouldUpdateWithEditor : undefined,
+      shouldUpdate: shouldUpdateWithEditor,
     });
     update();
     return unsubscribe;
@@ -155,7 +166,6 @@ export function useEditorSelector<
     runtimeId,
     runtimeIds,
     includeRootOrderChanges,
-    shouldUpdate,
     shouldUpdateWithEditor,
   ]);
 
@@ -166,7 +176,7 @@ export function useEditorSelector<
  * Reads from the immutable editor state view and re-renders only when the
  * selected value changes.
  *
- * Pass `deps` when the selector closes over changing values.
+ * Inline selectors always observe the latest render values.
  */
 export function useEditorState<
   T,
@@ -177,12 +187,10 @@ export function useEditorState<
   ) => T,
   {
     deferred,
-    deps,
     equalityFn = refEquality,
     shouldUpdate,
   }: EditorStateSelectorOptions<T, TEditor> = {}
 ): T {
-  const selectorDeps = deps ?? [selector];
   const stateSelector = useCallback(
     (editor: TEditor) =>
       editor.read((state) =>
@@ -190,21 +198,13 @@ export function useEditorState<
           state as EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
         )
       ),
-    // `deps` intentionally owns inline selector closure freshness.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    selectorDeps
-  );
-  const shouldUpdateWithChange = useCallback(
-    (change?: EditorCommit) =>
-      shouldUpdate
-        ? shouldUpdate(change as EditorCommit<ValueOf<TEditor>> | undefined)
-        : true,
-    [shouldUpdate]
+    [selector]
   );
 
-  return useEditorSelector<T, TEditor>(stateSelector, equalityFn, {
+  return useEditorSelector<T, TEditor>(stateSelector, {
     deferred,
-    shouldUpdate: shouldUpdate ? shouldUpdateWithChange : undefined,
+    equalityFn,
+    shouldUpdate,
   });
 }
 

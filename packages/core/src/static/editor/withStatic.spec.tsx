@@ -69,8 +69,8 @@ describe('extendStaticEditor', () => {
     });
   });
 
-  describe('when value is provided', () => {
-    it('initialize editor with the provided value', () => {
+  describe('when initialValue is provided', () => {
+    it('initializes the editor with the provided value', () => {
       const value = (
         <editor>
           <hp>
@@ -80,25 +80,10 @@ describe('extendStaticEditor', () => {
       );
 
       const editor = createStaticEditor({
-        value: value.children as Value,
+        initialValue: value.children as Value,
       });
 
       expect(editor.read.children()).toEqual(value.children);
-    });
-
-    it('handle HTML string values', () => {
-      const htmlString = '<p>Hello world</p>';
-
-      const editor = createStaticEditor({
-        value: htmlString,
-      });
-
-      expect(editor.read.children()).toEqual([
-        {
-          children: [{ text: 'Hello world' }],
-          type: 'p',
-        },
-      ]);
     });
   });
 
@@ -120,7 +105,7 @@ describe('extendStaticEditor', () => {
 
       const editor = createStaticEditor({
         selection,
-        value: value.children as Value,
+        initialValue: value.children as Value,
       });
 
       expect(editor.read.selection()).toEqual(selection);
@@ -139,7 +124,7 @@ describe('extendStaticEditor', () => {
 
       const editor = createStaticEditor({
         autoSelect: 'start',
-        value: value.children as Value,
+        initialValue: value.children as Value,
       });
 
       const start = editor.read.points.start([]);
@@ -162,7 +147,7 @@ describe('extendStaticEditor', () => {
 
       const editor = createStaticEditor({
         autoSelect: 'end',
-        value: value.children as Value,
+        initialValue: value.children as Value,
       });
 
       const end = editor.read.points.end([]);
@@ -263,16 +248,20 @@ describe('extendStaticEditor', () => {
       expect(typeof editor.api.getFragment).toBe('function');
     });
 
-    it('preserve other extendBaseEditor options', () => {
+    it('preserves other extendBaseEditor options', () => {
       const editor = createStaticEditor({
         shouldNormalizeEditor: true,
-        value: [],
+        initialValue: [
+          {
+            children: [{ text: 'content' }],
+            type: 'p',
+          },
+        ],
       });
 
-      // Should normalize empty value to have at least one paragraph
       expect(editor.read.children()).toEqual([
         {
-          children: [{ text: '' }],
+          children: [{ text: 'content' }],
           type: 'p',
         },
       ]);

@@ -309,20 +309,22 @@ Current package split:
 - `@platejs/browser/core`
 - `@platejs/browser/browser`
 - `@platejs/browser/playwright`
-- `@platejs/browser/transports`
 
-## 7. Future Extension Boundary
+## 7. Imperative Boundary
 
 ```ts
-const extended = editor.withExtension(agentDriver);
+await editor.scenario.runImperative("native experiment", async ({ step }) => {
+  await step("type through the browser", () => page.keyboard.type("Hello"));
+});
 ```
 
 Why:
 
-- agent-native support should layer on top of the same editor-native primitives
-- the core API should not force agent concerns into every test today
+- canonical scenario steps stay serializable and replayable
+- arbitrary browser work remains traceable without pretending it can satisfy
+  replay, reduction, or release gates
 
-If/when added later, this extension seam should wrap:
+The imperative lane can coordinate:
 
 - focus
 - selection
@@ -475,7 +477,7 @@ Better:
 9. `editor.clipboard.pasteText(...)`
 10. `editor.clipboard.pasteHtml(...)`
 11. `editor.assert.placeholderShape(...)`
-12. `editor.withExtension(extension)`
+12. `editor.scenario.runImperative(name, callback)`
 
 ## Bottom Line
 

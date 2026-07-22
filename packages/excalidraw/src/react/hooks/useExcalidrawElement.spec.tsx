@@ -3,7 +3,7 @@ import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/ty
 
 import type { TExcalidrawElement } from '../../lib';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useEditorReadOnlyMock = mock();
 const cloneDeepMock = mock(<T,>(value: T): T => structuredClone(value));
 const isEqualMock = mock(
@@ -16,7 +16,7 @@ mock.module('lodash', () => ({
 }));
 
 mock.module('@platejs/core/react', () => ({
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
 }));
 
 mock.module('@platejs/plite-react', () => ({
@@ -29,7 +29,7 @@ mock.module('@excalidraw/excalidraw', () => ({
 
 describe('useExcalidrawElement', () => {
   beforeEach(() => {
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     useEditorReadOnlyMock.mockReset();
     cloneDeepMock.mockClear();
     isEqualMock.mockClear();
@@ -45,7 +45,7 @@ describe('useExcalidrawElement', () => {
     );
     const setNodes = mock();
 
-    useEditorRefMock.mockReturnValue({
+    useEditorMock.mockReturnValue({
       read: {
         nodes: {
           path: () => [0],

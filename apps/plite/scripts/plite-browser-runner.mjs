@@ -1,9 +1,19 @@
 import { createHash } from 'node:crypto';
+import path from 'node:path';
 
 const DEFAULT_PLITE_BROWSER_BASE_URL = 'http://127.0.0.1:3102';
 
 export const resolvePliteBrowserBaseURL = (explicitBaseURL) =>
   explicitBaseURL ?? DEFAULT_PLITE_BROWSER_BASE_URL;
+
+export const formatIntegrityFailureDetails = (failure, root) => {
+  if (!failure.path) return '';
+
+  const changedPath = path.relative(root, failure.path) || '.';
+  const eventType = failure.eventType ? ` (${failure.eventType})` : '';
+
+  return `: ${changedPath}${eventType}`;
+};
 
 export const MAX_NORMAL_TESTS_PER_PROCESS = 32;
 const TESTS_PER_WORKER = 4;
@@ -11,7 +21,7 @@ export const BROWSER_UNIT_TIMEOUT_OVERHEAD_MS = 30_000;
 export const DEFAULT_HEAVY_TESTS_PER_PROCESS = 8;
 export const DEFAULT_PROJECT_CONCURRENCY = 2;
 export const DEFAULT_SERIAL_TESTS_PER_PROCESS = 3;
-export const DEFAULT_UNIT_WORKERS = 8;
+export const DEFAULT_UNIT_WORKERS = 4;
 export const MAX_BROWSER_WORKERS = 8;
 export const BROWSER_PROFILE_ANNOTATION = 'plite-browser-profile';
 const jobPattern = /^(\d+)\/(\d+)$/;
@@ -284,6 +294,31 @@ export const runProjectPool = async ({
   if (firstError) throw firstError;
 
   return failedStatus;
+};
+
+export const runProjectWaves = async ({
+  concurrency,
+  projects,
+  runProject,
+  stopSiblings,
+}) => {
+  const boundedConcurrency = resolveBrowserWorkerCount(
+    concurrency,
+    'project concurrency'
+  );
+
+  for (let index = 0; index < projects.length; index += boundedConcurrency) {
+    const status = await runProjectPool({
+      concurrency: boundedConcurrency,
+      projects: projects.slice(index, index + boundedConcurrency),
+      runProject,
+      stopSiblings,
+    });
+
+    if (status !== 0) return status;
+  }
+
+  return 0;
 };
 
 export const resolveTimeoutMs = (value, fallback, name) => {

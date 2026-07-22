@@ -52,7 +52,7 @@ describe('BaseHeadingPlugin', () => {
       const editor = createBaseEditor({
         plugins: [
           BaseHeadingPlugin.configure({
-            config: { levels: [1, 3, 5] },
+            options: { levels: [1, 3, 5] },
           }),
         ],
       });
@@ -71,7 +71,7 @@ describe('BaseHeadingPlugin', () => {
       const editor = createBaseEditor({
         plugins: [
           BaseHeadingPlugin.configure({
-            config: { levels: 2 },
+            options: { levels: 2 },
           }),
         ],
       });
@@ -112,7 +112,7 @@ describe('BaseHeadingPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
     const h2 = createBaseEditor({
       plugins: [BaseH2Plugin],
@@ -121,7 +121,7 @@ describe('BaseHeadingPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
     const h3 = createBaseEditor({
       plugins: [BaseH3Plugin],
@@ -130,7 +130,7 @@ describe('BaseHeadingPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
     const h4 = createBaseEditor({
       plugins: [BaseH4Plugin],
@@ -139,7 +139,7 @@ describe('BaseHeadingPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
     const h5 = createBaseEditor({
       plugins: [BaseH5Plugin],
@@ -148,7 +148,7 @@ describe('BaseHeadingPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
     const h6 = createBaseEditor({
       plugins: [BaseH6Plugin],
@@ -157,7 +157,7 @@ describe('BaseHeadingPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
 
     h1.update.h1.toggle();

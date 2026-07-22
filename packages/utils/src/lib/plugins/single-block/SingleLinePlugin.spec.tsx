@@ -31,7 +31,7 @@ describe('SingleLinePlugin', () => {
   it('merge all blocks into the first block', () => {
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.value.repair();
@@ -57,7 +57,7 @@ describe('SingleLinePlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      value: inputWithLineBreaks.children,
+      initialValue: inputWithLineBreaks.children,
     });
 
     editor.update.value.repair();
@@ -78,7 +78,7 @@ describe('SingleLinePlugin', () => {
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
       selection: singleLineInput.selection,
-      value: singleLineInput.children,
+      initialValue: singleLineInput.children,
     });
 
     editor.update.break.insert();
@@ -101,7 +101,7 @@ describe('SingleLinePlugin', () => {
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
       selection: singleLineInput.selection,
-      value: singleLineInput.children,
+      initialValue: singleLineInput.children,
     });
 
     editor.update.break.insertSoft();
@@ -128,7 +128,7 @@ describe('SingleLinePlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      value: emptyBlocksInput.children,
+      initialValue: emptyBlocksInput.children,
     });
 
     editor.update.value.repair();

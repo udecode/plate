@@ -1,4 +1,4 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, HtmlPlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseFontBackgroundColorPlugin } from './BaseFontBackgroundColorPlugin';
@@ -17,7 +17,7 @@ describe('BaseFontBackgroundColorPlugin', () => {
       editor.read.schema.property(BaseFontBackgroundColorPlugin)?.value.kind
     ).toBe('string');
     expect(
-      editor.api.html.deserialize({
+      editor.plugin(HtmlPlugin).api.deserialize({
         element: '<span style="background-color: rgb(255, 255, 0)">text</span>',
       })
     ).toMatchObject([
@@ -36,7 +36,7 @@ describe('BaseFontBackgroundColorPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
 
     editor.update.backgroundColor.set('yellow');

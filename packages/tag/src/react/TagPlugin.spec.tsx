@@ -1,4 +1,4 @@
-import { createPlateEditor, pipeOnChange } from '@platejs/core/react';
+import { createPlateEditor } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
 import { MultiSelectPlugin } from './TagPlugin';
@@ -12,7 +12,7 @@ describe('MultiSelectPlugin', () => {
         anchor: { offset: 0, path: [0, 3] },
         focus: { offset: 0, path: [0, 3] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -51,7 +51,7 @@ describe('MultiSelectPlugin', () => {
   it('routes duplicate tag cleanup through the Plite runtime', () => {
     const editor = createPlateEditor({
       plugins: [MultiSelectPlugin],
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'query' },
@@ -66,7 +66,6 @@ describe('MultiSelectPlugin', () => {
     });
 
     editor.update.value.repair();
-    pipeOnChange(editor, [...editor.read.children()]);
 
     const children = editor.read.children()[0].children;
     const tags = children.filter((node) => node.type === KEYS.tag);
@@ -87,7 +86,7 @@ describe('MultiSelectPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 7, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: '  query' }],
           type: 'p',
@@ -104,7 +103,6 @@ describe('MultiSelectPlugin', () => {
 
       if (at) tx.text.insert('!', { at });
     });
-    pipeOnChange(editor, [...editor.read.children()]);
     editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([

@@ -19,7 +19,7 @@ describe('removeAIMarks', () => {
   it('unsets only ai marks and leaves other marks alone', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseBoldPlugin, BaseAIPlugin],
-      value: [
+      initialValue: [
         {
           type: 'p',
           children: [
@@ -43,7 +43,7 @@ describe('removeAIMarks', () => {
   it('respects the at filter', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin],
-      value: [
+      initialValue: [
         { type: 'p', children: [{ ai: true, text: 'one' }] },
         { type: 'p', children: [{ ai: true, text: 'two' }] },
       ],

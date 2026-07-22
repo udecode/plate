@@ -16,7 +16,7 @@ docs:
 - **流式 Markdown/MDX 插入**，支持表格、列和代码块，由 `streamInsertChunk` 驱动。
 - **插入和聊天审查模式**，通过局部回滚的插入预览以及 `withAIBatch` 和 `editor.plugin(BaseAIPlugin).api.undo()` 实现撤销安全批处理。
 - **块选择感知变换**，使用 `editor.plugin(AIChatPlugin).api.replaceSelection` 和 `editor.plugin(AIChatPlugin).api.insertBelow` 替换或追加整个部分。
-- **与 `@ai-sdk/react` 直接集成**，使 `api.aiChat.submit` 可以从 Vercel AI SDK 助手流式传输响应。
+- **与 `@ai-sdk/react` 直接集成**，使 `editor.plugin(AIChatPlugin).api.submit` 可以从 Vercel AI SDK 助手流式传输响应。
 - **建议和评论工具**，可对 AI 编辑进行差异比较、接受/拒绝更改，并将 AI 反馈映射回文档范围。
 
 </PackageInfo>
@@ -211,7 +211,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
 ### 构建 API 路由
 
-在服务器上处理 `api.aiChat.submit` 请求。每个请求包含来自 `@ai-sdk/react` 的聊天 `messages` 和一个 `ctx` 有效载荷，其中包含编辑器 `children`、当前 `selection` 和最后的 `toolName`。
+在服务器上处理 `editor.plugin(AIChatPlugin).api.submit` 请求。每个请求包含来自 `@ai-sdk/react` 的聊天 `messages` 和一个 `ctx` 有效载荷，其中包含编辑器 `children`、当前 `selection` 和最后的 `toolName`。
 [完整 API 示例](https://github.com/udecode/plate-playground-template/blob/main/src/app/api/ai/command/route.ts)
 
 ```ts title="app/api/ai/command/route.ts"
@@ -302,7 +302,7 @@ useEditorChat({
 现在您可以以编程方式提交提示：
 
 ```tsx
-editor.api.aiChat.submit('', {
+editor.plugin(AIChatPlugin).api.submit('', {
   prompt: {
     default: 'Continue the document after {block}',
     selecting: 'Rewrite {selection} with a clearer tone',
@@ -317,13 +317,13 @@ editor.api.aiChat.submit('', {
 
 ### 客户端提示
 
-- `api.aiChat.submit` 接受一个 `EditorPrompt`。提供一个字符串、带有 `default`/`selecting`/`blockSelecting` 的对象，或一个接收 `{ editor, isSelecting, isBlockSelecting }` 的函数。客户端中的助手 `getEditorPrompt` 将该值转换为最终字符串。
+- `editor.plugin(AIChatPlugin).api.submit` 接受一个 `EditorPrompt`。提供一个字符串、带有 `default`/`selecting`/`blockSelecting` 的对象，或一个接收 `{ editor, isSelecting, isBlockSelecting }` 的函数。客户端中的助手 `getEditorPrompt` 将该值转换为最终字符串。
 - 将其与 `replacePlaceholders(editor, template, { prompt })` 结合使用，以使用 `@platejs/ai` 生成的 Markdown 扩展 `{editor}`、`{block}`、`{blockSelection}` 和 `{prompt}`。
 
 ```tsx
 import { replacePlaceholders } from '@platejs/ai';
 
-editor.api.aiChat.submit('Improve tone', {
+editor.plugin(AIChatPlugin).api.submit('Improve tone', {
   prompt: ({ isSelecting }) =>
     isSelecting
       ? replacePlaceholders(editor, 'Rewrite {blockSelection} using a friendly tone.')
@@ -543,7 +543,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown);
 
 ## API
 
-### `api.aiChat.submit(input, options?)`
+### `editor.plugin(AIChatPlugin).api.submit(input, options?)`
 
 向您的模型提供商提交提示。当省略 `mode` 时，折叠光标默认为 `'insert'`，否则为 `'chat'`。
 
@@ -560,7 +560,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown);
 </APIOptions>
 </API>
 
-### `api.aiChat.reset(options?)`
+### `editor.plugin(AIChatPlugin).api.reset(options?)`
 
 清除聊天状态，移除 AI 节点，并可选择撤销最后一个 AI 批次。
 
@@ -570,7 +570,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown);
 </APIParameters>
 </API>
 
-### `api.aiChat.node(options?)`
+### `editor.plugin(AIChatPlugin).api.node(options?)`
 
 检索与指定条件匹配的第一个 AI 节点。
 
@@ -581,19 +581,19 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown);
 <APIReturns type="NodeEntry | undefined">匹配的节点条目（如果找到）。</APIReturns>
 </API>
 
-### `api.aiChat.reload()`
+### `editor.plugin(AIChatPlugin).api.reload()`
 
 使用存储的 `UseChatHelpers` 重放最后一个提示，在重新提交之前恢复原始选择或块选择。
 
-### `api.aiChat.stop()`
+### `editor.plugin(AIChatPlugin).api.stop()`
 
 停止流式传输并调用 `chat.stop`。
 
-### `api.aiChat.show()`
+### `editor.plugin(AIChatPlugin).api.show()`
 
 打开 AI 菜单，清除之前的聊天消息，并重置工具状态。
 
-### `api.aiChat.hide(options?)`
+### `editor.plugin(AIChatPlugin).api.hide(options?)`
 
 关闭 AI 菜单，可选择撤销最后一个 AI 批次并重新聚焦编辑器。
 
@@ -706,7 +706,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown);
 
 <ComponentSource name="ai-menu" />
 
-扩展 `aiChatItems` 映射以添加新命令。每个命令接收 `{ aiEditor, editor, input }` 并可以使用自定义提示或变换调度 `api.aiChat.submit`。
+扩展 `aiChatItems` 映射以添加新命令。每个命令接收 `{ aiEditor, editor, input }` 并可以使用自定义提示或变换调用 `editor.plugin(AIChatPlugin).api.submit`。
 
 #### 简单自定义命令
 
@@ -716,7 +716,7 @@ summarizeInBullets: {
   label: 'Summarize in bullets',
   value: 'summarizeInBullets',
   onSelect: ({ editor }) => {
-    void editor.api.aiChat.submit('', {
+    void editor.plugin(AIChatPlugin).api.submit('', {
       prompt: 'Summarize the current selection using bullet points',
       toolName: 'generate',
     });
@@ -741,7 +741,7 @@ generateTOC: {
         ? 'Create a realistic table of contents for this document'
         : 'Generate a table of contents that reflects the existing headings';
 
-    void editor.api.aiChat.submit('', {
+    void editor.plugin(AIChatPlugin).api.submit('', {
       mode: 'insert',
       prompt,
       toolName: 'generate',

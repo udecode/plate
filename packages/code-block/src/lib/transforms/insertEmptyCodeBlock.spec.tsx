@@ -31,7 +31,7 @@ describe('insert empty code block', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -65,7 +65,7 @@ describe('insert empty code block', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -99,7 +99,7 @@ describe('insert empty code block', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -144,7 +144,7 @@ describe('insert empty code block', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {

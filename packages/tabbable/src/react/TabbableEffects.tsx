@@ -2,7 +2,7 @@ import React from 'react';
 
 import {
   useEditorReadOnly,
-  useEditorRef,
+  useEditor,
   usePluginOption,
 } from '@platejs/core/react';
 import { tabbable } from 'tabbable';
@@ -25,7 +25,7 @@ const comparePaths = (a: number[], b: number[]) => {
 };
 
 export function TabbableEffects() {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const globalEventListener = usePluginOption(
     BaseTabbablePlugin,

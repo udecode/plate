@@ -13,7 +13,7 @@ const createListEditor = (input: TestEditor) =>
   createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 describe('withDeleteFragmentList', () => {
@@ -80,7 +80,7 @@ describe('withDeleteFragmentList', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin, RootOwnerPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
     editor.update((tx) => {
       tx.nodes.insert(rootOwner, { at: [1] });

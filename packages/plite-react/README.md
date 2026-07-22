@@ -46,9 +46,13 @@ keep the native editing contract intact.
 
 Common hooks include `usePliteEditor`, `useEditorSelector`,
 `useEditorSelection`, `usePliteRuntimeState`, `usePliteRootEditor`,
-`usePliteRootState`, `usePliteActiveEditor`, `usePliteCommandCallback`,
+`usePliteRootState`, `usePliteActiveEditor`, `usePliteCommand`,
 `usePliteRootEffect`, `useElementPath`, `useElementSelected`, and
 `usePliteHistory`.
+
+`Plite` observes commits for the provider lifetime. Use `onCommit` for the
+canonical `{ commit, editor, snapshot }` context, or `onValueChange` and
+`onSelectionChange` for their narrower context objects.
 
 Advanced helper hooks include `usePliteNodeRef`,
 `useDOMStrategyVirtualOffset`, and `usePliteRangeDecorationSource`.

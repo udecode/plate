@@ -634,11 +634,8 @@ export const deserialize = (
 
     const meaningfulChildren = getMeaningfulChildren(children);
 
-    if (
-      meaningfulChildren.length > 0 &&
-      meaningfulChildren.every(isTopLevelBlock)
-    ) {
-      return meaningfulChildren;
+    if (meaningfulChildren.some(isTopLevelBlock)) {
+      return normalizeMixedBlockChildren(children);
     }
   }
 

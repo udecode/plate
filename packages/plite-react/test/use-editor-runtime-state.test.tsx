@@ -1,4 +1,5 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, render, renderHook, waitFor } from '@testing-library/react';
+import { useLayoutEffect } from 'react';
 import type { Element } from '@platejs/plite';
 
 import { createReactEditor, useEditorRuntimeState } from '../src';
@@ -74,5 +75,49 @@ describe('useEditorRuntimeState', () => {
       });
     });
     expect(selector).toHaveBeenCalledTimes(initialSelectorCalls + 1);
+  });
+
+  test('catches up when a changed filter misses a child layout commit', () => {
+    const editor = createReactEditor({
+      initialValue: [paragraph('body')],
+    });
+
+    const CommitFromChildLayout = ({ text }: { text?: string }) => {
+      useLayoutEffect(() => {
+        if (!text) return;
+
+        editor.update((tx) => {
+          tx.text.insert(text, { at: { path: [0, 0], offset: 4 } });
+        });
+      }, [text]);
+
+      return null;
+    };
+    const Probe = ({ allow, insert }: { allow: boolean; insert?: string }) => {
+      const text = useEditorRuntimeState(
+        editor,
+        (state) => {
+          const [block] = state.children();
+          const [textNode] = block.children;
+
+          return 'text' in textNode ? textNode.text : '';
+        },
+        { shouldUpdate: () => allow }
+      );
+
+      return (
+        <>
+          <span data-testid="runtime-filtered-text">{text}</span>
+          <CommitFromChildLayout text={insert} />
+        </>
+      );
+    };
+    const rendered = render(<Probe allow={false} />);
+
+    rendered.rerender(<Probe allow insert="!" />);
+
+    expect(rendered.getByTestId('runtime-filtered-text')).toHaveTextContent(
+      'body!'
+    );
   });
 });

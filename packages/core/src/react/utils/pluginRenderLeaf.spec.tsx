@@ -141,7 +141,7 @@ it('renders boundary spacers only for the active hard-affinity edge', () => {
       anchor: { offset: 12, path: [0, 0] },
       focus: { offset: 12, path: [0, 0] },
     } as any,
-    value: [
+    initialValue: [
       {
         children: [{ test: true, text: 'test content' }],
         type: 'p',

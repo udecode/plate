@@ -11,6 +11,687 @@ import type {
   PliteBrowserTransportClaim,
 } from './types';
 
+type ScenarioStepKind = PliteBrowserScenarioStep['kind'];
+type ValueValidator = (value: unknown) => boolean;
+type ScenarioStepShape = {
+  optional?: Record<string, ValueValidator>;
+  required?: Record<string, ValueValidator>;
+  validate?: (value: Record<string, unknown>) => boolean;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  (Object.getPrototypeOf(value) === Object.prototype ||
+    Object.getPrototypeOf(value) === null);
+
+const readJsonArrayValues = (value: unknown[]): unknown[] | null => {
+  if (
+    Object.keys(value).length !== value.length ||
+    Reflect.ownKeys(value).length !== value.length + 1
+  ) {
+    return null;
+  }
+
+  const values: unknown[] = [];
+
+  for (let index = 0; index < value.length; index++) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, index);
+
+    if (!descriptor?.enumerable || !('value' in descriptor)) return null;
+
+    values.push(descriptor.value);
+  }
+
+  return values;
+};
+
+const readJsonObjectEntries = (
+  value: Record<string, unknown>
+): [string, unknown][] | null => {
+  const keys = Object.keys(value);
+
+  if (Reflect.ownKeys(value).length !== keys.length) return null;
+
+  const entries: [string, unknown][] = [];
+
+  for (const key of keys) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+
+    if (!descriptor?.enumerable || !('value' in descriptor)) return null;
+
+    entries.push([key, descriptor.value]);
+  }
+
+  return entries;
+};
+
+const isJsonValue = (
+  value: unknown,
+  ancestors = new Set<object>()
+): boolean => {
+  if (
+    value === null ||
+    typeof value === 'boolean' ||
+    typeof value === 'string'
+  ) {
+    return true;
+  }
+
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (!value || typeof value !== 'object' || ancestors.has(value)) return false;
+
+  const entries = Array.isArray(value)
+    ? readJsonArrayValues(value)
+    : isRecord(value)
+      ? readJsonObjectEntries(value)?.map(([, entry]) => entry)
+      : null;
+
+  if (!entries) return false;
+
+  ancestors.add(value);
+  const valid = entries.every((entry) => isJsonValue(entry, ancestors));
+  ancestors.delete(value);
+
+  return valid;
+};
+
+const isJsonRecord = (value: unknown): value is Record<string, unknown> =>
+  isRecord(value) && isJsonValue(value);
+const isBoolean = (value: unknown): value is boolean =>
+  typeof value === 'boolean';
+const isNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+const isNonnegativeInteger = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 0;
+const isString = (value: unknown): value is string => typeof value === 'string';
+const isNonemptyString: ValueValidator = (value) =>
+  isString(value) && value.length > 0;
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every(isString);
+const isNonemptyStringArray: ValueValidator = (value) =>
+  isStringArray(value) && value.length > 0;
+const isPath = (value: unknown): value is number[] =>
+  Array.isArray(value) && value.every(isNonnegativeInteger);
+const isPathOrNull: ValueValidator = (value) => value === null || isPath(value);
+const isStringOrStringArray: ValueValidator = (value) =>
+  isString(value) || isStringArray(value);
+const isOneOf = (...values: readonly string[]): ValueValidator =>
+  (value) => typeof value === 'string' && values.includes(value);
+const isOffsetExpectation: ValueValidator = (value) =>
+  isNumber(value) ||
+  (Array.isArray(value) &&
+    value.length === 2 &&
+    value.every((entry) => isNumber(entry)));
+const isSelectionPoint = (
+  value: unknown,
+  validateOffset: ValueValidator
+) =>
+  isRecord(value) &&
+  isPath(value.path) &&
+  validateOffset(value.offset) &&
+  Object.keys(value).every((key) => key === 'offset' || key === 'path');
+const isSelection = (
+  value: unknown,
+  validateOffset: ValueValidator
+): boolean =>
+  isRecord(value) &&
+  value.kind === 'text' &&
+  isSelectionPoint(value.anchor, validateOffset) &&
+  isSelectionPoint(value.focus, validateOffset) &&
+  Object.keys(value).every(
+    (key) => key === 'anchor' || key === 'focus' || key === 'kind'
+  );
+const isSelectionSnapshot: ValueValidator = (value) =>
+  isSelection(value, isNumber);
+const isSelectionExpectation: ValueValidator = (value) =>
+  isSelection(value, isOffsetExpectation);
+const isDOMSelectionExpectation: ValueValidator = (value) =>
+  isRecord(value) &&
+  (value.anchorNodeText === null || isString(value.anchorNodeText)) &&
+  isOffsetExpectation(value.anchorOffset) &&
+  (value.focusNodeText === null || isString(value.focusNodeText)) &&
+  isOffsetExpectation(value.focusOffset) &&
+  Object.keys(value).every((key) =>
+    [
+      'anchorNodeText',
+      'anchorOffset',
+      'focusNodeText',
+      'focusOffset',
+    ].includes(key)
+  );
+const isCaretExpectation: ValueValidator = (value) =>
+  isRecord(value) &&
+  isNumber(value.offset) &&
+  isString(value.text) &&
+  Object.keys(value).every((key) => key === 'offset' || key === 'text');
+
+const isValidatedRecord = (
+  value: unknown,
+  fields: Record<string, ValueValidator>,
+  requireOne = false
+): value is Record<string, unknown> => {
+  if (!isRecord(value)) return false;
+
+  const keys = Object.keys(value);
+
+  return (
+    (!requireOne || keys.length > 0) &&
+    keys.every((key) => fields[key]?.(value[key]) === true)
+  );
+};
+
+const isNullable = (validate: ValueValidator): ValueValidator => (value) =>
+  value === null || validate(value);
+const isDOMSelectionLocationExpectation: ValueValidator = (value) =>
+  isValidatedRecord(
+    value,
+    {
+      anchorOffset: isNullable(isNumber),
+      anchorPath: isPathOrNull,
+      anchorText: isNullable(isString),
+      isCollapsed: isNullable(isBoolean),
+    },
+    true
+  );
+const isNumberRange: ValueValidator = (value) =>
+  isValidatedRecord(value, { max: isNumber, min: isNumber }, true);
+const isNumberBudget: ValueValidator = (value) =>
+  isNumber(value) ||
+  isValidatedRecord(
+    value,
+    { exact: isNumber, max: isNumber, min: isNumber },
+    true
+  );
+const renderKinds = [
+  'core-time',
+  'dom-text-sync',
+  'editable',
+  'element',
+  'leaf',
+  'root-plan',
+  'runtime-time',
+  'selector',
+  'spacer',
+  'text',
+  'void',
+] as const;
+const isRenderKindBudget: ValueValidator = (value) =>
+  isValidatedRecord(
+    value,
+    Object.fromEntries(renderKinds.map((kind) => [kind, isNumberBudget])),
+    true
+  );
+const isRenderBudget: ValueValidator = (value) =>
+  isValidatedRecord(
+    value,
+    { byKind: isRenderKindBudget, total: isNumberBudget },
+    true
+  );
+const isRenderedDOMShapeExpectation: ValueValidator = (value) =>
+  isValidatedRecord(value, {
+    blockIndex: isNonnegativeInteger,
+    domSelectionTarget: isDOMSelectionLocationExpectation,
+    innerText: isString,
+    lineBoxCount: (entry) => isNumber(entry) || isNumberRange(entry),
+    noUnexpectedZeroWidthBreaks: (entry) => entry === true,
+    textContent: isString,
+    zeroWidthBreakCount: isNonnegativeInteger,
+    zeroWidthCount: isNonnegativeInteger,
+  }) && Object.keys(value).some((key) => key !== 'blockIndex');
+const isSelectionContractExpectation: ValueValidator = (value) =>
+  isValidatedRecord(
+    value,
+    {
+      domSelection: isDOMSelectionExpectation,
+      domSelectionTarget: isDOMSelectionLocationExpectation,
+      hasVisibleEditorSelection: isBoolean,
+      hasVisibleSelection: isBoolean,
+      noDoubleSelectionHighlight: (entry) => entry === true,
+      selectedText: isString,
+      selection: isSelectionExpectation,
+    },
+    true
+  );
+
+const isKernelMovement: ValueValidator = (value) =>
+  isValidatedRecord(value, {
+    axis: isOneOf(
+      'document',
+      'horizontal',
+      'line',
+      'unknown',
+      'vertical',
+      'word'
+    ),
+    extend: isBoolean,
+    key: isString,
+    ownership: isOneOf('model-owned', 'native-allowed'),
+    reason: isOneOf(
+      'model-document-boundary',
+      'model-horizontal-inline-void',
+      'model-line-browser',
+      'model-word-boundary',
+      'native-selection-key',
+      'native-vertical-layout'
+    ),
+    reverse: isNullable(isBoolean),
+  });
+const isKernelSelectionPolicy: ValueValidator = (value) =>
+  isValidatedRecord(
+    value,
+    {
+      kind: isOneOf(
+        'clear',
+        'export-model',
+        'import-dom',
+        'none',
+        'partial-dom',
+        'preserve-model'
+      ),
+      reason: isOneOf(
+        'internal-control',
+        'model-owned',
+        'native-selection',
+        'not-requested',
+        'partial-dom-backed',
+        'selection-clear',
+        'unknown-selection'
+      ),
+    },
+    true
+  );
+const isKernelRepairPolicy: ValueValidator = (value) =>
+  isValidatedRecord(
+    value,
+    {
+      kind: isOneOf(
+        'force-render',
+        'none',
+        'repair-caret',
+        'repair-text',
+        'sync-selection'
+      ),
+      reason: isOneOf(
+        'force-render',
+        'not-requested',
+        'repair-caret',
+        'repair-caret-after-text-insert',
+        'repair-text',
+        'sync-selection'
+      ),
+    },
+    true
+  );
+const isKernelTransition: ValueValidator = (value) =>
+  isValidatedRecord(
+    value,
+    { allowed: isBoolean, reason: isNullable(isString) },
+    true
+  );
+const isKernelTraceExpectation: ValueValidator = (value) =>
+  isValidatedRecord(
+    value,
+    {
+      commandKind: isNullable(
+        isOneOf(
+          'format',
+          'delete',
+          'delete-both',
+          'delete-fragment',
+          'history',
+          'insert-break',
+          'insert-data',
+          'insert-text',
+          'move-selection',
+          'select',
+          'select-all',
+          'set-block',
+          'transpose-character',
+          'toggle-mark'
+        )
+      ),
+      eventFamily: isOneOf(
+        'beforeinput',
+        'blur',
+        'click',
+        'compositionend',
+        'compositionstart',
+        'compositionupdate',
+        'copy',
+        'cut',
+        'dragend',
+        'dragover',
+        'dragstart',
+        'drop',
+        'focus',
+        'input',
+        'keydown',
+        'mousedown',
+        'paste',
+        'repair',
+        'selectionchange'
+      ),
+      movement: isNullable(isKernelMovement),
+      ownership: isOneOf(
+        'app-owned',
+        'deferred',
+        'model-owned',
+        'native-allowed',
+        'native-denied',
+        'no-op'
+      ),
+      repairPolicy: isKernelRepairPolicy,
+      selectionChangeOrigin: isOneOf(
+        'browser-handle',
+        'native-user',
+        'programmatic-export',
+        'repair-induced',
+        'unknown'
+      ),
+      selectionPolicy: isKernelSelectionPolicy,
+      selectionSource: isOneOf(
+        'app-owned',
+        'composition-owned',
+        'dom-current',
+        'internal-control',
+        'model-owned',
+        'partial-dom-backed',
+        'unknown'
+      ),
+      stateAfter: isOneOf(
+        'app-owned',
+        'clipboard',
+        'composition',
+        'dom-selection',
+        'dragging',
+        'idle',
+        'internal-control',
+        'model-owned',
+        'partial-dom-backed',
+        'repairing',
+      ),
+      stateBefore: isOneOf(
+        'app-owned',
+        'clipboard',
+        'composition',
+        'dom-selection',
+        'dragging',
+        'idle',
+        'internal-control',
+        'model-owned',
+        'partial-dom-backed',
+        'repairing',
+      ),
+      targetOwner: isOneOf(
+        'app-owned',
+        'editor',
+        'internal-control',
+        'outside-editor',
+        'partial-dom',
+        'unknown'
+      ),
+      transition: isKernelTransition,
+    },
+    true
+  );
+
+const commonScenarioStepFields: Record<string, ValueValidator> = {
+  iteration: isNonnegativeInteger,
+  label: isString,
+  warmLoop: isString,
+};
+
+const scenarioStepShapes = {
+  activateShell: {
+    required: {
+      buttonName: isString,
+      expectedSelection: isSelectionExpectation,
+    },
+  },
+  applyChange: {
+    optional: { tag: isStringOrStringArray },
+    required: { change: isJsonRecord },
+  },
+  applyValueChange: {
+    optional: { tag: isStringOrStringArray },
+    required: { value: isJsonRecord },
+  },
+  assertBlockTexts: {
+    optional: { startIndex: isNonnegativeInteger },
+    required: { texts: isStringArray },
+  },
+  assertCapturedRuntimeIdPath: {
+    required: { name: isString, path: isPathOrNull },
+  },
+  assertDOMCaret: { required: { offset: isNumber, text: isString } },
+  assertDOMSelection: {
+    required: { selection: isDOMSelectionExpectation },
+  },
+  assertFocusOwner: {
+    required: {
+      focusOwner: isOneOf(
+        'contenteditable',
+        'editor',
+        'internal-control',
+        'none',
+        'outside'
+      ),
+    },
+  },
+  assertKernelTrace: { required: { trace: isKernelTraceExpectation } },
+  assertLastCommit: {},
+  assertLastCommitIncludesTags: {
+    required: { tags: isNonemptyStringArray },
+  },
+  assertLastCommitTags: { required: { tags: isStringArray } },
+  assertLocatorCount: {
+    optional: {
+      count: isNonnegativeInteger,
+      max: isNonnegativeInteger,
+      min: isNonnegativeInteger,
+    },
+    required: { selector: isString },
+    validate: (value) => {
+      const hasCount = Object.hasOwn(value, 'count');
+      const hasRange =
+        Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min');
+
+      return hasCount ? !hasRange : hasRange;
+    },
+  },
+  assertLocatorCss: {
+    optional: {
+      index: isNonnegativeInteger,
+      notValue: isString,
+      value: isString,
+    },
+    required: { property: isString, selector: isString },
+    validate: (value) =>
+      Object.hasOwn(value, 'value') || Object.hasOwn(value, 'notValue'),
+  },
+  assertLocatorText: {
+    optional: { contains: isNonemptyString, text: isString },
+    required: { selector: isString },
+    validate: (value) =>
+      Object.hasOwn(value, 'contains') || Object.hasOwn(value, 'text'),
+  },
+  assertLocatorVerticalGap: {
+    optional: { max: isNumber, min: isNumber },
+    required: { afterSelector: isString, beforeSelector: isString },
+    validate: (value) =>
+      Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min'),
+  },
+  assertLocatorVerticalOffset: {
+    optional: { max: isNumber, min: isNumber },
+    required: { innerSelector: isString, selector: isString },
+    validate: (value) =>
+      Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min'),
+  },
+  assertModelSelectionExpanded: {},
+  assertModelText: { required: { text: isNonemptyString } },
+  assertRenderBudget: { required: { budget: isRenderBudget } },
+  assertRenderedDOMShape: {
+    required: { shape: isRenderedDOMShapeExpectation },
+  },
+  assertSelectedText: { required: { text: isString } },
+  assertSelection: { required: { selection: isSelectionExpectation } },
+  assertSelectionContract: {
+    required: { expectation: isSelectionContractExpectation },
+  },
+  assertSelectionLocation: {
+    required: { location: isDOMSelectionLocationExpectation },
+  },
+  assertText: { required: { text: isNonemptyString } },
+  assertWindowSelectionText: {
+    optional: {
+      contains: isNonemptyString,
+      notEmpty: isBoolean,
+      text: isString,
+    },
+    validate: (value) =>
+      value.notEmpty === true ||
+      Object.hasOwn(value, 'contains') ||
+      Object.hasOwn(value, 'text'),
+  },
+  captureRuntimeId: { required: { name: isString, path: isPath } },
+  clickSelector: { required: { selector: isString } },
+  clickTestId: { required: { testId: isString } },
+  clickTextOffset: { required: { offset: isNumber, path: isPath } },
+  composeText: {
+    optional: {
+      committedText: isString,
+      steps: isStringArray,
+      transport: isOneOf('native', 'synthetic'),
+    },
+    required: { text: isString },
+  },
+  deleteBackward: {},
+  deleteForward: {},
+  doubleClickTextOffset: {
+    optional: { selectedText: isString },
+    required: { offset: isNumber, path: isPath },
+  },
+  dragTextSelection: {
+    optional: {
+      endXOffset: isNumber,
+      index: isNonnegativeInteger,
+      startXOffset: isNumber,
+      steps: isNonnegativeInteger,
+      yOffset: isNumber,
+    },
+    required: { selector: isString },
+  },
+  dropHtml: {
+    optional: { text: isString },
+    required: { html: isString },
+  },
+  fillControl: {
+    required: { selector: isString, value: isString },
+  },
+  focus: {},
+  insertText: { required: { text: isString } },
+  mutateTextDOM: {
+    optional: {
+      data: isString,
+      inputType: isString,
+      selectionOffset: isNumber,
+    },
+    required: { path: isPath, text: isString },
+  },
+  pasteHtml: {
+    optional: { text: isString },
+    required: { html: isString },
+  },
+  pasteText: { required: { text: isString } },
+  press: { required: { key: isString } },
+  resetRenderProfiler: {},
+  rootClick: {},
+  rootMouseDown: {},
+  select: { required: { selection: isSelectionSnapshot } },
+  selectAll: {},
+  selectDOM: { required: { selection: isSelectionSnapshot } },
+  settle: { optional: { timeoutMs: isNumber } },
+  snapshot: { required: { label: isString } },
+  type: { required: { text: isString } },
+  typeThenUndo: {
+    required: {
+      caretAfterType: isCaretExpectation,
+      caretAfterUndo: isCaretExpectation,
+      expectedModelTextAfterType: isString,
+      expectedModelTextAfterUndo: isString,
+      text: isString,
+    },
+  },
+  undo: { optional: { expectedModelTextBefore: isString } },
+} satisfies Record<ScenarioStepKind, ScenarioStepShape>;
+
+const decodeScenarioStep = (
+  value: unknown,
+  path: string
+): PliteBrowserScenarioStep => {
+  if (!isJsonRecord(value)) {
+    throw new TypeError(`${path} must be a JSON object.`);
+  }
+  if (!isString(value.kind) || !Object.hasOwn(scenarioStepShapes, value.kind)) {
+    throw new TypeError(`${path}.kind is not a supported scenario step.`);
+  }
+
+  const kind = value.kind as ScenarioStepKind;
+  const shape: ScenarioStepShape = scenarioStepShapes[kind];
+  const required = shape.required ?? {};
+  const optional = { ...commonScenarioStepFields, ...shape.optional };
+  const allowedKeys = new Set(['kind', ...Object.keys(required), ...Object.keys(optional)]);
+
+  for (const key of Object.keys(value)) {
+    if (!allowedKeys.has(key)) {
+      throw new TypeError(`${path}.${key} is not valid for ${kind}.`);
+    }
+  }
+  for (const [key, validate] of Object.entries(required)) {
+    if (!Object.hasOwn(value, key) || !validate(value[key])) {
+      throw new TypeError(`${path}.${key} is invalid for ${kind}.`);
+    }
+  }
+  for (const [key, validate] of Object.entries(optional)) {
+    if (Object.hasOwn(value, key) && !validate(value[key])) {
+      throw new TypeError(`${path}.${key} is invalid for ${kind}.`);
+    }
+  }
+  if (shape.validate && !shape.validate(value)) {
+    throw new TypeError(`${path} does not contain a meaningful assertion.`);
+  }
+
+  return value as PliteBrowserScenarioStep;
+};
+
+const omitAbsentScenarioStepFields = (
+  step: PliteBrowserScenarioStep
+): Record<string, unknown> => {
+  if (
+    !isRecord(step) ||
+    !isString(step.kind) ||
+    !Object.hasOwn(scenarioStepShapes, step.kind)
+  ) {
+    return step;
+  }
+
+  const shape: ScenarioStepShape =
+    scenarioStepShapes[step.kind as ScenarioStepKind];
+  const optional = { ...commonScenarioStepFields, ...shape.optional };
+  const required = shape.required ?? {};
+
+  return Object.fromEntries(
+    Object.entries(step).filter(
+      ([key, value]) =>
+        value !== undefined ||
+        !Object.hasOwn(optional, key) ||
+        Object.hasOwn(required, key)
+    )
+  );
+};
+
 /** Create candidate reduced scenarios from a failing scenario result. */
 export const createScenarioReductionCandidates = (
   steps: readonly PliteBrowserScenarioStep[]
@@ -182,55 +863,68 @@ export const summarizeScenarioStep = (
         step.notEmpty ? 'not empty' : 'current'
       }`;
     }
-    case 'custom':
-      return `${label}: custom non-replayable`;
     default:
       return `${label}: ${step.kind}`;
   }
 };
 
 const toReplayValue = (
-  value: unknown
+  value: unknown,
+  ancestors = new Set<object>()
 ): { replayable: boolean; value: unknown } => {
-  if (typeof value === 'function') {
+  if (
+    value === undefined ||
+    typeof value === 'bigint' ||
+    typeof value === 'function' ||
+    typeof value === 'symbol'
+  ) {
     return { replayable: false, value: undefined };
   }
 
-  if (value instanceof RegExp) {
-    return {
-      replayable: true,
-      value: {
-        flags: value.flags,
-        source: value.source,
-        type: 'RegExp',
-      },
-    };
+  if (typeof value === 'number' && !Number.isFinite(value)) {
+    return { replayable: false, value: undefined };
   }
 
   if (Array.isArray(value)) {
+    const values = readJsonArrayValues(value);
+
+    if (!values || ancestors.has(value)) {
+      return { replayable: false, value: undefined };
+    }
+
+    ancestors.add(value);
     let replayable = true;
-    const arrayValue = value
-      .map((entry) => {
-        const result = toReplayValue(entry);
-        replayable &&= result.replayable;
-        return result.value;
-      })
-      .filter((entry) => entry !== undefined);
+    const arrayValue = values.map((entry) => {
+      const result = toReplayValue(entry, ancestors);
+      replayable &&= result.replayable;
+      return result.value;
+    });
+    ancestors.delete(value);
 
     return { replayable, value: arrayValue };
   }
 
   if (value && typeof value === 'object') {
+    const prototype = Object.getPrototypeOf(value);
+    const entries =
+      prototype === Object.prototype || prototype === null
+        ? readJsonObjectEntries(value as Record<string, unknown>)
+        : null;
+
+    if (!entries || ancestors.has(value)) {
+      return { replayable: false, value: undefined };
+    }
+
+    ancestors.add(value);
     let replayable = true;
     const objectValue = Object.fromEntries(
-      Object.entries(value)
-        .map(([key, entry]) => {
-          const result = toReplayValue(entry);
-          replayable &&= result.replayable;
-          return [key, result.value] as const;
-        })
-        .filter(([, entry]) => entry !== undefined)
+      entries.map(([key, entry]) => {
+        const result = toReplayValue(entry, ancestors);
+        replayable &&= result.replayable;
+        return [key, result.value] as const;
+      })
     );
+    ancestors.delete(value);
 
     return { replayable, value: objectValue };
   }
@@ -243,20 +937,111 @@ export const serializeScenarioStepForReplay = (
   step: PliteBrowserScenarioStep,
   index: number
 ): PliteBrowserScenarioReplayStep => {
-  const { value, replayable } = toReplayValue(step);
-  const replayValue =
-    value && typeof value === 'object'
-      ? (value as Record<string, unknown>)
-      : {};
+  const { value, replayable } = toReplayValue(
+    omitAbsentScenarioStepFields(step)
+  );
+
+  if (!replayable) {
+    throw new TypeError(
+      `Browser scenario step "${getScenarioStepLabel(step, index)}" is not serializable. Use editor.scenario.runImperative for arbitrary browser code.`
+    );
+  }
+
+  const replayValue = decodeScenarioStep(value, `scenario.steps[${index}]`);
 
   return {
-    iteration: step.iteration,
+    ...(step.iteration === undefined ? {} : { iteration: step.iteration }),
     kind: step.kind,
     label: getScenarioStepLabel(step, index),
-    replayable,
+    replayable: true,
     summary: summarizeScenarioStep(step, index),
     value: replayValue,
-    warmLoop: step.warmLoop,
+    ...(step.warmLoop === undefined ? {} : { warmLoop: step.warmLoop }),
+  };
+};
+
+const decodeScenarioReplayStep = (
+  value: unknown,
+  index: number
+): PliteBrowserScenarioReplayStep => {
+  const path = `replay.steps[${index}]`;
+
+  if (!isJsonRecord(value)) {
+    throw new TypeError(`${path} must be a JSON object.`);
+  }
+
+  const allowedKeys = new Set([
+    'iteration',
+    'kind',
+    'label',
+    'replayable',
+    'summary',
+    'value',
+    'warmLoop',
+  ]);
+
+  for (const key of Object.keys(value)) {
+    if (!allowedKeys.has(key)) {
+      throw new TypeError(`${path}.${key} is not valid replay metadata.`);
+    }
+  }
+  if (
+    value.replayable !== true ||
+    !isString(value.kind) ||
+    !isString(value.label) ||
+    !isString(value.summary) ||
+    (Object.hasOwn(value, 'iteration') &&
+      !isNonnegativeInteger(value.iteration)) ||
+    (Object.hasOwn(value, 'warmLoop') && !isString(value.warmLoop))
+  ) {
+    throw new TypeError(`${path} has invalid replay metadata.`);
+  }
+
+  const step = decodeScenarioStep(value.value, `${path}.value`);
+  const expectedLabel = getScenarioStepLabel(step, index);
+  const expectedSummary = summarizeScenarioStep(step, index);
+
+  if (
+    value.kind !== step.kind ||
+    value.label !== expectedLabel ||
+    value.summary !== expectedSummary ||
+    value.iteration !== step.iteration ||
+    value.warmLoop !== step.warmLoop
+  ) {
+    throw new TypeError(`${path} metadata does not match its scenario step.`);
+  }
+
+  return {
+    ...(step.iteration === undefined ? {} : { iteration: step.iteration }),
+    kind: step.kind,
+    label: expectedLabel,
+    replayable: true,
+    summary: expectedSummary,
+    value: step,
+    ...(step.warmLoop === undefined ? {} : { warmLoop: step.warmLoop }),
+  };
+};
+
+/** Decode and validate a canonical JSON scenario replay artifact. */
+export const decodeScenarioReplay = (
+  value: unknown
+): PliteBrowserScenarioReplay => {
+  if (!isJsonRecord(value)) {
+    throw new TypeError('Scenario replay must be a JSON object.');
+  }
+  if (
+    value.replayable !== true ||
+    !Array.isArray(value.steps) ||
+    Object.keys(value).some(
+      (key) => key !== 'replayable' && key !== 'steps'
+    )
+  ) {
+    throw new TypeError('Scenario replay has an unsupported shape.');
+  }
+
+  return {
+    replayable: true,
+    steps: value.steps.map(decodeScenarioReplayStep),
   };
 };
 
@@ -267,7 +1052,7 @@ export const createScenarioReplay = (
   const replaySteps = steps.map(serializeScenarioStepForReplay);
 
   return {
-    replayable: replaySteps.every((step) => step.replayable),
+    replayable: true,
     steps: replaySteps,
   };
 };

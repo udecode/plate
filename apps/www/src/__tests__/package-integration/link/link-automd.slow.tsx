@@ -16,12 +16,12 @@ const createPlainEditor = (text: string, offset = text.length) =>
       anchor: { offset, path: [0, 0] },
       focus: { offset, path: [0, 0] },
     },
-    value: [{ children: [{ text }], type: 'p' }],
+    initialValue: [{ children: [{ text }], type: 'p' }],
   } as any);
 const createEditor = (value: any) =>
   createBaseEditor({
     plugins: [BaseParagraphPlugin, ...LinkKit, ...AutoformatKit],
-    value,
+    initialValue: value,
   } as any);
 
 const insertText = (

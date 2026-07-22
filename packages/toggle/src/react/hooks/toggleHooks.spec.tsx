@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
 
 const useEditorPluginMock = mock();
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useEditorSelectorMock = mock();
 const usePluginOptionMock = mock();
 const openNextTogglesMock = mock();
@@ -21,7 +21,7 @@ mock.module('../transforms', () => ({
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
   useEditorPlugin: useEditorPluginMock,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   useEditorSelector: useEditorSelectorMock,
   usePluginOption: usePluginOptionMock,
 }));
@@ -29,7 +29,7 @@ mock.module('@platejs/core/react', () => ({
 describe('toggle hooks', () => {
   beforeEach(() => {
     useEditorPluginMock.mockReset();
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     useEditorSelectorMock.mockReset();
     usePluginOptionMock.mockReset();
     openNextTogglesMock.mockReset();
@@ -58,7 +58,7 @@ describe('toggle hooks', () => {
     const editor = { api: { dom: { focus } }, update };
 
     useEditorSelectorMock.mockReturnValue(true);
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
 
     const { result } = renderHook(() => {
       const state = useToggleToolbarButtonState();

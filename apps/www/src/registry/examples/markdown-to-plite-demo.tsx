@@ -103,7 +103,7 @@ export default function MarkdownDemo() {
 
   const markdownEditor = usePlateEditor({
     plugins: [],
-    value: [{ children: [{ text: markdownValue }], type: 'p' }],
+    initialValue: [{ children: [{ text: markdownValue }], type: 'p' }],
   });
 
   const editor = usePlateEditor(

@@ -12,7 +12,7 @@ import { BaseCodeBlockPlugin, insertCodeBlock } from '@platejs/code-block';
 import { BaseDatePlugin } from '@platejs/date';
 import { BaseFootnoteReferencePlugin } from '@platejs/footnote';
 import { BaseColumnItemPlugin, insertColumnGroup } from '@platejs/layout';
-import { triggerFloatingLink } from '@platejs/link/react';
+import { LinkPlugin } from '@platejs/link/react';
 import { BaseListPlugin } from '@platejs/list-classic';
 import { BaseInlineEquationPlugin, insertEquation } from '@platejs/math';
 import {
@@ -110,7 +110,8 @@ const insertInlineMap: Record<
   [ACTION_FOOTNOTE]: runFootnoteAction,
   [KEYS.inlineEquation]: (editor) =>
     editor.plugin(BaseInlineEquationPlugin).update.insert({ select: true }),
-  [KEYS.link]: (editor) => triggerFloatingLink(editor, { focused: true }),
+  [KEYS.link]: (editor) =>
+    editor.plugin(LinkPlugin).api.trigger({ focused: true }),
 };
 
 export const insertBlock = (editor: PlateEditor, type: string) => {

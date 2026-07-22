@@ -7,7 +7,7 @@ describe('selectBlockSelectionNodes', () => {
   it('sets the editor selection through the editor update transaction', () => {
     const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
-      value: [
+      initialValue: [
         {
           id: 'block1',
           children: [{ text: 'One' }],
@@ -42,7 +42,7 @@ describe('selectBlockSelectionNodes', () => {
   it('sets a range across all selected blocks', () => {
     const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
-      value: [
+      initialValue: [
         {
           id: 'block1',
           children: [{ text: 'One' }],
@@ -77,7 +77,7 @@ describe('selectBlockSelectionNodes', () => {
   it('does not mutate plugin state when no model range is found', () => {
     const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
-      value: [
+      initialValue: [
         {
           id: 'block1',
           children: [{ text: 'One' }],
@@ -107,7 +107,7 @@ describe('selectBlockSelectionNodes', () => {
   it('keeps plugin selection intact when publication rolls back', () => {
     const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
-      value: [
+      initialValue: [
         {
           id: 'block1',
           children: [{ text: 'One' }],
@@ -138,7 +138,7 @@ describe('selectBlockSelectionNodes', () => {
   it('reads blocks inserted earlier in the same transaction', () => {
     const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
-      value: [
+      initialValue: [
         {
           id: 'block1',
           children: [{ text: 'One' }],

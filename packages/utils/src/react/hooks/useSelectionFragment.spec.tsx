@@ -29,7 +29,7 @@ describe('useSelectionFragment', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     const fragment = [{ children: [{ text: 'one' }], type: 'p' }];
 
@@ -47,7 +47,7 @@ describe('useSelectionFragment', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     const { result } = renderHook(

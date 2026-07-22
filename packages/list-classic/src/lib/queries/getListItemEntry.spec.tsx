@@ -25,7 +25,7 @@ it('returns the current list and list item for a top-level list selection', () =
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   expect(getListItemEntry(editor)).toEqual({
@@ -77,7 +77,7 @@ it('returns the nearest nested list and list item for a nested selection', () =>
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   expect(getListItemEntry(editor)).toEqual({
@@ -134,7 +134,7 @@ it('uses the focus path for expanded selections', () => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   expect(getListItemEntry(editor)).toEqual({
@@ -193,7 +193,7 @@ it('returns undefined when the selection is outside of a list item', () => {
   const editor = createBaseEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
   expect(getListItemEntry(editor)).toBeUndefined();

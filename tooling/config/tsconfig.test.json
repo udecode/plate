@@ -16,9 +16,6 @@
       "@platejs/browser/playwright": [
         "../../packages/browser/src/playwright/index.ts"
       ],
-      "@platejs/browser/transports": [
-        "../../packages/browser/src/transports/index.ts"
-      ],
       "@platejs/plite/internal": ["../../packages/plite/src/internal/index.ts"],
       "@platejs/plite": ["../../packages/plite/src/index.ts"],
       "@platejs/plite-dom": ["../../packages/plite-dom/src/index.ts"],

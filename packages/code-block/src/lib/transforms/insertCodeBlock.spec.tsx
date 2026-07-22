@@ -40,7 +40,7 @@ describe('insert code block', () => {
       const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update((tx) => {
@@ -81,7 +81,7 @@ describe('insert code block', () => {
       const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update((tx) => {
@@ -123,7 +123,7 @@ describe('insert code block', () => {
       const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update((tx) => {
@@ -137,7 +137,7 @@ describe('insert code block', () => {
   it('does nothing when there is no selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      value: [{ type: KEYS.p, children: [{ text: 'line 1' }] }],
+      initialValue: [{ type: KEYS.p, children: [{ text: 'line 1' }] }],
     });
 
     editor.update((tx) => {
@@ -163,7 +163,7 @@ describe('insert code block', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
     const before = editor.read.children();
 

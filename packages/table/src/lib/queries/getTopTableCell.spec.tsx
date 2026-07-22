@@ -14,7 +14,7 @@ const createEditorInstance = (input: TestEditor) =>
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 describe('getTopTableCell', () => {

@@ -18,7 +18,7 @@ describe('DOMPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value,
+      initialValue: value,
     });
     editor.extend(
       defineEditorExtension({
@@ -65,7 +65,7 @@ describe('DOMPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value,
+      initialValue: value,
     });
     editor.extend(
       defineEditorExtension({
@@ -100,7 +100,7 @@ describe('DOMPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value,
+      initialValue: value,
     });
     editor.extend(
       defineEditorExtension({
@@ -135,7 +135,7 @@ describe('DOMPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: '' }], type: 'p' },
         { children: [{ text: '' }], type: 'p' },
       ],
@@ -168,7 +168,7 @@ describe('DOMPlugin', () => {
       { children: [{ text: '' }], type: 'p' },
     ];
     const source = createBaseEditor({
-      value: twoBlocks,
+      initialValue: twoBlocks,
     });
 
     source.update.text.insert('x', { at: { offset: 0, path: [1, 0] } });
@@ -183,7 +183,7 @@ describe('DOMPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: twoBlocks,
+      initialValue: twoBlocks,
     });
     editor.extend(
       defineEditorExtension({
@@ -210,7 +210,7 @@ describe('DOMPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value,
+      initialValue: value,
     });
     editor.extend(
       defineEditorExtension({
@@ -248,7 +248,7 @@ describe('DOMPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value,
+      initialValue: value,
     });
     editor.extend(
       defineEditorExtension({
@@ -334,7 +334,7 @@ describe('DOMPlugin', () => {
 
   it('exposes Plate auto-scroll state and leaves view state on the Plite view', () => {
     const editor = createBaseEditor({
-      value,
+      initialValue: value,
     });
 
     expect(editor.api.dom.isAutoScrolling()).toBe(false);
@@ -344,7 +344,7 @@ describe('DOMPlugin', () => {
 
     const readOnlyEditor = createBaseEditor({
       readOnly: true,
-      value,
+      initialValue: value,
     });
 
     expect(readOnlyEditor.read.view.isReadOnly()).toBe(true);
@@ -353,7 +353,7 @@ describe('DOMPlugin', () => {
   it('preserves host DOM focus API', () => {
     const focusSpy = mock(() => {});
     const editor = createBaseEditor({
-      value,
+      initialValue: value,
     });
     editor.extend(
       defineEditorExtension({

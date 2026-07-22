@@ -1,9 +1,9 @@
 import { decode } from 'html-entities';
-import { serializeHtml } from 'platejs/static';
+import { renderStaticHtml } from 'platejs/static';
 
 import { createStaticEditor } from './create-static-editor';
 
-describe('core static serializeHtml element rendering', () => {
+describe('core static renderStaticHtml element rendering', () => {
   it('renders paragraph text', async () => {
     const editor = createStaticEditor([
       {
@@ -12,7 +12,7 @@ describe('core static serializeHtml element rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor);
+    const html = await renderStaticHtml(editor);
 
     expect(html).toContain('Some random paragraph here...');
   });
@@ -33,7 +33,7 @@ describe('core static serializeHtml element rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor);
+    const html = await renderStaticHtml(editor);
 
     expect(html).toContain('Heading 1');
     expect(html).toContain('Heading 2');
@@ -48,7 +48,7 @@ describe('core static serializeHtml element rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor);
+    const html = await renderStaticHtml(editor);
 
     expect(html).toContain('Blockquoted text here...');
   });
@@ -64,7 +64,7 @@ describe('core static serializeHtml element rendering', () => {
       { children: [{ text: ' part.' }], type: 'p' },
     ]);
 
-    const html = await serializeHtml(editor);
+    const html = await renderStaticHtml(editor);
 
     expect(html).toContain(decode('href="https://example.com/"'));
     expect(html).toContain('plite-a');
@@ -79,7 +79,7 @@ describe('core static serializeHtml element rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor);
+    const html = await renderStaticHtml(editor);
 
     expect(html).toContain('src="https://example.com/image.jpg"');
   });
@@ -100,7 +100,7 @@ describe('core static serializeHtml element rendering', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor);
+    const html = await renderStaticHtml(editor);
 
     expect(html).toContain('Cell 1');
     expect(html).toContain('Cell 2');

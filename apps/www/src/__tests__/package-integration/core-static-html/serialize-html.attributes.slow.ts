@@ -1,8 +1,8 @@
-import { serializeHtml } from 'platejs/static';
+import { renderStaticHtml } from 'platejs/static';
 
 import { createStaticEditor } from './create-static-editor';
 
-describe('core static serializeHtml attributes', () => {
+describe('core static renderStaticHtml attributes', () => {
   it('applies element, text, and leaf props to the output', async () => {
     const editor = createStaticEditor(
       [
@@ -36,7 +36,7 @@ describe('core static serializeHtml attributes', () => {
       }
     );
 
-    const html = await serializeHtml(editor, {
+    const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });

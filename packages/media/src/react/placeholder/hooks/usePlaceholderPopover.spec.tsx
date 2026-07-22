@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
 import * as actualUtils from '@platejs/utils';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useEditorSelectorMock = mock();
 const useElementMock = mock();
 const useEditorFocusedMock = mock();
@@ -24,7 +24,7 @@ mock.module('@platejs/plite-react', () => ({
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   useEditorSelector: useEditorSelectorMock,
   useElement: useElementMock,
 }));
@@ -36,7 +36,7 @@ mock.module('../placeholderStore', () => ({
 
 describe('usePlaceholderPopoverState', () => {
   beforeEach(() => {
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     useEditorSelectorMock.mockReset();
     useElementMock.mockReset();
     useEditorFocusedMock.mockReset();
@@ -58,7 +58,7 @@ describe('usePlaceholderPopoverState', () => {
     const setUploading = mock();
     const setUpdatedFiles = mock();
 
-    useEditorRefMock.mockReturnValue({ id: 'editor' });
+    useEditorMock.mockReturnValue({ id: 'editor' });
     useEditorSelectorMock.mockReturnValue(true);
     useElementMock.mockReturnValue({ id: 'ph-1', mediaType: 'image' });
     useEditorFocusedMock.mockReturnValue(true);

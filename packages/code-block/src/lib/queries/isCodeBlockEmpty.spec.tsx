@@ -14,7 +14,7 @@ describe('isCodeBlockEmpty', () => {
       createBaseEditor({
         plugins: [BaseCodeBlockPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       })
     );
 

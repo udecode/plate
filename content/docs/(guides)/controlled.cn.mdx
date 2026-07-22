@@ -12,8 +12,8 @@ Plate 不是普通的受控文本输入。编辑器拥有内容、选择、历�
 
 | 目标 | API |
 | --- | --- |
-| 设置初始内容。 | `usePlateEditor` 或 `createPlateEditor` 的 `value`。 |
-| 持久化编辑。 | `<Plate onValueChange>` 或 `<Plate onChange>`。 |
+| 设置初始内容。 | `usePlateEditor` 或 `createPlateEditor` 的 `initialValue`。 |
+| 持久化编辑。 | `<Plate onValueChange>` 或 `<Plate onCommit>`。 |
 | 从编辑器外部替换内容。 | `editor.update((tx) => tx.value.replace({ children: value }))`。 |
 | 恢复初始内容。 | `editor.update((tx) => tx.value.replace({ children: initialValue }))`。 |
 | 延迟初始化。 | `skipInitialization: true` 加一次显式 `editor.update(...)`。 |

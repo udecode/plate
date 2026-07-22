@@ -3,7 +3,7 @@ import {
   BlockSelectionPlugin,
   CursorOverlayPlugin,
 } from '@platejs/selection/react';
-import { getTransientSuggestionKey } from '@platejs/suggestion';
+import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { BaseParagraphPlugin, NodeIdPlugin } from '@platejs/core';
 import { SelectionApi, type TextSelection, type Value } from '@platejs/plite';
@@ -43,7 +43,7 @@ const createEditor = (
       AIChatPlugin.configure({ options: { chatNodes } }),
     ],
     selection,
-    value,
+    initialValue: value,
   });
 
 describe('applyAISuggestions utils', () => {
@@ -74,8 +74,6 @@ describe('applyAISuggestions utils', () => {
   });
 
   it('marks every node as transient and preserves nested children', () => {
-    const transientKey = getTransientSuggestionKey();
-
     expect(
       withTransient([
         { children: [{ text: 'child' }], type: 'p' },
@@ -83,11 +81,11 @@ describe('applyAISuggestions utils', () => {
       ])
     ).toEqual([
       {
-        [transientKey]: true,
-        children: [{ [transientKey]: true, text: 'child' }],
+        [SUGGESTION_TRANSIENT_KEY]: true,
+        children: [{ [SUGGESTION_TRANSIENT_KEY]: true, text: 'child' }],
         type: 'p',
       },
-      { [transientKey]: true, text: 'leaf' },
+      { [SUGGESTION_TRANSIENT_KEY]: true, text: 'leaf' },
     ]);
   });
 
@@ -155,7 +153,7 @@ describe('applyAISuggestions utils', () => {
     const transientNodes = editor.read.nodes.toArray({
       at: [],
       mode: 'lowest',
-      match: (node) => Boolean(Reflect.get(node, getTransientSuggestionKey())),
+      match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
     });
     const transientRange = editor.read.ranges.fromEntries(transientNodes);
 
@@ -164,8 +162,7 @@ describe('applyAISuggestions utils', () => {
     expect(
       editor.read.nodes.some({
         at: [],
-        match: (node) =>
-          Boolean(Reflect.get(node, getTransientSuggestionKey())),
+        match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
       })
     ).toBe(true);
     expect(editor.read.selection()).toEqual(SelectionApi.text(transientRange));

@@ -287,13 +287,25 @@ test.describe('editable voids', () => {
         focus: { path: [0, 0], offset: 0 },
       });
 
-    await outerEditor.evaluate((element: HTMLElement) => {
-      element.focus();
-    });
     if (testInfo.project.name === 'mobile') {
+      await outerEditor.evaluate((element: HTMLElement) => {
+        element.focus();
+      });
       await outer.insertText('Outer ');
     } else {
-      await page.keyboard.type('Outer ');
+      await outer.scenario.runImperative(
+        'restore outer editor selection through native keyboard input',
+        async ({ step }) => {
+          await step('focus outer editor', () =>
+            outerEditor.evaluate((element: HTMLElement) => {
+              element.focus();
+            })
+          );
+          await step('type through native keyboard', () =>
+            page.keyboard.type('Outer ')
+          );
+        }
+      );
     }
 
     await expect
@@ -645,11 +657,9 @@ test.describe('editable voids', () => {
           },
         },
         {
-          kind: 'custom',
+          kind: 'type',
           label: 'type through native keyboard',
-          run: async () => {
-            await page.keyboard.type('X');
-          },
+          text: 'X',
         },
         {
           kind: 'assertModelText',

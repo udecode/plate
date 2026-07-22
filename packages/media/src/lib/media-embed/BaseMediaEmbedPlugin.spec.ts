@@ -1,4 +1,4 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, HtmlPlugin } from '@platejs/core';
 import { ElementApi } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
@@ -34,7 +34,7 @@ describe('BaseMediaEmbedPlugin', () => {
       )
     ).toBe('https://x.com/platejs/status/1234567890');
     expect(
-      editor.api.html.deserialize({
+      editor.plugin(HtmlPlugin).api.deserialize({
         element: '<iframe src="https://example.com/embed"></iframe>',
       })
     ).toEqual([
@@ -45,7 +45,9 @@ describe('BaseMediaEmbedPlugin', () => {
       },
     ]);
     expect(
-      editor.api.html.deserialize({ element: '<iframe></iframe>' })
+      editor
+        .plugin(HtmlPlugin)
+        .api.deserialize({ element: '<iframe></iframe>' })
     ).toEqual([]);
   });
 
@@ -58,7 +60,7 @@ describe('BaseMediaEmbedPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
     insertMediaEmbed(editor, {
@@ -93,7 +95,7 @@ describe('BaseMediaEmbedPlugin', () => {
         idCreator: () => 'document-node-id',
       },
       plugins: [BaseMediaEmbedPlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           id: 'document-node-id',

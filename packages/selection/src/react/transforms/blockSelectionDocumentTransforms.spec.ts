@@ -20,7 +20,7 @@ const createBlockSelectionEditor = () =>
       TestBoldPlugin,
       TestElementPropertiesPlugin,
     ],
-    value: [
+    initialValue: [
       {
         id: 'block1',
         children: [{ text: 'One' }],

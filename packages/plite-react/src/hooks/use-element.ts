@@ -7,7 +7,7 @@ export const ElementContext = createContext<Element | null>(null);
  * Get the current element.
  */
 
-export const useElement = (): Element => {
+export const useElement = <TElement extends Element = Element>(): TElement => {
   const context = useContext(ElementContext);
 
   if (!context) {
@@ -16,10 +16,11 @@ export const useElement = (): Element => {
     );
   }
 
-  return context;
+  return context as TElement;
 };
 
 /**
  * Get the current element, or return null if not inside `renderElement`.
  */
-export const useOptionalElementContext = () => useContext(ElementContext);
+export const useOptionalElement = <TElement extends Element = Element>() =>
+  useContext(ElementContext) as TElement | null;

@@ -12,7 +12,7 @@ describe('BasePlaceholderPlugin', () => {
   ])('configures %s and inserts %s placeholders', (transform, mediaType) => {
     const editor = createBaseEditor({
       plugins: [BasePlaceholderPlugin],
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     expect(
       editor.read.schema.element(BasePlaceholderPlugin)?.behavior.void

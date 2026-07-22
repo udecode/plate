@@ -36,7 +36,7 @@ describe('unwrap code block', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -86,7 +86,7 @@ describe('unwrap code block', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {
@@ -131,7 +131,7 @@ describe('unwrap code block', () => {
       const editor = createBaseEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update((tx) => {

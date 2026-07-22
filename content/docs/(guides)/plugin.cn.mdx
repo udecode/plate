@@ -44,7 +44,7 @@ Schema 插件在顶层声明文档类型，并在 `schema` 下声明模型行为
 使用 `schema.element` 声明新元素类型：
 
 ```ts
-import { schema } from '@platejs/plite';
+import { schema } from 'platejs';
 
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
@@ -58,7 +58,7 @@ const ParagraphPlugin = createPlatePlugin({
 您可以为元素关联组件。详见[插件组件](/docs/plugin-components)。
 
 ```ts
-import { schema } from '@platejs/plite';
+import { schema } from 'platejs';
 
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
@@ -75,7 +75,7 @@ const ParagraphPlugin = createPlatePlugin({
 元素行为位于 `schema.element` 中。使用 `schema.mark` 下的属性描述符声明布尔文本属性：
 
 ```ts
-import { property, schema } from '@platejs/plite';
+import { property, schema } from 'platejs';
 
 const LinkPlugin = createPlatePlugin({
   key: 'link',
@@ -153,6 +153,7 @@ import { KEYS } from 'platejs';
 
 const TextAlignPlugin = createPlatePlugin({
   key: 'align',
+  targetPluginKeys: [KEYS.p],
   inject: {
     nodeProps: {
       defaultNodeValue: 'start',
@@ -160,8 +161,7 @@ const TextAlignPlugin = createPlatePlugin({
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
-    targetPlugins: [KEYS.p],
-    // 这将注入到所有`targetPlugins`中。本例中，ParagraphPlugin将能够反序列化`textAlign`样式。
+    // 这将注入到每个已安装且已启用的目标中。本例中，ParagraphPlugin 能够反序列化 `textAlign` 样式。
     targetPluginToInject: ({ editor, plugin }) => ({
       parsers: {
         html: {
@@ -220,7 +220,7 @@ editor.update((tx) => tx.custom.deleteBackward());
 当 Plate 插件需要安装 Plite 底层能力时使用 `.extendExtension()`：schema、state、tx、command、correction 或运行时服务。
 
 ```ts showLineNumbers
-import { defineEditorExtension } from '@platejs/plite';
+import { defineEditorExtension } from 'platejs';
 import { createPlatePlugin } from 'platejs/react';
 
 const customState = defineEditorExtension({

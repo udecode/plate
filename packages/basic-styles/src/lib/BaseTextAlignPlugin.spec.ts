@@ -1,4 +1,8 @@
-import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  HtmlPlugin,
+} from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseTextAlignPlugin } from './BaseTextAlignPlugin';
@@ -11,7 +15,7 @@ describe('BaseTextAlignPlugin', () => {
     const plugin = editor.getPlugin(BaseTextAlignPlugin);
 
     expect(plugin.inject.isBlock).toBe(true);
-    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
+    expect(plugin.targetPluginKeys).toEqual([KEYS.p]);
     expect(plugin.inject.nodeProps).toMatchObject({
       defaultNodeValue: 'start',
       styleKey: 'textAlign',
@@ -28,14 +32,14 @@ describe('BaseTextAlignPlugin', () => {
       type: 'custom-paragraph',
     });
     const TextAlignPlugin = BaseTextAlignPlugin.configure({
-      config: { targetPluginKeys: [KEYS.p] },
+      targetPluginKeys: [KEYS.p],
     });
     const editor = createBaseEditor({
       plugins: [ParagraphPlugin, TextAlignPlugin],
     });
     const plugin = editor.getPlugin(TextAlignPlugin);
 
-    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
+    expect(plugin.targetPluginKeys).toEqual([KEYS.p]);
     expect(
       editor.read.schema.property({
         key: 'align',
@@ -58,7 +62,7 @@ describe('BaseTextAlignPlugin', () => {
     });
 
     expect(
-      editor.api.html.deserialize({
+      editor.plugin(HtmlPlugin).api.deserialize({
         element: '<p style="text-align: center">text</p>',
       })
     ).toMatchObject([
@@ -78,7 +82,7 @@ describe('BaseTextAlignPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'One' }],
           type: 'p',

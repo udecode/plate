@@ -14,6 +14,7 @@ import type {
   Editor,
   EditorAboveOptions,
   EditorCommit,
+  EditorCommitListener,
   EditorCommitSource,
   EditorCommandDispatch,
   EditorExtension,
@@ -108,7 +109,7 @@ export type InternalEditorTransactionRuntime<V extends Value = Value> = {
   read: <T>(fn: (state: EditorStateView<V>) => T) => T;
   runCommand: EditorCommandDispatch;
   subscribe: (listener: SnapshotListener<V>) => () => void;
-  subscribeCommit: (listener: (commit: EditorCommit<V>) => void) => () => void;
+  subscribeCommit: (listener: EditorCommitListener<V>) => () => void;
   subscribeSource: (
     source: EditorCommitSource,
     listener: SnapshotListener<V>

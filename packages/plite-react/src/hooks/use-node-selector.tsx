@@ -157,8 +157,9 @@ function useRuntimeNodeSelector<T>(
     [editor, includeRootOrderChanges, runtimeId, updatePolicy]
   );
 
-  return useEditorSelector(nodeSelector, equalityFn, {
+  return useEditorSelector(nodeSelector, {
     deferred,
+    equalityFn,
     includeRootOrderChanges,
     profileId: runtimeId ? 'runtime-node' : 'runtime-node-missing-id',
     runtimeEventSource:

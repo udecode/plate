@@ -2,7 +2,7 @@ import { useContext, useMemo } from 'react';
 import type { Element, NamedRootKey, RootKey } from '@platejs/plite';
 
 import { NodeRuntimeIdContext } from '../context';
-import { useOptionalElementContext } from './use-element';
+import { useOptionalElement } from './use-element';
 
 const DEFAULT_CHILD_ROOT_SLOT = 'default';
 
@@ -45,7 +45,7 @@ export function usePliteChildRoot(
   element?: Element | null,
   slot: string = DEFAULT_CHILD_ROOT_SLOT
 ): NamedRootKey {
-  const contextElement = useOptionalElementContext();
+  const contextElement = useOptionalElement();
   const runtimeId = useContext(NodeRuntimeIdContext);
   const targetElement = element ?? contextElement;
 

@@ -52,7 +52,7 @@ describe('withImageUpload', () => {
       const editor = createBaseEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const data = {
@@ -92,7 +92,7 @@ describe('withImageUpload', () => {
       const editor = createBaseEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const data = {
@@ -125,7 +125,7 @@ describe('withImageUpload', () => {
       const editor = createBaseEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const data = {

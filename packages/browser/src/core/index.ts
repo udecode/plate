@@ -15,7 +15,15 @@ export {
   type PliteBrowserIntentFamilyContract,
 } from './first-party-browser-contracts';
 export {
-  type BrowserMobileScenarioId,
+  type BrowserMobileProofPlatform,
+  type BrowserMobileSupportedClaim,
+  type BrowserMobileTransportId,
+  type BrowserMobileTransportProof,
+  type BrowserMobileUnsupportedClaim,
+  classifyBrowserMobileTransportProof,
+  getBrowserMobileTransportProofMatrix,
+} from './mobile-transport-proof';
+export {
   type DebugPlaceholderShape,
   type DebugSnapshot,
   evaluateImeInput,

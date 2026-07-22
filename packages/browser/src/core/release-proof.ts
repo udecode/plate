@@ -3,8 +3,8 @@ import type {
   BrowserMobileSupportedClaim,
   BrowserMobileTransportId,
   BrowserMobileUnsupportedClaim,
-} from '../transports/contracts';
-import { classifyBrowserMobileTransportProof } from '../transports/contracts';
+} from './mobile-transport-proof';
+import { classifyBrowserMobileTransportProof } from './mobile-transport-proof';
 import type { ProofEvidenceClass } from './proof';
 
 /** Browser proof claim that can block release-quality assertions. */

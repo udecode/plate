@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { PlateTest, createPlateEditor } from '@platejs/core/react';
+import { createPlateEditor } from '@platejs/core/react';
+import { PlateTest } from '@platejs/core/react/test';
 import type { TextSelection } from '@platejs/plite';
 import { act, render } from '@testing-library/react';
 
@@ -25,7 +26,7 @@ describe('getSelectionBoundingClientRect', () => {
     } satisfies TextSelection;
     const editor = createPlateEditor({
       selection,
-      value: [{ children: [{ text: 'a' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
     });
 
     expect(getSelectionBoundingClientRect(editor)).toEqual(
@@ -47,7 +48,7 @@ describe('getSelectionBoundingClientRect', () => {
     } satisfies TextSelection;
     const editor = createPlateEditor({
       selection,
-      value: [{ children: [{ text: 'ab' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'ab' }], type: 'p' }],
     });
 
     await act(async () => {

@@ -16,7 +16,7 @@ export default function CodeDrawingDemo() {
       ...EditorKit,
       CodeDrawingPlugin.withComponent(CodeDrawingElement),
     ],
-    value: codeDrawingValue,
+    initialValue: codeDrawingValue,
   });
 
   return (

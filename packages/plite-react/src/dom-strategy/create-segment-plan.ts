@@ -1,10 +1,35 @@
-import type { RuntimeId } from '@platejs/plite';
+import type { Path, RuntimeId } from '@platejs/plite';
 import type { DOMTextSyncOptions } from '../dom-text-sync';
 
 export type DOMStrategyType = 'auto' | 'full' | 'staged';
 
 type DOMStrategyTextSyncConfig = {
   textSync?: DOMTextSyncOptions;
+};
+
+export type DOMStrategyVirtualizedLayout = {
+  pageItems?: readonly VirtualizedPageLayoutItem[];
+  topLevelItems?: readonly VirtualizedTopLevelLayoutItem[];
+  visiblePageItems?: readonly VirtualizedPageLayoutItem[];
+};
+
+export type VirtualizedPageLayoutItem = {
+  fragmentPaths?: readonly Path[];
+  index: number;
+  key: string;
+  pageIndexes: readonly number[];
+  size: number;
+  start: number;
+  topLevelIndexes: readonly number[];
+  unitPaths?: readonly Path[];
+};
+
+export type VirtualizedTopLevelLayoutItem = {
+  index: number;
+  left?: number;
+  size: number;
+  start: number;
+  width?: number;
 };
 
 export type DOMStrategyOptions =
@@ -19,6 +44,7 @@ export type DOMStrategyOptions =
        * strategy peer of `full` or `staged`.
        */
       estimatedBlockSize?: number;
+      layout?: DOMStrategyVirtualizedLayout;
       overscan?: number;
       textSync?: DOMTextSyncOptions;
       threshold?: number;

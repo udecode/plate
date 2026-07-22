@@ -1,9 +1,15 @@
-import { render, renderHook } from '@testing-library/react';
+import { act, render, renderHook } from '@testing-library/react';
 import { EDITOR_TO_FORCE_RENDER } from '@platejs/plite-dom/internal';
 
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
-import { useRuntimeRepairEngine } from '../src/editable/runtime-repair-engine';
-import type { ReactRuntimeEditor } from '../src/plugin/react-editor';
+import {
+  shouldExportPendingModelSelection,
+  useRuntimeRepairEngine,
+} from '../src/editable/runtime-repair-engine';
+import {
+  ReactEditor,
+  type ReactRuntimeEditor,
+} from '../src/plugin/react-editor';
 import { createReactEditor } from '../src/plugin/with-react';
 
 const createRuntime = (editor: ReactRuntimeEditor) =>
@@ -20,6 +26,116 @@ const renderRepairEngine = (editor: ReactRuntimeEditor) => {
     })
   );
 };
+
+test('exports the unchanged composition selection after its repair render', () => {
+  const editor = createReactEditor();
+  const runtime = createRuntime(editor);
+  const syncDOMSelectionToEditor = vi.fn();
+  const isFocused = vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
+  const { result } = renderHook(() =>
+    useRuntimeRepairEngine({
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+      syncDOMSelectionToEditor,
+    })
+  );
+
+  act(() => result.current.requestModelSelectionExportAfterRender());
+
+  expect(syncDOMSelectionToEditor).toHaveBeenCalledOnce();
+  isFocused.mockRestore();
+});
+
+test('does not export composition selection after focus leaves the editor', () => {
+  const editor = createReactEditor();
+  const runtime = createRuntime(editor);
+  const syncDOMSelectionToEditor = vi.fn();
+  let focused = true;
+  const isFocused = vi
+    .spyOn(ReactEditor, 'isFocused')
+    .mockImplementation(() => focused);
+  const { result } = renderHook(() =>
+    useRuntimeRepairEngine({
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+      syncDOMSelectionToEditor,
+    })
+  );
+
+  act(() => {
+    result.current.requestModelSelectionExportAfterRender();
+    focused = false;
+  });
+
+  expect(syncDOMSelectionToEditor).not.toHaveBeenCalled();
+  isFocused.mockRestore();
+});
+
+test('does not export when model selection drifts before the repair render', () => {
+  const editor = createReactEditor({
+    initialSelection: {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+      kind: 'text',
+    },
+    initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+  });
+  const runtime = createRuntime(editor);
+  const syncDOMSelectionToEditor = vi.fn();
+  const isFocused = vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
+  const { result } = renderHook(() =>
+    useRuntimeRepairEngine({
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+      syncDOMSelectionToEditor,
+    })
+  );
+
+  act(() => {
+    result.current.requestModelSelectionExportAfterRender();
+    editor.update((tx) => {
+      tx.selection.set({ path: [0, 0], offset: 1 });
+    });
+  });
+
+  expect(syncDOMSelectionToEditor).not.toHaveBeenCalled();
+  isFocused.mockRestore();
+});
+
+test('does not export a stale composition selection after a newer commit', () => {
+  const editor = createReactEditor();
+  const snapshot = editor.read.runtime.snapshot();
+
+  expect(
+    shouldExportPendingModelSelection(
+      snapshot,
+      {
+        ...snapshot,
+        version: snapshot.version + 1,
+      },
+      true
+    )
+  ).toBe(false);
+});
+
+test('does not export when selection changes without a document commit', () => {
+  const editor = createReactEditor();
+  const snapshot = editor.read.runtime.snapshot();
+  expect(
+    shouldExportPendingModelSelection(
+      snapshot,
+      {
+        ...snapshot,
+        selection: {
+          anchor: { offset: 0, path: [0] },
+          focus: { offset: 0, path: [0] },
+          kind: 'text',
+        },
+      },
+      true
+    )
+  ).toBe(false);
+});
 
 test('repair engine registers force render only after commit and cleans up on unmount', () => {
   const editor = createReactEditor();

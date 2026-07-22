@@ -14,7 +14,7 @@ import {
   collapseDOMAtTextPath,
   waitForPendingNativeTextInputRepair,
 } from './dom-text-actions';
-import { evaluatePliteBrowserHandle } from './handle';
+import { evaluateHarnessHandle } from './handle';
 import { createEditorHarnessAssertions } from './harness-assertions';
 import {
   createEditorHarnessClipboard,
@@ -131,16 +131,16 @@ export const createEditorHarness = (
       ),
     get: {
       modelText: async () =>
-        evaluatePliteBrowserHandle<string>(root, 'getText'),
+        evaluateHarnessHandle(root, 'getText'),
       modelBlockText: async (index) =>
-        evaluatePliteBrowserHandle<string | null>(
+        evaluateHarnessHandle(
           root,
           'getBlockText',
           [index],
           'This editor surface does not expose getBlockText'
         ),
       modelBlockTexts: async () =>
-        evaluatePliteBrowserHandle<string[]>(
+        evaluateHarnessHandle(
           root,
           'getBlockTexts',
           [],
@@ -371,7 +371,7 @@ export const createEditorHarness = (
       dom: async () => takeDOMSelectionSnapshotForRoot(root),
       location: async () => takeDOMSelectionLocationSnapshotForRoot(root),
       importDOM: async () =>
-        evaluatePliteBrowserHandle(
+        evaluateHarnessHandle(
           root,
           'importDOMSelection',
           [],
@@ -520,25 +520,25 @@ export const createEditorHarness = (
       await page.keyboard.press(key);
     },
     insertText: async (text: string) => {
-      await evaluatePliteBrowserHandle<void>(root, 'insertText', [text]);
+      await evaluateHarnessHandle(root, 'insertText', [text]);
     },
     insertBreak: async () => {
-      await evaluatePliteBrowserHandle<void>(root, 'insertBreak');
+      await evaluateHarnessHandle(root, 'insertBreak');
     },
     deleteFragment: async () => {
-      await evaluatePliteBrowserHandle<void>(root, 'deleteFragment');
+      await evaluateHarnessHandle(root, 'deleteFragment');
     },
     deleteBackward: async () => {
-      await evaluatePliteBrowserHandle<void>(root, 'deleteBackward');
+      await evaluateHarnessHandle(root, 'deleteBackward');
     },
     deleteForward: async () => {
-      await evaluatePliteBrowserHandle<void>(root, 'deleteForward');
+      await evaluateHarnessHandle(root, 'deleteForward');
     },
     undo: async () => {
-      await evaluatePliteBrowserHandle<void>(root, 'undo');
+      await evaluateHarnessHandle(root, 'undo');
     },
     redo: async () => {
-      await evaluatePliteBrowserHandle<void>(root, 'redo');
+      await evaluateHarnessHandle(root, 'redo');
     },
     selectAll: async () => {
       await harness.selection.selectAll();
@@ -570,8 +570,6 @@ export const createEditorHarness = (
       root,
       surface,
     }),
-    withExtension: <T>(extend: (editor: PliteBrowserEditorHarness) => T) =>
-      extend(harness),
   };
 
   return harness;

@@ -1,7 +1,7 @@
 import ReactDOMServer from 'react-dom/server';
 
 import { createBasePlugin } from '@platejs/core';
-import { schema } from '@platejs/plite';
+import { schema } from 'platejs';
 import { createBaseEditor, KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 

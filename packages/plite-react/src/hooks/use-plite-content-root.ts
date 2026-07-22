@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { Element, NamedRootKey } from '@platejs/plite';
 import { useEditor } from './use-editor';
-import { useOptionalElementContext } from './use-element';
+import { useOptionalElement } from './use-element';
 import { usePliteChildRoot } from './use-plite-child-root';
 import {
   type PliteRootChromeController,
@@ -29,7 +29,7 @@ export function usePliteContentRoot(
   options: UsePliteContentRootOptions = {}
 ): PliteContentRootController {
   const editor = useEditor();
-  const contextElement = useOptionalElementContext();
+  const contextElement = useOptionalElement();
   const targetElement = element ?? contextElement;
   const { slot: slotOverride, ...chromeOptions } = options;
   const declaredSlots = targetElement

@@ -61,7 +61,8 @@ test('rejects every deleted Plate schema authoring shape', () => {
     `const group = 'plate:block-content'`,
     'const group = `plate:block-content`',
     `createBasePlugin({ key: 'p', schema: ({ editor }) => ({ editor }) })`,
-    `createBasePlugin({ config: { isUrl: () => true }, key: 'link' })`,
+    `createBasePlugin({ config: { schemes: ['https'] }, key: 'link' })`,
+    `ParagraphPlugin.configure({ config: { topLevel: true } })`,
     `createBasePlugin({ key: 'p', schema: { element: { groups: ['block'] } } })`,
     `createBasePlugin({ key: 'p', schema: { element: {} } })`,
     `createBasePlugin({ key: 'link', schema: { element: { inline: true } } })`,
@@ -111,21 +112,21 @@ test('accepts current plugin syntax and unrelated document or Markdown AST shape
     `createBasePlugin<RuntimeConfig>({ key: 'runtime', options: { enabled: true } })`,
     `ParagraphPlugin.configure(({ editor }) => ({ options: { editor }, handlers: {}, render: {}, shortcuts: {} }))`,
     `ParagraphPlugin.configure(() => ({}))`,
-    `createBasePlugin({ config: { schemes: ['https'] }, key: 'link', schema: ({ config, key, own, plugins, type }) => ({ properties: [] }) })`,
+    `createBasePlugin({ options: { isUrl: () => true, schemes: ['https'] }, key: 'link', schema: ({ options, key, own, plugins, type }) => ({ properties: [] }) })`,
     `const event = { node: { type: 'paragraph' } }`,
     `createBasePlugin({ key: 'analytics', options: { event: { node: { type: 'paragraph' } } } })`,
     `const rules = { emphasis: { mark: true } }`,
     `const parser = { isElement: true, isLeaf: false }`,
     `defineEditorSchema({ elements: { paragraph: { content: schema.content.text(), groups: ['block'] } } })`,
     `state.schema.element('paragraph')`,
-    `createBasePlugin({ config: { targets: [ParagraphPlugin] }, key: 'align' })`,
-    `createBasePlugin({ config: { targetPluginKeys: ['p'] }, key: 'generic' })`,
-    `ParagraphPlugin.configure({ config: { topLevel: true } })`,
+    `createBasePlugin({ options: { targets: [ParagraphPlugin] }, key: 'align' })`,
+    `createBasePlugin({ key: 'generic', targetPluginKeys: ['p'] })`,
+    `ParagraphPlugin.configure({ options: { topLevel: true } })`,
     `ParagraphPlugin.configure({ schema: { element: { properties: { id: property.string() } } } })`,
     `ParagraphPlugin.extend(({ editor }) => ({ options: { editor } }))`,
     `ParagraphPlugin.withComponent(ParagraphElement)`,
     `createPlatePlugin({ key: 'p', render: { node: ParagraphElement } })`,
-    `createBasePlugin({ key: 'link',\n// @ts-expect-error immutable config rejects functions\nconfig: { isUrl: () => true } })`,
+    `createBasePlugin({ key: 'link', options: { isUrl: () => true } })`,
     `createBasePlugin({ key: 'negative', /* @ts-expect-error runtime access */ schema: ({ editor }) => ({ editor }) })`,
     `state.schema.getElementProperty(element, colSpanHandle)`,
     `editor.read.schema.property(AdvancedMarkPlugin)`,
@@ -223,9 +224,6 @@ test('accepts reviewed named lineage without banning schema declarations', () =>
     ],
     [
       `const TestSchema = { id: 'plate:yjs-api-test', version: 1 } as const;
-       createBaseEditor({ schema: TestSchema });
-       createPlateEditor({ schema: TestSchema });
-       createBaseEditor({ schema: TestSchema });
        createBaseEditor({ schema: TestSchema });
        createBaseEditor({ schema: TestSchema });`,
       'packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts',

@@ -1,8 +1,5 @@
 import { MarkdownPlugin } from '@platejs/markdown';
-import {
-  getSuggestionKey,
-  getTransientSuggestionKey,
-} from '@platejs/suggestion';
+import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { type TTableElement, KEYS } from '@platejs/utils';
 import { type Value, schema } from '@platejs/plite';
@@ -30,60 +27,69 @@ import { resetAIChat } from './resetAIChat';
 
 const TablePlugin = createPlatePlugin({
   key: KEYS.table,
-  node: {
-    element: {
-      content: schema.content.type(KEYS.tr, {
-        default: { type: KEYS.tr },
-        min: 1,
-      }),
-      groups: ['block'],
-    },
+  schema: ({ plugins }) => {
+    const rowType = plugins.elementType(TableRowPlugin);
+
+    return {
+      element: {
+        content: schema.content.type(rowType, {
+          default: { type: rowType },
+          min: 1,
+        }),
+      },
+    };
   },
+  type: KEYS.table,
 });
 const TableRowPlugin = createPlatePlugin({
   key: KEYS.tr,
-  node: {
-    element: {
-      content: schema.content.type(KEYS.td, {
-        default: { type: KEYS.td },
-        min: 1,
-      }),
-    },
+  schema: ({ plugins }) => {
+    const cellType = plugins.elementType(TableCellPlugin);
+
+    return {
+      element: {
+        content: schema.content.type(cellType, {
+          default: { type: cellType },
+          min: 1,
+        }),
+      },
+    };
   },
+  type: KEYS.tr,
 });
 const TableCellPlugin = createPlatePlugin({
   key: KEYS.td,
-  node: {
+  schema: ({ plugins }) => ({
     element: {
-      content: schema.content.group('block', {
-        default: { type: KEYS.p },
+      content: plugins.blockContent({
+        default: { type: plugins.elementType(BaseParagraphPlugin) },
         min: 1,
       }),
     },
-  },
+  }),
+  type: KEYS.td,
 });
 
 const createSuggestionEditor = (type: 'insert' | 'remove') => {
-  const transientKey = getTransientSuggestionKey();
-  const suggestionKey = getSuggestionKey('s1');
+  const suggestionKey = `${KEYS.suggestion}_s1`;
 
   return createPlateEditor<Value>({
     plugins: [
       BaseParagraphPlugin,
       SuggestionPlugin.configure({ options: { currentUserId: 'u1' } }),
     ],
-    value: [
+    initialValue: [
       {
         children: [
           {
             [suggestionKey]: {
-              createdAt: '2024-01-01T00:00:00.000Z',
+              createdAt: Date.parse('2024-01-01T00:00:00.000Z'),
               id: 's1',
               type,
               userId: 'u1',
             },
             [KEYS.suggestion]: true,
-            [transientKey]: true,
+            [SUGGESTION_TRANSIENT_KEY]: true,
             text: 'suggested',
           },
         ],
@@ -105,7 +111,7 @@ describe('ai chat action utils', () => {
         TableRowPlugin,
         TableCellPlugin,
       ],
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -129,8 +135,7 @@ describe('ai chat action utils', () => {
     expect(
       editor.read.nodes.some({
         at: [],
-        match: (node) =>
-          Boolean(Reflect.get(node, getTransientSuggestionKey())),
+        match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
       })
     ).toBe(true);
     expect(editor.read.text.string([])).toContain('ai');
@@ -148,8 +153,7 @@ describe('ai chat action utils', () => {
     expect(
       editor.read.nodes.some({
         at: [],
-        match: (node) =>
-          Boolean(Reflect.get(node, getTransientSuggestionKey())),
+        match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
       })
     ).toBe(false);
   });
@@ -167,7 +171,7 @@ describe('ai chat action utils', () => {
     const clear = mock();
     const editor = createPlateEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
     const chat = {
       messages: [

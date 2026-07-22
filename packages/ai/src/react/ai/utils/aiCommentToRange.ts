@@ -1,4 +1,4 @@
-import { deserializeMd } from '@platejs/markdown';
+import type { MarkdownEditor } from '@platejs/markdown';
 import {
   type Element,
   type NodeEntry,
@@ -12,12 +12,12 @@ import type { TComment } from '../../ai-chat/internal/types';
 import { findTextRangeInBlock } from './findTextRangeInBlock';
 
 export const aiCommentToRange = (
-  editor: PlateEditor,
+  editor: MarkdownEditor<PlateEditor>,
   aiComment: TComment
 ): Range | undefined => {
   const { blockId, content } = aiComment;
 
-  const contentNodes = deserializeMd(editor, content);
+  const contentNodes = editor.api.markdown.deserialize(content);
 
   let firstBlock: NodeEntry<Element> | undefined;
 

@@ -65,12 +65,12 @@ export default function MyEditorPage() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value,
+    initialValue: value,
   });
 
   return (
     <Plate
-      onChange={({ value }) => {
+      onValueChange={({ value }) => {
         localStorage.setItem(
           `nextjs-plate-value-demo-${new Date().toISOString().split('T')[0]}`,
           JSON.stringify(value)

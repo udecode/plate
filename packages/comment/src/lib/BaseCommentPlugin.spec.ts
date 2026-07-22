@@ -21,7 +21,7 @@ const createCommentEditor = (value: Value, selection: Selection = null) =>
   createBaseEditor({
     plugins: [BaseParagraphPlugin, CommentTargetPlugin, BaseCommentPlugin],
     selection,
-    value,
+    initialValue: value,
   });
 
 describe('BaseCommentPlugin', () => {
@@ -137,14 +137,14 @@ describe('BaseCommentPlugin', () => {
       },
     ]);
 
-    expect(editor.api.comment.has({ id: 'one' })).toBe(true);
-    expect(editor.api.comment.has({ id: 'missing' })).toBe(false);
-    expect(editor.api.comment.node({ id: 'one', at: [] })?.[1]).toEqual([0, 0]);
-    expect(editor.api.comment.nodes({ id: 'two', at: [] })).toHaveLength(1);
-    expect(editor.api.comment.nodes({ isDraft: true, at: [] })).toHaveLength(1);
-    expect(editor.api.comment.nodes({ transient: true, at: [] })).toHaveLength(
-      1
-    );
+    const commentApi = editor.plugin(BaseCommentPlugin).api;
+
+    expect(commentApi.has({ id: 'one' })).toBe(true);
+    expect(commentApi.has({ id: 'missing' })).toBe(false);
+    expect(commentApi.node({ id: 'one', at: [] })?.[1]).toEqual([0, 0]);
+    expect(commentApi.nodes({ id: 'two', at: [] })).toHaveLength(1);
+    expect(commentApi.nodes({ isDraft: true, at: [] })).toHaveLength(1);
+    expect(commentApi.nodes({ transient: true, at: [] })).toHaveLength(1);
   });
 
   it('returns the last comment id for normal leaves and undefined for draft leaves', () => {
@@ -167,15 +167,16 @@ describe('BaseCommentPlugin', () => {
         type: 'p',
       },
     ]);
-    const normal = editor.api.comment.node({ at: [], id: 'two' });
-    const draft = editor.api.comment.node({ at: [], isDraft: true });
+    const commentApi = editor.plugin(BaseCommentPlugin).api;
+    const normal = commentApi.node({ at: [], id: 'two' });
+    const draft = commentApi.node({ at: [], isDraft: true });
 
     if (!normal || !draft) {
       throw new TypeError('Expected normal and draft comment leaves');
     }
 
-    expect(editor.api.comment.nodeId(normal[0])).toBe('two');
-    expect(editor.api.comment.nodeId(draft[0])).toBeUndefined();
+    expect(commentApi.nodeId(normal[0])).toBe('two');
+    expect(commentApi.nodeId(draft[0])).toBeUndefined();
   });
 
   it('marks the selected text as a draft comment', () => {

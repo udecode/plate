@@ -165,6 +165,29 @@ test.describe('hidden content blocks example', () => {
     await expect.poll(() => pageErrors).toEqual([]);
   });
 
+  test('preserves rapid hidden-content control updates in the URL', async ({
+    page,
+  }) => {
+    const editor = await openExample(page, 'plite/hidden-content-blocks', {
+      ready: {
+        editor: 'visible',
+        selector: '[data-test-id="accordion-trigger"]',
+      },
+    });
+
+    await page.getByTestId('accordion-trigger').click();
+    await page.getByTestId('collapsible-trigger').click();
+
+    await expect(editor.root).toContainText('Accordion secret alpha');
+    await expect(editor.root).toContainText('Collapsible hidden note');
+    await expect
+      .poll(() => new URL(page.url()).searchParams.get('accordion_open'))
+      .toBe('true');
+    await expect
+      .poll(() => new URL(page.url()).searchParams.get('collapsible_open'))
+      .toBe('true');
+  });
+
   test('copies model-backed shadcn hidden content while DOM is absent', async ({
     page,
   }) => {

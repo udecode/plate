@@ -7,7 +7,7 @@ describe('duplicateBlockSelectionNodes', () => {
   it('duplicates selected blocks through the editor update transaction', () => {
     const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
-      value: [
+      initialValue: [
         {
           id: 'block1',
           children: [{ text: 'One' }],
@@ -57,7 +57,7 @@ describe('duplicateBlockSelectionNodes', () => {
   it('does not schedule plugin state after a rolled-back duplicate', async () => {
     const editor = createBaseEditor({
       plugins: [BlockSelectionPlugin],
-      value: [
+      initialValue: [
         {
           id: 'block1',
           children: [{ text: 'One' }],

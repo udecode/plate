@@ -24,6 +24,13 @@ import {
 } from '@platejs/plite';
 import { toInternalRoot } from '@platejs/plite/internal';
 
+import {
+  connectLayoutRuntime,
+  deferLayoutRuntimeConnection,
+  isLayoutRuntimeConnectionDeferred,
+  registerLayoutRuntimeLifecycle,
+} from './layout-runtime-lifecycle';
+
 const MAIN_ROOT_KEY: RootKey = 'main';
 
 const assertPublicRootKey = (root: RootKey | undefined) => {
@@ -233,13 +240,6 @@ export type PlitePageLayoutTypography = {
   }) => PlitePageLayoutTextStyle;
 };
 
-export type PlitePageLayoutBoxProvider = (context: {
-  defaultBoxes: readonly PlitePageLayoutBox[];
-  element: Element;
-  lineHeight: number;
-  path: Path;
-}) => readonly PlitePageLayoutBox[] | null | undefined;
-
 export type PlitePageLayoutBlock = {
   element: Element;
   boxes?: readonly PlitePageLayoutBox[];
@@ -380,6 +380,14 @@ export type PlitePageLayoutRefreshReason =
   | 'font'
   | 'settings'
   | 'viewport';
+
+export type PlitePageLayoutError = Readonly<{
+  cause: unknown;
+  phase: 'notify' | 'page-break-write';
+  reason: PlitePageLayoutRefreshReason;
+}>;
+
+export type PlitePageLayoutErrorSink = (error: PlitePageLayoutError) => void;
 
 export type PlitePageLayoutEngineInput = {
   blocks: readonly PlitePageLayoutBlock[];
@@ -568,6 +576,8 @@ export type PliteLayoutOptions<
 > = {
   engine?: PlitePageLayoutEngine;
   nodeLayout?: PliteNodeLayoutProvider;
+  /** Receives isolated subscriber and page-break persistence failures. */
+  onError?: PlitePageLayoutErrorSink;
   page: PlitePageSettingsSource<TSettings>;
   pageBreaks?: PlitePageBreaksOptions | null;
   root?: RootKey;
@@ -592,6 +602,8 @@ export type PlitePageLayoutOptions<
 > = {
   engine: PlitePageLayoutEngine;
   nodeLayout?: PliteNodeLayoutProvider;
+  /** Receives isolated subscriber and page-break persistence failures. */
+  onError?: PlitePageLayoutErrorSink;
   page: PlitePageSettingsSource<TSettings>;
   pageBreaks?: PlitePageBreaksOptions | null;
   root?: RootKey;
@@ -605,7 +617,7 @@ export type PlitePageLayoutProjectRangeOptions =
   };
 
 /** Live derived layout reader. It owns subscriptions, not document content. */
-export type PlitePageLayout = {
+export type PlitePageLayout<TOptions = PlitePageLayoutOptions> = {
   destroy: () => void;
   getFragments: (path: Path) => readonly PlitePageLayoutFragment[];
   getMetrics: () => PlitePageLayoutMetrics;
@@ -615,6 +627,7 @@ export type PlitePageLayout = {
     options?: PlitePageLayoutProjectRangeOptions
   ) => readonly PlitePageRect[];
   refresh: (reason?: PlitePageLayoutRefreshReason) => void;
+  reconfigure: (options: TOptions) => void;
   subscribe: (listener: () => void) => () => void;
 };
 
@@ -3033,8 +3046,10 @@ export const createPlitePageLayout = <
   TSettings extends PlitePageSettings = PlitePageSettings,
 >(
   editor: EditorType<Value>,
-  getOptions: () => PlitePageLayoutOptions<TSettings>
-): PlitePageLayout => {
+  initialOptions: PlitePageLayoutOptions<TSettings>
+): PlitePageLayout<PlitePageLayoutOptions<TSettings>> => {
+  const connectionDeferred = isLayoutRuntimeConnectionDeferred(initialOptions);
+  let options = initialOptions;
   let snapshot = createEmptyLayoutSnapshot(DEFAULT_SETTINGS, 0);
   let metrics: PlitePageLayoutMetrics = {
     blockCount: 0,
@@ -3043,15 +3058,68 @@ export const createPlitePageLayout = <
     pageCount: 1,
   };
   const listeners = new Set<() => void>();
+  let activeConnections = 0;
+  let destroyed = false;
+  let unsubscribeEditor: (() => void) | null = null;
+  let pendingPageBreakWrite: {
+    options: PlitePageLayoutOptions<TSettings>;
+    reason: PlitePageLayoutRefreshReason;
+    snapshot: PlitePageBreakSnapshot;
+    source: EditorStateField<PlitePageBreakSnapshot | null>;
+  } | null = null;
   let scheduledRefresh: {
     animationFrame: number | null;
     firstScheduledAt: number;
     timeout: ReturnType<typeof setTimeout> | null;
   } | null = null;
 
-  const notify = () => {
+  const reportError = (
+    currentOptions: PlitePageLayoutOptions<TSettings>,
+    phase: PlitePageLayoutError['phase'],
+    reason: PlitePageLayoutRefreshReason,
+    cause: unknown
+  ) => {
+    const error = Object.freeze({ cause, phase, reason });
+
+    if (currentOptions.onError) {
+      try {
+        currentOptions.onError(error);
+        return;
+      } catch (sinkError) {
+        globalThis.console?.error(
+          'Plite page-layout error sink failed.',
+          error,
+          sinkError
+        );
+        return;
+      }
+    }
+
+    globalThis.console?.error('Plite page-layout runtime failed.', error);
+  };
+
+  const writePageBreakSnapshot = (
+    write: NonNullable<typeof pendingPageBreakWrite>
+  ) => {
+    try {
+      editor.update((tx) => {
+        tx.setField(write.source, write.snapshot);
+      });
+    } catch (cause) {
+      reportError(write.options, 'page-break-write', write.reason, cause);
+    }
+  };
+
+  const notify = (
+    currentOptions: PlitePageLayoutOptions<TSettings>,
+    reason: PlitePageLayoutRefreshReason
+  ) => {
     for (const listener of listeners) {
-      listener();
+      try {
+        listener();
+      } catch (cause) {
+        reportError(currentOptions, 'notify', reason, cause);
+      }
     }
   };
 
@@ -3074,16 +3142,19 @@ export const createPlitePageLayout = <
     scheduledRefresh = null;
   };
 
-  const refresh = (_reason: PlitePageLayoutRefreshReason = 'editor') => {
+  const refresh = (
+    reason: PlitePageLayoutRefreshReason = 'editor',
+    nextOptions: PlitePageLayoutOptions<TSettings> = options
+  ) => {
     cancelScheduledRefresh();
 
     const startedAt = getNow();
-    const options = getOptions();
+    const currentOptions = nextOptions;
     const root = profileLayoutDuration('read-root', () =>
-      readLayoutRoot(editor, options)
+      readLayoutRoot(editor, currentOptions)
     );
     const settings = profileLayoutDuration('read-settings', () =>
-      readLayoutSettings(editor, options.page)
+      readLayoutSettings(editor, currentOptions.page)
     );
     const page = createPlitePage(settings);
     const version = profileLayoutDuration('read-version', () =>
@@ -3096,10 +3167,10 @@ export const createPlitePageLayout = <
       'measurement-profile',
       () =>
         createPlitePageLayoutMeasurementProfile({
-          engine: options.engine,
+          engine: currentOptions.engine,
           root,
           settings,
-          typography: options.typography,
+          typography: currentOptions.typography,
         })
     );
     const blocks = profileLayoutDuration('extract-blocks', () =>
@@ -3108,12 +3179,12 @@ export const createPlitePageLayout = <
         root,
         settings,
         measurementProfile,
-        options.typography,
-        options.nodeLayout
+        currentOptions.typography,
+        currentOptions.nodeLayout
       )
     );
     const output = profileLayoutDuration('engine-compose', () =>
-      options.engine.compose({
+      currentOptions.engine.compose({
         blocks,
         page,
         settings,
@@ -3126,7 +3197,7 @@ export const createPlitePageLayout = <
       let pageBreakSnapshotToWrite: PlitePageBreakSnapshot | null = null;
       let pageBreakSnapshotWriteSource: EditorStateField<PlitePageBreakSnapshot | null> | null =
         null;
-      const pageBreakOptions = options.pageBreaks;
+      const pageBreakOptions = currentOptions.pageBreaks;
 
       if (pageBreakOptions?.mode === 'read') {
         const documentKey = getPliteLayoutDocumentKey(blocks);
@@ -3177,7 +3248,7 @@ export const createPlitePageLayout = <
       };
     });
 
-    snapshot = {
+    const nextSnapshot: PlitePageLayoutSnapshot = {
       blocks,
       fragments: output.fragments,
       measurementProfile,
@@ -3189,24 +3260,34 @@ export const createPlitePageLayout = <
       settings,
       version,
     };
-    metrics = {
+    const nextMetrics: PlitePageLayoutMetrics = {
       blockCount: blocks.length,
       composeCount: metrics.composeCount + 1,
       lastDurationMs: getNow() - startedAt,
-      pageCount: snapshot.pages.length,
+      pageCount: nextSnapshot.pages.length,
     };
-    profileLayoutDuration('notify', notify);
 
-    if (
+    options = currentOptions;
+    snapshot = nextSnapshot;
+    metrics = nextMetrics;
+    profileLayoutDuration('notify', () => notify(currentOptions, reason));
+
+    pendingPageBreakWrite =
       pageBreakResult.pageBreakSnapshotWriteSource &&
       pageBreakResult.pageBreakSnapshotToWrite
-    ) {
-      editor.update((tx) => {
-        tx.setField(
-          pageBreakResult.pageBreakSnapshotWriteSource!,
-          pageBreakResult.pageBreakSnapshotToWrite!
-        );
-      });
+        ? {
+            options: currentOptions,
+            reason,
+            snapshot: pageBreakResult.pageBreakSnapshotToWrite,
+            source: pageBreakResult.pageBreakSnapshotWriteSource,
+          }
+        : null;
+
+    if (activeConnections > 0 && pendingPageBreakWrite) {
+      const write = pendingPageBreakWrite;
+
+      pendingPageBreakWrite = null;
+      writePageBreakSnapshot(write);
     }
   };
 
@@ -3252,49 +3333,91 @@ export const createPlitePageLayout = <
     };
   };
 
-  const unsubscribeEditor = editor.subscribeCommit((change) => {
-    const options = getOptions();
-    const writePageBreaks =
-      options.pageBreaks?.mode === 'write' ? options.pageBreaks : null;
+  const subscribeToEditor = () =>
+    editor.subscribeCommit((change) => {
+      const currentOptions = options;
+      const writePageBreaks =
+        currentOptions.pageBreaks?.mode === 'write'
+          ? currentOptions.pageBreaks
+          : null;
 
-    if (
-      writePageBreaks &&
-      !change.changed.hasAny('document') &&
-      change.dirtyStateKeys.length > 0 &&
-      change.dirtyStateKeys.every((key) => key === writePageBreaks.source.key)
-    ) {
-      return;
+      if (
+        writePageBreaks &&
+        !change.changed.hasAny('document') &&
+        change.dirtyStateKeys.length > 0 &&
+        change.dirtyStateKeys.every((key) => key === writePageBreaks.source.key)
+      ) {
+        return;
+      }
+
+      const shouldRefresh =
+        change.changed.hasAny('document') || change.changed.hasAny('state');
+
+      if (!shouldRefresh) {
+        return;
+      }
+
+      const textOnlyChange = Boolean(
+        change.changed.hasAny('text') &&
+          !change.changed.hasAny('state') &&
+          !change.changed.hasAny('structure')
+      );
+      const textChangeRefresh = getTextChangeRefreshOptions(
+        currentOptions.textChangeRefresh
+      );
+
+      if (textOnlyChange && textChangeRefresh.mode === 'deferred') {
+        scheduleRefreshAfterTextInput('editor', textChangeRefresh);
+      } else {
+        refresh('editor');
+      }
+    });
+
+  const connect = () => {
+    if (destroyed) return () => {};
+
+    activeConnections++;
+
+    if (activeConnections === 1) {
+      unsubscribeEditor = subscribeToEditor();
+
+      if (pendingPageBreakWrite) {
+        const write = pendingPageBreakWrite;
+
+        pendingPageBreakWrite = null;
+        writePageBreakSnapshot(write);
+      }
     }
 
-    const shouldRefresh =
-      change.changed.hasAny('document') || change.changed.hasAny('state');
+    let connected = true;
 
-    if (!shouldRefresh) {
-      return;
-    }
+    return () => {
+      if (!connected) return;
 
-    const textOnlyChange = Boolean(
-      change.changed.hasAny('text') &&
-        !change.changed.hasAny('state') &&
-        !change.changed.hasAny('structure')
-    );
-    const textChangeRefresh = getTextChangeRefreshOptions(
-      options.textChangeRefresh
-    );
+      connected = false;
 
-    if (textOnlyChange && textChangeRefresh.mode === 'deferred') {
-      scheduleRefreshAfterTextInput('editor', textChangeRefresh);
-    } else {
-      refresh('editor');
-    }
-  });
+      if (destroyed) return;
 
-  refresh('editor');
+      activeConnections--;
 
-  return {
+      if (activeConnections === 0) {
+        cancelScheduledRefresh();
+        unsubscribeEditor?.();
+        unsubscribeEditor = null;
+      }
+    };
+  };
+
+  const runtime: PlitePageLayout<PlitePageLayoutOptions<TSettings>> = {
     destroy() {
+      if (destroyed) return;
+
+      destroyed = true;
       cancelScheduledRefresh();
-      unsubscribeEditor();
+      unsubscribeEditor?.();
+      unsubscribeEditor = null;
+      activeConnections = 0;
+      pendingPageBreakWrite = null;
       listeners.clear();
     },
     getFragments(path) {
@@ -3322,6 +3445,9 @@ export const createPlitePageLayout = <
       return projectRangeThroughRuns(projection, range);
     },
     refresh,
+    reconfigure(nextOptions) {
+      refresh('settings', nextOptions);
+    },
     subscribe(listener) {
       listeners.add(listener);
 
@@ -3330,6 +3456,15 @@ export const createPlitePageLayout = <
       };
     },
   };
+
+  registerLayoutRuntimeLifecycle(runtime, { connect });
+  refresh('editor');
+
+  if (!connectionDeferred) {
+    connect();
+  }
+
+  return runtime;
 };
 
 /** Create a layout reader with the built-in browser or estimated engine. */
@@ -3337,24 +3472,41 @@ export const createPliteLayout = <
   TSettings extends PlitePageSettings = PlitePageSettings,
 >(
   editor: EditorType<Value>,
-  getOptions: () => PliteLayoutOptions<TSettings>
-): PlitePageLayout => {
+  initialOptions: PliteLayoutOptions<TSettings>
+): PlitePageLayout<PliteLayoutOptions<TSettings>> => {
   const fallbackEngine = canUseCanvasTextMeasurement()
     ? pretextPageLayoutEngine()
     : createEstimatedPageLayoutEngine();
-
-  return createPlitePageLayout(editor, () => {
-    const options = getOptions();
-    const engine = options.engine ?? fallbackEngine;
-
-    return {
-      engine,
-      nodeLayout: options.nodeLayout,
-      page: options.page,
-      pageBreaks: options.pageBreaks,
-      root: options.root,
-      textChangeRefresh: options.textChangeRefresh,
-      typography: options.typography,
-    };
+  const toPageLayoutOptions = (
+    options: PliteLayoutOptions<TSettings>
+  ): PlitePageLayoutOptions<TSettings> => ({
+    engine: options.engine ?? fallbackEngine,
+    nodeLayout: options.nodeLayout,
+    onError: options.onError,
+    page: options.page,
+    pageBreaks: options.pageBreaks,
+    root: options.root,
+    textChangeRefresh: options.textChangeRefresh,
+    typography: options.typography,
   });
+  const connectionDeferred = isLayoutRuntimeConnectionDeferred(initialOptions);
+  const pageLayoutOptions = toPageLayoutOptions(initialOptions);
+  const runtime = createPlitePageLayout(
+    editor,
+    connectionDeferred
+      ? deferLayoutRuntimeConnection(pageLayoutOptions)
+      : pageLayoutOptions
+  );
+  const layout: PlitePageLayout<PliteLayoutOptions<TSettings>> = {
+    ...runtime,
+    reconfigure(options) {
+      runtime.reconfigure(toPageLayoutOptions(options));
+    },
+  };
+
+  registerLayoutRuntimeLifecycle(layout, {
+    connect: () => connectLayoutRuntime(runtime),
+  });
+
+  return layout;
 };

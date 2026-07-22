@@ -164,7 +164,7 @@ const MentionExample = () => {
   return (
     <Plite
       editor={editor}
-      onChange={() => {
+      onCommit={() => {
         const match = editor.read((state) => {
           const selection = state.selection();
 

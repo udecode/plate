@@ -1,10 +1,10 @@
 import { act, renderHook } from '@testing-library/react';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useEmojiPickerStateMock = mock();
 
 mock.module('@platejs/core/react', () => ({
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
 }));
 
 mock.module('./useEmojiPickerState', () => ({
@@ -15,7 +15,7 @@ const { useEmojiPicker } = await import('./useEmojiPicker');
 
 describe('useEmojiPicker', () => {
   beforeEach(() => {
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     useEmojiPickerStateMock.mockReset();
   });
 
@@ -53,7 +53,7 @@ describe('useEmojiPicker', () => {
       update: { nodes: { insert } },
     };
 
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     useEmojiPickerStateMock.mockReturnValue([
       {
         hasFound: true,
@@ -130,7 +130,7 @@ describe('useEmojiPicker', () => {
       }),
     };
 
-    useEditorRefMock.mockReturnValue({ id: 'editor' });
+    useEditorMock.mockReturnValue({ id: 'editor' });
     useEmojiPickerStateMock.mockReturnValue([
       {
         isOpen: false,
@@ -222,7 +222,7 @@ describe('useEmojiPicker', () => {
       }),
     };
 
-    useEditorRefMock.mockReturnValue({ id: 'editor' });
+    useEditorMock.mockReturnValue({ id: 'editor' });
     useEmojiPickerStateMock.mockImplementation(() => [state, dispatch]);
 
     const { rerender, result } = renderHook(() =>

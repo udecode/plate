@@ -11,7 +11,7 @@ const createMarkEditor = (input: any) =>
   createBaseEditor({
     plugins: [BoldPlugin, ItalicPlugin],
     selection: input.selection,
-    value: input.children,
+    initialValue: input.children,
   });
 
 const createVoidElementPlugin = (key: string) =>
@@ -262,7 +262,7 @@ describe('slate cross-package contracts', () => {
       const editor = createBaseEditor({
         plugins: [BaseLinkPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       const [, blockPath] = editor.read.nodes.block()!;
@@ -301,7 +301,7 @@ describe('slate cross-package contracts', () => {
       const editor = createBaseEditor({
         plugins: [BaseLinkPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       expect(isTrailingTextEmpty(editor)).toBe(true);
@@ -324,7 +324,7 @@ describe('slate cross-package contracts', () => {
       const editor = createBaseEditor({
         plugins: [BaseLinkPlugin],
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       expect(isTrailingTextEmpty(editor)).toBe(false);
@@ -426,7 +426,7 @@ describe('slate cross-package contracts', () => {
         const editor = createBaseEditor({
           plugins,
           selection: input.selection,
-          value: input.children,
+          initialValue: input.children,
         });
 
         action(editor);

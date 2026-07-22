@@ -33,7 +33,7 @@ describe('SingleBlockPlugin', () => {
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.value.repair();
@@ -53,7 +53,7 @@ describe('SingleBlockPlugin', () => {
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.break.insert();
@@ -72,7 +72,7 @@ describe('SingleBlockPlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
-      value: singleBlockInput.children,
+      initialValue: singleBlockInput.children,
     });
 
     editor.update.value.repair();
@@ -98,7 +98,7 @@ describe('SingleBlockPlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
-      value: inputWithLineBreaks.children,
+      initialValue: inputWithLineBreaks.children,
     });
 
     editor.update.value.repair();
@@ -126,7 +126,7 @@ describe('SingleBlockPlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
-      value: emptyBlocksInput.children,
+      initialValue: emptyBlocksInput.children,
     });
 
     editor.update.value.repair();

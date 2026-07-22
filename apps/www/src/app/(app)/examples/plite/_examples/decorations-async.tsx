@@ -90,8 +90,8 @@ const AsyncDecorationsExample = () => {
   const hookDecorationSource = usePliteDecorationSource<AsyncHighlightData>(
     editor,
     {
-      deps: [decoratedLength],
       id: 'async-decoration-hook',
+      revision: decoratedLength,
       read: ({ snapshot }) => {
         const root = { children: snapshot.children } as Ancestor;
         const decorations: PliteDecoration<AsyncHighlightData>[] = [];
@@ -156,7 +156,7 @@ const AsyncDecorationsExample = () => {
           decorationMode === 'hook' ? [hookDecorationSource] : undefined
         }
         editor={editor}
-        onValueChange={scheduleAsyncDecorations}
+        onValueChange={({ value }) => scheduleAsyncDecorations(value)}
       >
         <Editable
           className="plite-decorations-async-editor"

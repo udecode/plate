@@ -35,7 +35,7 @@ describe('getCellIndices', () => {
     const editor = createPlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
-      value,
+      initialValue: value,
     });
     const entry = editor.read.nodes.get<TTableCellElement>([0, 0, 1]);
     assert(entry);
@@ -56,7 +56,7 @@ describe('getCellIndices', () => {
     const orphanValue: Value = [{ children: [{ text: '' }], type: 'p' }];
     const editor = createPlateEditor({
       plugins: [...getTestTablePlugins(), DebugPlugin],
-      value: orphanValue,
+      initialValue: orphanValue,
     });
     const cell: TTableCellElement = {
       children: [{ text: '' }],

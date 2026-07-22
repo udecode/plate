@@ -39,7 +39,7 @@ describe('moveSelection', () => {
 
     editor = createPlateEditor({
       plugins: [BlockSelectionPlugin],
-      value: [
+      initialValue: [
         {
           id: 'block1',
           children: [{ text: 'Block One' }],
@@ -185,7 +185,7 @@ describe('moveSelection', () => {
     it('select parent block if no previous sibling exists', () => {
       editor = createPlateEditor({
         plugins: [BlockSelectionPlugin, TestDivPlugin],
-        value: [
+        initialValue: [
           {
             id: 'parent1',
             children: [
@@ -256,7 +256,7 @@ describe('moveSelection', () => {
           TestTableRowPlugin,
           TestTableCellPlugin,
         ],
-        value: [
+        initialValue: [
           {
             id: 'table1',
             children: [
@@ -401,7 +401,7 @@ describe('moveSelection', () => {
           TestColumnGroupPlugin,
           TestColumnPlugin,
         ],
-        value: [
+        initialValue: [
           {
             id: 'block1',
             children: [{ text: 'Block One' }],

@@ -7,7 +7,6 @@
       "@platejs/browser/browser": ["../browser/src/browser/index.ts"],
       "@platejs/browser/core": ["../browser/src/core/index.ts"],
       "@platejs/browser/playwright": ["../browser/src/playwright/index.ts"],
-      "@platejs/browser/transports": ["../browser/src/transports/index.ts"],
       "@platejs/plite": ["../plite/src/index.ts"],
       "@platejs/plite/internal": ["../plite/src/internal/index.ts"],
       "@platejs/plite-dom": ["../plite-dom/src/index.ts"],

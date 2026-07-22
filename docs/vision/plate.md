@@ -46,6 +46,14 @@ Current priorities:
 
 - Core stays lean; optional capability should usually ship as packages,
   plugins, or app-owned components.
+- React files follow durable families rather than individual symbols. Keep a
+  component family in one `<Family>.tsx` file and a hook family in one
+  `use<Family>.ts` file; related public primitives and hooks may remain separate
+  exports from that owner. Sibling composition inside one family is not reuse
+  evidence for more files.
+- Keep feature-package React roots flat by default. A nested component/hook
+  directory earns its keep only as a real public subsystem with multiple
+  cross-family owners, not as taxonomy or a response to file size.
 - Preferred extension path is npm package distribution plus local app
   composition and registry usage for development.
 - If you build a plugin or component pack, host and maintain it in your own

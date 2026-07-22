@@ -31,6 +31,8 @@ export type ListPluginOptions = {
   inheritCheckStateOnLineEndBreak?: boolean;
   /** Inherit the checked state of below node after insert break at the start */
   inheritCheckStateOnLineStartBreak?: boolean;
+  /** Element plugins allowed as direct list-item children. */
+  validLiChildren?: readonly PluginReference[];
 };
 
 export type ListPluginTransaction = {
@@ -43,24 +45,6 @@ export type ListPluginTransaction = {
   };
   untab: () => boolean;
 };
-
-export type ListPluginConfiguration = {
-  /** Element plugins allowed as direct list-item children. */
-  validLiChildren?: readonly PluginReference[];
-};
-
-type ListContract = PluginConfig<
-  'listClassic',
-  ListPluginOptions,
-  {},
-  {
-    listClassic: ListPluginTransaction;
-  },
-  {},
-  {},
-  readonly [],
-  ListPluginConfiguration
->;
 
 export type ListCorrectionTransaction = Pick<
   EditorCoreUpdateTransaction,
@@ -193,14 +177,27 @@ export const BaseTaskListPlugin = createBasePlugin({
   toggle: () => toggleTaskList(editor, tx),
 }));
 
-/** Enables support for bulleted, numbered and to-do lists. */
-const listConfiguration: ListContract['config'] = { validLiChildren: [] };
-const listOptions: ListPluginOptions = {};
+type ListContract = PluginConfig<
+  'listClassic',
+  ListPluginOptions,
+  {},
+  { listClassic: ListPluginTransaction },
+  {},
+  {},
+  readonly [],
+  readonly [
+    typeof BaseBulletedListPlugin,
+    typeof BaseNumberedListPlugin,
+    typeof BaseTaskListPlugin,
+    typeof BaseListItemPlugin,
+    typeof BaseListItemContentPlugin,
+  ]
+>;
 
-export const BaseListPlugin = createBasePlugin({
+/** Enables support for bulleted, numbered and to-do lists. */
+export const BaseListPlugin = createBasePlugin<ListContract>({
   key: KEYS.listClassic,
-  config: listConfiguration,
-  options: listOptions,
+  options: { validLiChildren: [] },
   plugins: [
     BaseBulletedListPlugin,
     BaseNumberedListPlugin,
@@ -229,7 +226,7 @@ export const BaseListPlugin = createBasePlugin({
     };
   },
 })
-  .extend(({ plugin }) => ({
+  .extend(({ getOptions }) => ({
     plugins: [
       BaseBulletedListPlugin,
       BaseNumberedListPlugin,
@@ -244,7 +241,7 @@ export const BaseListPlugin = createBasePlugin({
               BaseTaskListPlugin,
             ]);
           const validLiChildren = plugins.elementTypes(
-            plugin.config.validLiChildren ?? []
+            getOptions().validLiChildren ?? []
           );
 
           return {

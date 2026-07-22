@@ -61,7 +61,7 @@ describe('insertTable', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.insert.table(
@@ -126,7 +126,7 @@ describe('insertTable', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.insert.table(
@@ -201,7 +201,7 @@ describe('insertTable', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.insert.table(
@@ -280,7 +280,7 @@ describe('insertTable', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.insert.table(
@@ -355,7 +355,7 @@ describe('insertTable', () => {
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       editor.update.insert.table(

@@ -19,7 +19,7 @@ export default function SingleBlockDemo() {
         ...EditorKit,
         isSingleBlock ? SingleBlockPlugin : SingleLinePlugin,
       ],
-      value: [
+      initialValue: [
         {
           children: [
             {

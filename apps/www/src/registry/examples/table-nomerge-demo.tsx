@@ -19,7 +19,7 @@ export default function TableNoMergeDemo() {
         },
       }),
     ],
-    value: createValue('table'),
+    initialValue: createValue('table'),
   });
 
   return (

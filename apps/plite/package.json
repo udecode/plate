@@ -23,12 +23,10 @@
     "next": "16.2.6",
     "nuqs": "2.4.3",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "serve-handler": "6.1.6"
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@faker-js/faker": "9.8.0",
-    "@types/serve-handler": "6.1.4",
     "@typescript/native-preview": "7.0.0-dev.20260707.2"
   }
 }

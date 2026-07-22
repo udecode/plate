@@ -108,7 +108,7 @@ export default function PreviewMdDemo() {
           decorate: decoratePreview,
         }),
       ],
-      value: previewMdValue,
+      initialValue: previewMdValue,
     },
     []
   );

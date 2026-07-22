@@ -62,7 +62,7 @@ describe('when inserting html', () => {
       const editor = createBaseEditor({
         plugins,
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       insertData(editor, dataTransfer);
@@ -95,7 +95,7 @@ describe('when inserting html', () => {
       const editor = createBaseEditor({
         plugins,
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       insertData(editor, dataTransfer as any);
@@ -130,7 +130,7 @@ describe('when inserting html', () => {
       const editor = createBaseEditor({
         plugins,
         selection: input.selection,
-        value: input.children,
+        initialValue: input.children,
       });
 
       insertData(
@@ -175,7 +175,7 @@ describe('when inserting empty html', () => {
     const editor = createBaseEditor({
       plugins,
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     insertData(editor, dataTransfer as any);
@@ -216,7 +216,7 @@ describe('when inserting an iframe without src', () => {
     const editor = createBaseEditor({
       plugins,
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     insertData(editor, data as any);
@@ -260,7 +260,7 @@ describe('when inserting link with href', () => {
     const editor = createBaseEditor({
       plugins,
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     insertData(editor, data as any);
@@ -306,7 +306,7 @@ describe('when inserting plain text', () => {
     const editor = createBaseEditor({
       plugins: [],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     insertData(editor, data as any);

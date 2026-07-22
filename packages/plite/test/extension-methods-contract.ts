@@ -294,6 +294,23 @@ describe('extension method hard cut', () => {
     );
   });
 
+  it('resolves editor api handles from installed API factories', () => {
+    const installed = defineEditorExtension({
+      api() {
+        return {
+          actual: {
+            read: () => 42,
+          },
+        };
+      },
+      name: 'factory-owner',
+    });
+    const editor = createEditor({ extensions: [installed] as const });
+
+    assert.equal(editor.getApi(installed), editor.api.actual);
+    assert.equal(editor.getApi(installed).read(), 42);
+  });
+
   it('pure command handlers delegate, override, and extend one spec', () => {
     const seenOffsets: number[] = [];
     const editor = createEditor({

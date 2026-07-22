@@ -165,7 +165,7 @@ describe('plite-react provider hooks contract', () => {
 
   test('Plite publishes editor commits from child mount layout effects', () => {
     const editor = createReactEditor({ initialValue });
-    const onChange = jest.fn();
+    const onCommit = jest.fn();
     const onValueChange = jest.fn();
     const shouldUpdate = jest.fn(() => true);
     const selector = jest.fn((nextEditor: typeof editor) =>
@@ -180,7 +180,10 @@ describe('plite-react provider hooks contract', () => {
 
     const ProbeAndCommit = () => {
       const mountedEditor = useEditor<typeof editor>();
-      const text = useEditorSelector(selector, Object.is, { shouldUpdate });
+      const text = useEditorSelector(selector, {
+        equalityFn: Object.is,
+        shouldUpdate,
+      });
 
       useLayoutEffect(() => {
         mountedEditor.update((tx) => {
@@ -192,30 +195,124 @@ describe('plite-react provider hooks contract', () => {
     };
 
     const rendered = render(
-      <Plite editor={editor} onChange={onChange} onValueChange={onValueChange}>
+      <Plite editor={editor} onCommit={onCommit} onValueChange={onValueChange}>
         <Editable />
         <ProbeAndCommit />
       </Plite>
     );
 
     expect(rendered.getByTestId('selector-text')).toHaveTextContent('test!');
-    expect(onChange).toHaveBeenCalledWith(
-      [{ type: 'block', children: [{ text: 'test!' }] }],
+    expect(onCommit).toHaveBeenCalledWith(
       expect.objectContaining({
         commit: expect.anything(),
-        valueChanged: true,
+        editor,
+        snapshot: expect.objectContaining({
+          children: [{ type: 'block', children: [{ text: 'test!' }] }],
+        }),
       })
     );
     expect(onValueChange).toHaveBeenCalledWith(
-      [{ type: 'block', children: [{ text: 'test!' }] }],
-      expect.objectContaining({ valueChanged: true })
+      expect.objectContaining({
+        editor,
+        value: [{ type: 'block', children: [{ text: 'test!' }] }],
+      })
     );
-    const publishedChange = onChange.mock.calls.at(-1)?.[1];
+    const publishedContext = onCommit.mock.calls.at(-1)?.[0];
 
-    expect(publishedChange?.commit.changed.has('text')).toBe(true);
+    expect(publishedContext?.commit.changed.has('text')).toBe(true);
     expect(
       shouldUpdate.mock.calls.some(([change]) => change?.changed.has('text'))
     ).toBe(true);
+  });
+
+  test('useEditorSelector catches up when a changed filter misses a child layout commit', () => {
+    const editor = createReactEditor({ initialValue });
+
+    const CommitFromChildLayout = ({ text }: { text?: string }) => {
+      useLayoutEffect(() => {
+        if (!text) return;
+
+        editor.update((tx) => {
+          tx.text.insert(text, { at: { path: [0, 0], offset: 4 } });
+        });
+      }, [text]);
+
+      return null;
+    };
+    const Probe = ({ allow, insert }: { allow: boolean; insert?: string }) => {
+      const text = useEditorSelector(
+        (nextEditor) => nextEditor.read.text.string([]),
+        { shouldUpdate: () => allow }
+      );
+
+      return (
+        <>
+          <span data-testid="filtered-selector-text">{text}</span>
+          <CommitFromChildLayout text={insert} />
+        </>
+      );
+    };
+    const rendered = render(
+      <Plite editor={editor}>
+        <Editable />
+        <Probe allow={false} />
+      </Plite>
+    );
+
+    rendered.rerender(
+      <Plite editor={editor}>
+        <Editable />
+        <Probe allow insert="!" />
+      </Plite>
+    );
+
+    expect(rendered.getByTestId('filtered-selector-text')).toHaveTextContent(
+      'test!'
+    );
+  });
+
+  test('abandoned selector renders do not publish their change filter', () => {
+    const editor = createReactEditor({ initialValue });
+    const suspended = new Promise<never>(() => {});
+    const selector = jest.fn((nextEditor: typeof editor) =>
+      nextEditor.read.text.string([])
+    );
+
+    const Probe = ({ abandoned }: { abandoned: boolean }) => {
+      const text = useEditorSelector(selector, {
+        shouldUpdate: () => abandoned,
+      });
+
+      if (abandoned) throw suspended;
+
+      return <span data-testid="committed-filter-text">{text}</span>;
+    };
+    const tree = (abandoned: boolean) => (
+      <Plite editor={editor}>
+        <Editable />
+        <Suspense fallback={<span>loading</span>}>
+          <Probe abandoned={abandoned} />
+        </Suspense>
+      </Plite>
+    );
+    const rendered = render(tree(false));
+    const committedSelectorCalls = selector.mock.calls.length;
+
+    act(() => {
+      startTransition(() => {
+        rendered.rerender(tree(true));
+      });
+    });
+    act(() => {
+      editor.update((tx) => {
+        tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+      });
+    });
+
+    expect(selector).toHaveBeenCalledTimes(committedSelectorCalls);
+    expect(rendered.getByTestId('committed-filter-text')).toHaveTextContent(
+      'test'
+    );
   });
 
   test('useEditorSelector honors the equality function when selector identity changes', async () => {
@@ -224,7 +321,7 @@ describe('plite-react provider hooks contract', () => {
     const callback2 = jest.fn(() => []);
 
     const { result, rerender } = renderHook(
-      ({ callback }) => useEditorSelector(callback, _.isEqual),
+      ({ callback }) => useEditorSelector(callback, { equalityFn: _.isEqual }),
       {
         initialProps: { callback: callback1 },
         wrapper: ({ children }) => (
@@ -313,8 +410,8 @@ describe('plite-react provider hooks contract', () => {
   test('abandoned provider renders keep committed change callbacks', () => {
     const committedEditor = createReactEditor({ initialValue });
     const abandonedEditor = createReactEditor({ initialValue });
-    const committedOnChange = jest.fn();
-    const abandonedOnChange = jest.fn();
+    const committedOnCommit = jest.fn();
+    const abandonedOnCommit = jest.fn();
     const suspended = new Promise<never>(() => {});
 
     const MaybeSuspend = ({ abandoned }: { abandoned: boolean }) => {
@@ -326,7 +423,7 @@ describe('plite-react provider hooks contract', () => {
       <Suspense fallback={<span>loading</span>}>
         <Plite
           editor={abandoned ? abandonedEditor : committedEditor}
-          onChange={abandoned ? abandonedOnChange : committedOnChange}
+          onCommit={abandoned ? abandonedOnCommit : committedOnCommit}
         >
           <MaybeSuspend abandoned={abandoned} />
           <Editable />
@@ -347,8 +444,52 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(committedOnChange).toBeCalledTimes(1);
-    expect(abandonedOnChange).not.toBeCalled();
+    expect(committedOnCommit).toBeCalledTimes(1);
+    expect(abandonedOnCommit).not.toBeCalled();
+  });
+
+  test('child layout commits after rerender use the newly committed provider callbacks', () => {
+    const editor = createReactEditor({ initialValue });
+    const previousOnCommit = jest.fn();
+    const previousOnValueChange = jest.fn();
+    const nextOnCommit = jest.fn();
+    const nextOnValueChange = jest.fn();
+
+    const CommitInLayout = ({ commit }: { commit: boolean }) => {
+      const mountedEditor = useEditor<typeof editor>();
+
+      useLayoutEffect(() => {
+        if (!commit) return;
+
+        mountedEditor.update((tx) => {
+          tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+        });
+      }, [commit, mountedEditor]);
+
+      return null;
+    };
+    const tree = (
+      commit: boolean,
+      onCommit: typeof previousOnCommit,
+      onValueChange: typeof previousOnValueChange
+    ) => (
+      <Plite editor={editor} onCommit={onCommit} onValueChange={onValueChange}>
+        <CommitInLayout commit={commit} />
+      </Plite>
+    );
+    const rendered = render(
+      tree(false, previousOnCommit, previousOnValueChange)
+    );
+
+    rendered.rerender(tree(true, nextOnCommit, nextOnValueChange));
+
+    expect(previousOnCommit).not.toBeCalled();
+    expect(previousOnValueChange).not.toBeCalled();
+    expect(nextOnCommit).toBeCalledTimes(1);
+    expect(nextOnValueChange).toBeCalledTimes(1);
+    expect(nextOnCommit.mock.calls[0]?.[0].commit.version).toBe(
+      nextOnValueChange.mock.calls[0]?.[0].commit.version
+    );
   });
 
   test('useEditorSelector replays subscription errors during render with context', async () => {
@@ -360,15 +501,18 @@ describe('plite-react provider hooks contract', () => {
       .mockImplementation(() => {});
 
     const ThrowingSelector = () => {
-      const version = useEditorSelector((nextEditor) => {
-        const nextVersion = editorGetLastCommit(nextEditor)?.version ?? 0;
+      const version = useEditorSelector(
+        (nextEditor) => {
+          const nextVersion = editorGetLastCommit(nextEditor)?.version ?? 0;
 
-        if (nextVersion > initialVersion) {
-          throw new Error('selector exploded');
-        }
+          if (nextVersion > initialVersion) {
+            throw new Error('selector exploded');
+          }
 
-        return nextVersion;
-      }, Object.is);
+          return nextVersion;
+        },
+        { equalityFn: Object.is }
+      );
 
       return <span data-testid="selector-version">{version}</span>;
     };
@@ -422,7 +566,7 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const { result } = renderHook(
-      () => useEditorSelector(selector, Object.is),
+      () => useEditorSelector(selector, { equalityFn: Object.is }),
       {
         wrapper: ({ children }) => (
           <Plite editor={editor}>
@@ -454,8 +598,9 @@ describe('plite-react provider hooks contract', () => {
 
     const { result } = renderHook(
       () =>
-        useEditorSelector(selector, Object.is, {
+        useEditorSelector(selector, {
           deferred: true,
+          equalityFn: Object.is,
         }),
       {
         wrapper: ({ children }) => (
@@ -491,8 +636,9 @@ describe('plite-react provider hooks contract', () => {
 
     const rendered = renderHook(
       () =>
-        useEditorSelector(selector, Object.is, {
+        useEditorSelector(selector, {
           deferred: true,
+          equalityFn: Object.is,
         }),
       {
         wrapper: ({ children }) => (
@@ -531,8 +677,9 @@ describe('plite-react provider hooks contract', () => {
     try {
       const { result } = renderHook(
         () =>
-          useEditorSelector(selector, Object.is, {
+          useEditorSelector(selector, {
             deferred: true,
+            equalityFn: Object.is,
             profileId: 'deferred-proof',
           }),
         {
@@ -588,7 +735,7 @@ describe('plite-react provider hooks contract', () => {
     const initialVersion = editorGetLastCommit(editor)?.version ?? 0;
 
     const { result } = renderHook(
-      () => useEditorSelector(selector, undefined, { shouldUpdate }),
+      () => useEditorSelector(selector, { shouldUpdate }),
       {
         wrapper: ({ children }) => (
           <Plite editor={editor}>
@@ -793,7 +940,7 @@ describe('plite-react provider hooks contract', () => {
     try {
       const { result } = renderHook(
         () =>
-          useEditorSelector(selector, undefined, {
+          useEditorSelector(selector, {
             runtimeId: firstBlockRuntimeId,
             shouldUpdate,
           }),

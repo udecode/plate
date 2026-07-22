@@ -12,7 +12,7 @@ import {
 import { KEYS } from '@platejs/utils';
 
 import type {
-  ListPluginConfiguration,
+  ListPluginOptions,
   ListTransaction,
 } from '../BaseListPlugin';
 import { getListItemEntry, getListTypes, getPropsIfTaskList } from '../queries';
@@ -20,16 +20,7 @@ import { unwrapList } from './unwrapList';
 
 type ToggleListOptions = { type: string; checked?: boolean };
 
-type ListConfigurationContract = PluginConfig<
-  'listClassic',
-  {},
-  {},
-  {},
-  {},
-  {},
-  readonly [],
-  ListPluginConfiguration
->;
+type ListOptionsContract = PluginConfig<'listClassic', ListPluginOptions>;
 
 const setListType = (
   editor: BaseEditor,
@@ -100,9 +91,9 @@ const _toggleList = (
 
   if (!selection) return;
 
-  const { validLiChildren } = editor.plugin<ListConfigurationContract>(
+  const { validLiChildren } = editor.plugin<ListOptionsContract>(
     KEYS.listClassic
-  ).plugin.config;
+  ).getOptions();
   const validLiChildrenTypes = validLiChildren?.map(({ key }) =>
     editor.getType(key)
   );

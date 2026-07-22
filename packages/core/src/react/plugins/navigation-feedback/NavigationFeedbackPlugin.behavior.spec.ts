@@ -17,7 +17,7 @@ describe('NavigationFeedbackPlugin', () => {
       return 1;
     }) as typeof setTimeout);
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     editor.update((tx) => {
       tx.navigation.flashTarget({
@@ -55,7 +55,7 @@ describe('NavigationFeedbackPlugin', () => {
       return timeoutId;
     }) as typeof setTimeout);
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     editor.update((tx) => {
       tx.navigation.flashTarget({
@@ -92,7 +92,7 @@ describe('NavigationFeedbackPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     const focusSpy = mock(() => {});
     const scrollSpy = mock(() => {});
@@ -146,7 +146,7 @@ describe('NavigationFeedbackPlugin', () => {
 
   it('navigates to a node inserted earlier in the same transaction', () => {
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     let navigated = false;
 
@@ -174,7 +174,7 @@ describe('NavigationFeedbackPlugin', () => {
 
   it('keeps the active target path synced when the target node moves', () => {
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     editor.update((tx) => {
@@ -222,7 +222,7 @@ describe('NavigationFeedbackPlugin', () => {
 
   it('clears the active target when the target node is removed', () => {
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     editor.update((tx) => {
@@ -246,7 +246,7 @@ describe('NavigationFeedbackPlugin', () => {
   it('uses the top-level navigationFeedback option to override duration', () => {
     const editor = createPlateEditor({
       navigationFeedback: { duration: 1200 },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     expect(editor.plugin(NavigationFeedbackPlugin).getOption('duration')).toBe(
@@ -257,7 +257,7 @@ describe('NavigationFeedbackPlugin', () => {
   it('can disable the navigation feedback plugin from editor options', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     expect(editor.runtime.pluginList.map((plugin) => plugin.key)).not.toContain(

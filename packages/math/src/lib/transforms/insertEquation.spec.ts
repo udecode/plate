@@ -13,7 +13,7 @@ describe('insertEquation', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hi' }],
           type: KEYS.p,
@@ -48,7 +48,7 @@ describe('insertEquation', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'a' }, { text: 'b' }],
           type: KEYS.p,

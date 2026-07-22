@@ -68,7 +68,7 @@ describe('math input rules', () => {
         ...(withCodeBlock ? [CodeBlockPlugin] : []),
       ],
       selection: value.selection,
-      value: value.children,
+      initialValue: value.children,
     });
 
   it('converts a completed $...$ sequence into an inline equation on the closing delimiter', () => {

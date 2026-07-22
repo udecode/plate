@@ -7,9 +7,10 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { createPlateEditor, type PlateEditor } from '../../editor';
 import {
   PlateStoreProvider,
+  useEditor,
+  useActiveEditor,
   useEditorId,
   useEditorMounted,
-  useEditorRef,
   useEditorSelection,
   useEditorState,
   useEditorValue,
@@ -27,7 +28,7 @@ describe('createPlateStore', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
     const containerRef = { current: document.createElement('div') };
@@ -85,8 +86,11 @@ describe('createPlateStore', () => {
 
     const { result } = renderHook(
       () => ({
-        editor: useEditorState('custom'),
-        editorRef: useEditorRef('custom'),
+        activeEditor: useActiveEditor({ id: 'custom' }),
+        editor: useEditor({ id: 'custom' }),
+        version: useEditorState((state) => state.runtime.snapshot().version, {
+          id: 'custom',
+        }),
         selection: useEditorSelection('custom'),
         store: usePlateStore('custom'),
         value: useEditorValue('custom'),
@@ -95,10 +99,8 @@ describe('createPlateStore', () => {
     );
 
     expect(result.current.editor).toBe(editor);
-    expect(result.current.editorRef).toBe(editor);
-    expect(result.current.editorRef.store.store).toBe(
-      result.current.store.store
-    );
+    expect(result.current.activeEditor).toBe(editor);
+    expect(result.current.editor.store.store).toBe(result.current.store.store);
     expect(result.current.selection).toEqual(editor.read.selection());
     expect(result.current.value).toEqual(editor.read.children());
 
@@ -124,7 +126,7 @@ describe('createPlateStore', () => {
     const value: Value = [{ children: [{ text: 'runtime' }], type: 'p' }];
     const editor = createPlateEditor({
       id: 'runtime-store-editor',
-      value,
+      initialValue: value,
     });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -135,14 +137,14 @@ describe('createPlateStore', () => {
 
     const { result } = renderHook(
       () => ({
-        editor: useEditorState<PlateEditor<Value>>('runtime'),
-        editorRef: useEditorRef<PlateEditor<Value>>('runtime'),
+        editor: useEditor<PlateEditor<Value>>({ id: 'runtime' }),
+        value: useEditorState((state) => state.children(), { id: 'runtime' }),
       }),
       { wrapper }
     );
 
     act(() => {
-      result.current.editorRef.update((tx) => {
+      result.current.editor.update((tx) => {
         tx.selection.set({
           kind: 'text',
           anchor: { offset: 0, path: [0, 0] },
@@ -152,8 +154,8 @@ describe('createPlateStore', () => {
     });
 
     expect(result.current.editor).toBe(editor);
-    expect(result.current.editorRef).toBe(editor);
-    expect(result.current.editorRef.store).toBeDefined();
+    expect(result.current.value).toEqual(value);
+    expect(result.current.editor.store).toBeDefined();
     expect(editor.read.selection()).toEqual({
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },

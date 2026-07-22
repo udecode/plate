@@ -145,6 +145,24 @@ describe('createPlatePlugin', () => {
     expect(1).toBe(1);
   });
 
+  it('contextually types declared explicit Plate tx groups', () => {
+    type DeclaredTxConfig = PluginConfig<
+      'sourcePlugin',
+      {},
+      {},
+      { foreignTx: { replace: (text: string) => number } }
+    >;
+
+    const plugin = createPlatePlugin<DeclaredTxConfig>({
+      key: 'sourcePlugin',
+    }).extendTxGroup('foreignTx', () => () => ({
+      replace: (text) => text.length,
+    }));
+    const editor = createPlateEditor({ plugins: [plugin] });
+
+    expect(editor.update.foreignTx.replace('text')).toBe(4);
+  });
+
   it('exposes plugin context as a Plate editor method', () => {
     type MethodConfig = PluginConfig<
       'methodPlugin',
@@ -168,7 +186,9 @@ describe('createPlatePlugin', () => {
     const keyedContext = editor.plugin<MethodConfig>('methodPlugin');
 
     expect(pluginContext.getOption('enabled') satisfies boolean).toBe(true);
-    expect(pluginContext.api.method.isEnabled() satisfies boolean).toBe(true);
+    expect(editor.api.method.isEnabled() satisfies boolean).toBe(true);
+    // @ts-expect-error root editor APIs do not leak into plugin portals
+    expect(pluginContext.api.method).toBeUndefined();
     expect(keyedContext.getOptions().enabled satisfies boolean).toBe(true);
   });
 });

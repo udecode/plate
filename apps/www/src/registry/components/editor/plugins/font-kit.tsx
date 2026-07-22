@@ -1,7 +1,5 @@
 'use client';
 
-import type { PlatePluginConfig } from 'platejs/react';
-
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
@@ -11,13 +9,13 @@ import {
 import { KEYS } from 'platejs';
 
 const options = {
-  inject: { targetPlugins: [KEYS.p] },
-} satisfies PlatePluginConfig;
+  targetPluginKeys: [KEYS.p],
+};
 
 export const FontKit = [
   FontColorPlugin.configure({
+    ...options,
     inject: {
-      ...options.inject,
       nodeProps: {
         defaultNodeValue: 'black',
       },

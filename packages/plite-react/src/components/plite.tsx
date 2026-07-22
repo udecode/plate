@@ -1,8 +1,15 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useInsertionEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import ReactDOM from 'react-dom';
 import {
   createEditorView,
   type EditorCommit,
+  type EditorCommitContext,
   type EditorSnapshot,
   isEditor,
   type NamedRootKey,
@@ -117,19 +124,117 @@ const isRootSelectionChanged = (root: RootKey, commit: EditorCommit) =>
   ) ||
     selectionIsInRoot(commit.selectionAfter, commit.selectionAfterRoot, root));
 
-const isRootMarksChanged = (root: RootKey, commit: EditorCommit) =>
-  commit.changed.has('marks', toPublicRootOption(root));
+type PliteChangeCallbacks<
+  V extends Value,
+  TExtensions extends readonly unknown[],
+> = {
+  onCommit?: (context: PliteCommitContext<V, TExtensions>) => void;
+  onSelectionChange?: (
+    context: PliteSelectionChangeContext<V, TExtensions>
+  ) => void;
+  onValueChange?: (context: PliteValueChangeContext<V, TExtensions>) => void;
+};
 
-/** Snapshot payload passed to Plite React change callbacks. */
-export type PliteChange<V extends Value = Value> = {
-  commit: EditorCommit<V>;
-  marksChanged: boolean;
-  selection: EditorSnapshot<V>['selection'];
-  selectionChanged: boolean;
+const useCommittedChangeCallbackCell = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  callbacks: PliteChangeCallbacks<V, TExtensions>
+) => {
+  const [cell] = useState(() => ({ current: callbacks }));
+
+  useInsertionEffect(() => {
+    cell.current = callbacks;
+  }, [callbacks, cell]);
+
+  return cell;
+};
+
+type PendingEditorCommit<V extends Value> = {
+  commit: EditorCommit;
   snapshot: EditorSnapshot<V>;
-  tags: EditorCommit<V>['tags'];
+};
+
+type EditorCommitPublicationQueue<V extends Value> = {
+  lastVersion: number;
+  pending: Map<number, PendingEditorCommit<V>>;
+  publishing: boolean;
+};
+
+const createEditorCommitPublicationQueue = <V extends Value>(
+  lastVersion: number
+): EditorCommitPublicationQueue<V> => ({
+  lastVersion,
+  pending: new Map(),
+  publishing: false,
+});
+
+const resetEditorCommitPublicationQueue = <V extends Value>(
+  queue: EditorCommitPublicationQueue<V>,
+  lastVersion: number
+) => {
+  queue.lastVersion = lastVersion;
+  queue.pending.clear();
+  queue.publishing = false;
+};
+
+const publishEditorCommitInVersionOrder = <V extends Value>(
+  queue: EditorCommitPublicationQueue<V>,
+  commit: EditorCommit,
+  snapshot: EditorSnapshot<V>,
+  publish: (commit: EditorCommit, snapshot: EditorSnapshot<V>) => void,
+  options: { allowVersionGap?: boolean } = {}
+) => {
+  if (commit.version <= queue.lastVersion) return;
+
+  queue.pending.set(commit.version, { commit, snapshot });
+  if (queue.publishing) return;
+
+  queue.publishing = true;
+
+  try {
+    let allowVersionGap = options.allowVersionGap ?? false;
+
+    while (queue.pending.size > 0) {
+      let nextVersion = queue.lastVersion + 1;
+      let next = queue.pending.get(nextVersion);
+
+      if (!next && allowVersionGap) {
+        nextVersion = Math.min(...queue.pending.keys());
+        next = queue.pending.get(nextVersion);
+      }
+      if (!next) break;
+
+      queue.pending.delete(nextVersion);
+      queue.lastVersion = nextVersion;
+      publish(next.commit, next.snapshot);
+      allowVersionGap = false;
+    }
+  } finally {
+    queue.publishing = false;
+  }
+};
+
+/** Canonical commit payload observed by a Plite React provider. */
+export type PliteCommitContext<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly unknown[],
+> = EditorCommitContext<ReactEditorType<V, TExtensions>>;
+
+/** Value-change payload derived independently from a canonical commit. */
+export type PliteValueChangeContext<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly unknown[],
+> = PliteCommitContext<V, TExtensions> & {
   value: V;
-  valueChanged: boolean;
+};
+
+/** Selection-change payload derived independently from a canonical commit. */
+export type PliteSelectionChangeContext<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly unknown[],
+> = PliteCommitContext<V, TExtensions> & {
+  selection: EditorSnapshot<V>['selection'];
 };
 
 /** Props for the Plite React provider around editable roots and callbacks. */
@@ -142,12 +247,11 @@ export type PliteProps<
   annotationStore?: PliteAnnotationStore<any, any> | null;
   children: React.ReactNode;
   decorationSources?: readonly PliteDecorationSource<any>[] | null;
-  onChange?: (value: V, change: PliteChange<V>) => void;
+  onCommit?: (context: PliteCommitContext<V, TExtensions>) => void;
   onSelectionChange?: (
-    selection: EditorSnapshot<V>['selection'],
-    change: PliteChange<V>
+    context: PliteSelectionChangeContext<V, TExtensions>
   ) => void;
-  onValueChange?: (value: V, change: PliteChange<V>) => void;
+  onValueChange?: (context: PliteValueChangeContext<V, TExtensions>) => void;
   readOnly?: boolean;
   root?: NamedRootKey<TRoot>;
 };
@@ -221,7 +325,7 @@ const PliteRuntimeView = <
   annotationStore = null,
   children,
   decorationSources = null,
-  onChange,
+  onCommit,
   onSelectionChange,
   onValueChange,
   readOnly = false,
@@ -250,7 +354,7 @@ const PliteRuntimeView = <
   );
   usePliteChangeCallbacks({
     editor: reactEditor,
-    onChange,
+    onCommit,
     onSelectionChange,
     onValueChange,
     root: viewRoot,
@@ -297,23 +401,24 @@ const usePliteChangeCallbacks = <
   TExtensions extends readonly unknown[],
 >({
   editor,
-  onChange,
+  onCommit,
   onSelectionChange,
   onValueChange,
   root,
 }: {
   editor: ReactRuntimeEditor<V, TExtensions>;
-  onChange?: (value: V, change: PliteChange<V>) => void;
+  onCommit?: (context: PliteCommitContext<V, TExtensions>) => void;
   onSelectionChange?: (
-    selection: EditorSnapshot<V>['selection'],
-    change: PliteChange<V>
+    context: PliteSelectionChangeContext<V, TExtensions>
   ) => void;
-  onValueChange?: (value: V, change: PliteChange<V>) => void;
+  onValueChange?: (context: PliteValueChangeContext<V, TExtensions>) => void;
   root: RootKey;
 }) => {
-  const onChangeRef = useRef(onChange);
-  const onSelectionChangeRef = useRef(onSelectionChange);
-  const onValueChangeRef = useRef(onValueChange);
+  const changeCallbacks = useMemo(
+    () => ({ onCommit, onSelectionChange, onValueChange }),
+    [onCommit, onSelectionChange, onValueChange]
+  );
+  const changeCallbacksCell = useCommittedChangeCallbackCell(changeCallbacks);
   const editorBaseline = useMemo(
     () => ({
       commitVersion: editorGetLastCommit(editor)?.version ?? 0,
@@ -322,29 +427,21 @@ const usePliteChangeCallbacks = <
     [editor]
   );
   const lastSnapshotRef = useRef(editorGetSnapshot(editor));
-  const lastCommitVersionRef = useRef(
-    editorGetLastCommit(editor)?.version ?? 0
+  const [commitPublicationQueue] = useState(() =>
+    createEditorCommitPublicationQueue<V>(editorBaseline.commitVersion)
   );
-  const hasCallbacks = !!(onChange || onSelectionChange || onValueChange);
-
-  useIsomorphicLayoutEffect(() => {
-    onChangeRef.current = onChange;
-    onSelectionChangeRef.current = onSelectionChange;
-    onValueChangeRef.current = onValueChange;
-  }, [onChange, onSelectionChange, onValueChange]);
 
   useIsomorphicLayoutEffect(() => {
     lastSnapshotRef.current = editorBaseline.snapshot;
-    lastCommitVersionRef.current = editorBaseline.commitVersion;
+    resetEditorCommitPublicationQueue(
+      commitPublicationQueue,
+      editorBaseline.commitVersion
+    );
 
-    if (!hasCallbacks) {
-      return;
-    }
-
-    const onContextChange: Parameters<
-      ReactRuntimeEditor<V, TExtensions>['subscribeCommit']
-    >[0] = (commit) => {
-      const snapshot = editorGetSnapshot(editor);
+    const publishContextChange = (
+      commit: EditorCommit,
+      snapshot: EditorSnapshot<V>
+    ) => {
       const previousSnapshot = lastSnapshotRef.current as EditorSnapshot<V>;
       const valueChanged =
         isRootValueChanged(root, commit) &&
@@ -352,50 +449,67 @@ const usePliteChangeCallbacks = <
       const selectionChanged =
         commit.selectionChanged &&
         !isSelectionEqual(previousSnapshot.selection, snapshot.selection);
-      const marksChanged = commit.changed.has(
-        'marks',
-        toPublicRootOption(root)
-      );
-
       lastSnapshotRef.current = snapshot;
-      lastCommitVersionRef.current = commit.version;
 
-      if (!valueChanged && !selectionChanged && !marksChanged) {
-        return;
-      }
-
-      const value = snapshot.children as V;
-      const change: PliteChange<V> = {
-        commit: commit as EditorCommit<V>,
-        marksChanged,
-        selection: snapshot.selection,
-        selectionChanged,
+      const context = {
+        commit,
+        editor,
         snapshot,
-        tags: commit.tags,
-        value,
-        valueChanged,
-      };
+      } as unknown as PliteCommitContext<V, TExtensions>;
+      const { onCommit, onSelectionChange, onValueChange } =
+        changeCallbacksCell.current;
 
-      onChangeRef.current?.(value, change);
+      onCommit?.(context);
 
       if (valueChanged) {
-        onValueChangeRef.current?.(value, change);
+        onValueChange?.({
+          ...context,
+          value: snapshot.children as V,
+        });
       }
 
       if (selectionChanged) {
-        onSelectionChangeRef.current?.(snapshot.selection, change);
+        onSelectionChange?.({
+          ...context,
+          selection: snapshot.selection,
+        });
       }
+    };
+    const onContextChange: Parameters<
+      ReactRuntimeEditor<V, TExtensions>['subscribeCommit']
+    >[0] = (commit, snapshot) => {
+      publishEditorCommitInVersionOrder(
+        commitPublicationQueue,
+        commit,
+        snapshot,
+        publishContextChange
+      );
     };
 
     const unsubscribe = editor.subscribeCommit(onContextChange);
     const latestCommit = editorGetLastCommit(editor);
 
-    if (latestCommit && latestCommit.version > lastCommitVersionRef.current) {
-      onContextChange(latestCommit);
+    if (
+      latestCommit &&
+      latestCommit.version > commitPublicationQueue.lastVersion
+    ) {
+      publishEditorCommitInVersionOrder(
+        commitPublicationQueue,
+        latestCommit,
+        editorGetSnapshot(editor),
+        publishContextChange,
+        { allowVersionGap: true }
+      );
     }
 
     return unsubscribe;
-  }, [editor, editorBaseline, hasCallbacks, root]);
+  }, [
+    changeCallbacksCell,
+    commitPublicationQueue,
+    editor,
+    editorBaseline,
+    root,
+  ]);
 };
 
 const PliteSingleEditor = <
@@ -409,7 +523,7 @@ const PliteSingleEditor = <
     decorationSources = null,
     editor,
     children,
-    onChange,
+    onCommit,
     onSelectionChange,
     onValueChange,
     readOnly = false,
@@ -431,13 +545,15 @@ const PliteSingleEditor = <
     () => editorGetLastCommit(editor)?.version ?? 0,
     [editor]
   );
-  const lastCommitVersionRef = useRef(editorBaselineVersion);
   const committedEditorRef = useRef(editor);
-  const changeCallbacksRef = useRef({
-    onChange,
-    onSelectionChange,
-    onValueChange,
-  });
+  const changeCallbacks = useMemo(
+    () => ({ onCommit, onSelectionChange, onValueChange }),
+    [onCommit, onSelectionChange, onValueChange]
+  );
+  const changeCallbacksCell = useCommittedChangeCallbackCell(changeCallbacks);
+  const [commitPublicationQueue] = useState(() =>
+    createEditorCommitPublicationQueue<V>(editorBaselineVersion)
+  );
   const mountedViewEditorsRef = useRef(
     new Map<RootKey, Set<typeof reactEditor>>()
   );
@@ -454,14 +570,6 @@ const PliteSingleEditor = <
   const [viewEffectQueue] = useState(createPliteViewEffectQueue);
   const [viewEffectVersion, setViewEffectVersion] = useState(0);
   const lastSelectionCacheRef = useRef(createRootSelectionCache());
-
-  useIsomorphicLayoutEffect(() => {
-    changeCallbacksRef.current = {
-      onChange,
-      onSelectionChange,
-      onValueChange,
-    };
-  }, [onChange, onSelectionChange, onValueChange]);
 
   const runtime = useMemo(
     () =>
@@ -654,12 +762,11 @@ const PliteSingleEditor = <
     return { changedTextCount, syncedTextCount };
   }, []);
   const handleCommittedEditorChange = useCallback(
-    (commit: EditorCommit) => {
+    (commit: EditorCommit, snapshot: EditorSnapshot<V>) => {
       lastSelectionCacheRef.current.record(
         commit.selectionAfter,
         commit.selectionAfterRoot
       );
-      lastCommitVersionRef.current = commit.version;
 
       const maybeBatchUpdates =
         REACT_MAJOR_VERSION < 18
@@ -689,45 +796,36 @@ const PliteSingleEditor = <
             rootTextSync.changedTextCount > rootTextSync.syncedTextCount);
 
         profileRuntimeDuration('change-callbacks', () => {
-          const { onChange, onSelectionChange, onValueChange } =
-            changeCallbacksRef.current;
+          const { onCommit, onSelectionChange, onValueChange } =
+            changeCallbacksCell.current;
 
-          if (!onChange && !onSelectionChange && !onValueChange) {
+          if (!onCommit && !onSelectionChange && !onValueChange) {
             return;
           }
 
           const valueChanged = isRootValueChanged('main', commit);
           const selectionChanged = isRootSelectionChanged('main', commit);
-          const marksChanged = isRootMarksChanged('main', commit);
 
-          if (!valueChanged && !selectionChanged && !marksChanged) {
-            return;
-          }
+          const context = {
+            commit,
+            editor,
+            snapshot,
+          } as unknown as PliteCommitContext<V, TExtensions>;
 
-          const snapshot = profileRuntimeDuration(
-            'change-callbacks-snapshot',
-            () => editorGetSnapshot(editor)
-          );
-          const value = snapshot.children as V;
-          const change: PliteChange<V> = {
-            commit: commit as EditorCommit<V>,
-            marksChanged,
-            selection: snapshot.selection,
-            selectionChanged,
-            snapshot: snapshot as EditorSnapshot<V>,
-            tags: commit.tags,
-            value,
-            valueChanged,
-          };
-
-          onChange?.(value, change);
+          onCommit?.(context);
 
           if (valueChanged) {
-            onValueChange?.(value, change);
+            onValueChange?.({
+              ...context,
+              value: snapshot.children as V,
+            });
           }
 
           if (selectionChanged) {
-            onSelectionChange?.(snapshot.selection, change);
+            onSelectionChange?.({
+              ...context,
+              selection: snapshot.selection,
+            });
           }
         });
 
@@ -745,6 +843,7 @@ const PliteSingleEditor = <
     },
     [
       editor,
+      changeCallbacksCell,
       handleSelectorChange,
       reactEditor,
       refreshFocused,
@@ -756,24 +855,47 @@ const PliteSingleEditor = <
   useIsomorphicLayoutEffect(() => {
     if (committedEditorRef.current !== editor) {
       committedEditorRef.current = editor;
-      lastCommitVersionRef.current = editorBaselineVersion;
+      resetEditorCommitPublicationQueue(
+        commitPublicationQueue,
+        editorBaselineVersion
+      );
     }
 
     const onContextChange: Parameters<typeof editor.subscribeCommit>[0] = (
-      commit
+      commit,
+      snapshot
     ) => {
-      handleCommittedEditorChange(commit);
+      publishEditorCommitInVersionOrder(
+        commitPublicationQueue,
+        commit,
+        snapshot,
+        handleCommittedEditorChange
+      );
     };
 
     const unsubscribe = editor.subscribeCommit(onContextChange);
     const latestCommit = editorGetLastCommit(editor);
 
-    if (latestCommit && latestCommit.version > lastCommitVersionRef.current) {
-      onContextChange(latestCommit);
+    if (
+      latestCommit &&
+      latestCommit.version > commitPublicationQueue.lastVersion
+    ) {
+      publishEditorCommitInVersionOrder(
+        commitPublicationQueue,
+        latestCommit,
+        editorGetSnapshot(editor),
+        handleCommittedEditorChange,
+        { allowVersionGap: true }
+      );
     }
 
     return unsubscribe;
-  }, [editor, editorBaselineVersion, handleCommittedEditorChange]);
+  }, [
+    commitPublicationQueue,
+    editor,
+    editorBaselineVersion,
+    handleCommittedEditorChange,
+  ]);
 
   const projectionContextValue = useMemo(() => {
     if (!annotationStore) {

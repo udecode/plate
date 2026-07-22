@@ -7,9 +7,11 @@ import {
   PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES,
 } from '../../src/core';
 import {
+  browserStep,
   classifyScenarioTransportClaim,
   createScenarioReductionCandidates,
   createScenarioReplay,
+  decodeScenarioReplay,
   createPliteBrowserCompositionGauntlet,
   createPliteBrowserDestructiveEditingGauntlet,
   createPliteBrowserFeatureContractRegistry,
@@ -22,11 +24,16 @@ import {
   createPliteBrowserWarmLoopSteps,
   createPliteBrowserWarmToolbarArrowGauntlet,
   definePliteBrowserFeatureContract,
+  matchesPliteBrowserKernelTrace,
   normalizeScenarioMetadata,
+  type EditorSnapshot,
+  type PliteBrowserEditorHarness,
+  type PliteBrowserKernelTraceEntry,
   type PliteBrowserScenarioStep,
   serializeScenarioStepForReplay,
   summarizeScenarioReductionCandidate,
 } from '../../src/playwright';
+import { createEditorHarnessScenario } from '../../src/playwright/harness-scenario';
 
 describe('scenario helpers', () => {
   test('creates prefix, suffix, and single-step reduction candidates', () => {
@@ -421,13 +428,13 @@ describe('scenario helpers', () => {
     expect(readme).toContain('editor.assert.noVisibleCaretInRoot()');
   });
 
-  test('summarizes reduction candidates without serializing step functions', () => {
+  test('summarizes canonical reduction candidates as replayable data', () => {
     const steps: PliteBrowserScenarioStep[] = [
-      {
-        kind: 'custom',
-        label: 'custom-step',
-        run: () => {},
-      },
+      browserStep.fill({
+        label: 'fill-control',
+        target: '#control',
+        value: 'A',
+      }),
       { kind: 'type', label: 'type-step', text: 'A' },
     ];
     const candidate = createScenarioReductionCandidates(steps)[0];
@@ -439,22 +446,24 @@ describe('scenario helpers', () => {
       removedStepSummaries: ['type-step: type "A" len=1'],
       removedRange: { end: 2, start: 1 },
       replay: {
-        replayable: false,
+        replayable: true,
         steps: [
           {
-            kind: 'custom',
-            label: 'custom-step',
-            replayable: false,
-            summary: 'custom-step: custom non-replayable',
+            kind: 'fillControl',
+            label: 'fill-control',
+            replayable: true,
+            summary: 'fill-control: fillControl',
             value: {
-              kind: 'custom',
-              label: 'custom-step',
+              kind: 'fillControl',
+              label: 'fill-control',
+              selector: '#control',
+              value: 'A',
             },
           },
         ],
       },
-      stepLabels: ['custom-step'],
-      stepSummaries: ['custom-step: custom non-replayable'],
+      stepLabels: ['fill-control'],
+      stepSummaries: ['fill-control: fillControl'],
     });
   });
 
@@ -504,7 +513,6 @@ describe('scenario helpers', () => {
     };
 
     expect(serializeScenarioStepForReplay(step, 0)).toEqual({
-      iteration: undefined,
       kind: 'mutateTextDOM',
       label: 'import-dom-text',
       replayable: true,
@@ -518,7 +526,6 @@ describe('scenario helpers', () => {
         selectionOffset: 13,
         text: 'This imported',
       },
-      warmLoop: undefined,
     });
   });
 
@@ -540,7 +547,6 @@ describe('scenario helpers', () => {
     };
 
     expect(serializeScenarioStepForReplay(step, 0)).toEqual({
-      iteration: undefined,
       kind: 'assertRenderedDOMShape',
       label: 'assert-first-block-dom-shape',
       replayable: true,
@@ -560,7 +566,6 @@ describe('scenario helpers', () => {
           zeroWidthBreakCount: 0,
         },
       },
-      warmLoop: undefined,
     });
   });
 
@@ -701,45 +706,246 @@ describe('scenario helpers', () => {
     ]);
   });
 
-  test('marks custom scenario steps as non-replayable without serializing functions', () => {
+  test('rejects closures hidden inside canonical scenario data', () => {
+    expect(() =>
+      createScenarioReplay([
+        {
+          change: { run: () => {} },
+          kind: 'applyChange',
+          label: 'not-serializable',
+        },
+      ])
+    ).toThrow(/editor\.scenario\.runImperative/);
+  });
+
+  test('rejects undefined payload data instead of changing replay indexes', () => {
+    expect(() =>
+      createScenarioReplay([
+        {
+          kind: 'applyValueChange',
+          value: { children: [undefined, 'x'] },
+        },
+      ])
+    ).toThrow(/editor\.scenario\.runImperative/);
+
+    expect(createScenarioReplay([{ kind: 'settle', timeoutMs: undefined }]))
+      .toMatchObject({
+        steps: [{ value: { kind: 'settle' } }],
+      });
+  });
+
+  test('rejects sparse payload arrays instead of serializing holes as null', () => {
+    const children = new Array<unknown>(2);
+    children[1] = 'x';
+
+    expect(() =>
+      createScenarioReplay([
+        {
+          kind: 'applyValueChange',
+          value: { children },
+        },
+      ])
+    ).toThrow(/editor\.scenario\.runImperative/);
+  });
+
+  test('round-trips shell activation through canonical JSON replay', () => {
     const replay = createScenarioReplay([
       {
-        kind: 'custom',
-        label: 'custom-step',
-        run: () => {},
+        buttonName: 'Open editor',
+        expectedSelection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 0 },
+        },
+        kind: 'activateShell',
       },
-      { kind: 'type', label: 'type-step', text: 'A' },
     ]);
 
-    expect(replay).toEqual({
-      replayable: false,
-      steps: [
+    expect(decodeScenarioReplay(JSON.parse(JSON.stringify(replay)))).toEqual(
+      replay
+    );
+  });
+
+  test('rejects non-JSON shell button matchers', () => {
+    expect(() =>
+      createScenarioReplay([
         {
-          iteration: undefined,
-          kind: 'custom',
-          label: 'custom-step',
-          replayable: false,
-          summary: 'custom-step: custom non-replayable',
-          value: {
-            kind: 'custom',
-            label: 'custom-step',
+          buttonName: /Open editor/u as unknown as string,
+          expectedSelection: {
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 0 },
+            focus: { path: [0, 0], offset: 0 },
           },
-          warmLoop: undefined,
+          kind: 'activateShell',
         },
-        {
-          iteration: undefined,
-          kind: 'type',
-          label: 'type-step',
+      ])
+    ).toThrow(/editor\.scenario\.runImperative/);
+  });
+
+  test('rejects malformed and unknown imported scenario steps', () => {
+    expect(() =>
+      decodeScenarioReplay({
+        replayable: true,
+        steps: [
+          {
+            kind: 'unknown',
+            label: '0:unknown',
+            replayable: true,
+            summary: '0:unknown: unknown',
+            value: { kind: 'unknown' },
+          },
+        ],
+      })
+    ).toThrow(/not a supported scenario step/);
+
+    const replay = createScenarioReplay([
+      {
+        buttonName: 'Open editor',
+        expectedSelection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 0 },
+        },
+        kind: 'activateShell',
+      },
+    ]);
+    const imported = JSON.parse(JSON.stringify(replay)) as {
+      steps: Array<{ value: Record<string, unknown> }>;
+    };
+
+    imported.steps[0].value.buttonName = { source: 'Open editor' };
+
+    expect(() => decodeScenarioReplay(imported)).toThrow(
+      /buttonName is invalid/
+    );
+  });
+
+  test('rejects declarative assertion steps that cannot prove anything', () => {
+    const noOpSteps = [
+      {
+        kind: 'assertLocatorCount',
+        selector: '[data-editor]',
+      },
+      {
+        count: 1,
+        kind: 'assertLocatorCount',
+        min: 100,
+        selector: '[data-editor]',
+      },
+      {
+        kind: 'assertLocatorCss',
+        property: 'opacity',
+        selector: '[data-toolbar]',
+      },
+      {
+        kind: 'assertLocatorText',
+        selector: '[data-editor]',
+      },
+      {
+        kind: 'assertLocatorVerticalGap',
+        afterSelector: '[data-after]',
+        beforeSelector: '[data-before]',
+      },
+      {
+        innerSelector: '[data-inner]',
+        kind: 'assertLocatorVerticalOffset',
+        selector: '[data-outer]',
+      },
+      { kind: 'assertWindowSelectionText', notEmpty: false },
+      { budget: {}, kind: 'assertRenderBudget' },
+      { budget: { total: {} }, kind: 'assertRenderBudget' },
+      { expectation: {}, kind: 'assertSelectionContract' },
+      {
+        expectation: { noDoubleSelectionHighlight: false },
+        kind: 'assertSelectionContract',
+      },
+      { kind: 'assertKernelTrace', trace: {} },
+      { kind: 'assertKernelTrace', trace: { madeUp: true } },
+      { kind: 'assertRenderedDOMShape', shape: {} },
+      { kind: 'assertRenderedDOMShape', shape: { blockIndex: 1 } },
+      {
+        kind: 'assertRenderedDOMShape',
+        shape: { noUnexpectedZeroWidthBreaks: false },
+      },
+      { kind: 'assertRenderedDOMShape', shape: { madeUp: true } },
+      { kind: 'assertSelectionLocation', location: {} },
+      { contains: '', kind: 'assertLocatorText', selector: '[data-editor]' },
+      { contains: '', kind: 'assertWindowSelectionText' },
+      { kind: 'assertModelText', text: '' },
+      { kind: 'assertText', text: '' },
+      { kind: 'assertLastCommitIncludesTags', tags: [] },
+    ];
+
+    for (const step of noOpSteps) {
+      expect(() =>
+        decodeScenarioReplay({
           replayable: true,
-          summary: 'type-step: type "A" len=1',
-          value: {
-            kind: 'type',
-            label: 'type-step',
-            text: 'A',
-          },
-          warmLoop: undefined,
-        },
-      ],
+          steps: [
+            {
+              kind: step.kind,
+              label: `0:${step.kind}`,
+              replayable: true,
+              summary: `0:${step.kind}: ${step.kind}`,
+              value: step,
+            },
+          ],
+        })
+      ).toThrow();
+    }
+  });
+
+  test('fails closed when an unsupported step reaches scenario execution', async () => {
+    const scenario = createEditorHarnessScenario({
+      getHarness: () => ({}) as PliteBrowserEditorHarness,
+      page: {} as never,
+      root: {} as never,
+      surface: {} as never,
+    });
+
+    await expect(
+      scenario.run(
+        'unsupported-step',
+        [{ kind: 'unknown' } as unknown as PliteBrowserScenarioStep],
+        { runtimeErrors: false }
+      )
+    ).rejects.toThrow(/not a supported scenario step/);
+  });
+
+  test('runs imperative experiments in an explicitly non-proof lane', async () => {
+    const actions: string[] = [];
+    const snapshot = { text: 'after type' } as EditorSnapshot;
+    const harness: Pick<PliteBrowserEditorHarness, 'trace'> = {
+      trace: {
+        snapshot: async (label, stepIndex = null) => ({
+          label,
+          snapshot,
+          stepIndex,
+        }),
+      },
+    };
+    const scenario = createEditorHarnessScenario({
+      getHarness: () => harness as PliteBrowserEditorHarness,
+      page: {} as never,
+      root: {} as never,
+      surface: {} as never,
+    });
+    const result = await scenario.runImperative(
+      'native keyboard experiment',
+      async ({ step }) => {
+        await step('type', () => {
+          actions.push('type');
+        });
+      }
+    );
+
+    expect(actions).toEqual(['type']);
+    expect(result).toEqual({
+      kind: 'imperative-scenario',
+      name: 'native keyboard experiment',
+      reducible: false,
+      releaseGateCapable: false,
+      replayable: false,
+      steps: [{ label: 'type', snapshot, stepIndex: 0 }],
     });
   });
 
@@ -1076,6 +1282,49 @@ describe('scenario helpers', () => {
         }),
       ])
     );
+  });
+
+  test('matches absent commands and partial-DOM kernel ownership exactly', () => {
+    const entry = {
+      command: null,
+      selectionSource: 'partial-dom-backed',
+      stateAfter: 'partial-dom-backed',
+      stateBefore: 'partial-dom-backed',
+      targetOwner: 'partial-dom',
+    } as PliteBrowserKernelTraceEntry;
+
+    expect(matchesPliteBrowserKernelTrace(entry, { commandKind: null })).toBe(
+      true
+    );
+    expect(
+      matchesPliteBrowserKernelTrace(entry, {
+        selectionSource: 'partial-dom-backed',
+        stateAfter: 'partial-dom-backed',
+        stateBefore: 'partial-dom-backed',
+        targetOwner: 'partial-dom',
+      })
+    ).toBe(true);
+    expect(
+      createScenarioReplay([
+        {
+          kind: 'assertKernelTrace',
+          trace: {
+            commandKind: 'transpose-character',
+            movement: {
+              axis: 'document',
+              reason: 'model-document-boundary',
+            },
+            selectionPolicy: {
+              kind: 'partial-dom',
+              reason: 'partial-dom-backed',
+            },
+            selectionSource: 'partial-dom-backed',
+            stateAfter: 'partial-dom-backed',
+            targetOwner: 'partial-dom',
+          },
+        },
+      ]).replayable
+    ).toBe(true);
   });
 
   test('normalizes scenario metadata for stable trace artifacts', () => {

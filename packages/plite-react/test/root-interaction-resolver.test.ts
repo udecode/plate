@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'vitest';
 
-import { shouldReplayMouseUpDOMSelection } from '../src/editable/root-interaction-controller';
+import {
+  shouldReplayMouseUpDOMSelection,
+  shouldRestoreMouseUpDOMSelection,
+} from '../src/editable/root-interaction-controller';
 import {
   resolveRootInteractionMouseDown,
   resolveRootInteractionMouseUp,
@@ -339,6 +342,80 @@ describe('root interaction resolver', () => {
         isFirefox: false,
         nativeSelectedTextClick: false,
         pointerMoved: true,
+      })
+    ).toBe(false);
+  });
+
+  test('restores only the same interaction and document after Firefox collapses at focus', () => {
+    const replaySelection = {
+      anchor: { offset: 9, path: [0, 1, 0] },
+      focus: { offset: 0, path: [0, 1, 0] },
+      kind: 'text',
+    } as const;
+    const firefoxCollapse = {
+      anchor: replaySelection.focus,
+      focus: replaySelection.focus,
+      kind: 'text',
+    } as const;
+
+    expect(
+      shouldRestoreMouseUpDOMSelection({
+        currentSelection: replaySelection,
+        replaySelection,
+        sameDocument: true,
+        sameInteraction: true,
+      })
+    ).toBe(true);
+    expect(
+      shouldRestoreMouseUpDOMSelection({
+        currentSelection: firefoxCollapse,
+        replaySelection,
+        sameDocument: true,
+        sameInteraction: true,
+      })
+    ).toBe(true);
+    expect(
+      shouldRestoreMouseUpDOMSelection({
+        currentSelection: firefoxCollapse,
+        replaySelection,
+        sameDocument: false,
+        sameInteraction: true,
+      })
+    ).toBe(false);
+    expect(
+      shouldRestoreMouseUpDOMSelection({
+        currentSelection: firefoxCollapse,
+        replaySelection,
+        sameDocument: true,
+        sameInteraction: false,
+      })
+    ).toBe(false);
+    expect(
+      shouldRestoreMouseUpDOMSelection({
+        currentSelection: {
+          anchor: replaySelection.anchor,
+          focus: replaySelection.anchor,
+          kind: 'text',
+        },
+        replaySelection: {
+          anchor: replaySelection.focus,
+          focus: replaySelection.anchor,
+          kind: 'text',
+        },
+        sameDocument: true,
+        sameInteraction: true,
+      })
+    ).toBe(false);
+    expect(
+      shouldRestoreMouseUpDOMSelection({
+        currentSelection: {
+          anchor: replaySelection.anchor,
+          focus: replaySelection.anchor,
+          kind: 'text',
+        },
+        replaySelection,
+        sameDocument: true,
+        sameInteraction: true,
       })
     ).toBe(false);
   });

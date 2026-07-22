@@ -8,7 +8,6 @@ import type { Element, Node, NodeEntry, Path, Text } from '@platejs/plite';
 
 import { BaseCommentPlugin } from '@platejs/comment';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { getSuggestionKey, keyId2SuggestionId } from '@platejs/suggestion';
 import {
   type TCommentText,
   ElementApi,
@@ -19,7 +18,7 @@ import {
   TextApi,
 } from 'platejs';
 import {
-  useEditorRef,
+  useEditor,
   useEditorRuntimeState,
   usePluginOption,
 } from 'platejs/react';
@@ -66,6 +65,7 @@ type BuildBlockDiscussionIndexOptions = {
     type: 'insert' | 'remove' | 'update';
   }>;
   getSuggestionId: (node: Node) => string | undefined;
+  getSuggestionKey: (id: string) => string;
   isBlockSuggestion: (node: Node) => boolean;
 };
 
@@ -218,6 +218,7 @@ const toResolvedSuggestion = ({
   entries,
   getSuggestionData,
   getSuggestionDataList,
+  getSuggestionKey,
   id,
   isBlockSuggestion,
 }: {
@@ -225,6 +226,7 @@ const toResolvedSuggestion = ({
   entries: SuggestionEntry[];
   getSuggestionData: BuildBlockDiscussionIndexOptions['getSuggestionData'];
   getSuggestionDataList: BuildBlockDiscussionIndexOptions['getSuggestionDataList'];
+  getSuggestionKey: BuildBlockDiscussionIndexOptions['getSuggestionKey'];
   id: string;
   isBlockSuggestion: BuildBlockDiscussionIndexOptions['isBlockSuggestion'];
 }): ResolvedSuggestion | null => {
@@ -269,7 +271,7 @@ const toResolvedSuggestion = ({
 
     const suggestionData = getSuggestionData(node);
 
-    if (suggestionData?.id !== keyId2SuggestionId(id)) return;
+    if (suggestionData?.id !== id) return;
 
     const inlineSuggestionText = getInlineSuggestionElementText(node);
 
@@ -310,7 +312,7 @@ const toResolvedSuggestion = ({
   const keyId = getSuggestionKey(id);
   const comments = discussionsById.get(id)?.comments ?? [];
   const createdAt = new Date(suggestionData.createdAt);
-  const suggestionId = keyId2SuggestionId(id);
+  const suggestionId = id;
 
   if (suggestionData.type === 'update') {
     return {
@@ -373,6 +375,7 @@ export const buildBlockDiscussionIndex = ({
   getSuggestionData,
   getSuggestionDataList,
   getSuggestionId,
+  getSuggestionKey,
   isBlockSuggestion,
 }: BuildBlockDiscussionIndexOptions): BlockDiscussionIndex => {
   const commentOwnerById = new Map<string, Path>();
@@ -438,6 +441,7 @@ export const buildBlockDiscussionIndex = ({
       entries: suggestionEntries,
       getSuggestionData,
       getSuggestionDataList,
+      getSuggestionKey,
       id: suggestionId,
       isBlockSuggestion,
     });
@@ -481,6 +485,7 @@ const getDiscussionIndex = (
     getSuggestionData: (node) => suggestionApi.suggestionData(node),
     getSuggestionDataList: (node) => suggestionApi.dataList(node),
     getSuggestionId: (node) => suggestionApi.nodeId(node),
+    getSuggestionKey: (id) => suggestionApi.key(id),
     isBlockSuggestion: (node) =>
       ElementApi.isElement(node) && suggestionApi.isBlockSuggestion(node),
   });
@@ -491,12 +496,11 @@ const getDiscussionIndex = (
 };
 
 export const useBlockDiscussionItems = (blockPath: Path) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const discussions = usePluginOption(discussionPlugin, 'discussions');
   const version = useEditorRuntimeState(
     editor,
-    (state) => state.runtime.snapshot().version,
-    { deps: [] }
+    (state) => state.runtime.snapshot().version
   );
 
   return React.useMemo(() => {

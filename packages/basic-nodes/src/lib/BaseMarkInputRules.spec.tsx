@@ -55,7 +55,7 @@ describe('basic mark input rules', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update.text.insert('*');
@@ -342,7 +342,7 @@ describe('basic mark input rules', () => {
     const editor = createBaseEditor({
       plugins: [...basicMarkPlugins, plugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     text.forEach((step) => {

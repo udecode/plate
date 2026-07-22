@@ -18,7 +18,7 @@ describe('footnote registry', () => {
         anchor: { offset: 4, path: [1, 0, 0] },
         focus: { offset: 4, path: [1, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { text: '' },
@@ -72,7 +72,7 @@ describe('footnote registry', () => {
         BaseFootnoteReferencePlugin,
         BaseFootnoteDefinitionPlugin,
       ] as const,
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: 'one' }], type: KEYS.p }],
           identifier: '1',
@@ -102,7 +102,7 @@ describe('footnote registry', () => {
         BaseFootnoteReferencePlugin,
         BaseFootnoteDefinitionPlugin,
       ] as const,
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
     expect(editor.api.footnote.nextId()).toBe('1');
@@ -134,7 +134,7 @@ describe('footnote registry', () => {
         BaseFootnoteReferencePlugin,
         BaseFootnoteDefinitionPlugin,
       ] as const,
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: 'one' }], type: KEYS.p }],
           identifier: '1',
@@ -179,7 +179,7 @@ describe('footnote registry', () => {
     ] as const;
     const source = createBaseEditor({
       plugins,
-      value,
+      initialValue: value,
     });
 
     source.update.nodes.set({ identifier: '2' }, { at: [0] });
@@ -189,7 +189,7 @@ describe('footnote registry', () => {
     );
     const replay = createBaseEditor({
       plugins,
-      value,
+      initialValue: value,
     });
 
     expect(replay.api.footnote.definition({ identifier: '1' })).toBeDefined();

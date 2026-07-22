@@ -98,7 +98,7 @@ const initialValue = [
 
 const plateEditor = createPlateEditor({
   plugins: [ConfiguredLayoutPlugin, MentionPlugin, ToolbarPlugin],
-  value: initialValue,
+  initialValue,
 });
 
 const expectBodyValue = (value: ReadBodyValue) => value;

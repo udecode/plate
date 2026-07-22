@@ -22,7 +22,7 @@ const createWrapper = (editor: PlateEditor) =>
 describe('useRemoveNodeButton', () => {
   it('removes the node at the current node path', () => {
     const editor = createPlateEditor({
-      value: [
+      initialValue: [
         { children: [{ text: 'one' }], type: 'p' },
         { children: [{ text: 'two' }], type: 'p' },
       ],
@@ -45,7 +45,7 @@ describe('useRemoveNodeButton', () => {
 
   it('resolves the node path when clicked', () => {
     const editor = createPlateEditor({
-      value: [
+      initialValue: [
         { children: [{ text: 'one' }], type: 'p' },
         { children: [{ text: 'two' }], type: 'p' },
         { children: [{ text: 'three' }], type: 'p' },
@@ -70,7 +70,7 @@ describe('useRemoveNodeButton', () => {
 
   it('prevents the default mouse down behavior', () => {
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     const preventDefault = mock();
 

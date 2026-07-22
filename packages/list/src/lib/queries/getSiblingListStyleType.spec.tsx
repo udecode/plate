@@ -34,7 +34,7 @@ describe('getSiblingListStyleType', () => {
     const editor = createBaseEditor({
       plugins: [BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
     const entry = editor.read.nodes.block<Element>();
 
@@ -65,7 +65,7 @@ describe('getSiblingListStyleType', () => {
     const editor = createBaseEditor({
       plugins: [BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
     const entry = editor.read.nodes.block<Element>();
 

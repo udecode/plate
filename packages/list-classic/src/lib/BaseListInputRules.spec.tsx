@@ -22,7 +22,7 @@ describe('BaseListPlugin input rules', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [{ children: [{ text: '-hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '-hello' }], type: 'p' }],
     } as any);
 
     editor.update.text.insert(' ');
@@ -66,7 +66,7 @@ describe('BaseListPlugin input rules', () => {
         }),
       ],
       selection,
-      value: input,
+      initialValue: input,
     } as any);
 
     editor.update.text.insert(' ');
@@ -135,7 +135,7 @@ describe('BaseListPlugin input rules', () => {
         }),
       ],
       selection,
-      value: input,
+      initialValue: input,
     } as any);
 
     editor.update.text.insert(' ');
@@ -174,7 +174,7 @@ describe('BaseListPlugin input rules', () => {
         anchor: { offset: 1, path: [0, 0, 0] },
         focus: { offset: 1, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             {

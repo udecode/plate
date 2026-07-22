@@ -80,7 +80,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     } as any);
 
     insertText(editor, '*');
@@ -109,7 +109,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     } as any);
 
     editor.update.selection.set({
@@ -140,7 +140,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     } as any);
 
     editor.update.selection.set({
@@ -176,7 +176,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     } as any);
 
     editor.update.selection.set({
@@ -212,7 +212,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     } as any);
     const dataTransfer = {
       files: [],
@@ -253,7 +253,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     } as any);
 
     insertText(editor, '*');
@@ -318,7 +318,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '##' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '##' }], type: 'p' }],
     } as any);
     editor.update.selection.set({
       kind: 'text',
@@ -357,7 +357,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: 'abc' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'abc' }], type: 'p' }],
     } as any);
     editor.update.selection.set({
       kind: 'text',
@@ -417,7 +417,7 @@ describe('input rules', () => {
           },
         }),
       ],
-      value: [{ children: [{ text: '**hello*' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '**hello*' }], type: 'p' }],
     });
 
     editor.update.selection.set({
@@ -451,7 +451,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '**hello* nope' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '**hello* nope' }], type: 'p' }],
     });
 
     editor.update.selection.set({
@@ -482,7 +482,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '``' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '``' }], type: 'p' }],
     } as any);
 
     editor.update.selection.set({
@@ -514,7 +514,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '``' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '``' }], type: 'p' }],
     } as any);
 
     editor.update.selection.set({
@@ -542,7 +542,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '$$' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '$$' }], type: 'p' }],
     } as any);
 
     expect(editor.runtime.inputRules.plugins.equation.rules).toHaveLength(1);
@@ -572,7 +572,7 @@ describe('input rules', () => {
           inputRules: [blockquoteMarkdown({ marker: '|' })],
         }),
       ],
-      value: [{ children: [{ text: '|' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '|' }], type: 'p' }],
     } as any);
 
     editor.update.selection.set({
@@ -612,7 +612,7 @@ describe('input rules', () => {
           inputRules: [headingMarkdown()],
         }),
       ],
-      value: [{ children: [{ text: '##' }], type: 'heading' }],
+      initialValue: [{ children: [{ text: '##' }], type: 'heading' }],
     } as any);
 
     editor.update.selection.set({

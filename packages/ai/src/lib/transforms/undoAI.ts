@@ -1,9 +1,9 @@
 import type { BaseEditor } from '@platejs/core';
 
-import { getTransientSuggestionKey } from '@platejs/suggestion';
+import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 
 import { cancelAIPreview, hasAIPreview } from './aiStreamSnapshot';
-import { aiBatchField } from './withAIBatch';
+import { aiBatchEffect } from './withAIBatch';
 
 export const undoAI = (editor: BaseEditor) => {
   if (hasAIPreview(editor) && cancelAIPreview(editor)) return;
@@ -15,12 +15,12 @@ export const undoAI = (editor: BaseEditor) => {
     }) ||
     editor.read.nodes.some({
       at: [],
-      match: (node) => Boolean(Reflect.get(node, getTransientSuggestionKey())),
+      match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
     });
 
   const lastBatch = editor.read.history.undos().at(-1);
-  const isAIBatch = lastBatch?.statePatches.some(
-    (patch) => patch.key === aiBatchField.key
+  const isAIBatch = lastBatch?.effects.some(
+    (effect) => effect.type === aiBatchEffect
   );
 
   if (isAIBatch && hasAINodeOrAISuggestion) {

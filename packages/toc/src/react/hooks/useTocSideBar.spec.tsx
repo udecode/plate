@@ -7,7 +7,7 @@ import {
   registerSharedTocHookMocks,
   resetSharedTocHookMocks,
   useContentControllerMock,
-  useEditorRefMock,
+  useEditorMock,
   useEditorSelectorMock,
   useEditorScrollElementMock,
   useTocControllerMock,
@@ -44,7 +44,7 @@ describe('useTocSideBar', () => {
     const onContentScroll = mock();
     const toDOMNode = mock(() => document.createElement('h2'));
 
-    useEditorRefMock.mockReturnValue({
+    useEditorMock.mockReturnValue({
       api: { dom: { resolveDOMNode: toDOMNode } },
       read: { nodes: { get: () => [{ id: 'h1' }, [0]] } },
     });

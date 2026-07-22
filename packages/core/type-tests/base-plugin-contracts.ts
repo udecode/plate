@@ -87,6 +87,95 @@ const ConfiguredCalloutPlugin = CalloutPlugin.configure({
   })
   .extendExtension(baseArrayExtension);
 
+CalloutPlugin.configure(({ getOptions, plugin }) => {
+  const configuredVariant: 'info' | 'warning' = getOptions().variant;
+  const configuredDismissible: boolean | undefined = plugin.options.dismissible;
+
+  void configuredDismissible;
+  void configuredVariant;
+
+  return { options: { variant: 'warning' } };
+}).configure({ options: { dismissible: true } });
+
+const ShortcutTargetPlugin = createBasePlugin({
+  key: 'shortcutTargetContracts',
+})
+  .extendTx(() => () => ({
+    both: () => true,
+    update: () => true,
+  }))
+  .extendApi(() => ({
+    api: () => true,
+    both: () => true,
+  }));
+
+ShortcutTargetPlugin.extend({
+  shortcuts: {
+    api: { keys: 'mod+a' },
+    both: { keys: 'mod+b', target: 'api' },
+    custom: { handler: () => true, keys: 'mod+c' },
+    update: { keys: 'mod+u' },
+  },
+});
+
+const ShortcutApiScopeCollisionPlugin = ShortcutTargetPlugin.extendEditorApi(
+  () => ({
+    api: () => true,
+  })
+);
+
+ShortcutApiScopeCollisionPlugin.extend({
+  shortcuts: {
+    // @ts-expect-error Plugin/editor API collisions require a custom handler.
+    api: { keys: 'mod+a', target: 'api' },
+  },
+});
+
+createBasePlugin<
+  PluginConfig<
+    'explicitShortcutContracts',
+    {},
+    {},
+    { explicitShortcutContracts: { run: () => boolean } }
+  >
+>({
+  key: 'explicitShortcutContracts',
+  // @ts-expect-error Explicitly typed factories declare shortcuts after capabilities.
+  shortcuts: { run: { keys: 'mod+r' } },
+});
+
+ShortcutTargetPlugin.extend({
+  shortcuts: {
+    // @ts-expect-error Update/API collisions require an explicit target.
+    both: { keys: 'mod+b' },
+  },
+});
+
+ShortcutTargetPlugin.extend({
+  shortcuts: {
+    // @ts-expect-error Unknown commands require a custom handler.
+    missing: { keys: 'mod+m' },
+  },
+});
+
+ShortcutTargetPlugin.extend({
+  shortcuts: {
+    // @ts-expect-error API-only commands cannot target update.
+    api: { keys: 'mod+a', target: 'update' },
+  },
+});
+
+ShortcutTargetPlugin.extend({
+  shortcuts: {
+    // @ts-expect-error Custom handlers own routing and reject target.
+    invalidHandlerTarget: {
+      handler: () => true,
+      keys: 'mod+i',
+      target: 'api',
+    },
+  },
+});
+
 const FactoryExtensionPlugin = createBasePlugin({
   key: 'factoryExtension',
   options: {
@@ -168,14 +257,11 @@ const OriginalOverridePlugin = createBasePlugin({
   });
 
 const ReplacementOverridePlugin = createBasePlugin({
+  dependencies: [OriginalOverridePlugin],
   key: 'replacementOverride',
-}).extendEditorApi(({ editor }) => {
-  const originalApi = getEditorPlugin(editor, OriginalOverridePlugin).api;
-
-  return {
-    overrideLabel: () => `overridden:${originalApi.scopedLabel()}`,
-  };
-});
+}).extendEditorApi(({ editor }) => ({
+  overrideLabel: () => `overridden:${editor.api.scopedLabel()}`,
+}));
 
 const overrideEditor = createBaseEditor({
   plugins: [OriginalOverridePlugin, ReplacementOverridePlugin],
@@ -192,18 +278,17 @@ const calloutDismissible: boolean | undefined = basePlateEditor
   .plugin(ConfiguredCalloutPlugin)
   .getOptions().dismissible;
 const overrideLabel: string = overrideEditor.api.overrideLabel();
-const scopedLabel: 'scoped' = getEditorPlugin(
-  overrideEditor,
-  OriginalOverridePlugin
-).api.scopedLabel();
+const scopedLabel: 'scoped' = overrideEditor.api.scopedLabel();
 const portalPluginScopedLabel: 'plugin-scoped' = getEditorPlugin(
   overrideEditor,
   OriginalOverridePlugin
 ).api.pluginScopedLabel();
-const portalRootPluginScopedLabel: 'plugin-scoped' =
-  overrideEditor.api.originalOverride.pluginScopedLabel();
-const pluginScopedLabel: 'plugin-scoped' =
-  overrideEditor.api.originalOverride.pluginScopedLabel();
+// @ts-expect-error descriptors do not expose an installed plugin portal
+OriginalOverridePlugin.api.pluginScopedLabel();
+// @ts-expect-error plugin-scoped API does not leak into editor.api
+overrideEditor.api.pluginScopedLabel();
+// @ts-expect-error plugin-scoped API is not published under a keyed root namespace
+overrideEditor.api.originalOverride.pluginScopedLabel();
 
 declare const extendedFullConfigApi: ExtendedFullConfig['api'];
 declare const extendedFullConfigOptions: ExtendedFullConfig['options'];
@@ -238,8 +323,6 @@ void calloutDismissible;
 void calloutVariant;
 void overrideLabel;
 void portalPluginScopedLabel;
-void portalRootPluginScopedLabel;
-void pluginScopedLabel;
 void scopedLabel;
 void extendedFullBaseApi;
 void extendedFullBaseOption;

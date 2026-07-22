@@ -17,7 +17,7 @@ Plite doctrine after the lane is selected.
    `packages/plite*`, `packages/browser`, `packages/yjs`,
    `apps/plite/tests/plite-browser/**`, and `benchmarks/plite/**`.
 6. `docs/plite/**` for accepted claim width.
-7. `benchmarks/targets/plite.json` for perf target authority.
+7. `benchmarks/targets/slate-v2.json` for perf target authority.
 
 Plate repo root commands are the current Plite runtime authority. Do not use a
 donor checkout as proof after the transplant.
@@ -117,7 +117,7 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
 
 ## Plite Perf And Degraded Modes
 
-- Benchmark target control state: `benchmarks/targets/plite.json`.
+- Benchmark target control state: `benchmarks/targets/slate-v2.json`.
 - Perf packets need one target id, one primary metric, one correctness command
   or browser proof, `METRIC` output when optimizing, and a keep/discard
   decision.

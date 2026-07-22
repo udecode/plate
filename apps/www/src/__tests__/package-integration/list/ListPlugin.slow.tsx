@@ -72,7 +72,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         JuicePlugin,
       ],
       selection: e.selection,
-      value: e.children,
+      initialValue: e.children,
     });
 
     insertData(
@@ -163,7 +163,7 @@ describe('when insertData with nested ul inside li', () => {
         JuicePlugin,
       ],
       selection: e.selection,
-      value: e.children,
+      initialValue: e.children,
     });
 
     insertData(

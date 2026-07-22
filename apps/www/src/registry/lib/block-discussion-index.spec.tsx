@@ -65,6 +65,7 @@ const getSuggestionDataList = (node: Text) =>
     .map((key) => node[key] as typeof suggestionData);
 
 const getSuggestionId = (node: Node) => getSuggestionData(node)?.id;
+const getSuggestionKey = (id: string) => `${KEYS.suggestion}_${id}`;
 
 const getBlockSuggestionData = (node: Node) =>
   ElementApi.isElement(node)
@@ -108,6 +109,7 @@ const getResolvedSuggestions = (editor: BaseEditor) => {
       getSuggestionData: (node) => suggestionApi.suggestionData(node),
       getSuggestionDataList: (node) => suggestionApi.dataList(node),
       getSuggestionId: (node) => suggestionApi.nodeId(node),
+      getSuggestionKey: (id) => suggestionApi.key(id),
       isBlockSuggestion: (node) => suggestionApi.isBlockSuggestion(node),
     }).suggestionsByBlock.get('0') ?? []
   );
@@ -150,6 +152,7 @@ describe('buildBlockDiscussionIndex', () => {
       getSuggestionData,
       getSuggestionDataList,
       getSuggestionId,
+      getSuggestionKey,
       isBlockSuggestion: () => false,
     });
 
@@ -198,6 +201,7 @@ describe('buildBlockDiscussionIndex', () => {
       getSuggestionData,
       getSuggestionDataList,
       getSuggestionId,
+      getSuggestionKey,
       isBlockSuggestion: () => false,
     });
 
@@ -229,6 +233,7 @@ describe('buildBlockDiscussionIndex', () => {
       getSuggestionData,
       getSuggestionDataList,
       getSuggestionId,
+      getSuggestionKey,
       isBlockSuggestion: () => false,
     });
 
@@ -257,6 +262,7 @@ describe('buildBlockDiscussionIndex', () => {
       getSuggestionData: getBlockSuggestionData,
       getSuggestionDataList,
       getSuggestionId: (node) => getBlockSuggestionData(node)?.id,
+      getSuggestionKey,
       isBlockSuggestion: (node) => !!getBlockSuggestionData(node),
     });
 
@@ -318,7 +324,7 @@ describe('buildBlockDiscussionIndex', () => {
         anchor: { path: [0, 2], offset: 0 },
         focus: { path: [0, 2], offset: 0 },
       },
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);

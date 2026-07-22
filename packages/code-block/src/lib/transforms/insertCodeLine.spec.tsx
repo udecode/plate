@@ -37,7 +37,7 @@ describe('insert code line', () => {
     const editor = createBaseEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
-      value: input.children,
+      initialValue: input.children,
     });
 
     editor.update((tx) => {

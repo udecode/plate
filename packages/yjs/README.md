@@ -27,7 +27,7 @@ const editor = createPlateEditor({
       },
     }),
   ],
-  value: initialValue,
+  initialValue,
 });
 ```
 

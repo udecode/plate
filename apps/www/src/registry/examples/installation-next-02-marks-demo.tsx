@@ -34,7 +34,7 @@ const initialValue: Value = [
 export default function MyEditorPage() {
   const editor = usePlateEditor({
     plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin],
-    value: initialValue,
+    initialValue,
   });
 
   return (

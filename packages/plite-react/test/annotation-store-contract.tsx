@@ -1,4 +1,5 @@
 import { act, render } from '@testing-library/react';
+import { startTransition, Suspense, useLayoutEffect } from 'react';
 import { createEditor, type Editor, type Range } from '@platejs/plite';
 import {
   getRuntimeId as editorGetRuntimeId,
@@ -68,9 +69,9 @@ const formatRange = (
   } | null
 ) =>
   range
-    ? `${range.anchor.path.join('.')}:${range.anchor.offset}|${range.focus.path.join(
-        '.'
-      )}:${range.focus.offset}`
+    ? `${range.anchor.path.join('.')}:${
+        range.anchor.offset
+      }|${range.focus.path.join('.')}:${range.focus.offset}`
     : 'none';
 
 const createChildren = () => [
@@ -105,7 +106,9 @@ const AnnotationOverlaySlices = () => {
       <span id="inline-projection">{formatProjection(projections)}</span>
       <span id="single-annotation">
         {comment
-          ? `${comment.id}:${comment.data?.label ?? 'none'}:${formatRange(comment.range)}`
+          ? `${comment.id}:${comment.data?.label ?? 'none'}:${formatRange(
+              comment.range
+            )}`
           : 'none'}
       </span>
       <span id="annotation-sidebar">
@@ -115,7 +118,9 @@ const AnnotationOverlaySlices = () => {
               .map((id) => {
                 const annotation = annotationSnapshot.byId.get(id)!;
 
-                return `${annotation.id}:${annotation.data?.label ?? 'none'}:${formatRange(annotation.range)}`;
+                return `${annotation.id}:${
+                  annotation.data?.label ?? 'none'
+                }:${formatRange(annotation.range)}`;
               })
               .join('|')}
       </span>
@@ -156,23 +161,22 @@ const ProjectedAnnotationHarness = ({
   const annotationStore = usePliteAnnotationStore<
     CommentData,
     CommentProjection
-  >(editor, {
-    deps: [comments],
-    project: () =>
-      comments.map((comment) => ({
-        anchor: comment.anchor,
-        data: {
-          kind: 'annotation',
-          label: comment.label,
-          tone: comment.tone,
-        },
-        id: comment.id,
-        projection: {
-          kind: 'annotation',
-          tone: comment.tone,
-        },
-      })),
-  });
+  >(
+    editor,
+    comments.map((comment) => ({
+      anchor: comment.anchor,
+      data: {
+        kind: 'annotation',
+        label: comment.label,
+        tone: comment.tone,
+      },
+      id: comment.id,
+      projection: {
+        kind: 'annotation',
+        tone: comment.tone,
+      },
+    }))
+  );
 
   return (
     <Plite annotationStore={annotationStore} editor={editor}>
@@ -298,6 +302,198 @@ describe('plite-react annotation store contract', () => {
     expect(
       mounted.container.querySelector('#inline-projection')?.textContent
     ).toBe('comment-1:1-4:annotation:reviewed:comment-1');
+  });
+
+  test('an abandoned annotation-store render cannot publish data or error options', () => {
+    const editor = createEditor();
+    const suspended = new Promise<never>(() => {});
+    const committedOnError = vi.fn();
+    const abandonedOnError = vi.fn();
+    let shouldThrow = false;
+    let abandonedResolveCount = 0;
+    let abandonedRenderCount = 0;
+    let committedStore: ReturnType<typeof usePliteAnnotationStore> | null =
+      null;
+    const abandonedStores = new Set<
+      ReturnType<typeof usePliteAnnotationStore>
+    >();
+
+    editorReplace(editor, {
+      children: createChildren(),
+      selection: null,
+    });
+
+    const baseAnchor = createRangeAnchor(editor, {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 4 },
+    });
+    const committedAnchor = {
+      release: () => baseAnchor.release(),
+      resolve: () => {
+        if (shouldThrow) throw new Error('annotation source failed');
+
+        return baseAnchor.resolve();
+      },
+    };
+    const abandonedAnchor = {
+      release: () => baseAnchor.release(),
+      resolve: () => {
+        abandonedResolveCount += 1;
+
+        return baseAnchor.resolve();
+      },
+    };
+    const annotations = (label: string) => [
+      {
+        anchor: label === 'abandoned' ? abandonedAnchor : committedAnchor,
+        data: { kind: 'annotation', label },
+        id: 'comment-1',
+      },
+    ];
+    const HookProbe = ({ abandoned }: { abandoned: boolean }) => {
+      const store = usePliteAnnotationStore(
+        editor,
+        annotations(abandoned ? 'abandoned' : 'committed'),
+        {
+          id: abandoned ? 'abandoned' : 'committed',
+          onError: abandoned ? abandonedOnError : committedOnError,
+        }
+      );
+
+      useLayoutEffect(() => {
+        committedStore = store;
+      }, [store]);
+
+      if (abandoned) {
+        abandonedRenderCount += 1;
+        abandonedStores.add(store);
+        throw suspended;
+      }
+
+      return null;
+    };
+    const tree = (abandoned: boolean) => (
+      <Suspense fallback={null}>
+        <HookProbe abandoned={abandoned} />
+      </Suspense>
+    );
+    const mounted = render(tree(false));
+
+    act(() => {
+      startTransition(() => {
+        mounted.rerender(tree(true));
+      });
+    });
+
+    expect(abandonedRenderCount).toBeGreaterThan(0);
+    expect(abandonedResolveCount).toBe(0);
+    expect(
+      [...abandonedStores].every((store) => store !== committedStore)
+    ).toBe(true);
+
+    act(() => {
+      editor.update((tx) => {
+        tx.text.insert('>', { at: { path: [0, 0], offset: 0 } });
+      });
+    });
+    expect(abandonedResolveCount).toBe(0);
+
+    act(() => {
+      committedStore?.refresh();
+    });
+    expect(committedStore?.getAnnotation('comment-1')?.data?.label).toBe(
+      'committed'
+    );
+
+    shouldThrow = true;
+    act(() => {
+      committedStore?.refresh();
+    });
+    expect(committedOnError).toHaveBeenCalledOnce();
+    expect(abandonedOnError).not.toHaveBeenCalled();
+
+    mounted.unmount();
+    abandonedStores.forEach((store) => {
+      store.destroy();
+    });
+    baseAnchor.release();
+  });
+
+  test('annotation-store inputs publish before child layout refreshes', () => {
+    const editor = createEditor();
+    const firstOnError = vi.fn();
+    const secondOnError = vi.fn();
+    let shouldThrow = false;
+    let observedLabel: string | undefined;
+
+    editorReplace(editor, {
+      children: createChildren(),
+      selection: null,
+    });
+
+    const baseAnchor = createRangeAnchor(editor, {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 4 },
+    });
+    const anchor = {
+      release: () => baseAnchor.release(),
+      resolve: () => {
+        if (shouldThrow) throw new Error('annotation source failed');
+
+        return baseAnchor.resolve();
+      },
+    };
+    const RefreshFromChildLayout = ({
+      enabled,
+      store,
+    }: {
+      enabled: boolean;
+      store: ReturnType<typeof usePliteAnnotationStore>;
+    }) => {
+      useLayoutEffect(() => {
+        if (!enabled) return;
+
+        store.refresh();
+        observedLabel = store.getAnnotation('comment-1')?.data?.label;
+        shouldThrow = true;
+        store.refresh();
+      }, [enabled, store]);
+
+      return null;
+    };
+    const HookProbe = ({
+      label,
+      onError,
+      refresh,
+    }: {
+      label: string;
+      onError: (error: unknown) => void;
+      refresh: boolean;
+    }) => {
+      const store = usePliteAnnotationStore(
+        editor,
+        [{ anchor, data: { kind: 'annotation', label }, id: 'comment-1' }],
+        { id: 'committed', onError }
+      );
+
+      return <RefreshFromChildLayout enabled={refresh} store={store} />;
+    };
+    const mounted = render(
+      <HookProbe label="first" onError={firstOnError} refresh={false} />
+    );
+
+    mounted.rerender(
+      <HookProbe label="second" onError={secondOnError} refresh />
+    );
+
+    expect(observedLabel).toBe('second');
+    expect(firstOnError).not.toHaveBeenCalled();
+    expect(secondOnError).toHaveBeenCalledOnce();
+
+    mounted.unmount();
+    baseAnchor.release();
   });
 
   test('annotation stores ignore selection-only changes and update when anchor ranges rebase', async () => {

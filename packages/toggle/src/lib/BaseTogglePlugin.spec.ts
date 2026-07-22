@@ -19,7 +19,7 @@ describe('BaseTogglePlugin', () => {
       new Set()
     );
 
-    editor.api.toggle.toggleIds(['a', 'b']);
+    editor.plugin(BaseTogglePlugin).api.toggleIds(['a', 'b']);
 
     expect(
       [
@@ -27,13 +27,13 @@ describe('BaseTogglePlugin', () => {
       ].sort()
     ).toEqual(['a', 'b']);
 
-    editor.api.toggle.toggleIds(['b'], false);
+    editor.plugin(BaseTogglePlugin).api.toggleIds(['b'], false);
 
     expect([
       ...(editor.plugin(BaseTogglePlugin).getOptions().openIds ?? new Set()),
     ]).toEqual(['a']);
 
-    editor.api.toggle.toggleIds(['a', 'c'], true);
+    editor.plugin(BaseTogglePlugin).api.toggleIds(['a', 'c'], true);
 
     expect(
       [

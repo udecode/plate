@@ -136,10 +136,10 @@ Work Checklist:
 - [x] Execute slice 7: schema delta, React invalidation, and content roots.
 - [x] Execute slice 8: codec and clipboard convergence.
 - [x] Execute slice 9: History, Yjs, and transactional configuration closure.
-- [ ] Make schema omission compile one deterministic derived base schema while
+- [x] Make schema omission compile one deterministic derived base schema while
       explicit `{id, version}` adds durable lineage without changing the
       semantic fingerprint.
-- [ ] Delete `definePliteExampleDocumentSchema`, its extension-array callers,
+- [x] Delete `definePliteExampleDocumentSchema`, its extension-array callers,
       and equivalent ordinary-example identity boilerplate.
 - [x] Restore component-only bindings to `.withComponent(Component)`, delete
       `node.component` and all synchronization/dual-write code, and prove both
@@ -1274,3 +1274,39 @@ Open risks:
   this plan's green schema benchmark claim.
 - `significant` is retained under the proven `ElementStatePlugin`/NodeId owner;
   its compiler and behavior proof must remain singular.
+
+## 2026-07-22 closure checkpoint
+
+- The final identity API is implemented: omitted identity compiles one
+  deterministic derived schema; explicit `id/version` supplies lineage without
+  changing the semantic fingerprint. Ordinary example identity boilerplate is
+  deleted and the 4,969-file adoption audit is green.
+- Core closure is green: 45 package typechecks/lints, Core and reviewed package
+  tests, schema/docs guards, declaration-leak guards, and `check:core` pass.
+  Packed proof is fresh across 10 packages and 31 public subpaths.
+- `plite-layout` was the declaration-leak owner because its release config
+  selected `tsconfig.json`; it now inherits `tsconfig.build.json`. The full
+  Plite package build and post-build source-leak audit pass.
+- Browser-runner contracts pass 49/49 with deterministic metadata checkpoints,
+  byte-level final digests, zero native watchers, and no process/test retries.
+  Exact Korean IME, heading, full Chromium,
+  and the matrix remain unproved because this sandbox rejects the proof
+  server's `127.0.0.1:3102` bind with `EPERM` before product code runs.
+- Formal CLI autoreview is likewise environment-blocked by read-only Codex
+  state. A source-grounded read-only architecture review is running as the
+  fallback; accepted findings remain a closure gate.
+- The fallback review's data-boundary findings are repaired: History and Yjs
+  share one strict schema-identity decoder that rejects symbols, accessors, and
+  exotic prototypes; Layout rejects negative persisted coordinates and empty
+  stable identifiers. Yjs, History, Layout, and their owner typechecks pass.
+- Final core/DOM proof passes 1,371/1,371 and 192/192 with both source/test
+  typechecks green. The clipboard authority harness now isolates support, 50k
+  cut, and 10k issue families in three single-run processes; its bounded
+  coordinator contract passes. Browser closure remains the only schema-plan
+  behavior gate and is still blocked before product code by localhost `EPERM`.
+- Final schema-cache/lazy-slice regressions are closed together. Plite passes
+  1,371/1,371, React passes 998/998, and the complete affected Node-22 gate
+  passes in 88.609 seconds. Chromium smoke reuses an exact 3/3 proof; strict DOM
+  and matrix execution remain blocked before product code by sandbox localhost
+  bind denial. The canonical clipboard authority remains open until host load
+  is low enough for trustworthy timing.

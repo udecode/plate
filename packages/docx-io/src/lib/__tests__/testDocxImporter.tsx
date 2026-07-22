@@ -11,9 +11,9 @@ import { cleanDocx } from '@platejs/docx';
 import type { BasePlugin, BasePlugins } from '@platejs/core';
 import {
   BaseParagraphPlugin,
+  HtmlPlugin,
   createBaseEditor,
   createBasePlugin,
-  deserializeHtml,
 } from '@platejs/core';
 import { property, schema } from '@platejs/plite';
 import { jsx, type TestEditor } from '@platejs/test-utils';
@@ -160,7 +160,9 @@ export const testDocxImporter = ({
 
     // Deserialize HTML to nodes
     const doc = new DOMParser().parseFromString(cleanedHtml, 'text/html');
-    const nodes = deserializeHtml(editor, { element: doc.body });
+    const nodes = editor.plugin(HtmlPlugin).api.deserialize({
+      element: doc.body,
+    });
 
     expect(nodes).toEqual(expected.children);
   });

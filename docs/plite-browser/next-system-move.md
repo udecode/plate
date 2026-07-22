@@ -25,7 +25,6 @@ Plite program.
   - `@platejs/browser/core`
   - `@platejs/browser/browser`
   - `@platejs/browser/playwright`
-  - `@platejs/browser/transports`
 - live root commands:
   - `pnpm plite:browser:test`
   - `pnpm plite:browser:test:proof`

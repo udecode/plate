@@ -25,7 +25,7 @@ describe('BaseTablePlugin schema', () => {
     };
     const editor = createBaseEditor({
       plugins: [BaseTablePlugin],
-      value: [{ children: [row], type: KEYS.table }],
+      initialValue: [{ children: [row], type: KEYS.table }],
     });
     const rowSpec = editor.read.schema.element(BaseTableRowPlugin);
     const tableSpec = editor.read.schema.element(BaseTablePlugin);

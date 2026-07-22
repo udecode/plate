@@ -13,7 +13,7 @@ const createEditor = () =>
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     },
-    value: [{ children: [{ text: 'text' }], id: 'block', type: 'p' }],
+    initialValue: [{ children: [{ text: 'text' }], id: 'block', type: 'p' }],
   });
 
 describe('getEditorPrompt', () => {

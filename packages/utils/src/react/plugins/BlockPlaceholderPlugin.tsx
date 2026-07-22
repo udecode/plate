@@ -16,7 +16,7 @@ import { KEYS } from '../../lib';
 export type BlockPlaceholderConfig = PluginConfig<
   'blockPlaceholder',
   {
-    _target: { node: Element; placeholder: string } | null;
+    _target: { path: Path; placeholder: string } | null;
     className?: string;
     placeholders: Record<string, string>;
     query: (
@@ -29,7 +29,7 @@ export type BlockPlaceholderConfig = PluginConfig<
   {},
   {},
   {
-    placeholder: (node?: Element) => string | undefined;
+    placeholder: (path?: Path) => string | undefined;
   }
 >;
 
@@ -63,7 +63,7 @@ export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
         }
 
         return editor.read.nodes.block();
-      }, [composing, editor, focused, readOnly]);
+      });
 
       React.useEffect(() => {
         if (!entry) {
@@ -103,7 +103,7 @@ export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
           !isPristineEmptyEditor
         ) {
           setOption('_target', {
-            node,
+            path,
             placeholder: placeholders[placeholder],
           });
         } else {
@@ -117,10 +117,10 @@ export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
   }
 )
   .extendSelectors(({ getOption }) => ({
-    placeholder: (node?: Element) => {
+    placeholder: (path?: Path) => {
       const target = getOption('_target');
 
-      if (target && target.node === node) {
+      if (target && path && PathApi.equals(target.path, path)) {
         return target.placeholder;
       }
     },
@@ -134,7 +134,7 @@ export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
           const placeholder = usePluginOption(
             props.plugin,
             'placeholder',
-            props.element
+            props.path
           );
 
           if (props.element && placeholder) {

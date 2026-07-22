@@ -150,7 +150,7 @@ describe('shouldMoveSelectionFromCell', () => {
         focus: { offset: 3, path: [0, 0, 1, 0, 0] },
         kind: 'text',
       },
-      value: [
+      initialValue: [
         {
           type: 'table',
           children: [

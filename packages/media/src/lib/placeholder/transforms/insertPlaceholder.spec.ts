@@ -15,7 +15,7 @@ describe('insertPlaceholder', () => {
   it('inserts a placeholder through the transaction boundary', () => {
     const editor = createBaseEditor({
       plugins: [BasePlaceholderPlugin],
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
     editor.update((tx) =>

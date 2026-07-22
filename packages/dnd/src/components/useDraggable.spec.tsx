@@ -9,12 +9,12 @@ const useDragMock = mock(() => {
 const useDropMock = mock(() => {
   throw new Error('useDrop should not run when DOM DnD is unavailable');
 });
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const canUseDomDndMock = mock(() => false);
 
 mock.module('@platejs/core/react', () => ({
   ...actualPlatejsReact,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
 }));
 
 mock.module('react-dnd', () => ({
@@ -37,10 +37,10 @@ describe('useDraggable', () => {
   beforeEach(() => {
     useDragMock.mockClear();
     useDropMock.mockClear();
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     canUseDomDndMock.mockReset();
 
-    useEditorRefMock.mockReturnValue({ plugins: { dnd: {} } });
+    useEditorMock.mockReturnValue({ plugins: { dnd: {} } });
     canUseDomDndMock.mockReturnValue(false);
   });
 

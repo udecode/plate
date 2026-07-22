@@ -28,7 +28,7 @@ export default function ListClassicDemo() {
       ...FloatingToolbarKit,
       ...AutoformatKit,
     ],
-    value: listValue,
+    initialValue: listValue,
   });
 
   return (

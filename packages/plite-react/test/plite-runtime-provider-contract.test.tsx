@@ -429,10 +429,10 @@ describe('PliteRuntime provider contract', () => {
     expect(headerValues.at(-1)).toBe('header!');
   });
 
-  test('Plite editor value callbacks ignore sibling root edits', async () => {
+  test('Plite onCommit observes sibling root edits while value callbacks ignore them', async () => {
     const editor = createReactEditor({ initialValue: initialValue() });
     let headerEditor!: ReturnType<typeof usePliteRootEditor>;
-    const onChange = vi.fn();
+    const onCommit = vi.fn();
     const onValueChange = vi.fn();
 
     const Probe = () => {
@@ -442,7 +442,7 @@ describe('PliteRuntime provider contract', () => {
     };
 
     render(
-      <Plite editor={editor} onChange={onChange} onValueChange={onValueChange}>
+      <Plite editor={editor} onCommit={onCommit} onValueChange={onValueChange}>
         <Probe />
         <Editable aria-label="Header editor" root="header" />
         <Editable aria-label="Main editor" />
@@ -455,14 +455,96 @@ describe('PliteRuntime provider contract', () => {
       });
     });
 
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).toHaveBeenCalledWith(expect.objectContaining({ editor }));
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
-  test('Plite editor selection callbacks ignore sibling root selection and marks', async () => {
+  test('Plite callbacks publish nested commits in version order with paired snapshots', async () => {
+    const editor = createReactEditor({ initialValue: [paragraph('body')] });
+    const onCommit = vi.fn();
+    const onValueChange = vi.fn();
+    const outerVersion = editor.read.runtime.snapshot().version + 1;
+    let nested = false;
+
+    editor.subscribeCommit((commit) => {
+      if (nested || !commit.changed.has('text')) return;
+
+      nested = true;
+      editor.update((tx) => {
+        tx.text.insert('?', { at: { path: [0, 0], offset: 5 } });
+      });
+    });
+
+    render(
+      <Plite editor={editor} onCommit={onCommit} onValueChange={onValueChange}>
+        <span />
+      </Plite>
+    );
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+      });
+    });
+
+    expect(onCommit).toHaveBeenCalledTimes(2);
+    expect(onValueChange).toHaveBeenCalledTimes(2);
+
+    expect(
+      onCommit.mock.calls.map(([context]) => context.commit.version)
+    ).toEqual([outerVersion, outerVersion + 1]);
+    expect(
+      onValueChange.mock.calls.map(([context]) => context.commit.version)
+    ).toEqual([outerVersion, outerVersion + 1]);
+    expect(
+      [
+        ...onCommit.mock.calls.map(([context], index) => ({
+          kind: 'commit',
+          order: onCommit.mock.invocationCallOrder[index],
+          version: context.commit.version,
+        })),
+        ...onValueChange.mock.calls.map(([context], index) => ({
+          kind: 'value',
+          order: onValueChange.mock.invocationCallOrder[index],
+          version: context.commit.version,
+        })),
+      ]
+        .sort((a, b) => a.order! - b.order!)
+        .map(({ kind, version }) => `${kind}:${version}`)
+    ).toEqual([
+      `commit:${outerVersion}`,
+      `value:${outerVersion}`,
+      `commit:${outerVersion + 1}`,
+      `value:${outerVersion + 1}`,
+    ]);
+
+    for (const [context] of onCommit.mock.calls) {
+      expect(context.snapshot.version).toBe(context.commit.version);
+    }
+    for (const [context] of onValueChange.mock.calls) {
+      expect(context.snapshot.version).toBe(context.commit.version);
+      expect(context.value).toBe(context.snapshot.children);
+    }
+
+    const outerCommit = onValueChange.mock.calls
+      .map(([context]) => context)
+      .find((context) => context.commit.version === outerVersion);
+
+    expect(outerCommit).toEqual(
+      expect.objectContaining({
+        snapshot: expect.objectContaining({
+          children: [paragraph('body!')],
+          version: outerVersion,
+        }),
+        value: [paragraph('body!')],
+      })
+    );
+  });
+
+  test('Plite onCommit observes sibling commits while selection callbacks stay root-scoped', async () => {
     const editor = createReactEditor({ initialValue: initialValue() });
     let headerEditor!: ReturnType<typeof usePliteRootEditor>;
-    const onChange = vi.fn();
+    const onCommit = vi.fn();
     const onSelectionChange = vi.fn();
     const onValueChange = vi.fn();
 
@@ -475,7 +557,7 @@ describe('PliteRuntime provider contract', () => {
     render(
       <Plite
         editor={editor}
-        onChange={onChange}
+        onCommit={onCommit}
         onSelectionChange={onSelectionChange}
         onValueChange={onValueChange}
       >
@@ -491,7 +573,7 @@ describe('PliteRuntime provider contract', () => {
       });
     });
 
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).toHaveBeenCalledTimes(1);
     expect(onSelectionChange).not.toHaveBeenCalled();
     expect(onValueChange).not.toHaveBeenCalled();
 
@@ -501,7 +583,7 @@ describe('PliteRuntime provider contract', () => {
       });
     });
 
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).toHaveBeenCalledTimes(2);
     expect(onSelectionChange).not.toHaveBeenCalled();
     expect(onValueChange).not.toHaveBeenCalled();
 
@@ -517,17 +599,18 @@ describe('PliteRuntime provider contract', () => {
       focus: { path: [0, 0], offset: 2 },
     };
 
-    expect(onChange).toHaveBeenCalledWith(
-      [paragraph('body')],
+    expect(onCommit).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        selection: expectedSelection,
-        selectionChanged: true,
-        valueChanged: false,
+        editor,
+        snapshot: expect.objectContaining({ selection: expectedSelection }),
       })
     );
     expect(onSelectionChange).toHaveBeenCalledWith(
-      expectedSelection,
-      expect.objectContaining({ selectionChanged: true })
+      expect.objectContaining({
+        editor,
+        selection: expectedSelection,
+        snapshot: expect.objectContaining({ selection: expectedSelection }),
+      })
     );
     expect(onValueChange).not.toHaveBeenCalled();
   });
@@ -718,12 +801,12 @@ describe('PliteRuntime provider contract', () => {
     expect(result.current).toBeNull();
   });
 
-  test('usePliteRootState treats root as a dependency even with custom deps', () => {
+  test('usePliteRootState observes root changes with an inline selector', () => {
     const selector = vi.fn(rootText);
     const RuntimeWrapper = createRuntimeWrapper();
 
     const { result, rerender } = renderHook(
-      ({ root }) => usePliteRootState(root, selector, { deps: [selector] }),
+      ({ root }) => usePliteRootState(root, selector),
       {
         initialProps: { root: 'header' },
         wrapper: RuntimeWrapper,
@@ -776,6 +859,61 @@ describe('PliteRuntime provider contract', () => {
     expect(shouldUpdate.mock.calls.at(-1)?.[0].changed.has('document')).toBe(
       true
     );
+  });
+
+  test('runtime selectors catch up when changed filters miss a child layout commit', () => {
+    let runtime!: ReturnType<typeof usePliteRuntime>;
+
+    const CommitFromChildLayout = ({ text }: { text?: string }) => {
+      useLayoutEffect(() => {
+        if (!text) return;
+
+        runtime.update((tx) => {
+          tx.text.insert(text, { at: { path: [0, 0], offset: 4 } });
+        });
+      }, [text]);
+
+      return null;
+    };
+    const Probe = ({ allow, insert }: { allow: boolean; insert?: string }) => {
+      const runtimeText = usePliteRuntimeState(rootText, {
+        shouldUpdate: () => allow,
+      });
+      const primaryRootText = usePliteRootState(undefined, rootText, {
+        shouldUpdate: () => allow,
+      });
+
+      return (
+        <>
+          <span data-testid="runtime-filter-text">{runtimeText}</span>
+          <span data-testid="root-filter-text">{primaryRootText}</span>
+          <CommitFromChildLayout text={insert} />
+        </>
+      );
+    };
+    const RuntimeViews = ({
+      allow,
+      insert,
+    }: {
+      allow: boolean;
+      insert?: string;
+    }) => {
+      runtime = usePliteRuntime({ initialValue: initialValue() });
+
+      return (
+        <PliteRuntime runtime={runtime}>
+          <Probe allow={allow} insert={insert} />
+        </PliteRuntime>
+      );
+    };
+    const rendered = render(<RuntimeViews allow={false} />);
+
+    rendered.rerender(<RuntimeViews allow insert="!" />);
+
+    expect(rendered.getByTestId('runtime-filter-text')).toHaveTextContent(
+      'body!'
+    );
+    expect(rendered.getByTestId('root-filter-text')).toHaveTextContent('body!');
   });
 
   test('usePliteRuntimeState catches commits made before runtime subscription starts', async () => {
@@ -1618,7 +1756,7 @@ describe('PliteRuntime provider contract', () => {
 
   test('root-bound Plite preserves change callbacks for the view root', async () => {
     let headerEditor!: ReturnType<typeof useEditor>;
-    const onChange = vi.fn();
+    const onCommit = vi.fn();
     const onSelectionChange = vi.fn();
     const onValueChange = vi.fn();
 
@@ -1634,7 +1772,7 @@ describe('PliteRuntime provider contract', () => {
       return (
         <PliteRuntime runtime={runtime}>
           <Plite
-            onChange={onChange}
+            onCommit={onCommit}
             onSelectionChange={onSelectionChange}
             onValueChange={onValueChange}
             root="header"
@@ -1656,16 +1794,14 @@ describe('PliteRuntime provider contract', () => {
 
     const expectedValue = [paragraph('header!')];
 
-    expect(onChange).toHaveBeenCalledWith(
-      expectedValue,
+    expect(onCommit).toHaveBeenCalledWith(
       expect.objectContaining({
-        value: expectedValue,
-        valueChanged: true,
+        editor: headerEditor,
+        snapshot: expect.objectContaining({ children: expectedValue }),
       })
     );
     expect(onValueChange).toHaveBeenCalledWith(
-      expectedValue,
-      expect.objectContaining({ valueChanged: true })
+      expect.objectContaining({ editor: headerEditor, value: expectedValue })
     );
     expect(onSelectionChange).not.toHaveBeenCalled();
 
@@ -1682,8 +1818,10 @@ describe('PliteRuntime provider contract', () => {
     };
 
     expect(onSelectionChange).toHaveBeenCalledWith(
-      expectedSelection,
-      expect.objectContaining({ selectionChanged: true })
+      expect.objectContaining({
+        editor: headerEditor,
+        selection: expectedSelection,
+      })
     );
   });
 
@@ -1721,13 +1859,123 @@ describe('PliteRuntime provider contract', () => {
 
     await waitFor(() => {
       expect(onValueChange).toHaveBeenCalledWith(
-        expectedValue,
         expect.objectContaining({
+          editor: expect.any(Object),
           value: expectedValue,
-          valueChanged: true,
         })
       );
     });
+  });
+
+  test('root-bound child layout commits after rerender use the newly committed callbacks', () => {
+    const previousOnCommit = vi.fn();
+    const previousOnValueChange = vi.fn();
+    const nextOnCommit = vi.fn();
+    const nextOnValueChange = vi.fn();
+
+    const CommitInLayout = ({ commit }: { commit: boolean }) => {
+      const editor = useEditor();
+
+      useLayoutEffect(() => {
+        if (!commit) return;
+
+        editor.update((tx) => {
+          tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
+        });
+      }, [commit, editor]);
+
+      return null;
+    };
+    const RuntimeViews = ({
+      commit,
+      onCommit,
+      onValueChange,
+    }: {
+      commit: boolean;
+      onCommit: typeof previousOnCommit;
+      onValueChange: typeof previousOnValueChange;
+    }) => {
+      const runtime = usePliteRuntime({ initialValue: initialValue() });
+
+      return (
+        <PliteRuntime runtime={runtime}>
+          <Plite
+            onCommit={onCommit}
+            onValueChange={onValueChange}
+            root="header"
+          >
+            <CommitInLayout commit={commit} />
+          </Plite>
+        </PliteRuntime>
+      );
+    };
+    const rendered = render(
+      <RuntimeViews
+        commit={false}
+        onCommit={previousOnCommit}
+        onValueChange={previousOnValueChange}
+      />
+    );
+
+    rendered.rerender(
+      <RuntimeViews
+        commit
+        onCommit={nextOnCommit}
+        onValueChange={nextOnValueChange}
+      />
+    );
+
+    expect(previousOnCommit).not.toHaveBeenCalled();
+    expect(previousOnValueChange).not.toHaveBeenCalled();
+    expect(nextOnCommit).toHaveBeenCalledTimes(1);
+    expect(nextOnValueChange).toHaveBeenCalledTimes(1);
+    expect(nextOnCommit.mock.calls[0]?.[0].commit.version).toBe(
+      nextOnValueChange.mock.calls[0]?.[0].commit.version
+    );
+  });
+
+  test('root-bound Plite does not replay commits from before callback activation', async () => {
+    let headerEditor!: ReturnType<typeof useEditor>;
+    const onCommit = vi.fn();
+
+    const HeaderProbe = () => {
+      headerEditor = useEditor();
+
+      return null;
+    };
+    const RuntimeViews = ({ observe }: { observe: boolean }) => {
+      const runtime = usePliteRuntime({ initialValue: initialValue() });
+
+      return (
+        <PliteRuntime runtime={runtime}>
+          <Plite onCommit={observe ? onCommit : undefined} root="header">
+            <HeaderProbe />
+            <Editable aria-label="Header editor" />
+          </Plite>
+        </PliteRuntime>
+      );
+    };
+    const rendered = render(<RuntimeViews observe={false} />);
+
+    await act(async () => {
+      headerEditor.update((tx) => {
+        tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
+      });
+    });
+
+    rendered.rerender(<RuntimeViews observe />);
+    expect(onCommit).not.toHaveBeenCalled();
+
+    await act(async () => {
+      headerEditor.update((tx) => {
+        tx.text.insert('?', { at: { path: [0, 0], offset: 7 } });
+      });
+    });
+
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(onCommit).toHaveBeenCalledWith(
+      expect.objectContaining({ editor: headerEditor })
+    );
   });
 
   test('root-bound Plite resets callback baselines when the root changes', async () => {
@@ -1769,7 +2017,7 @@ describe('PliteRuntime provider contract', () => {
 
   test('root-bound Plite skips value callbacks for sibling root edits', async () => {
     let mainEditor!: ReturnType<typeof useEditor>;
-    const onChange = vi.fn();
+    const onCommit = vi.fn();
     const onSelectionChange = vi.fn();
     const onValueChange = vi.fn();
 
@@ -1785,7 +2033,7 @@ describe('PliteRuntime provider contract', () => {
       return (
         <PliteRuntime runtime={runtime}>
           <Plite
-            onChange={onChange}
+            onCommit={onCommit}
             onSelectionChange={onSelectionChange}
             onValueChange={onValueChange}
             root="header"
@@ -1808,14 +2056,14 @@ describe('PliteRuntime provider contract', () => {
       });
     });
 
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).toHaveBeenCalledTimes(1);
     expect(onValueChange).not.toHaveBeenCalled();
     expect(onSelectionChange).not.toHaveBeenCalled();
   });
 
   test('root-bound Plite skips value callbacks for sibling root structure edits', async () => {
     let headerEditor!: ReturnType<typeof useEditor>;
-    const onChange = vi.fn();
+    const onCommit = vi.fn();
     const onSelectionChange = vi.fn();
     const onValueChange = vi.fn();
 
@@ -1835,7 +2083,7 @@ describe('PliteRuntime provider contract', () => {
             <Editable aria-label="Header editor" />
           </Plite>
           <Plite
-            onChange={onChange}
+            onCommit={onCommit}
             onSelectionChange={onSelectionChange}
             onValueChange={onValueChange}
           >
@@ -1853,7 +2101,7 @@ describe('PliteRuntime provider contract', () => {
       });
     });
 
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).toHaveBeenCalledTimes(1);
     expect(onValueChange).not.toHaveBeenCalled();
     expect(onSelectionChange).not.toHaveBeenCalled();
   });

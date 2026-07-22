@@ -18,19 +18,15 @@ import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 /** Hook options for computed decoration sources. */
 export type UsePliteDecorationSourceOptions<T = unknown> =
   PliteDecorationSourceOptions<T> & {
-    /**
-     * Controls when the hook refreshes the source for inline option closures.
-     */
-    deps?: readonly unknown[];
+    /** Explicit invalidation token for mutable data read by option callbacks. */
+    revision?: unknown;
   };
 
 /** Hook options for range-backed decoration sources. */
 export type UsePliteRangeDecorationSourceOptions<T = unknown> =
   PliteRangeDecorationSourceOptions<T> & {
-    /**
-     * Controls when the hook refreshes the source for inline option closures.
-     */
-    deps?: readonly unknown[];
+    /** Explicit invalidation token for mutable data read by option callbacks. */
+    revision?: unknown;
   };
 
 const DIRTINESS_CLASSES = [
@@ -106,14 +102,6 @@ const useDecorationSourceLifecycle = <T>(source: PliteDecorationSource<T>) => {
   useEffect(() => lifecycle.mount(source), [lifecycle, source]);
 };
 
-const areDependencyListsEqual = (
-  previous: readonly unknown[] | null,
-  next: readonly unknown[]
-) =>
-  previous !== null &&
-  previous.length === next.length &&
-  previous.every((value, index) => Object.is(value, next[index]));
-
 const useDecorationSourceCommit = <T>(
   editor: EditorType,
   source: PliteDecorationSource<T>,
@@ -127,21 +115,19 @@ const useDecorationSourceCommit = <T>(
   }
 ) => {
   const [commit] = useState<{
-    deps: readonly unknown[] | null;
+    revision: unknown;
     source: PliteDecorationSource<T> | null;
   }>(() => ({
-    deps: null,
+    revision: Symbol('uninitialized'),
     source: null,
   }));
 
   useIsomorphicLayoutEffect(() => {
     optionsCell.current = options;
-    const refreshDeps = options.deps ?? [options];
     const shouldRefresh =
-      commit.source !== source ||
-      !areDependencyListsEqual(commit.deps, refreshDeps);
+      commit.source !== source || !Object.is(commit.revision, options.revision);
 
-    commit.deps = [...refreshDeps];
+    commit.revision = options.revision;
     commit.source = source;
 
     if (shouldRefresh) {
@@ -157,7 +143,7 @@ const useDecorationSourceCommit = <T>(
 /**
  * Creates and owns a decoration source for computed editor decorations.
  *
- * Pass `deps` when the source options close over changing values.
+ * Pass `revision` when callbacks read a mutable external source.
  */
 export const usePliteDecorationSource = <T = unknown>(
   editor: EditorType,
@@ -166,16 +152,16 @@ export const usePliteDecorationSource = <T = unknown>(
   const [optionsCell] = useState(() => ({ current: options }));
   const optionsId = options.id;
   const dirtiness = useStableDirtiness(options.dirtiness);
-  const runtimeScope = options.runtimeScope;
+  const hasRuntimeScope = options.runtimeScope !== undefined;
 
   const source = useMemo(
     () =>
       createDecorationSource<T>(editor, {
         dirtiness,
         id: optionsId,
-        onError: options.onError,
+        onError: (error) => optionsCell.current.onError?.(error),
         read: (context) => optionsCell.current.read(context),
-        runtimeScope: runtimeScope
+        runtimeScope: hasRuntimeScope
           ? (context) => {
               const runtimeScope = optionsCell.current.runtimeScope;
 
@@ -189,7 +175,7 @@ export const usePliteDecorationSource = <T = unknown>(
             }
           : undefined,
       }),
-    [dirtiness, editor, options.onError, optionsCell, optionsId, runtimeScope]
+    [dirtiness, editor, hasRuntimeScope, optionsCell, optionsId]
   );
 
   useDecorationSourceLifecycle(source);
@@ -209,20 +195,20 @@ export const usePliteRangeDecorationSource = <T = unknown>(
   const [optionsCell] = useState(() => ({ current: options }));
   const optionsId = options.id;
   const dirtiness = useStableDirtiness(options.dirtiness);
-  const runtimeScope = options.runtimeScope;
+  const hasRuntimeScope = options.runtimeScope !== undefined;
 
   const source = useMemo(
     () =>
       createDecorationSource<T>(editor, {
         dirtiness,
         id: optionsId,
-        onError: options.onError,
+        onError: (error) => optionsCell.current.onError?.(error),
         read: (context) =>
           toPliteRangeDecorations(optionsCell.current.read(context), {
             data: optionsCell.current.data,
             id: optionsId,
           }),
-        runtimeScope: runtimeScope
+        runtimeScope: hasRuntimeScope
           ? (context) => {
               const runtimeScope = optionsCell.current.runtimeScope;
 
@@ -236,7 +222,7 @@ export const usePliteRangeDecorationSource = <T = unknown>(
             }
           : undefined,
       }),
-    [dirtiness, editor, options.onError, optionsCell, optionsId, runtimeScope]
+    [dirtiness, editor, hasRuntimeScope, optionsCell, optionsId]
   );
 
   useDecorationSourceLifecycle(source);

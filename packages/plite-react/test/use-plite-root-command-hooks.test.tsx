@@ -1,11 +1,12 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useLayoutEffect } from 'react';
+import { editorCommands, NodeApi } from '@platejs/plite';
 
 import {
   createReactEditor,
   Editable,
   Plite,
-  usePliteCommandCallback,
+  usePliteCommand,
   usePliteRootEffect,
 } from '../src';
 
@@ -185,31 +186,24 @@ describe('plite-react root and command hooks', () => {
     expect(calls).toEqual(['first', 'second']);
   });
 
-  test('usePliteCommandCallback keeps a stable handler while calling the latest callback with the target root editor', () => {
+  test('usePliteCommand binds a stable typed dispatcher and receives input at invocation time', () => {
     const editor = createReactEditor({
       initialValue: {
         children: initialValue,
         roots: { header: [{ type: 'block', children: [{ text: 'head' }] }] },
       },
     });
-    const calls: { label: string; root: string }[] = [];
     const handlers: unknown[] = [];
 
     const CommandButton = ({ label }: { label: string }) => {
-      const command = usePliteCommandCallback(
-        (rootEditor) => {
-          calls.push({
-            label,
-            root: rootEditor.read((state) => state.view.root()),
-          });
-        },
-        { root: 'header' }
-      );
+      const command = usePliteCommand(editorCommands.insertText, {
+        root: 'header',
+      });
 
       handlers.push(command);
 
       return (
-        <button onClick={() => command()} type="button">
+        <button onClick={() => command({ text: label })} type="button">
           Run command
         </button>
       );
@@ -236,9 +230,8 @@ describe('plite-react root and command hooks', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Run command' }));
 
     expect(handlers[0]).toBe(handlers[1]);
-    expect(calls).toEqual([
-      { label: 'first', root: 'header' },
-      { label: 'second', root: 'header' },
-    ]);
+    expect(NodeApi.string({ children: editor.read.root('header') })).toBe(
+      'headfirstsecond'
+    );
   });
 });

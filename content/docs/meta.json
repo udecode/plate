@@ -17,14 +17,11 @@
     "---Plite---",
     "[Overview](/docs/plite)",
     "[Examples](/examples/plite/richtext)",
-    "[Bookmark API](/docs/plite/api/locations/bookmark)",
+    "[Anchor API](/docs/plite/api/locations/anchor)",
     "[Location API](/docs/plite/api/locations/location)",
-    "[PathRef API](/docs/plite/api/locations/path-ref)",
     "[Path API](/docs/plite/api/locations/path)",
     "[PointEntry API](/docs/plite/api/locations/point-entry)",
-    "[PointRef API](/docs/plite/api/locations/point-ref)",
     "[Point API](/docs/plite/api/locations/point)",
-    "[RangeRef API](/docs/plite/api/locations/range-ref)",
     "[Range API](/docs/plite/api/locations/range)",
     "[Location Types APIs](/docs/plite/api/locations)",
     "[Span API](/docs/plite/api/locations/span)",
@@ -34,15 +31,13 @@
     "[Node API](/docs/plite/api/nodes/node)",
     "[Node Types APIs](/docs/plite/api/nodes)",
     "[Text API](/docs/plite/api/nodes/text)",
-    "[Operation API](/docs/plite/api/operations/operation)",
-    "[Operation Types](/docs/plite/api/operations)",
     "[Debug Value Scrubbing](/docs/plite/api/scrubber)",
     "[Transforms API](/docs/plite/api/transforms)",
     "[Interfaces](/docs/plite/concepts/01-interfaces)",
     "[Nodes](/docs/plite/concepts/02-nodes)",
     "[Locations](/docs/plite/concepts/03-locations)",
     "[Transforms](/docs/plite/concepts/04-transforms)",
-    "[Operations](/docs/plite/concepts/05-operations)",
+    "[Document Changes](/docs/plite/concepts/05-document-changes)",
     "[Commands](/docs/plite/concepts/06-commands)",
     "[Editor](/docs/plite/concepts/07-editor)",
     "[Extensions](/docs/plite/concepts/08-extensions)",
@@ -83,7 +78,7 @@
     "[Applying Custom Formatting](/docs/plite/walkthroughs/04-applying-custom-formatting)",
     "[Executing Commands](/docs/plite/walkthroughs/05-executing-commands)",
     "[Saving to a Database](/docs/plite/walkthroughs/06-saving-to-a-database)",
-    "[Operation Replay Substrate](/docs/plite/walkthroughs/07-operation-replay-substrate)",
+    "[Canonical Change Substrate](/docs/plite/walkthroughs/07-canonical-change-substrate)",
     "[Improving Performance](/docs/plite/walkthroughs/09-performance)",
     "---Guides---",
     "[Feature Kits](/docs/feature-kits)",
@@ -325,7 +320,7 @@
     "[Range](/docs/api/plite/range)",
     "[Location](/docs/api/plite/location)",
     "[Location Ref](/docs/api/plite/location-ref)",
-    "[Operation](/docs/api/plite/operation)",
+    "[Document Change](/docs/api/plite/document-change)",
     "[Plate Core](/docs/api/core)",
     "[Plate Components](/docs/api/core/plate-components)",
     "[Plate Editor](/docs/api/core/plate-editor)",
@@ -396,8 +391,8 @@
                   "title": "Location Ref"
                 },
                 {
-                  "href": "/docs/api/plite/operation",
-                  "title": "Operation"
+                  "href": "/docs/api/plite/document-change",
+                  "title": "Document Change"
                 }
               ],
               "label": "v42",
@@ -493,6 +488,7 @@
                 {
                   "headings": [
                     "key",
+                    "targetPluginKeys",
                     "api",
                     "tx",
                     "options",
@@ -507,7 +503,6 @@
                     "maxLevel",
                     "plugins",
                     "targetPluginToInject",
-                    "targetPlugins",
                     "node",
                     "isDecoration",
                     "rules",
@@ -3361,8 +3356,8 @@
       "/docs/api/plite/location-ref": {
         "title": "Location Ref"
       },
-      "/docs/api/plite/operation": {
-        "title": "Operation"
+      "/docs/api/plite/document-change": {
+        "title": "Document Change"
       },
       "/docs/api/core": {
         "description": "Core utilities for Plate.",

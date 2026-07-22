@@ -20,9 +20,6 @@
       "@platejs/browser/playwright": [
         "../../packages/browser/src/playwright/index.ts"
       ],
-      "@platejs/browser/transports": [
-        "../../packages/browser/src/transports/index.ts"
-      ],
       "@platejs/core": ["../../packages/core/src/index.ts"],
       "@platejs/core/react": ["../../packages/core/src/react/index.ts"],
       "@platejs/core/static": ["../../packages/core/src/static/index.ts"],

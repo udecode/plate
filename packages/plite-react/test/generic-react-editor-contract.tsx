@@ -1,7 +1,12 @@
 import {
   createEditor,
+  type CompatibleEditorCommand,
+  defineCommand,
   defineEditorExtension,
+  editorCommands,
   type EditorCommit,
+  type EditorCommandDescriptor,
+  type EditorCommandInput,
   type Node as PliteNode,
   type ValueOf,
 } from '@platejs/plite';
@@ -10,6 +15,7 @@ import * as PliteReact from '@platejs/plite-react';
 import {
   createReactEditor,
   Editable,
+  type EditableProps,
   type EditorSelectorOptions,
   Plite,
   type ReactEditor,
@@ -18,6 +24,7 @@ import {
   useEditorSelector,
   usePliteEditor,
   usePliteHistory,
+  usePliteCommand,
   usePliteRootChrome,
   usePliteRootEditor,
   usePliteRootState,
@@ -43,6 +50,11 @@ type CustomElement = ParagraphElement | LinkElement;
 
 type CustomValue = CustomElement[];
 
+type ExpectFalse<T extends false> = T;
+type EditableHasDOMStrategyLayout =
+  'domStrategyLayout' extends keyof EditableProps ? true : false;
+type EditableHidesDOMStrategyLayout = ExpectFalse<EditableHasDOMStrategyLayout>;
+
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: 'initial', bold: true }] },
 ];
@@ -63,6 +75,36 @@ const CustomApiExtension = defineEditorExtension({
     },
   },
 });
+const SpecialCommandExtension = defineEditorExtension({
+  name: 'special-command',
+  state: { special: () => ({ value: () => 1 }) },
+});
+const ExtraCommandExtension = defineEditorExtension({
+  name: 'extra-command',
+  state: { extra: () => ({ value: () => 2 }) },
+});
+type SpecialCommandEditor = ReactEditor<
+  CustomValue,
+  readonly [typeof SpecialCommandExtension]
+>;
+const specialCommand = defineCommand<{ amount: number }, SpecialCommandEditor>(
+  'react.special',
+  {
+    build: ({ input, state }) => {
+      state.special.value();
+
+      return input.amount > 0 ? state.transaction(() => {}) : false;
+    },
+  }
+);
+type SpecialCompatibleCommand = CompatibleEditorCommand<
+  SpecialCommandEditor,
+  typeof specialCommand
+>;
+type SpecialCommandPayload = EditorCommandInput<typeof specialCommand>;
+const compatibleSpecialCommand: SpecialCompatibleCommand = specialCommand;
+const specialCommandPayload: SpecialCommandPayload = { amount: 1 };
+const commandDescriptor: EditorCommandDescriptor = specialCommand;
 const baseEditor = createEditor({ initialValue });
 const historyOnlyEditor = createEditor({
   extensions: [HistoryExtension],
@@ -196,7 +238,10 @@ noHistoryReactEditor.update((tx) => tx.history.undo());
 // @ts-expect-error disabled default history rejects history update policy
 noHistoryReactEditor.update({ history: 'skip' }, () => {});
 
-const selectorOptions: EditorSelectorOptions<typeof historyReactEditor> = {
+const selectorOptions: EditorSelectorOptions<
+  number,
+  typeof historyReactEditor
+> = {
   shouldUpdate: (change) => {
     const typedChange: EditorCommit<CustomValue> | undefined = change;
 
@@ -217,7 +262,6 @@ const SelectorProbe = () => {
 
       return valueFromSelector.length;
     },
-    undefined,
     selectorOptions
   );
   const inferredSelected: number = selected;
@@ -251,6 +295,44 @@ const HookProbe = () => {
   hookEditor.api.react.isComposing();
 
   void valueFromHook;
+
+  return null;
+};
+
+const CommandHookProbe = () => {
+  const insertText = usePliteCommand(editorCommands.insertText);
+  const insertBreak = usePliteCommand(editorCommands.insertBreak);
+  const runSpecial = usePliteCommand<
+    typeof specialCommand,
+    CustomValue,
+    readonly [typeof SpecialCommandExtension]
+  >(specialCommand);
+  const runSpecialWithExtra = usePliteCommand<
+    typeof specialCommand,
+    CustomValue,
+    readonly [typeof SpecialCommandExtension, typeof ExtraCommandExtension]
+  >(specialCommand);
+  const typedSpecialDispatcher: (input: { amount: number }) => boolean =
+    runSpecial;
+
+  insertText({ text: 'typed' });
+  insertBreak();
+  runSpecial({ amount: 1 });
+  runSpecialWithExtra({ amount: 1 });
+  typedSpecialDispatcher({ amount: 1 });
+
+  // @ts-expect-error insertText requires command input
+  insertText();
+  // @ts-expect-error insertText text must be a string
+  insertText({ text: 1 });
+  // @ts-expect-error extension-owned command requires SpecialCommandExtension
+  usePliteCommand<typeof specialCommand, CustomValue>(specialCommand);
+  // @ts-expect-error default runtime lacks SpecialCommandExtension
+  usePliteCommand(specialCommand);
+  // @ts-expect-error extension-owned command requires its payload
+  runSpecial();
+  // @ts-expect-error extension-owned command payload is typed
+  runSpecial({ amount: '1' });
 
   return null;
 };
@@ -317,11 +399,16 @@ usePliteEditor({
 });
 
 void baseValue;
+void commandDescriptor;
+void compatibleSpecialCommand;
 void reactValue;
+void specialCommandPayload;
 void customApiResult;
 void _placeholderAsSpan;
 void _placeholderAsInput;
+void (null as unknown as EditableHidesDOMStrategyLayout);
 void SelectorProbe;
 void HookProbe;
+void CommandHookProbe;
 void NoHistoryHookProbe;
 void NamedRootRejectionProbe;

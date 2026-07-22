@@ -1,6 +1,6 @@
 import { createBaseEditor } from '@platejs/core';
 
-import { CsvPlugin, defineCsvConfig } from '../../CsvPlugin';
+import { CsvPlugin } from '../../CsvPlugin';
 import { deserializeCsv } from './deserializeCsv';
 
 const createCsvEditor = (options?: {
@@ -10,16 +10,14 @@ const createCsvEditor = (options?: {
   createBaseEditor({
     plugins: [
       CsvPlugin.configure({
-        config: defineCsvConfig({
+        options: {
           ...(options?.errorTolerance === undefined
             ? {}
             : { errorTolerance: options.errorTolerance }),
-          id: 'plate-test:csv:deserializer',
           ...(options?.header === undefined
             ? {}
             : { parseOptions: { header: options.header } }),
-          version: 1,
-        }),
+        },
       }),
     ],
   });

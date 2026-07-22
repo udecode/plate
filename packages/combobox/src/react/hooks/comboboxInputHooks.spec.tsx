@@ -4,13 +4,13 @@ import type React from 'react';
 import * as actualCoreReact from '@platejs/core/react';
 import { type Element, ElementApi } from '@platejs/plite';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useElementMock = mock();
 const useElementSelectedMock = mock();
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   useElement: useElementMock,
   useElementSelected: useElementSelectedMock,
 }));
@@ -28,7 +28,7 @@ const ComboboxInputPlugin = actualCoreReact.createPlatePlugin({
 
 describe('combobox input hooks', () => {
   beforeEach(() => {
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     useElementMock.mockReset();
     useElementSelectedMock.mockReset();
   });
@@ -53,7 +53,7 @@ describe('combobox input hooks', () => {
         anchor: { offset: 0, path: [0, 1, 0] },
         focus: { offset: 0, path: [0, 1, 0] },
       },
-      value: [
+      initialValue: [
         { children: [inputElement], type: 'p' },
         { children: [{ text: 'after' }], type: 'p' },
       ],
@@ -65,7 +65,7 @@ describe('combobox input hooks', () => {
     }
 
     useElementSelectedMock.mockReturnValue(true);
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     useElementMock.mockReturnValue(element);
 
     const ref = { current: document.createElement('input') };
@@ -105,7 +105,7 @@ describe('combobox input hooks', () => {
         anchor: { offset: 0, path: [0, 1, 0] },
         focus: { offset: 0, path: [0, 1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: '' }], type: 'mention_input' }],
           type: 'p',
@@ -120,7 +120,7 @@ describe('combobox input hooks', () => {
     }
 
     useElementSelectedMock.mockReturnValue(true);
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     useElementMock.mockReturnValue(element);
 
     const { result } = renderHook(() =>
@@ -156,7 +156,7 @@ describe('combobox input hooks', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'a' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
     });
     const element = editor.read.children()[0];
 
@@ -166,7 +166,7 @@ describe('combobox input hooks', () => {
 
     editor.update.text.insert('b');
     useElementSelectedMock.mockReturnValue(true);
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     useElementMock.mockReturnValue(element);
 
     const { result } = renderHook(() =>

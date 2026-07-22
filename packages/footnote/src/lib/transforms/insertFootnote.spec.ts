@@ -18,7 +18,7 @@ describe('insertFootnote', () => {
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hello' }],
           type: KEYS.p,
@@ -69,7 +69,7 @@ describe('insertFootnote', () => {
         anchor: { offset: 6, path: [0, 0] },
         focus: { offset: 11, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hello world' }],
           type: KEYS.p,
@@ -111,7 +111,7 @@ describe('insertFootnote', () => {
         BaseFootnoteReferencePlugin,
         BaseFootnoteDefinitionPlugin,
       ] as const,
-      value: [
+      initialValue: [
         {
           children: [{ text: 'hello' }],
           type: KEYS.p,
@@ -156,7 +156,7 @@ describe('insertFootnote', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'x' }],
           type: KEYS.p,
@@ -214,7 +214,7 @@ describe('insertFootnote', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'x' }],
           type: KEYS.p,
@@ -265,7 +265,7 @@ describe('insertFootnote', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'x' }],
           type: KEYS.p,
@@ -316,7 +316,7 @@ describe('insertFootnote', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'x' }],
           type: KEYS.p,
@@ -353,7 +353,7 @@ describe('insertFootnote', () => {
         BaseFootnoteReferencePlugin,
         BaseFootnoteDefinitionPlugin,
       ] as const,
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'a' },
@@ -424,7 +424,7 @@ describe('insertFootnote', () => {
         BaseFootnoteReferencePlugin,
         BaseFootnoteDefinitionPlugin,
       ] as const,
-      value: [
+      initialValue: [
         {
           children: [
             { text: 'a' },

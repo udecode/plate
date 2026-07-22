@@ -257,7 +257,7 @@ describe('incremental schema validation', () => {
       },
       version: 1,
     });
-    const descriptor = property.typed(policy);
+    const descriptor = property.json({ policy });
     const editor = createEditor({
       extensions: [
         defineEditorSchema({

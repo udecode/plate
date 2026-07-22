@@ -1,6 +1,5 @@
 import {
   createEditor,
-  definePropertyPolicy,
   property,
   schema,
   target,
@@ -11,7 +10,10 @@ import type { PluginConfig, PluginReference } from '../../lib/plugin';
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins';
-import { getPlateModelPublication } from './compilePlateModel';
+import {
+  getPlateModelPublication,
+  getResolvedPluginTargetBinding,
+} from './compilePlateModel';
 import { prepareParserRegistry } from './prepareParserRegistry';
 
 const createElementPlugin = (key: string, type = key) =>
@@ -63,12 +65,12 @@ describe('compilePlateModel', () => {
       type: 'model-mark',
     });
     const PropertyPlugin = createBasePlugin({
-      config: { targets: [BlockPlugin] as const },
       key: 'modelProperty',
-      schema: ({ config, own, plugins }) => ({
+      options: { targets: [BlockPlugin] as const },
+      schema: ({ options, own, plugins }) => ({
         properties: [
           own.elementProperty(property.string(), {
-            target: target.types(plugins.elementTypes(config.targets)),
+            target: target.types(plugins.elementTypes(options.targets)),
             typeChange: 'preserve-if-allowed',
           }),
         ],
@@ -407,15 +409,9 @@ describe('compilePlateModel', () => {
     ]);
   });
 
-  it('snapshots plugin references into frozen descriptor identities', () => {
+  it('configures schema inputs through plugin options', () => {
     type Config = PluginConfig<
       'configuredModel',
-      {},
-      {},
-      {},
-      {},
-      {},
-      readonly [],
       {
         label: string;
         nested: { value: number };
@@ -425,181 +421,33 @@ describe('compilePlateModel', () => {
 
     const TargetPlugin = createElementPlugin('configuredTarget');
     const plugin = createBasePlugin<Config>({
-      config: {
+      key: 'configuredModel',
+      options: {
         label: 'initial',
         nested: { value: 1 },
         targets: [TargetPlugin],
       },
-      key: 'configuredModel',
-      schema: ({ config, own, plugins }) => ({
+      schema: ({ options, own, plugins }) => ({
         properties: [
           own.elementProperty(property.string(), {
-            target: target.types(plugins.elementTypes(config.targets)),
+            target: target.types(plugins.elementTypes(options.targets)),
           }),
         ],
       }),
-    }).configure({ config: { label: 'configured' } });
+    }).configure({ options: { label: 'configured' } });
     const editor = createBaseEditor({
       plugins: [TargetPlugin, plugin],
     });
     const resolved = editor.getPlugin(plugin);
 
-    expect(resolved.config).toEqual({
+    expect(resolved.options).toEqual({
       label: 'configured',
       nested: { value: 1 },
-      targets: [{ key: 'configuredTarget', type: 'configuredTarget' }],
+      targets: [TargetPlugin],
     });
-    expect(Object.isFrozen(resolved.config)).toBe(true);
-    expect(Object.isFrozen(resolved.config.nested)).toBe(true);
-    expect(Object.isFrozen(resolved.config.targets)).toBe(true);
-    expect(Object.isFrozen(resolved.config.targets[0])).toBe(true);
-    expect(resolved.config.targets[0]).not.toBe(TargetPlugin);
-    expect(Object.isFrozen(TargetPlugin)).toBe(false);
-    expect(() => {
-      (resolved.config.targets[0] as { key: string }).key = 'changed';
-    }).toThrow();
   });
 
-  it('rejects mutable prototype objects in immutable plugin config', () => {
-    expect(() =>
-      createBasePlugin({
-        // @ts-expect-error immutable config rejects mutable prototype objects
-        config: { value: new Date(0) },
-        key: 'dateConfig',
-      })
-    ).toThrow('Move Date, Map, class instances');
-    expect(() =>
-      createBasePlugin({
-        // @ts-expect-error immutable config rejects mutable prototype objects
-        config: { value: new Map([['key', 'value']]) },
-        key: 'mapConfig',
-      })
-    ).toThrow('Move Date, Map, class instances');
-  });
-
-  it('recognizes plugin references nominally without evaluating impostors', () => {
-    let accessorReads = 0;
-    const accessor = {};
-
-    Object.defineProperty(accessor, 'key', {
-      enumerable: true,
-      get() {
-        accessorReads++;
-
-        return 'configuredTarget';
-      },
-    });
-    Object.defineProperties(accessor, {
-      clone: { enumerable: true, value: () => accessor },
-      configure: { enumerable: true, value: () => accessor },
-    });
-
-    class FakePluginReference {
-      get key() {
-        accessorReads++;
-
-        return 'configuredTarget';
-      }
-
-      clone() {
-        return this;
-      }
-
-      configure() {
-        return this;
-      }
-    }
-
-    expect(() =>
-      createBasePlugin({ config: { target: accessor }, key: 'accessorRef' })
-    ).toThrow('property accessors');
-    expect(() =>
-      createBasePlugin({
-        config: { target: new FakePluginReference() } as never,
-        key: 'classRef',
-      })
-    ).toThrow('Move Date, Map, class instances');
-    expect(() =>
-      createBasePlugin({
-        config: {
-          target: {
-            clone: () => undefined,
-            configure: () => undefined,
-            key: 'configuredTarget',
-          },
-        } as never,
-        key: 'forgedRef',
-      })
-    ).toThrow('Move functions and runtime resources to options');
-    expect(accessorReads).toBe(0);
-  });
-
-  it('keeps canonical plugin clones nominal with frozen configuration', () => {
-    const target = createBasePlugin({
-      config: { nested: { value: 1 } },
-      key: 'clonedTarget',
-    });
-    const clone = target.clone();
-    const owner = createBasePlugin({
-      config: { target: clone },
-      key: 'cloneOwner',
-    });
-
-    expect(clone).not.toBe(target);
-    expect(Object.isFrozen(clone.config)).toBe(true);
-    expect(Object.isFrozen(clone.config.nested)).toBe(true);
-    expect(owner.config.target).toEqual({
-      key: 'clonedTarget',
-      type: 'clonedTarget',
-    });
-    expect(Object.isFrozen(owner.config.target)).toBe(true);
-  });
-
-  it('accepts genuine property policies in immutable plugin config', () => {
-    const policy = definePropertyPolicy({
-      id: 'plate-plugin-config-policy',
-      validate: (value): value is string => typeof value === 'string',
-      version: 1,
-    });
-    type PolicyConfig = PluginConfig<
-      'policyConfig',
-      {},
-      {},
-      {},
-      {},
-      {},
-      readonly [],
-      { policy: typeof policy }
-    >;
-    const plugin = createBasePlugin<PolicyConfig>({
-      config: { policy },
-      key: 'policyConfig',
-    });
-
-    expect(plugin.config.policy).toBe(policy);
-  });
-
-  it('rejects forged schema-token symbols without mutating the input', () => {
-    const nested = { value: 1 };
-    const forged = {
-      [Symbol.for('platejs.plite.editorSchemaConfigToken')]: true,
-      nested,
-    };
-
-    expect(() =>
-      createBasePlugin({
-        config: { token: forged } as never,
-        key: 'forgedSchemaToken',
-      })
-    ).toThrow('only string-keyed plain data');
-    expect(Object.isFrozen(forged)).toBe(false);
-    expect(Object.isFrozen(nested)).toBe(false);
-
-    nested.value = 2;
-    expect(nested.value).toBe(2);
-  });
-
-  it('bootstraps only untouched supplied editors', () => {
+  it('bootstraps only unchanged supplied editors', () => {
     const plugin = createElementPlugin('suppliedElement');
     const untouched = createEditor();
     const editor = createBaseEditor({
@@ -612,16 +460,15 @@ describe('compilePlateModel', () => {
       { children: [{ text: '' }], type: 'p' },
     ]);
 
-    const explicitValue = [{ children: [{ text: 'keep me' }], type: 'legacy' }];
+    const explicitValue = [{ children: [{ text: 'keep me' }], type: 'p' }];
     const explicit = createEditor({ initialValue: explicitValue });
+    const explicitEditor = createBaseEditor({
+      editor: explicit,
+      plugins: [plugin],
+    });
 
-    expect(() =>
-      createBaseEditor({
-        editor: explicit,
-        plugins: [plugin],
-      })
-    ).toThrow('untouched editor without an explicit initial document');
-    expect(explicit.read.children()).toEqual(explicitValue);
+    expect(explicitEditor).toBe(explicit);
+    expect(explicitEditor.read.children()).toEqual(explicitValue);
 
     const updated = createEditor();
     const updatedValue = [
@@ -637,31 +484,34 @@ describe('compilePlateModel', () => {
         editor: updated,
         plugins: [plugin],
       })
-    ).toThrow('untouched empty document');
+    ).toThrow('unchanged document');
     expect(updated.read.children()).toEqual(updatedValue);
   });
 
-  it('publishes configured schema and host bindings as one revision', () => {
+  it('compiles top-level target keys into schema and host bindings', () => {
     const HeadingPlugin = createElementPlugin('configuredHeading', 'heading');
     const PropertyPlugin = createBasePlugin({
-      config: { targetPluginKeys: [BaseParagraphPlugin.key] },
       inject: { nodeProps: {} },
       key: 'configuredProperty',
-      schema: ({ config, own, plugins }) => ({
+      schema: ({ own, plugins, targetPluginKeys }) => ({
         properties: [
           own.elementProperty(property.string(), {
-            target: target.types(
-              plugins.elementTypesByKey(config.targetPluginKeys)
-            ),
+            target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
           }),
         ],
       }),
+      targetPluginKeys: [BaseParagraphPlugin.key],
+    });
+    const configuredPropertyPlugin = PropertyPlugin.configure({
+      targetPluginKeys: [
+        HeadingPlugin.key,
+        'missingOptionalHeading',
+        HeadingPlugin.key,
+      ],
     });
     const editor = createBaseEditor({
-      plugins: [HeadingPlugin, PropertyPlugin],
+      plugins: [HeadingPlugin, configuredPropertyPlugin],
     });
-    const before = getPlateModelPublication(editor)!;
-    const beforeFingerprint = editor.read.schema.identity()?.fingerprint;
 
     expect(editor.read.schema.identity()?.kind).toBe('derived');
 
@@ -669,65 +519,24 @@ describe('compilePlateModel', () => {
       (editor.api as unknown as Record<string, unknown>).plateModel
     ).toBeUndefined();
 
-    editor.configure(PropertyPlugin, {
-      targetPluginKeys: [HeadingPlugin.key],
-    });
+    const installedPropertyPlugin = editor.getPlugin(configuredPropertyPlugin);
+    const targetBinding = getResolvedPluginTargetBinding(
+      editor,
+      installedPropertyPlugin
+    );
 
-    const after = getPlateModelPublication(editor)!;
-
-    expect(after).not.toBe(before);
-    expect(after.model).not.toBe(before.model);
-    expect(editor.getPlugin(PropertyPlugin).config.targetPluginKeys).toEqual([
+    expect(installedPropertyPlugin.targetPluginKeys).toEqual([
+      'configuredHeading',
+      'missingOptionalHeading',
       'configuredHeading',
     ]);
-    expect(editor.read.schema.identity()?.fingerprint).not.toBe(
-      beforeFingerprint
-    );
+    expect(
+      Object.isFrozen(installedPropertyPlugin.targetPluginKeys)
+    ).toBe(true);
+    expect(targetBinding.keys).toEqual(['configuredHeading']);
+    expect(targetBinding.missingKeys).toEqual(['missingOptionalHeading']);
+    expect(targetBinding.types).toEqual(['heading']);
     expect(editor.read.history().schema).toEqual(editor.read.schema.identity());
-  });
-
-  it('keeps the previous Plate revision visible when candidate compilation fails', () => {
-    type Config = PluginConfig<
-      'configurableContainer',
-      {},
-      {},
-      {},
-      {},
-      {},
-      readonly [],
-      { childType: string }
-    >;
-    const Component = () => null;
-    const plugin = createBasePlugin<Config>({
-      config: { childType: 'p' },
-      key: 'configurableContainer',
-      render: { node: Component },
-      schema: ({ config }) => ({
-        element: {
-          content: schema.content.type(config.childType, {
-            default: { type: config.childType },
-            min: 1,
-          }),
-        },
-      }),
-    });
-    const editor = createBaseEditor({
-      plugins: [plugin],
-    });
-    const publication = getPlateModelPublication(editor)!;
-    const parserRegistry = prepareParserRegistry(editor);
-    const identity = editor.read.schema.identity();
-
-    expect(() =>
-      editor.configure(plugin, { childType: 'missing-child' })
-    ).toThrow();
-
-    expect(getPlateModelPublication(editor)).toBe(publication);
-    expect(getPlateModelPublication(editor)?.model).toBe(publication.model);
-    expect(editor.runtime.components.configurableContainer).toBe(Component);
-    expect(editor.getPlugin(plugin).config.childType).toBe('p');
-    expect(editor.read.schema.identity()).toEqual(identity);
-    expect(prepareParserRegistry(editor)).toBe(parserRegistry);
   });
 
   it('rejects missing, disabled, and non-element plugin references', () => {
@@ -746,12 +555,14 @@ describe('compilePlateModel', () => {
       referencedPlugin: PluginReference
     ) =>
       createBasePlugin({
-        config: { referencedPlugin },
         key,
-        schema: ({ config, own, plugins }) => ({
+        options: { referencedPlugin },
+        schema: ({ options, own, plugins }) => ({
           properties: [
             own.elementProperty(property.string(), {
-              target: target.type(plugins.elementType(config.referencedPlugin)),
+              target: target.type(
+                plugins.elementType(options.referencedPlugin)
+              ),
             }),
           ],
         }),

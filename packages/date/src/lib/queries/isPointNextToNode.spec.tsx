@@ -25,7 +25,7 @@ describe('isPointNextToNode', () => {
     return createBaseEditor({
       plugins: [BaseDatePlugin],
       selection: input.selection ? SelectionApi.text(input.selection) : null,
-      value: input.children,
+      initialValue: input.children,
     });
   };
 
@@ -148,7 +148,7 @@ describe('isPointNextToNode', () => {
   describe('when neither selection nor at is available', () => {
     it('throws a clear error', () => {
       const editor = createBaseEditor({
-        value: [
+        initialValue: [
           {
             children: [{ text: 'test' }],
             type: 'p',

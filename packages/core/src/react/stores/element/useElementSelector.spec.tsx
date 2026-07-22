@@ -61,7 +61,7 @@ describe('useElementSelector', () => {
 
     const exactScope = renderHook(
       () =>
-        useElementSelector(([element]) => element.type, [], {
+        useElementSelector(([element]) => element.type, {
           key: 'name',
         }),
       { wrapper }
@@ -71,7 +71,7 @@ describe('useElementSelector', () => {
 
     const fallbackScope = renderHook(
       () =>
-        useElementSelector(([element]) => element.type, [], {
+        useElementSelector(([element]) => element.type, {
           key: 'missing',
         }),
       { wrapper }
@@ -115,7 +115,6 @@ describe('useElementSelector', () => {
       () => {
         const value = useElementSelector(
           ([element]) => element.children.length,
-          [],
           { equalityFn: (a, b) => a === b, key: 'element' }
         );
 
@@ -150,7 +149,7 @@ describe('useElementSelector', () => {
     expect(renderValues).toHaveLength(initialRenderCount + 1);
   });
 
-  it('keeps inline selectors stable when deps are empty', () => {
+  it('uses the latest inline selector closure', () => {
     const editor = createPlateEditor();
     const entry = [
       {
@@ -159,8 +158,6 @@ describe('useElementSelector', () => {
       },
       [0],
     ] as any;
-    const selector = mock(([element]: any) => element.type);
-
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <Plate editor={editor}>
         <ElementProvider
@@ -175,17 +172,17 @@ describe('useElementSelector', () => {
     );
 
     const { rerender, result } = renderHook(
-      () =>
-        useElementSelector((state) => selector(state), [], { key: 'element' }),
-      { wrapper }
+      ({ suffix }) =>
+        useElementSelector(([element]) => `${element.type}-${suffix}`, {
+          key: 'element',
+        }),
+      { initialProps: { suffix: 'one' }, wrapper }
     );
 
-    expect(result.current).toBe('p');
-    const initialCallCount = selector.mock.calls.length;
+    expect(result.current).toBe('p-one');
 
-    rerender();
+    rerender({ suffix: 'two' });
 
-    expect(result.current).toBe('p');
-    expect(selector).toHaveBeenCalledTimes(initialCallCount);
+    expect(result.current).toBe('p-two');
   });
 });

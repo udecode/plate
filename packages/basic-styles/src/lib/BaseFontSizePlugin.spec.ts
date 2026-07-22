@@ -1,4 +1,4 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, HtmlPlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseFontSizePlugin } from './BaseFontSizePlugin';
@@ -17,7 +17,7 @@ describe('BaseFontSizePlugin', () => {
       'string'
     );
     expect(
-      editor.api.html.deserialize({
+      editor.plugin(HtmlPlugin).api.deserialize({
         element: '<span style="font-size: 18px">text</span>',
       })
     ).toMatchObject([
@@ -36,7 +36,7 @@ describe('BaseFontSizePlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
 
     editor.update.fontSize.set('24px');

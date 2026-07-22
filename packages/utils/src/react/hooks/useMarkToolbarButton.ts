@@ -1,4 +1,4 @@
-import { useEditorRef, useEditorSelector } from '@platejs/core/react';
+import { useEditor, useEditorSelector } from '@platejs/core/react';
 
 type PreventDefaultMouseEvent = Pick<
   React.MouseEvent<HTMLButtonElement>,
@@ -13,8 +13,7 @@ export const useMarkToolbarButtonState = ({
   clear?: string[] | string;
 }) => {
   const pressed = useEditorSelector(
-    (editor) => !!editor.read.marks()?.[nodeType],
-    [nodeType]
+    (editor) => !!editor.read.marks()?.[nodeType]
   );
 
   return {
@@ -27,7 +26,7 @@ export const useMarkToolbarButtonState = ({
 export const useMarkToolbarButton = (
   state: ReturnType<typeof useMarkToolbarButtonState>
 ) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return {
     props: {

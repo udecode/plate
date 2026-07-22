@@ -86,7 +86,7 @@ describe('withNormalizeTable', () => {
           disableMerge,
           initialTableWidth: 90,
         }),
-        value: input,
+        initialValue: input,
       });
 
       editor.update.value.repair();
@@ -171,7 +171,7 @@ describe('withNormalizeTable', () => {
           disableMerge,
           initialTableWidth: 90,
         }),
-        value: input,
+        initialValue: input,
       });
 
       editor.update.value.repair();
@@ -258,7 +258,7 @@ describe('withNormalizeTable', () => {
           disableMerge,
           initialTableWidth: 90,
         }),
-        value: input,
+        initialValue: input,
       });
 
       editor.update.value.repair();
@@ -279,7 +279,7 @@ describe('withNormalizeTable', () => {
           disableMerge,
           enableUnsetSingleColSize: true,
         }),
-        value: (
+        initialValue: (
           <fragment>
             <htable colSizes={[120]}>
               <htr>
@@ -315,7 +315,7 @@ describe('withNormalizeTable', () => {
       const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
-        value: (
+        initialValue: (
           <fragment>
             <htable>
               <htr>
@@ -370,7 +370,7 @@ describe('withNormalizeTable', () => {
       const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
-        value: (
+        initialValue: (
           <fragment>
             <htable>
               <htr>
@@ -420,7 +420,7 @@ describe('withNormalizeTable', () => {
       const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
-        value: (
+        initialValue: (
           <fragment>
             <htable>
               <htr>

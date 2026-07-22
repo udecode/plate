@@ -513,17 +513,17 @@ test('Editable domStrategy experimental virtualized mode can use layout-backed i
     <TestEditorSurface
       domStrategy={{
         estimatedBlockSize: 24,
+        layout: {
+          topLevelItems: [
+            { index: 0, size: 20, start: 0 },
+            { index: 1, size: 80, start: 20 },
+            { index: 2, size: 20, start: 100 },
+            { index: 3, size: 80, start: 120 },
+          ],
+        },
         overscan: 0,
         type: 'virtualized',
         threshold: 1,
-      }}
-      domStrategyLayout={{
-        getVirtualizedTopLevelItems: () => [
-          { index: 0, size: 20, start: 0 },
-          { index: 1, size: 80, start: 20 },
-          { index: 2, size: 20, start: 100 },
-          { index: 3, size: 80, start: 120 },
-        ],
       }}
       editor={editor}
       id="dom-strategy-virtualized-layout"
@@ -578,53 +578,53 @@ test('Editable domStrategy experimental virtualized mode preserves layout gaps b
     <TestEditorSurface
       domStrategy={{
         estimatedBlockSize: 24,
+        layout: {
+          pageItems: [
+            {
+              index: 0,
+              key: 'page-0',
+              pageIndexes: [0],
+              size: 100,
+              start: 0,
+              topLevelIndexes: [0, 1],
+            },
+            {
+              index: 1,
+              key: 'page-1',
+              pageIndexes: [1],
+              size: 100,
+              start: 140,
+              topLevelIndexes: [2, 3],
+            },
+          ],
+          topLevelItems: [
+            { index: 0, size: 20, start: 0 },
+            { index: 1, size: 80, start: 20 },
+            { index: 2, size: 20, start: 140 },
+            { index: 3, size: 80, start: 160 },
+          ],
+          visiblePageItems: [
+            {
+              index: 0,
+              key: 'page-0',
+              pageIndexes: [0],
+              size: 100,
+              start: 0,
+              topLevelIndexes: [0, 1],
+            },
+            {
+              index: 1,
+              key: 'page-1',
+              pageIndexes: [1],
+              size: 100,
+              start: 140,
+              topLevelIndexes: [2, 3],
+            },
+          ],
+        },
         overscan: 0,
         type: 'virtualized',
         threshold: 1,
-      }}
-      domStrategyLayout={{
-        getVirtualizedPageItems: () => [
-          {
-            index: 0,
-            key: 'page-0',
-            pageIndexes: [0],
-            size: 100,
-            start: 0,
-            topLevelIndexes: [0, 1],
-          },
-          {
-            index: 1,
-            key: 'page-1',
-            pageIndexes: [1],
-            size: 100,
-            start: 140,
-            topLevelIndexes: [2, 3],
-          },
-        ],
-        getVisibleVirtualizedPageItems: () => [
-          {
-            index: 0,
-            key: 'page-0',
-            pageIndexes: [0],
-            size: 100,
-            start: 0,
-            topLevelIndexes: [0, 1],
-          },
-          {
-            index: 1,
-            key: 'page-1',
-            pageIndexes: [1],
-            size: 100,
-            start: 140,
-            topLevelIndexes: [2, 3],
-          },
-        ],
-        getVirtualizedTopLevelItems: () => [
-          { index: 0, size: 20, start: 0 },
-          { index: 1, size: 80, start: 20 },
-          { index: 2, size: 20, start: 140 },
-          { index: 3, size: 80, start: 160 },
-        ],
       }}
       editor={editor}
       id="dom-strategy-virtualized-layout-gap"
@@ -666,21 +666,21 @@ test('Editable domStrategy experimental virtualized mode materializes layout-bac
     <TestEditorSurface
       domStrategy={{
         estimatedBlockSize: 24,
+        layout: {
+          topLevelItems: [
+            { index: 0, size: 20, start: 0 },
+            { index: 1, size: 80, start: 20 },
+            { index: 2, size: 20, start: 100 },
+            { index: 3, size: 80, start: 120 },
+            { index: 4, size: 20, start: 200 },
+            { index: 5, size: 80, start: 220 },
+            { index: 6, size: 20, start: 300 },
+            { index: 7, size: 80, start: 320 },
+          ],
+        },
         overscan: 0,
         type: 'virtualized',
         threshold: 1,
-      }}
-      domStrategyLayout={{
-        getVirtualizedTopLevelItems: () => [
-          { index: 0, size: 20, start: 0 },
-          { index: 1, size: 80, start: 20 },
-          { index: 2, size: 20, start: 100 },
-          { index: 3, size: 80, start: 120 },
-          { index: 4, size: 20, start: 200 },
-          { index: 5, size: 80, start: 220 },
-          { index: 6, size: 20, start: 300 },
-          { index: 7, size: 80, start: 320 },
-        ],
       }}
       editor={editor}
       id="dom-strategy-virtualized-layout-scroll"

@@ -20,7 +20,7 @@ describe('selection block utils', () => {
     it('selects blocks introduced by the last canonical change', () => {
       const editor = createBaseEditor({
         plugins: [BlockSelectionPlugin],
-        value: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
+        initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
       });
 
       editor.update.nodes.insert(
@@ -41,7 +41,7 @@ describe('selection block utils', () => {
     it('does not select existing blocks changed by the last commit', () => {
       const editor = createBaseEditor({
         plugins: [BlockSelectionPlugin, TestElementPropertiesPlugin],
-        value: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
+        initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
       });
 
       editor.update.nodes.set({ variant: 'lead' }, { at: [0] });
@@ -58,7 +58,7 @@ describe('selection block utils', () => {
     it('inserts a spacer block after the last non-empty selected block and pastes clipboard data', () => {
       const editor = createBaseEditor({
         plugins: [BlockSelectionPlugin],
-        value: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
+        initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
       });
       const initialValue = editor.read.children();
       let commits = 0;
@@ -100,7 +100,7 @@ describe('selection block utils', () => {
       });
       const editor = createBaseEditor({
         plugins: [BlockSelectionPlugin, throwingClipboardPlugin],
-        value: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
+        initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
       });
       const initialValue = editor.read.children();
       const selectedIds = new Set(['p1']);

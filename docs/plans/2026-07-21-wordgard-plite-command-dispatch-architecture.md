@@ -929,3 +929,18 @@ Open risks:
 - Browser matrix infrastructure is expensive. Focused Chromium rows run during
   adoption; the full matrix stays closure-only and is not evidence for changing
   model architecture if process startup fails before product code.
+
+## 2026-07-22 aggregate closure checkpoint
+
+- Command declaration, dispatch, and adopter deletion remain complete; the
+  current source audit still finds no root `editor.tf` or `editor.transforms`
+  mutation facade.
+- `check:core` and the fresh 10-package/31-subpath packed consumer pass. Browser
+  runner contracts pass 49/49 with zero retries.
+- Aggregate browser proof is not product-red: the managed runner reaches server
+  startup and the sandbox rejects `127.0.0.1:3102` with `EPERM`. Command plan
+  completion stays valid; the parent execution goal remains open for browser
+  and review closure.
+- The final package rerun passes Plite 1,371/1,371 and Plite DOM 192/192. The
+  clipboard benchmark coordinator proves distinct support/cut/issue worker
+  processes with three measured samples, zero retries, and unchanged budgets.

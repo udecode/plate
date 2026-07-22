@@ -7,9 +7,8 @@ import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { createPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
-import { resolvePluginTest } from './resolveCreatePluginTest';
 import {
-  isEquivalentPlatePluginConfig,
+  isEquivalentPlatePluginValue,
   resolveAndSortPlugins,
   resolvePlugins,
 } from './resolvePlugins';
@@ -34,10 +33,10 @@ describe('resolvePlugins', () => {
     });
 
     expect(
-      isEquivalentPlatePluginConfig({ policy: first }, { policy: first })
+      isEquivalentPlatePluginValue({ policy: first }, { policy: first })
     ).toBe(true);
     expect(
-      isEquivalentPlatePluginConfig({ policy: first }, { policy: second })
+      isEquivalentPlatePluginValue({ policy: first }, { policy: second })
     ).toBe(false);
   });
 
@@ -141,7 +140,6 @@ describe('resolvePlugins', () => {
             key: 'cachey',
             decorate: () => [],
             handlers: {
-              onChange: () => {},
               onNodeChange: () => {},
               onTextChange: () => {},
             },
@@ -174,7 +172,6 @@ describe('resolvePlugins', () => {
     });
 
     expect(editor.runtime.pluginCache.decorate).toContain('cachey');
-    expect(editor.runtime.pluginCache.handlers.onChange).toContain('cachey');
     expect(editor.runtime.pluginCache.handlers.onNodeChange).toContain(
       'cachey'
     );
@@ -212,12 +209,9 @@ describe('resolvePlugins', () => {
     const toggle = mock();
     const editor = createBaseEditor({
       plugins: [
-        createBasePlugin({
-          key: 'shortcutTx',
-          shortcuts: {
-            toggle: { keys: 'mod+k' },
-          },
-        }).extendTx(() => () => ({ toggle })),
+        createBasePlugin({ key: 'shortcutTx' })
+          .extendTx(() => () => ({ toggle }))
+          .extend({ shortcuts: { toggle: { keys: 'mod+k' } } }),
       ],
     });
 
@@ -226,19 +220,15 @@ describe('resolvePlugins', () => {
     expect(toggle).toHaveBeenCalledTimes(1);
   });
 
-  it('falls back to plugin-specific api when tx has no matching shortcut command', () => {
+  it('infers plugin-specific api when update has no matching command', () => {
     const other = mock();
     const toggle = mock() as any;
     const editor = createBaseEditor({
       plugins: [
-        createBasePlugin({
-          key: 'shortcutMixed',
-          shortcuts: {
-            toggle: { keys: 'mod+k' },
-          },
-        })
+        createBasePlugin({ key: 'shortcutMixed' })
           .extendTx(() => () => ({ other }))
-          .extendApi(() => ({ toggle })),
+          .extendApi(() => ({ toggle }))
+          .extend({ shortcuts: { toggle: { keys: 'mod+k' } } }),
       ],
     });
 
@@ -248,37 +238,34 @@ describe('resolvePlugins', () => {
     expect(toggle).toHaveBeenCalledTimes(1);
   });
 
-  it('does not prevent default when no matching tx or api shortcut command exists', () => {
+  it('rejects shortcuts with no matching update or api command', () => {
     const other = mock();
-    const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'shortcutMissing',
-          shortcuts: {
-            toggle: { keys: 'mod+k' },
-          },
-        }).extendTx(() => () => ({ other })),
-      ],
-    });
+    const create = () =>
+      createBaseEditor({
+        plugins: [
+          createBasePlugin({ key: 'shortcutMissing' })
+            .extendTx(() => () => ({ other }))
+            .extend({
+              shortcuts: {
+                toggle: { keys: 'mod+k' },
+              } as any,
+            }),
+        ],
+      });
 
-    const result = editor.runtime.shortcuts[
-      'shortcutMissing.toggle'
-    ]?.handler?.({} as any);
-
+    expect(create).toThrow(
+      'Plate shortcut "shortcutMissing.toggle" does not match a public update or API command.'
+    );
     expect(other).not.toHaveBeenCalled();
-    expect(result).toBe(false);
   });
 
   it('does not prevent default when a tx shortcut command returns false', () => {
     const untab = mock(() => false);
     const editor = createBaseEditor({
       plugins: [
-        createBasePlugin({
-          key: 'shortcutTxFalse',
-          shortcuts: {
-            untab: { keys: 'shift+tab' },
-          },
-        }).extendTx(() => () => ({ untab })),
+        createBasePlugin({ key: 'shortcutTxFalse' })
+          .extendTx(() => () => ({ untab }))
+          .extend({ shortcuts: { untab: { keys: 'shift+tab' } } }),
       ],
     });
 
@@ -290,21 +277,84 @@ describe('resolvePlugins', () => {
     expect(result).toBe(false);
   });
 
-  it('does not treat foreign tx groups as plugin shortcut commands', () => {
+  it('does not treat foreign update groups as plugin shortcut commands', () => {
     const replace = mock();
-    const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'shortcutForeign',
-          shortcuts: {
-            replace: { keys: 'mod+k' },
-          },
-        }).extendTxGroup('foreignTx', () => () => ({ replace })),
-      ],
-    });
+    const create = () =>
+      createBaseEditor({
+        plugins: [
+          createBasePlugin({ key: 'shortcutForeign' })
+            .extendTxGroup('foreignTx', () => () => ({ replace }))
+            .extend({
+              shortcuts: {
+                replace: { keys: 'mod+k' },
+              } as any,
+            }),
+        ],
+      });
 
-    expect(editor.runtime.shortcuts['shortcutForeign.replace']?.handler).toBe(
-      undefined
+    expect(create).toThrow(
+      'Plate shortcut "shortcutForeign.replace" does not match a public update or API command.'
+    );
+  });
+
+  it('requires target only when update and api commands collide', () => {
+    const apiToggle = mock();
+    const updateToggle = mock();
+    const AmbiguousPlugin = createBasePlugin({ key: 'shortcutAmbiguous' })
+      .extendApi(() => ({ toggle: apiToggle }))
+      .extendTx(() => () => ({ toggle: updateToggle }))
+      .extend({
+        shortcuts: { toggle: { keys: 'mod+k' } } as any,
+      });
+
+    expect(() => createBaseEditor({ plugins: [AmbiguousPlugin] })).toThrow(
+      'Plate shortcut "shortcutAmbiguous.toggle" matches both update and API commands.'
+    );
+
+    const ApiPlugin = AmbiguousPlugin.configure({
+      shortcuts: { toggle: { keys: 'mod+k', target: 'api' } },
+    });
+    const apiEditor = createBaseEditor({ plugins: [ApiPlugin] });
+
+    expect(
+      apiEditor.runtime.shortcuts['shortcutAmbiguous.toggle']
+    ).not.toHaveProperty('target');
+    apiEditor.runtime.shortcuts['shortcutAmbiguous.toggle']?.handler?.(
+      {} as any
+    );
+    expect(apiToggle).toHaveBeenCalledTimes(1);
+    expect(updateToggle).not.toHaveBeenCalled();
+
+    const UpdatePlugin = AmbiguousPlugin.configure({
+      shortcuts: { toggle: { keys: 'mod+k', target: 'update' } },
+    });
+    const updateEditor = createBaseEditor({ plugins: [UpdatePlugin] });
+
+    updateEditor.runtime.shortcuts['shortcutAmbiguous.toggle']?.handler?.(
+      {} as any
+    );
+    expect(updateToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('forbids target together with a custom shortcut handler', () => {
+    const create = () =>
+      createBaseEditor({
+        plugins: [
+          createBasePlugin({
+            key: 'shortcutHandlerTarget',
+            shortcuts: {
+              invalid: {
+                handler: () => true,
+                keys: 'mod+k',
+                target: 'api',
+              } as any,
+            },
+          }),
+        ],
+      });
+
+    expect(create).toThrow(
+      'Plate shortcut "shortcutHandlerTarget.invalid" cannot define `target` together with a custom handler.'
     );
   });
 
@@ -312,20 +362,43 @@ describe('resolvePlugins', () => {
     const toggle = mock();
     const editor = createBaseEditor({
       plugins: [
-        createBasePlugin({
-          key: 'shortcutApi',
-          shortcuts: {
-            toggle: { keys: 'mod+k' },
-          },
-        }).extendApi(() => ({
-          toggle,
-        })),
+        createBasePlugin({ key: 'shortcutApi' })
+          .extendApi(() => ({ toggle }))
+          .extend({ shortcuts: { toggle: { keys: 'mod+k' } } }),
       ],
     });
 
     editor.runtime.shortcuts['shortcutApi.toggle']?.handler?.({} as any);
 
     expect(toggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('routes shortcuts through api methods contributed at the editor root', () => {
+    const inspect = mock();
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({ key: 'shortcutRootApi' })
+          .extendEditorApi(() => ({ inspect }))
+          .extend({ shortcuts: { inspect: { keys: 'mod+k' } } }),
+      ],
+    });
+
+    editor.runtime.shortcuts['shortcutRootApi.inspect']?.handler?.({} as any);
+
+    expect(inspect).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects the same shortcut command in plugin and editor api scopes', () => {
+    const inspectPlugin = mock();
+    const inspectEditor = mock();
+    const Plugin = createBasePlugin({ key: 'shortcutApiScopeCollision' })
+      .extendApi(() => ({ inspect: inspectPlugin }))
+      .extendEditorApi(() => ({ inspect: inspectEditor }))
+      .extend({ shortcuts: { inspect: { keys: 'mod+k' } } as any });
+
+    expect(() => createBaseEditor({ plugins: [Plugin] })).toThrow(
+      'Plate shortcut "shortcutApiScopeCollision.inspect" matches API commands in both plugin and editor scopes.'
+    );
   });
 
   it('rejects plugin-set mutation after atomic model publication', () => {
@@ -339,12 +412,13 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    expect(editor.api.pluginApi.run()).toBe('run');
+    expect(editor.plugin({ key: 'pluginApi' }).api.run()).toBe('run');
+    expect(Reflect.get(editor.api, 'pluginApi')).toBeUndefined();
 
     expect(() => resolvePlugins(editor, [])).toThrow(
       'Plate plugins are immutable after model publication.'
     );
-    expect(editor.api.pluginApi.run()).toBe('run');
+    expect(editor.plugin({ key: 'pluginApi' }).api.run()).toBe('run');
   });
 
   it('throws when inputRules is configured as a boolean map', () => {
@@ -600,33 +674,13 @@ describe('applyPluginOverrides', () => {
   });
 
   describe('targetPluginKeys', () => {
-    it('correctly apply targetPluginToInject and merge with existing plugins', () => {
-      const resolvedPlugin = resolvePluginTest(
-        createBasePlugin({
-          config: { targetPluginKeys: ['plugin1', 'plugin2'] },
-          key: 'testPlugin',
-          inject: {
-            plugins: {
-              plugin1: {
-                parsers: {
-                  html: {
-                    deserializer: {
-                      parse: () => {},
-                    },
-                  },
-                },
-              },
-              plugin3: {
-                parsers: {
-                  html: {
-                    deserializer: {
-                      parse: () => {},
-                    },
-                  },
-                },
-              },
-            },
-            targetPluginToInject: ({ targetPlugin: _targetPlugin }) => ({
+    it('injects only installed optional targets and preserves explicit entries', () => {
+      const Plugin = createBasePlugin({
+        targetPluginKeys: ['plugin1', 'missingPlugin', 'plugin2'],
+        key: 'testPlugin',
+        inject: {
+          plugins: {
+            plugin1: {
               parsers: {
                 html: {
                   deserializer: {
@@ -634,10 +688,36 @@ describe('applyPluginOverrides', () => {
                   },
                 },
               },
-            }),
+            },
+            plugin3: {
+              parsers: {
+                html: {
+                  deserializer: {
+                    parse: () => {},
+                  },
+                },
+              },
+            },
           },
-        })
-      );
+          targetPluginToInject: ({ targetPlugin: _targetPlugin }) => ({
+            parsers: {
+              html: {
+                deserializer: {
+                  parse: () => {},
+                },
+              },
+            },
+          }),
+        },
+      });
+      const editor = createBaseEditor({
+        plugins: [
+          createBasePlugin({ key: 'plugin1' }),
+          createBasePlugin({ key: 'plugin2' }),
+          Plugin,
+        ],
+      });
+      const resolvedPlugin = editor.getPlugin(Plugin);
 
       expect(resolvedPlugin.inject?.plugins).toBeDefined();
       expect(Object.keys(resolvedPlugin.inject!.plugins!)).toEqual([
@@ -645,6 +725,7 @@ describe('applyPluginOverrides', () => {
         'plugin3',
         'plugin2',
       ]);
+      expect(resolvedPlugin.inject!.plugins!.missingPlugin).toBeUndefined();
 
       // Check merged result for plugin1
       expect(resolvedPlugin.inject!.plugins!.plugin1).toHaveProperty(
@@ -765,10 +846,37 @@ describe('applyPluginOverrides', () => {
 });
 
 describe('mergePlugins behavior in resolvePlugins', () => {
+  it('preserves configured options when an overlay uses undefined', () => {
+    const plugin = createBasePlugin({
+      key: 'test',
+      options: {
+        contextValue: 'kept',
+        nullValue: 'kept',
+        objectValue: 'kept',
+      },
+    })
+      .configure({
+        options: {
+          nullValue: null as unknown as string,
+          objectValue: undefined as unknown as string,
+        },
+      })
+      .configure(() => ({
+        options: { contextValue: undefined as unknown as string },
+      }));
+
+    const editor = createBaseEditor({ plugins: [plugin] });
+
+    expect(editor.plugins.test.options).toEqual({
+      contextValue: 'kept',
+      nullValue: null,
+      objectValue: 'kept',
+    });
+  });
+
   it('freezes the options record without cloning runtime resources', () => {
     const runtimeResource = { value: 'original' };
     const plugin = createBasePlugin({
-      config: { nested: { value: 'immutable' } },
       key: 'test',
       options: { resource: runtimeResource },
     });
@@ -784,8 +892,6 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     expect(published.options.resource).toBe(runtimeResource);
     expect(editor.plugin(plugin).getOption('resource')).toBe(runtimeResource);
     expect(Object.isFrozen(published.options.resource)).toBe(false);
-    expect(Object.isFrozen(published.config)).toBe(true);
-    expect(Object.isFrozen(published.config.nested)).toBe(true);
   });
 
   it('keeps mutable option state outside the published plugin descriptor', () => {

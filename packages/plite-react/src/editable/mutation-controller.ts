@@ -839,7 +839,13 @@ export type EditableRepairRequest =
   | {
       focus?: boolean;
       forceRender?: boolean;
-      kind: 'force-render' | 'sync-selection';
+      kind: 'force-render';
+      selectionSourceTransition?: EditableSelectionSourceTransition;
+    }
+  | {
+      focus?: boolean;
+      forceRender?: boolean;
+      kind: 'sync-selection';
       selectionSourceTransition?: EditableSelectionSourceTransition;
       syncDOMSelection?: boolean;
     }

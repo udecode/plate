@@ -186,16 +186,24 @@ const getEditorChangeWidgetIds = <T extends Record<string, unknown>>(
   });
 };
 
-/** Create a widget store backed by a live widget projector. */
-export const createPliteWidgetStore = <
+/** @internal Commit-activated widget store used by React ownership hooks. */
+export type ActivatablePliteWidgetStore<
+  T extends Record<string, unknown> = Record<string, never>,
+  TAnnotation extends Record<string, unknown> = Record<string, never>,
+> = PliteWidgetStore<T, TAnnotation> & {
+  activate: () => void;
+};
+
+const createPliteWidgetStoreInternal = <
   T extends Record<string, unknown>,
   TAnnotation extends Record<string, unknown>,
 >(
   editor: EditorType,
   getWidgets: () => readonly PliteWidget<T>[],
-  annotationStore?: PliteAnnotationStore<TAnnotation> | null,
-  options: PliteWidgetStoreOptions = {}
-): PliteWidgetStore<T, TAnnotation> => {
+  annotationStore: PliteAnnotationStore<TAnnotation> | null | undefined,
+  options: PliteWidgetStoreOptions,
+  dormant: boolean
+): ActivatablePliteWidgetStore<T, TAnnotation> => {
   let destroyed = false;
   const faultBoundary = createViewSourceFaultBoundary({
     id: options.id ?? 'widgets',
@@ -252,7 +260,9 @@ export const createPliteWidgetStore = <
         outputs: [],
       }),
     });
-  const initialWidgetsResult = faultBoundary.run('read', getWidgets);
+  const initialWidgetsResult = dormant
+    ? ({ ok: true, value: [] as readonly PliteWidget<T>[] } as const)
+    : faultBoundary.run('read', getWidgets);
   const initialMappedResult = initialWidgetsResult.ok
     ? faultBoundary.run('resolve', () =>
         createMappedSource(initialWidgetsResult.value)
@@ -280,6 +290,7 @@ export const createPliteWidgetStore = <
     recomputeCount: initialWidgetCount > 0 ? 1 : 0,
     widgetResolveCount: initialWidgetCount,
   }) as PliteWidgetStoreMetrics;
+  let activated = !dormant;
 
   const syncWidgets = (
     widgets: readonly PliteWidget<T>[],
@@ -335,51 +346,63 @@ export const createPliteWidgetStore = <
     }
   };
 
-  const unsubscribeEditor = editor.subscribeCommit((change) => {
-    if (destroyed) {
-      return;
-    }
+  const subscribeToEditor = () =>
+    editor.subscribeCommit((change) => {
+      if (destroyed) {
+        return;
+      }
 
-    const widgetsResult = faultBoundary.run('read', getWidgets);
+      const widgetsResult = faultBoundary.run('read', getWidgets);
 
-    if (!widgetsResult.ok) return;
-    const forceIds = getEditorChangeWidgetIds(
-      widgetsResult.value,
-      change,
-      editor
-    );
+      if (!widgetsResult.ok) return;
+      const forceIds = getEditorChangeWidgetIds(
+        widgetsResult.value,
+        change,
+        editor
+      );
 
-    if (forceIds.length > 0) {
-      syncWidgets(widgetsResult.value, { forceIds });
-    }
-  });
+      if (forceIds.length > 0) {
+        syncWidgets(widgetsResult.value, { forceIds });
+      }
+    });
 
-  const unsubscribeAnnotation = annotationStore?.subscribe(() => {
-    if (destroyed) {
-      return;
-    }
+  const subscribeToAnnotations = () =>
+    annotationStore?.subscribe(() => {
+      if (destroyed) {
+        return;
+      }
 
-    const widgetsResult = faultBoundary.run('read', getWidgets);
+      const widgetsResult = faultBoundary.run('read', getWidgets);
 
-    if (!widgetsResult.ok) return;
+      if (!widgetsResult.ok) return;
 
-    const forceIds = widgetsResult.value.flatMap((widget) =>
-      widget.anchor.type === 'annotation' ? [widget.id] : []
-    );
+      const forceIds = widgetsResult.value.flatMap((widget) =>
+        widget.anchor.type === 'annotation' ? [widget.id] : []
+      );
 
-    if (forceIds.length > 0) {
-      syncWidgets(widgetsResult.value, { forceIds });
-    }
-  });
+      if (forceIds.length > 0) {
+        syncWidgets(widgetsResult.value, { forceIds });
+      }
+    });
+  let unsubscribeEditor = activated ? subscribeToEditor() : null;
+  let unsubscribeAnnotation = activated ? subscribeToAnnotations() : null;
 
   return {
+    activate() {
+      if (activated || destroyed) return;
+
+      activated = true;
+      readAndSyncWidgets({ forceAll: true });
+      unsubscribeEditor = subscribeToEditor();
+      unsubscribeAnnotation = subscribeToAnnotations();
+    },
     destroy() {
       if (destroyed) {
         return;
       }
 
       destroyed = true;
-      unsubscribeEditor();
+      unsubscribeEditor?.();
       unsubscribeAnnotation?.();
       store.destroy();
     },
@@ -396,14 +419,14 @@ export const createPliteWidgetStore = <
       return store.getSnapshot().byId.get(id) ?? null;
     },
     refresh() {
-      if (destroyed) {
+      if (!activated || destroyed) {
         return;
       }
 
       readAndSyncWidgets();
     },
     retry() {
-      if (destroyed) return;
+      if (!activated || destroyed) return;
 
       faultBoundary.activate();
       readAndSyncWidgets({ forceAll: true });
@@ -416,3 +439,39 @@ export const createPliteWidgetStore = <
     },
   };
 };
+
+/** Create a widget store backed by a live widget projector. */
+export const createPliteWidgetStore = <
+  T extends Record<string, unknown>,
+  TAnnotation extends Record<string, unknown>,
+>(
+  editor: EditorType,
+  getWidgets: () => readonly PliteWidget<T>[],
+  annotationStore?: PliteAnnotationStore<TAnnotation> | null,
+  options: PliteWidgetStoreOptions = {}
+): PliteWidgetStore<T, TAnnotation> =>
+  createPliteWidgetStoreInternal(
+    editor,
+    getWidgets,
+    annotationStore,
+    options,
+    false
+  );
+
+/** @internal Create an inert candidate for commit-owned React activation. */
+export const createDormantPliteWidgetStore = <
+  T extends Record<string, unknown>,
+  TAnnotation extends Record<string, unknown>,
+>(
+  editor: EditorType,
+  getWidgets: () => readonly PliteWidget<T>[],
+  annotationStore?: PliteAnnotationStore<TAnnotation> | null,
+  options: PliteWidgetStoreOptions = {}
+) =>
+  createPliteWidgetStoreInternal(
+    editor,
+    getWidgets,
+    annotationStore,
+    options,
+    true
+  );

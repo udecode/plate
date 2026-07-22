@@ -11,7 +11,11 @@ const artifactPath = resolve(
 );
 
 describe('schema-backed sparse edit benchmark authority', () => {
-  it('installs a real compiled schema before measuring locality', () => {
+  it('installs a real compiled schema before measuring locality', {
+    // The child enforces the benchmark budgets. This outer process timeout only
+    // needs enough headroom to avoid killing valid work on a shared CI host.
+    timeout: 20_000,
+  }, () => {
     const result = spawnSync(
       process.execPath,
       [

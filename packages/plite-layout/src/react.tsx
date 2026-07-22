@@ -13,7 +13,6 @@ import type { Editor, EditorCommit, Path } from '@platejs/plite';
 import {
   defaultScrollSelectionIntoView,
   Editable,
-  type EditableDOMStrategyLayout,
   type EditableProps,
   useEditorState,
   useElementPath,
@@ -42,6 +41,10 @@ import {
   createPagedEditablePageMountPlan,
   getPagedEditableVisiblePageMountItems,
 } from './page-mount-plan';
+import {
+  connectLayoutRuntime,
+  deferLayoutRuntimeConnection,
+} from './layout-runtime-lifecycle';
 
 type PliteLayoutFragmentContextValue = {
   layout: PlitePageLayout;
@@ -120,39 +123,49 @@ export const usePliteLayout = <
 >(
   editor: Editor,
   options: UsePliteLayoutOptions<TSettings>
-): PlitePageLayout => {
-  const optionsRef = useRef(options);
-  optionsRef.current = options;
-
+): PlitePageLayout<PliteLayoutOptions<TSettings>> => {
   const layout = useMemo(
-    () => createPliteLayout(editor, () => optionsRef.current),
+    () => createPliteLayout(editor, deferLayoutRuntimeConnection(options)),
     [editor]
   );
-  const didRunInitialRefreshEffectRef = useRef(false);
+  const committedConfigurationRef = useRef({ layout, options });
   const pageDependency = getPageSourceDependency(options.page);
 
+  useEffect(() => connectLayoutRuntime(layout), [layout]);
+
   useEffect(() => {
-    if (!didRunInitialRefreshEffectRef.current) {
-      didRunInitialRefreshEffectRef.current = true;
+    const committedConfiguration = committedConfigurationRef.current;
+
+    if (committedConfiguration.layout !== layout) {
+      committedConfigurationRef.current = { layout, options };
       return;
     }
 
-    layout.refresh('settings');
+    if (committedConfiguration.options === options) return;
+
+    layout.reconfigure(options);
+    committedConfigurationRef.current = { layout, options };
   }, [
     layout,
     options.engine,
     options.nodeLayout,
+    options.onError,
+    options.pageBreaks?.mode,
+    options.pageBreaks?.source,
+    options.pageBreaks?.mode === 'write' ? options.pageBreaks.writerId : null,
     options.root,
+    typeof options.textChangeRefresh === 'object'
+      ? options.textChangeRefresh.delayMs
+      : options.textChangeRefresh,
+    typeof options.textChangeRefresh === 'object'
+      ? options.textChangeRefresh.maxDelayMs
+      : null,
+    typeof options.textChangeRefresh === 'object'
+      ? options.textChangeRefresh.mode
+      : null,
     options.typography,
     pageDependency,
   ]);
-
-  useEffect(
-    () => () => {
-      layout.destroy();
-    },
-    [layout]
-  );
 
   return layout;
 };
@@ -163,39 +176,49 @@ export const usePlitePageLayout = <
 >(
   editor: Editor,
   options: UsePlitePageLayoutOptions<TSettings>
-): PlitePageLayout => {
-  const optionsRef = useRef(options);
-  optionsRef.current = options;
-
+): PlitePageLayout<PlitePageLayoutOptions<TSettings>> => {
   const layout = useMemo(
-    () => createPlitePageLayout(editor, () => optionsRef.current),
+    () => createPlitePageLayout(editor, deferLayoutRuntimeConnection(options)),
     [editor]
   );
-  const didRunInitialRefreshEffectRef = useRef(false);
+  const committedConfigurationRef = useRef({ layout, options });
   const pageDependency = getPageSourceDependency(options.page);
 
+  useEffect(() => connectLayoutRuntime(layout), [layout]);
+
   useEffect(() => {
-    if (!didRunInitialRefreshEffectRef.current) {
-      didRunInitialRefreshEffectRef.current = true;
+    const committedConfiguration = committedConfigurationRef.current;
+
+    if (committedConfiguration.layout !== layout) {
+      committedConfigurationRef.current = { layout, options };
       return;
     }
 
-    layout.refresh('settings');
+    if (committedConfiguration.options === options) return;
+
+    layout.reconfigure(options);
+    committedConfigurationRef.current = { layout, options };
   }, [
     layout,
     options.engine,
     options.nodeLayout,
+    options.onError,
+    options.pageBreaks?.mode,
+    options.pageBreaks?.source,
+    options.pageBreaks?.mode === 'write' ? options.pageBreaks.writerId : null,
     options.root,
+    typeof options.textChangeRefresh === 'object'
+      ? options.textChangeRefresh.delayMs
+      : options.textChangeRefresh,
+    typeof options.textChangeRefresh === 'object'
+      ? options.textChangeRefresh.maxDelayMs
+      : null,
+    typeof options.textChangeRefresh === 'object'
+      ? options.textChangeRefresh.mode
+      : null,
     options.typography,
     pageDependency,
   ]);
-
-  useEffect(
-    () => () => {
-      layout.destroy();
-    },
-    [layout]
-  );
 
   return layout;
 };
@@ -853,34 +876,31 @@ export const PagedEditable = ({
 
     return byFragment;
   }, [projection.lines]);
-  const editableLayout = useMemo<EditableDOMStrategyLayout>(
-    () => ({
-      getVirtualizedPageItems: () =>
-        pageMountPlan.items.map((item) => ({
-          fragmentPaths: item.fragmentPaths,
-          index: item.index,
-          key: item.key,
-          pageIndexes: item.pageIndexes,
-          size: item.size,
-          start: item.start,
-          topLevelIndexes: item.topLevelIndexes,
-          unitPaths: item.unitPaths,
-        })),
-      getVisibleVirtualizedPageItems: () =>
-        pageContentItems?.map((item) => ({
-          fragmentPaths: item.fragmentPaths,
-          index: item.index,
-          key: item.key,
-          pageIndexes: item.pageIndexes,
-          size: item.size,
-          start: item.start,
-          topLevelIndexes: item.topLevelIndexes,
-          unitPaths: item.unitPaths,
-        })) ?? null,
-      getVirtualizedTopLevelItems: () => topLevelLayoutItems,
-    }),
-    [pageContentItems, pageMountPlan, topLevelLayoutItems]
-  );
+  const domStrategy = useMemo<EditableProps['domStrategy']>(() => {
+    const strategy = editableProps.domStrategy;
+
+    if (
+      typeof strategy !== 'object' ||
+      strategy == null ||
+      strategy.type !== 'virtualized'
+    ) {
+      return strategy;
+    }
+
+    return {
+      ...strategy,
+      layout: {
+        pageItems: pageMountPlan.items,
+        topLevelItems: topLevelLayoutItems,
+        visiblePageItems: pageContentItems ?? undefined,
+      },
+    };
+  }, [
+    editableProps.domStrategy,
+    pageContentItems,
+    pageMountPlan.items,
+    topLevelLayoutItems,
+  ]);
   const scrollSelectionIntoView = useMemo(() => {
     const scroll = editableProps.scrollSelectionIntoView;
 
@@ -910,7 +930,7 @@ export const PagedEditable = ({
   const editable = (
     <Editable
       {...editableProps}
-      domStrategyLayout={editableLayout}
+      domStrategy={domStrategy}
       scrollSelectionIntoView={scrollSelectionIntoView}
       style={{
         minHeight: geometry.height,

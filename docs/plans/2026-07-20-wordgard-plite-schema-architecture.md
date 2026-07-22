@@ -170,7 +170,7 @@ Work Checklist:
       evaluated and no useful mechanism remains unaccounted for.
 - [x] Public breaks and any private bridge have complete adoption/deletion answers.
 - [x] Conditional work and final handoff are resolved without generic N/A matrices.
-- [ ] Execute slices 0-13 through the linked Wordgard extraction goal and
+- [x] Execute slices 0-13 through the linked Wordgard extraction goal and
       replace planning evidence with current implementation proof.
 - [ ] Close hard-deletion, package, docs, browser, performance, review, and
       checker gates without a compatibility path.
@@ -1199,3 +1199,38 @@ Open risks:
   within budget. The 10k plain/copy/populated ceilings are source-backed at
   `60/20/280 ms`; current paste measurements exceed them and cannot be called
   optimized before a fresh canonical run passes.
+
+## 2026-07-22 closure checkpoint
+
+- Schema/compiler/configuration/adoption implementation is frozen and green.
+  `check:core` passes its 45-package graph; packed release proof passes 10
+  packages and 31 subpaths; the full build leaves zero declarations in source.
+- The release leak came from `plite-layout` overriding the direct-package build
+  config with `tsconfig.json`. It now inherits `tsconfig.build.json`, with a
+  regression contract that checks every direct Plite release package.
+- The Browser monitor no longer fans out `fs.watch`, uses failing FSEvents, or
+  opens thousands of kqueue descriptors. Deterministic file/directory metadata
+  checkpoints catch edit-revert and create-delete drift; byte digests remain
+  final content truth. All 49 runner contracts pass without retries.
+- The literal www wrapper still cannot open `tsx`'s local IPC socket in this
+  sandbox; its complete decomposed sequence passes: source build, docs parity,
+  registry parity, app TypeScript, and package-integration TypeScript.
+- Browser behavior and the canonical final benchmark remain open. Exact managed
+  Chromium stops at sandbox `listen EPERM` on `127.0.0.1:3102`, before any page
+  or product assertion executes.
+- Persisted schema/layout boundaries are fail-closed: one internal strict
+  identity decoder serves History and Yjs, and Layout rejects negative
+  document/page/block coordinates plus empty stable identifiers. Full Yjs,
+  History, and Layout suites and owner typechecks pass.
+- Schema-owned plain-text construction now compiles its default block/wrapper
+  plan once, carries an internal canonical-authority proof, and defers duplicate
+  preview runtime-index mapping. An isolated three-sample diagnostic records
+  49.84 ms paste, 17.49 ms copy, and 115.8 ms populated paste, all inside the
+  unchanged 60/20/280 ms budgets. The canonical artifact remains open while
+  host load is above the fixed timing envelope; no budget was loosened.
+- The derived base schema now reuses structural compilation while rebinding live
+  policies, without materializing deferred slice tokens. Plite passes
+  1,371/1,371 and the full affected Node-22 gate passes in 88.609 seconds.
+  Strict Browser DOM proof is blocked at sandbox `::1` bind; the matrix reaches
+  a 4.4-second production build and is blocked at `127.0.0.1:3102` before any
+  product assertion. The canonical clipboard run remains pending a quiet host.

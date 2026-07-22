@@ -13,7 +13,9 @@ import {
   type RenderElementProps,
   type RenderVoidProps,
   Plite,
-  type PliteChange,
+  type PliteCommitContext,
+  type PliteSelectionChangeContext,
+  type PliteValueChangeContext,
   useElementSelected,
 } from '../src';
 import type { ReactRuntimeEditor } from '../src/plugin/react-editor';
@@ -89,8 +91,6 @@ type EditableDOMBeforeInputProps = ComponentProps<
 type EditableHasDOMStrategy = 'domStrategy' extends keyof EditableProps
   ? true
   : false;
-type EditableHasDOMStrategyLayout =
-  'domStrategyLayout' extends keyof EditableProps ? true : false;
 type EditableHasLayout = 'layout' extends keyof EditableProps ? true : false;
 type EditableHasRenderingStrategy =
   'renderingStrategy' extends keyof EditableProps ? true : false;
@@ -108,19 +108,26 @@ type PliteHasWidgetStore = 'widgetStore' extends keyof ComponentProps<
 >
   ? true
   : false;
-type PliteChangeHasCommit = 'commit' extends keyof PliteChange ? true : false;
-type PliteChangeHasSnapshot = 'snapshot' extends keyof PliteChange
+type PliteHasOnCommit = 'onCommit' extends keyof ComponentProps<typeof Plite>
   ? true
   : false;
-type PliteChangeHasValueChanged = 'valueChanged' extends keyof PliteChange
+type PliteHasOnChange = 'onChange' extends keyof ComponentProps<typeof Plite>
   ? true
   : false;
-type PliteChangeHasUpdate = 'update' extends keyof PliteChange ? true : false;
+type PliteCommitHasCommit = 'commit' extends keyof PliteCommitContext
+  ? true
+  : false;
+type PliteCommitHasSnapshot = 'snapshot' extends keyof PliteCommitContext
+  ? true
+  : false;
+type PliteValueChangeHasValue = 'value' extends keyof PliteValueChangeContext
+  ? true
+  : false;
+type PliteSelectionChangeHasSelection =
+  'selection' extends keyof PliteSelectionChangeContext ? true : false;
 type EditableAutoCompleteAcceptsBoolean =
   boolean extends NonNullable<EditableProps['autoComplete']> ? true : false;
 type EditableExposesDOMStrategy = ExpectTrue<EditableHasDOMStrategy>;
-type EditableExposesDOMStrategyLayout =
-  ExpectTrue<EditableHasDOMStrategyLayout>;
 type EditableDoesNotExposeLayout = ExpectFalse<EditableHasLayout>;
 type EditableDoesNotExposeRenderingStrategy =
   ExpectFalse<EditableHasRenderingStrategy>;
@@ -130,10 +137,13 @@ type EditableDoesNotExposeOnRenderingStrategyMetrics =
   ExpectFalse<EditableHasOnRenderingStrategyMetrics>;
 type EditableDoesNotExposeOnCommand = ExpectFalse<EditableHasOnCommand>;
 type PliteDoesNotExposeWidgetStore = ExpectFalse<PliteHasWidgetStore>;
-type PliteChangeExposesCommit = ExpectTrue<PliteChangeHasCommit>;
-type PliteChangeExposesSnapshot = ExpectTrue<PliteChangeHasSnapshot>;
-type PliteChangeExposesValueChanged = ExpectTrue<PliteChangeHasValueChanged>;
-type PliteChangeDoesNotExposeUpdate = ExpectFalse<PliteChangeHasUpdate>;
+type PliteExposesOnCommit = ExpectTrue<PliteHasOnCommit>;
+type PliteDoesNotExposeOnChange = ExpectFalse<PliteHasOnChange>;
+type PliteCommitExposesCommit = ExpectTrue<PliteCommitHasCommit>;
+type PliteCommitExposesSnapshot = ExpectTrue<PliteCommitHasSnapshot>;
+type PliteValueChangeExposesValue = ExpectTrue<PliteValueChangeHasValue>;
+type PliteSelectionChangeExposesSelection =
+  ExpectTrue<PliteSelectionChangeHasSelection>;
 type EditableRejectsBooleanAutoComplete =
   ExpectFalse<EditableAutoCompleteAcceptsBoolean>;
 
@@ -142,17 +152,18 @@ void (null as unknown as RenderElementDoesNotExposeIndex);
 void (null as unknown as RenderVoidDoesNotExposePath);
 void (null as unknown as EditableDOMBeforeInputProps);
 void (null as unknown as EditableExposesDOMStrategy);
-void (null as unknown as EditableExposesDOMStrategyLayout);
 void (null as unknown as EditableDoesNotExposeLayout);
 void (null as unknown as EditableDoesNotExposeRenderingStrategy);
 void (null as unknown as EditableExposesOnDOMStrategyMetrics);
 void (null as unknown as EditableDoesNotExposeOnRenderingStrategyMetrics);
 void (null as unknown as EditableDoesNotExposeOnCommand);
 void (null as unknown as PliteDoesNotExposeWidgetStore);
-void (null as unknown as PliteChangeExposesCommit);
-void (null as unknown as PliteChangeExposesSnapshot);
-void (null as unknown as PliteChangeExposesValueChanged);
-void (null as unknown as PliteChangeDoesNotExposeUpdate);
+void (null as unknown as PliteExposesOnCommit);
+void (null as unknown as PliteDoesNotExposeOnChange);
+void (null as unknown as PliteCommitExposesCommit);
+void (null as unknown as PliteCommitExposesSnapshot);
+void (null as unknown as PliteValueChangeExposesValue);
+void (null as unknown as PliteSelectionChangeExposesSelection);
 void (null as unknown as EditableRejectsBooleanAutoComplete);
 
 const listSourceFiles = (roots: readonly string[]) => {
@@ -284,6 +295,7 @@ const expectedPliteReactRuntimeRootExports = [
   'useEditorState',
   'useEditorViewState',
   'useElement',
+  'useOptionalElement',
   'useElementPath',
   'useElementSelected',
   'useNodeSelector',
@@ -294,7 +306,7 @@ const expectedPliteReactRuntimeRootExports = [
   'usePliteAnnotationStore',
   'usePliteAnnotations',
   'usePliteChildRoot',
-  'usePliteCommandCallback',
+  'usePliteCommand',
   'usePliteContentRoot',
   'usePliteDecorationSource',
   'usePliteEditor',
@@ -344,7 +356,7 @@ const documentedAsGroupedRootTypeExports = [
   'PliteAnnotationProjectionData',
   'PliteAnnotationRefreshOptions',
   'PliteAnnotationStoreMetrics',
-  'PliteAnnotationStoreProjector',
+  'UsePliteAnnotationStoreOptions',
   'PliteCommandFocusPolicy',
   'PliteCustomSourceDirtiness',
   'PliteDecoration',
@@ -367,10 +379,11 @@ const documentedAsGroupedRootTypeExports = [
   'PliteSourceDirtinessClass',
   'PliteSourceDirtinessContext',
   'PliteWidgetStoreMetrics',
-  'PliteWidgetStoreProjector',
+  'UsePliteWidgetStoreOptions',
   'StateFieldSetter',
   'UseElementSelectedMode',
-  'UsePliteCommandCallbackOptions',
+  'PliteCommandDispatcher',
+  'UsePliteCommandOptions',
   'UsePliteContentRootOptions',
   'UsePliteDecorationSourceOptions',
   'UsePliteEditorOptions',
@@ -748,9 +761,9 @@ describe('plite-react surface contract', () => {
 
   test('plite-react overlay docs expose simple and scalable public paths', () => {
     const docFiles = [
-      'content/docs/plite/libraries/plite-react/annotations.md',
-      'content/docs/plite/libraries/plite-react/editable.md',
-      'content/docs/plite/libraries/plite-react/hooks.md',
+      'content/docs/plite/libraries/plite-react/annotations.mdx',
+      'content/docs/plite/libraries/plite-react/editable.mdx',
+      'content/docs/plite/libraries/plite-react/hooks.mdx',
       'content/docs/plite/libraries/plite-react/plite.mdx',
     ] as const;
 
@@ -780,19 +793,19 @@ describe('plite-react surface contract', () => {
       annotations: readFileSync(
         resolve(
           repoRoot,
-          'content/docs/plite/libraries/plite-react/annotations.md'
+          'content/docs/plite/libraries/plite-react/annotations.mdx'
         ),
         'utf8'
       ),
       editable: readFileSync(
         resolve(
           repoRoot,
-          'content/docs/plite/libraries/plite-react/editable.md'
+          'content/docs/plite/libraries/plite-react/editable.mdx'
         ),
         'utf8'
       ),
       hooks: readFileSync(
-        resolve(repoRoot, 'content/docs/plite/libraries/plite-react/hooks.md'),
+        resolve(repoRoot, 'content/docs/plite/libraries/plite-react/hooks.mdx'),
         'utf8'
       ),
       plite: readFileSync(
@@ -810,14 +823,19 @@ describe('plite-react surface contract', () => {
     expect(docs.plite).toContain('`widgetStore` prop');
     expect(docs.annotations).toMatch(/\busePliteAnnotationStore\b/);
     expect(docs.annotations).toMatch(/\busePliteAnnotations\b/);
-    expect(docs.annotations).toMatch(/\bdeps: \[comments\]/);
+    expect(docs.annotations).toContain(
+      'usePliteAnnotationStore(editor, annotations)'
+    );
     expect(docs.annotations).toMatch(/\btype PliteWidgetAnchor\b/);
     expect(docs.annotations).toMatch(/\busePliteWidgetStore\b/);
     expect(docs.annotations).toMatch(/\busePliteWidgets\(store\)/);
     expect(docs.hooks).toMatch(/\busePliteWidgetStore\b/);
     expect(docs.hooks).toMatch(/\busePliteWidgets\b/);
-    expect(docs.hooks).toMatch(/\bannotationsOrOptions\b/);
-    expect(docs.hooks).toContain('project: () =>');
+    expect(docs.hooks).toContain('revision: mutableAnnotationsRevision');
+    expect(docs.hooks).toContain('usePliteWidgetStore(editor, widgets, {');
+    expect(joinedDocs).not.toMatch(
+      /(?:annotationsOrOptions|project:\s*\(\)\s*=>|deps:\s*\[comments\])/
+    );
     expect(joinedDocs).not.toMatch(
       /(?:createPliteProjectionStore|ProjectionContext|from 'plite-react\/src)/
     );
@@ -1022,12 +1040,12 @@ describe('plite-react surface contract', () => {
   test('hook docs explain runtime and root editor names without aliases', () => {
     const hooks =
       readRepoFileIfExists(
-        'content/docs/plite/libraries/plite-react/hooks.md'
+        'content/docs/plite/libraries/plite-react/hooks.mdx'
       ) ?? readFileSync(resolve(packageRoot, 'Readme.md'), 'utf8');
 
     if (
       readRepoFileIfExists(
-        'content/docs/plite/libraries/plite-react/hooks.md'
+        'content/docs/plite/libraries/plite-react/hooks.mdx'
       ) !== null
     ) {
       expect(hooks).toContain('Runtime hooks read the whole editor runtime.');
@@ -1043,7 +1061,7 @@ describe('plite-react surface contract', () => {
         'Root editor hooks return a command-capable editor for one root.'
       );
       expect(hooks).toContain(
-        'Shared selector options are `deps`, `equalityFn`, `shouldUpdate`, and'
+        'Shared selector options are `equalityFn`, `shouldUpdate`, and `deferred`.'
       );
       expect(hooks).toContain('Prefer `usePliteRootEditor(root)`');
       expect(hooks).toContain('Pass `{ readOnly:');
@@ -1074,7 +1092,7 @@ describe('plite-react surface contract', () => {
       'usePliteRootState',
       'usePliteRootEditor',
       'usePliteActiveEditor',
-      'usePliteCommandCallback',
+      'usePliteCommand',
       'usePliteRootEffect',
     ]) {
       expect(readme).toContain(name);
@@ -1526,12 +1544,8 @@ describe('plite-react surface contract', () => {
     )?.[1];
 
     expect(editableSource).toContain('domStrategy?: DOMStrategyOptions | null');
-    expect(editableSource).toContain(
-      'domStrategyLayout?: EditableDOMStrategyLayout | null'
-    );
     expect(editableSource).toContain('onDOMStrategyMetrics?:');
     expect(editableSource).not.toContain('layout?: EditableLayout | null');
-    expect(packageIndex).toContain('EditableDOMStrategyLayout');
     expect(packageIndex).not.toContain('EditableLayout');
     expect(editableSource).not.toContain(
       'renderingStrategy?: RenderingStrategyOptions | null'
@@ -1560,16 +1574,13 @@ describe('plite-react surface contract', () => {
     expect(docs).toContain(
       'decorateRuntimeScope?: PliteProjectionRuntimeScope'
     );
-    expect(docs).toContain(
-      'domStrategyLayout?: EditableDOMStrategyLayout | null'
-    );
     expect(docs).not.toContain('layout?: EditableLayout | null');
     if (
       readRepoFileIfExists(
         'content/docs/plite/libraries/plite-react/editable.md'
       ) !== null
     ) {
-      expect(docs).toContain('Pass `domStrategyLayout` only when');
+      expect(docs).toContain('Virtualized layout data belongs inside');
       expect(docs).toContain('defaults to `defaultScrollSelectionIntoView`');
     }
 

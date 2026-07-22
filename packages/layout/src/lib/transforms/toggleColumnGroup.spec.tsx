@@ -15,7 +15,7 @@ const createEditor = ({
   createBaseEditor({
     plugins: [BaseColumnPlugin],
     selection,
-    value,
+    initialValue: value,
   });
 
 const getColumnGroup = (editor: ReturnType<typeof createEditor>) => {

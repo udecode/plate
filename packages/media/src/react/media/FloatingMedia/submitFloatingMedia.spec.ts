@@ -16,7 +16,7 @@ describe('submitFloatingMedia', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           type: NODES.mediaEmbed,

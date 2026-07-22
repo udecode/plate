@@ -100,7 +100,7 @@ export interface RangeInterface {
 }
 
 // eslint-disable-next-line no-redeclare
-export const RangeApi: RangeInterface = {
+export const RangeApi: Readonly<RangeInterface> = Object.freeze({
   edges(range: Range, options: RangeEdgesOptions = {}): [Point, Point] {
     const { reverse = false } = options;
     const { anchor, focus } = range;
@@ -206,4 +206,4 @@ export const RangeApi: RangeInterface = {
     const [start] = RangeApi.edges(range);
     return start;
   },
-};
+});

@@ -238,7 +238,8 @@ export const DOMStrategySegmentPlaceholder = React.memo(
       () => shouldRefreshPreview({ endIndex, startIndex }),
       [endIndex, startIndex]
     );
-    const preview = useEditorSelector(selectPreview, sameSegmentPreview, {
+    const preview = useEditorSelector(selectPreview, {
+      equalityFn: sameSegmentPreview,
       includeRootOrderChanges: true,
       profileId: 'dom-strategy-partial-dom-preview',
       runtimeIds: previewRuntimeIds,

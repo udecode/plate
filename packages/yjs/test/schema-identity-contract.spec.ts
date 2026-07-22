@@ -99,9 +99,9 @@ const policySchema = ({
             : mode === 'add'
               ? {
                   extra: property.boolean(),
-                  payload: property.typed(Probe),
+                  payload: property.json({ policy: Probe }),
                 }
-              : { payload: property.typed(Probe) },
+              : { payload: property.json({ policy: Probe }) },
         readOnly: mode === 'replace',
       },
     },

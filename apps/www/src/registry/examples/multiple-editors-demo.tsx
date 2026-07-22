@@ -19,19 +19,19 @@ export default function MultipleEditorsDemo() {
   const editor = usePlateEditor({
     id: 'editor1',
     plugins: BasicNodesKit,
-    value: basicBlocksValue,
+    initialValue: basicBlocksValue,
   });
 
   const editorMarks = usePlateEditor({
     id: 'marks',
     plugins: BasicNodesKit,
-    value: basicMarksValue,
+    initialValue: basicMarksValue,
   });
 
   const editorImage = usePlateEditor({
     id: 'image',
     plugins: [...BasicNodesKit, ...AlignKit, ...MediaKit],
-    value: imageValue,
+    initialValue: imageValue,
   });
 
   return (

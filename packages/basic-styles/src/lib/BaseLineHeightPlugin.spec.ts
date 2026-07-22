@@ -1,4 +1,8 @@
-import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  HtmlPlugin,
+} from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseLineHeightPlugin } from './BaseLineHeightPlugin';
@@ -11,7 +15,7 @@ describe('BaseLineHeightPlugin', () => {
     const plugin = editor.getPlugin(BaseLineHeightPlugin);
 
     expect(plugin.inject.isBlock).toBe(true);
-    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
+    expect(plugin.targetPluginKeys).toEqual([KEYS.p]);
     expect(plugin.inject.nodeProps).toMatchObject({
       defaultNodeValue: 1.5,
       nodeKey: 'lineHeight',
@@ -27,14 +31,14 @@ describe('BaseLineHeightPlugin', () => {
       type: 'custom-paragraph',
     });
     const LineHeightPlugin = BaseLineHeightPlugin.configure({
-      config: { targetPluginKeys: [KEYS.p] },
+      targetPluginKeys: [KEYS.p],
     });
     const editor = createBaseEditor({
       plugins: [ParagraphPlugin, LineHeightPlugin],
     });
     const plugin = editor.getPlugin(LineHeightPlugin);
 
-    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
+    expect(plugin.targetPluginKeys).toEqual([KEYS.p]);
     expect(
       editor.read.schema.property({
         key: KEYS.lineHeight,
@@ -57,7 +61,7 @@ describe('BaseLineHeightPlugin', () => {
     });
 
     expect(
-      editor.api.html.deserialize({
+      editor.plugin(HtmlPlugin).api.deserialize({
         element: '<p style="line-height: 2">text</p>',
       })
     ).toMatchObject([
@@ -77,7 +81,7 @@ describe('BaseLineHeightPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: 'One' }],
           type: 'p',

@@ -35,8 +35,8 @@
     "clean": "plate-pkg p:clean",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
-    "test": "bun test --preload ../../config/plite-source-test-setup.ts",
-    "test:watch": "bun test --preload ../../config/plite-source-test-setup.ts --watch",
+    "test": "plate-pkg p:test",
+    "test:watch": "plate-pkg p:test:watch",
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {

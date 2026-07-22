@@ -9,9 +9,7 @@ import { buildToggleIndex } from './toggleIndexAtom';
 describe('withToggle', () => {
   const plugins = [
     BaseIndentPlugin.configure({
-      config: {
-        targets: [BaseParagraphPlugin, TogglePlugin],
-      },
+      targetPluginKeys: [BaseParagraphPlugin.key, TogglePlugin.key],
     }),
     TogglePlugin,
   ];
@@ -24,13 +22,13 @@ describe('withToggle', () => {
         anchor: { offset: 6, path: [0, 0] },
         focus: { offset: 6, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
         { children: [{ text: 'after' }], type: KEYS.p },
       ],
     });
 
-    editor.api.toggle.toggleIds(['t1'], true);
+    editor.plugin(TogglePlugin).api.toggleIds(['t1'], true);
     editor.update.break.insert();
 
     expect(editor.read.children()).toMatchObject([
@@ -59,7 +57,7 @@ describe('withToggle', () => {
         anchor: { offset: 6, path: [0, 0] },
         focus: { offset: 6, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
         {
           children: [{ text: 'hidden child' }],
@@ -102,7 +100,7 @@ describe('withToggle', () => {
   it('marks descendants of closed toggles as non-selectable', () => {
     const editor = createPlateEditor({
       plugins,
-      value: [
+      initialValue: [
         { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
         {
           children: [{ text: 'hidden child' }],
@@ -128,7 +126,7 @@ describe('withToggle', () => {
       false
     );
 
-    editor.api.toggle.toggleIds(['t1'], true);
+    editor.plugin(TogglePlugin).api.toggleIds(['t1'], true);
 
     expect(hiddenChild && editor.read.nodes.isSelectable(hiddenChild)).toBe(
       true
@@ -143,7 +141,7 @@ describe('withToggle', () => {
         anchor: { offset: 0, path: [2, 0] },
         focus: { offset: 0, path: [2, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
         {
           children: [{ text: 'hidden' }],
@@ -183,7 +181,7 @@ describe('withToggle', () => {
         anchor: { offset: 6, path: [0, 0] },
         focus: { offset: 6, path: [0, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
         {
           children: [{ text: 'hidden' }],

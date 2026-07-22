@@ -124,7 +124,7 @@ Work Checklist:
   deletion answers.
 - [x] Execution slices and focused proof matrices are concrete.
 - [x] Conditional work and final handoff are resolved.
-- [ ] Execute slices 1-14, merge overlapping schema/compiler/host owners with
+- [x] Execute slices 1-14, merge overlapping schema/compiler/host owners with
       the accepted schema plan, and record fresh proof/deletion evidence.
 - [ ] Run bounded clipboard correctness against its distinct diagnostic output,
       then run the exact registered 50k target last and verify the canonical
@@ -1408,3 +1408,32 @@ Open risks:
   from core tests; the focused and matrix gates are mandatory.
 - Policy values for individual Plate elements require behavior-by-behavior
   adoption review; the plan forbids a blanket `preserveContext` default.
+
+## 2026-07-22 closure checkpoint
+
+- The single fitter, canonical slice construction, pure host codec, clipboard,
+  Plate adoption, History, and Yjs owners are implemented and package-green.
+  `check:core` and the fresh 10-package/31-subpath packed consumer pass.
+- The source declaration leak was release-config drift in `plite-layout`, not
+  slice logic. The owner now uses `tsconfig.build.json`; full Plite builds and
+  the post-build leak audit are green.
+- Browser runner infrastructure is contract-green at 49/49 with zero native
+  watchers, deterministic metadata checkpoints, final byte digests, and zero
+  retries. Exact Chromium and the matrix remain open
+  because localhost bind is denied with `EPERM` before product code.
+- The registered `clipboard-large-payload` benchmark remains deliberately last
+  after review and ledger closure; this plan stays incomplete until that fresh
+  authority artifact and browser proof are recorded.
+- Strict persistence review is closed: History/Yjs reject hidden or accessor
+  schema metadata, while Layout rejects negative page-break coordinates and
+  empty stable identifiers. Their full focused suites and typechecks pass.
+- The slice hot path no longer recanonicalizes schema-authored frozen content or
+  maps runtime IDs twice during a pure spec preview. The authority harness runs
+  support, 50k cut, and 10k issue metrics in distinct bounded processes and its
+  coordinator contract passes. Isolated issue p50s are 49.84/17.49/115.8 ms;
+  the canonical timing artifact stays open under current machine contention.
+- Open-slice laziness and structural schema-cache reuse now pass together in the
+  1,371-test Plite suite. The complete affected Node-22 gate passes in 88.609
+  seconds, including 47-package tests and exact 3/3 Chromium smoke reuse.
+  Strict DOM and matrix proof still cannot bind localhost in this sandbox; the
+  canonical three-process clipboard authority remains pending a quiet host.

@@ -38,9 +38,9 @@ export type UseYjsRemoteCursorDecorationSourceOptions<
   TDecorationData = YjsRemoteCursorDecorationData<TCursorData>,
 > = {
   readonly decorate?: (cursor: YjsRemoteCursor<TCursorData>) => TDecorationData;
-  /** Values that should recompute decoration data when decorate closes over React state. */
-  readonly deps?: readonly unknown[];
   readonly id?: string;
+  /** Explicit invalidation token for mutable data read by `decorate`. */
+  readonly revision?: unknown;
 };
 
 export type YjsRemoteCursorOverlayPosition<
@@ -59,8 +59,8 @@ export type UseYjsRemoteCursorOverlayPositionsOptions<
   TPositionData = YjsRemoteCursorDecorationData<TCursorData>,
 > = {
   readonly data?: (cursor: YjsRemoteCursor<TCursorData>) => TPositionData;
-  /** Values that should recompute overlay data when data closes over React state. */
-  readonly deps?: readonly unknown[];
+  /** Explicit invalidation token for mutable data read by `data`. */
+  readonly revision?: unknown;
 };
 
 const DEFAULT_CURSOR_DECORATION_SOURCE_ID = 'yjs-remote-cursors';
@@ -74,8 +74,6 @@ const DOM_RECT_FIELDS = [
   'x',
   'y',
 ] as const;
-const EMPTY_DEPS: readonly unknown[] = [];
-
 const useIsomorphicLayoutEffect =
   typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
@@ -139,6 +137,9 @@ const createDefaultCursorData = <
   cursor: YjsRemoteCursor<TCursorData>
 ): TData => createCursorData(cursor) as TData;
 
+const isEditorFocused = (editor: Editor): boolean =>
+  editor.read.view.isFocused();
+
 const resolveCursorRect = (
   editor: ReactEditor,
   range: Range
@@ -149,9 +150,6 @@ const resolveCursorRect = (
     return null;
   }
 };
-
-const isEditorFocused = (editor: Editor): boolean =>
-  editor.read.view.isFocused();
 
 const pointsEqual = (a: Range['anchor'], b: Range['anchor']): boolean =>
   a.offset === b.offset && pathsEqual(a.path, b.path);
@@ -443,13 +441,11 @@ export function useYjsRemoteCursorDecorationSource<
   > = {}
 ): PliteDecorationSource<TDecorationData> {
   const awarenessRevision = useYjsAwarenessRevision(editor);
-  const decorateRefreshDeps = options.deps ?? EMPTY_DEPS;
   const optionsRef = useRef(options);
   const id = options.id ?? DEFAULT_CURSOR_DECORATION_SOURCE_ID;
   optionsRef.current = options;
 
   const source = usePliteRangeDecorationSource<TDecorationData>(editor, {
-    deps: [awarenessRevision, ...decorateRefreshDeps],
     id,
     read: () =>
       editor.read((state) => {
@@ -509,7 +505,7 @@ export function useYjsRemoteCursorDecorationSource<
       reason: 'external',
       requiresDOMSelectionExport: isEditorFocused(editor),
     });
-  }, [awarenessRevision, source, ...decorateRefreshDeps]);
+  }, [awarenessRevision, editor, options.revision, source]);
 
   return source;
 }
@@ -528,7 +524,6 @@ export function useYjsRemoteCursorOverlayPositions<
   () => void,
 ] {
   const awarenessRevision = useYjsAwarenessRevision(editor);
-  const dataRefreshDeps = options.deps ?? EMPTY_DEPS;
   const animationFrameRef = useRef<number | null>(null);
   const optionsRef = useRef(options);
   optionsRef.current = options;
@@ -580,7 +575,7 @@ export function useYjsRemoteCursorOverlayPositions<
 
   useIsomorphicLayoutEffect(() => {
     refresh();
-  }, [awarenessRevision, refresh, ...dataRefreshDeps]);
+  }, [awarenessRevision, options.revision, refresh]);
 
   useIsomorphicLayoutEffect(() => {
     const unsubscribe = editor.subscribe(() => {

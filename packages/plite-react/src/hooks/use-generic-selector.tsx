@@ -7,9 +7,8 @@ import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
  * which only causes the component to render when the result of `selector`
  * differs from the previous result according to `equalityFn`.
  *
- * If `selector` is memoized using `useCallback`, then it will only be called
- * when it changes or when `update` is called. Otherwise, `selector` will be
- * called every time the component renders.
+ * The latest selector and equality function are committed after each render,
+ * so callers do not need to memoize inline selectors for correctness.
  *
  * @example
  * const [state, update] = useGenericSelector(selector, equalityFn)

@@ -65,5 +65,5 @@ const BasePlugins = [
 export const createTestEditor = (value: Value) =>
   createBaseEditor({
     plugins: BasePlugins,
-    value,
+    initialValue: value,
   });

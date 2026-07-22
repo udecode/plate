@@ -5,7 +5,7 @@ import type { TLinkElement } from '@platejs/utils';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 import { BaseLinkPlugin } from './BaseLinkPlugin';
-import { LinkRules } from './LinkRules';
+import { LinkRules } from './BaseLinkPlugin';
 
 const BaseCodeLinePlugin = createBasePlugin({
   key: 'codeLine',
@@ -46,6 +46,7 @@ const createAutolinkRules = () => [
 const createEditor = ({
   inputRules,
   options,
+  removeEmpty,
   selection,
   value,
 }: {
@@ -53,6 +54,7 @@ const createEditor = ({
   value: Value;
   inputRules?: ReturnType<typeof createAutolinkRules>;
   options?: Partial<BaseLinkConfig['options']>;
+  removeEmpty?: boolean;
 }) =>
   createBaseEditor({
     plugins: [
@@ -60,10 +62,14 @@ const createEditor = ({
       BaseLinkPlugin.configure({
         inputRules: inputRules ?? createAutolinkRules(),
         options,
+        rules:
+          removeEmpty === undefined
+            ? undefined
+            : { normalize: { removeEmpty } },
       }),
     ],
     selection,
-    value,
+    initialValue: value,
   });
 
 const paste = (editor: ReturnType<typeof createEditor>, text: string) => {
@@ -145,6 +151,29 @@ describe('LinkRules', () => {
     expect(findLink(replaceEditor)?.children).toEqual([
       { text: 'https://example.com' },
     ]);
+  });
+
+  it('keeps pasted URLs literal for expanded selections inside code blocks', () => {
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0, 0] },
+        focus: { offset: 8, path: [0, 0, 0] },
+      },
+      value: [
+        {
+          children: [
+            { children: [{ text: 'selected code' }], type: 'code_line' },
+          ],
+          type: 'code_block',
+        },
+      ],
+    });
+
+    paste(editor, 'https://example.com');
+
+    expect(findLink(editor)).toBeUndefined();
+    expect(editor.read.text.string([0])).toBe('https://example.com code');
   });
 
   it('keeps pasted URLs literal inside markdown link source', () => {
@@ -240,6 +269,11 @@ describe('LinkRules', () => {
       children: [{ text: 'Example' }],
       url: 'https://example.com',
     });
+    expect(editor.read.selection()).toEqual({
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 2] },
+      focus: { offset: 0, path: [0, 2] },
+    });
   });
 
   it('ignores unrelated links when converting markdown link syntax', () => {
@@ -311,5 +345,66 @@ describe('LinkRules', () => {
 
     expect(findLink(emptyEditor)).toBeUndefined();
     expect(findLink(zeroWidthEditor)).toBeDefined();
+  });
+
+  it('removes an empty link introduced by a value replacement', () => {
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
+
+    editor.update.value.replace({
+      children: [
+        {
+          children: [
+            { text: '' },
+            {
+              children: [{ text: '' }],
+              type: 'a',
+              url: 'https://example.com',
+            },
+            { text: '' },
+          ],
+          type: 'p',
+        },
+      ],
+    });
+
+    expect(findLink(editor)).toBeUndefined();
+  });
+
+  it('keeps an empty link when removeEmpty is disabled', () => {
+    const editor = createEditor({
+      removeEmpty: false,
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
+
+    editor.update.value.replace({
+      children: [
+        {
+          children: [
+            { text: '' },
+            {
+              children: [{ text: '' }],
+              type: 'a',
+              url: 'https://example.com',
+            },
+            { text: '' },
+          ],
+          type: 'p',
+        },
+      ],
+    });
+
+    expect(findLink(editor)).toBeDefined();
   });
 });

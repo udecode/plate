@@ -21,7 +21,7 @@ describe('getRenderNodeStaticProps', () => {
       host: { dangerouslyAllowAttributes: ['target'] },
     });
     const AlignPlugin = createBasePlugin({
-      config: { targetPluginKeys: ['p'] },
+      targetPluginKeys: ['p'],
       key: 'align',
       inject: {
         nodeProps: {
@@ -39,7 +39,7 @@ describe('getRenderNodeStaticProps', () => {
     });
     const editor = createBaseEditor({
       plugins: [ParagraphPlugin, AlignPlugin],
-      value: [
+      initialValue: [
         {
           align: 'center',
           children: [{ text: 'hello' }],

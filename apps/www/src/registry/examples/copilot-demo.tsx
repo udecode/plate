@@ -12,7 +12,7 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 export default function CopilotDemo() {
   const editor = usePlateEditor({
     plugins: [...CopilotKit, ...EditorKit],
-    value: copilotValue,
+    initialValue: copilotValue,
   });
 
   return (

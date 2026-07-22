@@ -70,6 +70,9 @@ pnpm check:plite
 pnpm check:plite:browser-matrix
 ```
 
+Run `pnpm plite:browser:install` once when Playwright reports a missing local
+browser. Proof commands never download browsers implicitly.
+
 `check:plite:dev` uses uncommitted inputs by default. Set
 `PLITE_CHECK_BASE=<ref>` when the affected range is already committed.
 `check:plite` is the strict all-package plus Chromium handoff gate; the browser

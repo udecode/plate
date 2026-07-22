@@ -8,7 +8,7 @@ import {
   computeDiff,
   createExcludeDiffFragmentExtension,
 } from '@platejs/diff';
-import { property, schema } from '@platejs/plite';
+import { property, schema } from 'platejs';
 import { cloneDeep } from 'lodash';
 import { type Value, createBasePlugin, KEYS } from 'platejs';
 import {
@@ -260,7 +260,7 @@ function Diff({ current, previous }: DiffProps) {
   const editor = usePlateEditor(
     {
       plugins: diffPlugins,
-      value: diffValue,
+      initialValue: diffValue,
     },
     [diffValue]
   );
@@ -299,13 +299,13 @@ export default function VersionHistoryDemo() {
 
   const editor = usePlateEditor({
     plugins: basePlugins,
-    value: createVersionSnapshot(initialValue),
+    initialValue: createVersionSnapshot(initialValue),
   });
 
   const editorRevision = usePlateEditor(
     {
       plugins: basePlugins,
-      value: selectedRevisionValue,
+      initialValue: selectedRevisionValue,
     },
     [selectedRevisionValue]
   );
@@ -315,7 +315,7 @@ export default function VersionHistoryDemo() {
       <Button onClick={saveRevision}>Save revision</Button>
 
       <VersionHistoryPlate
-        onChange={({ value }) => setValue(createVersionSnapshot(value))}
+        onValueChange={({ value }) => setValue(createVersionSnapshot(value))}
         editor={editor}
       />
 

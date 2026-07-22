@@ -13,7 +13,7 @@ describe('ExitBreakPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
 
     editor.update.exitBreak.insert({});
@@ -32,7 +32,7 @@ describe('ExitBreakPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'start' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'start' }], type: 'p' }],
     });
 
     editor.update.exitBreak.insertBefore({ match: () => true });
@@ -51,7 +51,7 @@ describe('ExitBreakPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'start' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'start' }], type: 'p' }],
     });
 
     editor.update.exitBreak.insert({});
@@ -95,7 +95,7 @@ describe('ExitBreakPlugin', () => {
         anchor: { offset: 4, path: [0, 0, 0] },
         focus: { offset: 4, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: 'code' }], type: 'codeline' }],
           type: 'codeblock',
@@ -166,7 +166,7 @@ describe('ExitBreakPlugin', () => {
         anchor: { offset: 4, path: [0, 0, 0, 0, 0] },
         focus: { offset: 4, path: [0, 0, 0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             {

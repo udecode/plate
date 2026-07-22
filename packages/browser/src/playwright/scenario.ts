@@ -11,7 +11,26 @@ import type {
   PliteBrowserShellActivationGauntletOptions,
   PliteBrowserTextInsertionGauntletOptions,
   PliteBrowserToolbarMarkClickTypingGauntletOptions,
+  PliteBrowserFillStepOptions,
 } from './types';
+
+/** Frozen constructors for canonical serializable browser steps. */
+export const browserStep = Object.freeze({
+  fill: ({
+    label,
+    target,
+    value,
+  }: PliteBrowserFillStepOptions): Extract<
+    PliteBrowserScenarioStep,
+    { kind: 'fillControl' }
+  > =>
+    Object.freeze({
+      kind: 'fillControl' as const,
+      ...(label === undefined ? {} : { label }),
+      selector: target,
+      value,
+    }),
+});
 
 /** Create a scenario that mixes navigation and typing through editor content. */
 export const createPliteBrowserNavigationTypingGauntlet = ({

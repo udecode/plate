@@ -49,7 +49,6 @@ The package is subpath-only. Import exactly the layer you need:
   - displayed-selection getter for native and projected selection proof
   - screenshot attachment helper for visual proof artifacts
   - file-backed JSON attachment helper for replayable proof artifacts
-  - low-level handle evaluator: `evaluatePliteBrowserHandle`
   - native event trace helpers for `selectionchange`, `beforeinput`, `input`,
     composition, target ranges, DOM deltas, and anomaly labels
   - block-text getter and assertion helpers
@@ -70,31 +69,21 @@ The package is subpath-only. Import exactly the layer you need:
   - helper types: `ReadyOptions`, `EditorSurfaceOptions`, selection and
     clipboard snapshot types, native event trace snapshot and anomaly types
   - `withExclusiveClipboardAccess(...)`
-- `@platejs/browser/transports`
-  - browser-mobile transport descriptors
-  - proof-scope classifiers for mobile transport claims
-  - current adapter builders for:
-    - `agent-browser` iOS
-    - Appium Android
-    - Appium iOS
 
 ## Boundaries
 
 - `@platejs/browser` is public test infrastructure, not the editor runtime API.
 - The root module is intentionally unavailable. Use `@platejs/browser/core`,
-  `@platejs/browser/browser`, `@platejs/browser/playwright`, or
-  `@platejs/browser/transports`.
+  `@platejs/browser/browser`, or `@platejs/browser/playwright`.
 - `@platejs/browser/playwright` owns browser tests. It may depend on Playwright
   types and test fixtures.
-- `@platejs/browser/core` and `@platejs/browser/browser` stay small enough for pure
-  assertions, classifiers, and DOM snapshots.
-- `@platejs/browser/transports` describes proof scope for device/browser lanes. It
-  is not a universal mobile automation driver.
-- Transport identity stays explicit; Appium descriptors can close automated
-  device-browser input/IME proof only when the device gate actually runs.
-  `agent-browser` iOS is proxy evidence, and the current automated surface does
-  not claim native mobile clipboard, human soft-keyboard, glide typing, or voice
-  input proof.
+- `@platejs/browser/core` and `@platejs/browser/browser` stay small enough for
+  pure assertions, capability classifiers, and DOM snapshots.
+- Raw-device identity belongs to the executable device runner. Automated
+  device-browser input or IME proof closes only when that gate runs and records
+  the resolved device, OS, and capability scope. Proxy browser evidence does
+  not claim native mobile clipboard, human soft-keyboard, glide typing, or
+  voice input proof.
 
 ## First Playwright Test
 
@@ -144,14 +133,18 @@ must still assert the expected parser behavior. Do not treat it as proof that a
 surface supports every rich HTML mark, element, sanitizer, or table policy.
 Use replayable scenario steps for generated stress. For direct browser DOM
 mutation/import proof, use `mutateTextDOM` so the artifact stays replayable;
-do not hide DOM mutation work in a `custom` step unless the packet is explicitly
-non-replayable.
+use `editor.scenario.runImperative(...)` for arbitrary browser work. Imperative
+scenario results are explicitly non-replayable, non-reducible, and ineligible
+for release proof.
 Generated stress artifacts carry reduction candidates. Replay the full artifact
 with `STRESS_REPLAY=<artifact> bun test:stress:replay:<project>`. Replay one
 candidate with
 `STRESS_REPLAY=<artifact> STRESS_REDUCTION=<label> bun test:stress:replay:<project>`.
 Reduced replays write a separate `.reduction-<label>.result.json` trace beside
 the full replay result.
+Decode imported JSON with `decodeScenarioReplay(...)`; never cast replay values
+into scenario steps. The decoder rejects unknown steps, stale metadata,
+non-JSON payloads, and assertion shapes that cannot prove anything.
 
 Example:
 

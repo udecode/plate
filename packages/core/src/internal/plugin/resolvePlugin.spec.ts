@@ -7,6 +7,34 @@ import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { validatePlugin } from './resolvePlugin';
 
 describe('resolvePlugin', () => {
+  it('applies object and contextual configuration layers in call order', () => {
+    const seen: string[] = [];
+    const plugin = createBasePlugin({
+      key: 'orderedConfiguration',
+      options: { label: 'base', mode: 'base' },
+    })
+      .configure({ options: { label: 'first' } })
+      .configure(({ plugin }) => {
+        seen.push(plugin.options.label);
+
+        return { options: { label: 'second' } };
+      })
+      .configure({ options: { mode: 'last' } })
+      .configure(({ plugin }) => {
+        seen.push(`${plugin.options.label}:${plugin.options.mode}`);
+
+        return { options: { label: 'final' } };
+      });
+    const editor = createBaseEditor({ plugins: [plugin] });
+
+    expect(seen).toEqual(['first', 'second:last']);
+    expect(editor.getPlugin(plugin).options).toEqual({
+      label: 'final',
+      mode: 'last',
+    });
+    expect(plugin.__configurationLayers).toHaveLength(4);
+  });
+
   it('lets the last child-plugin extension win', () => {
     const child = createBasePlugin({
       key: 'aa',

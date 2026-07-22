@@ -28,7 +28,7 @@ describe('BaseEquationPlugin', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           texExpression: 'x+1',

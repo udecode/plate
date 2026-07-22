@@ -8,11 +8,10 @@ import { useEditorSelector } from './use-editor-selector';
  * Only triggers a rerender when the selection actually changes
  */
 export const useEditorSelection = () =>
-  useEditorSelector(
-    (editor) => readRuntimeSelection(editor),
-    isSelectionEqual,
-    { profileId: 'editor-selection' }
-  );
+  useEditorSelector((editor) => readRuntimeSelection(editor), {
+    equalityFn: isSelectionEqual,
+    profileId: 'editor-selection',
+  });
 
 const isSelectionEqual = (a: Selection, b: Selection) => {
   if (!a && !b) return true;

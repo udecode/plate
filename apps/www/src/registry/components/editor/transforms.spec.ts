@@ -31,7 +31,7 @@ const createEditor = ({
       SuggestionPlugin,
     ],
     selection,
-    value,
+    initialValue: value,
   });
 
 describe('editor block transforms', () => {

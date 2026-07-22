@@ -633,7 +633,7 @@ function matchesNode(
   });
 }
 
-export const NodeApi: NodeInterface = {
+export const NodeApi: Readonly<NodeInterface> = Object.freeze({
   ancestor(root: Node, path: Path): Ancestor {
     const node = NodeApi.get(root, path);
 
@@ -1103,7 +1103,7 @@ export const NodeApi: NodeInterface = {
       }
     }
   },
-};
+});
 
 /**
  * The `Descendant` union type represents nodes that are descendants in the

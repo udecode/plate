@@ -39,7 +39,7 @@ describe('BaseListPlugin', () => {
   it('keeps list blocks on the single compiled paragraph schema', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Item' }],
           indent: 1,
@@ -70,11 +70,11 @@ describe('BaseListPlugin', () => {
       type: 'note',
     });
     const ListCalloutPlugin = BaseListPlugin.configure({
-      config: { targetPluginKeys: ['callout'] },
+      targetPluginKeys: ['callout'],
     });
     const editor = createBaseEditor({
       plugins: [CalloutPlugin, ListCalloutPlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Callout' }],
           listStyleType: 'disc',
@@ -83,7 +83,7 @@ describe('BaseListPlugin', () => {
       ],
     });
 
-    expect(editor.getPlugin(BaseListPlugin).config.targetPluginKeys).toEqual([
+    expect(editor.getPlugin(BaseListPlugin).targetPluginKeys).toEqual([
       'callout',
     ]);
     expect(editor.read.children()[0]).toMatchObject({
@@ -111,7 +111,7 @@ describe('BaseListPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
     });
     const list = editor.plugin(BaseListPlugin);
     const pluginKeys = editor.runtime.pluginList.map((plugin) => plugin.key);
@@ -134,7 +134,7 @@ describe('BaseListPlugin', () => {
     const value = [{ children: [{ text: 'Item' }], type: KEYS.p }];
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
-      value,
+      initialValue: value,
     });
     const list = editor.plugin(BaseListPlugin);
 
@@ -167,7 +167,7 @@ describe('BaseListPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 6, path: [1, 0] },
       },
-      value,
+      initialValue: value,
     });
 
     source.plugin(BaseListPlugin).update.toggle({ listStyleType: 'decimal' });
@@ -188,7 +188,7 @@ describe('BaseListPlugin', () => {
     const replay = createBaseEditor({
       plugins: [BaseListPlugin],
       selection: replaySelection,
-      value,
+      initialValue: value,
     });
 
     replay.update({ history: 'skip' }, (tx) => tx.changes.apply(change));
@@ -279,7 +279,7 @@ describe('BaseListPlugin', () => {
 
     expect(
       parse({
-        config: plugin.config,
+        options: plugin.options,
         element,
         registry: {
           getType: (key: string) => editor.getType(key),

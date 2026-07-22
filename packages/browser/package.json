@@ -37,11 +37,6 @@
       "import": "./dist/playwright/index.js",
       "default": "./dist/playwright/index.js"
     },
-    "./transports": {
-      "types": "./dist/transports/index.d.ts",
-      "import": "./dist/transports/index.js",
-      "default": "./dist/transports/index.js"
-    },
     "./package.json": "./package.json"
   },
   "files": [

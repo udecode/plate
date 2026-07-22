@@ -120,7 +120,7 @@ const isElement = (
 };
 
 // eslint-disable-next-line no-redeclare
-export const ElementApi: ElementInterface = {
+export const ElementApi: Readonly<ElementInterface> = Object.freeze({
   isAncestor<T extends Ancestor = Ancestor>(
     value: unknown,
     { deep = false }: ElementIsElementOptions = {}
@@ -167,7 +167,7 @@ export const ElementApi: ElementInterface = {
 
     return true;
   },
-};
+});
 
 /**
  * `ElementEntry` objects refer to an `Element` and the `Path` where it can be

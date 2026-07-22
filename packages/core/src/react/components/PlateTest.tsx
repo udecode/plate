@@ -11,16 +11,26 @@ import {
 import { type PlateProps, Plate } from './Plate';
 import { type PlateContentProps, PlateContent } from './PlateContent';
 
+type PlateTestEditorOptions = CreatePlateEditorOptions<
+  Value,
+  readonly PlateCorePlugin[]
+>;
+
 type PlateTestProps = Omit<PlateProps, 'children' | 'editor'> &
-  Omit<
-    CreatePlateEditorOptions<Value, readonly PlateCorePlugin[]>,
-    'editor'
-  > & {
+  Omit<PlateTestEditorOptions, 'editor' | 'schema'> & {
     children?: React.ReactNode;
     editableProps?: PlateContentProps;
-    editor?: Editor<Value> | PlateEditor | null;
     variant?: 'comment' | 'wordProcessor';
-  };
+  } & (
+    | {
+        editor: PlateEditor;
+        schema?: never;
+      }
+    | {
+        editor?: Editor<Value> | null;
+        schema: PlateTestEditorOptions['schema'];
+      }
+  );
 
 const isPlateEditor = (editor: Editor | PlateEditor): editor is PlateEditor =>
   'runtime' in editor &&
@@ -35,15 +45,23 @@ export function PlateTest({
   variant = 'wordProcessor',
   ...props
 }: PlateTestProps) {
-  const { editor: providedEditor, ...editorOptions } = props;
-  const editor: PlateEditor =
-    providedEditor && isPlateEditor(providedEditor)
-      ? providedEditor
-      : createPlateEditor({
-          ...editorOptions,
-          editor: providedEditor ?? undefined,
-          shouldNormalizeEditor,
-        });
+  const { editor: providedEditor, schema, ...editorOptions } = props;
+  let editor: PlateEditor;
+
+  if (providedEditor && isPlateEditor(providedEditor)) {
+    editor = providedEditor;
+  } else {
+    if (!schema) {
+      throw new TypeError('PlateTest requires a schema to create an editor');
+    }
+
+    editor = createPlateEditor({
+      ...editorOptions,
+      editor: providedEditor ?? undefined,
+      schema,
+      shouldNormalizeEditor,
+    });
+  }
 
   return (
     <Plate {...props} editor={editor}>

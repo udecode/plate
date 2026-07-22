@@ -32,7 +32,7 @@ const createEditor = ({
   const editor = createBaseEditor({
     plugins: MarkPlugins,
     selection,
-    value,
+    initialValue: value,
   });
 
   editor.update.marks.set(marks);

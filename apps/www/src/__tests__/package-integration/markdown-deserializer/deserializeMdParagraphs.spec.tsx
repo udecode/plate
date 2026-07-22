@@ -10,19 +10,16 @@ import remarkMath from 'remark-math';
 
 import {
   MarkdownPlugin,
-  defineMarkdownConfig,
 } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
 import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deserializer/deserializeMd';
 
 jsxt;
 
 const markdownPlugin = MarkdownPlugin.configure({
-  config: defineMarkdownConfig({
+  options: {
     disallowedNodes: [SuggestionPlugin.key],
-    id: 'plate-www:test:markdown-paragraphs',
     remarkPlugins: [remarkMath, remarkGfm],
-    version: 1,
-  }),
+  },
 });
 
 const createTestEditor = (plugins: any[] = []) =>

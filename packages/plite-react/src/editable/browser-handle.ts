@@ -29,6 +29,7 @@ import {
 import {
   beginEditableEventFrame,
   type EditableCommand,
+  type EditableKernelTraceEntry,
   getEditableKernelTrace,
   recordEditableKernelTrace,
 } from './editing-kernel';
@@ -84,7 +85,7 @@ export type PliteBrowserHandle = {
   ) => void;
   clearSettledPendingNativeTextInputRepair: () => boolean;
   focus: () => void;
-  getKernelTrace: () => unknown[];
+  getKernelTrace: () => readonly EditableKernelTraceEntry[];
   getHistory: () => unknown;
   getInputState: () => unknown;
   getLastCommit: () => unknown;

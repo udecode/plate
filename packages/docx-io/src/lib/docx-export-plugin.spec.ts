@@ -10,7 +10,7 @@ describe('DocxExportPlugin', () => {
   it('exports and downloads through the typed plugin API', async () => {
     const editor = createBaseEditor({
       plugins: [DocxExportPlugin],
-      value: [{ children: [{ text: 'Export me' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'Export me' }], type: 'p' }],
     });
     const createObjectUrl = spyOn(URL, 'createObjectURL').mockReturnValue(
       'blob:docx'

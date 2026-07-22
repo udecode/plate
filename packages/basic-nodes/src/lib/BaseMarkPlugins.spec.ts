@@ -1,4 +1,4 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, HtmlPlugin } from '@platejs/core';
 import { NodeApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
@@ -23,7 +23,7 @@ const getDeserializerQuery = (plugin: MarkPlugin) => {
   });
 
   return (element: HTMLElement) => {
-    const fragment = editor.api.html.deserialize({ element });
+    const fragment = editor.plugin(HtmlPlugin).api.deserialize({ element });
 
     return Array.from(NodeApi.texts({ children: fragment, type: 'root' })).some(
       ([text]) => text[plugin.key]
@@ -46,7 +46,7 @@ describe('BaseMarkPlugins', () => {
   it('registers and parses bold as a schema-owned text property', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin],
-      value: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
     const bold = editor.read.schema
       .getVocabulary()
@@ -118,7 +118,7 @@ describe('BaseMarkPlugins', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
 
     editor.update.code.toggle();
@@ -137,7 +137,7 @@ describe('BaseMarkPlugins', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
     const italic = createBaseEditor({
       plugins: [BaseItalicPlugin],
@@ -146,7 +146,7 @@ describe('BaseMarkPlugins', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
     const underline = createBaseEditor({
       plugins: [BaseUnderlinePlugin],
@@ -155,7 +155,7 @@ describe('BaseMarkPlugins', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
     const strikethrough = createBaseEditor({
       plugins: [BaseStrikethroughPlugin],
@@ -164,7 +164,7 @@ describe('BaseMarkPlugins', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
     });
 
     bold.update.bold.toggle();

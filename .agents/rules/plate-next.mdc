@@ -137,29 +137,87 @@ Rules:
   options, API, tx, selectors, or state, let `createBasePlugin` infer from the
   config object. Manual config types are for real public plugin contracts, not
   decoration.
+- Plate plugins have one value bag: `options`. Never add a second top-level
+  `config` channel for values described as immutable, compile-time, parser,
+  codec, schema, or host policy. Put plugin defaults in `options`, override
+  descriptor values with `.configure({ options })`, read live values through
+  the scoped plugin portal or builder `getOptions`, and update them through
+  scoped `setOption` / `setOptions` when runtime mutation is valid.
+- Schema factories destructure `options`; parser contexts receive `options`;
+  plugin API, tx, and extension callbacks use inferred `getOptions`. Updating
+  live options does not rebuild the compiled schema. When a schema-affecting
+  value must differ, configure the plugin descriptor before constructing the
+  editor. Do not recreate `editor.configure`, immutable option tokens,
+  versioned `define*Config` wrappers, plugin-host-policy resources, or a frozen
+  config snapshot to work around that lifecycle.
+- The options-only rule owns Plate plugin descriptors. A Plite editor extension
+  may keep its own `config` contract; do not mechanically rename unrelated
+  framework, parser-library, provider, build, or test-fixture config objects.
 - Do not wrap plugin-owned editor extension options in
   `defineEditorExtension({ name: pluginKey, ... })`. `extendExtension` should
   accept a built editor extension or raw extension options; raw options without
   `name` default to the owning plugin key. Use an explicit `name` only for a
   genuinely separate extension identity, keyed secondary extension, or
   standalone Plite extension.
-- Preserve original helper owners during package review. If `origin/main`
-  owned real behavior in a transform/query/helper file, keep that file and
-  migrate the logic inside it to Plite/Plate Next APIs. Do not move the
-  algorithm into the plugin file just because the plugin now exposes a tx/API
-  group. The plugin may delegate to the helper with the active `tx`, but the
-  helper remains the reviewed owner.
+- Colocation is the default. Plugin behavior with exactly one production owner
+  belongs inline in that plugin's `create*Plugin` / `.extend*` chain. This
+  includes one-use `with*`, `decorate*`, normalize, parser, command,
+  correction, option, API, and tx callbacks. Tests, barrels, and old public
+  exports do not count as additional owners.
+- There is no line-count ceiling. Do not split a coherent owner because the
+  file is large, crosses a readability threshold, or looks tidier as a folder.
+  One large owner is cheaper for humans and agents than a graph of one-use
+  files. Extract only for multiple production consumers, a real cross-layer or
+  standalone public owner, a React hook/component boundary, or dedicated proof
+  tooling.
+- React colocation uses the component or hook family as the file owner, not
+  each exported symbol. A component family belongs in one `<Family>.tsx` file
+  and may export its composable primitives while keeping family-only
+  subcomponents, variants, constants, and render helpers inline. A hook family
+  belongs in one `use<Family>.ts` file and may export its related state,
+  behavior, controller, and lifecycle hooks. Sibling use inside the same family
+  is internal composition, not multiple production consumers and not evidence
+  for another file.
+- Do not create a named one-use subcomponent or hook file merely to shorten its
+  family owner. Inline the body or keep the private symbol in the family file.
+  A separate React file needs reuse across durable families, a genuinely
+  standalone public owner, or an independent provider/store/lifecycle
+  boundary. A public export name alone does not require its own file.
+- Keep feature-package React roots flat by default: plugin files, component
+  family files, hook family files, and one public root barrel. `components/`,
+  `hooks/`, `utils/`, nested family folders, and nested barrels are taxonomy,
+  not ownership. Keep a nested directory only when it is itself a durable
+  public subsystem with multiple cross-family owners.
+- Prefer inline one-use constants, config fragments, and inferred callback
+  types. Do not create context/config/extension ferry types merely to move an
+  inferred callback into another file. Keep explicit types when they are a real
+  exported contract, recursive shape, external boundary, or reused API/tx
+  contract.
+- Let plugin builders own contextual typing. When a real API or transaction
+  contract already exists, pass the method object to the builder generic, for
+  example `.extendApi<ApiContract>(...)` or `.extendTx<TxContract>(...)`. Do not
+  append `satisfies TxContract` to the returned object, cast the callback, or
+  annotate each method parameter. For `.extendTx`, the explicit generic is the
+  command object returned by the transaction factory, not the factory function
+  type. Omit the generic when the complete contract can be inferred. If a
+  builder generic cannot contextually type the inline callback in this shape,
+  repair the Core builder signature instead of adding a call-site workaround.
+- When colocation makes a helper obsolete, delete its file and barrel export.
+  Do not preserve a helper export, forwarding wrapper, alias, or old filename
+  for compatibility. Route a genuine public API fork through `plate-plan` and
+  add the required release artifact; compatibility is not the default answer.
 - Never replace an old helper body with a wrapper like
-  `editor.plugin(FooPlugin).editor.update((tx) => tx.foo.bar(...))`; that is
-  a fake compatibility transform. Keep the real logic in the original helper
-  file and let plugin tx methods call that helper, passing the active `tx`
-  when mutation is required.
+  `editor.plugin(FooPlugin).editor.update((tx) => tx.foo.bar(...))`. If the
+  helper has real reuse or an independent owner, keep the algorithm there and
+  pass the active `tx`. If it has one plugin owner, inline the algorithm and
+  delete the helper.
 - Tests for plugin-owned behavior should live beside the plugin, either in the
   plugin's own spec or a colocated `<PluginName>-<method>.spec.tsx` file. Keep
   separate helper/spec files only when the helper is genuinely shared by
-  multiple owners, non-plugin product code, too large for inline readability,
-  or a React hook/component/non-plugin utility with a durable owner. Hooks are
-  the explicit exception: keep hooks in hook files.
+  multiple production owners, non-plugin product code, a React
+  hook/component/non-plugin utility with a durable owner, or dedicated proof
+  tooling. React tests live beside their component or hook family owner; do not
+  mirror private subcomponents/subhooks into separate test files.
 - Prefer direct one-shot Plite methods over callback boilerplate. A single
   operation like `editor.update((tx) => { tx.normalize({ force: true }); })`
   should be `editor.update.normalize({ force: true })`. A single read like
@@ -235,14 +293,19 @@ Rules:
 - Transform-backed callbacks must receive and use the active transaction. If a
   Plate/Core callback runs inside Plite transform middleware or another active
   transaction lane, its context should expose `tx` and mutations should go
-  through that `tx`. Do not call `editor.update.*` from such callbacks; fix the
-  owning context type and thread `tx` through instead.
-- Transform/helper owner files that mutate editor state must require the active
-  `tx` when they are called from a tx/plugin lane. Do not write hybrid helpers
-  with `tx?: EditorUpdateTransaction`, `if (tx) ... else editor.update(...)`,
-  or local `apply(transaction)` wrappers. The one-shot public command belongs
-  on `editor.update.*`; the helper file owns the algorithm and takes the
-  transaction explicitly.
+  through that `tx`. Do not call `editor.update.*` from such callbacks. Inline
+  single-owner behavior in the callback so `tx` stays lexically inferred.
+- Do not extract plugin-owned behavior merely to create a function that accepts
+  `tx`. A new `foo(editor, tx, ...)`, `fooWithTx(...)`, or paired one-shot/tx
+  wrapper is a failed owner split when one plugin owns the behavior. Put the
+  body inside the owning plugin tx group, command, correction, or middleware
+  callback and capture `tx`, `api`, options, editor, and type from that builder
+  context.
+- A separate transaction-accepting function is allowed only for multiple
+  production consumers or a real independent algorithm boundary. Record the
+  consumer graph. The surviving parameter is required, never optional, and the
+  helper must not open a nested `editor.update`. Tests, barrels, and historical
+  public exports do not establish reuse.
 - `editor.update` callbacks must never call `editor.update.*` again. If a
   callback is already inside `editor.update(...)`,
   `editor.update.withoutNormalizing(...)`, transform middleware, or another
@@ -292,25 +355,24 @@ Rules:
   API/tx group.
 - If the correct answer needs missing substrate, stop and name the exact
   `Plite gap` or `Plate gap` instead of inventing a local workaround.
-- Rename churn is forbidden by default in review mode. Do not rename files,
-  folders, plugin keys, exported symbols, helper names, or test filenames just
-  because the new name is cleaner. Keep the current `HEAD` name until the
-  behavior/API diff is reviewed.
-- If a rename looks desirable, write it to `docs/plans/pre-renaming.md` with
-  current name, proposed name, owner, reason, and recovery notes. Apply it only
-  after the user explicitly accepts the rename pass.
-- Added/deleted pairs that are mostly rename noise are a review failure. Restore
-  the old path/name for the current packet, then document the later rename.
-- Exceptions need a concrete reason: the old name is actively false, the file no
-  longer has an owner, the rename is required for a public API hard cut already
-  accepted by the user, or keeping both names would break tests/types.
+- Implementation topology is not frozen in review mode. Rename, move, merge,
+  or delete internal files, helper exports, and test filenames in the same
+  packet when that restores owner truth, removes a one-use split, or makes the
+  surviving owner accurately named. Do not defer those changes to
+  `pre-renaming.md` merely to reduce diff noise.
+- Reject cosmetic synonym churn, but accept added/deleted pairs that prove a
+  real merge, hard cut, or owner move. Preserve established public plugin
+  concepts and keys unless an accepted API decision changes them; that
+  protection does not extend to one-use helper files or helper exports.
 - Compare the current owner/name/role with `origin/main` before suggesting
-  renames, deletions, or new owner topology.
-- Do not suggest renaming established Core plugins, helpers, options, or public
-  concepts unless the user explicitly asks for naming cleanup, full Plate v2
-  closure, or a public API redesign.
-- Prefer "keep the main owner, repair the implementation" over "invent a
-  better name" during review mode.
+  renames, deletions, or new owner topology. `origin/main` is behavior and
+  ownership evidence, not a veto on the best current path or filename.
+- Do not rename established public Core plugins, options, keys, or concepts
+  unless the user explicitly asks for naming cleanup, full Plate v2 closure,
+  or a public API redesign. Internal one-use helpers are governed by owner-first
+  colocation, not public-name stability.
+- Prefer the smallest durable owner over both blind main-path preservation and
+  cosmetic naming invention.
 - If code moved from old Slate/Plate APIs to Plite primitives, preserve the
   existing Plate owner when that owner still describes the product concern, but
   do not preserve a legacy API shape merely for compatibility.
@@ -320,8 +382,9 @@ Rules:
   `editor.read.ranges.get(...)`. Do not hand-roll anchor/focus with point
   helpers inside a product package; that moves substrate range semantics into
   the wrong owner.
-- Treat rename/new-plugin/new-wrapper suggestions as later Plate v2 closure
-  unless the existing name is actively false or harmful for the current packet.
+- Treat new plugins and public concepts as API decisions. Treat internal
+  colocation, helper deletion, and owner-accurate file/test names as part of the
+  current cleanup packet.
 - In review-mode final answers, separate:
   - `best Plate v2 migration now`;
   - `Plite/Plate gap or blocker`;
@@ -331,21 +394,19 @@ Rules:
 Concrete correction:
 
 - `OverridePlugin` is the main-code owner for plugin node override behavior.
-  During review mode, do not suggest renaming it to a new concept.
+  Keep that public concept unless an accepted API redesign changes it.
 - A helper like `installPlateElementSpecsExtension` sitting in a huge editor
   file is migration plumbing. Do not defend that placement as final taste.
-  Prefer moving or extracting the Plite element-spec installation under the
-  existing `OverridePlugin` owner or an adjacent `override/` internal helper,
-  while keeping the `OverridePlugin` name/key unless the user asks for the
-  later rename pass.
+  If `OverridePlugin` is its only production owner, inline it there. Use an
+  adjacent `override/` helper only when it has real reuse or an independent
+  boundary. File size is not an extraction reason.
 - The drift to cut is duplicate API wrapping, `any`, stale `getPluginByType`
   runtime lookup, or a special installer in the huge editor file. The review
   target is main-parity ownership plus Plite-native implementation.
-- Examples of names to freeze during review mode even when they are not the
-  eventual best name: `SlateExtensionPlugin`/`PliteExtensionPlugin`,
-  `withScrolling`, `withPlate`, `withPlite`, `withStatic`, `withHOC`, and
-  existing `T*` test filenames. Put later names in `pre-renaming.md`, not in the
-  active behavioral diff.
+- Existing public plugin concepts still need an API decision before renaming.
+  One-use helpers such as `withScrolling`, `withPlate`, `withPlite`,
+  `withStatic`, or `withHOC`, and helper-named tests, are not frozen: inline,
+  delete, or rename them when the active owner audit proves they are redundant.
 
 ## Gap Law
 
@@ -407,19 +468,20 @@ claiming a Core review pass is clean:
   `git ls-files --others --exclude-standard packages/core | sort`.
 - Treat every untracked Core/Plate source, spec, type-test, and config file as a
   required ledger row.
-- For each row, compare against `origin/main` ownership before deciding. If the
-  file already exists on `origin/main`, recover the old path/name/colocation
-  first, even if the final Plate v2 name should be different later.
+- For each row, compare against `origin/main` to recover behavior and understand
+  the former owner. Then choose the best current owner. Recover the old path
+  only when it is still the durable owner; merge a one-use extraction into its
+  plugin owner instead of restoring it by reflex.
 - Every extracted file must end in exactly one bucket:
   `recover-main-owner`, `merge-existing-owner`, `move-to-plite`,
   `justify-new-proof-tooling`, or `delete-duplicate`.
-- New helper folders under an existing plugin are allowed only when that folder
-  already exists in `origin/main` or the plan explains why the old owner no
-  longer fits.
+- New helper folders under an existing plugin require multiple production
+  consumers or a real independent boundary. Prior existence on `origin/main`
+  does not justify a one-use split.
 - Do not give a file or packet a `100` score while any extracted/untracked file
   in scope lacks a ledger row and a bucket.
-- Put postponed naming taste in `docs/plans/pre-renaming.md`; do not leave
-  Added/Deleted rename soup in the active review diff.
+- Record cosmetic naming ideas as deferred, but complete owner-driven
+  merge/delete/rename work in the active packet.
 
 `sweep`, `all core`, `full-loop`, `full review`, and similar broad Core
 requests are not autopilot sampling. They mean full Core file review. Do not
@@ -513,8 +575,10 @@ Default suspicion list:
   capped below `50`; a comment, green snapshot, or old leaf-coalescing fixture
   is not sufficient evidence.
 - transform/input-rule/command callbacks that mutate through `editor.update.*`
-  while an active `tx` should be available. Fix the context owner and pass `tx`;
-  do not scatter local `editor.update` calls inside the callback.
+  while an active `tx` should be available. Inline single-owner behavior into
+  the callback so it captures `tx`; pass `tx` to another function only when a
+  proven shared or independent owner survives. Do not scatter local
+  `editor.update` calls inside the callback.
 - nested `editor.update.*` calls inside any `editor.update` callback,
   especially `editor.update.withoutNormalizing(() => { editor.update.* })`.
   The owning API should pass `({ tx })`, and the callback must mutate through
@@ -529,6 +593,10 @@ Default suspicion list:
   `editor.someCache`, direct property assignment bags, or interface extensions
   that smuggle plugin/product state onto `BaseEditor` / `PlateEditor`.
 - docs/examples that teach legacy compatibility instead of latest state.
+- React trees split into one file per sibling component or hook, especially
+  `components/` / `hooks/` taxonomies and nested barrels where one feature
+  family is the only durable owner. Multiple siblings inside that family do
+  not establish reuse.
 
 ## Bridge Scoring Law
 
@@ -629,6 +697,12 @@ Rules:
   migrate every consumer of the new owner API.
 - Before implementation, generate a package file manifest and materialize one
   checkbox per reviewed file in the autogoal plan.
+- Treat every production file under `transforms/`, `queries/`, `utils/`,
+  `helpers/`, and similar helper folders, plus every standalone production
+  function that accepts `tx`, as a mandatory owner-topology row. Package review
+  cannot close from a few representative helpers. Inline/delete each
+  single-owner row or record concrete multiple-consumer/independent-boundary
+  evidence.
 - Manifest inputs:
   - `packages/<name>/src/**/*.{ts,tsx,mts,cts}`;
   - package-local specs, test-utils, type-tests, fixtures, and examples when
@@ -638,11 +712,13 @@ Rules:
 - Every file row needs `path`, `score`, `verdict`, `owner`, `evidence`, and
   `next`.
 - A file row may be checked `[x]` only at score `100`.
-- Helper rows may score `100` only when the original owner is preserved or the
-  plan records a concrete accepted reason to move it: shared owner,
-  non-plugin utility, hook/component owner, size/read threshold, or explicit
-  user deferral. "I moved the logic into the plugin because it was small" is
-  not a durable owner decision.
+- Helper rows may score `100` only when topology matches durable ownership:
+  single-consumer plugin behavior is colocated in the plugin owner; a separate
+  helper names multiple production consumers or a real non-plugin,
+  cross-layer, standalone public, or proof-tooling owner. React rows use the
+  component/hook family as the owner: sibling exports or sibling consumers
+  inside one family do not justify separate files. Line count and readability
+  thresholds never justify extraction.
 - Score `100` means all of these are true:
   - no behavior regression versus `origin/main`;
   - no type regression;
@@ -651,7 +727,8 @@ Rules:
   - no legacy compat alias, shim, old command fallback, or duplicate wrapper
     around Plite APIs remains;
   - Plite/Plate ownership is correct;
-  - owner/name/path drift is either absent or explicitly accepted by the user;
+  - owner/name/path changes are justified by durable ownership rather than
+    compatibility or cosmetic churn;
   - focused package proof or a justified source audit proves the row.
 - Anything below `100` stays unchecked with a concrete reason and next action.
 - Green package tests alone do not make a file `100`.
@@ -716,8 +793,9 @@ Then loop:
 4. Fill the review matrix for every relevant helper/API in the target. For
    broad Core sweep, every Core file gets a drift score before any closure
    claim.
-5. In review mode, prefer `main-parity-cleanup` when the concept exists in
-   `origin/main` and only the migrated implementation drifted.
+5. In review mode, prefer `main-parity-cleanup` when the concept and owner remain
+   durable. When `origin/main` shows a one-use migration split, prefer
+   `merge-existing-owner` or `hard-cut` instead of restoring the old file graph.
 6. If the next choice is a public API fork, route to `plate-plan` and stop
    implementation until the plan is accepted.
 7. If the smell is source shape, route to `architecture-cleanup`.

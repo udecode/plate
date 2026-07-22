@@ -1,12 +1,12 @@
 import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
 
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const usePluginOptionMock = mock();
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   usePluginOption: usePluginOptionMock,
 }));
 
@@ -18,7 +18,7 @@ const loadModule = async () =>
 describe('useBlockSelectionNodes', () => {
   afterEach(() => {
     mock.restore();
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     usePluginOptionMock.mockReset();
   });
 
@@ -28,7 +28,7 @@ describe('useBlockSelectionNodes', () => {
       [{ id: 'b', type: 'p' }, [1]],
     ];
 
-    useEditorRefMock.mockReturnValue({
+    useEditorMock.mockReturnValue({
       read: {
         nodes: {
           toArray: mock(() => blocks),
@@ -49,7 +49,7 @@ describe('useBlockSelectionNodes', () => {
       [{ dir: 'rtl', id: 'b', type: 'p' }, [1]],
     ];
 
-    useEditorRefMock.mockReturnValue({
+    useEditorMock.mockReturnValue({
       read: {
         nodes: {
           toArray: mock(() => blocks),

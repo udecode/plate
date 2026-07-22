@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import { act, renderHook } from '@testing-library/react';
 import { createEditor, defineStateField } from '@platejs/plite';
+import { createElement, type PropsWithChildren, StrictMode } from 'react';
 
 import * as PliteLayout from '../src';
 import {
@@ -18,6 +19,7 @@ import {
   plitePageSettingsCodec,
   pretextPageLayoutEngine,
   type PlitePageBreakSnapshot,
+  type PlitePageLayoutError,
   type PlitePageLayoutSnapshot,
   type PlitePageSettings,
 } from '../src';
@@ -27,7 +29,7 @@ import {
   getPagedEditableVisiblePageMountItems,
 } from '../src/page-mount-plan';
 import * as PliteLayoutReact from '../src/react';
-import { usePliteLayout } from '../src/react';
+import { usePliteLayout, usePlitePageLayout } from '../src/react';
 
 const registeredDom = typeof document === 'undefined';
 
@@ -68,6 +70,9 @@ class TestOffscreenCanvas {
 }
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const StrictModeWrapper = ({ children }: PropsWithChildren) =>
+  createElement(StrictMode, null, children);
 
 const pageSettings = defineStateField<PlitePageSettings>({
   key: 'layout.page',
@@ -153,6 +158,99 @@ describe('plite-layout public docs', () => {
 });
 
 describe('createPlitePageLayout', () => {
+  it('balances usePliteLayout commit subscriptions under StrictMode', async () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'Strict layout lifetime.' }],
+        },
+      ],
+    });
+    const subscribeCommit = editor.subscribeCommit;
+    let subscriptions = 0;
+    let unsubscriptions = 0;
+
+    editor.subscribeCommit = (listener) => {
+      subscriptions++;
+      const unsubscribe = subscribeCommit(listener);
+
+      return () => {
+        unsubscriptions++;
+        unsubscribe();
+      };
+    };
+
+    const { unmount } = renderHook(
+      () =>
+        usePliteLayout(editor, {
+          page: { margins: 72, preset: 'letter' },
+        }),
+      { wrapper: StrictModeWrapper }
+    );
+
+    await act(async () => {});
+
+    expect({ subscriptions, unsubscriptions }).toEqual({
+      subscriptions: 1,
+      unsubscriptions: 0,
+    });
+
+    unmount();
+
+    expect({ subscriptions, unsubscriptions }).toEqual({
+      subscriptions: 1,
+      unsubscriptions: 1,
+    });
+  });
+
+  it('balances usePlitePageLayout commit subscriptions under StrictMode', async () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'Strict page-layout lifetime.' }],
+        },
+      ],
+    });
+    const subscribeCommit = editor.subscribeCommit;
+    let subscriptions = 0;
+    let unsubscriptions = 0;
+
+    editor.subscribeCommit = (listener) => {
+      subscriptions++;
+      const unsubscribe = subscribeCommit(listener);
+
+      return () => {
+        unsubscriptions++;
+        unsubscribe();
+      };
+    };
+
+    const { unmount } = renderHook(
+      () =>
+        usePlitePageLayout(editor, {
+          engine: createEstimatedPageLayoutEngine(),
+          page: { margins: 72, preset: 'letter' },
+        }),
+      { wrapper: StrictModeWrapper }
+    );
+
+    await act(async () => {});
+
+    expect({ subscriptions, unsubscriptions }).toEqual({
+      subscriptions: 1,
+      unsubscriptions: 0,
+    });
+
+    unmount();
+
+    expect({ subscriptions, unsubscriptions }).toEqual({
+      subscriptions: 1,
+      unsubscriptions: 1,
+    });
+  });
+
   it('keeps equivalent inline page settings from retriggering React layout refreshes', async () => {
     Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
     const editor = createEditor({
@@ -430,10 +528,10 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: pretextPageLayoutEngine({ whiteSpace: 'normal' }),
       page: pageSettings,
-    }));
+    });
     const rects = layout.projectRange({
       kind: 'text',
       anchor: { path: [0, 0], offset: 5 },
@@ -456,9 +554,9 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, () => ({
+    const layout = createPliteLayout(editor, {
       page: { margins: 72, preset: 'letter' },
-    }));
+    });
     const snapshot: PlitePageLayoutSnapshot = layout.getSnapshot();
 
     expect(snapshot.settings).toEqual({ margins: 72, preset: 'letter' });
@@ -480,11 +578,11 @@ describe('createPlitePageLayout', () => {
     });
 
     expect(() =>
-      createPlitePageLayout(editor, () => ({
+      createPlitePageLayout(editor, {
         engine: createEstimatedPageLayoutEngine(),
         page: pageSettings,
         root: 'main',
-      }))
+      })
     ).toThrow(/Omit root to target the primary document/);
   });
 
@@ -498,10 +596,10 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
-    }));
+    });
 
     expect(() =>
       layout.projectRange(
@@ -533,16 +631,117 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, () => ({
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 72, preset: 'letter' },
-    }));
+    });
     const snapshot = layout.getSnapshot();
 
     expect(snapshot.measurementProfile.engine.id).toBe('estimated');
     expect(snapshot.blocks[0]!.text).toBe(
       'Estimated generic layout call site.'
     );
+
+    layout.destroy();
+  });
+
+  it('replaces layout options atomically and refreshes once', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'Reconfigured layout.' }],
+        },
+      ],
+    });
+    const layout = createPliteLayout(editor, {
+      page: { margins: 72, preset: 'letter' },
+    });
+    const composeCount = layout.getMetrics().composeCount;
+    let wakeCount = 0;
+    const unsubscribe = layout.subscribe(() => {
+      wakeCount++;
+    });
+
+    layout.reconfigure({ page: { margins: 96, preset: 'a4' } });
+
+    expect(layout.getMetrics().composeCount).toBe(composeCount + 1);
+    expect(layout.getSnapshot().settings).toEqual({
+      margins: 96,
+      preset: 'a4',
+    });
+    expect(wakeCount).toBe(1);
+
+    expect(() =>
+      layout.reconfigure({
+        page: { margins: 48, preset: 'letter' },
+        root: 'main',
+      })
+    ).toThrow(/Omit root to target the primary document/);
+
+    expect(layout.getSnapshot().settings).toEqual({
+      margins: 96,
+      preset: 'a4',
+    });
+    expect(() => layout.refresh('settings')).not.toThrow();
+
+    unsubscribe();
+    layout.destroy();
+  });
+
+  it('publishes reconfiguration before fault-isolated subscriber notification', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'Fault-isolated layout.' }],
+        },
+      ],
+    });
+    const errors: PlitePageLayoutError[] = [];
+    const layout = createPliteLayout(editor, {
+      page: { margins: 72, preset: 'letter' },
+    });
+    const observedSettings: PlitePageSettings[] = [];
+
+    layout.subscribe(() => {
+      throw new Error('broken layout subscriber');
+    });
+    layout.subscribe(() => {
+      observedSettings.push(layout.getSnapshot().settings);
+    });
+
+    expect(() =>
+      layout.reconfigure({
+        onError: (error) => errors.push(error),
+        page: { margins: 96, preset: 'a4' },
+      })
+    ).not.toThrow();
+
+    expect(layout.getSnapshot().settings).toEqual({
+      margins: 96,
+      preset: 'a4',
+    });
+    expect(observedSettings).toEqual([{ margins: 96, preset: 'a4' }]);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatchObject({
+      phase: 'notify',
+      reason: 'settings',
+    });
+    expect(errors[0]!.cause).toBeInstanceOf(Error);
+    expect((errors[0]!.cause as Error).message).toBe(
+      'broken layout subscriber'
+    );
+
+    const composeCount = layout.getMetrics().composeCount;
+
+    expect(() => layout.refresh('settings')).not.toThrow();
+    expect(layout.getMetrics().composeCount).toBe(composeCount + 1);
+    expect(layout.getSnapshot().settings).toEqual({
+      margins: 96,
+      preset: 'a4',
+    });
+    expect(errors).toHaveLength(2);
 
     layout.destroy();
   });
@@ -562,9 +761,9 @@ describe('createPlitePageLayout', () => {
           },
         ],
       });
-      const layout = createPliteLayout(editor, () => ({
+      const layout = createPliteLayout(editor, {
         page: { margins: 72, preset: 'letter' },
-      }));
+      });
       const snapshot = layout.getSnapshot();
 
       expect(snapshot.settings).toEqual({ margins: 72, preset: 'letter' });
@@ -599,10 +798,10 @@ describe('createPlitePageLayout', () => {
         },
       },
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
-    }));
+    });
 
     expect(layout.getSnapshot().settings).toEqual({
       margins: 72,
@@ -637,7 +836,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 96, preset: 'a4' },
       pageBreaks: {
@@ -645,7 +844,7 @@ describe('createPlitePageLayout', () => {
         source: pageBreaks,
         writerId: 'writer-a',
       },
-    }));
+    });
     const storedSnapshot = editor.read((state) => state.getField(pageBreaks));
 
     expect(storedSnapshot?.writerId).toBe('writer-a');
@@ -656,14 +855,14 @@ describe('createPlitePageLayout', () => {
 
     layout.destroy();
 
-    const reader = createPlitePageLayout(editor, () => ({
+    const reader = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 96, preset: 'a4' },
       pageBreaks: {
         mode: 'read',
         source: pageBreaks,
       },
-    }));
+    });
 
     expect(reader.getSnapshot().pageBreaks).toEqual(storedSnapshot);
     expect(reader.getSnapshot().pageBreaksStatus).toBe('accepted');
@@ -680,14 +879,14 @@ describe('createPlitePageLayout', () => {
       });
     });
 
-    const staleReader = createPlitePageLayout(editor, () => ({
+    const staleReader = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 96, preset: 'a4' },
       pageBreaks: {
         mode: 'read',
         source: pageBreaks,
       },
-    }));
+    });
 
     expect(staleReader.getSnapshot().pageBreaks).toBe(null);
     expect(staleReader.getSnapshot().pageBreaksStatus).toBe('stale-profile');
@@ -767,10 +966,10 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
-    }));
+    });
     let wakeCount = 0;
     const unsubscribe = layout.subscribe(() => {
       wakeCount++;
@@ -802,11 +1001,11 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
       textChangeRefresh: 'deferred',
-    }));
+    });
     const composeCount = layout.getMetrics().composeCount;
 
     for (const text of ['a', 'b', 'c', 'd']) {
@@ -836,11 +1035,11 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
       textChangeRefresh: { delayMs: 25, maxDelayMs: 100, mode: 'deferred' },
-    }));
+    });
     const composeCount = layout.getMetrics().composeCount;
 
     for (const text of ['a', 'b', 'c', 'd']) {
@@ -886,11 +1085,11 @@ describe('createPlitePageLayout', () => {
         },
       },
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       root: 'header',
       page: pageSettings,
-    }));
+    });
 
     expect(layout.getSnapshot().root).toBe('header');
     expect(layout.getSnapshot().blocks).toHaveLength(1);
@@ -938,10 +1137,10 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
-    }));
+    });
     const snapshot = layout.getSnapshot();
 
     expect(snapshot.pages.length).toBeGreaterThan(1);
@@ -990,10 +1189,10 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
-    }));
+    });
 
     const partialRects = layout.projectRange({
       kind: 'text',
@@ -1041,10 +1240,10 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
-    }));
+    });
     const rects = layout.projectRange({
       kind: 'text',
       anchor: { path: [0, 0], offset: 6 },
@@ -1071,7 +1270,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
       typography: {
@@ -1087,7 +1286,7 @@ describe('createPlitePageLayout', () => {
           return { font: '400 16px Inter', letterSpacing: 0 };
         },
       },
-    }));
+    });
     const snapshot = layout.getSnapshot();
     const block = snapshot.blocks[0]!;
     const projection = getPlitePageLayoutProjection(snapshot);
@@ -1180,10 +1379,10 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
-    }));
+    });
     const boxes = layout
       .getSnapshot()
       .blocks.flatMap((block) => block.boxes ?? [])
@@ -1275,7 +1474,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       nodeLayout({ defaults, element, path }) {
         if (element.type === 'image') {
           return {
@@ -1313,7 +1512,7 @@ describe('createPlitePageLayout', () => {
       },
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
-    }));
+    });
     const boxes = layout
       .getSnapshot()
       .blocks.flatMap((block) => block.boxes ?? [])
@@ -1364,7 +1563,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({ defaults, element, path }) {
         if (element.type !== 'table') {
@@ -1389,7 +1588,7 @@ describe('createPlitePageLayout', () => {
         };
       },
       page: { margins: 96, preset: 'a4' },
-    }));
+    });
     const snapshot = layout.getSnapshot();
 
     expect(snapshot.pages).toHaveLength(2);
@@ -1475,7 +1674,7 @@ describe('createPlitePageLayout', () => {
       ],
     });
     const page = { margins: 96, preset: 'a4' } as const;
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({ element, path, pageSettings }) {
         if (element.type !== 'table') {
@@ -1521,7 +1720,7 @@ describe('createPlitePageLayout', () => {
           return {};
         },
       },
-    }));
+    });
     const block = layout.getSnapshot().blocks[0]!;
 
     expect(textStyleCalls).toBeLessThanOrEqual(1);
@@ -1563,7 +1762,7 @@ describe('createPlitePageLayout', () => {
       ],
     });
     const createLayout = (mode: 'read' | 'write') =>
-      createPlitePageLayout(editor, () => ({
+      createPlitePageLayout(editor, {
         engine: createEstimatedPageLayoutEngine(),
         nodeLayout({ defaults, element, path, pageSettings }) {
           if (element.type !== 'table') {
@@ -1594,7 +1793,7 @@ describe('createPlitePageLayout', () => {
           mode === 'write'
             ? { mode, source: pageBreaks, writerId: 'writer-units' }
             : { mode, source: pageBreaks },
-      }));
+      });
     const writer = createLayout('write');
     const storedSnapshot = editor.read((state) => state.getField(pageBreaks));
 
@@ -1631,7 +1830,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({ defaults, element, path, pageSettings }) {
         if (element.type !== 'image') {
@@ -1656,7 +1855,7 @@ describe('createPlitePageLayout', () => {
         };
       },
       page: { margins: 96, preset: 'a4' },
-    }));
+    });
     const snapshot = layout.getSnapshot();
 
     expect(snapshot.pages).toHaveLength(2);
@@ -1870,10 +2069,10 @@ describe('getPlitePageLayoutProjection', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, () => ({
+    const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
-    }));
+    });
     const projection = getPlitePageLayoutProjection(layout.getSnapshot(), {
       hitTesting: { inlineInset: 2 },
     });

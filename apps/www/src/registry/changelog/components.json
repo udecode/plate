@@ -1,6 +1,15 @@
 {
   "schemaVersion": 1,
   "components": {
+    "footnote-node": ["2026-07-22-plugin-portal-wiring"],
+    "table-node": [
+      "2026-07-22-plugin-portal-wiring",
+      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "table-node-static": ["2026-07-22-plugin-portal-wiring"],
     "list-toolbar-button": ["2026-07-16-list-toolbar-wiring"],
     "date-node": [
       "2026-07-15-fix-date-picker-trigger",
@@ -168,12 +177,6 @@
     "ai-demo": [
       "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
       "2025-11-20-biome-ultracite"
-    ],
-    "table-node": [
-      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
     ],
     "font-color-toolbar-button": [
       "2026-03-22-table-improve-selection-bug-fixed-insert-issue",

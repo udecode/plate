@@ -8,7 +8,7 @@ import { useEditorString } from './useEditorString';
 describe('useEditorString', () => {
   it('reads the editor string from the root path', () => {
     const editor = createPlateEditor({
-      value: [{ children: [{ text: 'full text' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'full text' }], type: 'p' }],
     });
 
     const { result } = renderHook(() => useEditorString(), {

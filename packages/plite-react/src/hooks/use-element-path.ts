@@ -40,7 +40,8 @@ export const useElementPath = (): Path | null => {
     [runtimeId]
   );
 
-  return useEditorSelector(selector, samePath, {
+  return useEditorSelector(selector, {
+    equalityFn: samePath,
     profileId: 'element-path',
     runtimeEventSource: 'path',
     runtimeId,

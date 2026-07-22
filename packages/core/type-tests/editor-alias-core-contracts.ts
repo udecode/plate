@@ -1,4 +1,4 @@
-import type { BaseEditor } from '@platejs/core';
+import { type BaseEditor, HtmlPlugin } from '@platejs/core';
 import type { PlateEditor } from '@platejs/core/react';
 import type { Descendant } from '@platejs/plite';
 
@@ -10,13 +10,13 @@ baseEditor.api.debug.log('base');
 plateEditor.api.debug.log('plate');
 
 expectDescendants(
-  baseEditor.api.html.deserialize({
+  baseEditor.plugin(HtmlPlugin).api.deserialize({
     element: '<p>base</p>',
   })
 );
 
 expectDescendants(
-  plateEditor.api.html.deserialize({
+  plateEditor.plugin(HtmlPlugin).api.deserialize({
     element: '<p>plate</p>',
   })
 );

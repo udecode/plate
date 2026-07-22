@@ -8,6 +8,24 @@ import { createPlatePlugin } from '../../plugin';
 import { useEditorPlugin } from './useEditorPlugin';
 
 describe('useEditorPlugin', () => {
+  it('infers plugin-owned updates from the descriptor', () => {
+    const duplicate = vi.fn();
+    const BlockPlugin = createPlatePlugin({ key: 'block' }).extendTx(
+      () => () => ({ duplicate })
+    );
+    const editor = createPlateEditor({ plugins: [BlockPlugin] });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Plate editor={editor}>{children}</Plate>
+    );
+    const { result } = renderHook(() => useEditorPlugin(BlockPlugin), {
+      wrapper,
+    });
+
+    act(() => result.current.update.duplicate());
+
+    expect(duplicate).toHaveBeenCalledTimes(1);
+  });
+
   it('returns the editor plugin context with a stable store-backed reference', () => {
     const CounterPlugin = createPlatePlugin({
       key: 'counter',

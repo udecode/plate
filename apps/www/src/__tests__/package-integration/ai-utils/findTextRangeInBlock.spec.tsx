@@ -27,7 +27,7 @@ const plugins = [
 const createTestEditor = (value: Value) =>
   createBaseEditor({
     plugins,
-    value,
+    initialValue: value,
   });
 
 const getFirstBlock = (editor: ReturnType<typeof createTestEditor>) =>

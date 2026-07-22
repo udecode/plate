@@ -1,7 +1,7 @@
 'use client';
 
 import { type Value, TrailingBlockPlugin } from 'platejs';
-import { type PlateEditor, useEditorRef } from 'platejs/react';
+import { type PlateEditor, useEditor as usePlateEditor } from 'platejs/react';
 
 import { AIKit } from '@/registry/components/editor/plugins/ai-kit';
 import { AlignKit } from '@/registry/components/editor/plugins/align-kit';
@@ -92,4 +92,4 @@ export const EditorKit = [
 
 export type MyEditor = PlateEditor<Value, (typeof EditorKit)[number]>;
 
-export const useEditor = () => useEditorRef<MyEditor>();
+export const useEditor = () => usePlateEditor<MyEditor>();

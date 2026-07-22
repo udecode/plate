@@ -31,7 +31,7 @@ mock.module('platejs/react', () => ({
   PlateLeaf: ({ children, className }: any) => (
     <span className={className}>{children}</span>
   ),
-  useEditorRef: () => ({
+  useEditor: () => ({
     update: {
       nodes: {
         set: mock(),

@@ -12,7 +12,7 @@ import { createValue } from './values/demo-values';
 export default function Demo({ id }: { id: string }) {
   const editor = usePlateEditor({
     plugins: EditorKit,
-    value: createValue(id),
+    initialValue: createValue(id),
   });
 
   return (

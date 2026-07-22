@@ -16,7 +16,7 @@ describe('TrailingBlockPlugin', () => {
   it('uses the editor paragraph type as the default trailing block type', () => {
     const editor = createBaseEditor({
       plugins: [...fixtureSchemaPlugins, TrailingBlockPlugin],
-      value: [{ type: 'h1', children: [{ text: 'x' }] }],
+      initialValue: [{ type: 'h1', children: [{ text: 'x' }] }],
     });
 
     expect(editor.getPlugin(TrailingBlockPlugin).options.type).toBe(

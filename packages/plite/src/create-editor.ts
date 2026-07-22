@@ -1,5 +1,6 @@
 import { extendEditor, getFragment } from './core';
 import {
+  getInstalledEditorExtensionApi,
   prepareInitialEditorExtensionPublication,
   prepareScopedEditorExtensionPublication,
   resolveInstalledEditorExtension,
@@ -254,14 +255,14 @@ const publishInitialEditorExtensions = <TEditor extends Editor>(
   }
 };
 
-/** @internal Replace the derived base schema on one untouched raw editor. */
+/** @internal Replace the derived base schema on one unchanged raw editor. */
 export const initializeEditorExtensions = <TEditor extends Editor>(
   editor: TEditor,
   input: EditorExtensionInput<TEditor>
 ) => {
   if (!PENDING_SCHEMA_BOOTSTRAP.has(editor)) {
     throw new Error(
-      'Editor schema initialization requires an untouched editor without an explicit initial document.'
+      'Editor schema initialization requires an editor without an installed schema.'
     );
   }
   if (getExtensionRegistry(editor).schemaContributions.records.size > 0) {
@@ -274,14 +275,14 @@ export const initializeEditorExtensions = <TEditor extends Editor>(
     document.children.length > 0 ||
     Object.values(document.roots ?? {}).some((children) => children.length > 0);
 
-  if ((lastCommit && !lastCommit.changes.empty) || hasDocument) {
+  if (lastCommit && !lastCommit.changes.empty) {
     PENDING_SCHEMA_BOOTSTRAP.delete(editor);
     throw new Error(
-      'Editor schema initialization requires an untouched empty document.'
+      'Editor schema initialization requires an unchanged document.'
     );
   }
 
-  publishInitialEditorExtensions(editor, input, false);
+  publishInitialEditorExtensions(editor, input, hasDocument);
 };
 
 /**
@@ -455,10 +456,12 @@ const createEditorImplementation = <
       );
     }
 
-    const apiNames =
-      typeof installedExtension.api === 'function'
-        ? []
-        : Object.keys(installedExtension.api ?? {});
+    const apiNames = Object.keys(
+      getInstalledEditorExtensionApi(
+        editor as Editor,
+        installedExtension.name
+      ) ?? {}
+    );
     const installedName = installedExtension.name;
     const capabilityName = apiNames.includes(installedName)
       ? installedName
@@ -544,7 +547,7 @@ const createEditorImplementation = <
   );
   const initialState = initializePublicState(editor, options);
 
-  if (!initialState.explicit) PENDING_SCHEMA_BOOTSTRAP.add(editor);
+  PENDING_SCHEMA_BOOTSTRAP.add(editor);
 
   if (options.extensions) {
     publishInitialEditorExtensions(

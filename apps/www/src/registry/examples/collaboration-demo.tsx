@@ -19,7 +19,7 @@ const INITIAL_VALUE = [
 export default function CollaborativeEditingDemo(): React.ReactNode {
   const editor = usePlateEditor({
     plugins: EditorKit,
-    value: INITIAL_VALUE,
+    initialValue: INITIAL_VALUE,
   });
 
   return (

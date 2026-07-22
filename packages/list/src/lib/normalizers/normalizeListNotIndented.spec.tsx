@@ -30,7 +30,7 @@ describe('normalizeList', () => {
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
         shouldNormalizeEditor: true,
-        value: input.children,
+        initialValue: input.children,
       });
 
       expect(editor.read.children()).toEqual(output.children);

@@ -5,9 +5,11 @@ import {
 } from '@platejs/core';
 import { schema } from '@platejs/plite';
 
-import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
-import { SuggestionUpdatePolicy } from './update-policy';
-import { getTransientSuggestionKey } from './utils/getTransientSuggestionKey';
+import {
+  BaseSuggestionPlugin,
+  SUGGESTION_TRANSIENT_KEY,
+  SuggestionUpdatePolicy,
+} from './BaseSuggestionPlugin';
 
 const SuggestionTargetPlugin = createBasePlugin({
   key: 'suggestionTarget',
@@ -50,7 +52,7 @@ describe('BaseSuggestionPlugin', () => {
         InlineSuggestionTargetPlugin,
         BaseSuggestionPlugin,
       ],
-      value: [
+      initialValue: [
         {
           children: [
             {
@@ -69,7 +71,7 @@ describe('BaseSuggestionPlugin', () => {
         {
           children: [
             {
-              [getTransientSuggestionKey()]: true,
+              [SUGGESTION_TRANSIENT_KEY]: true,
               suggestion: true,
               suggestion_transient: {
                 createdAt: 3,
@@ -167,7 +169,7 @@ describe('BaseSuggestionPlugin', () => {
     });
     expect(
       editor.read.schema.property({
-        key: getTransientSuggestionKey(),
+        key: SUGGESTION_TRANSIENT_KEY,
         placement: 'text',
         type: 'p',
       })
@@ -258,7 +260,7 @@ describe('BaseSuggestionPlugin', () => {
   it('bypasses suggestion tracking with the skip policy', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseSuggestionPlugin],
-      value: [{ children: [{ text: 'plain' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'plain' }], type: 'p' }],
     } as any);
 
     editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);

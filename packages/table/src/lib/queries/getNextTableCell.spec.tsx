@@ -13,7 +13,7 @@ const createTableEditor = (input: TestEditor) =>
   createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
-    value: input.children,
+    initialValue: input.children,
   });
 
 describe('getNextTableCell', () => {

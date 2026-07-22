@@ -44,7 +44,7 @@ export const normalizeRoot = ({
   const editor = createPlateEditor({
     plugins: [...fixtureSchemaPlugins, ...plugins],
     selection,
-    ...(value.length > 0 ? { value } : {}),
+    ...(value.length > 0 ? { initialValue: value } : {}),
   });
 
   if (value.length === 0) {

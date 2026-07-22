@@ -14,7 +14,6 @@ type PublicPackageModules = [
   typeof import('@platejs/browser/browser'),
   typeof import('@platejs/browser/core'),
   typeof import('@platejs/browser/playwright'),
-  typeof import('@platejs/browser/transports'),
 ];
 
 type PublicPackageNamedExports = [
@@ -31,7 +30,6 @@ type PublicPackageNamedExports = [
   typeof import('@platejs/plite').before,
   import('@platejs/plite').EditorCommit,
   typeof import('@platejs/plite').edges,
-  typeof import('@platejs/plite').end,
   typeof import('@platejs/plite').first,
   typeof import('@platejs/plite').fragment,
   typeof import('@platejs/plite').isBlock,
@@ -48,7 +46,6 @@ type PublicPackageNamedExports = [
   typeof import('@platejs/plite').parent,
   typeof import('@platejs/plite').previous,
   typeof import('@platejs/plite').range,
-  typeof import('@platejs/plite').start,
   typeof import('@platejs/plite').string,
   typeof import('@platejs/plite').unhangRange,
   typeof import('@platejs/yjs').createYjsExtension,
@@ -61,9 +58,9 @@ type PublicPackageNamedExports = [
   typeof import('@platejs/browser/core').assertPliteBrowserReleaseProof,
   typeof import('@platejs/browser/core').createPliteBrowserFeatureContractRegistry,
   typeof import('@platejs/browser/core').definePliteBrowserFeatureContract,
+  typeof import('@platejs/browser/core').classifyBrowserMobileTransportProof,
   typeof import('@platejs/browser/core').validatePliteBrowserReleaseProof,
   typeof import('@platejs/browser/playwright').assertPliteBrowserSelectionContract,
-  typeof import('@platejs/browser/transports').resolveBrowserMobileSurface,
   typeof import('@platejs/plite-dom').DOMCoverage,
   typeof import('@platejs/plite-dom').Hotkeys,
   typeof import('@platejs/plite-dom').getElements,
@@ -97,6 +94,7 @@ type PublicPackageNamedTypeExports = [
   import('@platejs/plite').Descendant,
   import('@platejs/plite').Editor,
   import('@platejs/plite').EditorCommit,
+  import('@platejs/plite').EditorCommitListener,
   import('@platejs/plite').EditorRead,
   import('@platejs/plite').EditorReadMethods,
   import('@platejs/plite').EditorStateSchemaApi,
@@ -133,17 +131,24 @@ type PublicPackageNamedTypeExports = [
   import('@platejs/plite-layout').PlitePageLayoutOptions,
   import('@platejs/plite-layout').PlitePageSettings,
   import('@platejs/plite-react').EditableDOMBeforeInputHandler,
-  import('@platejs/plite-react').EditableDOMStrategyLayout,
+  import('@platejs/plite-react').DOMStrategyVirtualizedLayout,
   import('@platejs/plite-react').EditableDOMStrategyMetrics,
   import('@platejs/plite-react').EditableKeyDownHandler,
   import('@platejs/plite-react').EditableProps,
   import('@platejs/plite-react').RenderElementProps,
+  import('@platejs/plite-react').VirtualizedPageLayoutItem,
+  import('@platejs/plite-react').VirtualizedTopLevelLayoutItem,
   import('@platejs/plite-react').PliteAnnotationStore,
-  import('@platejs/plite-react').PliteChange,
+  import('@platejs/plite-react').PliteCommitContext,
   import('@platejs/plite-react').PliteDecorationSourceOptions,
   import('@platejs/plite-react').PliteProps,
+  import('@platejs/plite-react').PliteSelectionChangeContext,
+  import('@platejs/plite-react').PliteValueChangeContext,
   import('@platejs/plite-react').PliteWidgetStore,
-  import('@platejs/plite-react').UsePliteCommandCallbackOptions,
+  import('@platejs/plite-react').PliteCommandDispatcher<
+    import('@platejs/plite').EditorCommand<any, any>
+  >,
+  import('@platejs/plite-react').UsePliteCommandOptions,
   import('@platejs/plite-react').UsePliteEditorOptions,
   import('@platejs/plite-react').UsePliteRootEditorOptions,
 ];
@@ -171,7 +176,7 @@ type _PublicEditorLifecycleMethods = [
   ExpectAssignable<string, ReturnType<typeof editor.read.text.string>>,
   ExpectAssignable<
     import('@platejs/plite').Selection,
-    ReturnType<typeof editor.read.selection.get>
+    ReturnType<typeof editor.read.selection>
   >,
   ExpectAssignable<boolean, ReturnType<typeof editor.read.schema.isBlock>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.blocks.reset>>,
@@ -338,8 +343,8 @@ editor.read((state) => state.root('main'));
 editor.read((state) =>
   state.slice.fitContent(slice, { parent: publicParent, root: 'header' })
 );
-// @ts-expect-error the primary fit context is selected by omitting root
 editor.read((state) =>
+  // @ts-expect-error the primary fit context is selected by omitting root
   state.slice.fitContent(slice, { parent: publicParent, root: 'main' })
 );
 editor.read((state) => state.schema.createDefaultRootChild('header'));
@@ -376,9 +381,14 @@ commit.changed.topLevelRanges('main');
 facet.compute(() => 1, {
   dependencies: [{ kind: 'document', root: 'header' }],
 });
-// @ts-expect-error the primary facet dependency is selected by omitting root
 facet.compute(() => 1, {
-  dependencies: [{ kind: 'document', root: 'main' }],
+  dependencies: [
+    {
+      kind: 'document',
+      // @ts-expect-error the primary document dependency is selected by omitting root
+      root: 'main',
+    },
+  ],
 });
 
 const acceptsPublicPackageModules = <_T extends PublicPackageModules>() => true;

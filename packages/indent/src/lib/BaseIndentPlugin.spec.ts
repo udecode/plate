@@ -52,7 +52,7 @@ describe('BaseIndentPlugin', () => {
   it('changes block indent through typed tx groups', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin, TestIndentPropsPlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'One' }],
           type: KEYS.p,
@@ -116,7 +116,7 @@ describe('BaseIndentPlugin', () => {
     });
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, QuotePlugin, IndentQuotePlugin],
-      value: [
+      initialValue: [
         {
           children: [{ text: 'Quote' }],
           indent: 1,
@@ -161,7 +161,7 @@ describe('BaseIndentPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'One' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'One' }], type: KEYS.p }],
     });
 
     expect(editor.update.indent.tab()).toBe(true);

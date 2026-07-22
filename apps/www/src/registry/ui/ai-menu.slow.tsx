@@ -11,7 +11,7 @@ const useIsSelectingMock = mock();
 const useFocusedLastMock = mock();
 const useHotkeysMock = mock();
 const usePluginOptionMock = mock();
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const toDOMNodeMock = mock();
 const setBlockSelectionMock = mock();
 const isAtBlockEndMock = mock();
@@ -35,7 +35,7 @@ mock.module('@platejs/selection/react', () => ({
 }));
 
 mock.module('@platejs/suggestion', () => ({
-  getTransientSuggestionKey: () => 'suggestion',
+  SUGGESTION_TRANSIENT_KEY: 'suggestion',
 }));
 
 mock.module('cmdk', () => ({
@@ -89,7 +89,7 @@ mock.module('platejs', () => ({
 
 mock.module('platejs/react', () => ({
   useEditorPlugin: useEditorPluginMock,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   useFocusedLast: useFocusedLastMock,
   useHotkeys: useHotkeysMock,
   usePluginOption: usePluginOptionMock,
@@ -136,7 +136,7 @@ describe('AIMenu slow contracts', () => {
     useFocusedLastMock.mockReset();
     useHotkeysMock.mockReset();
     usePluginOptionMock.mockReset();
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     toDOMNodeMock.mockReset();
     setBlockSelectionMock.mockReset();
     isAtBlockEndMock.mockReset();
@@ -173,7 +173,7 @@ describe('AIMenu slow contracts', () => {
       },
     } as unknown as PlateEditor;
 
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
 
     usePluginOptionMock.mockImplementation(
       (_plugin: unknown, option: string) => {

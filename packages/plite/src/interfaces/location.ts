@@ -46,7 +46,7 @@ export interface LocationInterface {
 }
 
 // eslint-disable-next-line no-redeclare
-export const LocationApi: LocationInterface = {
+export const LocationApi: Readonly<LocationInterface> = Object.freeze({
   isLocation(value: unknown): value is Location {
     return (
       PathApi.isPath(value) ||
@@ -70,7 +70,7 @@ export const LocationApi: LocationInterface = {
   isSpan(at: Location | Span): at is Span {
     return Array.isArray(at) && Array.isArray(at[0]);
   },
-};
+});
 
 /**
  * The `Span` interface is a low-level way to refer to locations in nodes
@@ -87,10 +87,10 @@ export interface SpanInterface {
 }
 
 // eslint-disable-next-line no-redeclare
-export const SpanApi: SpanInterface = {
+export const SpanApi: Readonly<SpanInterface> = Object.freeze({
   isSpan(value: unknown): value is Span {
     return (
       Array.isArray(value) && value.length === 2 && value.every(PathApi.isPath)
     );
   },
-};
+});

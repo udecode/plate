@@ -83,7 +83,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     BoldPlugin.configure({
-      shortcuts: { toggle: 'mod+b' },
+      shortcuts: { toggle: { keys: 'mod+b' } },
     }),
   ],
 });

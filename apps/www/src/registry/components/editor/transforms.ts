@@ -14,7 +14,7 @@ import { BaseDatePlugin } from '@platejs/date';
 import { insertExcalidraw } from '@platejs/excalidraw';
 import { BaseFootnoteReferencePlugin } from '@platejs/footnote';
 import { BaseColumnItemPlugin, insertColumnGroup } from '@platejs/layout';
-import { triggerFloatingLink } from '@platejs/link/react';
+import { LinkPlugin } from '@platejs/link/react';
 import { BaseInlineEquationPlugin, insertEquation } from '@platejs/math';
 import {
   insertAudioPlaceholder,
@@ -145,7 +145,8 @@ const insertInlineMap: Record<
   [ACTION_FOOTNOTE]: runFootnoteAction,
   [KEYS.inlineEquation]: (editor) =>
     editor.plugin(BaseInlineEquationPlugin).update.insert({ select: true }),
-  [KEYS.link]: (editor) => triggerFloatingLink(editor, { focused: true }),
+  [KEYS.link]: (editor) =>
+    editor.plugin(LinkPlugin).api.trigger({ focused: true }),
 };
 
 type InsertBlockOptions = {

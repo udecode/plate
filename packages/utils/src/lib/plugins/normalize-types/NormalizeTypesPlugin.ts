@@ -33,49 +33,43 @@ export const NormalizeTypesPlugin = createBasePlugin<NormalizeTypesConfig>({
     rules: [],
   },
 }).extendExtension(({ getOptions }) => ({
-  normalizers: {
-    editor({ next, tx }) {
-      const { onError, rules = [] } = getOptions();
+  corrections: [
+    {
+      event: 'children',
+      query: 'root',
+      correct({ tx }) {
+        const { onError, rules = [] } = getOptions();
 
-      const normalized = rules.some(({ path, strictType, type }) => {
-        const entry = tx.nodes.get(path);
-        const node = entry?.[0];
+        rules.forEach(({ path, strictType, type }) => {
+          const entry = tx.nodes.get(path);
+          const node = entry?.[0];
 
-        if (node) {
-          if (
-            strictType &&
-            ElementApi.isElement(node) &&
-            node.type !== strictType
-          ) {
-            tx.nodes.set({ type: strictType }, { at: path });
+          if (node) {
+            if (
+              strictType &&
+              ElementApi.isElement(node) &&
+              node.type !== strictType
+            ) {
+              tx.nodes.set({ type: strictType }, { at: path });
+            }
 
-            return true;
+            return;
           }
 
-          return false;
-        }
+          const nextType = strictType ?? type;
 
-        const nextType = strictType ?? type;
+          if (!nextType) return;
 
-        if (!nextType) return false;
-
-        try {
-          tx.nodes.insert(
-            { children: [{ text: '' }], type: nextType },
-            { at: path }
-          );
-
-          return true;
-        } catch (error) {
-          onError?.(error);
-
-          return false;
-        }
-      });
-
-      if (normalized) return;
-
-      next();
+          try {
+            tx.nodes.insert(
+              { children: [{ text: '' }], type: nextType },
+              { at: path }
+            );
+          } catch (error) {
+            onError?.(error);
+          }
+        });
+      },
     },
-  },
+  ],
 }));
