@@ -14,8 +14,8 @@ import { dirname, join, resolve } from 'node:path';
 import { globSync, isDynamicPattern } from 'tinyglobby';
 
 import {
+  TEST_FAST_IGNORE_PATTERNS,
   TEST_FILE_PATTERNS,
-  TEST_IGNORE_PATTERNS,
 } from '../config/test-suites.mjs';
 
 const VALUE_FLAGS = new Set([
@@ -80,7 +80,7 @@ for (let i = 0; i < rawArgs.length; i++) {
 
 const allFastFiles = globSync(TEST_FILE_PATTERNS, {
   cwd: process.cwd(),
-  ignore: TEST_IGNORE_PATTERNS,
+  ignore: TEST_FAST_IGNORE_PATTERNS,
   onlyFiles: true,
 }).sort();
 
@@ -97,7 +97,7 @@ for (const filter of pathFilters.map(normalizeFilter)) {
   if (isDynamicPattern(filter)) {
     for (const match of globSync(filter, {
       cwd: process.cwd(),
-      ignore: TEST_IGNORE_PATTERNS,
+      ignore: TEST_FAST_IGNORE_PATTERNS,
       onlyFiles: true,
     })) {
       dynamicMatches.add(match);

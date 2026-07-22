@@ -45,13 +45,13 @@ describe('BaseCodeBlockPlugin', () => {
     const html = new Map([['text/html', '<p>pasted</p>']]);
 
     expect(BaseCodeBlockPlugin.key).toBe('codeBlock');
-    expect(BaseCodeBlockPlugin.node.type).toBe(NODES.codeBlock);
+    expect(BaseCodeBlockPlugin.type).toBe(NODES.codeBlock);
     expect(BaseCodeLinePlugin.key).toBe('codeLine');
-    expect(BaseCodeLinePlugin.node.type).toBe(NODES.codeLine);
+    expect(BaseCodeLinePlugin.type).toBe(NODES.codeLine);
     expect(BaseCodeSyntaxPlugin.key).toBe('codeSyntax');
-    expect(BaseCodeSyntaxPlugin.node.type).toBe(NODES.codeSyntax);
+    expect(BaseCodeSyntaxPlugin.type).toBe(NODES.codeSyntax);
     expect(
-      editorWithCodeLine.read.schema.createAndFill(NODES.codeBlock)
+      editorWithCodeLine.read.schema.createAndFill(BaseCodeBlockPlugin)
     ).toEqual({
       children: [{ children: [{ text: '' }], type: NODES.codeLine }],
       type: NODES.codeBlock,
@@ -63,20 +63,22 @@ describe('BaseCodeBlockPlugin', () => {
       })
     ).toEqual({ preserveContext: true, replaceWhenCovered: false });
     expect(
-      editorWithCodeLine.read.schema.property({
-        key: NODES.codeSyntax,
-        placement: 'text',
-      })
+      editorWithCodeLine.read.schema.property(BaseCodeSyntaxPlugin)
     ).toMatchObject({ value: { kind: 'boolean' } });
     expect(
-      editorWithCodeLine.read.schema.element(NODES.codeBlock)?.groups
+      editorWithCodeLine.read.schema.element(BaseCodeBlockPlugin)?.groups
     ).toContain('block');
     expect(
-      editorWithCodeLine.read.schema.element(NODES.codeLine)?.groups
-    ).not.toContain('block');
+      editorWithCodeLine.read.schema.element(BaseCodeLinePlugin)?.groups
+    ).toContain('block');
     expect(() =>
       editorWithCodeLine.read.schema.validateDocument({
-        children: [{ children: [{ text: '' }], type: NODES.codeLine }],
+        children: [
+          {
+            children: [{ text: '' }],
+            type: NODES.codeLine,
+          },
+        ],
       })
     ).toThrow(/root.*cannot contain|cannot contain.*root/i);
 

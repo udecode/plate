@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@playwright/test": "1.53.0",
+    "@playwright/test": "1.61.0",
     "next": "16.2.6",
     "nuqs": "2.4.3",
     "react": "19.2.4",

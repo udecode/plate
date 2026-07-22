@@ -1,3 +1,4 @@
+import { property } from '@platejs/plite';
 import type { EdgeNodes } from '../types';
 
 import { createBaseEditor } from '../../../editor';
@@ -7,11 +8,11 @@ import { setAffinitySelection } from './setAffinitySelection';
 const MarkPlugins = [
   createBasePlugin({
     key: 'bold',
-    node: { mark: true },
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   }),
   createBasePlugin({
     key: 'italic',
-    node: { mark: true },
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   }),
 ];
 

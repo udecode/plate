@@ -475,18 +475,18 @@ const PerformanceControls = ({
   useEffect(() => {
     if (!SUPPORTS_LOAF_TIMING) return;
 
-    let afterOperation = false;
-    const unsubscribe = editor.subscribeCommit((change) => {
-      if (change.operations.length) {
-        afterOperation = true;
+    let afterDocumentChange = false;
+    const unsubscribe = editor.subscribeCommit((commit) => {
+      if (commit.changed.has('document')) {
+        afterDocumentChange = true;
       }
     });
 
     const observer = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
-        if (afterOperation) {
+        if (afterDocumentChange) {
           setLastLongAnimationFrameDuration(Math.round(entry.duration));
-          afterOperation = false;
+          afterDocumentChange = false;
         }
       });
     });

@@ -44,7 +44,7 @@ describe('insertCodeDrawing', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseCodeDrawingPlugin.configure({
-          node: { type: 'custom-code-drawing' },
+          type: 'custom-code-drawing',
         }),
       ],
       selection: {

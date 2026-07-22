@@ -763,11 +763,11 @@ describe('when pasting ul > 2 li fragment', () => {
 
         editor.extend(
           defineEditorExtension({
-            commands: [
-              editorCommands.replaceSlice.handle(({ command }, next) => {
-                seen.push(command.slice);
+            commands: ({ handle }) => [
+              handle(editorCommands.replaceSlice, ({ input }) => {
+                seen.push(input.slice);
 
-                return next();
+                return false;
               }),
             ],
             name: `list-root-delegation-${openDepth}`,

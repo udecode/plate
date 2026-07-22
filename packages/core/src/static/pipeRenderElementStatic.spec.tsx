@@ -1,3 +1,5 @@
+import { schema } from '@platejs/plite';
+
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
@@ -13,7 +15,10 @@ describe('pipeRenderElementStatic', () => {
   it('uses the element plugin renderer before the fallback renderElement prop', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: { groups: ['block'] }, type: 'p' },
+      type: 'p',
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
+      },
       render: { as: 'article' },
     });
     const renderElement = mock(() => <mark data-kind="fallback" />);

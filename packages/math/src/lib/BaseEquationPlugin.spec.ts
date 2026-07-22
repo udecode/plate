@@ -12,13 +12,9 @@ describe('BaseEquationPlugin', () => {
 
     expect(editor.read.schema.isBlock(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
-    expect(
-      editor.read.schema.property({
-        key: 'texExpression',
-        placement: 'element',
-        type: KEYS.equation,
-      })?.value.kind
-    ).toBe('string');
+    expect(editor.read.schema.property(BaseEquationPlugin)?.value.kind).toBe(
+      'string'
+    );
     editor.update((tx) => {
       expect(typeof tx.equation.insert).toBe('function');
     });

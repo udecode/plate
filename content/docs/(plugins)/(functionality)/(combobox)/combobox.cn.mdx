@@ -51,9 +51,7 @@ import { createBasePlugin } from 'platejs';
 const TagInputPlugin = createBasePlugin({
   key: 'tag_input',
   editOnly: true,
-  node: {
-    element: { inline: true, void: 'inline' },
-  },
+  schema: { element: { void: 'inline' } },
 });
 ```
 
@@ -69,7 +67,7 @@ type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
 
 export const TagPlugin = createBasePlugin<TagConfig>({
   key: 'tag',
-  node: { element: { inline: true, void: 'inline' } },
+  schema: { element: { void: 'inline' } },
   options: {
     trigger: '#',
     triggerPreviousCharPattern: /^\s?$/,
@@ -82,9 +80,8 @@ export const TagPlugin = createBasePlugin<TagConfig>({
 });
 ```
 
-- `node.element`: 定义插件的元素模型行为
-- `node.element.inline`: 使标签元素以内联方式而不是块级方式显示
-- `node.element.void`: 防止在标签元素内部编辑
+- `schema.element`: 定义插件的元素模型行为
+- `schema.element.void: 'inline'`: 将标签定义为行内 void，并防止编辑其内部内容
 - `options.trigger`: 触发组合框的字符(本例为`#`)
 - `options.triggerPreviousCharPattern`: 必须匹配触发器前字符的正则表达式。`/^\s?$/`允许在行首或空白后触发
 - `options.createComboboxInput`: 触发器激活时创建输入元素节点的函数
@@ -116,10 +113,8 @@ export function TagInputElement({ element, ...props }) {
     <PlateElement as="span" {...props}>
       <InlineCombobox element={element} trigger="#">
         <InlineComboboxInput />
-        
         <InlineComboboxContent>
           <InlineComboboxEmpty>未找到标签</InlineComboboxEmpty>
-          
           {tags.map((tag) => (
             <InlineComboboxItem
               key={tag.id}
@@ -143,7 +138,6 @@ export function TagInputElement({ element, ...props }) {
           ))}
         </InlineComboboxContent>
       </InlineCombobox>
-      
       {props.children}
     </PlateElement>
   );

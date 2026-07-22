@@ -1,5 +1,10 @@
 import { createHash } from 'node:crypto';
 
+const DEFAULT_PLITE_BROWSER_BASE_URL = 'http://127.0.0.1:3102';
+
+export const resolvePliteBrowserBaseURL = (explicitBaseURL) =>
+  explicitBaseURL ?? DEFAULT_PLITE_BROWSER_BASE_URL;
+
 export const MAX_NORMAL_TESTS_PER_PROCESS = 32;
 const TESTS_PER_WORKER = 4;
 export const BROWSER_UNIT_TIMEOUT_OVERHEAD_MS = 30_000;
@@ -16,6 +21,33 @@ const navigationFailurePattern = /\bpage\.goto\b|ERR_(?:CONNECTION|NAME)_/i;
 const assertionFailurePattern =
   /expect\(|AssertionError|toHave[A-Z]|toEqual|toBe\(/;
 const fixtureFailurePattern = /beforeEach|afterEach|globalSetup|globalTeardown/;
+const nodeVersionPattern = /^v?(\d+)(?:\.\d+\.\d+)?$/;
+
+const parseNodeMajorVersion = (version, name) => {
+  const match = nodeVersionPattern.exec(version.trim());
+
+  if (!match) {
+    throw new Error(`${name} must be a Node major or semantic version`);
+  }
+
+  return Number(match[1]);
+};
+
+export const assertBrowserNodeVersion = (runtimeVersion, requiredVersion) => {
+  const runtimeMajor = parseNodeMajorVersion(runtimeVersion, 'Runtime version');
+  const requiredMajor = parseNodeMajorVersion(
+    requiredVersion,
+    'Required version'
+  );
+
+  if (runtimeMajor !== requiredMajor) {
+    throw new Error(
+      `Plite browser proof requires Node ${requiredMajor} from .nvmrc; received ${runtimeVersion}. Activate the repo Node version before running browser proof.`
+    );
+  }
+
+  return runtimeMajor;
+};
 
 export const assertRetryFreeBrowserArgs = (args) => {
   const retryOverride = args.find(

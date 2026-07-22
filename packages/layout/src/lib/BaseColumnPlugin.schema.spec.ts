@@ -1,13 +1,15 @@
 import { createBaseEditor } from '@platejs/core';
 import { KEYS, NODES } from '@platejs/utils';
 
-import { BaseColumnPlugin } from './BaseColumnPlugin';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from './BaseColumnPlugin';
 
 describe('BaseColumnPlugin schema', () => {
   it('constructs configured column-group content from plugin-key grammar', () => {
-    const editor = createBaseEditor({ plugins: [BaseColumnPlugin] });
+    const editor = createBaseEditor({
+      plugins: [BaseColumnPlugin],
+    });
 
-    expect(editor.read.schema.createAndFill(NODES.columnGroup)).toEqual({
+    expect(editor.read.schema.createAndFill(BaseColumnPlugin)).toEqual({
       children: [
         {
           children: [{ children: [{ text: '' }], type: KEYS.p }],
@@ -20,10 +22,10 @@ describe('BaseColumnPlugin schema', () => {
       ],
       type: NODES.columnGroup,
     });
-    expect(editor.read.schema.element(NODES.columnGroup)?.groups).toContain(
+    expect(editor.read.schema.element(BaseColumnPlugin)?.groups).toContain(
       'block'
     );
-    expect(editor.read.schema.element(KEYS.column)?.groups).not.toContain(
+    expect(editor.read.schema.element(BaseColumnItemPlugin)?.groups).toContain(
       'block'
     );
     expect(() =>

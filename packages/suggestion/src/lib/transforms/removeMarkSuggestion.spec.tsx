@@ -4,6 +4,7 @@ import { type TUpdateSuggestionData } from '@platejs/utils';
 
 import { jsxt } from '@platejs/test-utils';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from '../utils';
@@ -18,12 +19,16 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 
 const BoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 const ItalicPlugin = createBasePlugin({
   key: 'italic',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 describe('removeMarkSuggestion', () => {

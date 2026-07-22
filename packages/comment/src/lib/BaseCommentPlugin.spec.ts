@@ -10,10 +10,9 @@ import { BaseCommentPlugin } from './BaseCommentPlugin';
 
 const CommentTargetPlugin = createBasePlugin({
   key: 'commentTarget',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
     },
   },
 });
@@ -26,6 +25,22 @@ const createCommentEditor = (value: Value, selection: Selection = null) =>
   });
 
 describe('BaseCommentPlugin', () => {
+  it('canonicalizes false base comment marks to the absent default', () => {
+    const editor = createCommentEditor([
+      { children: [{ text: 'plain' }], type: 'p' },
+    ]);
+
+    expect(
+      editor.read.schema.fitDocument({
+        children: [
+          { children: [{ comment: false, text: 'plain' }], type: 'p' },
+        ],
+      })
+    ).toEqual({
+      children: [{ children: [{ text: 'plain' }], type: 'p' }],
+    });
+  });
+
   it('compiles exact and namespaced comment lifecycle laws', () => {
     const text = {
       comment: true,

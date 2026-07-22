@@ -7,17 +7,16 @@ import { insertEmoji } from './insertEmoji';
 
 const EmojiChipPlugin = createBasePlugin({
   key: 'emoji-chip',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
     },
   },
 });
 
 const EmojiIdPlugin = createBasePlugin({
   key: 'emojiId',
-  node: { mark: { value: property.string() } },
+  schema: { mark: property.string() },
 });
 
 describe('insertEmoji', () => {

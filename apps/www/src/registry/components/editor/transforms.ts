@@ -166,8 +166,9 @@ export const insertBlock = (
   const [currentNode, path] = block;
   const isCurrentBlockEmpty = editor.read.nodes.isEmpty(currentNode);
   const currentBlockType = getBlockType(currentNode);
+  const nodeType = editor.getType(type);
 
-  const isSameBlockType = type === currentBlockType;
+  const isSameBlockType = nodeType === currentBlockType;
 
   if (upsert && isCurrentBlockEmpty && isSameBlockType) {
     return;
@@ -210,7 +211,7 @@ export const insertBlock = (
     if (type in insertBlockMap) {
       insertBlockMap[type](editor, tx, type);
     } else {
-      tx.nodes.insert(createBlock({ type }), {
+      tx.nodes.insert(createBlock({ type: nodeType }), {
         at: PathApi.next(path),
         select: true,
       });
@@ -282,6 +283,8 @@ export const setBlockType = (
     return;
   }
 
+  const nodeType = editor.getType(type);
+
   editor.update((tx) => {
     const setEntry = (entry: NodeEntry<Element>) => {
       const [node, path] = entry;
@@ -294,20 +297,22 @@ export const setBlockType = (
       }
       if (type === KEYS.blockquote) {
         const isActive =
-          node.type === type ||
+          node.type === nodeType ||
           !!tx.nodes.above({
             at: path,
-            match: { type },
+            match: { type: nodeType },
           });
 
         if (!isActive) {
-          tx.nodes.wrap({ children: [], type } as Element, { at: path });
+          tx.nodes.wrap({ children: [], type: nodeType } as Element, {
+            at: path,
+          });
         }
 
         return;
       }
-      if (node.type !== type) {
-        tx.nodes.set({ type }, { at: path });
+      if (node.type !== nodeType) {
+        tx.nodes.set({ type: nodeType }, { at: path });
       }
     };
 

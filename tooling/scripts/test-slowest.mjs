@@ -187,7 +187,7 @@ if (xml) {
       'Warning-zone specs found. CI may flip these over the fast-lane limit on a slower runner.'
     );
     console.log(
-      'Treat repeat offenders as move candidates for `*.slow.ts[x]`, especially React-heavy specs.'
+      'Treat repeat offenders as split candidates for the matching `*.slow.*` lane, especially React-heavy or blocking subprocess cases.'
     );
 
     if (warnFiles.length > 0) {
@@ -223,7 +223,7 @@ if (xml) {
   if (!profileOnly && (slowTests.length > 0 || slowFiles.length > 0)) {
     console.error('');
     console.error(
-      'Fast-suite threshold exceeded. Move the offending spec to `*.slow.ts[x]` so it runs via `pnpm test:slow` instead of the default fast loop.'
+      'Fast-suite threshold exceeded. Split inherently blocking cases into a matching `*.slow.*` file so they run via `pnpm test:slow`; keep cheap contracts in the fast loop.'
     );
 
     if (slowFiles.length > 0) {

@@ -1,11 +1,14 @@
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findInlineSuggestionNode } from './findSuggestionNode';
 
 const BoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 describe('findInlineSuggestionNode', () => {

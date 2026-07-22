@@ -22,7 +22,14 @@ Plate 用于在 `editor.plugins` 中按 key 存储插件的唯一标识符。
 </APIItem>
 
 <APIItem name="options" type="Record<string, any>">
-插件使用的扩展选项属性。
+插件拥有的可变运行时状态。通过插件 selector 读取，并使用 `setOption` 或
+`setOptions` 更新。
+</APIItem>
+
+<APIItem name="config" type="ImmutablePluginConfiguration<C['config']>">
+用于编译插件描述符、schema、parser 和 host codec 的不可变值。通过
+`.configure({ config: { ... } })` 设置。Schema 工厂接收冻结后的配置；可变运行时状态属于
+`options`。
 </APIItem>
 
 <APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
@@ -121,22 +128,22 @@ Plate 用于向任何节点组件注入 props 的属性。
 </APISubList>
 </APIItem>
 
-<APIItem name="node" type="object">
-定义插件的节点特定配置。
+<APIItem name="type" type="string">
+插件拥有的文档类型或属性 key。
+
+- **默认值:** `plugin.key`
+</APIItem>
+
+<APIItem name="schema" type="PluginSchema<C> | null">
+声明插件的 Plite 模型。元素语法使用 `schema.element`，类型化文本属性描述符使用
+`schema.mark`，跨节点属性使用 `schema.properties`。Schema 工厂只能读取不可变插件配置。
+布尔文本属性使用 `property.boolean({ default: false, omitDefault: true })`。
+</APIItem>
+
+<APIItem name="rules" type="object">
+定义插件编译后的 schema 类型的编辑行为。
 
 <APISubList>
-<APISubListItem parent="node" name="isDecoration" type="boolean" optional>
-指示此插件的节点是否可以作为装饰叶子渲染。设置为 false 时每个文本节点只渲染一次节点组件。
-
-- **默认值:** `true`
-</APISubListItem>
-<APISubListItem parent="node" name="element" type="SchemaElement" optional>
-声明插件的元素行为和语法。在此对象中使用 `inline`、`void`、
-`selectable`、`content`、`groups`、`properties` 和 `slice`。
-</APISubListItem>
-<APISubListItem parent="node" name="mark" type="true | (SchemaTextPropertyOptions & { value: PropertyValueDescriptor })" optional>
-声明插件拥有的文本属性。布尔标记使用 `true`；参数化标记提供值描述符和生命周期选项。
-</APISubListItem>
 <APISubListItem parent="rules" name="selection.affinity" type="'default' | 'directional' | 'outward' | 'hard'" optional>
 定义节点边界的选区行为。参见 [插件规则](/docs/plugin-rules#rulesselection)。
 
@@ -207,30 +214,12 @@ Plate 用于向任何节点组件注入 props 的属性。
 
 - **默认值:** `false`
 </APISubListItem>
-<APISubListItem parent="node" name="type" type="string" optional>
-指定此插件节点的类型标识符。
-
-- **默认值:** `plugin.key`
-</APISubListItem>
-<APISubListItem parent="node" name="component" type="NodeComponent | null" optional>
-用于渲染此插件节点的 React 组件。
-</APISubListItem>
-<APISubListItem parent="node" name="leafProps" type="LeafNodeProps<WithAnyKey<C>>" optional>
-覆盖 `data-plite-leaf` 元素属性。
-</APISubListItem>
-<APISubListItem parent="node" name="props" type="NodeProps<WithAnyKey<C>>" optional>
-覆盖节点属性。
-</APISubListItem>
-<APISubListItem parent="node" name="textProps" type="TextNodeProps<WithAnyKey<C>>" optional>
-覆盖 `data-plite-node="text"` 元素属性。
-</APISubListItem>
 </APISubList>
 </APIItem>
 
-<APIItem name="schema" type="PluginSchema<C> | null">
-贡献冻结的 Plite schema 声明。可提供贡献对象，或使用已解析的插件 key、type
-和 options 的纯函数。跨节点属性由此处声明；元素拥有的语法和属性保留在
-`node.element` 下，文本属性保留在 `node.mark` 下。
+<APIItem name="host" type="object | null">
+定义 DOM 和静态渲染策略。`dangerouslyAllowAttributes` 转发显式属性白名单，
+`toDataAttributes` 将元素投影为 host data attributes。语义声明属于 `schema`。
 </APIItem>
 
 <APIItem name="override" type="object">
@@ -292,16 +281,26 @@ HTML React 序列化器配置。
 在根元素的直接子元素之后渲染组件。与 `belowNodes` 的不同之处在于它是 `PlateElement` 的直接子元素，而不是包装可能是嵌套的子元素。当需要相对于根元素的组件时很有用。
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
-当插件声明 `node.mark` 且 `isDecoration: false` 时，在 leaf 节点下方渲染组件。当 `isDecoration: true` 时使用 `render.node`。
+当插件声明 `schema.mark` 且 `render.isDecoration: false` 时，在 leaf
+节点下方渲染组件。当 `render.isDecoration: true` 时使用 `render.node`。
 </APISubListItem>
 <APISubListItem parent="render" name="node" type="NodeComponent" optional>
 为以下内容渲染组件：
-- 声明 `node.element` 时渲染 element 节点
-- 声明 `node.mark` 且 `isDecoration: false` 时渲染在文本节点下方
-- 声明 `node.mark` 且 `isDecoration: true` 时渲染在 leaf 下方
+- 声明 `schema.element` 时渲染 element 节点
+- 声明 `schema.mark` 且 `render.isDecoration: false` 时渲染在文本节点下方
+- 声明 `schema.mark` 且 `render.isDecoration: true` 时渲染在 leaf 下方
+
+如果唯一的变更是绑定组件，优先使用 `.withComponent(Component)`。当同一个
+`.configure()` 或 `.extend()` 调用还包含其他插件配置时，再直接设置
+`render.node`。
+</APISubListItem>
+<APISubListItem parent="render" name="isDecoration" type="boolean" optional>
+为 `true` 时将标记值渲染为 decorated leaves；为 `false` 时每个文本节点只渲染一次。
+
+- **默认值:** `true`
 </APISubListItem>
 <APISubListItem parent="render" name="as" type="keyof HTMLElementTagNameMap" optional>
-指定渲染节点组件时使用的 HTML 标签名。仅在未为插件提供自定义 `component` 时使用。
+指定渲染节点组件时使用的 HTML 标签名。仅在插件没有自定义 `render.node` 时使用。
 
 - **默认值:** elements 为 `'div'`，leaves 为 `'span'`
 
@@ -317,16 +316,16 @@ HTML React 序列化器配置。
 用于管理插件选项的 Zustand store。
 </APIItem>
 
-<APIItem name="dependencies" type="string[]">
-此插件依赖的插件 key 数组。
+<APIItem name="dependencies" type="readonly PluginReference[]">
+必须在当前插件之前安装的插件描述符。直接传入插件对象，以保留依赖身份和类型推断。
 </APIItem>
 
 <APIItem name="enabled" type="boolean" optional>
 启用或禁用插件。Plate 使用此属性决定是否使用该插件。
 </APIItem>
 
-<APIItem name="plugins" type="any[]">
-递归插件支持，允许在单个插件中包含多个插件。
+<APIItem name="plugins" type="readonly PluginReference[]">
+随当前插件递归安装的嵌套插件描述符。
 </APIItem>
 
 <APIItem name="priority" type="number">
@@ -394,24 +393,20 @@ editOnly: {
 
 <API name="Methods">
 <APIMethods>
-<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => PlatePluginConfig)) => PlatePlugin">
-创建一个具有更新选项的新插件实例。
+<APIItem name="configure" type="(config: PlatePluginConfig) => PlatePlugin">
+返回应用不可变定义更新后的新插件描述符。参数始终是对象。需要读取已解析编辑器上下文时，
+使用 `.extend((ctx) => config)`。
 
 ```ts
-(
-  config:
-    | PlatePluginConfig<C["key"], InferOptions<C>, InferApi<C>, InferTx<C>>
-    | ((
-        ctx: PlatePluginContext<C>
-      ) => PlatePluginConfig<
-        C["key"],
-        InferOptions<C>,
-        InferApi<C>,
-        InferTx<C>
-      >)
-) => PlatePlugin<C>;
+HeadingPlugin.configure({
+  config: { levels: [1, 2, 3] },
+});
 ```
 
+</APIItem>
+
+<APIItem name="configurePlugin" type="(plugin: PluginReference | { key: string }, config: PluginMethodConfig) => PlatePlugin">
+配置已有的嵌套插件。找不到目标时，返回原父插件。
 </APIItem>
 
 <APIItem name="extend" type="(config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
@@ -427,22 +422,20 @@ editOnly: {
 
 </APIItem>
 
-<APIItem name="extendPlugin" type="(key: string, config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
+<APIItem name="extendPlugin" type="(plugin: PluginReference | { key: string }, config: PluginMethodConfig) => PlatePlugin">
 扩展现有嵌套插件或在未找到时添加新插件。支持深层嵌套。
 
 ```ts
 (
-  key: string,
-  extendConfig:
-    | Partial<PlatePlugin>
-    | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)
+  plugin: PluginReference | { key: string },
+  extendConfig: PluginMethodConfig
 ) => PlatePlugin;
 ```
 
 </APIItem>
 
 <APIItem name="withComponent" type="function">
-设置或替换与插件关联的组件。
+设置或替换与插件关联的组件。当唯一的变更是绑定组件时，这是首选方式。
 
 ```ts
 (component: NodeComponent) => PlatePlugin<C>;
@@ -544,7 +537,8 @@ editOnly: {
 <API name="GenericTypes">
 <APIAttributes>
 <APIItem name="C" type="AnyPluginConfig = PluginConfig">
-表示插件配置。此类型扩展了 `PluginConfig`，包括 `key`、`options`、`api` 和 `transforms`。
+表示插件契约，包括 `key`、不可变 `config`、运行时 `options`、`api`、`tx`、
+selectors、dependencies、嵌套 plugins 和 schema 推断。
 </APIItem>
 </APIAttributes>
 </API>

@@ -1,5 +1,5 @@
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { property, schema } from '@platejs/plite';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
@@ -8,9 +8,8 @@ import { findSuggestionProps } from './findSuggestionProps';
 describe('findSuggestionProps', () => {
   const MentionPlugin = createBasePlugin({
     key: KEYS.mention,
-    node: {
+    schema: {
       element: {
-        content: schema.content.text({ default: 'text', min: 1 }),
         inline: true,
         properties: {
           key: property.string(),

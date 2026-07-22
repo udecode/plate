@@ -1,6 +1,5 @@
 import {
   defineEditorSchema,
-  element,
   property,
   schema,
   target,
@@ -36,19 +35,19 @@ export const createSchemaArchitectureCorpus = () => {
       { length: SCHEMA_ARCHITECTURE_CORPUS.elementTypes },
       (_value, index) => [
         schemaElementType(index),
-        element({
+        {
           content:
             index < SCHEMA_ARCHITECTURE_CORPUS.elementTypes / 2
               ? schema.content.group('block')
               : schema.content.text(),
-          groups: ['block', schemaGroupName(index)],
+          groups: [schemaGroupName(index)],
           properties: {
             [schemaElementPropertyKey(index)]: property.number({
               default: index,
               omitDefault: true,
             }),
           },
-        }),
+        },
       ]
     )
   );
@@ -83,31 +82,32 @@ export const createSchemaArchitectureCorpus = () => {
     groups: Object.fromEntries(
       Array.from(
         { length: SCHEMA_ARCHITECTURE_CORPUS.declaredGroups },
-        (_value, index) => [schemaGroupName(index), schema.group()]
+        (_value, index) => [schemaGroupName(index), {}]
       )
     ),
     id: 'schema-architecture-benchmark',
     properties: [...exactTextProperties, ...elementPrefixes, ...textPrefixes],
-    root: schema.root({
+    root: {
       content: schema.content.group('block', {
         default: { type: schemaElementType(0) },
         min: 1,
       }),
-    }),
+    },
     roots: Object.fromEntries(
       Array.from(
         { length: SCHEMA_ARCHITECTURE_CORPUS.namedRoots },
         (_value, index) => [
           `aux_${index + 1}`,
-          schema.root({
+          {
             content: schema.content.group('block', {
               default: { type: schemaElementType(index + 1) },
               min: 1,
             }),
-          }),
+          },
         ]
       )
     ),
+    unknown: 'reject',
     version: 1,
   });
 };

@@ -3,11 +3,12 @@ import {
   createEditorRuntime,
   createEditorView,
   defineEditorSchema,
-  element,
+  property,
   schema,
   type Point,
   type RootKey,
 } from '@platejs/plite';
+import { defineHostCodec, hostCodecs } from '@platejs/plite-dom';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -19,7 +20,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { applyEditableCut } from '../src/editable/clipboard-input-strategy';
 import {
-  getProjectedViewSelectionFragment,
+  decodeProjectedClipboardFragment,
+  getProjectedViewSelectionSlice,
   writeProjectedViewSelectionClipboardData,
 } from '../src/editable/projected-clipboard';
 import type { ReactRuntimeEditor } from '../src/plugin/react-editor';
@@ -37,23 +39,51 @@ const SHARED_ROOT = 'synced-block:shared:body' as RootKey;
 
 const contentRootExtension = defineEditorSchema({
   elements: {
-    'content-card': element({
-      contentRoot: {
-        content: schema.content.not(schema.content.text()),
-        slot: 'body',
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: {
+        blockTone: property.string({ significant: true }),
+      },
+    },
+    section: {
+      content: schema.content.not(schema.content.text()),
+    },
+    'content-card': {
+      content: schema.content.open(),
+      contentRoots: {
+        body: schema.content.not(schema.content.text()),
       },
       void: 'editable-island',
-    }),
+    },
   },
   id: 'projected-clipboard-test',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  properties: [
+    schema.textProperty('emphasis', property.boolean({ significant: true })),
+  ],
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
+const projectedHostCodecs = hostCodecs('projected-clipboard-host', [
+  defineHostCodec({
+    format: 'text/html',
+    key: 'projected-html',
+    serialize: () => '<article data-projected-host="true">host</article>',
+  }),
+]);
 
-const paragraph = (text: string) => ({
+const paragraph = (
+  text: string,
+  properties: Readonly<{ blockTone?: string; emphasis?: boolean }> = {}
+) => ({
+  ...(properties.blockTone ? { blockTone: properties.blockTone } : {}),
   type: 'paragraph',
-  children: [{ text }],
+  children: [
+    {
+      ...(properties.emphasis ? { emphasis: true } : {}),
+      text,
+    },
+  ],
 });
 
 const contentCard = (bodyRoot = SHARED_ROOT) => ({
@@ -84,12 +114,18 @@ const point = (
   offset,
 });
 
-const createFixture = () => {
+const createFixture = (withSignificantProperties = false) => {
+  const mainParagraph = withSignificantProperties
+    ? paragraph('Before', { blockTone: 'warm', emphasis: true })
+    : paragraph('Before');
+  const rootParagraph = withSignificantProperties
+    ? paragraph('Inside', { blockTone: 'cool', emphasis: true })
+    : paragraph('Inside');
   const runtime = createEditorRuntime({
-    extensions: [contentRootExtension],
+    extensions: [contentRootExtension, projectedHostCodecs],
     initialValue: {
-      children: [paragraph('Before'), contentCard(), paragraph('After')],
-      roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
+      children: [mainParagraph, contentCard(), paragraph('After')],
+      roots: { [SHARED_ROOT]: [rootParagraph, paragraph('More')] },
     },
   });
   const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
@@ -159,6 +195,7 @@ const createClipboardData = () => {
 
   return {
     data,
+    getData: (type: string) => data.get(type) ?? '',
     setData: (type: string, value: string) => {
       data.set(type, value);
     },
@@ -204,17 +241,23 @@ const createClipboardEvent = (
     target,
   }) as unknown as ClipboardEvent<HTMLDivElement>;
 
-const decodePliteFragment = (encoded: string) =>
-  JSON.parse(decodeURIComponent(globalThis.atob(encoded)));
+const decodePliteFragment = (encoded: string) => {
+  const envelope = JSON.parse(decodeURIComponent(globalThis.atob(encoded)));
+
+  expect(envelope.version).toBe(1);
+
+  return envelope.slice;
+};
 
 describe('projected clipboard', () => {
   it('serializes projected selection fragments in visible order across roots', () => {
     const { editor } = createFixture();
 
-    expect(getProjectedViewSelectionFragment(editor)).toEqual([
-      paragraph('ore'),
-      paragraph('In'),
-    ]);
+    expect(getProjectedViewSelectionSlice(editor)).toEqual({
+      content: [paragraph('ore'), paragraph('In')],
+      openEnd: 1,
+      openStart: 1,
+    });
   });
 
   it('writes plain text, html, and Plite fragment data from the projected model selection', () => {
@@ -228,11 +271,51 @@ describe('projected clipboard', () => {
     expect(clipboardData.data.get('text/html')).toContain(
       'data-plite-fragment='
     );
+    expect(clipboardData.data.get('text/html')).toContain(
+      'data-projected-host="true"'
+    );
     expect(
       decodePliteFragment(
         clipboardData.data.get('application/x-plite-fragment')!
       )
-    ).toEqual([paragraph('ore'), paragraph('In')]);
+    ).toEqual({
+      content: [paragraph('ore'), paragraph('In')],
+      openEnd: 1,
+      openStart: 1,
+    });
+    const root = mountEditorRoot(editor);
+
+    try {
+      expect(decodeProjectedClipboardFragment(editor, clipboardData)).toEqual({
+        content: [paragraph('ore'), paragraph('In')],
+        openEnd: 1,
+        openStart: 1,
+      });
+    } finally {
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  it('preserves significant element and text properties in projected fragments', () => {
+    const { editor } = createFixture(true);
+    const clipboardData = createClipboardData();
+    const expected = {
+      content: [
+        paragraph('ore', { blockTone: 'warm', emphasis: true }),
+        paragraph('In', { blockTone: 'cool', emphasis: true }),
+      ],
+      openEnd: 1,
+      openStart: 1,
+    };
+
+    expect(
+      writeProjectedViewSelectionClipboardData(editor, clipboardData)
+    ).toBe(true);
+    expect(
+      decodePliteFragment(
+        clipboardData.data.get('application/x-plite-fragment')!
+      )
+    ).toEqual(expected);
   });
 
   it('uses the editor clipboard format key for projected Plite fragment data', () => {
@@ -251,7 +334,11 @@ describe('projected clipboard', () => {
       decodePliteFragment(
         clipboardData.data.get('application/x-custom-plite-fragment')!
       )
-    ).toEqual([paragraph('ore'), paragraph('In')]);
+    ).toEqual({
+      content: [paragraph('ore'), paragraph('In')],
+      openEnd: 1,
+      openStart: 1,
+    });
     expect(clipboardData.data.get('text/html')).toContain(
       'data-plite-fragment-format="x-custom-plite-fragment"'
     );
@@ -276,7 +363,11 @@ describe('projected clipboard', () => {
       decodePliteFragment(
         clipboardData.data.get('application/x-custom-plite-fragment')!
       )
-    ).toEqual([paragraph('ore'), paragraph('In')]);
+    ).toEqual({
+      content: [paragraph('ore'), paragraph('In')],
+      openEnd: 1,
+      openStart: 1,
+    });
     expect(clipboardData.data.get('text/html')).toContain(
       'data-plite-fragment-format="x-custom-plite-fragment"'
     );
@@ -286,11 +377,11 @@ describe('projected clipboard', () => {
     const { editor } = createRepeatedFixture();
     const clipboardData = createClipboardData();
 
-    expect(getProjectedViewSelectionFragment(editor)).toEqual([
-      paragraph('side'),
-      paragraph('Between'),
-      paragraph('Insi'),
-    ]);
+    expect(getProjectedViewSelectionSlice(editor)).toEqual({
+      content: [paragraph('side'), paragraph('Between'), paragraph('Insi')],
+      openEnd: 1,
+      openStart: 1,
+    });
     expect(
       writeProjectedViewSelectionClipboardData(editor, clipboardData)
     ).toBe(true);
@@ -299,7 +390,66 @@ describe('projected clipboard', () => {
       decodePliteFragment(
         clipboardData.data.get('application/x-plite-fragment')!
       )
-    ).toEqual([paragraph('side'), paragraph('Between'), paragraph('Insi')]);
+    ).toEqual({
+      content: [paragraph('side'), paragraph('Between'), paragraph('Insi')],
+      openEnd: 1,
+      openStart: 1,
+    });
+  });
+
+  it('preserves nested open edges through projected copy and paste', () => {
+    const runtime = createEditorRuntime({
+      extensions: [contentRootExtension],
+      initialValue: {
+        children: [
+          {
+            type: 'section',
+            children: [paragraph('abc')],
+          },
+        ],
+      },
+    });
+    const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
+    const graph = createPliteProjectionGraph([{ path: [0], root: 'main' }]);
+
+    writePliteViewSelection(
+      editor,
+      createPliteViewSelection(graph, {
+        anchor: { point: point(undefined, [0, 0, 0], 1) },
+        focus: { point: point(undefined, [0, 0, 0], 2) },
+      })
+    );
+    const clipboardData = createClipboardData();
+
+    expect(
+      writeProjectedViewSelectionClipboardData(editor, clipboardData)
+    ).toBe(true);
+    const slice = decodeProjectedClipboardFragment(editor, clipboardData);
+
+    expect(slice).toEqual({
+      content: [
+        {
+          type: 'section',
+          children: [paragraph('b')],
+        },
+      ],
+      openEnd: 2,
+      openStart: 2,
+    });
+    const target = createEditorRuntime({
+      extensions: [contentRootExtension],
+      initialValue: { children: [paragraph('x')] },
+    });
+    let applied = false;
+
+    target.update((tx) => {
+      applied = tx.slice.replace(slice!, {
+        at: { offset: 1, path: [0, 0] },
+      });
+    });
+
+    expect(applied).toBe(true);
+    expect(target.read((state) => state.children())).toEqual([paragraph('xb')]);
   });
 
   it('does not cut repeated content-root owners that cannot be deleted as one model mutation', () => {

@@ -4,8 +4,6 @@ import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import { createTestEditor } from './createTestEditor';
 import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deserializer';
 import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
-import { withMarkdownRuntime } from '../../../../../../packages/markdown/src/lib/markdown-runtime';
-import { buildRulesWithRuntime } from '../../../../../../packages/markdown/src/lib/rules/defaultRules';
 import { serializeMd } from '../../../../../../packages/markdown/src/lib/serializer';
 
 describe('defaultRules', () => {
@@ -25,10 +23,10 @@ describe('defaultRules', () => {
       plugins: [
         MarkdownPlugin,
         BaseH1Plugin.configure({
-          node: { type: 'custom-h1' },
+          type: 'custom-h1',
         }),
         BaseParagraphPlugin.configure({
-          node: { type: 'custom-p' },
+          type: 'custom-p',
         }),
       ],
     });
@@ -52,13 +50,13 @@ describe('defaultRules', () => {
       plugins: [
         MarkdownPlugin,
         BaseH1Plugin.configure({
-          node: { type: 'custom-h1' },
+          type: 'custom-h1',
         }),
         BaseParagraphPlugin.configure({
-          node: { type: 'custom-p' },
+          type: 'custom-p',
         }),
         BaseBoldPlugin.configure({
-          node: { type: 'custom-bold' },
+          type: 'custom-bold',
         }),
       ],
     });
@@ -83,10 +81,10 @@ describe('defaultRules', () => {
       plugins: [
         MarkdownPlugin,
         BaseH1Plugin.configure({
-          node: { type: 'custom-h1' },
+          type: 'custom-h1',
         }),
         BaseParagraphPlugin.configure({
-          node: { type: 'custom-p' },
+          type: 'custom-p',
         }),
       ],
     });
@@ -114,13 +112,13 @@ describe('defaultRules', () => {
       plugins: [
         MarkdownPlugin,
         BaseH1Plugin.configure({
-          node: { type: 'custom-h1' },
+          type: 'custom-h1',
         }),
         BaseParagraphPlugin.configure({
-          node: { type: 'custom-p' },
+          type: 'custom-p',
         }),
         BaseBoldPlugin.configure({
-          node: { type: 'custom-bold' },
+          type: 'custom-bold',
         }),
       ],
     });
@@ -162,28 +160,12 @@ describe('defaultRules', () => {
 
   it('converts footnote definitions into dedicated nodes', () => {
     const editor = createTestEditor();
-
-    const result = withMarkdownRuntime(editor, (runtime) =>
-      buildRulesWithRuntime(runtime).footnoteDefinition!.deserialize!(
-        {
-          children: [
-            {
-              children: [{ type: 'text', value: 'First note' }],
-              type: 'paragraph',
-            },
-            {
-              children: [{ type: 'text', value: 'Second note' }],
-              type: 'paragraph',
-            },
-          ],
-          identifier: '1',
-        } as any,
-        {},
-        { runtime }
-      )
+    const [result] = deserializeMd(
+      editor,
+      '[^1]: First note\n\n    Second note'
     );
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       children: [
         {
           children: [{ text: 'First note' }],
@@ -201,26 +183,12 @@ describe('defaultRules', () => {
 
   it('prefers image attributes over mdast url and alt fields', () => {
     const editor = createTestEditor();
-
-    const result = withMarkdownRuntime(editor, (runtime) =>
-      buildRulesWithRuntime(runtime).img!.deserialize!(
-        {
-          alt: 'fallback alt',
-          attributes: [
-            { name: 'alt', type: 'mdxJsxAttribute', value: 'caption alt' },
-            { name: 'src', type: 'mdxJsxAttribute', value: '/from-attr.png' },
-            { name: 'width', type: 'mdxJsxAttribute', value: '320' },
-          ],
-          title: 'Image title',
-          type: 'image',
-          url: '/from-mdast.png',
-        } as any,
-        {},
-        { runtime }
-      )
+    const [result] = deserializeMd(
+      editor,
+      '<img alt="caption alt" src="/from-attr.png" title="Image title" width="320" />'
     );
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       caption: [{ text: 'caption alt' }],
       children: [{ text: '' }],
       title: 'Image title',
@@ -232,27 +200,17 @@ describe('defaultRules', () => {
 
   it('serializes a trailing blockquote break as html so the newline survives', () => {
     const editor = createTestEditor();
-
-    const result = withMarkdownRuntime(editor, (runtime) =>
-      buildRulesWithRuntime(runtime).blockquote!.serialize!(
+    const result = serializeMd(editor, {
+      value: [
         {
           children: [{ text: 'Line one' }, { text: '\n' }],
           type: 'blockquote',
-        } as any,
-        { runtime }
-      )
-    );
-
-    expect(result).toEqual({
-      children: [
-        {
-          children: [
-            { type: 'text', value: 'Line one' },
-            { type: 'html', value: '\n<br />' },
-          ],
-          type: 'paragraph',
         },
       ],
+    });
+
+    expect(result).toContain('<br />');
+    expect(deserializeMd(editor, result)[0]).toMatchObject({
       type: 'blockquote',
     });
   });

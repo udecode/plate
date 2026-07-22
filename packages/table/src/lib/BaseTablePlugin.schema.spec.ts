@@ -1,7 +1,11 @@
 import { createBaseEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import {
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from './BaseTablePlugin';
 
 const paragraph = (text = '') => ({
   children: [{ text }],
@@ -23,9 +27,9 @@ describe('BaseTablePlugin schema', () => {
       plugins: [BaseTablePlugin],
       value: [{ children: [row], type: KEYS.table }],
     });
-    const rowSpec = editor.read.schema.element(KEYS.tr);
-    const tableSpec = editor.read.schema.element(KEYS.table);
-    const cellSpec = editor.read.schema.element(KEYS.td);
+    const rowSpec = editor.read.schema.element(BaseTableRowPlugin);
+    const tableSpec = editor.read.schema.element(BaseTablePlugin);
+    const cellSpec = editor.read.schema.element(BaseTableCellPlugin);
 
     expect(rowSpec).toMatchObject({
       content: {
@@ -34,11 +38,11 @@ describe('BaseTablePlugin schema', () => {
         default: { type: KEYS.td },
         min: 0,
       },
-      groups: expect.not.arrayContaining(['block']),
+      groups: expect.arrayContaining(['block']),
       type: KEYS.tr,
     });
     expect(tableSpec?.groups).toContain('block');
-    expect(cellSpec?.groups).not.toContain('block');
+    expect(cellSpec?.groups).toContain('block');
     expect(tableSpec?.content).toMatchObject({
       allowedElementTypes: [KEYS.tr],
       allowsText: false,
@@ -46,12 +50,12 @@ describe('BaseTablePlugin schema', () => {
       min: 1,
     });
     expect(cellSpec?.content).toMatchObject({
-      allowedElementTypes: [KEYS.p],
+      allowedElementTypes: [KEYS.p, KEYS.table],
       allowsText: false,
       default: { type: KEYS.p },
       min: 1,
     });
-    expect(editor.read.schema.createAndFill(KEYS.table)).toEqual({
+    expect(editor.read.schema.createAndFill(BaseTablePlugin)).toEqual({
       children: [
         {
           children: [],
@@ -124,6 +128,6 @@ describe('BaseTablePlugin schema', () => {
           type: KEYS.table,
         },
       ])
-    ).toThrow(/cannot contain/i);
+    ).not.toThrow();
   });
 });

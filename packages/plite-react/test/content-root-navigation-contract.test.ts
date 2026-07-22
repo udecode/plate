@@ -2,7 +2,7 @@ import {
   createEditorRuntime,
   createEditorView,
   defineEditorSchema,
-  element,
+  NodeApi,
   schema,
   type Point,
 } from '@platejs/plite';
@@ -23,16 +23,19 @@ import {
 
 const contentRootExtension = defineEditorSchema({
   elements: {
-    'content-card': element({
-      contentRoot: {
-        content: schema.content.not(schema.content.text()),
-        slot: 'body',
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+    'content-card': {
+      content: schema.content.open(),
+      contentRoots: {
+        body: schema.content.not(schema.content.text()),
       },
       void: 'editable-island',
-    }),
+    },
   },
   id: 'content-root-navigation-test',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
@@ -192,6 +195,59 @@ describe('content root navigation', () => {
 
     expect(findContentRootOwners(editor)).toEqual([]);
     expect(read).not.toHaveBeenCalled();
+  });
+
+  it('finds every mapped slot through the runtime element index', () => {
+    const multiSlotExtension = defineEditorSchema({
+      elements: {
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        'content-card': {
+          content: schema.content.open(),
+          contentRoots: {
+            body: schema.content.type('paragraph'),
+            caption: schema.content.type('paragraph'),
+          },
+          void: 'editable-island',
+        },
+      },
+      id: 'content-root-navigation-multi-slot-test',
+      root: { content: schema.content.not(schema.content.text()) },
+      unknown: 'preserve',
+      version: 1,
+    });
+    const runtime = createEditorRuntime({
+      extensions: [multiSlotExtension],
+      initialValue: {
+        children: [
+          paragraph('Before'),
+          {
+            ...contentCard(),
+            childRoots: {
+              body: 'card:body',
+              caption: 'card:caption',
+            },
+          },
+          ...Array.from({ length: 5000 }, (_, index) =>
+            paragraph(`After ${index}`)
+          ),
+        ],
+        roots: {
+          'card:body': [paragraph('Body')],
+          'card:caption': [paragraph('Caption')],
+        },
+      },
+    });
+    const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
+    const isElement = vi.spyOn(NodeApi, 'isElement');
+
+    expect(findContentRootOwners(editor)).toEqual([
+      { childRoot: 'card:body', ownerPath: [1], ownerRoot: 'main' },
+      { childRoot: 'card:caption', ownerPath: [1], ownerRoot: 'main' },
+    ]);
+    expect(isElement).toHaveBeenCalledTimes(1);
+    isElement.mockRestore();
   });
 
   it('does not exit a content root from the start of its last block on ArrowDown', () => {

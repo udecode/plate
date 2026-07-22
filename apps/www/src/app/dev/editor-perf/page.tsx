@@ -2920,7 +2920,10 @@ function BenchmarkEditableMount({
       }
 
       if (elementBenchmarkMode === 'pipe-plugin-precomputed-path') {
-        if (elementPlugin?.node.element) {
+        if (
+          elementPlugin &&
+          editor.read.schema.element(elementPlugin) !== undefined
+        ) {
           return (
             <PlateElement
               {...({
@@ -2951,7 +2954,10 @@ function BenchmarkEditableMount({
       }
 
       if (elementBenchmarkMode === 'pipe-plugin-precomputed-no-below-root') {
-        if (elementPlugin?.node.element) {
+        if (
+          elementPlugin &&
+          editor.read.schema.element(elementPlugin) !== undefined
+        ) {
           return (
             <PlateElement
               {...({
@@ -2970,9 +2976,12 @@ function BenchmarkEditableMount({
       }
 
       if (elementBenchmarkMode === 'pipe-bare-plain-fast-path') {
-        if (elementPlugin?.node.element) {
-          const typeClass = elementPlugin.node.type
-            ? `plite-${elementPlugin.node.type}`
+        if (
+          elementPlugin &&
+          editor.read.schema.element(elementPlugin) !== undefined
+        ) {
+          const typeClass = elementPlugin.type
+            ? `plite-${elementPlugin.type}`
             : undefined;
           const attributes = {
             ...baseAttributes,
@@ -3729,8 +3738,9 @@ function BenchmarkEditableMount({
   const precomputedElementRender = React.useMemo(() => {
     if (
       !precomputedElementPluginPath ||
-      !paragraphPlugin?.node.element ||
-      !paragraphPlugin.node.type
+      !paragraphPlugin ||
+      editor.read.schema.element(paragraphPlugin) === undefined ||
+      !paragraphPlugin.type
     ) {
       return;
     }
@@ -3743,7 +3753,7 @@ function BenchmarkEditableMount({
     return (props: RenderElementProps) => {
       const element = props.element as PliteElement;
 
-      if (element.type !== paragraphPlugin.node.type) {
+      if (element.type !== paragraphPlugin.type) {
         return renderElement(props);
       }
 

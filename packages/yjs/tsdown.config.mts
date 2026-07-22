@@ -1,20 +1,9 @@
-import { defineConfig } from 'tsdown';
+import { defineDirectPackageConfig } from '../../tooling/config/direct-package.config.mts';
 
-const enableSourcemaps = !process.env.CI;
-
-export default defineConfig({
+export default defineDirectPackageConfig({
   entry: {
     index: 'src/index.ts',
     'core/index': 'src/core/index.ts',
     'react/index': 'src/react/index.ts',
   },
-  format: ['esm'],
-  clean: true,
-  platform: 'neutral',
-  tsconfig: 'tsconfig.build.json',
-  sourcemap: enableSourcemaps,
-  dts: false,
-  outExtensions: () => ({
-    js: '.js',
-  }),
 });

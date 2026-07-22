@@ -1,54 +1,29 @@
 import type { NodeComponent, PluginConfig } from '../../lib';
-
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { createPlateEditor } from '../editor';
 import { createPlatePlugin } from './createPlatePlugin';
 
-describe('withComponent method', () => {
-  it('set the component for the plugin', () => {
-    const MockComponent: NodeComponent = () => null;
-    const basePlugin = createPlatePlugin({ key: 'testPlugin' });
+describe('createPlatePlugin', () => {
+  it('uses withComponent as a facade for render.node only', () => {
+    const Component: NodeComponent = () => null;
+    const plugin = createPlatePlugin({ key: 'testPlugin' }).withComponent(
+      Component
+    );
+    const resolvedPlugin = resolvePluginTest(plugin);
 
-    const componentPlugin = basePlugin.withComponent(MockComponent);
-    const resolvedPlugin = resolvePluginTest(componentPlugin);
-
-    expect(resolvedPlugin.render.node).toBe(MockComponent);
+    expect(resolvedPlugin.render.node).toBe(Component);
   });
 
-  it('override an existing component', () => {
+  it('replaces an existing render.node through withComponent', () => {
     const OriginalComponent: NodeComponent = () => null;
     const NewComponent: NodeComponent = () => null;
-
-    const basePlugin = createPlatePlugin({
+    const plugin = createPlatePlugin({
       key: 'testPlugin',
       render: { node: OriginalComponent },
-    });
+    }).withComponent(NewComponent);
+    const resolvedPlugin = resolvePluginTest(plugin);
 
-    const componentPlugin = basePlugin.withComponent(NewComponent);
-    const resolvedPlugin = resolvePluginTest(componentPlugin);
-
-    expect(resolvedPlugin.render.node).not.toBe(OriginalComponent);
     expect(resolvedPlugin.render.node).toBe(NewComponent);
-    expect(resolvedPlugin.node.component).not.toBe(OriginalComponent);
-    expect(resolvedPlugin.node.component).toBe(NewComponent);
-  });
-
-  it('override an existing component with node.component', () => {
-    const OriginalComponent: NodeComponent = () => null;
-    const NewComponent: NodeComponent = () => null;
-
-    const basePlugin = createPlatePlugin({
-      key: 'testPlugin',
-      node: { component: OriginalComponent },
-    });
-
-    const componentPlugin = basePlugin.withComponent(NewComponent);
-    const resolvedPlugin = resolvePluginTest(componentPlugin);
-
-    expect(resolvedPlugin.render.node).not.toBe(OriginalComponent);
-    expect(resolvedPlugin.render.node).toBe(NewComponent);
-    expect(resolvedPlugin.node.component).not.toBe(OriginalComponent);
-    expect(resolvedPlugin.node.component).toBe(NewComponent);
   });
 
   it('extendEditorApi', () => {
@@ -65,7 +40,7 @@ describe('withComponent method', () => {
 
     createPlatePlugin({
       key: 'codeBlock',
-      node: { type: 'code_block' },
+      type: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
     })
       .extendEditorApi<CodeBlockConfig['api']>(() => ({
@@ -113,7 +88,9 @@ describe('withComponent method', () => {
 
     expect(RuntimePlugin.__editorExtensions).toHaveLength(2);
 
-    const editor = createPlateEditor({ plugins: [RuntimePlugin] });
+    const editor = createPlateEditor({
+      plugins: [RuntimePlugin],
+    });
 
     expect(editor.api.runtime.key()).toBe('runtime');
     expect(editor.api.runtime.label()).toBe('Runtime');
@@ -184,7 +161,9 @@ describe('withComponent method', () => {
       },
     }));
 
-    const editor = createPlateEditor({ plugins: [MethodPlugin] });
+    const editor = createPlateEditor({
+      plugins: [MethodPlugin],
+    });
     const pluginContext = editor.plugin(MethodPlugin);
     const keyedContext = editor.plugin<MethodConfig>('methodPlugin');
 

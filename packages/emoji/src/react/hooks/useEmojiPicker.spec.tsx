@@ -11,6 +11,8 @@ mock.module('./useEmojiPickerState', () => ({
   useEmojiPickerState: useEmojiPickerStateMock,
 }));
 
+const { useEmojiPicker } = await import('./useEmojiPicker');
+
 describe('useEmojiPicker', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
@@ -22,9 +24,6 @@ describe('useEmojiPicker', () => {
   });
 
   it('dispatches search and selection updates, then inserts the chosen emoji', async () => {
-    const { useEmojiPicker } = await import(
-      `./useEmojiPicker?test=${Math.random().toString(36).slice(2)}`
-    );
     const dispatch = mock();
     const emojiLibrary = {
       getGrid: () => ({
@@ -92,9 +91,6 @@ describe('useEmojiPicker', () => {
   });
 
   it('marks a clicked category visible before scrolling to it', async () => {
-    const { useEmojiPicker } = await import(
-      `./useEmojiPicker?test=${Math.random().toString(36).slice(2)}`
-    );
     const dispatch = mock();
     const foodsRoot = {
       getBoundingClientRect: () => ({ top: 110 }),
@@ -153,7 +149,11 @@ describe('useEmojiPicker', () => {
       })
     );
 
-    result.current.refs.current.contentRoot.current = contentRoot as any;
+    const contentRootRef = result.current.refs.current.contentRoot;
+
+    if (!contentRootRef) throw new Error('Missing content root ref');
+
+    contentRootRef.current = contentRoot as any;
 
     act(() => {
       result.current.handleCategoryClick('foods' as any);
@@ -176,9 +176,6 @@ describe('useEmojiPicker', () => {
   });
 
   it('scrolls to a clicked category after search results unmount', async () => {
-    const { useEmojiPicker } = await import(
-      `./useEmojiPicker?test=${Math.random().toString(36).slice(2)}`
-    );
     let state = {
       hasFound: true,
       isOpen: false,
@@ -236,7 +233,11 @@ describe('useEmojiPicker', () => {
       })
     );
 
-    result.current.refs.current.contentRoot.current = contentRoot as any;
+    const contentRootRef = result.current.refs.current.contentRoot;
+
+    if (!contentRootRef) throw new Error('Missing content root ref');
+
+    contentRootRef.current = contentRoot as any;
 
     act(() => {
       result.current.handleCategoryClick('foods' as any);

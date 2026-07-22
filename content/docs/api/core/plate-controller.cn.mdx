@@ -40,20 +40,19 @@ PlateController Store 包含基于 **`id`** 获取 Plate Store 以及确定当�
 ```tsx
 const App = withHoc(PlateController, () => {
   const mainEditor = useEditorRef('main');
-  
   useEffect(() => {
     if (!mainEditor.isFallback) {
       console.info('Editor mounted', mainEditor);
     }
   }, [mainEditor]);
-  
   return (
     <>
-      <Plate editor={createPlateEditor({ id: 'main' })}>
+      <Plate editor={createPlateEditor({
+         id: 'main' })}>
         <PlateContent />
       </Plate>
-    
-      <Plate editor={createPlateEditor({ id: 'secondary' })}>
+      <Plate editor={createPlateEditor({
+         id: 'secondary' })}>
         <PlateContent />
       </Plate>
     </>
@@ -75,20 +74,18 @@ const App = withHoc(PlateController, () => {
 const App = withHoc(PlateController, () => {
   const activeEditorId = useEditorId();
   const isFallback = !useEditorMounted();
-  
   const message = isFallback
     ? '请聚焦一个编辑器'
     : `活动编辑器：${activeEditorId}`;
-  
   return (
     <main>
       <p>{message}</p>
-      
-      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
+      <Plate editor={createPlateEditor({
+         id: 'main', primary: false })}>
         <PlateContent />
       </Plate>
-    
-      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
+      <Plate editor={createPlateEditor({
+         id: 'secondary', primary: false })}>
         <PlateContent />
       </Plate>
     </main>
@@ -114,23 +111,21 @@ import { KEYS } from 'platejs';
 
 const App = withHoc(PlateController, () => {
   const activeEditor = useEditorRef();
-  
   const toggleBold = () => {
     if (activeEditor.isFallback) return;
     activeEditor.update.marks.toggle(KEYS.bold);
   };
-  
   return (
     <main>
       <button type="button" onClick={toggleBold}>
         Bold
       </button>
-      
-      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
+      <Plate editor={createPlateEditor({
+         id: 'main', primary: false })}>
         <PlateContent />
       </Plate>
-    
-      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
+      <Plate editor={createPlateEditor({
+         id: 'secondary', primary: false })}>
         <PlateContent />
       </Plate>
     </main>
@@ -142,11 +137,9 @@ const App = withHoc(PlateController, () => {
 const App = withHoc(PlateController, () => {
   const activeEditor = useEditorRef();
   const isFallback = !useEditorMounted();
-  
   const toggleBold = () => {
     activeEditor.update.marks.toggle(KEYS.bold);
   };
-  
   return (
     <main>
       <button
@@ -156,12 +149,12 @@ const App = withHoc(PlateController, () => {
       >
         Bold
       </button>
-      
-      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
+      <Plate editor={createPlateEditor({
+         id: 'main', primary: false })}>
         <PlateContent />
       </Plate>
-    
-      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
+      <Plate editor={createPlateEditor({
+         id: 'secondary', primary: false })}>
         <PlateContent />
       </Plate>
     </main>

@@ -76,6 +76,22 @@ export const PLITE_RELEASE_PACKAGES = [
     name: '@platejs/browser',
   },
   {
+    allowedPlateRuntime: [],
+    directory: 'packages/udecode/utils',
+    name: '@udecode/utils',
+  },
+  {
+    allowedPlateRuntime: [
+      '@platejs/plite',
+      '@platejs/plite-dom',
+      '@platejs/plite-history',
+      '@platejs/plite-hyperscript',
+      '@platejs/plite-react',
+    ],
+    directory: 'packages/core',
+    name: '@platejs/core',
+  },
+  {
     // @platejs/yjs deliberately publishes both the Plite collaboration
     // substrate and the Plate plugin adapter from separate public subpaths.
     allowedPlateRuntime: [
@@ -319,6 +335,32 @@ export function createConsumerSources(packages) {
     }
   }
 
+  const consumesPliteRoot = packages.some((packedPackage) =>
+    packedPackage.publicExports.some(
+      (packageExport) =>
+        packageExport.specifier === '@platejs/plite' &&
+        packageExport.subpath === '.'
+    )
+  );
+
+  if (consumesPliteRoot) {
+    typeImports.push(createPliteSchemaConsumerSource({ typed: true }));
+    runtimeImports.push(createPliteSchemaConsumerSource({ typed: false }));
+  }
+
+  const consumesCoreRoot = packages.some((packedPackage) =>
+    packedPackage.publicExports.some(
+      (packageExport) =>
+        packageExport.specifier === '@platejs/core' &&
+        packageExport.subpath === '.'
+    )
+  );
+
+  if (consumesCoreRoot) {
+    typeImports.push(createPlateSchemaConsumerSource({ typed: true }));
+    runtimeImports.push(createPlateSchemaConsumerSource({ typed: false }));
+  }
+
   const sentinel = 'globalThis.__PLITE_RELEASE_ARTIFACT_SENTINEL__ = 1;';
 
   return {
@@ -329,6 +371,258 @@ export function createConsumerSources(packages) {
     runtime: [...runtimeImports, ''].join('\n'),
     types: [...typeImports, ''].join('\n'),
   };
+}
+
+function createPliteSchemaConsumerSource({ typed }) {
+  return [
+    "import { deepStrictEqual as releaseAssertDeepEqual, equal as releaseAssertEqual } from 'node:assert/strict';",
+    'import {',
+    '  createEditorRuntime as createReleaseEditorRuntime,',
+    '  defineEditorSchema as defineReleaseEditorSchema,',
+    '  property as releaseProperty,',
+    '  schema as releaseSchemaApi,',
+    "} from '@platejs/plite';",
+    ...(typed
+      ? [
+          "import type { SchemaElementFor as ReleaseSchemaElementFor } from '@platejs/plite';",
+        ]
+      : []),
+    '',
+    'const ReleaseArtifactSchema = defineReleaseEditorSchema({',
+    '  elements: {',
+    '    paragraph: {',
+    "      content: releaseSchemaApi.content.text({ default: 'text', min: 1 }),",
+    '      properties: {',
+    "        tone: releaseProperty.string({ default: 'body' }),",
+    '      },',
+    '    },',
+    '  },',
+    "  id: 'release-consumer-schema',",
+    '  root: {',
+    "    content: releaseSchemaApi.content.type('paragraph', {",
+    "      default: { type: 'paragraph' },",
+    '      min: 1,',
+    '    }),',
+    '  },',
+    "  unknown: 'reject',",
+    '  version: 1,',
+    '});',
+    'const releaseRuntime = createReleaseEditorRuntime({',
+    '  extensions: [ReleaseArtifactSchema],',
+    '  initialValue: [',
+    '    {',
+    "      children: [{ text: 'installed tarball' }],",
+    "      type: 'paragraph',",
+    '    },',
+    '  ],',
+    '});',
+    'const releaseIdentity = releaseRuntime.editor.read.schema.identity();',
+    "if (releaseIdentity?.kind !== 'named') {",
+    "  throw new Error('Expected a named release schema identity.');",
+    '}',
+    "releaseAssertEqual(releaseIdentity?.id, 'release-consumer-schema');",
+    'releaseAssertEqual(releaseIdentity?.version, 1);',
+    'const releaseParagraphHandle = releaseSchemaApi.handle.element(',
+    '  ReleaseArtifactSchema,',
+    "  'paragraph'",
+    ');',
+    'const releaseCanonicalParagraph =',
+    '  releaseRuntime.editor.read.schema.createAndFill(releaseParagraphHandle);',
+    typed
+      ? "const releaseTypedParagraph: ReleaseSchemaElementFor<typeof ReleaseArtifactSchema, 'paragraph'> = releaseCanonicalParagraph;"
+      : 'const releaseTypedParagraph = releaseCanonicalParagraph;',
+    'releaseAssertDeepEqual(releaseTypedParagraph, {',
+    "  tone: 'body',",
+    "  children: [{ text: '' }],",
+    "  type: 'paragraph',",
+    '});',
+  ].join('\n');
+}
+
+function createPlateSchemaConsumerSource({ typed }) {
+  return [
+    "import { deepStrictEqual as releasePlateAssertDeepEqual, equal as releasePlateAssertEqual } from 'node:assert/strict';",
+    'import {',
+    '  property as releasePlateProperty,',
+    '  schema as releasePlateSchemaApi,',
+    "} from '@platejs/plite';",
+    'import {',
+    '  createBaseEditor as createReleaseBaseEditor,',
+    '  createBasePlugin as createReleaseBasePlugin,',
+    '  definePluginHostPolicy as defineReleasePluginHostPolicy,',
+    '  getPluginHostPolicyResource as getReleasePluginHostPolicyResource,',
+    "} from '@platejs/core';",
+    ...(typed
+      ? [
+          "import type { PluginHostPolicy as ReleasePluginHostPolicy } from '@platejs/core';",
+        ]
+      : []),
+    '',
+    'const ReleaseDraftHostPolicy = defineReleasePluginHostPolicy({',
+    "  id: 'release-consumer-host-policy:draft',",
+    '  resource: {',
+    "    prefix: 'draft:',",
+    '  },',
+    '  version: 1,',
+    '});',
+    'const ReleasePublishedHostPolicy = defineReleasePluginHostPolicy({',
+    "  id: 'release-consumer-host-policy:published',",
+    '  resource: {',
+    "    prefix: 'published:',",
+    '  },',
+    '  version: 1,',
+    '});',
+    ...(typed
+      ? [
+          'const releaseTypedHostPolicy: ReleasePluginHostPolicy<{',
+          '  readonly prefix: string;',
+          '}> = ReleaseDraftHostPolicy;',
+          'void releaseTypedHostPolicy;',
+        ]
+      : []),
+    'const ReleaseElementPlugin = createReleaseBasePlugin({',
+    '  config: {',
+    '    hostPolicy: ReleaseDraftHostPolicy,',
+    "    label: 'draft',",
+    '  },',
+    "  key: 'releaseArtifactElement',",
+    '  schema: ({ config }) => ({',
+    '    element: {',
+    "      content: releasePlateSchemaApi.content.text({ default: 'text', min: 1 }),",
+    '      properties: {',
+    '        tone: releasePlateProperty.string({ default: config.label }),',
+    '      },',
+    '    },',
+    '  }),',
+    "  type: 'release-artifact-paragraph',",
+    '}).extendApi(({ plugin }) => ({',
+    '  formatConfiguredLabel: () =>',
+    '    getReleasePluginHostPolicyResource(plugin.config.hostPolicy).prefix +',
+    '    plugin.config.label,',
+    '  readConfiguredLabel: () => plugin.config.label,',
+    '}));',
+    'const ReleaseMarkPlugin = createReleaseBasePlugin({',
+    "  key: 'releaseArtifactMark',",
+    '  schema: {',
+    '    mark: releasePlateProperty.boolean({',
+    '      default: false,',
+    '      omitDefault: true,',
+    '    }),',
+    '  },',
+    "  type: 'release-artifact-strong',",
+    '});',
+    'const ReleaseParentPlugin = createReleaseBasePlugin({',
+    "  key: 'releaseArtifactParent',",
+    '  plugins: [ReleaseElementPlugin, ReleaseMarkPlugin],',
+    '});',
+    ...(typed
+      ? [
+          "const releaseExactElementType: 'release-artifact-paragraph' = ReleaseElementPlugin.type;",
+          "const releaseExactMarkType: 'release-artifact-strong' = ReleaseMarkPlugin.type;",
+          'const releaseNestedElementPlugin: typeof ReleaseElementPlugin =',
+          '  ReleaseParentPlugin.plugins[0];',
+          'const releaseNestedMarkPlugin: typeof ReleaseMarkPlugin =',
+          '  ReleaseParentPlugin.plugins[1];',
+          'if (false) {',
+          '  // @ts-expect-error Plate plugin configuration is immutable.',
+          "  ReleaseElementPlugin.config.label = 'mutated';",
+          '}',
+          'void releaseExactElementType;',
+          'void releaseExactMarkType;',
+          'void releaseNestedElementPlugin;',
+          'void releaseNestedMarkPlugin;',
+        ]
+      : []),
+    'const releasePlateEditor = createReleaseBaseEditor({',
+    '  nodeId: false,',
+    '  plugins: [ReleaseParentPlugin],',
+    '  schema: {',
+    "    id: 'release-consumer-plate-schema',",
+    '    version: 1,',
+    '  },',
+    '  value: [',
+    '    {',
+    "      children: [{ text: 'packed core' }],",
+    "      tone: 'draft',",
+    "      type: 'release-artifact-paragraph',",
+    '    },',
+    '  ],',
+    '});',
+    'const releaseHeldPlugin = releasePlateEditor.plugin(ReleaseElementPlugin);',
+    'const releasePlateIdentityBefore =',
+    '  releasePlateEditor.read.schema.identity();',
+    "if (releasePlateIdentityBefore?.kind !== 'named') {",
+    "  throw new Error('Expected a named Plate schema identity.');",
+    '}',
+    'const releasePlateElementBefore =',
+    '  releasePlateEditor.read.schema.createAndFill(ReleaseElementPlugin);',
+    ...(typed
+      ? [
+          "const releaseCreatedElementType: 'release-artifact-paragraph' = releasePlateElementBefore.type;",
+          'const releaseCreatedElementTone: string | undefined =',
+          '  releasePlateElementBefore.tone;',
+          'void releaseCreatedElementType;',
+          'void releaseCreatedElementTone;',
+        ]
+      : []),
+    'releasePlateAssertDeepEqual(releasePlateElementBefore, {',
+    "  children: [{ text: '' }],",
+    "  tone: 'draft',",
+    "  type: 'release-artifact-paragraph',",
+    '});',
+    'releasePlateAssertEqual(',
+    '  releasePlateEditor.read.schema.property(ReleaseMarkPlugin)?.key,',
+    "  'release-artifact-strong'",
+    ');',
+    'releasePlateAssertEqual(',
+    '  releasePlateEditor.read.schema.property(ReleaseMarkPlugin)?.placement,',
+    "  'text'",
+    ');',
+    'releasePlateAssertEqual(Object.isFrozen(ReleaseElementPlugin.config), true);',
+    'releasePlateAssertEqual(Object.isFrozen(ReleaseDraftHostPolicy), true);',
+    'releasePlateAssertEqual(releaseHeldPlugin.api.readConfiguredLabel(), "draft");',
+    'releasePlateAssertEqual(',
+    '  releaseHeldPlugin.api.formatConfiguredLabel(),',
+    "  'draft:draft'",
+    ');',
+    'releasePlateEditor.configure(',
+    '  ReleaseElementPlugin,',
+    '  {',
+    '    hostPolicy: ReleasePublishedHostPolicy,',
+    "    label: 'published',",
+    '  },',
+    '  {',
+    '    migrate({ document, next }) {',
+    '      next.validateDocument(document);',
+    '',
+    '      return document;',
+    '    },',
+    '  }',
+    ');',
+    'const releasePlateIdentityAfter = releasePlateEditor.read.schema.identity();',
+    "if (releasePlateIdentityAfter?.kind !== 'named') {",
+    "  throw new Error('Expected a named Plate schema identity.');",
+    '}',
+    'const releasePlateElementAfter =',
+    '  releasePlateEditor.read.schema.createAndFill(ReleaseElementPlugin);',
+    'releasePlateAssertDeepEqual(releasePlateElementAfter, {',
+    "  children: [{ text: '' }],",
+    "  tone: 'published',",
+    "  type: 'release-artifact-paragraph',",
+    '});',
+    'releasePlateAssertEqual(releasePlateIdentityAfter?.id, releasePlateIdentityBefore?.id);',
+    'releasePlateAssertEqual(',
+    '  releasePlateIdentityAfter?.fingerprint ===',
+    '    releasePlateIdentityBefore?.fingerprint,',
+    '  false',
+    ');',
+    "releasePlateAssertEqual(releaseHeldPlugin.plugin.config.label, 'published');",
+    "releasePlateAssertEqual(releaseHeldPlugin.api.readConfiguredLabel(), 'published');",
+    'releasePlateAssertEqual(',
+    '  releaseHeldPlugin.api.formatConfiguredLabel(),',
+    "  'published:published'",
+    ');',
+  ].join('\n');
 }
 
 export async function checkPliteReleaseArtifacts({ keep = false } = {}) {
@@ -429,7 +723,7 @@ export async function checkPliteReleaseArtifacts({ keep = false } = {}) {
     }
 
     console.log(
-      `Verified ${packedPackages.length} packed Plite-family packages, ${packedPackages.reduce((count, item) => count + item.publicExports.length, 0)} public subpaths, NodeNext/Bundler declarations, package direction, and bare/named DCE.`
+      `Verified ${packedPackages.length} packed release packages, ${packedPackages.reduce((count, item) => count + item.publicExports.length, 0)} public subpaths, NodeNext/Bundler declarations, package direction, and bare/named DCE.`
     );
   } finally {
     if (keep) {

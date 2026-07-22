@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react';
 
 import type { PluginConfig } from '../../../lib';
 
+import { DebugPlugin } from '../../../lib/plugins/debug/DebugPlugin';
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
 import { createPlatePlugin } from '../../plugin';
@@ -133,50 +134,49 @@ describe('usePluginOption', () => {
     expect(result.current).toBe(true);
   });
 
-  it('logs and returns undefined for missing options, and returns undefined when the store is missing', () => {
-    const CounterPlugin = createPlatePlugin({
+  it('logs and returns undefined for missing options', () => {
+    type CounterConfig = PluginConfig<
+      'counter',
+      {
+        missing?: number;
+        value: number;
+      }
+    >;
+
+    const CounterPlugin = createPlatePlugin<CounterConfig>({
       key: 'counter',
       options: {
         value: 1,
       },
     });
-    const editor = createPlateEditor({
-      plugins: [CounterPlugin],
-    });
-    const externalPlugin = createPlatePlugin({
-      key: 'external',
-      options: {
-        value: 5,
-      },
-    });
     const debugError = mock();
-
-    editor.api.debug.error = debugError as any;
+    const editor = createPlateEditor({
+      plugins: [
+        DebugPlugin.configure({
+          options: {
+            logger: {
+              error: debugError,
+            },
+            throwErrors: false,
+          },
+        }),
+        CounterPlugin,
+      ],
+    });
 
     const missingKey = renderHook(() =>
-      useEditorPluginOption(editor, CounterPlugin, 'missing' as any)
+      useEditorPluginOption(editor, CounterPlugin, 'missing')
     );
-    const missingStore = renderHook(() => ({
-      option: useEditorPluginOption(editor, externalPlugin, 'value'),
-      selected: useEditorPluginOptions(
-        editor,
-        externalPlugin,
-        (state) => state
-      ),
-    }));
 
     expect(missingKey.result.current).toBeUndefined();
     expect(debugError).toHaveBeenCalledWith(
       'usePluginOption: missing option is not defined in plugin counter',
-      'OPTION_UNDEFINED'
+      'OPTION_UNDEFINED',
+      undefined
     );
-    expect(missingStore.result.current).toEqual({
-      option: undefined,
-      selected: undefined,
-    });
   });
 
-  it('returns undefined for missing runtime plugin option stores', () => {
+  it('throws when the plugin is not installed', () => {
     const CounterPlugin = createPlatePlugin({
       key: 'counter',
       options: {
@@ -193,18 +193,13 @@ describe('usePluginOption', () => {
       plugins: [CounterPlugin],
     });
 
-    const missingStore = renderHook(() => ({
-      option: useEditorPluginOption(editor, externalPlugin, 'value'),
-      selected: useEditorPluginOptions(
-        editor,
-        externalPlugin,
-        (state) => state
-      ),
-    }));
-
-    expect(missingStore.result.current).toEqual({
-      option: undefined,
-      selected: undefined,
-    });
+    expect(() =>
+      renderHook(() => useEditorPluginOption(editor, externalPlugin, 'value'))
+    ).toThrow('Plate plugin "external" is not installed.');
+    expect(() =>
+      renderHook(() =>
+        useEditorPluginOptions(editor, externalPlugin, (state) => state)
+      )
+    ).toThrow('Plate plugin "external" is not installed.');
   });
 });

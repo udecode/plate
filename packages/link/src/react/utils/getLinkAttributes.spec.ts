@@ -1,7 +1,11 @@
 import { createBaseEditor } from '@platejs/core';
 import type { TLinkElement } from '@platejs/utils';
 
-import { BaseLinkPlugin, getLinkAttributes } from '../../lib';
+import {
+  type BaseLinkConfig,
+  BaseLinkPlugin,
+  getLinkAttributes,
+} from '../../lib';
 import type { LinkConfig } from '../LinkPlugin';
 
 const baseLink = {
@@ -15,10 +19,18 @@ const defaultOptions: Partial<LinkConfig['options']> = {
   },
 };
 
-const createEditor = (options: Partial<LinkConfig['options']> = {}) =>
-  createBaseEditor({
+const createEditor = (
+  settings: Partial<BaseLinkConfig['config'] & LinkConfig['options']> = {}
+) => {
+  const { dangerouslySkipSanitization, ...options } = settings;
+
+  return createBaseEditor({
     plugins: [
       BaseLinkPlugin.configure({
+        config:
+          dangerouslySkipSanitization === undefined
+            ? undefined
+            : { dangerouslySkipSanitization },
         options: {
           ...defaultOptions,
           ...options,
@@ -26,6 +38,7 @@ const createEditor = (options: Partial<LinkConfig['options']> = {}) =>
       }),
     ],
   });
+};
 
 describe('getLinkAttributes', () => {
   const editor = createEditor();

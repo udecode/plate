@@ -8,7 +8,9 @@ import { deserializeHtmlNode } from './deserializeHtmlNode';
 jsxt;
 
 describe('when element has a br', () => {
-  const editor = createBaseEditor({ plugins: [] });
+  const editor = createBaseEditor({
+    plugins: [],
+  });
 
   const html = '<html><body>test<br /></body></html>';
   const element = getHtmlDocument(html).body;
@@ -25,7 +27,9 @@ describe('when element has a br', () => {
 });
 
 describe('deserializeHtmlNode standalone br handling', () => {
-  const editor = createBaseEditor({ plugins: [] });
+  const editor = createBaseEditor({
+    plugins: [],
+  });
 
   it('converts standalone br tags into empty paragraphs', () => {
     const element = getHtmlDocument(

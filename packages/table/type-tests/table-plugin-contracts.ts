@@ -5,7 +5,7 @@ type IsAny<T> = 0 extends 1 & T ? true : false;
 
 type _tablePluginNotAny = AssertFalse<IsAny<typeof TablePlugin>>;
 
-const configuredTablePlugin = TablePlugin.configure((ctx) => {
+const extendedTablePlugin = TablePlugin.extend((ctx) => {
   type _ctxNotAny = AssertFalse<IsAny<typeof ctx>>;
   type _editorNotAny = AssertFalse<IsAny<typeof ctx.editor>>;
 
@@ -22,4 +22,4 @@ const configuredTablePlugin = TablePlugin.configure((ctx) => {
   };
 });
 
-void configuredTablePlugin;
+void extendedTablePlugin;

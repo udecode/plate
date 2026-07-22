@@ -5,7 +5,6 @@ import {
   createEditor,
   defineEditorSchema,
   EditorSchemaValidationError,
-  element,
   property,
   schema,
   target,
@@ -14,37 +13,31 @@ import {
 
 const Schema = defineEditorSchema({
   elements: {
-    code: element({
+    code: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    container: element({
+    } as const,
+    container: {
       content: schema.content.type('paragraph', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
-    }),
-    heading: element({
+    } as const,
+    heading: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    paragraph: element({
+    } as const,
+    paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
       properties: { count: property.number() },
-    }),
-    portal: element({
+    } as const,
+    portal: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      contentRoot: {
-        content: schema.content.type('paragraph', {
+      contentRoots: {
+        body: schema.content.type('paragraph', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-        slot: 'body',
       },
-      groups: ['block'],
-    }),
+    } as const,
   },
   id: 'validation-diagnostics',
   properties: [
@@ -58,15 +51,16 @@ const Schema = defineEditorSchema({
       target: target.type('paragraph'),
     }),
   ],
-  root: schema.root({
+  root: {
     content: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  }),
+  } as const,
   roots: {
-    header: schema.root({ content: schema.content.type('heading') }),
+    header: { content: schema.content.type('heading') } as const,
   },
+  unknown: 'reject',
   version: 1,
 });
 

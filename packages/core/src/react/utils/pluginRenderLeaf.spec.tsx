@@ -1,5 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 
+import { property } from '@platejs/plite';
 import React from 'react';
 
 import { render } from '@testing-library/react';
@@ -11,19 +12,16 @@ import { pluginRenderLeaf } from './pluginRenderLeaf';
 it('uses a plain render.as fast path for simple leaf plugins', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      mark: true,
-      type: 'test',
-    },
+    type: 'test',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 'strong',
     },
   });
   const editor = createPlateEditor({
+    navigationFeedback: false,
     plugins: [testPlugin],
   });
-  editor.runtime.pluginCache.inject.nodeProps = [];
-  editor.runtime.pluginCache.inject.nodeProps = [];
   const renderLeaf = pluginRenderLeaf(editor, testPlugin as any);
   const TestComponent = () =>
     renderLeaf({
@@ -51,10 +49,8 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
 it('renders simple hard-affinity leaves without spacers when inactive', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      mark: true,
-      type: 'test',
-    },
+    type: 'test',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 'code',
     },
@@ -65,9 +61,9 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
     },
   });
   const editor = createPlateEditor({
+    navigationFeedback: false,
     plugins: [testPlugin],
   });
-  editor.runtime.pluginCache.inject.nodeProps = [];
   const renderLeaf = pluginRenderLeaf(editor, testPlugin as any);
   const text = { test: true, text: 'test content' } as any;
   const TestComponent = () =>
@@ -91,10 +87,8 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
 it('renders simple directional-affinity leaves without PlateLeaf fallback', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      mark: true,
-      type: 'test',
-    },
+    type: 'test',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 's',
     },
@@ -128,10 +122,8 @@ it('renders simple directional-affinity leaves without PlateLeaf fallback', () =
 it('renders boundary spacers only for the active hard-affinity edge', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      mark: true,
-      type: 'test',
-    },
+    type: 'test',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 'code',
     },
@@ -142,6 +134,7 @@ it('renders boundary spacers only for the active hard-affinity edge', () => {
     },
   });
   const editor = createPlateEditor({
+    navigationFeedback: false,
     plugins: [testPlugin],
     selection: {
       kind: 'text',
@@ -155,7 +148,6 @@ it('renders boundary spacers only for the active hard-affinity edge', () => {
       },
     ] as any,
   });
-  editor.runtime.pluginCache.inject.nodeProps = [];
   const renderLeaf = pluginRenderLeaf(editor, testPlugin as any);
   const text = editor.read.children()[0].children[0] as any;
   const TestComponent = () =>

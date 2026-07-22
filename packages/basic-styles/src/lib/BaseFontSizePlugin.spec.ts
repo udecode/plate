@@ -13,12 +13,9 @@ describe('BaseFontSizePlugin', () => {
     expect(plugin.inject.nodeProps).toMatchObject({
       nodeKey: 'fontSize',
     });
-    expect(
-      editor.read.schema.property({
-        key: KEYS.fontSize,
-        placement: 'text',
-      })?.value.kind
-    ).toBe('string');
+    expect(editor.read.schema.property(BaseFontSizePlugin)?.value.kind).toBe(
+      'string'
+    );
     expect(
       editor.api.html.deserialize({
         element: '<span style="font-size: 18px">text</span>',

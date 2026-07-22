@@ -42,21 +42,23 @@ describe('extension method hard cut', () => {
   it('rejects malformed command registrations before mutating the editor', () => {
     const editor = createEditor();
     const commandExtension = asExtensionInput({
-      commands: [
+      commands: () => [
         {
           handler: () => false,
-          type: 'insert_text',
         },
-      ] as const,
+      ],
       name: 'command-extension',
     });
 
     assert.throws(
       () => editor.extend(commandExtension),
-      /command registrations must reference a non-empty command type/
+      /command registrations must be created by the extension command factory/
     );
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
-    assert.equal(editorGetExtensionRegistry(editor).commands.size, 0);
+    assert.equal(
+      editorGetExtensionRegistry(editor).commands.byDescriptor.size,
+      0
+    );
   });
 
   it('rejects unsupported extension lifecycle slots before mutating the editor', () => {
@@ -298,12 +300,12 @@ describe('extension method hard cut', () => {
       extensions: [
         defineEditorExtension({
           name: 'insert-text-command',
-          commands: [
-            editorCommands.insertText.handle(({ command, state }, next) => {
+          commands: ({ around }) => [
+            around(editorCommands.insertText, ({ input, state, next }) => {
               seenOffsets.push(state.selection()?.anchor.offset ?? -1);
               const spec = next({
-                ...command,
-                text: command.text.toUpperCase(),
+                ...input,
+                text: input.text.toUpperCase(),
               });
 
               if (!spec) return false;
@@ -367,8 +369,8 @@ describe('extension method hard cut', () => {
       extensions: [
         defineEditorExtension({
           name: 'insert-break-command',
-          commands: [
-            editorCommands.insertBreak.handle((_context, next) => next()),
+          commands: ({ handle }) => [
+            handle(editorCommands.insertBreak, (_context) => false),
           ],
         }),
       ],
@@ -380,8 +382,8 @@ describe('extension method hard cut', () => {
     editor.extend(
       defineEditorExtension({
         name: 'insert-text-command',
-        commands: [
-          editorCommands.insertText.handle((_context, next) => next()),
+        commands: ({ handle }) => [
+          handle(editorCommands.insertText, (_context) => false),
         ],
       })
     );
@@ -405,9 +407,9 @@ describe('extension method hard cut', () => {
     editor.extend(
       defineEditorExtension({
         name: 'delete-backward-command',
-        commands: [
-          editorCommands.delete.handle(({ command, state }) => {
-            seenUnits.push(command.unit);
+        commands: ({ handle }) => [
+          handle(editorCommands.delete, ({ input, state }) => {
+            seenUnits.push(input.unit);
             return state.transaction(() => {});
           }),
         ],
@@ -427,18 +429,18 @@ describe('extension method hard cut', () => {
     editor.extend([
       defineEditorExtension({
         name: 'low-delete-backward-command',
-        commands: [
-          editorCommands.delete.handle((_context, next) => {
+        commands: ({ handle }) => [
+          handle(editorCommands.delete, (_context) => {
             calls.push('low');
-            return next();
+            return false;
           }),
         ],
       }),
       defineEditorExtension({
         name: 'high-delete-backward-command',
         priority: 10,
-        commands: [
-          editorCommands.delete.handle(({ state }) => {
+        commands: ({ handle }) => [
+          handle(editorCommands.delete, ({ state }) => {
             calls.push('high');
             return state.transaction(() => {});
           }),

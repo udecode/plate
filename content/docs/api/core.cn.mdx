@@ -66,9 +66,9 @@ description: \@platejs/core 的 API 参考文档。
         - **默认值:** `'if-needed'`
       </APISubListItem>
       <APISubListItem parent="nodeId" name="reuseId" type="boolean" optional>
-        在撤销/重做和复制/粘贴时重用 ID。
-        - 当 `true`: 如果文档中不存在则保留 ID
-        - 当 `false`: 总是生成新 ID (跨文档更安全)
+        粘贴剪贴板内容时重用 ID。
+        - 当 `true`: 如果目标文档中不存在则保留源 ID
+        - 当 `false`: 为粘贴的节点生成新 ID
         - **默认值:** `false`
       </APISubListItem>
       <APISubListItem parent="nodeId" name="allow" type="string[]" optional>

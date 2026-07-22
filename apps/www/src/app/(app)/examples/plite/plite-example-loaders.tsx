@@ -76,6 +76,9 @@ export const pliteExampleComponents = {
   plaintext: createPliteExampleLoader(() => import('./_examples/plaintext')),
   'read-only': createPliteExampleLoader(() => import('./_examples/read-only')),
   richtext: createPliteExampleLoader(() => import('./_examples/richtext')),
+  'schema-reconfiguration': createPliteExampleLoader(
+    () => import('./_examples/schema-reconfiguration')
+  ),
   'search-highlighting': createPliteExampleLoader(
     () => import('./_examples/search-highlighting')
   ),

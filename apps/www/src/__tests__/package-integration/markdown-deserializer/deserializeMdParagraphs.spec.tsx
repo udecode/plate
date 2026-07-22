@@ -8,16 +8,21 @@ import { createBaseEditor } from 'platejs';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
+import {
+  MarkdownPlugin,
+  defineMarkdownConfig,
+} from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
 import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deserializer/deserializeMd';
 
 jsxt;
 
 const markdownPlugin = MarkdownPlugin.configure({
-  options: {
+  config: defineMarkdownConfig({
     disallowedNodes: [SuggestionPlugin.key],
+    id: 'plate-www:test:markdown-paragraphs',
     remarkPlugins: [remarkMath, remarkGfm],
-  },
+    version: 1,
+  }),
 });
 
 const createTestEditor = (plugins: any[] = []) =>

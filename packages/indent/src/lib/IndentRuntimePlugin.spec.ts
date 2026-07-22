@@ -10,10 +10,9 @@ import { BaseIndentPlugin } from './BaseIndentPlugin';
 
 const QuotePlugin = createBasePlugin({
   key: 'quote',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
     },
   },
 });

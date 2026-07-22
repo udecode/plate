@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import { property } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
 jsxt;
@@ -8,7 +9,7 @@ import { createPlatePlugin } from '../plugin';
 
 const BoldPlugin = createPlatePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
 it('uses custom hotkey handler for bold', () => {

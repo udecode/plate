@@ -1,5 +1,5 @@
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import type { Selection, Value } from '@platejs/plite';
+import { property, type Selection, type Value } from '@platejs/plite';
 import type { TLinkElement } from '@platejs/utils';
 
 import type { BaseLinkConfig } from '../BaseLinkPlugin';
@@ -8,7 +8,9 @@ import { BaseLinkPlugin } from '../BaseLinkPlugin';
 const mark = (key: string) =>
   createBasePlugin({
     key,
-    node: { mark: true },
+    schema: {
+      mark: property.boolean({ default: false, omitDefault: true }),
+    },
   });
 
 const createEditor = ({

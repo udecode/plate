@@ -6,7 +6,6 @@ import {
   createEditorRuntime,
   createEditorView,
   defineEditorSchema,
-  element,
   type Element,
   schema,
 } from '@platejs/plite';
@@ -20,17 +19,17 @@ const paragraph = (text: string) =>
 
 const voidBlock = defineEditorSchema({
   elements: {
-    paragraph: element({}),
-    'void-block': element({ void: 'block' }),
+    paragraph: { content: schema.content.text() } as const,
+    'void-block': { void: 'block' } as const,
   },
   id: 'test-void-block',
-  root: schema.root({
+  root: {
     content: schema.content.types(['paragraph', 'void-block']),
-  }),
+  } as const,
   roots: {
-    header: schema.root({
+    header: {
       content: schema.content.types(['paragraph', 'void-block']),
-    }),
+    } as const,
   },
   unknown: 'preserve',
   version: 1,

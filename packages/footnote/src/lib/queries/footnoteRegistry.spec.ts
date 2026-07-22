@@ -177,14 +177,20 @@ describe('footnote registry', () => {
       BaseFootnoteReferencePlugin,
       BaseFootnoteDefinitionPlugin,
     ] as const;
-    const source = createBaseEditor({ plugins, value });
+    const source = createBaseEditor({
+      plugins,
+      value,
+    });
 
     source.update.nodes.set({ identifier: '2' }, { at: [0] });
 
     const change = DocumentChange.fromJSON(
       source.read.lastCommit()!.changes.toJSON()
     );
-    const replay = createBaseEditor({ plugins, value });
+    const replay = createBaseEditor({
+      plugins,
+      value,
+    });
 
     expect(replay.api.footnote.definition({ identifier: '1' })).toBeDefined();
     expect(change.primaryClassification).toBeNull();

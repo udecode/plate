@@ -224,6 +224,13 @@ the resulting `DocumentChange` rather than slice symbols; their tests and
 examples remain adoption/proof owners. Current docs expand the proof manifest
 without introducing another runtime owner.
 
+Linked schema identity invariant: slice preparation and fitter caches consume
+the compiler-owned identity, never caller ceremony. Plate omission selects
+`{ kind: 'derived', fingerprint }`; explicit `id/version` selects
+`{ kind: 'named', id, version, fingerprint }`; lineage is excluded from the
+fingerprint. Both forms therefore invalidate slice policy on semantic change,
+while ordinary examples need no identity declaration.
+
 ## Complete concept ledger
 
 The classification is always the live Plite design relative to live Wordgard.
@@ -459,21 +466,26 @@ editor.update((tx) => {
 ### Pure command/extension-author use
 
 ```ts
-editorCommands.replaceSlice.handle(({ command, state }, next) => {
-  if (!shouldHandle(command.slice, state)) return next();
+const suggestionSlices = defineEditorExtension({
+  name: 'suggestion-slices',
+  commands: ({ around }) => [
+    around(editorCommands.replaceSlice, ({ input, next, state }) => {
+      if (!shouldHandle(input.slice, state)) return false;
 
-  const slice = ContentSlice.withContent(
-    command.slice,
-    rewriteSuggestionContent(command.slice.content),
-    { open: 'preserve' }
-  );
+      const slice = ContentSlice.withContent(
+        input.slice,
+        rewriteSuggestionContent(input.slice.content),
+        { open: 'preserve' }
+      );
 
-  return state.slice.fit(slice, { at: command.options?.at });
+      return next({ ...input, slice });
+    }),
+  ],
 });
 ```
 
-The command returns a complete immutable `TransactionSpec`; no bespoke
-`{change,selection}` or internal transaction application is exposed.
+The downstream command returns a complete immutable `TransactionSpec`; no
+bespoke `{change,selection}` or internal transaction application is exposed.
 
 ### Synthetic parent/table use
 
@@ -516,14 +528,13 @@ or direct write. The host dispatcher validates and fits the result.
 ### Element slice policy
 
 ```ts
-const Heading = element({
+const Heading = {
   content: schema.content.group('inline', { min: 1 }),
-  groups: ['block'],
   slice: {
     preserveContext: true,
     replaceWhenCovered: false,
   },
-});
+} as const;
 ```
 
 Defaults are deterministic: `preserveContext` is `false`, and
@@ -561,8 +572,8 @@ derivable from the immutable nested content and compiled schema policy.
 
 The shared schema plan's compiled element record gains normalized slice policy
 alongside its containment/default/wrapping indexes. Policy is declared only
-through the final `element(...)` / Plate `node.element` vocabulary, compiled by
-the one schema compiler, conflict-checked, frozen, and published atomically
+through contextual raw Plite element descriptors or Plate `schema.element`,
+compiled by the one schema compiler, conflict-checked, frozen, and published atomically
 with the extension revision. Execution never adds an interim
 `EditorElementSpec.slice`; that type is already condemned by the schema hard
 cut. No codec or Plate plugin keeps a second policy registry.
@@ -796,7 +807,8 @@ downstream callers are being adopted.
 - Owner: the shared final schema descriptor/compiler from
   `2026-07-20-wordgard-plite-schema-architecture.md`.
 - Entry: Slice 1 types are stable.
-- Work: add slice policy only to final `element(...)` / Plate `node.element`
+- Work: add slice policy only to contextual raw Plite element descriptors or
+  Plate `schema.element`
   declarations, normalize deterministic defaults, conflict-check ownership,
   and compile policy on `CompiledElement` with wrapping/default indexes.
 - Public breaks: the final element descriptor gains the configuration surface;
@@ -1154,7 +1166,7 @@ output; the current broken command is evidence, not an executable proof step.
 | Scenario | Expected architecture response |
 | --- | --- |
 | Cyclic/repeated/non-JSON content or impossible open depth | `ContentSlice.fromJSON/closed` throws before any transaction; clipboard decode reports a recoverable miss and falls through. |
-| Frozen slice reused after extension reconfiguration | Structural preparation is reused; schema validation/policy cache misses by compiled schema identity and refits under the new revision. |
+| Frozen slice reused after extension reconfiguration | Structural preparation is reused; schema validation/policy cache keys semantic fingerprint/revision and refits on semantic change. Derived versus named lineage does not alter that fingerprint. |
 | Open partial list pasted into paragraph/list/table cell | One candidate engine derives both spines and target context; compiled policy decides wrapper preservation; product handler only transforms list/table semantics. |
 | Selection spans roots | Fit returns false before change construction; one slice replacement never crosses roots. |
 | Named-root insertion | Transaction spec carries root-aware selection and only changes that root. |
@@ -1328,7 +1340,7 @@ Verification evidence:
   The changeset audit covers 52/52 changed published packages with no minor
   release.
 - Current Plite/Plate reference docs teach the final fragment/slice, host codec,
-  `node.element`, `node.mark`, compiled grammar, and property-significance
+  top-level `type`, `schema.element`, descriptor-backed `schema.mark`, compiled grammar, and property-significance
   vocabulary. Fumadocs source/parity and the Plite docs audit pass; historical
   migration pages retain their version-specific terms.
 - The planning-stage `check-complete` passed after the hostile source/count/API

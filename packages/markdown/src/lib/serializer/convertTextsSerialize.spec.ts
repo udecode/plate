@@ -2,17 +2,14 @@ import type { Text } from '@platejs/plite';
 
 import {
   createTestEditor,
-  getTestMarkdownRuntime,
+  getTestSerializeOptions,
 } from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';
 import { convertTextsSerialize } from './convertTextsSerialize';
 
 describe('convertTextsSerialize', () => {
   const editor = createTestEditor();
-  const options = {
-    runtime: getTestMarkdownRuntime(editor),
-    rules: defaultRules,
-  } as const;
+  const options = getTestSerializeOptions(editor, { rules: defaultRules });
 
   it('keeps outer whitespace outside a single closing mark', () => {
     const result = convertTextsSerialize(

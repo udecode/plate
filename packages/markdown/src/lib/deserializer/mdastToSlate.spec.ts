@@ -1,6 +1,6 @@
 import {
   createTestEditor,
-  getTestMarkdownRuntime,
+  getTestDeserializeOptions,
 } from '../__tests__/createTestEditor';
 import { mdastToSlate } from './mdastToSlate';
 
@@ -31,10 +31,7 @@ describe('mdastToSlate', () => {
           },
           type: 'root',
         },
-        {
-          runtime: getTestMarkdownRuntime(editor),
-          splitLineBreaks: true,
-        }
+        getTestDeserializeOptions(editor, { splitLineBreaks: true })
       )
     ).toEqual([
       {

@@ -14,8 +14,6 @@ import {
   createEditor,
   createEditorRuntime,
   createEditorView,
-  defineCommandType,
-  defineEditorExtension,
   DocumentChange,
   SelectionApi,
 } from '@platejs/plite';
@@ -1031,17 +1029,8 @@ describe('plite-history contract', () => {
     });
   });
 
-  it('routes tx undo and redo through history commands', () => {
+  it('tags tx undo and redo as semantic commands', () => {
     const editor = historyTestEditor();
-    const commands: string[] = [];
-    const redoCommand = defineCommandType<{
-      root: string;
-      type: 'history_redo';
-    }>('history_redo');
-    const undoCommand = defineCommandType<{
-      root: string;
-      type: 'history_undo';
-    }>('history_undo');
 
     replace(editor, [paragraph('one')], {
       kind: 'text',
@@ -1049,38 +1038,17 @@ describe('plite-history contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeUndo = editor.extend(
-      defineEditorExtension({
-        commands: [
-          undoCommand.handle((context, next) => {
-            commands.push(context.command.type);
-            return next();
-          }),
-        ],
-        name: 'test-history-undo-command',
-      })
-    );
-    const unsubscribeRedo = editor.extend(
-      defineEditorExtension({
-        commands: [
-          redoCommand.handle((context, next) => {
-            commands.push(context.command.type);
-            return next();
-          }),
-        ],
-        name: 'test-history-redo-command',
-      })
-    );
-
     write(editor, (tx) => {
       tx.text.insert('!');
     });
     undo(editor);
-    redo(editor);
-    unsubscribeUndo();
-    unsubscribeRedo();
+    const undoCommit = editor.read.lastCommit();
 
-    assert.deepEqual(commands, ['history_undo', 'history_redo']);
+    redo(editor);
+    const redoCommit = editor.read.lastCommit();
+
+    assert.equal(undoCommit?.tags.includes('semantic-command'), true);
+    assert.equal(redoCommit?.tags.includes('semantic-command'), true);
     assert.equal(editorString(editor, [0]), 'one!');
   });
 

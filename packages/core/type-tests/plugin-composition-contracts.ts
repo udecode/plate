@@ -151,48 +151,6 @@ GrandparentPlugin.configurePlugin(ChildPlugin, {
   },
 });
 
-GrandparentPlugin.configurePlugin(
-  ChildPlugin,
-  ({ editor, getOptions, plugin }) => {
-    const childLevel: 1 | 2 = getOptions().level;
-    const childMode: ChildMode = plugin.options.mode;
-
-    editor.update((tx) => {
-      tx.child.setMode('edit');
-      // @ts-expect-error invalid nested tx argument from configurePlugin context
-      tx.child.setMode('preview');
-    });
-
-    void childLevel;
-    void childMode;
-
-    return {
-      options: {
-        level: 2 as const,
-      },
-    };
-  }
-);
-
-GrandparentPlugin.configurePlugin(ChildPlugin, ({ getOptions }) => {
-  // @ts-expect-error invalid option key from configurePlugin context
-  const missing = getOptions().missing;
-  void missing;
-
-  return {
-    options: {
-      mode: 'edit' as const,
-    },
-  };
-});
-
-// @ts-expect-error invalid nested configured option value from callback
-GrandparentPlugin.configurePlugin(ChildPlugin, () => ({
-  options: {
-    mode: 'preview',
-  },
-}));
-
 // @ts-expect-error invalid merged selector argument
 basePlateEditor.plugin(ChildPlugin).getOption('isLevel', 3);
 
@@ -231,7 +189,9 @@ const DependentPlugin = createBasePlugin({
   },
 }));
 
-const dependencyEditor = createBaseEditor({ plugins: [DependentPlugin] });
+const dependencyEditor = createBaseEditor({
+  plugins: [DependentPlugin],
+});
 
 const dependencyValue: 'dependency' = dependencyEditor.api.dependencyValue();
 

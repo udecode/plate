@@ -163,7 +163,6 @@ import {
   PlaceholderPlugin,
   VideoPlugin,
 } from '@platejs/media/react';
-import { KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 import { 
   AudioElement, 
@@ -201,16 +200,27 @@ const editor = createPlateEditor({
 
 ```tsx
 import { CaptionPlugin } from '@platejs/caption/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  VideoPlugin,
+} from '@platejs/media/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     // ...媒体插件
     CaptionPlugin.configure({
-      options: {
-        query: {
-          allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
-        },
+      config: {
+        targets: [
+          ImagePlugin,
+          VideoPlugin,
+          AudioPlugin,
+          FilePlugin,
+          MediaEmbedPlugin,
+        ],
       },
     }),
   ],
@@ -287,7 +297,6 @@ export function useUploadFile({
 
       setUploadedFile(uploadedFile);
       onUploadComplete?.(uploadedFile);
-      
       return uploadedFile;
     } catch (error) {
       onUploadError?.(error);
@@ -320,7 +329,6 @@ export function PlaceholderElement({ className, children, element, ...props }) {
     onUploadComplete: (uploadedFile) => {
       // 将占位符替换为实际媒体元素
       const { url, type } = uploadedFile;
-      
       // 上传成功后插入最终媒体节点
       editor.update((tx) => {
         tx.placeholder.insert(getMediaType(type), { select: true });
@@ -689,7 +697,6 @@ enum UploadErrorCode {
 <APIParameters>
   <APIItem name="options.urlParsers" type="EmbedUrlParser[]" optional>
     用于解析媒体元素 URL 的 URL 解析器数组。
-  
     - **`EmbedUrlParser`:** `(url: string) => EmbedUrlData | undefined`
   </APIItem>
 </APIParameters>

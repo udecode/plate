@@ -17,10 +17,8 @@ const createMarkEditor = (input: any) =>
 const createVoidElementPlugin = (key: string) =>
   createBasePlugin({
     key,
-    node: {
-      element: { groups: ['block'], void: 'block' },
-      type: key,
-    },
+    schema: { element: { void: 'block' } },
+    type: key,
   });
 
 const deleteBackwardCharacter = (

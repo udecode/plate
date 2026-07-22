@@ -56,7 +56,6 @@ The package is subpath-only. Import exactly the layer you need:
   - snapshot helper for aggregated editor state
   - selection namespace for semantic selection actions and setup
   - DOM namespace for mounted text-path readiness and native caret setup
-  - bookmark/capture helpers backed by real Plite range refs
   - tolerant selection assertions
   - collapsed model/native DOM selection agreement assertions
   - double-highlight selection assertion
@@ -254,10 +253,6 @@ await editor.scenario.run([
     kind: "assertSelectionContract",
   },
 ]);
-
-const bookmark = await editor.selection.capture({ affinity: "inward" });
-await editor.selection.restore(bookmark);
-await editor.selection.unref(bookmark);
 
 await editor.clipboard.pasteText("more");
 await editor.clipboard.copy();

@@ -1,6 +1,5 @@
 import {
   defineEditorSchema,
-  element,
   schema,
   type Editor,
   type SchemaElementInput,
@@ -12,21 +11,43 @@ export const defineTestSchema = (
   id: string,
   elements: Readonly<Record<string, SchemaElementInput>>
 ) => {
+  const inputs: Readonly<Record<string, SchemaElementInput>> = {
+    block: {},
+    paragraph: {},
+    quote: {},
+    ...elements,
+  };
   const elementDeclarations = Object.fromEntries(
-    Object.entries({
-      block: {},
-      paragraph: {},
-      quote: {},
-      ...elements,
-    }).map(([type, input]) => [type, element(input)] as const)
+    Object.entries(inputs).map(
+      ([type, input]) =>
+        [
+          type,
+          input.content !== undefined ||
+          input.void === 'block' ||
+          input.void === 'inline' ||
+          input.void === 'markable-inline'
+            ? input
+            : {
+                content: input.inline
+                  ? schema.content.text()
+                  : ['block', 'paragraph', 'quote'].includes(type)
+                    ? schema.content.any([
+                        schema.content.text(),
+                        schema.content.group('inline'),
+                      ])
+                    : schema.content.open(),
+                ...input,
+              },
+        ] as const
+    )
   );
 
   return defineEditorSchema({
     elements: elementDeclarations,
     id,
-    root: schema.root({
+    root: {
       content: schema.content.types(Object.keys(elementDeclarations)),
-    }),
+    } as const,
     unknown: 'preserve',
     version: 1,
   });

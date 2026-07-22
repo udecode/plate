@@ -14,7 +14,6 @@ import {
   defineEditorSchema,
   defineExtensionSlot,
   defineFacet,
-  element,
   type Element,
   schema,
 } from '@platejs/plite';
@@ -22,6 +21,7 @@ import {
   EDITOR_TO_PENDING_ACTION,
   EDITOR_TO_PENDING_DIFFS,
   EDITOR_TO_PENDING_SELECTION,
+  IS_COMPOSING,
 } from '@platejs/plite-dom/internal';
 import {
   createReactEditor,
@@ -39,6 +39,7 @@ import {
   usePliteRuntime,
   usePliteRuntimeState,
 } from '../src';
+import { useRootDocumentEpoch } from '../src/editable/root-selector-sources';
 import { didSyncTextPathToDOM } from '../src/hooks/use-plite-node-ref';
 
 const paragraph = (text: string): Descendant => ({
@@ -81,31 +82,31 @@ const initialValue = () => ({
 
 const editableIsland = defineEditorSchema({
   elements: {
-    'editable-void': element({
-      contentRoot: {
-        content: schema.content.not(schema.content.text()),
-        slot: 'body',
+    'editable-void': {
+      content: schema.content.open(),
+      contentRoots: {
+        body: schema.content.not(schema.content.text()),
       },
       void: 'editable-island',
-    }),
+    },
   },
   id: 'test-editable-island',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
 
 const contentRootExtension = defineEditorSchema({
   elements: {
-    'details-content': element({
-      contentRoot: {
-        content: schema.content.not(schema.content.text()),
-        slot: 'body',
+    'details-content': {
+      content: schema.content.open(),
+      contentRoots: {
+        body: schema.content.not(schema.content.text()),
       },
-    }),
+    },
   },
   id: 'test-content-root',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
@@ -278,6 +279,58 @@ describe('PliteRuntime provider contract', () => {
       childRoot
     );
     expect(contentRootEditor.root).toBe(childRoot);
+  });
+
+  test('usePliteContentRoot requires a slot for multi-slot elements', () => {
+    const bodyRoot = 'details-multi:body';
+    const captionRoot = 'details-multi:caption';
+    const multiSlotSchema = defineEditorSchema({
+      elements: {
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        'details-content': {
+          content: schema.content.open(),
+          contentRoots: {
+            body: schema.content.type('paragraph'),
+            caption: schema.content.type('paragraph'),
+          },
+        },
+      },
+      id: 'test-content-root-multi-slot',
+      root: { content: schema.content.type('details-content') },
+      unknown: 'reject',
+      version: 1,
+    });
+    const element = {
+      type: 'details-content',
+      childRoots: { body: bodyRoot, caption: captionRoot },
+      children: [{ text: '' }],
+    } satisfies Element & { childRoots: Record<string, string> };
+    const editor = createReactEditor({
+      extensions: [multiSlotSchema],
+      initialValue: {
+        children: [element],
+        roots: {
+          [bodyRoot]: [paragraph('body')],
+          [captionRoot]: [paragraph('caption')],
+        },
+      },
+    });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <Plite editor={editor}>{children}</Plite>
+    );
+
+    expect(() =>
+      renderHook(() => usePliteContentRoot(element), { wrapper })
+    ).toThrow(/pass options\.slot/);
+
+    const { result } = renderHook(
+      () => usePliteContentRoot(element, { slot: 'caption' }),
+      { wrapper }
+    );
+
+    expect(result.current.root).toBe(captionRoot);
   });
 
   test('renderElement contentRoot slot mounts same-runtime root content', async () => {
@@ -966,6 +1019,31 @@ describe('PliteRuntime provider contract', () => {
     expect(screen.getByLabelText('Header editor')).toHaveTextContent('header!');
   });
 
+  test('runtime text sync leaves composing DOM under native ownership', async () => {
+    const editor = createReactEditor({ initialValue: [paragraph('body')] });
+
+    render(
+      <Plite editor={editor}>
+        <Editable aria-label="Body editor" />
+      </Plite>
+    );
+
+    IS_COMPOSING.set(editor, true);
+
+    try {
+      await act(async () => {
+        editor.update((tx) => {
+          tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+        });
+      });
+
+      expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(false);
+      expect(screen.getByLabelText('Body editor')).toHaveTextContent('body!');
+    } finally {
+      IS_COMPOSING.delete(editor);
+    }
+  });
+
   test('runtime root pending native state transforms on mounted root view editors', async () => {
     let mainEditor!: ReturnType<typeof usePliteRuntime>['editor'];
     let headerEditor!: ReturnType<typeof useEditor>;
@@ -1196,6 +1274,57 @@ describe('PliteRuntime provider contract', () => {
     render(<RuntimeViews />);
 
     expect(new Set(seen)).toHaveLength(3);
+  });
+
+  test('root document epochs ignore replacements in sibling roots', async () => {
+    let headerEditor!: ReturnType<typeof useEditor>;
+    const headerRenders = vi.fn();
+    const footerRenders = vi.fn();
+    const EpochProbe = ({ root }: { root: 'footer' | 'header' }) => {
+      const editor = useEditor();
+      const epoch = useRootDocumentEpoch();
+
+      if (root === 'header') {
+        headerEditor = editor;
+        headerRenders(epoch);
+      } else {
+        footerRenders(epoch);
+      }
+
+      return <span data-testid={`${root}-epoch`}>{epoch}</span>;
+    };
+    const RuntimeViews = () => {
+      const runtime = usePliteRuntime({ initialValue: initialValue() });
+
+      return (
+        <PliteRuntime runtime={runtime}>
+          <Plite root="header">
+            <EpochProbe root="header" />
+          </Plite>
+          <Plite root="footer">
+            <EpochProbe root="footer" />
+          </Plite>
+        </PliteRuntime>
+      );
+    };
+
+    render(<RuntimeViews />);
+    const headerRenderCount = headerRenders.mock.calls.length;
+    const footerRenderCount = footerRenders.mock.calls.length;
+
+    await act(async () => {
+      headerEditor.update((tx) => {
+        tx.value.replace({
+          children: [paragraph('next header')],
+          selection: null,
+        });
+      });
+    });
+
+    expect(screen.getByTestId('header-epoch')).not.toHaveTextContent('0');
+    expect(headerRenders.mock.calls.length).toBeGreaterThan(headerRenderCount);
+    expect(screen.getByTestId('footer-epoch')).toHaveTextContent('0');
+    expect(footerRenders).toHaveBeenCalledTimes(footerRenderCount);
   });
 
   test('root-bound Plite renders Editable from the selected root', () => {

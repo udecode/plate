@@ -1,4 +1,5 @@
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
@@ -7,7 +8,9 @@ const createEditor = () =>
     plugins: [
       createBasePlugin({
         key: 'bold',
-        node: { mark: true },
+        schema: {
+          mark: property.boolean({ default: false, omitDefault: true }),
+        },
       }),
       BaseLinkPlugin,
     ],

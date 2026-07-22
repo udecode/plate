@@ -61,13 +61,11 @@ const legacyTransforms = Slate.Transforms;
 const currentInlineSchema = isPlite
   ? Slate.defineEditorSchema({
       elements: {
-        inline: Slate.element({ inline: true }),
-        paragraph: Slate.element({}),
+        inline: { content: Slate.schema.content.open(), inline: true },
+        paragraph: { content: Slate.schema.content.open() },
       },
       id: 'normalization-compare-inline',
-      root: Slate.schema.root({
-        content: Slate.schema.content.types(['paragraph']),
-      }),
+      root: { content: Slate.schema.content.type('paragraph') },
       unknown: 'preserve',
       version: 1,
     })

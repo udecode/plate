@@ -40,13 +40,13 @@ import {
   setSelection,
 } from './selection-actions';
 import {
-  captureSelectionBookmark,
+  captureSelectionAnchorHandle,
   handleSelectionMatches,
-  resolveSelectionBookmark,
-  restoreSelectionBookmark,
-  unrefSelectionBookmark,
+  resolveSelectionAnchorHandle,
+  restoreSelectionAnchorHandle,
+  releaseSelectionAnchorHandle,
   waitForHandleSelection,
-} from './selection-bookmarks';
+} from './selection-anchors';
 import { getFocusOwnerSnapshot, getSelectionRect } from './selection-geometry';
 import {
   focusWithHandle,
@@ -67,7 +67,7 @@ import type { SurfaceTarget } from './surface';
 import type {
   EditorSurfaceOptions,
   ReadyOptions,
-  SelectionBookmark,
+  SelectionAnchorHandle,
   SelectionCaptureOptions,
   SelectionPoint,
   SelectionSnapshot,
@@ -338,20 +338,19 @@ export const createEditorHarness = (
         await harness.selection.select({
           anchor: point,
           focus: point,
+          kind: 'text',
         });
       },
-      capture: async (options?: SelectionCaptureOptions) =>
-        captureSelectionBookmark(root, options),
-      bookmark: async (options?: SelectionCaptureOptions) =>
-        captureSelectionBookmark(root, options),
-      resolve: async (bookmark: SelectionBookmark) =>
-        resolveSelectionBookmark(root, bookmark),
-      restore: async (bookmark: SelectionBookmark) => {
-        await restoreSelectionBookmark(root, bookmark);
+      anchor: async (options?: SelectionCaptureOptions) =>
+        captureSelectionAnchorHandle(root, options),
+      resolve: async (handle: SelectionAnchorHandle) =>
+        resolveSelectionAnchorHandle(root, handle),
+      restore: async (handle: SelectionAnchorHandle) => {
+        await restoreSelectionAnchorHandle(root, handle);
         await waitForSelectionIfPresent(root);
       },
-      unref: async (bookmark: SelectionBookmark) =>
-        unrefSelectionBookmark(root, bookmark),
+      release: async (handle: SelectionAnchorHandle) =>
+        releaseSelectionAnchorHandle(root, handle),
       selectAll: async () => {
         const selectedWithHandle =
           (await waitForSelectionHandle(root)) &&

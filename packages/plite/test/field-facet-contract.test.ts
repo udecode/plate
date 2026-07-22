@@ -266,17 +266,16 @@ describe('field-aware explicit facets', () => {
   });
 
   it('reads installed fields in non-publishing command specs', () => {
-    type Increment = { amount: number; type: 'field.increment' };
+    type Increment = { amount: number };
     const counter = defineStateField({
       initial: 0,
       key: 'draft-field-counter',
     });
-    const increment = defineCommand<Increment>({
-      run: ({ command, state }) =>
+    const increment = defineCommand<Increment>('field.increment', {
+      build: ({ input, state }) =>
         state.transaction((tx) => {
-          tx.setField(counter, (value) => value + command.amount);
+          tx.setField(counter, (value) => value + input.amount);
         }),
-      type: 'field.increment',
     });
     const editor = createEditor({ extensions: [counter] as const });
 
@@ -285,7 +284,6 @@ describe('field-aware explicit facets', () => {
     assert.equal(
       dispatchCommand(editor, increment, {
         amount: 1,
-        type: increment.type,
       }),
       true
     );

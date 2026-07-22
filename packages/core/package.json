@@ -36,14 +36,15 @@
   ],
   "scripts": {
     "brl": "plate-pkg p:brl",
-    "build": "node ../../tooling/scripts/build-plite-package.mjs",
+    "build": "tsdown --config tsdown.config.mts --log-level warn",
     "build:watch": "plate-pkg p:build:watch",
     "clean": "plate-pkg p:clean",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
     "test": "plate-pkg p:test",
     "test:watch": "plate-pkg p:test:watch",
-    "typecheck": "plate-pkg p:typecheck && tsc --project tsconfig.test.json --noEmit && tsc --project tsconfig.type-tests.json --noEmit"
+    "typecheck": "plate-pkg p:typecheck && tsc --project tsconfig.test.json --noEmit && pnpm typecheck:contracts",
+    "typecheck:contracts": "rimraf ../../.tmp/core-type-contract-declarations && tsc --project tsconfig.type-tests.json"
   },
   "dependencies": {
     "@platejs/plite": "workspace:^",
@@ -61,6 +62,7 @@
     "jotai-optics": "0.4.0",
     "jotai-x": "2.3.4",
     "lodash": "^4.17.21",
+    "mutative": "^1.1.0",
     "nanoid": "^5.1.5",
     "optics-ts": "2.4.1",
     "react-compiler-runtime": "^1.0.0",
@@ -79,7 +81,6 @@
   "module": "./dist/index.js",
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "@platejs/test-utils": "workspace:^",
-    "mutative": "^1.1.0"
+    "@platejs/test-utils": "workspace:^"
   }
 }

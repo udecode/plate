@@ -1,6 +1,6 @@
 import {
   createTestEditor,
-  getTestMarkdownRuntime,
+  getTestDeserializeOptions,
 } from '../../__tests__/createTestEditor';
 import { customMdxDeserialize } from './customMdxDeserialize';
 
@@ -28,7 +28,7 @@ describe('customMdxDeserialize', () => {
         type: 'mdxJsxFlowElement',
       },
       {},
-      { runtime: getTestMarkdownRuntime(editor) }
+      getTestDeserializeOptions(editor)
     );
 
     expect(result).toEqual({
@@ -55,7 +55,7 @@ describe('customMdxDeserialize', () => {
         type: 'mdxJsxTextElement',
       },
       {},
-      { runtime: getTestMarkdownRuntime(editor) }
+      getTestDeserializeOptions(editor)
     );
 
     expect(result).toEqual([{ text: '<Badge>New</Badge>' }]);
@@ -74,7 +74,7 @@ describe('customMdxDeserialize', () => {
         type: 'mdxJsxTextElement',
       },
       {},
-      { runtime: getTestMarkdownRuntime(editor) }
+      getTestDeserializeOptions(editor)
     );
 
     expect(result).toEqual([{ text: '<label for="email">Email</label>' }]);
@@ -92,7 +92,7 @@ describe('customMdxDeserialize', () => {
         type: 'mdxJsxTextElement',
       },
       {},
-      { runtime: getTestMarkdownRuntime(editor) }
+      getTestDeserializeOptions(editor)
     );
 
     expect(warn).toHaveBeenCalledWith(
@@ -116,7 +116,7 @@ describe('customMdxDeserialize', () => {
         type: 'mdxJsxFlowElement',
       },
       {},
-      { runtime: getTestMarkdownRuntime(editor) }
+      getTestDeserializeOptions(editor)
     );
 
     expect(result).toEqual([
@@ -149,7 +149,7 @@ describe('customMdxDeserialize', () => {
         type: 'mdxJsxFlowElement',
       },
       {},
-      { runtime: getTestMarkdownRuntime(editor) }
+      getTestDeserializeOptions(editor)
     );
 
     expect(result).toEqual([

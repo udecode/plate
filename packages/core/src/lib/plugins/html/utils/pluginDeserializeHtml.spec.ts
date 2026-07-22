@@ -1,4 +1,4 @@
-import { schema } from '@platejs/plite';
+import { property, schema } from '@platejs/plite';
 
 import { createBaseEditor, createBasePlugin } from '../../../index';
 import { parseHtmlElement } from './parseHtmlElement';
@@ -6,14 +6,14 @@ import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 const paragraphElement = {
   content: schema.content.text({ default: 'text', min: 1 }),
-  groups: ['block'],
 } as const;
 
 describe('pluginDeserializeHtml', () => {
   it('adds static rules and merges parsed, injected, data, and allowed attribute props', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {
@@ -69,7 +69,8 @@ describe('pluginDeserializeHtml', () => {
   it('skips parser output for existing plite nodes and keeps only data-node props', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {
@@ -102,7 +103,8 @@ describe('pluginDeserializeHtml', () => {
           defaultNodeValue: '1.5',
         },
       },
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {
@@ -135,7 +137,7 @@ describe('pluginDeserializeHtml', () => {
   it('falls back to a boolean leaf mark when parse is omitted', () => {
     const BoldPlugin = createBasePlugin({
       key: 'bold',
-      node: { mark: true },
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       parsers: {
         html: {
           deserializer: {
@@ -162,7 +164,8 @@ describe('pluginDeserializeHtml', () => {
   it('matches string attribute rules and stores allowed attributes', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {
@@ -192,7 +195,8 @@ describe('pluginDeserializeHtml', () => {
   it('rejects string attribute rules when the required attribute is missing', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {
@@ -215,7 +219,8 @@ describe('pluginDeserializeHtml', () => {
   it('rejects object attribute rules when the element value does not match', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {
@@ -244,7 +249,8 @@ describe('pluginDeserializeHtml', () => {
   it('returns undefined when the deserializer query rejects the element', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {
@@ -290,7 +296,8 @@ describe('pluginDeserializeHtml', () => {
   it('matches valid style arrays and falls back to the element type when parse is omitted', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {
@@ -324,7 +331,8 @@ describe('pluginDeserializeHtml', () => {
   it('matches object attribute rules when the attribute value is in the allowed list', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {

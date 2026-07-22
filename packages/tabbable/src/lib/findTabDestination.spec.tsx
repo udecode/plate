@@ -2,7 +2,7 @@
 
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { type Node, type Path, schema } from '@platejs/plite';
+import { type Node, type Path } from '@platejs/plite';
 
 import type { TabbableEntry } from './types';
 
@@ -12,10 +12,8 @@ jsxt;
 
 const MyVoidPlugin = createBasePlugin({
   key: 'my-void',
-  node: {
+  schema: {
     element: {
-      content: schema.content.text({ default: 'text', max: 1, min: 1 }),
-      groups: ['block'],
       void: 'block',
     },
   },

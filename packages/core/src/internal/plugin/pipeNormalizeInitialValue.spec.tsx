@@ -143,11 +143,14 @@ describe('pipeNormalizeInitialValue', () => {
 
   it('throws when a transformInitialValue hook returns undefined', () => {
     const editor = createBaseEditor({
-      plugins: [createLoosePlugin({ key: 'bad' })],
+      plugins: [
+        createLoosePlugin({
+          key: 'bad',
+          transformInitialValue: () => undefined,
+        }),
+      ],
       skipInitialization: true,
     });
-    editor.getPlugin({ key: 'bad' }).transformInitialValue = (() => {}) as any;
-    editor.runtime.pluginCache.transformInitialValue.push('bad');
     editor.update.value.replace({
       children: [{ children: [{ text: '' }], type: 'p' }],
       selection: null,

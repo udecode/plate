@@ -1,4 +1,10 @@
-import { createEditorRuntime, createEditorView } from '@platejs/plite';
+import {
+  createEditorRuntime,
+  createEditorView,
+  defineEditorSchema,
+  schema,
+  type RootKey,
+} from '@platejs/plite';
 import {
   getSelection as editorGetSelection,
   replace as editorReplace,
@@ -7,6 +13,7 @@ import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
+  IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
 import {
@@ -73,12 +80,34 @@ afterEach(() => {
   testRuntimes.clear();
 });
 import { ReactEditor } from '../src/plugin/react-editor';
-import { createReactEditor } from '../src/plugin/with-react';
+import { createReactEditor, react } from '../src/plugin/with-react';
 import { createPliteProjectionGraph } from '../src/projection-graph';
 import {
   createPliteViewSelection,
+  readPliteViewSelection,
   writePliteViewSelection,
 } from '../src/view-selection';
+
+const PROJECTED_SELECTION_ROOT: RootKey = 'selection-controller:projected-root';
+
+const projectedSelectionSchema = defineEditorSchema({
+  elements: {
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+    'content-card': {
+      content: schema.content.open(),
+      contentRoots: {
+        body: schema.content.not(schema.content.text()),
+      },
+      void: 'editable-island',
+    },
+  },
+  id: 'selection-controller-projected-selection',
+  root: { content: schema.content.not(schema.content.text()) },
+  unknown: 'preserve',
+  version: 1,
+});
 
 const markEditable = (element: HTMLElement) => {
   Object.defineProperty(element, 'isContentEditable', {
@@ -641,6 +670,218 @@ test('changed expanded DOM selection can override stale programmatic origin', ()
       selectionChangeOrigin: 'programmatic-export',
     })
   ).toBe(true);
+});
+
+test('changed expanded DOM selection import publishes a selection commit', () => {
+  const editor = createReactEditor();
+  const editorElement = document.createElement('div');
+  const textNode = document.createTextNode('selection');
+  const nextSelection = {
+    kind: 'text' as const,
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 9 },
+  };
+  const domSelection = {
+    anchorNode: textNode,
+    anchorOffset: 0,
+    focusNode: textNode,
+    focusOffset: 9,
+    isCollapsed: false,
+    rangeCount: 1,
+    removeAllRanges: vi.fn(),
+    type: 'Range',
+  } as unknown as globalThis.Selection;
+  const root = {
+    activeElement: editorElement,
+    getSelection: () => domSelection,
+  } as unknown as Document;
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: true },
+    state: {
+      activeIntent: null,
+      isComposing: false,
+      isDraggingInternally: false,
+      isUpdatingSelection: false,
+      latestElement: editorElement,
+      pendingDOMSelectionImport: false,
+      selectionChangeOrigin: 'native-user',
+      selectionSource: 'dom-current',
+    },
+  });
+
+  editorElement.setAttribute('data-plite-editor', 'true');
+  editorElement.append(textNode);
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'selection' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 9 },
+      focus: { path: [0, 0], offset: 9 },
+    },
+  });
+  IS_NODE_MAP_DIRTY.delete(editor);
+
+  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(root);
+  const hasSelectableTarget = vi
+    .spyOn(ReactEditor, 'hasSelectableTarget')
+    .mockReturnValue(true);
+  const resolvePliteRange = vi
+    .spyOn(ReactEditor, 'resolvePliteRange')
+    .mockReturnValue(nextSelection);
+
+  const commits: NonNullable<ReturnType<typeof editor.read.lastCommit>>[] = [];
+  const unsubscribe = editor.subscribe((_snapshot, commit) => {
+    if (commit) commits.push(commit);
+  });
+
+  try {
+    applyEditableDOMSelectionChange({
+      androidInputManager: null,
+      editor,
+      inputController,
+      processing: { current: false },
+      readOnly: false,
+      rerunOnDirtyNodeMap: vi.fn(),
+    });
+
+    expect(hasSelectableTarget).toHaveBeenCalledTimes(2);
+    expect(resolvePliteRange).toHaveBeenCalledOnce();
+    expect(inputController.preferModelSelectionForInputRef.current).toBe(false);
+    expect(editorGetSelection(editor)).toEqual(nextSelection);
+    expect(commits).toHaveLength(1);
+    expect(commits[0]?.selectionChanged).toBe(true);
+    expect(commits[0]?.changed.has('selection')).toBe(true);
+  } finally {
+    unsubscribe();
+    vi.restoreAllMocks();
+  }
+});
+
+test('projected DOM selection import publishes its anchor selection commit', () => {
+  const runtime = createEditorRuntime({
+    extensions: [react(), projectedSelectionSchema],
+    initialValue: {
+      children: [
+        { type: 'paragraph', children: [{ text: 'Before' }] },
+        {
+          type: 'content-card',
+          childRoots: { body: PROJECTED_SELECTION_ROOT },
+          children: [{ text: '' }],
+        },
+        { type: 'paragraph', children: [{ text: 'After' }] },
+      ],
+      roots: {
+        [PROJECTED_SELECTION_ROOT]: [
+          { type: 'paragraph', children: [{ text: 'Inside' }] },
+        ],
+      },
+    },
+  });
+  const editor = createEditorView(runtime);
+  const childEditor = createEditorView(runtime, {
+    root: PROJECTED_SELECTION_ROOT,
+  });
+  const editorElement = document.createElement('div');
+  const mainTextNode = document.createTextNode('Before');
+  const ownerElement = document.createElement('div');
+  const slotElement = document.createElement('div');
+  const childEditorElement = document.createElement('div');
+  const childTextNode = document.createTextNode('Inside');
+  const domSelection = {
+    anchorNode: mainTextNode,
+    anchorOffset: 1,
+    focusNode: childTextNode,
+    focusOffset: 3,
+    isCollapsed: false,
+    rangeCount: 1,
+    removeAllRanges: vi.fn(),
+    type: 'Range',
+  } as unknown as globalThis.Selection;
+  const root = {
+    activeElement: editorElement,
+    getSelection: () => domSelection,
+  } as unknown as Document;
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: {
+      activeIntent: null,
+      isComposing: false,
+      isDraggingInternally: false,
+      isUpdatingSelection: false,
+      latestElement: editorElement,
+      pendingDOMSelectionImport: false,
+      selectionChangeOrigin: 'native-user',
+      selectionSource: 'dom-current',
+    },
+  });
+
+  editorElement.setAttribute('data-plite-editor', 'true');
+  ownerElement.setAttribute('data-plite-node', 'element');
+  ownerElement.setAttribute('data-plite-path', '1');
+  slotElement.setAttribute('data-plite-content-root-slot', 'body');
+  slotElement.setAttribute('data-plite-content-root-owner-path', '1');
+  slotElement.setAttribute('data-plite-content-root-owner-root', 'main');
+  childEditorElement.setAttribute('data-plite-editor', 'true');
+  childEditorElement.setAttribute('data-plite-root', PROJECTED_SELECTION_ROOT);
+  childEditorElement.append(childTextNode);
+  slotElement.append(childEditorElement);
+  ownerElement.append(slotElement);
+  editorElement.append(mainTextNode, ownerElement);
+
+  ELEMENT_TO_NODE.set(editorElement, editor);
+  ELEMENT_TO_NODE.set(childEditorElement, childEditor);
+
+  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(root);
+  vi.spyOn(ReactEditor, 'resolvePliteRange').mockImplementation(
+    (_editor, domRange) => {
+      const startContainer =
+        'startContainer' in domRange
+          ? domRange.startContainer
+          : domRange.anchorNode;
+      const point =
+        startContainer === mainTextNode
+          ? { path: [0, 0], offset: 1 }
+          : { path: [0, 0], offset: 3 };
+
+      return { kind: 'text', anchor: point, focus: point };
+    }
+  );
+
+  const commits: NonNullable<ReturnType<typeof editor.read.lastCommit>>[] = [];
+  const unsubscribe = editor.subscribe((_snapshot, commit) => {
+    if (commit) commits.push(commit);
+  });
+
+  try {
+    applyEditableDOMSelectionChange({
+      androidInputManager: null,
+      editor,
+      inputController,
+      processing: { current: false },
+      readOnly: false,
+      rerunOnDirtyNodeMap: vi.fn(),
+    });
+
+    expect(editorGetSelection(editor)).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    });
+    expect(readPliteViewSelection(editor)?.focus.point.root).toBe(
+      PROJECTED_SELECTION_ROOT
+    );
+    expect(domSelection.removeAllRanges).toHaveBeenCalledOnce();
+    expect(commits).toHaveLength(1);
+    expect(commits[0]?.selectionChanged).toBe(true);
+    expect(commits[0]?.changed.has('selection')).toBe(true);
+  } finally {
+    unsubscribe();
+    ELEMENT_TO_NODE.delete(editorElement);
+    ELEMENT_TO_NODE.delete(childEditorElement);
+    vi.restoreAllMocks();
+  }
 });
 
 test('changed expanded DOM import ignores same, collapsed, and repair ranges', () => {

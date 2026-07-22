@@ -17,7 +17,7 @@ describe('BaseTextIndentPlugin', () => {
     const transformNodeValue = nodeProps.transformNodeValue!;
 
     expect(plugin.inject.isBlock).toBe(true);
-    expect(plugin.inject.targetPlugins).toEqual([KEYS.p]);
+    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
     expect(nodeProps).toMatchObject({
       nodeKey: 'textIndent',
       styleKey: 'textIndent',
@@ -29,31 +29,24 @@ describe('BaseTextIndentPlugin', () => {
         nodeValue: 2,
       })
     ).toBe('48px');
-    expect(
-      editor.read.schema.property({
-        key: KEYS.textIndent,
-        placement: 'element',
-        type: KEYS.p,
-      })?.value.kind
-    ).toBe('number');
+    expect(editor.read.schema.property(BaseTextIndentPlugin)?.value.kind).toBe(
+      'number'
+    );
   });
 
   it('derives schema and injection targets from configured plugin keys', () => {
     const ParagraphPlugin = BaseParagraphPlugin.configure({
-      node: { type: 'custom-paragraph' },
+      type: 'custom-paragraph',
     });
     const TextIndentPlugin = BaseTextIndentPlugin.configure({
-      options: { targetPluginKeys: [KEYS.p] },
+      config: { targetPluginKeys: [KEYS.p] },
     });
     const editor = createBaseEditor({
       plugins: [ParagraphPlugin, TextIndentPlugin],
     });
     const plugin = editor.getPlugin(TextIndentPlugin);
 
-    expect(plugin.options.targetPluginKeys).toEqual([KEYS.p]);
-    expect(plugin.inject.targetPlugins).toEqual(
-      plugin.options.targetPluginKeys
-    );
+    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
     expect(
       editor.read.schema.property({
         key: KEYS.textIndent,

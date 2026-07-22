@@ -1,5 +1,7 @@
 /** @jsx jsxt */
 
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { schema } from '@platejs/plite';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -227,5 +229,77 @@ describe('withDeleteTable', () => {
     editor.update.fragment.delete();
 
     expect(editor.read.text.string([])).toBe('beafter');
+  });
+
+  it('uses an explicit named-root target instead of the ambient table selection', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <anchor />
+                11
+              </hp>
+            </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>
+                21
+                <focus />
+              </hp>
+            </htd>
+            <htd>
+              <hp>22</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const targetRoot = 'table-explicit-target';
+    const rootOwner = {
+      childRoots: { body: targetRoot },
+      children: [{ text: '' }],
+      type: 'table-test-root-owner',
+    };
+    const RootOwnerPlugin = createBasePlugin({
+      key: 'table-test-root-owner',
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          contentRoots: {
+            body: schema.content.type('p', { min: 1 }),
+          },
+        },
+      },
+      type: 'table-test-root-owner',
+    });
+    const editor = createBaseEditor({
+      plugins: [...getTestTablePlugins(), RootOwnerPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+
+    editor.update((tx) => {
+      tx.nodes.insert(rootOwner, { at: [1] });
+      tx.roots.create(targetRoot, [
+        { children: [{ text: 'named' }], type: 'p' },
+      ]);
+    });
+    editor.update.fragment.delete({
+      at: {
+        anchor: { offset: 1, path: [0, 0], root: targetRoot },
+        focus: { offset: 4, path: [0, 0], root: targetRoot },
+      },
+    });
+
+    expect(editor.read.children()).toEqual([...input.children!, rootOwner]);
+    expect(editor.read.root(targetRoot)).toEqual([
+      { children: [{ text: 'nd' }], type: 'p' },
+    ]);
   });
 });

@@ -9,31 +9,29 @@ import { BaseTocPlugin } from '../lib/BaseTocPlugin';
 import { getHeadingList } from './getHeadingList';
 
 const TestHeadingsPlugin = createBasePlugin({
+  key: 'testHeadings',
   plugins: [
     createBasePlugin({
       key: 'h1',
-      node: {
+      schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
         },
       },
     }),
     createBasePlugin({
       key: 'h2',
-      node: {
+      schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
         },
       },
     }),
     createBasePlugin({
       key: 'h3',
-      node: {
+      schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
         },
       },
     }),

@@ -158,7 +158,7 @@ const MyPlugin = createPlatePlugin({
 ```ts
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
-  node: { type: 'myNodeType' },
+  type: 'myNodeType',
   handlers: {
     onKeyDown: ({ type }) => {
       console.info('节点类型:', type);

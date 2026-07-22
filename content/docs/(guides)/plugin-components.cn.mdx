@@ -76,12 +76,10 @@ export function CodeLeaf(props: PlateLeafProps) {
 
 ### 方法1：插件的`withComponent`（推荐）
 
-`withComponent`方法是关联组件与插件最直接的方式。
+`withComponent`方法是关联组件与插件最直接的方式。当该调用只需绑定一个 React 组件时，优先使用它。
 
 ```tsx
 const plugins = [
-  // 这等同于：
-  // ParagraphPlugin.configure({ node: { component: MyParagraphElement }});
   ParagraphPlugin.withComponent(MyParagraphElement),
   CodeBlockPlugin.withComponent(MyCodeBlockElement),
   CodeLinePlugin.withComponent(MyCodeLineElement),
@@ -89,20 +87,16 @@ const plugins = [
 ]
 ```
 
-### 方法2：插件的`override.components`
+### 方法2：`render.node`
 
-对于管理多个组件部分的插件（如`CodeBlockPlugin`包含`code_block`、`code_line`和`code_syntax`），或者当您需要为特定插件实例覆盖组件时，在`configure`中使用`override.components`选项。
+当同一个 `.configure()` 或 `.extend()` 调用还要配置规则、快捷键、选项或解析行为时，在该组合配置中使用 `render.node`。
 
 ```tsx
 const plugins = [
-  CodeBlockPlugin.configure({
-    override: {
-      components: {
-        [CodeBlockPlugin.key]: MyCodeBlockElement,
-        [CodeLinePlugin.key]: MyCodeLineElement,
-        [CodeSyntaxPlugin.key]: MyCodeSyntaxLeaf,
-      },
-    },
+  CodePlugin.configure({
+    inputRules: [CodeRules.markdown()],
+    render: { node: MyCodeLeaf },
+    shortcuts: { toggle: { keys: 'mod+e' } },
   }),
 ];
 ```

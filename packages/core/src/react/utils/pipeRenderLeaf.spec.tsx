@@ -1,5 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 
+import { property } from '@platejs/plite';
 import React from 'react';
 
 import { render } from '@testing-library/react';
@@ -29,7 +30,11 @@ type ChildrenProps = {
 };
 
 it('render the default leaf', () => {
-  const Leaf = pipeRenderLeaf(createPlateEditor({ plugins: [] }))!;
+  const Leaf = pipeRenderLeaf(
+    createPlateEditor({
+      plugins: [],
+    })
+  )!;
 
   const { getByTestId } = render(
     <Leaf
@@ -54,7 +59,10 @@ it('returns the custom leaf renderer unchanged when no plugin work exists', () =
 
   expect(
     pipeRenderLeaf(
-      createPlateEditor({ navigationFeedback: false, plugins: [] }),
+      createPlateEditor({
+        navigationFeedback: false,
+        plugins: [],
+      }),
       renderLeaf
     )
   ).toBe(renderLeaf);
@@ -63,11 +71,9 @@ it('returns the custom leaf renderer unchanged when no plugin work exists', () =
 it('render with render.leaf and isDecoration=false', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      isDecoration: false,
-      mark: true,
-    },
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
+      isDecoration: false,
       leaf: ({ children }: ChildrenProps) => (
         <span data-testid="leaf-wrapper">{children}</span>
       ),
@@ -97,11 +103,9 @@ it('render with render.leaf and isDecoration=false', () => {
 it('render with render.leaf and isDecoration=true', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      isDecoration: true,
-      mark: true,
-    },
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
+      isDecoration: true,
       leaf: ({ children }: ChildrenProps) => (
         <span data-testid="leaf-wrapper">{children}</span>
       ),
@@ -131,10 +135,8 @@ it('render with render.leaf and isDecoration=true', () => {
 it('keeps the outer leaf attributes for render.as leaf plugins', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      mark: true,
-      type: 'test',
-    },
+    type: 'test',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 'strong',
     },
@@ -167,20 +169,16 @@ it('keeps the outer leaf attributes for render.as leaf plugins', () => {
 it('nests multiple simple render.as leaf plugins without losing outer attributes', () => {
   const boldPlugin = createBasePlugin({
     key: 'bold',
-    node: {
-      mark: true,
-      type: 'bold',
-    },
+    type: 'bold',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 'strong',
     },
   });
   const italicPlugin = createBasePlugin({
     key: 'italic',
-    node: {
-      mark: true,
-      type: 'italic',
-    },
+    type: 'italic',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 'em',
     },
@@ -218,10 +216,8 @@ it('skips inactive leaf renderers', () => {
 
   const boldPlugin = createBasePlugin({
     key: 'bold',
-    node: {
-      mark: true,
-      type: 'bold',
-    },
+    type: 'bold',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       leaf: ({ children }: ChildrenProps) => {
         activeCalls += 1;
@@ -232,10 +228,8 @@ it('skips inactive leaf renderers', () => {
   });
   const italicPlugin = createBasePlugin({
     key: 'italic',
-    node: {
-      mark: true,
-      type: 'italic',
-    },
+    type: 'italic',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       leaf: ({ children }: ChildrenProps) => {
         inactiveCalls += 1;
@@ -274,10 +268,8 @@ it('keeps complex leaf renderer hooks stable when a mark activates', () => {
   try {
     const testPlugin = createBasePlugin({
       key: 'test',
-      node: {
-        mark: true,
-        type: 'test',
-      },
+      type: 'test',
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       render: {
         leaf: ({ children }: ChildrenProps) => (
           <span data-testid="complex-leaf">{children}</span>
@@ -330,10 +322,8 @@ it('keeps hooks stable when the projection segment count changes', () => {
   try {
     const testPlugin = createBasePlugin({
       key: 'test',
-      node: {
-        mark: true,
-        type: 'test',
-      },
+      type: 'test',
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     });
     const editor = createPlateEditor({
       navigationFeedback: false,
@@ -370,20 +360,16 @@ it('keeps hooks stable when the projection segment count changes', () => {
 it('uses node.type to activate leaf renderers when key differs', () => {
   const simplePlugin = createBasePlugin({
     key: 'simple',
-    node: {
-      mark: true,
-      type: 'simpleMark',
-    },
+    type: 'simpleMark',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 'strong',
     },
   });
   const complexPlugin = createBasePlugin({
     key: 'complex',
-    node: {
-      mark: true,
-      type: 'complexMark',
-    },
+    type: 'complexMark',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       leaf: ({ children }: ChildrenProps) => (
         <span data-testid="complex-leaf">{children}</span>
@@ -421,10 +407,8 @@ it('uses node.type to activate leaf renderers when key differs', () => {
 it('renders legacy decoration data from projection slices', () => {
   const searchPlugin = createBasePlugin({
     key: 'searchHighlight',
-    node: {
-      mark: true,
-      type: 'search_highlight',
-    },
+    type: 'search_highlight',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       leaf: ({ children }: ChildrenProps) => (
         <span data-testid="search-highlight">{children}</span>
@@ -468,12 +452,13 @@ it('renders legacy decoration data from projection slices', () => {
 it('keeps plugin leafProps behavior', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      mark: true,
+    type: 'test',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+    render: {
       leafProps: {
+        className: 'plugin-leaf',
         'data-leaf-probe': 'yes',
       },
-      type: 'test',
     },
   });
 
@@ -482,6 +467,9 @@ it('keeps plugin leafProps behavior', () => {
   });
 
   const Leaf = pipeRenderLeaf(editor)!;
+  const publishedLeafProps = editor.getPlugin(testPlugin).render.leafProps;
+
+  expect(Object.isFrozen(publishedLeafProps)).toBe(true);
 
   const { getByTestId } = render(
     <Leaf
@@ -498,15 +486,18 @@ it('keeps plugin leafProps behavior', () => {
     'data-leaf-probe',
     'yes'
   );
+  expect(getByTestId('Leaf')).toHaveClass('plugin-leaf');
+  expect(publishedLeafProps).toEqual({
+    className: 'plugin-leaf',
+    'data-leaf-probe': 'yes',
+  });
 });
 
 it('render with render.node', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      isDecoration: false,
-      mark: true,
-    },
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+    render: { isDecoration: false },
   });
 
   const editor = createPlateEditor({
@@ -533,7 +524,10 @@ it('returns the custom text renderer unchanged when no plugin work exists', () =
 
   expect(
     pipeRenderText(
-      createPlateEditor({ navigationFeedback: false, plugins: [] }),
+      createPlateEditor({
+        navigationFeedback: false,
+        plugins: [],
+      }),
       renderText
     )
   ).toBe(renderText);
@@ -545,11 +539,9 @@ it('keeps text hooks stable when the projection segment count changes', () => {
   try {
     const testPlugin = createBasePlugin({
       key: 'test',
-      node: {
-        isDecoration: false,
-        mark: true,
-        type: 'test',
-      },
+      type: 'test',
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+      render: { isDecoration: false },
     });
     const editor = createPlateEditor({
       navigationFeedback: false,
@@ -585,14 +577,9 @@ it('keeps text hooks stable when the projection segment count changes', () => {
 it('keeps the outer text attributes for render.as text plugins', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      isDecoration: false,
-      mark: true,
-      type: 'test',
-    },
-    render: {
-      as: 'strong',
-    },
+    type: 'test',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+    render: { isDecoration: false, as: 'strong' },
   });
 
   const editor = createPlateEditor({
@@ -620,12 +607,10 @@ it('skips inactive text renderers', () => {
 
   const boldPlugin = createBasePlugin({
     key: 'bold',
-    node: {
-      isDecoration: false,
-      mark: true,
-      type: 'bold',
-    },
+    type: 'bold',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
+      isDecoration: false,
       node: ({ children }: ChildrenProps) => {
         activeCalls += 1;
 
@@ -635,12 +620,10 @@ it('skips inactive text renderers', () => {
   });
   const italicPlugin = createBasePlugin({
     key: 'italic',
-    node: {
-      isDecoration: false,
-      mark: true,
-      type: 'italic',
-    },
+    type: 'italic',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
+      isDecoration: false,
       node: ({ children }: ChildrenProps) => {
         inactiveCalls += 1;
 
@@ -673,12 +656,10 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
   try {
     const testPlugin = createBasePlugin({
       key: 'test',
-      node: {
-        isDecoration: false,
-        mark: true,
-        type: 'test',
-      },
+      type: 'test',
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       render: {
+        isDecoration: false,
         node: ({ children }: ChildrenProps) => (
           <span data-testid="complex-text">{children}</span>
         ),
@@ -717,13 +698,14 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
 it('keeps plugin textProps behavior', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
+    type: 'test',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+    render: {
       isDecoration: false,
-      mark: true,
       textProps: {
+        className: 'plugin-text',
         'data-text-probe': 'yes',
       },
-      type: 'test',
     },
   });
 
@@ -732,6 +714,9 @@ it('keeps plugin textProps behavior', () => {
   });
 
   const Text = pipeRenderText(editor)!;
+  const publishedTextProps = editor.getPlugin(testPlugin).render.textProps;
+
+  expect(Object.isFrozen(publishedTextProps)).toBe(true);
 
   const { container } = render(
     <Text attributes={attributes} text={text}>
@@ -742,4 +727,11 @@ it('keeps plugin textProps behavior', () => {
   (
     expect(container.querySelector('[data-text-probe="yes"]')) as any
   ).toHaveAttribute('data-text-probe', 'yes');
+  expect(container.querySelector('[data-text-probe="yes"]')).toHaveClass(
+    'plugin-text'
+  );
+  expect(publishedTextProps).toEqual({
+    className: 'plugin-text',
+    'data-text-probe': 'yes',
+  });
 });

@@ -28,7 +28,9 @@ const createBlockSelectionEditor = () =>
     ],
   });
 
-const runSelectAllShortcut = (editor: ReturnType<typeof createPlateEditor>) =>
+const runSelectAllShortcut = (
+  editor: ReturnType<typeof createBlockSelectionEditor>
+) =>
   editor.runtime.shortcuts['blockSelection.selectAll']?.handler?.({
     editor,
     event: new KeyboardEvent('keydown'),

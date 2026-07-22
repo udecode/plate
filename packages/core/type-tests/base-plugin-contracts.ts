@@ -100,6 +100,33 @@ const FactoryExtensionPlugin = createBasePlugin({
   return [baseFactoryExtension] as const;
 });
 
+createBasePlugin({
+  handlers: {
+    onTextChange: ({ plugin, text }) => {
+      const exactTone: 'warm' = plugin.options.tone;
+      const nextText: string = text;
+
+      void exactTone;
+      void nextText;
+    },
+  },
+  inject: {
+    nodeProps: {
+      transformProps: ({ plugin, props }) => {
+        const exactTone: 'warm' = plugin.options.tone;
+
+        void exactTone;
+
+        return props;
+      },
+    },
+  },
+  key: 'contextualInput',
+  options: {
+    tone: 'warm' as const,
+  },
+});
+
 const InlineHistoryPlugin = createBasePlugin({
   key: 'inlineHistory',
 }).extendExtension(history());

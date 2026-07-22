@@ -18,8 +18,9 @@ describe('BaseTablePlugin', () => {
       editor.getPlugin(BaseTableCellPlugin).parsers!.html!.deserializer!.parse!;
     const thParse = editor.getPlugin(BaseTableCellHeaderPlugin).parsers!.html!
       .deserializer!.parse!;
-    const tdProps = editor.getPlugin(BaseTableCellPlugin).node.props;
-    const thProps = editor.getPlugin(BaseTableCellHeaderPlugin).node.props;
+    const tdProps = editor.getPlugin(BaseTableCellPlugin).render?.nodeProps;
+    const thProps = editor.getPlugin(BaseTableCellHeaderPlugin).render
+      ?.nodeProps;
     const td = document.createElement('td');
     const th = document.createElement('th');
     td.style.backgroundColor = 'rgb(1, 2, 3)';

@@ -23,7 +23,6 @@ type PublicPackageNamedExports = [
   typeof import('@platejs/plite').ContentSlice,
   typeof import('@platejs/plite').defineEditorSchema,
   typeof import('@platejs/plite').definePropertyPolicy,
-  typeof import('@platejs/plite').element,
   typeof import('@platejs/plite').property,
   typeof import('@platejs/plite').schema,
   typeof import('@platejs/plite').target,

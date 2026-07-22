@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { property } from '@platejs/plite';
+import { schema, property } from '@platejs/plite';
 
 import { createBasePlugin } from '../../../plugin';
 import { createPlateTestEditor } from '../../../../react/__tests__/createPlateTestEditor';
@@ -11,22 +11,23 @@ jsxt;
 
 const TestLinkPlugin = createBasePlugin({
   key: 'a',
-  node: {
+  type: 'a',
+  schema: {
     element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
       inline: true,
       properties: {
         target: property.string(),
         url: property.string(),
       },
     },
-    type: 'a',
   },
   rules: { selection: { affinity: 'hard' } },
 });
 
 const TestBoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
 describe('getEdgeNodes', () => {

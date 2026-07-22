@@ -8,15 +8,13 @@ describe('BaseTogglePlugin', () => {
       plugins: [BaseTogglePlugin],
     });
 
-    expect(
-      editor.read.schema.createAndFill(BaseTogglePlugin.node.type)
-    ).toEqual({
+    expect(editor.read.schema.createAndFill(BaseTogglePlugin)).toEqual({
       children: [{ text: '' }],
-      type: BaseTogglePlugin.node.type,
+      type: BaseTogglePlugin.type,
     });
-    expect(
-      editor.read.schema.element(BaseTogglePlugin.node.type)?.groups
-    ).toContain('block');
+    expect(editor.read.schema.element(BaseTogglePlugin)?.groups).toContain(
+      'block'
+    );
     expect(editor.plugin(BaseTogglePlugin).getOptions().openIds).toEqual(
       new Set()
     );

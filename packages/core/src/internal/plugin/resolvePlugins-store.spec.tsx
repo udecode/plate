@@ -69,7 +69,10 @@ const TestComponentNested = ({
 
 const createStoreEditor = (
   plugins: NonNullable<Parameters<typeof createBaseEditor>[0]>['plugins']
-) => createBaseEditor({ plugins });
+) =>
+  createBaseEditor({
+    plugins,
+  });
 
 describe('BasePlugin store', () => {
   it('create a store for each plugin', () => {
@@ -83,14 +86,18 @@ describe('BasePlugin store', () => {
 
   it('initialize the store with plugin options', () => {
     const p1 = createBasePlugin({ key: 'plugin1', options: { value: 1 } });
-    const editor = createBaseEditor({ plugins: [p1] });
+    const editor = createBaseEditor({
+      plugins: [p1],
+    });
 
     expect(editor.plugin(p1).getOptions()).toEqual({ value: 1 });
   });
 
   it('update plugin options when setOption is called', () => {
     const p1 = createBasePlugin({ key: 'plugin1', options: { value: 1 } });
-    const editor = createBaseEditor({ plugins: [p1] });
+    const editor = createBaseEditor({
+      plugins: [p1],
+    });
 
     editor.plugin(p1).setOption('value', 2);
 
@@ -102,7 +109,9 @@ describe('BasePlugin store', () => {
       key: 'plugin1',
       options: { nested: { value: 1 } },
     });
-    const editor = createBaseEditor({ plugins: [p1] });
+    const editor = createBaseEditor({
+      plugins: [p1],
+    });
 
     editor.plugin(p1).setOption('nested', { value: 2 });
 
@@ -112,7 +121,9 @@ describe('BasePlugin store', () => {
   it('maintain separate stores for each plugin', () => {
     const p1 = createBasePlugin({ key: 'plugin1', options: { value: 1 } });
     const p2 = createBasePlugin({ key: 'plugin2', options: { value: 2 } });
-    const editor = createBaseEditor({ plugins: [p1, p2] });
+    const editor = createBaseEditor({
+      plugins: [p1, p2],
+    });
 
     editor.plugin(p1).setOption('value', 3);
 
@@ -122,7 +133,9 @@ describe('BasePlugin store', () => {
 
   it('handle plugins with no initial options', () => {
     const p1 = createBasePlugin({ key: 'plugin1' });
-    const editor = createBaseEditor({ plugins: [p1] });
+    const editor = createBaseEditor({
+      plugins: [p1],
+    });
 
     expect(editor.plugin(p1).getOptions()).toEqual({});
   });
@@ -130,15 +143,17 @@ describe('BasePlugin store', () => {
   it('preserve other plugin properties when updating store', () => {
     const p1 = createBasePlugin({
       key: 'plugin1',
-      node: { type: 'test' },
+      type: 'test',
       options: { value: 1 },
     });
-    const editor = createBaseEditor({ plugins: [p1] });
+    const editor = createBaseEditor({
+      plugins: [p1],
+    });
 
     editor.plugin(p1).setOption('value', 2);
 
     expect(editor.plugin(p1).getOptions()).toEqual({ value: 2 });
-    expect(editor.getPlugin(p1).node.type).toBe('test');
+    expect(editor.getPlugin(p1).type).toBe('test');
   });
 
   it('allow getting the entire store', () => {
@@ -264,7 +279,9 @@ describe('PlatePlugin usePluginOption', () => {
   describe('usePluginOption', () => {
     it('returns the current option value', () => {
       const p1 = createBasePlugin({ key: 'plugin1', options: { value: 1 } });
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createPlateEditor({
+        plugins: [p1],
+      });
 
       const TestHook = () => {
         const value = useEditorPluginOption(editor, p1, 'value');
@@ -279,7 +296,9 @@ describe('PlatePlugin usePluginOption', () => {
 
     it('update when option value changes', () => {
       const p1 = createPlatePlugin({ key: 'plugin1', options: { value: 1 } });
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createPlateEditor({
+        plugins: [p1],
+      });
 
       const { getByTestId } = render(
         <TestComponent editor={editor} plugin={p1 as any} />
@@ -299,7 +318,9 @@ describe('PlatePlugin usePluginOption', () => {
         key: 'plugin1',
         options: { nested: { subValue: 'initial' }, value: 1 },
       });
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createPlateEditor({
+        plugins: [p1],
+      });
 
       const { getByTestId } = render(
         <TestComponentNested editor={editor} plugin={p1 as any} />
@@ -319,7 +340,9 @@ describe('PlatePlugin usePluginOption', () => {
         key: 'plugin1',
         options: { other: 'test', value: 1 },
       });
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createPlateEditor({
+        plugins: [p1],
+      });
 
       let renderCount = 0;
       const TestHook = () => {
@@ -363,7 +386,9 @@ describe('PlatePlugin usePluginOption', () => {
         doubleValue: (mul: number) => getOptions().value * mul,
       }));
 
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createPlateEditor({
+        plugins: [p1],
+      });
 
       const TestHook = () => {
         // @ts-expect-error
@@ -392,7 +417,9 @@ describe('PlatePlugin usePluginOption', () => {
         key: 'plugin1',
         options: { other: 'test', value: 1 },
       });
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createPlateEditor({
+        plugins: [p1],
+      });
 
       const TestHook = () => {
         const { other, value } = useEditorPluginOptions(

@@ -1,4 +1,4 @@
-import { property } from '@platejs/plite';
+import { schema, property } from '@platejs/plite';
 
 import { BaseParagraphPlugin } from '../lib/plugins';
 import { createBasePlugin } from '../lib/plugin';
@@ -23,37 +23,43 @@ const plugins = [
   BaseParagraphPlugin,
   createBasePlugin({
     key: 'a',
-    node: {
-      dangerouslyAllowAttributes: ['target'],
+    type: 'a',
+    schema: {
       element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
         inline: true,
         properties: {
           target: property.string(),
           url: property.string(),
         },
       },
-      props: ({ element }) =>
+    },
+    render: {
+      nodeProps: ({ element }) =>
         /^https?:\/\/platejs.org\/?/.test(getStringProp(element, 'url'))
           ? {}
           : { target: '_blank' },
-      type: 'a',
     },
+    host: { dangerouslyAllowAttributes: ['target'] },
   }),
   createBasePlugin({
     key: 'img',
-    node: {
+    type: 'img',
+    schema: {
       element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
         inline: true,
         properties: {
           attributes: property.json(),
           url: property.string(),
         },
       },
-      props: ({ element }) => ({
+    },
+    render: {
+      nodeProps: ({ element }) => ({
         alt: getObjectProp(element, 'attributes').alt,
         width: getStringProp(element, 'url').split('/').pop(),
       }),
-      type: 'img',
     },
   }),
 ];

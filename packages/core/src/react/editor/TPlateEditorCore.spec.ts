@@ -1,4 +1,4 @@
-import { createEditor, type Value } from '@platejs/plite';
+import { property, createEditor, type Value } from '@platejs/plite';
 
 import { createBaseEditor } from '../../lib/editor/withPlite';
 import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
@@ -52,6 +52,24 @@ describe('PlateEditor core package', () => {
         getAttributes: () => ({}),
       },
     },
+  });
+
+  it('creates base and React editors without identity ceremony', () => {
+    const baseEditor = createBaseEditor();
+    const editor = createPlateEditor();
+    const named = createBaseEditor({
+      schema: { id: 'persisted-document', version: 7 },
+    });
+
+    expect(baseEditor.read.schema.identity()?.kind).toBe('derived');
+    expect(editor.read.schema.identity()?.kind).toBe('derived');
+    expect(named.read.schema.identity()).toMatchObject({
+      id: 'persisted-document',
+      kind: 'named',
+      version: 7,
+    });
+    expect(baseEditor.api.debug.log).toBeInstanceOf(Function);
+    expect(editor.api.debug.log).toBeInstanceOf(Function);
   });
 
   describe('Core Plugins', () => {
@@ -153,12 +171,9 @@ describe('PlateEditor core package', () => {
       editor.api.insertTable;
     });
 
-    it('extends a plate editor with additional plugins', () => {
-      const plugins = [TextFormattingPlugin, ListPlugin];
-      const editor1 = extendPlateEditor(createEditor(), { plugins });
-
-      const editor = extendPlateEditor(editor1, {
-        plugins: [...editor1.runtime.pluginList, TablePlugin],
+    it('extends a raw editor with all plugins atomically', () => {
+      const editor = extendPlateEditor(createEditor(), {
+        plugins: [TextFormattingPlugin, ListPlugin, TablePlugin],
       });
 
       expect(editor.api.bold).toBeInstanceOf(Function);
@@ -193,9 +208,9 @@ describe('PlateEditor core package', () => {
   });
 
   describe('Plugin', () => {
-    const BoldPlugin = createBasePlugin<'bold'>({
+    const BoldPlugin = createBasePlugin({
       key: 'bold',
-      node: { mark: true },
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       parsers: {
         html: {
           deserializer: {

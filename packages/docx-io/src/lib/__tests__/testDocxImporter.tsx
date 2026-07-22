@@ -10,6 +10,7 @@ import {
 import { cleanDocx } from '@platejs/docx';
 import type { BasePlugin, BasePlugins } from '@platejs/core';
 import {
+  BaseParagraphPlugin,
   createBaseEditor,
   createBasePlugin,
   deserializeHtml,
@@ -26,7 +27,7 @@ jsx;
 
 const TestLinkPlugin = createBasePlugin({
   key: KEYS.link,
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       inline: true,
@@ -58,40 +59,47 @@ const TestLinkPlugin = createBasePlugin({
 
 const TestTableRowPlugin = createBasePlugin({
   key: KEYS.tr,
-  node: {
-    element: {
-      content: schema.content.type(KEYS.td, {
-        default: { type: KEYS.td },
-        min: 1,
-      }),
-    },
+  schema: ({ plugins }) => {
+    const cellType = plugins.elementType(TestTableCellPlugin);
+
+    return {
+      element: {
+        content: schema.content.type(cellType, {
+          default: { type: cellType },
+          min: 1,
+        }),
+      },
+    };
   },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'TR' }] } } },
 });
 
 const TestTableCellPlugin = createBasePlugin({
   key: KEYS.td,
-  node: {
+  schema: ({ plugins }) => ({
     element: {
-      content: schema.content.group('block', {
-        default: { type: KEYS.p },
+      content: plugins.blockContent({
+        default: { type: plugins.elementType(BaseParagraphPlugin) },
         min: 1,
       }),
     },
-  },
+  }),
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'TD' }] } } },
 });
 
 const TestTablePlugin = createBasePlugin({
   key: KEYS.table,
-  node: {
-    element: {
-      content: schema.content.type(KEYS.tr, {
-        default: { type: KEYS.tr },
-        min: 1,
-      }),
-      groups: ['block'],
-    },
+  schema: ({ plugins }) => {
+    const rowType = plugins.elementType(TestTableRowPlugin);
+
+    return {
+      element: {
+        content: schema.content.type(rowType, {
+          default: { type: rowType },
+          min: 1,
+        }),
+      },
+    };
   },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'TABLE' }] } } },
   plugins: [TestTableRowPlugin, TestTableCellPlugin],

@@ -33,45 +33,47 @@ const setType = (type: CustomElementType) =>
 const forcedLayout = () =>
   defineEditorExtension<CustomEditor>()({
     name: 'forced-layout',
-    normalizers: {
-      editor({ next, tx }) {
-        const children = tx.nodes.children();
-        const first = children[0];
-        const second = children[1];
-        const firstText = first ? NodeApi.string(first) : '';
+    corrections: [
+      {
+        event: 'children',
+        query: 'root',
+        correct({ tx }) {
+          const children = tx.nodes.children();
+          const first = children[0];
+          const second = children[1];
+          const firstText = first ? NodeApi.string(first) : '';
 
-        if (children.length <= 1 && firstText === '') {
-          tx.nodes.insert(createTitle(), {
-            at: [0],
-            select: true,
-          });
-          return;
-        }
+          if (children.length <= 1 && firstText === '') {
+            tx.nodes.insert(createTitle(), {
+              at: [0],
+              select: true,
+            });
+            return;
+          }
 
-        if (children.length < 2) {
-          tx.nodes.insert(createParagraph(), { at: [1] });
-          return;
-        }
+          if (children.length < 2) {
+            tx.nodes.insert(createParagraph(), { at: [1] });
+            return;
+          }
 
-        if (
-          NodeApi.isElement(first) &&
-          first.type !== ('title' satisfies CustomElementType)
-        ) {
-          tx.nodes.set(setType('title'), { at: [0] });
-          return;
-        }
+          if (
+            NodeApi.isElement(first) &&
+            first.type !== ('title' satisfies CustomElementType)
+          ) {
+            tx.nodes.set(setType('title'), { at: [0] });
+            return;
+          }
 
-        if (
-          NodeApi.isElement(second) &&
-          second.type !== ('paragraph' satisfies CustomElementType)
-        ) {
-          tx.nodes.set(setType('paragraph'), { at: [1] });
-          return;
-        }
-
-        next();
+          if (
+            NodeApi.isElement(second) &&
+            second.type !== ('paragraph' satisfies CustomElementType)
+          ) {
+            tx.nodes.set(setType('paragraph'), { at: [1] });
+            return;
+          }
+        },
       },
-    },
+    ],
   });
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {

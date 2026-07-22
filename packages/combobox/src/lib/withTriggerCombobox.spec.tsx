@@ -7,7 +7,7 @@ import {
   createBasePlugin,
   type PluginConfig,
 } from '@platejs/core';
-import { type Element, property, schema } from '@platejs/plite';
+import { type Element, property } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import type { TriggerComboboxPluginOptions } from './types';
@@ -21,9 +21,8 @@ const ExampleComboboxPlugin = createBasePlugin<ExampleComboboxConfig>({
   plugins: [
     createBasePlugin({
       key: 'mentionInput',
-      node: {
+      schema: {
         element: {
-          content: schema.content.text({ default: 'text', max: 1, min: 1 }),
           inline: true,
           properties: {
             trigger: property.string(),
@@ -31,8 +30,8 @@ const ExampleComboboxPlugin = createBasePlugin<ExampleComboboxConfig>({
           },
           void: 'inline',
         },
-        type: 'mention_input',
       },
+      type: 'mention_input',
     }),
   ],
 }).extendExtension(withTriggerCombobox);
@@ -70,9 +69,8 @@ const plugins = [
 const RegexComboboxPlugin =
   ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
     key: 'regexCombobox',
-    node: {
+    schema: {
       element: {
-        content: schema.content.text({ default: 'text', max: 1, min: 1 }),
         inline: true,
         properties: {
           trigger: property.string(),

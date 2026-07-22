@@ -1,9 +1,4 @@
-import {
-  createEditor,
-  defineEditorSchema,
-  element,
-  schema,
-} from '@platejs/plite';
+import { createEditor, defineEditorSchema, schema } from '@platejs/plite';
 import {
   createEditorFixture,
   createHyperscript,
@@ -38,6 +33,10 @@ const createFixtureElement = (tagName, attributes, children) =>
   );
 
 const fixtureElements = {};
+const inlineContent = schema.content.any(
+  [schema.content.text(), schema.content.group('inline')],
+  { default: 'text', min: 1 }
+);
 
 for (const inline of [false, true]) {
   for (const isVoid of [false, true]) {
@@ -56,7 +55,12 @@ for (const inline of [false, true]) {
             attributes
           );
 
-          fixtureElements[type] = element({
+          fixtureElements[type] = {
+            ...(!isVoid
+              ? {
+                  content: inline ? inlineContent : schema.content.open(),
+                }
+              : {}),
             groups: ['fixture'],
             inline,
             readOnly,
@@ -70,7 +74,7 @@ for (const inline of [false, true]) {
                     : 'block',
                 }
               : {}),
-          });
+          };
         }
       }
     }
@@ -79,11 +83,11 @@ for (const inline of [false, true]) {
 
 export const fixtureSchema = defineEditorSchema({
   elements: fixtureElements,
-  groups: { fixture: schema.group() },
+  groups: { fixture: {} },
   id: 'fixture-schema',
-  root: schema.root({
+  root: {
     content: schema.content.not(schema.content.text()),
-  }),
+  },
   unknown: 'preserve',
   version: 1,
 });

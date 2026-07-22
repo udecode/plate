@@ -145,7 +145,31 @@ const editor = createPlateEditor({
 
 链接格式化插件。
 
+URL 解析策略属于不可变配置。回调函数、UI 状态和交互行为属于运行时选项：
+
+```tsx
+LinkPlugin.configure({
+  config: {
+    allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+    dangerouslySkipSanitization: false,
+  },
+  options: {
+    triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
+  },
+});
+```
+
 <API name="LinkPlugin">
+
+不可变配置：
+
+- `allowedSchemes?: string[]` — 解析和链接清理接受的 URL 协议。默认值：
+  `['http', 'https', 'mailto', 'tel']`。
+- `dangerouslySkipSanitization?: boolean` — 设置为 `true` 时跳过 URL 清理。
+  默认值：`false`。
+
+运行时选项：
+
 <APIOptions type="object">
 <APIItem name="forceSubmit" type="boolean" optional>
 决定是否强制提交链接表单。
@@ -164,14 +188,6 @@ const editor = createPlateEditor({
 <APIItem name="triggerFloatingLinkHotkeys" type="string | string[]" optional>
 触发浮动链接的热键。
 - **默认值:** **`'meta+k, ctrl+k'`**
-</APIItem>
-<APIItem name="allowedSchemes" type="string[]" optional>
-允许的URL协议列表。
-- **默认值:** **`['http', 'https', 'mailto', 'tel']`**
-</APIItem>
-<APIItem name="dangerouslySkipSanitization" type="boolean" optional>
-决定是否跳过链接的消毒处理。
-- **默认值:** **`false`**
 </APIItem>
 <APIItem name="defaultLinkAttributes" type="AnchorHTMLAttributes&lt;HTMLAnchorElement&gt;" optional>
 链接元素的默认HTML属性。

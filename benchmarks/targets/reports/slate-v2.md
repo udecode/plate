@@ -8,12 +8,12 @@ runners, Autoresearch, and report generation.
 
 ## Summary
 
-- Targets: 41
-- Required artifacts: 41
-- Existing artifacts: 41
+- Targets: 42
+- Required artifacts: 42
+- Existing artifacts: 42
 - Missing optional artifacts: 0
 - Missing required artifacts: 0
-- Status counts: ok=41
+- Status counts: ok=42
 
 ## Targets
 
@@ -38,6 +38,7 @@ runners, Autoresearch, and report generation.
 | core-yjs-collaboration-current | core-current | yjs_collaboration_worst_p95_ms | ok | 1/1 | yes |
 | history-compare | history | history_compare_worst_p95_ratio | ok | 1/1 | yes |
 | issue-6038-transaction-execution | issue-replay | benchmark_seconds | ok | 1/1 | wrapped |
+| plite-command-dispatch | core-command | plite_command_dispatch_worst_budget_ratio | ok | 1/1 | yes |
 | plite-content-slice-value | core-slice | plite_content_slice_value_trusted_identity_reuse | ok | 1/1 | yes |
 | plite-correction-worklist | core-corrections | plite_correction_worklist_max_touched_targets | ok | 1/1 | yes |
 | plite-fit-content-locality | core-slice | plite_fit_content_document_width_ratio | ok | 1/1 | yes |

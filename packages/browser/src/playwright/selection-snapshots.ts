@@ -42,6 +42,7 @@ const matchesSelectionExpectation = (
     );
 
   return (
+    actual.kind === expected.kind &&
     pathsEqual &&
     matchesOffsetExpectation(expected.anchor.offset, actual.anchor.offset) &&
     matchesOffsetExpectation(expected.focus.offset, actual.focus.offset)
@@ -305,6 +306,7 @@ const takeResolvedDOMSelectionSnapshotForRoot = async (
           offset: selection.focus.offset,
           path: [...selection.focus.path],
         },
+        kind: 'text',
       };
     },
     { key: PLITE_BROWSER_HANDLE_KEY }
@@ -462,6 +464,7 @@ export const takeSelectionSnapshot = async (
           path: getPath(selection.focusNode),
           offset: toEditorOffset(selection.focusNode, selection.focusOffset),
         },
+        kind: 'text',
       };
     },
     { key: PLITE_BROWSER_HANDLE_KEY }
@@ -595,6 +598,7 @@ export const takeSelectionSnapshotForRoot = async (
           path: getPath(selection.focusNode),
           offset: toEditorOffset(selection.focusNode, selection.focusOffset),
         },
+        kind: 'text',
       };
     },
     { key: PLITE_BROWSER_HANDLE_KEY }
@@ -628,6 +632,7 @@ export const waitForSelectionSync = async (
         ) =>
           !!left &&
           !!right &&
+          left.kind === right.kind &&
           pointsEqual(left.anchor, right.anchor) &&
           pointsEqual(left.focus, right.focus);
         const rootNode = element.getRootNode() as Document | ShadowRoot;
@@ -755,6 +760,7 @@ export const waitForSelectionSync = async (
               ),
               path: focusPath,
             },
+            kind: 'text' as const,
           };
         };
 

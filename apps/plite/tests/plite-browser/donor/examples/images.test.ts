@@ -987,8 +987,8 @@ test.describe('images example', () => {
     page,
   }, testInfo) => {
     test.skip(
-      testInfo.project.name === 'webkit' || testInfo.project.name === 'mobile',
-      'Chromium/Firefox native clipboard.read HTML payload proof; WebKit blocks navigator.clipboard.read() in Playwright'
+      testInfo.project.name === 'mobile',
+      'Desktop native clipboard payload proof'
     );
 
     const editor = await openExample(page, 'plite/images', {
@@ -1006,7 +1006,7 @@ test.describe('images example', () => {
         focus: { path: [1, 0], offset: 0 },
       });
 
-    const payload = await editor.clipboard.copyPayload();
+    const payload = await editor.clipboard.copyNativeEventPayload();
 
     expect(payload.types).toContain('text/html');
     expect(payload.html).toContain('data-plite-fragment=');

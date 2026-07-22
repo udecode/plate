@@ -15,15 +15,11 @@ describe('BaseCodeDrawingPlugin', () => {
     expect(plugin.key).toBe('codeDrawing');
     expect(editor.read.schema.isBlock(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
-    expect(
-      editor.read.schema.property({
-        key: 'data',
-        placement: 'element',
-        type: NODES.codeDrawing,
-      })?.value.kind
-    ).toBe('json');
+    expect(editor.read.schema.property(BaseCodeDrawingPlugin)?.value.kind).toBe(
+      'json'
+    );
     expect(editor.getType(KEYS.codeDrawing)).toBe(NODES.codeDrawing);
-    expect(plugin.node.type).toBe(NODES.codeDrawing);
+    expect(plugin.type).toBe(NODES.codeDrawing);
 
     editor.update((tx) => {
       expect(typeof tx.codeDrawing.insert).toBe('function');

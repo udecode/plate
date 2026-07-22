@@ -1,4 +1,4 @@
-import { createEditor, type Value } from '@platejs/plite';
+import { property, createEditor, type Value } from '@platejs/plite';
 
 import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
@@ -102,12 +102,9 @@ describe('PlateEditor', () => {
       editor.api.insertTable;
     });
 
-    it('extends a plate editor with additional plugins', () => {
-      const plugins = [TextFormattingPlugin, ListPlugin];
-      const editor1 = extendPlateEditor(createEditor(), { plugins });
-
-      const editor = extendPlateEditor(editor1, {
-        plugins: [...editor1.runtime.pluginList, TablePlugin],
+    it('extends a raw editor with all plugins atomically', () => {
+      const editor = extendPlateEditor(createEditor(), {
+        plugins: [TextFormattingPlugin, ListPlugin, TablePlugin],
       });
 
       expect(editor.api.bold).toBeInstanceOf(Function);
@@ -142,9 +139,9 @@ describe('PlateEditor', () => {
   });
 
   describe('Plugin', () => {
-    const BoldPlugin = createBasePlugin<'bold'>({
+    const BoldPlugin = createBasePlugin({
       key: 'bold',
-      node: { mark: true },
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       parsers: {
         html: {
           deserializer: {

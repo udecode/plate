@@ -55,6 +55,7 @@ export const EXAMPLE_NAMES_AND_PATHS = [
   ['Read-only', 'read-only'],
   ['Rendering in iframes', 'iframe'],
   ['Rich Text', 'richtext'],
+  ['Schema Reconfiguration', 'schema-reconfiguration'],
   ['Search Highlighting', 'search-highlighting'],
   ['Shadow DOM', 'shadow-dom'],
   ['Styling', 'styling'],
@@ -69,6 +70,7 @@ export const HIDDEN_EXAMPLES = [
   'decorations-async',
   'dom-coverage-boundaries',
   'persistent-annotation-anchors',
+  'schema-reconfiguration',
 ] as const;
 
 const hiddenExamplePaths: readonly string[] = HIDDEN_EXAMPLES;

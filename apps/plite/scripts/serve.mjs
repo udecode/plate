@@ -4,9 +4,12 @@ import { fileURLToPath } from 'node:url';
 
 import handler from 'serve-handler';
 
+import { resolvePliteBrowserBaseURL } from './plite-browser-runner.mjs';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicPath = path.resolve(__dirname, '../out');
-const port = Number(process.env.PORT ?? 3102);
+const defaultBaseURL = new URL(resolvePliteBrowserBaseURL());
+const port = Number(process.env.PORT ?? defaultBaseURL.port);
 
 const server = http.createServer((request, response) =>
   handler(request, response, {
@@ -14,6 +17,8 @@ const server = http.createServer((request, response) =>
   })
 );
 
-server.listen(port, () => {
-  console.log(`plite serving ${publicPath} on http://localhost:${port}`);
+server.listen(port, defaultBaseURL.hostname, () => {
+  console.log(
+    `plite serving ${publicPath} on http://${defaultBaseURL.hostname}:${port}`
+  );
 });

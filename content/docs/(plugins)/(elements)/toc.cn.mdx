@@ -97,7 +97,7 @@ const editor = createPlateEditor({
     H2Plugin.withComponent(H2Element),
     H3Plugin.withComponent(H3Element),
     TocPlugin.configure({
-      node: { component: TocElement },
+      render: { node: TocElement },
       options: {
         topOffset: 80,
         isScroll: true,
@@ -107,7 +107,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `node.component`: 指定渲染目录元素的 [`TocElement`](/docs/components/toc-node)
+- `render.node`: 指定渲染目录元素的 [`TocElement`](/docs/components/toc-node)
 - `options.topOffset`: 设置滚动至标题时的顶部偏移量
 - `options.isScroll`: 启用滚动至标题的行为
 

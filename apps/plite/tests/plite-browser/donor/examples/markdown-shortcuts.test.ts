@@ -486,29 +486,36 @@ test.describe('On markdown-shortcuts example', () => {
       'Desktop markdown shortcut keyboard proof'
     );
 
-    const editor = await openMarkdownShortcuts(page);
-    const textbox = editor.root;
+    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
 
-    await editor.selectAll();
-    await editor.deleteFragment();
-    await editor.focus();
-    await textbox.pressSequentially('# Heading');
-    await expect(textbox.locator('h1')).toHaveText('Heading');
+    try {
+      const editor = await openMarkdownShortcuts(page);
+      const textbox = editor.root;
 
-    await editor.selection.selectDOM({
-      kind: 'text',
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    });
-    await textbox.press('Enter');
+      await editor.selectAll();
+      await editor.deleteFragment();
+      await editor.focus();
+      await textbox.pressSequentially('# Heading');
+      await expect(textbox.locator('h1')).toHaveText('Heading');
 
-    await expect(textbox.locator('p')).toHaveCount(1);
-    await expect(textbox.locator('h1')).toHaveText('Heading');
-    await editor.assert.blockTexts(['', 'Heading']);
-    await editor.assert.selection({
-      kind: 'text',
-      anchor: { path: [1, 0], offset: 0 },
-      focus: { path: [1, 0], offset: 0 },
-    });
+      await editor.selection.selectDOM({
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      });
+      await textbox.press('Enter');
+
+      runtimeErrors.assertNone();
+      await expect(textbox.locator('p')).toHaveCount(1);
+      await expect(textbox.locator('h1')).toHaveText('Heading');
+      await editor.assert.blockTexts(['', 'Heading']);
+      await editor.assert.selection({
+        kind: 'text',
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
+      });
+    } finally {
+      runtimeErrors.stop();
+    }
   });
 });

@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import pluginBabel from '@rollup/plugin-babel';
-import type { Plugin } from 'rolldown';
 import { convertPathToPattern } from 'tinyglobby';
 import { defineConfig } from 'tsdown';
+
+import { withDirectPackageConfig } from './direct-package.config.mts';
 
 const PACKAGE_ROOT_PATH = process.cwd();
 const TS_FILE_RE = /\.ts$/;
@@ -52,87 +53,45 @@ if (fs.existsSync(STATIC_INPUT_FILE_PATH)) {
 // Disable sourcemaps in CI to speed up builds
 const enableSourcemaps = !process.env.CI;
 
-const walkFiles = (dir: string, result: string[] = []) => {
-  if (!fs.existsSync(dir)) return result;
-
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const entryPath = path.join(dir, entry.name);
-
-    if (entry.isDirectory()) {
-      walkFiles(entryPath, result);
-      continue;
-    }
-
-    result.push(entryPath);
-  }
-
-  return result;
-};
-
-const fixBrokenDtsChunkImports = (): Plugin => ({
-  name: 'plate/fix-broken-dts-chunk-imports',
-  writeBundle(options) {
-    const outDir = options.file
-      ? path.dirname(path.resolve(PACKAGE_ROOT_PATH, options.file))
-      : path.resolve(PACKAGE_ROOT_PATH, options.dir ?? 'dist');
-    const declarationFiles = walkFiles(outDir).filter((filePath) =>
-      filePath.endsWith('.d.ts')
-    );
-
-    for (const filePath of declarationFiles) {
-      const original = fs.readFileSync(filePath, 'utf8');
-      const rewritten = original.replace(
-        /from\s+(['"])(\.[^'"]+)\.js\1/g,
-        (fullMatch, quote, importPath) => {
-          const resolvedBase = path.resolve(path.dirname(filePath), importPath);
-
-          if (fs.existsSync(`${resolvedBase}.js`)) return fullMatch;
-          if (!fs.existsSync(`${resolvedBase}.d.ts`)) return fullMatch;
-
-          return `from ${quote}${importPath}${quote}`;
-        }
-      );
-
-      if (rewritten !== original) {
-        fs.writeFileSync(filePath, rewritten);
-      }
-    }
-  },
-});
-
-export default defineConfig((opts) => [
-  {
-    ...opts,
-    entry,
-    platform: 'neutral',
-    tsconfig: 'tsconfig.build.json',
-    sourcemap: enableSourcemaps,
-    dts: false,
-    exports: true,
-    plugins: [
-      pluginBabel({
-        babelHelpers: 'bundled',
-        exclude: '**/static/**',
-        overrides: [
-          {
-            parserOpts: {
-              plugins: ['typescript'],
-              sourceType: 'module',
+export const createPlatePackageConfig = ({ directDeclarations = false } = {}) =>
+  defineConfig((opts) => {
+    const config = {
+      ...opts,
+      deps: { neverBundle: true },
+      entry,
+      platform: 'neutral',
+      tsconfig: 'tsconfig.build.json',
+      sourcemap: enableSourcemaps,
+      dts: false,
+      exports: false,
+      failOnWarn: 'ci-only',
+      plugins: [
+        pluginBabel({
+          babelHelpers: 'bundled',
+          exclude: '**/static/**',
+          overrides: [
+            {
+              parserOpts: {
+                plugins: ['typescript'],
+                sourceType: 'module',
+              },
+              test: TS_FILE_RE,
             },
-            test: TS_FILE_RE,
-          },
-          {
-            parserOpts: {
-              plugins: [['typescript', { isTSX: true }], 'jsx'],
-              sourceType: 'module',
+            {
+              parserOpts: {
+                plugins: [['typescript', { isTSX: true }], 'jsx'],
+                sourceType: 'module',
+              },
+              test: TSX_FILE_RE,
             },
-            test: TSX_FILE_RE,
-          },
-        ],
-        plugins: [['babel-plugin-react-compiler', { target: '18' }]],
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
-      }),
-      fixBrokenDtsChunkImports(),
-    ],
-  },
-]);
+          ],
+          plugins: [['babel-plugin-react-compiler', { target: '18' }]],
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        }),
+      ],
+    };
+
+    return [directDeclarations ? withDirectPackageConfig(config) : config];
+  });
+
+export default createPlatePackageConfig();

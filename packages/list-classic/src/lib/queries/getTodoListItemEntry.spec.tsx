@@ -7,16 +7,19 @@ import { getTodoListItemEntry } from './getTodoListItemEntry';
 
 const TodoRootPlugin = createBasePlugin({
   key: 'todoRoot',
-  node: {
-    element: {
-      content: schema.content.type(KEYS.listTodoClassic, {
-        default: { type: KEYS.listTodoClassic },
-        min: 1,
-      }),
-      groups: ['block'],
-    },
-    type: KEYS.taskList,
+  schema: ({ plugins }) => {
+    const todoType = plugins.elementType(BaseTodoListPlugin);
+
+    return {
+      element: {
+        content: schema.content.type(todoType, {
+          default: { type: todoType },
+          min: 1,
+        }),
+      },
+    };
   },
+  type: KEYS.taskList,
 });
 
 const createTodoEditor = ({

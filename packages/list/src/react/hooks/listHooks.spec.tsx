@@ -19,6 +19,15 @@ mock.module('../ListPlugin', () => ({
   ListPlugin: { key: 'list' },
 }));
 
+const { useListToolbarButton, useListToolbarButtonState } = await import(
+  './useListToolbarButton'
+);
+const { useTodoListElement, useTodoListElementState } = await import(
+  './useTodoListElement'
+);
+const { useTodoListToolbarButton, useTodoListToolbarButtonState } =
+  await import('./useTodoListToolbarButton');
+
 describe('list hooks', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
@@ -33,9 +42,6 @@ describe('list hooks', () => {
   });
 
   it('builds list toolbar button props from query state', async () => {
-    const { useListToolbarButton, useListToolbarButtonState } = await import(
-      `./useListToolbarButton?test=${Math.random().toString(36).slice(2)}`
-    );
     const editor = {
       plugin: () => ({
         api: { isActive: isActiveMock },
@@ -63,9 +69,6 @@ describe('list hooks', () => {
   });
 
   it('updates todo checked state only when editable and the path exists', async () => {
-    const { useTodoListElement, useTodoListElementState } = await import(
-      `./useTodoListElement?test=${Math.random().toString(36).slice(2)}`
-    );
     const setNodes = mock();
     const element = { checked: false, id: 'todo-1' };
     const update = mock(
@@ -102,10 +105,6 @@ describe('list hooks', () => {
   });
 
   it('builds todo toolbar button props from todo selection state', async () => {
-    const { useTodoListToolbarButton, useTodoListToolbarButtonState } =
-      await import(
-        `./useTodoListToolbarButton?test=${Math.random().toString(36).slice(2)}`
-      );
     const editor = {
       plugin: () => ({
         api: { isActive: isActiveMock },

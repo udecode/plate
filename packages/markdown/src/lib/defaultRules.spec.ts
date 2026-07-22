@@ -1,6 +1,6 @@
 import {
   createTestEditor,
-  getTestMarkdownRuntime,
+  getTestDeserializeOptions,
 } from './__tests__/createTestEditor';
 import { buildRules } from './rules/defaultRules';
 
@@ -31,7 +31,7 @@ describe('defaultRules', () => {
         url: '/from-mdast.png',
       },
       {},
-      { runtime: getTestMarkdownRuntime(editor) }
+      getTestDeserializeOptions(editor)
     );
 
     expect(result).toEqual({
@@ -55,7 +55,7 @@ describe('defaultRules', () => {
         url: '/from-mdast.png',
       },
       {},
-      { runtime: getTestMarkdownRuntime(editor) }
+      getTestDeserializeOptions(editor)
     );
 
     expect(result).toEqual({
@@ -82,7 +82,7 @@ describe('defaultRules', () => {
         url: '/from-mdast.png',
       },
       {},
-      { runtime: getTestMarkdownRuntime(editor) }
+      getTestDeserializeOptions(editor)
     );
 
     expect(result).toEqual({

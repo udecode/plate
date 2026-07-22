@@ -9,7 +9,9 @@ jsxt;
 
 describe('deserializeHtml - Google Docs', () => {
   it('create single empty paragraphs from BR tags between paragraphs', () => {
-    const editor = createBaseEditor({ plugins: [] });
+    const editor = createBaseEditor({
+      plugins: [],
+    });
 
     // HTML structure from Google Docs with BR tags between paragraphs
     const html = `
@@ -48,7 +50,9 @@ describe('deserializeHtml - Google Docs', () => {
   });
 
   it('preserve BR tags within paragraphs', () => {
-    const editor = createBaseEditor({ plugins: [] });
+    const editor = createBaseEditor({
+      plugins: [],
+    });
 
     const html = '<p>Line 1<br />Line 2</p>';
     const element = getHtmlDocument(html).body;
@@ -65,7 +69,9 @@ describe('deserializeHtml - Google Docs', () => {
   });
 
   it('handle complex Google Docs HTML', () => {
-    const editor = createBaseEditor({ plugins: [] });
+    const editor = createBaseEditor({
+      plugins: [],
+    });
 
     // Actual HTML structure from the issue
     const html = `
@@ -109,7 +115,9 @@ describe('deserializeHtml - Google Docs', () => {
   });
 
   it('preserve BR tags within paragraphs as separate text nodes', () => {
-    const editor = createBaseEditor({ plugins: [] });
+    const editor = createBaseEditor({
+      plugins: [],
+    });
 
     const html = '<p><span>Hello</span><br /><span>World</span></p>';
     const element = getHtmlDocument(html).body;
@@ -127,7 +135,9 @@ describe('deserializeHtml - Google Docs', () => {
   });
 
   it('handle two consecutive BR tags between paragraphs', () => {
-    const editor = createBaseEditor({ plugins: [] });
+    const editor = createBaseEditor({
+      plugins: [],
+    });
 
     const html = `
       <p>First paragraph</p>
@@ -157,7 +167,9 @@ describe('deserializeHtml - Google Docs', () => {
   });
 
   it('handle three consecutive BR tags between paragraphs', () => {
-    const editor = createBaseEditor({ plugins: [] });
+    const editor = createBaseEditor({
+      plugins: [],
+    });
 
     const html = `
       <p>First paragraph</p>
@@ -191,7 +203,9 @@ describe('deserializeHtml - Google Docs', () => {
   });
 
   it('handle multiple consecutive BR tags in complex Google Docs HTML', () => {
-    const editor = createBaseEditor({ plugins: [] });
+    const editor = createBaseEditor({
+      plugins: [],
+    });
 
     const html = `
       <b style="font-weight:normal;">
@@ -226,7 +240,9 @@ describe('deserializeHtml - Google Docs', () => {
   });
 
   it('handle three consecutive BR tags not between blocks', () => {
-    const editor = createBaseEditor({ plugins: [] });
+    const editor = createBaseEditor({
+      plugins: [],
+    });
 
     // 3 BR tags at the start, not between blocks
     const html = `
@@ -257,7 +273,9 @@ describe('deserializeHtml - Google Docs', () => {
   });
 
   it('handle BR tags in various contexts within a div', () => {
-    const editor = createBaseEditor({ plugins: [] });
+    const editor = createBaseEditor({
+      plugins: [],
+    });
 
     const html = `
       <div>

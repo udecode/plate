@@ -7,6 +7,7 @@ export const TEST_FILE_PATTERNS = [
 export const TEST_SLOW_FILE_PATTERNS = [
   'apps/**/*.slow.{ts,tsx}',
   'packages/**/*.slow.{ts,tsx}',
+  'tooling/scripts/**/*.slow.test.mjs',
 ];
 
 export const TEST_DEFERRED_FILE_PATTERNS = [
@@ -22,13 +23,19 @@ export const TEST_IGNORE_PATTERNS = [
   '**/__deferred__/**',
 ];
 
+export const TEST_FAST_IGNORE_PATTERNS = [
+  ...TEST_IGNORE_PATTERNS,
+  'tooling/scripts/**/*.slow.test.mjs',
+];
+
 const isCI = !!process.env.CI;
 
-// When a fast-suite spec repeatedly crosses these thresholds, move the whole
-// spec to `*.slow.ts[x]`. `pnpm test:slowest` and `pnpm check` enforce these
-// limits. CI runners are noisier than fast local machines, so keep local
-// enforcement tight and give CI a slightly wider bucket before it hard-fails.
-// Use `pnpm test:profile` for a non-failing profile run.
+// When an inherently blocking test repeatedly crosses these thresholds, split
+// that case into the matching `*.slow.*` lane. Keep cheap contracts in the fast
+// file. `pnpm test:slowest` and `pnpm check` enforce these limits. CI runners are
+// noisier than fast local machines, so keep local enforcement tight and give CI
+// a slightly wider bucket before it hard-fails. Use `pnpm test:profile` for a
+// non-failing profile run.
 export const FAST_TEST_SLOW_CASE_THRESHOLD_MS = isCI ? 90 : 75;
 export const FAST_TEST_SLOW_FILE_THRESHOLD_MS = isCI ? 180 : 150;
 

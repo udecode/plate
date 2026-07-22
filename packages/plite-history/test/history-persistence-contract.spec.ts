@@ -12,7 +12,6 @@ import {
   defineStateField,
   defineValueCodec,
   DocumentChange,
-  element,
   type Element,
   type Range,
   schema,
@@ -21,6 +20,7 @@ import {
 } from '@platejs/plite';
 
 import { History, history } from '../src';
+import { encodeHistoryValue } from '../src/history-codec';
 
 type CellSelection = Range &
   Readonly<{
@@ -50,15 +50,16 @@ const editorSchema = ({
 } = {}) =>
   defineEditorSchema({
     elements: {
-      paragraph: element({
+      paragraph: {
         content: schema.content.text(),
         isolating,
-      }),
+      },
     },
     id,
-    root: schema.root({
+    root: {
       content: schema.content.type('paragraph', { min: 1 }),
-    }),
+    },
+    unknown: 'reject',
     version,
   });
 
@@ -126,7 +127,7 @@ const redo = (editor: ReturnType<typeof createStateEditor>) => {
 };
 
 describe('versioned history persistence', () => {
-  it('embeds the nullable schema identity in version 3 JSON', () => {
+  it('embeds the exact schema identity in version 4 JSON', () => {
     const raw = createStateEditor([paragraph('body')]);
     const declared = createEditor({
       extensions: [history(), editorSchema()] as const,
@@ -135,14 +136,74 @@ describe('versioned history persistence', () => {
 
     assert.deepEqual(History.toJSON(raw), {
       redos: [],
-      schema: null,
+      schema: raw.read.schema.identity(),
       undos: [],
-      version: 3,
+      version: 4,
     });
     assert.deepEqual(
       History.toJSON(declared).schema,
       declared.read.schema.identity()
     );
+  });
+
+  it('keeps persisted schema identity exact and free of live fields', () => {
+    const editor = createEditor({
+      extensions: [history(), editorSchema()] as const,
+      initialValue: [paragraph('body')],
+    });
+    const encoded = History.toJSON(editor);
+    const liveValidator = () => true;
+    const pollutedIdentity = {
+      ...encoded.schema!,
+      validator: liveValidator,
+    };
+
+    assert.throws(
+      () =>
+        History.fromJSON(editor, {
+          ...encoded,
+          schema: pollutedIdentity,
+        }),
+      /Invalid history JSON/
+    );
+    assert.equal(
+      History.isHistory({
+        ...editor.read.history(),
+        schema: pollutedIdentity,
+      }),
+      false
+    );
+    assert.throws(
+      () =>
+        encodeHistoryValue(editor, {
+          ...editor.read.history(),
+          schema: pollutedIdentity,
+        } as never),
+      /Invalid history schema identity/
+    );
+
+    let accessorReads = 0;
+    const accessorIdentity = Object.defineProperties(
+      {},
+      {
+        fingerprint: {
+          enumerable: true,
+          get: () => {
+            accessorReads++;
+
+            return encoded.schema!.fingerprint;
+          },
+        },
+        id: { enumerable: true, value: encoded.schema!.id },
+        version: { enumerable: true, value: encoded.schema!.version },
+      }
+    );
+
+    assert.throws(
+      () => History.fromJSON(editor, { ...encoded, schema: accessorIdentity }),
+      /Invalid history JSON/
+    );
+    assert.equal(accessorReads, 0);
   });
 
   it('rejects schema mismatches before decoding any history batch', () => {
@@ -222,12 +283,13 @@ describe('versioned history persistence', () => {
     const schemaWithBlock = (version: number, type: string) =>
       defineEditorSchema({
         elements: {
-          [type]: element({ content: schema.content.text() }),
+          [type]: { content: schema.content.text() },
         },
         id: 'history-schema',
-        root: schema.root({
+        root: {
           content: schema.content.type(type, { min: 1 }),
-        }),
+        },
+        unknown: 'reject',
         version,
       });
     const editor = createEditor({
@@ -307,7 +369,7 @@ describe('versioned history persistence', () => {
     );
   });
 
-  it('treats equivalent schema reconfiguration as a history-neutral no-op', () => {
+  it('preserves undoable edits across equivalent schema reconfiguration', () => {
     const slot = defineExtensionSlot('equivalent-history-schema');
     const editor = createEditor({
       extensions: [history(), slot.of(editorSchema())] as const,
@@ -532,17 +594,18 @@ describe('versioned history persistence', () => {
 
     const closedParagraph = defineEditorSchema({
       elements: {
-        paragraph: element({
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-        }),
+        },
       },
       id: 'closed-history-paragraph',
-      root: schema.root({
+      root: {
         content: schema.content.type('paragraph', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      },
+      unknown: 'reject',
       version: 1,
     });
     const restored = createEditor({
@@ -601,7 +664,7 @@ describe('versioned history persistence', () => {
     assert.equal(restored.read.getField(counter), 2);
   });
 
-  it('rejects v2 and unversioned history, unknown effects, and stale field data', () => {
+  it('rejects old and unversioned history, unknown effects, and stale field data', () => {
     const editor = createStateEditor([paragraph('body')]);
 
     assert.throws(
@@ -611,6 +674,16 @@ describe('versioned history persistence', () => {
           schema: null,
           undos: [],
           version: 2,
+        }),
+      /unsupported history version/i
+    );
+    assert.throws(
+      () =>
+        History.fromJSON(editor, {
+          redos: [],
+          schema: null,
+          undos: [],
+          version: 3,
         }),
       /unsupported history version/i
     );

@@ -2,6 +2,7 @@
 
 import { createBaseEditor } from '@platejs/core';
 import { jsxt } from '@platejs/test-utils';
+import { schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseDatePlugin } from './BaseDatePlugin';
@@ -15,16 +16,12 @@ describe('BaseDatePlugin', () => {
     });
 
     const element = { children: [{ text: '' }], type: KEYS.date };
+    const dateElement = editor.read.schema.handle(BaseDatePlugin);
+    const date = schema.handle.property(dateElement, 'date');
 
     expect(editor.read.schema.isVoid(element)).toBe(true);
     expect(editor.read.schema.isInline(element)).toBe(true);
-    expect(
-      editor.read.schema.property({
-        key: 'date',
-        placement: 'element',
-        type: KEYS.date,
-      })?.value.kind
-    ).toBe('string');
+    expect(editor.read.schema.property(date)?.value.kind).toBe('string');
   });
 
   it('does not force date elements to opt out of keyboard entry', () => {

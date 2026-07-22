@@ -1609,7 +1609,7 @@ describe('plite-react provider hooks contract', () => {
     }
   });
 
-  test('mounted render selector hooks skip synced text commits but catch the next node commit', async () => {
+  test('mounted render selectors skip synced typing but refresh historic text', async () => {
     const editor = createReactEditor();
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
@@ -1684,13 +1684,32 @@ describe('plite-react provider hooks contract', () => {
         syncedTextProfile.byKey['selector:selector-runtime-node-check'] ?? 0
       ).toBe(0);
 
+      const callsAfterSyncedText = {
+        node: nodeSelector.mock.calls.length,
+        text: textSelector.mock.calls.length,
+      };
+
+      await act(async () => {
+        editor.update({ tags: 'historic' }, (tx) => {
+          tx.text.insert('?', { at: { path: [0, 0], offset: 4 } });
+        });
+      });
+
+      expect(result.current).toEqual({ nodeText: 'one!?', text: 'one!?' });
+      expect(nodeSelector.mock.calls.length).toBeGreaterThan(
+        callsAfterSyncedText.node
+      );
+      expect(textSelector.mock.calls.length).toBeGreaterThan(
+        callsAfterSyncedText.text
+      );
+
       await act(async () => {
         editor.update((tx) => {
           tx.nodes.set({ tone: true } as never, { at: [0, 0] });
         });
       });
 
-      expect(result.current.text).toBe('one!');
+      expect(result.current.text).toBe('one!?');
       expect(textSelector.mock.calls.length).toBeGreaterThan(
         callsAfterMount.text
       );
@@ -1701,7 +1720,7 @@ describe('plite-react provider hooks contract', () => {
         });
       });
 
-      expect(result.current.nodeText).toBe('one!');
+      expect(result.current.nodeText).toBe('one!?');
       expect(nodeSelector.mock.calls.length).toBeGreaterThan(
         callsAfterMount.node
       );

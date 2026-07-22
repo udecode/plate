@@ -266,6 +266,25 @@ test('Plite benchmark authority inputs run only bounded proof contracts', () => 
   }
 });
 
+test('split tooling contracts remain in affected Plite proof', () => {
+  for (const input of [
+    'tooling/scripts/bench-targets.test.mjs',
+    'tooling/scripts/bench-targets.slow.test.mjs',
+    'tooling/scripts/check-plite-release-artifacts.test.mjs',
+    'tooling/scripts/check-plite-release-artifacts.slow.test.mjs',
+    'tooling/scripts/plite-source-aliases.test.mjs',
+    'tooling/scripts/plite-source-aliases.slow.test.mjs',
+    'tooling/scripts/run-bounded-process.test.mjs',
+    'tooling/scripts/run-bounded-process.slow.test.mjs',
+    'tooling/scripts/test-suite-routing.test.mjs',
+  ]) {
+    const plan = createAffectedPlan([input]);
+
+    assert.equal(plan.relevant, true, input);
+    assert.deepEqual(ids(createCheckSteps('dev', plan)), ['contracts'], input);
+  }
+});
+
 test('the editor performance route runs only the www source typecheck', () => {
   const plan = createAffectedPlan([
     'apps/www/src/app/dev/editor-perf/page.tsx',
@@ -441,8 +460,19 @@ test('Plite CI watches every benchmark authority root through cheap contracts', 
     'benchmarks/targets/slate-v2.json',
     'tooling/scripts/bench-targets.mjs',
     'tooling/scripts/bench-targets.test.mjs',
+    'tooling/scripts/bench-targets.slow.test.mjs',
+    'tooling/scripts/check-plite-release-artifacts.mjs',
+    'tooling/scripts/check-plite-release-artifacts.test.mjs',
+    'tooling/scripts/check-plite-release-artifacts.slow.test.mjs',
+    'tooling/scripts/plite-source-aliases.test.mjs',
+    'tooling/scripts/plite-source-aliases.slow.test.mjs',
     'tooling/scripts/run-bounded-process.mjs',
     'tooling/scripts/run-bounded-process.test.mjs',
+    'tooling/scripts/run-bounded-process.slow.test.mjs',
+    'tooling/scripts/test-fast.mjs',
+    'tooling/scripts/test-slow.mjs',
+    'tooling/scripts/test-slowest.mjs',
+    'tooling/scripts/test-suite-routing.test.mjs',
   ]) {
     const escaped = input.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -487,7 +517,7 @@ test('Plite runtime uses one source-first adopter typecheck lane', () => {
   assert.match(workflow, /^ {2}plite-adopters:$/mu);
   assert.match(workflow, /run: pnpm check:plite:adopters/u);
   assert.match(workflow, /PLITE_CHECK_BASE:/u);
-  assert.doesNotMatch(sourceTypecheck, /\.plite-types|\bbuild\b/u);
+  assert.doesNotMatch(sourceTypecheck, /\bbuild\b/u);
 });
 
 test('local affected proof uses working changes unless CI supplies a base', () => {
@@ -549,7 +579,14 @@ test('root scripts keep source-first typecheck and strict browser closure separa
   );
   for (const requiredContract of [
     'tooling/scripts/bench-targets.test.mjs',
+    'tooling/scripts/bench-targets.slow.test.mjs',
+    'tooling/scripts/check-plite-release-artifacts.test.mjs',
+    'tooling/scripts/check-plite-release-artifacts.slow.test.mjs',
+    'tooling/scripts/plite-source-aliases.test.mjs',
+    'tooling/scripts/plite-source-aliases.slow.test.mjs',
     'tooling/scripts/run-bounded-process.test.mjs',
+    'tooling/scripts/run-bounded-process.slow.test.mjs',
+    'tooling/scripts/test-suite-routing.test.mjs',
     'packages/plite/test/slice-fit-contract.test.ts',
     'benchmarks/editor/benchmarks/benchmark-artifact.test.ts',
     'benchmarks/editor/benchmarks/plite-clipboard-large-payload-benchmark.test.ts',

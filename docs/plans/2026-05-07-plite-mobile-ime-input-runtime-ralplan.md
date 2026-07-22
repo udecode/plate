@@ -2006,9 +2006,11 @@ Slice 16 result:
   a real DOM composition starts inside `default block 1`, a nearby model-owned
   replacement intersects only part of the active composition neighborhood, and
   the later `compositionend` must not append stale `すし`.
-- The first draft used an expanded DOM composition selection; Plite correctly
-  deleted that range on `compositionstart`, so the row was tightened to a
-  collapsed composition point plus a partial model-owned replacement.
+- The first draft used an expanded DOM composition selection; the runtime at
+  that point deleted the range on `compositionstart`, so the historical row was
+  tightened to a collapsed composition point plus a partial model-owned
+  replacement. That deletion is recorded here as historical evidence, not
+  current composition doctrine.
 - Runtime code changes: none for this slice; it verifies that the slice-14
   fallback cancellation handles narrower overlap pressure.
 - Issue claims changed: none.
@@ -2233,15 +2235,16 @@ Slice 22 result:
   into a Plite rich-text proof using Chromium CDP `Input.imeSetComposition`.
 - The first synthetic proof was intentionally red but too weak: it changed DOM
   text while Plite model text still contained the old content.
-- The CDP proof exposed the real runtime issue: trusted native composition
-  needs model-selection pre-delete, visible mark capture, model-owned insert
-  while composing, and cleanup of stale browser-owned composition text in
-  managed Plite strings.
-- Runtime changes:
-  `packages/plite-react/src/editable/composition-state.ts` now
-  gates expanded-selection pre-delete on trusted native composition, captures
-  composition marks synchronously, tracks latest composition text, and repairs
-  stale composition text left inside managed DOM strings.
+- The CDP proof exposed the then-current runtime issue: the slice used
+  model-selection pre-delete, visible mark capture, model-owned insert while
+  composing, and cleanup of stale browser-owned composition text in managed
+  Plite strings. That pre-delete design is historical evidence only.
+- Historical runtime change:
+  `packages/plite-react/src/editable/composition-state.ts` gated
+  expanded-selection pre-delete on trusted native composition, captured marks,
+  tracked composition text, and repaired stale composition DOM. Current
+  doctrine preserves the expanded model target and performs one atomic targeted
+  replacement after the browser releases composition.
 - Runtime changes:
   `packages/plite-react/src/editable/mutation-controller.ts` now
   requests a render after model-owned text insertion during composition.
@@ -2350,18 +2353,19 @@ Slice 26 result:
 - The row translates Lexical's undo-selection pressure into Plite's runtime
   contract: replacing the selected `b` in `ab` with IME text yields `aす`, and
   one undo restores both `ab` and the original backward selection.
-- The first proof failed: undo left `a`, proving trusted native composition
-  pre-delete and the Chrome composition-end fallback insert were separate
-  history batches.
-- Runtime change:
-  `packages/plite-react/src/editable/composition-state.ts` now
-  tracks trusted native expanded-selection pre-delete and merges the following
-  Chrome composition-end fallback insert into that history batch.
+- The first proof failed: undo left `a`. The historical implementation split a
+  `compositionstart` pre-delete from the Chrome composition-end fallback insert,
+  so they landed in separate history batches.
+- Historical runtime change:
+  `packages/plite-react/src/editable/composition-state.ts` tracked that
+  pre-delete and merged the fallback insert into its history batch. Current
+  doctrine deletes that split design: preserve the expanded target, defer work
+  until the browser releases composition, and commit one targeted replacement.
 - Issue claims changed: none.
 - Reference docs: no change, because this is desktop Chromium CDP proof and
   does not promote exact Mobile/IME issue closure or raw-device claims.
 - ce-compound note added:
-  `docs/solutions/ui-bugs/2026-05-07-slate-react-ime-replacement-undo-must-merge-native-predelete.md`.
+  `docs/solutions/ui-bugs/2026-05-07-plite-react-ime-replacement-undo-needs-one-atomic-replacement.md`.
 - Rendering-strategy IME regression proof passed:
   `bun playwright test playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "commits IME composition through|records runtime metadata for committed IME composition|undoes committed IME composition as one history step|restores expanded selection after undoing IME replacement|does not push canceled IME composition onto history|drops active IME composition when a model change overlaps it|drops active IME composition when a model change partially overlaps it|drops active IME composition when a model change happens at its insertion point|keeps active IME composition when a model change happens elsewhere|commits rapidly following IME compositions in separate text blocks|commits cross-paragraph IME composition as one replacement" --retries=0`.
 - Richtext Chromium IME regression proof passed:

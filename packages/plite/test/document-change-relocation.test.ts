@@ -83,4 +83,20 @@ describe('DocumentChange relocations', () => {
       { path: [0], root: null, targetPath: [0, 0] },
     ]);
   });
+
+  it('does not report ambiguous duplicate subtrees as relocations', () => {
+    const duplicate = paragraph('duplicate');
+    const before: JsonEditorValue = {
+      children: [duplicate, duplicate],
+    };
+    const after: JsonEditorValue = {
+      children: [
+        { children: [duplicate], type: 'quote' },
+        { children: [duplicate], type: 'quote' },
+      ],
+    };
+    const change = DocumentChange.between(before, after);
+
+    assert.deepEqual(getDocumentChangeRelocations(change, before), []);
+  });
 });

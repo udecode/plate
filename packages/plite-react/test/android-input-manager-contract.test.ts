@@ -336,8 +336,8 @@ describe('Android input manager command-handler flush policy', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          commands: [
-            editorCommands.insertText.handle((_context, next) => next()),
+          commands: ({ handle }) => [
+            handle(editorCommands.insertText, (_context) => false),
           ],
           name: 'insert-text-command',
         }),
@@ -369,8 +369,8 @@ describe('Android input manager command-handler flush policy', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          commands: [
-            editorCommands.insertText.handle((_context, next) => next()),
+          commands: ({ handle }) => [
+            handle(editorCommands.insertText, (_context) => false),
           ],
           name: 'insert-text-command',
         }),
@@ -390,8 +390,8 @@ describe('Android input manager command-handler flush policy', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          commands: [
-            editorCommands.insertBreak.handle((_context, next) => next()),
+          commands: ({ handle }) => [
+            handle(editorCommands.insertBreak, (_context) => false),
           ],
           name: 'insert-break-command',
         }),

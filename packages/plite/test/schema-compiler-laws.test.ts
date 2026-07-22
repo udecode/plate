@@ -4,11 +4,10 @@ import { describe, it } from 'node:test';
 import {
   defineEditorSchema,
   DocumentChange,
-  element,
   property,
   schema,
   target,
-  type EditorSchemaContribution,
+  type EditorSchemaDeclaration,
   type JsonEditorValue,
   type SchemaProperty,
 } from '@platejs/plite';
@@ -43,37 +42,37 @@ const assertLaw = (
 
 const record = (
   extensionName: string,
-  contribution: EditorSchemaContribution,
-  order = 0
-): EditorSchemaContributionRecord => ({ contribution, extensionName, order });
+  contribution: EditorSchemaDeclaration
+): EditorSchemaContributionRecord => ({ contribution, extensionName });
 
 const createBaseSchema = (properties: readonly SchemaProperty[] = []) =>
   defineEditorSchema({
     elements: {
-      code: element({ content: schema.content.text() }),
-      paragraph: element({
+      code: { content: schema.content.text() } as const,
+      paragraph: {
         content: schema.content.text(),
         groups: ['editable'],
-      }),
+      } as const,
     },
-    groups: { editable: schema.group() },
+    groups: { editable: {} as const },
     id: 'generated-laws',
     properties,
-    root: schema.root({
+    root: {
       content: schema.content.type('paragraph'),
-    }),
+    } as const,
     roots: {
-      comments: schema.root({
+      comments: {
         content: schema.content.type('paragraph'),
-      }),
+      } as const,
     },
+    unknown: 'reject',
     version: 1,
   });
 
 const compile = (
   definition: Readonly<{
     name: string;
-    schema: EditorSchemaContribution;
+    schema: EditorSchemaDeclaration;
   }> = createBaseSchema(),
   additions: readonly EditorSchemaContributionRecord[] = []
 ) =>
@@ -115,29 +114,20 @@ describe('compiled schema generated laws', () => {
           minLength: 1,
         }),
         (ids) => {
-          const additions = ids.map((id, index) =>
-            record(
-              `property-${id}`,
-              schema.contribution({
-                properties: [
-                  schema.textProperty(`generated_${id}`, property.number(), {
-                    target:
-                      id % 2 === 0
-                        ? target.type('paragraph')
-                        : target.type('code'),
-                  }),
-                ],
-              }),
-              index
-            )
+          const additions = ids.map((id) =>
+            record(`property-${id}`, {
+              properties: [
+                schema.textProperty(`generated_${id}`, property.number(), {
+                  target:
+                    id % 2 === 0
+                      ? target.type('paragraph')
+                      : target.type('code'),
+                }),
+              ],
+            } as const)
           );
           const left = compile(createBaseSchema(), additions);
-          const right = compile(
-            createBaseSchema(),
-            [...additions]
-              .reverse()
-              .map((entry, index) => ({ ...entry, order: 10_000 - index }))
-          );
+          const right = compile(createBaseSchema(), [...additions].reverse());
 
           assert.equal(left.identity.fingerprint, right.identity.fingerprint);
           assert.deepEqual(compiledShape(left), compiledShape(right));
@@ -160,13 +150,13 @@ describe('compiled schema generated laws', () => {
             target: target.type('paragraph'),
           }),
         ]);
-        const exact = schema.contribution({
+        const exact = {
           properties: [
             schema.textProperty(`${prefix}value`, property.string(), {
               target: target.type('paragraph'),
             }),
           ],
-        });
+        } as const;
 
         assert.throws(
           () => compile(definition, [record('exact', exact)]),
@@ -183,16 +173,13 @@ describe('compiled schema generated laws', () => {
         assert.throws(
           () =>
             compile(definition, [
-              record(
-                'duplicate-exact',
-                schema.contribution({
-                  properties: [
-                    schema.textProperty(exactKey, property.string(), {
-                      target: target.type('paragraph'),
-                    }),
-                  ],
-                })
-              ),
+              record('duplicate-exact', {
+                properties: [
+                  schema.textProperty(exactKey, property.string(), {
+                    target: target.type('paragraph'),
+                  }),
+                ],
+              } as const),
             ]),
           (error) => {
             assert.ok(error instanceof EditorSchemaCompileError);
@@ -207,16 +194,13 @@ describe('compiled schema generated laws', () => {
 
         assert.doesNotThrow(() =>
           compile(definition, [
-            record(
-              'disjoint-exact',
-              schema.contribution({
-                properties: [
-                  schema.textProperty(`${prefix}value`, property.string(), {
-                    target: target.type('code'),
-                  }),
-                ],
-              })
-            ),
+            record('disjoint-exact', {
+              properties: [
+                schema.textProperty(`${prefix}value`, property.string(), {
+                  target: target.type('code'),
+                }),
+              ],
+            } as const),
           ])
         );
       }),
@@ -230,8 +214,8 @@ describe('compiled schema generated laws', () => {
         const create = (unknown: 'preserve' | 'reject') =>
           defineEditorSchema({
             elements: {
-              a: element({ content: schema.content.text() }),
-              b: element({ content: schema.content.text() }),
+              a: { content: schema.content.text() } as const,
+              b: { content: schema.content.text() } as const,
             },
             id: `closed-target-${id}`,
             properties: [
@@ -242,7 +226,7 @@ describe('compiled schema generated laws', () => {
                 target: target.not(target.type('b')),
               }),
             ],
-            root: schema.root({ content: schema.content.type('a') }),
+            root: { content: schema.content.type('a') } as const,
             unknown,
             version: 1,
           });
@@ -275,15 +259,15 @@ describe('compiled schema generated laws', () => {
         (unknownTypes) => {
           const definition = defineEditorSchema({
             elements: {
-              paragraph: element({ content: schema.content.text() }),
-              wrapper: element({
+              paragraph: { content: schema.content.text() } as const,
+              wrapper: {
                 content: schema.content.not(schema.content.text()),
-              }),
+              } as const,
             },
             id: 'bounded-unknown-wrapper-plans',
-            root: schema.root({
+            root: {
               content: schema.content.type('wrapper'),
-            }),
+            } as const,
             unknown: 'preserve',
             version: 1,
           });
@@ -566,14 +550,13 @@ describe('compiled schema generated laws', () => {
       {
         code: 'invalid-property-descriptor',
         descriptor: {
-          equality: 'structural',
           kind: 'date',
           omitDefault: false,
         },
         name: 'unknown kind',
       },
       {
-        code: 'invalid-property-descriptor',
+        code: 'unknown-schema-key',
         descriptor: {
           equality: 'reference',
           kind: 'string',
@@ -584,7 +567,6 @@ describe('compiled schema generated laws', () => {
       {
         code: 'invalid-property-descriptor',
         descriptor: {
-          equality: 'structural',
           kind: 'set',
           omitDefault: false,
         },
@@ -594,7 +576,6 @@ describe('compiled schema generated laws', () => {
         code: 'invalid-property-default',
         descriptor: {
           default: 'wrong',
-          equality: 'structural',
           kind: 'number',
           omitDefault: false,
         },
@@ -603,7 +584,6 @@ describe('compiled schema generated laws', () => {
       {
         code: 'invalid-property-default',
         descriptor: {
-          equality: 'structural',
           kind: 'string',
           omitDefault: true,
         },
@@ -612,7 +592,6 @@ describe('compiled schema generated laws', () => {
       {
         code: 'invalid-property-policy',
         descriptor: {
-          equality: 'structural',
           kind: 'string',
           omitDefault: false,
           policy: { id: 'invalid', validate: () => true, version: 0 },
@@ -635,7 +614,7 @@ describe('compiled schema generated laws', () => {
             value: testCase.descriptor,
           },
         ],
-      } as unknown as EditorSchemaContribution;
+      } as unknown as EditorSchemaDeclaration;
 
       assert.throws(
         () =>

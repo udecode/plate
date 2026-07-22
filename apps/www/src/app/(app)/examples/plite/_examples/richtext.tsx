@@ -3,6 +3,7 @@ import type { MouseEvent, PointerEvent } from 'react';
 import {
   type Descendant,
   defineEditorExtension,
+  editorCommands,
   type Node,
   NodeApi,
   PathApi,
@@ -12,7 +13,7 @@ import {
   type Text as PliteText,
   TextApi,
 } from '@platejs/plite';
-import { isHotkey } from '@platejs/plite-dom';
+import { isHotkey, parseDOMClipboardHtml } from '@platejs/plite-dom';
 import {
   Editable,
   type RenderElementProps,
@@ -321,23 +322,23 @@ const richText = () =>
           return next();
         }
 
-        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        const parsed = parseDOMClipboardHtml(html);
         const fragment = normalizeRichTextHtmlFragment(
           deserialize(parsed.body)
         );
 
-        tx.fragment.insert(fragment);
+        tx.fragment.replace(fragment);
         return true;
       },
     },
-    transforms: {
-      insertBreak({ next, tx }) {
-        const selection = tx.selection();
+    commands: ({ around }) => [
+      around(editorCommands.insertBreak, ({ state, next }) => {
+        const selection = state.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
-          const blockEntry = tx.nodes.above({
+          const blockEntry = state.nodes.above({
             at: selection,
-            match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
+            match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
           });
 
           if (blockEntry) {
@@ -348,7 +349,7 @@ const richText = () =>
               isExitOnEnterType(block.type as CustomElementType)
             ) {
               const blockText = NodeApi.string(block);
-              const end = tx.points.end(blockPath);
+              const end = state.points.end(blockPath);
 
               if (
                 blockText === '' ||
@@ -357,23 +358,25 @@ const richText = () =>
                 const paragraphPath = PathApi.next(blockPath);
                 const result = next();
 
-                tx.nodes.set(
-                  { type: 'paragraph' },
-                  {
-                    at: paragraphPath,
-                    match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
-                  }
-                );
+                if (result === false) return false;
 
-                return result;
+                return state.transaction.extend(result, (tx) => {
+                  tx.nodes.set(
+                    { type: 'paragraph' },
+                    {
+                      at: paragraphPath,
+                      match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
+                    }
+                  );
+                });
               }
             }
           }
         }
 
-        return next();
-      },
-    },
+        return false;
+      }),
+    ],
   });
 
 const handleRichTextKeyDown = (

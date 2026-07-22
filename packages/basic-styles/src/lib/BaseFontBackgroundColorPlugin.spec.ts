@@ -14,10 +14,7 @@ describe('BaseFontBackgroundColorPlugin', () => {
       nodeKey: 'backgroundColor',
     });
     expect(
-      editor.read.schema.property({
-        key: KEYS.backgroundColor,
-        placement: 'text',
-      })?.value.kind
+      editor.read.schema.property(BaseFontBackgroundColorPlugin)?.value.kind
     ).toBe('string');
     expect(
       editor.api.html.deserialize({

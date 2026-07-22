@@ -24,7 +24,9 @@ describe('when element is a body', () => {
 
     expect(
       htmlBodyToFragment(
-        createBaseEditor({ plugins: [BaseParagraphPlugin] }),
+        createBaseEditor({
+          plugins: [BaseParagraphPlugin],
+        }),
         body
       )
     ).toEqual(output);

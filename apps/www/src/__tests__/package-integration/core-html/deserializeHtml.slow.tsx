@@ -59,11 +59,7 @@ describe('when element is a div', () => {
   ) as any;
 
   it('returns a text fragment', () => {
-    expect(
-      deserializeHtml(createBaseEditor(), {
-        element,
-      })
-    ).toEqual(output);
+    expect(deserializeHtml(createBaseEditor(), { element })).toEqual(output);
   });
 });
 
@@ -100,11 +96,7 @@ describe('when html is a text without tags', () => {
   ) as any;
 
   it('returns a text fragment', () => {
-    expect(
-      deserializeHtml(createBaseEditor(), {
-        element,
-      })
-    ).toEqual(output);
+    expect(deserializeHtml(createBaseEditor(), { element })).toEqual(output);
   });
 });
 

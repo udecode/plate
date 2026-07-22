@@ -5,7 +5,10 @@ import type { TColumnGroupElement } from '@platejs/utils';
 import { BaseColumnPlugin } from '../BaseColumnPlugin';
 
 const createEditor = (value = twoColumns) =>
-  createBaseEditor({ plugins: [BaseColumnPlugin], value });
+  createBaseEditor({
+    plugins: [BaseColumnPlugin],
+    value,
+  });
 
 const getColumnGroup = (editor: ReturnType<typeof createEditor>) => {
   const entry = editor.read.nodes.get<TColumnGroupElement>([0]);

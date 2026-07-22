@@ -4,7 +4,6 @@ import {
   createEditorView,
   type Descendant,
   defineEditorSchema,
-  element,
   schema,
 } from '@platejs/plite';
 import { Hotkeys } from '@platejs/plite-dom';
@@ -90,16 +89,19 @@ const paragraph = (text: string) =>
 
 const contentRootExtension = defineEditorSchema({
   elements: {
-    'content-card': element({
-      contentRoot: {
-        content: schema.content.not(schema.content.text()),
-        slot: 'body',
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+    'content-card': {
+      content: schema.content.open(),
+      contentRoots: {
+        body: schema.content.not(schema.content.text()),
       },
       void: 'editable-island',
-    }),
+    },
   },
   id: 'keyboard-content-root-test',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
@@ -2419,7 +2421,7 @@ describe('keyboard input strategy', () => {
 
     try {
       const [
-        { createEditor, defineEditorSchema, element, schema },
+        { createEditor, defineEditorSchema, schema },
         { ReactEditor },
         { applyEditableKeyDown },
       ] = await Promise.all([
@@ -2430,11 +2432,11 @@ describe('keyboard input strategy', () => {
       const editor = createEditor({
         extensions: [
           defineEditorSchema({
-            elements: { mention: element({ void: 'markable-inline' }) },
+            elements: { mention: { void: 'markable-inline' } },
             id: 'keyboard-input-strategy-inline-void-test',
-            root: schema.root({
+            root: {
               content: schema.content.not(schema.content.text()),
-            }),
+            },
             unknown: 'preserve',
             version: 1,
           }),
@@ -2531,7 +2533,7 @@ describe('keyboard input strategy', () => {
 
     try {
       const [
-        { createEditor, defineEditorSchema, element, schema },
+        { createEditor, defineEditorSchema, schema },
         { ReactEditor },
         { applyEditableKeyDown },
       ] = await Promise.all([
@@ -2542,11 +2544,11 @@ describe('keyboard input strategy', () => {
       const editor = createEditor({
         extensions: [
           defineEditorSchema({
-            elements: { image: element({ void: 'block' }) },
+            elements: { image: { void: 'block' } },
             id: 'keyboard-input-strategy-void-test',
-            root: schema.root({
+            root: {
               content: schema.content.not(schema.content.text()),
-            }),
+            },
             unknown: 'preserve',
             version: 1,
           }),

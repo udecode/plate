@@ -204,10 +204,10 @@ describe('plite-history integrity contract', () => {
 
     const unsubscribe = editor.extend(
       defineEditorExtension({
-        commands: [
-          editorCommands.move.handle((context, next) => {
-            seenCommands.push(context.command.type);
-            return next();
+        commands: ({ handle }) => [
+          handle(editorCommands.move, () => {
+            seenCommands.push(editorCommands.move.id);
+            return false;
           }),
         ],
         name: 'test-move-command',
@@ -219,7 +219,8 @@ describe('plite-history integrity contract', () => {
 
     unsubscribe();
 
-    assert.deepEqual(seenCommands, ['move_selection']);
+    assert.deepEqual(seenCommands, ['selection.move']);
+    assert.equal(movementCommit?.tags.includes('semantic-command'), true);
     assert.equal(getHistory(editor).undos.length, 0);
     assert.equal(movementCommit?.changed.has('selection'), true);
   });
@@ -236,10 +237,10 @@ describe('plite-history integrity contract', () => {
 
     const unsubscribe = editor.extend(
       defineEditorExtension({
-        commands: [
-          editorCommands.addMark.handle((context, next) => {
-            seenCommands.push(context.command.type);
-            return next();
+        commands: ({ handle }) => [
+          handle(editorCommands.addMark, () => {
+            seenCommands.push(editorCommands.addMark.id);
+            return false;
           }),
         ],
         name: 'test-add-mark-command',
@@ -251,7 +252,8 @@ describe('plite-history integrity contract', () => {
 
     unsubscribe();
 
-    assert.deepEqual(seenCommands, ['add_mark']);
+    assert.deepEqual(seenCommands, ['mark.add']);
+    assert.equal(markCommit?.tags.includes('semantic-command'), true);
     assert.equal(getHistory(editor).undos.length, 0);
     assert.equal(markCommit?.changed.has('marks'), true);
   });

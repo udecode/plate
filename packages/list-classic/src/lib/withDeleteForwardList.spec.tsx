@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
@@ -10,7 +11,9 @@ jsxt;
 
 const BaseBoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 describe('p (empty) + list when selection not in list', () => {

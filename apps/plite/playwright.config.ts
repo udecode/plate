@@ -5,11 +5,12 @@ import { devices, type PlaywrightTestConfig } from '@playwright/test';
 import {
   assertBrowserWorkerArgs,
   MAX_BROWSER_WORKERS,
+  resolvePliteBrowserBaseURL,
   resolveBrowserWorkerCount,
 } from './scripts/plite-browser-runner.mjs';
 
 const explicitBaseURL = process.env.PLAYWRIGHT_BASE_URL;
-const baseURL = explicitBaseURL ?? 'http://localhost:3102';
+const baseURL = resolvePliteBrowserBaseURL(explicitBaseURL);
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 process.env.PLAYWRIGHT_BASE_URL = baseURL;
 assertBrowserWorkerArgs(process.argv);

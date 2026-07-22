@@ -43,6 +43,37 @@ const editor = createPlateEditor({
 
 支持HTML字符串反序列化的完整插件列表，请参阅[插件反序列化规则](/docs/html#plugin-deserialization-rules)部分。
 
+### Schema 身份
+
+Plate 根据已安装插件编译文档 schema。普通编辑器省略 `schema` 即可。
+`editor.read.schema.identity()` 返回带有精确编译指纹的派生身份：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [HeadingPlugin],
+});
+
+editor.read.schema.identity();
+// { kind: 'derived', fingerprint: '...' }
+```
+
+当文档用于持久化、历史序列化、schema 迁移或协作节点协商时，传入
+`schema: { id, version }`。这会创建命名谱系，而指纹仍只取决于编译后的
+schema：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [HeadingPlugin],
+  schema: { id: 'acme-document', version: 3 },
+});
+
+editor.read.schema.identity();
+// { kind: 'named', id: 'acme-document', version: 3, fingerprint: '...' }
+```
+
+命名谱系的 schema 语义变化时递增 `version`。同一 ID 和版本对应不同指纹时，
+Plate 会将其视为身份不匹配。
+
 ### 异步初始值
 
 如果需要异步获取初始值（例如从 API），可以使用 `skipInitialization` 选项，并在数据就绪后用一次 `editor.update(...)` 初始化内容：
@@ -150,14 +181,12 @@ const editor = usePlateEditor({
     // 排除文本节点获取ID（默认：true）
     filterText: true,
 
-    // 在撤销/重做和复制/粘贴时重用ID（默认：false）
-    // 设置为true可使ID在这些操作中保持稳定
+    // 粘贴时重用目标文档中不存在的源ID（默认：false）
     reuseId: false,
 
     // 控制初始值中的 ID 分配（默认：'if-needed'）
     // 使用 'always' 为初始值中的所有缺失 ID 补齐
     initialValueIds: 'always',
-    
     // 禁止覆盖插入节点的现有ID（默认：false）
     disableInsertOverrides: false,
 

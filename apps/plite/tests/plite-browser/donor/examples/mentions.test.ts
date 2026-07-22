@@ -344,10 +344,6 @@ test.describe('mentions example', () => {
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard repro');
-    test.skip(
-      testInfo.project.name === 'webkit',
-      'WebKit blocks privileged clipboard reads in Playwright'
-    );
 
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
 
@@ -367,7 +363,7 @@ test.describe('mentions example', () => {
           focus: { path: [1, 1, 0], offset: 0 },
         });
 
-      const payload = await editor.clipboard.copyPayload();
+      const payload = await editor.clipboard.copyNativeEventPayload();
 
       expect(payload.html).toContain('data-plite-fragment=');
 
@@ -389,10 +385,6 @@ test.describe('mentions example', () => {
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard repro');
-    test.skip(
-      testInfo.project.name === 'webkit',
-      'WebKit blocks privileged clipboard reads in Playwright'
-    );
 
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
 
@@ -410,7 +402,7 @@ test.describe('mentions example', () => {
         focus: { path: [1, 1, 0], offset: 0 },
       });
 
-      const payload = await editor.clipboard.copyPayload();
+      const payload = await editor.clipboard.copyNativeEventPayload();
 
       expect(payload.html).toContain('data-plite-fragment=');
       expect(parsePliteFragmentFromHtml(payload.html)).toEqual({
@@ -459,8 +451,8 @@ test.describe('mentions example', () => {
     page,
   }, testInfo) => {
     test.skip(
-      testInfo.project.name !== 'chromium',
-      'Chromium privileged clipboard payload proof'
+      testInfo.project.name === 'mobile',
+      'Desktop clipboard payload proof'
     );
 
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
@@ -479,7 +471,7 @@ test.describe('mentions example', () => {
         focus: { path: [1, 1, 0], offset: 0 },
       });
 
-      const payload = await editor.clipboard.copyPayload();
+      const payload = await editor.clipboard.copyNativeEventPayload();
 
       expect(payload.types).toEqual(
         expect.arrayContaining(['text/html', 'text/plain'])

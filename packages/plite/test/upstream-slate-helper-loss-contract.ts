@@ -12,6 +12,7 @@ import {
   PointApi,
   type Range,
   RangeApi,
+  schema,
   SelectionApi,
   type Text,
 } from '@platejs/plite';
@@ -323,18 +324,31 @@ describe('old Slate helper behavior through current Plite APIs', () => {
   });
 
   it('covers old block/above/edgeBlocks helpers with state.nodes.block and state.ranges.edges', () => {
-    const editor = createSeededEditor([
-      {
-        type: 'paragraph',
-        children: [
-          {
-            type: 'blockquote',
-            children: [{ text: 'one' }],
+    const editor = createEditor({
+      extensions: [
+        defineTestSchema('nested-block-helper-loss', {
+          blockquote: { content: schema.content.text({ min: 1 }) },
+          paragraph: {
+            content: schema.content.any(
+              [schema.content.text(), schema.content.type('blockquote')],
+              { default: 'text', max: 1, min: 1 }
+            ),
           },
-        ],
-      },
-      paragraph('two'),
-    ]);
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: 'blockquote',
+              children: [{ text: 'one' }],
+            },
+          ],
+        },
+        paragraph('two'),
+      ],
+    });
 
     const result = editor.read((state) => {
       const highest = state.nodes.block({

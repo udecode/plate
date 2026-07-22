@@ -3,7 +3,7 @@ import {
   deleteForward,
   insertBreak,
 } from '@platejs/plite/internal';
-import { property } from '@platejs/plite';
+import { schema, property } from '@platejs/plite';
 
 import { createBaseEditor } from '../../editor';
 import { createBasePlugin } from '../../plugin';
@@ -12,11 +12,13 @@ describe('OverridePlugin', () => {
   it('publishes a closed Plate schema for elements and text properties', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',
-      node: { element: { groups: ['block'] } },
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
+      },
     });
     const TonePlugin = createBasePlugin({
       key: 'tone',
-      node: { mark: { value: property.string() } },
+      schema: { mark: { property: property.string() } },
     });
     const editor = createBaseEditor({
       plugins: [CalloutPlugin, TonePlugin],
@@ -51,7 +53,7 @@ describe('OverridePlugin', () => {
   it('selects a previous block void before deleting it', () => {
     const VoidPlugin = createBasePlugin({
       key: 'void',
-      node: { element: { groups: ['block'], void: 'block' } },
+      schema: { element: { void: 'block' } },
     });
     const editor = createBaseEditor({
       plugins: [VoidPlugin],
@@ -82,7 +84,7 @@ describe('OverridePlugin', () => {
   it('removes a selected block void without merging the next block into it', () => {
     const VoidPlugin = createBasePlugin({
       key: 'void',
-      node: { element: { groups: ['block'], void: 'block' } },
+      schema: { element: { void: 'block' } },
     });
     const editor = createBaseEditor({
       plugins: [VoidPlugin],
@@ -112,9 +114,9 @@ describe('OverridePlugin', () => {
   it('handles deleteExit through the OverridePlugin Plite extension', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',
-      node: {
-        element: { groups: ['block'] },
-        type: 'callout',
+      type: 'callout',
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
       rules: {
         break: {
@@ -143,9 +145,9 @@ describe('OverridePlugin', () => {
   it('resets the empty block inserted at the start of a splitReset block', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',
-      node: {
-        element: { groups: ['block'] },
-        type: 'callout',
+      type: 'callout',
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
       rules: { break: { splitReset: true } },
     });
@@ -170,9 +172,9 @@ describe('OverridePlugin', () => {
   it('preserves an empty merge target when its plugin disables removal', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',
-      node: {
-        element: { groups: ['block'] },
-        type: 'callout',
+      type: 'callout',
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
       rules: { merge: { removeEmpty: false } },
     });
@@ -199,9 +201,9 @@ describe('OverridePlugin', () => {
   it('preserves plugin-owned empty merge targets by default', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',
-      node: {
-        element: { groups: ['block'] },
-        type: 'callout',
+      type: 'callout',
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
     });
     const MergeAwarePlugin = createBasePlugin({

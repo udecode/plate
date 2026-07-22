@@ -121,6 +121,7 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
   const [currentNode, path] = block;
   const isCurrentBlockEmpty = editor.read.nodes.isEmpty(currentNode);
   const currentBlockType = getBlockType(currentNode);
+  const nodeType = editor.getType(type);
 
   if (type === KEYS.img || type === KEYS.mediaEmbed) {
     void insertAsyncMediaAndRemoveEmptySource(
@@ -136,13 +137,13 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
     if (type in insertBlockMap) {
       insertBlockMap[type](editor, tx, type);
     } else {
-      tx.nodes.insert(createBlock({ type }), {
+      tx.nodes.insert(createBlock({ type: nodeType }), {
         at: PathApi.next(path),
         select: true,
       });
     }
 
-    if (currentBlockType !== type && isCurrentBlockEmpty) {
+    if (currentBlockType !== nodeType && isCurrentBlockEmpty) {
       const source = tx.nodes.get(path);
 
       if (
@@ -195,12 +196,14 @@ export const setBlockType = (
     return;
   }
 
+  const nodeType = editor.getType(type);
+
   editor.update((tx) => {
     const setEntry = (entry: NodeEntry<Element>) => {
       const [node, path] = entry;
 
-      if (node.type !== type) {
-        tx.nodes.set({ type }, { at: path });
+      if (node.type !== nodeType) {
+        tx.nodes.set({ type: nodeType }, { at: path });
       }
     };
 

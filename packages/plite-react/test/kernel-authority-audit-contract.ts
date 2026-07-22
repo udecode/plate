@@ -665,7 +665,6 @@ test('all source timing primitives are scheduler internals or named semantic tim
     'packages/plite-react/src/components/editable-rendered-element.tsx': 1,
     'packages/plite-react/src/components/editable-text-blocks.tsx': 2,
     'packages/plite-react/src/components/plite-void-shell.tsx': 1,
-    'packages/plite-react/src/editable/composition-state.ts': 1,
     'packages/plite-react/src/hooks/use-plite-annotation-store.tsx': 1,
     'packages/plite-react/src/hooks/use-plite-decoration-source.ts': 1,
     'packages/plite-react/src/hooks/use-plite-widget-store.tsx': 1,

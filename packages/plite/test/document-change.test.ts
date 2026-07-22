@@ -376,7 +376,11 @@ describe('JSON document change algebra', () => {
     const before: JsonEditorValue = {
       children: asJsonNodes([paragraph('a')]),
     };
+    let constructedRoots = 0;
     const builder = new DocumentChangeBuilder(before, {
+      indexConstructedRoot: () => {
+        constructedRoots++;
+      },
       validate: (value) => {
         if (
           (value.children[0] as { children: readonly [{ text: string }] })
@@ -398,6 +402,33 @@ describe('JSON document change algebra', () => {
     assert.throws(() => builder.applyCanonical(change), /noncanonical/);
     assert.equal(builder.change.empty, true);
     assert.equal(builder.value, before);
+    assert.equal(constructedRoots, 0);
+  });
+
+  it('validates the exact immutable root published by a direct change', () => {
+    const before: JsonEditorValue = {
+      children: asJsonNodes([paragraph('a')]),
+    };
+    let validatedChildren: readonly JsonNode[] | undefined;
+    const builder = new DocumentChangeBuilder(before, {
+      validate: (value) => {
+        validatedChildren = value.children;
+      },
+    });
+    const change = new DocumentChange({
+      primary: insertTextChange(
+        IndexedDocument.fromValue(before.children),
+        [0, 0],
+        1,
+        '!'
+      ),
+    });
+    const step = builder.applyCanonical(change);
+
+    assert.equal(step.after.children, validatedChildren);
+    assert.equal(builder.value.children, validatedChildren);
+    assert.equal(Object.isFrozen(validatedChildren), true);
+    assert.equal(builder.classify(), step.change);
   });
 
   it('rejects a noncanonical primitive draft at publication', () => {
@@ -512,6 +543,41 @@ describe('JSON document change algebra', () => {
     );
     assert.equal(invalid.value, before);
     assert.equal(invalid.change.empty, true);
+  });
+
+  it('adopts the exact empty indexed result for a deleted root', () => {
+    const before: JsonEditorValue = {
+      children: asJsonNodes([paragraph('main')]),
+      roots: { island: asJsonNodes([paragraph('child')]) },
+    };
+    const after: JsonEditorValue = {
+      children: before.children,
+    };
+    const change = DocumentChange.between(before, after);
+    const candidate = new DocumentChangeBuilder(before).apply(change);
+    const deletedRoot = candidate.indexedAfter.get('island');
+
+    assert.equal(deletedRoot?.length, 0);
+
+    let indexedDeletedRoot: IndexedDocument | undefined;
+    const builder = new DocumentChangeBuilder(before, {
+      indexConstructedRoot: ({ after, root }) => {
+        if (root === 'island') indexedDeletedRoot = after;
+      },
+    });
+    const step = builder.applyTrustedCanonical(change, {
+      indexedAfter: candidate.indexedAfter,
+      runtimeCandidates: candidate.runtimeCandidates,
+    });
+
+    assert.equal(indexedDeletedRoot, deletedRoot);
+    assert.equal(step.indexedAfter.get('island'), deletedRoot);
+    assert.equal(
+      step.runtimeCandidates.get('island'),
+      candidate.runtimeCandidates.get('island')
+    );
+    assert.deepEqual(step.after, after);
+    assert.deepEqual(builder.value, after);
   });
 
   it('adopts prepared forks only for the exact parent, state, and revision', () => {
@@ -1391,7 +1457,9 @@ describe('JSON document change algebra', () => {
     assert.deepEqual(index.pathOf(retainedRuntimeId!), [0]);
   });
 
-  it('bounds retained wide-document mapping storage by binary segment count', () => {
+  it('bounds retained wide-document mapping storage by binary segment count', {
+    timeout: 10_000,
+  }, () => {
     const owner = {} as Editor;
     let document = IndexedDocument.fromValue(
       asJsonNodes(

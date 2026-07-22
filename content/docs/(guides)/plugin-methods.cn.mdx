@@ -19,10 +19,10 @@ const ConfiguredPlugin = MyPlugin.configure({
 });
 ```
 
-你也可以使用函数来访问当前配置：
+需要读取运行时上下文时，请使用 `.extend()`：
 
 ```ts
-const ConfiguredPlugin = MyPlugin.configure(({ getOptions }) => ({
+const ConfiguredPlugin = MyPlugin.extend(({ getOptions }) => ({
   options: {
     ...getOptions(),
     myOption: `${getOptions().myOption} + extra`,
@@ -162,11 +162,13 @@ const CounterComponent = () => {
 `withComponent`方法允许你设置或替换与插件关联的组件。
 
 ```ts
+import { schema } from '@platejs/plite';
+
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
-  node: {
-    element: {},
-    type: 'p',
+  type: 'p',
+  schema: {
+    element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
 }).withComponent(ParagraphElement);
 ```
@@ -247,8 +249,8 @@ import { editorCommands } from '@platejs/plite';
 const SingleLinePlugin = createPlatePlugin({
   key: 'singleLine',
 }).extendExtension({
-  commands: [
-    editorCommands.insertBreak.handle(({ state }) =>
+  commands: ({ handle }) => [
+    handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction((tx) => {
         tx.break.insertSoft();
       })
@@ -311,10 +313,15 @@ editor.update((tx) => tx.insert.mention());
 要将类型化的Plite插件转换为Plate插件，可以使用`toPlatePlugin`：
 
 ```ts
+import { schema } from '@platejs/plite';
+
 const CodeBlockPlugin = toPlatePlugin(
   createBasePlugin({
     key: 'codeBlock',
-    node: { type: 'code_block' },
+    type: 'code_block',
+    schema: {
+      element: { content: schema.content.text({ default: 'text', min: 1 }) },
+    },
   }),
   {
     handlers: {},

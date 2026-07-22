@@ -15,29 +15,32 @@ import { MathRules } from './MathRules';
 
 jsxt;
 
+const CodeLinePlugin = createBasePlugin({
+  key: KEYS.codeLine,
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+  type: NODES.codeLine,
+});
+
 const CodeBlockPlugin = createBasePlugin({
   key: KEYS.codeBlock,
-  node: {
-    element: {
-      content: schema.content.type(NODES.codeLine, {
-        default: { type: NODES.codeLine },
-        min: 1,
-      }),
-      groups: ['block'],
-    },
-    type: NODES.codeBlock,
-  },
-  plugins: [
-    createBasePlugin({
-      key: KEYS.codeLine,
-      node: {
-        element: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        },
-        type: NODES.codeLine,
+  schema: ({ plugins }) => {
+    const codeLineType = plugins.elementType(CodeLinePlugin);
+
+    return {
+      element: {
+        content: schema.content.type(codeLineType, {
+          default: { type: codeLineType },
+          min: 1,
+        }),
       },
-    }),
-  ],
+    };
+  },
+  type: NODES.codeBlock,
+  plugins: [CodeLinePlugin],
 });
 
 describe('math input rules', () => {
@@ -115,7 +118,7 @@ describe('math input rules', () => {
 
     editor.update((tx) => {
       tx.selection.set(end);
-      tx.command(editorCommands.insertBreak, {});
+      tx.command(editorCommands.insertBreak);
     });
 
     expect(editor.read.value().children).toMatchObject([

@@ -8,11 +8,11 @@ const value = [{ children: [{ text: 'ab' }], type: 'p' }];
 const MarkPlugins = [
   createBasePlugin({
     key: 'bold',
-    node: { mark: true },
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   }),
   createBasePlugin({
     key: 'color',
-    node: { mark: { value: property.string() } },
+    schema: { mark: { property: property.string() } },
   }),
 ];
 

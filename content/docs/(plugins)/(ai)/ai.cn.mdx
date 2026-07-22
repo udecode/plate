@@ -517,8 +517,8 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown);
 
 <API name="AIPlugin">
   <APIOptions>
-    <APIItem name="node.mark" type="true">AI 内容存储在文本节点上。</APIItem>
-    <APIItem name="node.isDecoration" type="false">AI 标记是常规文本属性，而不是装饰。</APIItem>
+    <APIItem name="schema.mark" type="PluginSchemaMark">AI 内容通过 `property.boolean({ default: false, omitDefault: true })` 和显式生命周期规则存储为布尔文本属性。</APIItem>
+    <APIItem name="render.isDecoration" type="false">AI 标记每个文本节点渲染一次，而不是作为装饰渲染。</APIItem>
   </APIOptions>
 </API>
 

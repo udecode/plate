@@ -5,7 +5,9 @@ import { DocxPlugin } from './DocxPlugin';
 import { cleanDocx } from './docx-cleaner/cleanDocx';
 
 describe('DocxPlugin', () => {
-  const editor = createBaseEditor({ plugins: [DocxPlugin] });
+  const editor = createBaseEditor({
+    plugins: [DocxPlugin],
+  });
   const createContext = prepareParserPluginContext(editor, DocxPlugin);
   const context = editor.read((state) => createContext(state));
   const source = (dataTransfer: DataTransfer) => ({

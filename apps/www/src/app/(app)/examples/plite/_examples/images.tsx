@@ -181,7 +181,7 @@ const image = () =>
         return next();
       },
     },
-    elements: [{ type: 'image', void: 'block' }],
+    schema: { elements: { image: { void: 'block' } } },
   });
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {

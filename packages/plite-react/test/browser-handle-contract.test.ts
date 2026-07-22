@@ -162,6 +162,48 @@ test('browser handle undo and redo no-op when history is disabled', () => {
   expect(forceRender).not.toHaveBeenCalled();
 });
 
+test('browser handle leaves text-only multi-root history to direct DOM sync', () => {
+  const before = {
+    children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+    roots: {
+      shared: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
+    },
+  };
+  const after = {
+    children: [{ type: 'paragraph', children: [{ text: 'two' }] }],
+    roots: {
+      shared: [{ type: 'paragraph', children: [{ text: 'beta' }] }],
+    },
+  };
+  const editor = createReactEditor({ initialValue: before });
+  const element = document.createElement('div') as PliteBrowserHandleElement;
+  const forceRender = vi.fn();
+
+  attachPliteBrowserHandle({
+    browserHandleNextId: { current: 0 },
+    browserHandleRangeAnchors: { current: new Map() },
+    editor,
+    element,
+    forceRender,
+    inputController: createInputController(),
+    isPartialDOMBackedSelection: () => false,
+    setExplicitPartialDOMBackedSelection: vi.fn(),
+  });
+
+  element.__pliteBrowserHandle?.applyValueChange(after);
+  forceRender.mockClear();
+
+  element.__pliteBrowserHandle?.undo();
+
+  expect(editor.read((state) => state.value())).toEqual(before);
+  expect(forceRender).not.toHaveBeenCalled();
+
+  element.__pliteBrowserHandle?.redo();
+
+  expect(editor.read((state) => state.value())).toEqual(after);
+  expect(forceRender).not.toHaveBeenCalled();
+});
+
 test('browser handle selectAll selects the whole editor', () => {
   const editor = createReactEditor({
     initialValue: [

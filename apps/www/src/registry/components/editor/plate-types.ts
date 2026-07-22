@@ -4,6 +4,7 @@ import type { Element, Text } from '@platejs/plite';
 import type {
   EmptyText,
   KEYS,
+  NODES,
   PlainText,
   TBasicMarks,
   TCaptionProps,
@@ -43,12 +44,12 @@ export interface MyBlockquoteElement extends MyTextBlockElement {
 
 export interface MyCodeBlockElement extends MyBlockElement {
   children: MyCodeLineElement[];
-  type: typeof KEYS.codeBlock;
+  type: typeof NODES.codeBlock;
 }
 
 export interface MyCodeLineElement extends Element {
   children: PlainText[];
-  type: typeof KEYS.codeLine;
+  type: typeof NODES.codeLine;
 }
 
 export interface MyH1Element extends MyTextBlockElement {
@@ -102,7 +103,7 @@ export interface MyMediaEmbedElement
     TMediaEmbedElement,
     TResizableProps {
   children: [EmptyText];
-  type: typeof KEYS.mediaEmbed;
+  type: typeof NODES.mediaEmbed;
 }
 
 export interface MyMentionElement extends TMentionElement {
@@ -112,7 +113,7 @@ export interface MyMentionElement extends TMentionElement {
 
 export interface MyMentionInputElement extends TComboboxInputElement {
   children: [PlainText];
-  type: typeof KEYS.mentionInput;
+  type: typeof NODES.mentionInput;
 }
 
 export type MyNestableBlock = MyParagraphElement;

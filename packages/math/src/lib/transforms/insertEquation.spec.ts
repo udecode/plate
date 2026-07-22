@@ -40,7 +40,7 @@ describe('insertEquation', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseEquationPlugin.configure({
-          node: { type: 'custom-equation' },
+          type: 'custom-equation',
         }),
       ],
       selection: {

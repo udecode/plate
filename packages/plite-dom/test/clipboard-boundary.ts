@@ -6,7 +6,6 @@ import {
   type EditorExtension,
   defineEditorExtension,
   defineEditorSchema,
-  element,
   type Node,
   property,
   type Range,
@@ -75,38 +74,103 @@ const createChildren = (): Descendant[] => [
 
 const clipboardRichSchema = defineEditorSchema({
   elements: {
-    image: element({
-      content: schema.content.text({ default: 'text', max: 1, min: 1 }),
-      groups: ['block'],
+    image: {
       properties: { url: property.string() },
       void: 'block',
-    }),
-    link: element({
+    },
+    link: {
       content: schema.content.text({ default: 'text', min: 1 }),
       inline: true,
       properties: { url: property.string() },
-    }),
-    mention: element({
-      content: schema.content.text({ default: 'text', max: 1, min: 1 }),
+    },
+    mention: {
       properties: { character: property.string() },
       void: 'markable-inline',
-    }),
-    paragraph: element({
+    },
+    paragraph: {
       content: schema.content.any(
         [schema.content.text(), schema.content.group('inline')],
         { default: 'text', min: 1 }
       ),
-      groups: ['block'],
-    }),
+      properties: {
+        blockTone: property.string({ significant: true }),
+        transientLabel: property.string({ significant: false }),
+      },
+    },
   },
   id: 'clipboard-rich-test',
-  root: schema.root({
+  properties: [
+    schema.textProperty('emphasis', property.boolean({ significant: true })),
+    schema.textProperty(
+      'transientMark',
+      property.string({ significant: false })
+    ),
+  ],
+  root: {
     content: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  }),
+  },
+  unknown: 'reject',
   version: 1,
+});
+
+const permissiveClipboardSchema = defineEditorSchema({
+  elements: {},
+  id: 'clipboard-permissive-test',
+  root: { content: schema.content.not(schema.content.text()) },
+  unknown: 'preserve',
+  version: 1,
+});
+
+const readOnlyInlinePasteExtension = defineEditorExtension({
+  clipboard: {
+    insertData(_data, { next }) {
+      return next();
+    },
+  },
+  name: 'read-only-inline-paste-delegate',
+  schema: {
+    elements: {
+      badge: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+        readOnly: true,
+      },
+    },
+  },
+});
+
+const inlineLinkPasteExtension = defineEditorExtension({
+  name: 'inline-link-paste',
+  schema: {
+    elements: {
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
+    },
+  },
+});
+
+const nestedInlinePasteExtension = defineEditorExtension({
+  name: 'nested-inline-paste',
+  schema: {
+    elements: {
+      inner: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
+      outer: {
+        content: schema.content.any(
+          [schema.content.text(), schema.content.type('inner')],
+          { default: 'text', min: 1 }
+        ),
+        inline: true,
+      },
+    },
+  },
 });
 
 const getHistory = (editor: Editor) =>
@@ -594,6 +658,8 @@ describe('plite-dom clipboard boundary', () => {
           name: 'product-card-paste',
           clipboard: {
             insertData(data, { next, tx }) {
+              expect(tx.tags.has('paste')).toBe(true);
+
               const title = data.getData('application/x-product-card-title');
 
               seen.push(
@@ -681,6 +747,125 @@ describe('plite-dom clipboard boundary', () => {
         focus: { path: [1, 0], offset: 5 },
       });
     });
+  });
+
+  it('tags direct and composed clipboard insertion as one paste transaction', () => {
+    const selection: Range = {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    };
+    const createTarget = () =>
+      createClipboardEditor(
+        [{ children: [{ text: '' }], type: 'paragraph' }],
+        selection
+      );
+    const createExactData = () => {
+      const data = new FakeDataTransfer();
+
+      writeDOMFragmentData(data as unknown as DataTransfer, {
+        html: '<p>exact</p>',
+        slice: ContentSlice.closed([
+          { children: [{ text: 'exact' }], type: 'paragraph' },
+        ]),
+      });
+
+      return data;
+    };
+    const assertOnePasteCommit = (editor: Editor, insert: () => boolean) => {
+      let commits = 0;
+
+      editor.subscribeCommit(() => commits++);
+
+      expect(insert()).toBe(true);
+      expect(commits).toBe(1);
+      expect(editorGetLastCommit(editor)?.tags).toContain('paste');
+    };
+    const fragmentTarget = createTarget();
+    const fragmentData = createExactData();
+
+    assertOnePasteCommit(fragmentTarget, () =>
+      fragmentTarget.api.clipboard.insertFragmentData(
+        fragmentData as unknown as DataTransfer
+      )
+    );
+
+    const textTarget = createTarget();
+    const textData = new FakeDataTransfer();
+
+    textData.setData('text/plain', 'text');
+    assertOnePasteCommit(textTarget, () =>
+      textTarget.api.clipboard.insertTextData(
+        textData as unknown as DataTransfer
+      )
+    );
+
+    const composedTarget = createTarget();
+    const composedData = createExactData();
+
+    assertOnePasteCommit(composedTarget, () =>
+      composedTarget.api.clipboard.insertData(
+        composedData as unknown as DataTransfer
+      )
+    );
+  });
+
+  it('tags exact and host pastes without treating significance as a clipboard filter', () => {
+    const fragment = ContentSlice.closed([
+      {
+        blockTone: 'warm',
+        children: [{ emphasis: true, text: 'copied', transientMark: 'local' }],
+        transientLabel: 'metadata',
+        type: 'paragraph',
+      },
+    ]);
+    const selection: Range = {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    };
+    const createTarget = (extensions: readonly EditorExtension[] = []) =>
+      createClipboardEditor(
+        [{ children: [{ text: '' }], type: 'paragraph' }],
+        selection,
+        undefined,
+        [clipboardRichSchema, ...extensions]
+      );
+    const expected = [
+      {
+        blockTone: 'warm',
+        children: [{ emphasis: true, text: 'copied', transientMark: 'local' }],
+        transientLabel: 'metadata',
+        type: 'paragraph',
+      },
+    ];
+    const exactTarget = createTarget();
+    const exact = new FakeDataTransfer();
+
+    writeDOMFragmentData(exact as unknown as DataTransfer, {
+      html: '<p>copied</p>',
+      slice: fragment,
+    });
+    exactTarget.api.clipboard.insertData(exact as unknown as DataTransfer);
+
+    expect(editorGetSnapshot(exactTarget).children).toEqual(expected);
+    expect(editorGetLastCommit(exactTarget)?.tags).toContain('paste');
+
+    const HostCodec = hostCodecs('significant-property-paste', [
+      defineHostCodec({
+        format: 'application/x-significant-property',
+        key: 'significant-property-paste',
+        parse: () => fragment,
+      }),
+    ]);
+    const hostTarget = createTarget([HostCodec]);
+    const host = new FakeDataTransfer();
+
+    host.setData('application/x-significant-property', 'copied');
+    hostTarget.api.clipboard.insertData(host as unknown as DataTransfer);
+
+    expect(editorGetSnapshot(hostTarget).children).toEqual(expected);
+    expect(editorGetLastCommit(hostTarget)?.tags).toContain('paste');
   });
 
   it('writes an explicit range without publishing or changing model selection', () => {
@@ -1577,6 +1762,254 @@ describe('plite-dom clipboard boundary', () => {
     expect(
       (editorGetSnapshot(editor).children[1] as PliteElement).children[0]
     ).toEqual({ text: 'hello' });
+  });
+
+  it('pastes plain text immediately before a read-only inline', () => {
+    const prefix = 'before ';
+    const editor = createClipboardEditor(
+      [
+        {
+          type: 'paragraph',
+          children: [
+            { text: prefix },
+            {
+              type: 'badge',
+              children: [{ text: 'Approved' }],
+            },
+            { text: '.' },
+          ],
+        },
+      ],
+      {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: prefix.length },
+        focus: { path: [0, 0], offset: prefix.length },
+      },
+      undefined,
+      [permissiveClipboardSchema, readOnlyInlinePasteExtension]
+    );
+    const clipboard = new FakeDataTransfer();
+
+    expect(editorGetSnapshot(editor).children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: prefix },
+          {
+            type: 'badge',
+            children: [{ text: 'Approved' }],
+          },
+          { text: '.' },
+        ],
+      },
+    ]);
+    clipboard.setData('text/plain', 'PASTE ');
+
+    expect(
+      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+    ).toBe(true);
+    expect(editorGetSnapshot(editor).children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'before PASTE ' },
+          {
+            type: 'badge',
+            children: [{ text: 'Approved' }],
+          },
+          { text: '.' },
+        ],
+      },
+    ]);
+    expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 'before PASTE '.length },
+      focus: { path: [0, 0], offset: 'before PASTE '.length },
+    });
+  });
+
+  it('pastes plain text inside an inline without splitting it', () => {
+    const editor = createClipboardEditor(
+      [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'before ' },
+            {
+              type: 'link',
+              url: 'https://example.com',
+              children: [{ text: 'hyperlink' }],
+            },
+            { text: ' after' },
+          ],
+        },
+      ],
+      {
+        kind: 'text',
+        anchor: { path: [0, 1, 0], offset: 'hyper'.length },
+        focus: { path: [0, 1, 0], offset: 'hyper'.length },
+      },
+      undefined,
+      [permissiveClipboardSchema, inlineLinkPasteExtension]
+    );
+    const clipboard = new FakeDataTransfer();
+
+    clipboard.setData('text/plain', 'TEXT');
+
+    expect(
+      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+    ).toBe(true);
+    expect(editorGetSnapshot(editor).children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'before ' },
+          {
+            type: 'link',
+            url: 'https://example.com',
+            children: [{ text: 'hyperTEXTlink' }],
+          },
+          { text: ' after' },
+        ],
+      },
+    ]);
+    expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 1, 0], offset: 'hyperTEXT'.length },
+      focus: { path: [0, 1, 0], offset: 'hyperTEXT'.length },
+    });
+  });
+
+  it('keeps multiline plain text structural inside an inline', () => {
+    const editor = createClipboardEditor(
+      [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'before ' },
+            {
+              type: 'link',
+              url: 'https://example.com',
+              children: [{ text: 'hyperlink' }],
+            },
+            { text: ' after' },
+          ],
+        },
+      ],
+      {
+        kind: 'text',
+        anchor: { path: [0, 1, 0], offset: 'hyper'.length },
+        focus: { path: [0, 1, 0], offset: 'hyper'.length },
+      },
+      undefined,
+      [permissiveClipboardSchema, inlineLinkPasteExtension]
+    );
+    const clipboard = new FakeDataTransfer();
+
+    clipboard.setData('text/plain', 'A\nB');
+
+    expect(
+      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+    ).toBe(true);
+    expect(editorGetSnapshot(editor).children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'before ' },
+          {
+            type: 'link',
+            url: 'https://example.com',
+            children: [{ text: 'hyper' }],
+          },
+          { text: 'A' },
+        ],
+      },
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'B' },
+          {
+            type: 'link',
+            url: 'https://example.com',
+            children: [{ text: 'link' }],
+          },
+          { text: ' after' },
+        ],
+      },
+    ]);
+    expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 1 },
+    });
+  });
+
+  it('preserves every consecutive editable inline ancestor for plain text', () => {
+    const editor = createClipboardEditor(
+      [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'before ' },
+            {
+              kind: 'outer',
+              type: 'outer',
+              children: [
+                { text: '' },
+                {
+                  kind: 'inner',
+                  type: 'inner',
+                  children: [{ text: 'hyperlink' }],
+                },
+                { text: '' },
+              ],
+            },
+            { text: ' after' },
+          ],
+        },
+      ],
+      {
+        kind: 'text',
+        anchor: { path: [0, 1, 1, 0], offset: 'hyper'.length },
+        focus: { path: [0, 1, 1, 0], offset: 'hyper'.length },
+      },
+      undefined,
+      [permissiveClipboardSchema, nestedInlinePasteExtension]
+    );
+    const clipboard = new FakeDataTransfer();
+
+    clipboard.setData('text/plain', 'TEXT');
+
+    expect(
+      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+    ).toBe(true);
+    expect(editorGetSnapshot(editor).children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'before ' },
+          {
+            kind: 'outer',
+            type: 'outer',
+            children: [
+              { text: '' },
+              {
+                kind: 'inner',
+                type: 'inner',
+                children: [{ text: 'hyperTEXTlink' }],
+              },
+              { text: '' },
+            ],
+          },
+          { text: ' after' },
+        ],
+      },
+    ]);
+    expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 1, 1, 0], offset: 'hyperTEXT'.length },
+      focus: { path: [0, 1, 1, 0], offset: 'hyperTEXT'.length },
+    });
   });
 
   it('appends plain text at the document end when selection is absent', () => {

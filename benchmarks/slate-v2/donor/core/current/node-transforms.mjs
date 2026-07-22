@@ -54,7 +54,7 @@ const measureLane = (setup, run) => {
   return summarize(samples);
 };
 
-const insertFragmentMs = measureLane(createEditorWithChildren, (editor) => {
+const replaceFragmentMs = measureLane(createEditorWithChildren, (editor) => {
   const path = [Math.floor(blockCount / 2), 0];
 
   write(editor, (tx) => {
@@ -67,7 +67,7 @@ const insertFragmentMs = measureLane(createEditorWithChildren, (editor) => {
   });
 
   if (Editor.getSnapshot(editor).children.length <= blockCount) {
-    throw new Error('insertFragmentMs did not insert new blocks');
+    throw new Error('replaceFragmentMs did not insert new blocks');
   }
 });
 
@@ -287,7 +287,7 @@ const summary = {
     selectionBlocks,
   },
   lanes: {
-    insertFragmentMs,
+    replaceFragmentMs,
     insertNodesMs,
     setNodesMs,
     moveNodesMs,

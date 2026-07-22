@@ -1,8 +1,4 @@
-import {
-  element,
-  type SchemaElement,
-  type SchemaElementContentRoot,
-} from '@platejs/plite';
+import { schema, type SchemaContent, type SchemaElement } from '@platejs/plite';
 
 type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
@@ -24,21 +20,24 @@ type _BooleanIsNotVoidKind = Assert<
   boolean extends ElementVoidKind ? false : true
 >;
 type _ContentRootSpecIsObjectOnly = Assert<
-  Equal<NonNullable<SchemaElement['contentRoot']>, SchemaElementContentRoot>
+  Equal<
+    NonNullable<SchemaElement['contentRoots']>,
+    Readonly<Record<string, SchemaContent>>
+  >
 >;
 
-const blockVoid = element({ void: 'block' });
-const inlineVoid = element({ void: 'inline' });
-const markableInlineVoid = element({
+const blockVoid = { void: 'block' } as const;
+const inlineVoid = { void: 'inline' } as const;
+const markableInlineVoid = {
   void: 'markable-inline',
-});
-const editableIslandVoid = element({
+} as const;
+const editableIslandVoid = {
   void: 'editable-island',
-});
-const editorOnlyRootedContent = element({
-  contentRoot: { slot: 'body' },
-});
-const nonVoid = element({});
+} as const;
+const editorOnlyRootedContent = {
+  contentRoots: { body: schema.content.open() },
+} as const satisfies SchemaElement;
+const nonVoid = {} as const;
 
 void blockVoid;
 void inlineVoid;

@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { schema } from '@platejs/plite';
+import { property, schema } from '@platejs/plite';
 import { insertBreak, insertText } from '@platejs/plite/internal';
 import { BaseParagraphPlugin } from '../../lib/plugins';
 
@@ -18,7 +18,9 @@ describe('input rules', () => {
   it('retains element schema contributions after configuring input rules', () => {
     const CalloutPlugin = createPlatePlugin({
       key: 'callout',
-      node: { element: { groups: ['block'] } },
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
+      },
     }).configure({
       inputRules: [
         defineInputRule({
@@ -28,7 +30,9 @@ describe('input rules', () => {
         }),
       ],
     });
-    const editor = createPlateEditor({ plugins: [CalloutPlugin] });
+    const editor = createPlateEditor({
+      plugins: [CalloutPlugin],
+    });
 
     expect(() =>
       editor.read.schema.validateDocument({
@@ -408,7 +412,9 @@ describe('input rules', () => {
               trigger: '*',
             }),
           ],
-          node: { mark: true },
+          schema: {
+            mark: property.boolean({ default: false, omitDefault: true }),
+          },
         }),
       ],
       value: [{ children: [{ text: '**hello*' }], type: 'p' }],
@@ -494,12 +500,10 @@ describe('input rules', () => {
   it('registers configured match-triggered fences through createPlateEditor', () => {
     const editor = createPlateEditor({
       plugins: [
-        BaseParagraphPlugin.extend({
-          node: { type: 'paragraph' },
-        }),
+        BaseParagraphPlugin,
         createPlatePlugin({
           key: 'codeBlock',
-          node: { type: 'code_block' },
+          type: 'code_block',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -510,7 +514,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      value: [{ children: [{ text: '``' }], type: 'paragraph' }],
+      value: [{ children: [{ text: '``' }], type: 'p' }],
     } as any);
 
     editor.update.selection.set({
@@ -559,10 +563,9 @@ describe('input rules', () => {
       plugins: [
         createPlatePlugin({
           key: 'blockquote',
-          node: {
+          schema: {
             element: {
               content: schema.content.group('block'),
-              groups: ['block'],
             },
           },
         }).configure({
@@ -597,12 +600,14 @@ describe('input rules', () => {
     });
     const editor = createPlateEditor({
       plugins: [
-        BaseParagraphPlugin.extend({
-          node: { type: 'paragraph' },
-        }),
+        BaseParagraphPlugin,
         createPlatePlugin({
           key: 'heading',
-          node: { element: { groups: ['block'] } },
+          schema: {
+            element: {
+              content: schema.content.open({ default: 'text', min: 1 }),
+            },
+          },
         }).configure({
           inputRules: [headingMarkdown()],
         }),
@@ -618,7 +623,7 @@ describe('input rules', () => {
     insertText(editor, ' ');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'p' },
     ]);
   });
 

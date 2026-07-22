@@ -16,7 +16,9 @@ describe('BaseSuggestionKit', () => {
       `./suggestion-base-kit?test=${Math.random().toString(36).slice(2)}`
     );
 
-    const editor = createBaseEditor({ plugins: BaseSuggestionKit });
+    const editor = createBaseEditor({
+      plugins: BaseSuggestionKit,
+    });
     const transformProps = editor.getPlugin(BaseSuggestionKit[0]).inject
       ?.nodeProps?.transformProps;
 

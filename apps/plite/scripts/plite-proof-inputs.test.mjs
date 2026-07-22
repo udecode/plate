@@ -27,13 +27,20 @@ const normalizedEntries = (entries) =>
     )
   );
 
-const waitForChange = async (monitor) => {
-  for (let attempt = 0; attempt < 20; attempt++) {
+const waitForChange = async (monitor, timeoutMs = 1000) => {
+  const startedAt = performance.now();
+
+  while (performance.now() - startedAt < timeoutMs) {
     const change = await monitor.checkpoint();
 
     if (change) return change;
     await new Promise((resolve) => setTimeout(resolve, 5));
   }
+};
+
+const waitForMonitorReady = async (monitor) => {
+  await monitor.ready();
+  assert.equal(await monitor.checkpoint(), null);
 };
 
 test('app build inputs cover styles, config, local dependencies, and tooling', () => {
@@ -50,8 +57,8 @@ test('app build inputs cover styles, config, local dependencies, and tooling', (
     'packages/udecode/utils/src',
     'tooling/config/tsconfig.base.json',
     'tooling/config/tsconfig.build.json',
-    'tooling/config/plite-dts.config.mts',
-    'tooling/scripts/build-plite-package.mjs',
+    'tooling/config/direct-package.config.mts',
+    'tooling/scripts/check-package-build-artifacts.mjs',
   ]) {
     assert.ok(entries.has(expected), `missing app build input: ${expected}`);
   }
@@ -67,8 +74,8 @@ test('browser build inputs cover its declaration and tooling config chain', () =
     'packages/browser/tsconfig.build.json',
     'tooling/config/tsconfig.base.json',
     'tooling/config/tsconfig.build.json',
-    'tooling/config/plite-dts.config.mts',
-    'tooling/scripts/build-plite-package.mjs',
+    'tooling/config/direct-package.config.mts',
+    'tooling/scripts/check-package-build-artifacts.mjs',
     'tsconfig.json',
   ]) {
     assert.ok(
@@ -171,31 +178,50 @@ test('proof monitor catches transient source changes and new files', async () =>
   });
 
   try {
+    await waitForMonitorReady(monitor);
     fs.writeFileSync(sourceFile, 'during');
-    fs.writeFileSync(sourceFile, 'before');
     const change = await waitForChange(monitor);
 
     assert.equal(change?.kind, 'source');
-    assert.equal(change?.path, sourceFile);
+    assert.ok(
+      change?.path === sourceFile || change?.path === sourceRoot,
+      change?.path
+    );
+
+    fs.writeFileSync(sourceFile, 'before');
+    await monitor.checkpoint();
+
+    assert.equal(monitor.change, change);
   } finally {
     monitor.close();
+    fs.rmSync(root, { force: true, recursive: true });
   }
 
+  const additionRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'plite-proof-monitor-addition-')
+  );
+  const additionSourceRoot = path.join(additionRoot, 'source');
+
+  fs.mkdirSync(additionSourceRoot);
   const additionMonitor = createProofIntegrityMonitor({
-    sourceEntries: [sourceRoot],
+    sourceEntries: [additionSourceRoot],
   });
 
   try {
-    const addedFile = path.join(sourceRoot, 'added.ts');
+    const addedFile = path.join(additionSourceRoot, 'added.ts');
 
+    await waitForMonitorReady(additionMonitor);
     fs.writeFileSync(addedFile, 'added');
     const change = await waitForChange(additionMonitor);
 
     assert.equal(change?.kind, 'source');
-    assert.equal(change?.path, addedFile);
+    assert.ok(
+      change?.path === addedFile || change?.path === additionSourceRoot,
+      change?.path
+    );
   } finally {
     additionMonitor.close();
-    fs.rmSync(root, { force: true, recursive: true });
+    fs.rmSync(additionRoot, { force: true, recursive: true });
   }
 });
 
@@ -212,6 +238,7 @@ test('proof monitor classifies output and manifest drift', async () => {
   });
 
   try {
+    await waitForMonitorReady(monitor);
     fs.writeFileSync(manifestPath, '{"note":true}');
     const manifestChange = await waitForChange(monitor);
 
@@ -226,6 +253,7 @@ test('proof monitor classifies output and manifest drift', async () => {
   });
 
   try {
+    await waitForMonitorReady(outputMonitor);
     fs.writeFileSync(outputFile, 'after');
     const outputChange = await waitForChange(outputMonitor);
 
@@ -250,9 +278,10 @@ test('source monitor ignores its build manifest but the run digest does not', as
   });
 
   try {
+    await waitForMonitorReady(monitor);
     fs.writeFileSync(manifestPath, '{"fingerprint":"after"}');
 
-    assert.equal(await waitForChange(monitor), undefined);
+    assert.equal(await waitForChange(monitor, 100), undefined);
     assert.notEqual(hashEntries([root]), initialDigest);
 
     fs.writeFileSync(runtimePath, 'runtime-after');
@@ -288,12 +317,13 @@ test('target monitor ignores its build manifest but freshness does not', async (
   try {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
+    await waitForMonitorReady(monitor);
     fs.writeFileSync(
       manifestPath,
       JSON.stringify({ ...manifest, fingerprint: 'drifted' })
     );
 
-    assert.equal(await waitForChange(monitor), undefined);
+    assert.equal(await waitForChange(monitor, 100), undefined);
     assert.equal(isBuildManifestFresh(options), false);
 
     fs.writeFileSync(outputPath, 'changed output');

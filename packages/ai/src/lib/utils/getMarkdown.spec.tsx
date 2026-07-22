@@ -55,39 +55,43 @@ afterAll(() => {
 
 const TableFixturePlugin = createBasePlugin({
   key: KEYS.table,
-  node: {
+  schema: ({ plugins }) => ({
     element: {
-      content: schema.content.type(KEYS.tr),
-      groups: ['block'],
+      content: schema.content.type(plugins.elementType(TableRowFixturePlugin)),
     },
-  },
+  }),
 });
 
 const TableRowFixturePlugin = createBasePlugin({
   key: KEYS.tr,
-  node: {
+  schema: ({ plugins }) => ({
     element: {
-      content: schema.content.types([KEYS.td, KEYS.th]),
+      content: schema.content.types(
+        plugins.elementTypes([
+          TableCellFixturePlugin,
+          TableHeaderCellFixturePlugin,
+        ])
+      ),
     },
-  },
+  }),
 });
 
 const TableCellFixturePlugin = createBasePlugin({
   key: KEYS.td,
-  node: {
+  schema: ({ plugins }) => ({
     element: {
-      content: schema.content.group('block'),
+      content: plugins.blockContent(),
     },
-  },
+  }),
 });
 
 const TableHeaderCellFixturePlugin = createBasePlugin({
   key: KEYS.th,
-  node: {
+  schema: ({ plugins }) => ({
     element: {
-      content: schema.content.group('block'),
+      content: plugins.blockContent(),
     },
-  },
+  }),
 });
 
 const createTestEditor = (input: TestEditor) =>

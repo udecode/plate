@@ -602,11 +602,13 @@ const plugins = [
 `reset` 规则负责标准段落重置。功能特有的结构变更应放在插件自己的事务组中，让调用方显式执行。
 
 ```tsx
+import { schema } from '@platejs/plite';
+
 const CodeBlockPlugin = createPlatePlugin({
   key: 'codeBlock',
-  node: {
-    element: {},
-    type: 'code_block',
+  type: 'code_block',
+  schema: {
+    element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
 }).extendTx(({ type }) => (tx) => ({
   unwrap() {
@@ -692,8 +694,8 @@ import { editorCommands } from '@platejs/plite';
 const SingleLinePlugin = createPlatePlugin({
   key: 'singleLine',
 }).extendExtension({
-  commands: [
-    editorCommands.insertBreak.handle(({ state }) =>
+  commands: ({ handle }) => [
+    handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction((tx) => {
         tx.break.insertSoft();
       })
@@ -702,7 +704,7 @@ const SingleLinePlugin = createPlatePlugin({
 });
 ```
 
-Command handler 对不属于自己的情况返回 `next()`，对已处理的情况返回 `state.transaction(...)`。这样键盘输入、程序化调用和测试共享同一条语义命令链。
+Command handler 对不属于自己的情况返回 `false`，对已处理的情况返回 `state.transaction(...)`。这样键盘输入、程序化调用和测试共享同一条语义命令链。
 
 ## `rules.selection`
 

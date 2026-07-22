@@ -1,9 +1,9 @@
 import type { MdHeading, MdRootContent } from '../mdast';
-import type { DeserializeMdOptions } from './deserializeMd';
+import type { DeserializeMdContext } from '../types';
 
 import {
   createTestEditor,
-  getTestMarkdownRuntime,
+  getTestDeserializeOptions,
 } from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';
 import {
@@ -44,10 +44,9 @@ describe('convertNodesDeserialize', () => {
     mockBoldNode,
   ];
 
-  const baseOptions: DeserializeMdOptions = {
-    runtime: getTestMarkdownRuntime(editor),
+  const baseOptions: DeserializeMdContext = getTestDeserializeOptions(editor, {
     rules: defaultRules,
-  };
+  });
 
   const mockParagraphNodeSlate = {
     children: [{ text: 'Hello' }],
@@ -92,7 +91,7 @@ describe('convertNodesDeserialize', () => {
     });
 
     it('only include nodes specified in allowedNodes', () => {
-      const options: DeserializeMdOptions = {
+      const options: DeserializeMdContext = {
         ...baseOptions,
         allowedNodes: ['heading', 'text'],
       };
@@ -104,7 +103,7 @@ describe('convertNodesDeserialize', () => {
     });
 
     it('include all nodes when allowedNodes is null or undefined', () => {
-      const options: DeserializeMdOptions = {
+      const options: DeserializeMdContext = {
         ...baseOptions,
         allowedNodes: null,
       };
@@ -115,7 +114,7 @@ describe('convertNodesDeserialize', () => {
     });
 
     it('include no nodes when allowedNodes is empty', () => {
-      const options: DeserializeMdOptions = {
+      const options: DeserializeMdContext = {
         ...baseOptions,
         allowedNodes: [],
       };
@@ -127,7 +126,7 @@ describe('convertNodesDeserialize', () => {
 
   describe('disabledNodes option', () => {
     it('exclude nodes specified in disabledNodes', () => {
-      const options: DeserializeMdOptions = {
+      const options: DeserializeMdContext = {
         ...baseOptions,
         disallowedNodes: ['heading'],
       };
@@ -142,7 +141,7 @@ describe('convertNodesDeserialize', () => {
     });
 
     it('exclude inline nodes specified in disallowedNodes', () => {
-      const options: DeserializeMdOptions = {
+      const options: DeserializeMdContext = {
         ...baseOptions,
         disallowedNodes: ['bold'],
       };
@@ -163,7 +162,7 @@ describe('convertNodesDeserialize', () => {
 
   describe('allowNode option', () => {
     it('exclude nodes specified in allowNode', () => {
-      const options: DeserializeMdOptions = {
+      const options: DeserializeMdContext = {
         ...baseOptions,
         allowNode: {
           deserialize(node) {
@@ -183,7 +182,7 @@ describe('convertNodesDeserialize', () => {
     });
 
     it('exclude inline nodes specified in allowNode', () => {
-      const options: DeserializeMdOptions = {
+      const options: DeserializeMdContext = {
         ...baseOptions,
         allowNode: {
           deserialize(node) {

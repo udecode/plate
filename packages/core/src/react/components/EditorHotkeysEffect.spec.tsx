@@ -4,6 +4,7 @@ import { act, render } from '@testing-library/react';
 import * as reactHotkeysModule from '@udecode/react-hotkeys';
 
 import { createPlateEditor } from '../editor';
+import type { Shortcuts } from '../plugin';
 import * as storesModule from '../stores';
 import { EditorHotkeysEffect } from './EditorHotkeysEffect';
 
@@ -24,6 +25,13 @@ describe('EditorHotkeysEffect', () => {
   let editor: any;
   let setHotkeyRefMock: ReturnType<typeof mock>;
   const hotkeyCallback = mock();
+
+  const publishEditorWithShortcuts = (shortcuts: Shortcuts) => {
+    editor = createPlateEditor({
+      shortcuts,
+    });
+    useEditorRefSpy.mockReturnValue(editor);
+  };
 
   beforeEach(() => {
     editor = createPlateEditor({
@@ -79,7 +87,7 @@ describe('EditorHotkeysEffect', () => {
     const fallback = mock();
     const specific = mock();
 
-    editor.runtime.shortcuts = {
+    publishEditorWithShortcuts({
       fallback: {
         keys: 'mod+a',
         handler: fallback,
@@ -90,7 +98,7 @@ describe('EditorHotkeysEffect', () => {
         handler: specific,
         priority: 100,
       },
-    };
+    });
 
     render(<SimpleComponent />);
 
@@ -138,12 +146,12 @@ describe('EditorHotkeysEffect', () => {
 
     it('does not call preventDefault when handler returns false', async () => {
       const handlerReturningFalse = mock().mockReturnValue(false);
-      editor.runtime.shortcuts = {
+      publishEditorWithShortcuts({
         'mod+x': {
           keys: 'mod+x',
           handler: handlerReturningFalse,
         },
-      };
+      });
 
       render(<SimpleComponent />);
 
@@ -159,12 +167,12 @@ describe('EditorHotkeysEffect', () => {
 
     it('call preventDefault when handler returns undefined (default behavior)', async () => {
       const handlerReturningUndefined = mock().mockReturnValue(undefined);
-      editor.runtime.shortcuts = {
+      publishEditorWithShortcuts({
         'mod+y': {
           keys: 'mod+y',
           handler: handlerReturningUndefined,
         },
-      };
+      });
 
       render(<SimpleComponent />);
 
@@ -180,12 +188,12 @@ describe('EditorHotkeysEffect', () => {
 
     it('call preventDefault when handler returns true', async () => {
       const handlerReturningTrue = mock().mockReturnValue(true);
-      editor.runtime.shortcuts = {
+      publishEditorWithShortcuts({
         'mod+z': {
           keys: 'mod+z',
           handler: handlerReturningTrue,
         },
-      };
+      });
 
       render(<SimpleComponent />);
 
@@ -201,13 +209,13 @@ describe('EditorHotkeysEffect', () => {
 
     it('does not call preventDefault when preventDefault option is explicitly set to false', async () => {
       const handlerReturningTrue = mock().mockReturnValue(true);
-      editor.runtime.shortcuts = {
+      publishEditorWithShortcuts({
         'mod+a': {
           keys: 'mod+a',
           handler: handlerReturningTrue,
           preventDefault: false,
         },
-      };
+      });
 
       render(<SimpleComponent />);
 
@@ -223,13 +231,13 @@ describe('EditorHotkeysEffect', () => {
 
     it('does not call preventDefault when preventDefault option is explicitly set (regardless of handler return)', async () => {
       const handlerReturningFalse = mock().mockReturnValue(false);
-      editor.runtime.shortcuts = {
+      publishEditorWithShortcuts({
         'mod+s': {
           keys: 'mod+s',
           handler: handlerReturningFalse,
           preventDefault: true, // Even though this is true, the current logic ignores it when preventDefault is defined
         },
-      };
+      });
 
       render(<SimpleComponent />);
 

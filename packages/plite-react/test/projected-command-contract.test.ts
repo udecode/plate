@@ -3,7 +3,6 @@ import {
   createEditorView,
   defineEditorExtension,
   defineEditorSchema,
-  element,
   editorCommands,
   schema,
   type EditorExtension,
@@ -55,58 +54,94 @@ class FakeDataTransfer {
 }
 
 const encodePliteFragment = (fragment: unknown) =>
-  globalThis.btoa(encodeURIComponent(JSON.stringify(fragment)));
+  globalThis.btoa(
+    encodeURIComponent(
+      JSON.stringify({
+        slice: { content: fragment, openEnd: 0, openStart: 0 },
+        version: 1,
+      })
+    )
+  );
 
 const contentRootExtension = defineEditorSchema({
   elements: {
-    'content-card': element({
-      contentRoot: {
-        content: schema.content.not(schema.content.text()),
-        slot: 'body',
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+    'content-card': {
+      content: schema.content.open(),
+      contentRoots: {
+        body: schema.content.not(schema.content.text()),
       },
       void: 'editable-island',
-    }),
+    },
   },
   id: 'projected-command-test',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
 
+const splitSchemaDocumentExtension = defineEditorSchema({
+  elements: {},
+  id: 'projected-command-split-schema-document',
+  root: { content: schema.content.not(schema.content.text()) },
+  unknown: 'preserve',
+  version: 1,
+});
+
+const splitSchemaSyncedBlockExtension = defineEditorExtension({
+  name: 'projected-command-split-schema-synced-block',
+  schema: {
+    elements: {
+      'synced-block': {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        contentRoots: {
+          body: schema.content.not(schema.content.text()),
+        },
+      },
+    },
+  },
+});
+
 const inlineLinkExtension = defineEditorSchema({
-  elements: { link: element({ inline: true }) },
+  elements: {
+    link: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
   id: 'projected-command-inline-test',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
 
 const structuralListExtension = defineEditorSchema({
   elements: {
-    paragraph: element({
+    paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    'list-item': element({
+    },
+    'list-item': {
       content: schema.content.text({ default: 'text', min: 1 }),
       groups: ['list-item'],
-    }),
-    'bulleted-list': element({
+    },
+    'bulleted-list': {
       content: schema.content.group('list-item', {
         default: { type: 'list-item' },
         min: 1,
       }),
-      groups: ['block'],
-    }),
+    },
   },
-  groups: { 'list-item': schema.group() },
+  groups: { 'list-item': {} },
   id: 'projected-command-structural-list-test',
-  root: schema.root({
+  root: {
     content: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  }),
+  },
+  unknown: 'reject',
   version: 1,
 });
 
@@ -411,6 +446,7 @@ describe('projected editable commands', () => {
       children: [paragraph('BefZ'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
+    expect(editorGetLastCommit(editor)?.tags).toContain('paste');
     expect(readPliteViewSelection(editor)).toBe(null);
   });
 
@@ -646,6 +682,88 @@ describe('projected editable commands', () => {
     expect(readPliteViewSelection(editor)).toBe(null);
   });
 
+  it('deletes a projected selection across split-schema main and named roots atomically', () => {
+    const runtime = createEditorRuntime({
+      extensions: [
+        history(),
+        dom(),
+        splitSchemaDocumentExtension,
+        splitSchemaSyncedBlockExtension,
+      ],
+      initialValue: {
+        children: [
+          paragraph('p1'),
+          {
+            type: 'synced-block',
+            childRoots: { body: SHARED_ROOT },
+            children: [{ text: '' }],
+          },
+          paragraph('Between synced copies.'),
+        ],
+        roots: {
+          [SHARED_ROOT]: [
+            paragraph('Shared mission statement'),
+            paragraph('Editing any copy updates every synced copy.'),
+          ],
+        },
+      },
+    });
+    const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
+    const owner = {
+      childRoot: SHARED_ROOT,
+      ownerPath: [1],
+      ownerRoot: 'main',
+    } satisfies PliteProjectionOwner;
+    const graph = createPliteProjectionGraph([
+      { path: [0], root: 'main' },
+      { owner, path: [0], root: SHARED_ROOT },
+      { owner, path: [1], root: SHARED_ROOT },
+      { path: [2], root: 'main' },
+    ]);
+
+    writePliteViewSelection(
+      editor,
+      createPliteViewSelection(graph, {
+        anchor: { point: point(undefined, [0, 0], 1) },
+        focus: {
+          owner,
+          point: point(SHARED_ROOT, [0, 0], 2),
+        },
+      })
+    );
+
+    expect(
+      applyEditableCommand({
+        command: { kind: 'delete-fragment' },
+        editor,
+      })
+    ).toBe(true);
+
+    expect(editor.read((state) => state.value())).toEqual({
+      children: [
+        paragraph('p'),
+        {
+          type: 'synced-block',
+          childRoots: { body: SHARED_ROOT },
+          children: [{ text: '' }],
+        },
+        paragraph('Between synced copies.'),
+      ],
+      roots: {
+        [SHARED_ROOT]: [
+          paragraph('ared mission statement'),
+          paragraph('Editing any copy updates every synced copy.'),
+        ],
+      },
+    });
+    expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    });
+    expect(readPliteViewSelection(editor)).toBe(null);
+  });
+
   it('delete-fragment from a content root into the owner document deletes each rooted segment', () => {
     const { editor } = createFixture();
     const graph = createPliteProjectionGraph([
@@ -800,11 +918,11 @@ describe('projected editable commands', () => {
     const runtime = createEditorRuntime({
       extensions: [
         defineEditorExtension({
-          commands: [
-            editorCommands.deleteFragment.handle(({ command }, next) => {
-              seenDirections.push(command.direction);
+          commands: ({ handle }) => [
+            handle(editorCommands.deleteFragment, ({ input }) => {
+              seenDirections.push(input.direction);
 
-              return next();
+              return false;
             }),
           ],
           name: 'projected-command-delete-fragment-handler',

@@ -7,24 +7,26 @@ describe('getRenderNodeStaticProps', () => {
   it('merges plugin props, allowed attrs, Plite classes, and injected node props', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: {
-        dangerouslyAllowAttributes: ['target'],
-        element: { groups: ['block'] },
-        props: ({ editor }) => ({
+      type: 'p',
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
+      },
+      render: {
+        nodeProps: ({ editor }) => ({
           className: 'plugin-class',
           'data-has-editor': editor ? 'yes' : 'no',
           title: undefined,
         }),
-        type: 'p',
       },
+      host: { dangerouslyAllowAttributes: ['target'] },
     });
     const AlignPlugin = createBasePlugin({
+      config: { targetPluginKeys: ['p'] },
       key: 'align',
       inject: {
         nodeProps: {
           nodeKey: 'align',
           styleKey: 'textAlign',
-          targetPlugins: ['p'],
         },
       },
       schema: {

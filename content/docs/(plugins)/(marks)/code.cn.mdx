@@ -86,14 +86,14 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     CodePlugin.configure({
-      node: { component: CodeLeaf },
+      render: { node: CodeLeaf },
       shortcuts: { toggle: { keys: 'mod+e' } },
     }),
   ],
 });
 ```
 
-- `node.component`: 指定 [`CodeLeaf`](/docs/components/code-node) 来渲染内联代码元素
+- `render.node`: 指定 [`CodeLeaf`](/docs/components/code-node) 来渲染内联代码元素
 - `shortcuts.toggle`: 定义用于切换代码格式的键盘[快捷键](/docs/plugin-shortcuts)
 
 ### 添加工具栏按钮

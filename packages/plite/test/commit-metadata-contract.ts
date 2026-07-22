@@ -11,6 +11,7 @@ import {
 
 import {
   createEditor,
+  DocumentChange,
   type Element,
   defineEditorExtension,
   defineEffect,
@@ -18,7 +19,10 @@ import {
   defineUpdateAnnotation,
   type EditorUpdatePolicy,
   type EditorUpdateTag,
+  type SnapshotIndex,
 } from '@platejs/plite';
+
+import { createEditorCommit } from '../src/core/commit';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -297,6 +301,78 @@ describe('commit metadata contract', () => {
     assert.deepEqual(commit.changed.runtimeIds('projection'), nextRuntimeIds);
     assert.deepEqual(commit.changed.runtimeIds('selection'), []);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
+  });
+
+  it('resolves a pure deletion to its surviving top-level boundary', () => {
+    const editor = createEditor({
+      initialValue: [
+        paragraph('before'),
+        paragraph('removed'),
+        paragraph('after'),
+      ],
+    });
+
+    editor.update((tx) => tx.nodes.remove({ at: [1] }));
+
+    const ranges = editorGetLastCommit(editor)?.changed.topLevelRanges();
+
+    assert.deepEqual(ranges, [[1, 1]]);
+    assert.equal(editorGetLastCommit(editor)?.changed.topLevelRanges(), ranges);
+    assert.equal(Object.isFrozen(ranges), true);
+    assert.equal(Object.isFrozen(ranges?.[0]), true);
+  });
+
+  it('reads top-level ranges without materializing runtime indexes', () => {
+    const editor = createEditor();
+    const before = paragraph('before');
+    const beforeChildren = [before];
+    const afterChildren = [before, paragraph('inserted')];
+    const beforeValue = { children: beforeChildren };
+    const afterValue = { children: afterChildren };
+    const changes = DocumentChange.between(beforeValue, afterValue);
+    const forbiddenIndex = {
+      entries: () => {
+        throw new Error('top-level range query materialized runtime entries');
+      },
+      idAt: () => {
+        throw new Error('top-level range query resolved a runtime path');
+      },
+      pathOf: () => {
+        throw new Error('top-level range query resolved a runtime id');
+      },
+    } satisfies SnapshotIndex;
+    const commit = createEditorCommit(
+      {
+        after: {
+          children: afterChildren,
+          index: forbiddenIndex,
+          selection: null,
+          version: 1,
+        },
+        afterValue,
+        annotations: {},
+        before: {
+          children: beforeChildren,
+          index: forbiddenIndex,
+          selection: null,
+          version: 0,
+        },
+        beforeValue,
+        changes,
+        dirtyStateKeys: [],
+        editor,
+        effects: [],
+        selectionAfter: null,
+        selectionAfterRoot: 'main',
+        selectionBefore: null,
+        selectionBeforeRoot: 'main',
+        selectionChanged: false,
+        tags: [],
+      },
+      { previousVersion: 0, version: 1 }
+    );
+
+    assert.deepEqual(commit.changed.topLevelRanges(), [[1, 1]]);
   });
 
   it('keeps top-level split path impact scoped to shifted top-level runtime ids', () => {

@@ -66,7 +66,10 @@ describe('update policy contract', () => {
     editor.update({ history: 'skip' }).text.insert('!');
 
     assert.equal(editor.read.text.string([]), 'one!');
-    assert.deepEqual(editor.read.lastCommit()?.tags, ['history-skip']);
+    assert.deepEqual(editor.read.lastCommit()?.tags, [
+      'history-skip',
+      'semantic-command',
+    ]);
   });
 
   it('runs a policy-first callback as one atomic commit', () => {
@@ -157,11 +160,8 @@ describe('update policy contract', () => {
   it('keeps outer update tags visible through command spec continuations', () => {
     const handlerTags: EditorUpdateTag[][] = [];
     const definitionTags: EditorUpdateTag[][] = [];
-    const command = defineCommand<{
-      text: string;
-      type: 'update-policy.insert';
-    }>({
-      run: ({ command, state, tags }) => {
+    const command = defineCommand<{ text: string }>('update-policy.insert', {
+      build: ({ input, state, tags }) => {
         const inferredTags: readonly EditorUpdateTag[] = tags;
 
         assert.equal(Object.isFrozen(inferredTags), true);
@@ -171,25 +171,20 @@ describe('update policy contract', () => {
         );
         definitionTags.push([...inferredTags]);
 
-        return state.transaction((tx) => tx.text.insert(command.text));
+        return state.transaction((tx) => tx.text.insert(input.text));
       },
-      type: 'update-policy.insert',
     });
     const extension = defineEditorExtension({
-      commands: [
-        command.handle(
-          ({ state }, next) =>
-            next.after(
-              state.transaction((tx) => tx.tags.add('command-prefix'))
-            ),
-          { priority: 2 }
+      commands: ({ around, handle }) => [
+        around(command, ({ state, next }) =>
+          next.after(state.transaction((tx) => tx.tags.add('command-prefix')))
         ),
-        command.handle(({ tags }, next) => {
+        handle(command, ({ tags }) => {
           const inferredTags: readonly EditorUpdateTag[] = tags;
 
           assert.equal(Object.isFrozen(inferredTags), true);
           handlerTags.push([...inferredTags]);
-          return next();
+          return false;
         }),
       ],
       name: 'update-policy.command-tag-observer',
@@ -211,6 +206,7 @@ describe('update policy contract', () => {
     assert.deepEqual(definitionTags, [['outer-policy', 'command-prefix']]);
     assert.deepEqual(editor.read.lastCommit()?.tags, [
       'outer-policy',
+      'semantic-command',
       'command-prefix',
     ]);
   });
@@ -406,7 +402,10 @@ describe('update policy contract', () => {
     policy.tags.push('external');
     paste.text.insert('!');
 
-    assert.deepEqual(editor.read.lastCommit()?.tags, ['paste']);
+    assert.deepEqual(editor.read.lastCommit()?.tags, [
+      'paste',
+      'semantic-command',
+    ]);
   });
 
   it('rejects transaction-only methods from dynamic direct dispatch', () => {

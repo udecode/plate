@@ -75,8 +75,9 @@ Apply that metadata when the browser runtime imports native text:
 - Chrome `compositionend` fallback insertion in `composition-state.ts`
 - DOM input repair insertion in `dom-repair-queue.ts`
 
-Keep the composition-predelete path on forced `merge`, because that path repairs
-one logical composition commit.
+Composition replacement keeps its expanded target intact and applies one atomic
+targeted replacement after the browser releases composition. It needs no
+pre-delete or forced-merge exception.
 
 ## Why This Works
 

@@ -24,7 +24,11 @@ const plugins = [
   BaseKbdPlugin,
 ];
 
-const createTestEditor = (value: Value) => createBaseEditor({ plugins, value });
+const createTestEditor = (value: Value) =>
+  createBaseEditor({
+    plugins,
+    value,
+  });
 
 const getFirstBlock = (editor: ReturnType<typeof createTestEditor>) =>
   editor.read.nodes.get([0])!;

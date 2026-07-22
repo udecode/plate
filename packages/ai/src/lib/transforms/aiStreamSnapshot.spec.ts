@@ -48,7 +48,7 @@ const createEditor = () =>
 
 const InlineFixturePlugin = createBasePlugin({
   key: 'inlineFixture',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       inline: true,
@@ -74,6 +74,18 @@ const installPreview = (
 };
 
 describe('ai preview transforms', () => {
+  it('canonicalizes false AI marks to the absent default', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseAIPlugin],
+    });
+
+    expect(
+      editor.read.schema.fitDocument({
+        children: [createParagraph('plain', { text: { ai: false } })],
+      })
+    ).toEqual({ children: [createParagraph('plain')] });
+  });
+
   it('targets AI marks to text parents and preview state to blocks', () => {
     const editor = createBaseEditor({
       plugins: [

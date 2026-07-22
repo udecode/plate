@@ -5,7 +5,10 @@ import { prepareParserRegistry } from './prepareParserRegistry';
 
 const createParserEditor = (
   plugins: NonNullable<Parameters<typeof createBaseEditor>[0]>['plugins']
-) => createBaseEditor({ plugins });
+) =>
+  createBaseEditor({
+    plugins,
+  });
 
 describe('pipeTransformData', () => {
   it('pipes transformed data through parser plugins in order', () => {

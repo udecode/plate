@@ -11,6 +11,16 @@ import {
   BaseHeadingPlugin,
 } from './BaseHeadingPlugin';
 
+const headingPlugins = [
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+] as const;
+const headingKeys = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
+
 describe('BaseHeadingPlugin', () => {
   describe('when using default options', () => {
     it('creates plugins for all 6 heading levels', () => {
@@ -21,14 +31,16 @@ describe('BaseHeadingPlugin', () => {
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
       expect(headingPlugin.plugins).toHaveLength(6);
 
-      KEYS.heading.forEach((level, index) => {
-        const plugin = headingPlugin.plugins[index]!;
-        expect(plugin.key).toBe(level);
-        expect(plugin.node.element).toBeDefined();
+      headingPlugins.forEach((plugin, index) => {
+        const level = headingKeys[index]!;
+        const resolvedPlugin = editor.getPlugin({ key: plugin.key });
+
+        expect(resolvedPlugin.key).toBe(level);
+        expect(editor.read.schema.element(resolvedPlugin.type)).toBeDefined();
         expect(editor.read.schema.isElementTypeInGroup(level, 'block')).toBe(
           true
         );
-        expect(plugin.parsers.html.deserializer?.rules).toEqual([
+        expect(resolvedPlugin.parsers.html?.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);
       });
@@ -40,7 +52,7 @@ describe('BaseHeadingPlugin', () => {
       const editor = createBaseEditor({
         plugins: [
           BaseHeadingPlugin.configure({
-            options: { levels: [1, 3, 5] },
+            config: { levels: [1, 3, 5] },
           }),
         ],
       });
@@ -48,10 +60,8 @@ describe('BaseHeadingPlugin', () => {
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
       expect(headingPlugin.plugins).toHaveLength(3);
 
-      const expectedLevels = ['h1', 'h3', 'h5'];
-      expectedLevels.forEach((level, index) => {
-        const plugin = headingPlugin.plugins[index]!;
-        expect(plugin.key).toBe(level);
+      [BaseH1Plugin, BaseH3Plugin, BaseH5Plugin].forEach((plugin) => {
+        expect(editor.getPlugin({ key: plugin.key }).key).toBe(plugin.key);
       });
     });
   });
@@ -61,7 +71,7 @@ describe('BaseHeadingPlugin', () => {
       const editor = createBaseEditor({
         plugins: [
           BaseHeadingPlugin.configure({
-            options: { levels: 2 },
+            config: { levels: 2 },
           }),
         ],
       });
@@ -77,18 +87,17 @@ describe('BaseHeadingPlugin', () => {
         plugins: [BaseHeadingPlugin],
       });
 
-      const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
+      headingPlugins.forEach((plugin, index) => {
+        const resolvedPlugin = editor.getPlugin({ key: plugin.key });
 
-      headingPlugin.plugins.forEach((plugin, index) => {
-        expect(plugin.node.element).toBeDefined();
+        expect(editor.read.schema.element(resolvedPlugin.type)).toBeDefined();
         expect(
-          editor.read.schema.createAndFill(plugin.node.type)
+          editor.read.schema.createAndFill(resolvedPlugin.type)
         ).toMatchObject({
           children: [{ text: '' }],
-          type: plugin.node.type,
+          type: resolvedPlugin.type,
         });
-        expect(plugin.handlers?.onKeyDown).not.toBeDefined();
-        expect(plugin.parsers.html.deserializer?.rules).toEqual([
+        expect(resolvedPlugin.parsers.html?.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);
       });

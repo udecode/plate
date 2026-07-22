@@ -98,21 +98,21 @@ const editor = createPlateEditor({
     // ...其他插件,
     InlineEquationPlugin.configure({
       inputRules: [MathRules.markdown({ variant: '$' })],
-      node: {
-        component: InlineEquationElement,
+      render: {
+        node: InlineEquationElement,
       },
     }),
     EquationPlugin.configure({
       inputRules: [MathRules.markdown({ on: 'break', variant: '$$' })],
-      node: {
-        component: EquationElement,
+      render: {
+        node: EquationElement,
       },
     }),
   ],
 });
 ```
 
-- `node.component`：指定[`EquationElement`](/docs/components/equation-node)渲染块级公式，[`InlineEquationElement`](/docs/components/equation-node)渲染行内公式。
+- `render.node`：指定[`EquationElement`](/docs/components/equation-node)渲染块级公式，[`InlineEquationElement`](/docs/components/equation-node)渲染行内公式。
 - `MathRules.markdown({ variant: '$' })`：启用行内公式 Markdown 快捷输入。
 - `MathRules.markdown({ variant: '$$', on: 'break' | 'match' })`：启用块级公式 Markdown 快捷输入，并显式选择提交时机。
 

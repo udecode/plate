@@ -20,7 +20,7 @@ describe('getEditorPlugin', () => {
   beforeEach(() => {
     testPlugin = createBasePlugin<TestConfig>({
       key: 'test',
-      node: { type: 'test-type' },
+      type: 'test-type',
       options: {
         testOption: 'testValue',
       },
@@ -42,7 +42,7 @@ describe('getEditorPlugin', () => {
       editor,
       plugin: expect.objectContaining({
         key: 'test',
-        node: { type: 'test-type' },
+        type: 'test-type',
       }),
       type: 'test-type',
     });
@@ -57,7 +57,7 @@ describe('getEditorPlugin', () => {
     >;
     const plugin = createBasePlugin<Config>({
       key: 'test',
-      node: { type: 'test-type' },
+      type: 'test-type',
       options: {
         testOption: 'testValue',
       },
@@ -104,16 +104,16 @@ describe('getEditorPlugin', () => {
       editor,
       plugin: expect.objectContaining({
         key: 'test',
-        node: { type: 'test-type' },
+        type: 'test-type',
       }),
       type: 'test-type',
     });
   });
 
-  it('resolve unresolved plugin', () => {
+  it('rejects a plugin that is not installed', () => {
     const unresolvedPlugin = createBasePlugin({
       key: 'unresolved',
-      node: { type: 'unresolved-type' },
+      type: 'unresolved-type',
       options: {
         unresolvedOption: 'unresolvedValue',
       },
@@ -121,15 +121,9 @@ describe('getEditorPlugin', () => {
 
     const context = getEditorPlugin(editor, unresolvedPlugin);
 
-    expect(context).toMatchObject({
-      api: {},
-      editor,
-      plugin: expect.objectContaining({
-        key: 'unresolved',
-        node: { type: 'unresolved-type' },
-      }),
-      type: 'unresolved-type',
-    });
+    expect(() => context.plugin).toThrow(
+      'Plate plugin "unresolved" is not installed.'
+    );
   });
 
   it('splits plugin-owned API from the root editor API', () => {
@@ -186,7 +180,9 @@ describe('getEditorPlugin', () => {
         },
       })
     );
-    const typedEditor = createBaseEditor({ plugins: [plugin, otherPlugin] });
+    const typedEditor = createBaseEditor({
+      plugins: [plugin, otherPlugin],
+    });
 
     typedEditor.plugin(plugin).update.setMode('edit');
     typedEditor.plugin(plugin).update.insert.node();

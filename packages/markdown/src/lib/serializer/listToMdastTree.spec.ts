@@ -2,12 +2,12 @@ import type { MdList, MdListItem, MdParagraph, MdText } from '../mdast';
 
 import {
   createTestEditor,
-  getTestMarkdownRuntime,
+  getTestSerializeOptions,
 } from '../__tests__/createTestEditor';
 import { listToMdastTree } from './listToMdastTree';
 
 const editor = createTestEditor();
-const runtime = getTestMarkdownRuntime(editor);
+const runtimeOptions = getTestSerializeOptions(editor);
 
 const getList = (parent: MdListItem, index: number): MdList => {
   const node = parent.children[index];
@@ -61,7 +61,7 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     expect(result).toEqual({
@@ -122,7 +122,7 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     expect(result).toEqual({
@@ -195,7 +195,7 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     expect(result).toEqual({
@@ -270,7 +270,7 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     // The structure should correctly represent the indentation levels
@@ -280,7 +280,7 @@ describe('listToMdastTree', () => {
   });
 
   it('throw error for empty nodes', () => {
-    expect(() => listToMdastTree([], { runtime })).toThrow(
+    expect(() => listToMdastTree([], runtimeOptions)).toThrow(
       'Cannot create a list from empty nodes'
     );
   });
@@ -318,7 +318,7 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     expect(result.ordered).toBe(false);
@@ -354,7 +354,7 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     expect(result.ordered).toBe(false);
@@ -381,7 +381,7 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     expect(result.ordered).toBe(true);
@@ -429,7 +429,7 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     expect(result.children).toHaveLength(2);
@@ -474,7 +474,7 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     const firstItem = getParagraph(result.children[0], 0).children;
@@ -511,7 +511,7 @@ describe('listToMdastTree', () => {
     ];
 
     const result = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     expect(result).toMatchSnapshot();
@@ -537,14 +537,14 @@ describe('listToMdastTree', () => {
 
     // Test with spread: false (default)
     const resultNoSpread = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
     });
 
     expect(resultNoSpread.spread).toBe(false);
 
     // Test with spread: true
     const resultWithSpread = listToMdastTree(nodes, {
-      runtime,
+      ...runtimeOptions,
       spread: true,
     });
 
@@ -576,7 +576,7 @@ describe('listToMdastTree', () => {
       },
     ];
 
-    const result = listToMdastTree(nodes, { runtime });
+    const result = listToMdastTree(nodes, runtimeOptions);
     const nestedChildren = result.children[0].children.slice(1);
 
     expect(nestedChildren).toEqual([
@@ -651,7 +651,7 @@ describe('listToMdastTree', () => {
 
     const result = listToMdastTree(
       nodes,
-      { runtime, spread: true, withBlockId: true },
+      { ...runtimeOptions, spread: true, withBlockId: true },
       true
     );
 

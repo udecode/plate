@@ -592,6 +592,7 @@ describe('document meta history contract', () => {
       currentSelection
     );
     assert.deepEqual(undoCommit?.tags, [
+      'semantic-command',
       'history-skip',
       'historic',
       'skip-dom-selection',

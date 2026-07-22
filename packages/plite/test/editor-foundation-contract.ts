@@ -13,7 +13,6 @@ import {
   DocumentChange,
   type Element,
   defineEditorExtension,
-  element,
   property,
   schema,
 } from '@platejs/plite';
@@ -61,15 +60,16 @@ describe('editor foundation contract', () => {
     editor.extend(
       defineEditorExtension({
         name: 'table-foundation',
-        schema: schema.contribution({
+        schema: {
           elements: {
-            'table-cell': element({
+            'table-cell': {
+              content: schema.content.text({ default: 'text', min: 1 }),
               properties: {
                 colSpan: property.number({ default: 1 }),
               },
-            }),
+            },
           },
-        }),
+        },
         state: {
           table(state) {
             return {

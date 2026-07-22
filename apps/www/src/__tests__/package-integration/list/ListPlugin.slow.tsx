@@ -1,6 +1,11 @@
 /** @jsx jsxt */
 
-import { BasicBlocksPlugin } from '@platejs/basic-nodes/react';
+import {
+  BasicBlocksPlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+} from '@platejs/basic-nodes/react';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
@@ -12,8 +17,10 @@ import { LinkPlugin } from '@platejs/link/react';
 import { ImagePlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { jsxt } from '@platejs/test-utils';
+import { BaseParagraphPlugin } from 'platejs';
 
 import {
+  type BaseEditor,
   createBaseEditor,
   type BasePluginInput,
 } from '../../../../../../packages/core/src/lib/editor';
@@ -22,8 +29,8 @@ import { BaseListPlugin } from '../../../../../../packages/list/src/lib/BaseList
 jsxt;
 
 const targetPluginConfig = {
-  options: {
-    targetPluginKeys: ['p', 'h1', 'h2', 'h3'],
+  config: {
+    targets: [BaseParagraphPlugin, H1Plugin, H2Plugin, H3Plugin],
   },
 };
 
@@ -32,10 +39,7 @@ const createClipboardData = (html: string, rtf?: string): DataTransfer =>
     getData: (format: string) => (format === 'text/html' ? html : rtf),
   }) as any;
 
-const insertData = (
-  editor: ReturnType<typeof createBaseEditor>,
-  data: DataTransfer
-) => {
+const insertData = (editor: BaseEditor, data: DataTransfer) => {
   editor.api.clipboard.insertData(data);
 };
 

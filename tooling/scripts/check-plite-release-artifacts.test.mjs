@@ -1,13 +1,5 @@
 import assert from 'node:assert/strict';
-import {
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -17,7 +9,7 @@ import {
   filterTypeScriptConsumerDiagnostics,
   getPublicExports,
   parseRuntimeExportNames,
-  runTypeScriptConsumer,
+  PLITE_RELEASE_PACKAGES,
 } from './check-plite-release-artifacts.mjs';
 
 const packageJson = {
@@ -65,6 +57,17 @@ const files = [
   },
   { path: 'package.json', source: '' },
 ];
+
+test('builds every package before packing its release artifact', () => {
+  const rootPackageJson = JSON.parse(
+    readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
+  );
+  const releaseBuild = rootPackageJson.scripts['plite:packages:build'];
+
+  for (const { directory } of PLITE_RELEASE_PACKAGES) {
+    assert.match(releaseBuild, new RegExp(`--filter=\\./${directory}(?: |$)`));
+  }
+});
 
 test('enumerates every explicit public package subpath', () => {
   assert.deepEqual(
@@ -141,92 +144,6 @@ test('keeps packed consumer diagnostics and ignores linked dependency noise', ()
       'node_modules/@platejs/yjs/dist/index.d.ts(3,10): error TS2305: Missing export.',
       'error TS2688: Cannot find type definition file for node.',
     ].join('\n')
-  );
-});
-
-test('rejects a packed declaration that imports a missing Core symbol', (t) => {
-  const root = mkdtempSync(join(tmpdir(), 'plite-release-types-'));
-  const consumerDirectory = join(root, 'consumer');
-  const coreDirectory = join(root, 'core');
-  const yjsDirectory = join(
-    consumerDirectory,
-    'node_modules',
-    '@platejs',
-    'yjs'
-  );
-
-  t.after(() => rmSync(root, { force: true, recursive: true }));
-  mkdirSync(coreDirectory, { recursive: true });
-  mkdirSync(join(yjsDirectory, 'dist'), { recursive: true });
-  writeFileSync(
-    join(coreDirectory, 'package.json'),
-    JSON.stringify({
-      exports: {
-        '.': {
-          default: './index.js',
-          types: './index.d.ts',
-        },
-      },
-      name: '@platejs/core',
-      type: 'module',
-    })
-  );
-  writeFileSync(
-    join(coreDirectory, 'index.d.ts'),
-    'export type Present = true;'
-  );
-  writeFileSync(join(coreDirectory, 'index.js'), 'export {};');
-  symlinkSync(
-    coreDirectory,
-    join(consumerDirectory, 'node_modules', '@platejs', 'core'),
-    'junction'
-  );
-  writeFileSync(
-    join(yjsDirectory, 'package.json'),
-    JSON.stringify({
-      exports: {
-        '.': {
-          default: './dist/index.js',
-          types: './dist/index.d.ts',
-        },
-      },
-      name: '@platejs/yjs',
-      type: 'module',
-    })
-  );
-  writeFileSync(
-    join(yjsDirectory, 'dist', 'index.d.ts'),
-    [
-      "import type { MissingCoreSymbol } from '@platejs/core';",
-      'export type Probe = MissingCoreSymbol;',
-    ].join('\n')
-  );
-  writeFileSync(join(yjsDirectory, 'dist', 'index.js'), 'export {};');
-  writeFileSync(
-    join(consumerDirectory, 'consumer.ts'),
-    "import type { Probe } from '@platejs/yjs'; declare const probe: Probe; void probe;"
-  );
-  writeFileSync(
-    join(consumerDirectory, 'package.json'),
-    JSON.stringify({ name: 'consumer', type: 'module' })
-  );
-  writeFileSync(
-    join(consumerDirectory, 'tsconfig.json'),
-    JSON.stringify({
-      compilerOptions: {
-        module: 'NodeNext',
-        moduleResolution: 'NodeNext',
-        noEmit: true,
-        strict: true,
-        types: [],
-      },
-      files: ['./consumer.ts'],
-    })
-  );
-
-  assert.throws(
-    () => runTypeScriptConsumer(consumerDirectory, 'tsconfig.json'),
-    /TS2305: Module .*@platejs\/core.*MissingCoreSymbol/
   );
 });
 
@@ -319,4 +236,89 @@ test('builds runtime, type, bare, and unused named consumer fixtures', () => {
   );
   assert.equal(sources.namedImportCount, 2);
   assert.equal(sources.baseline, `${sources.bare.split('\n').at(-2)}\n`);
+});
+
+test('builds an executable typed Plite schema consumer without changing DCE fixtures', () => {
+  const sources = createConsumerSources([
+    {
+      publicExports: [
+        {
+          runtimeExportNames: ['createEditorRuntime'],
+          specifier: '@platejs/plite',
+          subpath: '.',
+        },
+      ],
+    },
+  ]);
+
+  for (const source of [sources.types, sources.runtime]) {
+    assert.match(source, /defineEditorSchema/);
+    assert.match(source, /createEditorRuntime/);
+    assert.match(source, /read\.schema\.identity\(\)/);
+    assert.match(source, /read\.schema\.createAndFill/);
+    assert.match(source, /release-consumer-schema/);
+  }
+
+  assert.match(sources.types, /SchemaElementFor/);
+
+  for (const source of [sources.baseline, sources.bare, sources.named]) {
+    assert.doesNotMatch(source, /release-consumer-schema/);
+  }
+});
+
+test('packs Core and builds an executable final Plate schema consumer', () => {
+  const coreContract = PLITE_RELEASE_PACKAGES.find(
+    ({ name }) => name === '@platejs/core'
+  );
+  const utilsContract = PLITE_RELEASE_PACKAGES.find(
+    ({ name }) => name === '@udecode/utils'
+  );
+  const sources = createConsumerSources([
+    {
+      publicExports: [
+        {
+          runtimeExportNames: ['createBaseEditor'],
+          specifier: '@platejs/core',
+          subpath: '.',
+        },
+      ],
+    },
+  ]);
+
+  assert.deepEqual(coreContract, {
+    allowedPlateRuntime: [
+      '@platejs/plite',
+      '@platejs/plite-dom',
+      '@platejs/plite-history',
+      '@platejs/plite-hyperscript',
+      '@platejs/plite-react',
+    ],
+    directory: 'packages/core',
+    name: '@platejs/core',
+  });
+  assert.deepEqual(utilsContract, {
+    allowedPlateRuntime: [],
+    directory: 'packages/udecode/utils',
+    name: '@udecode/utils',
+  });
+
+  for (const source of [sources.types, sources.runtime]) {
+    assert.match(source, /createBaseEditor/);
+    assert.match(source, /createBasePlugin/);
+    assert.match(source, /schema: \(\{ config \}\)/);
+    assert.match(source, /mark: releasePlateProperty\.boolean/);
+    assert.match(source, /ReleaseParentPlugin/);
+    assert.match(source, /definePluginHostPolicy/);
+    assert.match(source, /releasePlateEditor\.configure/);
+    assert.match(source, /releasePlateIdentityAfter/);
+  }
+
+  assert.match(sources.types, /releaseExactElementType/);
+  assert.match(sources.types, /releaseNestedElementPlugin/);
+  assert.match(sources.types, /@ts-expect-error/);
+  assert.doesNotMatch(sources.runtime, /@ts-expect-error/);
+
+  for (const source of [sources.baseline, sources.bare, sources.named]) {
+    assert.doesNotMatch(source, /release-consumer-plate-schema/);
+  }
 });

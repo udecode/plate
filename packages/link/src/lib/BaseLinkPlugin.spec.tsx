@@ -5,7 +5,10 @@ import { KEYS } from '@platejs/utils';
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 
 describe('BaseLinkPlugin', () => {
-  const createEditor = () => createBaseEditor({ plugins: [BaseLinkPlugin] });
+  const createEditor = () =>
+    createBaseEditor({
+      plugins: [BaseLinkPlugin],
+    });
 
   it('parses valid anchors with a default target', () => {
     const editor = createEditor();

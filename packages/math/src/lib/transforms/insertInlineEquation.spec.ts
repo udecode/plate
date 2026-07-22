@@ -45,7 +45,7 @@ describe('insertInlineEquation', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseInlineEquationPlugin.configure({
-          node: { type: 'custom-inline-equation' },
+          type: 'custom-inline-equation',
         }),
       ],
       selection: {

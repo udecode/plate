@@ -2,7 +2,12 @@
 
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
 import { TextIndentPlugin } from '@platejs/basic-styles/react';
-import { BasicBlocksPlugin } from '@platejs/basic-nodes/react';
+import {
+  BasicBlocksPlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+} from '@platejs/basic-nodes/react';
 import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
@@ -14,6 +19,7 @@ import { BaseListPlugin } from '@platejs/list';
 import { ImagePlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { jsx } from '@platejs/test-utils';
+import { BaseParagraphPlugin } from 'platejs';
 
 import { DocxPlugin } from '@platejs/docx';
 import { readTestFile } from './readTestFile';
@@ -24,8 +30,8 @@ import type { BasePlugin } from '../../../../../../packages/core/src/lib/plugin'
 jsx;
 
 const targetPluginConfig = {
-  options: {
-    targetPluginKeys: ['p', 'h1', 'h2', 'h3'],
+  config: {
+    targets: [BaseParagraphPlugin, H1Plugin, H2Plugin, H3Plugin],
   },
 };
 

@@ -2,7 +2,7 @@
 // biome-ignore-all lint/performance/useTopLevelRegex: Source-contract assertions keep patterns next to their claims.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
-import { defineEditorSchema, element, schema } from '@platejs/plite';
+import { defineEditorSchema, schema } from '@platejs/plite';
 import { act, render } from '@testing-library/react';
 import { type ComponentProps, useEffect } from 'react';
 import * as PliteReact from '../src';
@@ -33,27 +33,30 @@ const packageDirectoryByName = new Map([
 ]);
 
 const blockVoidSchema = defineEditorSchema({
-  elements: { image: element({ void: 'block' }) },
+  elements: { image: { void: 'block' } },
   id: 'react-surface-block-void',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
 
 const editableIslandSchema = defineEditorSchema({
   elements: {
-    'editable-card': element({ void: 'editable-island' }),
+    'editable-card': {
+      content: schema.content.open(),
+      void: 'editable-island',
+    },
   },
   id: 'react-surface-editable-island',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
 
 const inlineVoidSchema = defineEditorSchema({
-  elements: { mention: element({ void: 'inline' }) },
+  elements: { mention: { void: 'inline' } },
   id: 'react-surface-inline-void',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });

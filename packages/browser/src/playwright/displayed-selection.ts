@@ -138,6 +138,7 @@ export const takeDisplayedSelectionSnapshotForRoot = async (
             offset: toEditorOffset(selection.focusNode, selection.focusOffset),
             path: focusPath,
           },
+          kind: 'text',
         };
       };
       const toViewPoint = (pointLike: any): SelectionPoint | null => {
@@ -157,6 +158,7 @@ export const takeDisplayedSelectionSnapshotForRoot = async (
           ? {
               anchor: viewAnchor,
               focus: viewFocus,
+              kind: 'text' as const,
             }
           : null;
       const source =

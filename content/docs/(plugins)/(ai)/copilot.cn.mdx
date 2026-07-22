@@ -108,17 +108,24 @@ const editor = createPlateEditor({
 
 ```tsx
 import { CopilotPlugin } from '@platejs/ai/react';
-import { serializeMd, stripMarkdown } from '@platejs/markdown';
+import {
+  MarkdownPlugin,
+  defineMarkdownConfig,
+  serializeMd,
+  stripMarkdown,
+} from '@platejs/markdown';
 import { GhostText } from '@/components/ui/ghost-text';
 
 const plugins = [
   // ...其他插件,
   MarkdownPlugin.configure({
-    options: {
+    config: defineMarkdownConfig({
+      id: 'copilot-example:markdown',
       remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
-    },
+      version: 1,
+    }),
   }),
-  CopilotPlugin.configure(({ api }) => ({
+  CopilotPlugin.extend(({ api }) => ({
     options: {
       completeOptions: {
         api: '/api/ai/copilot',
@@ -218,7 +225,7 @@ export async function POST(req: NextRequest) {
 系统提示词定义了 AI 的角色和行为。修改 `completeOptions` 中的 `body.system` 属性：
 
 ```tsx
-CopilotPlugin.configure(({ api }) => ({
+CopilotPlugin.extend(({ api }) => ({
   options: {
     completeOptions: {
       api: '/api/ai/copilot',
@@ -249,7 +256,7 @@ CopilotPlugin.configure(({ api }) => ({
 用户提示词（通过 `getPrompt`）决定发送给 AI 的上下文内容。您可以自定义它以包含更多上下文或以不同方式格式化：
 
 ```tsx
-CopilotPlugin.configure(({ api }) => ({
+CopilotPlugin.extend(({ api }) => ({
   options: {
     getPrompt: ({ editor }) => {
         const contextEntry = editor.api.block({ highest: true });
@@ -321,7 +328,7 @@ export async function POST(req: NextRequest) {
 在 `CopilotPlugin` 中配置模型：
 
 ```tsx
-CopilotPlugin.configure(({ api }) => ({
+CopilotPlugin.extend(({ api }) => ({
   options: {
     completeOptions: {
       api: '/api/ai/copilot',
@@ -343,13 +350,12 @@ CopilotPlugin.configure(({ api }) => ({
 控制何时自动触发建议：
 
 ```tsx
-CopilotPlugin.configure(({ api }) => ({
+CopilotPlugin.extend(({ api }) => ({
   options: {
     triggerQuery: ({ editor }) => {
       // 仅在段落块中触发
       const block = editor.api.block();
       if (!block || block[0].type !== 'p') return false;
-      
       // 标准检查
       return editor.selection && 
              !editor.api.isExpanded() && 
@@ -359,9 +365,7 @@ CopilotPlugin.configure(({ api }) => ({
       // 自动触发的自定义条件
       const block = editor.api.block();
       if (!block) return false;
-      
       const text = editor.api.string(block[0]);
-      
       // 在疑问词后触发
       return /\b(what|how|why|when|where)\s*$/i.test(text);
     },

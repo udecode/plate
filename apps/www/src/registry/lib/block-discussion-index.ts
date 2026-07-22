@@ -14,6 +14,7 @@ import {
   ElementApi,
   KEYS,
   NodeApi,
+  NODES,
   PathApi,
   TextApi,
 } from 'platejs';
@@ -87,7 +88,7 @@ const TYPE_TEXT_MAP: Record<string, (node?: Element) => string> = {
   [KEYS.audio]: () => 'Audio',
   [KEYS.blockquote]: () => 'Blockquote',
   [KEYS.callout]: () => 'Callout',
-  [KEYS.codeBlock]: () => 'Code Block',
+  [NODES.codeBlock]: () => 'Code Block',
   [KEYS.column]: () => 'Column',
   [KEYS.equation]: () => 'Equation',
   [KEYS.file]: () => 'File',
@@ -99,7 +100,7 @@ const TYPE_TEXT_MAP: Record<string, (node?: Element) => string> = {
   [KEYS.h6]: () => 'Heading 6',
   [KEYS.hr]: () => 'Horizontal Rule',
   [KEYS.img]: () => 'Image',
-  [KEYS.mediaEmbed]: () => 'Media',
+  [NODES.mediaEmbed]: () => 'Media',
   [KEYS.p]: (node) => {
     if (node?.[KEYS.listType] === KEYS.listTodo) return 'Todo List';
     if (node?.[KEYS.listType] === KEYS.ol) return 'Ordered List';
@@ -197,7 +198,7 @@ const getInlineSuggestionElementText = (node: Element) => {
   }
 
   if (
-    node.type === KEYS.inlineEquation &&
+    node.type === NODES.inlineEquation &&
     typeof (node as Element & { texExpression?: unknown }).texExpression ===
       'string' &&
     (node as Element & { texExpression: string }).texExpression.length > 0

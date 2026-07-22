@@ -2621,7 +2621,9 @@ test.describe('synced blocks example', () => {
 
   test('copies a projected selection from visible order instead of root-local DOM selection', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof');
+
     await openExample(page, 'plite/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -2646,7 +2648,7 @@ test.describe('synced blocks example', () => {
     await expect.poll(() => getRenderedViewSelectionText(page)).toBe('1Sh');
     await outer.assert.noDoubleSelectionHighlight();
 
-    const payload = await outer.clipboard.copyEventPayload();
+    const payload = await outer.clipboard.copyNativeEventPayload();
 
     expect(payload.types).toEqual(
       expect.arrayContaining([
@@ -2657,6 +2659,98 @@ test.describe('synced blocks example', () => {
     );
     expect(payload.text).toBe('1\nSh');
     expect(payload.html).toContain('data-plite-fragment=');
+  });
+
+  test('cuts and pastes a projected selection through native clipboard events', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof');
+
+    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+
+    try {
+      await openExample(page, 'plite/synced-blocks', {
+        ready: { editor: 'visible' },
+      });
+
+      const outerEditor = page.locator('[data-plite-editor="true"]').first();
+      const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
+      const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
+      const outer = createPliteBrowserEditorHarness(
+        page,
+        'synced-blocks-outer',
+        outerEditor
+      );
+      const first = createPliteBrowserEditorHarness(
+        page,
+        'synced-blocks-first-copy',
+        firstEditor
+      );
+      const second = createPliteBrowserEditorHarness(
+        page,
+        'synced-blocks-second-copy',
+        secondEditor
+      );
+
+      await outer.selection.collapse({ path: [0, 0], offset: 1 });
+      await focusRoot(outerEditor);
+      await setViewSelection(outerEditor, {
+        anchor: { point: { path: [0, 0], offset: 1 } },
+        focus: {
+          owner: firstSharedOwner,
+          point: { path: [0, 0], root: SHARED_ROOT, offset: 2 },
+        },
+        graph: firstSharedProjectionGraph,
+      });
+      await expect.poll(() => getRenderedViewSelectionText(page)).toBe('1Sh');
+      await outer.assert.noDoubleSelectionHighlight();
+
+      const payload = await outer.clipboard.cutNativeEventPayload();
+
+      expect(payload.types).toEqual(
+        expect.arrayContaining([
+          'application/x-plite-fragment',
+          'text/html',
+          'text/plain',
+        ])
+      );
+      expect(payload.text).toBe('1\nSh');
+      expect(payload.html).toContain('data-plite-fragment=');
+      await expect
+        .poll(() => outer.get.modelText())
+        .toBe('pBetween synced copies.Between synced documents.p2');
+      await expect
+        .poll(() => first.get.modelText())
+        .toBe(`${SHARED_BODY_FIRST.slice(2)}${SHARED_BODY_SECOND}`);
+      await expect
+        .poll(() => second.get.modelText())
+        .toBe(`${SHARED_BODY_FIRST.slice(2)}${SHARED_BODY_SECOND}`);
+      await expect.poll(() => getViewSelection(outerEditor)).toBe(null);
+      await outer.assert.selection({
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      });
+
+      await outer.root.press('ControlOrMeta+V');
+
+      await expect
+        .poll(() => outer.get.modelText())
+        .toBe('p1ShBetween synced copies.Between synced documents.p2');
+      await expect
+        .poll(() => first.get.modelText())
+        .toBe(`${SHARED_BODY_FIRST.slice(2)}${SHARED_BODY_SECOND}`);
+      await expect
+        .poll(() => second.get.modelText())
+        .toBe(`${SHARED_BODY_FIRST.slice(2)}${SHARED_BODY_SECOND}`);
+      await outer.type('!');
+      await expect
+        .poll(() => outer.get.modelText())
+        .toBe('p1Sh!Between synced copies.Between synced documents.p2');
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
   });
 
   test('classifies projected selection native affordances without claiming native parity', async ({

@@ -30,7 +30,9 @@ describe('insertPlaceholder', () => {
   });
 
   it('uses the expected media type helpers', () => {
-    const editor = createBaseEditor({ plugins: [BasePlaceholderPlugin] });
+    const editor = createBaseEditor({
+      plugins: [BasePlaceholderPlugin],
+    });
 
     editor.update((tx) => {
       insertImagePlaceholder(tx, KEYS.placeholder, { at: [0] });

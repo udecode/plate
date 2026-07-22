@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
@@ -10,7 +11,9 @@ jsxt;
 
 const BaseBoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 describe('li > lic * 2 with selection at second child start', () => {

@@ -12,7 +12,6 @@ import {
   defineEditorExtension,
   defineEditorSchema,
   defineValueCodec,
-  element,
   property,
   type Range,
   schema,
@@ -121,14 +120,12 @@ const initialValue = [
 
 const selectionMarksSchema = defineEditorSchema({
   elements: {
-    code: element({
+    code: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    paragraph: element({
+    } as const,
+    paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
+    } as const,
   },
   id: 'selection-marks-schema',
   properties: [
@@ -136,20 +133,21 @@ const selectionMarksSchema = defineEditorSchema({
       target: target.type('paragraph'),
     }),
   ],
-  root: schema.root({
+  root: {
     content: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  }),
+  } as const,
   roots: {
-    header: schema.root({
+    header: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-    }),
+    } as const,
   },
+  unknown: 'reject',
   version: 1,
 });
 

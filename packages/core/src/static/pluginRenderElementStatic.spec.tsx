@@ -1,3 +1,5 @@
+import { schema } from '@platejs/plite';
+
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
@@ -9,7 +11,10 @@ describe('pluginRenderElementStatic', () => {
   it('applies above/below wrappers and below-root renderers around the element output', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: { groups: ['block'] }, type: 'p' },
+      type: 'p',
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
+      },
       render: { as: 'article' },
     });
     const AbovePlugin = createBasePlugin({

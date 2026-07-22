@@ -12,14 +12,14 @@
     }
   },
   "counts": {
-    "targets": 41,
-    "artifacts": 41,
-    "existingArtifacts": 41,
+    "targets": 42,
+    "artifacts": 42,
+    "existingArtifacts": 42,
     "missingOptionalArtifacts": 0,
     "missingRequiredArtifacts": 0,
-    "requiredArtifacts": 41,
+    "requiredArtifacts": 42,
     "statusCounts": {
-      "ok": 41
+      "ok": 42
     }
   },
   "targets": [
@@ -517,6 +517,28 @@
       }
     },
     {
+      "id": "plite-command-dispatch",
+      "family": "core-command",
+      "kind": "current",
+      "owner": "plite",
+      "question": "Does command dispatch scale across 0, 1, 8, and 32 handlers, keep simple fallback continuation-free and document-size independent, and bound prefix composition without pretending its generic TransactionSpec cost is command-only work?",
+      "command": "PLITE_COMMAND_DISPATCH_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.ts --output=tmp/plite-command-dispatch-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_command_dispatch_worst_budget_ratio",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/command-spec.test.ts ./packages/plite/test/extension-configuration.test.ts ./benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-command-dispatch-benchmark.json",
+          "required": true,
+          "exists": true
+        }
+      ],
+      "status": "ok",
+      "migration": null
+    },
+    {
       "id": "plite-content-slice-value",
       "family": "core-slice",
       "kind": "current",
@@ -631,13 +653,13 @@
       "family": "core-schema",
       "kind": "current",
       "owner": "plite",
-      "question": "Does the compiled schema keep a 100-type, 200-exact-property, 20-prefix, 30-group, four-root corpus cheap to compile, query, validate, reconfigure equivalently, and retain?",
-      "command": "PLITE_SCHEMA_ARCHITECTURE_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts --output=tmp/plite-schema-architecture-benchmark.json",
+      "question": "Does schema architecture stay bounded across 1/100/1,000 contributions, 100/1,000 Plate descriptors, local construction and schema deltas, equivalent/non-equivalent configuration, 10k-block migration, projected clipboard, type inference, and the established compiled corpus?",
+      "command": "PLITE_SCHEMA_ARCHITECTURE_STRICT=1 PLITE_SCHEMA_TYPECHECK_BUDGET=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts --output=tmp/plite-schema-architecture-benchmark.json",
       "cwd": ".",
       "metric": "plite_schema_architecture_compile_p95_ms",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/schema-target-model-oracle.test.ts ./packages/plite/test/schema-compiler-laws.test.ts ./packages/plite/test/schema-compiler.test.ts ./packages/plite/test/incremental-schema-validation.test.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/schema-target-model-oracle.test.ts ./packages/plite/test/schema-compiler-laws.test.ts ./packages/plite/test/schema-compiler.test.ts ./packages/plite/test/incremental-schema-validation.test.ts ./packages/plite-react/test/schema-runtime-invalidation-contract.test.ts ./packages/core/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/projected-clipboard-contract.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-schema-architecture-benchmark.json",
@@ -653,13 +675,13 @@
       "family": "core-schema",
       "kind": "current",
       "owner": "plite",
-      "question": "Does canonical schema construction keep the changed representation and untouched identities local for a sparse edit inside one deep, wide top-level node?",
+      "question": "Does a schema-backed sparse edit keep the changed representation span and untouched boundary identities local inside one deep, wide top-level node?",
       "command": "PLITE_SCHEMA_CONSTRUCTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-construction-benchmark.ts --output=tmp/plite-schema-construction-benchmark.json",
       "cwd": ".",
       "metric": "plite_schema_construction_max_changed_span",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/slice-fit-contract.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/slice-fit-contract.test.ts ./benchmarks/editor/benchmarks/plite-schema-construction-benchmark.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-schema-construction-benchmark.json",
@@ -703,7 +725,7 @@
       "metric": "plite_yjs_event_change_sync_distance_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/yjs/test/remote-import-contract.spec.ts ./packages/yjs/test/canonical-change-contract.spec.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/yjs/test/remote-import-contract.slow.ts ./packages/yjs/test/canonical-change-contract.spec.ts",
       "artifacts": [
         {
           "path": "tmp/plite-yjs-event-change-bridge-benchmark.json",

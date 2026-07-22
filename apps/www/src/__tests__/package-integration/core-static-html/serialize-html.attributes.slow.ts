@@ -18,9 +18,9 @@ describe('core static serializeHtml attributes', () => {
         override: {
           plugins: {
             italic: {
-              node: {
+              render: {
                 isDecoration: false,
-                props: {
+                nodeProps: {
                   'data-plite-test': true,
                 },
                 textProps: {

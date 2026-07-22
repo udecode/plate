@@ -2,8 +2,9 @@
 
 Objective:
 Execute all 23 accepted Wordgard-to-Plite packets plus the accepted
-Wordgard-informed schema and slice architectures; done when all linked plans'
-slices, adoption, browser/package proof, review, and goal checkers pass.
+Wordgard-informed schema, slice, command-dispatch, and schema-contribution
+architectures; done when all linked plans' slices, adoption, browser/package
+proof, review, and goal checkers pass.
 
 Flow mode:
 one-shot execution
@@ -14,6 +15,8 @@ docs/plans/2026-07-19-wordgard-plite-final-extraction-execution.md
 Linked accepted execution plans:
 - docs/plans/2026-07-20-wordgard-plite-schema-architecture.md
 - docs/plans/2026-07-20-wordgard-plite-slice-architecture.md
+- docs/plans/2026-07-21-wordgard-plite-command-dispatch-architecture.md
+- docs/plans/2026-07-21-wordgard-plite-schema-contribution-architecture.md
 
 Template:
 docs/plans/templates/plite-plan.md
@@ -48,6 +51,16 @@ Completion threshold:
   policy, single fitter, final fit/fragment API, synthetic content, host,
   clipboard, Plate adoption, persistence, law, benchmark, docs, deletion, and
   checker gates without compatibility paths.
+- Command-dispatch slices 0-9 pass descriptor identity/input separation,
+  immutable compiled pipelines, extension-aware typing, pure spec dispatch,
+  semantic helper lowering, full Plate/host adoption, model laws, benchmark,
+  docs, browser, deletion, and checker gates without compatibility paths.
+- Schema-contribution slices 1-10 pass runtime-policy rebinding, direct
+  contribution/factory input, closed construction invariants, the final Plate
+  schema model API, atomic host projection, typed handles, local schema-delta
+  invalidation, canonical clipboard, History/Yjs policy, complete adoption,
+  deletion, browser, benchmark, release, and checker gates without compatibility
+  paths.
 - Static hard-cut audits find no normal transform `applyIntent`, no speculative
   editor-state swap for transaction specs, no numeric shared-effect cursor,
   no routine full-root Yjs diff import, no stale public compatibility path, and
@@ -74,8 +87,8 @@ Verification surface:
   `pnpm check:plite:browser-matrix`.
 - Source audits of removed owners/exports/docs plus `autoreview` and
   `node .agents/skills/autogoal/scripts/check-complete.mjs` on this file and
-  both linked accepted architecture plans. The master goal cannot close while
-  either linked checker remains red.
+  all four linked accepted architecture plans. The master goal cannot close
+  while any linked checker remains red.
 
 Constraints:
 - The user explicitly accepted all 23 packets and invoked `plite-plan`; execute
@@ -88,6 +101,11 @@ Constraints:
   `docs/plans/2026-07-20-wordgard-plite-slice-architecture.md` for execution
   during this run; merge its overlapping compiler/fitter/host/adoption work
   into the same dependency graph rather than building competing owners.
+- The user explicitly accepted
+  `docs/plans/2026-07-21-wordgard-plite-command-dispatch-architecture.md` and
+  `docs/plans/2026-07-21-wordgard-plite-schema-contribution-architecture.md` for
+  uninterrupted execution in this shared checkout; both hard cuts and their
+  deletion/adoption gates are part of this goal, not follow-up work.
 - No public compatibility aliases or runtime shims.
 - Plate adopters use Plite primitives directly: one-shot writes use
   `editor.update.*`, grouped or already-transactional writes use the active
@@ -146,6 +164,7 @@ Start Gates:
 | --- | --- | --- |
 | Prompt requirements captured | yes | Execute all 23 accepted items uninterrupted; no partial planning handoff |
 | Linked schema plan accepted | yes | User explicitly requested application of the exact 2026-07-20 schema architecture plan; its slices 0-13 are part of closure |
+| Schema identity correction accepted | yes | Plate omission yields `{ kind: 'derived', fingerprint }`; explicit `id/version` yields `{ kind: 'named', id, version, fingerprint }`; lineage is excluded from the fingerprint and Plite compilation owns the single complete identity |
 | Linked slice plan accepted | yes | User explicitly requested merging the exact 2026-07-20 slice architecture plan; its slices 1-14 are part of closure |
 | Active goal and plan verified | yes | One-shot goal names this execution plan and both accepted linked architecture plans |
 | Slice-0 baseline owners read | yes | Live revalidation recorded the 13 `applyIntent` transforms, speculative spec save/restore, permissive fitter, correction restart loop, Yjs numeric cursor/full-root import, eager mutable history, and split DOM ownership before those owners were replaced |
@@ -183,13 +202,13 @@ closure items above until their linked checker and shared final gates pass):
 | Schema | 2 | One immutable compiler truth for type/group/root/property/content policy and conflicts |
 | Schema | 3 | Compiled target/lifecycle enforcement plus replace/set algebra laws |
 | Schema | 4 | Total construction plans and one fitter with no hidden fallback or hot-path BFS |
-| Schema | 5 | Atomic schema migration with stable identity/fingerprint and zero partial publication |
+| Schema | 5 | Atomic schema migration with one compiler-owned discriminated identity: exact-fingerprint derived default or optional named lineage, with lineage excluded from the fingerprint and zero partial publication |
 | Schema | 6 | Final public hard cut, complete Plate declaration adoption, barrels, lint, Core proof |
 | Schema | 7 | Cross-cut and dynamic metadata targets, JSON laws, and correction deletion |
 | Schema | 8 | Structural table/list/layout/code/media/link/mention adoption without fallback |
 | Schema | 9 | Canonical fitted HTML/Markdown/DOCX/clipboard ingress and stable codec claims |
 | Schema | 10 | Fail-closed History schema envelopes and two-peer Yjs property/schema proof |
-| Schema | 11 | Current-only docs/examples/JSDoc, registry declarations, inference tests, deletion audit |
+| Schema | 11 | Current-only docs/examples/JSDoc, registry declarations, inference tests, deletion audit; ordinary Plate examples omit identity while persistence/collaboration/migration examples may name lineage |
 | Schema | 12 | Browser routes/matrix plus compile/query/validate/fit/reconfigure/Yjs benchmark closure |
 | Schema | 13 | Hard-deletion ledger, per-package changesets, barrels, broad checks, review, checker |
 | Slice | 1 | Generic `ContentSlice<V>` lifecycle hard cut and full caller adoption |
@@ -267,7 +286,9 @@ closure items above until their linked checker and shared final gates pass):
 - [x] Docs pack: docs lane, target docs, nearest sibling docs, and source owner are recorded.
 - [x] Docs pack: named APIs, imports, options, routes, components, transforms, demos, and previews are source-backed or have a scoped N/A reason.
 - [x] Docs pack: docs use current-state reference voice, not changelog voice.
-- [x] Docs pack: docs checker validates current links and references; the content build remains a separate closure gate below.
+- [ ] Docs pack: docs checker validates current links and references and accepts
+      omitted Plate identity while rejecting partial/nondeterministic identity;
+      the previous explicit-identity requirement is obsolete.
 - [x] Browser pack: route, interaction path, and expected visible outcome are recorded before proof in [the active Browser proof](./artifacts/wordgard-plite-final-extraction/browser-proof.md).
 - [ ] Browser pack: Browser proof is used for normal app surfaces; Chrome proof
       is used directly for native downloads, print/print-preview, file
@@ -297,7 +318,7 @@ Completion Gates:
 | Autoreview | yes | Run for implementation changes | Not run yet; load and execute `autoreview` after broad verification is green |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-19-wordgard-plite-final-extraction-execution.md` | Final checker run is intentionally deferred until every closure gate is resolved |
 | Docs source-backed claim audit | yes | Verify docs claims against current source | Active normalization, live-shape, transform, codec, history, and runtime claims were repaired from source; final autoreview may still require edits |
-| Docs links / routes / previews | yes | Verify leaf links, routes, anchors, and preview names | `node tooling/scripts/check-plite-docs.mjs` passes after the global current-teaching facade repair; Browser route proof remains separate |
+| Docs links / routes / previews | yes | Verify leaf links, routes, anchors, preview names, and corrected schema-identity DX | The previous `check-plite-docs.mjs` pass enforced explicit identity and is obsolete for this claim; rerun after ordinary-example boilerplate and checker assertions are repaired. Browser route proof remains separate. |
 | Docs MDX/content parser | yes | Run `pnpm --filter www build:source` for MDX/content changes | `pnpm --filter www check:docs` passes after the latest docs edits; Fumadocs generated `.source` successfully |
 | Plugin page specifics | no | Apply plugin-page kit/manual/API rules only for plugin pages | N/A: this execution changes Plite architecture references and examples, not a plugin documentation page |
 | Browser interaction proof | yes | Exercise target route/interaction with Browser | Not run yet; use the recorded richtext, paste, table, root, collaboration, shadow-DOM, and huge-document routes |
@@ -747,7 +768,8 @@ Verification evidence:
   changelogs, v48 material, and negative fixtures intentionally remain.
   `node tooling/scripts/check-plite-docs.mjs` passes 4/4 and
   `pnpm --filter www check:docs` passes.
-- Current Plate reference docs teach `node.element`, `node.mark`, compiled
+- Current Plate reference docs teach top-level `type`, `schema.element`,
+  descriptor-backed `schema.mark`, compiled
   content grammar, and property `significant: false`; bounded searches find no
   removed `node.isElement`, `node.isLeaf`, `node.isInline`, `node.isVoid`,
   `node.isContainer`, `node.isStrictSiblings`, or `node.isMetadataProp`
@@ -937,8 +959,9 @@ Timeline:
   locality run. Zero post-first wrapper-plan searches, exactly two sparse-edit
   property visits, zero unchanged named-root visits/fallbacks, and zero
   equivalent-reconfigure compile/revision/commit work are deterministic.
-- 2026-07-21 Core standard-mark lifecycle closure passes: `mark: true` and
-  parameterized marks default to `typeChange: 'preserve-if-allowed'`, while an
+- 2026-07-21 Core standard-mark lifecycle closure passes: boolean and
+  parameterized `schema.mark` descriptors default to
+  `typeChange: 'preserve-if-allowed'`, while an
   explicit `typeChange: 'drop'` remains authoritative. The focused
   paragraph-to-heading regression preserves boolean `bold` and string `tone`,
   drops only `ephemeral`, and passes 1/1; `@platejs/core` typecheck passes.

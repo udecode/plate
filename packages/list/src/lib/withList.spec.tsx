@@ -12,7 +12,7 @@ jsxt;
 
 const InlinePlugin = createBasePlugin({
   key: 'inline',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       inline: true,

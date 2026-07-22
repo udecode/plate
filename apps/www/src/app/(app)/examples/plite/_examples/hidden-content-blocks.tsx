@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import {
   defineEditorExtension,
   NodeApi,
+  schema,
   type Element as PliteElement,
 } from '@platejs/plite';
 import type {
@@ -254,7 +255,7 @@ const HiddenContentBlocksExample = () => {
   const selectAndCopy = useCallback(
     (path: number[]) => {
       editor.update((tx) => {
-        const entry = editor.read.nodes.get(path);
+        const entry = tx.nodes.get(path);
 
         if (!entry) return;
 
@@ -402,12 +403,26 @@ const HiddenContentBlocksExample = () => {
 const hiddenContentBlocks = () =>
   defineEditorExtension({
     name: 'hidden-content-blocks',
-    elements: [
-      { isolating: true, type: 'accordion-block' },
-      { isolating: true, type: 'collapsible-block' },
-      { isolating: true, type: 'tab-panel' },
-      { isolating: true, type: 'tabs-block' },
-    ],
+    schema: {
+      elements: {
+        'accordion-block': {
+          content: schema.content.open(),
+          isolating: true,
+        },
+        'collapsible-block': {
+          content: schema.content.open(),
+          isolating: true,
+        },
+        'tab-panel': {
+          content: schema.content.open(),
+          isolating: true,
+        },
+        'tabs-block': {
+          content: schema.content.open(),
+          isolating: true,
+        },
+      },
+    },
   });
 
 const Element = ({ children, element, slots }: RenderElementProps) => {
@@ -483,7 +498,11 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
                 copyPolicy={copyPolicy}
                 mounted={collapsibleOpen}
                 onMaterialize={() => setCollapsibleOpen(true)}
-                scope={{ from: 0, to: childNodes.length - 1, type: 'children' }}
+                scope={{
+                  from: 0,
+                  to: childNodes.length - 1,
+                  type: 'children',
+                }}
                 selectionPolicy={selectionPolicy}
               />
             </CollapsibleContent>

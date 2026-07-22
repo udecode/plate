@@ -1,10 +1,21 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';
 import { getTransientSuggestionKey } from '../utils/getTransientSuggestionKey';
 import { getSuggestionProps } from './getSuggestionProps';
+
+const InlineSuggestionTargetPlugin = createBasePlugin({
+  key: 'inlineSuggestionTarget',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
+});
 
 describe('getSuggestionProps', () => {
   const createEditor = () =>
@@ -13,6 +24,7 @@ describe('getSuggestionProps', () => {
         BaseSuggestionPlugin.configure({
           options: { currentUserId: 'user-1' },
         }),
+        InlineSuggestionTargetPlugin,
       ],
       value: [{ children: [{ text: '' }], type: 'p' }],
     });
@@ -47,6 +59,27 @@ describe('getSuggestionProps', () => {
 
     expect(result).toEqual({
       [KEYS.suggestion]: {
+        createdAt: 456,
+        id: 'def',
+        type: 'remove',
+        userId: 'user-1',
+      },
+    });
+  });
+
+  it('returns inline suggestion props for inline element nodes', () => {
+    const result = getSuggestionProps(
+      createEditor(),
+      {
+        children: [{ text: '' }],
+        type: InlineSuggestionTargetPlugin.key,
+      },
+      { createdAt: 456, id: 'def', suggestionDeletion: true }
+    );
+
+    expect(result).toEqual({
+      [KEYS.suggestion]: true,
+      [getSuggestionKey('def')]: {
         createdAt: 456,
         id: 'def',
         type: 'remove',

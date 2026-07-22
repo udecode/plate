@@ -10,6 +10,7 @@ import {
   select as editorSelect,
   string as editorString,
 } from '@platejs/plite/internal';
+import { IS_COMPOSING } from '@platejs/plite-dom/internal';
 import { describe, expect, it, vi } from 'vitest';
 import type { ReactEditor } from '../src';
 
@@ -469,9 +470,9 @@ describe('model input strategy', () => {
 
     editor.extend(
       defineEditorExtension({
-        commands: [
-          editorCommands.insertText.handle(({ command, state }, next) => {
-            if (command.text !== ' ') return next();
+        commands: ({ handle }) => [
+          handle(editorCommands.insertText, ({ input, state }) => {
+            if (input.text !== ' ') return false;
 
             return state.transaction((tx) => {
               tx.selection.set({
@@ -982,6 +983,74 @@ describe('model input strategy', () => {
       focus: { path: [0, 0], offset: 'prefix 中文'.length },
     });
     expect(repair).toEqual({ kind: 'none' });
+  });
+
+  it('keeps composing when compositionend precedes insertFromComposition', () => {
+    const editor = createTextEditor('prefix stale suffix');
+    const selection = {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 'prefix '.length },
+      focus: { path: [0, 0], offset: 'prefix stale'.length },
+    };
+    const setComposing = vi.fn((nextValue: boolean) => {
+      IS_COMPOSING.set(editor, nextValue);
+    });
+
+    editorSelect(editor, selection);
+    IS_COMPOSING.set(editor, true);
+
+    try {
+      applyModelOwnedBeforeInputMutation({
+        data: '中文',
+        deferredMutations: { current: [] },
+        editor: editor as ReactEditor,
+        inputType: 'insertFromComposition',
+        native: false,
+        preserveComposing: true,
+        selection,
+        setComposing,
+      });
+
+      expect(editorString(editor, [])).toBe('prefix 中文 suffix');
+      expect(setComposing).not.toHaveBeenCalled();
+      expect(IS_COMPOSING.get(editor)).toBe(true);
+    } finally {
+      IS_COMPOSING.delete(editor);
+    }
+  });
+
+  it('clears composing when insertFromComposition precedes compositionend', () => {
+    const editor = createTextEditor('prefix stale suffix');
+    const selection = {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 'prefix '.length },
+      focus: { path: [0, 0], offset: 'prefix stale'.length },
+    };
+    const setComposing = vi.fn((nextValue: boolean) => {
+      IS_COMPOSING.set(editor, nextValue);
+    });
+
+    editorSelect(editor, selection);
+    IS_COMPOSING.set(editor, true);
+
+    try {
+      applyModelOwnedBeforeInputMutation({
+        data: '中文',
+        deferredMutations: { current: [] },
+        editor: editor as ReactEditor,
+        inputType: 'insertFromComposition',
+        native: false,
+        selection,
+        setComposing,
+      });
+
+      expect(editorString(editor, [])).toBe('prefix 中文 suffix');
+      expect(setComposing).toHaveBeenCalledOnce();
+      expect(setComposing).toHaveBeenCalledWith(false);
+      expect(IS_COMPOSING.get(editor)).toBe(false);
+    } finally {
+      IS_COMPOSING.delete(editor);
+    }
   });
 
   it('deletes expanded CJK composition selection once', () => {

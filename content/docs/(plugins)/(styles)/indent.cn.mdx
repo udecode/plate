@@ -81,14 +81,21 @@ const editor = createPlateEditor({
 你可以配置 `IndentPlugin` 以针对特定元素并自定义缩进行为。
 
 ```tsx
+import { BlockquotePlugin, HeadingPlugin } from '@platejs/basic-nodes/react';
 import { IndentPlugin } from '@platejs/indent/react';
-import { KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin.configure({
+      config: {
+        targets: [
+          ...HeadingPlugin.plugins,
+          ParagraphPlugin,
+          BlockquotePlugin,
+        ],
+      },
       inject: {
         nodeProps: {
           styleKey: 'marginLeft',
@@ -98,7 +105,6 @@ const editor = createPlateEditor({
         offset: 24,
         unit: 'px',
         indentMax: 10,
-        targetPluginKeys: [...KEYS.heading, KEYS.p, KEYS.blockquote],
       },
     }),
   ],
@@ -106,7 +112,7 @@ const editor = createPlateEditor({
 ```
 
 - `inject.nodeProps.styleKey`：将注入的属性映射到 CSS `marginLeft` 属性。
-- `options.targetPluginKeys`：一个插件键数组，指示哪些元素类型可以缩进。
+- `config.targets`：可存储缩进属性的元素插件描述符。
 - `options.offset`：缩进偏移量（像素）（默认：`24`）。
 - `options.unit`：缩进值的单位（默认：`'px'`）。
 - `options.indentMax`：允许的最大缩进次数。
@@ -121,7 +127,7 @@ const editor = createPlateEditor({
 
 ### `IndentPlugin`
 
-用于缩进块级元素的插件。它向 `options.targetPluginKeys` 指定的元素注入 `indent` 属性并应用 `marginLeft` 样式。
+用于缩进块级元素的插件。它向 `config.targets` 指定的元素注入 `indent` 属性并应用 `marginLeft` 样式。
 
 <API name="IndentPlugin">
 <APIOptions type="object">
@@ -133,9 +139,9 @@ const editor = createPlateEditor({
     用于样式的 CSS 属性名称。
     - **默认值：** `'marginLeft'`
   </APIItem>
-  <APIItem name="options.targetPluginKeys" type="string[]" optional>
-    用于缩进注入的插件键数组。
-    - **默认值：** `['p']`
+  <APIItem name="config.targets" type="PluginReference[]" optional>
+    用于缩进存储和注入的元素插件描述符。
+    - **默认值：** `[BaseParagraphPlugin]`
   </APIItem>
   <APIItem name="options.offset" type="number" optional>
     在 `(offset * element.indent) + unit` 中使用的缩进偏移量。

@@ -5,14 +5,14 @@ import { getDataNodeProps } from './getDataNodeProps';
 
 const paragraphElement = {
   content: schema.content.text({ default: 'text', min: 1 }),
-  groups: ['block'],
 } as const;
 
 describe('getDataNodeProps', () => {
   it('parses default Plite data attributes and merges custom node props', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {
@@ -52,7 +52,8 @@ describe('getDataNodeProps', () => {
   it('respects disableDefaultNodeProps and skips non-Plite nodes', () => {
     const DisabledPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
       parsers: {
         html: {
           deserializer: {
@@ -93,7 +94,8 @@ describe('getDataNodeProps', () => {
   it('returns undefined when no default or custom node props apply', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: { element: paragraphElement, type: 'p' },
+      type: 'p',
+      schema: { element: paragraphElement },
     });
     const editor = createBaseEditor({
       plugins: [ParagraphPlugin],

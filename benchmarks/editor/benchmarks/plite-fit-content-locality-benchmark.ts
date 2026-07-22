@@ -4,7 +4,6 @@ import {
   ContentSlice,
   createEditor,
   defineEditorSchema,
-  element,
   schema,
   type Editor,
   type EditorDocumentValue,
@@ -61,34 +60,33 @@ const cell = (): Element => ({
 const createFitSchema = (elementTypes: number) => {
   assert.ok(elementTypes >= 2);
   const elements: Record<string, SchemaElement> = {
-    cell: element({
+    cell: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-    }),
-    paragraph: element({
+    },
+    paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
+    },
   };
 
   for (let index = 2; index < elementTypes; index += 1) {
-    elements[`unused_${index}`] = element({
+    elements[`unused_${index}`] = {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    });
+    };
   }
 
   return defineEditorSchema({
     elements,
     id: `fit-content-locality-${elementTypes}`,
-    root: schema.root({
+    root: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-    }),
+    },
+    unknown: 'reject',
     version: 1,
   });
 };

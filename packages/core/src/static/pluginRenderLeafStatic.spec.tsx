@@ -1,3 +1,4 @@
+import { property } from '@platejs/plite';
 import React from 'react';
 
 import { type RenderLeafProps, createBasePlugin } from '../lib';
@@ -10,13 +11,13 @@ import {
 describe('pluginRenderLeafStatic', () => {
   const HighlightPlugin = createBasePlugin({
     key: 'highlight',
-    node: {
-      mark: true,
+    type: 'highlight',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+    render: {
       leafProps: {
         className: 'highlight-leaf',
         'data-tone': 'warm',
       },
-      type: 'highlight',
     },
   });
 

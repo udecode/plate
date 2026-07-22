@@ -10,3 +10,6 @@ canonical changes and merge set-valued text properties by value.
 from application code. Raw Plite editors can install `createYjsExtension`
 directly. Import React cursor and provider-state hooks from
 `@platejs/yjs/react`. Serialized adapter metadata uses `plite:*` keys.
+
+Encode exact derived or named schema identities in Yjs schema metadata format
+2 and reject older room metadata envelopes.

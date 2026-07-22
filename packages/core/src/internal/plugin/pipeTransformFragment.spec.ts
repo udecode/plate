@@ -7,7 +7,10 @@ import { prepareParserRegistry } from './prepareParserRegistry';
 
 const createParserEditor = (
   plugins: NonNullable<Parameters<typeof createBaseEditor>[0]>['plugins']
-) => createBaseEditor({ plugins });
+) =>
+  createBaseEditor({
+    plugins,
+  });
 
 const createParagraph = (text: string): Descendant => ({
   children: [{ text }],

@@ -2,6 +2,7 @@
 
 import { jsxt } from '@platejs/test-utils';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { rejectSuggestion } from './rejectSuggestion';
@@ -16,12 +17,23 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 
 const BoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 const ItalicPlugin = createBasePlugin({
   key: 'italic',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+});
+
+const ExplicitFalseItalicPlugin = createBasePlugin({
+  key: 'italic',
+  schema: {
+    mark: property.boolean({ default: true, omitDefault: true }),
+  },
 });
 
 describe('rejectSuggestion', () => {
@@ -169,7 +181,7 @@ describe('rejectSuggestion', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      plugins: [suggestionPlugin, BoldPlugin, ItalicPlugin],
+      plugins: [suggestionPlugin, BoldPlugin, ExplicitFalseItalicPlugin],
       value: input.children,
     });
 

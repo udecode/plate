@@ -34,6 +34,7 @@ import {
   getPlitePageLayoutGeometry,
   getPlitePageLayoutPathKey,
   getPlitePageLayoutProjection,
+  plitePageSettingsCodec,
   pretextPageLayoutEngine,
   type PliteNodeLayoutProvider,
   type PlitePageLayoutDecorationRects,
@@ -92,7 +93,7 @@ const pageSettings = defineStateField<PlitePageSettings>({
   collab: 'shared',
   history: 'push',
   initial: () => ({ margins: 96, preset: 'a4' }),
-  persist: true,
+  persist: plitePageSettingsCodec,
 });
 
 type DOMStrategyMode = 'full' | 'staged' | 'virtualized';
@@ -1572,10 +1573,8 @@ const PaginationSurface = ({
           return true;
         }
         if (
-          change.fullDocumentChanged ||
-          change.rootRuntimeIdsChanged ||
-          change.structureChanged ||
-          change.topLevelOrderChanged
+          change.changed.has('structure') ||
+          change.changed.has('root-order')
         ) {
           return true;
         }
@@ -2071,10 +2070,10 @@ const PaginationEditor = ({
         tableRows: controls.tableRows,
       }),
       meta: {
-        [pageSettings.key]: {
+        [pageSettings.key]: pageSettings.serialize({
           margins: controls.margins,
           preset: controls.preset,
-        },
+        }),
       },
     },
   });

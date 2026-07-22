@@ -11,13 +11,20 @@ import type { ReadyOptions, PliteBrowserEditorHarness } from './types';
 export const waitForReady = async (
   editor: PliteBrowserEditorHarness,
   surface: SurfaceTarget,
-  { editor: editorState, placeholder, selector, text, selection }: ReadyOptions
+  {
+    editor: editorState,
+    placeholder,
+    selector,
+    text,
+    selection,
+    timeoutMs = READY_TIMEOUT_MS,
+  }: ReadyOptions
 ) => {
   if (editorState === 'visible') {
-    await expect(editor.root).toBeVisible({ timeout: READY_TIMEOUT_MS });
+    await expect(editor.root).toBeVisible({ timeout: timeoutMs });
     await expect
       .poll(() => hasSelectionHandle(editor.root), {
-        timeout: READY_TIMEOUT_MS,
+        timeout: timeoutMs,
       })
       .toBe(true);
   }
@@ -29,14 +36,14 @@ export const waitForReady = async (
   if (selector) {
     await surface.locator(selector).first().waitFor({
       state: 'visible',
-      timeout: READY_TIMEOUT_MS,
+      timeout: timeoutMs,
     });
   }
 
   if (text) {
     if (text instanceof RegExp) {
       await expect(editor.root).toContainText(text, {
-        timeout: READY_TIMEOUT_MS,
+        timeout: timeoutMs,
       });
     } else {
       await editor.assert.text(text);

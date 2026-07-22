@@ -1,5 +1,5 @@
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { ElementApi, property, schema, TextApi } from '@platejs/plite';
+import { ElementApi, property, TextApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
@@ -12,9 +12,8 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 
 const MentionPlugin = createBasePlugin({
   key: KEYS.mention,
-  node: {
+  schema: {
     element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
       inline: true,
       properties: {
         value: property.string(),

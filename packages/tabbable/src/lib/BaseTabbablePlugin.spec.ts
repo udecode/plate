@@ -1,16 +1,12 @@
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { schema } from '@platejs/plite';
-
 import type { TabbableEntry } from './types';
 
 import { BaseTabbablePlugin } from './BaseTabbablePlugin';
 
 const BaseVoidPlugin = createBasePlugin({
   key: 'void',
-  node: {
+  schema: {
     element: {
-      content: schema.content.text({ default: 'text', max: 1, min: 1 }),
-      groups: ['block'],
       void: 'block',
     },
   },

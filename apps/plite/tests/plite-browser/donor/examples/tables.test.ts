@@ -8,7 +8,14 @@ import {
 } from '@platejs/browser/playwright';
 
 const encodePliteFragment = (fragment: unknown) =>
-  globalThis.btoa(encodeURIComponent(JSON.stringify(fragment)));
+  globalThis.btoa(
+    encodeURIComponent(
+      JSON.stringify({
+        slice: { content: fragment, openEnd: 0, openStart: 0 },
+        version: 1,
+      })
+    )
+  );
 
 test.describe('table example', () => {
   test.beforeEach(async ({ page }) => {

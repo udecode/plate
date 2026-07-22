@@ -2,8 +2,8 @@ import { act, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import {
   defineEditorSchema,
+  defineExtensionSlot,
   type Descendant,
-  element,
   schema,
 } from '@platejs/plite';
 import { replace as editorReplace } from '@platejs/plite/internal';
@@ -11,9 +11,14 @@ import { replace as editorReplace } from '@platejs/plite/internal';
 import { createReactEditor, Editable, Plite } from '../src';
 
 const inlineLinkSchema = defineEditorSchema({
-  elements: { link: element({ inline: true }) },
+  elements: {
+    link: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
   id: 'rendered-dom-shape-inline-link',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
@@ -79,6 +84,77 @@ const createSeededRandom = (initialSeed: number) => {
 };
 
 describe('rendered DOM shape contract', () => {
+  test('schema reconfiguration republishes mounted element classification without document writes', async () => {
+    const slot = defineExtensionSlot('rendered-dom-schema-reconfiguration');
+    const createSchema = (profile: 'block' | 'inline' | 'void') =>
+      defineEditorSchema({
+        elements: {
+          probe:
+            profile === 'void'
+              ? { void: 'block' }
+              : {
+                  content: schema.content.text({ default: 'text', min: 1 }),
+                  inline: profile === 'inline',
+                },
+        },
+        id: 'rendered-dom-schema-reconfiguration',
+        root: {
+          content: schema.content.type('probe', {
+            default: { type: 'probe' },
+            min: 1,
+          }),
+        },
+        unknown: 'reject',
+        version: profile === 'block' ? 1 : profile === 'inline' ? 2 : 3,
+      });
+    const editor = createReactEditor({
+      extensions: [slot.of(createSchema('block'))] as const,
+      initialValue: [
+        {
+          type: 'probe',
+          children: [{ text: '' }],
+        },
+      ],
+    });
+    const rendered = render(
+      <Plite editor={editor}>
+        <Editable id="rendered-dom-schema-reconfiguration" />
+      </Plite>
+    );
+    const initialDocument = editor.read.value();
+    const initialRuntimeId = getFirstElement(rendered.container).getAttribute(
+      'data-plite-runtime-id'
+    );
+
+    await act(async () => {
+      editor.update.extensions.reconfigure(slot, createSchema('inline'));
+    });
+
+    await waitFor(() => {
+      const element = getFirstElement(rendered.container);
+
+      expect(element.tagName).toBe('SPAN');
+      expect(element).toHaveAttribute('data-plite-inline', 'true');
+    });
+
+    await act(async () => {
+      editor.update.extensions.reconfigure(slot, createSchema('void'));
+    });
+
+    await waitFor(() => {
+      const element = getFirstElement(rendered.container);
+
+      expect(element).toHaveAttribute('data-plite-void', 'true');
+      expect(element).not.toHaveAttribute('data-plite-inline');
+    });
+    expect(getFirstElement(rendered.container)).toHaveAttribute(
+      'data-plite-runtime-id',
+      initialRuntimeId
+    );
+    expect(editor.read.value()).toEqual(initialDocument);
+    expect(editor.read.lastCommit()?.changes.empty).toBe(true);
+  });
+
   test('custom element and text renderers include mounted path metadata', () => {
     const editor = createReactEditor();
 

@@ -1,4 +1,8 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
 import { DocumentChange, schema } from '@platejs/plite';
 import ReactDOMServer from 'react-dom/server';
 
@@ -6,7 +10,9 @@ import { KEYS } from '@platejs/utils';
 import { BaseListPlugin } from './BaseListPlugin';
 
 const assertScopedListTypes = () => {
-  const editor = createBaseEditor({ plugins: [BaseListPlugin] });
+  const editor = createBaseEditor({
+    plugins: [BaseListPlugin],
+  });
   const list = editor.plugin(BaseListPlugin);
 
   list.api.isActive(['disc', 'circle']);
@@ -44,26 +50,27 @@ describe('BaseListPlugin', () => {
     });
     const paragraph = editor.read.children()[0];
 
-    expect(editor.read.schema.element(KEYS.p)?.groups).toContain('block');
+    expect(editor.read.schema.element(BaseParagraphPlugin)?.groups).toContain(
+      'block'
+    );
     expect(editor.read.schema.isBlock(paragraph)).toBe(true);
     expect(() =>
       editor.read.schema.validateDocument(editor.read.value())
     ).not.toThrow();
   });
 
-  it('uses targetPluginKeys for both model validation and injection', () => {
+  it('uses configured targets for both model validation and injection', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',
-      node: {
+      schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
         },
-        type: 'note',
       },
+      type: 'note',
     });
     const ListCalloutPlugin = BaseListPlugin.configure({
-      options: { targetPluginKeys: ['callout'] },
+      config: { targetPluginKeys: ['callout'] },
     });
     const editor = createBaseEditor({
       plugins: [CalloutPlugin, ListCalloutPlugin],
@@ -76,7 +83,7 @@ describe('BaseListPlugin', () => {
       ],
     });
 
-    expect(editor.getPlugin(BaseListPlugin).inject.targetPlugins).toEqual([
+    expect(editor.getPlugin(BaseListPlugin).config.targetPluginKeys).toEqual([
       'callout',
     ]);
     expect(editor.read.children()[0]).toMatchObject({
@@ -229,13 +236,7 @@ describe('BaseListPlugin', () => {
 
   it('parses list metadata and renders list wrappers for list items', () => {
     const editor = createBaseEditor({
-      plugins: [
-        BaseListPlugin.configure({
-          options: {
-            getListStyleType: () => 'circle' as any,
-          },
-        }),
-      ],
+      plugins: [BaseListPlugin],
     });
     const plugin = editor.getPlugin(BaseListPlugin);
     const parse = plugin.parsers.html!.deserializer!.parse! as any;
@@ -274,11 +275,12 @@ describe('BaseListPlugin', () => {
     );
 
     element.setAttribute('aria-level', '2');
+    element.style.listStyleType = 'circle';
 
     expect(
       parse({
+        config: plugin.config,
         element,
-        options: plugin.options,
         registry: {
           getType: (key: string) => editor.getType(key),
         },

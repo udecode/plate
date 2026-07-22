@@ -11,37 +11,30 @@ describe('BaseLineHeightPlugin', () => {
     const plugin = editor.getPlugin(BaseLineHeightPlugin);
 
     expect(plugin.inject.isBlock).toBe(true);
-    expect(plugin.inject.targetPlugins).toEqual([KEYS.p]);
+    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
     expect(plugin.inject.nodeProps).toMatchObject({
       defaultNodeValue: 1.5,
       nodeKey: 'lineHeight',
     });
-    expect(
-      editor.read.schema.property({
-        key: KEYS.lineHeight,
-        placement: 'element',
-        type: KEYS.p,
-      })?.value.kind
-    ).toBe('json');
+    expect(editor.read.schema.property(BaseLineHeightPlugin)?.value.kind).toBe(
+      'json'
+    );
     expect(typeof editor.update.lineHeight.set).toBe('function');
   });
 
   it('derives schema and injection targets from configured plugin keys', () => {
     const ParagraphPlugin = BaseParagraphPlugin.configure({
-      node: { type: 'custom-paragraph' },
+      type: 'custom-paragraph',
     });
     const LineHeightPlugin = BaseLineHeightPlugin.configure({
-      options: { targetPluginKeys: [KEYS.p] },
+      config: { targetPluginKeys: [KEYS.p] },
     });
     const editor = createBaseEditor({
       plugins: [ParagraphPlugin, LineHeightPlugin],
     });
     const plugin = editor.getPlugin(LineHeightPlugin);
 
-    expect(plugin.options.targetPluginKeys).toEqual([KEYS.p]);
-    expect(plugin.inject.targetPlugins).toEqual(
-      plugin.options.targetPluginKeys
-    );
+    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
     expect(
       editor.read.schema.property({
         key: KEYS.lineHeight,

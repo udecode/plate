@@ -15,7 +15,6 @@ import type {
   ParagraphElement as ParagraphElementType,
   VideoElement as VideoElementType,
 } from './custom-types.d';
-
 const EmbedsExample = () => {
   const editor = usePliteEditor({
     extensions: [embed()],
@@ -57,7 +56,7 @@ const EmbedsExample = () => {
 const embed = () =>
   defineEditorExtension<CustomEditor>()({
     name: 'embed',
-    elements: [{ type: 'video', void: 'block' }],
+    schema: { elements: { video: { void: 'block' } } },
   });
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {

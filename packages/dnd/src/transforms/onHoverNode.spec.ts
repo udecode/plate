@@ -21,12 +21,16 @@ describe('onHoverNode', () => {
   const monitor = {} as DropTargetMonitor;
   const nodeRef = { current: null };
 
-  let editor = createPlateEditor({ plugins: [DndPlugin] });
+  let editor = createPlateEditor({
+    plugins: [DndPlugin],
+  });
   let dragItem: ElementDragItemNode;
   let hoverElement: Element;
 
   beforeEach(() => {
-    editor = createPlateEditor({ plugins: [DndPlugin] });
+    editor = createPlateEditor({
+      plugins: [DndPlugin],
+    });
     editor.update.nodes.insert(
       [
         { children: [{ text: 'previous' }], id: 'previous', type: 'p' },

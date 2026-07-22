@@ -13,9 +13,15 @@ describe('Base media plugin contracts', () => {
       plugins: [BaseFilePlugin],
     });
 
-    expect(editor.getPlugin({ key: KEYS.file }).node).toMatchObject({
-      element: { groups: ['block'], void: 'block' },
-    });
+    expect(editor.read.schema.element(BaseFilePlugin)?.behavior.void).toBe(
+      true
+    );
+    expect(editor.read.schema.element(BaseFilePlugin)?.behavior.voidKind).toBe(
+      'block'
+    );
+    expect(editor.read.schema.element(BaseFilePlugin)?.groups).toContain(
+      'block'
+    );
   });
 
   it('configures audio nodes as void elements', () => {
@@ -23,9 +29,15 @@ describe('Base media plugin contracts', () => {
       plugins: [BaseAudioPlugin],
     });
 
-    expect(editor.getPlugin({ key: KEYS.audio }).node).toMatchObject({
-      element: { groups: ['block'], void: 'block' },
-    });
+    expect(editor.read.schema.element(BaseAudioPlugin)?.behavior.void).toBe(
+      true
+    );
+    expect(editor.read.schema.element(BaseAudioPlugin)?.behavior.voidKind).toBe(
+      'block'
+    );
+    expect(editor.read.schema.element(BaseAudioPlugin)?.groups).toContain(
+      'block'
+    );
   });
 
   it('configures video nodes as void elements with width and height passthrough', () => {
@@ -33,9 +45,19 @@ describe('Base media plugin contracts', () => {
       plugins: [BaseVideoPlugin],
     });
 
-    expect(editor.getPlugin({ key: KEYS.video }).node).toMatchObject({
+    const plugin = editor.getPlugin({ key: KEYS.video });
+
+    expect(editor.read.schema.element(BaseVideoPlugin)?.behavior.void).toBe(
+      true
+    );
+    expect(editor.read.schema.element(BaseVideoPlugin)?.behavior.voidKind).toBe(
+      'block'
+    );
+    expect(editor.read.schema.element(BaseVideoPlugin)?.groups).toContain(
+      'block'
+    );
+    expect(plugin.host).toMatchObject({
       dangerouslyAllowAttributes: ['width', 'height'],
-      element: { groups: ['block'], void: 'block' },
     });
   });
 
@@ -104,7 +126,9 @@ describe('Base media plugin contracts', () => {
   });
 
   it('does not deserialize an image without a source URL', () => {
-    const editor = createBaseEditor({ plugins: [BaseImagePlugin] });
+    const editor = createBaseEditor({
+      plugins: [BaseImagePlugin],
+    });
 
     expect(
       editor.api.html.deserialize({ element: '<img alt="missing" />' })

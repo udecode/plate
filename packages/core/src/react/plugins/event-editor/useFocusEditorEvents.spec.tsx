@@ -9,7 +9,9 @@ import {
 
 describe('useFocusEditorEvents', () => {
   it('calls focus and blur handlers only for the matching editor id', () => {
-    const editor = createPlateEditor({ id: 'editor-a' });
+    const editor = createPlateEditor({
+      id: 'editor-a',
+    });
     const onEditorFocus = mock();
     const onEditorBlur = mock();
 

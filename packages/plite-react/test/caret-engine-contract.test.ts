@@ -17,7 +17,7 @@ const createKeyDownEvent = (key: string) =>
     preventDefault: vi.fn(),
   }) as never;
 
-test('caret movement preserves core move_selection commit metadata', () => {
+test('caret movement tags the semantic command commit', () => {
   const editor = createReactEditor();
 
   editorReplace(editor, {
@@ -51,9 +51,8 @@ test('caret movement preserves core move_selection commit metadata', () => {
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
-  expect(editor.read((state) => state.lastCommit())?.command).toEqual({
-    origin: 'command',
-    type: 'move_selection',
-  });
+  expect(editor.read((state) => state.lastCommit())?.tags).toContain(
+    'semantic-command'
+  );
   runtime.destroy();
 });

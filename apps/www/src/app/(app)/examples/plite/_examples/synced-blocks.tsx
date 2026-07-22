@@ -1,5 +1,5 @@
 import type { PointerEvent } from 'react';
-import { defineEditorExtension } from '@platejs/plite';
+import { defineEditorExtension, schema } from '@platejs/plite';
 import {
   Editable,
   type EditableProps,
@@ -21,7 +21,6 @@ import type {
   ParagraphElement as ParagraphElementType,
   SyncedBlockElement,
 } from './custom-types.d';
-
 let syncedBlockCopyId = 0;
 let syncedBlockRootId = 0;
 
@@ -114,12 +113,16 @@ const SyncedBlocksExample = () => {
 const syncedBlocks = () =>
   defineEditorExtension({
     name: 'synced-blocks',
-    elements: [
-      {
-        type: 'synced-block',
-        contentRoot: { slot: 'body' },
+    schema: {
+      elements: {
+        'synced-block': {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          contentRoots: {
+            body: schema.content.not(schema.content.text()),
+          },
+        },
       },
-    ],
+    },
   });
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {

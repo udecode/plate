@@ -10,14 +10,28 @@ import {
   defineEditorExtension,
   DocumentChange,
   property,
+  schema,
+  target,
 } from '@platejs/plite';
 import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
+import { NODES } from '@platejs/utils';
 import { createLowlight } from 'lowlight';
 
 import { CodeBlockPlugin } from './CodeBlockPlugin';
 import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
 
 jsxt;
+
+const TestCodeBlockPropertyPlugin = createBasePlugin({
+  key: 'testCodeBlockProperty',
+  schema: {
+    properties: [
+      schema.elementProperty('foo', property.string(), {
+        target: target.type(NODES.codeBlock),
+      }),
+    ],
+  },
+});
 
 const installRefreshDecorationsProbe = (
   editor: BaseEditor,
@@ -65,6 +79,7 @@ describe('CodeBlockPlugin', () => {
             key: 'a',
             parser: {
               format: 'text/plain',
+              schema: [{ kind: 'schema' }],
               deserialize() {
                 return [{ text: 'test' }];
               },
@@ -225,16 +240,9 @@ describe('CodeBlockPlugin operations', () => {
       plugins: [
         BaseParagraphPlugin,
         CodeBlockPlugin.configure({
-          node: {
-            element: {
-              properties: {
-                foo: property.string(),
-                lang: property.string(),
-              },
-            },
-          },
           options: { lowlight: createLowlight() },
         }),
+        TestCodeBlockPropertyPlugin,
       ],
       value: input.children,
     });

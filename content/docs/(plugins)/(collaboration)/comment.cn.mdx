@@ -201,7 +201,7 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
     })
   )
   .configure({
-    node: { component: CommentLeaf },
+    render: { node: CommentLeaf },
     shortcuts: {
       setDraft: { keys: 'mod+shift+m' },
     },

@@ -7,7 +7,6 @@ import {
   defineEditorSchema,
   type Descendant,
   DocumentChange,
-  element,
   type Element,
   ElementApi,
   schema,
@@ -94,38 +93,37 @@ const createLawSchema = (grammar: number, policyIndex: number) => {
 
   return defineEditorSchema({
     elements: {
-      caption: element({
+      caption: {
         content: schema.content.text({ default: 'text', min: 1 }),
-      }),
-      heading: element({
+      } as const,
+      heading: {
         content: schema.content.text({ default: 'text', min: 1 }),
-        groups: ['block'],
-      }),
-      paragraph: element({
+      } as const,
+      paragraph: {
         content: schema.content.text({ default: 'text', min: 1 }),
-        groups: ['block', 'textBlock'],
-      }),
-      section: element({
+        groups: ['textBlock'],
+      } as const,
+      section: {
         content,
-        groups: ['block'],
         slice: policy,
-      }),
+      } as const,
     },
     id: `slice-fit-laws-${grammar}-${policyIndex}`,
-    root: schema.root({
+    root: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-    }),
+    } as const,
     roots: {
-      header: schema.root({
+      header: {
         content: schema.content.type('heading', {
           default: { type: 'heading' },
           min: 1,
         }),
-      }),
+      } as const,
     },
+    unknown: 'reject',
     version: 1,
   });
 };

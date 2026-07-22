@@ -491,7 +491,6 @@ export default function MarkdownStreamingDemo() {
           </Button>
 
           <Button
-            // eslint-disable-next-line react-hooks/immutability -- Static editor playback mutates editor.read.children() through onStreamingStatic.
             onClick={() => {
               if (streaming) {
                 setPausedState(!pausedRef.current);

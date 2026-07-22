@@ -1,7 +1,6 @@
 /** @jsx jsxt */
 
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { schema } from '@platejs/plite';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import { KEYS } from '@platejs/utils';
@@ -13,10 +12,8 @@ jsxt;
 
 const BaseImagePlugin = createBasePlugin({
   key: KEYS.img,
-  node: {
+  schema: {
     element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
       void: 'block',
     },
   },
@@ -123,7 +120,7 @@ describe('toggleList', () => {
       );
     });
 
-    it('keeps validLiChildrenTypes at the list item root', () => {
+    it('keeps configured valid list-item children at the list item root', () => {
       const input = (
         <editor>
           <himg>
@@ -137,8 +134,8 @@ describe('toggleList', () => {
       const editor = runToggleList(input, [
         BaseImagePlugin,
         BaseListPlugin.configure({
-          options: {
-            validLiChildrenTypes: [BaseImagePlugin.key],
+          config: {
+            validLiChildren: [BaseImagePlugin],
           },
         }),
       ]);

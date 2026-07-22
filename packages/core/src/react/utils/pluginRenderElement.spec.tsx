@@ -74,9 +74,11 @@ describe('pluginRenderElement', () => {
         MarkerPlugin,
         createBasePlugin({
           key: 'p',
-          node: {
-            element: { groups: ['block'] },
-            type: 'p',
+          type: 'p',
+          schema: {
+            element: {
+              content: schema.content.open({ default: 'text', min: 1 }),
+            },
           },
           render: {
             node: ({ attributes, children }) => {
@@ -133,10 +135,8 @@ describe('pluginRenderElement', () => {
       plugins: [
         createBasePlugin({
           key: 'hr',
-          node: {
-            element: { groups: ['block'], void: 'block' },
-            type: 'hr',
-          },
+          type: 'hr',
+          schema: { element: { void: 'block' } },
           render: {
             as: 'hr',
           },

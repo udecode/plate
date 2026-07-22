@@ -50,7 +50,7 @@ describe('insertDate', () => {
 
   it('bound date.insert uses the configured node type', () => {
     const editor = createBaseEditor({
-      plugins: [BaseDatePlugin.configure({ node: { type: 'custom-date' } })],
+      plugins: [BaseDatePlugin.configure({ type: 'custom-date' })],
       selection: {
         kind: 'text',
         anchor: { offset: 1, path: [0, 0] },

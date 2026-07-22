@@ -6,7 +6,7 @@ import {
   defineEditorExtension,
   defineEditorSchema,
   defineExtensionSlot,
-  element,
+  editorCommands,
   NodeApi,
   property,
   schema,
@@ -61,25 +61,96 @@ const DataAttribute = schema.elementProperty(
 
 const hostSchema = defineEditorSchema({
   elements: {
-    heading: element({
+    heading: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    paragraph: element({
+    },
+    paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
+    },
   },
   id: 'host-codec-test',
   properties: [ParagraphBold, HeadingBold, DataAttribute],
-  root: schema.root({
+  root: {
     content: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  }),
+  },
+  unknown: 'reject',
   version: 1,
 });
+
+const inlineHostSchema = defineEditorSchema({
+  elements: {
+    link: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+      properties: {
+        labels: property.set(property.string()),
+        tone: property.string({ default: 'neutral' }),
+        url: property.string(),
+      },
+    },
+    paragraph: {
+      content: schema.content.any(
+        [schema.content.text(), schema.content.group('inline')],
+        { default: 'text', min: 1 }
+      ),
+    },
+  },
+  id: 'host-codec-inline-test',
+  root: {
+    content: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+  },
+  unknown: 'reject',
+  version: 1,
+});
+
+const createInlineCodecEditor = (
+  capture: (slice: ContentSlice) => void,
+  lifecycleErrorSink?: EditorLifecycleErrorSink
+) =>
+  createEditor({
+    extensions: [
+      inlineHostSchema,
+      dom(),
+      hostCodecs('inline-host-codecs', []),
+      defineEditorExtension({
+        commands: ({ around }) => [
+          around(editorCommands.replaceSlice, ({ input, next }) => {
+            capture(input.slice);
+
+            return next();
+          }),
+        ],
+        name: 'capture-inline-host-slice',
+      }),
+    ] as const,
+    initialSelection: SelectionApi.text({
+      anchor: { offset: 3, path: [0, 1, 0] },
+      focus: { offset: 3, path: [0, 1, 0] },
+    }),
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: '' },
+          {
+            type: 'link',
+            labels: ['source'],
+            tone: 'source',
+            url: 'https://example.com',
+            children: [{ text: 'before' }],
+          },
+          { text: '' },
+        ],
+      },
+    ],
+    lifecycleErrorSink,
+  });
 
 const createCodecEditor = (
   codecs: readonly HostCodec[],
@@ -98,6 +169,27 @@ const createCodecEditor = (
     initialValue: [paragraph('')],
     lifecycleErrorSink,
   });
+
+const hostPropertyIds = (() => {
+  const editor = createCodecEditor([]);
+  const get = (key: string, placement: 'element' | 'text', type: string) => {
+    const compiled = editor.read.schema.property({ key, placement, type });
+
+    if (!compiled) {
+      throw new Error(
+        `Expected compiled ${placement} property "${key}" for "${type}".`
+      );
+    }
+
+    return compiled.id;
+  };
+
+  return Object.freeze({
+    dataAttribute: get('data_owner', 'element', 'paragraph'),
+    headingBold: get('bold', 'text', 'heading'),
+    paragraphBold: get('bold', 'text', 'paragraph'),
+  });
+})();
 
 test('host codecs expose only immutable model and host read capabilities', () => {
   const inspect = mock(
@@ -193,11 +285,11 @@ test('host codec results cross one immutable slice boundary', () => {
   expect(Object.isFrozen(editor.read.children()[0])).toBe(true);
 });
 
-test('host codec parsing observes the active transaction document and selection', () => {
+test('plain-text construction observes the active transaction without cloning properties into new blocks', () => {
   const editor = createCodecEditor([]);
   const data = new DataTransferStub();
 
-  data.setData('text/plain', 'pasted');
+  data.setData('text/plain', 'first\nsecond');
 
   editor.update((tx) => {
     tx.nodes.insert(
@@ -215,10 +307,81 @@ test('host codec parsing observes the active transaction document and selection'
   });
 
   expect(editor.read.children()[1]).toEqual({
-    children: [{ text: 'pasted' }],
+    ...paragraph('first'),
     data_owner: 'target',
-    type: 'paragraph',
   });
+  expect(editor.read.children()[2]).toEqual(paragraph('second'));
+});
+
+test('plain-text inline wrappers preserve validated properties and schema construction', () => {
+  let captured: ContentSlice | null = null;
+  const editor = createInlineCodecEditor((slice) => {
+    captured = slice;
+  });
+  const data = new DataTransferStub();
+
+  data.setData('text/plain', 'TEXT');
+
+  editor.update((tx) => {
+    tx.nodes.set({ labels: ['z', 'a', 'z'], tone: null } as never, {
+      at: [0, 1],
+    });
+
+    expect(
+      editor.api.clipboard.insertData(data as unknown as DataTransfer)
+    ).toBe(true);
+  });
+
+  expect(captured).toEqual({
+    content: [
+      {
+        type: 'link',
+        labels: ['a', 'z'],
+        tone: 'neutral',
+        url: 'https://example.com',
+        children: [{ text: 'TEXT' }],
+      },
+    ],
+    openEnd: 1,
+    openStart: 1,
+  });
+});
+
+test('plain-text inline wrappers reject undeclared closed-schema properties', () => {
+  const diagnostics: EditorLifecycleError[] = [];
+  let captures = 0;
+  const editor = createInlineCodecEditor(
+    () => captures++,
+    (diagnostic) => diagnostics.push(diagnostic)
+  );
+  const data = new DataTransferStub();
+
+  data.setData('text/plain', 'TEXT');
+
+  editor.update((tx) => {
+    tx.nodes.set({ rogue: 'blocked' } as never, { at: [0, 1] });
+
+    expect(
+      editor.api.clipboard.insertData(data as unknown as DataTransfer)
+    ).toBe(false);
+
+    tx.nodes.unset('rogue' as never, { at: [0, 1] });
+  });
+
+  expect(captures).toBe(0);
+  expect(diagnostics).toHaveLength(1);
+  expect(diagnostics[0]).toMatchObject({
+    extension: 'plite-dom',
+    format: 'text/plain',
+    key: 'plite-plain-text',
+    phase: 'parse',
+    source: 'host-codec',
+  });
+  expect(
+    diagnostics[0] && 'cause' in diagnostics[0]
+      ? String(diagnostics[0].cause)
+      : ''
+  ).toContain('Unknown editor element property "rogue"');
 });
 
 test('host codec serialization observes the active transaction document', () => {
@@ -243,20 +406,18 @@ test('host codec serialization observes the active transaction document', () => 
   expect(data.getData('text/html')).toBe('<p>draft</p>');
 });
 
-test('host codec priority is deterministic per format', () => {
+test('host codec configuration order is deterministic per format', () => {
   const editor = createCodecEditor([
     defineHostCodec({
       format: 'text/html',
       key: 'low-html',
       parse: () => ContentSlice.closed([paragraph('low')]),
-      priority: 1,
       serialize: () => '<p>low</p>',
     }),
     defineHostCodec({
       format: 'text/html',
       key: 'high-html',
       parse: () => ContentSlice.closed([paragraph('high')]),
-      priority: 10,
       serialize: () => '<p>high</p>',
     }),
     defineHostCodec({
@@ -281,7 +442,7 @@ test('host codec priority is deterministic per format', () => {
   expect(output.getData('text/markdown')).toBe('high');
 });
 
-test('later registration wins a host codec priority tie', () => {
+test('later host codec registration runs first', () => {
   const editor = createCodecEditor([
     defineHostCodec({
       format: 'text/html',
@@ -370,7 +531,6 @@ test('host codec compilation follows configuration revisions and rolls back conf
       defineHostCodec({
         format: 'text/html',
         key: 'temporary',
-        priority: 10,
         serialize: () => '<p>temporary</p>',
       }),
     ])
@@ -391,17 +551,39 @@ test('host codec claims compile against the candidate schema revision', () => {
   const Italic = schema.textProperty('italic', property.boolean(), {
     target: target.type('paragraph'),
   });
+  const italicSchema = defineEditorExtension({
+    name: 'italic-schema',
+    schema: {
+      properties: [Italic],
+    },
+  });
+  const identityEditor = createEditor({
+    extensions: [hostSchema, italicSchema],
+    initialValue: [paragraph('')],
+  });
+  const italicProperty = identityEditor.read.schema.property({
+    key: 'italic',
+    placement: 'text',
+    type: 'paragraph',
+  });
+
+  if (!italicProperty) throw new Error('Expected compiled italic property.');
+
+  const equivalentItalicSchema = defineEditorExtension({
+    name: 'equivalent-italic-schema',
+    schema: {
+      properties: [
+        schema.textProperty('italic', property.boolean(), {
+          target: target.type('paragraph'),
+        }),
+      ],
+    },
+  });
   const italic = defineHostCodec({
     format: 'text/html',
     key: 'italic',
-    schema: [{ declaration: Italic, kind: 'property' }],
+    schema: [{ id: italicProperty.id, kind: 'property' }],
     serialize: () => '<em>value</em>',
-  });
-  const italicSchema = defineEditorExtension({
-    name: 'italic-schema',
-    schema: schema.contribution({
-      properties: [Italic],
-    }),
   });
 
   expect(() => editor.extend(hostCodecs('italic-codec', [italic]))).toThrow(
@@ -409,7 +591,7 @@ test('host codec claims compile against the candidate schema revision', () => {
   );
 
   const cleanup = editor.extend([
-    italicSchema,
+    equivalentItalicSchema,
     hostCodecs('italic-codec', [italic]),
   ]);
   const data = new DataTransferStub();
@@ -428,17 +610,18 @@ test('schema reconfiguration recompiles codec claims and rolls back atomically',
   const articleSchema = (version: number, type: 'heading' | 'paragraph') =>
     defineEditorSchema({
       elements: {
-        [type]: element({
+        [type]: {
           content: schema.content.text({ default: 'text', min: 1 }),
-        }),
+        },
       },
       id: 'host-codec-schema-revision',
-      root: schema.root({
+      root: {
         content: schema.content.type(type, {
           default: { type },
           min: 1,
         }),
-      }),
+      },
+      unknown: 'reject',
       version,
     });
   const editor = createEditor({
@@ -487,7 +670,6 @@ test('query and parse faults report lifecycle errors then fall through', () => {
         format: 'text/html',
         key: 'fallback',
         parse: () => ContentSlice.closed([paragraph('fallback')]),
-        priority: 1,
       }),
       defineHostCodec({
         format: 'text/html',
@@ -498,13 +680,11 @@ test('query and parse faults report lifecycle errors then fall through', () => {
             openEnd: 2,
             openStart: 2,
           }) as ContentSlice,
-        priority: 10,
       }),
       defineHostCodec({
         format: 'text/html',
         key: 'throwing-query',
         parse: () => ContentSlice.closed([paragraph('unreachable')]),
-        priority: 20,
         query: () => {
           throw new Error('query failed');
         },
@@ -590,13 +770,11 @@ test('serialization faults report lifecycle errors then fall through', () => {
       defineHostCodec({
         format: 'text/html',
         key: 'fallback',
-        priority: 1,
         serialize: () => '<p>fallback</p>',
       }),
       defineHostCodec({
         format: 'text/html',
         key: 'throwing',
-        priority: 10,
         serialize: () => {
           throw new Error('serialize failed');
         },
@@ -688,29 +866,37 @@ test('codec keys and compiled schema ownership conflict atomically', () => {
   ).not.toThrow();
   expect(() =>
     createCodecEditor([
-      codec('first-bold', [{ declaration: ParagraphBold, kind: 'property' }]),
-      codec('second-bold', [{ declaration: ParagraphBold, kind: 'property' }]),
+      codec('first-bold', [
+        { id: hostPropertyIds.paragraphBold, kind: 'property' },
+      ]),
+      codec('second-bold', [
+        { id: hostPropertyIds.paragraphBold, kind: 'property' },
+      ]),
     ])
   ).toThrow(/both claim parse target/);
   expect(() =>
     createCodecEditor([
       codec('paragraph', [{ kind: 'element', type: 'paragraph' }]),
       codec('paragraph-bold', [
-        { declaration: ParagraphBold, kind: 'property' },
+        { id: hostPropertyIds.paragraphBold, kind: 'property' },
       ]),
     ])
   ).toThrow(/both claim parse target/);
   expect(() =>
     createCodecEditor([
-      codec('data-prefix', [{ declaration: DataAttribute, kind: 'property' }]),
+      codec('data-prefix', [
+        { id: hostPropertyIds.dataAttribute, kind: 'property' },
+      ]),
     ])
   ).not.toThrow();
   expect(() =>
     createCodecEditor([
       codec('paragraph-bold', [
-        { declaration: ParagraphBold, kind: 'property' },
+        { id: hostPropertyIds.paragraphBold, kind: 'property' },
       ]),
-      codec('heading-bold', [{ declaration: HeadingBold, kind: 'property' }]),
+      codec('heading-bold', [
+        { id: hostPropertyIds.headingBold, kind: 'property' },
+      ]),
     ])
   ).not.toThrow();
   expect(() =>
@@ -722,7 +908,7 @@ test('codec keys and compiled schema ownership conflict atomically', () => {
     createCodecEditor([
       codec('unknown-property', [
         {
-          declaration: schema.textProperty('unknown', property.boolean()),
+          id: 'text:unknown@missing',
           kind: 'property',
         },
       ]),
@@ -730,41 +916,33 @@ test('codec keys and compiled schema ownership conflict atomically', () => {
   ).toThrow(/targets unknown schema property/);
 });
 
-test('host codec property claims require immutable schema definitions', () => {
-  const mutable = {
-    ...ParagraphBold,
-    value: { ...ParagraphBold.value },
-  };
-
+test('host codec property claims store compiled semantic ids', () => {
   expect(() =>
     defineHostCodec({
       format: 'text/html',
-      key: 'mutable-property',
+      key: 'empty-property-id',
       parse: () => null,
       schema: [
         {
-          declaration: mutable,
+          id: '',
           kind: 'property',
         },
       ],
     })
-  ).toThrow(/must be an immutable schema definition/);
+  ).toThrow(/property id cannot be empty/);
 
   const codec = defineHostCodec({
     format: 'text/html',
-    key: 'immutable-property',
+    key: 'semantic-property',
     parse: () => null,
-    schema: [{ declaration: ParagraphBold, kind: 'property' }],
+    schema: [{ id: hostPropertyIds.paragraphBold, kind: 'property' }],
   });
 
   expect(codec.schema?.[0]).toEqual({
-    declaration: ParagraphBold,
+    id: hostPropertyIds.paragraphBold,
     kind: 'property',
   });
-  expect(
-    codec.schema?.[0]?.kind === 'property' &&
-      codec.schema[0].declaration === ParagraphBold
-  ).toBe(true);
+  expect(Object.isFrozen(codec.schema?.[0])).toBe(true);
 });
 
 test('parser and serializer schema claims are independent', () => {

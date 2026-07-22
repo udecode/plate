@@ -3,6 +3,7 @@
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { LinkPlugin } from '@platejs/link/react';
 import { ImagePlugin } from '@platejs/media/react';
+import { schema } from '@platejs/plite';
 import { TablePlugin } from '@platejs/table/react';
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
@@ -35,11 +36,9 @@ describe('when element has class and attribute, and plugin has deserialize type,
           plugins: [
             createBasePlugin({
               key: 'a',
-              node: { type: 'poll' },
               parsers: {
                 html: {
                   deserializer: {
-                    isElement: true,
                     rules: [
                       {
                         validClassName: 'poll',
@@ -53,6 +52,12 @@ describe('when element has class and attribute, and plugin has deserialize type,
                   },
                 },
               },
+              schema: {
+                element: {
+                  content: schema.content.text({ default: 'text', min: 1 }),
+                },
+              },
+              type: 'poll',
             }),
           ],
         }),
@@ -196,7 +201,7 @@ describe('when plugin has deserializer.parse', () => {
   const editor = createBaseEditor({
     plugins: [
       BaseParagraphPlugin as BasePluginInput,
-      LinkPlugin.extend(() => ({
+      LinkPlugin.extend({
         parsers: {
           html: {
             deserializer: {
@@ -208,7 +213,7 @@ describe('when plugin has deserializer.parse', () => {
             },
           },
         },
-      })) as BasePluginInput,
+      }) as BasePluginInput,
     ],
   });
 

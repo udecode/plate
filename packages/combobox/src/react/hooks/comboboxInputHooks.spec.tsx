@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import type React from 'react';
 
 import * as actualCoreReact from '@platejs/core/react';
-import { type Element, ElementApi, schema } from '@platejs/plite';
+import { type Element, ElementApi } from '@platejs/plite';
 
 const useEditorRefMock = mock();
 const useElementMock = mock();
@@ -17,14 +17,13 @@ mock.module('@platejs/core/react', () => ({
 
 const ComboboxInputPlugin = actualCoreReact.createPlatePlugin({
   key: 'mentionInput',
-  node: {
+  schema: {
     element: {
-      content: schema.content.text({ default: 'text', max: 1, min: 1 }),
       inline: true,
       void: 'inline',
     },
-    type: 'mention_input',
   },
+  type: 'mention_input',
 });
 
 describe('combobox input hooks', () => {

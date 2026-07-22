@@ -45,22 +45,24 @@ describe('getRenderNodeProps', () => {
   it('keeps plugin props, allowed attrs, and injected node props on the full path', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: {
-        dangerouslyAllowAttributes: ['target'],
-        element: { groups: ['block'] },
-        props: (({ editor }: any) => ({
+      type: 'p',
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
+      },
+      render: {
+        nodeProps: (({ editor }: any) => ({
           'data-has-editor': editor ? 'yes' : 'no',
           title: undefined,
         })) as any,
-        type: 'p',
       },
+      host: { dangerouslyAllowAttributes: ['target'] },
     });
     const AlignPlugin = createBasePlugin({
+      config: { targetPluginKeys: ['p'] },
       inject: {
         nodeProps: {
           nodeKey: 'align',
           styleKey: 'textAlign',
-          targetPlugins: ['p'],
         },
       },
       key: 'align',

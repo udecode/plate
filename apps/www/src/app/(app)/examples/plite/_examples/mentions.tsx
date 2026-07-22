@@ -27,7 +27,6 @@ import type {
   MentionElement,
   ParagraphElement,
 } from './custom-types.d';
-
 const mentionMenuItemVariants = cva('plite-mentions-menu-item', {
   variants: {
     active: {
@@ -248,7 +247,7 @@ const MentionExample = () => {
 const mention = () =>
   defineEditorExtension<CustomEditor>()({
     name: 'mention',
-    elements: [{ type: 'mention', void: 'markable-inline' }],
+    schema: { elements: { mention: { void: 'markable-inline' } } },
   });
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {

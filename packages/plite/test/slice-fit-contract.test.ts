@@ -7,7 +7,6 @@ import {
   defineEditorSchema,
   type Descendant,
   DocumentChange,
-  element,
   type Element,
   ElementApi,
   property,
@@ -21,8 +20,19 @@ import {
   constructCanonicalDocumentChange,
   prepareCanonicalFitSlice,
 } from '../src/core/representation';
-import { encodeContentSlice } from '../src/core/content-slice';
-import { ChangeSet, IndexedDocument } from '../src/core/document-change';
+import {
+  createDetachedContentSlice,
+  encodeContentSlice,
+  encodeContentSliceContent,
+  isDetachedContentSlice,
+} from '../src/core/content-slice';
+import {
+  ChangeSet,
+  DocumentSlice,
+  getInternalDocumentChangeEntries,
+  hasMaterializedDocumentSliceTokens,
+  IndexedDocument,
+} from '../src/core/document-change';
 
 const paragraph = (text: string, children?: Descendant[]) => ({
   type: 'paragraph',
@@ -31,42 +41,45 @@ const paragraph = (text: string, children?: Descendant[]) => ({
 
 const SliceFitSchema = defineEditorSchema({
   elements: {
-    caption: element({
+    caption: {
       content: schema.content.text({ default: 'text', min: 1 }),
-    }),
-    divider: element({
+    } as const,
+    divider: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    heading: element({
+    } as const,
+    heading: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
       properties: { level: property.number() },
-    }),
-    link: element({
+    } as const,
+    link: {
       content: schema.content.text({ default: 'text', min: 1 }),
       inline: true,
-    }),
-    paragraph: element({
+    } as const,
+    paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    section: element({
-      content: schema.content.group('block', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-      groups: ['block'],
-    }),
+    } as const,
+    section: {
+      content: schema.content.types(
+        ['divider', 'heading', 'paragraph', 'section'],
+        {
+          default: { type: 'paragraph' },
+          min: 1,
+        }
+      ),
+    } as const,
   },
   id: 'slice-fit-contract',
   properties: [schema.textProperty('bold', property.boolean())],
-  root: schema.root({
-    content: schema.content.group('block', {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  }),
+  root: {
+    content: schema.content.types(
+      ['divider', 'heading', 'paragraph', 'section'],
+      {
+        default: { type: 'paragraph' },
+        min: 1,
+      }
+    ),
+  } as const,
+  unknown: 'reject',
   version: 1,
 });
 
@@ -75,53 +88,48 @@ const createSchemaEditor = (initialValue: Element[]) =>
 
 const CoveredDeletionSchema = defineEditorSchema({
   elements: {
-    defaultReplace: element({
+    defaultReplace: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
-    }),
-    explicitReplace: element({
+    } as const,
+    explicitReplace: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
       slice: { preserveContext: true, replaceWhenCovered: true },
-    }),
-    explicitRetain: element({
+    } as const,
+    explicitRetain: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
       slice: { replaceWhenCovered: false },
-    }),
-    heading: element({
+    } as const,
+    heading: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    paragraph: element({
+    } as const,
+    paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    preservedRetain: element({
+    } as const,
+    preservedRetain: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
       slice: { preserveContext: true },
-    }),
+    } as const,
   },
   id: 'covered-deletion-contract',
-  root: schema.root({
+  root: {
     content: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  }),
+  } as const,
+  unknown: 'reject',
   version: 1,
 });
 
@@ -130,57 +138,50 @@ const createCoveredDeletionEditor = (initialValue: Element[]) =>
 
 const CoveredReplacementSchema = defineEditorSchema({
   elements: {
-    heading: element({
+    heading: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    isolatedParagraphs: element({
+    } as const,
+    isolatedParagraphs: {
       content: schema.content.type('paragraph', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
       isolating: true,
-    }),
-    outer: element({
+    } as const,
+    outer: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
-    }),
-    paragraph: element({
+    } as const,
+    paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    paragraphOnly: element({
+    } as const,
+    paragraphOnly: {
       content: schema.content.type('paragraph', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
-    }),
-    preservedParagraphs: element({
+    } as const,
+    preservedParagraphs: {
       content: schema.content.type('paragraph', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
       slice: { preserveContext: true },
-    }),
-    widget: element({
-      content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
+    } as const,
+    widget: {
       void: 'block',
-    }),
+    } as const,
   },
   id: 'covered-replacement-contract',
-  root: schema.root({
+  root: {
     content: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  }),
+  } as const,
+  unknown: 'reject',
   version: 1,
 });
 
@@ -190,26 +191,26 @@ const createCoveredReplacementEditor = (initialValue: Element[]) =>
 const defineMentionSchema = (id: string) =>
   defineEditorSchema({
     elements: {
-      mention: element({
-        content: schema.content.text({ default: 'text', min: 1 }),
+      mention: {
         properties: { character: property.string() },
         void: 'markable-inline',
-      }),
-      paragraph: element({
+      } as const,
+      paragraph: {
         content: schema.content.any(
           [schema.content.text(), schema.content.type('mention')],
           { default: 'text', min: 1 }
         ),
-      }),
+      } as const,
     },
     id,
     properties: [schema.textProperty('bold', property.boolean())],
-    root: schema.root({
+    root: {
       content: schema.content.type('paragraph', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-    }),
+    } as const,
+    unknown: 'reject',
     version: 1,
   });
 
@@ -278,6 +279,56 @@ describe('contextual schema slice fitting', () => {
     }
   });
 
+  it('claims internal detached slice identities at most once', () => {
+    const text = Object.freeze({ text: 'owned' });
+    const children: Descendant[] = [text];
+    const block: Element = { children, type: 'paragraph' };
+    const content: Descendant[] = [block];
+
+    Object.freeze(children);
+    Object.freeze(block);
+    Object.freeze(content);
+    const slice = createDetachedContentSlice(content, 1, 1);
+    const editor = createSchemaEditor([paragraph(''), paragraph('')]);
+
+    assert.throws(
+      () =>
+        createDetachedContentSlice(
+          Object.freeze([
+            Object.freeze({
+              children: [{ text: 'mutable' }],
+              type: 'paragraph',
+            }),
+          ]),
+          1,
+          1
+        ),
+      /deeply frozen/i
+    );
+    assert.equal(slice.content, content);
+    assert.equal(isDetachedContentSlice(slice), true);
+
+    editor.update((tx) => {
+      assert.equal(
+        tx.slice.replace(slice, { at: { offset: 0, path: [0, 0] } }),
+        true
+      );
+    });
+    editor.update((tx) => {
+      assert.equal(
+        tx.slice.replace(slice, { at: { offset: 0, path: [1, 0] } }),
+        true
+      );
+    });
+
+    const after = editor.read.children();
+
+    assert.equal(after[0], block);
+    assert.equal(after[0]!.children[0], text);
+    assert.notEqual(after[1], block);
+    assert.notEqual(after[1]!.children[0], text);
+  });
+
   it('reads canonical slices with their structural edges intact', () => {
     const editor = createSchemaEditor([paragraph('abc'), paragraph('def')]);
     const partial = editor.read.slice.get({
@@ -310,35 +361,32 @@ describe('contextual schema slice fitting', () => {
   it('keeps compiled context barriers closed across extraction and fitting', () => {
     const extension = defineEditorSchema({
       elements: {
-        container: element({
+        container: {
           content: schema.content.group('block', {
             default: { type: 'paragraph' },
             min: 1,
           }),
-          groups: ['block'],
-        }),
-        isolated: element({
+        } as const,
+        isolated: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
           isolating: true,
-        }),
-        paragraph: element({
+        } as const,
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
-        preserved: element({
+        } as const,
+        preserved: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
           slice: { preserveContext: true },
-        }),
+        } as const,
       },
       id: 'slice-context-barrier',
-      root: schema.root({
+      root: {
         content: schema.content.group('block', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
 
@@ -486,26 +534,25 @@ describe('contextual schema slice fitting', () => {
   it('selects a grammar-valid candidate before one canonical lowering', () => {
     const extension = defineEditorSchema({
       elements: {
-        paragraph: element({
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
-        section: element({
+        } as const,
+        section: {
           content: schema.content.type('paragraph', {
             default: { type: 'paragraph' },
             min: 1,
           }),
-          groups: ['block'],
-        }),
+        } as const,
       },
       id: 'bounded-slice-fit-candidate',
-      root: schema.root({
+      root: {
         content: schema.content.group('block', {
           default: { type: 'paragraph' },
           max: 1,
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
     const value = { children: [paragraph('left')] };
@@ -554,7 +601,7 @@ describe('contextual schema slice fitting', () => {
     ]);
   });
 
-  it('lowers a prepared open block slice directly at one top-level text leaf', () => {
+  it('lowers a prepared open block slice through the shared fitter', () => {
     const before = paragraph('before');
     const target = paragraph('', [
       { bold: true, text: 'aa' },
@@ -573,37 +620,20 @@ describe('contextual schema slice fitting', () => {
     });
     const editor = createSchemaEditor([before, target, after]);
     const committedBefore = editor.read.children();
-    const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
-        record?: (event: { id: string; kind: string }) => void;
-      };
-    };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
-    const profiledIds: string[] = [];
     let commits = 0;
 
     editor.subscribeCommit(() => commits++);
-
-    try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
-        record(event) {
-          if (event.kind === 'core-time') profiledIds.push(event.id);
-        },
-      };
-      editor.update((tx) => {
-        assert.equal(
-          tx.slice.replace(slice, {
-            at: {
-              anchor: { offset: 1, path: [1, 1] },
-              focus: { offset: 1, path: [1, 1] },
-            },
-          }),
-          true
-        );
-      });
-    } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
-    }
+    editor.update((tx) => {
+      assert.equal(
+        tx.slice.replace(slice, {
+          at: {
+            anchor: { offset: 1, path: [1, 1] },
+            focus: { offset: 1, path: [1, 1] },
+          },
+        }),
+        true
+      );
+    });
 
     const children = editor.read.children();
 
@@ -624,25 +654,463 @@ describe('contextual schema slice fitting', () => {
       kind: 'text',
     });
     assert.equal(children[0], committedBefore[0]);
-    assert.equal(children[2], slice.content[1]);
     assert.equal(children[4], committedBefore[2]);
     assert.equal(commits, 1);
-    assert.equal(profiledIds.includes('slice-fit-candidate-scoring'), false);
+  });
+
+  it('keeps detached fit specs equivalent to transactional replacement', () => {
+    const slice = ContentSlice.fromJSON({
+      content: [paragraph('one'), paragraph('two')],
+      openEnd: 1,
+      openStart: 1,
+    });
+    const at = {
+      anchor: { offset: 4, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+    };
+    const detached = createSchemaEditor([paragraph('leftright')]);
+    const transactional = createSchemaEditor([paragraph('leftright')]);
+    const fitted = detached.read.slice.fit(slice, { at });
+
+    assert.ok(fitted);
+    const expected = fitted.changes.apply(detached.read.value());
+
+    transactional.update((tx) => {
+      assert.equal(tx.slice.replace(slice, { at }), true);
+    });
+
+    assert.deepEqual(transactional.read.value(), expected);
+    assert.deepEqual(
+      transactional.read.selection(),
+      fitted.selection?.value ?? null
+    );
+  });
+
+  it('publishes nothing when transactional slice fitting declines', () => {
+    const editor = createSchemaEditor([paragraph('target')]);
+    const before = editor.read.runtime.snapshot();
+    let commits = 0;
+    let replaced = true;
+
+    editor.subscribeCommit(() => commits++);
+    editor.update((tx) => {
+      replaced = tx.slice.replace(
+        ContentSlice.closed([
+          { type: 'unknown', children: [{ text: 'invalid vocabulary' }] },
+        ]),
+        {
+          at: {
+            anchor: { offset: 3, path: [0, 0] },
+            focus: { offset: 3, path: [0, 0] },
+          },
+        }
+      );
+    });
+
+    assert.equal(replaced, false);
+    const after = editor.read.runtime.snapshot();
+
+    assert.equal(after.version, before.version);
+    assert.equal(after.children, before.children);
+    assert.equal(editor.read.lastCommit(), null);
+    assert.equal(commits, 0);
+  });
+
+  it('splits an active inline around a closed inline slice', () => {
+    const extension = defineEditorSchema({
+      elements: {
+        link: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+        } as const,
+        paragraph: {
+          content: schema.content.any(
+            [schema.content.text(), schema.content.type('link')],
+            { default: 'text', min: 1 }
+          ),
+        } as const,
+      },
+      id: 'closed-inline-split',
+      root: {
+        content: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      } as const,
+      unknown: 'reject',
+      version: 1,
+    });
+    const value = {
+      children: [
+        paragraph('', [
+          { text: '' },
+          { children: [{ text: 'word' }], type: 'link' },
+          { text: '' },
+        ]),
+      ],
+    };
+    const editor = createEditor({
+      extensions: [extension],
+      initialValue: value.children,
+    });
+    const fitted = editor.read.slice.fit(
+      ContentSlice.closed([{ children: [{ text: 'fragment' }], type: 'link' }]),
+      {
+        at: {
+          anchor: { offset: 2, path: [0, 1, 0] },
+          focus: { offset: 2, path: [0, 1, 0] },
+        },
+      }
+    );
+
+    assert.ok(fitted);
+    assert.deepEqual(fitted.changes.apply(value).children, [
+      paragraph('', [
+        { text: '' },
+        { children: [{ text: 'wo' }], type: 'link' },
+        { text: '' },
+        { children: [{ text: 'fragment' }], type: 'link' },
+        { text: '' },
+        { children: [{ text: 'rd' }], type: 'link' },
+        { text: '' },
+      ]),
+    ]);
+    assert.deepEqual(fitted.selection?.value, {
+      anchor: { offset: 8, path: [0, 3, 0] },
+      focus: { offset: 8, path: [0, 3, 0] },
+      kind: 'text',
+    });
+  });
+
+  it('fits a nested leading spine without consuming its target suffix', () => {
+    const extension = defineEditorSchema({
+      elements: {
+        container: {
+          content: schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        } as const,
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        } as const,
+      },
+      id: 'nested-leading-spine',
+      root: {
+        content: schema.content.group('block', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      } as const,
+      unknown: 'reject',
+      version: 1,
+    });
+    const container = (children: Descendant[]) => ({
+      children,
+      type: 'container',
+    });
+    const active = container([paragraph('')]);
+    const suffix = container([paragraph('tail')]);
+    const value = {
+      children: [container([container([container([active, suffix])])])],
+    };
+    const slice = ContentSlice.closed([
+      container([
+        container([
+          container([container([paragraph('1')]), container([paragraph('2')])]),
+        ]),
+      ]),
+    ]);
+    const editor = createEditor({
+      extensions: [extension],
+      initialValue: value.children,
+    });
+    const fitted = editor.read.slice.fit(slice, {
+      at: {
+        anchor: { offset: 0, path: [0, 0, 0, 0, 0, 0] },
+        focus: { offset: 0, path: [0, 0, 0, 0, 0, 0] },
+      },
+    });
+
+    assert.ok(fitted);
+    assert.deepEqual(fitted.changes.apply(value).children, [
+      container([
+        container([
+          container([
+            container([paragraph('1'), container([paragraph('2')])]),
+            suffix,
+          ]),
+        ]),
+      ]),
+    ]);
+    assert.deepEqual(fitted.selection?.value, {
+      anchor: { offset: 1, path: [0, 0, 0, 0, 1, 0, 0] },
+      focus: { offset: 1, path: [0, 0, 0, 0, 1, 0, 0] },
+      kind: 'text',
+    });
+  });
+
+  it('keeps detached open block fitting on one prepared materialization', () => {
+    const slice = ContentSlice.fromJSON({
+      content: [paragraph('one'), paragraph('two')],
+      openEnd: 1,
+      openStart: 1,
+    });
+    const fullInsert = encodeContentSliceContent(slice);
+    const editor = createSchemaEditor([paragraph('leftright')]);
+    const profilerGlobal = globalThis as typeof globalThis & {
+      __PLITE_REACT_RENDER_PROFILER__?: {
+        record?: (event: { id: string; kind: string }) => void;
+      };
+    };
+    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const events: string[] = [];
+    let fitted: ReturnType<typeof editor.read.slice.fit>;
+
+    assert.equal(isDetachedContentSlice(slice), true);
+    assert.equal(hasMaterializedDocumentSliceTokens(fullInsert), false);
+
+    try {
+      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+        record(event) {
+          if (event.kind === 'core-time') events.push(event.id);
+        },
+      };
+      fitted = editor.read.slice.fit(slice, {
+        at: {
+          anchor: { offset: 4, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        },
+      });
+    } finally {
+      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    }
+
+    assert.ok(fitted);
+    const semanticInsert = [...getInternalDocumentChangeEntries(fitted.changes)]
+      .flatMap(([, change]) => change.data)
+      .find((data): data is DocumentSlice => data instanceof DocumentSlice);
+
+    assert.ok(semanticInsert);
+    assert.equal(hasMaterializedDocumentSliceTokens(fullInsert), false);
+    assert.equal(hasMaterializedDocumentSliceTokens(semanticInsert), false);
+    assert.deepEqual(fitted.changes.apply(editor.read.value()).children, [
+      paragraph('leftone'),
+      paragraph('tworight'),
+    ]);
+    assert.deepEqual(fitted.selection?.value, {
+      anchor: { offset: 3, path: [1, 0] },
+      focus: { offset: 3, path: [1, 0] },
+      kind: 'text',
+    });
     assert.equal(
-      profiledIds.includes('slice-fit-canonical-preparation'),
-      false
+      events.filter((id) => id === 'slice-fit-canonicalize').length,
+      1
     );
     assert.equal(
-      profiledIds.includes('slice-fit-structural-candidates'),
-      false
+      events.filter((id) => id === 'change-set-local-splice').length,
+      1
     );
-    assert.equal(profiledIds.includes('slice-fit-canonicalize'), false);
-    assert.equal(profiledIds.includes('slice-fit-direct-proof'), true);
-    assert.equal(profiledIds.includes('slice-fit-direct-index-splice'), true);
-    assert.equal(profiledIds.includes('slice-fit-direct-adopt-index'), true);
     assert.equal(
-      profiledIds.includes('slice-fit-vocabulary-validation'),
-      false
+      events.filter((id) => id === 'slice-fit-canonical-change-finalize')
+        .length,
+      0
+    );
+    assert.equal(
+      events.filter((id) => id === 'slice-fit-canonical-change-map').length,
+      0
+    );
+  });
+
+  it('preserves both split sides and runtime identity without decoding the slice', () => {
+    const slice = ContentSlice.fromJSON({
+      content: [paragraph('one'), paragraph('two')],
+      openEnd: 1,
+      openStart: 1,
+    });
+    const fullInsert = encodeContentSliceContent(slice);
+    const editor = createSchemaEditor([paragraph('leftright')]);
+    const blockId = editor.read.runtime.idAt([0]);
+    const textId = editor.read.runtime.idAt([0, 0]);
+    const prefix = editor.anchor(
+      {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      { association: 'inward', deletion: 'drop' }
+    );
+    const suffix = editor.anchor(
+      {
+        kind: 'text',
+        anchor: { offset: 5, path: [0, 0] },
+        focus: { offset: 8, path: [0, 0] },
+      },
+      { association: 'inward', deletion: 'drop' }
+    );
+
+    editor.update((tx) => {
+      assert.equal(
+        tx.slice.replace(slice, { at: { offset: 4, path: [0, 0] } }),
+        true
+      );
+    });
+
+    const commit = editor.read.lastCommit();
+
+    assert.ok(commit);
+    const semanticInsert = [...getInternalDocumentChangeEntries(commit.changes)]
+      .flatMap(([, change]) => change.data)
+      .find((data): data is DocumentSlice => data instanceof DocumentSlice);
+
+    assert.ok(semanticInsert);
+    assert.equal(hasMaterializedDocumentSliceTokens(fullInsert), false);
+    assert.equal(hasMaterializedDocumentSliceTokens(semanticInsert), false);
+    assert.deepEqual(prefix.release(), {
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+    assert.deepEqual(suffix.release(), {
+      anchor: { offset: 4, path: [1, 0] },
+      focus: { offset: 7, path: [1, 0] },
+    });
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 3, path: [1, 0] },
+      focus: { offset: 3, path: [1, 0] },
+      kind: 'text',
+    });
+    assert.equal(editor.read.runtime.idAt([0]), blockId);
+    assert.equal(editor.read.runtime.idAt([0, 0]), textId);
+    assert.notEqual(editor.read.runtime.idAt([1]), blockId);
+    assert.notEqual(editor.read.runtime.idAt([1, 0]), textId);
+  });
+
+  it('classifies a prepared open block fit only when commit queries need it', () => {
+    const slice = ContentSlice.fromJSON({
+      content: [paragraph('one'), paragraph('two')],
+      openEnd: 1,
+      openStart: 1,
+    });
+    const editor = createSchemaEditor([paragraph('leftright')]);
+
+    editor.update((tx) => {
+      assert.equal(
+        tx.slice.replace(slice, {
+          at: {
+            anchor: { offset: 4, path: [0, 0] },
+            focus: { offset: 4, path: [0, 0] },
+          },
+        }),
+        true
+      );
+    });
+
+    const commit = editor.read.lastCommit();
+
+    assert.ok(commit);
+    assert.equal(commit.changes.primaryClassification, null);
+    assert.equal(commit.changed.has('structure'), true);
+    assert.equal(commit.changes.primaryClassification, null);
+  });
+
+  it('classifies a prepared open block fit before registered corrections run', () => {
+    const slice = ContentSlice.fromJSON({
+      content: [paragraph('one'), paragraph('two')],
+      openEnd: 1,
+      openStart: 1,
+    });
+    const editor = createSchemaEditor([paragraph('leftright')]);
+    const events: string[] = [];
+    const profilerGlobal = globalThis as typeof globalThis & {
+      __PLITE_REACT_RENDER_PROFILER__?: {
+        record?: (event: { id: string; kind: string }) => void;
+      };
+    };
+    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    let correctionVisits = 0;
+
+    editor.extend({
+      corrections: [
+        {
+          event: 'content',
+          correct() {
+            correctionVisits++;
+          },
+        },
+      ],
+      name: 'prepared-open-block-correction',
+    });
+
+    try {
+      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+        record(event) {
+          if (event.kind === 'core-time') events.push(event.id);
+        },
+      };
+      editor.update((tx) => {
+        assert.equal(
+          tx.slice.replace(slice, {
+            at: {
+              anchor: { offset: 4, path: [0, 0] },
+              focus: { offset: 4, path: [0, 0] },
+            },
+          }),
+          true
+        );
+      });
+    } finally {
+      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    }
+
+    assert.equal(events.includes('transaction-active-change'), true);
+    assert.equal(correctionVisits > 0, true);
+  });
+
+  it('never adopts live nodes from an extracted open block slice', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two'), paragraph('')],
+    });
+    const before = editor.read.children();
+    const firstRuntimeId = editor.read.runtime.idAt([0]);
+    const secondRuntimeId = editor.read.runtime.idAt([1]);
+    const slice = editor.read.slice.get({
+      at: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [1, 0] },
+      },
+    });
+
+    assert.equal(isDetachedContentSlice(slice), false);
+    editor.update((tx) => {
+      assert.equal(
+        tx.slice.replace(slice, { at: { offset: 0, path: [2, 0] } }),
+        true
+      );
+    });
+
+    const after = editor.read.children();
+
+    assert.deepEqual(after, [
+      paragraph('one'),
+      paragraph('two'),
+      paragraph('one'),
+      paragraph('two'),
+    ]);
+    assert.equal(after[0], before[0]);
+    assert.equal(after[1], before[1]);
+    assert.notEqual(after[0], after[2]);
+    assert.notEqual(after[1], after[3]);
+    assert.notEqual(after[2]!.children[0], after[0]!.children[0]);
+    assert.notEqual(after[3]!.children[0], after[1]!.children[0]);
+    assert.equal(editor.read.runtime.idAt([0]), firstRuntimeId);
+    assert.equal(editor.read.runtime.idAt([1]), secondRuntimeId);
+    assert.notEqual(
+      editor.read.runtime.idAt([0]),
+      editor.read.runtime.idAt([2])
+    );
+    assert.notEqual(
+      editor.read.runtime.idAt([1]),
+      editor.read.runtime.idAt([3])
     );
   });
 
@@ -1081,33 +1549,32 @@ describe('contextual schema slice fitting', () => {
   it('splits synthesized wrapper groups without replacing the target block', () => {
     const wrappingSchema = defineEditorSchema({
       elements: {
-        bucket: element({
+        bucket: {
           content: schema.content.group('item', {
             default: { type: 'item' },
             max: 1,
             min: 1,
           }),
-          groups: ['block'],
-        }),
-        item: element({
+        } as const,
+        item: {
           content: schema.content.text({ default: 'text', min: 1 }),
           groups: ['item'],
-        }),
-        paragraph: element({
+        } as const,
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
+        } as const,
       },
       groups: {
-        item: schema.group(),
+        item: {} as const,
       },
       id: 'slice-wrapper-maximum',
-      root: schema.root({
-        content: schema.content.group('block', {
+      root: {
+        content: schema.content.types(['bucket', 'paragraph'], {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
     const value = { children: [paragraph('target')] };
@@ -1153,33 +1620,32 @@ describe('contextual schema slice fitting', () => {
   it('fills synthesized wrapper minimum without replacing the target block', () => {
     const wrappingSchema = defineEditorSchema({
       elements: {
-        item: element({
+        item: {
           content: schema.content.text({ default: 'text', min: 1 }),
           groups: ['item'],
-        }),
-        pair: element({
+        } as const,
+        pair: {
           content: schema.content.group('item', {
             default: { type: 'item' },
             max: 2,
             min: 2,
           }),
-          groups: ['block'],
-        }),
-        paragraph: element({
+        } as const,
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
+        } as const,
       },
       groups: {
-        item: schema.group(),
+        item: {} as const,
       },
       id: 'slice-wrapper-minimum',
-      root: schema.root({
-        content: schema.content.group('block', {
+      root: {
+        content: schema.content.types(['pair', 'paragraph'], {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
     const value = { children: [paragraph('target')] };
@@ -1245,33 +1711,33 @@ describe('contextual schema slice fitting', () => {
   it('keeps named-root selection coordinates on fitted insertion', () => {
     const namedSchema = defineEditorSchema({
       elements: {
-        heading: element({
+        heading: {
           content: schema.content.text({ default: 'text', min: 1 }),
           groups: ['heading'],
-        }),
-        paragraph: element({
+        } as const,
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
+        } as const,
       },
       groups: {
-        heading: schema.group(),
+        heading: {} as const,
       },
       id: 'named-root-slice-fit',
-      root: schema.root({
+      root: {
         content: schema.content.group('block', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
       roots: {
-        header: schema.root({
+        header: {
           content: schema.content.group('heading', {
             default: { type: 'heading' },
             min: 1,
           }),
-        }),
+        } as const,
       },
+      unknown: 'reject',
       version: 1,
     });
     const editor = createEditor({
@@ -1306,34 +1772,35 @@ describe('contextual schema slice fitting', () => {
   it('fits closed slices through the grammar of their target root', () => {
     const rootSchema = defineEditorSchema({
       elements: {
-        heading: element({
+        heading: {
           content: schema.content.text({ default: 'text', min: 1 }),
           groups: ['header'],
-        }),
-        paragraph: element({
+        } as const,
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
           groups: ['body'],
-        }),
+        } as const,
       },
       groups: {
-        body: schema.group(),
-        header: schema.group(),
+        body: {} as const,
+        header: {} as const,
       },
       id: 'target-root-slice-fit',
-      root: schema.root({
+      root: {
         content: schema.content.group('body', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
       roots: {
-        header: schema.root({
+        header: {
           content: schema.content.group('header', {
             default: { type: 'heading' },
             min: 1,
           }),
-        }),
+        } as const,
       },
+      unknown: 'reject',
       version: 1,
     });
     const editor = createEditor({
@@ -1375,29 +1842,30 @@ describe('contextual schema slice fitting', () => {
       extensions: [
         defineEditorSchema({
           elements: {
-            caption: element({
+            caption: {
               content: schema.content.text({ default: 'text', min: 1 }),
-            }),
-            figure: element({
+            } as const,
+            figure: {
               content: schema.content.type('caption', {
                 default: { type: 'caption' },
                 min: 1,
               }),
-            }),
-            section: element({
+            } as const,
+            section: {
               content: schema.content.type('figure', {
                 default: { type: 'figure' },
                 min: 1,
               }),
-            }),
+            } as const,
           },
           id: 'root-fit-selection-provenance',
-          root: schema.root({
+          root: {
             content: schema.content.type('section', {
               default: { type: 'section' },
               min: 1,
             }),
-          }),
+          } as const,
+          unknown: 'reject',
           version: 1,
         }),
       ],
@@ -1450,20 +1918,23 @@ describe('contextual schema slice fitting', () => {
     });
   });
 
-  it('maps a selection from dropped root text to retained fitted content', () => {
+  it('maps a selection from a merged text leaf to retained fitted content', () => {
     const editor = createEditor({
       extensions: [
         defineEditorSchema({
           elements: {
-            widget: element({ void: 'block' }),
+            paragraph: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            } as const,
           },
-          id: 'root-fit-dropped-selection-provenance',
-          root: schema.root({
-            content: schema.content.type('widget', {
-              default: { type: 'widget' },
+          id: 'root-fit-merged-selection-provenance',
+          root: {
+            content: schema.content.type('paragraph', {
+              default: { type: 'paragraph' },
               min: 1,
             }),
-          }),
+          } as const,
+          unknown: 'reject',
           version: 1,
         }),
       ],
@@ -1471,22 +1942,24 @@ describe('contextual schema slice fitting', () => {
 
     editor.update.value.replace({
       children: [
-        { text: 'drop' },
-        { children: [{ text: 'keep' }], type: 'widget' },
-      ] as any,
+        {
+          children: [{ text: 'keep' }, { text: 'drop' }],
+          type: 'paragraph',
+        },
+      ],
       selection: {
-        anchor: { offset: 2, path: [0] },
-        focus: { offset: 2, path: [0] },
+        anchor: { offset: 2, path: [0, 1] },
+        focus: { offset: 2, path: [0, 1] },
         kind: 'text',
       },
     });
 
     assert.deepEqual(editor.read.children(), [
-      { children: [{ text: 'keep' }], type: 'widget' },
+      { children: [{ text: 'keepdrop' }], type: 'paragraph' },
     ]);
     assert.deepEqual(editor.read.selection(), {
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
+      anchor: { offset: 6, path: [0, 0] },
+      focus: { offset: 6, path: [0, 0] },
       kind: 'text',
     });
   });
@@ -1496,24 +1969,25 @@ describe('contextual schema slice fitting', () => {
       extensions: [
         defineEditorSchema({
           elements: {
-            link: element({
+            link: {
               content: schema.content.text({ default: 'text', min: 1 }),
               inline: true,
-            }),
-            paragraph: element({
+            } as const,
+            paragraph: {
               content: schema.content.any(
                 [schema.content.text(), schema.content.type('link')],
                 { default: 'text', min: 1 }
               ),
-            }),
+            } as const,
           },
           id: 'root-fit-selected-spacer-provenance',
-          root: schema.root({
+          root: {
             content: schema.content.type('paragraph', {
               default: { type: 'paragraph' },
               min: 1,
             }),
-          }),
+          } as const,
+          unknown: 'reject',
           version: 1,
         }),
       ],
@@ -1631,25 +2105,25 @@ describe('contextual schema slice fitting', () => {
   it('preserves explicit empty text at an inline boundary', () => {
     const inlineBoundarySchema = defineEditorSchema({
       elements: {
-        link: element({
+        link: {
           content: schema.content.text({ default: 'text', min: 1 }),
           inline: true,
-        }),
-        paragraph: element({
+        } as const,
+        paragraph: {
           content: schema.content.any(
             [schema.content.text(), schema.content.type('link')],
             { default: 'text', min: 1 }
           ),
-          groups: ['block'],
-        }),
+        } as const,
       },
       id: 'selected-inline-boundary-schema',
-      root: schema.root({
+      root: {
         content: schema.content.type('paragraph', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
     const editor = createEditor({
@@ -1737,19 +2211,19 @@ describe('contextual schema slice fitting', () => {
     const target = Math.floor(leafCount / 2);
     const measuredSchema = defineEditorSchema({
       elements: {
-        paragraph: element({
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
+        } as const,
       },
       id: 'bounded-representation-construction',
       properties: [schema.textProperty('mark', property.number())],
-      root: schema.root({
+      root: {
         content: schema.content.group('block', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
     const editor = createEditor({

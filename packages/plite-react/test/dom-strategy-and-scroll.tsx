@@ -3044,12 +3044,19 @@ test('Editable domStrategy preserves Plite fragment data for partial-dom-backed 
 
   const encodedFragment = window.btoa(
     encodeURIComponent(
-      JSON.stringify([
-        {
-          type: 'paragraph',
-          children: [{ text: 'fragment marker' }],
+      JSON.stringify({
+        slice: {
+          content: [
+            {
+              type: 'paragraph',
+              children: [{ text: 'fragment marker' }],
+            },
+          ],
+          openEnd: 0,
+          openStart: 0,
         },
-      ])
+        version: 1,
+      })
     )
   );
 

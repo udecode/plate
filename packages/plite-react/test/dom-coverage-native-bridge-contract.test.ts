@@ -2,7 +2,6 @@ import type { ClipboardEvent, DragEvent } from 'react';
 import {
   defineEditorSchema,
   type Descendant,
-  element,
   type Range,
   schema,
 } from '@platejs/plite';
@@ -35,17 +34,17 @@ import {
 } from '../src/plugin/react-editor';
 
 const blockImageSchema = defineEditorSchema({
-  elements: { image: element({ void: 'block' }) },
+  elements: { image: { void: 'block' } },
   id: 'dom-coverage-block-image',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });
 
 const blockVideoSchema = defineEditorSchema({
-  elements: { video: element({ void: 'block' }) },
+  elements: { video: { void: 'block' } },
   id: 'dom-coverage-block-video',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });

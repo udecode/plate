@@ -388,6 +388,59 @@ describe('DOM coverage boundaries', () => {
     });
   });
 
+  test('focus publishes a missing selection and joins an active update', () => {
+    withDom((document) => {
+      const editor = createEditor({ extensions: [dom()] });
+      const root = mountEditorRoot(editor, document);
+
+      editorReplace(editor, {
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'focus' }],
+          },
+        ] satisfies Descendant[],
+        selection: null,
+      });
+      IS_FOCUSED.delete(editor);
+      IS_NODE_MAP_DIRTY.delete(editor);
+      const textDOM = createTextDOM(document, 'focus');
+      root.appendChild(textDOM);
+      const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
+      bindDOMNode(editor, textNode as Descendant, textDOM);
+      const { scheduler } = createRecordingScheduler({ run: true });
+      const uninstall = installEditorDOMPhaseScheduler(editor, root, scheduler);
+      const commits: NonNullable<ReturnType<typeof editor.read.lastCommit>>[] =
+        [];
+      const unsubscribe = editor.subscribeCommit((commit) => {
+        commits.push(commit);
+      });
+
+      try {
+        editor.update(() => {
+          editor.api.dom.focus({ retries: 1 });
+          expect(commits).toHaveLength(0);
+        });
+
+        expect(commits).toHaveLength(1);
+        expect(commits[0]?.selectionChanged).toBe(true);
+        expect(commits[0]?.changed.has('selection')).toBe(true);
+
+        editor.update((tx) => tx.selection.clear());
+        commits.length = 0;
+
+        editor.api.dom.focus({ retries: 1 });
+
+        expect(commits).toHaveLength(1);
+        expect(commits[0]?.selectionChanged).toBe(true);
+        expect(commits[0]?.changed.has('selection')).toBe(true);
+      } finally {
+        unsubscribe();
+        uninstall();
+      }
+    });
+  });
+
   test('focus retries dirty node maps through the root DOM scheduler', () => {
     withDom((document) => {
       const editor = createEditor({ extensions: [dom()] });

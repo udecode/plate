@@ -11,7 +11,7 @@ import { decorateFindReplace } from './decorateFindReplace';
 
 const InlinePlugin = createBasePlugin({
   key: 'a',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       inline: true,
@@ -41,14 +41,13 @@ const decorate = ({
 
 describe('decorateFindReplace', () => {
   it('registers search highlights as a boolean text property', () => {
-    const editor = createBaseEditor({ plugins: [FindReplacePlugin] });
+    const editor = createBaseEditor({
+      plugins: [FindReplacePlugin],
+    });
 
-    expect(
-      editor.read.schema.property({
-        key: NODES.searchHighlight,
-        placement: 'text',
-      })?.value.kind
-    ).toBe('boolean');
+    expect(editor.read.schema.property(FindReplacePlugin)?.value.kind).toBe(
+      'boolean'
+    );
   });
 
   it('returns no ranges when the search term is empty', () => {
@@ -242,7 +241,7 @@ describe('decorateFindReplace', () => {
     const plugin = editor.getPlugin(FindReplacePlugin);
 
     expect(plugin.key).toBe('searchHighlight');
-    expect(plugin.node.type).toBe(NODES.searchHighlight);
+    expect(plugin.type).toBe(NODES.searchHighlight);
 
     editor.plugin(FindReplacePlugin).setOption('search', 'test');
 

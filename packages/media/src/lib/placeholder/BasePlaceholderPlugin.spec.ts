@@ -14,11 +14,15 @@ describe('BasePlaceholderPlugin', () => {
       plugins: [BasePlaceholderPlugin],
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
-    const plugin = editor.getPlugin(BasePlaceholderPlugin);
-
-    expect(plugin.node).toMatchObject({
-      element: { groups: ['block'], void: 'block' },
-    });
+    expect(
+      editor.read.schema.element(BasePlaceholderPlugin)?.behavior.void
+    ).toBe(true);
+    expect(
+      editor.read.schema.element(BasePlaceholderPlugin)?.behavior.voidKind
+    ).toBe('block');
+    expect(editor.read.schema.element(BasePlaceholderPlugin)?.groups).toContain(
+      'block'
+    );
 
     switch (transform) {
       case 'audioPlaceholder': {

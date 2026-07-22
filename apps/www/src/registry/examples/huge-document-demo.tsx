@@ -9,6 +9,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from 'react';
@@ -412,6 +413,7 @@ function EnginePane({
   const [keyPressDurations, setKeyPressDurations] = useState<number[]>([]);
   const [lastLongAnimationFrameDuration, setLastLongAnimationFrameDuration] =
     useState<number | null>(null);
+  const afterChange = useRef(false);
 
   const initialValue = useMemo(
     () => createHugeDocumentValue({ blocks: config.blocks, engine }),
@@ -479,31 +481,19 @@ function EnginePane({
   useEffect(() => {
     if (!getBrowserSupportsLoafTiming()) return;
 
-    const apply = editor.apply;
-    let afterOperation = false;
-
-    // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally monkeypatches editor.apply to measure long animation frames
-    editor.apply = (operation) => {
-      apply(operation);
-      afterOperation = true;
-    };
-
     const observer = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
-        if (!afterOperation) return;
+        if (!afterChange.current) return;
 
         setLastLongAnimationFrameDuration(Math.round(entry.duration));
-        afterOperation = false;
+        afterChange.current = false;
       });
     });
 
     observer.observe({ type: 'long-animation-frame' });
 
-    return () => {
-      editor.apply = apply;
-      observer.disconnect();
-    };
-  }, [editor]);
+    return () => observer.disconnect();
+  }, []);
 
   const renderElement = useCallback(
     (props: any) => (
@@ -531,7 +521,13 @@ function EnginePane({
   const editable = rendering ? (
     <div>Rendering&hellip;</div>
   ) : engine === 'upstream-slate' ? (
-    <Slate editor={editor as any} initialValue={initialValue as any}>
+    <Slate
+      editor={editor as any}
+      initialValue={initialValue as any}
+      onChange={() => {
+        afterChange.current = true;
+      }}
+    >
       <SlateEditable
         placeholder="Enter some text…"
         renderChunk={config.chunkDivs ? renderChunk : undefined}
@@ -540,7 +536,12 @@ function EnginePane({
       />
     </Slate>
   ) : (
-    <Plate editor={editor as any}>
+    <Plate
+      editor={editor as any}
+      onChange={() => {
+        afterChange.current = true;
+      }}
+    >
       <PlateContent
         domStrategy={config.chunking ? ('auto' as const) : ('full' as const)}
         placeholder="Enter some text…"

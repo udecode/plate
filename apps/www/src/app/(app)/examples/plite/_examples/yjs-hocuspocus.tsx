@@ -19,7 +19,6 @@ import {
   type Editor,
   type EditorUpdateTransaction,
   NodeApi,
-  type Operation,
   type Range,
 } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
@@ -350,10 +349,10 @@ const readEditorValue = (editor: YjsEditor): CustomValue =>
   cloneValue(editor.read.children()) as CustomValue;
 
 const getFirstBlockTextEntry = (
-  editor: YjsEditor,
+  value: readonly Descendant[],
   position: 'first' | 'last'
 ) => {
-  const [block] = readEditorValue(editor);
+  const [block] = value;
 
   if (!block) {
     return null;
@@ -506,8 +505,6 @@ const syncSelectionAfterHistory = (
   editor.api.dom.focus({ retries: 1 });
 };
 
-const getParagraphCount = (editor: YjsEditor) => editor.read.children().length;
-
 const documentText = (editor: YjsEditor) =>
   readEditorValue(editor)
     .map((node) => NodeApi.string(node))
@@ -563,7 +560,7 @@ const setConnected = (editor: YjsEditor, connected: boolean) => {
 };
 
 const selectHello = (peer: PeerDefinition, editor: YjsEditor) => {
-  const entry = getFirstBlockTextEntry(editor, 'first');
+  const entry = getFirstBlockTextEntry(readEditorValue(editor), 'first');
 
   if (!entry) {
     return;
@@ -584,12 +581,8 @@ const selectHello = (peer: PeerDefinition, editor: YjsEditor) => {
   });
 };
 
-const appendText = (
-  peer: PeerDefinition,
-  editor: YjsEditor,
-  tx: PeerCommandTx
-) => {
-  const entry = getFirstBlockTextEntry(editor, 'last');
+const appendText = (peer: PeerDefinition, tx: PeerCommandTx) => {
+  const entry = getFirstBlockTextEntry(tx.value().children, 'last');
 
   if (!entry) {
     return;
@@ -606,8 +599,8 @@ const appendText = (
   });
 };
 
-const insertExclamation = (editor: YjsEditor, tx: PeerCommandTx) => {
-  const entry = getFirstBlockTextEntry(editor, 'last');
+const insertExclamation = (tx: PeerCommandTx) => {
+  const entry = getFirstBlockTextEntry(tx.value().children, 'last');
 
   if (!entry) {
     return;
@@ -624,8 +617,8 @@ const insertExclamation = (editor: YjsEditor, tx: PeerCommandTx) => {
   });
 };
 
-const selectDefaultBoldRange = (editor: YjsEditor, tx: PeerCommandTx) => {
-  const selection = editor.read.selection();
+const selectDefaultBoldRange = (tx: PeerCommandTx) => {
+  const selection = tx.selection();
 
   if (
     selection &&
@@ -635,7 +628,7 @@ const selectDefaultBoldRange = (editor: YjsEditor, tx: PeerCommandTx) => {
     return;
   }
 
-  const entry = getFirstBlockTextEntry(editor, 'first');
+  const entry = getFirstBlockTextEntry(tx.value().children, 'first');
 
   if (!entry) {
     return;
@@ -649,84 +642,46 @@ const selectDefaultBoldRange = (editor: YjsEditor, tx: PeerCommandTx) => {
   });
 };
 
-const toggleBold = (editor: YjsEditor, tx: PeerCommandTx) => {
-  selectDefaultBoldRange(editor, tx);
+const toggleBold = (tx: PeerCommandTx) => {
+  selectDefaultBoldRange(tx);
   tx.marks.toggle('bold');
 };
 
-const replaceDocument = (
-  peer: PeerDefinition,
-  editor: YjsEditor,
-  tx: PeerCommandTx
-) => {
-  const value = readEditorValue(editor);
+const replaceDocument = (peer: PeerDefinition, tx: PeerCommandTx) => {
   const selection = {
     anchor: { path: [0, 0], offset: peer.replacementText.length },
     focus: { path: [0, 0], offset: peer.replacementText.length },
   } satisfies Range;
 
-  tx.operations.replay([
-    {
-      children: value,
-      index: 0,
-      newChildren: [paragraph(peer.replacementText)],
-      newSelection: selection,
-      path: [],
-      selection: null,
-      type: 'replace_children',
-    },
-  ]);
+  tx.nodes.replaceChildren([paragraph(peer.replacementText)], { at: [] });
+  tx.selection.set(selection);
 };
 
-const replaceWithEmptyParagraph = (editor: YjsEditor, tx: PeerCommandTx) => {
-  const operation: Operation = {
-    children: readEditorValue(editor),
-    newChildren: [paragraph('')],
-    newSelection: {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    },
-    path: [],
-    selection: null,
-    type: 'replace_fragment',
-  };
-
-  tx.operations.replay([operation]);
+const replaceWithEmptyParagraph = (tx: PeerCommandTx) => {
+  tx.nodes.replaceChildren([paragraph('')], { at: [] });
+  tx.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 0 },
+  });
 };
 
-const replaceBlockTextWithEmpty = (
-  editor: YjsEditor,
-  blockIndex: number,
-  tx: PeerCommandTx
-) => {
-  const value = readEditorValue(editor);
+const replaceBlockTextWithEmpty = (blockIndex: number, tx: PeerCommandTx) => {
+  const value = tx.value().children;
   const block = value[blockIndex];
 
   if (!block || !('children' in block)) {
     return;
   }
 
-  const operation: Operation = {
-    children: block.children,
-    newChildren: [{ text: '' }],
-    newSelection: {
-      anchor: { path: [blockIndex, 0], offset: 0 },
-      focus: { path: [blockIndex, 0], offset: 0 },
-    },
-    path: [blockIndex],
-    selection: null,
-    type: 'replace_fragment',
-  };
-
-  tx.operations.replay([operation]);
+  tx.nodes.replaceChildren([{ text: '' }], { at: [blockIndex] });
+  tx.selection.set({
+    anchor: { path: [blockIndex, 0], offset: 0 },
+    focus: { path: [blockIndex, 0], offset: 0 },
+  });
 };
 
-const removeBlock = (
-  editor: YjsEditor,
-  blockIndex: number,
-  tx: PeerCommandTx
-) => {
-  const value = readEditorValue(editor);
+const removeBlock = (blockIndex: number, tx: PeerCommandTx) => {
+  const value = tx.value().children;
   const node = value[blockIndex];
 
   if (!node) {
@@ -734,17 +689,11 @@ const removeBlock = (
   }
 
   if (value.length === 1) {
-    replaceWithEmptyParagraph(editor, tx);
+    replaceWithEmptyParagraph(tx);
     return;
   }
 
-  tx.operations.replay([
-    {
-      node,
-      path: [blockIndex],
-      type: 'remove_node',
-    },
-  ]);
+  tx.nodes.remove({ at: [blockIndex] });
 };
 
 const shouldReplaceWholeDocumentSelection = (
@@ -817,7 +766,7 @@ const handleDeleteKeyDown = (
 
     if (nodeIndex !== -1) {
       event.preventDefault();
-      runPeerCommand(peer, editor, (tx) => removeBlock(editor, nodeIndex, tx));
+      runPeerCommand(peer, editor, (tx) => removeBlock(nodeIndex, tx));
 
       return true;
     }
@@ -830,24 +779,20 @@ const handleDeleteKeyDown = (
 
     event.preventDefault();
     runPeerCommand(peer, editor, (tx) =>
-      replaceBlockTextWithEmpty(editor, blockIndex, tx)
+      replaceBlockTextWithEmpty(blockIndex, tx)
     );
 
     return true;
   }
 
   event.preventDefault();
-  runPeerCommand(peer, editor, (tx) => replaceWithEmptyParagraph(editor, tx));
+  runPeerCommand(peer, editor, replaceWithEmptyParagraph);
 
   return true;
 };
 
-const splitFirstText = (
-  editor: YjsEditor,
-  bumpRender: () => void,
-  tx: PeerCommandTx
-) => {
-  const value = readEditorValue(editor);
+const splitFirstText = (bumpRender: () => void, tx: PeerCommandTx) => {
+  const value = tx.value().children;
   const [block] = value;
 
   if (!block) {
@@ -876,12 +821,8 @@ const wrapFirstBlock = (tx: PeerCommandTx) => {
   tx.selection.clear();
 };
 
-const ensureParagraphCount = (
-  editor: YjsEditor,
-  count: number,
-  tx: PeerCommandTx
-) => {
-  const paragraphCount = getParagraphCount(editor);
+const ensureParagraphCount = (count: number, tx: PeerCommandTx) => {
+  const paragraphCount = tx.value().children.length;
 
   if (paragraphCount >= count) {
     return;
@@ -892,20 +833,16 @@ const ensureParagraphCount = (
   }
 };
 
-const removeSecondBlock = (editor: YjsEditor, tx: PeerCommandTx) => {
-  if (getParagraphCount(editor) < 2) {
+const removeSecondBlock = (tx: PeerCommandTx) => {
+  if (tx.value().children.length < 2) {
     return;
   }
 
   tx.nodes.remove({ at: [1] });
 };
 
-const mergeSecondBlock = (
-  editor: YjsEditor,
-  bumpRender: () => void,
-  tx: PeerCommandTx
-) => {
-  if (getParagraphCount(editor) < 2) {
+const mergeSecondBlock = (bumpRender: () => void, tx: PeerCommandTx) => {
+  if (tx.value().children.length < 2) {
     return;
   }
 
@@ -913,16 +850,16 @@ const mergeSecondBlock = (
   bumpRender();
 };
 
-const moveFirstBlockDown = (editor: YjsEditor, tx: PeerCommandTx) => {
-  ensureParagraphCount(editor, 2, tx);
+const moveFirstBlockDown = (tx: PeerCommandTx) => {
+  ensureParagraphCount(2, tx);
   tx.nodes.move({ at: [0], to: [1] });
 };
 
 const setFirstBlockRole = (tx: PeerCommandTx) =>
   tx.nodes.set({ role: 'title' }, { at: [0] });
 
-const unsetFirstBlockRole = (editor: YjsEditor, tx: PeerCommandTx) => {
-  const [firstBlock] = readEditorValue(editor);
+const unsetFirstBlockRole = (tx: PeerCommandTx) => {
+  const [firstBlock] = tx.value().children;
 
   if (!firstBlock || !('role' in firstBlock)) {
     return;
@@ -931,36 +868,32 @@ const unsetFirstBlockRole = (editor: YjsEditor, tx: PeerCommandTx) => {
   tx.nodes.unset('role', { at: [0] });
 };
 
-const firstBlockIsQuote = (editor: YjsEditor) => {
-  const [firstBlock] = readEditorValue(editor);
+const firstBlockIsQuote = (tx: PeerCommandTx) => {
+  const [firstBlock] = tx.value().children;
 
   return (
     firstBlock && 'type' in firstBlock && firstBlock.type === 'block-quote'
   );
 };
 
-const unwrapFirstBlock = (editor: YjsEditor, tx: PeerCommandTx) => {
-  if (!firstBlockIsQuote(editor)) {
+const unwrapFirstBlock = (tx: PeerCommandTx) => {
+  if (!firstBlockIsQuote(tx)) {
     return;
   }
 
   tx.nodes.unwrap({ at: [0] });
 };
 
-const liftFirstWrappedBlock = (editor: YjsEditor, tx: PeerCommandTx) => {
-  if (!firstBlockIsQuote(editor)) {
+const liftFirstWrappedBlock = (tx: PeerCommandTx) => {
+  if (!firstBlockIsQuote(tx)) {
     return;
   }
 
   tx.nodes.lift({ at: [0, 0] });
 };
 
-const insertFragmentText = (
-  peer: PeerDefinition,
-  editor: YjsEditor,
-  tx: PeerCommandTx
-) => {
-  const entry = getFirstBlockTextEntry(editor, 'last');
+const insertFragmentText = (peer: PeerDefinition, tx: PeerCommandTx) => {
+  const entry = getFirstBlockTextEntry(tx.value().children, 'last');
 
   if (!entry) {
     return;
@@ -970,19 +903,19 @@ const insertFragmentText = (
     anchor: { path: entry.path, offset: entry.text.length },
     focus: { path: entry.path, offset: entry.text.length },
   });
-  tx.fragment.insert([{ text: `${peer.name} fragment` }]);
+  tx.fragment.replace([{ text: `${peer.name} fragment` }]);
 };
 
-const moveFirstBlockAfterSecond = (editor: YjsEditor, tx: PeerCommandTx) => {
-  if (getParagraphCount(editor) < 2) {
+const moveFirstBlockAfterSecond = (tx: PeerCommandTx) => {
+  if (tx.value().children.length < 2) {
     return;
   }
 
   tx.nodes.move({ at: [0], to: [1] });
 };
 
-const deleteFirstFragment = (editor: YjsEditor, tx: PeerCommandTx) => {
-  const entry = getFirstBlockTextEntry(editor, 'first');
+const deleteFirstFragment = (tx: PeerCommandTx) => {
+  const entry = getFirstBlockTextEntry(tx.value().children, 'first');
 
   if (!entry) {
     return;
@@ -1001,11 +934,8 @@ const deleteFirstFragment = (editor: YjsEditor, tx: PeerCommandTx) => {
   tx.fragment.delete();
 };
 
-const deleteBackwardFromFirstBlockEnd = (
-  editor: YjsEditor,
-  tx: PeerCommandTx
-) => {
-  const entry = getFirstBlockTextEntry(editor, 'last');
+const deleteBackwardFromFirstBlockEnd = (tx: PeerCommandTx) => {
+  const entry = getFirstBlockTextEntry(tx.value().children, 'last');
 
   if (!entry || entry.text.length === 0) {
     return;
@@ -1264,9 +1194,7 @@ const ProviderBackedPeer = ({
             Select
           </CommandButton>
           <CommandButton
-            onRun={() =>
-              runPeerCommand(peer, editor, (tx) => toggleBold(editor, tx))
-            }
+            onRun={() => runPeerCommand(peer, editor, toggleBold)}
             testId={`yjs-peer-${peer.id}-mark-bold`}
           >
             Bold
@@ -1308,7 +1236,7 @@ const ProviderBackedPeer = ({
         <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
           <CommandButton
             onRun={() =>
-              runPeerCommand(peer, editor, (tx) => appendText(peer, editor, tx))
+              runPeerCommand(peer, editor, (tx) => appendText(peer, tx))
             }
             testId={`yjs-peer-${peer.id}-append`}
           >
@@ -1316,9 +1244,7 @@ const ProviderBackedPeer = ({
           </CommandButton>
           <CommandButton
             onRun={() =>
-              runPeerCommand(peer, editor, (tx) =>
-                replaceDocument(peer, editor, tx)
-              )
+              runPeerCommand(peer, editor, (tx) => replaceDocument(peer, tx))
             }
             testId={`yjs-peer-${peer.id}-replace`}
           >
@@ -1326,9 +1252,7 @@ const ProviderBackedPeer = ({
           </CommandButton>
           <CommandButton
             onRun={() =>
-              runPeerCommand(peer, editor, (tx) =>
-                removeSecondBlock(editor, tx)
-              )
+              runPeerCommand(peer, editor, (tx) => removeSecondBlock(tx))
             }
             testId={`yjs-peer-${peer.id}-remove-node`}
           >
@@ -1337,7 +1261,7 @@ const ProviderBackedPeer = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(peer, editor, (tx) =>
-                splitFirstText(editor, bumpRender, tx)
+                splitFirstText(bumpRender, tx)
               )
             }
             testId={`yjs-peer-${peer.id}-split-node`}
@@ -1347,7 +1271,7 @@ const ProviderBackedPeer = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(peer, editor, (tx) =>
-                mergeSecondBlock(editor, bumpRender, tx)
+                mergeSecondBlock(bumpRender, tx)
               )
             }
             testId={`yjs-peer-${peer.id}-merge-node`}
@@ -1356,9 +1280,7 @@ const ProviderBackedPeer = ({
           </CommandButton>
           <CommandButton
             onRun={() =>
-              runPeerCommand(peer, editor, (tx) =>
-                moveFirstBlockDown(editor, tx)
-              )
+              runPeerCommand(peer, editor, (tx) => moveFirstBlockDown(tx))
             }
             testId={`yjs-peer-${peer.id}-move-down`}
           >
@@ -1374,9 +1296,7 @@ const ProviderBackedPeer = ({
           </CommandButton>
           <CommandButton
             onRun={() =>
-              runPeerCommand(peer, editor, (tx) =>
-                unsetFirstBlockRole(editor, tx)
-              )
+              runPeerCommand(peer, editor, (tx) => unsetFirstBlockRole(tx))
             }
             testId={`yjs-peer-${peer.id}-unset-node`}
           >
@@ -1391,18 +1311,14 @@ const ProviderBackedPeer = ({
             Wrap
           </CommandButton>
           <CommandButton
-            onRun={() =>
-              runPeerCommand(peer, editor, (tx) => unwrapFirstBlock(editor, tx))
-            }
+            onRun={() => runPeerCommand(peer, editor, unwrapFirstBlock)}
             testId={`yjs-peer-${peer.id}-unwrap`}
           >
             Unwrap
           </CommandButton>
           <CommandButton
             onRun={() =>
-              runPeerCommand(peer, editor, (tx) =>
-                liftFirstWrappedBlock(editor, tx)
-              )
+              runPeerCommand(peer, editor, (tx) => liftFirstWrappedBlock(tx))
             }
             testId={`yjs-peer-${peer.id}-lift`}
           >
@@ -1410,9 +1326,7 @@ const ProviderBackedPeer = ({
           </CommandButton>
           <CommandButton
             onRun={() =>
-              runPeerCommand(peer, editor, (tx) =>
-                insertFragmentText(peer, editor, tx)
-              )
+              runPeerCommand(peer, editor, (tx) => insertFragmentText(peer, tx))
             }
             testId={`yjs-peer-${peer.id}-insert-fragment`}
           >
@@ -1420,9 +1334,7 @@ const ProviderBackedPeer = ({
           </CommandButton>
           <CommandButton
             onRun={() =>
-              runPeerCommand(peer, editor, (tx) =>
-                deleteFirstFragment(editor, tx)
-              )
+              runPeerCommand(peer, editor, (tx) => deleteFirstFragment(tx))
             }
             testId={`yjs-peer-${peer.id}-delete-fragment`}
           >
@@ -1431,7 +1343,7 @@ const ProviderBackedPeer = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(peer, editor, (tx) =>
-                deleteBackwardFromFirstBlockEnd(editor, tx)
+                deleteBackwardFromFirstBlockEnd(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-delete-backward`}
@@ -1440,9 +1352,7 @@ const ProviderBackedPeer = ({
           </CommandButton>
           <CommandButton
             onRun={() =>
-              runPeerCommand(peer, editor, (tx) =>
-                insertExclamation(editor, tx)
-              )
+              runPeerCommand(peer, editor, (tx) => insertExclamation(tx))
             }
             testId={`yjs-peer-${peer.id}-insert-text`}
           >
@@ -1451,7 +1361,7 @@ const ProviderBackedPeer = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(peer, editor, (tx) =>
-                moveFirstBlockAfterSecond(editor, tx)
+                moveFirstBlockAfterSecond(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-move`}

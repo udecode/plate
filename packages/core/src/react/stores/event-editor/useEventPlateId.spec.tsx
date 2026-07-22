@@ -25,7 +25,9 @@ describe('useEventPlateId', () => {
   });
 
   it('prefers explicit id, then event store ids, then the provider editor id', () => {
-    const editor = createPlateEditor({ id: 'provider-id' });
+    const editor = createPlateEditor({
+      id: 'provider-id',
+    });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <Plate editor={editor}>{children}</Plate>
     );

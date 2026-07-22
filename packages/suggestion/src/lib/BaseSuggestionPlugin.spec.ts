@@ -11,10 +11,19 @@ import { getTransientSuggestionKey } from './utils/getTransientSuggestionKey';
 
 const SuggestionTargetPlugin = createBasePlugin({
   key: 'suggestionTarget',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
+    },
+  },
+});
+
+const InlineSuggestionTargetPlugin = createBasePlugin({
+  key: 'inlineSuggestionTarget',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
     },
   },
 });
@@ -38,6 +47,7 @@ describe('BaseSuggestionPlugin', () => {
       plugins: [
         BaseParagraphPlugin,
         SuggestionTargetPlugin,
+        InlineSuggestionTargetPlugin,
         BaseSuggestionPlugin,
       ],
       value: [
@@ -75,6 +85,20 @@ describe('BaseSuggestionPlugin', () => {
       ],
     } as any);
 
+  it('canonicalizes false base suggestion marks to the absent default', () => {
+    const editor = createEditor();
+
+    expect(
+      editor.read.schema.fitDocument({
+        children: [
+          { children: [{ suggestion: false, text: 'plain' }], type: 'p' },
+        ],
+      })
+    ).toEqual({
+      children: [{ children: [{ text: 'plain' }], type: 'p' }],
+    });
+  });
+
   it('compiles suggestion placement, namespace, lifecycle, and merge laws', () => {
     const editor = createEditor();
     const paragraph = { children: [{ text: '' }], type: 'p' };
@@ -97,6 +121,20 @@ describe('BaseSuggestionPlugin', () => {
         key: 'suggestion_any',
         placement: 'element',
         type: 'p',
+      })
+    ).toBeNull();
+    expect(
+      editor.read.schema.property({
+        key: 'suggestion',
+        placement: 'element',
+        type: InlineSuggestionTargetPlugin.key,
+      })
+    ).toMatchObject({ value: { kind: 'boolean' } });
+    expect(
+      editor.read.schema.property({
+        key: 'suggestion_any',
+        placement: 'element',
+        type: InlineSuggestionTargetPlugin.key,
       })
     ).toMatchObject({ value: { kind: 'json' } });
     expect(
@@ -152,7 +190,7 @@ describe('BaseSuggestionPlugin', () => {
       editor.read.schema.property({
         key: 'suggestion_any',
         placement: 'element',
-        type: 'p',
+        type: InlineSuggestionTargetPlugin.key,
       })?.value.significant
     ).toBe(true);
 

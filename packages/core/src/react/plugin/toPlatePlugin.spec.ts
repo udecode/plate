@@ -1,3 +1,5 @@
+import { schema } from '@platejs/plite';
+
 import type { PlatePlugin, RenderNodeWrapper } from './PlatePlugin';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
@@ -38,7 +40,9 @@ type CodeBlockConfig2 = CodeBlockConfig & {
 describe('toPlatePlugin', () => {
   const BaseParagraphPlugin = createBasePlugin({
     key: 'p',
-    node: { element: { groups: ['block'] } },
+    schema: {
+      element: { content: schema.content.open({ default: 'text', min: 1 }) },
+    },
     options: { t: 1 },
     parsers: {
       html: {
@@ -64,7 +68,9 @@ describe('toPlatePlugin', () => {
       someApiMethod: () => 'API method result',
     }));
 
-    const editor = createPlateEditor({ plugins: [ParagraphPlugin] });
+    const editor = createPlateEditor({
+      plugins: [ParagraphPlugin],
+    });
     const resolvedPlugin = editor.plugins.p as any;
 
     expect(resolvedPlugin.render.node).toBe(MockComponent);
@@ -74,8 +80,8 @@ describe('toPlatePlugin', () => {
       hotkey: ['mod+opt+0', 'mod+shift+0'],
       t: 1,
     });
-    expect(resolvedPlugin.api.baseApiMethod()).toBe('base');
-    expect(resolvedPlugin.api.someApiMethod()).toBe('API method result');
+    expect(editor.api.baseApiMethod()).toBe('base');
+    expect(editor.api.someApiMethod()).toBe('API method result');
   });
 
   it('extend with a function configuration', () => {
@@ -89,13 +95,15 @@ describe('toPlatePlugin', () => {
       getEditorId: () => editor.id,
     }));
 
-    const editor = createPlateEditor({ plugins: [ParagraphPlugin] });
+    const editor = createPlateEditor({
+      plugins: [ParagraphPlugin],
+    });
     const resolvedPlugin = editor.plugins.p as any;
 
     expect(resolvedPlugin.render.node).toBe(MockComponent);
     expect(resolvedPlugin.options).toHaveProperty('editorId');
     expect(resolvedPlugin.options.t).toBe(1);
-    expect(resolvedPlugin.api.getEditorId()).toBe(editor.id);
+    expect(editor.api.getEditorId()).toBe(editor.id);
   });
 
   it('add new handlers and API methods', () => {
@@ -111,12 +119,14 @@ describe('toPlatePlugin', () => {
       customMethod: () => 'custom result',
     }));
 
-    const editor = createPlateEditor({ plugins: [ParagraphPlugin] });
+    const editor = createPlateEditor({
+      plugins: [ParagraphPlugin],
+    });
     const resolvedPlugin = editor.plugins.p as any;
 
     expect(resolvedPlugin.handlers).toHaveProperty('onKeyDown', mockOnKeyDown);
     expect(resolvedPlugin.handlers).toHaveProperty('onChange', mockOnChange);
-    expect(resolvedPlugin.api.customMethod()).toBe('custom result');
+    expect(editor.api.customMethod()).toBe('custom result');
   });
 
   it('throw an error when extending a non-existent plugin', () => {
@@ -134,7 +144,10 @@ describe('toPlatePlugin', () => {
     type TestConfig = PluginConfig<'test', { foo: string }>;
     type ExtendedConfig = PluginConfig<'test', { baz: number; foo: string }>;
 
-    const basePlugin: BasePlugin<TestConfig> = createBasePlugin();
+    const basePlugin: BasePlugin<TestConfig> = createBasePlugin<TestConfig>({
+      key: 'test',
+      options: { foo: 'foo' },
+    });
     const extended: PlatePlugin<ExtendedConfig> = toPlatePlugin(basePlugin, {
       options: { baz: 123 },
     });
@@ -175,7 +188,7 @@ describe('toPlatePlugin type tests', () => {
   it('work with CodeBlockConfig for toPlatePlugin', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
       key: 'codeBlock',
-      node: { type: 'code_block' },
+      type: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
     }).extendEditorApi<CodeBlockConfig['api']>(() => ({
       plugin: {
@@ -221,24 +234,14 @@ describe('toPlatePlugin type tests', () => {
     editor.api.plugin2.setLanguage('python');
     editor.api.plugin.getLanguage();
 
-    // Plugin API type checks
-    const pluginApi = editor.plugins.codeBlock.api;
-    pluginApi.toggleSyntax();
-    pluginApi.plugin.getSyntaxState();
-    pluginApi.plugin2.setLanguage('ruby');
-    pluginApi.plugin.getLanguage();
-
     // @ts-expect-error - Non-existent method
     editor.api.nonExistentMethod;
-
-    // @ts-expect-error - Non-existent method
-    pluginApi.nonExistentMethod;
   });
 
   it('work with function-based extension', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
       key: 'codeBlock',
-      node: { type: 'code_block' },
+      type: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
     });
 
@@ -256,7 +259,9 @@ describe('toPlatePlugin type tests', () => {
     );
 
     expect(
-      createPlateEditor({ plugins: [CodeBlockPlugin] })
+      createPlateEditor({
+        plugins: [CodeBlockPlugin],
+      })
         .plugin(CodeBlockPlugin)
         .getOptions()
     ).toEqual({
@@ -342,7 +347,7 @@ describe('toPlatePlugin type tests', () => {
   it('work with CodeBlockConfig for toPlatePlugin', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
       key: 'codeBlock',
-      node: { type: 'code_block' },
+      type: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
     }).extendEditorApi<CodeBlockConfig['api']>(() => ({
       plugin: {
@@ -391,18 +396,8 @@ describe('toPlatePlugin type tests', () => {
     editor.api.plugin2.setLanguage('python');
     editor.api.plugin.getLanguage();
 
-    // Plugin API type checks
-    const pluginApi = editor.plugins.codeBlock.api;
-    pluginApi.toggleSyntax();
-    pluginApi.plugin.getSyntaxState();
-    pluginApi.plugin2.setLanguage('ruby');
-    pluginApi.plugin.getLanguage();
-
     // @ts-expect-error - Non-existent method
     editor.api.nonExistentMethod;
-
-    // @ts-expect-error - Non-existent method
-    pluginApi.nonExistentMethod;
   });
 
   it('work with function-based extension and explicit typing', () => {
@@ -414,7 +409,7 @@ describe('toPlatePlugin type tests', () => {
 
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
       key: 'codeBlock',
-      node: { type: 'code_block' },
+      type: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
     });
 
@@ -432,7 +427,9 @@ describe('toPlatePlugin type tests', () => {
     );
 
     expect(
-      createPlateEditor({ plugins: [CodeBlockPlugin2] })
+      createPlateEditor({
+        plugins: [CodeBlockPlugin2],
+      })
         .plugin(CodeBlockPlugin2)
         .getOptions()
     ).toEqual({
@@ -511,9 +508,9 @@ describe('toPlatePlugin with extendPlugin', () => {
         options: { bar: 100 },
         render: { node: () => null }, // Modify a React-specific property
       })
-      .configurePlugin(ChildPlatePlugin, () => ({
+      .configurePlugin(ChildPlatePlugin, {
         options: { bar: 100 },
-      }));
+      });
 
     // Type checks
     const options = ExtendedPlugin.options;
@@ -564,7 +561,7 @@ describe('toPlatePlugin with direct merge for object configs', () => {
     });
   });
 
-  it('override an existing component', () => {
+  it('keeps withComponent on the Plate wrapper', () => {
     const NewComponent: NodeComponent = () => null;
 
     const basePlugin = createBasePlugin({

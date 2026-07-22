@@ -6,7 +6,6 @@ import {
   createEditor as createBaseEditor,
   type Descendant,
   defineEditorSchema,
-  element,
   NodeApi,
   type Path,
   schema,
@@ -60,9 +59,14 @@ type RenderedProjectionEditor = RenderResult & {
 const LeafRenderContext = createContext('leaf');
 
 const inlineLinkSchema = defineEditorSchema({
-  elements: { link: element({ inline: true }) },
+  elements: {
+    link: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
   id: 'inline-decoration-boundary',
-  root: schema.root({ content: schema.content.not(schema.content.text()) }),
+  root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
   version: 1,
 });

@@ -73,7 +73,7 @@ const getBlockSuggestionData = (node: Node) =>
 
 const MentionPlugin = createBasePlugin({
   key: KEYS.mention,
-  node: {
+  schema: {
     element: {
       inline: true,
       properties: {
@@ -87,14 +87,14 @@ const MentionPlugin = createBasePlugin({
 
 const InlineEquationPlugin = createBasePlugin({
   key: KEYS.inlineEquation,
-  node: {
+  schema: {
     element: {
       inline: true,
       properties: { texExpression: property.string() },
       void: 'inline',
     },
-    type: NODES.inlineEquation,
   },
+  type: NODES.inlineEquation,
 });
 
 const getResolvedSuggestions = (editor: BaseEditor) => {

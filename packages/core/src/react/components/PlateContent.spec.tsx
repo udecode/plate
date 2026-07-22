@@ -27,6 +27,63 @@ const VariantPlugin = createBasePlugin({
   },
 });
 
+const AtomicParserAPlugin = createBasePlugin({
+  key: 'atomicParserA',
+  parser: {
+    deserialize: () => [
+      {
+        children: [{ atomicParserA: true, text: 'parsed-a' }],
+        type: 'p',
+      },
+    ],
+    format: 'application/x-plate-atomic-parser',
+  },
+  render: {
+    as: 'mark',
+    abovePlite: ({ children }) => (
+      <div data-testid="plite-renderer-a">{children}</div>
+    ),
+    beforeContainer: () => <span data-testid="container-renderer-a" />,
+    beforeEditable: () => <span data-testid="renderer-a" />,
+  },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+});
+
+const AtomicParserBPlugin = createBasePlugin({
+  key: 'atomicParserB',
+  parser: {
+    deserialize: () => [
+      {
+        children: [{ atomicParserB: true, text: 'parsed-b' }],
+        type: 'p',
+      },
+    ],
+    format: 'application/x-plate-atomic-parser',
+  },
+  render: {
+    as: 'u',
+    abovePlite: ({ children }) => (
+      <div data-testid="plite-renderer-b">{children}</div>
+    ),
+    beforeContainer: () => <span data-testid="container-renderer-b" />,
+    beforeEditable: () => <span data-testid="renderer-b" />,
+  },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+});
+
+const AtomicConfigurationPlugin = createBasePlugin({
+  config: { variant: 'a' as 'a' | 'b' },
+  key: 'atomicConfiguration',
+}).extend(({ plugin }) => ({
+  plugins: [
+    plugin.config.variant === 'a' ? AtomicParserAPlugin : AtomicParserBPlugin,
+  ],
+}));
+
 const ReadOnlyProbe = () => {
   const editor = useEditorRef();
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
@@ -36,7 +93,9 @@ const ReadOnlyProbe = () => {
 
 describe('PlateContent', () => {
   it('renders inside the Plate container without mutating editor runtime', () => {
-    const editor = createPlateEditor({ value });
+    const editor = createPlateEditor({
+      value,
+    });
     const { getByTestId } = render(
       <Plate editor={editor}>
         <PlateContainer data-testid="plate-shell">
@@ -52,7 +111,9 @@ describe('PlateContent', () => {
   });
 
   it('syncs readOnly and disabled into the Plite view state', async () => {
-    const editor = createPlateEditor({ value });
+    const editor = createPlateEditor({
+      value,
+    });
 
     const Shell = ({
       disabled,
@@ -88,7 +149,10 @@ describe('PlateContent', () => {
   });
 
   it('routes store node and text handlers through Plite change events', async () => {
-    const editor = createPlateEditor({ plugins: [VariantPlugin], value });
+    const editor = createPlateEditor({
+      plugins: [VariantPlugin],
+      value,
+    });
     const onNodeChange = mock();
     const onTextChange = mock();
 
@@ -116,7 +180,9 @@ describe('PlateContent', () => {
   });
 
   it('focuses the editor end when autoFocusOnEditable flips readOnly off', async () => {
-    const editor = createPlateEditor({ value });
+    const editor = createPlateEditor({
+      value,
+    });
     const focus = spyOn(HTMLElement.prototype, 'focus').mockImplementation(
       () => {}
     );
@@ -194,6 +260,66 @@ describe('PlateContent', () => {
 
     act(() => {
       editor.api.react.refreshDecorations();
+    });
+  });
+
+  it('publishes configured schema, codecs, and mounted renderers together', async () => {
+    const editor = createPlateEditor({
+      plugins: [AtomicConfigurationPlugin],
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
+    const beforeFingerprint = editor.read.schema.identity()?.fingerprint;
+    const { container, getByTestId, queryByTestId } = render(
+      <Plate editor={editor}>
+        <PlateContainer>
+          <PlateContent />
+        </PlateContainer>
+      </Plate>
+    );
+
+    expect(getByTestId('renderer-a')).toBeInTheDocument();
+    expect(getByTestId('container-renderer-a')).toBeInTheDocument();
+    expect(getByTestId('plite-renderer-a')).toBeInTheDocument();
+    expect(queryByTestId('renderer-b')).not.toBeInTheDocument();
+    expect(queryByTestId('container-renderer-b')).not.toBeInTheDocument();
+    expect(queryByTestId('plite-renderer-b')).not.toBeInTheDocument();
+
+    act(() => {
+      editor.configure(AtomicConfigurationPlugin, { variant: 'b' });
+    });
+
+    await waitFor(() => {
+      expect(queryByTestId('renderer-a')).not.toBeInTheDocument();
+      expect(queryByTestId('container-renderer-a')).not.toBeInTheDocument();
+      expect(queryByTestId('plite-renderer-a')).not.toBeInTheDocument();
+      expect(getByTestId('renderer-b')).toBeInTheDocument();
+      expect(getByTestId('container-renderer-b')).toBeInTheDocument();
+      expect(getByTestId('plite-renderer-b')).toBeInTheDocument();
+    });
+    expect(editor.read.schema.identity()?.fingerprint).not.toBe(
+      beforeFingerprint
+    );
+
+    let inserted = false;
+
+    act(() => {
+      inserted = editor.api.clipboard.insertData({
+        files: [],
+        getData: (format: string) =>
+          format === 'application/x-plate-atomic-parser' ? 'payload' : '',
+        types: ['application/x-plate-atomic-parser'],
+      } as any);
+    });
+
+    expect(inserted).toBe(true);
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ atomicParserB: true, text: 'parsed-b' }],
+        type: 'p',
+      },
+    ]);
+    await waitFor(() => {
+      expect(container.querySelector('u')).toHaveTextContent('parsed-b');
     });
   });
 });

@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { DocumentChange, schema } from '@platejs/plite';
+import { property, DocumentChange, schema } from '@platejs/plite';
 
 import { createBaseEditor } from '../../editor';
 import { createBasePlugin } from '../../plugin';
@@ -15,27 +15,34 @@ jsxt;
 
 const TestLinkPlugin = createBasePlugin({
   key: 'a',
-  node: { element: { inline: true }, type: 'a' },
+  type: 'a',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
 });
 
 const TestBlockquotePlugin = createBasePlugin({
   key: 'blockquote',
-  node: {
+  schema: {
     element: {
       content: schema.content.group('block'),
-      groups: ['block'],
     },
   },
 });
 
 const TestHeadingPlugin = createBasePlugin({
   key: 'h1',
-  node: { element: { groups: ['block'] } },
+  schema: {
+    element: { content: schema.content.open({ default: 'text', min: 1 }) },
+  },
 });
 
 const TestMarkLikePlugin = createBasePlugin({
   key: 'markLike',
-  node: { mark: true },
+  schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
 const createIdFactory = (start = 1) => {
@@ -356,9 +363,11 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
+          config: {
+            idKey: 'foo',
+          },
           options: {
             idCreator: createIdFactory(),
-            idKey: 'foo',
             initialValueIds: 'if-needed',
           },
         }),
@@ -369,6 +378,12 @@ describe('NodeIdPlugin', () => {
     expect(editor.read.children()[0].foo).toBe('first');
     expect(editor.read.children()[1].foo).toBeUndefined();
     expect(editor.read.children()[2].foo).toBe('last');
+    expect(
+      editor.read.schema.getElementProperty(
+        editor.read.children()[0],
+        NodeIdPlugin
+      )
+    ).toBe('first');
   });
 
   it('replaces duplicate inserted ids and restores a unique _id override', () => {
@@ -432,6 +447,82 @@ describe('NodeIdPlugin', () => {
       children: [{ text: 'inserted' }],
       id: 'unique-id',
       type: 'p',
+    });
+  });
+
+  it('creates fresh ids for clipboard-pasted nodes by default', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: createStringIdFactory(),
+          },
+        }),
+      ],
+      value: [
+        { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
+      ],
+    });
+
+    editor.update({ tags: 'paste' }, (tx) => {
+      tx.nodes.insert(
+        {
+          children: [{ text: 'pasted' }],
+          id: 'source-editor-id',
+          type: 'p',
+        } as any,
+        { at: [1] }
+      );
+    });
+
+    expect(editor.read.children()[1]).toMatchObject({
+      children: [{ text: 'pasted' }],
+      id: 'generated-1',
+      type: 'p',
+    });
+  });
+
+  it('reuses only target-unique pasted ids when reuseId is enabled', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: createStringIdFactory(),
+            reuseId: true,
+          },
+        }),
+      ],
+      value: [
+        { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
+      ],
+    });
+
+    editor.update({ tags: 'paste' }, (tx) => {
+      tx.nodes.insert(
+        {
+          children: [{ text: 'unique' }],
+          id: 'source-editor-id',
+          type: 'p',
+        } as any,
+        { at: [1] }
+      );
+    });
+    editor.update({ tags: 'paste' }, (tx) => {
+      tx.nodes.insert(
+        {
+          children: [{ text: 'duplicate' }],
+          id: 'existing-id',
+          type: 'p',
+        } as any,
+        { at: [2] }
+      );
+    });
+
+    expect(editor.read.children()[1]).toMatchObject({
+      id: 'source-editor-id',
+    });
+    expect(editor.read.children()[2]).toMatchObject({
+      id: 'generated-1',
     });
   });
 

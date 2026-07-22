@@ -959,10 +959,6 @@ test.describe('Inlines example', {
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof');
-    test.skip(
-      testInfo.project.name === 'webkit',
-      'WebKit blocks privileged clipboard reads in Playwright'
-    );
 
     const editor = await openExample(page, 'plite/inlines', {
       ready: {
@@ -976,9 +972,9 @@ test.describe('Inlines example', {
       anchor: { path: [0, 1, 0], offset: 2 },
       focus: { path: [0, 1, 0], offset: 5 },
     });
-    await editor.root.press('ControlOrMeta+C');
+    const payload = await editor.clipboard.copyNativeEventPayload();
 
-    await expect.poll(() => editor.clipboard.readText()).toBe('per');
+    expect(payload.text).toBe('per');
 
     await editor.selection.collapse({ path: [0, 2], offset: 0 });
     await editor.root.press('ControlOrMeta+V');
@@ -1745,14 +1741,9 @@ test.describe('Inlines example', {
       focus: { path: [0, 1, 0], offset: 'hyperlink'.length },
     });
 
-    await editor.root.press('ControlOrMeta+X');
+    const payload = await editor.clipboard.cutNativeEventPayload();
 
-    if (
-      testInfo.project.name !== 'mobile' &&
-      testInfo.project.name !== 'webkit'
-    ) {
-      await expect.poll(() => editor.clipboard.readText()).toBe('hyperlink');
-    }
+    expect(payload.text).toBe('hyperlink');
     await expect(
       editor.root.locator('a').filter({ hasText: 'hyperlink' })
     ).toHaveCount(0);

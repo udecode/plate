@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Bookmark, Editor, Range, Value } from '@platejs/plite';
+import type { Anchor, Editor, Range, Value } from '@platejs/plite';
 import {
   Editable,
   type react,
@@ -30,7 +30,7 @@ type CommentStatus = 'open' | 'resolved';
 type CommentTone = 'question' | 'review';
 
 type CommentThread = {
-  anchor: Bookmark;
+  anchor: Anchor<Range>;
   body: string;
   id: string;
   label: string;
@@ -59,7 +59,7 @@ const initialValue: Value = [
     type: 'paragraph',
     children: [
       {
-        text: 'Comment mode in Plite uses bookmark-backed annotations instead of trying to smuggle durable state through decorate.',
+        text: 'Comment mode in Plite uses anchored annotations instead of trying to smuggle durable state through decorate.',
       },
     ],
   },
@@ -313,7 +313,7 @@ const CommentModePane = ({
   useEffect(
     () => () => {
       commentsRef.current.forEach((comment) => {
-        comment.anchor.unref();
+        comment.anchor.release();
       });
     },
     []
@@ -326,7 +326,10 @@ const CommentModePane = ({
     const snippet =
       writerEditor.read.text.string(range).replace(/\s+/g, ' ').trim() ||
       'selection';
-    const anchor = writerEditor.read.ranges.bookmark(range);
+    const anchor = writerEditor.anchor(range, {
+      association: 'inward',
+      deletion: 'drop',
+    });
 
     nextCommentId.current += 1;
     onCommentWrite();
@@ -363,7 +366,7 @@ const CommentModePane = ({
     setComments((current) => {
       const target = current.find((comment) => comment.id === id);
 
-      target?.anchor.unref();
+      target?.anchor.release();
 
       return current.filter((comment) => comment.id !== id);
     });
@@ -373,7 +376,7 @@ const CommentModePane = ({
     onCommentWrite();
     setComments((current) => {
       current.forEach((comment) => {
-        comment.anchor.unref();
+        comment.anchor.release();
       });
 
       return [];
@@ -562,6 +565,7 @@ const CommentModePane = ({
 const CommentModeExample = () => {
   const writerEditor = usePliteEditor<Value>({
     initialSelection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
@@ -569,6 +573,7 @@ const CommentModeExample = () => {
   });
   const commentEditor = usePliteEditor<Value>({
     initialSelection: {
+      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     },
@@ -608,8 +613,8 @@ const CommentModeExample = () => {
     <div className="plite-comment-mode-panel">
       <Instruction>
         Edit mode owns document writes. Comment mode renders the same document
-        read-only, creates bookmark-backed comments, and writes only to the
-        external comment channel.
+        read-only, creates anchored comments, and writes only to the external
+        comment channel.
       </Instruction>
       <div className="plite-comment-mode-proof-grid">
         <div className="plite-comment-mode-proof-cell">

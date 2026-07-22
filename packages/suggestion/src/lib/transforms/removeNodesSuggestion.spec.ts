@@ -50,8 +50,14 @@ describe('removeNodesSuggestion', () => {
     const firstSuggestion = (editor.read.children()[0] as any).suggestion;
     const secondSuggestion = (editor.read.children()[1] as any).suggestion;
 
-    expect(firstSuggestion).toMatchObject({ type: 'remove' });
-    expect(secondSuggestion).toMatchObject({ type: 'remove' });
+    expect(firstSuggestion).toMatchObject({
+      type: 'remove',
+      userId: 'user-1',
+    });
+    expect(secondSuggestion).toMatchObject({
+      type: 'remove',
+      userId: 'user-1',
+    });
     expect(firstSuggestion.id).toBe(secondSuggestion.id);
     expect(firstSuggestion.createdAt).toBe(secondSuggestion.createdAt);
   });

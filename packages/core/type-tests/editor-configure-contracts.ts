@@ -110,3 +110,69 @@ expectParagraphValue([
   // @ts-expect-error custom editor value type should stay narrow
   { children: [{ text: 'nope' }], type: 'h1' },
 ]);
+
+type NoConfig = PluginConfig<'noConfig'>;
+
+createBasePlugin<NoConfig>({
+  // @ts-expect-error plugins without public configuration reject factory config
+  config: { remarkPlugins: [() => {}] },
+  key: 'noConfig',
+});
+
+createPlatePlugin<NoConfig>({
+  // @ts-expect-error plugins without public configuration reject factory config
+  config: { remarkPlugins: [() => {}] },
+  key: 'noConfig',
+});
+
+const NoConfigPlugin = createBasePlugin({ key: 'noConfig' });
+const NoConfigPlatePlugin = createPlatePlugin({ key: 'noConfigPlate' });
+const ConfiguredPlugin = createBasePlugin({
+  config: { label: 'initial' },
+  key: 'configured',
+});
+const ConfiguredPlatePlugin = createPlatePlugin({
+  config: { label: 'initial' },
+  key: 'configuredPlate',
+});
+
+NoConfigPlugin.configure({
+  // @ts-expect-error no-config descriptors reject configuration overlays
+  config: { remarkPlugins: [() => {}] },
+});
+NoConfigPlugin.extend({
+  // @ts-expect-error no-config descriptors reject configuration extensions
+  config: { remarkPlugins: [() => {}] },
+});
+NoConfigPlatePlugin.configure({
+  // @ts-expect-error no-config Plate descriptors reject configuration overlays
+  config: { remarkPlugins: [() => {}] },
+});
+NoConfigPlatePlugin.extend({
+  // @ts-expect-error no-config Plate descriptors reject configuration extensions
+  config: { remarkPlugins: [() => {}] },
+});
+ParentPlugin.configurePlugin(NoConfigPlugin, {
+  // @ts-expect-error nested no-config descriptors reject configuration overlays
+  config: { remarkPlugins: [() => {}] },
+});
+
+const noConfigEditor = createBaseEditor({
+  plugins: [NoConfigPlugin],
+});
+
+// @ts-expect-error editor configuration is unavailable without public config
+noConfigEditor.configure(NoConfigPlugin, { remarkPlugins: [() => {}] });
+
+ConfiguredPlugin.configure({
+  config: { label: 'configured' },
+});
+ConfiguredPlugin.extend({
+  config: { label: 'extended' },
+});
+ConfiguredPlatePlugin.configure({
+  config: { label: 'configured' },
+});
+ConfiguredPlatePlugin.extend({
+  config: { label: 'extended' },
+});

@@ -4,10 +4,13 @@ import {
   createEditor,
   defineEditorSchema,
   defineExtensionSlot,
-  element,
+  definePropertyPolicy,
+  ElementApi,
+  property,
   schema,
   type Descendant,
 } from '@platejs/plite';
+import { History, history } from '@platejs/plite-history';
 import * as Y from 'yjs';
 
 import { createYjsNode } from '../src/core/document';
@@ -33,23 +36,85 @@ const card = (text: string): Descendant => ({
 const articleSchema = (version: number, preserveContext = false) =>
   defineEditorSchema({
     elements: {
-      paragraph: element({
+      paragraph: {
         content: schema.content.text({ min: 1 }),
         slice: { preserveContext },
-      }),
+      },
     },
     id: 'article',
-    root: schema.root({ content: schema.content.type('paragraph') }),
+    root: { content: schema.content.type('paragraph') },
+    unknown: 'reject',
     version,
   });
 
 const requiredCardSchema = defineEditorSchema({
   elements: {
-    card: element({ content: schema.content.text({ min: 1 }) }),
+    card: { content: schema.content.text({ min: 1 }) },
   },
   id: 'required-card',
-  root: schema.root({ content: schema.content.type('card', { min: 2 }) }),
+  root: { content: schema.content.type('card', { min: 2 }) },
+  unknown: 'reject',
   version: 1,
+});
+
+type PolicyProbe = Readonly<{ revision: number }>;
+type PolicySchemaMode = 'add' | 'base' | 'remove' | 'replace';
+
+const policySchema = ({
+  calls,
+  label,
+  mode = 'base',
+  version = 1,
+}: {
+  calls: string[];
+  label: string;
+  mode?: PolicySchemaMode;
+  version?: number;
+}) => {
+  const Probe = definePropertyPolicy<PolicyProbe>({
+    id: 'article-policy-probe',
+    validate: (value): value is PolicyProbe => {
+      calls.push(label);
+
+      return (
+        typeof value === 'object' &&
+        value !== null &&
+        'revision' in value &&
+        typeof value.revision === 'number' &&
+        Number.isInteger(value.revision) &&
+        value.revision >= 0
+      );
+    },
+    version: 1,
+  });
+
+  return defineEditorSchema({
+    elements: {
+      paragraph: {
+        content: schema.content.text({ min: 1 }),
+        properties:
+          mode === 'remove'
+            ? {}
+            : mode === 'add'
+              ? {
+                  extra: property.boolean(),
+                  payload: property.typed(Probe),
+                }
+              : { payload: property.typed(Probe) },
+        readOnly: mode === 'replace',
+      },
+    },
+    id: 'article-policy-schema',
+    root: { content: schema.content.type('paragraph') },
+    unknown: 'reject',
+    version,
+  });
+};
+
+const policyParagraph = (text: string, revision: number): Descendant => ({
+  children: [{ text }],
+  payload: { revision },
+  type: 'paragraph',
 });
 
 const seedUpdate = (
@@ -84,17 +149,17 @@ describe('@platejs/yjs schema identity contract', () => {
     assert.deepEqual(editor.read.children(), [card(''), card('')]);
   });
 
-  it('claims an explicit no-schema envelope with the initial document', () => {
+  it('claims a derived schema envelope with the initial document', () => {
     const doc = new Y.Doc();
 
-    createEditor({
+    const editor = createEditor({
       extensions: [createYjsExtension({ doc, rootName })],
       initialValue: [paragraph('open')],
     });
 
     assert.deepEqual(
       doc.getMap(getYjsSchemaMetadataName(rootName)).get('current'),
-      createYjsSchemaEnvelope(null)
+      createYjsSchemaEnvelope(editor.read.schema.identity())
     );
     assert.equal(doc.get(rootName, Y.XmlElement).length, 1);
   });
@@ -128,7 +193,7 @@ describe('@platejs/yjs schema identity contract', () => {
 
     doc
       .getMap(getYjsSchemaMetadataName(rootName))
-      .set('current', { format: 2, identity: null });
+      .set('current', { format: 1, identity: null });
 
     const editor = createEditor({
       extensions: [createYjsExtension({ doc, rootName })],
@@ -148,8 +213,13 @@ describe('@platejs/yjs schema identity contract', () => {
     const errors: unknown[] = [];
 
     doc.getMap(getYjsSchemaMetadataName(rootName)).set('current', {
-      format: 1,
-      identity: { fingerprint: 'schema-v0', id: 'article', version: 0 },
+      format: 2,
+      identity: {
+        fingerprint: 'schema-v0',
+        id: 'article',
+        kind: 'named',
+        version: 0,
+      },
     });
 
     const editor = createEditor({
@@ -214,7 +284,7 @@ describe('@platejs/yjs schema identity contract', () => {
 
     assert.equal(root.length, 1);
     assert.deepEqual(metadata.get('current'), {
-      format: 1,
+      format: 2,
       identity: editor.read.schema.identity(),
     });
     assert.equal(
@@ -248,7 +318,7 @@ describe('@platejs/yjs schema identity contract', () => {
     assert.deepEqual(editor.read.children(), [paragraph('local')]);
   });
 
-  it('keeps open editors out of schema-claimed rooms', () => {
+  it('keeps derived editors out of differently named schema rooms', () => {
     const doc = new Y.Doc();
 
     Y.applyUpdate(doc, seedUpdate(articleSchema(1)));
@@ -261,7 +331,7 @@ describe('@platejs/yjs schema identity contract', () => {
 
     assert.throws(
       () => provider.emitSync(true),
-      /local open schema cannot join room schema "article"/
+      /local derived schema .* cannot join room schema "article"/
     );
     assert.deepEqual(editor.read.children(), [paragraph('local')]);
   });
@@ -326,5 +396,203 @@ describe('@platejs/yjs schema identity contract', () => {
       /local version 2, room version 1/
     );
     assert.equal(editor.read.schema.identity(), identity);
+  });
+
+  it('keeps randomized History, Yjs, live policies, and configuration atomic', () => {
+    const calls: string[] = [];
+    const slot = defineExtensionSlot('randomized-policy-schema');
+    const doc = new Y.Doc();
+    const editor = createEditor({
+      extensions: [
+        history(),
+        slot.of(policySchema({ calls, label: 'policy-0' })),
+        createYjsExtension({ doc, rootName }),
+      ] as const,
+      initialValue: [policyParagraph('local', 0)],
+    });
+    const metadata = doc.getMap(getYjsSchemaMetadataName(rootName));
+    const root = doc.get(rootName, Y.XmlElement);
+    const actionKinds = [
+      'edit',
+      'equivalent',
+      'add',
+      'remove',
+      'replace',
+      'rollback',
+    ] as const;
+    let seed = 0x51_c4_3a_7d;
+    const nextAction = () => {
+      seed = (Math.imul(seed, 1_664_525) + 1_013_904_223) >>> 0;
+
+      return actionKinds[seed % actionKinds.length]!;
+    };
+    const actions = [...actionKinds, ...Array.from({ length: 58 }, nextAction)];
+    let activePolicy = 'policy-0';
+    let commitCount = 0;
+    let expectedPayloadRevision = 0;
+    let expectedText = 'local';
+    let policyRevision = 0;
+
+    editor.subscribeCommit(() => {
+      commitCount += 1;
+    });
+
+    const assertActivePolicy = () => {
+      const before = calls.length;
+
+      editor.read.schema.validateFragment([
+        policyParagraph(expectedText, expectedPayloadRevision),
+      ]);
+
+      const validationCalls = calls.slice(before);
+
+      assert.ok(validationCalls.length > 0);
+      assert.equal(
+        validationCalls.every((label) => label === activePolicy),
+        true
+      );
+    };
+    const snapshot = () => ({
+      commits: commitCount,
+      history: History.toJSON(editor),
+      identity: editor.read.schema.identity(),
+      metadata: structuredClone(metadata.get('current')),
+      room: root.toString(),
+      value: structuredClone(editor.read.value()),
+    });
+    const assertSnapshot = (before: ReturnType<typeof snapshot>) => {
+      assert.deepEqual(snapshot(), before);
+      assertActivePolicy();
+    };
+
+    for (const [index, action] of actions.entries()) {
+      if (action === 'edit') {
+        const text = String.fromCharCode(97 + (index % 26));
+
+        editor.update((tx) => {
+          tx.history.newBatch();
+          tx.text.insert(text, {
+            at: { offset: expectedText.length, path: [0, 0] },
+          });
+        });
+        expectedText += text;
+      } else if (action === 'equivalent') {
+        const historyBefore = editor.read.history();
+        const identityBefore = editor.read.schema.identity();
+
+        policyRevision += 1;
+        activePolicy = `policy-${policyRevision}`;
+        expectedPayloadRevision += 1;
+        editor.update((tx) => {
+          tx.history.newBatch();
+          tx.extensions.reconfigure(
+            slot,
+            policySchema({ calls, label: activePolicy })
+          );
+          tx.nodes.set(
+            { payload: { revision: expectedPayloadRevision } },
+            { at: [0] }
+          );
+        });
+
+        assert.deepEqual(editor.read.schema.identity(), identityBefore);
+        assert.ok(
+          editor.read.history().undos.length >= historyBefore.undos.length
+        );
+        assertActivePolicy();
+      } else {
+        const before = snapshot();
+
+        assert.throws(
+          () =>
+            editor.update((tx) => {
+              tx.history.newBatch();
+              tx.text.insert('x', {
+                at: { offset: expectedText.length, path: [0, 0] },
+              });
+
+              if (action === 'rollback') {
+                throw new Error('generated configuration rollback');
+              }
+
+              tx.extensions.reconfigure(
+                slot,
+                policySchema({
+                  calls,
+                  label: `rejected-${action}-${index}`,
+                  mode: action,
+                }),
+                action === 'remove'
+                  ? {
+                      migrate: ({ document, next }) =>
+                        next.fitDocument({
+                          ...document,
+                          children: document.children.map((node) =>
+                            ElementApi.isElement(node)
+                              ? { children: node.children, type: 'paragraph' }
+                              : node
+                          ),
+                        }),
+                    }
+                  : undefined
+              );
+            }),
+          action === 'rollback'
+            ? /generated configuration rollback/
+            : /semantics changed without a version bump/
+        );
+        assertSnapshot(before);
+      }
+
+      assert.equal(editor.read.text.string([]), expectedText);
+      assert.deepEqual(editor.read.children()[0]?.payload, {
+        revision: expectedPayloadRevision,
+      });
+      assert.deepEqual(metadata.get('current'), {
+        format: 2,
+        identity: editor.read.schema.identity(),
+      });
+      assert.equal(root.length, 1);
+    }
+
+    const serialized = JSON.stringify({
+      history: History.toJSON(editor),
+      room: doc.toJSON(),
+    });
+
+    assert.doesNotMatch(
+      serialized,
+      /(?:policy-\d|rejected-(?:add|remove|replace))/
+    );
+
+    const localCalls: string[] = [];
+    const localSlot = defineExtensionSlot('randomized-policy-local-schema');
+    const local = createEditor({
+      extensions: [
+        history(),
+        localSlot.of(policySchema({ calls: localCalls, label: 'local-1' })),
+      ] as const,
+      initialValue: [policyParagraph('local', 0)],
+    });
+
+    local.update((tx) => {
+      tx.history.newBatch();
+      tx.text.insert('!', { at: { offset: 5, path: [0, 0] } });
+    });
+    assert.equal(local.read.history().undos.length, 1);
+
+    local.update.extensions.reconfigure(
+      localSlot,
+      policySchema({
+        calls: localCalls,
+        label: 'local-2',
+        mode: 'replace',
+        version: 2,
+      })
+    );
+
+    assert.deepEqual(local.read.history().undos, []);
+    assert.deepEqual(local.read.history().redos, []);
+    assert.deepEqual(local.read.history().schema, local.read.schema.identity());
   });
 });

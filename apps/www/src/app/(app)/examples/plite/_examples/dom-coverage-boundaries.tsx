@@ -141,7 +141,7 @@ const DomCoverageBoundariesExample = () => {
 
   const updateHiddenBody = useCallback(() => {
     editor.update((tx) => {
-      const node = editor.read.nodes.get(hiddenBodyPath)?.[0];
+      const node = tx.nodes.get(hiddenBodyPath)?.[0];
 
       if (!node) return;
 
@@ -159,7 +159,7 @@ const DomCoverageBoundariesExample = () => {
 
   const selectHiddenBody = useCallback(() => {
     editor.update((tx) => {
-      const node = editor.read.nodes.get(hiddenBodyPath)?.[0];
+      const node = tx.nodes.get(hiddenBodyPath)?.[0];
 
       if (!node) return;
 

@@ -49,7 +49,7 @@
   ],
   "scripts": {
     "brl": "echo 'No barrels to generate'",
-    "build": "node ../../tooling/scripts/build-plite-package.mjs",
+    "build": "tsdown --config tsdown.config.mts --log-level warn",
     "clean": "rimraf dist lib",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
@@ -61,7 +61,7 @@
     "test:selection": "vitest run --config ./vitest.config.ts --project browser test/browser/selection.browser.test.ts"
   },
   "devDependencies": {
-    "@playwright/test": "1.53.0",
+    "@playwright/test": "1.61.0",
     "@types/node": "24.12.0",
     "@vitest/browser-playwright": "^4.1.0",
     "playwright": "^1.58.2",

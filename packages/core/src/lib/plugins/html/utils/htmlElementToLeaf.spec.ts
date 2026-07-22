@@ -1,4 +1,4 @@
-import { schema } from '@platejs/plite';
+import { property, schema } from '@platejs/plite';
 
 import { createBaseEditor, createBasePlugin } from '../../../index';
 import { parseHtmlElement } from './parseHtmlElement';
@@ -8,12 +8,11 @@ describe('htmlElementToLeaf', () => {
   it('merges outer leaf marks into descendant text nodes and preserves nested leaf marks', () => {
     const ParagraphPlugin = createBasePlugin({
       key: 'p',
-      node: {
+      type: 'p',
+      schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
         },
-        type: 'p',
       },
       parsers: {
         html: {
@@ -25,7 +24,7 @@ describe('htmlElementToLeaf', () => {
     });
     const BoldPlugin = createBasePlugin({
       key: 'bold',
-      node: { mark: true },
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       parsers: {
         html: {
           deserializer: {
@@ -36,7 +35,7 @@ describe('htmlElementToLeaf', () => {
     });
     const ItalicPlugin = createBasePlugin({
       key: 'italic',
-      node: { mark: true },
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       parsers: {
         html: {
           deserializer: {

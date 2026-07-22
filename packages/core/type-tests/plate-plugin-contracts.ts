@@ -1,5 +1,26 @@
 import type { PluginConfig } from '@platejs/core';
-import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
+import {
+  createPlateEditor,
+  createPlatePlugin,
+  type ExtendedPlatePlugin,
+} from '@platejs/core/react';
+
+type ExtendDeclarationBoundaryConfig =
+  PluginConfig<'extendDeclarationBoundary'>;
+
+export const ExtendDeclarationBoundaryPlugin =
+  createPlatePlugin<ExtendDeclarationBoundaryConfig>({
+    key: 'extendDeclarationBoundary',
+  }).extend({ editOnly: true });
+
+const exactExtendDeclarationBoundary: ExtendedPlatePlugin<
+  ExtendDeclarationBoundaryConfig,
+  {},
+  {},
+  {}
+> = ExtendDeclarationBoundaryPlugin;
+
+void exactExtendDeclarationBoundary;
 
 type ToolbarConfig = PluginConfig<
   'toolbar',
@@ -35,24 +56,24 @@ const MentionPlugin = createPlatePlugin({
   getTrigger: () => getOptions().trigger,
 }));
 
-type ExplicitFactoryConfig = PluginConfig<
-  'explicitFactory',
+type ExplicitPluginConfig = PluginConfig<
+  'explicitPlugin',
   {
     enabled: boolean;
   },
   {
-    explicitFactory: {
+    explicitPlugin: {
       isEnabled: () => boolean;
     };
   }
 >;
 
-const ExplicitFactoryPlugin = createPlatePlugin<ExplicitFactoryConfig>(() => ({
-  key: 'explicitFactory',
+const ExplicitPlugin = createPlatePlugin<ExplicitPluginConfig>({
+  key: 'explicitPlugin',
   options: {
     enabled: false,
   },
-})).extendApi<ExplicitFactoryConfig['api']['explicitFactory']>(
+}).extendApi<ExplicitPluginConfig['api']['explicitPlugin']>(
   ({ getOptions }) => ({
     isEnabled: () => getOptions().enabled,
   })
@@ -73,7 +94,7 @@ const createdPlateEditor = createPlateEditor({
   plugins: [
     ToolbarPlugin,
     MentionPlugin,
-    ExplicitFactoryPlugin,
+    ExplicitPlugin,
     ReactFactoryExtensionPlugin,
   ],
 });
@@ -83,13 +104,13 @@ const nestedFloating: boolean = plateEditor.api.plugin.isFloating();
 const mentionTrigger: '@' = plateEditor.api.getTrigger();
 const createdFloating: boolean = createdPlateEditor.api.toggleFloating();
 const createdMentionTrigger: '@' = createdPlateEditor.api.getTrigger();
-const explicitFactoryEnabled: boolean =
-  createdPlateEditor.api.explicitFactory.isEnabled();
-const explicitFactoryPortalEnabled: boolean = createdPlateEditor
-  .plugin(ExplicitFactoryPlugin)
+const explicitPluginEnabled: boolean =
+  createdPlateEditor.api.explicitPlugin.isEnabled();
+const explicitPluginPortalEnabled: boolean = createdPlateEditor
+  .plugin(ExplicitPlugin)
   .api.isEnabled();
-const explicitFactoryPortalRootEnabled: boolean =
-  createdPlateEditor.api.explicitFactory.isEnabled();
+const explicitPluginPortalRootEnabled: boolean =
+  createdPlateEditor.api.explicitPlugin.isEnabled();
 const toolbarFloating: boolean = createdPlateEditor
   .plugin(ToolbarPlugin)
   .getOptions().floating;
@@ -100,9 +121,9 @@ const createdMentionOption: '@' = createdPlateEditor
 void createdFloating;
 void createdMentionOption;
 void createdMentionTrigger;
-void explicitFactoryEnabled;
-void explicitFactoryPortalEnabled;
-void explicitFactoryPortalRootEnabled;
+void explicitPluginEnabled;
+void explicitPluginPortalEnabled;
+void explicitPluginPortalRootEnabled;
 void floating;
 void mentionTrigger;
 void nestedFloating;
@@ -114,11 +135,9 @@ plateEditor.api.notReal();
 // @ts-expect-error wrong nested plugin api call
 createdPlateEditor.api.plugin.isFloating(true);
 
-const explicitFactoryPortalApi = createdPlateEditor.plugin(
-  ExplicitFactoryPlugin
-).api;
+const explicitPluginPortalApi = createdPlateEditor.plugin(ExplicitPlugin).api;
 // @ts-expect-error plugin portal API is scoped, not wrapped by plugin key
-explicitFactoryPortalApi.explicitFactory.isEnabled();
+explicitPluginPortalApi.explicitPlugin.isEnabled();
 
 // @ts-expect-error literal option type must stay stable
 createdPlateEditor.plugin(MentionPlugin).getOptions().trigger = '#';

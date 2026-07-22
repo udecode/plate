@@ -9,7 +9,7 @@ import { cleanDocx } from '@platejs/docx';
 import { htmlToDocxBlob, preprocessMammothHtml } from '@platejs/docx-io';
 import { jsx } from '@platejs/test-utils';
 import mammoth from 'mammoth';
-import type { BasePlugin, Value } from 'platejs';
+import type { Value } from 'platejs';
 import { createBaseEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 
@@ -18,11 +18,9 @@ import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-
 
 jsx;
 
-const editorPlugins = [...BaseEditorKit, ...DocxExportKit] as BasePlugin[];
-
 const createTestEditor = (value?: Value) =>
   createBaseEditor({
-    plugins: editorPlugins,
+    plugins: [...BaseEditorKit, ...DocxExportKit],
     value,
   });
 

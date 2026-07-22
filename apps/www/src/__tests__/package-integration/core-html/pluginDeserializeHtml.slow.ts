@@ -1,4 +1,5 @@
 import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { property, schema } from '@platejs/plite';
 
 import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
 import {
@@ -10,10 +11,24 @@ import { pluginDeserializeHtml } from '../../../../../../packages/core/src/lib/p
 
 const parse = () => ({ type: BaseParagraphPlugin.key });
 
+const paragraphElement = {
+  content: schema.content.text({ default: 'text', min: 1 }),
+} as const;
+
+const deserializeWithPlugin = (
+  plugin: Parameters<typeof pluginDeserializeHtml>[1],
+  options: Parameters<typeof pluginDeserializeHtml>[2]
+) => {
+  const editor = createBaseEditor({
+    plugins: [plugin],
+  });
+
+  return pluginDeserializeHtml(editor, editor.getPlugin(plugin), options);
+};
+
 describe('when element is p and validNodeName is P', () => {
   it('returns a paragraph node', () => {
     const deserializer: HtmlDeserializer = {
-      isElement: true,
       parse,
       rules: [
         {
@@ -23,15 +38,16 @@ describe('when element is p and validNodeName is P', () => {
     };
 
     expect(
-      pluginDeserializeHtml(
-        createBaseEditor(),
+      deserializeWithPlugin(
         createBasePlugin({
-          node: { type: BaseParagraphPlugin.key },
+          key: BaseParagraphPlugin.key,
           parsers: {
             html: {
               deserializer,
             },
           },
+          schema: { element: paragraphElement },
+          type: BaseParagraphPlugin.key,
         }),
         { element: document.createElement('p') }
       )?.node
@@ -45,14 +61,12 @@ describe('when element is p, validAttribute', () => {
     element.setAttribute('title', '');
 
     expect(
-      pluginDeserializeHtml(
-        createBaseEditor(),
+      deserializeWithPlugin(
         createBasePlugin({
-          node: { type: BaseParagraphPlugin.key },
+          key: BaseParagraphPlugin.key,
           parsers: {
             html: {
               deserializer: {
-                isElement: true,
                 parse,
                 rules: [
                   {
@@ -62,6 +76,8 @@ describe('when element is p, validAttribute', () => {
               },
             },
           },
+          schema: { element: paragraphElement },
+          type: BaseParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -72,14 +88,12 @@ describe('when element is p, validAttribute', () => {
     const element = document.createElement('p');
 
     expect(
-      pluginDeserializeHtml(
-        createBaseEditor(),
+      deserializeWithPlugin(
         createBasePlugin({
-          node: { type: BaseParagraphPlugin.key },
+          key: BaseParagraphPlugin.key,
           parsers: {
             html: {
               deserializer: {
-                isElement: true,
                 parse,
                 rules: [
                   {
@@ -89,6 +103,8 @@ describe('when element is p, validAttribute', () => {
               },
             },
           },
+          schema: { element: paragraphElement },
+          type: BaseParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -102,14 +118,12 @@ describe('when element is p with color and rule style is different', () => {
     element.style.color = '#FF0000';
 
     expect(
-      pluginDeserializeHtml(
-        createBaseEditor(),
+      deserializeWithPlugin(
         createBasePlugin({
-          node: { type: BaseParagraphPlugin.key },
+          key: BaseParagraphPlugin.key,
           parsers: {
             html: {
               deserializer: {
-                isElement: true,
                 parse,
                 rules: [
                   {
@@ -121,6 +135,8 @@ describe('when element is p with color and rule style is different', () => {
               },
             },
           },
+          schema: { element: paragraphElement },
+          type: BaseParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -134,14 +150,12 @@ describe('when element is p with same style color than rule', () => {
     element.style.color = 'rgb(255, 0, 0)';
 
     expect(
-      pluginDeserializeHtml(
-        createBaseEditor(),
+      deserializeWithPlugin(
         createBasePlugin({
-          node: { type: BaseParagraphPlugin.key },
+          key: BaseParagraphPlugin.key,
           parsers: {
             html: {
               deserializer: {
-                isElement: true,
                 parse,
                 rules: [
                   {
@@ -153,6 +167,8 @@ describe('when element is p with same style color than rule', () => {
               },
             },
           },
+          schema: { element: paragraphElement },
+          type: BaseParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -166,14 +182,12 @@ describe('when element has style color and rule style color is *', () => {
     element.style.color = '#FF0000';
 
     expect(
-      pluginDeserializeHtml(
-        createBaseEditor(),
+      deserializeWithPlugin(
         createBasePlugin({
-          node: { type: BaseParagraphPlugin.key },
+          key: BaseParagraphPlugin.key,
           parsers: {
             html: {
               deserializer: {
-                isElement: true,
                 parse,
                 rules: [
                   {
@@ -185,6 +199,8 @@ describe('when element has style color and rule style color is *', () => {
               },
             },
           },
+          schema: { element: paragraphElement },
+          type: BaseParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -198,10 +214,9 @@ describe('when element is strong and validNodeName is strong', () => {
     el.textContent = 'hello';
 
     expect(
-      pluginDeserializeHtml(
-        createBaseEditor(),
+      deserializeWithPlugin(
         createBasePlugin({
-          node: { mark: true, type: BoldPlugin.key },
+          key: BoldPlugin.key,
           parsers: {
             html: {
               deserializer: {
@@ -212,6 +227,9 @@ describe('when element is strong and validNodeName is strong', () => {
                 ],
               },
             },
+          },
+          schema: {
+            mark: property.boolean({ default: false, omitDefault: true }),
           },
         }),
         { deserializeLeaf: true, element: el }

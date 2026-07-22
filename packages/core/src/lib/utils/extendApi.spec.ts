@@ -53,21 +53,25 @@ describe('extendEditorApi method', () => {
     }));
 
     const furtherExtendedPlugin = extendedPlugin.extendEditorApi(
-      ({ plugin: { api, options } }) => ({
-        getTotal: (factor: number) => api.multiply(factor) + options.baseValue,
+      ({ getOptions, plugin: { api }, setOption }) => ({
+        getTotal: (factor: number) =>
+          api.multiply(factor) + getOptions().baseValue,
         increment: (amount: number) => {
-          options.baseValue += amount;
+          setOption('baseValue', getOptions().baseValue + amount);
         },
       })
     );
 
-    const editor = createBaseEditor({ plugins: [furtherExtendedPlugin] });
+    const editor = createBaseEditor({
+      plugins: [furtherExtendedPlugin],
+    });
 
     expect(editor.plugins.customPlugin.options.baseValue).toBe(5);
     expect(editor.api.multiply(3)).toBe(15);
 
     editor.api.increment(2);
-    expect(editor.plugins.customPlugin.options.baseValue).toBe(7);
+    expect(editor.plugin(furtherExtendedPlugin).getOption('baseValue')).toBe(7);
+    expect(editor.plugins.customPlugin.options.baseValue).toBe(5);
 
     expect(editor.api.getTotal(3)).toBe(28); // (7 * 3) + 7
   });
@@ -98,7 +102,9 @@ describe('extendEditorApi method', () => {
         anotherMethod: () => api.sampleMethod(1) + options.baseValue,
       }));
 
-    const editor = createBaseEditor({ plugins: [extendedPlugin] });
+    const editor = createBaseEditor({
+      plugins: [extendedPlugin],
+    });
 
     expect(editor.plugin(extendedPlugin).getOptions().baseValue).toBe(20);
     expect(editor.api.sampleMethod(1)).toBe(21);
@@ -124,7 +130,9 @@ describe('extendEditorApi method', () => {
         method3: () => api.method1() + api.method2(),
       }));
 
-    const editor = createBaseEditor({ plugins: [extendedPlugin] });
+    const editor = createBaseEditor({
+      plugins: [extendedPlugin],
+    });
 
     expect(editor.api.method1()).toBe(1);
     expect(editor.api.method2()).toBe(2);
@@ -206,7 +214,9 @@ describe('extendEditorApi method', () => {
       };
     });
 
-    const editor = createBaseEditor({ plugins: [basePlugin, overridePlugin] });
+    const editor = createBaseEditor({
+      plugins: [basePlugin, overridePlugin],
+    });
 
     expect(editor.api.method()).toBe('override base');
   });
@@ -224,7 +234,9 @@ describe('extendEditorApi method', () => {
         },
       }));
 
-    const editor = createBaseEditor({ plugins: [basePlugin] });
+    const editor = createBaseEditor({
+      plugins: [basePlugin],
+    });
 
     expect(editor.api.cloud.a()).toBe('a');
     expect(editor.api.cloud.b()).toBe('b');
@@ -260,7 +272,9 @@ describe('extendEditorApi method', () => {
       method: () => 'plugin3',
     }));
 
-    const editor = createBaseEditor({ plugins: [plugin1, plugin3] });
+    const editor = createBaseEditor({
+      plugins: [plugin1, plugin3],
+    });
 
     expect(editor.api.method()).toBe('plugin3'); // Overridden by plugin2
     expect(getEditorPlugin(editor, plugin1).api.scoped()).toBe('scoped2'); // From plugin1, not overridden
@@ -301,7 +315,9 @@ describe('extendEditorApi method', () => {
       };
     });
 
-    const editor = createBaseEditor({ plugins: [basePlugin, overridePlugin] });
+    const editor = createBaseEditor({
+      plugins: [basePlugin, overridePlugin],
+    });
 
     expect(editor.api.level1.method1()).toBe(10);
     expect(editor.api.level1.method2(3)).toBe(30);
@@ -317,15 +333,17 @@ describe('extendEditorApi method', () => {
 
     expect(editor.api.override()).toBe('overridden: base');
 
-    const plugin = editor.getPlugin(basePlugin);
-    expect(plugin.api.level1.method1()).toBe(10);
+    const context = editor.plugin(basePlugin);
 
-    plugin.api.level1.method1 = () => 100;
-    expect(plugin.api.level1.method1()).toBe(100);
-    expect(editor.api.level1.method1()).toBe(10);
+    expect(context.api.level1.method1()).toBe(10);
+    expect(Object.isFrozen(context.api.level1)).toBe(true);
+    expect(() => {
+      context.api.level1.method1 = () => 100;
+    }).toThrow();
 
-    editor.plugins.testPlugin.options.baseValue = 20;
+    context.setOption('baseValue', 20);
     expect(editor.api.level1.method1()).toBe(20);
+    expect(editor.plugins.testPlugin.options.baseValue).toBe(10);
   });
 });
 
@@ -341,7 +359,9 @@ describe('extendApi method', () => {
         pluginMethod: () => 'plugin',
       }));
 
-    const editor = createBaseEditor({ plugins: [testPlugin] });
+    const editor = createBaseEditor({
+      plugins: [testPlugin],
+    });
 
     expect(editor.api.globalMethod()).toBe('global');
     expect(editor.api.testPlugin.pluginMethod()).toBe('plugin');
@@ -365,7 +385,9 @@ describe('extendApi method', () => {
         method3: () => api.method1() + api.method2(),
       }));
 
-    const editor = createBaseEditor({ plugins: [testPlugin] });
+    const editor = createBaseEditor({
+      plugins: [testPlugin],
+    });
 
     expect(editor.api.testPlugin.method1()).toBe(1);
     expect(editor.api.testPlugin.method2()).toBe(2);
@@ -382,7 +404,9 @@ describe('extendApi method', () => {
       getValue: () => getOptions().baseValue,
     }));
 
-    const editor = createBaseEditor({ plugins: [testPlugin] });
+    const editor = createBaseEditor({
+      plugins: [testPlugin],
+    });
 
     expect(editor.api.testPlugin.getValue()).toBe(10);
   });
@@ -398,7 +422,9 @@ describe('extendApi method', () => {
         pluginMethod: () => editor.api.globalMethod() * 2,
       }));
 
-    const editor = createBaseEditor({ plugins: [testPlugin] });
+    const editor = createBaseEditor({
+      plugins: [testPlugin],
+    });
 
     expect(editor.api.testPlugin.pluginMethod()).toBe(10);
   });
@@ -416,7 +442,9 @@ describe('extendApi method', () => {
       method: () => 'plugin2',
     }));
 
-    const editor = createBaseEditor({ plugins: [plugin1, plugin2] });
+    const editor = createBaseEditor({
+      plugins: [plugin1, plugin2],
+    });
 
     expect(editor.api.plugin1.method()).toBe('plugin1');
     expect(editor.api.plugin2.method()).toBe('plugin2');
@@ -439,7 +467,9 @@ describe('extendApi method', () => {
       };
     });
 
-    const editor = createBaseEditor({ plugins: [basePlugin, overridePlugin] });
+    const editor = createBaseEditor({
+      plugins: [basePlugin, overridePlugin],
+    });
 
     expect(editor.api.basePlugin.method()).toBe('base');
     expect(editor.api.overridePlugin.method()).toBe('override base');
@@ -462,7 +492,9 @@ describe('extendApi method', () => {
         combinedMethod: () => `${api.globalMethod()}-${api.pluginMethod()}`,
       }));
 
-    const editor = createBaseEditor({ plugins: [testPlugin] });
+    const editor = createBaseEditor({
+      plugins: [testPlugin],
+    });
 
     expect(editor.api.globalMethod()).toBe('global');
     expect(editor.api.testPlugin.pluginMethod()).toBe(5);

@@ -6,10 +6,9 @@ import { BaseTocPlugin } from './BaseTocPlugin';
 
 const TestParagraphPlugin = createBasePlugin({
   key: 'paragraph',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
     },
   },
 });
@@ -22,9 +21,10 @@ describe('BaseTocPlugin', () => {
     const plugin = editor.getPlugin(BaseTocPlugin);
 
     expect(plugin.key).toBe(KEYS.toc);
-    expect(plugin.node.element).toMatchObject({
-      void: 'block',
-    });
+    expect(editor.read.schema.element(BaseTocPlugin)?.behavior.void).toBe(true);
+    expect(editor.read.schema.element(BaseTocPlugin)?.behavior.voidKind).toBe(
+      'block'
+    );
     expect(plugin.options).toMatchObject({
       isScroll: true,
       topOffset: 80,
@@ -35,7 +35,9 @@ describe('BaseTocPlugin', () => {
         type: KEYS.toc,
       })
     ).toMatchObject({ atom: true, inline: false, void: true });
-    expect(editor.read.schema.element(KEYS.toc)?.groups).toContain('block');
+    expect(editor.read.schema.element(BaseTocPlugin)?.groups).toContain(
+      'block'
+    );
     expect(editor.update.toc.insert).toBeDefined();
   });
 

@@ -7,7 +7,7 @@ import {
   waitForTextPathMaterialized,
 } from './materialization';
 import { setDOMSelection, setSelection } from './selection-actions';
-import { waitForHandleSelection } from './selection-bookmarks';
+import { waitForHandleSelection } from './selection-anchors';
 import {
   hasExpandedSelection,
   setSelectionWithHandle,
@@ -390,6 +390,7 @@ export const clickTextOffset = async (
         ? {
             anchor: { offset, path },
             focus: { offset, path },
+            kind: 'text',
           }
         : undefined
     ).catch(async (error: unknown) => {
@@ -414,7 +415,7 @@ export const collapseDOMAtTextPath = async (
   point: SelectionPoint,
   options: PliteBrowserDOMPathOptions = {}
 ) => {
-  const selection = { anchor: point, focus: point };
+  const selection = { anchor: point, focus: point, kind: 'text' as const };
 
   if (
     !(await scrollTextPathIntoViewAndCheckMaterialized(

@@ -1,38 +1,10 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import { repoRoot } from './check-plite.mjs';
-
-test('source preload bypasses stale direct and transitive workspace artifacts', () => {
-  const result = spawnSync(
-    'bun',
-    [
-      '--preload',
-      './config/plite-source-aliases.ts',
-      '-e',
-      [
-        "const { BaseAIPlugin } = await import('@platejs/ai');",
-        "const { createBaseEditor, BaseParagraphPlugin } = await import('@platejs/core');",
-        "const { MarkdownPlugin } = await import('@platejs/markdown');",
-        "const { ContentSlice } = await import('@platejs/plite');",
-        "const { ExitBreakPlugin } = await import('@platejs/utils');",
-        'createBaseEditor({ plugins: [BaseParagraphPlugin, BaseAIPlugin, MarkdownPlugin] });',
-        'ContentSlice.closed([]);',
-        'void ExitBreakPlugin;',
-      ].join('\n'),
-    ],
-    {
-      cwd: repoRoot,
-      encoding: 'utf8',
-    }
-  );
-
-  assert.equal(result.status, 0, result.stderr || result.stdout);
-});
 
 test('workspace source entries cover every public runtime entry exactly once', () => {
   const entries = getWorkspaceSourceEntries(repoRoot);
@@ -132,4 +104,18 @@ test('package typecheck gets source paths without exposing them to Bun', () => {
   );
 
   assert.match(rootManifest.scripts['plite:typecheck'], /^pnpm --parallel /);
+});
+
+test('type-test fixtures resolve the Plite React internal entry from source', () => {
+  const config = JSON.parse(
+    readFileSync(
+      path.join(repoRoot, 'tooling/config/tsconfig.type-tests.json'),
+      'utf8'
+    )
+  );
+
+  assert.deepEqual(
+    config.compilerOptions.paths['@platejs/plite-react/internal'],
+    ['../../packages/plite-react/src/internal/index.ts']
+  );
 });

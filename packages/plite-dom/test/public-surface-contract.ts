@@ -105,6 +105,7 @@ const expectedPliteDOMRuntimeRootExports = [
   'normalizePoint',
   'normalizeRange',
   'normalizeStringDiff',
+  'parseDOMClipboardHtml',
   'splitDecorationsByChild',
   'targetRange',
   'verifyDiffState',

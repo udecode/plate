@@ -6,7 +6,6 @@ import {
   ElementApi,
   type Element,
   type EditorCommit,
-  element,
   property,
   schema,
   SelectionApi,
@@ -87,33 +86,71 @@ const runEditorTransaction = (
     ...options,
   });
 
+const inlineContent = schema.content.any(
+  [schema.content.text(), schema.content.types(['inline', 'link', 'mention'])],
+  { default: 'text', min: 1 }
+);
+const blockContent = schema.content.types(
+  [
+    'article',
+    'block',
+    'bulleted-list',
+    'code-block',
+    'container',
+    'heading',
+    'list-item',
+    'numbered-list',
+    'paragraph',
+    'quote',
+    'section',
+    'thematic-break',
+  ],
+  { default: { type: 'paragraph' }, min: 1 }
+);
+
 const SnapshotContractSchema = defineEditorSchema({
   elements: {
-    article: element({}),
-    block: element({}),
-    'bulleted-list': element({}),
-    'code-block': element({}),
-    'code-line': element({}),
-    container: element({}),
-    heading: element({}),
-    inline: element({ inline: true }),
-    link: element({ inline: true }),
-    'list-item': element({}),
-    mention: element({ void: 'markable-inline' }),
-    'numbered-list': element({}),
-    paragraph: element({
+    article: { content: blockContent } as const,
+    block: { content: inlineContent } as const,
+    'bulleted-list': {
+      content: schema.content.type('list-item', {
+        default: { type: 'list-item' },
+        min: 1,
+      }),
+    } as const,
+    'code-block': {
+      content: schema.content.type('code-line', {
+        default: { type: 'code-line' },
+        min: 1,
+      }),
+    } as const,
+    'code-line': { content: inlineContent } as const,
+    container: { content: blockContent } as const,
+    heading: { content: inlineContent } as const,
+    inline: { content: inlineContent, inline: true } as const,
+    link: { content: inlineContent, inline: true } as const,
+    'list-item': { content: inlineContent } as const,
+    mention: { void: 'markable-inline' } as const,
+    'numbered-list': {
+      content: schema.content.type('list-item', {
+        default: { type: 'list-item' },
+        min: 1,
+      }),
+    } as const,
+    paragraph: {
+      content: inlineContent,
       properties: {
         id: property.string(),
         rootWrap: property.boolean(),
       },
-    }),
-    quote: element({}),
-    section: element({}),
-    'thematic-break': element({ void: 'block' }),
+    } as const,
+    quote: { content: blockContent } as const,
+    section: { content: blockContent } as const,
+    'thematic-break': { void: 'block' } as const,
   },
   id: 'snapshot-contract',
   properties: [schema.textProperty('segment', property.boolean())],
-  root: schema.root({
+  root: {
     content: schema.content.types([
       'article',
       'block',
@@ -128,7 +165,7 @@ const SnapshotContractSchema = defineEditorSchema({
       'section',
       'thematic-break',
     ]),
-  }),
+  } as const,
   unknown: 'preserve',
   version: 1,
 });
@@ -1038,68 +1075,6 @@ it('the correction kernel removes stray top-level text after insertNodes', () =>
   ]);
 });
 
-it('the correction kernel removes block-only inline children after insertNodes', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'quote',
-        children: [
-          {
-            type: 'paragraph',
-            children: [{ text: 'alpha' }],
-          },
-        ],
-      } as Descendant,
-    ],
-    selection: null,
-  });
-
-  editorInsertNodes(
-    editor,
-    {
-      type: 'link',
-      children: [{ text: 'stray' }],
-    },
-    { at: [0, 1] }
-  );
-
-  assert.deepEqual(editorGetSnapshot(editor).children, [
-    {
-      type: 'quote',
-      children: [
-        {
-          type: 'paragraph',
-          children: [{ text: 'alpha' }],
-        },
-      ],
-    },
-  ]);
-});
-
-it('the correction kernel removes stray top-level text during replace', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: [
-      { text: 'stray' } as Descendant,
-      {
-        type: 'paragraph',
-        children: [{ text: 'beta' }],
-      },
-    ],
-    selection: null,
-  });
-
-  assert.deepEqual(editorGetSnapshot(editor).children, [
-    {
-      type: 'paragraph',
-      children: [{ text: 'beta' }],
-    },
-  ]);
-});
-
 it('editorNormalize explicitly merges adjacent compatible text children in inline-style containers', () => {
   const editor = createEditor();
 
@@ -1141,75 +1116,6 @@ it('editorNormalize explicitly removes empty adjacent text in inline-style conta
     {
       type: 'paragraph',
       children: [{ text: 'alphabeta', bold: true }],
-    },
-  ]);
-});
-
-it('editorNormalize explicitly flattens block wrappers inside inline-style containers', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'alpha' },
-          {
-            type: 'quote',
-            children: [
-              {
-                type: 'paragraph',
-                children: [{ text: 'beta' }],
-              },
-            ],
-          },
-        ],
-      } as Descendant,
-    ],
-    selection: null,
-  });
-
-  editor.update.value.repair();
-
-  assert.deepEqual(editorGetSnapshot(editor).children, [
-    {
-      type: 'paragraph',
-      children: [{ text: 'alphabeta' }],
-    },
-  ]);
-});
-
-it('the correction kernel removes block-only inline children during replace', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'quote',
-        children: [
-          {
-            type: 'paragraph',
-            children: [{ text: 'alpha' }],
-          },
-          {
-            type: 'link',
-            children: [{ text: 'stray' }],
-          },
-        ],
-      } as Descendant,
-    ],
-    selection: null,
-  });
-
-  assert.deepEqual(editorGetSnapshot(editor).children, [
-    {
-      type: 'quote',
-      children: [
-        {
-          type: 'paragraph',
-          children: [{ text: 'alpha' }],
-        },
-      ],
     },
   ]);
 });
@@ -1914,8 +1820,8 @@ it('slice replacement keeps nested selection paths under the insertion ancestor'
 
   assert.deepEqual(editorGetSnapshot(editor).selection, {
     kind: 'text',
-    anchor: { path: [0, 1, 0, 0], offset: 2 },
-    focus: { path: [0, 1, 0, 0], offset: 2 },
+    anchor: { path: [0, 0, 2, 0, 0], offset: 2 },
+    focus: { path: [0, 0, 2, 0, 0], offset: 2 },
   });
 });
 
@@ -3169,7 +3075,7 @@ it('supports path-based node property updates while keeping runtime ids stable',
   const textId = before.index.idAt([0, 0]);
 
   editor.update((tx) => {
-    tx.nodes.set({ type: 'quote', align: 'center' }, { at: [0] });
+    tx.nodes.set({ type: 'heading', align: 'center' }, { at: [0] });
     editorSetNodes(
       editor,
       {
@@ -3186,7 +3092,7 @@ it('supports path-based node property updates while keeping runtime ids stable',
     type: string;
   };
 
-  assert.equal(firstBlock.type, 'quote');
+  assert.equal(firstBlock.type, 'heading');
   assert.equal(firstBlock.align, 'center');
   assert.equal(firstBlock.children[0]?.bold, true);
   assert.equal(firstBlock.children[0]?.italic, true);

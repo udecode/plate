@@ -5,10 +5,9 @@ import { BaseCaptionPlugin } from './BaseCaptionPlugin';
 
 const MediaPlugin = createBasePlugin({
   key: 'media',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', max: 1, min: 1 }),
-      groups: ['block'],
     },
   },
 });
@@ -18,9 +17,7 @@ const createCaptionEditor = (value: Value, selection: Selection = null) =>
     plugins: [
       MediaPlugin,
       BaseCaptionPlugin.configure({
-        options: {
-          query: { allow: ['media'] },
-        },
+        config: { targetPluginKeys: ['media'] },
       }),
     ],
     selection,
@@ -65,6 +62,29 @@ describe('withCaption', () => {
         children: [
           {
             caption: { text: 'not-an-array' },
+            children: [{ text: '' }],
+            type: 'media',
+          },
+        ],
+      })
+    ).toThrow(/plate\.caption\.content/);
+  });
+
+  it('rejects element-shaped caption descendants without a string type', () => {
+    const editor = createCaptionEditor([
+      {
+        caption: [{ text: 'caption' }],
+        children: [{ text: '' }],
+        type: 'media',
+      },
+    ]);
+    const elementShapedCaption: unknown = [{ children: [{ text: '' }] }];
+
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            caption: elementShapedCaption,
             children: [{ text: '' }],
             type: 'media',
           },
@@ -170,9 +190,7 @@ describe('withCaption', () => {
       plugins: [
         MediaPlugin,
         BaseCaptionPlugin.configure({
-          options: {
-            query: { allow: ['media'] },
-          },
+          config: { targetPluginKeys: ['media'] },
         }),
       ],
       selection: {

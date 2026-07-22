@@ -20,10 +20,9 @@ const ListTargetSchemaKit = [
 ].map((type) =>
   createBasePlugin({
     key: type,
-    node: {
+    schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
-        groups: ['block'],
       },
     },
   })

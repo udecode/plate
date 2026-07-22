@@ -1,4 +1,4 @@
-import { parseDOMClipboardHtml } from '../src/internal';
+import { parseDOMClipboardHtml } from '../src';
 
 describe('clipboard HTML', () => {
   const setTrustedTypes = (value: unknown) => {

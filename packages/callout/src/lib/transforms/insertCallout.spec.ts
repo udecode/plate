@@ -35,7 +35,7 @@ describe('insertCallout', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseCalloutPlugin.configure({
-          node: { type: 'custom-callout' },
+          type: 'custom-callout',
         }),
       ],
       value: [{ children: [{ text: '' }], type: KEYS.p }],

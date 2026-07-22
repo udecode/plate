@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   addMark as editorAddMark,
-  defineCommand as editorDefineCommand,
   deleteBackward as editorDeleteBackward,
   deleteForward as editorDeleteForward,
   deleteFragment as editorDeleteFragment,
@@ -33,9 +32,7 @@ import {
   editorCommands,
   type Editor,
   type EditorCommand,
-  type EditorCommandHandler,
-  type EditorCommandOptions,
-  type EditorCommandReference,
+  type EditorCommandAroundHandler,
   type Element,
   type Range,
   SelectionApi,
@@ -54,22 +51,17 @@ const runEditorTransaction = (
 
 let commandExtensionOrder = 0;
 
-const installCommandExtension = <TCommand extends EditorCommand>(
+const installCommandExtension = <Input>(
   editor: Editor,
-  command: EditorCommandReference<TCommand>,
-  handler: EditorCommandHandler<TCommand>,
-  options?: EditorCommandOptions
+  command: EditorCommand<Input>,
+  handler: EditorCommandAroundHandler<Input>,
+  options?: { priority?: number }
 ) =>
   editor.extend(
     defineEditorExtension({
-      commands: [
-        {
-          command,
-          handler,
-          ...(options ? { options } : {}),
-        },
-      ],
+      commands: ({ around }) => [around(command, handler)],
       name: `test-command-${commandExtensionOrder++}`,
+      priority: options?.priority,
     })
   );
 
@@ -81,17 +73,6 @@ const paragraph = (
   ...props,
   children: [{ text }],
 });
-
-type DeleteCommand = {
-  direction: 'backward' | 'forward';
-  type: 'delete';
-  unit: 'character' | 'word' | 'line' | 'block';
-};
-
-type DeleteFragmentCommand = {
-  direction: 'backward' | 'forward';
-  type: 'delete_fragment';
-};
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
@@ -716,11 +697,11 @@ describe('plite transaction contract', () => {
 
     const unsubscribe = installCommandExtension(
       editor,
-      'insert_text',
-      (context, next) => {
-        seenCommands.push(context.command);
+      editorCommands.insertText,
+      ({ next, ...context }) => {
+        seenCommands.push(context.input);
         return next({
-          ...context.command,
+          ...context.input,
           text: '!',
         });
       }
@@ -737,14 +718,10 @@ describe('plite transaction contract', () => {
     assert.deepEqual(seenCommands[0], {
       options: {},
       text: '?',
-      type: 'insert_text',
     });
     assert.equal(editorString(editor, [0]), 'one!');
     assert(commit);
-    assert.deepEqual(commit.command, {
-      origin: 'command',
-      type: 'insert_text',
-    });
+    assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('text'), true);
     assert.equal(commit.changed.has('structure'), false);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
@@ -778,10 +755,7 @@ describe('plite transaction contract', () => {
     const commit = editorGetLastCommit(editor);
 
     assert(commit);
-    assert.deepEqual(commit.command, {
-      origin: 'command',
-      type: 'insert_text',
-    });
+    assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('text'), true);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
   });
@@ -801,9 +775,9 @@ describe('plite transaction contract', () => {
 
     const unsubscribe = installCommandExtension(
       editor,
-      'insert_break',
-      (context, next) => {
-        seenCommands.push(context.command);
+      editorCommands.insertBreak,
+      ({ next, ...context }) => {
+        seenCommands.push(context.input);
         return next();
       }
     );
@@ -815,16 +789,13 @@ describe('plite transaction contract', () => {
 
     unsubscribe();
 
-    assert.deepEqual(seenCommands, [{ type: 'insert_break' }]);
+    assert.deepEqual(seenCommands, [undefined]);
     assert.deepEqual(editorGetSnapshot(editor).children, [
       paragraph('o'),
       paragraph('ne'),
     ]);
     assert(commit);
-    assert.deepEqual(commit.command, {
-      origin: 'command',
-      type: 'insert_break',
-    });
+    assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('structure'), true);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 1]]);
     assert.equal(commit.selectionChanged, true);
@@ -855,9 +826,9 @@ describe('plite transaction contract', () => {
 
     const unsubscribe = installCommandExtension(
       editor,
-      'insert_soft_break',
-      (context, next) => {
-        seenCommands.push(context.command);
+      editorCommands.insertSoftBreak,
+      ({ next, ...context }) => {
+        seenCommands.push(context.input);
         return next();
       }
     );
@@ -869,13 +840,10 @@ describe('plite transaction contract', () => {
 
     unsubscribe();
 
-    assert.deepEqual(seenCommands, [{ type: 'insert_soft_break' }]);
+    assert.deepEqual(seenCommands, [undefined]);
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('o\nne')]);
     assert(commit);
-    assert.deepEqual(commit.command, {
-      origin: 'command',
-      type: 'insert_soft_break',
-    });
+    assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('text'), true);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
     assert.equal(commit.changed.has('structure'), false);
@@ -895,8 +863,7 @@ describe('plite transaction contract', () => {
   it('routes delete commands through pure command handlers and preserves commits', () => {
     const backwardEditor = createEditor();
     const fragmentEditor = createEditor();
-    const deleteFragmentCommand =
-      editorDefineCommand<DeleteFragmentCommand>('delete_fragment');
+    const deleteFragmentCommand = editorCommands.deleteFragment;
     const deleteCommands: unknown[] = [];
     const fragmentCommands: unknown[] = [];
 
@@ -908,9 +875,9 @@ describe('plite transaction contract', () => {
 
     const unsubscribeDelete = installCommandExtension(
       backwardEditor,
-      'delete',
-      (context, next) => {
-        deleteCommands.push(context.command);
+      editorCommands.delete,
+      ({ next, ...context }) => {
+        deleteCommands.push(context.input);
         return next();
       }
     );
@@ -926,7 +893,6 @@ describe('plite transaction contract', () => {
       {
         direction: 'backward',
         unit: 'character',
-        type: 'delete',
       },
     ]);
     assert.equal(editorString(backwardEditor, [0]), 'on');
@@ -943,8 +909,8 @@ describe('plite transaction contract', () => {
     const unsubscribeFragment = installCommandExtension(
       fragmentEditor,
       deleteFragmentCommand,
-      (context, next) => {
-        fragmentCommands.push(context.command);
+      ({ next, ...context }) => {
+        fragmentCommands.push(context.input);
         return next();
       }
     );
@@ -958,7 +924,6 @@ describe('plite transaction contract', () => {
 
     assert.deepEqual(fragmentCommands[0], {
       direction: 'backward',
-      type: 'delete_fragment',
     });
     assert.equal(editorString(fragmentEditor, [0]), 'ho');
     assert(fragmentCommit);
@@ -967,7 +932,7 @@ describe('plite transaction contract', () => {
   });
 
   it('honors delete command direction overrides from pure handlers', () => {
-    const deleteCommand = editorDefineCommand<DeleteCommand>('delete');
+    const deleteCommand = editorCommands.delete;
     const backwardEditor = createEditor();
     const forwardEditor = createEditor();
 
@@ -980,7 +945,7 @@ describe('plite transaction contract', () => {
     const unsubscribeBackward = installCommandExtension(
       backwardEditor,
       deleteCommand,
-      (context, next) => next({ ...context.command, direction: 'forward' })
+      ({ next, ...context }) => next({ ...context.input, direction: 'forward' })
     );
 
     backwardEditor.update(() => {
@@ -999,7 +964,8 @@ describe('plite transaction contract', () => {
     const unsubscribeForward = installCommandExtension(
       forwardEditor,
       deleteCommand,
-      (context, next) => next({ ...context.command, direction: 'backward' })
+      ({ next, ...context }) =>
+        next({ ...context.input, direction: 'backward' })
     );
 
     forwardEditor.update(() => {
@@ -1028,7 +994,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
     assert(commit);
-    assert.equal(commit.command, null);
+    assert.equal(commit.tags.includes('semantic-command'), false);
     assert.equal(commit.changed.has('selection'), true);
     assert.equal(commit.changed.has('document'), false);
     assert.equal(commit.selectionChanged, true);
@@ -1073,11 +1039,11 @@ describe('plite transaction contract', () => {
 
     const unsubscribe = installCommandExtension(
       editor,
-      'move_selection',
-      (context, next) => {
-        seenCommands.push(context.command);
+      editorCommands.move,
+      ({ next, ...context }) => {
+        seenCommands.push(context.input);
         return next({
-          ...context.command,
+          ...context.input,
           options: {
             distance: 2,
           },
@@ -1095,7 +1061,6 @@ describe('plite transaction contract', () => {
     assert.deepEqual(seenCommands, [
       {
         options: {},
-        type: 'move_selection',
       },
     ]);
     assert.deepEqual(editorGetSnapshot(editor).selection, {
@@ -1104,10 +1069,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 2 },
     });
     assert(commit);
-    assert.deepEqual(commit.command, {
-      origin: 'command',
-      type: 'move_selection',
-    });
+    assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('selection'), true);
     assert.equal(commit.changes.empty, true);
     assert.deepEqual(commit.changed.runtimeIds('node'), []);
@@ -1267,11 +1229,11 @@ describe('plite transaction contract', () => {
 
     const unsubscribeAdd = installCommandExtension(
       editor,
-      'add_mark',
-      (context, next) => {
-        seenCommands.push(context.command);
+      editorCommands.addMark,
+      ({ next, ...context }) => {
+        seenCommands.push(context.input);
         return next({
-          ...context.command,
+          ...context.input,
           key: 'italic',
         });
       }
@@ -1286,7 +1248,6 @@ describe('plite transaction contract', () => {
 
     assert.deepEqual(seenCommands[0], {
       key: 'bold',
-      type: 'add_mark',
       value: true,
     });
     assert.deepEqual(getMarks(editor), { italic: true });
@@ -1304,11 +1265,11 @@ describe('plite transaction contract', () => {
 
     const unsubscribeRemove = installCommandExtension(
       editor,
-      'remove_mark',
-      (context, next) => {
-        seenCommands.push(context.command);
+      editorCommands.removeMark,
+      ({ next, ...context }) => {
+        seenCommands.push(context.input);
         return next({
-          ...context.command,
+          ...context.input,
           key: 'italic',
         });
       }
@@ -1323,7 +1284,6 @@ describe('plite transaction contract', () => {
 
     assert.deepEqual(seenCommands[1], {
       key: 'bold',
-      type: 'remove_mark',
     });
     assert.deepEqual(getMarks(editor), {});
     assert(removeCommit);
@@ -1356,9 +1316,9 @@ describe('plite transaction contract', () => {
 
     const unsubscribe = installCommandExtension(
       editor,
-      'insert_text',
-      (context, next) => {
-        seenCommands.push(context.command);
+      editorCommands.insertText,
+      ({ next, ...context }) => {
+        seenCommands.push(context.input);
         return next();
       }
     );
@@ -1366,7 +1326,11 @@ describe('plite transaction contract', () => {
     const registry = editorGetExtensionRegistry(editor);
 
     assert.notEqual(registry, initialRegistry);
-    assert.equal(registry.commands.get('insert_text')?.length, 1);
+    assert.equal(
+      registry.commands.byDescriptor.get(editorCommands.insertText)?.entries
+        .length,
+      1
+    );
 
     editor.update((tx) => {
       editorInsertText(editor, '!');
@@ -1377,25 +1341,19 @@ describe('plite transaction contract', () => {
       {
         options: {},
         text: '!',
-        type: 'insert_text',
       },
     ]);
     assert.equal(
-      editorGetExtensionRegistry(editor).commands.has('insert_text'),
+      editorGetExtensionRegistry(editor).commands.byDescriptor.has(
+        editorCommands.insertText
+      ),
       false
     );
   });
 
   it('registers typed internal command definitions with deterministic priority order', () => {
-    type InsertTextCommand = {
-      options: Record<string, never>;
-      text: string;
-      type: 'insert_text';
-    };
-
     const editor = createEditor();
-    const insertTextCommand =
-      editorDefineCommand<InsertTextCommand>('insert_text');
+    const insertTextCommand = editorCommands.insertText;
     const seenCommands: string[] = [];
 
     replaceChildren(editor, [paragraph('one')]);
@@ -1407,8 +1365,8 @@ describe('plite transaction contract', () => {
     const unsubscribeEarly = installCommandExtension(
       editor,
       insertTextCommand,
-      (context, next) => {
-        const text: string = context.command.text;
+      ({ next, ...context }) => {
+        const text: string = context.input.text;
 
         seenCommands.push(`early:${text}`);
         return next();
@@ -1418,8 +1376,8 @@ describe('plite transaction contract', () => {
     const unsubscribeLate = installCommandExtension(
       editor,
       insertTextCommand,
-      (context, next) => {
-        seenCommands.push(`late:${context.command.text}`);
+      ({ next, ...context }) => {
+        seenCommands.push(`late:${context.input.text}`);
         return next();
       },
       { priority: 1 }
@@ -1427,8 +1385,8 @@ describe('plite transaction contract', () => {
     const unsubscribeHigh = installCommandExtension(
       editor,
       insertTextCommand,
-      (context, next) => {
-        seenCommands.push(`high:${context.command.text}`);
+      ({ next, ...context }) => {
+        seenCommands.push(`high:${context.input.text}`);
         return next();
       },
       { priority: 2 }
@@ -1444,7 +1402,9 @@ describe('plite transaction contract', () => {
 
     assert.deepEqual(seenCommands, ['high:!', 'early:!', 'late:!']);
     assert.equal(
-      editorGetExtensionRegistry(editor).commands.has('insert_text'),
+      editorGetExtensionRegistry(editor).commands.byDescriptor.has(
+        insertTextCommand
+      ),
       false
     );
   });
@@ -1461,20 +1421,20 @@ describe('plite transaction contract', () => {
 
     const unsubscribeDecline = installCommandExtension(
       editor,
-      'insert_text',
+      editorCommands.insertText,
       (context) => {
-        seenCommands.push(`decline:${context.command.text}`);
+        seenCommands.push(`decline:${context.input.text}`);
         return false;
       },
       { priority: 2 }
     );
     const unsubscribeOverride = installCommandExtension(
       editor,
-      'insert_text',
-      (context, next) => {
-        seenCommands.push(`override:${context.command.text}`);
+      editorCommands.insertText,
+      ({ next, ...context }) => {
+        seenCommands.push(`override:${context.input.text}`);
         return next({
-          ...context.command,
+          ...context.input,
           text: '?',
         });
       },
@@ -1642,10 +1602,10 @@ describe('plite transaction contract', () => {
     const unsubscribe = installCommandExtension(
       editor,
       editorCommands.replaceSlice,
-      (context, next) => {
-        seenCommands.push(context.command);
+      ({ next, ...context }) => {
+        seenCommands.push(context.input);
         return next({
-          ...context.command,
+          ...context.input,
           slice: ContentSlice.closed([{ text: '!' }]),
         });
       }
@@ -1653,7 +1613,6 @@ describe('plite transaction contract', () => {
 
     dispatchCommand(editor, editorCommands.replaceSlice, {
       slice: ContentSlice.closed([{ text: '?' }]),
-      type: editorCommands.replaceSlice.type,
     });
     const commit = editorGetLastCommit(editor);
 
@@ -1666,7 +1625,6 @@ describe('plite transaction contract', () => {
           openEnd: 0,
           openStart: 0,
         },
-        type: 'replace_slice',
       },
     ]);
     assert.equal(editorString(editor, [0]), 'one!');
@@ -1691,13 +1649,13 @@ describe('plite transaction contract', () => {
     const unsubscribe = installCommandExtension(
       editor,
       editorCommands.replaceSlice,
-      (context, next) => {
-        receivedSlice = context.command.slice;
+      ({ next, ...context }) => {
+        receivedSlice = context.input.slice;
 
-        assert.notEqual(context.command.slice, rawSlice);
-        assert.equal(Object.isFrozen(context.command.slice), true);
-        assert.equal(Object.isFrozen(context.command.slice.content), true);
-        assert.equal(Object.isFrozen(context.command.slice.content[0]), true);
+        assert.notEqual(context.input.slice, rawSlice);
+        assert.equal(Object.isFrozen(context.input.slice), true);
+        assert.equal(Object.isFrozen(context.input.slice.content), true);
+        assert.equal(Object.isFrozen(context.input.slice.content[0]), true);
 
         return next();
       }
@@ -1705,7 +1663,6 @@ describe('plite transaction contract', () => {
 
     dispatchCommand(editor, editorCommands.replaceSlice, {
       slice: rawSlice,
-      type: editorCommands.replaceSlice.type,
     });
     content[0]!.children[0] = { text: 'mutated' };
     unsubscribe();
@@ -1731,7 +1688,7 @@ describe('plite transaction contract', () => {
     const unsubscribe = installCommandExtension(
       editor,
       editorCommands.replaceSlice,
-      (_context, next) => {
+      ({ next }) => {
         commands += 1;
 
         return next();
@@ -1798,10 +1755,7 @@ describe('plite transaction contract', () => {
     assert.equal(extensionCommits.length, 1);
     assert.equal(subscribedCommits.length, 1);
     assert.equal(extensionCommits[0], subscribedCommits[0]);
-    assert.deepEqual(extensionCommits[0]?.command, {
-      origin: 'command',
-      type: 'insert_text',
-    });
+    assert.equal(extensionCommits[0]?.tags.includes('semantic-command'), true);
 
     unsubscribeSubscriber();
     unextendCommitListener();

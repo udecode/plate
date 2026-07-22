@@ -39,23 +39,28 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
+import {
+  MarkdownPlugin,
+  defineMarkdownConfig,
+} from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
 import {
   remarkMdx,
   remarkMention,
 } from '../../../../../../packages/markdown/src/lib/plugins';
 
 const markdownPlugin = MarkdownPlugin.configure({
-  options: {
+  config: defineMarkdownConfig({
+    id: 'plate-www:test:markdown-rich',
     plainMarks: [KEYS.suggestion, KEYS.comment],
     remarkPlugins: [
       remarkMath,
       remarkGfm,
-      remarkEmoji as any,
+      remarkEmoji,
       remarkMdx,
       remarkMention,
     ],
-  },
+    version: 1,
+  }),
 });
 
 export const createTestEditor = (plugins: any[] = []) =>

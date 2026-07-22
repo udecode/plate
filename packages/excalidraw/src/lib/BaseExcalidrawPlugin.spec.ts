@@ -14,13 +14,9 @@ describe('BaseExcalidrawPlugin', () => {
     expect(plugin.key).toBe(KEYS.excalidraw);
     expect(editor.read.schema.isBlock(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
-    expect(
-      editor.read.schema.property({
-        key: 'data',
-        placement: 'element',
-        type: KEYS.excalidraw,
-      })?.value.kind
-    ).toBe('json');
+    expect(editor.read.schema.property(BaseExcalidrawPlugin)?.value.kind).toBe(
+      'json'
+    );
     expect(editor.getType(KEYS.excalidraw)).toBe(KEYS.excalidraw);
   });
 });

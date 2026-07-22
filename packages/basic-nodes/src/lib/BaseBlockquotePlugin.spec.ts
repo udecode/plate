@@ -22,7 +22,7 @@ describe('BaseBlockquotePlugin', () => {
     expect(editor.read.schema.allowsElementType(KEYS.blockquote, KEYS.p)).toBe(
       true
     );
-    expect(editor.read.schema.createAndFill(KEYS.blockquote)).toEqual({
+    expect(editor.read.schema.createAndFill(BaseBlockquotePlugin)).toEqual({
       children: [{ children: [{ text: '' }], type: KEYS.p }],
       type: KEYS.blockquote,
     });

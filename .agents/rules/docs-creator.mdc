@@ -321,9 +321,10 @@ least one useful inbound link from the owning neighborhood.
 - Include real imports. Show `platejs` vs `platejs/react` vs `@platejs/*` paths explicitly.
 - Use `// ...otherPlugins,` only when the omission is obvious.
 - No placeholder comments (`// your logic here`, `// Your validation logic`).
-- In Plite schema examples, root-capable elements explicitly declare
-  `groups: ['block']`. Non-inline does not imply block membership, and inline
-  elements never claim the block group.
+- In Plite schema examples, never repeat derived structural membership:
+  non-inline elements belong to `block`, while inline elements do not. In Plate
+  examples, use `topLevel: false` for structural internals and
+  `plugins.blockContent()` for normal-flow container content.
 - `showLineNumbers` + `{n-m}` highlights on snippets longer than ~15 lines.
 - `title="filename.tsx"` when file context matters.
 

@@ -49,7 +49,9 @@ describe('heading input rules', () => {
         </editor>
       ),
       title: 'promotes # into h1 on space',
-      plugin: BaseH1Plugin,
+      plugin: BaseH1Plugin.configure({
+        inputRules: [HeadingRules.markdown()],
+      }),
     },
     {
       input: (
@@ -67,15 +69,13 @@ describe('heading input rules', () => {
         </editor>
       ),
       title: 'promotes ## into h2 on space',
-      plugin: BaseH2Plugin,
+      plugin: BaseH2Plugin.configure({
+        inputRules: [HeadingRules.markdown()],
+      }),
     },
   ])('$title', ({ input, output, plugin }) => {
     const editor = createBaseEditor({
-      plugins: [
-        plugin.configure({
-          inputRules: [HeadingRules.markdown()],
-        }),
-      ],
+      plugins: [plugin],
       selection: input.selection,
       value: input.children,
     });

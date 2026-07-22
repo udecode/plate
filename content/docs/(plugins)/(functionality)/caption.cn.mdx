@@ -75,7 +75,6 @@ const editor = createPlateEditor({
 配置哪些媒体插件应支持标题功能：
 
 ```tsx
-import { KEYS } from 'platejs';
 import { CaptionPlugin } from '@platejs/caption/react';
 import {
   AudioPlugin,
@@ -94,17 +93,21 @@ const editor = createPlateEditor({
     FilePlugin,
     MediaEmbedPlugin,
     CaptionPlugin.configure({
-      options: {
-        query: {
-          allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
-        },
+      config: {
+        targets: [
+          ImagePlugin,
+          VideoPlugin,
+          AudioPlugin,
+          FilePlugin,
+          MediaEmbedPlugin,
+        ],
       },
     }),
   ],
 });
 ```
 
-- `query.allow`: 支持标题功能的插件键名数组
+- `config.targets`: 支持标题功能的元素插件描述符
 
 </Steps>
 
@@ -115,15 +118,14 @@ const editor = createPlateEditor({
 为媒体元素添加标题功能的插件。
 
 <API name="CaptionPlugin">
+
+不可变配置：
+
+- `targets?: PluginReference[]` — 节点可存储标题内容的元素插件。
+
+运行时选项：
+
 <APIOptions>
-  <APIItem name="query" type="{ allow: string[] }" required>
-    配置哪些插件支持标题功能
-    <APISubList>
-      <APISubListItem parent="query" name="allow" type="string[]">
-        可添加标题的区块插件键名
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
   <APIItem name="focusEndPath" type="Path" optional>
     标题末尾的聚焦路径
     - **默认值:** `null`
@@ -176,7 +178,6 @@ const editor = createPlateEditor({
       </APISubListItem>
     </APISubList>
   </APIItem>
-  
   <APIOptions type="object">
   <APIItem name="readOnly" type="boolean" optional>
     标题组件是否处于只读模式

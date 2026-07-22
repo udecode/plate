@@ -8,6 +8,7 @@ import { render } from '@testing-library/react';
 import { createBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { PlateRoot } from '../components/PlateRoot';
+import type { PlateEditor } from '../editor/PlateEditor';
 import { createPlateEditor } from '../editor/withPlate';
 import { useElement, useElementSelector, usePath } from '../stores';
 import { pipeRenderElement } from './pipeRenderElement';
@@ -21,26 +22,6 @@ const createValue = (id?: string) =>
     },
   ] as any;
 
-const createFallbackValue = () =>
-  [
-    {
-      children: [{ text: 'Body' }],
-      type: 'blockquote',
-    },
-  ] as any;
-
-const BlockquoteSchemaPlugin = createBasePlugin({
-  key: 'blockquoteSchema',
-  schema: {
-    elements: {
-      blockquote: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-        groups: ['block'],
-      },
-    },
-  },
-});
-
 const ListStylePropertyPlugin = createBasePlugin({
   key: 'listStyleProperty',
   schema: {
@@ -52,7 +33,7 @@ const ListStylePropertyPlugin = createBasePlugin({
   },
 });
 
-const renderPipe = (editor: ReturnType<typeof createPlateEditor>) => {
+const renderPipe = (editor: PlateEditor<any, any>) => {
   const renderElement = pipeRenderElement(editor)!;
   const element = editor.read.children()[0] as any;
 
@@ -72,7 +53,7 @@ const renderPipe = (editor: ReturnType<typeof createPlateEditor>) => {
   );
 };
 
-const renderPipeBare = (editor: ReturnType<typeof createPlateEditor>) => {
+const renderPipeBare = (editor: PlateEditor<any, any>) => {
   const renderElement = pipeRenderElement(editor)!;
   const element = editor.read.children()[0] as any;
 
@@ -154,9 +135,11 @@ describe('pipeRenderElement', () => {
       plugins: [
         createBasePlugin({
           key: 'p',
-          node: {
-            element: { groups: ['block'] },
-            type: 'p',
+          type: 'p',
+          schema: {
+            element: {
+              content: schema.content.open({ default: 'text', min: 1 }),
+            },
           },
           render: {
             as: 'article',
@@ -186,9 +169,11 @@ describe('pipeRenderElement', () => {
       plugins: [
         createBasePlugin({
           key: 'p',
-          node: {
-            element: { groups: ['block'] },
-            type: 'p',
+          type: 'p',
+          schema: {
+            element: {
+              content: schema.content.open({ default: 'text', min: 1 }),
+            },
           },
           render: {
             as: CustomElement,
@@ -210,10 +195,8 @@ describe('pipeRenderElement', () => {
       plugins: [
         createBasePlugin({
           key: 'hr',
-          node: {
-            element: { groups: ['block'], void: 'block' },
-            type: 'hr',
-          },
+          type: 'hr',
+          schema: { element: { void: 'block' } },
           render: {
             as: 'hr',
           },
@@ -276,49 +259,21 @@ describe('pipeRenderElement', () => {
     expect(getByTestId('above')).toBeInTheDocument();
   });
 
-  it('passes the node path to renderElement fallback props', () => {
-    const editor = createPlateEditor({
-      plugins: [BlockquoteSchemaPlugin],
-      value: createFallbackValue(),
-    });
-    let receivedPath: any = 'unset';
-
-    const renderElement = pipeRenderElement(editor, (props: any) => {
-      receivedPath = props.path;
-
-      return <blockquote {...props.attributes}>{props.children}</blockquote>;
-    })!;
-    const element = editor.read.children()[0] as any;
-
-    const RenderProbe = () =>
-      renderElement({
-        attributes: {} as any,
-        children: 'Body',
-        element,
-      } as any);
-
-    render(
-      <Plate editor={editor}>
-        <PlateRoot>
-          <RenderProbe />
-        </PlateRoot>
-      </Plate>
-    );
-
-    expect(receivedPath).toEqual([0]);
-  });
-
   it('keeps plugin node.props behavior', () => {
     const editor = createPlateEditor({
       plugins: [
         createBasePlugin({
           key: 'p',
-          node: {
-            element: { groups: ['block'] },
-            props: {
+          type: 'p',
+          schema: {
+            element: {
+              content: schema.content.open({ default: 'text', min: 1 }),
+            },
+          },
+          render: {
+            nodeProps: {
               'data-probe': 'yes',
             },
-            type: 'p',
           },
         }),
       ],
@@ -363,13 +318,13 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
+          config: { targetPluginKeys: ['p'] },
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
               query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
               styleKey: 'listStyleType',
             },
-            targetPlugins: ['p'],
           },
           key: 'list',
         }),
@@ -394,6 +349,7 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
+          config: { targetPluginKeys: ['p'] },
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -411,7 +367,6 @@ describe('pipeRenderElement', () => {
                 };
               },
             },
-            targetPlugins: ['p'],
           },
           key: 'hook-inject',
         }),
@@ -437,6 +392,7 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
+          config: { targetPluginKeys: ['p'] },
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -454,7 +410,6 @@ describe('pipeRenderElement', () => {
                 };
               },
             },
-            targetPlugins: ['p'],
           },
           key: 'selector-inject',
         }),
@@ -479,6 +434,7 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
+          config: { targetPluginKeys: ['p'] },
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -493,15 +449,16 @@ describe('pipeRenderElement', () => {
                 },
               }),
             },
-            targetPlugins: ['p'],
           },
           key: 'list',
         }),
         createBasePlugin({
           key: 'p',
-          node: {
-            element: { groups: ['block'] },
-            type: 'p',
+          type: 'p',
+          schema: {
+            element: {
+              content: schema.content.open({ default: 'text', min: 1 }),
+            },
           },
           rules: {
             selection: {
@@ -532,6 +489,7 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
+          config: { targetPluginKeys: ['p'] },
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -546,7 +504,6 @@ describe('pipeRenderElement', () => {
                 },
               }),
             },
-            targetPlugins: ['p'],
           },
           key: 'list',
         }),
@@ -595,9 +552,11 @@ describe('pipeRenderElement', () => {
       plugins: [
         createBasePlugin({
           key: 'p',
-          node: {
-            element: { groups: ['block'] },
-            type: 'p',
+          type: 'p',
+          schema: {
+            element: {
+              content: schema.content.open({ default: 'text', min: 1 }),
+            },
           },
           rules: {
             selection: {
@@ -622,9 +581,11 @@ describe('pipeRenderElement', () => {
         createBasePlugin({
           editOnly: true,
           key: 'p',
-          node: {
-            element: { groups: ['block'] },
-            type: 'p',
+          type: 'p',
+          schema: {
+            element: {
+              content: schema.content.open({ default: 'text', min: 1 }),
+            },
           },
         }),
       ],

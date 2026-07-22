@@ -1,5 +1,9 @@
 import { type ChangeEvent, type KeyboardEvent, useRef } from 'react';
-import { defineStateField, type EditorCommit } from '@platejs/plite';
+import {
+  defineStateField,
+  type EditorCommit,
+  valueCodecs,
+} from '@platejs/plite';
 import {
   Editable,
   type ReactEditor,
@@ -22,7 +26,7 @@ const documentTitle = defineStateField({
   collab: 'shared',
   history: 'push',
   initial: () => 'Untitled',
-  persist: true,
+  persist: valueCodecs.string,
 });
 
 const spellcheck = defineStateField({
@@ -30,20 +34,34 @@ const spellcheck = defineStateField({
   collab: 'shared',
   history: 'push',
   initial: () => true,
-  persist: true,
+  persist: valueCodecs.boolean,
 });
 
 const formatList = (items: readonly string[]) =>
   items.length === 0 ? 'none' : items.join(',');
 
+const changedKinds = [
+  'document',
+  'text',
+  'structure',
+  'properties',
+  'replace',
+  'root-order',
+  'selection',
+  'marks',
+  'state',
+] as const;
+
 const formatCommit = (commit: EditorCommit | null) => {
   if (!commit) {
-    return 'commit:none;ops:none;state:none;tags:none';
+    return 'commit:none;changed:none;state:none;tags:none';
   }
 
   return [
     `commit:${commit.version}`,
-    `ops:${formatList(commit.operations.map((operation) => operation.type))}`,
+    `changed:${formatList(
+      changedKinds.filter((kind) => commit.changed.has(kind))
+    )}`,
     `state:${formatList(commit.dirtyStateKeys)}`,
     `tags:${formatList(commit.tags)}`,
   ].join(';');
@@ -144,13 +162,10 @@ const DocumentStatePanel = () => {
         ],
       },
       (tx) => {
-        tx.statePatches.replay([
-          {
-            key: documentTitle.key,
-            previousValue,
-            value: 'Remote Q2 Brief',
-          },
-        ]);
+        tx.effects.emit(documentTitle.effect, {
+          previousValue,
+          value: 'Remote Q2 Brief',
+        });
       }
     );
   };
@@ -250,8 +265,8 @@ const DocumentStateExample = () => {
         },
       ],
       meta: {
-        [documentTitle.key]: 'Q2 Planning Brief',
-        [spellcheck.key]: true,
+        [documentTitle.key]: documentTitle.serialize('Q2 Planning Brief'),
+        [spellcheck.key]: spellcheck.serialize(true),
       },
     },
   });

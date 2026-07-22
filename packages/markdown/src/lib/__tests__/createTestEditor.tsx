@@ -15,8 +15,15 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { MarkdownPlugin } from '../MarkdownPlugin';
-import { withMarkdownRuntime } from '../markdown-runtime';
+import { defineMarkdownConfig, MarkdownPlugin } from '../MarkdownPlugin';
+import type { DeserializeMdOptions } from '../deserializer';
+import type { SerializeMdOptions } from '../serializer';
+
+import { withMarkdownRuntime } from '../internal/markdownRuntime';
+import {
+  getMergedOptionsDeserialize,
+  getMergedOptionsSerialize,
+} from '../internal/markdownOptions';
 import { remarkMdx, remarkMention } from '../plugins';
 
 type TestElementOptions = {
@@ -28,6 +35,13 @@ type TestElementOptions = {
 
 const element = (key: string, options: TestElementOptions = {}) => {
   const descriptor: SchemaElement = {
+    ...(!options.void
+      ? {
+          content: options.inline
+            ? schema.content.text({ default: 'text', min: 1 })
+            : schema.content.open(),
+        }
+      : {}),
     ...(options.inline ? { inline: true } : {}),
     ...(options.properties ? { properties: options.properties } : {}),
     ...(options.void ? { void: options.inline ? 'inline' : 'block' } : {}),
@@ -35,20 +49,24 @@ const element = (key: string, options: TestElementOptions = {}) => {
 
   return createBasePlugin({
     key,
-    node: {
-      element: descriptor,
-      ...(options.type ? { type: options.type } : {}),
-    },
+    schema: { element: descriptor },
+    ...(options.type ? { type: options.type } : {}),
   });
 };
 
 const leaf = (key: string, type = key) =>
-  createBasePlugin({ key, node: { mark: true, type } });
+  createBasePlugin({
+    key,
+    schema: {
+      mark: property.boolean({ default: false, omitDefault: true }),
+    },
+    type,
+  });
 
 const testSchemaPlugins = [
   createBasePlugin({
     key: KEYS.list,
-    schema: schema.contribution({
+    schema: {
       properties: Object.entries({
         checked: property.boolean(),
         indent: property.number(),
@@ -61,7 +79,7 @@ const testSchemaPlugins = [
           target: target.group('element'),
         })
       ),
-    }),
+    },
   }),
   ...KEYS.heading.map((key) => element(key)),
   element(KEYS.blockquote),
@@ -114,7 +132,8 @@ const testSchemaPlugins = [
 ];
 
 const markdownPlugin = MarkdownPlugin.configure({
-  options: {
+  config: defineMarkdownConfig({
+    id: 'plate-test:markdown:shared-profile',
     plainMarks: [KEYS.suggestion, KEYS.comment],
     remarkPlugins: [
       remarkMath,
@@ -123,7 +142,8 @@ const markdownPlugin = MarkdownPlugin.configure({
       remarkMdx,
       remarkMention,
     ],
-  },
+    version: 1,
+  }),
 });
 
 export const createTestEditor = () =>
@@ -131,6 +151,18 @@ export const createTestEditor = () =>
     plugins: [BaseParagraphPlugin, ...testSchemaPlugins, markdownPlugin],
   });
 
-export const getTestMarkdownRuntime = (
-  editor: ReturnType<typeof createTestEditor>
-) => withMarkdownRuntime(editor, (runtime) => runtime);
+export const getTestDeserializeOptions = (
+  editor: ReturnType<typeof createTestEditor>,
+  options?: DeserializeMdOptions
+) =>
+  withMarkdownRuntime(editor, (runtime) =>
+    getMergedOptionsDeserialize(runtime, options)
+  );
+
+export const getTestSerializeOptions = (
+  editor: ReturnType<typeof createTestEditor>,
+  options?: SerializeMdOptions
+) =>
+  withMarkdownRuntime(editor, (runtime) =>
+    getMergedOptionsSerialize(runtime, options)
+  );

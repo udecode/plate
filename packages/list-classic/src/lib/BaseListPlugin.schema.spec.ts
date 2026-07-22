@@ -2,12 +2,20 @@ import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import { ElementApi, schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import { BaseListPlugin } from './BaseListPlugin';
+import {
+  BaseBulletedListPlugin,
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+  BaseListPlugin,
+  BaseTaskListPlugin,
+} from './BaseListPlugin';
 
 describe('BaseListPlugin schema', () => {
   it('constructs and validates the list root, item, and content grammar', () => {
-    const editor = createBaseEditor({ plugins: [BaseListPlugin] });
-    const list = editor.read.schema.createAndFill(KEYS.ulClassic);
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+    });
+    const list = editor.read.schema.createAndFill(BaseBulletedListPlugin);
 
     if (!ElementApi.isElement(list)) {
       throw new Error('Expected the list schema to construct a list element.');
@@ -38,11 +46,15 @@ describe('BaseListPlugin schema', () => {
       preserveContext: true,
       replaceWhenCovered: false,
     });
-    expect(editor.read.schema.element(KEYS.ulClassic)?.groups).toContain(
+    expect(
+      editor.read.schema.element(BaseBulletedListPlugin)?.groups
+    ).toContain('block');
+    expect(editor.read.schema.element(BaseListItemPlugin)?.groups).toContain(
       'block'
     );
-    expect(editor.read.schema.element(KEYS.li)?.groups).not.toContain('block');
-    expect(editor.read.schema.element(KEYS.lic)?.groups).not.toContain('block');
+    expect(
+      editor.read.schema.element(BaseListItemContentPlugin)?.groups
+    ).toContain('block');
     expect(() => editor.read.schema.validateFragment([list])).not.toThrow();
     expect(() =>
       editor.read.schema.validateDocument({ children: [listItem] })
@@ -63,7 +75,9 @@ describe('BaseListPlugin schema', () => {
   });
 
   it('restricts checked state to task-list items', () => {
-    const editor = createBaseEditor({ plugins: [BaseListPlugin] });
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+    });
     const item = {
       checked: true,
       children: [{ children: [{ text: '' }], type: KEYS.lic }],
@@ -80,31 +94,33 @@ describe('BaseListPlugin schema', () => {
         { children: [item], type: KEYS.ulClassic },
       ])
     ).toThrow(/property "checked" cannot target element "li"/i);
-    expect(editor.read.schema.createAndFill(KEYS.taskList)).toEqual({
+    const taskList = editor.read.schema.createAndFill(BaseTaskListPlugin);
+
+    expect(taskList).toMatchObject({
       children: [
         {
-          checked: false,
           children: [{ children: [{ text: '' }], type: KEYS.lic }],
           type: KEYS.li,
         },
       ],
       type: KEYS.taskList,
     });
+    expect(Reflect.get(taskList.children[0]!, 'checked')).toBe(false);
   });
 
   it('resolves configured valid list-item child plugin keys', () => {
     const EmbedPlugin = createBasePlugin({
       key: 'embed',
-      node: {
+      schema: {
         element: { content: schema.content.text({ default: 'text', min: 1 }) },
-        type: 'image-card',
       },
+      type: 'image-card',
     });
     const editor = createBaseEditor({
       plugins: [
         EmbedPlugin,
         BaseListPlugin.configure({
-          options: { validLiChildrenTypes: ['embed'] },
+          config: { validLiChildren: [EmbedPlugin] },
         }),
       ],
     });

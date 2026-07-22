@@ -32,7 +32,7 @@ describe('insertToc', () => {
 
   it('respects the configured node type', () => {
     const editor = createBaseEditor({
-      plugins: [BaseTocPlugin.configure({ node: { type: 'custom-toc' } })],
+      plugins: [BaseTocPlugin.configure({ type: 'custom-toc' })],
       value: [
         {
           children: [{ text: 'a' }],

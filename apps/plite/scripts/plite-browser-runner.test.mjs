@@ -9,6 +9,7 @@ import { stopProcessTree } from '../../../tooling/scripts/run-bounded-process.mj
 
 import {
   applyWorkerCap,
+  assertBrowserNodeVersion,
   assertBrowserWorkerArgs,
   assertRetryFreeBrowserArgs,
   BROWSER_UNIT_TIMEOUT_OVERHEAD_MS,
@@ -23,6 +24,7 @@ import {
   MAX_BROWSER_WORKERS,
   MAX_NORMAL_TESTS_PER_PROCESS,
   parseJob,
+  resolvePliteBrowserBaseURL,
   resolveBrowserWorkerCount,
   resolveMaxTestsPerProcess,
   resolveTimeoutMs,
@@ -51,6 +53,27 @@ const makeTests = (file, count, profile) =>
     timeoutMs: 45_000,
     title: `${file} duplicate title`,
   }));
+
+test('defaults browser proof to numeric loopback and preserves an explicit target', () => {
+  assert.equal(resolvePliteBrowserBaseURL(undefined), 'http://127.0.0.1:3102');
+  assert.equal(
+    resolvePliteBrowserBaseURL('https://plite-proof.example.test'),
+    'https://plite-proof.example.test'
+  );
+});
+
+test('requires the repository Node major for browser proof', () => {
+  assert.equal(assertBrowserNodeVersion('v22.22.1', 'v22'), 22);
+  assert.equal(assertBrowserNodeVersion('22.22.1', '22'), 22);
+  assert.throws(
+    () => assertBrowserNodeVersion('v24.14.1', 'v22'),
+    /requires Node 22 from \.nvmrc; received v24\.14\.1/
+  );
+  assert.throws(
+    () => assertBrowserNodeVersion('current', 'v22'),
+    /Runtime version must be a Node major or semantic version/
+  );
+});
 
 test('bounds normal browser processes by exact discovered locations', () => {
   const units = createTestUnits(

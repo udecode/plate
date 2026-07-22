@@ -10,17 +10,23 @@ import {
   defineEffect,
   defineExtensionSlot,
   defineFacet,
+  definePropertyPolicy,
   defineStateField,
   defineValueCodec,
   ElementApi,
-  element,
+  editorCommands,
   property,
   schema,
+  type Editor,
   type EditorExtension,
+  type EditorSchemaIdentity,
 } from '@platejs/plite';
 import {
+  dispatchCommand,
   getCompiledEditorConfiguration,
   getEditorExtensionRegistry,
+  getInstalledEditorExtension,
+  initializeEditorExtensions,
 } from '@platejs/plite/internal';
 import { prepareEditorExtensionPublication } from '../src/core/editor-extension';
 
@@ -29,24 +35,218 @@ const paragraph = (text: string) => ({
   type: 'paragraph',
 });
 
+const namedIdentity = (identity: EditorSchemaIdentity | null) => {
+  assert.equal(identity?.kind, 'named');
+
+  if (identity?.kind !== 'named') assert.fail('Expected named schema identity');
+
+  return identity;
+};
+
 describe('transactional extension configuration', () => {
-  it('publishes a dynamic extension migration and schema atomically', () => {
+  it('composes partial schema contributions over the derived base schema', () => {
+    const imageExtension = defineEditorExtension({
+      name: 'partial-image-schema',
+      schema: { elements: { image: { void: 'block' } } },
+    });
+    const derivedEditor = createEditor({ extensions: [imageExtension] });
+
+    assert.equal(derivedEditor.read.schema.identity()?.kind, 'derived');
+    assert.equal(
+      derivedEditor.read.schema.element('image')?.behavior.voidKind,
+      'block'
+    );
+    assert.equal(
+      getEditorExtensionRegistry(derivedEditor).schemaContributions.records
+        .size,
+      1
+    );
+
+    const documentSchema = defineEditorSchema({
+      elements: {},
+      id: 'explicit-schema-composition-owner',
+      root: { content: schema.content.not(schema.content.text()) },
+      unknown: 'preserve',
+      version: 1,
+    });
+    const editor = createEditor({
+      extensions: [documentSchema, imageExtension],
+    });
+
+    assert.equal(
+      namedIdentity(editor.read.schema.identity()).id,
+      'explicit-schema-composition-owner'
+    );
+    assert.equal(
+      editor.read.schema.element('image')?.behavior.voidKind,
+      'block'
+    );
+  });
+
+  it('bootstraps one complete schema only on an untouched implicit editor', () => {
     const articleSchema = defineEditorSchema({
       elements: {
-        paragraph: element({
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-        }),
+        },
       },
-      id: 'dynamic-schema-migration',
-      root: schema.root({
+      id: 'one-shot-schema-bootstrap',
+      root: {
         content: schema.content.type('paragraph', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      },
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = createEditor({
+      extensions: [
+        defineEditorExtension({ name: 'pre-schema-runtime-extension' }),
+      ],
+    });
+    let commits = 0;
+
+    editor.subscribeCommit(() => commits++);
+    initializeEditorExtensions(editor, articleSchema);
+
+    assert.deepEqual(editor.read.children(), [paragraph('')]);
+    assert.equal(
+      namedIdentity(editor.read.schema.identity()).id,
+      'one-shot-schema-bootstrap'
+    );
+    assert.equal(editor.read.lastCommit(), null);
+    assert.equal(commits, 0);
+    assert.throws(
+      () => initializeEditorExtensions(editor, articleSchema),
+      /without an explicit initial document|already initialized/u
+    );
+
+    const updated = createEditor();
+
+    updated.update((tx) => tx.nodes.insert(paragraph('written')));
+    assert.throws(
+      () => initializeEditorExtensions(updated, articleSchema),
+      /untouched empty document/u
+    );
+  });
+
+  it('restores a failed schema bootstrap and permits one clean retry', () => {
+    let allowPublishedDocument = false;
+    let editor: ReturnType<typeof createEditor> | undefined;
+    const Guard = definePropertyPolicy({
+      id: 'bootstrap-publication-guard',
+      validate: (value): value is string =>
+        typeof value === 'string' &&
+        (allowPublishedDocument ||
+          !editor ||
+          editor.read.children().length === 0),
+      version: 1,
+    });
+    const articleSchema = defineEditorSchema({
+      elements: {
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: {
+            guard: property.typed(Guard, { default: 'valid' }),
+          },
+        },
+      },
+      id: 'retryable-schema-bootstrap',
+      root: {
+        content: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
+      unknown: 'reject',
+      version: 1,
+    });
+
+    editor = createEditor();
+    const derivedIdentity = editor.read.schema.identity();
+
+    assert.equal(derivedIdentity?.kind, 'derived');
+
+    assert.throws(
+      () => initializeEditorExtensions(editor!, articleSchema),
+      /guard/u
+    );
+    assert.deepEqual(editor.read.value(), { children: [] });
+    assert.equal(editor.read.selection(), null);
+    assert.equal(editor.read.schema.identity(), derivedIdentity);
+    assert.equal(editor.read.lastCommit(), null);
+
+    allowPublishedDocument = true;
+    initializeEditorExtensions(editor, articleSchema);
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        children: [{ text: '' }],
+        guard: 'valid',
+        type: 'paragraph',
+      },
+    ]);
+    assert.equal(editor.read.selection(), null);
+    assert.equal(
+      namedIdentity(editor.read.schema.identity()).id,
+      'retryable-schema-bootstrap'
+    );
+    assert.equal(editor.read.lastCommit(), null);
+  });
+
+  it('validates explicit initial documents without fitting or rewriting them', () => {
+    const articleSchema = defineEditorSchema({
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'explicit-schema-bootstrap',
+      root: { content: schema.content.type('paragraph') },
+      unknown: 'reject',
+      version: 1,
+    });
+
+    assert.throws(
+      () =>
+        createEditor({
+          extensions: [articleSchema],
+          initialValue: [
+            { children: [{ text: 'must reject' }], type: 'external' },
+          ],
+        }),
+      /external/u
+    );
+
+    const explicitEditor = createEditor({
+      initialValue: [paragraph('preserve')],
+    });
+
+    assert.throws(
+      () => initializeEditorExtensions(explicitEditor, articleSchema),
+      /without an explicit initial document/u
+    );
+    assert.deepEqual(explicitEditor.read.children(), [paragraph('preserve')]);
+  });
+
+  it('publishes a dynamic extension migration and schema atomically', () => {
+    const articleSchema = defineEditorSchema({
+      elements: {
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        } as const,
+      },
+      id: 'dynamic-schema-migration',
+      root: {
+        content: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
     const editor = createEditor();
+    const derivedIdentity = editor.read.schema.identity();
     const observations: Array<{
       children: unknown;
       schema: ReturnType<typeof editor.read.schema.identity>;
@@ -64,7 +264,7 @@ describe('transactional extension configuration', () => {
       /requires an explicit migration/u
     );
     assert.deepEqual(editor.read.children(), []);
-    assert.equal(editor.read.schema.identity(), null);
+    assert.equal(editor.read.schema.identity(), derivedIdentity);
     assert.deepEqual(observations, []);
 
     editor.extend(articleSchema, {
@@ -80,7 +280,7 @@ describe('transactional extension configuration', () => {
     const identity = editor.read.schema.identity();
 
     assert.deepEqual(editor.read.children(), [paragraph('')]);
-    assert.equal(identity?.id, 'dynamic-schema-migration');
+    assert.equal(namedIdentity(identity).id, 'dynamic-schema-migration');
     assert.deepEqual(observations, [
       {
         children: [paragraph('')],
@@ -99,17 +299,18 @@ describe('transactional extension configuration', () => {
     const articleSchema = (version: number, type: string) =>
       defineEditorSchema({
         elements: {
-          [type]: element({
+          [type]: {
             content: schema.content.text({ default: 'text', min: 1 }),
-          }),
+          } as const,
         },
         id: 'atomic-schema-migration',
-        root: schema.root({
+        root: {
           content: schema.content.type(type, {
             default: { type },
             min: 1,
           }),
-        }),
+        } as const,
+        unknown: 'reject',
         version,
       });
     const beforeSchema = articleSchema(1, 'paragraph');
@@ -118,6 +319,7 @@ describe('transactional extension configuration', () => {
       extensions: [slot.of(beforeSchema)] as const,
       initialValue: [paragraph('before')],
     });
+    const schemaFacade = editor.read((state) => state.schema);
     const beforeRevision = getCompiledEditorConfiguration(editor).revision;
     const commits: number[] = [];
     const observerStates: Array<{
@@ -138,7 +340,7 @@ describe('transactional extension configuration', () => {
       () => editor.update.extensions.reconfigure(slot, afterSchema),
       /unknown editor element type "paragraph"/i
     );
-    assert.equal(editor.read.schema.identity()?.version, 1);
+    assert.equal(namedIdentity(editor.read.schema.identity()).version, 1);
     assert.equal(
       getCompiledEditorConfiguration(editor).revision,
       beforeRevision
@@ -148,8 +350,8 @@ describe('transactional extension configuration', () => {
 
     editor.update.extensions.reconfigure(slot, afterSchema, {
       migrate({ document, next }) {
-        assert.equal(editor.read.schema.identity()?.version, 1);
-        assert.equal(next.identity()?.version, 2);
+        assert.equal(namedIdentity(editor.read.schema.identity()).version, 1);
+        assert.equal(namedIdentity(next.identity()).version, 2);
 
         return {
           ...document,
@@ -163,15 +365,23 @@ describe('transactional extension configuration', () => {
       },
     });
 
-    assert.equal(editor.read.schema.identity()?.version, 2);
+    assert.equal(namedIdentity(editor.read.schema.identity()).version, 2);
+    assert.equal(
+      editor.read((state) => state.schema),
+      schemaFacade
+    );
+    assert.equal(namedIdentity(schemaFacade.identity()).version, 2);
     assert.equal(
       getCompiledEditorConfiguration(editor).revision,
       beforeRevision + 1
     );
     const publishedIdentity = editor.read.schema.identity();
 
-    assert.equal(publishedIdentity?.id, 'atomic-schema-migration');
-    assert.equal(publishedIdentity?.version, 2);
+    assert.equal(
+      namedIdentity(publishedIdentity).id,
+      'atomic-schema-migration'
+    );
+    assert.equal(namedIdentity(publishedIdentity).version, 2);
     assert.match(publishedIdentity?.fingerprint ?? '', /^fnv1a64:/u);
     assert.deepEqual(editor.read.children(), [
       { children: [{ text: 'before' }], type: 'heading' },
@@ -202,17 +412,18 @@ describe('transactional extension configuration', () => {
     const articleSchema = (version: number, type: string) =>
       defineEditorSchema({
         elements: {
-          [type]: element({
+          [type]: {
             content: schema.content.text({ default: 'text', min: 1 }),
-          }),
+          } as const,
         },
         id: 'schema-migration-after-write',
-        root: schema.root({
+        root: {
           content: schema.content.type(type, {
             default: { type },
             min: 1,
           }),
-        }),
+        } as const,
+        unknown: 'reject',
         version,
       });
     const before = articleSchema(1, 'paragraph');
@@ -259,17 +470,18 @@ describe('transactional extension configuration', () => {
     const articleSchema = (version: number, type: string) =>
       defineEditorSchema({
         elements: {
-          [type]: element({
+          [type]: {
             content: schema.content.text({ default: 'text', min: 1 }),
-          }),
+          } as const,
         },
         id: 'failed-schema-migration',
-        root: schema.root({
+        root: {
           content: schema.content.type(type, {
             default: { type },
             min: 1,
           }),
-        }),
+        } as const,
+        unknown: 'reject',
         version,
       });
     const editor = createEditor({
@@ -333,34 +545,39 @@ describe('transactional extension configuration', () => {
       getCompiledEditorConfiguration(editor).revision,
       previousRevision
     );
-    assert.equal(editor.read.schema.identity()?.version, 1);
+    assert.equal(namedIdentity(editor.read.schema.identity()).version, 1);
     assert.deepEqual(editor.read.children(), [paragraph('before')]);
     assert.equal(editor.read.lastCommit(), null);
     assert.equal(commits, 0);
   });
 
-  it('does not invoke migration for equivalent schema configuration', () => {
+  it('treats a fresh equivalent complete schema as a configuration no-op', () => {
     const slot = defineExtensionSlot('equivalent-schema-migration');
     const createSchema = () =>
       defineEditorSchema({
         elements: {
-          paragraph: element({
+          paragraph: {
             content: schema.content.text({ default: 'text', min: 1 }),
-          }),
+          } as const,
         },
         id: 'equivalent-schema-migration',
-        root: schema.root({
+        root: {
           content: schema.content.type('paragraph', {
             default: { type: 'paragraph' },
             min: 1,
           }),
-        }),
+        } as const,
+        unknown: 'reject',
         version: 1,
       });
     const editor = createEditor({
       extensions: [slot.of(createSchema())] as const,
       initialValue: [paragraph('same')],
     });
+    const identity = editor.read.schema.identity();
+    const configurationRevision =
+      getCompiledEditorConfiguration(editor).revision;
+    const schemaRevision = getEditorExtensionRegistry(editor).schemaRevision;
     let migrations = 0;
     let commits = 0;
 
@@ -374,7 +591,438 @@ describe('transactional extension configuration', () => {
 
     assert.equal(migrations, 0);
     assert.equal(commits, 0);
+    assert.equal(editor.read.schema.identity(), identity);
+    assert.equal(
+      getCompiledEditorConfiguration(editor).revision,
+      configurationRevision
+    );
+    assert.equal(
+      getEditorExtensionRegistry(editor).schemaRevision,
+      schemaRevision
+    );
     assert.equal(editor.read.lastCommit(), null);
+  });
+
+  it('treats declaration-order differences as a configuration no-op', () => {
+    const slot = defineExtensionSlot('equivalent-schema-order');
+    const articleSchema = (groups: readonly string[]) =>
+      defineEditorSchema({
+        elements: {
+          paragraph: {
+            content: schema.content.text(),
+            groups,
+          },
+        },
+        groups: {
+          article: { extends: ['block'] },
+          section: { extends: ['block'] },
+        },
+        id: 'equivalent-schema-order',
+        root: { content: schema.content.type('paragraph') },
+        unknown: 'reject',
+        version: 1,
+      });
+    const editor = createEditor({
+      extensions: [slot.of(articleSchema(['article', 'section']))] as const,
+      initialValue: [paragraph('same')],
+    });
+    const identity = editor.read.schema.identity();
+    const configurationRevision =
+      getCompiledEditorConfiguration(editor).revision;
+    const schemaRevision = getEditorExtensionRegistry(editor).schemaRevision;
+    let commits = 0;
+
+    editor.subscribeCommit(() => commits++);
+    editor.update.extensions.reconfigure(
+      slot,
+      articleSchema(['section', 'article'])
+    );
+
+    assert.equal(commits, 0);
+    assert.equal(editor.read.schema.identity(), identity);
+    assert.equal(
+      getCompiledEditorConfiguration(editor).revision,
+      configurationRevision
+    );
+    assert.equal(
+      getEditorExtensionRegistry(editor).schemaRevision,
+      schemaRevision
+    );
+    assert.equal(editor.read.lastCommit(), null);
+  });
+
+  it('treats fresh equivalent immutable configuration as a no-op', () => {
+    const slot = defineExtensionSlot('equivalent-immutable-config');
+    const extension = () =>
+      defineEditorExtension({
+        config: {
+          paragraph: { enabled: true },
+          roots: ['main'],
+        },
+        name: 'equivalent-immutable-config',
+        schema: ({ config }) => ({
+          elements: {
+            paragraph: {
+              content: schema.content.text(),
+              readOnly: !config.paragraph.enabled,
+            },
+          },
+          id: 'equivalent-immutable-config',
+          root: { content: schema.content.type('paragraph') },
+          unknown: 'reject',
+          version: 1,
+        }),
+      });
+    const editor = createEditor({
+      extensions: [slot.of(extension())] as const,
+      initialValue: [paragraph('same')],
+    });
+    const configurationRevision =
+      getCompiledEditorConfiguration(editor).revision;
+    let commits = 0;
+
+    editor.subscribeCommit(() => commits++);
+    editor.update.extensions.reconfigure(slot, extension());
+
+    assert.equal(commits, 0);
+    assert.equal(
+      getCompiledEditorConfiguration(editor).revision,
+      configurationRevision
+    );
+    assert.equal(editor.read.lastCommit(), null);
+  });
+
+  it('publishes equal-schema non-schema changes without migration', () => {
+    const mode = defineFacet<string, string>({
+      combine: (values) => values.at(-1) ?? 'missing',
+      key: 'equal-schema-non-schema-mode',
+    });
+    const slot = defineExtensionSlot('equal-schema-non-schema');
+    const createSchema = () =>
+      defineEditorSchema({
+        elements: {
+          paragraph: { content: schema.content.text() },
+        },
+        id: 'equal-schema-non-schema',
+        root: { content: schema.content.type('paragraph') },
+        unknown: 'reject',
+        version: 1,
+      }).schema;
+    const extension = (value: string) =>
+      defineEditorExtension({
+        facets: [mode.of(value)],
+        name: 'equal-schema-non-schema',
+        schema: createSchema(),
+      });
+    const editor = createEditor({
+      extensions: [slot.of(extension('read'))] as const,
+      initialValue: [paragraph('same')],
+    });
+    const identity = editor.read.schema.identity();
+    const configurationRevision =
+      getCompiledEditorConfiguration(editor).revision;
+    const schemaRevision = getEditorExtensionRegistry(editor).schemaRevision;
+    const observations: Array<{
+      mode: string;
+      revision: number;
+      schemaRevision: number;
+    }> = [];
+    let migrations = 0;
+
+    editor.subscribeCommit(() => {
+      observations.push({
+        mode: editor.read.facet(mode),
+        revision: getCompiledEditorConfiguration(editor).revision,
+        schemaRevision: getEditorExtensionRegistry(editor).schemaRevision,
+      });
+    });
+    editor.update.extensions.reconfigure(slot, extension('write'), {
+      migrate({ document }) {
+        migrations++;
+        return document;
+      },
+    });
+
+    assert.equal(migrations, 0);
+    assert.equal(editor.read.facet(mode), 'write');
+    assert.equal(editor.read.schema.identity(), identity);
+    assert.deepEqual(observations, [
+      {
+        mode: 'write',
+        revision: configurationRevision + 1,
+        schemaRevision,
+      },
+    ]);
+  });
+
+  it('publishes same-schema setup, API, and options replacements', () => {
+    const schemaDeclaration = defineEditorSchema({
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'same-schema-runtime-resources',
+      root: { content: schema.content.type('paragraph') },
+      unknown: 'reject',
+      version: 1,
+    }).schema;
+    const assertPublishes = (
+      slotName: string,
+      initial: EditorExtension<Editor, any>,
+      replacement: EditorExtension<Editor, any>,
+      verify: (editor: Editor) => void
+    ) => {
+      const slot = defineExtensionSlot(slotName);
+      const editor = createEditor({
+        extensions: [slot.of(initial)],
+        initialValue: [paragraph('same')],
+      });
+      const identity = editor.read.schema.identity();
+      const configurationRevision =
+        getCompiledEditorConfiguration(editor).revision;
+      const schemaRevision = getEditorExtensionRegistry(editor).schemaRevision;
+      let commits = 0;
+
+      editor.subscribeCommit(() => commits++);
+      editor.update.extensions.reconfigure(slot, replacement);
+
+      assert.equal(commits, 1);
+      assert.equal(editor.read.schema.identity(), identity);
+      assert.equal(
+        getCompiledEditorConfiguration(editor).revision,
+        configurationRevision + 1
+      );
+      assert.equal(
+        getEditorExtensionRegistry(editor).schemaRevision,
+        schemaRevision
+      );
+      verify(editor);
+    };
+    const setupLifecycle: string[] = [];
+    const setupExtension = (mode: string) =>
+      defineEditorExtension({
+        activate(_editor, context) {
+          setupLifecycle.push(`activate:${mode}`);
+          context.onCleanup(() => setupLifecycle.push(`cleanup:${mode}`));
+        },
+        name: 'same-schema-setup',
+        schema: schemaDeclaration,
+      });
+
+    assertPublishes(
+      'same-schema-setup-slot',
+      setupExtension('read'),
+      setupExtension('write'),
+      () =>
+        assert.deepEqual(setupLifecycle, [
+          'activate:read',
+          'activate:write',
+          'cleanup:read',
+        ])
+    );
+    assertPublishes(
+      'same-schema-api-slot',
+      defineEditorExtension({
+        api: { sameSchemaApi: 'read' },
+        name: 'same-schema-api',
+        schema: schemaDeclaration,
+      }),
+      defineEditorExtension({
+        api: { sameSchemaApi: 'write' },
+        name: 'same-schema-api',
+        schema: schemaDeclaration,
+      }),
+      (editor) =>
+        assert.deepEqual(
+          getEditorExtensionRegistry(editor).capabilities.get('sameSchemaApi'),
+          ['write']
+        )
+    );
+    const observedOptions: string[] = [];
+    const activateWithOptions: NonNullable<
+      EditorExtension<Editor, { mode: string }>['activate']
+    > = (_editor, context) => {
+      observedOptions.push(context.options.mode);
+    };
+    const optionsExtension = (mode: string) =>
+      defineEditorExtension({
+        activate: activateWithOptions,
+        name: 'same-schema-options',
+        options: { mode },
+        schema: schemaDeclaration,
+      });
+
+    assertPublishes(
+      'same-schema-options-slot',
+      optionsExtension('read'),
+      optionsExtension('write'),
+      () => assert.deepEqual(observedOptions, ['read', 'write'])
+    );
+  });
+
+  it('reports only semantically changed schema resources', () => {
+    const slot = defineExtensionSlot('semantic-schema-delta');
+    const articleSchema = (version: number, paragraphReadOnly: boolean) =>
+      defineEditorSchema({
+        elements: {
+          heading: { content: schema.content.text() },
+          paragraph: {
+            content: schema.content.text(),
+            readOnly: paragraphReadOnly,
+          },
+        },
+        id: 'semantic-schema-delta',
+        root: { content: schema.content.types(['heading', 'paragraph']) },
+        unknown: 'reject',
+        version,
+      });
+    const editor = createEditor({
+      extensions: [slot.of(articleSchema(1, false))] as const,
+      initialValue: [paragraph('same')],
+    });
+
+    editor.update.extensions.reconfigure(slot, articleSchema(2, true), {
+      migrate: ({ document }) => document,
+    });
+
+    assert.deepEqual(editor.read.schema.delta(), {
+      constructionTypes: [],
+      elementTypes: ['paragraph'],
+      propertyIds: [],
+      roots: [],
+    });
+  });
+
+  it('rebinds live validators without treating function identity as schema data', () => {
+    const slot = defineExtensionSlot('schema-policy-rebind');
+    const articleSchema = (accepted: string) => {
+      const Tone = definePropertyPolicy({
+        id: 'schema-policy-rebind.tone',
+        validate: (value): value is string => value === accepted,
+        version: 1,
+      });
+
+      return defineEditorSchema({
+        elements: {
+          paragraph: {
+            content: schema.content.text(),
+            properties: { tone: property.typed(Tone) },
+          },
+        },
+        id: 'schema-policy-rebind',
+        root: { content: schema.content.type('paragraph') },
+        unknown: 'reject',
+        version: 1,
+      });
+    };
+    const editor = createEditor({
+      extensions: [slot.of(articleSchema('old'))] as const,
+      initialValue: [paragraph('same')],
+    });
+    const configurationRevision =
+      getCompiledEditorConfiguration(editor).revision;
+    const schemaRevision = getEditorExtensionRegistry(editor).schemaRevision;
+    let commits = 0;
+
+    editor.subscribeCommit(() => commits++);
+    editor.update.extensions.reconfigure(slot, articleSchema('new'), {
+      migrate: ({ document }) => document,
+    });
+
+    assert.equal(commits, 1);
+    assert.equal(
+      getCompiledEditorConfiguration(editor).revision,
+      configurationRevision + 1
+    );
+    assert.equal(
+      getEditorExtensionRegistry(editor).schemaRevision,
+      schemaRevision
+    );
+    assert.equal(editor.read.schema.delta(), null);
+    assert.throws(
+      () =>
+        editor.read.schema.validateDocument({
+          children: [
+            { children: [{ text: '' }], tone: 'old', type: 'paragraph' },
+          ],
+        }),
+      /tone/u
+    );
+    assert.doesNotThrow(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          { children: [{ text: '' }], tone: 'new', type: 'paragraph' },
+        ],
+      })
+    );
+  });
+
+  it('rolls back an equal-schema validator rebind that rejects the document', () => {
+    const slot = defineExtensionSlot('schema-policy-rebind-rollback');
+    const articleSchema = (accepted: string) => {
+      const Tone = definePropertyPolicy({
+        id: 'schema-policy-rebind-rollback.tone',
+        validate: (value): value is string => value === accepted,
+        version: 1,
+      });
+
+      return defineEditorSchema({
+        elements: {
+          paragraph: {
+            content: schema.content.text(),
+            properties: { tone: property.typed(Tone) },
+          },
+        },
+        id: 'schema-policy-rebind-rollback',
+        root: { content: schema.content.type('paragraph') },
+        unknown: 'reject',
+        version: 1,
+      });
+    };
+    const editor = createEditor({
+      extensions: [slot.of(articleSchema('old'))] as const,
+      initialValue: [
+        {
+          ...paragraph('same'),
+          tone: 'old',
+        },
+      ],
+    });
+    const configurationRevision =
+      getCompiledEditorConfiguration(editor).revision;
+    const registry = getEditorExtensionRegistry(editor);
+    let migrations = 0;
+
+    assert.throws(
+      () =>
+        editor.update.extensions.reconfigure(slot, articleSchema('new'), {
+          migrate({ document }) {
+            migrations++;
+            return {
+              ...document,
+              children: [
+                {
+                  ...paragraph('same'),
+                  tone: 'new',
+                },
+              ],
+            };
+          },
+        }),
+      /tone/u
+    );
+
+    assert.equal(migrations, 0);
+    assert.equal(
+      getCompiledEditorConfiguration(editor).revision,
+      configurationRevision
+    );
+    assert.equal(getEditorExtensionRegistry(editor), registry);
+    assert.deepEqual(editor.read.children(), [
+      {
+        ...paragraph('same'),
+        tone: 'old',
+      },
+    ]);
   });
 
   it('requires an explicit migration when candidate root defaults change the document', () => {
@@ -382,17 +1030,18 @@ describe('transactional extension configuration', () => {
     const articleSchema = (version: number, minimum: number) =>
       defineEditorSchema({
         elements: {
-          paragraph: element({
+          paragraph: {
             content: schema.content.text({ default: 'text', min: 1 }),
-          }),
+          } as const,
         },
         id: 'explicit-root-default-migration',
-        root: schema.root({
+        root: {
           content: schema.content.type('paragraph', {
             default: { type: 'paragraph' },
             min: minimum,
           }),
-        }),
+        } as const,
+        unknown: 'reject',
         version,
       });
     const bootstrapped = createEditor({
@@ -412,7 +1061,7 @@ describe('transactional extension configuration', () => {
       /requires an explicit migration/u
     );
     assert.deepEqual(editor.read.children(), []);
-    assert.equal(editor.read.schema.identity()?.version, 1);
+    assert.equal(namedIdentity(editor.read.schema.identity()).version, 1);
     assert.equal(
       getCompiledEditorConfiguration(editor).revision,
       beforeRevision
@@ -421,16 +1070,12 @@ describe('transactional extension configuration', () => {
 
     editor.update.extensions.reconfigure(slot, articleSchema(2, 1), {
       migrate({ document, next }) {
-        const child = next.createDefaultRootChild();
-
-        assert.ok(child && ElementApi.isElement(child));
-
-        return { ...document, children: [child] };
+        return next.fitDocument(document);
       },
     });
 
     assert.deepEqual(editor.read.children(), [paragraph('')]);
-    assert.equal(editor.read.schema.identity()?.version, 2);
+    assert.equal(namedIdentity(editor.read.schema.identity()).version, 2);
     assert.equal(commits, 1);
   });
 
@@ -577,7 +1222,9 @@ describe('transactional extension configuration', () => {
         defineEditorExtension({
           activate(runtimeEditor, context) {
             lifecycle.push(
-              `new:activate:${runtimeEditor.read.facet(mode).join(',')}:${runtimeEditor.read.text.string([])}`
+              `new:activate:${runtimeEditor.read
+                .facet(mode)
+                .join(',')}:${runtimeEditor.read.text.string([])}`
             );
             context.signal.addEventListener('abort', () => {
               lifecycle.push('new:abort');
@@ -814,28 +1461,173 @@ describe('transactional extension configuration', () => {
     assert.equal(getCompiledEditorConfiguration(editor).revision, revision);
   });
 
-  it('exposes published registry collections as immutable', () => {
-    const command = defineCommand<{ type: 'immutable-command' }>(
-      'immutable-command'
+  it('rejects merged command id collisions without publishing the candidate', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorExtension({
+          commands: ({ handle }) => [
+            handle(editorCommands.insertText, () => false),
+          ],
+          name: 'canonical-command-descriptor',
+        }),
+      ],
+    });
+    const registry = getEditorExtensionRegistry(editor);
+    const revision = getCompiledEditorConfiguration(editor).revision;
+    const pipeline = registry.commands.byDescriptor.get(
+      editorCommands.insertText
     );
+    const conflicting = defineCommand(editorCommands.insertText.id);
+
+    assert.throws(
+      () =>
+        editor.extend(
+          defineEditorExtension({
+            commands: ({ handle }) => [handle(conflicting, () => false)],
+            name: 'conflicting-command-descriptor',
+          })
+        ),
+      /cannot install multiple descriptor identities/
+    );
+
+    assert.equal(getEditorExtensionRegistry(editor), registry);
+    assert.equal(getCompiledEditorConfiguration(editor).revision, revision);
+    assert.equal(
+      registry.commands.byDescriptor.get(editorCommands.insertText),
+      pipeline
+    );
+    assert.equal(
+      registry.commands.byId.get(editorCommands.insertText.id),
+      editorCommands.insertText
+    );
+    assert.equal(
+      registry.commands.byDescriptor.has(editorCommands.insertText),
+      true
+    );
+  });
+
+  it('recompiles dependency order when an extension is replaced', () => {
+    const command = defineCommand('ordered-command');
+    const seen: string[] = [];
+    const extension = (name: string, label: string, dependencies?: string[]) =>
+      defineEditorExtension({
+        commands: ({ handle }) => [
+          handle(command, () => {
+            seen.push(label);
+
+            return false;
+          }),
+        ],
+        dependencies,
+        name,
+      });
+    const editor = createEditor({
+      extensions: [
+        extension('ordered-base', 'base-1'),
+        extension('ordered-dependent', 'dependent', ['ordered-base']),
+      ],
+    });
+
+    assert.equal(dispatchCommand(editor, command), false);
+    assert.deepEqual(seen, ['base-1', 'dependent']);
+
+    seen.length = 0;
+    editor.extend(extension('ordered-base', 'base-2'));
+
+    assert.equal(dispatchCommand(editor, command), false);
+    assert.deepEqual(seen, ['base-2', 'dependent']);
+  });
+
+  it('keeps a captured command pipeline immutable through publication', () => {
+    const command = defineCommand('captured-command-pipeline');
+    const seen: string[] = [];
+    let editor!: ReturnType<typeof createEditor>;
+    let installed = false;
+    const late = defineEditorExtension({
+      commands: ({ handle }) => [
+        handle(command, () => {
+          seen.push('late');
+
+          return false;
+        }),
+      ],
+      name: 'captured-command-late',
+    });
+    editor = createEditor({
+      extensions: [
+        defineEditorExtension({
+          commands: ({ handle }) => [
+            handle(command, () => {
+              seen.push('first');
+              if (!installed) {
+                installed = true;
+                editor.extend(late);
+              }
+
+              return false;
+            }),
+            handle(command, () => {
+              seen.push('second');
+
+              return false;
+            }),
+          ],
+          name: 'captured-command-base',
+        }),
+      ],
+    });
+    const previousRegistry = getEditorExtensionRegistry(editor);
+    const previousPipeline =
+      previousRegistry.commands.byDescriptor.get(command)!;
+    const previousEntries = previousPipeline.entries;
+
+    assert.equal(dispatchCommand(editor, command), false);
+    assert.deepEqual(seen, ['first', 'second']);
+    assert.equal(Object.isFrozen(previousPipeline), true);
+    assert.equal(Object.isFrozen(previousEntries), true);
+    assert.equal(previousPipeline.entries, previousEntries);
+    assert.equal(previousEntries.length, 2);
+
+    const currentRegistry = getEditorExtensionRegistry(editor);
+
+    assert.notEqual(currentRegistry, previousRegistry);
+    assert.equal(
+      currentRegistry.commands.revision,
+      previousRegistry.commands.revision + 1
+    );
+    assert.equal(
+      previousRegistry.commands.byDescriptor.get(command),
+      previousPipeline
+    );
+
+    seen.length = 0;
+    assert.equal(dispatchCommand(editor, command), false);
+    assert.deepEqual(seen, ['first', 'second', 'late']);
+  });
+
+  it('exposes published registry collections as immutable', () => {
+    const command = defineCommand('immutable-command');
     const effect = defineEffect({ key: 'immutable-effect' });
     const field = defineStateField({ key: 'immutable-field' });
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          commands: [command.handle(() => false)],
+          commands: ({ handle }) => [handle(command, () => false)],
           effects: [effect],
           fields: [field],
           name: 'immutable-registry',
           schema: defineEditorSchema({
-            elements: { 'immutable-element': element({}) },
+            elements: {
+              'immutable-element': { content: schema.content.open() },
+            },
             id: 'immutable-registry',
             properties: [
               schema.textProperty('immutable-property', property.boolean()),
             ],
-            root: schema.root({
+            root: {
               content: schema.content.type('immutable-element'),
-            }),
+            } as const,
+            unknown: 'reject',
             version: 1,
           }).schema,
           state: { immutableState: () => ({}) },
@@ -844,8 +1636,10 @@ describe('transactional extension configuration', () => {
       ],
     });
     const registry = getEditorExtensionRegistry(editor);
+    const commandPipeline = registry.commands.byDescriptor.get(command)!;
     const registrations = [
-      registry.commands.get(command.type)?.[0],
+      commandPipeline,
+      commandPipeline.entries[0],
       registry.effectTypes.get(effect.key),
       registry.schemaContributions.records.get('immutable-registry'),
       registry.schemaContributions.compiled?.elements.byType.get(
@@ -869,7 +1663,23 @@ describe('transactional extension configuration', () => {
       () => registry.schemaContributions.records.delete('immutable-registry'),
       /registries are immutable/
     );
+    assert.throws(
+      () =>
+        (registry.commands.byDescriptor as Map<object, unknown>).delete(
+          command
+        ),
+      /registries are immutable/
+    );
+    assert.throws(
+      () => (registry.commands.byId as Map<string, object>).delete(command.id),
+      /registries are immutable/
+    );
+    assert.throws(() =>
+      (commandPipeline.entries as unknown[]).push(commandPipeline.entries[0])
+    );
     assert.equal(registry.extensions.has('immutable-registry'), true);
+    assert.equal(registry.commands.byId.get(command.id), command);
+    assert.equal(registry.commands.revision, registry.configurationRevision);
     assert.equal(
       registrations.every((entry) => Object.isFrozen(entry)),
       true
@@ -915,11 +1725,14 @@ describe('transactional extension configuration', () => {
       defineEditorExtension({
         name,
         schema: defineEditorSchema({
-          elements: { 'equivalent-schema-element': element({}) },
+          elements: {
+            'equivalent-schema-element': { content: schema.content.text() },
+          },
           id: 'equivalent-schema',
-          root: schema.root({
+          root: {
             content: schema.content.type('equivalent-schema-element'),
-          }),
+          } as const,
+          unknown: 'reject',
           version: 1,
         }).schema,
       });
@@ -939,6 +1752,117 @@ describe('transactional extension configuration', () => {
     );
   });
 
+  it('canonicalizes raw static declarations once at publication', () => {
+    const sourceElement = {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: false,
+    };
+    const extension = {
+      name: 'raw-static-schema-declaration',
+      schema: {
+        elements: { paragraph: sourceElement },
+        id: 'raw-static-schema-declaration',
+        root: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+        unknown: 'reject',
+        version: 1,
+      },
+    } satisfies EditorExtension;
+    const editor = createEditor({ extensions: [extension] as const });
+    const published = getInstalledEditorExtension(
+      editor,
+      'raw-static-schema-declaration'
+    );
+
+    assert.ok(published);
+
+    sourceElement.inline = true;
+    extension.name = 'mutated-raw-static-schema-declaration';
+
+    assert.notEqual(published, extension);
+    assert.equal(published?.name, 'raw-static-schema-declaration');
+    assert.equal(Object.isFrozen(published), true);
+    assert.equal(Object.isFrozen(published?.schema), true);
+    assert.equal(
+      editor.read.schema.element('paragraph')?.behavior.inline,
+      false
+    );
+  });
+
+  it('evaluates raw schema factories once against a canonical config', () => {
+    const source = {
+      element: { type: 'paragraph' },
+      targets: ['paragraph', 'heading'] as const,
+    };
+    let calls = 0;
+    const extension = {
+      api: { rawFactoryApi: { read: () => 'canonical' } },
+      config: source,
+      name: 'raw-schema-factory',
+      schema({ config }) {
+        calls++;
+        const primaryType: 'paragraph' = config.targets[0];
+        const secondaryType: 'heading' = config.targets[1];
+
+        void primaryType;
+        void secondaryType;
+
+        return {
+          elements: {
+            [config.element.type]: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            },
+          },
+          id: 'raw-schema-factory',
+          root: {
+            content: schema.content.type(config.element.type, {
+              default: { type: config.element.type },
+              min: 1,
+            }),
+          },
+          unknown: 'reject' as const,
+          version: 1,
+        };
+      },
+    } satisfies EditorExtension<Editor, unknown, typeof source>;
+    const editor = createEditor({ extensions: [extension] as const });
+    const published = getInstalledEditorExtension(editor, 'raw-schema-factory');
+
+    assert.ok(published);
+
+    source.element.type = 'heading';
+
+    assert.equal(calls, 1);
+    assert.notEqual(published?.config, source);
+    assert.equal(Object.isFrozen(published?.config), true);
+    assert.deepEqual(published?.config, {
+      element: { type: 'paragraph' },
+      targets: ['paragraph', 'heading'],
+    });
+    assert.equal(editor.getApi(extension).read(), 'canonical');
+    assert.equal(editor.read.schema.element('paragraph')?.type, 'paragraph');
+    assert.equal(editor.read.schema.element('heading'), null);
+  });
+
+  it('keeps the canonical token identity when raw extension input mutates', () => {
+    const extension = {
+      api: {
+        'raw-extension-token': { read: () => 'canonical' },
+        secondary: { read: () => 'secondary' },
+      },
+      name: 'raw-extension-token',
+    } satisfies EditorExtension;
+    const editor = createEditor({ extensions: [extension] as const });
+
+    extension.name = 'mutated-raw-extension-token';
+
+    assert.equal(editor.getApi(extension).read(), 'canonical');
+  });
+
   it('clones and deeply freezes schema declarations from another realm', () => {
     const source = runInNewContext(`({
       name: "cross-realm-schema",
@@ -956,18 +1880,18 @@ describe('transactional extension configuration', () => {
               default: { type: "paragraph" },
               min: 1
             },
-            groups: ["block"],
+            groups: ["article"],
             properties: {
               payload: {
                 default: { nested: ["foreign"] },
-                equality: "structural",
                 kind: "json",
                 omitDefault: false
               }
             }
           }
         },
-        groups: {},
+        groups: { article: {} },
+        id: "cross-realm-schema",
         properties: [{
           inclusive: true,
           key: "tone",
@@ -976,7 +1900,6 @@ describe('transactional extension configuration', () => {
           target: { kind: "type", type: "paragraph" },
           typeChange: "drop",
           value: {
-            equality: "structural",
             kind: "string",
             omitDefault: false
           }
@@ -988,15 +1911,20 @@ describe('transactional extension configuration', () => {
             min: 1
           }
         },
-        roots: {}
+        roots: {},
+        unknown: "reject",
+        version: 1
       }
     })`) as EditorExtension;
     const canonical = defineEditorExtension(source);
     const schemaDeclaration = canonical.schema;
-    const paragraphElement = schemaDeclaration?.elements.paragraph;
+
+    assert.ok(schemaDeclaration && typeof schemaDeclaration !== 'function');
+
+    const paragraphElement = schemaDeclaration.elements?.paragraph;
     const content = paragraphElement?.content;
     const payloadProperty = paragraphElement?.properties?.payload;
-    const textProperty = schemaDeclaration?.properties[0];
+    const textProperty = schemaDeclaration.properties?.[0];
 
     assert.equal(Object.getPrototypeOf(schemaDeclaration), Object.prototype);
     assert.equal(
@@ -1052,12 +1980,150 @@ describe('transactional extension configuration', () => {
       assert.equal(Object.isFrozen(declaration), true);
     }
 
+    const sourceSchema = source.schema;
+
+    assert.ok(sourceSchema && typeof sourceSchema !== 'function');
+
     (
-      source.schema?.elements.paragraph as {
+      sourceSchema.elements?.paragraph as {
         content: { min: number };
       }
     ).content.min = 2;
     assert.equal(content?.min, 1);
+  });
+
+  it('evaluates schema factories once against a deeply frozen config clone', () => {
+    const source = {
+      element: { type: 'paragraph' },
+      groups: ['article'],
+    };
+    let calls = 0;
+    let received: unknown;
+    const extension = defineEditorExtension({
+      config: source,
+      name: 'immutable-schema-factory-config',
+      schema({ config }) {
+        calls++;
+        received = config;
+
+        return {
+          elements: {
+            [config.element.type]: {
+              content: schema.content.text(),
+              groups: config.groups,
+            },
+          },
+          groups: { article: {} },
+        };
+      },
+    });
+
+    assert.equal(calls, 1);
+    assert.notEqual(extension.config, source);
+    assert.notEqual(extension.config.element, source.element);
+    assert.notEqual(extension.config.groups, source.groups);
+    assert.equal(received, extension.config);
+    assert.equal(Object.isFrozen(extension.config), true);
+    assert.equal(Object.isFrozen(extension.config.element), true);
+    assert.equal(Object.isFrozen(extension.config.groups), true);
+    assert.equal(Object.isFrozen(source), false);
+    assert.deepEqual(source, {
+      element: { type: 'paragraph' },
+      groups: ['article'],
+    });
+
+    source.element.type = 'heading';
+    source.groups.push('changed');
+
+    assert.deepEqual(extension.config, {
+      element: { type: 'paragraph' },
+      groups: ['article'],
+    });
+    assert.deepEqual(extension.schema, {
+      elements: {
+        paragraph: {
+          content: schema.content.text(),
+          groups: ['article'],
+        },
+      },
+      groups: { article: {} },
+    });
+  });
+
+  it('rejects configuration accessors before evaluating schema factories', () => {
+    const config: Record<string, unknown> = {};
+    let factoryCalls = 0;
+
+    Object.defineProperty(config, 'element', {
+      enumerable: true,
+      get() {
+        throw new Error('configuration accessor evaluated');
+      },
+    });
+
+    assert.throws(
+      () =>
+        defineEditorExtension({
+          config,
+          name: 'configuration-accessor',
+          schema: () => {
+            factoryCalls++;
+
+            return {};
+          },
+        }),
+      /cannot contain property accessors/u
+    );
+    assert.equal(factoryCalls, 0);
+  });
+
+  it('accepts only genuine nominal schema tokens in configuration', () => {
+    const policy = definePropertyPolicy({
+      id: 'nominal-configuration-policy',
+      validate: (value): value is string => typeof value === 'string',
+      version: 1,
+    });
+    const extension = defineEditorExtension({
+      config: { policy },
+      name: 'nominal-configuration-token',
+    });
+    const forged = {
+      [Symbol.for('platejs.plite.editorSchemaConfigToken')]: true,
+      mutable: { value: 1 },
+    };
+
+    assert.equal(extension.config.policy, policy);
+    assert.equal(Object.isFrozen(policy), true);
+    assert.throws(
+      () =>
+        defineEditorExtension({
+          config: { forged },
+          name: 'forged-configuration-token',
+        }),
+      /string-keyed plain data/u
+    );
+  });
+
+  it('rejects every mutable runtime shape in extension configuration', () => {
+    const hidden = { visible: true };
+    const cyclic: Record<string, unknown> = {};
+
+    Object.defineProperty(hidden, 'hidden', { value: true });
+    cyclic.self = cyclic;
+
+    for (const config of [
+      { nested: { callback: () => true } },
+      { nested: hidden },
+      { nested: new Date(0) },
+      { nested: cyclic },
+    ]) {
+      assert.throws(() =>
+        defineEditorExtension({
+          config,
+          name: 'invalid-immutable-configuration',
+        } as never)
+      );
+    }
   });
 
   it('activates with only immutable configuration resources and lifecycle controls', () => {

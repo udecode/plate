@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type {
-  Bookmark,
+  Anchor,
   createEditor,
   Path,
   Point,
@@ -325,9 +325,9 @@ const AnchoredProjectionContent = ({
   setAnnotation,
   widgetStore,
 }: {
-  annotation: Bookmark | null;
+  annotation: Anchor<Range> | null;
   editor: ReturnType<typeof createEditor>;
-  setAnnotation: React.Dispatch<React.SetStateAction<Bookmark | null>>;
+  setAnnotation: React.Dispatch<React.SetStateAction<Anchor<Range> | null>>;
   widgetStore: ReturnType<
     typeof usePliteWidgetStore<
       {
@@ -366,7 +366,7 @@ const AnchoredProjectionContent = ({
   return (
     <div className="plite-persistent-annotation-anchors-panel" id="editor-root">
       <Instruction>
-        Persistent bookmarks keep the annotation slice attached to the same
+        Persistent anchors keep the annotation slice attached to the same
         logical text even when the document shape changes.
       </Instruction>
 
@@ -382,10 +382,13 @@ const AnchoredProjectionContent = ({
             setAnnotation(
               (current) =>
                 current ??
-                editor.read.ranges.bookmark({
-                  anchor: { path, offset: 1 },
-                  focus: { path, offset: 4 },
-                })
+                editor.anchor(
+                  {
+                    anchor: { path, offset: 1 },
+                    focus: { path, offset: 4 },
+                  },
+                  { association: 'inward', deletion: 'drop' }
+                )
             );
           }}
           type="button"
@@ -406,7 +409,7 @@ const AnchoredProjectionContent = ({
                 anchor: at,
                 focus: at,
               });
-              tx.fragment.insert([
+              tx.fragment.replace([
                 {
                   type: 'paragraph',
                   children: [{ text: 'intro-a' }],
@@ -455,7 +458,7 @@ const AnchoredProjectionContent = ({
           id="clear-anchor"
           onClick={() => {
             setAnnotation((current) => {
-              current?.unref();
+              current?.release();
               return null;
             });
           }}
@@ -477,7 +480,7 @@ const AnchoredProjectionContent = ({
 
 const PersistentAnnotationAnchorsExample = () => {
   const editor = usePliteEditor({ initialValue: createChildren() });
-  const [annotation, setAnnotation] = useState<Bookmark | null>(null);
+  const [annotation, setAnnotation] = useState<Anchor<Range> | null>(null);
   const annotationStore = usePliteAnnotationStore(editor, {
     deps: [annotation],
     project: () =>

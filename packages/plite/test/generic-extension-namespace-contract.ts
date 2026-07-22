@@ -154,6 +154,29 @@ const runtimeExtension = defineEditorExtension({
   },
 });
 
+const tupleConfigExtension = defineEditorExtension({
+  config: {
+    targets: [
+      'paragraph',
+      { kind: 'heading' as const, level: 2 as const },
+    ] as const,
+  },
+  name: 'tuple-config-schema',
+  schema({ config }) {
+    const firstTarget: 'paragraph' = config.targets[0];
+    const secondTargetKind: 'heading' = config.targets[1].kind;
+    const secondTargetLevel: 2 = config.targets[1].level;
+
+    void firstTarget;
+    void secondTargetKind;
+    void secondTargetLevel;
+
+    return {};
+  },
+});
+
+void tupleConfigExtension;
+
 defineEditorExtension({
   name: 'bad-register-slot',
   // @ts-expect-error extension registration is declarative
@@ -164,8 +187,8 @@ defineEditorExtension({
 
 defineEditorExtension<CustomEditor>()({
   name: 'bad-command-namespace',
-  commands: [
-    // @ts-expect-error command registrations come from typed command handles
+  // @ts-expect-error command registrations come from the typed factory
+  commands: () => [
     {
       handler: () => false,
     },
@@ -204,15 +227,15 @@ defineEditorExtension<CustomEditor>()({
       },
     },
   },
-  commands: [
-    editorCommands.insertText.handle((context, next) => {
+  commands: ({ around }) => [
+    around(editorCommands.insertText, ({ next, ...context }) => {
       context.state.selection();
-      context.command.text;
+      context.input.text;
 
       // @ts-expect-error pure command handlers do not receive a live tx
       context.tx;
 
-      return next({ ...context.command, text: context.command.text });
+      return next({ ...context.input, text: context.input.text });
     }),
   ],
 });

@@ -70,12 +70,12 @@ describe('pluginInjectNodeProps', () => {
   it('keeps transformProps hook order when inject matching rejects the node', () => {
     const transformProps = mock(({ props }) => props);
     const TargetPlugin = createBasePlugin({
+      config: { targetPluginKeys: ['quote'] },
       inject: {
         nodeProps: {
           nodeKey: 'tone',
           transformProps,
         },
-        targetPlugins: ['quote'],
       },
       key: 'target',
     });
@@ -225,6 +225,7 @@ describe('pluginInjectNodeProps', () => {
 
   it('does not resolve a path when inject matching is pathless', () => {
     const ListishPlugin = createBasePlugin({
+      config: { targetPluginKeys: ['p'] },
       inject: {
         nodeProps: {
           nodeKey: 'listStyleType',
@@ -237,7 +238,6 @@ describe('pluginInjectNodeProps', () => {
             },
           }),
         },
-        targetPlugins: ['p'],
       },
       key: 'list',
     });
@@ -311,7 +311,9 @@ describe('pluginInjectNodeProps', () => {
       },
       key: 'path',
     });
-    const editor = createBaseEditor({ plugins: [PathPlugin] });
+    const editor = createBaseEditor({
+      plugins: [PathPlugin],
+    });
 
     expect(
       pluginInjectNodeProps(

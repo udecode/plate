@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {
   createEditor,
   defineEditorSchema,
-  element,
   schema,
 } from '../../../../../packages/plite/src/index.ts';
 import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
@@ -20,11 +19,11 @@ const observedOps = Number(process.env.NORMALIZATION_BENCH_OBSERVED_OPS || 50);
 
 const InlineNormalizationSchema = defineEditorSchema({
   elements: {
-    inline: element({ inline: true }),
-    paragraph: element({}),
+    inline: { content: schema.content.open(), inline: true },
+    paragraph: { content: schema.content.open() },
   },
   id: 'normalization-benchmark-inline',
-  root: schema.root({ content: schema.content.types(['paragraph']) }),
+  root: { content: schema.content.type('paragraph') },
   unknown: 'preserve',
   version: 1,
 });

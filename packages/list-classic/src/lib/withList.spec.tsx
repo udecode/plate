@@ -1,6 +1,10 @@
 /** @jsx jsxt */
 
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
 import { schema } from '@platejs/plite';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -11,10 +15,9 @@ jsxt;
 
 const BaseBlockquotePlugin = createBasePlugin({
   key: 'blockquote',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
     },
   },
 });
@@ -61,7 +64,7 @@ const testDeleteForward = (input: any, expected: any) => {
 
 describe('withList', () => {
   describe('normalizeList', () => {
-    describe('when li > block, with block in validLiChildrenTypes', () => {
+    describe('when li contains a configured valid element', () => {
       it('keep the block untouched', () => {
         const input = (
           <editor>
@@ -97,8 +100,8 @@ describe('withList', () => {
         ) as TestEditor;
 
         testInsertText(input, expected, {
-          options: {
-            validLiChildrenTypes: ['p', 'blockquote'],
+          config: {
+            validLiChildren: [BaseParagraphPlugin, BaseBlockquotePlugin],
           },
         });
       });

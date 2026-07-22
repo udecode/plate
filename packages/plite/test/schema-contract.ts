@@ -8,7 +8,6 @@ import {
   defineEditorSchema,
   definePropertyPolicy,
   DocumentChange,
-  element,
   ElementApi,
   property,
   schema,
@@ -18,16 +17,41 @@ import {
   TextApi,
 } from '@platejs/plite';
 
+const inlineContent = schema.content.any(
+  [schema.content.text(), schema.content.group('inline')],
+  { default: 'text', min: 1 }
+);
+
 const defineContractSchema = (
   id: string,
   elements: Readonly<Record<string, SchemaElement>>
-) =>
-  defineEditorSchema({
-    elements: { 'test-root': element({}), ...elements },
+) => {
+  const declarations = Object.fromEntries(
+    Object.entries(elements).map(([type, input]) => [
+      type,
+      input.content !== undefined ||
+      input.void === 'block' ||
+      input.void === 'inline' ||
+      input.void === 'markable-inline'
+        ? input
+        : {
+            content: input.inline ? inlineContent : schema.content.open(),
+            ...input,
+          },
+    ])
+  );
+
+  return defineEditorSchema({
+    elements: {
+      'test-root': { content: schema.content.open() },
+      ...declarations,
+    },
     id,
-    root: schema.root({ content: schema.content.type('test-root') }),
+    root: { content: schema.content.type('test-root') } as const,
+    unknown: 'reject',
     version: 1,
   });
+};
 
 describe('editor schema', () => {
   it('rejects non-JSON document properties at create and update boundaries', () => {
@@ -178,15 +202,16 @@ describe('editor schema', () => {
     const invalidProperty = { payload: new Date(0) };
     const fromProperties = defineEditorSchema({
       elements: {
-        paragraph: element({
+        paragraph: {
           content: schema.content.text(),
           properties: { payload: property.json() },
-        }),
+        } as const,
       },
       id: 'invalid-create-properties',
-      root: schema.root({
+      root: {
         content: schema.content.type('paragraph'),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
 
@@ -214,18 +239,18 @@ describe('editor schema', () => {
 
     const closedSchema = defineEditorSchema({
       elements: {
-        paragraph: element({
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
+        } as const,
       },
       id: 'closed-document',
-      root: schema.root({
+      root: {
         content: schema.content.group('block', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
 
@@ -295,14 +320,13 @@ describe('editor schema', () => {
   it('counts exact and prefix property declarations in a closed vocabulary', () => {
     const extension = defineEditorSchema({
       elements: {
-        cell: element({
+        cell: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
           properties: {
             colSpan: property.number(),
             variant: property.string(),
           },
-        }),
+        } as const,
       },
       id: 'closed-exact-prefix-properties',
       properties: [
@@ -312,12 +336,13 @@ describe('editor schema', () => {
           { target: target.type('cell') }
         ),
       ],
-      root: schema.root({
+      root: {
         content: schema.content.group('block', {
           default: { type: 'cell' },
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
 
@@ -340,17 +365,15 @@ describe('editor schema', () => {
   it('compiles structural root grammar and validates each named root', () => {
     const extension = defineEditorSchema({
       elements: {
-        heading: element({
+        heading: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
-        paragraph: element({
+        } as const,
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
+        } as const,
       },
       id: 'root-grammar',
-      root: schema.root({
+      root: {
         content: schema.content.all(
           [
             schema.content.group('block'),
@@ -358,15 +381,16 @@ describe('editor schema', () => {
           ],
           { default: { type: 'paragraph' }, min: 1 }
         ),
-      }),
+      } as const,
       roots: {
-        header: schema.root({
+        header: {
           content: schema.content.type('heading', {
             default: { type: 'heading' },
             min: 1,
           }),
-        }),
+        } as const,
       },
+      unknown: 'reject',
       version: 1,
     });
 
@@ -383,29 +407,25 @@ describe('editor schema', () => {
     );
     const conflictingExtension = defineEditorSchema({
       elements: {
-        paragraph: element({
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
-        'paragraph-portal': element({
+        } as const,
+        'paragraph-portal': {
           content: schema.content.text({ default: 'text', min: 1 }),
-          contentRoot: {
-            content: schema.content.type('paragraph'),
-            slot: 'body',
+          contentRoots: {
+            body: schema.content.type('paragraph'),
           },
-          groups: ['block'],
-        }),
-        'portal-portal': element({
+        } as const,
+        'portal-portal': {
           content: schema.content.text({ default: 'text', min: 1 }),
-          contentRoot: {
-            content: schema.content.type('paragraph-portal'),
-            slot: 'body',
+          contentRoots: {
+            body: schema.content.type('paragraph-portal'),
           },
-          groups: ['block'],
-        }),
+        } as const,
       },
       id: 'conflicting-owned-content-root',
-      root: schema.root({ content: schema.content.group('block') }),
+      root: { content: schema.content.group('block') } as const,
+      unknown: 'reject',
       version: 1,
     });
 
@@ -461,11 +481,19 @@ describe('editor schema', () => {
         }),
       /root "header".*cannot contain "paragraph"/
     );
-    const filled = createEditor({
-      extensions: [extension],
-      initialValue: [{ type: 'paragraph', children: [{ text: 'body' }] }],
-    });
+    assert.throws(
+      () =>
+        createEditor({
+          extensions: [extension],
+          initialValue: [{ type: 'paragraph', children: [{ text: 'body' }] }],
+        }),
+      /root "header" is missing/u
+    );
+    const filled = createEditor({ extensions: [extension] });
 
+    assert.deepEqual(filled.read.children(), [
+      { type: 'paragraph', children: [{ text: '' }] },
+    ]);
     assert.deepEqual(filled.read.root('header'), [
       { type: 'heading', children: [{ text: '' }] },
     ]);
@@ -477,13 +505,13 @@ describe('editor schema', () => {
         extensions: [
           defineEditorSchema({
             elements: {
-              paragraph: element({
+              paragraph: {
                 content: schema.content.text({ default: 'text', min: 1 }),
-                groups: ['block'],
-              }),
+              } as const,
             },
             id: 'element-only-root',
-            root: schema.root({ content }),
+            root: { content } as const,
+            unknown: 'reject',
             version: 1,
           }),
         ],
@@ -520,19 +548,18 @@ describe('editor schema', () => {
           extensions: [
             defineEditorSchema({
               elements: {
-                portal: element({
+                portal: {
                   content: schema.content.text({ default: 'text', min: 1 }),
-                  contentRoot: {
-                    content: schema.content.text(),
-                    slot: 'body',
+                  contentRoots: {
+                    body: schema.content.text(),
                   },
-                  groups: ['block'],
-                }),
+                } as const,
               },
               id: 'element-only-content-root',
-              root: schema.root({
+              root: {
                 content: schema.content.type('portal'),
-              }),
+              } as const,
+              unknown: 'reject',
               version: 1,
             }),
           ],
@@ -545,30 +572,30 @@ describe('editor schema', () => {
   it('applies each declared root default during sparse writes', () => {
     const extension = defineEditorSchema({
       elements: {
-        paragraph: element({
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
-        'root-inline': element({
+        } as const,
+        'root-inline': {
           content: schema.content.text({ default: 'text', min: 1 }),
           inline: true,
-        }),
+        } as const,
       },
       id: 'per-root-construction',
-      root: schema.root({
+      root: {
         content: schema.content.type('paragraph', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
       roots: {
-        header: schema.root({
+        header: {
           content: schema.content.type('root-inline', {
             default: { type: 'root-inline' },
             min: 2,
           }),
-        }),
+        } as const,
       },
+      unknown: 'reject',
       version: 1,
     });
     const editor = createEditor({
@@ -599,29 +626,27 @@ describe('editor schema', () => {
   it('validates element-owned content roots with their declared grammar', () => {
     const extension = defineEditorSchema({
       elements: {
-        paragraph: element({
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
-        portal: element({
+        } as const,
+        portal: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          contentRoot: {
-            content: schema.content.group('block', {
+          contentRoots: {
+            body: schema.content.group('block', {
               default: { type: 'paragraph' },
               min: 1,
             }),
-            slot: 'body',
           },
-          groups: ['block'],
-        }),
+        } as const,
       },
       id: 'owned-content-root',
-      root: schema.root({
+      root: {
         content: schema.content.group('block', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
 
@@ -674,21 +699,19 @@ describe('editor schema', () => {
             { type: 'portal', children: [{ text: 'missing root' }] },
           ],
         }),
-      /portal.*missing content root "body"/i
+      /portal.*missing.*content roots/i
     );
   });
 
   it('validates and resolves structural text-property specs', () => {
     const extension = defineEditorSchema({
       elements: {
-        code: element({
+        code: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
-        paragraph: element({
+        } as const,
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
+        } as const,
       },
       id: 'text-properties',
       properties: [
@@ -697,12 +720,13 @@ describe('editor schema', () => {
         }),
         schema.textProperty('commentIds', property.set(property.string())),
       ],
-      root: schema.root({
+      root: {
         content: schema.content.group('block', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
 
@@ -819,14 +843,12 @@ describe('editor schema', () => {
   it('applies text-property merge, split, type-change, and cursor semantics', () => {
     const extension = defineEditorSchema({
       elements: {
-        code: element({
+        code: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
-        paragraph: element({
+        } as const,
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
-        }),
+        } as const,
       },
       id: 'text-property-behavior',
       properties: [
@@ -841,12 +863,13 @@ describe('editor schema', () => {
           split: 'drop',
         }),
       ],
-      root: schema.root({
+      root: {
         content: schema.content.group('block', {
           default: { type: 'paragraph' },
           min: 1,
         }),
-      }),
+      } as const,
+      unknown: 'reject',
       version: 1,
     });
     const editor = createEditor({
@@ -1007,10 +1030,9 @@ describe('editor schema', () => {
       extensions: [
         defineEditorSchema({
           elements: {
-            paragraph: element({
+            paragraph: {
               content: schema.content.text({ default: 'text', min: 1 }),
-              groups: ['block'],
-            }),
+            } as const,
           },
           id: 'non-inclusive-property',
           properties: [
@@ -1018,12 +1040,13 @@ describe('editor schema', () => {
               inclusive: false,
             }),
           ],
-          root: schema.root({
+          root: {
             content: schema.content.group('block', {
               default: { type: 'paragraph' },
               min: 1,
             }),
-          }),
+          } as const,
+          unknown: 'reject',
           version: 1,
         }),
       ],
@@ -1056,28 +1079,32 @@ describe('editor schema', () => {
       extensions: [
         defineEditorSchema({
           elements: {
-            caption: element({
+            caption: {
               content: schema.content.text(),
               groups: ['inline-container'],
-            }),
-            figure: element({
+            } as const,
+            figure: {
               content: schema.content.type('caption'),
-              groups: ['block'],
-            }),
-            paragraph: element({
+              groups: ['section-child'],
+            } as const,
+            paragraph: {
               content: schema.content.text({ default: 'text', min: 1 }),
-              groups: ['block'],
-            }),
-            section: element({
-              content: schema.content.group('block', {
+              groups: ['section-child'],
+            } as const,
+            section: {
+              content: schema.content.group('section-child', {
                 default: { type: 'paragraph' },
                 min: 1,
               }),
-            }),
+            } as const,
           },
-          groups: { 'inline-container': schema.group() },
+          groups: {
+            'inline-container': {},
+            'section-child': {},
+          },
           id: 'compiled-schema',
-          root: schema.root({ content: schema.content.type('section') }),
+          root: { content: schema.content.type('section') } as const,
+          unknown: 'reject',
           version: 1,
         }),
       ],
@@ -1168,37 +1195,38 @@ describe('editor schema', () => {
       extensions: [
         defineEditorSchema({
           elements: {
-            caption: element({
+            caption: {
               content: schema.content.text({ default: 'text', min: 1 }),
-            }),
-            figure: element({
+            } as const,
+            figure: {
               content: schema.content.type('caption', {
                 default: { type: 'caption' },
                 min: 1,
               }),
-            }),
-            heading: element({
+            } as const,
+            heading: {
               content: schema.content.text({ default: 'text', min: 1 }),
-            }),
-            section: element({
+            } as const,
+            section: {
               content: schema.content.type('figure', {
                 default: { type: 'figure' },
                 min: 1,
               }),
-            }),
+            } as const,
           },
           id: 'external-root-fit',
-          root: schema.root({
+          root: {
             content: schema.content.type('section', {
               default: { type: 'section' },
               min: 1,
             }),
-          }),
+          } as const,
           roots: {
-            header: schema.root({
+            header: {
               content: schema.content.type('heading'),
-            }),
+            } as const,
           },
+          unknown: 'reject',
           version: 1,
         }),
       ],
@@ -1272,29 +1300,31 @@ describe('editor schema', () => {
       extensions: [
         defineEditorSchema({
           elements: {
-            caption: element({
+            caption: {
               content: schema.content.text({ default: 'text', min: 1 }),
-            }),
-            figure: element({
+            } as const,
+            figure: {
               content: schema.content.type('caption', {
                 default: { type: 'caption' },
                 min: 1,
               }),
-              groups: ['block'],
-            }),
-            paragraph: element({
+              groups: ['section-child'],
+            } as const,
+            paragraph: {
               content: schema.content.text({ default: 'text', min: 1 }),
-              groups: ['block'],
-            }),
-            section: element({
-              content: schema.content.group('block', {
+              groups: ['section-child'],
+            } as const,
+            section: {
+              content: schema.content.group('section-child', {
                 default: { type: 'paragraph' },
                 min: 1,
               }),
-            }),
+            } as const,
           },
+          groups: { 'section-child': {} },
           id: 'open-slice-schema',
-          root: schema.root({ content: schema.content.type('section') }),
+          root: { content: schema.content.type('section') } as const,
+          unknown: 'reject',
           version: 1,
         }),
       ],
@@ -1381,10 +1411,10 @@ describe('editor schema', () => {
       () =>
         editor.extend(
           defineContractSchema('invalid-batch', {
-            'invalid-owner': element({
+            'invalid-owner': {
               content: schema.content.group('missing-group'),
-            }),
-            'valid-before-rollback': element({}),
+            } as const,
+            'valid-before-rollback': {} as const,
           })
         ),
       /references unknown group "missing-group"/i
@@ -1403,13 +1433,13 @@ describe('editor schema', () => {
     const editor = createEditor({
       extensions: [
         defineContractSchema('property-validation', {
-          callout: element({
+          callout: {
             content: schema.content.text(),
             properties: {
               count: property.number(),
               tone: property.string({ policy: Tone }),
             },
-          }),
+          } as const,
         }),
       ],
     });
@@ -1442,11 +1472,11 @@ describe('editor schema', () => {
     const editor = createEditor();
     const cleanup = editor.extend(
       defineContractSchema('schema-contract', {
-        badge: element({ selectable: false }),
-        image: element({ void: 'block' }),
-        link: element({ inline: true }),
-        mention: element({ void: 'markable-inline' }),
-        readonly: element({ readOnly: true }),
+        badge: { selectable: false } as const,
+        image: { void: 'block' } as const,
+        link: { inline: true } as const,
+        mention: { void: 'markable-inline' } as const,
+        readonly: { readOnly: true } as const,
       })
     );
 
@@ -1497,7 +1527,7 @@ describe('editor schema', () => {
   it('registers compiled element declarations through extensions', () => {
     const editor = createEditor();
     const cleanup = editor.extend(
-      defineContractSchema('embed', { embed: element({ void: 'block' }) })
+      defineContractSchema('embed', { embed: { void: 'block' } as const })
     );
 
     assert.equal(
@@ -1525,7 +1555,7 @@ describe('editor schema', () => {
       () =>
         editor.extend(
           defineContractSchema('boolean-void-flag', {
-            'boolean-void-flag': element({ void: true as never }),
+            'boolean-void-flag': { void: true as never } as const,
           })
         ),
       /void/i
@@ -1535,7 +1565,7 @@ describe('editor schema', () => {
   it('rejects duplicate element specs', () => {
     const editor = createEditor();
     editor.extend(
-      defineContractSchema('image', { image: element({ void: 'block' }) })
+      defineContractSchema('image', { image: { void: 'block' } as const })
     );
 
     assert.throws(
@@ -1543,9 +1573,11 @@ describe('editor schema', () => {
         editor.extend(
           defineEditorExtension({
             name: 'other-image',
-            schema: schema.contribution({
-              elements: { image: element({ inline: true }) },
-            }),
+            schema: {
+              elements: {
+                image: { content: inlineContent, inline: true },
+              },
+            },
           })
         ),
       /element type "image".*owned by both/i
@@ -1559,9 +1591,9 @@ describe('editor schema', () => {
       () =>
         editor.extend(
           defineContractSchema('bad-properties', {
-            'bad-cell': element({
+            'bad-cell': {
               properties: { type: property.string() },
-            }),
+            } as const,
           })
         ),
       /property.*reserved key "type"/i
@@ -1572,7 +1604,7 @@ describe('editor schema', () => {
     const editor = createEditor();
     editor.extend(
       defineContractSchema('mention', {
-        mention: element({ void: 'markable-inline' }),
+        mention: { void: 'markable-inline' } as const,
       })
     );
 
@@ -1596,12 +1628,12 @@ describe('editor schema', () => {
     const editor = createEditor();
     editor.extend(
       defineContractSchema('element-behavior', {
-        'editable-embed': element({ void: 'editable-island' }),
-        'mention-card': element({
+        'editable-embed': { void: 'editable-island' } as const,
+        'mention-card': {
           atom: true,
           isolating: true,
           keyboardSelectable: true,
-        }),
+        } as const,
       })
     );
 
@@ -1630,23 +1662,36 @@ describe('editor schema', () => {
     );
   });
 
-  it('reads element property defaults with structural equality semantics', () => {
+  it('reads element property defaults without exposing implementation equality', () => {
     const editor = createEditor();
-    editor.extend(
-      defineContractSchema('table-properties', {
-        'table-cell': element({
+    const TableSchema = defineEditorSchema({
+      elements: {
+        'table-cell': {
+          content: schema.content.open(),
           properties: {
             colSpan: property.number({ default: 1 }),
             locked: property.boolean({ default: false }),
             role: property.string({ default: 'cell' }),
           },
-        }),
-      })
-    );
+        },
+      },
+      id: 'table-properties',
+      root: {
+        content: schema.content.type('table-cell'),
+      },
+      unknown: 'reject',
+      version: 1,
+    });
+
+    editor.extend(TableSchema);
     const cell = {
       type: 'table-cell',
       children: [{ text: '' }],
     };
+    const colSpanHandle = schema.handle.property(
+      schema.handle.element(TableSchema, 'table-cell'),
+      'colSpan'
+    );
 
     assert.equal(
       editor.read((state) => state.schema.getElementProperty(cell, 'colSpan')),
@@ -1667,9 +1712,13 @@ describe('editor schema', () => {
             key: 'colSpan',
             placement: 'element',
             type: 'table-cell',
-          })?.value.equality
+          })?.value.kind
       ),
-      'structural'
+      'number'
+    );
+    assert.equal(
+      editor.read.schema.property(colSpanHandle)?.value.kind,
+      'number'
     );
     assert.deepEqual(cell, {
       type: 'table-cell',
@@ -1681,12 +1730,12 @@ describe('editor schema', () => {
     const editor = createEditor();
     editor.extend(
       defineContractSchema('table-property-variants', {
-        'table-cell': element({
+        'table-cell': {
           properties: { colSpan: property.number({ default: 1 }) },
-        }),
-        'wide-table-cell': element({
+        } as const,
+        'wide-table-cell': {
           properties: { colSpan: property.number({ default: 2 }) },
-        }),
+        } as const,
       })
     );
 

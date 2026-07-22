@@ -1,5 +1,6 @@
 import {
   defineEditorExtension,
+  editorCommands,
   NodeApi,
   PointApi,
   RangeApi,
@@ -191,63 +192,46 @@ const TablesExample = () => {
 const table = () =>
   defineEditorExtension<CustomEditor>()({
     name: 'table',
-    transforms: {
-      deleteBackward({ next, tx, unit }) {
-        const selection = tx.selection();
+    commands: ({ handle }) => [
+      handle(editorCommands.delete, ({ input, state }) => {
+        const selection = state.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
-          const cell = tx.nodes.find({
+          const cell = state.nodes.find({
             match: (n) => NodeApi.isElement(n) && n.type === 'table-cell',
           });
 
           if (cell) {
             const [, cellPath] = cell;
-            const start = tx.points.start(cellPath);
+            const edge =
+              input.direction === 'backward'
+                ? state.points.start(cellPath)
+                : state.points.end(cellPath);
 
-            if (start && PointApi.equals(selection.anchor, start)) {
-              return true;
+            if (edge && PointApi.equals(selection.anchor, edge)) {
+              return state.transaction(() => {});
             }
           }
         }
 
-        return next({ unit });
-      },
-      deleteForward({ next, tx, unit }) {
-        const selection = tx.selection();
+        return false;
+      }),
+      handle(editorCommands.insertBreak, ({ state }) => {
+        const selection = state.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
-          const cell = tx.nodes.find({
+          const cell = state.nodes.find({
             match: (n) => NodeApi.isElement(n) && n.type === 'table-cell',
           });
 
           if (cell) {
-            const [, cellPath] = cell;
-            const end = tx.points.end(cellPath);
-
-            if (end && PointApi.equals(selection.anchor, end)) {
-              return true;
-            }
+            return state.transaction(() => {});
           }
         }
 
-        return next({ unit });
-      },
-      insertBreak({ next, tx }) {
-        const selection = tx.selection();
-
-        if (selection && RangeApi.isCollapsed(selection)) {
-          const cell = tx.nodes.find({
-            match: (n) => NodeApi.isElement(n) && n.type === 'table-cell',
-          });
-
-          if (cell) {
-            return true;
-          }
-        }
-
-        return next();
-      },
-    },
+        return false;
+      }),
+    ],
   });
 
 const Element = ({ attributes, children, element }: RenderElementProps) => {

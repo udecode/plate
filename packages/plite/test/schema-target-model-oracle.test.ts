@@ -3,7 +3,6 @@ import { describe, it } from 'node:test';
 
 import {
   defineEditorSchema,
-  element,
   property,
   schema,
   target,
@@ -151,16 +150,16 @@ const compileTarget = (input: ModelTarget) => {
     elements: Object.fromEntries(
       Array.from({ length: TYPE_COUNT }, (_value, index) => [
         typeName(index),
-        element({
+        {
           content: schema.content.text(),
           groups: [groupName(index % GROUP_COUNT)],
-        }),
+        } as const,
       ])
     ),
     groups: Object.fromEntries(
       Array.from({ length: GROUP_COUNT }, (_value, index) => [
         groupName(index),
-        schema.group(),
+        {} as const,
       ])
     ),
     id: 'target-model',
@@ -169,24 +168,24 @@ const compileTarget = (input: ModelTarget) => {
         target: toTarget(input),
       }),
     ],
-    root: schema.root({
+    root: {
       content: schema.content.type(typeName(0)),
-    }),
+    } as const,
     roots: {
-      comments: schema.root({
+      comments: {
         content: schema.content.type(typeName(1)),
-      }),
-      footnotes: schema.root({
+      } as const,
+      footnotes: {
         content: schema.content.type(typeName(2)),
-      }),
+      } as const,
     },
+    unknown: 'reject',
     version: 1,
   });
   const records: EditorSchemaContributionRecord[] = [
     {
       contribution: definition.schema,
       extensionName: definition.name,
-      order: 0,
     },
   ];
   const compiled = compileEditorSchemaContributions(records);

@@ -18,13 +18,9 @@ describe('BaseTagPlugin', () => {
 
     expect(editor.read.schema.isInline(tag)).toBe(true);
     expect(editor.read.schema.isVoid(tag)).toBe(true);
-    expect(
-      editor.read.schema.property({
-        key: 'value',
-        placement: 'element',
-        type: KEYS.tag,
-      })?.value.kind
-    ).toBe('string');
+    expect(editor.read.schema.property(BaseTagPlugin)?.value.kind).toBe(
+      'string'
+    );
 
     editor.update.tag.insert({ value: 'alpha' });
 

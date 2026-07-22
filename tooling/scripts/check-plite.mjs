@@ -168,9 +168,20 @@ const proofContractInputs = new Set([
   'benchmarks/targets/slate-v2.json',
   'tooling/scripts/bench-targets.mjs',
   'tooling/scripts/bench-targets.test.mjs',
-  'tooling/scripts/build-plite-package.test.mjs',
+  'tooling/scripts/bench-targets.slow.test.mjs',
+  'tooling/scripts/check-package-build-artifacts.test.mjs',
+  'tooling/scripts/check-plite-release-artifacts.mjs',
+  'tooling/scripts/check-plite-release-artifacts.test.mjs',
+  'tooling/scripts/check-plite-release-artifacts.slow.test.mjs',
+  'tooling/scripts/plite-source-aliases.test.mjs',
+  'tooling/scripts/plite-source-aliases.slow.test.mjs',
   'tooling/scripts/run-bounded-process.mjs',
   'tooling/scripts/run-bounded-process.test.mjs',
+  'tooling/scripts/run-bounded-process.slow.test.mjs',
+  'tooling/scripts/test-fast.mjs',
+  'tooling/scripts/test-slow.mjs',
+  'tooling/scripts/test-slowest.mjs',
+  'tooling/scripts/test-suite-routing.test.mjs',
 ]);
 
 const normalizePath = (file) =>
@@ -255,7 +266,7 @@ export const createAffectedPlan = (changedFiles) => {
     if (
       globalInputs.has(file) ||
       isPathWithin(file, 'tooling/config') ||
-      file === 'tooling/scripts/build-plite-package.mjs'
+      file === 'tooling/scripts/check-package-build-artifacts.mjs'
     ) {
       for (const name of allPackageNames) affected.add(name);
       for (const { name } of plateAdopterPackages) {

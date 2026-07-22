@@ -24,7 +24,9 @@ import {
   createEditableInputController,
   createEditableInputControllerState,
 } from '../src/editable/input-controller';
+import { createDOMRepairQueue } from '../src/editable/dom-repair-queue';
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
+import { beginEditableCompositionSession } from '../src/editable/input-state';
 import {
   getDOMInputRepairTarget,
   repairPendingNativeTextInputModelSelection,
@@ -2815,13 +2817,22 @@ test('runtime input capture leaves runtime-targeted repair to the root listener'
   const root = mountEditableRoot(editor);
   const text = appendTextHost(root, '0,0');
   const repairDOMInputAfterFrame = vi.fn();
-  const repairDOMInputWithTrace = vi.fn();
+  const domPhaseScheduler = createDOMPhaseScheduler();
+  const domRepairQueue = createDOMRepairQueue({
+    domPhaseScheduler,
+    editor,
+    inputController,
+    scrollSelectionIntoView: vi.fn(),
+    syncDOMSelectionToEditor: vi.fn(),
+  });
+  const repairDOMInputWithTrace = vi.fn(domRepairQueue.repairDOMInput);
   const requestEditableRepair = vi.fn();
   const nativeEvent = { data: 'x', inputType: 'insertText' };
 
   inputController.state.activeIntent = 'text-insert';
   inputController.state.selectionSource = 'model-owned';
   inputController.state.modelOwnedTextInputGuard = 0;
+  beginEditableCompositionSession(inputController);
   text.nodeValue = 'xabc';
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
@@ -2890,13 +2901,15 @@ test('runtime input capture leaves runtime-targeted repair to the root listener'
       root
     );
     expect(requestEditableRepair).not.toHaveBeenCalled();
-    expect(editorString(editor, [0])).toBe('abc');
+    expect(editorString(editor, [0])).toBe('axbc');
     expect(editorGetSelection(editor)).toEqual({
       kind: 'text',
-      anchor: { path: [0, 0], offset: 1 },
-      focus: { path: [0, 0], offset: 1 },
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 2 },
     });
+    expect(inputController.state.compositionSession?.modelCommitted).toBe(true);
   } finally {
+    domPhaseScheduler.destroy();
     unmountEditableRoot(editor, root);
   }
 });

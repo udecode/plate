@@ -105,7 +105,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     TablePlugin.configure({
-      node: { component: TableElement },
+      render: { node: TableElement },
       options: {
         initialTableWidth: 600,
         disableMerge: false,
@@ -119,7 +119,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `node.component`: 指定 [`TableElement`](/docs/components/table-node) 渲染表格容器
+- `render.node`: 指定 [`TableElement`](/docs/components/table-node) 渲染表格容器
 - `withComponent`: 为表格行、单元格和表头单元格分配组件
 - `options.initialTableWidth`: 设置新建表格的初始宽度
 - `options.disableMerge`: 禁用单元格合并功能
@@ -411,7 +411,6 @@ const editor = createPlateEditor({
 ### getNextTableCell
 
 获取表格中的下一个单元格
-  
 <API name="getNextTableCell">
 <APIParameters>
   <APIItem name="currentCell" type="NodeEntry">
@@ -942,7 +941,6 @@ const editor = createPlateEditor({
   </APIItem>
 </APIReturns>
 </API>
-  
 
 ### `useTableStore`
 
@@ -1064,7 +1062,6 @@ const editor = createPlateEditor({
   </APIItem>
 </APIReturns>
 </API>
-  
 ### `useTableCellElement`
 
 为表格单元格提供状态和功能的表格单元格元素 hook。

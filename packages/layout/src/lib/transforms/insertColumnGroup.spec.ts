@@ -18,7 +18,7 @@ describe('insertColumnGroup', () => {
     const [columnGroup] = entry;
 
     expect(BaseColumnPlugin.key).toBe('columnGroup');
-    expect(BaseColumnPlugin.node.type).toBe(NODES.columnGroup);
+    expect(BaseColumnPlugin.type).toBe(NODES.columnGroup);
     expect(columnGroup.type).toBe(NODES.columnGroup);
     expect(columnGroup.children).toHaveLength(3);
     expect(columnGroup.children[0].width).toContain('33.3333');

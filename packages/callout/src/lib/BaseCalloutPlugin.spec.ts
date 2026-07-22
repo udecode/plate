@@ -1,4 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
+import { schema } from '@platejs/plite';
 
 import { BaseCalloutPlugin } from './BaseCalloutPlugin';
 import { CALLOUT_STORAGE_KEY } from './transforms/insertCallout';
@@ -12,6 +13,8 @@ describe('BaseCalloutPlugin', () => {
       value: [{ children: [{ text: '' }], type: 'p' }],
     });
     const plugin = editor.getPlugin(BaseCalloutPlugin);
+    const callout = editor.read.schema.handle(BaseCalloutPlugin);
+    const variant = schema.handle.property(callout, 'variant');
 
     expect(plugin.rules).toMatchObject({
       break: {
@@ -23,13 +26,7 @@ describe('BaseCalloutPlugin', () => {
         start: 'reset',
       },
     });
-    expect(
-      editor.read.schema.property({
-        key: 'variant',
-        placement: 'element',
-        type: 'callout',
-      })?.value.kind
-    ).toBe('string');
+    expect(editor.read.schema.property(variant)?.value.kind).toBe('string');
     expect(editor.read.schema.isElementTypeInGroup('callout', 'block')).toBe(
       true
     );

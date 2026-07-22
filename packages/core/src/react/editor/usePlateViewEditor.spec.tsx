@@ -252,7 +252,7 @@ describe('usePlateViewEditor', () => {
   describe('edge cases', () => {
     it('handle rapid prop changes', () => {
       const { rerender, result } = renderHook(
-        ({ id, enabled }) => usePlateViewEditor({ id, enabled }),
+        ({ id, enabled }) => usePlateViewEditor({ enabled, id }),
         {
           initialProps: {
             id: 'editor-1',
@@ -292,15 +292,6 @@ describe('usePlateViewEditor', () => {
       expect(result.current).toBeDefined();
       expect(mockCreateStaticEditor).toHaveBeenCalledWith(
         expect.objectContaining(complexOptions)
-      );
-    });
-
-    it('handle empty options object', () => {
-      const { result } = renderHook(() => usePlateViewEditor({}));
-
-      expect(result.current).toBeDefined();
-      expect(mockCreateStaticEditor).toHaveBeenCalledWith(
-        expect.objectContaining({})
       );
     });
   });

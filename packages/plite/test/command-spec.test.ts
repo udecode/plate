@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import fc from 'fast-check';
 
 import {
+  ContentSlice,
   createEditor,
   createEditorRuntime,
   createEditorView,
@@ -10,8 +12,8 @@ import {
   defineEditorSchema,
   defineUpdateAnnotation,
   editorCommands,
-  element,
-  type EditorCommandRegistration,
+  type EditorCommand,
+  type EditorExtension,
   type EditorTransactionDraftRef,
   type Point,
   SelectionApi,
@@ -24,15 +26,13 @@ import { defineTestSchema } from './support/schema';
 
 type InsertCommand = {
   text: string;
-  type: 'test.insert';
 };
 
-const createTextEditor = (...commands: EditorCommandRegistration<any>[]) =>
+const createTextEditorWithExtensions = (
+  extensions: readonly EditorExtension<any, any>[] = []
+) =>
   createEditor({
-    extensions:
-      commands.length === 0
-        ? []
-        : [defineEditorExtension({ commands, name: 'test.commands' })],
+    extensions,
     initialSelection: SelectionApi.text({
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
@@ -40,22 +40,31 @@ const createTextEditor = (...commands: EditorCommandRegistration<any>[]) =>
     initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }] as Value,
   });
 
-const insert = defineCommand<InsertCommand>({
-  run: ({ command, state }) =>
+type CommandDeclarations = NonNullable<EditorExtension['commands']>;
+
+const createTextEditor = (commands?: CommandDeclarations) =>
+  createTextEditorWithExtensions(
+    commands ? [defineEditorExtension({ commands, name: 'test.commands' })] : []
+  );
+
+const commandExtension = (
+  name: string,
+  priority: number,
+  commands: CommandDeclarations
+) => defineEditorExtension({ commands, name, priority });
+
+const insert = defineCommand<InsertCommand>('test.insert', {
+  build: ({ input, state }) =>
     state.transaction((tx) => {
-      tx.text.insert(command.text);
+      tx.text.insert(input.text);
     }),
-  type: 'test.insert',
 });
 
-const deleteWordBackward = defineCommand<{
-  type: 'test.delete-word-backward';
-}>({
-  run: ({ state }) =>
+const deleteWordBackward = defineCommand('test.delete-word-backward', {
+  build: ({ state }) =>
     state.transaction((tx) => {
       tx.text.delete({ reverse: true, unit: 'word' });
     }),
-  type: 'test.delete-word-backward',
 });
 
 describe('pure command transaction specs', () => {
@@ -68,11 +77,10 @@ describe('pure command transaction specs', () => {
     let commits = 0;
 
     editor.subscribeCommit(() => commits++);
-    const spec = insert.run({
-      command: { text: '!', type: insert.type },
-      state: editor.read((state) => state),
-      tags: Object.freeze([]),
-    }) as TransactionSpec;
+    const spec = editor.read((state) => insert.build(state, { text: '!' }));
+
+    assert.notEqual(spec, false);
+    if (spec === false) throw new Error('Expected a transaction spec.');
 
     assert.equal(Object.isFrozen(spec), true);
     assert.throws(
@@ -92,6 +100,340 @@ describe('pure command transaction specs', () => {
     assert.deepEqual(anchor.resolve(), { offset: 2, path: [0, 0] });
     assert.equal(commits, 1);
     anchor.release();
+  });
+
+  it('rejects copied descriptors and structurally forged specs', () => {
+    const editor = createTextEditor();
+    const copied = { ...insert };
+    const forged = {
+      annotations: [],
+      changes: editor.read((state) => state.transaction(() => {})).changes,
+      effects: [],
+      kind: 'transaction',
+      tags: [],
+    } as unknown as TransactionSpec;
+    const forgedCommand = defineCommand('test.forged-spec', {
+      build: () => forged,
+    });
+
+    assert.throws(
+      () => dispatchCommand(editor, copied, { text: '!' }),
+      /must be created with defineCommand/
+    );
+    assert.throws(
+      () => dispatchCommand(editor, forgedCommand),
+      /must return false or a transaction spec/
+    );
+    assert.equal(editor.read.text.string([]), 'ab');
+  });
+
+  it('prepares once through fallback and again only for explicit rewrites', () => {
+    let prepares = 0;
+    const command = defineCommand<{ value: number }>('test.prepare-count', {
+      build: () => false,
+      prepare(input) {
+        prepares++;
+
+        return Object.freeze({ ...input });
+      },
+    });
+    const editor = createTextEditor(({ handle }) =>
+      Array.from({ length: 32 }, () => handle(command, () => false))
+    );
+
+    assert.equal(dispatchCommand(editor, command, { value: 1 }), false);
+    assert.equal(prepares, 1);
+
+    const rewritingEditor = createTextEditor(({ around }) => [
+      around(command, ({ input, next }) => next({ value: input.value + 1 })),
+      around(command, ({ input, next }) => next({ value: input.value + 1 })),
+    ]);
+
+    prepares = 0;
+    assert.equal(
+      dispatchCommand(rewritingEditor, command, { value: 1 }),
+      false
+    );
+    assert.equal(prepares, 3);
+  });
+
+  it('matches a reference model for mixed command chains from 0 through 32 handlers', () => {
+    type Action =
+      | 'around-false'
+      | 'around-next'
+      | 'around-rewrite'
+      | 'around-spec'
+      | 'around-throw'
+      | 'handle-false'
+      | 'handle-spec'
+      | 'handle-throw';
+    type Terminal = 'false' | 'spec' | 'throw';
+    type Input = { value: number };
+    const actionArbitrary = fc.constantFrom<Action>(
+      'around-false',
+      'around-next',
+      'around-rewrite',
+      'around-spec',
+      'around-throw',
+      'handle-false',
+      'handle-spec',
+      'handle-throw'
+    );
+
+    fc.assert(
+      fc.property(
+        fc.array(actionArbitrary, { maxLength: 32 }),
+        fc.constantFrom<Terminal>('false', 'spec', 'throw'),
+        (actions, terminal) => {
+          const expectedTrace: string[] = [];
+          const actualTrace: string[] = [];
+          const prepare = (trace: string[], input: Input) => {
+            trace.push(`prepare:${input.value}`);
+
+            return { value: input.value + 1 };
+          };
+          const evaluate = (
+            index: number,
+            input: Input,
+            prepared = false
+          ): boolean => {
+            const nextInput = prepared ? input : prepare(expectedTrace, input);
+            const action = actions[index];
+
+            if (!action) {
+              expectedTrace.push(`default:${nextInput.value}`);
+              if (terminal === 'throw') throw new Error('default');
+
+              return terminal === 'spec';
+            }
+
+            expectedTrace.push(`${index}:${action}:${nextInput.value}`);
+            if (action.endsWith('throw')) throw new Error(`action-${index}`);
+            if (action.endsWith('spec')) return true;
+            if (action === 'around-next') {
+              return evaluate(index + 1, nextInput, true);
+            }
+            if (action === 'around-rewrite') {
+              return evaluate(
+                index + 1,
+                { value: nextInput.value + index + 1 },
+                false
+              );
+            }
+
+            return evaluate(index + 1, nextInput, true);
+          };
+          const command = defineCommand<Input>('test.generated-chain', {
+            build: ({ input, state }) => {
+              actualTrace.push(`default:${input.value}`);
+              if (terminal === 'throw') throw new Error('default');
+
+              return terminal === 'spec' ? state.transaction(() => {}) : false;
+            },
+            prepare: (input) => prepare(actualTrace, input),
+          });
+          const editor = createTextEditor(({ around, handle }) =>
+            actions.map((action, index) => {
+              const record = (value: number) =>
+                actualTrace.push(`${index}:${action}:${value}`);
+
+              if (action.startsWith('handle')) {
+                return handle(command, ({ input, state }) => {
+                  record(input.value);
+                  if (action === 'handle-throw') {
+                    throw new Error(`action-${index}`);
+                  }
+
+                  return action === 'handle-spec'
+                    ? state.transaction(() => {})
+                    : false;
+                });
+              }
+
+              return around(command, ({ input, next, state }) => {
+                record(input.value);
+                if (action === 'around-throw') {
+                  throw new Error(`action-${index}`);
+                }
+                if (action === 'around-spec') {
+                  return state.transaction(() => {});
+                }
+                if (action === 'around-next') return next();
+                if (action === 'around-rewrite') {
+                  return next({ value: input.value + index + 1 });
+                }
+
+                return false;
+              });
+            })
+          );
+          const run = (fn: () => boolean) => {
+            try {
+              return { result: fn() };
+            } catch (error) {
+              return {
+                error: error instanceof Error ? error.message : String(error),
+              };
+            }
+          };
+          const expected = run(() => evaluate(0, { value: 0 }));
+          const actual = run(() =>
+            dispatchCommand(editor, command, { value: 0 })
+          );
+
+          assert.deepEqual(actual, expected);
+          assert.deepEqual(actualTrace, expectedTrace);
+        }
+      ),
+      { numRuns: 128, seed: 0x50_4c_49_54 }
+    );
+  });
+
+  it('maps every semantic one-shot helper to exactly one command', () => {
+    const seen: string[] = [];
+    const editor = createTextEditor(({ handle }) => {
+      const intercept = <Input>(command: EditorCommand<Input>) =>
+        handle(command, ({ state }) => {
+          seen.push(command.id);
+
+          return state.transaction(() => {});
+        });
+
+      return [
+        intercept(editorCommands.addMark),
+        intercept(editorCommands.collapse),
+        intercept(editorCommands.delete),
+        intercept(editorCommands.deleteFragment),
+        intercept(editorCommands.insertBreak),
+        intercept(editorCommands.insertNodes),
+        intercept(editorCommands.insertSoftBreak),
+        intercept(editorCommands.insertText),
+        intercept(editorCommands.move),
+        intercept(editorCommands.removeMark),
+        intercept(editorCommands.removeNodes),
+        intercept(editorCommands.replaceSlice),
+        intercept(editorCommands.select),
+        intercept(editorCommands.setNodes),
+        intercept(editorCommands.setSelection),
+        intercept(editorCommands.toggleBlock),
+        intercept(editorCommands.toggleMark),
+      ];
+    });
+    const point = { offset: 1, path: [0, 0] };
+    const selection = SelectionApi.text({ anchor: point, focus: point });
+    const rows: ReadonlyArray<readonly [string, () => unknown]> = [
+      [editorCommands.toggleBlock.id, () => editor.update.blocks.toggle('p')],
+      [editorCommands.insertBreak.id, () => editor.update.break.insert()],
+      [
+        editorCommands.insertSoftBreak.id,
+        () => editor.update.break.insertSoft(),
+      ],
+      [editorCommands.deleteFragment.id, () => editor.update.fragment.delete()],
+      [
+        editorCommands.replaceSlice.id,
+        () => editor.update.fragment.replace([{ text: 'x' }]),
+      ],
+      [editorCommands.addMark.id, () => editor.update.marks.add('bold', true)],
+      [editorCommands.removeMark.id, () => editor.update.marks.remove('bold')],
+      [
+        editorCommands.toggleMark.id,
+        () => editor.update.marks.toggle('bold', true),
+      ],
+      [
+        editorCommands.insertNodes.id,
+        () => editor.update.nodes.insert({ text: 'x' }),
+      ],
+      [editorCommands.removeNodes.id, () => editor.update.nodes.remove()],
+      [
+        editorCommands.setNodes.id,
+        () => editor.update.nodes.set({ bold: true }),
+      ],
+      [editorCommands.collapse.id, () => editor.update.selection.collapse()],
+      [editorCommands.move.id, () => editor.update.selection.move()],
+      [editorCommands.select.id, () => editor.update.selection.set(selection)],
+      [
+        editorCommands.setSelection.id,
+        () => editor.update.selection.setRange({ anchor: point }),
+      ],
+      [
+        editorCommands.replaceSlice.id,
+        () => editor.update.slice.replace(ContentSlice.closed([{ text: 'x' }])),
+      ],
+      [editorCommands.delete.id, () => editor.update.text.deleteBackward()],
+      [editorCommands.delete.id, () => editor.update.text.deleteForward()],
+      [editorCommands.insertText.id, () => editor.update.text.insert('x')],
+    ];
+
+    for (const [expectedId, invoke] of rows) {
+      const before = seen.length;
+
+      invoke();
+      assert.deepEqual(seen.slice(before), [expectedId]);
+    }
+
+    assert.equal(rows.length, 19);
+  });
+
+  it('rejects self and mutual command recursion by descriptor identity', () => {
+    const self = defineCommand('test.recursion.self');
+    const left = defineCommand('test.recursion.left');
+    const right = defineCommand('test.recursion.right');
+    let selfEditor!: ReturnType<typeof createTextEditor>;
+    let mutualEditor!: ReturnType<typeof createTextEditor>;
+
+    selfEditor = createTextEditor(({ handle }) => [
+      handle(self, () => {
+        dispatchCommand(selfEditor, self);
+
+        return false;
+      }),
+    ]);
+    mutualEditor = createTextEditor(({ handle }) => [
+      handle(left, () => {
+        dispatchCommand(mutualEditor, right);
+
+        return false;
+      }),
+      handle(right, () => {
+        dispatchCommand(mutualEditor, left);
+
+        return false;
+      }),
+    ]);
+
+    assert.throws(
+      () => dispatchCommand(selfEditor, self),
+      /test.recursion.self -> test.recursion.self/
+    );
+    assert.throws(
+      () => dispatchCommand(mutualEditor, left),
+      /test.recursion.left -> test.recursion.right -> test.recursion.left/
+    );
+  });
+
+  it('tags only handled commands and reduces nested dispatches to one tag', () => {
+    const declined = defineCommand('test.declined');
+    const editor = createTextEditor();
+
+    editor.update((tx) => {
+      assert.equal(tx.command(declined), false);
+      tx.text.insert('x');
+    });
+    assert.equal(
+      editor.read.lastCommit()?.tags.includes('semantic-command'),
+      false
+    );
+
+    editor.update((tx) => {
+      tx.command(insert, { text: 'y' });
+      tx.command(insert, { text: 'z' });
+    });
+
+    assert.equal(
+      editor.read.lastCommit()?.tags.filter((tag) => tag === 'semantic-command')
+        .length,
+      1
+    );
   });
 
   it('reuses the committed runtime index while dispatching a command spec', () => {
@@ -212,13 +554,13 @@ describe('pure command transaction specs', () => {
 
   it('routes one-shot updates through commands and keeps tx methods primitive', () => {
     const seen: string[] = [];
-    const editor = createTextEditor(
-      editorCommands.insertText.handle(({ command }, next) => {
-        seen.push(command.text);
+    const editor = createTextEditor(({ around }) => [
+      around(editorCommands.insertText, ({ input, next }) => {
+        seen.push(input.text);
 
-        return next({ ...command, text: command.text.toUpperCase() });
-      })
-    );
+        return next({ ...input, text: input.text.toUpperCase() });
+      }),
+    ]);
 
     editor.update.text.insert('x');
 
@@ -386,7 +728,6 @@ describe('pure command transaction specs', () => {
         }),
       },
       text: 'I',
-      type: 'insert_text',
     });
 
     assert.equal(editor.read.text.string([]), 'IS');
@@ -398,21 +739,74 @@ describe('pure command transaction specs', () => {
     assert.equal(commits, 1);
   });
 
+  it('replaces an explicit multi-leaf text target in document order', () => {
+    const selection = SelectionApi.text({
+      anchor: { offset: 'This is '.length, path: [0, 0] },
+      focus: { offset: ' text'.length, path: [0, 2] },
+    });
+    const editor = createEditor({
+      initialSelection: selection,
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'This is editable ' },
+            { bold: true, text: 'rich' },
+            { text: ' text, ' },
+            { italic: true, text: 'much' },
+            { text: ' better than a ' },
+            { code: true, text: '<textarea>' },
+            { text: '!' },
+          ],
+        },
+      ],
+    });
+
+    dispatchCommand(editor, editorCommands.insertText, {
+      options: {
+        at: selection,
+      },
+      text: 'example',
+    });
+
+    assert.equal(
+      editor.read.text.string([]),
+      'This is example, much better than a <textarea>!'
+    );
+    assert.deepEqual(editor.read.children()[0], {
+      type: 'paragraph',
+      children: [
+        { text: 'This is example, ' },
+        { italic: true, text: 'much' },
+        { text: ' better than a ' },
+        { code: true, text: '<textarea>' },
+        { text: '!' },
+      ],
+    });
+    assert.deepEqual(
+      editor.read.selection(),
+      SelectionApi.text({
+        anchor: { offset: 'This is example'.length, path: [0, 0] },
+        focus: { offset: 'This is example'.length, path: [0, 0] },
+      })
+    );
+  });
+
   it('dispatches collapse and block toggle as pure semantic commands', () => {
     const seen: string[] = [];
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          commands: [
-            editorCommands.collapse.handle(({ command }, next) => {
-              seen.push(command.type);
+          commands: ({ handle }) => [
+            handle(editorCommands.collapse, () => {
+              seen.push(editorCommands.collapse.id);
 
-              return next();
+              return false;
             }),
-            editorCommands.toggleBlock.handle(({ command }, next) => {
-              seen.push(command.type);
+            handle(editorCommands.toggleBlock, () => {
+              seen.push(editorCommands.toggleBlock.id);
 
-              return next();
+              return false;
             }),
           ],
           name: 'test.semantic-selection-and-block-commands',
@@ -431,7 +825,6 @@ describe('pure command transaction specs', () => {
         collapse: { edge: 'end' },
         defaultType: 'paragraph',
       },
-      type: 'toggle_block',
     });
 
     dispatchCommand(editor, editorCommands.select, {
@@ -439,14 +832,12 @@ describe('pure command transaction specs', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       }),
-      type: 'select',
     });
     dispatchCommand(editor, editorCommands.collapse, {
       options: { edge: 'start' },
-      type: 'collapse_selection',
     });
 
-    assert.deepEqual(seen, ['toggle_block', 'collapse_selection']);
+    assert.deepEqual(seen, ['block.toggle', 'selection.collapse']);
     assert.deepEqual(editor.read.selection(), {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
@@ -477,7 +868,6 @@ describe('pure command transaction specs', () => {
         clear: 'subscript',
         collapse: { edge: 'end' },
       },
-      type: 'toggle_mark',
       value: true,
     });
 
@@ -498,12 +888,10 @@ describe('pure command transaction specs', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       }),
-      type: 'select',
     });
     dispatchCommand(editor, editorCommands.toggleMark, {
       key: 'superscript',
       options: { clear: 'subscript' },
-      type: 'toggle_mark',
       value: true,
     });
 
@@ -521,7 +909,6 @@ describe('pure command transaction specs', () => {
     dispatchCommand(editor, editorCommands.toggleMark, {
       key: 'bold',
       options: { clear: ['bold', 'italic'] },
-      type: 'toggle_mark',
       value: true,
     });
 
@@ -590,6 +977,22 @@ describe('pure command transaction specs', () => {
       readOnly: true,
       root: 'header',
     });
+    let builds = 0;
+    let prepares = 0;
+    const blocked = defineCommand<InsertCommand>('test.read-only', {
+      build: ({ input, state }) => {
+        builds++;
+
+        return state.transaction((tx) => {
+          tx.text.insert(input.text);
+        });
+      },
+      prepare: (input) => {
+        prepares++;
+
+        return input;
+      },
+    });
 
     assert.throws(() => {
       runtime.update(() => {
@@ -598,6 +1001,12 @@ describe('pure command transaction specs', () => {
         });
       });
     }, /read.only/i);
+    assert.throws(
+      () => dispatchCommand(readOnlyHeader, blocked, { text: 'blocked' }),
+      /read.only/i
+    );
+    assert.equal(prepares, 0);
+    assert.equal(builds, 0);
     assert.equal(commits, 2);
   });
 
@@ -624,10 +1033,8 @@ describe('pure command transaction specs', () => {
 
   it('maps build-scoped refs through draft changes and expires them', () => {
     let leakedRef: EditorTransactionDraftRef<Point> | undefined;
-    const insertBeforeTarget = defineCommand<{
-      type: 'test.insert-before-target';
-    }>({
-      run: ({ state }) =>
+    const insertBeforeTarget = defineCommand('test.insert-before-target', {
+      build: ({ state }) =>
         state.transaction((tx) => {
           const target = tx.refs.point(
             { offset: 2, path: [0, 0] },
@@ -642,13 +1049,10 @@ describe('pure command transaction specs', () => {
           });
           tx.selection.set(target.resolve()!);
         }),
-      type: 'test.insert-before-target',
     });
     const editor = createTextEditor();
 
-    dispatchCommand(editor, insertBeforeTarget, {
-      type: insertBeforeTarget.type,
-    });
+    dispatchCommand(editor, insertBeforeTarget);
 
     assert.equal(editor.read.text.string([]), 'axb');
     assert.deepEqual(
@@ -663,64 +1067,70 @@ describe('pure command transaction specs', () => {
 
   it('preserves priority and next command overrides before dispatch', () => {
     const seen: string[] = [];
-    const editor = createTextEditor(
-      insert.handle(
-        ({ command }, next) => {
-          seen.push(`low:${command.text}`);
-          return next({ ...command, text: command.text.toUpperCase() });
-        },
-        { priority: 1 }
-      ),
-      insert.handle(
-        ({ command }, next) => {
-          seen.push(`high:${command.text}`);
-          return next({ ...command, text: `${command.text}!` });
-        },
-        { priority: 2 }
-      )
-    );
+    const editor = createTextEditorWithExtensions([
+      defineEditorExtension({
+        commands: ({ around }) => [
+          around(insert, ({ input, next }) => {
+            seen.push(`low:${input.text}`);
+            return next({ ...input, text: input.text.toUpperCase() });
+          }),
+        ],
+        name: 'low-command-priority',
+        priority: 1,
+      }),
+      defineEditorExtension({
+        commands: ({ around }) => [
+          around(insert, ({ input, next }) => {
+            seen.push(`high:${input.text}`);
+            return next({ ...input, text: `${input.text}!` });
+          }),
+        ],
+        name: 'high-command-priority',
+        priority: 2,
+      }),
+    ]);
 
-    dispatchCommand(editor, insert, { text: 'z', type: insert.type });
+    dispatchCommand(editor, insert, { text: 'z' });
 
     assert.deepEqual(seen, ['high:z', 'low:z!']);
     assert.equal(editor.read.text.string([]), 'aZ!b');
   });
 
   it('rejects multiple delegations from one handler', () => {
-    const editor = createTextEditor(
-      insert.handle((_context, next) => {
+    const editor = createTextEditor(({ around }) => [
+      around(insert, ({ next }) => {
         next();
 
         return next();
-      })
-    );
+      }),
+    ]);
 
     assert.throws(
-      () => dispatchCommand(editor, insert, { text: 'x', type: insert.type }),
+      () => dispatchCommand(editor, insert, { text: 'x' }),
       /may delegate only once/
     );
     assert.equal(editor.read.text.string([]), 'ab');
   });
 
   it('rejects a handler that discards its delegated result', () => {
-    const editor = createTextEditor(
-      insert.handle(({ state }, next) => {
+    const editor = createTextEditor(({ around }) => [
+      around(insert, ({ next, state }) => {
         next();
 
         return state.transaction((tx) => tx.text.insert('y'));
-      })
-    );
+      }),
+    ]);
 
     assert.throws(
-      () => dispatchCommand(editor, insert, { text: 'x', type: insert.type }),
+      () => dispatchCommand(editor, insert, { text: 'x' }),
       /must return their delegated result/
     );
     assert.equal(editor.read.text.string([]), 'ab');
   });
 
   it('extends a delegated spec on the same isolated draft', () => {
-    const editor = createTextEditor(
-      insert.handle(({ state }, next) => {
+    const editor = createTextEditor(({ around }) => [
+      around(insert, ({ next, state }) => {
         const delegated = next();
 
         if (!delegated) return false;
@@ -728,10 +1138,10 @@ describe('pure command transaction specs', () => {
         return state.transaction.extend(delegated, (tx) => {
           tx.text.insert('?');
         });
-      })
-    );
+      }),
+    ]);
 
-    dispatchCommand(editor, insert, { text: 'x', type: insert.type });
+    dispatchCommand(editor, insert, { text: 'x' });
 
     assert.equal(editor.read.text.string([]), 'ax?b');
     assert.equal(editor.read.lastCommit()?.version, 1);
@@ -739,27 +1149,26 @@ describe('pure command transaction specs', () => {
 
   it('runs downstream handlers against the prefix state', () => {
     const observed: string[] = [];
-    const editor = createTextEditor(
-      insert.handle(
-        ({ state }, next) => {
+    const editor = createTextEditorWithExtensions([
+      commandExtension('prefix-observer', 1, ({ handle }) => [
+        handle(insert, ({ state }) => {
           observed.push(state.text.string([]));
 
-          return next();
-        },
-        { priority: 1 }
-      ),
-      insert.handle(
-        ({ state }, next) =>
+          return false;
+        }),
+      ]),
+      commandExtension('prefix-writer', 2, ({ around }) => [
+        around(insert, ({ state, next }) =>
           next.after(
             state.transaction((tx) => {
               tx.text.insert('x');
             })
-          ),
-        { priority: 2 }
-      )
-    );
+          )
+        ),
+      ]),
+    ]);
 
-    dispatchCommand(editor, insert, { text: '!', type: insert.type });
+    dispatchCommand(editor, insert, { text: '!' });
 
     assert.deepEqual(observed, ['axb']);
     assert.equal(editor.read.text.string([]), 'ax!b');
@@ -768,8 +1177,8 @@ describe('pure command transaction specs', () => {
 
   it('combines prefix metadata and selection into the delegated commit', () => {
     const origin = defineUpdateAnnotation<string>({ key: 'test.origin' });
-    const editor = createTextEditor(
-      insert.handle(({ state }, next) =>
+    const editor = createTextEditor(({ around }) => [
+      around(insert, ({ state, next }) =>
         next.after(
           state.transaction((tx) => {
             tx.annotations.set(origin, 'prefix');
@@ -777,10 +1186,10 @@ describe('pure command transaction specs', () => {
             tx.tags.add('test-prefix');
           })
         )
-      )
-    );
+      ),
+    ]);
 
-    dispatchCommand(editor, insert, { text: '!', type: insert.type });
+    dispatchCommand(editor, insert, { text: '!' });
 
     const commit = editor.read.lastCommit();
 
@@ -791,69 +1200,61 @@ describe('pure command transaction specs', () => {
   });
 
   it('discards a prefix when downstream declines the command', () => {
-    const decline = defineCommand<{ type: 'test.decline' }>({
-      run: () => false,
-      type: 'test.decline',
+    const decline = defineCommand('test.decline', {
+      build: () => false,
     });
-    const editor = createTextEditor(
-      decline.handle(({ state }, next) =>
+    const editor = createTextEditor(({ around }) => [
+      around(decline, ({ state, next }) =>
         next.after(
           state.transaction((tx) => {
             tx.text.insert('x');
           })
         )
-      )
-    );
+      ),
+    ]);
     let commits = 0;
 
     editor.subscribeCommit(() => commits++);
 
-    assert.equal(
-      dispatchCommand(editor, decline, { type: decline.type }),
-      false
-    );
+    assert.equal(dispatchCommand(editor, decline), false);
     assert.equal(editor.read.text.string([]), 'ab');
     assert.equal(commits, 0);
   });
 
   it('publishes a prefix when downstream handles an empty transaction', () => {
-    const consume = defineCommand<{ type: 'test.consume' }>({
-      run: ({ state }) => state.transaction(() => {}),
-      type: 'test.consume',
+    const consume = defineCommand('test.consume', {
+      build: ({ state }) => state.transaction(() => {}),
     });
-    const editor = createTextEditor(
-      consume.handle(({ state }, next) =>
+    const editor = createTextEditor(({ around }) => [
+      around(consume, ({ state, next }) =>
         next.after(
           state.transaction((tx) => {
             tx.text.insert('x');
           })
         )
-      )
-    );
+      ),
+    ]);
 
-    assert.equal(
-      dispatchCommand(editor, consume, { type: consume.type }),
-      true
-    );
+    assert.equal(dispatchCommand(editor, consume), true);
     assert.equal(editor.read.text.string([]), 'axb');
     assert.equal(editor.read.lastCommit()?.version, 1);
   });
 
   it('composes nested prepared continuations in handler order', () => {
-    const editor = createTextEditor(
-      insert.handle(
-        ({ state }, next) =>
-          next.after(state.transaction((tx) => tx.text.insert('y'))),
-        { priority: 1 }
-      ),
-      insert.handle(
-        ({ state }, next) =>
-          next.after(state.transaction((tx) => tx.text.insert('x'))),
-        { priority: 2 }
-      )
-    );
+    const editor = createTextEditorWithExtensions([
+      commandExtension('nested-prefix-low', 1, ({ around }) => [
+        around(insert, ({ state, next }) =>
+          next.after(state.transaction((tx) => tx.text.insert('y')))
+        ),
+      ]),
+      commandExtension('nested-prefix-high', 2, ({ around }) => [
+        around(insert, ({ state, next }) =>
+          next.after(state.transaction((tx) => tx.text.insert('x')))
+        ),
+      ]),
+    ]);
 
-    dispatchCommand(editor, insert, { text: 'z', type: insert.type });
+    dispatchCommand(editor, insert, { text: 'z' });
 
     assert.equal(editor.read.text.string([]), 'axyzb');
     assert.equal(editor.read.lastCommit()?.version, 1);
@@ -861,36 +1262,34 @@ describe('pure command transaction specs', () => {
 
   it('discards prepared contexts after a downstream exception', () => {
     let active = true;
-    const editor = createTextEditor(
-      insert.handle(
-        (_context, next) => {
+    const editor = createTextEditorWithExtensions([
+      commandExtension('throwing-handler', 1, ({ handle }) => [
+        handle(insert, () => {
           if (active) throw new Error('downstream failed');
 
-          return next();
-        },
-        { priority: 1 }
-      ),
-      insert.handle(
-        ({ state }, next) =>
+          return false;
+        }),
+      ]),
+      commandExtension('throwing-prefix', 2, ({ around }) => [
+        around(insert, ({ state, next }) =>
           active
             ? next.after(state.transaction((tx) => tx.text.insert('x')))
-            : next(),
-        { priority: 2 }
-      )
-    );
+            : next()
+        ),
+      ]),
+    ]);
 
     assert.throws(
       () =>
         dispatchCommand(editor, insert, {
           text: '!',
-          type: insert.type,
         }),
       /downstream failed/
     );
     assert.equal(editor.read.text.string([]), 'ab');
 
     active = false;
-    dispatchCommand(editor, insert, { text: '!', type: insert.type });
+    dispatchCommand(editor, insert, { text: '!' });
 
     assert.equal(editor.read.text.string([]), 'a!b');
   });
@@ -936,6 +1335,44 @@ describe('pure command transaction specs', () => {
     assert.equal(editor.read.runtime.idAt([0]), blockRuntimeId);
     assert.deepEqual(editor.read.runtime.pathOf(blockRuntimeId!), [0]);
     assert.notEqual(editor.read.runtime.idAt([1]), blockRuntimeId);
+  });
+
+  it('keeps split runtime identities injective while extending a delegated spec', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorExtension({
+          commands: ({ around }) => [
+            around(editorCommands.insertBreak, ({ next, state }) => {
+              const delegated = next();
+
+              if (delegated === false) return false;
+
+              return state.transaction.extend(delegated, (tx) => {
+                tx.nodes.set({ type: 'quote' }, { at: [0] });
+              });
+            }),
+          ],
+          name: 'test.extend-split-command',
+        }),
+      ],
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      }),
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'ab' }] },
+      ] as Value,
+    });
+    const blockRuntimeId = editor.read.runtime.idAt([0]);
+
+    assert.equal(dispatchCommand(editor, editorCommands.insertBreak), true);
+    assert.deepEqual(editor.read.children(), [
+      { type: 'quote', children: [{ text: '' }] },
+      { type: 'paragraph', children: [{ text: 'ab' }] },
+    ]);
+    assert.equal(editor.read.runtime.idAt([1]), blockRuntimeId);
+    assert.notEqual(editor.read.runtime.idAt([0]), blockRuntimeId);
+    assert.deepEqual(editor.read.runtime.pathOf(blockRuntimeId!), [1]);
   });
 
   it('publishes one canonical wrap after transient move steps', () => {
@@ -1036,9 +1473,7 @@ describe('pure command transaction specs', () => {
     });
 
     for (let index = 0; index < 4; index++) {
-      dispatchCommand(editor, deleteWordBackward, {
-        type: deleteWordBackward.type,
-      });
+      dispatchCommand(editor, deleteWordBackward);
     }
 
     assert.deepEqual(editor.read.children()[0], {
@@ -1075,8 +1510,8 @@ describe('pure command transaction specs', () => {
         { type: 'paragraph', children: [{ text: 'after' }] },
       ],
     });
-    const insertAtSelection = defineCommand<{ type: 'test.insert-block' }>({
-      run: ({ state }) =>
+    const insertAtSelection = defineCommand('test.insert-block', {
+      build: ({ state }) =>
         state.transaction((tx) => {
           tx.nodes.insert(
             { type: 'paragraph', children: [{ text: 'inserted' }] },
@@ -1084,12 +1519,9 @@ describe('pure command transaction specs', () => {
           );
           tx.selection.set(selection);
         }),
-      type: 'test.insert-block',
     });
 
-    dispatchCommand(editor, insertAtSelection, {
-      type: insertAtSelection.type,
-    });
+    dispatchCommand(editor, insertAtSelection);
 
     assert.deepEqual(editor.read.children(), [
       { type: 'paragraph', children: [{ text: 'before' }] },
@@ -1115,11 +1547,57 @@ describe('pure command transaction specs', () => {
     dispatchCommand(editor, editorCommands.deleteFragment, {
       at: selection,
       direction: 'forward',
-      type: 'delete_fragment',
     });
 
     assert.deepEqual(editor.read.children(), [
       { type: 'paragraph', children: [{ text: 'beta' }] },
+    ]);
+    assert.deepEqual(
+      editor.read.selection(),
+      SelectionApi.text({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      })
+    );
+  });
+
+  it('uses the schema root default after deleting every selected block', () => {
+    const selection = SelectionApi.text({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 'heading'.length, path: [0, 0] },
+    });
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema({
+          elements: {
+            heading: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            } as const,
+            paragraph: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            } as const,
+          },
+          identity: 'derived',
+          root: {
+            content: schema.content.types(['heading', 'paragraph'], {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+          } as const,
+          unknown: 'reject',
+        }),
+      ],
+      initialSelection: selection,
+      initialValue: [{ type: 'heading', children: [{ text: 'heading' }] }],
+    });
+
+    dispatchCommand(editor, editorCommands.deleteFragment, {
+      at: selection,
+      direction: 'forward',
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'paragraph', children: [{ text: '' }] },
     ]);
     assert.deepEqual(
       editor.read.selection(),
@@ -1139,30 +1617,29 @@ describe('pure command transaction specs', () => {
       extensions: [
         defineEditorSchema({
           elements: {
-            'bulleted-list': element({
+            'bulleted-list': {
               content: schema.content.group('list-item', {
                 default: { type: 'list-item' },
                 min: 1,
               }),
-              groups: ['block'],
-            }),
-            'list-item': element({
+            } as const,
+            'list-item': {
               content: schema.content.text({ default: 'text', min: 1 }),
               groups: ['list-item'],
-            }),
-            paragraph: element({
+            } as const,
+            paragraph: {
               content: schema.content.text({ default: 'text', min: 1 }),
-              groups: ['block'],
-            }),
+            } as const,
           },
-          groups: { 'list-item': schema.group() },
+          groups: { 'list-item': {} as const },
           id: 'test.structural-blocks',
-          root: schema.root({
+          root: {
             content: schema.content.group('block', {
               default: { type: 'paragraph' },
               min: 1,
             }),
-          }),
+          } as const,
+          unknown: 'reject',
           version: 1,
         }),
       ],
@@ -1178,7 +1655,6 @@ describe('pure command transaction specs', () => {
     dispatchCommand(editor, editorCommands.insertText, {
       options: { at: selection },
       text: 'Z',
-      type: 'insert_text',
     });
 
     assert.deepEqual(editor.read.children(), [
@@ -1194,15 +1670,14 @@ describe('pure command transaction specs', () => {
   });
 
   it('roots explicit paths in command specs to the dispatching view', () => {
-    const insertBlock = defineCommand<{ type: 'test.insert-root-block' }>({
-      run: ({ state }) =>
+    const insertBlock = defineCommand('test.insert-root-block', {
+      build: ({ state }) =>
         state.transaction((tx) => {
           tx.nodes.insert(
             { type: 'paragraph', children: [{ text: 'second' }] },
             { at: [1] }
           );
         }),
-      type: 'test.insert-root-block',
     });
     const runtime = createEditorRuntime({
       initialValue: {
@@ -1214,7 +1689,7 @@ describe('pure command transaction specs', () => {
     });
     const header = createEditorView(runtime, { root: 'header' });
 
-    dispatchCommand(header, insertBlock, { type: insertBlock.type });
+    dispatchCommand(header, insertBlock);
 
     assert.deepEqual(
       runtime.read((state) => state.value()),

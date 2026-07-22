@@ -8,11 +8,11 @@ export {
 export {
   assertPliteBrowserFirstPartyParityContracts,
   PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
-  PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS,
+  PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS,
   PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES,
   type PliteBrowserFirstPartyParityContractResult,
   type PliteBrowserFirstPartyParityFamily,
-  type PliteBrowserOperationFamilyContract,
+  type PliteBrowserIntentFamilyContract,
 } from './first-party-browser-contracts';
 export {
   type BrowserMobileScenarioId,

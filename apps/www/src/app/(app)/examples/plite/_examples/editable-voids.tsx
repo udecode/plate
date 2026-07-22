@@ -1,5 +1,5 @@
 import type { PointerEvent } from 'react';
-import { defineEditorExtension } from '@platejs/plite';
+import { defineEditorExtension, schema } from '@platejs/plite';
 import {
   Editable,
   type EditableProps,
@@ -23,7 +23,6 @@ import type {
   EditableVoidElement,
   ParagraphElement as ParagraphElementType,
 } from './custom-types.d';
-
 let editableVoidId = 0;
 
 const paragraph = (text: string): ParagraphElementType => ({
@@ -119,13 +118,17 @@ const EditableVoidsExample = () => {
 const editableVoid = () =>
   defineEditorExtension({
     name: 'editable-voids',
-    elements: [
-      {
-        type: 'editable-void',
-        contentRoot: { slot: 'body' },
-        void: 'editable-island',
+    schema: {
+      elements: {
+        'editable-void': {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          contentRoots: {
+            body: schema.content.not(schema.content.text()),
+          },
+          void: 'editable-island',
+        },
       },
-    ],
+    },
   });
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {

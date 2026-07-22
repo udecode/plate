@@ -167,7 +167,9 @@ describe('DOMPlugin', () => {
       { children: [{ text: '' }], type: 'p' },
       { children: [{ text: '' }], type: 'p' },
     ];
-    const source = createBaseEditor({ value: twoBlocks });
+    const source = createBaseEditor({
+      value: twoBlocks,
+    });
 
     source.update.text.insert('x', { at: { offset: 0, path: [1, 0] } });
 

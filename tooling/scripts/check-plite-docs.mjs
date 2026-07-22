@@ -20,6 +20,21 @@ const requiredContractSignals = [
 ];
 
 const teachingDocs = new Set([
+  'content/docs/(plugins)/(elements)/media.cn.mdx',
+  'content/docs/(plugins)/(elements)/media.mdx',
+  'content/docs/(plugins)/(elements)/heading.mdx',
+  'content/docs/(plugins)/(elements)/toggle.cn.mdx',
+  'content/docs/(plugins)/(elements)/toggle.mdx',
+  'content/docs/(plugins)/(functionality)/caption.cn.mdx',
+  'content/docs/(plugins)/(functionality)/caption.mdx',
+  'content/docs/(plugins)/(styles)/indent.cn.mdx',
+  'content/docs/(plugins)/(styles)/indent.mdx',
+  'content/docs/(plugins)/(styles)/line-height.cn.mdx',
+  'content/docs/(plugins)/(styles)/line-height.mdx',
+  'content/docs/(plugins)/(styles)/list.cn.mdx',
+  'content/docs/(plugins)/(styles)/list.mdx',
+  'content/docs/(plugins)/(styles)/text-align.cn.mdx',
+  'content/docs/(plugins)/(styles)/text-align.mdx',
   'content/docs/(guides)/debugging.cn.mdx',
   'content/docs/(guides)/debugging.mdx',
   'content/docs/(guides)/editing-behavior.mdx',
@@ -36,6 +51,9 @@ const teachingDocs = new Set([
   'docs/plite/absolute-architecture-release-claim.md',
   'docs/plite/references/architecture-contract.md',
 ]);
+
+const removedPlateNodeBagPattern =
+  /\bnode\s*:\s*\{[\s\S]{0,400}?\b(?:type|element|mark|component|isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp|isDecoration|dangerouslyAllowAttributes|toDataAttributes)\s*:/;
 
 const staleCodePatterns = [
   {
@@ -54,11 +72,23 @@ const staleCodePatterns = [
   },
 ];
 
+const deletedCodeBlockPatterns = [
+  {
+    pattern: removedPlateNodeBagPattern,
+    reason:
+      'Plate plugin semantics belong under schema.element or schema.mark; the node bag is deleted',
+  },
+];
+
 const removedRootMutationFacadePattern =
   /\b(?:editor\.(?:tf|transforms)|overrideEditor)\b|\btf\s*:\s*\{/;
 const removedPlateSchemaFlagsPattern =
-  /\bnode\.(?:isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp)\b|\b(?:isElement\b[^\n]{0,160}\bisLeaf|isLeaf\b[^\n]{0,160}\bisElement)\b/;
-
+  /\bnode\.(?:component|element|mark|isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp)\b|\bisMarkableVoid\b|\b(?:isElement\b[^\n]{0,160}\bisLeaf|isLeaf\b[^\n]{0,160}\bisElement)\b/;
+const removedSchemaTargetOptionsPattern = /\btargetPluginKeys\b/;
+const removedCaptionTargetOptionsPattern =
+  /\boptions\s*:\s*\{\s*query\s*:\s*\{\s*allow\s*:/;
+const removedHeadingLevelsOptionsPattern =
+  /\boptions\.levels\b|\boptions\s*:\s*\{\s*levels\s*:/;
 const staleTeachingPatterns = [
   {
     pattern:
@@ -74,9 +104,18 @@ const staleTeachingPatterns = [
 
 const deletedArchitecturePatterns = [
   {
-    pattern: removedPlateSchemaFlagsPattern,
+    pattern: removedSchemaTargetOptionsPattern,
     reason:
-      'Plate schema declarations use node.element, node.mark, and schema.properties',
+      'schema target plugin descriptors belong in immutable config.targets',
+  },
+  {
+    pattern: removedCaptionTargetOptionsPattern,
+    reason:
+      'caption target plugin descriptors belong in immutable config.targets',
+  },
+  {
+    pattern: removedHeadingLevelsOptionsPattern,
+    reason: 'heading levels belong in immutable config.levels',
   },
   {
     pattern: removedRootMutationFacadePattern,
@@ -154,6 +193,9 @@ const requiredAgentStartManualSoakSignals = [
   'Do not add them to `check`, `test`,',
 ];
 const agentTextFilePattern = /\.(md|mdc)$/;
+const isCurrentSchemaAdoptionDoc = (path) =>
+  path.startsWith('content/docs/') &&
+  !path.startsWith('content/docs/migration/');
 const yjsResearchLedgerPaths = [
   'docs/plite/research/2026-06-14-yjs-large-doc-import-readback/lead-ledger.tsv',
   'docs/plite/research/2026-06-14-yjs-large-doc-import-readback/promoted-ledger.tsv',
@@ -395,6 +437,12 @@ function auditSlateV2Docs() {
     ...docsRoots.flatMap(collectMarkdown),
     ...[...teachingDocs].map((path) => join(repoRoot, path)),
   ]);
+  const schemaAdoptionDocs = new Set([
+    ...collectMarkdown(join(repoRoot, 'content/docs')).filter((path) =>
+      isCurrentSchemaAdoptionDoc(relative(repoRoot, path).replaceAll('\\', '/'))
+    ),
+    ...auditedDocs,
+  ]);
   const currentReleaseNotes = collectMarkdown(join(repoRoot, '.changeset'));
 
   for (const path of currentReleaseNotes) {
@@ -409,6 +457,62 @@ function auditSlateV2Docs() {
       failures.push(
         `${relativePath}:${lineNumber}: current release notes must teach editor.update.*, an active tx, or a scoped plugin command: ${line}`
       );
+    }
+
+    const schemaMatch = removedPlateSchemaFlagsPattern.exec(source);
+
+    if (schemaMatch?.index !== undefined) {
+      const lineNumber = source.slice(0, schemaMatch.index).split('\n').length;
+      const line = source.split('\n')[lineNumber - 1]?.trim() ?? schemaMatch[0];
+
+      failures.push(
+        `${relativePath}:${lineNumber}: current release notes must use schema.element or schema.mark: ${line}`
+      );
+    }
+
+    const nodeBagMatch = removedPlateNodeBagPattern.exec(source);
+
+    if (nodeBagMatch?.index !== undefined) {
+      const lineNumber = source.slice(0, nodeBagMatch.index).split('\n').length;
+      const line =
+        source.split('\n')[lineNumber - 1]?.trim() ?? nodeBagMatch[0];
+
+      failures.push(
+        `${relativePath}:${lineNumber}: current release notes must not teach the deleted Plate node bag: ${line}`
+      );
+    }
+  }
+
+  for (const path of [...schemaAdoptionDocs].sort()) {
+    const relativePath = relative(repoRoot, path).replaceAll('\\', '/');
+    const source = readFileSync(path, 'utf8');
+    const lines = source.split('\n');
+    const schemaMatch = removedPlateSchemaFlagsPattern.exec(source);
+
+    if (schemaMatch?.index !== undefined) {
+      const lineNumber = source.slice(0, schemaMatch.index).split('\n').length;
+      const line = lines[lineNumber - 1]?.trim() ?? schemaMatch[0];
+
+      failures.push(
+        `${relativePath}:${lineNumber}: Plate plugin semantics belong under schema.element or schema.mark: ${line}`
+      );
+    }
+
+    for (const fence of source.matchAll(/```[^\n]*\n([\s\S]*?)```/g)) {
+      const code = fence[1] ?? '';
+
+      for (const { pattern, reason } of deletedCodeBlockPatterns) {
+        const match = pattern.exec(code);
+
+        if (match?.index === undefined) continue;
+
+        const codeOffset = (fence.index ?? 0) + fence[0].indexOf(code);
+        const matchOffset = codeOffset + match.index;
+        const lineNumber = source.slice(0, matchOffset).split('\n').length;
+        const line = lines[lineNumber - 1]?.trim() ?? match[0];
+
+        failures.push(`${relativePath}:${lineNumber}: ${reason}: ${line}`);
+      }
     }
   }
 
@@ -481,6 +585,11 @@ export {
   closureColumnIndexes,
   isActionableLedgerValue,
   isClosedLedgerValue,
+  isCurrentSchemaAdoptionDoc,
+  removedPlateNodeBagPattern,
   removedPlateSchemaFlagsPattern,
   removedRootMutationFacadePattern,
+  removedCaptionTargetOptionsPattern,
+  removedHeadingLevelsOptionsPattern,
+  removedSchemaTargetOptionsPattern,
 };

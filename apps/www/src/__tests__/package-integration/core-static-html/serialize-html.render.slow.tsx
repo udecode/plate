@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { property } from '@platejs/plite';
 import { createBaseEditor, createBasePlugin } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 
@@ -76,11 +77,11 @@ describe('core static serializeHtml custom render hooks', () => {
   it('applies both node and leaf renderers', async () => {
     const testPlugin = createBasePlugin({
       key: 'test',
-      node: {
-        isDecoration: false,
-        mark: true,
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
       },
       render: {
+        isDecoration: false,
         node: ({ children }) => (
           <span data-plite-test="node-wrapper">{children}</span>
         ),
@@ -118,18 +119,19 @@ describe('core static serializeHtml custom render hooks', () => {
   it('applies a component renderer to decoration leaves', async () => {
     const testPlugin = createBasePlugin({
       key: 'test',
-      node: {
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+      render: {
         isDecoration: true,
-        mark: true,
+        node: ({ children }) => (
+          <span data-plite-test="node-wrapper">{children}</span>
+        ),
       },
     });
 
     const editor = createBaseEditor({
-      plugins: [
-        testPlugin.withComponent(({ children }) => (
-          <span data-plite-test="node-wrapper">{children}</span>
-        )),
-      ],
+      plugins: [testPlugin],
       value: [
         {
           children: [
@@ -156,18 +158,19 @@ describe('core static serializeHtml custom render hooks', () => {
   it('applies a component renderer to non-decoration leaves', async () => {
     const testPlugin = createBasePlugin({
       key: 'test',
-      node: {
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+      render: {
         isDecoration: false,
-        mark: true,
+        node: ({ children }) => (
+          <span data-plite-test="node-wrapper">{children}</span>
+        ),
       },
     });
 
     const editor = createBaseEditor({
-      plugins: [
-        testPlugin.withComponent(({ children }) => (
-          <span data-plite-test="node-wrapper">{children}</span>
-        )),
-      ],
+      plugins: [testPlugin],
       value: [
         {
           children: [

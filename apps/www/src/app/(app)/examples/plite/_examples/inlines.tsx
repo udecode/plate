@@ -3,9 +3,11 @@ import type React from 'react';
 import { type PointerEvent, useMemo } from 'react';
 import {
   defineEditorExtension,
-  type EditorUpdateTransaction,
+  editorCommands,
+  type EditorTransactionSpecBuilder,
   NodeApi,
   RangeApi,
+  schema,
 } from '@platejs/plite';
 import { isHotkey } from '@platejs/plite-dom';
 import * as PliteReact from '@platejs/plite-react';
@@ -30,7 +32,6 @@ import type {
   LinkElement,
   ParagraphElement,
 } from './custom-types.d';
-
 const InlinesExample = () => {
   const editor = usePliteEditor({
     extensions: [inline()],
@@ -124,11 +125,15 @@ const InlinesExample = () => {
 const inline = () =>
   defineEditorExtension<CustomEditor>()({
     clipboard: {
-      insertData(data, { editor, next, tx }) {
+      insertData(data, { next, tx }) {
         const text = data.getData('text/plain');
 
         if (text && isUrl(text)) {
-          if (isLinkActive(editor)) {
+          if (
+            tx.nodes.some({
+              match: (node) => NodeApi.isElement(node) && node.type === 'link',
+            })
+          ) {
             tx.nodes.unwrap({
               match: (node) => NodeApi.isElement(node) && node.type === 'link',
             });
@@ -155,26 +160,40 @@ const inline = () =>
       },
     },
     name: 'inline',
-    transforms: {
-      insertText({ next, text, tx }) {
-        if (isUrl(text)) {
-          insertLinkText(tx, text);
-
-          return true;
+    commands: ({ handle }) => [
+      handle(editorCommands.insertText, ({ input, state }) => {
+        if (isUrl(input.text)) {
+          return state.transaction((tx) => {
+            insertLinkText(tx, input.text);
+          });
         }
 
-        if (insertLinkedTextSegments(tx, text)) {
-          return true;
-        }
+        let handled = false;
+        const transaction = state.transaction((tx) => {
+          handled = insertLinkedTextSegments(tx, input.text);
+        });
 
-        return next();
+        return handled ? transaction : false;
+      }),
+    ],
+    schema: {
+      elements: {
+        badge: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+          readOnly: true,
+          selectable: false,
+        },
+        button: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+        },
+        link: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+        },
       },
     },
-    elements: [
-      { inline: true, type: 'link' },
-      { inline: true, type: 'button' },
-      { inline: true, readOnly: true, selectable: false, type: 'badge' },
-    ],
   });
 
 const URL_TEXT_PATTERN = /https?:\/\/[^\s]+/gi;
@@ -231,9 +250,13 @@ const splitLinkedTextSegments = (text: string) => {
 };
 
 const insertLinkText = (
-  tx: EditorUpdateTransaction<CustomElement[]>,
+  tx: EditorTransactionSpecBuilder<CustomElement[]>,
   url: string
 ) => {
+  const selection = tx.selection();
+
+  if (!selection) return;
+
   if (
     tx.nodes.some({
       match: (n) => NodeApi.isElement(n) && n.type === 'link',
@@ -244,8 +267,7 @@ const insertLinkText = (
     });
   }
 
-  const selection = tx.selection();
-  const isCollapsed = selection && RangeApi.isCollapsed(selection);
+  const isCollapsed = RangeApi.isCollapsed(selection);
   const link: LinkElement = {
     type: 'link',
     url,
@@ -263,7 +285,7 @@ const insertLinkText = (
 };
 
 const insertLinkedTextSegments = (
-  tx: EditorUpdateTransaction<CustomElement[]>,
+  tx: EditorTransactionSpecBuilder<CustomElement[]>,
   text: string
 ) => {
   const selection = tx.selection();
@@ -317,37 +339,35 @@ const isLinkActive = (editor: CustomEditor): boolean =>
     match: (n) => NodeApi.isElement(n) && n.type === 'link',
   });
 
-const isButtonActive = (editor: CustomEditor): boolean =>
-  editor.read.nodes.some({
-    match: (n) => NodeApi.isElement(n) && n.type === 'button',
-  });
-
 const unwrapLink = (editor: CustomEditor) => {
   editor.update.nodes.unwrap({
     match: (n) => NodeApi.isElement(n) && n.type === 'link',
   });
 };
 
-const unwrapButton = (editor: CustomEditor) => {
-  editor.update.nodes.unwrap({
-    match: (n) => NodeApi.isElement(n) && n.type === 'button',
-  });
-};
-
 const wrapLink = (editor: CustomEditor, url: string) => {
-  if (isLinkActive(editor)) {
-    unwrapLink(editor);
-  }
-
-  const selection = editor.read.selection();
-  const isCollapsed = selection && RangeApi.isCollapsed(selection);
-  const link: LinkElement = {
-    type: 'link',
-    url,
-    children: isCollapsed ? [{ text: url }] : [],
-  };
-
   editor.update((tx) => {
+    if (
+      tx.nodes.some({
+        match: (node) => NodeApi.isElement(node) && node.type === 'link',
+      })
+    ) {
+      tx.nodes.unwrap({
+        match: (node) => NodeApi.isElement(node) && node.type === 'link',
+      });
+    }
+
+    const selection = tx.selection();
+
+    if (!selection) return;
+
+    const isCollapsed = RangeApi.isCollapsed(selection);
+    const link: LinkElement = {
+      type: 'link',
+      url,
+      children: isCollapsed ? [{ text: url }] : [],
+    };
+
     if (isCollapsed) {
       tx.nodes.insert(link);
       tx.selection.move({ unit: 'offset' });
@@ -360,18 +380,29 @@ const wrapLink = (editor: CustomEditor, url: string) => {
 };
 
 const wrapButton = (editor: CustomEditor) => {
-  if (isButtonActive(editor)) {
-    unwrapButton(editor);
-  }
-
-  const selection = editor.read.selection();
-  const isCollapsed = selection && RangeApi.isCollapsed(selection);
-  const button: ButtonElement = {
-    type: 'button',
-    children: isCollapsed ? [{ text: 'Edit me!' }] : [],
-  };
-
   editor.update((tx) => {
+    if (
+      tx.nodes.some({
+        match: (n) => NodeApi.isElement(n) && n.type === 'button',
+      })
+    ) {
+      tx.nodes.unwrap({
+        match: (n) => NodeApi.isElement(n) && n.type === 'button',
+      });
+
+      return;
+    }
+
+    const selection = tx.selection();
+
+    if (!selection) return;
+
+    const isCollapsed = RangeApi.isCollapsed(selection);
+    const button: ButtonElement = {
+      type: 'button',
+      children: isCollapsed ? [{ text: 'Edit me!' }] : [],
+    };
+
     if (isCollapsed) {
       tx.nodes.insert(button);
     } else {
@@ -499,9 +530,7 @@ const AddLinkButton = () => {
         const url = window.prompt.bind(window)('Enter the URL of the link:');
         if (!url) return;
 
-        if (editor.read.selection()) {
-          wrapLink(editor, url);
-        }
+        wrapLink(editor, url);
       }}
       onPointerDown={(event: PointerEvent<HTMLButtonElement>) =>
         event.preventDefault()
@@ -522,9 +551,7 @@ const RemoveLinkButton = () => {
     <Button
       active={active}
       onClick={() => {
-        if (isLinkActive(editor)) {
-          unwrapLink(editor);
-        }
+        unwrapLink(editor);
       }}
       onPointerDown={(event: PointerEvent<HTMLButtonElement>) =>
         event.preventDefault()
@@ -540,13 +567,7 @@ const ToggleEditableButtonButton = () => {
   return (
     <Button
       active
-      onClick={() => {
-        if (isButtonActive(editor)) {
-          unwrapButton(editor);
-        } else if (editor.read.selection()) {
-          wrapButton(editor);
-        }
-      }}
+      onClick={() => wrapButton(editor)}
       onPointerDown={(event: PointerEvent<HTMLButtonElement>) =>
         event.preventDefault()
       }

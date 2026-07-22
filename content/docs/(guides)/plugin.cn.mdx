@@ -34,20 +34,23 @@ const ConfiguredPlugin = MyPlugin.configure({
 });
 ```
 
-## 节点插件
+## Schema 插件
 
-节点插件通过 `node` 属性声明元素和文本属性。
+Schema 插件在顶层声明文档类型，并在 `schema` 下声明模型行为。React
+渲染配置位于 `render` 下。
 
 ### 元素
 
-使用 `node.element` 声明新元素类型：
+使用 `schema.element` 声明新元素类型：
 
 ```ts
+import { schema } from '@platejs/plite';
+
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
-  node: {
-    element: {},
-    type: 'p',
+  type: 'p',
+  schema: {
+    element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
 });
 ```
@@ -55,48 +58,53 @@ const ParagraphPlugin = createPlatePlugin({
 您可以为元素关联组件。详见[插件组件](/docs/plugin-components)。
 
 ```ts
+import { schema } from '@platejs/plite';
+
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
-  node: {
-    element: {},
-    type: 'p',
-    component: ParagraphElement,
+  type: 'p',
+  schema: {
+    element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
+  render: { node: ParagraphElement },
 });
 ```
 
-### 行内元素、Void 元素和标记节点
+### 行内元素、Void 元素和文本属性
 
-元素行为位于 `node.element` 中。使用 `node.mark: true` 声明布尔文本属性：
+元素行为位于 `schema.element` 中。使用 `schema.mark` 下的属性描述符声明布尔文本属性：
 
 ```ts
+import { property, schema } from '@platejs/plite';
+
 const LinkPlugin = createPlatePlugin({
   key: 'link',
-  node: {
-    element: { inline: true },
-    type: 'a',
+  type: 'a',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
   },
 });
 
 const ImagePlugin = createPlatePlugin({
   key: 'image',
-  node: {
-    element: { void: 'block' },
-    type: 'img',
-  },
+  type: 'img',
+  schema: { element: { void: 'block' } },
 });
 
 const BoldPlugin = createPlatePlugin({
   key: 'bold',
-  node: {
-    mark: true,
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
 ```
 
 ## 行为插件
 
-除了渲染元素或标记外，您可能还想自定义编辑器的行为。Plate提供了多种插件选项来修改编辑器行为。
+除了声明元素或文本属性外，您可能还想自定义编辑器的行为。Plate提供了多种插件选项来修改编辑器行为。
 
 ### 插件规则
 
@@ -393,7 +401,7 @@ type CodeBlockConfig = PluginConfig<
 
 const CodeBlockPlugin = createPlatePlugin<CodeBlockConfig>({
   key: 'codeBlock',
-  node: { type: 'code_block' },
+  type: 'code_block',
   options: { syntax: true, syntaxPopularFirst: false },
 }).extendEditorApi<CodeBlockConfig['api']>(() => ({
   plugin: {

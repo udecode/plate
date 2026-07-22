@@ -9,20 +9,26 @@ import { createBasePlugin } from './createBasePlugin';
 const assertTypedSchemaContributions = () => {
   type SchemaConfig = PluginConfig<
     'validSchema',
+    {},
+    {},
+    {},
+    {},
+    {},
+    readonly [],
     { targetPluginKeys: string[] }
   >;
 
   createBasePlugin<SchemaConfig>({
+    config: { targetPluginKeys: ['cell', 'header'] },
     key: 'validSchema',
-    options: { targetPluginKeys: ['cell', 'header'] },
-    schema: ({ options }) => {
-      // @ts-expect-error schema callback options are deeply readonly
-      options.targetPluginKeys.push('paragraph');
+    schema: ({ config }) => {
+      // @ts-expect-error schema callback config is deeply readonly
+      config.targetPluginKeys.push('paragraph');
 
       return {
         properties: [
           schema.elementProperty('status', property.string(), {
-            target: target.types(options.targetPluginKeys),
+            target: target.types(config.targetPluginKeys),
           }),
         ],
       };
@@ -41,25 +47,24 @@ void assertTypedSchemaContributions;
 const assertTypedNodeSchemas = () => {
   createBasePlugin({
     key: 'booleanMark',
-    node: { mark: true },
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
 
   createBasePlugin({
     key: 'tone',
-    node: {
+    schema: {
       mark: {
         split: 'drop',
         target: target.group('textBlock'),
-        value: property.string(),
+        property: property.string(),
       },
     },
   });
 
   createBasePlugin({
     key: 'image',
-    node: {
+    schema: {
       element: {
-        inline: true,
         properties: {
           alt: property.string({ default: '' }),
           url: property.string(),
@@ -73,19 +78,6 @@ const assertTypedNodeSchemas = () => {
 void assertTypedNodeSchemas;
 
 describe('createBasePlugin', () => {
-  it('work with fn', () => {
-    // Test plugin creation with a function
-    const functionPlugin = createBasePlugin<
-      PluginConfig<'functionPlugin', { editorId: string }>
-    >((editor) => ({
-      key: 'functionPlugin',
-      options: { editorId: editor.id },
-    }));
-
-    const resolvedFunctionPlugin = resolvePluginTest(functionPlugin);
-    expect(resolvedFunctionPlugin.key).toBe('functionPlugin');
-  });
-
   it('create a plugin with explicit types and cover various scenarios', () => {
     type TestOptions = {
       optionA?: string;
@@ -100,7 +92,7 @@ describe('createBasePlugin', () => {
       PluginConfig<'testPlugin', TestOptions, TestApi>
     >({
       key: 'testPlugin',
-      node: { type: 'test' },
+      type: 'test',
       options: {
         optionA: 'initial',
         optionB: 10,
@@ -115,7 +107,7 @@ describe('createBasePlugin', () => {
 
     // Test basic plugin creation
     expect(baseEditor.plugins.testPlugin.key).toBe('testPlugin');
-    expect(baseEditor.plugins.testPlugin.node.type).toBe('test');
+    expect(baseEditor.plugins.testPlugin.type).toBe('test');
     expect(baseEditor.plugins.testPlugin.options).toEqual({
       optionA: 'initial',
       optionB: 10,
@@ -135,19 +127,19 @@ describe('createBasePlugin', () => {
 
     // Test extend method
     const extendedPlugin = basePlugin.extend({
-      node: { type: 'extended' },
+      type: 'extended',
       options: { optionB: 20 },
     });
     const extendedEditor = createBaseEditor({
       plugins: [extendedPlugin],
     });
-    expect(extendedEditor.plugins.testPlugin.node.type).toBe('extended');
+    expect(extendedEditor.plugins.testPlugin.type).toBe('extended');
     expect(extendedEditor.plugins.testPlugin.options).toEqual({
       optionA: 'initial',
       optionB: 20,
     });
 
-    // Test withComponent method
+    // Test the component convenience facade
     const MockComponent: NodeComponent = () => null;
     const componentPlugin = basePlugin.withComponent(MockComponent);
     const editorWithComponent = createBaseEditor({
@@ -196,27 +188,15 @@ describe('createBasePlugin', () => {
       nestedOption: 'configured',
     });
 
-    // Test plugin creation with a function
-    const functionPlugin = createBasePlugin<
-      PluginConfig<'functionPlugin', { editorId: string }>
-    >((editor) => ({
-      key: 'functionPlugin',
-      options: { editorId: editor.id },
-    }));
-
-    const resolvedFunctionPlugin = resolvePluginTest(functionPlugin);
-    expect(resolvedFunctionPlugin.key).toBe('functionPlugin');
-    expect(resolvedFunctionPlugin.options).toHaveProperty('editorId');
-
     // Test multiple extends and configurations
     const multiExtendedPlugin = basePlugin
-      .extend({ node: { type: 'firstExtend' } })
+      .extend({ type: 'firstExtend' })
       .configure({ options: { optionA: 'firstConfigure' } })
-      .extend({ node: { type: 'secondExtend' } })
+      .extend({ type: 'secondExtend' })
       .configure({ options: { optionB: 30 } });
 
     const resolvedMultiExtended = resolvePluginTest(multiExtendedPlugin);
-    expect(resolvedMultiExtended.node.type).toBe('secondExtend');
+    expect(resolvedMultiExtended.type).toBe('secondExtend');
     expect(resolvedMultiExtended.options).toEqual({
       optionA: 'initial',
       optionB: 30,

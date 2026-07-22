@@ -1,3 +1,5 @@
+import { schema } from '@platejs/plite';
+
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { defineInputRule } from '../../lib/plugins/input-rules';
@@ -6,32 +8,23 @@ import { validatePlugin } from './resolvePlugin';
 
 describe('resolvePlugin', () => {
   it('lets the last child-plugin extension win', () => {
+    const child = createBasePlugin({
+      key: 'aa',
+      options: { value: 'base' },
+    });
+
     expect(
       createBaseEditor({
         plugins: [
           createBasePlugin({
             key: 'a',
-            plugins: [
-              createBasePlugin({
-                key: 'aa',
-              }),
-            ],
+            plugins: [child],
           })
-            .extendPlugin(
-              { key: 'aa' },
-              {
-                node: { type: 'ab' },
-              }
-            )
-            .extendPlugin(
-              { key: 'aa' },
-              {
-                node: { type: 'ac' },
-              }
-            ),
+            .extendPlugin(child, { options: { value: 'first' } })
+            .extendPlugin(child, { options: { value: 'last' } }),
         ],
-      }).plugins.aa.node.type
-    ).toBe('ac');
+      }).plugins.aa.options.value
+    ).toBe('last');
   });
 
   it('does not mutate configured inputRules reused across editors', () => {
@@ -87,41 +80,13 @@ describe('resolvePlugin', () => {
     );
   });
 
-  it('reports plugins that claim to be both elements and leaves', () => {
-    const errorLogger = mock();
-    const editor = createBaseEditor({
-      plugins: [
-        DebugPlugin.configure({
-          options: {
-            logger: { error: errorLogger } as any,
-            throwErrors: false,
-          },
-        }),
-      ],
-    });
-
-    validatePlugin(
-      editor,
-      createBasePlugin({
-        key: 'invalid',
-        node: {
-          element: {},
-          mark: true,
-        },
-      }) as any
-    );
-
-    expect(errorLogger).toHaveBeenCalledWith(
-      'Plugin invalid cannot declare both node.element and node.mark.',
-      'PLUGIN_NODE_TYPE',
-      undefined
-    );
-  });
-
   it('does not mutate the configured plugin between editor instances', () => {
     const configured = createBasePlugin({
       key: 'p',
-      node: { element: { groups: ['block'] }, type: 'p' },
+      type: 'p',
+      schema: {
+        element: { content: schema.content.open({ default: 'text', min: 1 }) },
+      },
     }).configure({
       inputRules: [
         {
@@ -132,10 +97,14 @@ describe('resolvePlugin', () => {
       ],
     });
 
-    const e1 = createBaseEditor({ plugins: [configured] });
-    expect((e1.plugins.p as any).__configuredInputRules?.length).toBe(1);
+    const e1 = createBaseEditor({
+      plugins: [configured],
+    });
+    expect(e1.runtime.inputRules.plugins.p.rules).toHaveLength(1);
 
-    const e2 = createBaseEditor({ plugins: [configured] });
-    expect((e2.plugins.p as any).__configuredInputRules?.length).toBe(1);
+    const e2 = createBaseEditor({
+      plugins: [configured],
+    });
+    expect(e2.runtime.inputRules.plugins.p.rules).toHaveLength(1);
   });
 });

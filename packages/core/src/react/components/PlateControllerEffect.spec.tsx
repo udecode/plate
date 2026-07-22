@@ -174,7 +174,12 @@ describe('PlateControllerEffect', () => {
       const { getByText, queryByText } = render(
         <PlateController primaryEditorIds={['1', '2']}>
           <UnmountablePlate initialMounted={false}>
-            <Plate editor={createPlateEditor({ id: '3' })} primary={true}>
+            <Plate
+              editor={createPlateEditor({
+                id: '3',
+              })}
+              primary={true}
+            >
               <PlateControllerEffect />
             </Plate>
           </UnmountablePlate>

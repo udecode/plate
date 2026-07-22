@@ -3,13 +3,16 @@ import {
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
+import { property } from '@platejs/plite';
 
 import { BaseAIPlugin } from '../BaseAIPlugin';
 import { removeAIMarks } from './removeAIMarks';
 
 const BaseBoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 describe('removeAIMarks', () => {

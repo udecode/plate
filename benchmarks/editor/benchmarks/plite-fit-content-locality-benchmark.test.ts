@@ -7,7 +7,6 @@ import {
   ContentSlice,
   createEditor,
   defineEditorSchema,
-  element,
   schema,
 } from '../../../packages/plite/src/index';
 
@@ -22,18 +21,19 @@ describe('fitContent locality benchmark authority', () => {
   it('exercises the live detached fitting API without publishing', () => {
     const definition = defineEditorSchema({
       elements: {
-        cell: element({
+        cell: {
           content: schema.content.type('paragraph', {
             default: { type: 'paragraph' },
             min: 1,
           }),
-        }),
-        paragraph: element({
+        },
+        paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
-        }),
+        },
       },
       id: 'fit-content-locality-authority',
-      root: schema.root({ content: schema.content.type('paragraph') }),
+      root: { content: schema.content.type('paragraph') },
+      unknown: 'reject',
       version: 1,
     });
     const editor = createEditor({

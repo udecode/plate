@@ -27,6 +27,26 @@ Prepare v54 beta prerelease versioning and preserve initial selections when
 Install typed plugin-object dependencies recursively with deterministic
 overrides, dependency-first ordering, and graph validation.
 
+Declare document identity with top-level `type`, element behavior through
+`schema.element`, marks through descriptor-backed `schema.mark`, rendering
+through `render`, and DOM attribute policy through `host`.
+
+Derive schema identity from compiled plugin semantics when editor creation
+omits `schema`. Pass `{ id, version }` only for application-named History,
+Yjs, or migration lineage. `createBaseEditor`, `createPlateEditor`,
+`createStaticEditor`, `usePlateEditor`, and `usePlateViewEditor` accept no
+options.
+
+Keep plugin configuration immutable. Use object-form `.configure(...)` for
+descriptor data, `.extend(context => ...)` for runtime-derived behavior, and
+`editor.configure(plugin, config)` for atomic live reconfiguration of the
+compiled schema, APIs, updates, parsers, renderers, handlers, and lifecycle.
+
+Register semantic command policy through extension
+`commands: ({ handle, around }) => [...]` factories. Handlers return
+`false | TransactionSpec`; `handle` provides ordered fallback and `around`
+wraps or rewrites downstream behavior.
+
 **Migration:** Replace nested plugin API reads with the scoped portal API:
 
 ```tsx
@@ -57,3 +77,28 @@ Rename these exports:
 
 Replace dependency keys such as `dependencies: ['feature']` with the plugin
 object, for example `dependencies: [BaseFeaturePlugin]`.
+
+Replace the overloaded `node` declaration with explicit model and host fields:
+
+```tsx
+createPlatePlugin({
+  key: 'link',
+  type: 'a',
+  schema: { element: { inline: true } },
+  render: { node: LinkElement },
+});
+```
+
+Move callback configuration to `.extend(...)`:
+
+```tsx
+// Before
+FooPlugin.configure(({ editor }) => ({
+  options: { enabled: editor.api.isEnabled() },
+}));
+
+// After
+FooPlugin.extend(({ editor }) => ({
+  options: { enabled: editor.api.isEnabled() },
+}));
+```

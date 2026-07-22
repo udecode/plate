@@ -1,4 +1,5 @@
 import { createPlateEditor } from '@platejs/core/react';
+import { BaseParagraphPlugin } from '@platejs/core';
 import { BaseIndentPlugin } from '@platejs/indent';
 import { KEYS } from '@platejs/utils';
 
@@ -8,8 +9,8 @@ import { buildToggleIndex } from './toggleIndexAtom';
 describe('withToggle', () => {
   const plugins = [
     BaseIndentPlugin.configure({
-      options: {
-        targetPluginKeys: [KEYS.p, KEYS.toggle],
+      config: {
+        targets: [BaseParagraphPlugin, TogglePlugin],
       },
     }),
     TogglePlugin,
@@ -118,7 +119,7 @@ describe('withToggle', () => {
 
     const hiddenChild = editor.read.nodes.get([1])?.[0];
 
-    expect(editor.read.schema.element(KEYS.toggle)?.groups).toContain('block');
+    expect(editor.read.schema.element(TogglePlugin)?.groups).toContain('block');
     expect(hiddenChild && editor.read.schema.isSelectable(hiddenChild)).toBe(
       true
     );

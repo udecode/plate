@@ -26,12 +26,21 @@ const hasPlatePluginList = (
 
 describe('PlateTest', () => {
   it('extends a provided Plite editor before rendering', async () => {
-    const editor = createReactEditor({ initialValue: value });
+    const editor = createReactEditor();
 
     let rendered!: ReturnType<typeof render>;
     try {
       await act(async () => {
-        rendered = render(<PlateTest editor={editor} />);
+        rendered = render(
+          <PlateTest
+            editor={editor}
+            schema={{
+              id: 'plate-test:core:react-components-platetest:editor-1',
+              version: 1,
+            }}
+            value={value}
+          />
+        );
       });
     } catch (error) {
       if (error instanceof AggregateError) {

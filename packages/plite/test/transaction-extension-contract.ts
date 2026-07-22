@@ -11,7 +11,6 @@ import {
   defineFacet,
   defineStateField,
   defineUpdateAnnotation,
-  element,
   type EditorCommit,
   schema,
 } from '@platejs/plite';
@@ -185,10 +184,13 @@ describe('transaction extension values', () => {
     const schemaMode = (voidKind?: 'block') =>
       defineEditorSchema({
         elements: {
-          quote: element(voidKind ? { void: voidKind } : {}),
+          quote: voidKind
+            ? { void: voidKind }
+            : { content: schema.content.text() },
         },
         id: 'facet-schema',
-        root: schema.root({ content: schema.content.type('quote') }),
+        root: { content: schema.content.type('quote') } as const,
+        unknown: 'reject',
         version: voidKind ? 2 : 1,
       });
     const editor = createEditor({
@@ -315,22 +317,21 @@ describe('transaction extension values', () => {
   });
 
   it('runs typed command defaults headlessly inside one update', () => {
-    type AddCommand = { amount: number; type: 'counter.add' };
+    type AddCommand = { amount: number };
     const counter = defineStateField({ key: 'counter', initial: () => 0 });
-    const add = defineCommand<AddCommand>({
-      run: ({ command, state }) =>
+    const add = defineCommand<AddCommand>('counter.add', {
+      build: ({ input, state }) =>
         state.transaction((tx) => {
-          tx.setField(counter, (value) => value + command.amount);
+          tx.setField(counter, (value) => value + input.amount);
         }),
-      type: 'counter.add',
     });
     const editor = createEditor({ extensions: [counter] as const });
 
+    assert.equal(dispatchCommand(editor, add, { amount: 4 }), true);
+    assert.equal(editor.read.getField(counter), 4);
     assert.equal(
-      dispatchCommand(editor, add, { amount: 4, type: add.type }),
+      editor.read.lastCommit()?.tags.includes('semantic-command'),
       true
     );
-    assert.equal(editor.read.getField(counter), 4);
-    assert.equal(editor.read.lastCommit()?.command?.type, add.type);
   });
 });

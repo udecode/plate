@@ -8,7 +8,6 @@ import {
   defineExtensionSlot,
   defineFacet,
   defineStateField,
-  element,
   NodeApi,
   schema,
 } from '@platejs/plite';
@@ -37,18 +36,21 @@ describe('transaction-local facet caching', () => {
     const schemaMode = (voidKind?: 'block') =>
       defineEditorSchema({
         elements: {
-          paragraph: element({}),
-          quote: element(voidKind ? { void: voidKind } : {}),
+          paragraph: { content: schema.content.text() } as const,
+          quote: voidKind
+            ? { void: voidKind }
+            : { content: schema.content.text() },
         },
         id: 'draft-schema',
-        root: schema.root({
+        root: {
           content: schema.content.types(['paragraph', 'quote']),
-        }),
+        } as const,
         roots: {
-          sidebar: schema.root({
+          sidebar: {
             content: schema.content.types(['paragraph', 'quote']),
-          }),
+          } as const,
         },
+        unknown: 'reject',
         version: voidKind ? 2 : 1,
       });
     const editor = createEditor({

@@ -1,13 +1,30 @@
 import { createBaseEditor } from '@platejs/core';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
+import type { BaseLinkConfig } from '../BaseLinkPlugin';
 import { validateUrl } from './validateUrl';
 
 describe('validateUrl', () => {
-  const createTestEditor = (options?: any) =>
-    createBaseEditor({
-      plugins: [BaseLinkPlugin.configure({ options })],
+  const createTestEditor = (
+    settings: Partial<BaseLinkConfig['config'] & BaseLinkConfig['options']> = {}
+  ) => {
+    const { allowedSchemes, dangerouslySkipSanitization, ...options } =
+      settings;
+
+    return createBaseEditor({
+      plugins: [
+        BaseLinkPlugin.configure({
+          config: {
+            ...(allowedSchemes === undefined ? {} : { allowedSchemes }),
+            ...(dangerouslySkipSanitization === undefined
+              ? {}
+              : { dangerouslySkipSanitization }),
+          },
+          options,
+        }),
+      ],
     });
+  };
 
   describe('internal links', () => {
     it('validate paths starting with /', () => {
@@ -136,5 +153,25 @@ describe('validateUrl', () => {
       expect(validateUrl(editor, '#heading1')).toBe(true);
       expect(validateUrl(editor, '##heading2')).toBe(true);
     });
+  });
+
+  it('keeps HTML parsing on immutable URL policy instead of runtime callbacks', () => {
+    const editor = createTestEditor({
+      allowedSchemes: ['mailto'],
+      isUrl: () => true,
+    });
+    const plugin = editor.getPlugin(BaseLinkPlugin);
+    const parse = plugin.parsers.html?.deserializer?.parse;
+    const element = document.createElement('a');
+
+    element.setAttribute('href', 'https://example.com');
+
+    expect(
+      parse?.({
+        config: plugin.config,
+        element,
+        type: plugin.type,
+      } as any)
+    ).toBeUndefined();
   });
 });

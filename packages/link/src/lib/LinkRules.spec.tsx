@@ -7,29 +7,33 @@ import type { BaseLinkConfig } from './BaseLinkPlugin';
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 import { LinkRules } from './LinkRules';
 
+const BaseCodeLinePlugin = createBasePlugin({
+  key: 'codeLine',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      topLevel: false,
+    },
+  },
+  type: 'code_line',
+});
+
 const BaseCodeBlockPlugin = createBasePlugin({
   key: 'codeBlock',
-  node: {
-    element: {
-      content: schema.content.type('codeLine', {
-        default: { type: 'codeLine' },
-        min: 1,
-      }),
-      groups: ['block'],
-    },
-    type: 'code_block',
-  },
-  plugins: [
-    createBasePlugin({
-      key: 'codeLine',
-      node: {
-        element: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        },
-        type: 'code_line',
+  schema: ({ plugins }) => {
+    const codeLineType = plugins.elementType(BaseCodeLinePlugin);
+
+    return {
+      element: {
+        content: schema.content.type(codeLineType, {
+          default: { type: codeLineType },
+          min: 1,
+        }),
       },
-    }),
-  ],
+    };
+  },
+  type: 'code_block',
+  plugins: [BaseCodeLinePlugin],
 });
 
 const createAutolinkRules = () => [

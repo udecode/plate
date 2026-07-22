@@ -4,12 +4,16 @@ import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import {
   createEditor,
+  defineEditorSchema,
+  defineExtensionSlot,
   type Descendant,
   type Editor,
+  type EditorCommit,
+  type EditorSchemaIdentity,
   type EditorUpdateTransaction,
   NodeApi,
-  type Operation,
   type Range,
+  schema,
 } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
@@ -76,9 +80,10 @@ type ExampleNetwork = {
   registerPeerEditor: (peer: ExamplePeer, editor: YjsEditor) => () => void;
   recordLocalChange: (
     peer: ExamplePeer,
-    operations: readonly Operation[]
+    commit: EditorCommit<CustomValue>
   ) => void;
   runWithoutLocalHistory: (fn: () => void) => void;
+  roomSchemaIdentity: EditorSchemaIdentity;
   subscribeNotify: (notify: () => void) => () => void;
   syncAll: () => void;
   syncAwareness: () => void;
@@ -116,6 +121,33 @@ const PEERS: PeerDefinition[] = [
   },
 ] as const;
 
+const ROOT_NAME = '@platejs/plite';
+const schemaSlot = defineExtensionSlot('yjs-collaboration-schema');
+
+const createCollaborationSchema = (version: number) =>
+  defineEditorSchema({
+    elements: {
+      'block-quote': {
+        content: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+    },
+    id: 'yjs-collaboration-example',
+    root: {
+      content: schema.content.types(['block-quote', 'paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+    },
+    unknown: 'preserve',
+    version,
+  });
+
 const syncPeerHistoryDepths = (peer: ExamplePeer) => {
   peer.undoDepth = peer.undoGroups.length;
   peer.redoDepth = peer.redoGroups.length;
@@ -140,21 +172,6 @@ const recordPeerUndoGroup = (
 
   peer.redoGroups = [];
   syncPeerHistoryDepths(peer);
-};
-
-const areJsonEqual = (left: unknown, right: unknown) =>
-  JSON.stringify(left) === JSON.stringify(right);
-
-const changesDocument = (operation: Operation) => {
-  switch (operation.type) {
-    case 'set_selection':
-      return false;
-    case 'replace_children':
-    case 'replace_fragment':
-      return !areJsonEqual(operation.children, operation.newChildren);
-    default:
-      return true;
-  }
 };
 
 const INITIAL_VALUE: CustomValue = [
@@ -238,30 +255,41 @@ const paragraph = (text: string): CustomElement => ({
 
 const cloneValue = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
-const createSeedUpdate = () => {
+const createSeedSnapshot = () => {
   const seedDoc = new Y.Doc();
 
-  createEditor({
+  const seedEditor = createEditor({
     extensions: [
+      schemaSlot.of(createCollaborationSchema(1)),
       createYjsExtension({
         clientId: 'seed',
         doc: seedDoc,
-        rootName: '@platejs/plite',
+        rootName: ROOT_NAME,
       }),
     ],
     initialValue: cloneValue(INITIAL_VALUE),
   });
+  const identity = seedEditor.read.schema.identity();
 
-  return Y.encodeStateAsUpdate(seedDoc);
+  if (!identity) {
+    throw new Error(
+      'The Yjs collaboration example requires a schema identity.'
+    );
+  }
+
+  return {
+    identity,
+    update: Y.encodeStateAsUpdate(seedDoc),
+  };
 };
 
 const createExampleNetwork = (): ExampleNetwork => {
-  const seedUpdate = createSeedUpdate();
+  const seed = createSeedSnapshot();
   const peers: ExamplePeer[] = PEERS.map((definition) => {
     const doc = new Y.Doc();
 
     doc.clientID = definition.clientId;
-    Y.applyUpdate(doc, seedUpdate);
+    Y.applyUpdate(doc, seed.update);
 
     return {
       ...definition,
@@ -288,11 +316,11 @@ const createExampleNetwork = (): ExampleNetwork => {
         }
       };
     },
-    recordLocalChange(peer, operations) {
+    recordLocalChange(peer, commit) {
       if (network.syncing) {
         return;
       }
-      if (operations.some(changesDocument)) {
+      if (commit.changed.has('document')) {
         recordPeerUndoGroup(
           peer,
           peer.pendingLocalChangeKind ?? 'keyboard',
@@ -310,6 +338,7 @@ const createExampleNetwork = (): ExampleNetwork => {
         network.syncing = wasSyncing;
       }
     },
+    roomSchemaIdentity: seed.identity,
     subscribeNotify(notify) {
       network.notify = notify;
 
@@ -519,10 +548,10 @@ const getTextEntryAtPath = (
 };
 
 const getFirstBlockTextEntry = (
-  editor: YjsEditor,
+  value: readonly Descendant[],
   position: 'first' | 'last'
 ) => {
-  const [block] = getEditorValue(editor);
+  const [block] = value;
 
   if (!block) {
     return null;
@@ -683,8 +712,6 @@ const getBlockText = (editor: YjsEditor, index: number) => {
   return node ? NodeApi.string(node) : '';
 };
 
-const getParagraphCount = (editor: YjsEditor) => editor.read.children().length;
-
 const clearPeerHistory = (peer: ExamplePeer) => {
   peer.undoGroups = [];
   peer.redoGroups = [];
@@ -778,7 +805,7 @@ const selectHello = (
   peer: ExamplePeer,
   editor: YjsEditor
 ) => {
-  const entry = getFirstBlockTextEntry(editor, 'first');
+  const entry = getFirstBlockTextEntry(getEditorValue(editor), 'first');
 
   if (!entry) {
     return;
@@ -800,12 +827,8 @@ const selectHello = (
   network.syncAwareness();
 };
 
-const appendText = (
-  peer: ExamplePeer,
-  editor: YjsEditor,
-  tx: PeerCommandTx
-) => {
-  const entry = getFirstBlockTextEntry(editor, 'last');
+const appendText = (peer: ExamplePeer, tx: PeerCommandTx) => {
+  const entry = getFirstBlockTextEntry(tx.value().children, 'last');
 
   if (!entry) {
     return;
@@ -822,8 +845,8 @@ const appendText = (
   });
 };
 
-const insertExclamation = (editor: YjsEditor, tx: PeerCommandTx) => {
-  const entry = getFirstBlockTextEntry(editor, 'last');
+const insertExclamation = (tx: PeerCommandTx) => {
+  const entry = getFirstBlockTextEntry(tx.value().children, 'last');
 
   if (!entry) {
     return;
@@ -840,8 +863,8 @@ const insertExclamation = (editor: YjsEditor, tx: PeerCommandTx) => {
   });
 };
 
-const selectDefaultBoldRange = (editor: YjsEditor, tx: PeerCommandTx) => {
-  const selection = editor.read.selection();
+const selectDefaultBoldRange = (tx: PeerCommandTx) => {
+  const selection = tx.selection();
 
   if (
     selection &&
@@ -851,7 +874,7 @@ const selectDefaultBoldRange = (editor: YjsEditor, tx: PeerCommandTx) => {
     return;
   }
 
-  const entry = getFirstBlockTextEntry(editor, 'first');
+  const entry = getFirstBlockTextEntry(tx.value().children, 'first');
 
   if (!entry) {
     return;
@@ -865,84 +888,46 @@ const selectDefaultBoldRange = (editor: YjsEditor, tx: PeerCommandTx) => {
   });
 };
 
-const toggleBold = (editor: YjsEditor, tx: PeerCommandTx) => {
-  selectDefaultBoldRange(editor, tx);
+const toggleBold = (tx: PeerCommandTx) => {
+  selectDefaultBoldRange(tx);
   tx.marks.toggle('bold');
 };
 
-const replaceDocument = (
-  peer: ExamplePeer,
-  editor: YjsEditor,
-  tx: PeerCommandTx
-) => {
-  const value = getEditorValue(editor);
+const replaceDocument = (peer: ExamplePeer, tx: PeerCommandTx) => {
   const selection = {
     anchor: { path: [0, 0], offset: peer.replacementText.length },
     focus: { path: [0, 0], offset: peer.replacementText.length },
   } satisfies Range;
 
-  tx.operations.replay([
-    {
-      children: value,
-      index: 0,
-      newChildren: [paragraph(peer.replacementText)],
-      newSelection: selection,
-      path: [],
-      selection: null,
-      type: 'replace_children',
-    },
-  ]);
+  tx.nodes.replaceChildren([paragraph(peer.replacementText)], { at: [] });
+  tx.selection.set(selection);
 };
 
-const replaceWithEmptyParagraph = (editor: YjsEditor, tx: PeerCommandTx) => {
-  const operation: Operation = {
-    children: getEditorValue(editor),
-    newChildren: [paragraph('')],
-    newSelection: {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    },
-    path: [],
-    selection: null,
-    type: 'replace_fragment',
-  };
-
-  tx.operations.replay([operation]);
+const replaceWithEmptyParagraph = (tx: PeerCommandTx) => {
+  tx.nodes.replaceChildren([paragraph('')], { at: [] });
+  tx.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 0 },
+  });
 };
 
-const replaceBlockTextWithEmpty = (
-  editor: YjsEditor,
-  blockIndex: number,
-  tx: PeerCommandTx
-) => {
-  const value = getEditorValue(editor);
+const replaceBlockTextWithEmpty = (blockIndex: number, tx: PeerCommandTx) => {
+  const value = tx.value().children;
   const block = value[blockIndex];
 
   if (!block || !('children' in block)) {
     return;
   }
 
-  const operation: Operation = {
-    children: block.children,
-    newChildren: [{ text: '' }],
-    newSelection: {
-      anchor: { path: [blockIndex, 0], offset: 0 },
-      focus: { path: [blockIndex, 0], offset: 0 },
-    },
-    path: [blockIndex],
-    selection: null,
-    type: 'replace_fragment',
-  };
-
-  tx.operations.replay([operation]);
+  tx.nodes.replaceChildren([{ text: '' }], { at: [blockIndex] });
+  tx.selection.set({
+    anchor: { path: [blockIndex, 0], offset: 0 },
+    focus: { path: [blockIndex, 0], offset: 0 },
+  });
 };
 
-const removeBlock = (
-  editor: YjsEditor,
-  blockIndex: number,
-  tx: PeerCommandTx
-) => {
-  const value = getEditorValue(editor);
+const removeBlock = (blockIndex: number, tx: PeerCommandTx) => {
+  const value = tx.value().children;
   const node = value[blockIndex];
 
   if (!node) {
@@ -950,17 +935,11 @@ const removeBlock = (
   }
 
   if (value.length === 1) {
-    replaceWithEmptyParagraph(editor, tx);
+    replaceWithEmptyParagraph(tx);
     return;
   }
 
-  tx.operations.replay([
-    {
-      node,
-      path: [blockIndex],
-      type: 'remove_node',
-    },
-  ]);
+  tx.nodes.remove({ at: [blockIndex] });
 };
 
 const shouldReplaceWholeDocumentSelection = (
@@ -1034,9 +1013,7 @@ const handleDeleteKeyDown = (
 
     if (nodeIndex !== -1) {
       event.preventDefault();
-      runPeerCommand(network, peer, editor, (tx) =>
-        removeBlock(editor, nodeIndex, tx)
-      );
+      runPeerCommand(network, peer, editor, (tx) => removeBlock(nodeIndex, tx));
 
       return true;
     }
@@ -1049,26 +1026,20 @@ const handleDeleteKeyDown = (
 
     event.preventDefault();
     runPeerCommand(network, peer, editor, (tx) =>
-      replaceBlockTextWithEmpty(editor, blockIndex, tx)
+      replaceBlockTextWithEmpty(blockIndex, tx)
     );
 
     return true;
   }
 
   event.preventDefault();
-  runPeerCommand(network, peer, editor, (tx) =>
-    replaceWithEmptyParagraph(editor, tx)
-  );
+  runPeerCommand(network, peer, editor, replaceWithEmptyParagraph);
 
   return true;
 };
 
-const splitFirstText = (
-  peer: ExamplePeer,
-  editor: YjsEditor,
-  tx: PeerCommandTx
-) => {
-  const value = getEditorValue(editor);
+const splitFirstText = (peer: ExamplePeer, tx: PeerCommandTx) => {
+  const value = tx.value().children;
   const [block] = value;
 
   if (!block) {
@@ -1097,12 +1068,8 @@ const wrapFirstBlock = (tx: PeerCommandTx) => {
   tx.selection.clear();
 };
 
-const ensureParagraphCount = (
-  editor: YjsEditor,
-  count: number,
-  tx: PeerCommandTx
-) => {
-  const paragraphCount = getParagraphCount(editor);
+const ensureParagraphCount = (count: number, tx: PeerCommandTx) => {
+  const paragraphCount = tx.value().children.length;
 
   if (paragraphCount >= count) {
     return;
@@ -1113,20 +1080,16 @@ const ensureParagraphCount = (
   }
 };
 
-const removeSecondBlock = (editor: YjsEditor, tx: PeerCommandTx) => {
-  if (getParagraphCount(editor) < 2) {
+const removeSecondBlock = (tx: PeerCommandTx) => {
+  if (tx.value().children.length < 2) {
     return;
   }
 
   tx.nodes.remove({ at: [1] });
 };
 
-const mergeSecondBlock = (
-  peer: ExamplePeer,
-  editor: YjsEditor,
-  tx: PeerCommandTx
-) => {
-  if (getParagraphCount(editor) < 2) {
+const mergeSecondBlock = (peer: ExamplePeer, tx: PeerCommandTx) => {
+  if (tx.value().children.length < 2) {
     return;
   }
 
@@ -1134,16 +1097,16 @@ const mergeSecondBlock = (
   peer.renderEpoch += 1;
 };
 
-const moveFirstBlockDown = (editor: YjsEditor, tx: PeerCommandTx) => {
-  ensureParagraphCount(editor, 2, tx);
+const moveFirstBlockDown = (tx: PeerCommandTx) => {
+  ensureParagraphCount(2, tx);
   tx.nodes.move({ at: [0], to: [1] });
 };
 
 const setFirstBlockRole = (tx: PeerCommandTx) =>
   tx.nodes.set({ role: 'title' }, { at: [0] });
 
-const unsetFirstBlockRole = (editor: YjsEditor, tx: PeerCommandTx) => {
-  const [firstBlock] = getEditorValue(editor);
+const unsetFirstBlockRole = (tx: PeerCommandTx) => {
+  const [firstBlock] = tx.value().children;
 
   if (!firstBlock || !('role' in firstBlock)) {
     return;
@@ -1152,36 +1115,32 @@ const unsetFirstBlockRole = (editor: YjsEditor, tx: PeerCommandTx) => {
   tx.nodes.unset('role', { at: [0] });
 };
 
-const firstBlockIsQuote = (editor: YjsEditor) => {
-  const [firstBlock] = getEditorValue(editor);
+const firstBlockIsQuote = (tx: PeerCommandTx) => {
+  const [firstBlock] = tx.value().children;
 
   return (
     firstBlock && 'type' in firstBlock && firstBlock.type === 'block-quote'
   );
 };
 
-const unwrapFirstBlock = (editor: YjsEditor, tx: PeerCommandTx) => {
-  if (!firstBlockIsQuote(editor)) {
+const unwrapFirstBlock = (tx: PeerCommandTx) => {
+  if (!firstBlockIsQuote(tx)) {
     return;
   }
 
   tx.nodes.unwrap({ at: [0] });
 };
 
-const liftFirstWrappedBlock = (editor: YjsEditor, tx: PeerCommandTx) => {
-  if (!firstBlockIsQuote(editor)) {
+const liftFirstWrappedBlock = (tx: PeerCommandTx) => {
+  if (!firstBlockIsQuote(tx)) {
     return;
   }
 
   tx.nodes.lift({ at: [0, 0] });
 };
 
-const insertFragmentText = (
-  peer: ExamplePeer,
-  editor: YjsEditor,
-  tx: PeerCommandTx
-) => {
-  const entry = getFirstBlockTextEntry(editor, 'last');
+const insertFragmentText = (peer: ExamplePeer, tx: PeerCommandTx) => {
+  const entry = getFirstBlockTextEntry(tx.value().children, 'last');
 
   if (!entry) {
     return;
@@ -1191,19 +1150,19 @@ const insertFragmentText = (
     anchor: { path: entry.path, offset: entry.text.length },
     focus: { path: entry.path, offset: entry.text.length },
   });
-  tx.fragment.insert([{ text: `${peer.name} fragment` }]);
+  tx.fragment.replace([{ text: `${peer.name} fragment` }]);
 };
 
-const moveFirstBlockAfterSecond = (editor: YjsEditor, tx: PeerCommandTx) => {
-  if (getParagraphCount(editor) < 2) {
+const moveFirstBlockAfterSecond = (tx: PeerCommandTx) => {
+  if (tx.value().children.length < 2) {
     return;
   }
 
   tx.nodes.move({ at: [0], to: [1] });
 };
 
-const deleteFirstFragment = (editor: YjsEditor, tx: PeerCommandTx) => {
-  const entry = getFirstBlockTextEntry(editor, 'first');
+const deleteFirstFragment = (tx: PeerCommandTx) => {
+  const entry = getFirstBlockTextEntry(tx.value().children, 'first');
 
   if (!entry) {
     return;
@@ -1222,11 +1181,8 @@ const deleteFirstFragment = (editor: YjsEditor, tx: PeerCommandTx) => {
   tx.fragment.delete();
 };
 
-const deleteBackwardFromFirstBlockEnd = (
-  editor: YjsEditor,
-  tx: PeerCommandTx
-) => {
-  const entry = getFirstBlockTextEntry(editor, 'last');
+const deleteBackwardFromFirstBlockEnd = (tx: PeerCommandTx) => {
+  const entry = getFirstBlockTextEntry(tx.value().children, 'last');
 
   if (!entry || entry.text.length === 0) {
     return;
@@ -1462,6 +1418,47 @@ const CommandButton = ({
   </Button>
 );
 
+type IncompatibleJoinResult = {
+  error: string;
+  localText: string;
+};
+
+const errorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
+
+const attemptIncompatibleJoin = (roomDoc: Y.Doc): IncompatibleJoinResult => {
+  const candidateDoc = new Y.Doc();
+  const errors: unknown[] = [];
+  const initialValue = [paragraph('Candidate local')];
+
+  Y.applyUpdate(candidateDoc, Y.encodeStateAsUpdate(roomDoc));
+
+  try {
+    const candidate = createEditor({
+      extensions: [
+        schemaSlot.of(createCollaborationSchema(2)),
+        createYjsExtension({
+          clientId: 'incompatible-candidate',
+          doc: candidateDoc,
+          rootName: ROOT_NAME,
+        }),
+      ],
+      initialValue,
+      lifecycleErrorSink: ({ cause }) => errors.push(cause),
+    });
+
+    return {
+      error: errors[0] ? errorMessage(errors[0]) : 'accepted',
+      localText: candidate.read.children().map(NodeApi.string).join('\n'),
+    };
+  } catch (error) {
+    return {
+      error: errorMessage(error),
+      localText: initialValue.map(NodeApi.string).join('\n'),
+    };
+  }
+};
+
 const PeerPanel = ({
   network,
   peer,
@@ -1474,15 +1471,19 @@ const PeerPanel = ({
   const editor = usePliteEditor({
     extensions: [
       history(),
+      schemaSlot.of(createCollaborationSchema(1)),
       createYjsExtension({
         awareness: peer.awareness,
         clientId: peer.id,
         doc: peer.doc,
-        rootName: '@platejs/plite',
+        rootName: ROOT_NAME,
       }),
     ],
     initialValue: cloneValue(INITIAL_VALUE),
   });
+  const [incompatibleJoin, setIncompatibleJoin] =
+    useState<IncompatibleJoinResult | null>(null);
+  const [reconfigureError, setReconfigureError] = useState<string | null>(null);
 
   const canUndo = peer.undoDepth > 0;
   const canRedo = peer.redoDepth > 0;
@@ -1505,7 +1506,7 @@ const PeerPanel = ({
           !change.tags.includes('historic') &&
           !change.tags.includes('yjs-example-test-setup')
         ) {
-          network.recordLocalChange(peer, change.operations);
+          network.recordLocalChange(peer, change.commit);
         }
         network.syncAll();
       }}
@@ -1520,6 +1521,12 @@ const PeerPanel = ({
             >
               <CursorStatus editor={editor} />
             </div>
+            <div
+              className="mt-0.5 text-xs text-slate-500"
+              data-test-id={`yjs-peer-${peer.id}-history`}
+            >
+              undo:{peer.undoDepth};redo:{peer.redoDepth}
+            </div>
           </div>
           <span
             className={cn(
@@ -1533,6 +1540,45 @@ const PeerPanel = ({
           </span>
         </div>
 
+        {peer.id === 'a' && (
+          <div className="grid gap-2 border-b border-slate-200 px-3 py-2 text-xs">
+            <div className="flex flex-wrap gap-1.5">
+              <CommandButton
+                onRun={() =>
+                  setIncompatibleJoin(attemptIncompatibleJoin(peer.doc))
+                }
+                testId="yjs-schema-incompatible-join"
+              >
+                Join with schema v2
+              </CommandButton>
+              <CommandButton
+                onRun={() => {
+                  try {
+                    editor.update.extensions.reconfigure(
+                      schemaSlot,
+                      createCollaborationSchema(2)
+                    );
+                    setReconfigureError('accepted');
+                  } catch (error) {
+                    setReconfigureError(errorMessage(error));
+                  }
+                }}
+                testId="yjs-schema-incompatible-reconfigure"
+              >
+                Reconfigure to v2
+              </CommandButton>
+            </div>
+            <output data-test-id="yjs-schema-incompatible-join-status">
+              {incompatibleJoin
+                ? `error:${incompatibleJoin.error};local:${incompatibleJoin.localText}`
+                : 'not-run'}
+            </output>
+            <output data-test-id="yjs-schema-incompatible-reconfigure-status">
+              {reconfigureError ? `error:${reconfigureError}` : 'not-run'}
+            </output>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
           <CommandButton
             onRun={() => selectHello(network, peer, editor)}
@@ -1542,9 +1588,7 @@ const PeerPanel = ({
           </CommandButton>
           <CommandButton
             onRun={() =>
-              runPeerCommand(network, peer, editor, (tx) =>
-                toggleBold(editor, tx)
-              )
+              runPeerCommand(network, peer, editor, (tx) => toggleBold(tx))
             }
             testId={`yjs-peer-${peer.id}-mark-bold`}
           >
@@ -1591,7 +1635,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                appendText(peer, editor, tx)
+                appendText(peer, tx)
               )
             }
             testId={`yjs-peer-${peer.id}-append`}
@@ -1601,7 +1645,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                replaceDocument(peer, editor, tx)
+                replaceDocument(peer, tx)
               )
             }
             testId={`yjs-peer-${peer.id}-replace`}
@@ -1611,7 +1655,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                removeSecondBlock(editor, tx)
+                removeSecondBlock(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-remove-node`}
@@ -1621,7 +1665,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                splitFirstText(peer, editor, tx)
+                splitFirstText(peer, tx)
               )
             }
             testId={`yjs-peer-${peer.id}-split-node`}
@@ -1631,7 +1675,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                mergeSecondBlock(peer, editor, tx)
+                mergeSecondBlock(peer, tx)
               )
             }
             testId={`yjs-peer-${peer.id}-merge-node`}
@@ -1641,7 +1685,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                moveFirstBlockDown(editor, tx)
+                moveFirstBlockDown(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-move-down`}
@@ -1661,7 +1705,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                unsetFirstBlockRole(editor, tx)
+                unsetFirstBlockRole(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-unset-node`}
@@ -1679,7 +1723,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                unwrapFirstBlock(editor, tx)
+                unwrapFirstBlock(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-unwrap`}
@@ -1689,7 +1733,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                liftFirstWrappedBlock(editor, tx)
+                liftFirstWrappedBlock(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-lift`}
@@ -1699,7 +1743,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                insertFragmentText(peer, editor, tx)
+                insertFragmentText(peer, tx)
               )
             }
             testId={`yjs-peer-${peer.id}-insert-fragment`}
@@ -1709,7 +1753,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                deleteFirstFragment(editor, tx)
+                deleteFirstFragment(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-delete-fragment`}
@@ -1719,7 +1763,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                deleteBackwardFromFirstBlockEnd(editor, tx)
+                deleteBackwardFromFirstBlockEnd(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-delete-backward`}
@@ -1729,7 +1773,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                insertExclamation(editor, tx)
+                insertExclamation(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-insert-text`}
@@ -1739,7 +1783,7 @@ const PeerPanel = ({
           <CommandButton
             onRun={() =>
               runPeerCommand(network, peer, editor, (tx) =>
-                moveFirstBlockAfterSecond(editor, tx)
+                moveFirstBlockAfterSecond(tx)
               )
             }
             testId={`yjs-peer-${peer.id}-move`}
@@ -1787,6 +1831,15 @@ const YjsCollaborationExample = () => {
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-5 text-slate-950">
+      <div className="mx-auto mb-4 max-w-7xl rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm">
+        <span className="font-medium">Claimed room schema: </span>
+        <output
+          data-schema-fingerprint={network.roomSchemaIdentity.fingerprint}
+          data-test-id="yjs-schema-room-claim"
+        >
+          {network.roomSchemaIdentity.id}@{network.roomSchemaIdentity.version}
+        </output>
+      </div>
       <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-2">
         {network.peers.map((peer) => (
           <PeerPanel

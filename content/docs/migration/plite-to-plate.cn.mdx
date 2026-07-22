@@ -32,7 +32,7 @@ import { createPlateEditor, Plate, PlateContent } from 'platejs/react';
 
 ```ts
 // 之前
-const editor = useMemo(() => withReact(withHistory(createBaseEditor()))), []);
+const editor = useMemo(() => withReact(withHistory(createBaseEditor())), []);
 
 // 之后
 const editor = createPlateEditor({
@@ -76,6 +76,7 @@ const renderElement = useCallback(({ attributes, children, element }) => {
 }, []);
 
 // 之后
+import { schema } from '@platejs/plite';
 import { type PlateElement, type PlateElementProps } from 'platejs/react';
 import { cn } from '@/lib/utils';
 
@@ -89,11 +90,11 @@ export function ParagraphElement(props: PlateElementProps) {
 
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',
-  node: {
-    element: {},
-    type: 'paragraph',
-    component: ParagraphElement,
+  type: 'paragraph',
+  schema: {
+    element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
+  render: { node: ParagraphElement },
 });
 ```
 
@@ -215,7 +216,9 @@ const plugins = [
   // ... 其他插件
 ];
 
-const editor = createPlateEditor({ plugins });
+const editor = createPlateEditor({
+  plugins,
+});
 ```
 
 ## 10. 测试和优化

@@ -1,4 +1,5 @@
-import { type Descendant, defineEditorExtension } from '@platejs/plite';
+import { type Descendant, defineEditorExtension, schema } from '@platejs/plite';
+import { parseDOMClipboardHtml } from '@platejs/plite-dom';
 import { jsx } from '@platejs/plite-hyperscript';
 
 import type {
@@ -102,7 +103,7 @@ export const isPlainTextClipboardHtml = (html: string, text: string) => {
     return !!text;
   }
 
-  const parsed = new DOMParser().parseFromString(html, 'text/html');
+  const parsed = parseDOMClipboardHtml(html);
 
   return parsed.body.textContent === text && parsed.body.children.length === 0;
 };
@@ -688,7 +689,7 @@ export const html = () =>
         // Prediction/autocorrect paste can carry plain text as identical or wrapper-only HTML.
         if (isPlainTextClipboardHtml(html, text)) return next();
 
-        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        const parsed = parseDOMClipboardHtml(html);
         const deserialized = deserialize(
           getCommentBoundedFragmentRoot(parsed.body)
         );
@@ -700,12 +701,20 @@ export const html = () =>
               : [deserialized]
         ).filter(isDescendant);
 
-        tx.fragment.insert(fragment);
+        tx.fragment.replace(fragment);
         return true;
       },
     },
-    elements: [
-      { inline: true, type: 'link' },
-      { type: 'image', void: 'block' },
-    ],
+    schema: {
+      elements: {
+        image: { void: 'block' },
+        link: {
+          content: schema.content.any(
+            [schema.content.text(), schema.content.group('inline')],
+            { default: 'text', min: 1 }
+          ),
+          inline: true,
+        },
+      },
+    },
   });

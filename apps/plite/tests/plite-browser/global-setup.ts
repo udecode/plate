@@ -1,14 +1,15 @@
 import type { FullConfig } from '@playwright/test';
 
+import { resolvePliteBrowserBaseURL } from '../../scripts/plite-browser-runner.mjs';
+
 const getBaseURL = (config: FullConfig) => {
   const projectBaseURL = config.projects.find(
     (project) => typeof project.use.baseURL === 'string'
   )?.use.baseURL;
 
-  return (
+  return resolvePliteBrowserBaseURL(
     process.env.PLAYWRIGHT_BASE_URL ??
-    (typeof projectBaseURL === 'string' ? projectBaseURL : undefined) ??
-    'http://localhost:3100'
+      (typeof projectBaseURL === 'string' ? projectBaseURL : undefined)
   );
 };
 

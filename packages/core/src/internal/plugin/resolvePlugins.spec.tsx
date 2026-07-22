@@ -1,3 +1,4 @@
+import { definePropertyPolicy, property } from '@platejs/plite';
 import { createBaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
@@ -8,19 +9,10 @@ import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
 import { resolvePluginTest } from './resolveCreatePluginTest';
 import {
-  applyPluginsToEditor,
+  isEquivalentPlatePluginConfig,
   resolveAndSortPlugins,
-  resolvePluginOverrides,
   resolvePlugins,
 } from './resolvePlugins';
-
-const getResolvedKeys = (plugins: readonly AnyBasePlugin[]) => {
-  const editor = createBaseEditor();
-
-  resolvePlugins(editor, plugins);
-
-  return editor.runtime.pluginList.map((plugin) => plugin.key);
-};
 
 const getSortedKeys = (plugins: readonly AnyBasePlugin[]) => {
   const editor = createBaseEditor();
@@ -29,9 +21,29 @@ const getSortedKeys = (plugins: readonly AnyBasePlugin[]) => {
 };
 
 describe('resolvePlugins', () => {
+  it('compares nominal schema tokens by identity', () => {
+    const first = definePropertyPolicy({
+      id: 'identity-policy',
+      validate: (value): value is string => typeof value === 'string',
+      version: 1,
+    });
+    const second = definePropertyPolicy({
+      id: 'identity-policy',
+      validate: (value): value is string => typeof value === 'string',
+      version: 1,
+    });
+
+    expect(
+      isEquivalentPlatePluginConfig({ policy: first }, { policy: first })
+    ).toBe(true);
+    expect(
+      isEquivalentPlatePluginConfig({ policy: first }, { policy: second })
+    ).toBe(false);
+  });
+
   it('initialize plugins with correct order based on priority', () => {
     expect(
-      getResolvedKeys([
+      getSortedKeys([
         createBasePlugin({ key: 'a', priority: 1 }),
         createBasePlugin({ key: 'b', priority: 3 }),
         createBasePlugin({ key: 'c', priority: 2 }),
@@ -40,7 +52,7 @@ describe('resolvePlugins', () => {
   });
 
   it('handle nested plugins', () => {
-    const pluginKeys = getResolvedKeys([
+    const pluginKeys = getSortedKeys([
       createBasePlugin({
         key: 'parent',
         plugins: [
@@ -56,7 +68,7 @@ describe('resolvePlugins', () => {
   });
 
   it('does not include disabled plugins', () => {
-    const pluginKeys = getResolvedKeys([
+    const pluginKeys = getSortedKeys([
       createBasePlugin({ key: 'enabled' }),
       createBasePlugin({ key: 'disabled', enabled: false }),
     ]);
@@ -66,23 +78,22 @@ describe('resolvePlugins', () => {
   });
 
   it('apply overrides correctly', () => {
-    const editor = createBaseEditor();
-    const plugins = [
-      createBasePlugin({
-        key: 'a',
-        node: { type: 'original' },
-        override: {
-          plugins: {
-            b: { node: { type: 'overridden' } },
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'a',
+          type: 'original',
+          override: {
+            plugins: {
+              b: { type: 'overridden' },
+            },
           },
-        },
-      }),
-      createBasePlugin({ key: 'b', node: { type: 'original' } }),
-    ];
+        }),
+        createBasePlugin({ key: 'b', type: 'original' }),
+      ],
+    });
 
-    resolvePlugins(editor, plugins);
-
-    expect(editor.plugins.b.node.type).toBe('overridden');
+    expect(editor.plugins.b.type).toBe('overridden');
   });
 
   it('merge all plugin APIs into editor.api', () => {
@@ -125,42 +136,42 @@ describe('resolvePlugins', () => {
   it('fills plugin cache buckets for node, render, hook, rule, and handler metadata', () => {
     const editor = createBaseEditor({
       plugins: [
-        createBasePlugin({
-          key: 'cachey',
-          decorate: () => [],
-          handlers: {
-            onChange: () => {},
-            onNodeChange: () => {},
-            onTextChange: () => {},
-          },
-          node: {
-            isDecoration: false,
-            mark: true,
-            leafProps: { 'data-leaf': 'x' } as any,
-            textProps: { 'data-text': 'y' } as any,
+        Object.assign(
+          createPlatePlugin({
+            key: 'cachey',
+            decorate: () => [],
+            handlers: {
+              onChange: () => {},
+              onNodeChange: () => {},
+              onTextChange: () => {},
+            },
             type: 'cachey',
-          },
-          transformInitialValue: () => [],
-          render: {
-            aboveEditable: () => null,
-            aboveNodes: () => null,
-            abovePlite: () => null,
-            afterContainer: () => null,
-            afterEditable: () => null,
-            beforeContainer: () => null,
-            beforeEditable: () => null,
-            belowNodes: () => null,
-            belowRootNodes: () => null,
-          },
-          rules: {
-            match: () => true,
-          },
-        }) as any,
+            schema: {
+              mark: property.boolean({ default: false, omitDefault: true }),
+            },
+            transformInitialValue: () => [],
+            render: {
+              isDecoration: false,
+              leafProps: { 'data-leaf': 'x' } as any,
+              textProps: { 'data-text': 'y' } as any,
+              aboveEditable: () => null,
+              aboveNodes: () => () => null,
+              abovePlite: () => null,
+              afterContainer: () => null,
+              afterEditable: () => null,
+              beforeContainer: () => null,
+              beforeEditable: () => null,
+              belowNodes: () => () => null,
+              belowRootNodes: () => null,
+            },
+            rules: {
+              match: () => true,
+            },
+          }),
+          { useHooks: () => {} }
+        ) as any,
       ],
     });
-
-    (editor.plugins.cachey as any).useHooks = () => {};
-    resolvePlugins(editor, [editor.plugins.cachey as any]);
 
     expect(editor.runtime.pluginCache.decorate).toContain('cachey');
     expect(editor.runtime.pluginCache.handlers.onChange).toContain('cachey');
@@ -317,7 +328,7 @@ describe('resolvePlugins', () => {
     expect(toggle).toHaveBeenCalledTimes(1);
   });
 
-  it('cleans plugin api extensions before resolving a new plugin set on the same editor', () => {
+  it('rejects plugin-set mutation after atomic model publication', () => {
     const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
@@ -328,11 +339,12 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    expect(editor.plugins.pluginApi.api).toHaveProperty('pluginApi.run');
+    expect(editor.api.pluginApi.run()).toBe('run');
 
-    resolvePlugins(editor, []);
-
-    expect(editor.plugins.pluginApi).toBeUndefined();
+    expect(() => resolvePlugins(editor, [])).toThrow(
+      'Plate plugins are immutable after model publication.'
+    );
+    expect(editor.api.pluginApi.run()).toBe('run');
   });
 
   it('throws when inputRules is configured as a boolean map', () => {
@@ -449,77 +461,43 @@ describe('resolveAndSortPlugins', () => {
   });
 });
 
-describe('applyPluginsToEditor', () => {
-  it('merge plugins correctly', () => {
-    const editor = createBaseEditor();
-
-    const plugins = [
-      createBasePlugin({ key: 'a', node: { type: 'typeA' } }),
-      createBasePlugin({ key: 'b', node: { type: 'typeB' } }),
-    ];
-
-    applyPluginsToEditor(editor, plugins);
-
-    expect(editor.runtime.pluginList).toHaveLength(2);
-    expect(editor.plugins.a.node.type).toBe('typeA');
-    expect(editor.plugins.b.node.type).toBe('typeB');
-  });
-
-  it('update existing plugins', () => {
-    const editor = createBaseEditor({
-      plugins: [createBasePlugin({ key: 'a', node: { type: 'oldType' } })],
-    });
-
-    const plugins = [createBasePlugin({ key: 'a', node: { type: 'newType' } })];
-
-    applyPluginsToEditor(editor, plugins);
-
-    expect(editor.runtime.pluginList).toHaveLength(1);
-    expect(editor.plugins.a.node.type).toBe('newType');
-  });
-});
-
 describe('applyPluginOverrides', () => {
   it('apply overrides correctly', () => {
     const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
           key: 'a',
-          node: { type: 'originalA' },
+          type: 'originalA',
           override: {
             plugins: {
-              b: { node: { type: 'overriddenB' } },
+              b: { type: 'overriddenB' },
             },
           },
         }),
-        createBasePlugin({ key: 'b', node: { type: 'originalB' } }),
+        createBasePlugin({ key: 'b', type: 'originalB' }),
       ],
     });
 
-    resolvePluginOverrides(editor);
-
-    expect(editor.plugins.a.node.type).toBe('originalA');
-    expect(editor.plugins.b.node.type).toBe('overriddenB');
+    expect(editor.plugins.a.type).toBe('originalA');
+    expect(editor.plugins.b.type).toBe('overriddenB');
   });
 
   it('handle nested overrides', () => {
-    const editor = createBaseEditor();
-
-    resolvePlugins(editor, [
-      createBasePlugin({
-        key: 'parent',
-        override: {
-          plugins: {
-            child: { node: { type: 'overriddenChild' } },
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'parent',
+          override: {
+            plugins: {
+              child: { type: 'overriddenChild' },
+            },
           },
-        },
-        plugins: [
-          createBasePlugin({ key: 'child', node: { type: 'originalChild' } }),
-        ],
-      }),
-    ]);
+          plugins: [createBasePlugin({ key: 'child', type: 'originalChild' })],
+        }),
+      ],
+    });
 
-    expect(editor.plugins.child.node.type).toBe('overriddenChild');
+    expect(editor.plugins.child.type).toBe('overriddenChild');
   });
 
   it('apply multiple overrides in correct order', () => {
@@ -527,29 +505,27 @@ describe('applyPluginOverrides', () => {
       plugins: [
         createBasePlugin({
           key: 'a',
-          node: { type: 'originalA' },
+          type: 'originalA',
           override: {
             plugins: {
-              c: { node: { type: 'overriddenByA' } },
+              c: { type: 'overriddenByA' },
             },
           },
         }),
         createBasePlugin({
           key: 'b',
-          node: { type: 'originalB' },
+          type: 'originalB',
           override: {
             plugins: {
-              c: { node: { type: 'overriddenByB' } },
+              c: { type: 'overriddenByB' },
             },
           },
         }),
-        createBasePlugin({ key: 'c', node: { type: 'originalC' } }),
+        createBasePlugin({ key: 'c', type: 'originalC' }),
       ],
     });
 
-    resolvePluginOverrides(editor);
-
-    expect(editor.plugins.c.node.type).toBe('overriddenByB');
+    expect(editor.plugins.c.type).toBe('overriddenByB');
   });
 
   it('override components based on priority only if target plugin has a component', () => {
@@ -604,8 +580,6 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    resolvePluginOverrides(editor);
-
     // Higher priority override
     expect(getPlugin(editor, { key: 'b' }).render.node).toBe(
       HighPriorityComponent
@@ -625,10 +599,11 @@ describe('applyPluginOverrides', () => {
     );
   });
 
-  describe('targetPlugins', () => {
+  describe('targetPluginKeys', () => {
     it('correctly apply targetPluginToInject and merge with existing plugins', () => {
       const resolvedPlugin = resolvePluginTest(
         createBasePlugin({
+          config: { targetPluginKeys: ['plugin1', 'plugin2'] },
           key: 'testPlugin',
           inject: {
             plugins: {
@@ -651,7 +626,6 @@ describe('applyPluginOverrides', () => {
                 },
               },
             },
-            targetPlugins: ['plugin1', 'plugin2'],
             targetPluginToInject: ({ targetPlugin: _targetPlugin }) => ({
               parsers: {
                 html: {
@@ -784,8 +758,6 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    resolvePluginOverrides(editor);
-
     expect(editor.plugins).toHaveProperty('a');
     expect(editor.plugins).not.toHaveProperty('b');
     expect(editor.plugins).toHaveProperty('c');
@@ -793,25 +765,30 @@ describe('applyPluginOverrides', () => {
 });
 
 describe('mergePlugins behavior in resolvePlugins', () => {
-  it('does not deeply clone options object', () => {
-    const nestedOptions = { value: 'original' };
+  it('freezes the options record without cloning runtime resources', () => {
+    const runtimeResource = { value: 'original' };
     const plugin = createBasePlugin({
+      config: { nested: { value: 'immutable' } },
       key: 'test',
-      options: { nested: nestedOptions },
+      options: { resource: runtimeResource },
     });
 
     const editor = createBaseEditor({
       plugins: [plugin],
     });
 
-    // Modify the nested options
-    nestedOptions.value = 'modified';
+    const published = editor.plugins.test;
 
-    // Check that the modification is reflected in the resolved plugin's options
-    expect(editor.plugins.test.options.nested.value).toBe('modified');
+    expect(published.options).not.toBe(plugin.options);
+    expect(Object.isFrozen(published.options)).toBe(true);
+    expect(published.options.resource).toBe(runtimeResource);
+    expect(editor.plugin(plugin).getOption('resource')).toBe(runtimeResource);
+    expect(Object.isFrozen(published.options.resource)).toBe(false);
+    expect(Object.isFrozen(published.config)).toBe(true);
+    expect(Object.isFrozen(published.config.nested)).toBe(true);
   });
 
-  it('shallow clone the options object', () => {
+  it('keeps mutable option state outside the published plugin descriptor', () => {
     const plugin = createBasePlugin({
       key: 'test',
       options: { value: 'original' },
@@ -821,14 +798,14 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       plugins: [plugin],
     });
 
-    // Modify the top-level option
-    editor.plugins.test.options.value = 'modified';
+    editor.plugin(plugin).setOption('value', 'modified');
 
-    // Check that the modification does not affect the original plugin
+    expect(editor.plugin(plugin).getOption('value')).toBe('modified');
+    expect(editor.plugins.test.options.value).toBe('original');
     expect(plugin.options.value).toBe('original');
   });
 
-  it('merges options from plugin extensions', () => {
+  it('keeps extension-derived defaults separate from mutable option state', () => {
     const plugin = createBasePlugin({
       key: 'test',
       options: { value: 'original' },
@@ -843,23 +820,25 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       plugins: [plugin],
     });
 
-    // Modify the top-level option
-    editor.plugins.test.options.value = 'modified';
+    expect(editor.plugins.test.options.value).toBe('modified');
 
-    // Check that the modification does not affect the original plugin
+    editor.plugin(plugin).setOption('value', 'runtime');
+
+    expect(editor.plugin(plugin).getOption('value')).toBe('runtime');
+    expect(editor.plugins.test.options.value).toBe('modified');
     expect(plugin.options.value).toBe('original');
   });
 });
 
 describe('resolvePlugins with keyless plugins', () => {
   it('does not add a plugin without a key to the editor', () => {
-    const editor = createBaseEditor();
     const plugins = [
-      createBasePlugin({ node: { type: 'no-key-plugin' } } as any), // Simulate a plugin without a key
-      createBasePlugin({ key: 'keyedPlugin', node: { type: 'keyed-type' } }),
+      createBasePlugin({ type: 'no-key-plugin' } as any), // Simulate a plugin without a key
+      createBasePlugin({ key: 'keyedPlugin', type: 'keyed-type' }),
     ];
-
-    resolvePlugins(editor, plugins as any);
+    const editor = createBaseEditor({
+      plugins: plugins as any,
+    });
 
     expect(editor.runtime.pluginList.map((p) => p.key)).not.toContain('');
     expect(editor.plugins.keyedPlugin).toBeDefined();
@@ -870,32 +849,32 @@ describe('resolvePlugins with keyless plugins', () => {
   });
 
   it('process child plugins of a keyless plugin', () => {
-    const editor = createBaseEditor();
     const plugins = [
       createBasePlugin({
         // No key for the parent
-        node: { type: 'parent-no-key' },
+        type: 'parent-no-key',
         plugins: [
           createBasePlugin({
             key: 'childKey1',
-            node: { type: 'child1-type' },
+            type: 'child1-type',
             priority: 2,
           }),
           createBasePlugin({
             key: 'childKey2',
-            node: { type: 'child2-type' },
+            type: 'child2-type',
             priority: 1,
           }),
         ],
       } as any),
       createBasePlugin({
         key: 'anotherPlugin',
-        node: { type: 'another-type' },
+        type: 'another-type',
         priority: 3,
       }),
     ];
-
-    resolvePlugins(editor, plugins as any);
+    const editor = createBaseEditor({
+      plugins: plugins as any,
+    });
 
     expect(editor.plugins['parent-no-key']).toBeUndefined();
     expect(editor.plugins.childKey1).toBeDefined();

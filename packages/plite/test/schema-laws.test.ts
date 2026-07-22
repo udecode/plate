@@ -6,7 +6,6 @@ import {
   defineEditorSchema,
   type Descendant,
   DocumentChange,
-  element,
   ElementApi,
   property,
   schema,
@@ -24,35 +23,35 @@ const createSchemaEditor = () =>
     extensions: [
       defineEditorSchema({
         elements: {
-          caption: element({
+          caption: {
             content: schema.content.text({ default: 'text', min: 1 }),
-          }),
-          figure: element({
+          } as const,
+          figure: {
             content: schema.content.type('caption', {
               default: { type: 'caption' },
               min: 1,
             }),
-          }),
-          link: element({
+          } as const,
+          link: {
             content: schema.content.text({ default: 'text', min: 1 }),
             inline: true,
-          }),
-          paragraph: element({
+          } as const,
+          paragraph: {
             content: schema.content.text({ default: 'text', min: 1 }),
-            groups: ['block'],
-          }),
-          section: element({
+          } as const,
+          section: {
             content: schema.content.group('block', {
               default: { type: 'paragraph' },
               min: 1,
             }),
-          }),
+          } as const,
         },
         id: 'generated-schema-laws',
         properties: [schema.textProperty('bold', property.boolean())],
-        root: schema.root({
+        root: {
           content: schema.content.types(['figure', 'paragraph', 'section']),
-        }),
+        } as const,
+        unknown: 'reject',
         version: 1,
       }),
     ],
@@ -162,17 +161,18 @@ describe('compiled schema and correction laws', () => {
           extensions: [
             defineEditorSchema({
               elements: {
-                generated: element({
+                generated: {
                   content: schema.content.text({
                     default: 'text',
                     min: minimum,
                   }),
-                }),
+                } as const,
               },
               id: `minimum-${minimum}`,
-              root: schema.root({
+              root: {
                 content: schema.content.type('generated'),
-              }),
+              } as const,
+              unknown: 'reject',
               version: 1,
             }),
           ],
@@ -230,23 +230,23 @@ describe('compiled schema and correction laws', () => {
             extensions: [
               defineEditorSchema({
                 elements: {
-                  mention: element({
-                    content: schema.content.text({ default: 'text', min: 1 }),
+                  mention: {
                     properties: { character: property.string() },
                     void: 'markable-inline',
-                  }),
-                  paragraph: element({
+                  } as const,
+                  paragraph: {
                     content: schema.content.any(
                       [schema.content.text(), schema.content.type('mention')],
                       { default: 'text', min: 1 }
                     ),
-                  }),
+                  } as const,
                 },
                 id: 'generated-inline-construction',
                 properties: [schema.textProperty('bold', property.boolean())],
-                root: schema.root({
+                root: {
                   content: schema.content.type('paragraph'),
-                }),
+                } as const,
+                unknown: 'reject',
                 version: 1,
               }),
             ],
@@ -300,6 +300,45 @@ describe('compiled schema and correction laws', () => {
         }
       ),
       { numRuns: 100 }
+    );
+  });
+
+  it('keeps incremental open-content mode aligned with full canonicalization', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema({
+          elements: {
+            block: { content: schema.content.open() },
+          },
+          id: 'open-content-construction',
+          root: { content: schema.content.type('block') },
+          unknown: 'reject',
+          version: 1,
+        }),
+      ],
+    });
+    const before = {
+      children: [
+        { type: 'block', children: [{ text: 'before' }] },
+      ] as Descendant[],
+    };
+    const after = {
+      children: [
+        {
+          type: 'block',
+          children: [{ type: 'block', children: [{ text: 'nested' }] }],
+        },
+      ] as Descendant[],
+    };
+    const change = DocumentChange.between(before, after);
+
+    assert.deepEqual(
+      canonicalizeRootChildren(editor, after.children, null),
+      after.children
+    );
+    assert.equal(
+      constructCanonicalDocumentChange(editor, after, change).empty,
+      true
     );
   });
 });

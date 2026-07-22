@@ -1,29 +1,51 @@
-import { createBasePlugin } from '@platejs/core';
-import { property, schema, type SchemaContent, target } from '@platejs/plite';
+import {
+  BaseParagraphPlugin,
+  type PluginReference,
+  createBasePlugin,
+} from '@platejs/core';
+import { property, schema, target } from '@platejs/plite';
 
-const createTestContainerPlugin = <const TKey extends string>(
+const createTestContainerPlugin = <
+  const TKey extends string,
+  const TChild extends PluginReference,
+>(
   key: TKey,
-  content: SchemaContent,
-  { rootCapable = false }: { rootCapable?: boolean } = {}
+  child: TChild
 ) =>
   createBasePlugin({
     key,
-    node: {
-      element: {
-        content,
-        ...(rootCapable ? { groups: ['block'] } : {}),
-      },
+    schema: ({ plugins }) => {
+      const childType = plugins.elementType(child);
+
+      return {
+        element: {
+          content: schema.content.type(childType, {
+            default: { type: childType },
+            min: 1,
+          }),
+        },
+      };
     },
   });
 
-const blockContent = schema.content.group('block', {
-  default: { type: 'p' },
-  min: 1,
-});
+const createTestBlockContainerPlugin = <const TKey extends string>(key: TKey) =>
+  createBasePlugin({
+    key,
+    schema: ({ plugins }) => ({
+      element: {
+        content: plugins.blockContent({
+          default: { type: plugins.elementType(BaseParagraphPlugin) },
+          min: 1,
+        }),
+      },
+    }),
+  });
 
 export const TestBoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 export const TestElementPropertiesPlugin = createBasePlugin({
@@ -43,37 +65,26 @@ export const TestElementPropertiesPlugin = createBasePlugin({
   },
 });
 
+export const TestColumnPlugin = createTestBlockContainerPlugin('column');
 export const TestColumnGroupPlugin = createTestContainerPlugin(
   'column_group',
-  schema.content.type('column', { default: { type: 'column' }, min: 1 }),
-  { rootCapable: true }
+  TestColumnPlugin
 );
-export const TestColumnPlugin = createTestContainerPlugin(
-  'column',
-  blockContent
-);
-export const TestDivPlugin = createTestContainerPlugin('div', blockContent, {
-  rootCapable: true,
-});
-export const TestRootPlugin = createTestContainerPlugin(
-  'root',
-  schema.content.type('section', { default: { type: 'section' }, min: 1 }),
-  { rootCapable: true }
-);
+export const TestDivPlugin = createTestBlockContainerPlugin('div');
 export const TestSectionPlugin = createTestContainerPlugin(
   'section',
-  schema.content.type('div', { default: { type: 'div' }, min: 1 })
+  TestDivPlugin
 );
-export const TestTableCellPlugin = createTestContainerPlugin(
-  'td',
-  blockContent
+export const TestRootPlugin = createTestContainerPlugin(
+  'root',
+  TestSectionPlugin
+);
+export const TestTableCellPlugin = createTestBlockContainerPlugin('td');
+export const TestTableRowPlugin = createTestContainerPlugin(
+  'tr',
+  TestTableCellPlugin
 );
 export const TestTablePlugin = createTestContainerPlugin(
   'table',
-  schema.content.type('tr', { default: { type: 'tr' }, min: 1 }),
-  { rootCapable: true }
-);
-export const TestTableRowPlugin = createTestContainerPlugin(
-  'tr',
-  schema.content.type('td', { default: { type: 'td' }, min: 1 })
+  TestTableRowPlugin
 );

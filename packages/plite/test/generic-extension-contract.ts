@@ -1,10 +1,13 @@
 import {
   createEditor,
   defineEditorExtension,
+  definePropertyPolicy,
   type DocumentChange,
   type Editor,
   type ValueOf,
 } from '@platejs/plite';
+
+import type { EditorImmutableConfig } from '../src/interfaces/editor';
 
 type CustomText = {
   text: string;
@@ -23,6 +26,40 @@ type CustomEditor = Editor<CustomValue>;
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: 'paragraph' }] },
 ];
+
+const configPolicy = definePropertyPolicy({
+  id: 'plite-test:immutable-extension-config',
+  validate: (value): value is string => typeof value === 'string',
+  version: 1,
+});
+
+const immutableConfigExtension = defineEditorExtension({
+  config: {
+    count: 1,
+    enabled: true,
+    label: 'paragraph',
+    nullable: null,
+    optional: undefined,
+    policy: configPolicy,
+    tuple: ['paragraph', 2],
+  },
+  name: 'immutable-config',
+});
+const exactConfigCount: 1 = immutableConfigExtension.config.count;
+const exactConfigEnabled: true = immutableConfigExtension.config.enabled;
+const exactConfigLabel: 'paragraph' = immutableConfigExtension.config.label;
+const exactConfigPolicy: typeof configPolicy =
+  immutableConfigExtension.config.policy;
+const exactConfigTuple: readonly ['paragraph', 2] =
+  immutableConfigExtension.config.tuple;
+
+declare const immutableConfigSymbol: symbol;
+
+// @ts-expect-error bigint is not a valid immutable extension config value.
+const invalidBigintConfig: EditorImmutableConfig<bigint> = 1n;
+// @ts-expect-error symbols are not valid immutable extension config values.
+const invalidSymbolConfig: EditorImmutableConfig<symbol> =
+  immutableConfigSymbol;
 
 const extension = defineEditorExtension<CustomEditor>()({
   name: 'generic-extension',
@@ -68,3 +105,10 @@ const editor = createEditor({ extensions: [extension] as const, initialValue });
 const value: Readonly<CustomValue> = editor.read((state) => state.children());
 
 void value;
+void exactConfigCount;
+void exactConfigEnabled;
+void exactConfigLabel;
+void exactConfigPolicy;
+void exactConfigTuple;
+void invalidBigintConfig;
+void invalidSymbolConfig;

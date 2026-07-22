@@ -44,9 +44,9 @@ const pliteToolchainEntries = [
   path.join(repoRoot, 'tsconfig.json'),
   path.join(repoRoot, 'tooling/config/tsconfig.base.json'),
   path.join(repoRoot, 'tooling/config/tsconfig.build.json'),
+  path.join(repoRoot, 'tooling/config/direct-package.config.mts'),
   path.join(repoRoot, 'tooling/config/tsdown.config.ts'),
-  path.join(repoRoot, 'tooling/config/plite-dts.config.mts'),
-  path.join(repoRoot, 'tooling/scripts/build-plite-package.mjs'),
+  path.join(repoRoot, 'tooling/scripts/check-package-build-artifacts.mjs'),
 ];
 
 export const appBuildEntries = [
@@ -309,9 +309,13 @@ const watchDirectory = ({ directory, onChange, recursive }) => {
   }
 };
 
+const PROOF_MONITOR_READY_QUIET_MS = 20;
+const PROOF_MONITOR_READY_TIMEOUT_MS = 500;
+
 /**
  * Watches proof inputs between the runner's byte-level start and end checks.
- * A sticky change records transient edits even when their final bytes are restored.
+ * `ready()` drains pre-subscription filesystem events before fingerprinting. A
+ * sticky change then records transient edits even when their bytes are restored.
  */
 export const createProofIntegrityMonitor = ({
   sourceEntries,
@@ -320,7 +324,29 @@ export const createProofIntegrityMonitor = ({
   targetRoot,
 }) => {
   let firstChange = null;
+  let closed = false;
+  let isReady = false;
+  let readyDeadline;
+  let readyQuietWindow;
+  let resolveReady;
   const watchers = [];
+  const readyPromise = new Promise((resolve) => {
+    resolveReady = resolve;
+  });
+  const finishReady = () => {
+    if (isReady) return;
+
+    isReady = true;
+    clearTimeout(readyDeadline);
+    clearTimeout(readyQuietWindow);
+    resolveReady();
+  };
+  const scheduleReady = () => {
+    if (closed || isReady) return;
+
+    clearTimeout(readyQuietWindow);
+    readyQuietWindow = setTimeout(finishReady, PROOF_MONITOR_READY_QUIET_MS);
+  };
   const ignoredSourcePaths = new Set(
     sourceIgnoredPaths.map((entry) => path.resolve(entry))
   );
@@ -328,6 +354,12 @@ export const createProofIntegrityMonitor = ({
     targetIgnoredPaths.map((entry) => path.resolve(entry))
   );
   const markChanged = (kind, changedPath, eventType) => {
+    if (closed) return;
+    if (!isReady) {
+      scheduleReady();
+      return;
+    }
+
     firstChange ??= {
       eventType,
       kind,
@@ -460,22 +492,30 @@ export const createProofIntegrityMonitor = ({
 
   for (const watcher of watchers) {
     watcher.on('error', (error) => {
+      finishReady();
       markChanged('monitor', error.message, 'error');
     });
   }
 
+  scheduleReady();
+  readyDeadline = setTimeout(finishReady, PROOF_MONITOR_READY_TIMEOUT_MS);
+
   return {
     checkpoint: async () => {
+      await readyPromise;
       await new Promise((resolve) => setImmediate(resolve));
 
       return firstChange;
     },
     close: () => {
+      closed = true;
+      finishReady();
       for (const watcher of watchers) watcher.close();
     },
     get change() {
       return firstChange;
     },
+    ready: () => readyPromise,
   };
 };
 

@@ -13,7 +13,7 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Element } from '@platejs/plite';
+import { createEditor, type Element, schema } from '@platejs/plite';
 import { defineTestSchema } from './support/schema';
 
 const paragraph = (text: string): Element => ({
@@ -615,9 +615,16 @@ describe('plite delete contract', () => {
 
     editor.extend(
       defineTestSchema('isolating-expanded-range-delete', {
-        'accordion-block': {},
-        'tab-panel': {},
-        'tabs-block': { isolating: true },
+        'accordion-block': {
+          content: schema.content.type('paragraph', { min: 1 }),
+        },
+        'tab-panel': {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        'tabs-block': {
+          content: schema.content.type('tab-panel', { min: 1 }),
+          isolating: true,
+        },
       })
     );
     editor.update((tx) => {

@@ -48,11 +48,11 @@ describe('withInsertFragmentTable fitContent', () => {
 
       editor.extend(
         defineEditorExtension({
-          commands: [
-            editorCommands.replaceSlice.handle(({ command }, next) => {
-              seen.push(command.slice);
+          commands: ({ handle }) => [
+            handle(editorCommands.replaceSlice, ({ input }) => {
+              seen.push(input.slice);
 
-              return next();
+              return false;
             }),
           ],
           name: `table-slice-delegation-${openDepth}`,

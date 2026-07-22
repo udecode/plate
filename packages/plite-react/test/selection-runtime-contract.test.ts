@@ -22,17 +22,17 @@ describe('selection runtime', () => {
   const createChange = (
     change: Pick<EditorCommit, 'selectionChanged'> & {
       childrenChanged: boolean;
-      command?: EditorCommit['command'];
       structureChanged?: boolean;
+      tags?: EditorCommit['tags'];
       textChanged?: boolean;
       topLevelOrderChanged?: boolean;
     }
   ) => {
     const {
       childrenChanged,
-      command = null,
       selectionChanged,
       structureChanged = false,
+      tags = [],
       textChanged = childrenChanged && !structureChanged,
       topLevelOrderChanged = false,
     } = change;
@@ -53,9 +53,9 @@ describe('selection runtime', () => {
         runtimeIdsAll: () => [],
         topLevelRanges: () => [],
       },
-      command,
       selectionChanged,
-    } as EditorCommit;
+      tags,
+    } as unknown as EditorCommit;
   };
 
   const createInputController = () =>
@@ -105,8 +105,8 @@ describe('selection runtime', () => {
       shouldExportModelSelectionToDOM(inputController, {
         commit: createChange({
           childrenChanged: true,
-          command: { origin: 'command', type: 'toggle_mark' },
           selectionChanged: false,
+          tags: ['semantic-command'],
         }),
         modelSelection: expandedSelection,
       })
@@ -115,8 +115,8 @@ describe('selection runtime', () => {
       shouldExportModelSelectionToDOM(inputController, {
         commit: createChange({
           childrenChanged: true,
-          command: { origin: 'command', type: 'toggle_mark' },
           selectionChanged: false,
+          tags: ['semantic-command'],
         }),
         modelSelection: collapsedSelection,
       })
@@ -408,8 +408,8 @@ describe('selection runtime', () => {
     listener?.(
       createChange({
         childrenChanged: true,
-        command: { origin: 'command', type: 'toggle_mark' },
         selectionChanged: false,
+        tags: ['semantic-command'],
       })
     );
     expect(syncCalls).toBe(0);
@@ -452,8 +452,8 @@ describe('selection runtime', () => {
     listener?.(
       createChange({
         childrenChanged: true,
-        command: { origin: 'command', type: 'toggle_mark' },
         selectionChanged: false,
+        tags: ['semantic-command'],
       })
     );
 
@@ -627,8 +627,8 @@ describe('selection runtime', () => {
     listener?.(
       createChange({
         childrenChanged: true,
-        command: { origin: 'command', type: 'history_undo' },
         selectionChanged: true,
+        tags: ['semantic-command'],
       })
     );
 

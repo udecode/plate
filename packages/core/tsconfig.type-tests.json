@@ -1,5 +1,13 @@
 {
   "extends": "../../tooling/config/tsconfig.type-tests.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "outDir": "../../.tmp/core-type-contract-declarations",
+    "rootDir": "../.."
+  },
   "include": [
     "type-tests/**/*.ts",
     "type-tests/**/*.tsx",

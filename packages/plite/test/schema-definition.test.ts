@@ -4,11 +4,13 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   defineEditorSchema,
+  defineEditorExtension,
   defineExtensionSlot,
   definePropertyPolicy,
-  element,
+  type EditorSchemaContribution,
   type EditorExtension,
   type EditorExtensionInput,
+  type PropertyPolicy,
   property,
   schema,
   type SchemaContentRule,
@@ -40,7 +42,6 @@ describe('schema declaration builders', () => {
     assert.equal(Object.isFrozen(Width), true);
     assert.deepEqual(Width, {
       default: 12,
-      equality: 'structural',
       kind: 'number',
       omitDefault: true,
       policy: Positive,
@@ -63,18 +64,53 @@ describe('schema declaration builders', () => {
     assert.throws(
       () =>
         property.json({
-          default: () => 'not JSON',
+          default: (() => 'not JSON') as never,
         }),
       /must be JSON data/
     );
     assert.throws(
-      () => property.json<Date>({ default: new Date(0) }),
+      () => property.json({ default: new Date(0) as never }),
       /plain JSON objects/
     );
   });
 
+  it('accepts only property policies created by definePropertyPolicy', () => {
+    const forged = {
+      id: 'forged',
+      validate: (value: unknown): value is string => typeof value === 'string',
+      version: 1,
+    };
+
+    assert.throws(
+      () => property.typed(forged as never),
+      /definePropertyPolicy/
+    );
+    assert.throws(
+      () => property.string({ policy: forged as never }),
+      /definePropertyPolicy/
+    );
+    assert.throws(
+      () =>
+        property.set({
+          kind: 'json',
+          omitDefault: false,
+          policy: forged,
+        } as never),
+      /definePropertyPolicy/
+    );
+  });
+
   it('canonicalizes set defaults with structural item identity', () => {
-    const Comments = property.set(property.json<{ id: string }>(), {
+    const Comment = definePropertyPolicy<{ id: string }>({
+      id: 'comment',
+      validate: (value): value is { id: string } =>
+        typeof value === 'object' &&
+        value !== null &&
+        'id' in value &&
+        typeof value.id === 'string',
+      version: 1,
+    });
+    const Comments = property.set(property.typed(Comment), {
       default: [{ id: 'b' }, { id: 'a' }, { id: 'b' }],
       omitDefault: true,
     });
@@ -82,7 +118,6 @@ describe('schema declaration builders', () => {
     assert.deepEqual(Comments.default, [{ id: 'a' }, { id: 'b' }]);
     assert.equal(Object.isFrozen(Comments.default), true);
     assert.equal(Object.isFrozen(Comments.default?.[0]), true);
-    assert.equal(Comments.equality, 'structural');
     const Nested = property.set(property.set(property.string()), {
       default: [
         ['b', 'a'],
@@ -109,7 +144,7 @@ describe('schema declaration builders', () => {
     assert.deepEqual(JSON.parse(JSON.stringify(placement)), {
       kind: 'and',
       targets: [
-        { kind: 'types', types: ['paragraph', 'quote'] },
+        { kind: 'types', types: ['quote', 'paragraph', 'paragraph'] },
         { kind: 'root', root: null },
         { kind: 'parent', target: { kind: 'type', type: 'section' } },
         { kind: 'not', target: { group: 'readOnly', kind: 'group' } },
@@ -133,7 +168,7 @@ describe('schema declaration builders', () => {
     });
     const Suggestions = schema.textProperty(
       schema.key.prefix('suggestion_'),
-      property.json<{ id: string }>()
+      property.json()
     );
 
     assert.deepEqual(Bold, {
@@ -144,7 +179,6 @@ describe('schema declaration builders', () => {
       target: { group: 'textBlock', kind: 'group' },
       typeChange: 'drop',
       value: {
-        equality: 'structural',
         kind: 'boolean',
         omitDefault: false,
       },
@@ -158,26 +192,30 @@ describe('schema declaration builders', () => {
     assert.equal(Object.isFrozen(Suggestions.key), true);
   });
 
-  it('freezes element shape, owned properties, and slice policy', () => {
+  it('freezes raw element shape, content roots, owned properties, and slice policy during normalization', () => {
     const groups = ['inline'];
     const slice = { preserveContext: true };
     const properties = { alt: property.string({ default: '' }) };
-    const Image = element({
+    const image: SchemaElement = {
       content: schema.content.text({ max: 1, min: 1 }),
-      contentRoot: schema.contentRoot({
-        content: schema.content.group('block'),
-        slot: 'body',
-      }),
+      contentRoots: { body: schema.content.group('block') },
       groups,
       inline: true,
       properties,
       slice,
-      void: 'inline',
+    };
+    const ImageSchema = defineEditorSchema({
+      elements: { image },
+      id: 'image-shape',
+      root: { content: schema.content.type('image') },
+      unknown: 'reject',
+      version: 1,
     });
 
     groups.push('mutated');
     slice.preserveContext = false;
     properties.alt = property.string({ default: 'mutated' });
+    const Image = ImageSchema.schema.elements.image!;
 
     assert.deepEqual(Image.groups, ['inline']);
     assert.deepEqual(Image.slice, { preserveContext: true });
@@ -186,18 +224,19 @@ describe('schema declaration builders', () => {
     assert.equal(Object.isFrozen(Image.groups), true);
     assert.equal(Object.isFrozen(Image.properties), true);
     assert.equal(Object.isFrozen(Image.slice), true);
-    assert.equal(Object.isFrozen(Image.contentRoot), true);
+    assert.equal(Object.isFrozen(Image.contentRoots), true);
+    assert.equal(Object.isFrozen(Image.contentRoots?.body), true);
   });
 
   it('packages one deeply frozen schema extension and preserves literal types', () => {
-    const Paragraph = element({
+    const Paragraph = {
       content: schema.content.text({ min: 1 }),
       groups: ['articleBlock'],
-    });
+    } as const;
     const ArticleSchema = defineEditorSchema({
       elements: { paragraph: Paragraph },
       groups: {
-        articleBlock: schema.group({ extends: ['block'] }),
+        articleBlock: { extends: ['block'] } as const,
       },
       id: 'article',
       properties: [
@@ -205,14 +244,15 @@ describe('schema declaration builders', () => {
           target: target.group('textBlock'),
         }),
       ],
-      root: schema.root({
+      root: {
         content: schema.content.group('articleBlock', { min: 1 }),
-      }),
+      } as const,
       roots: {
-        comments: schema.root({
+        comments: {
           content: schema.content.type('paragraph'),
-        }),
+        } as const,
       },
+      unknown: 'reject',
       version: 1,
     });
     const extension: EditorExtension = ArticleSchema;
@@ -243,19 +283,25 @@ describe('schema declaration builders', () => {
   });
 
   it('rejects public main roots and malformed cardinality', () => {
-    const Paragraph = element({});
-    const root = schema.root({ content: schema.content.type('paragraph') });
+    const Paragraph = { content: schema.content.text() } as const;
+    const root = { content: schema.content.type('paragraph') } as const;
     const invalidMain = {
       elements: { paragraph: Paragraph },
       id: 'invalid-main',
       root,
       roots: { main: root },
+      unknown: 'reject',
       version: 1,
     } as const;
 
     assert.throws(
-      // @ts-expect-error the primary root belongs in the singular root field
-      () => defineEditorSchema(invalidMain),
+      () =>
+        createEditor({
+          extensions: [
+            // @ts-expect-error the primary root belongs in the singular root field
+            defineEditorSchema(invalidMain),
+          ],
+        }),
       /singular root field/
     );
     assert.throws(
@@ -275,16 +321,21 @@ describe('schema declaration builders', () => {
       ],
       { min: 1 }
     );
-    const contribution = schema.contribution({
+    const contribution = {
       elements: {
-        paragraph: element({ content: schema.content.text({ min: 1 }) }),
+        paragraph: { content: schema.content.text({ min: 1 }) },
       },
       properties: [schema.textProperty('bold', property.boolean())],
-    });
-    const extension: EditorExtension = {
+    } as const;
+    const extension: EditorExtension = defineEditorExtension({
       name: 'paragraph-feature',
       schema: contribution,
-    };
+    });
+    const canonicalContribution = extension.schema;
+
+    assert.ok(
+      canonicalContribution && typeof canonicalContribution !== 'function'
+    );
 
     assert.deepEqual(content, {
       allowed: {
@@ -302,28 +353,28 @@ describe('schema declaration builders', () => {
       },
       min: 1,
     });
-    assert.equal(extension.schema, contribution);
+    assert.notEqual(canonicalContribution, contribution);
     assert.equal(Object.isFrozen(content.allowed), true);
     assert.equal(
       content.allowed.kind === 'all' && Object.isFrozen(content.allowed.rules),
       true
     );
-    assert.equal(Object.isFrozen(contribution), true);
-    assert.equal(Object.isFrozen(contribution.elements), true);
-    assert.equal(Object.isFrozen(contribution.properties), true);
+    assert.equal(Object.isFrozen(canonicalContribution), true);
+    assert.equal(Object.isFrozen(canonicalContribution.elements), true);
+    assert.equal(Object.isFrozen(canonicalContribution.properties), true);
   });
 
   it('preserves unknown elements only when the compiled grammar admits them', () => {
     const OpenSchema = defineEditorSchema({
       elements: {
-        container: element({
-          content: schema.content.not(schema.content.text()),
-        }),
+        container: {
+          content: schema.content.open(),
+        } as const,
       },
       id: 'open-elements',
-      root: schema.root({
+      root: {
         content: schema.content.not(schema.content.text()),
-      }),
+      } as const,
       unknown: 'preserve',
       version: 1,
     });
@@ -347,11 +398,13 @@ describe('schema declaration builders', () => {
         createEditor({
           extensions: [
             defineEditorSchema({
-              elements: { container: element({}) },
+              elements: {
+                container: { content: schema.content.text() },
+              },
               id: 'closed-content',
-              root: schema.root({
+              root: {
                 content: schema.content.type('container'),
-              }),
+              } as const,
               unknown: 'preserve',
               version: 1,
             }),
@@ -379,6 +432,7 @@ describe('schema declaration builders', () => {
       elements,
       id: 'raw-structural-input',
       root: { content: rawContent },
+      unknown: 'reject',
       version: 1,
     });
 
@@ -412,7 +466,8 @@ describe('schema declaration builders', () => {
     const FrozenSchema = defineEditorSchema({
       elements: { paragraph: frozenElement },
       id: 'frozen-declaration-traversal',
-      root: schema.root({ content: schema.content.type('paragraph') }),
+      root: { content: schema.content.type('paragraph') } as const,
+      unknown: 'reject',
       version: 1,
     });
 
@@ -435,7 +490,8 @@ describe('schema declaration builders', () => {
         defineEditorSchema({
           elements: { paragraph: accessor as SchemaElement },
           id: 'frozen-accessor',
-          root: schema.root({ content: schema.content.type('paragraph') }),
+          root: { content: schema.content.type('paragraph') } as const,
+          unknown: 'reject',
           version: 1,
         }),
       /cannot contain property accessors/
@@ -452,7 +508,8 @@ describe('schema declaration builders', () => {
         defineEditorSchema({
           elements: { paragraph: nonPlain as unknown as SchemaElement },
           id: 'frozen-nonplain',
-          root: schema.root({ content: schema.content.type('paragraph') }),
+          root: { content: schema.content.type('paragraph') } as const,
+          unknown: 'reject',
           version: 1,
         }),
       /plain declaration objects/
@@ -470,7 +527,8 @@ describe('schema declaration builders', () => {
         defineEditorSchema({
           elements: { paragraph: cyclic as unknown as SchemaElement },
           id: 'frozen-cycle',
-          root: schema.root({ content: schema.content.type('paragraph') }),
+          root: { content: schema.content.type('paragraph') } as const,
+          unknown: 'reject',
           version: 1,
         }),
       /cannot be cyclic/
@@ -478,10 +536,30 @@ describe('schema declaration builders', () => {
   });
 
   typeOnly(() => {
-    const root = schema.root({ content: schema.content.text() });
+    const forgedPolicyInput = {
+      id: 'forged',
+      validate: (value: unknown): value is string => typeof value === 'string',
+      version: 1,
+    };
+    // @ts-expect-error property policies are tokens created by definePropertyPolicy
+    const forgedPolicy: PropertyPolicy<string> = forgedPolicyInput;
+    const contribution: EditorSchemaContribution = {
+      elements: { paragraph: { content: schema.content.text() } },
+    };
+    const invalidContribution: EditorSchemaContribution = {
+      elements: { paragraph: { content: schema.content.text() } },
+      // @ts-expect-error partial contributions cannot claim complete identity
+      id: 'partial',
+    };
+    const invalidRootContribution: EditorSchemaContribution = {
+      // @ts-expect-error only the complete schema definition owns the primary root
+      root: { content: schema.content.text() },
+    };
 
-    // @ts-expect-error partial contributions cannot name the primary root
-    schema.contribution({ roots: { main: root } });
+    void contribution;
+    void forgedPolicy;
+    void invalidContribution;
+    void invalidRootContribution;
     definePropertyPolicy<{ id: string }>({
       id: 'unsafe-property-access',
       validate: (value): value is { id: string } => {
@@ -502,9 +580,11 @@ describe('schema declaration builders', () => {
     schema.elementProperty('indent', property.number(), { split: 'preserve' });
     // @ts-expect-error content is grammar vocabulary, not a placement target
     target.content('paragraph');
-    element({
+    const invalidElement: SchemaElement = {
       // @ts-expect-error element construction is compiled from schema defaults
       create: () => ({ children: [{ text: '' }], type: 'paragraph' }),
-    });
+    };
+
+    void invalidElement;
   });
 });

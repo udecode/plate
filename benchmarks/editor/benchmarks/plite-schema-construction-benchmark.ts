@@ -2,7 +2,11 @@ import {
   createEditor,
   defineEditorExtension,
   ElementApi,
+  property,
+  schema,
+  target,
 } from '../../../packages/plite/src/index';
+import { getCompiledEditorSchema } from '../../../packages/plite/src/internal/index';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const iterationsArgument = process.argv.find((argument) =>
@@ -22,41 +26,56 @@ if (!Number.isInteger(iterations) || iterations < 1) {
 const percentile = (values: readonly number[], ratio: number) =>
   values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
 
-const schema = defineEditorExtension({
-  elements: [
-    {
-      content: { allowed: 'text', default: 'text', min: 1 },
-      create: () => ({ type: 'paragraph', children: [{ text: '' }] }),
-      groups: ['block'],
-      type: 'paragraph',
+const schemaExtension = defineEditorExtension({
+  name: 'schema-construction-benchmark',
+  schema: {
+    elements: {
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+      section: {
+        content: schema.content.group('block', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
     },
-    {
-      content: {
-        allowed: { group: 'block' },
+    id: 'schema-construction-benchmark',
+    properties: [
+      schema.textProperty('bold', property.boolean(), {
+        target: target.group('block'),
+      }),
+    ],
+    root: {
+      content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
-      },
-      create: () => ({ type: 'section', children: [] }),
-      groups: ['block'],
-      type: 'section',
+      }),
     },
-  ],
-  name: 'schema-construction-benchmark',
-  roots: {
-    main: {
-      allowed: { group: 'block' },
-      default: { type: 'paragraph' },
-      min: 1,
-    },
+    unknown: 'reject',
+    version: 1,
   },
-  textProperties: [{ key: 'bold', kind: 'boolean' }],
 });
+
+const sentinelEditor = createEditor({ extensions: [schemaExtension] });
+const sentinelSchema = getCompiledEditorSchema(sentinelEditor);
+
+if (
+  sentinelSchema?.identity.id !== 'schema-construction-benchmark' ||
+  !sentinelSchema.elements.byType.has('paragraph') ||
+  !sentinelSchema.elements.byType.has('section') ||
+  sentinelSchema.properties.byId.size !== 1
+) {
+  throw new Error(
+    'Schema construction benchmark must install its canonical compiled schema before timing.'
+  );
+}
 
 const cohorts = [100, 1000, 10_000, 50_000] as const;
 const rows = cohorts.map((blocks) => {
   const target = Math.floor(blocks / 2);
   const editor = createEditor({
-    extensions: [schema],
+    extensions: [schemaExtension],
     initialValue: [
       {
         type: 'section',
@@ -147,28 +166,42 @@ if (strict && (maximumChangedSpan >= 64 || !boundaryIdentityPreserved)) {
 const result = {
   benchmark: 'plite-schema-construction',
   boundaryIdentityPreserved,
+  compiledSchema: {
+    active: true,
+    elementTypes: sentinelSchema.elements.byType.size,
+    id: sentinelSchema.identity.id,
+    properties: sentinelSchema.properties.byId.size,
+  },
   generatedAt: new Date().toISOString(),
+  immutablePublicationDiagnostic: {
+    label: 'immutable-publication diagnostic',
+    rows,
+    sizeRatio,
+    scope:
+      'Sparse text insertion publishes immutable ancestor arrays. These timings expose DocumentChange publication width and are not schema-construction latency.',
+  },
   maximumChangedSpan,
-  rows,
-  sizeRatio,
   thresholdPolicy: {
     boundaryIdentityRequired: true,
     maximumChangedSpanExclusive: 64,
     timingScope:
       'Whole editor publication is recorded but not gated because immutable plain-JSON ancestor reconstruction scales with ancestor width.',
   },
-  version: 1,
+  version: 2,
 };
 const output = `${JSON.stringify(result, null, 2)}\n`;
 
 process.stdout.write(
-  `METRIC plite_schema_construction_size_ratio=${sizeRatio}\n`
+  `METRIC plite_schema_construction_immutable_publication_diagnostic_ratio=${sizeRatio}\n`
 );
 process.stdout.write(
   `METRIC plite_schema_construction_max_changed_span=${maximumChangedSpan}\n`
 );
 process.stdout.write(
   `METRIC plite_schema_construction_boundary_identity_preserved=${boundaryIdentityPreserved ? 1 : 0}\n`
+);
+process.stdout.write(
+  'METRIC plite_schema_construction_compiled_schema_active=1\n'
 );
 
 if (outputArgument) {

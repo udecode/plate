@@ -34,7 +34,7 @@ describe('insertExcalidraw', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseExcalidrawPlugin.configure({
-          node: { type: 'custom-excalidraw' },
+          type: 'custom-excalidraw',
         }),
       ],
       selection: {

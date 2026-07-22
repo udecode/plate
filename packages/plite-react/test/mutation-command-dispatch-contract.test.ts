@@ -13,30 +13,44 @@ const createCommandProbeEditor = () => {
   const editor = createReactEditor({
     extensions: [
       defineEditorExtension({
-        commands: [
-          editorCommands.delete.handle(({ command, state }) => {
-            seen.push(`${command.type}:${command.direction}:${command.unit}`);
+        commands: ({ handle }) => [
+          handle(editorCommands.delete, ({ input, state }) => {
+            seen.push(
+              `${editorCommands.delete.id}:${input.direction}:${input.unit}`
+            );
             return state.transaction(() => {});
           }),
-          editorCommands.deleteFragment.handle(({ command, state }) => {
-            seen.push(`${command.type}:${command.direction}`);
+          handle(editorCommands.deleteFragment, ({ input, state }) => {
+            seen.push(`${editorCommands.deleteFragment.id}:${input.direction}`);
             return state.transaction(() => {});
           }),
-          editorCommands.insertBreak.handle(({ command, state }) => {
-            seen.push(command.type);
+          handle(editorCommands.insertBreak, ({ state }) => {
+            seen.push(editorCommands.insertBreak.id);
             return state.transaction(() => {});
           }),
-          editorCommands.insertSoftBreak.handle(({ command, state }) => {
-            seen.push(command.type);
+          handle(editorCommands.insertSoftBreak, ({ state }) => {
+            seen.push(editorCommands.insertSoftBreak.id);
             return state.transaction(() => {});
           }),
-          editorCommands.insertNodes.handle(({ command, state }) => {
-            seen.push(command.type);
+          handle(editorCommands.insertNodes, ({ state }) => {
+            seen.push(editorCommands.insertNodes.id);
             return state.transaction(() => {});
           }),
-          editorCommands.insertText.handle(({ command, state }) => {
-            seen.push(`${command.type}:${command.text}`);
-            return state.transaction(() => {});
+          handle(editorCommands.insertText, ({ input }) => {
+            seen.push(`${editorCommands.insertText.id}:${input.text}`);
+            return false;
+          }),
+          handle(editorCommands.select, () => {
+            seen.push(editorCommands.select.id);
+            return false;
+          }),
+          handle(editorCommands.collapse, () => {
+            seen.push(editorCommands.collapse.id);
+            return false;
+          }),
+          handle(editorCommands.move, () => {
+            seen.push(editorCommands.move.id);
+            return false;
           }),
         ],
         name: 'react-host-command-probe',
@@ -83,11 +97,41 @@ test('React user actions dispatch through semantic editor commands', () => {
   });
 
   expect(seen).toEqual([
-    'delete:backward:word',
-    'insert_break',
-    'insert_soft_break',
-    'insert_nodes',
-    'insert_text:x',
-    'delete_fragment:forward',
+    'content.delete:backward:word',
+    'break.insert',
+    'break.insertSoft',
+    'node.insert',
+    'text.insert:x',
+    'fragment.delete:forward',
+  ]);
+  expect(editor.read.lastCommit()?.tags).toContain('semantic-command');
+});
+
+test('React selection actions dispatch through semantic editor commands', () => {
+  const { editor, seen } = createCommandProbeEditor();
+
+  applyEditableCommand({
+    command: {
+      kind: 'select',
+      selection: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 1 },
+      },
+    },
+    editor,
+  });
+  applyEditableCommand({
+    command: { axis: 'horizontal', kind: 'move-selection' },
+    editor,
+  });
+  applyEditableCommand({
+    command: { axis: 'horizontal', kind: 'move-selection', reverse: true },
+    editor,
+  });
+
+  expect(seen).toEqual([
+    editorCommands.select.id,
+    editorCommands.collapse.id,
+    editorCommands.move.id,
   ]);
 });

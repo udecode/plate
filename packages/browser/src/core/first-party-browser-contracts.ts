@@ -5,7 +5,7 @@ import {
 } from './feature-contracts';
 
 /** First-party browser behavior row without its owning feature label. */
-export type PliteBrowserOperationFamilyContract = Omit<
+export type PliteBrowserIntentFamilyContract = Omit<
   PliteBrowserFeatureContractRow,
   'feature'
 >;
@@ -19,13 +19,13 @@ export type PliteBrowserFirstPartyParityFamily = {
 
 /** Summary returned after first-party browser contract validation. */
 export type PliteBrowserFirstPartyParityContractResult = {
-  operationFamilyCount: number;
+  intentFamilyCount: number;
   parityFamilies: string[];
   registryRowCount: number;
 };
 
 /** Canonical first-party browser behavior families Plite must preserve. */
-export const PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS = [
+export const PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS = [
   {
     assertions: [
       'model selection lands on the next inline void from both sides',
@@ -117,7 +117,7 @@ export const PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS = [
   },
   {
     assertions: [
-      'annotation metadata updates without replacing the bookmark',
+      'annotation metadata updates without replacing the anchor',
       'inline annotation payload changes render',
       'annotation sidebar remains attached to the same id',
     ],
@@ -126,11 +126,11 @@ export const PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS = [
   },
   {
     assertions: [
-      'annotation bookmark rebase keeps inline projection attached',
+      'annotation anchor rebase keeps inline projection attached',
       'annotation sidebar range follows inserted content',
       'annotation widget remains visible after rebase',
     ],
-    family: 'overlay-annotation-bookmark-rebase',
+    family: 'overlay-annotation-anchor-rebase',
     routes: ['comment-mode', 'persistent-annotation-anchors'],
   },
   {
@@ -272,7 +272,7 @@ export const PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS = [
     family: 'ime-composition-undo',
     routes: ['richtext'],
   },
-] satisfies readonly PliteBrowserOperationFamilyContract[];
+] satisfies readonly PliteBrowserIntentFamilyContract[];
 
 /** Focused parity families that compare the same invariant across routes. */
 export const PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES = [
@@ -319,7 +319,7 @@ export const PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES = [
 ] satisfies readonly PliteBrowserFirstPartyParityFamily[];
 
 const rowsByFamily = (families: readonly string[]) =>
-  PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS.filter((contract) =>
+  PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS.filter((contract) =>
     families.includes(contract.family)
   );
 
@@ -360,7 +360,7 @@ export const PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
       feature: 'annotations',
       rows: rowsByFamily([
         'overlay-annotation-metadata-only',
-        'overlay-annotation-bookmark-rebase',
+        'overlay-annotation-anchor-rebase',
         'overlay-widget-dirty-id',
         'overlay-mixed-update',
       ]),
@@ -397,14 +397,14 @@ export const assertPliteBrowserFirstPartyParityContracts =
 
     if (
       registry.rows.length !==
-      PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS.length
+      PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS.length
     ) {
       throw new Error(
         'Feature browser contract registry is missing stress rows.'
       );
     }
 
-    for (const contract of PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS) {
+    for (const contract of PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS) {
       const row = registry.rowByFamily.get(contract.family);
 
       if (!row) {
@@ -446,8 +446,8 @@ export const assertPliteBrowserFirstPartyParityContracts =
     }
 
     return {
-      operationFamilyCount:
-        PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS.length,
+      intentFamilyCount:
+        PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS.length,
       parityFamilies: PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES.map(
         (family) => family.family
       ),

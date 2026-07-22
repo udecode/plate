@@ -92,6 +92,33 @@ const assertUndoRedoRoundTrip = (
 };
 
 describe('plite-history seeded soak contract', () => {
+  it('queues remote bursts without eagerly walking deep history', () => {
+    const editor = createEditor({
+      extensions: [history({ maxDepth: 1000 })],
+      initialValue: [paragraph('body')],
+    });
+
+    for (let index = 0; index < 1000; index++) {
+      editor.update((tx) => {
+        tx.history.newBatch();
+        tx.text.insert('l', { at: { offset: 4 + index, path: [0, 0] } });
+      });
+    }
+
+    for (let index = 0; index < 1000; index++) {
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.text.insert('r', { at: { offset: 0, path: [0, 0] } });
+      });
+    }
+
+    editor.update((tx) => tx.history.undo());
+
+    assert.equal(
+      editor.read.text.string([]),
+      `${'r'.repeat(1000)}body${'l'.repeat(999)}`
+    );
+  });
+
   it('preserves tree, selection, and stack invariants across mixed events', {
     timeout: 30_000,
   }, () => {

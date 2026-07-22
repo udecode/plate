@@ -4,7 +4,6 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   defineEditorSchema,
-  element,
   ElementApi,
   property,
   schema,
@@ -13,15 +12,15 @@ import {
 
 const NestedTargetSchema = defineEditorSchema({
   elements: {
-    paragraph: element({
+    paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
-    }),
-    section: element({
+    } as const,
+    section: {
       content: schema.content.type('paragraph', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-    }),
+    } as const,
   },
   id: 'nested-target-runtime',
   properties: [
@@ -33,12 +32,13 @@ const NestedTargetSchema = defineEditorSchema({
       ),
     }),
   ],
-  root: schema.root({
+  root: {
     content: schema.content.type('section', {
       default: { type: 'section' },
       min: 1,
     }),
-  }),
+  } as const,
+  unknown: 'reject',
   version: 1,
 });
 

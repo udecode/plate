@@ -35,10 +35,9 @@ describe('BaseIndentPlugin', () => {
 
     expect(editor.plugin(BaseIndentPlugin).getOptions()).toEqual({
       offset: 24,
-      targetPluginKeys: [KEYS.p],
       unit: 'px',
     });
-    expect(plugin.inject.targetPlugins).toEqual([KEYS.p]);
+    expect(plugin.config.targetPluginKeys).toEqual([KEYS.p]);
     expect(nodeProps.nodeKey).toBe('indent');
     expect(nodeProps.styleKey).toBe('marginLeft');
     expect(
@@ -102,19 +101,18 @@ describe('BaseIndentPlugin', () => {
     ]);
   });
 
-  it('uses targetPluginKeys for both model validation and injection', () => {
+  it('uses configured targets for both model validation and injection', () => {
     const QuotePlugin = createBasePlugin({
       key: 'quote',
-      node: {
+      schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          groups: ['block'],
         },
-        type: 'callout',
       },
+      type: 'callout',
     });
     const IndentQuotePlugin = BaseIndentPlugin.configure({
-      options: { targetPluginKeys: ['quote'] },
+      config: { targetPluginKeys: ['quote'] },
     });
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, QuotePlugin, IndentQuotePlugin],
@@ -127,9 +125,9 @@ describe('BaseIndentPlugin', () => {
       ],
     });
 
-    expect(editor.getPlugin(BaseIndentPlugin).inject.targetPlugins).toEqual([
-      'quote',
-    ]);
+    expect(
+      editor.getPlugin(BaseIndentPlugin).config.targetPluginKeys
+    ).toEqual(['quote']);
     expect(editor.read.children()[0]).toMatchObject({
       indent: 1,
       type: 'callout',

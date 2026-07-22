@@ -157,8 +157,8 @@ Named exceptions:
 - Do not extract editor-locked helpers just to placate TypeScript.
 - Do not create new public top-level files when `internal/` is enough.
 - Do not treat `transformProps` like a universal replacement for
-  `node.component`, `render`, or `useHooks`. Use it when the real job is prop
-  augmentation.
+  `render.node`, wrapper plugins, or `useHooks`. Use it when the real job is
+  prop augmentation.
 - Do not trust the loudest old plugin file over core APIs and type tests.
 
 ## Key Patterns

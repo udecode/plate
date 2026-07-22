@@ -32,11 +32,15 @@ const TestAlignPlugin = createBasePlugin({
 });
 const TestBoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 const TestItalicPlugin = createBasePlugin({
   key: 'italic',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 const getTestTablePlugins = (options?: Partial<TableConfig['options']>) => [

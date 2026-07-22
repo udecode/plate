@@ -3,11 +3,12 @@
 import * as React from 'react';
 
 import {
-  type DiffOperation,
+  type DiffIntent,
   type DiffUpdate,
   computeDiff,
   createExcludeDiffFragmentExtension,
 } from '@platejs/diff';
+import { property, schema } from '@platejs/plite';
 import { cloneDeep } from 'lodash';
 import { type Value, createBasePlugin, KEYS } from 'platejs';
 import {
@@ -32,15 +33,20 @@ import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-
 
 const InlinePlugin = createPlatePlugin({
   key: 'inline',
-  node: { isElement: true, isInline: true },
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
 });
 
 const InlineVoidPlugin = createPlatePlugin({
   key: 'inline-void',
-  node: { isElement: true, isInline: true, isVoid: true },
+  schema: { element: { inline: true, void: 'inline' } },
 });
 
-const diffOperationColors: Record<DiffOperation['type'], string> = {
+const diffIntentColors: Record<DiffIntent['type'], string> = {
   delete: 'bg-red-200',
   insert: 'bg-green-200',
   update: 'bg-blue-200',
@@ -116,7 +122,9 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 const DiffPlugin = toPlatePlugin(
   createBasePlugin({
     key: 'diff',
-    node: { isLeaf: true },
+    schema: {
+      mark: property.boolean({ default: false, omitDefault: true }),
+    },
   }).extendExtension(createExcludeDiffFragmentExtension()),
   {
     render: {
@@ -126,7 +134,7 @@ const DiffPlugin = toPlatePlugin(
         ({ children, editor, element }) => {
           if (!element.diff) return children;
 
-          const diffOperation = element.diffOperation as DiffOperation;
+          const diffIntent = element.diffIntent as DiffIntent;
 
           const label = (
             {
@@ -134,7 +142,7 @@ const DiffPlugin = toPlatePlugin(
               insert: 'insertion',
               update: 'update',
             } as const
-          )[diffOperation.type];
+          )[diffIntent.type];
 
           const Component = editor.read.schema.isInline(element)
             ? 'span'
@@ -142,10 +150,10 @@ const DiffPlugin = toPlatePlugin(
 
           return (
             <Component
-              className={diffOperationColors[diffOperation.type]}
+              className={diffIntentColors[diffIntent.type]}
               title={
-                diffOperation.type === 'update'
-                  ? describeUpdate(diffOperation)
+                diffIntent.type === 'update'
+                  ? describeUpdate(diffIntent)
                   : undefined
               }
               aria-label={label}
@@ -159,19 +167,17 @@ const DiffPlugin = toPlatePlugin(
 );
 
 function DiffLeaf({ children, ...props }: PlateLeafProps) {
-  const diffOperation = props.leaf.diffOperation as DiffOperation;
+  const diffIntent = props.leaf.diffIntent as DiffIntent;
 
   return (
     <PlateLeaf
       {...props}
       // as={Component}
-      className={diffOperationColors[diffOperation.type]}
+      className={diffIntentColors[diffIntent.type]}
       attributes={{
         ...props.attributes,
         title:
-          diffOperation.type === 'update'
-            ? describeUpdate(diffOperation)
-            : undefined,
+          diffIntent.type === 'update' ? describeUpdate(diffIntent) : undefined,
       }}
     >
       {children}
@@ -214,8 +220,8 @@ export const createVersionSnapshot = (value: Value): Value => cloneDeep(value);
 
 const basePlugins = [
   ...BasicMarksKit,
-  InlinePlugin.withComponent(InlineElement),
-  InlineVoidPlugin.withComponent(InlineVoidElement),
+  InlinePlugin.extend({ render: { node: InlineElement } }),
+  InlineVoidPlugin.extend({ render: { node: InlineVoidElement } }),
 ];
 
 const diffPlugins = [...basePlugins, DiffPlugin];

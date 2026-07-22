@@ -20,9 +20,14 @@ describe('BaseMentionPlugin', () => {
     const inputPlugin = editor.getPlugin(BaseMentionInputPlugin);
 
     expect(inputPlugin.key).toBe('mentionInput');
-    expect(inputPlugin.node.type).toBe(NODES.mentionInput);
-    expect(plugin.node).toMatchObject({
-      element: { inline: true, void: 'markable-inline' },
+    expect(inputPlugin.type).toBe(NODES.mentionInput);
+    expect(
+      editor.read.schema.element(BaseMentionPlugin)?.behavior
+    ).toMatchObject({
+      inline: true,
+      markableVoid: true,
+      void: true,
+      voidKind: 'markable-inline',
     });
     expect(plugin.options.trigger).toBe('@');
     expect(plugin.options.createComboboxInput?.('@')).toEqual({
@@ -30,8 +35,12 @@ describe('BaseMentionPlugin', () => {
       trigger: '@',
       type: NODES.mentionInput,
     });
-    expect(inputPlugin.node).toMatchObject({
-      element: { inline: true, void: 'inline' },
+    expect(
+      editor.read.schema.element(BaseMentionInputPlugin)?.behavior
+    ).toMatchObject({
+      inline: true,
+      void: true,
+      voidKind: 'inline',
     });
 
     editor.update.mention.insert({ key: 'u1', value: 'Ada' });

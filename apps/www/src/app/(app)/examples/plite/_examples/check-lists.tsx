@@ -1,6 +1,7 @@
 import type { ChangeEvent } from 'react';
 import {
   defineEditorExtension,
+  editorCommands,
   NodeApi,
   PointApi,
   RangeApi,
@@ -87,36 +88,39 @@ const CheckListsExample = () => {
 const checklist = () =>
   defineEditorExtension<CustomEditor>()({
     name: 'checklists',
-    transforms: {
-      deleteBackward({ next, tx }) {
-        const selection = tx.selection();
+    commands: ({ handle }) => [
+      handle(editorCommands.delete, ({ input, state }) => {
+        if (input.direction !== 'backward') return false;
+
+        const selection = state.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
-          const match = tx.nodes.find({
+          const match = state.nodes.find({
             match: (n) => NodeApi.isElement(n) && n.type === 'check-list-item',
           });
 
           if (match) {
             const [, path] = match;
-            const start = tx.points.start(path);
+            const start = state.points.start(path);
 
             if (start && PointApi.equals(selection.anchor, start)) {
-              tx.nodes.set(
-                { type: 'paragraph' } satisfies Partial<PliteElement>,
-                {
-                  match: (n) =>
-                    NodeApi.isElement(n) && n.type === 'check-list-item',
-                }
-              );
-              tx.selection.set(start);
-              return true;
+              return state.transaction((tx) => {
+                tx.nodes.set(
+                  { type: 'paragraph' } satisfies Partial<PliteElement>,
+                  {
+                    match: (n) =>
+                      NodeApi.isElement(n) && n.type === 'check-list-item',
+                  }
+                );
+                tx.selection.set(start);
+              });
             }
           }
         }
 
-        return next();
-      },
-    },
+        return false;
+      }),
+    ],
   });
 
 const renderElement = (

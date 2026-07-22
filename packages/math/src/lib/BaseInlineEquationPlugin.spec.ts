@@ -15,15 +15,11 @@ describe('BaseInlineEquationPlugin', () => {
     };
 
     expect(plugin.key).toBe('inlineEquation');
-    expect(plugin.node.type).toBe(NODES.inlineEquation);
+    expect(plugin.type).toBe(NODES.inlineEquation);
     expect(editor.read.schema.isInline(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
     expect(
-      editor.read.schema.property({
-        key: 'texExpression',
-        placement: 'element',
-        type: NODES.inlineEquation,
-      })?.value.kind
+      editor.read.schema.property(BaseInlineEquationPlugin)?.value.kind
     ).toBe('string');
     expect(editor.getType(KEYS.inlineEquation)).toBe(NODES.inlineEquation);
 

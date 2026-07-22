@@ -5,6 +5,7 @@ import {
   getSnapshot as editorGetSnapshot,
   isEditor as editorIsEditor,
   replace as editorReplace,
+  setEditorChildren,
 } from '@platejs/plite/internal';
 import {
   createEditor,
@@ -13,6 +14,7 @@ import {
   type Element,
   type EditorExtension,
   PathApi,
+  schema,
   SelectionApi,
   TextApi,
 } from '@platejs/plite';
@@ -1392,7 +1394,7 @@ describe('plite normalization contract', () => {
     }
   });
 
-  it('converges malformed mixed-content trees to structural invariants', () => {
+  it('converges malformed inline-content trees to structural invariants', () => {
     const random = (seed: number) => {
       let state = seed;
 
@@ -1477,7 +1479,9 @@ describe('plite normalization contract', () => {
         extensions: [
           {
             ...defineTestSchema(`malformed-fuzz-schema-${seed}`, {
-              empty: {},
+              empty: {
+                content: schema.content.text({ default: 'text', min: 1 }),
+              },
               inline: { inline: true },
               nested: {},
             }),
@@ -1498,6 +1502,7 @@ describe('plite normalization contract', () => {
                   text('c'),
                 ]
               : [
+                  text(''),
                   { type: 'nested', children: [] },
                   text('a'),
                   inline('i'),
@@ -1507,8 +1512,8 @@ describe('plite normalization contract', () => {
         { type: 'empty', children: [] },
       ];
 
-      editor.update((tx) => {
-        tx.value.replace({ children, selection: null });
+      editor.update(() => {
+        setEditorChildren(editor, children);
       });
 
       editor.read.children().forEach((node, index) => {

@@ -30,7 +30,7 @@ const createContextMenuEditor = ({
     api: {
       blockSelection: { add },
     },
-    getPlugin: () => ({ node: { type: 'p' } }),
+    getPlugin: () => ({ type: 'p' }),
     plugin: () => ({
       api: {
         add,
@@ -146,7 +146,7 @@ describe('useBlockSelectable', () => {
           enableContextMenu: true,
           selectedIds: new Set<string>(),
         }),
-        getPlugin: () => ({ node: { type: 'p' } }),
+        getPlugin: () => ({ type: 'p' }),
       } as any;
 
       useElementContextMock.mockReturnValue({

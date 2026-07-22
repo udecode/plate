@@ -13,12 +13,9 @@ describe('BaseFontFamilyPlugin', () => {
     expect(plugin.inject.nodeProps).toMatchObject({
       nodeKey: 'fontFamily',
     });
-    expect(
-      editor.read.schema.property({
-        key: KEYS.fontFamily,
-        placement: 'text',
-      })?.value.kind
-    ).toBe('string');
+    expect(editor.read.schema.property(BaseFontFamilyPlugin)?.value.kind).toBe(
+      'string'
+    );
     expect(
       editor.api.html.deserialize({
         element: '<span style="font-family: Fira Code, monospace">text</span>',

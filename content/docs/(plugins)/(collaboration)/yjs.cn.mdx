@@ -44,11 +44,15 @@ npm install y-webrtc
 
 ### 添加插件
 
+同一房间内的所有节点必须使用相同的命名 schema 谱系。下方显式设置的 `id` 和
+`version` 属于房间协商；递增版本前先迁移房间。
+
 ```tsx
 import { YjsPlugin } from "@platejs/yjs/react";
 import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
+  schema: { id: 'yjs-example', version: 1 },
   plugins: [
     YjsPlugin.configure({
       options: {

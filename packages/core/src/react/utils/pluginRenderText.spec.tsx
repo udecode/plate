@@ -1,5 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 
+import { property } from '@platejs/plite';
 import React from 'react';
 
 import { render } from '@testing-library/react';
@@ -11,19 +12,14 @@ import { pluginRenderText } from './pluginRenderText';
 it('uses a plain render.as fast path for simple text plugins', () => {
   const testPlugin = createBasePlugin({
     key: 'test',
-    node: {
-      isDecoration: false,
-      mark: true,
-      type: 'test',
-    },
-    render: {
-      as: 'strong',
-    },
+    type: 'test',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+    render: { isDecoration: false, as: 'strong' },
   });
   const editor = createPlateEditor({
+    navigationFeedback: false,
     plugins: [testPlugin],
   });
-  editor.runtime.pluginCache.inject.nodeProps = [];
   const renderText = pluginRenderText(editor, testPlugin as any);
   const TestComponent = () =>
     renderText({

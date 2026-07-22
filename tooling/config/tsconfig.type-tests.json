@@ -41,6 +41,9 @@
         "../../packages/plite-layout/src/react.tsx"
       ],
       "@platejs/plite-react": ["../../packages/plite-react/src/index.ts"],
+      "@platejs/plite-react/internal": [
+        "../../packages/plite-react/src/internal/index.ts"
+      ],
       "@platejs/table": ["../../packages/table/src/index.ts"],
       "@platejs/table/react": ["../../packages/table/src/react/index.ts"],
       "@platejs/yjs": ["../../packages/yjs/src/index.ts"],

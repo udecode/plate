@@ -1,9 +1,8 @@
 /** @jsx jsxt */
-import type { Value } from '@platejs/plite';
+import { createEditor, type Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
 import { createBasePlugin, DOMPlugin } from '../../lib';
-import { createBaseEditor } from '../../lib/editor';
 import { ViewPlugin } from '../plugins/ViewPlugin';
 import { createStaticEditor } from './withStatic';
 
@@ -12,7 +11,9 @@ jsxt;
 describe('extendStaticEditor', () => {
   describe('createStaticEditor', () => {
     it('create an editor with static plugins', () => {
-      const editor = createStaticEditor({ id: '1' });
+      const editor = createStaticEditor({
+        id: '1',
+      });
 
       expect(editor.id).toBe('1');
       expect(editor.plugins).toBeDefined();
@@ -175,9 +176,8 @@ describe('extendStaticEditor', () => {
   });
 
   describe('when using an existing editor', () => {
-    it('enhance existing editor with static plugins', () => {
-      const existingEditor = createBaseEditor();
-      existingEditor.id = 'existing';
+    it('enhances a raw editor with static plugins', () => {
+      const existingEditor = createEditor({ id: 'existing' });
 
       const editor = createStaticEditor({
         editor: existingEditor,
@@ -187,9 +187,8 @@ describe('extendStaticEditor', () => {
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
-    it('preserves existing editor id when new id is provided', () => {
-      const existingEditor = createBaseEditor();
-      existingEditor.id = 'old';
+    it('preserves a raw editor id when a new id is provided', () => {
+      const existingEditor = createEditor({ id: 'old' });
 
       const editor = createStaticEditor({
         id: 'new',

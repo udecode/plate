@@ -12,9 +12,9 @@ describe('BaseCaptionPlugin', () => {
     expect(plugin.options).toMatchObject({
       focusEndPath: null,
       focusStartPath: null,
-      query: { allow: [] },
       visibleId: null,
     });
+    expect(plugin.config.targetPluginKeys).toEqual([]);
 
     editor.plugin(BaseCaptionPlugin).setOption('visibleId', 'caption-1');
 

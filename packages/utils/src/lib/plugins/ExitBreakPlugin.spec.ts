@@ -1,4 +1,4 @@
-import { createBasePlugin } from '@platejs/core';
+import { BaseParagraphPlugin, createBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { schema } from '@platejs/plite';
 
@@ -63,32 +63,33 @@ describe('ExitBreakPlugin', () => {
   });
 
   it('exits after the nearest ancestor whose parent accepts a paragraph', () => {
+    const CodeLinePlugin = createBasePlugin({
+      key: 'codeline',
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      type: 'codeline',
+    });
+    const CodeBlockPlugin = createBasePlugin({
+      key: 'codeblock',
+      schema: ({ plugins }) => {
+        const codeLineType = plugins.elementType(CodeLinePlugin);
+
+        return {
+          element: {
+            content: schema.content.type(codeLineType, {
+              default: { type: codeLineType },
+              min: 1,
+            }),
+          },
+        };
+      },
+      type: 'codeblock',
+    });
     const editor = createPlateEditor({
-      plugins: [
-        ExitBreakPlugin,
-        createBasePlugin({
-          key: 'codeblock',
-          node: {
-            element: {
-              content: schema.content.type('codeline', {
-                default: { type: 'codeline' },
-                min: 1,
-              }),
-              groups: ['block'],
-            },
-            type: 'codeblock',
-          },
-        }),
-        createBasePlugin({
-          key: 'codeline',
-          node: {
-            element: {
-              content: schema.content.text({ default: 'text', min: 1 }),
-            },
-            type: 'codeline',
-          },
-        }),
-      ],
+      plugins: [ExitBreakPlugin, CodeBlockPlugin, CodeLinePlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 4, path: [0, 0, 0] },
@@ -114,47 +115,52 @@ describe('ExitBreakPlugin', () => {
   });
 
   it('exits after an outer structure whose grammar rejects paragraphs', () => {
+    const TableCellPlugin = createBasePlugin({
+      key: 'td',
+      schema: ({ plugins }) => ({
+        element: {
+          content: plugins.blockContent({
+            default: { type: plugins.elementType(BaseParagraphPlugin) },
+            min: 1,
+          }),
+        },
+      }),
+      type: 'td',
+    });
+    const TableRowPlugin = createBasePlugin({
+      key: 'tr',
+      schema: ({ plugins }) => {
+        const cellType = plugins.elementType(TableCellPlugin);
+
+        return {
+          element: {
+            content: schema.content.type(cellType, {
+              default: { type: cellType },
+              min: 1,
+            }),
+          },
+        };
+      },
+      type: 'tr',
+    });
+    const TablePlugin = createBasePlugin({
+      key: 'table',
+      schema: ({ plugins }) => {
+        const rowType = plugins.elementType(TableRowPlugin);
+
+        return {
+          element: {
+            content: schema.content.type(rowType, {
+              default: { type: rowType },
+              min: 1,
+            }),
+          },
+        };
+      },
+      type: 'table',
+    });
     const editor = createPlateEditor({
-      plugins: [
-        ExitBreakPlugin,
-        createBasePlugin({
-          key: 'table',
-          node: {
-            element: {
-              content: schema.content.type('tr', {
-                default: { type: 'tr' },
-                min: 1,
-              }),
-              groups: ['block'],
-            },
-            type: 'table',
-          },
-        }),
-        createBasePlugin({
-          key: 'tr',
-          node: {
-            element: {
-              content: schema.content.type('td', {
-                default: { type: 'td' },
-                min: 1,
-              }),
-            },
-            type: 'tr',
-          },
-        }),
-        createBasePlugin({
-          key: 'td',
-          node: {
-            element: {
-              content: schema.content.group('block', {
-                default: { type: 'p' },
-                min: 1,
-              }),
-            },
-            type: 'td',
-          },
-        }),
-      ],
+      plugins: [ExitBreakPlugin, TablePlugin, TableRowPlugin, TableCellPlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 4, path: [0, 0, 0, 0, 0] },

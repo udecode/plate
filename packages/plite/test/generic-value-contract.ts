@@ -10,6 +10,7 @@ import {
   type DescendantEntryOf,
   type DescendantIn,
   type Editor,
+  type EditorDocumentValue,
   ElementApi,
   type ElementEntry,
   type ElementEntryOf,
@@ -93,6 +94,13 @@ const value: CustomValue = [{ type: 'paragraph', children: [{ text: 'one' }] }];
 
 const editor = createEditor<CustomValue>();
 const typedEditor: Editor<CustomValue> = editor;
+declare const externalDocument: EditorDocumentValue<
+  {
+    children: { text: string; transient: false }[];
+    type: 'external';
+  }[]
+>;
+const fittedDocument = typedEditor.read.schema.fitDocument(externalDocument);
 
 typedEditor.update((tx) => {
   tx.value.replace({
@@ -108,6 +116,9 @@ type _BareEditorDoesNotEraseValue = Assert<
 type _BareEditorDefaultsToValue = Assert<Equal<ValueOf<Editor>, Value>>;
 type _EditorKeepsValue = Assert<
   Equal<ValueOf<typeof typedEditor>, CustomValue>
+>;
+type _FitDocumentReturnsCanonicalEditorValue = Assert<
+  Equal<typeof fittedDocument, EditorDocumentValue<CustomValue>>
 >;
 type _EditorKeepsElements = Assert<
   Equal<ElementOf<typeof typedEditor>, ParagraphElement | QuoteElement>

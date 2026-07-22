@@ -20,6 +20,7 @@ import {
   NodeApi,
   type NodeEntry,
   type Path,
+  schema,
   TextApi,
 } from '@platejs/plite';
 import { defineTestSchema } from './support/schema';
@@ -1174,7 +1175,17 @@ describe('plite transforms contract', () => {
 
   it('setNodes can target the highest matching inline when mode is highest', () => {
     const editor = createEditor();
-    editor.extend(defineTestSchema('inline', { inline: { inline: true } }));
+    editor.extend(
+      defineTestSchema('nested-inline-highest', {
+        inline: {
+          content: schema.content.any([
+            schema.content.text(),
+            schema.content.type('inline'),
+          ]),
+          inline: true,
+        },
+      })
+    );
 
     editorReplace(editor, {
       children: [
@@ -1438,7 +1449,7 @@ describe('plite transforms contract', () => {
     });
   });
 
-  it('liftNodes can target inside a void element when voids is true', () => {
+  it('liftNodes preserves canonical void content when voids is true', () => {
     const editor = createEditor();
     editor.extend(
       defineTestSchema('void-flag', { 'void-block': { void: 'block' } })
@@ -1448,7 +1459,7 @@ describe('plite transforms contract', () => {
       children: [
         {
           type: 'void-block',
-          children: [{ type: 'block', children: [{ text: 'word' }] }],
+          children: [{ text: '' }],
         } as Descendant,
       ],
       selection: null,
@@ -1459,7 +1470,7 @@ describe('plite transforms contract', () => {
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
-      { type: 'block', children: [{ text: 'word' }] },
+      { type: 'void-block', children: [{ text: '' }] },
     ]);
   });
 });

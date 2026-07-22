@@ -1,11 +1,11 @@
 import type { Descendant } from '@platejs/plite';
 
 import type { MdRootContent } from '../mdast';
-import type { SerializeMdOptions } from './serializeMd';
+import type { SerializeMdContext } from '../types';
 
 import {
   createTestEditor,
-  getTestMarkdownRuntime,
+  getTestSerializeOptions,
 } from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';
 import { buildMdastNode, convertNodesSerialize } from './convertNodesSerialize';
@@ -70,10 +70,9 @@ describe('convertNodesSerialize', () => {
     mockBoldNodeMd,
   ];
 
-  const baseOptions: SerializeMdOptions = {
-    runtime: getTestMarkdownRuntime(editor),
+  const baseOptions: SerializeMdContext = getTestSerializeOptions(editor, {
     rules: defaultRules,
-  };
+  });
 
   const expectMdNodes = (actual: MdRootContent[], expected: MdRootContent[]) =>
     expect(actual).toEqual(expected);
@@ -90,7 +89,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('only include nodes specified in allowedNodes', () => {
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         allowedNodes: ['h1', 'text'],
       };
@@ -102,7 +101,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('include all nodes when allowedNodes is null or undefined', () => {
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         allowedNodes: null,
       };
@@ -113,7 +112,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('include no nodes when allowedNodes is empty', () => {
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         allowedNodes: [],
       };
@@ -123,7 +122,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('drop truthy text marks that are not in allowedNodes even when the parent block is allowed', () => {
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         allowedNodes: ['p'],
       };
@@ -280,7 +279,7 @@ describe('convertNodesSerialize', () => {
 
   describe('disallowedNodes option', () => {
     it('exclude nodes specified in disallowedNodes', () => {
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         disallowedNodes: ['h1'],
       };
@@ -295,7 +294,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('exclude text marks specified in disallowedNodes', () => {
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         disallowedNodes: ['bold'],
       };
@@ -316,7 +315,7 @@ describe('convertNodesSerialize', () => {
 
   describe('plainMarks option', () => {
     it('treat marks specified in plainMarks as plain text', () => {
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         plainMarks: ['bold'],
       };
@@ -343,7 +342,7 @@ describe('convertNodesSerialize', () => {
         type: 'p',
       };
 
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         plainMarks: ['bold', 'italic'],
       };
@@ -367,7 +366,7 @@ describe('convertNodesSerialize', () => {
         type: 'p',
       };
 
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         plainMarks: ['bold'],
       };
@@ -391,7 +390,7 @@ describe('convertNodesSerialize', () => {
 
   describe('allowNode option', () => {
     it('exclude nodes specified in allowNode', () => {
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         allowNode: {
           serialize(node) {
@@ -411,7 +410,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('exclude text marks specified in allowNode', () => {
-      const options: SerializeMdOptions = {
+      const options: SerializeMdContext = {
         ...baseOptions,
         allowNode: {
           serialize(node) {

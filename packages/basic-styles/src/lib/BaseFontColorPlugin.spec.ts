@@ -14,12 +14,9 @@ describe('BaseFontColorPlugin', () => {
       defaultNodeValue: 'black',
       nodeKey: 'color',
     });
-    expect(
-      editor.read.schema.property({
-        key: KEYS.color,
-        placement: 'text',
-      })?.value.kind
-    ).toBe('string');
+    expect(editor.read.schema.property(BaseFontColorPlugin)?.value.kind).toBe(
+      'string'
+    );
     expect(
       editor.api.html.deserialize({
         element: '<span style="color: rgb(255, 0, 0)">text</span>',

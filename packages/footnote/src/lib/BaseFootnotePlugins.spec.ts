@@ -12,14 +12,17 @@ describe('BaseFootnotePlugins', () => {
     const editor = createBaseEditor({
       plugins: [BaseFootnoteReferencePlugin],
     });
-    const plugin = editor.plugins[BaseFootnoteReferencePlugin.key];
-    const inputPlugin = editor.plugins[BaseFootnoteInputPlugin.key];
     const options = editor.plugin(BaseFootnoteReferencePlugin).getOptions();
 
-    expect(plugin.node.element).toMatchObject({
-      inline: true,
-      void: 'inline',
-    });
+    expect(
+      editor.read.schema.element(BaseFootnoteReferencePlugin)?.behavior.inline
+    ).toBe(true);
+    expect(
+      editor.read.schema.element(BaseFootnoteReferencePlugin)?.behavior.void
+    ).toBe(true);
+    expect(
+      editor.read.schema.element(BaseFootnoteReferencePlugin)?.behavior.voidKind
+    ).toBe('inline');
     expect(options.trigger).toBe('^');
     expect(options.triggerPreviousCharPattern?.test('[')).toBe(true);
     expect(options.triggerPreviousCharPattern?.test('x')).toBe(false);
@@ -27,9 +30,12 @@ describe('BaseFootnotePlugins', () => {
       children: [{ text: '' }],
       type: 'footnoteInput',
     });
-    expect(inputPlugin.node.element).toMatchObject({
+    expect(
+      editor.read.schema.element(BaseFootnoteInputPlugin)?.behavior
+    ).toMatchObject({
       inline: true,
-      void: 'inline',
+      void: true,
+      voidKind: 'inline',
     });
     expect(
       editor.read.schema.getElementBehavior({
@@ -53,20 +59,24 @@ describe('BaseFootnotePlugins', () => {
     const editor = createBaseEditor({
       plugins: [BaseFootnoteDefinitionPlugin],
     });
-    const plugin = editor.plugins[BaseFootnoteDefinitionPlugin.key];
-
-    expect(plugin.node.element).toMatchObject({
-      content: {
-        allowed: { group: 'block', kind: 'group' },
-      },
-    });
-    expect(plugin.node.element?.inline).toBeUndefined();
-    expect(editor.read.schema.createAndFill(KEYS.footnoteDefinition)).toEqual({
+    expect(
+      editor.read.schema.element(BaseFootnoteDefinitionPlugin)?.content
+        ?.allowsText
+    ).toBe(false);
+    expect(
+      editor.read.schema.element(BaseFootnoteDefinitionPlugin)?.content?.min
+    ).toBe(1);
+    expect(
+      editor.read.schema.element(BaseFootnoteDefinitionPlugin)?.behavior.inline
+    ).toBe(false);
+    expect(
+      editor.read.schema.createAndFill(BaseFootnoteDefinitionPlugin)
+    ).toEqual({
       children: [{ children: [{ text: '' }], type: KEYS.p }],
       type: KEYS.footnoteDefinition,
     });
     expect(
-      editor.read.schema.element(KEYS.footnoteDefinition)?.groups
+      editor.read.schema.element(BaseFootnoteDefinitionPlugin)?.groups
     ).toContain('block');
     expect(() =>
       editor.read.schema.validateDocument({

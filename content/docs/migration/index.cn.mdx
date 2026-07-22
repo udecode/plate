@@ -110,7 +110,7 @@ title: 主要版本更新
         -   默认情况下，`render`、`handlers` 和 `inject` 被视为仅编辑（`true`）。`normalizeInitialValue` 默认为始终活动（`false`）。
         -   示例：`editOnly: { render: false, normalizeInitialValue: true }` 将使渲染始终活动，但仅在编辑模式下进行规范化。
     -   新增插件字段：`render.as` (`keyof HTMLElementTagNameMap`)。
-        -   指定 `PlateElement`（默认：`'div'`）或 `PlateLeaf`（默认：`'span'`）在渲染节点时使用的默认HTML标签名，但仅当未为插件提供自定义 `node.component` 时。
+        -   指定 `PlateElement`（默认：`'div'`）或 `PlateLeaf`（默认：`'span'`）在渲染节点时使用的默认HTML标签名，但仅当未为插件提供自定义 `render.node` 时。
         -   示例：`render: { as: 'h1' }` 将使插件默认将其节点渲染为 `<h1>` 标签，而无需提供自定义组件。
     -   新增插件字段：`node.isContainer`（布尔值）。
         -   当为 `true` 时，表示插件的元素主要是其他内容的容器。

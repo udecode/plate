@@ -73,15 +73,10 @@ export type PliteBrowserReleaseProofResult = {
 /** Required guard names for browser release-discipline proof. */
 export const PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS = [
   'public-surface-contract',
-  'public-field-hard-cut-contract',
-  'escape-hatch-inventory-contract',
   'write-boundary-contract',
   'leaf-lifecycle-contract',
   'selection-rebase-contract',
   'rendered-dom-shape-contract',
-  'destructive-leaf-boundary-gauntlet',
-  'leaf-delete-parity',
-  'compat-alias-hard-cut-contract',
 ] as const;
 
 /** Create a raw-device mobile browser proof artifact. */

@@ -9,7 +9,6 @@ import {
   createEditorRuntime,
   createEditorView,
   defineEditorSchema,
-  element,
   ElementApi,
   property,
   schema,
@@ -48,74 +47,66 @@ const matrixCell = (children: Descendant[] = [paragraph()]): Element => ({
 
 const detachedContentSchema = defineEditorSchema({
   elements: {
-    bounded: element({
+    bounded: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         max: 1,
         min: 1,
       }),
-      groups: ['block'],
-    }),
-    caption: element({
+    } as const,
+    caption: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    cell: element({
+    } as const,
+    cell: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
-    }),
-    matrixBounded: element({
+    } as const,
+    matrixBounded: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         max: 1,
         min: 1,
       }),
-      groups: ['block'],
       slice: { preserveContext: true },
-    }),
-    matrixCell: element({
+    } as const,
+    matrixCell: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
       slice: { preserveContext: true },
-    }),
-    paragraph: element({
+    } as const,
+    paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
-    }),
-    preserved: element({
+    } as const,
+    preserved: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
       slice: { preserveContext: true },
-    }),
-    isolated: element({
+    } as const,
+    isolated: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-      groups: ['block'],
       isolating: true,
-    }),
-    row: element({
+    } as const,
+    row: {
       content: schema.content.type('strictCell', {
         default: { type: 'strictCell' },
         min: 1,
       }),
-    }),
-    strictCell: element({
+    } as const,
+    strictCell: {
       content: schema.content.type('paragraph', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-    }),
+    } as const,
   },
   id: 'detached-content-fit',
   properties: [
@@ -129,20 +120,21 @@ const detachedContentSchema = defineEditorSchema({
       target: target.root('comments'),
     }),
   ],
-  root: schema.root({
+  root: {
     content: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  }),
+  } as const,
   roots: {
-    comments: schema.root({
+    comments: {
       content: schema.content.group('block', {
         default: { type: 'paragraph' },
         min: 1,
       }),
-    }),
+    } as const,
   },
+  unknown: 'reject',
   version: 1,
 });
 

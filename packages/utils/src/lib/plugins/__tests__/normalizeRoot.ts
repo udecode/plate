@@ -5,33 +5,30 @@ import { type Selection, type Value, schema } from '@platejs/plite';
 export const fixtureSchemaPlugins = [
   createBasePlugin({
     key: 'fixtureH1',
-    node: {
+    schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
-        groups: ['block'],
       },
-      type: 'h1',
     },
+    type: 'h1',
   }),
   createBasePlugin({
     key: 'fixtureH2',
-    node: {
+    schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
-        groups: ['block'],
       },
-      type: 'h2',
     },
+    type: 'h2',
   }),
   createBasePlugin({
     key: 'fixtureElement',
-    node: {
+    schema: ({ plugins }) => ({
       element: {
-        content: schema.content.group('block'),
-        groups: ['block'],
+        content: plugins.blockContent(),
       },
-      type: 'element',
-    },
+    }),
+    type: 'element',
   }),
 ];
 

@@ -7,23 +7,31 @@ import { getInjectMatch } from './getInjectMatch';
 
 const ParagraphPlugin = createBasePlugin({
   key: 'paragraph',
-  node: { element: { groups: ['block'] }, type: 'paragraph-test' },
+  type: 'paragraph-test',
+  schema: {
+    element: { content: schema.content.open({ default: 'text', min: 1 }) },
+  },
 });
 
 const QuotePlugin = createBasePlugin({
   key: 'quote',
-  node: {
+  type: 'quote',
+  schema: {
     element: {
       content: schema.content.group('block'),
-      groups: ['block'],
     },
-    type: 'quote',
   },
 });
 
 const LinkPlugin = createBasePlugin({
   key: 'link',
-  node: { element: { inline: true }, type: 'a' },
+  type: 'a',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
 });
 
 const createMatchEditor = (plugin: AnyBasePlugin) =>
@@ -91,9 +99,9 @@ describe('getInjectMatch', () => {
     expect(leafMatch({ text: 'leaf' } as any, [0, 0])).toBe(true);
   });
 
-  it('respects targetPlugins and excludePlugins', () => {
+  it('respects targetPluginKeys and excludePlugins', () => {
     const targetPlugin = createBasePlugin({
-      inject: { targetPlugins: ['paragraph'] },
+      config: { targetPluginKeys: ['paragraph'] },
       key: 'targetFilter',
     });
     const excludePlugin = createBasePlugin({

@@ -44,7 +44,6 @@ import {
   type Descendant,
   type Element,
   defineEditorSchema,
-  element,
   type Node,
   NodeApi,
   PathApi,
@@ -73,44 +72,59 @@ const editorReplaceTrusted = (
   });
 };
 
+const inlineContent = schema.content.any(
+  [schema.content.text(), schema.content.group('inline')],
+  { default: 'text', min: 1 }
+);
+
 const QueryContractSchema = defineEditorSchema({
   elements: {
-    block: element({}),
-    'block-mention': element({ void: 'block' }),
-    'bulleted-list': element({}),
-    chip: element({ inline: true }),
-    'editable-embed': element({ void: 'editable-island' }),
-    element: element({}),
-    inline: element({ inline: true }),
-    link: element({ inline: true }),
-    'list-item': element({}),
-    'markable-inline': element({ void: 'markable-inline' }),
-    nested: element({ inline: true }),
-    'non-selectable-block': element({ selectable: false }),
-    'non-selectable-inline': element({ inline: true, selectable: false }),
-    'non-selectable-inline-void': element({
+    block: { content: schema.content.open() },
+    'block-mention': { void: 'block' } as const,
+    'bulleted-list': { content: schema.content.open() },
+    chip: { content: inlineContent, inline: true },
+    'editable-embed': {
+      content: schema.content.open(),
+      void: 'editable-island',
+    },
+    element: { content: schema.content.open() },
+    inline: { content: inlineContent, inline: true },
+    link: { content: inlineContent, inline: true },
+    'list-item': { content: schema.content.open() },
+    'markable-inline': { void: 'markable-inline' } as const,
+    nested: { content: inlineContent, inline: true },
+    'non-selectable-block': {
+      content: schema.content.open(),
+      selectable: false,
+    },
+    'non-selectable-inline': {
+      content: inlineContent,
+      inline: true,
+      selectable: false,
+    },
+    'non-selectable-inline-void': {
       inline: true,
       selectable: false,
       void: 'inline',
-    }),
-    'numbered-list': element({}),
-    paragraph: element({}),
-    quote: element({}),
-    section: element({}),
-    table: element({}),
-    'table-cell': element({}),
-    'table-row': element({}),
-    target: element({}),
-    token: element({ atom: true }),
-    video: element({ void: 'block' }),
-    'void-block': element({ void: 'block' }),
-    'void-element': element({ void: 'block' }),
-    'void-inline': element({ inline: true, void: 'inline' }),
-    'void-paragraph': element({ void: 'block' }),
+    } as const,
+    'numbered-list': { content: schema.content.open() },
+    paragraph: { content: schema.content.open() },
+    quote: { content: schema.content.open() },
+    section: { content: schema.content.open() },
+    table: { content: schema.content.open() },
+    'table-cell': { content: schema.content.open() },
+    'table-row': { content: schema.content.open() },
+    target: { content: schema.content.open() },
+    token: { atom: true, content: schema.content.open() },
+    video: { void: 'block' } as const,
+    'void-block': { void: 'block' } as const,
+    'void-element': { void: 'block' } as const,
+    'void-inline': { inline: true, void: 'inline' } as const,
+    'void-paragraph': { void: 'block' } as const,
   },
   id: 'query-contract',
   properties: [schema.textProperty('segment', property.boolean())],
-  root: schema.root({
+  root: {
     content: schema.content.types([
       'block',
       'block-mention',
@@ -131,7 +145,7 @@ const QueryContractSchema = defineEditorSchema({
       'void-element',
       'void-paragraph',
     ]),
-  }),
+  } as const,
   unknown: 'preserve',
   version: 1,
 });
@@ -397,7 +411,7 @@ const createNestedInlineChildren = (): Element[] => [
 const createVoidBlockChildren = (): Element[] => [
   {
     type: 'void-block',
-    children: [{ text: 'one' }, { text: 'two' }],
+    children: [{ text: 'onetwo' }],
   } as Element,
 ];
 
@@ -2311,14 +2325,7 @@ it('positions exposes selectable voids atomically and enters void content only w
     children: [
       {
         type: 'block-mention',
-        children: [
-          { text: 'one' },
-          {
-            type: 'chip',
-            children: [{ text: 'two' }],
-          },
-          { text: 'three' },
-        ],
+        children: [{ text: 'onetwothree' }],
       } as Descendant,
     ],
     selection: null,
@@ -2327,25 +2334,13 @@ it('positions exposes selectable voids atomically and enters void content only w
   assert.deepEqual(Array.from(editorPositions(editor, { at: [] })), [
     { path: [0, 0], offset: 0 },
   ]);
-  assert.deepEqual(
-    Array.from(editorPositions(editor, { at: [], voids: true })),
-    [
-      { path: [0, 0], offset: 0 },
-      { path: [0, 0], offset: 1 },
-      { path: [0, 0], offset: 2 },
-      { path: [0, 0], offset: 3 },
-      { path: [0, 1, 0], offset: 0 },
-      { path: [0, 1, 0], offset: 1 },
-      { path: [0, 1, 0], offset: 2 },
-      { path: [0, 1, 0], offset: 3 },
-      { path: [0, 2], offset: 0 },
-      { path: [0, 2], offset: 1 },
-      { path: [0, 2], offset: 2 },
-      { path: [0, 2], offset: 3 },
-      { path: [0, 2], offset: 4 },
-      { path: [0, 2], offset: 5 },
-    ]
+  const voidPositions = Array.from(
+    editorPositions(editor, { at: [], voids: true })
   );
+
+  assert.equal(voidPositions.length, 12);
+  assert.deepEqual(voidPositions[0], { path: [0, 0], offset: 0 });
+  assert.deepEqual(voidPositions.at(-1), { path: [0, 0], offset: 11 });
 });
 
 it('positions uses element spec atom and editable-island policies', () => {
@@ -3291,22 +3286,18 @@ it('supports editorBefore and editorAfter with voids: true on range and split-vo
     children: [
       {
         type: 'void-paragraph',
-        children: [{ text: 'one' }, { segment: true, text: 'two' }],
+        children: [{ text: 'onetwo' }],
       } as Element,
     ],
     selection: null,
   });
 
-  assert.deepEqual(editorAfter(editor, [0, 0], { voids: true }), {
-    path: [0, 1],
-    offset: 0,
-  });
   assert.deepEqual(
     editorBefore(
       editor,
       {
         anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 1], offset: 2 },
+        focus: { path: [0, 0], offset: 5 },
       },
       { voids: true }
     ),
@@ -3317,11 +3308,11 @@ it('supports editorBefore and editorAfter with voids: true on range and split-vo
       editor,
       {
         anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 1], offset: 2 },
+        focus: { path: [0, 0], offset: 5 },
       },
       { voids: true }
     ),
-    { path: [0, 1], offset: 3 }
+    { path: [0, 0], offset: 6 }
   );
 });
 

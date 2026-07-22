@@ -13,7 +13,7 @@ describe('BaseSlashPlugin', () => {
 
     expect(plugin.key).toBe('slashCommand');
     expect(inputPlugin.key).toBe('slashInput');
-    expect(inputPlugin.node.type).toBe(NODES.slashInput);
+    expect(inputPlugin.type).toBe(NODES.slashInput);
     expect(plugin.editOnly).toBe(true);
     expect(plugin.options.trigger).toBe('/');
     const triggerPreviousCharPattern =
@@ -31,8 +31,12 @@ describe('BaseSlashPlugin', () => {
       children: [{ text: '' }],
       type: NODES.slashInput,
     });
-    expect(inputPlugin.node).toMatchObject({
-      element: { inline: true, void: 'inline' },
+    expect(
+      editor.read.schema.element(BaseSlashInputPlugin)?.behavior
+    ).toMatchObject({
+      inline: true,
+      void: true,
+      voidKind: 'inline',
     });
   });
 });

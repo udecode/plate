@@ -305,10 +305,10 @@ describe('insertFootnote', () => {
     const editor = createPlateEditor({
       plugins: [
         BaseFootnoteReferencePlugin.configure({
-          node: { type: 'custom-footnote-reference' },
+          type: 'custom-footnote-reference',
         }),
         BaseFootnoteDefinitionPlugin.configure({
-          node: { type: 'custom-footnote-definition' },
+          type: 'custom-footnote-definition',
         }),
       ] as const,
       selection: {

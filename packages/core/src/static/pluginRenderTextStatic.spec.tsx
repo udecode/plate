@@ -1,3 +1,4 @@
+import { property } from '@platejs/plite';
 import React from 'react';
 
 import { type RenderTextProps, createBasePlugin } from '../lib';
@@ -10,14 +11,14 @@ import {
 describe('pluginRenderTextStatic', () => {
   const CommentPlugin = createBasePlugin({
     key: 'comment',
-    node: {
+    type: 'comment',
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+    render: {
       isDecoration: false,
-      mark: true,
       textProps: {
         className: 'comment-text',
         'data-tone': 'warm',
       },
-      type: 'comment',
     },
   });
 

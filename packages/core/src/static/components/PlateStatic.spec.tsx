@@ -43,7 +43,12 @@ const createEditor = ({
   createBaseEditor({
     components,
     plugins: [
-      createBasePlugin({ key: 'bold', node: { mark: true } }),
+      createBasePlugin({
+        key: 'bold',
+        schema: {
+          mark: property.boolean({ default: false, omitDefault: true }),
+        },
+      }),
       RevisionPlugin,
     ],
     selection: {
@@ -75,7 +80,12 @@ const createEditorWithMultipleElements = ({
   createBaseEditor({
     components,
     plugins: [
-      createBasePlugin({ key: 'bold', node: { mark: true } }),
+      createBasePlugin({
+        key: 'bold',
+        schema: {
+          mark: property.boolean({ default: false, omitDefault: true }),
+        },
+      }),
       RevisionPlugin,
     ],
     value,
@@ -242,10 +252,9 @@ describe('PlateStatic Memoization', () => {
         plugins: [
           createBasePlugin({
             key: 'fallback-element',
-            node: {
+            schema: {
               element: {
                 content: schema.content.text({ default: 'text', min: 1 }),
-                groups: ['block'],
               },
             },
           }),
@@ -277,7 +286,7 @@ describe('PlateStatic Memoization', () => {
         },
       },
       key: 'tone',
-      node: { mark: { value: property.string() } },
+      schema: { mark: { property: property.string() } },
     });
     const editor = createBaseEditor({
       plugins: [TonePlugin],

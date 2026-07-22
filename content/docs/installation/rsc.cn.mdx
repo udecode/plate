@@ -39,7 +39,11 @@ import {
   BaseH2Plugin,
   BaseH3Plugin,
 } from '@platejs/basic-nodes';
-import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
+import {
+  MarkdownPlugin,
+  defineMarkdownConfig,
+  remarkMdx,
+} from '@platejs/markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
@@ -71,9 +75,11 @@ const editor = createBaseEditor({
     BaseCodePlugin,
     // ... 添加更多标记插件
     MarkdownPlugin.configure({ // 序列化示例
-      options: {
+      config: defineMarkdownConfig({
+        id: 'rsc-example:markdown',
         remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
-      },
+        version: 1,
+      }),
     }),
     // ... 添加其他功能插件
   ],

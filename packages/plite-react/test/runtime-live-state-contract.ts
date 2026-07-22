@@ -70,7 +70,7 @@ describe('plite-react runtime live state facade', () => {
     expect(textBinding.text?.text).toBe('alpha');
   });
 
-  test('owns selection and marks fallback writes for react runtime callers', () => {
+  test('publishes runtime selection writes and joins an active transaction', () => {
     const editor = createEditor();
     const selection = {
       kind: 'text',
@@ -83,9 +83,39 @@ describe('plite-react runtime live state facade', () => {
       selection: null,
     });
 
-    writeRuntimeSelection(editor, selection);
-    expect(readLiveSelection(editor)).toEqual(selection);
-    expect(readRuntimeSelection(editor)).toEqual(selection);
+    let commitCount = 0;
+    let lastCommit = editor.read.lastCommit();
+    const unsubscribe = editor.subscribeCommit((commit) => {
+      commitCount++;
+      lastCommit = commit;
+    });
+
+    try {
+      writeRuntimeSelection(editor, selection);
+      expect(readLiveSelection(editor)).toEqual(selection);
+      expect(readRuntimeSelection(editor)).toEqual(selection);
+      expect(commitCount).toBe(1);
+      expect(lastCommit?.selectionChanged).toBe(true);
+      expect(lastCommit?.changed.has('selection')).toBe(true);
+
+      const joinedSelection = {
+        ...selection,
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      };
+
+      editor.update(() => {
+        writeRuntimeSelection(editor, joinedSelection);
+        expect(commitCount).toBe(1);
+      });
+
+      expect(readRuntimeSelection(editor)).toEqual(joinedSelection);
+      expect(commitCount).toBe(2);
+      expect(lastCommit?.selectionChanged).toBe(true);
+      expect(lastCommit?.changed.has('selection')).toBe(true);
+    } finally {
+      unsubscribe();
+    }
 
     writeRuntimeMarks(editor, { bold: true });
     expect(editor.read((state) => state.marks())).toEqual({ bold: true });

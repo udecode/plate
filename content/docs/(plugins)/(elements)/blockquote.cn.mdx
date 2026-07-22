@@ -86,14 +86,14 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     BlockquotePlugin.configure({
-      node: { component: BlockquoteElement },
+      render: { node: BlockquoteElement },
       shortcuts: { toggle: 'mod+shift+.' },
     }),
   ],
 });
 ```
 
-- `node.component`: 分配 [`BlockquoteElement`](/docs/components/blockquote-node) 来渲染引用块元素。
+- `render.node`: 分配 [`BlockquoteElement`](/docs/components/blockquote-node) 来渲染引用块元素。
 - `shortcuts.toggle`: 定义用于切换引用块格式的键盘[快捷键](/docs/plugin-shortcuts)。
 
 ### 转换为工具栏按钮

@@ -15,10 +15,16 @@ describe('BaseMediaEmbedPlugin', () => {
     const transformUrl = plugin.options.transformUrl!;
 
     expect(plugin.key).toBe('mediaEmbed');
-    expect(plugin.node.type).toBe(NODES.mediaEmbed);
-    expect(plugin.node).toMatchObject({
-      element: { groups: ['block'], void: 'block' },
-    });
+    expect(plugin.type).toBe(NODES.mediaEmbed);
+    expect(
+      editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior.void
+    ).toBe(true);
+    expect(
+      editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior.voidKind
+    ).toBe('block');
+    expect(editor.read.schema.element(BaseMediaEmbedPlugin)?.groups).toContain(
+      'block'
+    );
     expect(transformUrl('<iframe src="https://x.test"></iframe>')).toBe(
       'https://x.test'
     );

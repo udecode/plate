@@ -69,37 +69,71 @@ export const createEditorHarnessScenario = ({
     try {
       for (const [stepIndex, step] of steps.entries()) {
         switch (step.kind) {
-          case 'applyOperations':
+          case 'applyChange':
             await root.evaluate(
               (
                 element: HTMLElement,
                 {
+                  change,
                   key,
-                  operations,
                   tag,
                 }: {
+                  change: Record<string, unknown>;
                   key: string;
-                  operations: readonly Record<string, unknown>[];
                   tag?: string | string[];
                 }
               ) => {
                 const handle = (element as Record<string, any>)[key];
 
-                if (!handle?.applyOperations) {
+                if (!handle?.applyChange) {
                   throw new Error(
-                    'This editor surface does not expose applyOperations'
+                    'This editor surface does not expose applyChange'
                   );
                 }
 
-                handle.applyOperations(
-                  operations,
+                handle.applyChange(
+                  change,
+                  tag === undefined ? undefined : { tags: tag }
+                );
+              },
+              {
+                change: step.change,
+                key: PLITE_BROWSER_HANDLE_KEY,
+                tag: step.tag,
+              }
+            );
+            break;
+          case 'applyValueChange':
+            await root.evaluate(
+              (
+                element: HTMLElement,
+                {
+                  key,
+                  tag,
+                  value,
+                }: {
+                  key: string;
+                  tag?: string | string[];
+                  value: Record<string, unknown>;
+                }
+              ) => {
+                const handle = (element as Record<string, any>)[key];
+
+                if (!handle?.applyValueChange) {
+                  throw new Error(
+                    'This editor surface does not expose applyValueChange'
+                  );
+                }
+
+                handle.applyValueChange(
+                  value,
                   tag === undefined ? undefined : { tags: tag }
                 );
               },
               {
                 key: PLITE_BROWSER_HANDLE_KEY,
-                operations: step.operations,
                 tag: step.tag,
+                value: step.value,
               }
             );
             break;
@@ -604,7 +638,10 @@ export const createEditorHarnessScenario = ({
               .toContain(step.expectedModelTextAfterType);
 
             const hotkey = await page.evaluate(() =>
-              navigator.userAgent.includes('Mac OS X') ? 'Meta+Z' : 'Control+Z'
+              /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+              navigator.userAgent.includes('Mac OS X')
+                ? 'Meta+Z'
+                : 'Control+Z'
             );
 
             await getHarness().press(hotkey);
@@ -625,7 +662,10 @@ export const createEditorHarnessScenario = ({
             }
 
             const hotkey = await page.evaluate(() =>
-              navigator.userAgent.includes('Mac OS X') ? 'Meta+Z' : 'Control+Z'
+              /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+              navigator.userAgent.includes('Mac OS X')
+                ? 'Meta+Z'
+                : 'Control+Z'
             );
 
             await getHarness().press(hotkey);

@@ -1,6 +1,7 @@
 import {
   defineEditorExtension,
-  type EditorUpdateTransaction,
+  editorCommands,
+  type EditorTransactionSpecBuilder,
   NodeApi,
   PathApi,
   PointApi,
@@ -101,22 +102,23 @@ const MarkdownShortcutsExample = () => {
 const markdownShortcuts = () =>
   defineEditorExtension<CustomEditor>()({
     name: 'markdown-shortcuts',
-    transforms: {
-      deleteBackward({ editor, next, tx, unit }) {
-        const selection = tx.selection();
+    commands: ({ around, handle }) => [
+      handle(editorCommands.delete, ({ input, state }) => {
+        const selection = state.selection();
 
         if (
-          unit === 'character' &&
+          input.direction === 'backward' &&
+          input.unit === 'character' &&
           selection &&
           RangeApi.isCollapsed(selection)
         ) {
-          const match = tx.nodes.above({
-            match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
+          const match = state.nodes.above({
+            match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
           });
 
           if (match) {
             const [block, path] = match;
-            const start = tx.points.start(path);
+            const start = state.points.start(path);
 
             if (
               start &&
@@ -124,35 +126,36 @@ const markdownShortcuts = () =>
               block.type !== 'paragraph' &&
               PointApi.equals(selection.anchor, start)
             ) {
-              tx.nodes.set({
-                type: 'paragraph',
-              } satisfies Partial<PliteElement>);
+              return state.transaction((tx) => {
+                tx.nodes.set({
+                  type: 'paragraph',
+                } satisfies Partial<PliteElement>);
 
-              if (block.type === 'list-item') {
-                tx.nodes.unwrap({
-                  match: (n) =>
-                    NodeApi.isElement(n) &&
-                    (n.type === 'bulleted-list' || n.type === 'numbered-list'),
-                  split: true,
-                });
-              }
+                if (block.type === 'list-item') {
+                  tx.nodes.unwrap({
+                    match: (n) =>
+                      NodeApi.isElement(n) &&
+                      (n.type === 'bulleted-list' ||
+                        n.type === 'numbered-list'),
+                    split: true,
+                  });
+                }
 
-              selectCurrentBlockStart(tx);
-              editor.api.dom.focus();
-              return true;
+                selectCurrentBlockStart(tx);
+              });
             }
           }
         }
 
-        return next({ unit });
-      },
-      insertBreak({ next, tx }) {
-        const selection = tx.selection();
+        return false;
+      }),
+      around(editorCommands.insertBreak, ({ state, next }) => {
+        const selection = state.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
-          const blockEntry = tx.nodes.above({
+          const blockEntry = state.nodes.above({
             at: selection,
-            match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
+            match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
           });
 
           if (blockEntry) {
@@ -162,29 +165,32 @@ const markdownShortcuts = () =>
               NodeApi.isElement(block) &&
               HEADING_TYPES.has(block.type as CustomElementType)
             ) {
-              const start = tx.points.start(blockPath);
+              const start = state.points.start(blockPath);
 
               if (start && PointApi.equals(selection.anchor, start)) {
                 const result = next();
 
-                tx.nodes.set(
-                  { type: 'paragraph' },
-                  {
-                    at: blockPath,
-                    match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
-                  }
-                );
+                if (result === false) return false;
 
-                return result;
+                return state.transaction.extend(result, (tx) => {
+                  tx.nodes.set(
+                    { type: 'paragraph' },
+                    {
+                      at: blockPath,
+                      match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
+                    }
+                  );
+                });
               }
             }
           }
         }
 
-        return next();
-      },
-      insertText({ editor, next, text, tx }) {
-        const selection = tx.selection();
+        return false;
+      }),
+      handle(editorCommands.insertText, ({ input, state }) => {
+        const { text } = input;
+        const selection = state.selection();
 
         if (
           SHORTCUT_TRAILING_WHITESPACE.test(text) &&
@@ -192,18 +198,18 @@ const markdownShortcuts = () =>
           RangeApi.isCollapsed(selection)
         ) {
           const { anchor } = selection;
-          const block = tx.nodes.above({
-            match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
+          const block = state.nodes.above({
+            match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
           });
           const path = block ? block[1] : [];
           const currentBlock = block?.[0];
-          const start = tx.points.start(path);
+          const start = state.points.start(path);
 
-          if (!start) return next();
+          if (!start) return false;
 
           const range = { anchor, focus: start };
           const beforeText =
-            tx.text.string(range) +
+            state.text.string(range) +
             text.replace(SHORTCUT_TRAILING_WHITESPACE, '');
           const orderedListMatch = ORDERED_LIST_SHORTCUT.exec(beforeText);
           const type = orderedListMatch ? 'list-item' : SHORTCUTS[beforeText];
@@ -215,56 +221,54 @@ const markdownShortcuts = () =>
               currentBlock.type !== 'paragraph'
             ) {
               if (type === 'list-item' && currentBlock.type === 'list-item') {
-                tx.selection.set(range);
+                return state.transaction((tx) => {
+                  tx.selection.set(range);
 
-                if (!RangeApi.isCollapsed(range)) {
-                  tx.text.delete();
+                  if (!RangeApi.isCollapsed(range)) {
+                    tx.text.delete();
+                  }
+
+                  selectCurrentBlockStart(tx);
+                });
+              }
+
+              return false;
+            }
+
+            return state.transaction((tx) => {
+              tx.selection.set(range);
+
+              if (!RangeApi.isCollapsed(range)) {
+                tx.text.delete();
+              }
+
+              tx.nodes.set(
+                { type },
+                {
+                  match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
                 }
+              );
 
-                selectCurrentBlockStart(tx);
-                editor.api.dom.focus();
+              if (type === 'list-item') {
+                const list = createListElement(beforeText, orderedListMatch);
 
-                return true;
+                tx.nodes.wrap(list, {
+                  match: (n) => NodeApi.isElement(n) && n.type === 'list-item',
+                });
+
+                if (list.type === 'bulleted-list') {
+                  mergeAdjacentBulletedLists(tx);
+                }
               }
 
-              return next();
-            }
-
-            tx.selection.set(range);
-
-            if (!RangeApi.isCollapsed(range)) {
-              tx.text.delete();
-            }
-
-            tx.nodes.set(
-              { type },
-              {
-                match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
-              }
-            );
-
-            if (type === 'list-item') {
-              const list = createListElement(beforeText, orderedListMatch);
-
-              tx.nodes.wrap(list, {
-                match: (n) => NodeApi.isElement(n) && n.type === 'list-item',
-              });
-
-              if (list.type === 'bulleted-list') {
-                mergeAdjacentBulletedLists(tx);
-              }
-            }
-
-            selectCurrentBlockStart(tx);
-            editor.api.dom.focus();
-
-            return true;
+              selectCurrentBlockStart(tx);
+            });
           }
         }
 
-        return next();
-      },
-    },
+        return false;
+      }),
+    ],
   });
 
 const renderElement = ({
@@ -325,7 +329,7 @@ const createListElement = (
 };
 
 const mergeAdjacentBulletedLists = (
-  tx: EditorUpdateTransaction<CustomValue>
+  tx: EditorTransactionSpecBuilder<CustomValue>
 ) => {
   const selection = tx.selection();
 
@@ -370,7 +374,9 @@ const mergeAdjacentBulletedLists = (
   }
 };
 
-const selectCurrentBlockStart = (tx: EditorUpdateTransaction<CustomValue>) => {
+const selectCurrentBlockStart = (
+  tx: EditorTransactionSpecBuilder<CustomValue>
+) => {
   const block = tx.nodes.above({
     match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
   });

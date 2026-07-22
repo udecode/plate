@@ -2,6 +2,7 @@
 
 import { jsxt } from '@platejs/test-utils';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';
@@ -17,7 +18,9 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 
 const BoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 describe('acceptSuggestion', () => {

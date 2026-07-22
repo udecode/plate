@@ -153,6 +153,10 @@ const createFixture = () => {
   writeFile(path.join(appRoot, 'package.json'), '{"private":true}\n');
   writeFile(path.join(fixtureRoot, 'package.json'), '{"private":true}\n');
   writeFile(
+    path.join(fixtureRoot, '.nvmrc'),
+    `${process.versions.node.split('.')[0]}\n`
+  );
+  writeFile(
     path.join(
       fixtureRoot,
       'apps/www/src/app/(app)/examples/plite/plite-example-registry.ts'
@@ -209,17 +213,40 @@ const readSingleJson = (directory, prefix) => {
   return JSON.parse(fs.readFileSync(path.join(directory, files[0]), 'utf8'));
 };
 
-test('orchestrates bounded units, resume, outputs, manifest drift, and sticky invalidation', {
-  timeout: 30_000,
-}, async (context) => {
-  const fixture = createFixture();
+const runnerControlEnvironmentNames = [
+  'CI',
+  'PLAYWRIGHT_BASE_URL',
+  'PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH',
+  'PLITE_BROWSER_BUILD_SETUP_TIMEOUT_MS',
+  'PLITE_BROWSER_CLIPBOARD_LOCK_TIMEOUT_MS',
+  'PLITE_BROWSER_DIRECT_TIMEOUT_MS',
+  'PLITE_BROWSER_DISCOVERY_TIMEOUT_MS',
+  'PLITE_BROWSER_FORCE_PROOF',
+  'PLITE_BROWSER_JOB',
+  'PLITE_BROWSER_MAX_TESTS_PER_PROCESS',
+  'PLITE_BROWSER_PROJECT_CONCURRENCY',
+  'PLITE_BROWSER_TARGET_FINGERPRINT',
+  'PLITE_BROWSER_TRACE',
+  'PLITE_BROWSER_UNIT_TIMEOUT_MS',
+  'PLITE_BROWSER_UNIT_WORKERS',
+  'PLITE_MENTIONS_FIREFOX_SELECT_ALL_DIAGNOSTIC',
+  'PLITE_PAGINATION_AUTOSCROLL_PROOF',
+  'STRESS_ARTIFACT_DIR',
+  'STRESS_FAMILIES',
+  'STRESS_REDUCTION',
+  'STRESS_REPLAY',
+  'STRESS_ROUTES',
+  'STRESS_SEED',
+];
 
-  context.after(() =>
-    fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true })
-  );
+const createFixtureRunner = (fixture, overrides = {}) => {
+  const environment = { ...process.env };
 
-  const environment = {
-    ...process.env,
+  for (const name of runnerControlEnvironmentNames) {
+    delete environment[name];
+  }
+
+  Object.assign(environment, {
     FAKE_PLAYWRIGHT_CONTROL: fixture.controlFile,
     FAKE_PLAYWRIGHT_LOG: fixture.logFile,
     FAKE_PLAYWRIGHT_MANIFEST: fixture.manifestFile,
@@ -230,16 +257,33 @@ test('orchestrates bounded units, resume, outputs, manifest drift, and sticky in
     PLITE_BROWSER_TARGET_FINGERPRINT: 'fixture-target-v1',
     PLITE_BROWSER_UNIT_TIMEOUT_MS: '5000',
     PLITE_BROWSER_UNIT_WORKERS: '2',
+    ...overrides,
+  });
+
+  return {
+    environment,
+    run: () =>
+      runBoundedProcess({
+        args: [fixture.runnerFile, 'chromium'],
+        command: process.execPath,
+        cwd: fixture.appRoot,
+        env: environment,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeoutMs: 15_000,
+      }),
   };
-  const run = () =>
-    runBoundedProcess({
-      args: [fixture.runnerFile, 'chromium'],
-      command: process.execPath,
-      cwd: fixture.appRoot,
-      env: environment,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      timeoutMs: 15_000,
-    });
+};
+
+test('orchestrates bounded units, resume, outputs, manifest drift, and sticky invalidation', {
+  timeout: 30_000,
+}, async (context) => {
+  const fixture = createFixture();
+
+  context.after(() =>
+    fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true })
+  );
+
+  const { environment, run } = createFixtureRunner(fixture);
   const writeControl = (value) =>
     writeFile(fixture.controlFile, `${JSON.stringify(value)}\n`);
   const stateDirectory = path.join(
@@ -356,6 +400,46 @@ test('orchestrates bounded units, resume, outputs, manifest drift, and sticky in
           args.find((argument) => argument.startsWith('--workers='))?.slice(10)
         ) <= 2
     ),
+    true
+  );
+});
+
+test('forced proof reruns every bounded batch instead of resuming', {
+  timeout: 15_000,
+}, async (context) => {
+  const fixture = createFixture();
+
+  context.after(() =>
+    fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true })
+  );
+
+  const { environment, run } = createFixtureRunner(fixture);
+  const initial = await run();
+
+  assert.equal(initial.status, 0, initial.stderr);
+  const beforeForcedRun = readInvocations(fixture.logFile).filter(
+    ({ kind }) => kind === 'unit'
+  ).length;
+
+  environment.PLITE_BROWSER_FORCE_PROOF = '1';
+  writeFile(fixture.controlFile, '{"unitOrdinal":0}\n');
+  const forced = await run();
+
+  assert.equal(forced.status, 0, forced.stderr);
+  assert.doesNotMatch(forced.stdout, /Resuming|reused/);
+  assert.equal(
+    readInvocations(fixture.logFile).filter(({ kind }) => kind === 'unit')
+      .length - beforeForcedRun,
+    3
+  );
+  const forcedSummary = readSingleJson(
+    path.join(fixture.appRoot, 'test-results/plite-browser-runner'),
+    'summary-chromium-'
+  );
+
+  assert.equal(forcedSummary.selectedUnits, 3);
+  assert.equal(
+    forcedSummary.units.every(({ reused }) => !reused),
     true
   );
 });

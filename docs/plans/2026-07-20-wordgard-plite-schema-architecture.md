@@ -145,7 +145,7 @@ Work Checklist:
 - [x] Resolve shared `property` descriptor factory versus distinct text/element
       semantics.
 - [x] Resolve non-node property plugins such as Indent and eliminate or justify
-      `node.elementProperties`.
+      the legacy `node.elementProperties` field.
 - [x] Resolve explicit cross-cutting property target rules and current global
       element-property permissiveness.
 - [x] Resolve which Wordgard Mark capabilities to steal without Mark classes
@@ -217,10 +217,16 @@ Decision brief:
   Plite's better JSON, multi-root, collaboration, history, and extension model.
 - consequence: This is a real hard cut. Plate plugins migrate from
   free-floating node/schema flags plus `elementProperties`/`textProperty` to
-  `node.element`, `node.mark`, and explicit schema contributions; every
+  top-level `type`, `schema.element`, `schema.mark`, and explicit property
+  contributions; every
   property becomes registered and targetable; the old global merge, matcher
   ambiguity, and correction-as-schema-cleanup paths disappear in the same
   execution.
+- identity DX: ordinary Plate editors omit identity and receive the exact
+  deterministic semantic fingerprint. Explicit `id/version` is optional
+  durable lineage for persistence, collaboration, and migrations across
+  fingerprint changes. Plite compilation, not each caller, owns the one
+  complete identity descriptor.
 
 ## Blunt current-state finding
 
@@ -231,8 +237,9 @@ stronger foundations than Wordgard's class graph.
 
 Its schema declaration layer is weaker. The compiler is still a set of maps
 plus runtime lookups, property ownership is split between nested element specs
-and a separate text registry, and Plate makes the problem worse by globally
-copying every non-element plugin's `node.elementProperties` onto every element
+and a separate text registry, and legacy Plate made the problem worse by
+globally copying every non-element plugin's `node.elementProperties` onto every
+element
 type. Indent is the clean proof of the bug: schema compilation permits
 `indent` everywhere, then a semantic correction deletes it from nodes the
 feature did not mean to target
@@ -289,8 +296,8 @@ All other package paths are written from the repository root.
 
 | # | Concept | Wordgard evidence | Live Plite/Plate evidence | Current classification | Verdict and blunt reason |
 | ---: | --- | --- | --- | --- | --- |
-| 13 | Boolean mark declaration | `Mark.define` creates singleton boolean marks; Strong/Emphasis/etc. use it (`doc/mark.ts:43-80`; `types/schema.ts:309-382`) | Plate repeats `isLeaf: true` and `textProperty: { kind: 'boolean' }`; `withPlite.ts:349-374` synthesizes an implicit descriptor if omitted | `inferior` | `hard-cut` the redundancy. `isLeaf: true` already semantically implies a boolean property; the final API makes that truth explicit as `node: { mark: true }` and deletes the old fields. |
-| 14 | Parameterized text property | `Mark.Type.define<T>` handles Link, Color, language, spans, image metadata (`types/schema.ts:52-59,206-298,363-395`) | `textProperty` supports boolean/string/number/JSON/set kinds (`interfaces/editor.ts:966-984`) | `different tradeoff` | `rearchitect` as `node: { mark: property.string() }` in Plate and an explicit `schema.textProperty(...)` in Plite. |
+| 13 | Boolean mark declaration | `Mark.define` creates singleton boolean marks; Strong/Emphasis/etc. use it (`doc/mark.ts:43-80`; `types/schema.ts:309-382`) | Plate repeats `isLeaf: true` and `textProperty: { kind: 'boolean' }`; `withPlite.ts:349-374` synthesizes an implicit descriptor if omitted | `inferior` | `hard-cut` the redundancy. `isLeaf: true` semantically implies a boolean property; the final API states the value policy explicitly as `schema: { mark: property.boolean(...) }`. |
+| 14 | Parameterized text property | `Mark.Type.define<T>` handles Link, Color, language, spans, image metadata (`types/schema.ts:52-59,206-298,363-395`) | `textProperty` supports boolean/string/number/JSON/set kinds (`interfaces/editor.ts:966-984`) | `different tradeoff` | `rearchitect` as `schema: { mark: property.string() }` in Plate and an explicit `schema.textProperty(...)` in raw Plite. |
 | 15 | Element-owned property | Wordgard uses targeted marks even for node metadata such as `ColSpan`, `RowSpan`, `ImageAlt`, `ImageSize` (`types/schema.ts:206-298`) | Plite nests `properties` inside `EditorElementSpec` (`interfaces/editor.ts:986-1003`) | `different tradeoff` | `keep` distinct element storage, but `rearchitect` declaration through explicit element-property registrations so ownership and targeting compile uniformly. |
 | 16 | Cross-cutting property | Wordgard `Mark.Spec.target` targets types/groups across nodes (`doc/mark.ts:213-270`) | Plate fakes this with non-element plugins whose properties are globally merged (`PluginConfig.ts:271-364`; `withPlite.ts:327-452`) | `inferior` | `hard-cut` global merge; `steal` explicit target rules. Indent, alignment, IDs, comments, suggestions, spans, and metadata become named schema contributions. |
 | 16a | Ephemeral editor metadata | Wordgard state/facets keep runtime state outside document tags (`state/state.ts:422-587`) | Plate registers `_memo` on elements/text, then a correction always removes it (`packages/core/src/react/editor/internal/EditableMetadataPlugin.ts:5-29`) | `inferior` | `hard-cut` `_memo` as schema/document data. Ephemeral renderer/editor metadata belongs in fields or the mapped view store, never in History/Yjs/document JSON. |
@@ -325,7 +332,7 @@ All other package paths are written from the repository root.
 | ---: | --- | --- | --- | --- | --- |
 | 41 | Node membership | Wordgard schema owns exact node type objects and recursively validates membership (`doc/schema.ts:43-75`) | Plite exact types plus dynamic `match` overlays; open fallback when unspecified (`core/editor-schema.ts:403-482,514-562`) | `inferior` | `rearchitect` exact stable type IDs and `hard-cut` arbitrary node matcher overlays from closed schemas. Reject speculative discriminant variants until a real serializable consumer proves the API. |
 | 42 | Groups | Wordgard groups are first-class and hierarchical (`doc/node.ts:236-285`) | Plite groups are flat strings compiled to sets (`interfaces/editor.ts:986-1003`; `core/editor-schema.ts:200-308`) | `inferior` | `steal` hierarchical groups, represented as frozen string IDs with transitive compiled membership rather than classes. |
-| 42a | Inline/block/void classification | Wordgard `Node.Spec.inline` drives built-in Inline/Block/Textblock groups (`doc/node.ts:193-225,252-263`) | Plite element specs expose inline/void behavior, while Plate duplicates it as free-floating `isInline`/`isVoid` flags (`packages/plite/src/interfaces/editor.ts:927-937,986-1003`; `packages/core/src/lib/plugin/PluginConfig.ts:343-400`) | `different tradeoff` | `rearchitect` one `node.element` behavior declaration that compiles built-in groups and renderer behavior; delete the duplicate Plate flags. |
+| 42a | Inline/block/void classification | Wordgard `Node.Spec.inline` drives built-in Inline/Block/Textblock groups (`doc/node.ts:193-225,252-263`) | Plite element specs expose inline/void behavior, while Plate duplicates it as free-floating `isInline`/`isVoid` flags (`packages/plite/src/interfaces/editor.ts:927-937,986-1003`; `packages/core/src/lib/plugin/PluginConfig.ts:343-400`) | `different tradeoff` | `rearchitect` one `schema.element` behavior declaration that compiles built-in groups and renderer behavior; delete the duplicate Plate flags. |
 | 43 | Semantic roles | Wordgard has Code/List/LineBreak roles (`doc/node.ts:287-312`) | Plate behavior is distributed across plugin node/config APIs and Plite exposes no schema-role slot (`packages/core/src/lib/plugin/PluginConfig.ts:271-364`; `packages/plite/src/interfaces/editor.ts:1919-1957`) | `different tradeoff` | `reject` a role registry today: no live Plite kernel consumer needs it. Keep tables/lists/product semantics in Plate and add a named kernel capability only when generic behavior proves the owner gap. |
 | 44 | Content grammar | Wordgard node specs define content queries and schema containment (`doc/node.ts:716-859`; `doc/schema.ts:124-180`) | Plite has composable `type/group/text/any/all/not` rules with cardinality (`interfaces/editor.ts:939-964`) | `different tradeoff` | `keep` Plite grammar AST; compile it into membership/cardinality/default tables. |
 | 45 | Cardinality | Wordgard content matching/default construction enforces required shapes (`doc/schema.ts:124-180,189-277`) | Plite exposes `min`/`max` and generated laws (`interfaces/editor.ts:939-964`; `test/schema-laws.test.ts`) | `superior` | `keep`. |
@@ -356,7 +363,7 @@ All other package paths are written from the repository root.
 | 65 | Transactional reconfiguration | Wordgard config effects can replace configuration, then wrap old content in the new schema (`state/state.ts:163-195`) | Plite compiles and validates the candidate/current document before atomic publication; invalid candidates never publish (`editor-extension.ts:1119-1223`; test lines 820-896) | `superior` | `keep` atomic publication; `reject` merely rewrapping content under a new schema. |
 | 66 | Schema migration | Wordgard configuration replacement wraps the current content in the next schema without a fitted migration API (`state/state.ts:163-195`) | Plite validates/rejects incompatible candidates but exposes no atomic document migration callback (`packages/plite/src/core/editor-extension.ts:1119-1223`) | `equivalent` | `rearchitect` explicit `editor.update.extensions.reconfigure(slot, next, { migrate })` that stages the schema, builds a canonical `DocumentChange`, validates both, then publishes one commit. |
 | 67 | Automatic facet dependencies | Wordgard facets automatically track state dependencies (`state/state.ts:422-587`) | Plite extension/facet dependencies are explicit declarations (`packages/plite/src/interfaces/editor.ts:305-310,1932`; `core/editor-extension.ts:544-929`) | `different tradeoff` | `reject` automatic tracking for schema. Explicit inputs produce deterministic compilation, serialization, and agent-readable ownership. |
-| 68 | Schema version/fingerprint | Wordgard configuration relies on live schema elements/facets (`state/state.ts:590-683,773-813`) | Plite fingerprints/revisions declarations, while History validates against the live schema (`packages/plite/src/core/editor-extension.ts:1004-1181`; `packages/plite-history/src/history-codec.ts:21-185`) | `superior` | `rearchitect` stable schema ID/version/fingerprint in persisted state/history diagnostics, without serializing descriptor classes. |
+| 68 | Schema version/fingerprint | Wordgard configuration relies on live schema elements/facets (`state/state.ts:590-683,773-813`) | Plite fingerprints/revisions declarations, while History validates against the live schema (`packages/plite/src/core/editor-extension.ts:1004-1181`; `packages/plite-history/src/history-codec.ts:21-185`) | `superior` | `rearchitect` one compiler-owned identity: omission derives the exact semantic fingerprint; optional explicit ID/version adds durable lineage for persisted state, collaboration, and migrations. Never serialize descriptor classes or require identity boilerplate from ordinary Plate callers. |
 
 ### E. Parsing, serialization, codecs, and rendering
 
@@ -387,11 +394,11 @@ All other package paths are written from the repository root.
 | # | Concept | Wordgard evidence | Live Plite/Plate evidence | Current classification | Verdict and blunt reason |
 | ---: | --- | --- | --- | --- | --- |
 | 83 | Schema author TypeScript | Wordgard generic `Node.Type`/`Mark.Type` locally type `param`, while composition remains class-centric (`doc/node.ts:132-190`; `doc/mark.ts:139-210`) | Plite `Value` unions infer element/text shapes, while schema descriptors erase many property generics to `any` (`interfaces/editor.ts:908-1003`) | `different tradeoff` | `rearchitect` frozen descriptor builders whose key/value/target types feed an inferred schema type and editor value. |
-| 84 | Plugin-author DX | Wordgard puts node/mark semantics in cohesive class specs (`doc/node.ts:193-225,716-859`; `doc/mark.ts:213-270`) | Plate exposes overlapping flags/fields and global property behavior (`packages/core/src/lib/plugin/PluginConfig.ts:271-400`) | `inferior` | `hard-cut` free-floating schema-affecting node flags and property fields in favor of `node.element`, `node.mark`, and top-level cross-cutting `schema.properties`. |
+| 84 | Plugin-author DX | Wordgard puts node/mark semantics in cohesive class specs (`doc/node.ts:193-225,716-859`; `doc/mark.ts:213-270`) | Plate exposes overlapping flags/fields and global property behavior (`packages/core/src/lib/plugin/PluginConfig.ts:271-400`) | `inferior` | `hard-cut` free-floating schema-affecting node flags and property fields in favor of `schema.element`, `schema.mark`, and top-level cross-cutting property contributions. |
 | 85 | Agent discoverability | Wordgard centralizes schema semantics in `Schema`, node specs, and mark specs (`doc/schema.ts:6-35`; `doc/node.ts:193-225`; `doc/mark.ts:213-270`) | Plite semantics span interfaces, adapter inference, registries, compiler, codecs, and corrections (`packages/plite/src/interfaces/editor.ts:795-1003`; `core/extension-registry.ts:44-59`; `packages/core/src/lib/editor/withPlite.ts:267-500`) | `inferior` | `rearchitect` one documented vocabulary, one compiler artifact, one property declaration route, and JSDoc with concrete owner examples. |
 | 86 | Runtime cost | Wordgard compiles containment/wrapping maps and mark rank/set order (`doc/schema.ts:11-35,124-180`; `doc/mark.ts:169-183`) | Plite traverses rules, runs wrapper BFS/property matcher lookup, and expands Plate properties (`packages/plite/src/core/editor-schema.ts:446-756`; `packages/core/src/lib/editor/withPlite.ts:327-452`) | `inferior` | `steal` finite tables/caches; benchmark compilation, validation, fitting, reconfiguration, and hot property queries. |
 | 87 | Memory | Wordgard allocates class tags and sorted mark arrays plus compiled maps (`doc/node.ts:61-95`; `doc/mark.ts:82-136`; `doc/schema.ts:11-35`) | Plite plain objects are lean, but Plate copies global descriptors into element specs (`packages/plite/src/interfaces/element.ts:11-17`; `packages/core/src/lib/editor/withPlite.ts:327-452`) | `different tradeoff` | `hard-cut` descriptor expansion; store each property once plus sparse target membership sets. Keep JSON values and let retained-heap evidence justify any denser structure. |
-| 88 | History | Wordgard state/configuration keeps documents bound to live schemas (`state/state.ts:49-79,590-683`) | Plite History JSON validates every intermediate document against current schema (`plite-history/src/history-codec.ts:21-185`) | `superior` | `keep`, add schema ID/version/fingerprint diagnostics and fail closed on mismatch. Do not invent generic stack migration without source-document/schema context. |
+| 88 | History | Wordgard state/configuration keeps documents bound to live schemas (`state/state.ts:49-79,590-683`) | Plite History JSON validates every intermediate document against current schema (`plite-history/src/history-codec.ts:21-185`) | `superior` | `keep`, persist the exact fingerprint and optional named lineage, then fail closed on mismatch. Do not require lineage for ordinary editors or invent generic stack migration without source-document/schema context. |
 | 89 | Yjs | Wordgard exposes local `ChangeSet` transformation rather than a Yjs bridge (`doc/change.ts:117-180,489-544`) | Plite Yjs lowers canonical changes and recognizes set-valued text properties (`packages/yjs/src/core/controller.ts:146-178`; `core/change-bridge.ts:1-205`) | `superior` | `keep`, generalize compiled merge/lifecycle lookup to element and text property IDs; remove `text in node` special casing. |
 | 90 | Collaboration convergence | Wordgard Mark.Set add/remove ordering is deterministic locally (`doc/mark.ts:82-136,250-274`) | Plite generated/exhaustive property-delta laws prove invert/transform convergence (`test/schema-contract.ts:759-987`) | `superior` | `keep`; every new value/merge strategy requires algebra laws before registration. |
 | 91 | Plate versus Plite ownership | Wordgard combines schema, DOM parsing/serialization, and state configuration (`doc/schema.ts:6-35`; `doc/parse.ts:10-225`; `state/state.ts:590-683`) | Plite core, `plite-dom`, Plate Core, and feature packages have separate owners (`packages/plite/src/interfaces/editor.ts:795-1003`; `packages/plite-dom/src/plugin/host-codec.ts:19-52`; `packages/core/src/lib/plugin/PluginConfig.ts:271-364`) | `superior` | `keep`: Plite owns generic schema/change laws; host packages own codecs; Plate Core adapts plugins; packages own product concepts. |
@@ -568,29 +575,31 @@ targets stay deferred until a concrete consumer proves the need.
 ```ts
 const BaseBoldPlugin = createBasePlugin({
   key: 'bold',
-  node: { mark: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
 });
 
 const BaseColorPlugin = createBasePlugin({
   key: 'color',
-  node: {
+  schema: {
     mark: {
+      property: property.typed(CssColor),
       target: target.group('textBlock'),
-      value: property.string({ policy: CssColor }),
     },
   },
 });
 
 const BaseImagePlugin = createBasePlugin({
   key: 'image',
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ min: 1, max: 1 }),
       inline: true,
       void: 'inline',
       properties: {
         alt: property.string({ default: '', omitDefault: true }),
-        url: property.string({ policy: SafeUrl }),
+        url: property.typed(SafeUrl),
       },
     },
   },
@@ -598,20 +607,16 @@ const BaseImagePlugin = createBasePlugin({
 
 const BaseIndentPlugin = createBasePlugin({
   key: 'indent',
-  options: {
-    targetPluginKeys: ['paragraph'],
+  config: {
+    targets: [BaseParagraphPlugin],
   },
-  schema: ({ options }) => ({
+  schema: ({ config, own, plugins }) => ({
     properties: [
-      schema.elementProperty(
-        'indent',
-        property.number({ policy: PositiveInteger }),
-        {
-          target: target.types(options.targetPluginKeys),
-          split: 'preserve',
-          typeChange: 'preserve-if-allowed',
-        }
-      ),
+      own.elementProperty(property.typed(PositiveInteger), {
+        target: target.types(plugins.elementTypes(config.targets)),
+        split: 'preserve',
+        typeChange: 'preserve-if-allowed',
+      }),
     ],
   }),
 });
@@ -624,7 +629,8 @@ keys to the serializable exact-type target before Plite compilation.
 The hard answer to the suspicious APIs:
 
 - `isLeaf: true` semantically implies a boolean text property. Because this is
-  a hard cut, the final API deletes `isLeaf` and says `mark: true`.
+  a hard cut, the final API deletes `isLeaf` and declares
+  `schema.mark: property.boolean(...)`.
 - `textProperty` and `elementProperty` should share `property.*` value
   factories. They must remain distinct property registrations.
 - Indent is not a node and must not pretend to be one. It contributes an
@@ -636,25 +642,31 @@ The hard answer to the suspicious APIs:
 ### Custom schema and atomic reconfiguration
 
 ```ts
-const ArticleSchema = defineEditorSchema({
-  id: 'article',
-  version: 1,
+const articleSchemaDefinition = {
   unknown: 'reject',
   groups: {
-    commentable: schema.group(),
-    indentable: schema.group({ extends: ['block'] }),
+    commentable: {},
+    indentable: { extends: ['block'] },
   },
   elements: {
     image: Image,
-    paragraph: element({
-      groups: ['block', 'commentable', 'indentable'],
+    paragraph: {
+      groups: ['commentable', 'indentable'],
       content: schema.content.text({ default: 'text', min: 1 }),
-    }),
+    },
   },
   properties: [Bold, Color, Comments, Indent],
-  root: schema.root({
+  root: {
     content: schema.content.group('block', { min: 1 }),
-  }),
+  },
+} as const;
+
+const ArticleSchema = defineEditorSchema(articleSchemaDefinition);
+
+const PersistedArticleSchema = defineEditorSchema({
+  ...articleSchemaDefinition,
+  id: 'article',
+  version: 1,
 });
 
 const articleSchemaSlot = defineExtensionSlot('article-schema');
@@ -690,6 +702,14 @@ schema.
 - roots/groups/property IDs;
 - the editor's default `Value` where no explicit wider value is supplied.
 
+`ArticleSchema` uses its exact semantic fingerprint as identity.
+`PersistedArticleSchema` adds optional durable lineage for data that must span
+compatible schema evolution. Supplying only `id` or only `version` is invalid;
+the compiler completes exactly one identity in either mode. The identity is
+discriminated as `{ kind: 'derived', fingerprint }` or
+`{ kind: 'named', id, version, fingerprint }`. Lineage is excluded from the
+fingerprint, so naming the same semantics cannot alter semantic compatibility.
+
 Open JSON editors remain possible through
 `defineEditorSchema({ unknown: 'preserve', ... })`. Closed schemas never infer
 openness from the presence or absence of roots.
@@ -703,9 +723,15 @@ examples never expose the runtime's internal primary-root sentinel.
 
 ```ts
 interface CompiledEditorSchema {
-  readonly id: string;
-  readonly version: number;
   readonly fingerprint: string;
+  readonly identity:
+    | Readonly<{ fingerprint: string; kind: 'derived' }>
+    | Readonly<{
+        fingerprint: string;
+        id: string;
+        kind: 'named';
+        version: number;
+      }>;
   readonly revision: number;
   readonly unknown: 'reject' | 'preserve';
 
@@ -768,7 +794,7 @@ API boundary.
 | --- | --- | --- |
 | `plite` | JSON value descriptors; element/text property registrations; separate target and content ASTs; schema compiler; canonical construction/fitting; lifecycle and change-lowering laws; schema transactions | DOM/HTML/Markdown, React, tables/lists/media product schemas |
 | `plite-dom` | Schema-linked DataTransfer codecs and clipboard DOM ingress/egress keyed by stable element/property IDs | Model schema representation, Plate component/static rendering, or speculative render metadata |
-| `plite-history` | Persisted schema ID/version/fingerprint diagnostics and fail-closed decode | Live descriptor identity or generic history-stack migration |
+| `plite-history` | Persisted exact fingerprint plus optional named-lineage diagnostics and fail-closed decode | Live descriptor identity, required lineage, or generic history-stack migration |
 | `yjs` | Lowering compiled replace/set property strategies and canonical `DocumentChange` to/from Yjs | Guessing property kind from `text in node` or plugin keys |
 | Plate Core | Typed plugin-to-schema composition; resolved plugin target IDs; React renderer registration; product extension precedence | Global descriptor copying or schema repair corrections |
 | Plate packages | Element types, product groups, element-owned/cross-cut properties, codec/render contributions, commands, genuine semantic corrections | Generic schema/compiler primitives |
@@ -783,7 +809,7 @@ dependency-sorted below.
 | 1 | A+ | Explicit cross-cutting property contributions with target rules; delete Plate's global element-property merge | The current system lies about where data is valid. Indent proves it. This fixes correctness, DX, memory, corrections, and codec/Yjs ownership at once. |
 | 2 | A+ | Build the real immutable schema compiler artifact | Every later capability becomes simpler when type/group/parent/root/property/default/wrapper/lifecycle questions are compiled once instead of rediscovered at runtime. |
 | 3 | A+ | One `property.*` value vocabulary plus distinct text/element registrations | It removes duplicate factories without erasing different editing semantics. This is the clean center Wordgard almost has, adapted correctly to Plite. |
-| 4 | A | Hard-cut Plate's free-floating node/schema flag and property matrix for `node.element`, `node.mark`, and `schema.properties` | The current API is redundant, misleading, and difficult for both humans and agents to infer correctly. |
+| 4 | A | Hard-cut Plate's free-floating node/schema flag and property matrix for `schema.element`, descriptor-backed `schema.mark`, and explicit property contributions | The current API is redundant, misleading, and difficult for both humans and agents to infer correctly. |
 | 5 | A | Compile a structural target AST across type, hierarchical group, root, and actual parent | This pulls Wordgard's best schema idea into all proven Plite property lanes and makes invalid state unrepresentable at ingress. |
 | 6 | A | Replace callback matchers with exact IDs and provably disjoint exact/prefix keys | Runtime ambiguity is not extensibility; it is deferred schema failure. Do not add unused discriminant variants without a real serializable consumer. |
 | 7 | A | Make closed/open schema policy explicit | Coupling unknown-property policy to whether roots exist is arbitrary and fragile. |
@@ -795,7 +821,7 @@ dependency-sorted below.
 | 13 | A- | Infer document/value/property types from frozen schema builders | Today Plite's JSON value unions are good, but descriptor generics leak to `any`. A schema rewrite that does not fix inference has failed. |
 | 14 | A- | Extend existing schema-linked DataTransfer codecs to stable element and both-placement property IDs | The fitted HostCodec path already exists. Finish its vocabulary and delete Plate flag inference; defer render metadata until Plate static rendering proves the consumer. |
 | 15 | A- | Generalize replace/set change strategies to element and text properties | Comments/suggestions/metadata need the same convergence law regardless of storage location; Yjs must stop guessing from node shape. |
-| 16 | B+ | Add stable schema ID/version/fingerprint persistence diagnostics | History and collaboration should fail with an actionable schema mismatch, not a late invalid-document exception. |
+| 16 | B+ | Add compiler-owned derived/named schema identity and persistence diagnostics | Ordinary Plate callers get deterministic exact-fingerprint identity; optional named lineage makes History/collaboration/migration mismatches actionable without contaminating the semantic fingerprint. |
 | 17 | B+ | Hierarchical groups; defer a kernel-role registry until a generic consumer exists | Hierarchical groups improve reuse and targets. A role vocabulary without a runtime owner is architecture cosplay. |
 | 18 | B+ | Structured path-aware schema diagnostics with contributor provenance | This materially improves plugin-author and agent DX and makes compile conflict failures debuggable. |
 | 19 | B+ | Delete schema-cleanup corrections and normalizers | If a property target can express the law, accepting it then deleting it later is architectural nonsense. |
@@ -824,9 +850,9 @@ adopts its callers.
 | runtime content-rule interpretation in hot queries | `core/editor-schema.ts:514-562` | compiled programs and immutable membership sets | Benchmark and profiler show indexed queries |
 | repeated wrapper BFS/factory probing | `core/editor-schema.ts:692-756` | compiled/cached wrapper plans and construction plans | Wrapper plan cache laws and benchmark pass |
 | hidden closed-schema paragraph/factory fallback | `core/editor-schema.ts:564-627` | compiler-proven defaults | Unconstructable schema fails compilation |
-| free-floating Plate schema flags/fields: `node.isElement`, `isLeaf`, `isInline`, `isVoid`, `isMarkableVoid`, `isSelectable`, `isContainer`, `isStrictSiblings`, `isMetadataProp`, `elementProperties`, `elementPropertyMatchers`, `textProperty` | `packages/core/src/lib/plugin/PluginConfig.ts:271-400` | `node.element` behavior/content/groups, `node.mark`, property significance, and `schema.properties`; renderer-only fields stay outside schema | Repository `rg` returns zero old schema declarations and adapter branches |
+| free-floating Plate schema flags/fields: `node.isElement`, `isLeaf`, `isInline`, `isVoid`, `isMarkableVoid`, `isSelectable`, `isContainer`, `isStrictSiblings`, `isMetadataProp`, `elementProperties`, `elementPropertyMatchers`, `textProperty` | `packages/core/src/lib/plugin/PluginConfig.ts:271-400` | top-level `type`, `schema.element` behavior/content, descriptor-backed `schema.mark`, property significance, and explicit property contributions; renderer-only fields stay outside schema | Repository `rg` returns zero old schema declarations and adapter branches |
 | global non-element property collection/merge | `packages/core/src/lib/editor/withPlite.ts:327-452` | explicit cross-cut contributions and target compilation | Indent is invalid outside its configured targets without correction |
-| implicit untyped `isLeaf` descriptor synthesis and forced `keepOnTypeChange: true` | `withPlite.ts:349-374` | boolean `mark: true` shorthand and explicit lifecycle defaults | Boolean/parameterized inference tests pass |
+| implicit untyped `isLeaf` descriptor synthesis and forced `keepOnTypeChange: true` | `withPlite.ts:349-374` | `schema.mark: property.boolean(...)` and explicit lifecycle defaults | Boolean/parameterized inference tests pass |
 | Plate adapter helper chain `createImplicitPlateElementSpecs`, `collectPlateGlobalElementProperties`, `createImplicitPlateTextPropertySpecs`, and `compilePlate*Specs` | `withPlite.ts:267-500` | one typed plugin-schema contribution compiler | No implicit/global/spec-merging helper remains |
 | ParserPlugin codec inference from `isElement`/`textProperty` | `packages/core/src/lib/plugins/ParserPlugin.ts:33-107` | codecs claim stable compiled node/property IDs | Codec tests contain no node-flag inference |
 | schema-cleanup branch in Indent correction | `packages/indent/src/lib/BaseIndentPlugin.ts:161-197` | schema target rejects the property | Genuine semantic indent behavior remains tested |
@@ -835,8 +861,9 @@ adopts its callers.
 | text-only property vocabulary | `plite-dom/src/plugin/host-codec.ts:19-52` | exact/pattern element and text property vocabulary | Codec claims compile for both placements |
 | runtime property helper cluster `getElementSpecPropertyDescriptor`, `getTextPropertySpec`, `isTextPropertyAllowed`, `mergeTextProperty`, and split/type-change filtering branches | `core/editor-schema.ts:446-503,1885-2066,2385-2416` | direct compiled property/index/lifecycle queries | Public-state methods delegate only to compiled tables |
 | Yjs `text in node` set-property classification | `packages/yjs/src/core/controller.ts:146-178` | compiled property storage/merge strategy | Element/text set properties round-trip and converge |
-| persisted reliance on whichever live schema happens to decode History | `plite-history/src/history-codec.ts:21-185` | schema ID/version/fingerprint diagnostics and explicit migration | Mismatch/migration tests pass |
+| persisted reliance on whichever live schema happens to decode History | `plite-history/src/history-codec.ts:21-185` | exact-fingerprint diagnostics, optional named lineage, and explicit migration | Derived/named mismatch and migration tests pass |
 | docs/examples teaching the old free-floating Plate schema matrix | package docs, registry examples, API references | one node/property schema vocabulary | Documentation and registry audit returns zero old terms |
+| required explicit Plate schema identity and checker-driven example boilerplate | ordinary app/docs/test constructors and docs-check assertions | omitted `schema` selects `{ kind: 'derived', fingerprint }`; explicit paired `id/version` selects `{ kind: 'named', id, version, fingerprint }`; lineage excluded from fingerprint | Ordinary examples omit identity; durable lineage examples retain it; checker accepts omission and rejects partial/nondeterministic identity |
 
 ## Adoption impact
 
@@ -939,7 +966,7 @@ Decision ledger:
 | Document model | Plain `Element`/`Text` JSON | Same | Plite | Better than Wordgard classes | None beyond descriptor typing | JSON codec/schema laws | Accidental class leakage | keep |
 | Property values | Duplicate text/element factories | One `property.*` vocabulary | Plite | Remove duplication | All schema declarations | Type/runtime descriptor laws | Erasing placement semantics | rearchitect |
 | Property placement | Nested element specs + separate text registry + Plate global merge | Explicit element/text registrations and targets | Plite/Plate Core | Make validity truthful | All property packages | Target/generated laws | Large hard cut | hard-cut |
-| Plate node API | Five overlapping flags/fields | `node.element`, `node.mark`, `schema.properties` | Plate Core | Best plugin/agent DX | All declarations and registry | Type inference + package tests | Mechanical breadth | hard-cut |
+| Plate node API | Five overlapping flags/fields | top-level `type`, `schema.element`, descriptor-backed `schema.mark`, explicit property contributions | Plate Core | Best plugin/agent DX | All declarations and registry | Type inference + package tests | Mechanical breadth | hard-cut |
 | Targets | Exact text targets, implicit/global element scope | Compiled type/group/root/actual-parent AST | Plite | Pull Wordgard's best proven mechanism | Indent/metadata/owned properties | Interpreter-model equivalence laws | Context bugs | steal/rearchitect |
 | Unknown properties | Open/closed inferred from roots | Explicit `unknown` policy | Plite | Roots are unrelated | Custom schemas/codecs | Complete-primary-root open/closed matrix | Existing loose fixtures | hard-cut |
 | Dynamic keys/types | Runtime callback matchers | Exact IDs and disjoint exact/prefix selectors; no speculative discriminant variants | Plite/Plate | Fail early and serialize | Suggestion/dynamic metadata | Compile conflict tests | Dynamic plugin loss | rearchitect |
@@ -1011,11 +1038,11 @@ Findings:
   one compiled schema.
 - Plite's shared-value descriptor duplication is cosmetic debt; Plate's global
   element-property merge is correctness debt.
-- `isLeaf: true` plus a boolean descriptor is redundant. The final Plate
-  shorthand is `mark: true`.
+- `isLeaf: true` plus a boolean descriptor is redundant. The final Plate shape
+  is `schema.mark: property.boolean(...)`.
 - Text and element property placement cannot be merged internally without
   losing real editing laws.
-- Indent belongs at `schema.properties`, not `node`.
+- Indent belongs in an explicit schema property contribution, not `node`.
 - Wordgard's class identity, one-param tags, Mark arrays, DOM-in-core shapes,
   and one-document assumption are not useful extraction candidates.
 
@@ -1121,10 +1148,14 @@ Verification evidence:
   codecs expose only immutable state/data/slice contexts; the removed
   slice/codec/public parser symbols and manual DOM paste helpers have zero
   production matches.
-- Current Plate reference docs use `node.element`, `node.mark`, compiled
+- Current Plate reference docs use top-level `type`, `schema.element`,
+  descriptor-backed `schema.mark`, compiled
   content grammar, and property `significant: false`. Removed node flags and
   `isStrictSiblings` remain only in historical migration pages;
-  `pnpm --filter www check:docs` and the Plite docs audit pass.
+  `pnpm --filter www check:docs` and the earlier Plite docs audit passed. The
+  identity portion is reopened because that checker enforced explicit lineage;
+  it must accept deterministic omission and the ordinary-example boilerplate
+  must be removed before docs closure is current again.
 
 Final handoff prepared:
 - Not yet. The public vocabulary, compiler, Plate adoption, host, History/Yjs,

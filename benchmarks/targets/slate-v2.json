@@ -13,7 +13,7 @@
   "targets": [
     {
       "id": "plite-schema-construction",
-      "question": "Does canonical schema construction keep the changed representation and untouched identities local for a sparse edit inside one deep, wide top-level node?",
+      "question": "Does a schema-backed sparse edit keep the changed representation span and untouched boundary identities local inside one deep, wide top-level node?",
       "owner": "plite",
       "family": "core-schema",
       "kind": "current",
@@ -24,11 +24,11 @@
         "direction": "lower",
         "unit": "tokens",
         "printsMetric": true,
-        "upgrade": "Sparse canonical construction must retain untouched boundary identities and change fewer than 64 tokens. Whole publication timing remains diagnostic because immutable plain-JSON ancestor reconstruction scales with ancestor width."
+        "upgrade": "A sparse schema-backed edit must retain untouched boundary identities and change fewer than 64 tokens. The 100/1,000/10,000/50,000 timing rows are labeled immutable-publication diagnostic because they measure immutable DocumentChange ancestor publication, not schema construction."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/slice-fit-contract.test.ts",
-        "policy": "Promotion requires contextual fitter laws, strict direct-write rejection, mapped selection/runtime identity, canonical idempotence, and the strict locality benchmark."
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/slice-fit-contract.test.ts ./benchmarks/editor/benchmarks/plite-schema-construction-benchmark.test.ts",
+        "policy": "Promotion requires contextual fitter laws, strict direct-write rejection, mapped selection/runtime identity, canonical idempotence, a sentinel proving the benchmark's compiled schema is active, and the strict locality benchmark."
       },
       "artifacts": [
         {
@@ -38,11 +38,12 @@
       ],
       "docs": {
         "sources": [
-          "docs/plans/2026-07-18-wordgard-plite-full-architecture-ledger.md"
+          "docs/plans/2026-07-18-wordgard-plite-full-architecture-ledger.md",
+          "docs/plans/2026-07-21-wordgard-plite-schema-contribution-architecture.md"
         ]
       },
       "thresholds": {
-        "promotion": "plite_schema_construction_max_changed_span<64 and plite_schema_construction_boundary_identity_preserved=1"
+        "promotion": "plite_schema_construction_compiled_schema_active=1 and plite_schema_construction_max_changed_span<64 and plite_schema_construction_boundary_identity_preserved=1"
       }
     },
     {
@@ -72,7 +73,8 @@
       ],
       "docs": {
         "sources": [
-          "docs/plans/2026-07-20-wordgard-plite-slice-architecture.md"
+          "docs/plans/2026-07-20-wordgard-plite-slice-architecture.md",
+          "docs/plans/2026-07-21-wordgard-plite-schema-contribution-architecture.md"
         ]
       },
       "thresholds": {
@@ -81,22 +83,22 @@
     },
     {
       "id": "plite-schema-architecture",
-      "question": "Does the compiled schema keep a 100-type, 200-exact-property, 20-prefix, 30-group, four-root corpus cheap to compile, query, validate, reconfigure equivalently, and retain?",
+      "question": "Does schema architecture stay bounded across 1/100/1,000 contributions, 100/1,000 Plate descriptors, local construction and schema deltas, equivalent/non-equivalent configuration, 10k-block migration, projected clipboard, type inference, and the established compiled corpus?",
       "owner": "plite",
       "family": "core-schema",
       "kind": "current",
       "cwd": ".",
-      "command": "PLITE_SCHEMA_ARCHITECTURE_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts --output=tmp/plite-schema-architecture-benchmark.json",
+      "command": "PLITE_SCHEMA_ARCHITECTURE_STRICT=1 PLITE_SCHEMA_TYPECHECK_BUDGET=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts --output=tmp/plite-schema-architecture-benchmark.json",
       "metrics": {
         "primary": "plite_schema_architecture_compile_p95_ms",
         "direction": "lower",
         "unit": "ms",
         "printsMetric": true,
-        "upgrade": "Compile p95 must stay below 16 ms; semantically comparable warm type, exact-property, prefix, and declared-wrapper queries target at least 2x less latency; unknown wrapper lookup reports first/warm timing and zero plan searches after the first; a sparse edit in a 50k-block constructor-owned document must take the incremental path, validate exactly the changed text property and owning-element property, visit zero properties in the unchanged named root, and take zero full fallbacks; equivalent reconfiguration must execute zero compiles and stay within 5% of the recorded legacy p95; every apples-to-apples forced-GC retained-heap sample must stay at least 25% below the recorded legacy p50. Group, allowed-parent, compiler-only compile scope, cold-detached/repeated-frozen 10k-block full validation, and deterministic representation-byte rows are current baselines without invented ratios."
+        "upgrade": "Preserve every established compile/query/validation/invalidation/cache/heap gate. Add exact 1/100/1,000 contribution compile/cache counts; 100/1,000 Plate descriptor resolution plus cold and structurally cached startup; isolated createAndFill construction-plan cardinality across 100/1,000 irrelevant defaults; equivalent and non-equivalent Plate publication; 1k/10k explicit migration; fixed two-node canonical open-edge projected clipboard locality across 1k/50k documents; and 100/1,000 TypeScript fixture budgets with an explicit 1,000-plugin widening boundary."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/schema-target-model-oracle.test.ts ./packages/plite/test/schema-compiler-laws.test.ts ./packages/plite/test/schema-compiler.test.ts ./packages/plite/test/incremental-schema-validation.test.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts",
-        "policy": "Promotion requires replayable target-model equivalence, compiler/property algebra laws, bounded wrapper-plan caching, differential incremental/full validation, exact 50k sparse-edit property-visit and unchanged-root counters, compiler contracts, exact corpus counts, four-root compilation, and strict benchmark assertions."
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/schema-target-model-oracle.test.ts ./packages/plite/test/schema-compiler-laws.test.ts ./packages/plite/test/schema-compiler.test.ts ./packages/plite/test/incremental-schema-validation.test.ts ./packages/plite-react/test/schema-runtime-invalidation-contract.test.ts ./packages/core/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/projected-clipboard-contract.test.ts",
+        "policy": "Promotion keeps the existing compiler/property/incremental/schema-delta contracts and additionally requires Plate model publication, canonical projected clipboard behavior, exact workload cohorts, explicit type widening, and every strict execution budget."
       },
       "artifacts": [
         {
@@ -107,11 +109,12 @@
       "docs": {
         "sources": [
           "docs/plans/2026-07-20-wordgard-plite-schema-architecture.md",
+          "docs/plans/2026-07-21-wordgard-plite-schema-contribution-architecture.md",
           "docs/plans/artifacts/wordgard-plite-schema-architecture/baseline.md"
         ]
       },
       "thresholds": {
-        "promotion": "plite_schema_architecture_compile_p95_ms<16 and comparable type/exact-property/prefix/declared-wrapper ratios<=0.5 and plite_schema_architecture_wrapper_plan_searches_after_first=0 and plite_schema_architecture_equivalent_reconfigure_compile_count=0 and equivalent-reconfiguration ratio<=1.05 and worst-sample plite_schema_architecture_retained_heap_baseline_ratio<=0.75; unknown-wrapper first/warm timing, group, allowed-parent, compile-scope, cold/warm full-validation, and retained-representation-proxy metrics are baseline-only"
+        "promotion": "plite_schema_architecture_compile_p95_ms<16 and comparable type/exact-property/prefix/declared-wrapper ratios<=0.5 and plite_schema_architecture_wrapper_plan_searches_after_first=0 and plite_schema_architecture_schema_invalidation_document_width_ratio<=1.5 and plite_schema_architecture_schema_invalidation_changed_type_ratio<=2 and plite_schema_architecture_schema_invalidation_property_affected_runtime_ids=64 and plite_schema_architecture_equivalent_reconfigure_compile_count=0 and equivalent-reconfiguration ratio<=1.05 and worst-sample plite_schema_architecture_retained_heap_baseline_ratio<=0.75; plus plite_schema_architecture_contribution_1000_compile_p95_ms<100 and plite_schema_architecture_contribution_1000_structural_cache_p95_ms<25 and plite_schema_architecture_contribution_1000_previous_revision_cache_p95_ms<50 and plite_schema_architecture_contribution_1000_cache_compile_count=0 and plite_schema_architecture_plate_descriptor_resolution_width_ratio<=2 and plite_schema_architecture_plate_startup_1000_p95_ms<2500 and plite_schema_architecture_plate_startup_per_descriptor_ratio<=2.5 and plite_schema_architecture_plate_equivalent_reconfigure_p95_ms<25 and plite_schema_architecture_plate_equivalent_reconfigure_compile_count=0 and plite_schema_architecture_plate_equivalent_reconfigure_commit_count=0 and plite_schema_architecture_plate_non_equivalent_reconfigure_p95_ms<25 and plite_schema_architecture_plate_non_equivalent_reconfigure_compile_count=5 and plite_schema_architecture_plate_non_equivalent_reconfigure_commit_count=5 and plite_schema_architecture_construction_1000_default_property_ids=1 and plite_schema_architecture_construction_1000_property_ids=1 and plite_schema_architecture_construction_property_width_ratio<=2 and plite_schema_architecture_large_document_migration_10000_p95_ms<2000 and plite_schema_architecture_large_document_migration_width_ratio<=15 and plite_schema_architecture_large_document_migration_10000_configuration_commit_count=10 and plite_schema_architecture_large_document_migration_10000_migration_call_count=10 and plite_schema_architecture_projected_clipboard_width_ratio<=1.5 and plite_schema_architecture_projected_clipboard_host_width_ratio<=2 and plite_schema_architecture_projected_clipboard_selected_nodes=2 and plite_schema_architecture_projected_clipboard_open_start=1 and plite_schema_architecture_projected_clipboard_open_end=1 and plite_schema_architecture_typecheck_1000_check_ms<5000 and plite_schema_architecture_typecheck_1000_instantiations<5000000 and plite_schema_architecture_typecheck_1000_memory_bytes<1342177280 and plite_schema_architecture_typecheck_check_time_ratio<=2 and plite_schema_architecture_typecheck_instantiation_ratio<=1.25; structurally cached Plate startup, unknown-wrapper first/warm timing, group, allowed-parent, compile-scope, cold/warm full-validation, cold invalidation index, and retained-representation-proxy metrics are baseline-only"
       }
     },
     {
@@ -183,6 +186,40 @@
       }
     },
     {
+      "id": "plite-command-dispatch",
+      "question": "Does command dispatch scale across 0, 1, 8, and 32 handlers, keep simple fallback continuation-free and document-size independent, and bound prefix composition without pretending its generic TransactionSpec cost is command-only work?",
+      "owner": "plite",
+      "family": "core-command",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_COMMAND_DISPATCH_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.ts --output=tmp/plite-command-dispatch-benchmark.json",
+      "metrics": {
+        "primary": "plite_command_dispatch_worst_budget_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "Every simple and prefix lane must stay within its explicit absolute p50/p95 budget. Simple dispatch at 20,000 blocks must remain within 2x its 100-block p50 at every handler depth. Runtime proof observes zero callable continuation identities in simple handlers and one fresh identity per around visit. Prefix document-size ratios are recorded only because each handler intentionally constructs a generic immutable TransactionSpec. The synthetic same-run interpreter is a correctness and machine-noise control, never a replacement for the unavailable pre-edit baseline."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/command-spec.test.ts ./packages/plite/test/extension-configuration.test.ts ./benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts",
+        "policy": "Promotion requires command fallback/prefix/rollback/configuration laws, exact actual/reference visit and handled-result parity, exact callable-continuation identity evidence, zero no-op commits, fixed absolute latency budgets, and the simple large-document ratio gate."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-command-dispatch-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-07-21-wordgard-plite-command-dispatch-architecture.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_command_dispatch_worst_budget_ratio<=1 and simple 20k/100-block p50 ratio<=2 and plite_command_dispatch_continuation_failures=0 and plite_command_dispatch_reference_parity=1; prefix document-size ratio is record-only"
+      }
+    },
+    {
       "id": "plite-history-depth",
       "question": "Does the cost of one history-skipped remote commit stay independent of retained undo depth?",
       "owner": "plite-history",
@@ -230,7 +267,7 @@
         "upgrade": "Start, middle, and end edits must keep local and sync medians within 2x, decode one top-level node, retain one changed range, and keep runtime-ID p95 below 1ms."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/yjs/test/remote-import-contract.spec.ts ./packages/yjs/test/canonical-change-contract.spec.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/yjs/test/remote-import-contract.slow.ts ./packages/yjs/test/canonical-change-contract.spec.ts",
         "policy": "The performance claim requires exact event-native traces, narrow changed ranges, full event-shape coverage, and explicit fallback tests."
       },
       "artifacts": [

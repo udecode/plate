@@ -1,5 +1,5 @@
 // biome-ignore-all lint/correctness/noUnusedFunctionParameters: Donor rows preserve the shared cross-browser fixture signature.
-import { expect, type Locator, test } from '@playwright/test';
+import { expect, type Locator, type Page, test } from '@playwright/test';
 import {
   assertNoIllegalKernelTransitions,
   assertPliteBrowserSelectionContract,
@@ -18,6 +18,66 @@ import {
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3101';
 const macChromeUserAgent =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36';
+const scrollableEditorCSS = `
+  [data-plite-editor][data-plite-root="main"] {
+    display: block;
+    max-height: 120px;
+    overflow-y: auto;
+    scroll-behavior: auto;
+  }
+`;
+
+const configureScrollableEditor = async (
+  page: Page,
+  root: Locator,
+  target: 'parent' | 'root'
+) => {
+  if (target === 'root') {
+    await page.addStyleTag({ content: scrollableEditorCSS });
+    return;
+  }
+
+  await root.evaluate((element: HTMLElement) => {
+    const scrollContainer = element.parentElement;
+
+    if (!scrollContainer) {
+      throw new Error('Missing scroll container');
+    }
+
+    scrollContainer.style.display = 'block';
+    scrollContainer.style.maxHeight = '120px';
+    scrollContainer.style.overflowY = 'auto';
+  });
+};
+
+const expectScrollableEditor = async (
+  root: Locator,
+  target: 'parent' | 'root'
+) => {
+  await expect
+    .poll(() =>
+      root.evaluate((element: HTMLElement, scrollTarget) => {
+        const scrollContainer =
+          scrollTarget === 'parent' ? element.parentElement : element;
+
+        if (!scrollContainer) return null;
+
+        const style = getComputedStyle(scrollContainer);
+
+        return {
+          maxHeight: style.maxHeight,
+          overflowY: style.overflowY,
+          scrollable:
+            scrollContainer.scrollHeight > scrollContainer.clientHeight,
+        };
+      }, target)
+    )
+    .toEqual({
+      maxHeight: '120px',
+      overflowY: 'auto',
+      scrollable: true,
+    });
+};
 
 const expectDOMCaretAtTextEnd = async (root: Locator, suffix: string) => {
   await expect
@@ -2046,41 +2106,10 @@ test.describe('On richtext example', () => {
     const expectedText = 'This is editable 가나다 better than a <textarea>!';
 
     await editor.ime.enableKeyEvents();
-    await editor.root.evaluate((element: HTMLElement) => {
-      const handle = (element as Record<string, any>).__pliteBrowserHandle;
-      const selection = element.ownerDocument.getSelection();
-
-      if (!handle?.selectRange || !selection) {
-        throw new Error('Cannot compose across formatted text');
-      }
-
-      const textNodeAt = (path: number[]) => {
-        const host = element.querySelector(
-          `[data-plite-node="text"][data-plite-path="${path.join(',')}"]`
-        );
-        const walker =
-          host &&
-          element.ownerDocument.createTreeWalker(host, NodeFilter.SHOW_TEXT);
-        const node = walker?.nextNode();
-
-        if (!node) {
-          throw new Error(`Cannot find text node at ${path.join(',')}`);
-        }
-
-        return node;
-      };
-
-      const anchor = { path: [0, 1], offset: 0 };
-      const focus = { path: [0, 3], offset: 'much'.length };
-
-      const range = element.ownerDocument.createRange();
-      range.setStart(textNodeAt(anchor.path), anchor.offset);
-      range.setEnd(textNodeAt(focus.path), focus.offset);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      element.ownerDocument.dispatchEvent(
-        new Event('selectionchange', { bubbles: true })
-      );
+    await editor.selection.select({
+      kind: 'text',
+      anchor: { path: [0, 1], offset: 0 },
+      focus: { path: [0, 3], offset: 'much'.length },
     });
 
     const client = await page.context().newCDPSession(page);
@@ -2707,18 +2736,8 @@ test.describe('On richtext example', () => {
         },
       });
 
-      await editor.root.evaluate((element: HTMLElement, target) => {
-        const scrollContainer =
-          target === 'parent' ? element.parentElement : element;
-
-        if (!scrollContainer) {
-          throw new Error('Missing scroll container');
-        }
-
-        scrollContainer.style.display = 'block';
-        scrollContainer.style.maxHeight = '120px';
-        scrollContainer.style.overflowY = 'auto';
-      }, scrollTarget);
+      await configureScrollableEditor(page, editor.root, scrollTarget);
+      await expectScrollableEditor(editor.root, scrollTarget);
       await editor.selection.select({
         kind: 'text',
         anchor: { path: [0, 6], offset: 1 },
@@ -2747,13 +2766,8 @@ test.describe('On richtext example', () => {
         editor: 'visible',
       },
     });
+    await configureScrollableEditor(page, editor.root, 'root');
 
-    await editor.root.evaluate((element: HTMLElement) => {
-      element.style.display = 'block';
-      element.style.maxHeight = '120px';
-      element.style.overflowY = 'auto';
-      element.style.scrollBehavior = 'auto';
-    });
     await editor.selection.select({
       kind: 'text',
       anchor: { path: [0, 6], offset: 1 },
@@ -2761,12 +2775,13 @@ test.describe('On richtext example', () => {
     });
 
     for (let i = 0; i < 18; i++) {
-      await page.keyboard.type(`Line ${i}`);
+      await page.keyboard.insertText(`Line ${i}`);
       await page.keyboard.press('Enter');
     }
 
     await editor.selection.collapse({ path: [0, 0], offset: 0 });
     await editor.focus();
+    await expectScrollableEditor(editor.root, 'root');
     await editor.root.evaluate((element: HTMLElement) => {
       element.scrollTop = 0;
 
@@ -2816,6 +2831,7 @@ test.describe('On richtext example', () => {
         editor: 'visible',
       },
     });
+    await configureScrollableEditor(page, editor.root, 'root');
 
     await page.evaluate(() => {
       document.getElementById('outside-focus-target')?.remove();
@@ -2826,12 +2842,6 @@ test.describe('On richtext example', () => {
       input.value = 'outside';
       document.body.append(input);
     });
-    await editor.root.evaluate((element: HTMLElement) => {
-      element.style.display = 'block';
-      element.style.maxHeight = '120px';
-      element.style.overflowY = 'auto';
-      element.style.scrollBehavior = 'auto';
-    });
     await editor.selection.select({
       kind: 'text',
       anchor: { path: [0, 6], offset: 1 },
@@ -2839,7 +2849,7 @@ test.describe('On richtext example', () => {
     });
 
     for (let i = 0; i < 18; i++) {
-      await page.keyboard.type(`Line ${i}`);
+      await page.keyboard.insertText(`Line ${i}`);
       await page.keyboard.press('Enter');
     }
 
@@ -2853,6 +2863,7 @@ test.describe('On richtext example', () => {
     };
 
     await editor.selection.select(bottomSelection);
+    await expectScrollableEditor(editor.root, 'root');
     await editor.root.evaluate((element: HTMLElement) => {
       element.scrollTop = element.scrollHeight - element.clientHeight;
     });
@@ -6301,7 +6312,7 @@ test.describe('On richtext example', () => {
     }
   });
 
-  test('records core command metadata for text input and delete', async ({
+  test('records semantic command tags for text input and delete', async ({
     page,
   }, testInfo) => {
     const editor = await openExample(page, 'plite/richtext', {
@@ -6364,12 +6375,9 @@ test.describe('On richtext example', () => {
           text: 'ThisQ is editable rich text',
         },
         {
-          command: {
-            origin: 'command',
-            type: 'insert_text',
-          },
-          kind: 'assertLastCommitCommand',
+          kind: 'assertLastCommitIncludesTags',
           label: 'assert-commit-after-text-input',
+          tags: ['semantic-command'],
         },
         mobile
           ? {
@@ -6411,18 +6419,15 @@ test.describe('On richtext example', () => {
           text: 'This is editable rich text',
         },
         {
-          command: {
-            origin: 'command',
-            type: 'delete',
-          },
-          kind: 'assertLastCommitCommand',
+          kind: 'assertLastCommitIncludesTags',
           label: 'assert-commit-after-backspace',
+          tags: ['semantic-command'],
         },
       ],
       {
         metadata: {
           capabilities: [
-            'core-command-metadata',
+            'semantic-command-tag',
             'dom-selection',
             'model-selection',
             'text-mutation',

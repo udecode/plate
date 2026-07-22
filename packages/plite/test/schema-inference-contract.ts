@@ -1,17 +1,21 @@
 import {
   createEditor,
+  defineEditorExtension,
   defineEditorSchema,
   defineExtensionSlot,
-  element,
   property,
   schema,
+  type EditorSchemaProperty,
   type SchemaElementFor,
+  type SchemaElementInput,
   type SchemaElementPropertiesFor,
   type SchemaElementPropertyKeys,
   type SchemaElementTypes,
   type SchemaGroupNames,
+  type SchemaGroupOptions,
   type SchemaPropertyIds,
   type SchemaRootNames,
+  type SchemaTarget,
   type SchemaText,
   type SchemaTextPropertyKeys,
   type SchemaValue,
@@ -20,16 +24,14 @@ import {
 
 const ArticleSchema = defineEditorSchema({
   elements: {
-    heading: element({
+    heading: {
       content: schema.content.text({ min: 1 }),
-      groups: ['block'],
       properties: { level: property.number() },
-    }),
-    paragraph: element({
+    } as const,
+    paragraph: {
       content: schema.content.text({ min: 1 }),
-      groups: ['block'],
       properties: { align: property.string() },
-    }),
+    } as const,
   },
   id: 'schema-inference-contract',
   properties: [
@@ -42,17 +44,289 @@ const ArticleSchema = defineEditorSchema({
     schema.textProperty('bold', property.boolean()),
     schema.textProperty(schema.key.prefix('comment_'), property.string()),
   ],
-  root: schema.root({
+  root: {
     content: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  }),
+  } as const,
   roots: {
-    comments: schema.root({ content: schema.content.type('paragraph') }),
+    comments: { content: schema.content.type('paragraph') } as const,
   },
+  unknown: 'reject',
   version: 1,
 });
+
+const dynamicTargetGroup: string = 'custom';
+const dynamicTargetType: string = 'heading';
+const dynamicTargetTypes: readonly string[] = ['heading'];
+declare const runtimeCondition: boolean;
+const finiteTargetGroup: 'custom' | 'other' = runtimeCondition
+  ? 'custom'
+  : 'other';
+const finiteTargetType: 'heading' | 'paragraph' = runtimeCondition
+  ? 'heading'
+  : 'paragraph';
+const finiteTargetTypes = runtimeCondition
+  ? (['heading'] as const)
+  : (['paragraph'] as const);
+const widenedTargets: readonly [SchemaTarget, SchemaTarget] = [
+  target.type('heading'),
+  target.type('paragraph'),
+];
+
+const UnsupportedDepthSchema = defineEditorSchema({
+  elements: {
+    heading: { content: schema.content.text() },
+    paragraph: {
+      content: schema.content.text(),
+      groups: ['custom'],
+    },
+  },
+  groups: { custom: {}, other: {} },
+  id: 'schema-inference-unsupported-target-depth',
+  properties: [
+    schema.elementProperty('deep', property.boolean(), {
+      target: target.not(
+        target.not(
+          target.not(
+            target.not(
+              target.not(
+                target.not(target.not(target.not(target.type('heading'))))
+              )
+            )
+          )
+        )
+      ),
+    }),
+    schema.elementProperty('dynamicGroup', property.boolean(), {
+      target: target.group(dynamicTargetGroup),
+    }),
+    schema.elementProperty('dynamicOr', property.boolean(), {
+      target: target.or(...widenedTargets),
+    }),
+    schema.elementProperty('dynamicType', property.boolean(), {
+      target: target.type(dynamicTargetType),
+    }),
+    schema.elementProperty('dynamicTypes', property.boolean(), {
+      target: target.types(dynamicTargetTypes),
+    }),
+    schema.elementProperty('finiteGroup', property.boolean(), {
+      target: target.group(finiteTargetGroup),
+    }),
+    schema.elementProperty('finiteType', property.boolean(), {
+      target: target.type(finiteTargetType),
+    }),
+    schema.elementProperty('finiteTypes', property.boolean(), {
+      target: target.types(finiteTargetTypes),
+    }),
+    schema.elementProperty('literalTypes', property.boolean(), {
+      target: target.types(['heading', 'paragraph'] as const),
+    }),
+  ],
+  root: { content: schema.content.types(['heading', 'paragraph']) },
+  unknown: 'reject',
+  version: 1,
+});
+
+const unsupportedDepthParagraph: SchemaElementFor<
+  typeof UnsupportedDepthSchema,
+  'paragraph'
+> = {
+  children: [{ text: '' }],
+  // @ts-expect-error inference never claims a property when target depth is unsupported
+  deep: true,
+  type: 'paragraph',
+};
+
+// Dynamic target inputs are runtime-only facts, never statically claimed keys.
+// @ts-expect-error a widened group cannot prove property applicability
+const invalidDynamicGroupKey: SchemaElementPropertyKeys<
+  typeof UnsupportedDepthSchema,
+  'paragraph'
+> = 'dynamicGroup';
+// @ts-expect-error widened combinator children cannot prove applicability
+const invalidDynamicOrKey: SchemaElementPropertyKeys<
+  typeof UnsupportedDepthSchema,
+  'paragraph'
+> = 'dynamicOr';
+// @ts-expect-error a widened type cannot prove property applicability
+const invalidDynamicTypeKey: SchemaElementPropertyKeys<
+  typeof UnsupportedDepthSchema,
+  'paragraph'
+> = 'dynamicType';
+// @ts-expect-error widened types cannot prove property applicability
+const invalidDynamicTypesKey: SchemaElementPropertyKeys<
+  typeof UnsupportedDepthSchema,
+  'paragraph'
+> = 'dynamicTypes';
+// @ts-expect-error a runtime union group cannot prove applicability
+const invalidFiniteGroupKey: SchemaElementPropertyKeys<
+  typeof UnsupportedDepthSchema,
+  'paragraph'
+> = 'finiteGroup';
+// @ts-expect-error a runtime union type cannot prove applicability
+const invalidFiniteTypeKey: SchemaElementPropertyKeys<
+  typeof UnsupportedDepthSchema,
+  'paragraph'
+> = 'finiteType';
+// @ts-expect-error a runtime union types list cannot prove applicability
+const invalidFiniteTypesKey: SchemaElementPropertyKeys<
+  typeof UnsupportedDepthSchema,
+  'paragraph'
+> = 'finiteTypes';
+const validLiteralTypesKey: SchemaElementPropertyKeys<
+  typeof UnsupportedDepthSchema,
+  'paragraph'
+> = 'literalTypes';
+
+const dynamicInline = true as boolean;
+const dynamicVoid = 'block' as NonNullable<SchemaElementInput['void']>;
+const dynamicGroups = ['custom'] as readonly string[];
+const dynamicParents = ['custom'] as readonly string[];
+const finiteGroups = runtimeCondition
+  ? (['custom'] as const)
+  : (['other'] as const);
+const finiteParents = runtimeCondition
+  ? (['custom'] as const)
+  : (['other'] as const);
+const conditionalGroupsElement = runtimeCondition
+  ? ({ content: schema.content.text(), groups: ['custom'] } as const)
+  : ({ content: schema.content.text() } as const);
+const conditionalInlineElement = runtimeCondition
+  ? ({ content: schema.content.text(), inline: true } as const)
+  : ({ content: schema.content.text() } as const);
+const fullyWidenedElement: SchemaElementInput = {
+  content: schema.content.text(),
+  groups: ['custom'],
+  inline: true,
+};
+const fullyWidenedGroup: SchemaGroupOptions = { extends: ['custom'] };
+const WidenedElementSchema = defineEditorSchema({
+  elements: {
+    dynamicGroups: {
+      content: schema.content.text(),
+      groups: dynamicGroups,
+    },
+    conditionalGroups: conditionalGroupsElement,
+    conditionalInline: conditionalInlineElement,
+    finiteGroups: {
+      content: schema.content.text(),
+      groups: finiteGroups,
+    },
+    finiteParents: {
+      content: schema.content.text(),
+      groups: ['finiteChild'],
+    },
+    dynamicInline: {
+      content: schema.content.text(),
+      inline: dynamicInline,
+    },
+    dynamicParents: {
+      content: schema.content.text(),
+      groups: ['child'],
+    },
+    dynamicVoid: { void: dynamicVoid },
+    wholeGroup: {
+      content: schema.content.text(),
+      groups: ['wholeChild'],
+    },
+    wholeInput: fullyWidenedElement,
+  },
+  groups: {
+    child: { extends: dynamicParents },
+    custom: {},
+    finiteChild: { extends: finiteParents },
+    other: {},
+    wholeChild: fullyWidenedGroup,
+  },
+  id: 'schema-inference-widened-element-facts',
+  properties: [
+    schema.elementProperty('blockOnly', property.boolean(), {
+      target: target.group('block'),
+    }),
+    schema.elementProperty('inlineOnly', property.boolean(), {
+      target: target.group('inline'),
+    }),
+    schema.elementProperty('notCustom', property.boolean(), {
+      target: target.not(target.group('custom')),
+    }),
+  ],
+  root: { content: schema.content.open() },
+  unknown: 'reject',
+  version: 1,
+});
+
+// @ts-expect-error widened inline behavior cannot prove block membership
+const invalidDynamicInlineBlockKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'dynamicInline'
+> = 'blockOnly';
+// @ts-expect-error widened inline behavior cannot prove inline membership
+const invalidDynamicInlineInlineKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'dynamicInline'
+> = 'inlineOnly';
+// @ts-expect-error widened void behavior cannot prove block membership
+const invalidDynamicVoidBlockKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'dynamicVoid'
+> = 'blockOnly';
+// @ts-expect-error widened void behavior cannot prove inline membership
+const invalidDynamicVoidInlineKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'dynamicVoid'
+> = 'inlineOnly';
+// @ts-expect-error widened direct groups cannot prove a negative target
+const invalidDynamicGroupsNotKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'dynamicGroups'
+> = 'notCustom';
+// @ts-expect-error widened parent groups cannot prove a negative target
+const invalidDynamicParentsNotKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'dynamicParents'
+> = 'notCustom';
+// @ts-expect-error a wholly widened element cannot prove block membership
+const invalidWholeInputBlockKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'wholeInput'
+> = 'blockOnly';
+// @ts-expect-error a wholly widened element cannot prove a negative target
+const invalidWholeInputNotKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'wholeInput'
+> = 'notCustom';
+// @ts-expect-error a wholly widened group cannot prove a negative target
+const invalidWholeGroupNotKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'wholeGroup'
+> = 'notCustom';
+// @ts-expect-error a conditional inline declaration cannot prove block membership
+const invalidConditionalInlineBlockKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'conditionalInline'
+> = 'blockOnly';
+// @ts-expect-error a conditional inline declaration cannot prove inline membership
+const invalidConditionalInlineInlineKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'conditionalInline'
+> = 'inlineOnly';
+// @ts-expect-error conditional groups cannot prove a negative target
+const invalidConditionalGroupsNotKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'conditionalGroups'
+> = 'notCustom';
+// @ts-expect-error a runtime union group list cannot prove a negative target
+const invalidFiniteGroupsNotKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'finiteGroups'
+> = 'notCustom';
+// @ts-expect-error a runtime union parent list cannot prove a negative target
+const invalidFiniteParentsNotKey: SchemaElementPropertyKeys<
+  typeof WidenedElementSchema,
+  'finiteParents'
+> = 'notCustom';
 
 const elementType: SchemaElementTypes<typeof ArticleSchema> = 'heading';
 const groupName: SchemaGroupNames<typeof ArticleSchema> = 'block';
@@ -128,6 +402,94 @@ const editor = createEditor({
   ],
 });
 
+const paragraphHandle = schema.handle.element(ArticleSchema, 'paragraph');
+const alignHandle = schema.handle.property(paragraphHandle, 'align');
+const handledParagraph = editor.read.schema.createAndFill(paragraphHandle, {
+  align: 'center',
+  shared: true,
+});
+const handledAlign: string | undefined = editor.read.schema.getElementProperty(
+  handledParagraph,
+  alignHandle
+);
+const handledAlignProperty: EditorSchemaProperty | null =
+  editor.read.schema.property(alignHandle);
+const exactHandledParagraph: SchemaElementFor<
+  typeof ArticleSchema,
+  'paragraph'
+> = handledParagraph;
+
+const assertSchemaHandleTypes = () => {
+  // @ts-expect-error handles reject undeclared element types
+  schema.handle.element(ArticleSchema, 'unknown');
+  // @ts-expect-error property handles reject keys unavailable on the element
+  schema.handle.property(paragraphHandle, 'headingOnly');
+  // @ts-expect-error handle-owned element properties retain their value type
+  editor.read.schema.createAndFill(paragraphHandle, { align: 1 });
+};
+
+void assertSchemaHandleTypes;
+void handledAlignProperty;
+
+const FactoryContribution = defineEditorExtension({
+  config: {
+    nested: { enabled: true },
+    types: ['callout'],
+  },
+  name: 'schema-inference-factory-contribution',
+  schema({ config }) {
+    const assertReadonlyConfig = () => {
+      // @ts-expect-error nested factory config is deeply readonly
+      config.nested.enabled = false;
+      // @ts-expect-error nested factory arrays are deeply readonly
+      config.types.push('paragraph');
+    };
+
+    void assertReadonlyConfig;
+
+    return {
+      elements: {
+        callout: {
+          content: schema.content.text(),
+          properties: { tone: property.string() },
+        },
+      },
+    } as const;
+  },
+});
+// @ts-expect-error Canonical extensions expose the evaluated declaration.
+FactoryContribution.schema({
+  config: FactoryContribution.config,
+  name: FactoryContribution.name,
+});
+const composedEditor = createEditor({
+  extensions: [ArticleSchema, FactoryContribution] as const,
+  initialValue: [
+    { children: [{ text: 'typed contribution' }], type: 'callout' },
+  ],
+});
+const calloutHandle = schema.handle.element(FactoryContribution, 'callout');
+const toneHandle = schema.handle.property(calloutHandle, 'tone');
+const handledCallout = composedEditor.read.schema.createAndFill(calloutHandle, {
+  tone: 'notice',
+});
+const handledTone: string | undefined =
+  composedEditor.read.schema.getElementProperty(handledCallout, toneHandle);
+const composedCallout: ReturnType<typeof composedEditor.read.children>[number] =
+  {
+    children: [{ text: '' }],
+    tone: 'notice',
+    type: 'callout',
+  };
+const invalidComposedCallout: ReturnType<
+  typeof composedEditor.read.children
+>[number] = {
+  children: [{ text: '' }],
+  // @ts-expect-error partial contribution properties retain their descriptor type
+  tone: 1,
+  type: 'callout',
+};
+
 editor.read.schema.property({
   key: 'bold',
   placement: 'text',
@@ -180,6 +542,29 @@ const assertEditorUpdateTypes = () => {
 };
 
 void assertEditorUpdateTypes;
+void invalidDynamicGroupKey;
+void invalidDynamicGroupsNotKey;
+void invalidDynamicInlineBlockKey;
+void invalidDynamicInlineInlineKey;
+void invalidDynamicOrKey;
+void invalidDynamicParentsNotKey;
+void invalidDynamicTypeKey;
+void invalidDynamicTypesKey;
+void invalidDynamicVoidBlockKey;
+void invalidDynamicVoidInlineKey;
+void invalidConditionalGroupsNotKey;
+void invalidConditionalInlineBlockKey;
+void invalidConditionalInlineInlineKey;
+void invalidFiniteGroupKey;
+void invalidFiniteGroupsNotKey;
+void invalidFiniteParentsNotKey;
+void invalidFiniteTypeKey;
+void invalidFiniteTypesKey;
+void invalidWholeInputBlockKey;
+void invalidWholeInputNotKey;
+void invalidWholeGroupNotKey;
+void validLiteralTypesKey;
+void unsupportedDepthParagraph;
 
 const slottedEditor = createEditor({
   extensions: [defineExtensionSlot('article-schema').of(ArticleSchema)],
@@ -229,12 +614,12 @@ void assertWiderValueType;
 
 const PreserveSchema = defineEditorSchema({
   elements: {
-    paragraph: element({
+    paragraph: {
       properties: { count: property.number() },
-    }),
+    } as const,
   },
   id: 'schema-inference-preserve-contract',
-  root: schema.root({ content: schema.content.type('paragraph') }),
+  root: { content: schema.content.type('paragraph') } as const,
   unknown: 'preserve',
   version: 1,
 });
@@ -262,6 +647,10 @@ void builtInGroupName;
 void explicitValue;
 void groupName;
 void headingProperties;
+void handledAlign;
+void handledCallout;
+void handledTone;
+void exactHandledParagraph;
 void inferredCustom;
 void invalidElementProperty;
 void invalidElementPropertyValue;
@@ -274,6 +663,8 @@ void propertyIds;
 void preservedKnown;
 void preservedUnknown;
 void preservedWrongKnownProperty;
+void composedCallout;
+void invalidComposedCallout;
 void rootName;
 void siblingHeading;
 void slottedHeading;

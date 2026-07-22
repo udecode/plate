@@ -11,7 +11,12 @@ const createEditor = ({
 }: {
   selection?: Selection;
   value: Value;
-}) => createBaseEditor({ plugins: [BaseColumnPlugin], selection, value });
+}) =>
+  createBaseEditor({
+    plugins: [BaseColumnPlugin],
+    selection,
+    value,
+  });
 
 const getColumnGroup = (editor: ReturnType<typeof createEditor>) => {
   const entry = editor.read.nodes.get<TColumnGroupElement>([0]);

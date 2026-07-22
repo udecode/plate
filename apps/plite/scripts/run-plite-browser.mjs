@@ -9,6 +9,7 @@ import path from 'node:path';
 import { buildAppIfStale } from './build-app-if-stale.mjs';
 import {
   applyWorkerCap,
+  assertBrowserNodeVersion,
   assertBrowserWorkerArgs,
   assertRetryFreeBrowserArgs,
   classifyFailure,
@@ -22,6 +23,7 @@ import {
   getSelectionUniverseSelectors,
   MAX_BROWSER_WORKERS,
   parseJob,
+  resolvePliteBrowserBaseURL,
   resolveBrowserWorkerCount,
   resolveMaxTestsPerProcess,
   resolveTimeoutMs,
@@ -55,8 +57,14 @@ const playwrightPackagePath = require.resolve('@playwright/test/package.json');
 const playwrightPackage = require(playwrightPackagePath);
 const playwrightRuntime = require('@playwright/test');
 const playwrightCli = path.join(path.dirname(playwrightPackagePath), 'cli.js');
+const requiredNodeVersion = fs
+  .readFileSync(path.join(repoRoot, '.nvmrc'), 'utf8')
+  .trim();
+
+assertBrowserNodeVersion(process.version, requiredNodeVersion);
+
 const baseArgs = ['test', '--config', 'playwright.config.ts'];
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3102';
+const baseURL = resolvePliteBrowserBaseURL(process.env.PLAYWRIGHT_BASE_URL);
 const stateDirectory = path.join(appRoot, '.tmp/plite-browser-runner');
 const summaryDirectory = path.join(
   appRoot,
@@ -635,6 +643,7 @@ const getProofSession = () => {
     });
 
     try {
+      await monitor.ready();
       const planInputDigest = hashEntries(browserPlanEntries);
       const runInputDigest = hashEntries(browserRunEntries);
       const localTargetFingerprint = process.env.PLAYWRIGHT_BASE_URL

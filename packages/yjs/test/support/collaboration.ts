@@ -80,6 +80,7 @@ const createYjsPeerWithEditor = <TEditor extends TestEditor>(
     children: [...children],
     selection: null,
   });
+  editor.read.schema.validateDocument(editor.read.value());
 
   const doc = new Y.Doc();
 

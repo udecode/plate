@@ -1,17 +1,27 @@
 import { readFileSync } from 'node:fs';
-import type { Range } from '@platejs/plite';
+import { createEditor, type Range } from '@platejs/plite';
+import {
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import {
   createEditableInputController,
   createEditableInputControllerState,
   setEditableModelSelectionPreference,
 } from '../src/editable/input-controller';
 import {
+  captureCompositionModelInput,
+  claimSettledCompositionInput,
   getDeferredNativeTextInputRepairPathKey,
+  queuePendingCompositionModelInput,
   shouldAllowBeforeInputSelectionImport,
   shouldFlushPendingNativeTextInputBeforeDOMBeforeInput,
   shouldFlushSelectionChangeBeforeDOMBeforeInput,
   shouldIgnoreDOMBeforeInputWithoutSelection,
 } from '../src/editable/runtime-before-input-events';
+import type { PendingCompositionInput } from '../src/editable/input-state';
+import { beginEditableCompositionSession } from '../src/editable/input-state';
+import type { ReactEditor } from '../src/plugin/react-editor';
 
 const collapsedSelection: Range = {
   kind: 'text',
@@ -237,4 +247,176 @@ test('beforeinput still flushes pending DOM selection for native-owned input', (
       inputType: 'insertText',
     })
   ).toBe(true);
+});
+
+test('pending composition input defers input rules and captures immutable input', () => {
+  const editor = createEditor() as ReactEditor;
+  const compositionSelection: Range = {
+    kind: 'text',
+    anchor: { offset: 1, path: [0, 0] },
+    focus: { offset: 3, path: [0, 0] },
+  };
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+    selection: compositionSelection,
+  });
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
+  });
+  let pendingInput: PendingCompositionInput | null = null;
+
+  beginEditableCompositionSession(inputController);
+  inputController.state.pendingCompositionEnd = {
+    cancel: vi.fn(),
+    flush: vi.fn(() => false),
+    ownership: 'plite',
+    phase: 'end-pending',
+    replaceWithInput: (input) => {
+      pendingInput = input;
+      return true;
+    },
+  };
+  const applyInputRules = vi.fn(() => true);
+  const requestEditableRepair = vi.fn();
+  const command = {
+    inputType: 'insertFromComposition',
+    kind: 'insert-text',
+    text: '文',
+  } satisfies Parameters<typeof captureCompositionModelInput>[0]['command'];
+
+  expect(
+    queuePendingCompositionModelInput({
+      applyInputRules,
+      command,
+      data: '文',
+      editor,
+      inputController,
+      inputType: 'insertFromComposition',
+      repair: { requestEditableRepair },
+      selection: compositionSelection,
+      setComposing: vi.fn(),
+    })
+  ).toBe(true);
+  expect(applyInputRules).not.toHaveBeenCalled();
+  expect(editorString(editor, [])).toBe('abcd');
+  expect(pendingInput).not.toBeNull();
+  expect(Object.isFrozen(pendingInput)).toBe(true);
+
+  expect(pendingInput?.commit(compositionSelection, { publish: true })).toBe(
+    false
+  );
+  expect(applyInputRules).toHaveBeenCalledOnce();
+  expect(applyInputRules).toHaveBeenCalledWith({
+    data: '文',
+    inputType: 'insertFromComposition',
+    selection: compositionSelection,
+  });
+  expect(editorString(editor, [])).toBe('abcd');
+
+  pendingInput?.complete();
+  expect(requestEditableRepair).toHaveBeenCalledOnce();
+});
+
+test('pending composition input records only an actual document commit', () => {
+  const editor = createEditor() as ReactEditor;
+  const compositionSelection: Range = {
+    kind: 'text',
+    anchor: { offset: 1, path: [0, 0] },
+    focus: { offset: 3, path: [0, 0] },
+  };
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+    selection: compositionSelection,
+  });
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
+  });
+  let pendingInput: PendingCompositionInput | null = null;
+
+  beginEditableCompositionSession(inputController);
+  inputController.state.pendingCompositionEnd = {
+    cancel: vi.fn(),
+    flush: vi.fn(() => false),
+    ownership: 'plite',
+    phase: 'end-pending',
+    replaceWithInput: (input) => {
+      pendingInput = input;
+      return true;
+    },
+  };
+
+  queuePendingCompositionModelInput({
+    command: {
+      inputType: 'insertFromComposition',
+      kind: 'insert-text',
+      text: '文',
+    },
+    data: '文',
+    editor,
+    inputController,
+    inputType: 'insertFromComposition',
+    repair: { requestEditableRepair: vi.fn() },
+    selection: compositionSelection,
+    setComposing: vi.fn(),
+  });
+
+  expect(pendingInput?.commit(compositionSelection, { publish: true })).toBe(
+    true
+  );
+  expect(editorString(editor, [])).toBe('a文d');
+  expect(inputController.state.compositionSession?.modelCommitted).toBe(true);
+});
+
+test('settled composition completion suppresses one matching late final only', () => {
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
+  });
+  const cancel = vi.fn(() => {
+    inputController.state.pendingCompositionEnd = null;
+  });
+
+  inputController.state.pendingCompositionEnd = {
+    cancel,
+    data: '文',
+    inputTypes: ['insertFromComposition', 'insertText'],
+    ownership: 'settled',
+    phase: 'settled',
+  };
+
+  expect(
+    claimSettledCompositionInput({
+      data: '文',
+      inputController,
+      inputType: 'insertText',
+    })
+  ).toBe(true);
+  expect(cancel).toHaveBeenCalledOnce();
+  expect(
+    claimSettledCompositionInput({
+      data: '文',
+      inputController,
+      inputType: 'insertText',
+    })
+  ).toBe(false);
+
+  inputController.state.pendingCompositionEnd = {
+    cancel,
+    data: '文',
+    inputTypes: ['insertFromComposition', 'insertText'],
+    ownership: 'settled',
+    phase: 'settled',
+  };
+  expect(
+    claimSettledCompositionInput({
+      data: 'x',
+      inputController,
+      inputType: 'insertText',
+    })
+  ).toBe(false);
+  expect(inputController.state.pendingCompositionEnd).toBeNull();
 });

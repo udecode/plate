@@ -1,6 +1,7 @@
 import {
   createTestEditor,
-  getTestMarkdownRuntime,
+  getTestDeserializeOptions,
+  getTestSerializeOptions,
 } from '../__tests__/createTestEditor';
 import { columnRules } from './columnRules';
 
@@ -25,7 +26,7 @@ describe('columnRules', () => {
         type: 'mdxJsxFlowElement',
       },
       {},
-      { runtime: getTestMarkdownRuntime(editor) }
+      getTestDeserializeOptions(editor)
     );
 
     expect(result).toMatchObject({
@@ -52,7 +53,7 @@ describe('columnRules', () => {
         id: 'ignore-me',
         type: 'column_group',
       },
-      { rules: {}, runtime: getTestMarkdownRuntime(editor) }
+      getTestSerializeOptions(editor, { rules: {} })
     );
 
     expect(result).toEqual({

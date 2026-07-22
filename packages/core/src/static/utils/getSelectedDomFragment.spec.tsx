@@ -31,7 +31,9 @@ describe('getSelectedDomFragment', () => {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    const editor = createBaseEditor({ nodeId: true });
+    const editor = createBaseEditor({
+      nodeId: true,
+    });
     const block = { children: [{ text: 'hello' }], id: 'block-1', type: 'p' };
 
     editor.update.value.replace({ children: [block], selection: null });
@@ -58,7 +60,9 @@ describe('getSelectedDomFragment', () => {
         5
       );
 
-    const editor = createBaseEditor({ nodeId: true });
+    const editor = createBaseEditor({
+      nodeId: true,
+    });
     const blockOne = { children: [{ text: 'hello world' }], type: 'p' };
     const blockTwo = { children: [{ text: 'omega' }], type: 'p' };
     const partialOne = { children: [{ text: 'ello world' }], type: 'p' };
