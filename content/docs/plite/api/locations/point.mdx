@@ -23,7 +23,6 @@ content-root, or other extra roots carry that root key.
 - [Static methods](point#static-methods)
   - [Retrieval methods](point#retrieval-methods)
   - [Check methods](point#check-methods)
-  - [Transform methods](point#transform-methods)
 
 ## Static Methods
 
@@ -50,11 +49,3 @@ Check if a `point` is exactly equal to `another`.
 #### `PointApi.isPoint(value: unknown) => value is Point`
 
 Check if a `value` implements the `Point` interface.
-
-### Transform Methods
-
-#### `PointApi.transform(point: Point, op: Operation, options?) => Point | null`
-
-Transform a `point` by an `op`.
-
-Options: `{affinity?: 'forward' | 'backward' | null}`

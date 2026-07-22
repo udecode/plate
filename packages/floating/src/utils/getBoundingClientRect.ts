@@ -1,13 +1,10 @@
 import { type Location, PathApi, type Range, type Value } from '@platejs/plite';
-import type { DOMCapableEditor } from '@platejs/plite-dom';
+import type { DOMEditor } from '@platejs/plite-dom';
 
 import { mergeClientRects } from './mergeClientRects';
 
-export const getBoundingClientRect = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: DOMCapableEditor<V, TExtensions>,
+export const getBoundingClientRect = <V extends Value>(
+  editor: DOMEditor<V>,
   at?: Location | Location[]
 ): DOMRect | undefined => {
   const atRanges: Range[] = (() => {

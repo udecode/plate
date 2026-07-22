@@ -19,7 +19,7 @@ export const moveListSiblingsAfterCursor = (
 ) => {
   const offset = at.at(-1)!;
   at = PathApi.parent(at);
-  const listEntry = editor.read.nodes.get<Element>(at);
+  const listEntry = tx.nodes.get<Element>(at);
 
   if (
     !listEntry ||

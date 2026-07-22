@@ -1,44 +1,120 @@
-import type { BaseEditor } from '@platejs/core';
-import { type Element, ElementApi, NodeApi, RangeApi } from '@platejs/plite';
+import type { BaseEditor, PluginConfig } from '@platejs/core';
+import {
+  type Element,
+  type ElementEntry,
+  type Location,
+  type Node,
+  type Path,
+  ElementApi,
+  PathApi,
+  RangeApi,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type { ListConfig, ListTransaction } from '../BaseListPlugin';
+import type {
+  ListPluginConfiguration,
+  ListTransaction,
+} from '../BaseListPlugin';
 import { getListItemEntry, getListTypes, getPropsIfTaskList } from '../queries';
 import { unwrapList } from './unwrapList';
 
 type ToggleListOptions = { type: string; checked?: boolean };
+
+type ListConfigurationContract = PluginConfig<
+  'listClassic',
+  {},
+  {},
+  {},
+  {},
+  {},
+  readonly [],
+  ListPluginConfiguration
+>;
+
+const setListType = (
+  editor: BaseEditor,
+  tx: ListTransaction,
+  [list, path]: ElementEntry,
+  { checked, type }: Required<ToggleListOptions>
+) => {
+  const listItemType = editor.getType(KEYS.li);
+  const taskListType = editor.getType(KEYS.taskList);
+  const listItemPaths = list.children.flatMap((child, index) =>
+    ElementApi.isElement(child) && child.type === listItemType
+      ? [path.concat(index)]
+      : []
+  );
+
+  if (list.type === taskListType && type !== taskListType) {
+    for (const itemPath of listItemPaths) {
+      tx.nodes.unset('checked', { at: itemPath });
+    }
+  }
+
+  tx.nodes.set({ type }, { at: path });
+
+  if (type === taskListType) {
+    for (const itemPath of listItemPaths) {
+      tx.nodes.set({ checked }, { at: itemPath });
+    }
+  }
+};
+
+const setListTreeType = (
+  editor: BaseEditor,
+  tx: ListTransaction,
+  at: Location,
+  { checked, type }: Required<ToggleListOptions>
+) => {
+  const listItemType = editor.getType(KEYS.li);
+  const taskListType = editor.getType(KEYS.taskList);
+  const isTaskListItem = (node: Node, path: Path) =>
+    ElementApi.isElement(node) &&
+    node.type === listItemType &&
+    tx.nodes.parent<Element>(path)?.[0].type === taskListType;
+
+  if (type !== taskListType) {
+    tx.nodes.unset('checked', {
+      at,
+      match: isTaskListItem,
+      mode: 'all',
+    });
+  }
+
+  tx.nodes.set(
+    { type },
+    { at, match: { type: getListTypes(editor) }, mode: 'all' }
+  );
+
+  if (type === taskListType) {
+    tx.nodes.set({ checked }, { at, match: isTaskListItem, mode: 'all' });
+  }
+};
 
 const _toggleList = (
   editor: BaseEditor,
   tx: ListTransaction,
   { checked = false, type }: ToggleListOptions
 ) => {
-  const selection = editor.read.selection();
+  const selection = tx.selection();
 
   if (!selection) return;
 
-  const { validLiChildrenTypes } = editor
-    .plugin<ListConfig>(KEYS.listClassic)
-    .getOptions();
+  const { validLiChildren } = editor.plugin<ListConfigurationContract>(
+    KEYS.listClassic
+  ).plugin.config;
+  const validLiChildrenTypes = validLiChildren?.map(({ key }) =>
+    editor.getType(key)
+  );
 
-  if (
-    editor.read.selection.isCollapsed() ||
-    !editor.read.selection.isAcrossBlocks()
-  ) {
-    const res = getListItemEntry(editor);
+  if (tx.selection.isCollapsed() || !tx.selection.isAcrossBlocks()) {
+    const res = getListItemEntry(editor, { at: selection }, tx);
 
     if (res) {
       if (res.list[0].type === type) {
         unwrapList(editor, tx);
       } else {
-        tx.nodes.set(
-          { type },
-          {
-            at: selection,
-            match: { type: getListTypes(editor) },
-            mode: 'lowest',
-          }
-        );
+        setListType(editor, tx, res.list, { checked, type });
       }
 
       return;
@@ -47,15 +123,26 @@ const _toggleList = (
     tx.nodes.wrap({ children: [], type });
 
     const nodes = Array.from(
-      editor.read.nodes.entries({ match: { type: editor.getType(KEYS.p) } })
+      tx.nodes.entries({ match: { type: editor.getType(KEYS.p) } })
     );
-    const blockAbove = editor.read.nodes.block({
+    const blockAbove = tx.nodes.block({
       match: { type: validLiChildrenTypes },
     });
 
-    if (!blockAbove) {
-      tx.nodes.set({ type: editor.getType(KEYS.lic) });
+    if (blockAbove) {
+      tx.nodes.wrap(
+        {
+          children: [],
+          ...getPropsIfTaskList(editor, type, { checked }),
+          type: editor.getType(KEYS.li),
+        },
+        { at: blockAbove[1] }
+      );
+
+      return;
     }
+
+    tx.nodes.set({ type: editor.getType(KEYS.lic) });
 
     for (const [, path] of nodes) {
       tx.nodes.wrap(
@@ -72,7 +159,9 @@ const _toggleList = (
   }
 
   const [startPoint, endPoint] = RangeApi.edges(selection);
-  const commonEntry = NodeApi.common(editor, startPoint.path, endPoint.path);
+  const commonEntry = tx.nodes.get(
+    PathApi.common(startPoint.path, endPoint.path)
+  );
 
   if (!commonEntry) return;
 
@@ -86,12 +175,12 @@ const _toggleList = (
       return;
     }
 
-    const startList = editor.read.nodes.find({
+    const startList = tx.nodes.find({
       at: RangeApi.start(selection),
       match: { type: getListTypes(editor) },
       mode: 'lowest',
     });
-    const endList = editor.read.nodes.find({
+    const endList = tx.nodes.find({
       at: RangeApi.end(selection),
       match: { type: getListTypes(editor) },
       mode: 'lowest',
@@ -99,34 +188,19 @@ const _toggleList = (
 
     if (!startList || !endList) return;
 
-    const rangeLength = Math.min(startList[1].length, endList[1].length);
-
-    tx.nodes.set(
-      { type },
-      {
-        at: selection,
-        match: (node, path) =>
-          ElementApi.isElement(node) &&
-          getListTypes(editor).includes(node.type) &&
-          path.length >= rangeLength,
-        mode: 'all',
-      }
-    );
+    setListTreeType(editor, tx, selection, { checked, type });
 
     return;
   }
 
   const rootPathLength = commonEntry[1].length;
-  const nodes = Array.from(
-    editor.read.nodes.entries<Element>({ mode: 'all' })
-  ).filter(([, path]) => path.length === rootPathLength + 1);
+  const nodes = Array.from(tx.nodes.entries<Element>({ mode: 'all' })).filter(
+    ([, path]) => path.length === rootPathLength + 1
+  );
 
   for (const [node, path] of nodes) {
     if (getListTypes(editor).includes(node.type)) {
-      tx.nodes.set(
-        { type },
-        { at: path, match: { type: getListTypes(editor) }, mode: 'all' }
-      );
+      setListTreeType(editor, tx, path, { checked, type });
       continue;
     }
 

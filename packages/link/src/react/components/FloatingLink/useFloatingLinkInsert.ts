@@ -25,9 +25,12 @@ export type LinkFloatingToolbarState = {
 export const useFloatingLinkInsertState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const { editor, getOptions } = useEditorPlugin(LinkPlugin);
+  const { editor } = useEditorPlugin(LinkPlugin);
 
-  const { triggerFloatingLinkHotkeys } = getOptions();
+  const triggerFloatingLinkHotkeys = usePluginOption(
+    LinkPlugin,
+    'triggerFloatingLinkHotkeys'
+  );
   const readOnly = useEditorReadOnly();
   const focused = useEditorFocused();
   const mode = usePluginOption(LinkPlugin, 'mode');

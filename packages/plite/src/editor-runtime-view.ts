@@ -2,6 +2,7 @@ import {
   createEditorReadApi,
   createEditorUpdateApi,
 } from './core/editor-lifecycle-api';
+import { createCommandDispatch } from './core/command-registry';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -12,6 +13,7 @@ import {
   getExtensionRegistry,
   inheritExtensionRegistry,
 } from './core/extension-registry';
+import { extendEditor } from './core/editor-extension';
 import {
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -23,49 +25,44 @@ import {
   isSelectionAcrossBlocks,
   isSelectionWithinText,
   isSelectionWithinBlock,
-  withEditorOperationRoot,
-  withEditorOperationRootChildren,
+  withEditorUpdateRoot,
+  withEditorUpdateRootChildren,
   withEditorRootChildren,
   withEditorRootChildrenGenerator,
   withEditorTargetRuntime,
 } from './core/public-state';
-import {
-  getEditorTransformRegistry,
-  setEditorTransformRegistry,
-} from './core/transform-registry';
-import { createEditor } from './create-editor';
-import type { Bookmark } from './interfaces/bookmark';
+import { createEditorUnchecked } from './create-editor';
 import type {
   Editor,
+  EditorAnchorApi,
   EditorCommitContext,
   EditorRuntime,
   EditorRuntimeOptions,
   EditorSelectionBlockOptions,
   EditorSelectionTargetOptions,
   EditorSnapshot,
+  EditorStateSliceApi,
   EditorStateView,
   EditorStateViewApi,
-  EditorTransformRegistry,
-  EditorToggleMarkOptions,
+  EditorTransactionSpecBuilder,
+  EditorMarkToggleOptions,
   EditorUpdateContext,
   EditorUpdateTransaction,
   EditorView,
   EditorViewOptions,
   NodeTarget,
+  NamedRootKey,
   RootKey,
   Selection,
   Value,
 } from './interfaces/editor';
-import type { Location } from './interfaces/location';
-import type { Point } from './interfaces/point';
-import { RangeApi, type Range } from './interfaces/range';
-import type { RangeRef } from './interfaces/range-ref';
+import { RangeApi } from './interfaces/range';
+import { getRangeRoot, withImplicitRangeRoot } from './internal/root-location';
 import {
-  getRangeRoot,
-  type RangeRootMeta,
-  stripImplicitRangeRoots,
-  withImplicitRangeRoot,
-} from './internal/root-location';
+  MAIN_ROOT_KEY,
+  toInternalRoot,
+  toPublicRoot,
+} from './core/public-root';
 
 type ViewState = {
   composing: boolean;
@@ -74,10 +71,8 @@ type ViewState = {
   root: RootKey;
 };
 
-const MAIN_ROOT_KEY = 'main';
-
-type ViewStateTransformInput = Pick<
-  EditorStateView<any, any>,
+type ViewStateTransformInput<V extends Value> = Pick<
+  EditorStateView<V>,
   | 'fragment'
   | 'marks'
   | 'nodes'
@@ -90,14 +85,9 @@ type ViewStateTransformInput = Pick<
   | 'view'
 > & {
   children: () => readonly unknown[];
-};
-
-const resolvePublicViewRoot = (root: RootKey | undefined): RootKey => {
-  if (root === MAIN_ROOT_KEY) {
-    throw new Error('[Plite] Omit root to target the primary document.');
-  }
-
-  return root ?? MAIN_ROOT_KEY;
+  slice: Pick<EditorStateSliceApi<V>, 'get'> &
+    Partial<Pick<EditorStateSliceApi<V>, 'fit' | 'fitContent'>>;
+  transaction?: EditorStateView<V>['transaction'];
 };
 
 const createViewApi = (state: ViewState): EditorStateViewApi =>
@@ -105,7 +95,7 @@ const createViewApi = (state: ViewState): EditorStateViewApi =>
     isComposing: () => state.composing,
     isFocused: () => state.focused,
     isReadOnly: () => state.readOnly,
-    root: () => state.root,
+    root: () => toPublicRoot(state.root),
   });
 
 const withRootRead = <T>(
@@ -139,210 +129,30 @@ const rootGeneratorMethod = <TMethod extends (...args: any[]) => Iterable<any>>(
       method(...args)
     )) as unknown as TMethod;
 
-const rootBookmarkMethod = <
-  TMethod extends EditorStateView<any, any>['ranges']['bookmark'],
->(
-  method: TMethod,
-  viewState: ViewState
-): TMethod =>
-  ((range, options) => {
-    const rootMeta = getRangeRoot(range, viewState.root);
-
-    if (!rootMeta.root) {
-      throw new Error('Cannot create a Plite bookmark across multiple roots.');
-    }
-
-    const bookmark = method(
-      withImplicitRangeRoot(range, rootMeta.root),
-      options
-    );
-    const stripRange = (value: Range | null) =>
-      value ? stripImplicitRangeRoots(value, rootMeta) : null;
-
-    return {
-      affinity: bookmark.affinity,
-      resolve: () => stripRange(bookmark.resolve()),
-      unref: () => stripRange(bookmark.unref()),
-    } satisfies Bookmark;
-  }) as TMethod;
-
-const toViewRangeRef = (ref: RangeRef, rootMeta: RangeRootMeta): RangeRef => {
-  const stripRange = (range: Range | null) =>
-    range ? stripImplicitRangeRoots(range, rootMeta) : null;
-  const withRootRange = (range: Range | null) =>
-    range && rootMeta.root
-      ? withImplicitRangeRoot(range, rootMeta.root)
-      : range;
-
-  return {
-    affinity: ref.affinity,
-    get current() {
-      return stripRange(ref.current);
-    },
-    set current(range) {
-      ref.current = withRootRange(range);
-    },
-    unref() {
-      return stripRange(ref.unref());
-    },
-  };
-};
-
 const runRootTransform = <T>(
   editor: Editor,
   viewState: ViewState,
   fn: () => T
 ): T =>
-  withEditorOperationRoot(editor, viewState.root, () =>
-    withEditorOperationRootChildren(editor, viewState.root, fn)
+  withEditorUpdateRoot(editor, viewState.root, () =>
+    withEditorUpdateRootChildren(editor, viewState.root, fn)
   );
-
-const runRootSelectionTransform = <T>(
-  editor: Editor,
-  viewState: ViewState,
-  fn: () => T
-): T | undefined => {
-  if (!hasViewSelection(editor, viewState)) {
-    return;
-  }
-
-  return runRootTransform(editor, viewState, fn);
-};
-
-const runRootImplicitTransform = <T>(
-  editor: Editor,
-  viewState: ViewState,
-  options: { at?: Location } | undefined,
-  fn: () => T
-): T | undefined =>
-  options?.at === undefined
-    ? runRootSelectionTransform(editor, viewState, fn)
-    : runRootTransform(editor, viewState, fn);
-
-const createRootTransformRegistry = <V extends Value>(
-  editor: Editor,
-  registry: EditorTransformRegistry<V>,
-  viewState: ViewState
-): EditorTransformRegistry<V> => {
-  const rootRegistry = {
-    ...registry,
-    addMark: (key, value) =>
-      runRootSelectionTransform(editor, viewState, () =>
-        registry.addMark(key, value)
-      ),
-    bookmark: rootBookmarkMethod(registry.bookmark, viewState),
-    collapse: (options) =>
-      runRootSelectionTransform(editor, viewState, () =>
-        registry.collapse(options)
-      ),
-    delete: (options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.delete(options)
-      ),
-    deleteBackward: (unit) =>
-      runRootSelectionTransform(editor, viewState, () =>
-        registry.deleteBackward(unit)
-      ),
-    deleteForward: (unit) =>
-      runRootSelectionTransform(editor, viewState, () =>
-        registry.deleteForward(unit)
-      ),
-    deleteFragment: (options) =>
-      runRootSelectionTransform(editor, viewState, () =>
-        registry.deleteFragment(options)
-      ),
-    deselect: () =>
-      runRootSelectionTransform(editor, viewState, registry.deselect),
-    insertBreak: () =>
-      runRootSelectionTransform(editor, viewState, registry.insertBreak),
-    insertFragment: (fragment, options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.insertFragment(fragment, options)
-      ),
-    insertNode: (node, options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.insertNode(node, options)
-      ),
-    insertNodes: (nodes, options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.insertNodes(nodes, options)
-      ),
-    insertSoftBreak: () =>
-      runRootSelectionTransform(editor, viewState, registry.insertSoftBreak),
-    insertText: (text, options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.insertText(text, options)
-      ),
-    liftNodes: (options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.liftNodes(options)
-      ),
-    mergeNodes: (options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.mergeNodes(options)
-      ),
-    move: (options) =>
-      runRootSelectionTransform(editor, viewState, () =>
-        registry.move(options)
-      ),
-    moveNodes: (options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.moveNodes(options)
-      ),
-    normalize: (options) =>
-      runRootTransform(editor, viewState, () => registry.normalize(options)),
-    removeMark: (key) =>
-      runRootSelectionTransform(editor, viewState, () =>
-        registry.removeMark(key)
-      ),
-    removeNodes: (options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.removeNodes(options)
-      ),
-    select: (target) =>
-      runRootTransform(editor, viewState, () => registry.select(target)),
-    setNodes: (props, options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.setNodes(props, options)
-      ),
-    setPoint: (props, options) =>
-      runRootSelectionTransform(editor, viewState, () =>
-        registry.setPoint(props, options)
-      ),
-    setSelection: (props) =>
-      runRootSelectionTransform(editor, viewState, () =>
-        registry.setSelection(props)
-      ),
-    splitNodes: (options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.splitNodes(options)
-      ),
-    toggleMark: (key, value) =>
-      runRootSelectionTransform(editor, viewState, () =>
-        registry.toggleMark(key, value)
-      ),
-    unsetNodes: (props, options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.unsetNodes(props, options)
-      ),
-    unwrapNodes: (options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.unwrapNodes(options)
-      ),
-    wrapNodes: (element, options) =>
-      runRootImplicitTransform(editor, viewState, options, () =>
-        registry.wrapNodes(element, options)
-      ),
-  } satisfies EditorTransformRegistry<V>;
-
-  return Object.freeze(rootRegistry);
-};
 
 const withViewSelection = (
   selection: Selection,
   viewState: ViewState,
   selectionRoot: RootKey
-): Selection => (selectionRoot === viewState.root ? selection : null);
+): Selection => {
+  if (selectionRoot !== viewState.root || !selection) return null;
+  if (viewState.root === MAIN_ROOT_KEY || !RangeApi.isRange(selection)) {
+    return selection;
+  }
+
+  return {
+    ...selection,
+    ...withImplicitRangeRoot(selection, viewState.root),
+  };
+};
 
 const hasViewSelection = (editor: Editor, viewState: ViewState) =>
   !getCurrentSelection(editor) ||
@@ -365,40 +175,24 @@ const withViewSnapshot = <V extends Value>(
   viewState: ViewState,
   selectionRoot: RootKey
 ): EditorSnapshot<V> => {
-  if (selectionRoot === viewState.root) {
-    return snapshot;
-  }
+  const selection = withViewSelection(
+    snapshot.selection,
+    viewState,
+    selectionRoot
+  );
+
+  if (selection === snapshot.selection) return snapshot;
 
   return Object.freeze({
     ...snapshot,
-    marks: null,
-    selection: null,
+    selection,
   }) as EditorSnapshot<V>;
 };
 
-const withPointRoot = <TPoint extends Point>(
-  point: TPoint,
-  viewState: ViewState
-): TPoint =>
-  viewState.root === MAIN_ROOT_KEY || point.root !== undefined
-    ? point
-    : ({ ...point, root: viewState.root } as TPoint);
-
-const withRangeRoot = <TRange extends Range>(
-  range: TRange,
-  viewState: ViewState
-): TRange => {
-  if (viewState.root === MAIN_ROOT_KEY) {
-    return range;
-  }
-
-  return {
-    anchor: withPointRoot(range.anchor, viewState),
-    focus: withPointRoot(range.focus, viewState),
-  } as TRange;
-};
-
-const withRootChildren = <T extends ViewStateTransformInput>(
+const withRootChildren = <
+  V extends Value,
+  T extends ViewStateTransformInput<V>,
+>(
   editor: Editor,
   state: T,
   viewState: ViewState
@@ -425,7 +219,7 @@ const withRootChildren = <T extends ViewStateTransformInput>(
     void: rootMethod(editor, viewState, state.nodes.void),
   }) as T['nodes'];
 
-const withRootPoints = <T extends ViewStateTransformInput>(
+const withRootPoints = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
   state: T,
   viewState: ViewState
@@ -444,14 +238,13 @@ const withRootPoints = <T extends ViewStateTransformInput>(
     start: rootMethod(editor, viewState, state.points.start),
   }) as T['points'];
 
-const withRootRanges = <T extends ViewStateTransformInput>(
+const withRootRanges = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
   state: T,
   viewState: ViewState
 ): T['ranges'] =>
   Object.freeze({
     ...state.ranges,
-    bookmark: rootBookmarkMethod(state.ranges.bookmark, viewState),
     edges: rootMethod(editor, viewState, state.ranges.edges),
     fromEntries: rootMethod(editor, viewState, state.ranges.fromEntries),
     get: rootMethod(editor, viewState, state.ranges.get),
@@ -459,7 +252,7 @@ const withRootRanges = <T extends ViewStateTransformInput>(
     unhang: rootMethod(editor, viewState, state.ranges.unhang),
   }) as T['ranges'];
 
-const withRootMarks = <T extends ViewStateTransformInput>(
+const withRootMarks = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
   state: T,
   viewState: ViewState
@@ -489,7 +282,7 @@ const withRootMarks = <T extends ViewStateTransformInput>(
     }, state.marks)
   ) as T['marks'];
 
-const withRootRuntime = <T extends ViewStateTransformInput>(
+const withRootRuntime = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
   state: T,
   viewState: ViewState
@@ -506,7 +299,7 @@ const withRootRuntime = <T extends ViewStateTransformInput>(
       ),
   }) as T['runtime'];
 
-const withViewState = <T extends ViewStateTransformInput>(
+const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
   state: T,
   viewState: ViewState
@@ -518,6 +311,47 @@ const withViewState = <T extends ViewStateTransformInput>(
       viewState,
       getCurrentSelectionRoot(editor)
     );
+  const baseSliceFit = state.slice.fit;
+  const baseSliceFitContent = state.slice.fitContent;
+  const fitSlice = baseSliceFit
+    ? (((slice, options) => {
+        const run = () =>
+          runRootTransform(editor, viewState, () =>
+            baseSliceFit(slice, options)
+          );
+
+        if (options?.at !== undefined) return run();
+
+        return runWithViewSelection(editor, viewState, run) ?? false;
+      }) satisfies EditorStateSliceApi<V>['fit'])
+    : undefined;
+  const fitSliceContent = baseSliceFitContent
+    ? (((slice, options) =>
+        runRootTransform(editor, viewState, () =>
+          baseSliceFitContent(slice, options)
+        )) satisfies EditorStateSliceApi<V>['fitContent'])
+    : undefined;
+  const transaction = state.transaction
+    ? Object.assign(
+        (fn: (transaction: EditorTransactionSpecBuilder<V>) => void) =>
+          runRootTransform(editor, viewState, () =>
+            state.transaction!((tx) =>
+              fn(withViewSpecTransaction(editor, tx, viewState))
+            )
+          ),
+        {
+          extend: (
+            base: Parameters<EditorStateView<V>['transaction']['extend']>[0],
+            fn: (transaction: EditorTransactionSpecBuilder<V>) => void
+          ) =>
+            runRootTransform(editor, viewState, () =>
+              state.transaction!.extend(base, (tx) =>
+                fn(withViewSpecTransaction(editor, tx, viewState))
+              )
+            ),
+        }
+      )
+    : undefined;
 
   scopedState = Object.freeze({
     ...state,
@@ -531,15 +365,21 @@ const withViewState = <T extends ViewStateTransformInput>(
         state.fragment
       )
     ),
-    marks: withRootMarks(editor, state, viewState),
-    nodes: withRootChildren(editor, state, viewState),
-    points: withRootPoints(editor, state, viewState),
-    ranges: withRootRanges(editor, state, viewState),
-    runtime: withRootRuntime(editor, state, viewState),
+    marks: withRootMarks<V, T>(editor, state, viewState),
+    nodes: withRootChildren<V, T>(editor, state, viewState),
+    points: withRootPoints<V, T>(editor, state, viewState),
+    ranges: withRootRanges<V, T>(editor, state, viewState),
+    runtime: withRootRuntime<V, T>(editor, state, viewState),
+    slice: Object.freeze({
+      ...(fitSlice ? { fit: fitSlice } : {}),
+      ...(fitSliceContent ? { fitContent: fitSliceContent } : {}),
+      get: rootMethod(editor, viewState, state.slice.get),
+    }) as T['slice'],
     selection: Object.freeze(
       Object.assign(selection, {
         contains: (target: NodeTarget) =>
           doesSelectionContain(scopedState, selection(), target),
+        domRange: () => state.selection.domRange(),
         intersects: (target: NodeTarget) =>
           doesSelectionIntersect(scopedState, selection(), target),
         isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
@@ -562,45 +402,80 @@ const withViewState = <T extends ViewStateTransformInput>(
           isSelectionWithinBlock(scopedState, selection(), options),
         isWithinText: (options?: EditorSelectionTargetOptions) =>
           isSelectionWithinText(scopedState, selection(), options),
+        ranges: () => state.selection.ranges(),
+        replacementRange: () => state.selection.replacementRange(),
       })
     ),
     text: Object.freeze({
       ...state.text,
       string: rootMethod(editor, viewState, state.text.string),
     }),
+    ...(transaction ? { transaction } : {}),
     view: createViewApi(viewState),
   });
 
   return scopedState;
 };
 
+function withViewSpecTransaction<V extends Value>(
+  editor: Editor,
+  transaction: EditorTransactionSpecBuilder<V>,
+  viewState: ViewState
+): EditorTransactionSpecBuilder<V> {
+  return withViewTransaction(
+    editor,
+    transaction as EditorUpdateTransaction<V>,
+    viewState
+  ) as EditorTransactionSpecBuilder<V>;
+}
+
 const withViewTransaction = <V extends Value>(
   editor: Editor,
   transaction: EditorUpdateTransaction<V>,
-  viewState: ViewState
+  viewState: ViewState,
+  getViewEditor?: () => Editor<V> | null
 ): EditorUpdateTransaction<V> => {
-  const state = withViewState(editor, transaction, viewState);
+  const state = withViewState<V, EditorUpdateTransaction<V>>(
+    editor,
+    transaction,
+    viewState
+  );
   const hasExplicitTarget = (options: { at?: NodeTarget } | undefined) =>
     options?.at !== undefined;
-  const runSelectionMutation = (fn: () => void) => {
+  const runSelectionMutation = <T>(fn: () => T): T | undefined =>
     runWithViewSelection(editor, viewState, () =>
       runRootTransform(editor, viewState, fn)
     );
-  };
-  const runImplicitSelectionMutation = (
+  const runImplicitSelectionMutation = <T>(
     options: { at?: NodeTarget } | undefined,
-    fn: () => void
-  ) => {
+    fn: () => T
+  ): T | undefined => {
     if (hasExplicitTarget(options)) {
-      runRootTransform(editor, viewState, fn);
-      return;
+      return runRootTransform(editor, viewState, fn);
     }
 
-    runSelectionMutation(fn);
+    return runSelectionMutation(fn);
   };
 
-  return Object.freeze({
+  const viewTransaction = Object.freeze({
     ...state,
+    ...(getViewEditor
+      ? {
+          command: ((definition, input) => {
+            const viewEditor = getViewEditor();
+
+            if (!viewEditor) {
+              throw new Error('Editor view is not initialized.');
+            }
+
+            return getEditorRuntime(viewEditor).runCommand(definition, input);
+          }) as EditorUpdateTransaction<V>['command'],
+        }
+      : {}),
+    anchor: (value, anchorOptions) =>
+      runRootTransform(editor, viewState, () =>
+        transaction.anchor(value, anchorOptions)
+      ),
     blocks: Object.freeze<EditorUpdateTransaction<V>['blocks']>({
       duplicate: (options) =>
         runImplicitSelectionMutation(options, () =>
@@ -636,13 +511,13 @@ const withViewTransaction = <V extends Value>(
             runImplicitSelectionMutation(options, () =>
               transaction.fragment.delete(options)
             ),
-          insert: (
-            fragment: Parameters<typeof transaction.fragment.insert>[0],
-            options?: Parameters<typeof transaction.fragment.insert>[1]
+          replace: (
+            content: Parameters<typeof transaction.fragment.replace>[0],
+            options?: Parameters<typeof transaction.fragment.replace>[1]
           ) =>
             runImplicitSelectionMutation(options, () =>
-              transaction.fragment.insert(fragment, options)
-            ),
+              transaction.fragment.replace(content, options)
+            ) ?? false,
         }
       )
     ),
@@ -657,7 +532,7 @@ const withViewTransaction = <V extends Value>(
         toggle: (
           key: string,
           value?: unknown,
-          options?: EditorToggleMarkOptions
+          options?: EditorMarkToggleOptions
         ) =>
           runSelectionMutation(() =>
             transaction.marks.toggle(key, value, options)
@@ -722,23 +597,10 @@ const withViewTransaction = <V extends Value>(
           transaction.nodes.wrap(element, options)
         ),
     }),
-    refs: Object.freeze<EditorUpdateTransaction<V>['refs']>({
-      path: (path, options = {}) =>
-        transaction.refs.path(path, { ...options, root: viewState.root }),
-      point: (point, options = {}) =>
-        transaction.refs.point(withPointRoot(point, viewState), options),
-      range: (range, options = {}) => {
-        const rootMeta = getRangeRoot(range, viewState.root);
-
-        return toViewRangeRef(
-          transaction.refs.range(withRangeRoot(range, viewState), options),
-          rootMeta
-        );
-      },
-    }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
         contains: (target: NodeTarget) => state.selection.contains(target),
+        domRange: () => state.selection.domRange(),
         intersects: (target: NodeTarget) => state.selection.intersects(target),
         isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
           state.selection.isAcrossBlocks(options),
@@ -752,6 +614,8 @@ const withViewTransaction = <V extends Value>(
           state.selection.isWithinBlock(options),
         isWithinText: (options?: EditorSelectionTargetOptions) =>
           state.selection.isWithinText(options),
+        ranges: () => state.selection.ranges(),
+        replacementRange: () => state.selection.replacementRange(),
         clear: () => runSelectionMutation(transaction.selection.clear),
         collapse: (options = {}) =>
           runSelectionMutation(() => transaction.selection.collapse(options)),
@@ -763,7 +627,9 @@ const withViewTransaction = <V extends Value>(
             return;
           }
 
-          transaction.selection.set(target);
+          runRootTransform(editor, viewState, () =>
+            transaction.selection.set(target)
+          );
         },
         setPoint: (
           props: Parameters<typeof transaction.selection.setPoint>[0],
@@ -777,6 +643,17 @@ const withViewTransaction = <V extends Value>(
         ) => runSelectionMutation(() => transaction.selection.setRange(props)),
       }) satisfies typeof transaction.selection
     ),
+    slice: Object.freeze({
+      get: (options?: Parameters<typeof transaction.slice.get>[0]) =>
+        state.slice.get(options),
+      replace: (
+        slice: Parameters<typeof transaction.slice.replace>[0],
+        options?: Parameters<typeof transaction.slice.replace>[1]
+      ) =>
+        runImplicitSelectionMutation(options, () =>
+          transaction.slice.replace(slice, options)
+        ) ?? false,
+    }),
     text: Object.freeze({
       ...state.text,
       delete: (options = {}) =>
@@ -796,6 +673,8 @@ const withViewTransaction = <V extends Value>(
         ),
     }),
   }) as EditorUpdateTransaction<V>;
+
+  return viewTransaction;
 };
 
 const withViewUpdateContext = <V extends Value>(
@@ -892,12 +771,8 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.parent(...args)),
     path: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.path(...args)),
-    pathRef: (path, options = {}) =>
-      baseRuntime.pathRef(path, { ...options, root: viewState.root }),
     point: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.point(...args)),
-    pointRef: (point, options = {}) =>
-      baseRuntime.pointRef(withPointRoot(point, viewState), options),
     positions: (...args) =>
       withRootGenerator(editor, viewState, () =>
         baseRuntime.positions(...args)
@@ -908,18 +783,29 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.projectRange(...args)),
     range: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.range(...args)),
-    rangeRef: (range, options = {}) => {
-      const rootMeta = getRangeRoot(range, viewState.root);
-
-      return toViewRangeRef(
-        baseRuntime.rangeRef(withRangeRoot(range, viewState), options),
-        rootMeta
-      );
-    },
     read: (fn) =>
       baseRuntime.read((state) =>
-        fn(withViewState(editor, state, viewState) as EditorStateView<V>)
+        fn(
+          withViewState<V, EditorStateView<V>>(
+            editor,
+            state,
+            viewState
+          ) as EditorStateView<V>
+        )
       ),
+    runCommand: createCommandDispatch(() => {
+      if (viewState.readOnly) {
+        throw new Error('Cannot update a read-only editor view.');
+      }
+
+      const viewEditor = getViewEditor();
+
+      if (!viewEditor) {
+        throw new Error('Editor view is not initialized.');
+      }
+
+      return viewEditor;
+    }),
     subscribe: (listener) =>
       baseRuntime.subscribe((_snapshot, change) => {
         listener(
@@ -951,10 +837,15 @@ const createViewRuntime = <V extends Value>(
       }
 
       const runUpdate = () =>
-        withEditorOperationRoot(editor, viewState.root, () => {
+        withEditorUpdateRoot(editor, viewState.root, () => {
           baseRuntime.update((transaction, context) => {
             fn(
-              withViewTransaction(editor, transaction, viewState),
+              withViewTransaction(
+                editor,
+                transaction,
+                viewState,
+                getViewEditor
+              ),
               withViewUpdateContext(editor, context, viewState, getViewEditor)
             );
           }, updateOptions);
@@ -995,10 +886,11 @@ export function createEditorRuntime<
 >(
   options: EditorRuntimeOptions<V, TExtensions> = {}
 ): EditorRuntime<V, TExtensions> {
-  const editor = createEditor(options);
+  const editor = createEditorUnchecked(options);
 
   return Object.freeze({
     api: editor.api,
+    anchor: editor.anchor,
     editor,
     extend: editor.extend,
     getApi: editor.getApi,
@@ -1013,15 +905,16 @@ export function createEditorRuntime<
 export const createEditorView = <
   V extends Value,
   TExtensions extends readonly unknown[] = readonly [],
+  const TRoot extends RootKey = RootKey,
 >(
   runtime: EditorRuntime<V, TExtensions>,
-  options: EditorViewOptions = {}
+  options: EditorViewOptions<TRoot> = {}
 ): EditorView<V, TExtensions> => {
   const viewState: ViewState = {
     composing: runtime.editor.read.view.isComposing(),
     focused: runtime.editor.read.view.isFocused(),
     readOnly: options.readOnly ?? false,
-    root: resolvePublicViewRoot(options.root),
+    root: toInternalRoot(options.root),
   };
   const baseRuntime = getEditorRuntime(runtime.editor);
   let viewEditor: Editor<V> | null = null;
@@ -1060,9 +953,18 @@ export const createEditorView = <
       },
     }
   );
+  const createViewAnchor: EditorAnchorApi = (value, anchorOptions) =>
+    runRootTransform(runtime.editor, viewState, () =>
+      runtime.editor.anchor(value, anchorOptions)
+    );
+  const extendView: EditorView<V, TExtensions>['extend'] = (
+    extension,
+    options
+  ) => extendEditor(viewEditor!, extension, options);
 
   const view = {
     api: runtime.editor.api,
+    anchor: createViewAnchor,
     blur: () => {
       viewState.focused = false;
     },
@@ -1073,14 +975,14 @@ export const createEditorView = <
           : state.root(viewState.root)
       );
     },
-    extend: runtime.editor.extend,
+    extend: extendView,
     focus: () => {
       viewState.focused = true;
     },
     getApi: runtime.editor.getApi,
     id: runtime.editor.id,
     read: viewRead,
-    root: viewState.root,
+    root: toPublicRoot(viewState.root) as NamedRootKey | undefined,
     runtime,
     subscribe: viewRuntime.subscribe,
     subscribeCommit: viewRuntime.subscribeCommit,
@@ -1092,17 +994,9 @@ export const createEditorView = <
   setEditorRuntime(
     viewEditor,
     viewRuntime,
-    getEditorRuntimeOwner(runtime.editor)
+    getEditorRuntimeOwner(runtime.editor),
+    viewState.root
   );
   inheritExtensionRegistry(viewEditor, runtime.editor);
-  setEditorTransformRegistry(
-    viewEditor,
-    createRootTransformRegistry(
-      runtime.editor,
-      getEditorTransformRegistry(runtime.editor),
-      viewState
-    )
-  );
-
   return Object.freeze(view);
 };

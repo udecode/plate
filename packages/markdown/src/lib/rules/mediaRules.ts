@@ -1,8 +1,7 @@
 import type { TMediaElement } from '@platejs/utils';
 
 import type { MdMdxJsxFlowElement } from '../mdast';
-import type { MdRules } from '../types';
-import type { SerializeMdOptions } from '../serializer';
+import type { MdRules, SerializeMdContext } from '../types';
 
 import { convertNodesSerialize } from '../serializer';
 import { isMdFlowContent } from '../serializer/wrapWithBlockId';
@@ -22,7 +21,7 @@ function createMediaRule() {
     },
     serialize: (
       node: TMediaElement,
-      options: SerializeMdOptions
+      options: SerializeMdContext
     ): MdMdxJsxFlowElement => {
       const { children, type, url, ...rest } = node;
       const serializedChildren = convertNodesSerialize(children, options);

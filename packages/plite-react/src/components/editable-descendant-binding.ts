@@ -11,9 +11,10 @@ import {
   getRuntimeId as editorGetRuntimeId,
   getSnapshot as editorGetSnapshot,
   isEditor as editorIsEditor,
+  isInline as editorIsInline,
+  isVoid as editorIsVoid,
 } from '../editable/runtime-editor-api';
-
-import { getSnapshotPathKey } from './editable-dom-strategy-helpers';
+import { getDOMTextRenderRevision } from '../hooks/use-plite-node-ref';
 
 const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly RuntimeId[];
 const EMPTY_DIRECT_TEXT_CHILD_NODES = Object.freeze(
@@ -23,8 +24,11 @@ const EMPTY_DIRECT_TEXT_CHILD_NODES = Object.freeze(
 export type EditableDescendantBinding = {
   childRuntimeIds: readonly RuntimeId[];
   directTextChildNodes: readonly (PliteTextNode | null)[];
+  isInline: boolean;
+  isVoid: boolean;
   node: Descendant | null;
   path: Path | null;
+  renderRevision: number;
 };
 
 export const isEditableTextNode = (value: Descendant): value is PliteTextNode =>
@@ -49,8 +53,11 @@ export const readEditableDescendantBinding = ({
     return {
       childRuntimeIds: EMPTY_RUNTIME_IDS,
       directTextChildNodes: EMPTY_DIRECT_TEXT_CHILD_NODES,
+      isInline: false,
+      isVoid: false,
       node: null,
       path: null,
+      renderRevision: 0,
     };
   }
 
@@ -62,26 +69,36 @@ export const readEditableDescendantBinding = ({
     !renderSegment &&
     !renderText;
 
-  return {
-    childRuntimeIds: isEditableTextNode(descendant)
-      ? EMPTY_RUNTIME_IDS
-      : ((descendant as PliteElementNode).children
-          .map((_, index) => {
-            const childPath = [...path, index] as Path;
+  const childRuntimeIds = isEditableTextNode(descendant)
+    ? EMPTY_RUNTIME_IDS
+    : ((descendant as PliteElementNode).children
+        .map((_, index) => {
+          const childPath = [...path, index] as Path;
 
-            return (
-              snapshot.index.pathToId[getSnapshotPathKey(childPath)] ??
-              editorGetRuntimeId(editor, childPath) ??
-              ''
-            );
-          })
-          .filter(Boolean) as RuntimeId[]),
+          return (
+            snapshot.index.idAt(childPath) ??
+            editorGetRuntimeId(editor, childPath) ??
+            ''
+          );
+        })
+        .filter(Boolean) as RuntimeId[]);
+  const ownRuntimeId = editorGetRuntimeId(editor, path);
+  const isElement = !isEditableTextNode(descendant);
+
+  return {
+    childRuntimeIds,
     directTextChildNodes: usesDirectTextChildren
       ? (descendant as PliteElementNode).children.map((child) =>
           isEditableTextNode(child) ? child : null
         )
       : EMPTY_DIRECT_TEXT_CHILD_NODES,
+    isInline: isElement && editorIsInline(editor, descendant),
+    isVoid: isElement && editorIsVoid(editor, descendant),
     node: descendant,
     path,
+    renderRevision: getDOMTextRenderRevision(editor, [
+      ...(ownRuntimeId ? [ownRuntimeId] : []),
+      ...childRuntimeIds,
+    ]),
   };
 };

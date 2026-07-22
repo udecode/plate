@@ -1,17 +1,27 @@
 import type { BaseEditor } from '@platejs/core';
-import type { Element, ElementEntry, Path, Point, Range } from '@platejs/plite';
+import type {
+  EditorStateView,
+  Element,
+  ElementEntry,
+  Path,
+  Point,
+  Range,
+} from '@platejs/plite';
 
 import { getListTypes } from './getListTypes';
 
 /** Searches upward for the root list element */
 export const getListRoot = (
   editor: BaseEditor,
-  at: Path | Point | Range | null = editor.read.selection()
+  at: Path | Point | Range | null | undefined,
+  state: Pick<EditorStateView, 'nodes' | 'selection'> = editor.read
 ): ElementEntry | undefined => {
-  if (!at) return;
+  const location = at === undefined ? state.selection() : at;
 
-  const parentList = editor.read.nodes.above<Element>({
-    at,
+  if (!location) return;
+
+  const parentList = state.nodes.above<Element>({
+    at: location,
     match: {
       type: getListTypes(editor),
     },
@@ -20,6 +30,6 @@ export const getListRoot = (
   if (parentList) {
     const [, parentListPath] = parentList;
 
-    return getListRoot(editor, parentListPath) ?? parentList;
+    return getListRoot(editor, parentListPath, state) ?? parentList;
   }
 };

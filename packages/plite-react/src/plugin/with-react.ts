@@ -4,7 +4,7 @@ import {
   defineEditorExtension,
   type Editor,
   type EditorExtension,
-  type EditorExtensionSetupContext,
+  type EditorExtensionConfigurationContext,
   type EditorExtensionTypeProvider,
   type Value,
 } from '@platejs/plite';
@@ -13,16 +13,10 @@ import type {
   DOMClipboardApi,
   DOMEditorOptions,
 } from '@platejs/plite-dom';
-import {
-  EDITOR_TO_PENDING_SELECTION,
-  installDOM,
-} from '@platejs/plite-dom/internal';
+import { dom } from '@platejs/plite-dom';
+import { EDITOR_TO_PENDING_SELECTION } from '@platejs/plite-dom/internal';
 import { history, type HistoryExtension } from '@platejs/plite-history';
 import { refreshEditorDecorations } from '../decoration-refresh';
-import {
-  getEditorTransformRegistry,
-  setEditorTransformRegistry,
-} from '../editable/runtime-editor-api';
 import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
 
 const ANDROID_USER_AGENT_RE = /Android/;
@@ -49,14 +43,15 @@ export type ReactExtensionTypes = {
 /** Editor extension installed by `react()`. */
 export type ReactExtension = Omit<
   EditorExtension<Editor>,
-  'api' | 'conflicts' | 'name' | 'setup' | 'state' | 'tx'
+  'api' | 'conflicts' | 'name' | 'state' | 'tx'
 > &
   EditorExtensionTypeProvider<(editor: Editor) => ReactExtensionTypes> & {
+    api: (
+      editor: Editor,
+      context: EditorExtensionConfigurationContext
+    ) => ReactExtensionTypes['api'];
     conflicts: readonly ['dom'];
     name: 'react';
-    setup: (context: EditorExtensionSetupContext<Editor>) => {
-      api: ReactExtensionTypes['api'];
-    };
   };
 type ReactDefaultExtensions<TExtensions extends readonly unknown[]> = readonly [
   ReactExtension,
@@ -84,25 +79,6 @@ export type CreateReactEditorOptions<
   TExtensions extends readonly unknown[] = readonly [],
 > = CreateEditorOptions<V, TExtensions> & ReactEditorOptions;
 
-const installReactTransforms = (editor: Editor) => {
-  const transforms = getEditorTransformRegistry(editor);
-
-  if (
-    typeof navigator !== 'undefined' &&
-    ANDROID_USER_AGENT_RE.test(navigator.userAgent)
-  ) {
-    setEditorTransformRegistry(editor, {
-      ...transforms,
-      insertText: (text, options) => {
-        // COMPAT: Android devices can apply pending selection after insertText.
-        EDITOR_TO_PENDING_SELECTION.delete(editor);
-
-        return transforms.insertText(text, options);
-      },
-    });
-  }
-};
-
 const createReactApi = (editor: Editor, domApi: DOMApi): ReactApi =>
   Object.freeze({
     refreshDecorations: (options) => {
@@ -122,28 +98,43 @@ const createReactApi = (editor: Editor, domApi: DOMApi): ReactApi =>
  * Installs the DOM bridge and exposes React focus, read-only, and composition
  * APIs through the editor extension system.
  */
-export const react = (options: ReactEditorOptions = {}): ReactExtension =>
-  defineEditorExtension({
-    conflicts: ['dom'],
-    name: 'react',
-    setup(context: EditorExtensionSetupContext<Editor>) {
-      const editor = installDOM(context.editor, options);
-      const { clipboard, ...domApi } = editor.dom;
+export const react = (options: ReactEditorOptions = {}): ReactExtension => {
+  const { clipboard: _clipboard, ...domOptions } = options;
+  const domExtension = dom(domOptions);
 
-      Reflect.deleteProperty(editor, 'dom');
-      installReactTransforms(editor);
+  const extension = defineEditorExtension<Editor>()({
+    activate: domExtension.activate,
+    api(editor, context) {
+      const api = domExtension.api(editor, context);
 
-      const frozenDOMApi = Object.freeze(domApi) as DOMApi;
+      if (!api.clipboard) {
+        throw new Error('React editor DOM clipboard capability is missing.');
+      }
 
       return {
-        api: {
-          clipboard,
-          dom: frozenDOMApi,
-          react: createReactApi(editor, frozenDOMApi),
-        },
+        ...api,
+        clipboard: api.clipboard,
+        react: createReactApi(editor, api.dom),
       };
     },
+    conflicts: ['dom'],
+    name: 'react',
+    onCommit(context) {
+      domExtension.onCommit?.(context);
+
+      if (
+        context.commit.changed.hasAny('text') &&
+        typeof navigator !== 'undefined' &&
+        ANDROID_USER_AGENT_RE.test(navigator.userAgent)
+      ) {
+        EDITOR_TO_PENDING_SELECTION.delete(context.editor);
+      }
+    },
+    onTransactionChange: domExtension.onTransactionChange,
   });
+
+  return extension as ReactExtension;
+};
 
 export function createReactEditor<
   V extends Value = Value,

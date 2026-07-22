@@ -2,7 +2,7 @@ import { type Element, PathApi } from '@platejs/plite';
 
 import { type GetSiblingListOptions, BaseListPlugin } from '../lib';
 
-export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
+export const listPluginPage = BaseListPlugin.configure(({ editor }) => ({
   options: {
     getSiblingListOptions: {
       getNextEntry: ([, path]: any, state) => {

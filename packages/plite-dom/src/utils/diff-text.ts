@@ -1,21 +1,25 @@
 import {
+  type DocumentChange,
+  type EditorDocumentValue,
   NodeApi,
-  type Operation,
   type Path,
   PathApi,
   type Point,
-  PointApi,
   type Range,
   RangeApi,
   type Editor as EditorType,
 } from '@platejs/plite';
 import {
   above as editorAbove,
+  getInternalDocumentChangeSet,
   hasPath as editorHasPath,
+  IndexedDocument,
   isBlock as editorIsBlock,
+  MAIN_ROOT_KEY,
   next as editorNext,
+  toInternalRoot,
+  toPublicRoot,
 } from '@platejs/plite/internal';
-import { getOperationRoot, MAIN_ROOT_KEY } from '@platejs/plite/internal';
 import { EDITOR_TO_PENDING_DIFFS } from './weak-maps';
 
 export type StringDiff = {
@@ -238,15 +242,7 @@ export function normalizeRange(
 }
 
 const getPendingPointRoot = (editor: EditorType<any>, point: Point) =>
-  point.root ?? editor.read((state) => state.view.root());
-
-const withPendingPointRoot = (editor: EditorType<any>, point: Point): Point => {
-  const root = getPendingPointRoot(editor, point);
-
-  return point.root === undefined && root !== MAIN_ROOT_KEY
-    ? { ...point, root }
-    : point;
-};
+  toInternalRoot(point.root ?? editor.read((state) => state.view.root()));
 
 const stripImplicitPendingPointRoot = (
   point: Point | null,
@@ -261,12 +257,59 @@ const stripImplicitPendingPointRoot = (
   return pointWithoutRoot;
 };
 
+export type PendingDocumentChange = Readonly<{
+  after: EditorDocumentValue;
+  before: EditorDocumentValue;
+  change: DocumentChange;
+}>;
+
+const rootChildren = (value: EditorDocumentValue, root: string) =>
+  root === MAIN_ROOT_KEY ? value.children : (value.roots?.[root] ?? []);
+
+const mapPointThroughChange = (
+  editor: EditorType<any>,
+  point: Point,
+  context: PendingDocumentChange,
+  association: -1 | 1
+): Point | null => {
+  const root = getPendingPointRoot(editor, point);
+
+  if (context.change.deleteRoots.has(root)) return null;
+  if (!getInternalDocumentChangeSet(context.change, root)) return point;
+
+  const source = IndexedDocument.fromValue(rootChildren(context.before, root));
+  const target = IndexedDocument.fromValue(rootChildren(context.after, root));
+  const localPoint = { offset: point.offset, path: point.path };
+
+  try {
+    const position = source.positionAt(localPoint);
+    const publicRoot = toPublicRoot(root);
+    const mapped = context.change.mapPosition(position, {
+      association: association === 1 ? 'forward' : 'backward',
+      ...(publicRoot ? { root: publicRoot } : {}),
+    });
+    const next = mapped === null ? null : target.pointAt(mapped, association);
+
+    if (!next) return null;
+
+    const mappedPoint = {
+      offset: next.offset,
+      path: [...next.path] as Path,
+    };
+
+    return point.root === undefined && root === MAIN_ROOT_KEY
+      ? mappedPoint
+      : { ...mappedPoint, root };
+  } catch {
+    return null;
+  }
+};
+
 export function transformPendingPoint(
   editor: EditorType<any>,
   point: Point,
-  op: Operation
+  context: PendingDocumentChange
 ): Point | null {
-  const rootedPoint = withPendingPointRoot(editor, point);
   const pendingDiffs = EDITOR_TO_PENDING_DIFFS.get(editor);
   const textDiff = pendingDiffs?.find(({ path }) =>
     PathApi.equals(path, point.path)
@@ -274,7 +317,7 @@ export function transformPendingPoint(
 
   if (!textDiff || point.offset <= textDiff.diff.start) {
     return stripImplicitPendingPointRoot(
-      PointApi.transform(rootedPoint, op, { affinity: 'backward' }),
+      mapPointThroughChange(editor, point, context, -1),
       point
     );
   }
@@ -283,13 +326,12 @@ export function transformPendingPoint(
   // Point references location inside the diff => transform the point based on the location
   // the diff will be applied to and add the offset inside the diff.
   if (point.offset <= diff.start + diff.text.length) {
-    const anchor = withPendingPointRoot(editor, {
+    const anchor = {
       path: point.path,
       offset: diff.start,
-    });
-    const transformed = PointApi.transform(anchor, op, {
-      affinity: 'backward',
-    });
+      ...(point.root === undefined ? {} : { root: point.root }),
+    };
+    const transformed = mapPointThroughChange(editor, anchor, context, -1);
 
     if (!transformed) {
       return null;
@@ -305,24 +347,14 @@ export function transformPendingPoint(
   }
 
   // Point references location after the diff
-  const anchor = withPendingPointRoot(editor, {
+  const anchor = {
     path: point.path,
     offset: point.offset - diff.text.length + diff.end - diff.start,
-  });
-  const transformed = PointApi.transform(anchor, op, {
-    affinity: 'backward',
-  });
+    ...(point.root === undefined ? {} : { root: point.root }),
+  };
+  const transformed = mapPointThroughChange(editor, anchor, context, -1);
   if (!transformed) {
     return null;
-  }
-
-  if (
-    op.type === 'split_node' &&
-    PathApi.equals(op.path, point.path) &&
-    anchor.offset < op.position &&
-    diff.start < op.position
-  ) {
-    return stripImplicitPendingPointRoot(transformed, point);
   }
 
   return stripImplicitPendingPointRoot(
@@ -337,9 +369,9 @@ export function transformPendingPoint(
 export function transformPendingRange(
   editor: EditorType<any>,
   range: Range,
-  op: Operation
+  context: PendingDocumentChange
 ): Range | null {
-  const anchor = transformPendingPoint(editor, range.anchor, op);
+  const anchor = transformPendingPoint(editor, range.anchor, context);
   if (!anchor) {
     return null;
   }
@@ -348,7 +380,7 @@ export function transformPendingRange(
     return { anchor, focus: anchor };
   }
 
-  const focus = transformPendingPoint(editor, range.focus, op);
+  const focus = transformPendingPoint(editor, range.focus, context);
   if (!focus) {
     return null;
   }
@@ -358,129 +390,53 @@ export function transformPendingRange(
 
 export function transformTextDiff(
   textDiff: TextDiff,
-  op: Operation,
+  context: PendingDocumentChange,
   editor?: EditorType<any>
 ): TextDiff | null {
   const { path, diff, id } = textDiff;
   const root = getPendingDiffRoot(editor);
 
-  if (root !== getOperationRoot(op)) {
+  if (!getInternalDocumentChangeSet(context.change, root)) {
     return textDiff;
   }
+  if (!editor) return null;
 
-  switch (op.type) {
-    case 'insert_text': {
-      if (!PathApi.equals(op.path, path) || op.offset >= diff.end) {
-        return textDiff;
-      }
+  const start = mapPointThroughChange(
+    editor,
+    { offset: diff.start, path },
+    context,
+    1
+  );
+  const end = mapPointThroughChange(
+    editor,
+    { offset: diff.end, path },
+    context,
+    1
+  );
 
-      if (op.offset <= diff.start) {
-        return {
-          diff: {
-            start: op.text.length + diff.start,
-            end: op.text.length + diff.end,
-            text: diff.text,
-          },
-          id,
-          path,
-        };
-      }
+  if (!start || !end) return null;
 
-      return {
-        diff: {
-          start: diff.start,
-          end: diff.end + op.text.length,
-          text: diff.text,
-        },
-        id,
-        path,
-      };
-    }
-    case 'remove_text': {
-      if (!PathApi.equals(op.path, path) || op.offset >= diff.end) {
-        return textDiff;
-      }
-
-      const opEnd = op.offset + op.text.length;
-      const removedBeforeStart = Math.max(
-        0,
-        Math.min(opEnd, diff.start) - op.offset
-      );
-      const removedWithinDiff = Math.max(
-        0,
-        Math.min(opEnd, diff.end) - Math.max(op.offset, diff.start)
-      );
-
-      return {
-        diff: {
-          start: diff.start - removedBeforeStart,
-          end: diff.end - removedBeforeStart - removedWithinDiff,
-          text: diff.text,
-        },
-        id,
-        path,
-      };
-    }
-    case 'split_node': {
-      if (!PathApi.equals(op.path, path) || op.position >= diff.end) {
-        return {
-          diff,
-          id,
-          path: PathApi.transform(path, op, { affinity: 'backward' })!,
-        };
-      }
-
-      if (op.position > diff.start) {
-        return {
-          diff: {
-            start: diff.start,
-            end: Math.min(op.position, diff.end),
-            text: diff.text,
-          },
-          id,
-          path,
-        };
-      }
-
-      return {
-        diff: {
-          start: diff.start - op.position,
-          end: diff.end - op.position,
-          text: diff.text,
-        },
-        id,
-        path: PathApi.transform(path, op, { affinity: 'forward' })!,
-      };
-    }
-    case 'merge_node': {
-      if (!PathApi.equals(op.path, path)) {
-        return {
-          diff,
-          id,
-          path: PathApi.transform(path, op)!,
-        };
-      }
-
-      return {
-        diff: {
-          start: diff.start + op.position,
-          end: diff.end + op.position,
-          text: diff.text,
-        },
-        id,
-        path: PathApi.transform(path, op)!,
-      };
-    }
+  if (PathApi.equals(start.path, end.path)) {
+    return {
+      diff: { start: start.offset, end: end.offset, text: diff.text },
+      id,
+      path: start.path,
+    };
   }
 
-  const newPath = PathApi.transform(path, op);
-  if (!newPath) {
-    return null;
-  }
+  const startNode = IndexedDocument.fromValue(
+    rootChildren(context.after, root)
+  ).node(start.path);
+
+  if (!NodeApi.isText(startNode)) return null;
 
   return {
-    diff,
-    path: newPath,
+    diff: {
+      start: start.offset,
+      end: startNode.text.length,
+      text: diff.text,
+    },
     id,
+    path: start.path,
   };
 }

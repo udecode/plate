@@ -30,6 +30,36 @@ test('reports exit 124 when a timed-out child handles SIGTERM cleanly', async ()
   assert.equal(result.status, 124);
 });
 
+test('falls back to the owned child when process-group signaling is denied', async () => {
+  const kill = process.kill;
+
+  process.kill = (pid, signal) => {
+    if (pid < 0) {
+      const error = new Error('process group signal denied');
+
+      error.code = 'EPERM';
+      throw error;
+    }
+
+    return kill(pid, signal);
+  };
+
+  try {
+    const result = await runBoundedProcess({
+      args: ['-e', 'setInterval(() => {}, 1000);'],
+      command: process.execPath,
+      gracePeriodMs: 100,
+      stdio: 'ignore',
+      timeoutMs: 50,
+    });
+
+    assert.equal(result.timedOut, true);
+    assert.equal(result.status, 124);
+  } finally {
+    process.kill = kill;
+  }
+});
+
 test('reports an interrupted status when a child handles SIGINT cleanly', async () => {
   const result = await runBoundedProcess({
     args: [

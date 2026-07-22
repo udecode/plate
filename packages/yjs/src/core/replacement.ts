@@ -1,22 +1,31 @@
-import type { Descendant, Operation } from '@platejs/plite';
+import type { Descendant } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import {
   formatYjsTextAttributes,
-  getPliteYjsElementType,
+  getYjsAttributes,
   removePliteYjsAttribute,
+  setYjsAttribute,
   setPliteYjsAttribute,
   type YjsAttributeRecord,
   type YjsNode,
 } from './attributes';
 import {
   assertPublicYjsAttributeCanBeSet,
+  createYjsPropertyContext,
   createYjsVisibleChildrenReader,
   getYjsLength,
+  type YjsPropertyContext,
+  type YjsPropertyLocation,
+  type YjsSetPropertyResolver,
   type YjsVisibleChildrenReader,
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
 import { isRecord } from './record';
+import {
+  encodeYjsSetValueAttributes,
+  getYjsSetValueAttributeKeys,
+} from './set-valued-attributes';
 
 type PliteElementLike = {
   readonly children: readonly Descendant[];
@@ -25,16 +34,6 @@ type PliteElementLike = {
 type PliteTextLike = {
   readonly text: string;
 } & Readonly<Record<string, unknown>>;
-
-export const isNoopPliteOperationForYjs = (operation: Operation): boolean => {
-  switch (operation.type) {
-    case 'replace_children':
-    case 'replace_fragment':
-      return areJsonLikeValuesEqual(operation.children, operation.newChildren);
-    default:
-      return false;
-  }
-};
 
 const isPliteText = (node: unknown): node is PliteTextLike =>
   isRecord(node) && typeof node.text === 'string';
@@ -52,6 +51,29 @@ const getTextAttributes = (node: PliteTextLike): YjsAttributeRecord => {
   }
 
   return attributes;
+};
+
+const getEncodedTextAttributes = (
+  node: PliteTextLike,
+  isSetValued: YjsSetPropertyResolver,
+  context: YjsPropertyContext
+): YjsAttributeRecord => {
+  const attributes = getTextAttributes(node);
+  const encoded: YjsAttributeRecord = {};
+
+  for (const [key, value] of Object.entries(attributes)) {
+    if (!isSetValued(node as Descendant, key, context)) {
+      encoded[key] = value;
+      continue;
+    }
+    if (!Array.isArray(value)) {
+      throw new Error(`Set-valued Yjs property "${key}" must be an array.`);
+    }
+
+    Object.assign(encoded, encodeYjsSetValueAttributes(key, value));
+  }
+
+  return encoded;
 };
 
 const getElementAttributes = (node: PliteElementLike): YjsAttributeRecord => {
@@ -79,29 +101,11 @@ const applyTextFormatPatch = (
   formatYjsTextAttributes(text, 0, length, patch);
 };
 
-const copyYjsChildren = (children: readonly YjsNode[]): YjsNode[] => {
-  const copy = new Array<YjsNode>(children.length);
-
-  let index = 0;
-
-  while (index < children.length) {
-    const child = children[index];
-
-    if (child === undefined) {
-      throw new Error('Cannot copy a sparse Yjs child array.');
-    }
-
-    copy[index] = child;
-    index++;
-  }
-
-  return copy;
-};
-
 export const setYjsNodeAttributes = (
   node: YjsNode,
   properties: YjsAttributeRecord,
-  newProperties: YjsAttributeRecord
+  newProperties: YjsAttributeRecord,
+  isSetValued: (key: string) => boolean = () => false
 ): void => {
   const textNode = node instanceof Y.XmlText ? node : null;
   const textPatch: YjsAttributeRecord | null = textNode === null ? null : {};
@@ -115,6 +119,49 @@ export const setYjsNodeAttributes = (
     const value = newProperties[key];
 
     assertPublicYjsAttributeCanBeSet(key);
+
+    if (isSetValued(key)) {
+      if (!Array.isArray(value)) {
+        throw new Error(`Set-valued Yjs property "${key}" must be an array.`);
+      }
+
+      const currentAttributes = getYjsAttributes(node);
+      const encoded = encodeYjsSetValueAttributes(key, value);
+
+      removePliteYjsAttribute(node, key);
+      if (textPatch !== null) {
+        textPatch[key] = null;
+        hasTextPatch = true;
+      }
+
+      for (const encodedKey of getYjsSetValueAttributeKeys(
+        currentAttributes,
+        key
+      )) {
+        if (Object.hasOwn(encoded, encodedKey)) continue;
+
+        node.removeAttribute(encodedKey);
+        if (textPatch !== null) {
+          textPatch[encodedKey] = null;
+          hasTextPatch = true;
+        }
+      }
+      for (const [encodedKey, encodedValue] of Object.entries(encoded)) {
+        if (
+          areJsonLikeValuesEqual(currentAttributes[encodedKey], encodedValue)
+        ) {
+          continue;
+        }
+
+        setYjsAttribute(node, encodedKey, encodedValue);
+        if (textPatch !== null) {
+          textPatch[encodedKey] = encodedValue;
+          hasTextPatch = true;
+        }
+      }
+
+      continue;
+    }
 
     if (value === null || value === undefined) {
       if (properties[key] === null || properties[key] === undefined) {
@@ -151,6 +198,28 @@ export const setYjsNodeAttributes = (
     }
     assertPublicYjsAttributeCanBeSet(key);
 
+    if (isSetValued(key)) {
+      const currentAttributes = getYjsAttributes(node);
+
+      removePliteYjsAttribute(node, key);
+      if (textPatch !== null) {
+        textPatch[key] = null;
+        hasTextPatch = true;
+      }
+      for (const encodedKey of getYjsSetValueAttributeKeys(
+        currentAttributes,
+        key
+      )) {
+        node.removeAttribute(encodedKey);
+        if (textPatch !== null) {
+          textPatch[encodedKey] = null;
+          hasTextPatch = true;
+        }
+      }
+
+      continue;
+    }
+
     removePliteYjsAttribute(node, key);
 
     if (textPatch !== null) {
@@ -162,41 +231,6 @@ export const setYjsNodeAttributes = (
   if (textNode !== null && textPatch !== null && hasTextPatch) {
     applyTextFormatPatch(textNode, textPatch);
   }
-};
-
-export const createSplitElement = (
-  original: Y.XmlElement,
-  properties: YjsAttributeRecord,
-  children: readonly YjsNode[]
-): Y.XmlElement => {
-  const elementType =
-    typeof properties.type === 'string'
-      ? properties.type
-      : getPliteYjsElementType(original);
-  const element = new Y.XmlElement(elementType);
-
-  for (const key in properties) {
-    if (!Object.hasOwn(properties, key) || key === 'type') {
-      continue;
-    }
-
-    assertPublicYjsAttributeCanBeSet(key);
-  }
-  setPliteYjsAttribute(element, 'type', elementType);
-
-  for (const key in properties) {
-    if (!Object.hasOwn(properties, key) || key === 'type') {
-      continue;
-    }
-
-    setPliteYjsAttribute(element, key, properties[key]);
-  }
-
-  if (children.length > 0) {
-    element.insert(0, copyYjsChildren(children));
-  }
-
-  return element;
 };
 
 const getSharedPrefixLength = (left: string, right: string): number => {
@@ -263,7 +297,7 @@ const replaceYjsText = (
   }
 };
 
-const canReplaceCompatibleYjsChildren = (
+const canReplaceCompatibleYjsChildrenWithReader = (
   readVisibleChildren: YjsVisibleChildrenReader,
   children: readonly YjsNode[],
   oldChildren: readonly Descendant[],
@@ -271,7 +305,7 @@ const canReplaceCompatibleYjsChildren = (
   startIndex = 0
 ): boolean => {
   if (
-    children.length - startIndex < oldChildren.length ||
+    children.length - startIndex !== oldChildren.length ||
     oldChildren.length !== newChildren.length
   ) {
     return false;
@@ -302,7 +336,7 @@ const canReplaceCompatibleYjsChildren = (
       isPliteElement(newChild)
     ) {
       if (
-        !canReplaceCompatibleYjsChildren(
+        !canReplaceCompatibleYjsChildrenWithReader(
           readVisibleChildren,
           readVisibleChildren(child),
           oldChild.children,
@@ -327,7 +361,9 @@ const applyCompatibleYjsChildrenReplacement = (
   children: readonly YjsNode[],
   oldChildren: readonly Descendant[],
   newChildren: readonly Descendant[],
-  startIndex = 0
+  startIndex = 0,
+  isSetValued: YjsSetPropertyResolver = () => false,
+  location: YjsPropertyLocation = { ancestors: [], path: [], root: null }
 ): void => {
   let index = 0;
 
@@ -335,6 +371,17 @@ const applyCompatibleYjsChildrenReplacement = (
     const child = children[startIndex + index];
     const oldChild = oldChildren[index];
     const newChild = newChildren[index];
+
+    if (newChild === undefined) {
+      index++;
+      continue;
+    }
+
+    const context = createYjsPropertyContext(newChild, {
+      ancestors: location.ancestors,
+      path: [...location.path, (location.offset ?? startIndex) + index],
+      root: location.root,
+    });
 
     if (child instanceof Y.XmlText) {
       if (!isPliteText(oldChild) || !isPliteText(newChild)) {
@@ -344,8 +391,18 @@ const applyCompatibleYjsChildrenReplacement = (
 
       const attributes = getTextAttributes(newChild);
 
-      setYjsNodeAttributes(child, getTextAttributes(oldChild), attributes);
-      replaceYjsText(child, oldChild.text, newChild.text, attributes);
+      setYjsNodeAttributes(
+        child,
+        getTextAttributes(oldChild),
+        attributes,
+        (key) => isSetValued(newChild as Descendant, key, context)
+      );
+      replaceYjsText(
+        child,
+        oldChild.text,
+        newChild.text,
+        getEncodedTextAttributes(newChild, isSetValued, context)
+      );
 
       index++;
       continue;
@@ -359,13 +416,21 @@ const applyCompatibleYjsChildrenReplacement = (
       setYjsNodeAttributes(
         child,
         getElementAttributes(oldChild),
-        getElementAttributes(newChild)
+        getElementAttributes(newChild),
+        (key) => isSetValued(newChild as Descendant, key, context)
       );
       applyCompatibleYjsChildrenReplacement(
         readVisibleChildren,
         readVisibleChildren(child),
         oldChild.children,
-        newChild.children
+        newChild.children,
+        0,
+        isSetValued,
+        {
+          ancestors: [context.type, ...context.ancestors],
+          path: context.path,
+          root: context.root,
+        }
       );
     }
     index++;
@@ -377,10 +442,12 @@ const replaceCompatibleYjsChildrenWithReader = (
   children: readonly YjsNode[],
   oldChildren: readonly Descendant[],
   newChildren: readonly Descendant[],
-  startIndex = 0
+  startIndex = 0,
+  isSetValued: YjsSetPropertyResolver = () => false,
+  location: YjsPropertyLocation = { ancestors: [], path: [], root: null }
 ): boolean => {
   if (
-    !canReplaceCompatibleYjsChildren(
+    !canReplaceCompatibleYjsChildrenWithReader(
       readVisibleChildren,
       children,
       oldChildren,
@@ -396,23 +463,44 @@ const replaceCompatibleYjsChildrenWithReader = (
     children,
     oldChildren,
     newChildren,
-    startIndex
+    startIndex,
+    isSetValued,
+    location
   );
 
   return true;
 };
 
-export const replaceCompatibleYjsChildren = (
+export const canReplaceCompatibleYjsChildren = (
   root: Y.XmlElement,
   children: readonly YjsNode[],
   oldChildren: readonly Descendant[],
   newChildren: readonly Descendant[],
   startIndex = 0
 ): boolean =>
-  replaceCompatibleYjsChildrenWithReader(
+  canReplaceCompatibleYjsChildrenWithReader(
     createYjsVisibleChildrenReader(root),
     children,
     oldChildren,
     newChildren,
     startIndex
+  );
+
+export const replaceCompatibleYjsChildren = (
+  root: Y.XmlElement,
+  children: readonly YjsNode[],
+  oldChildren: readonly Descendant[],
+  newChildren: readonly Descendant[],
+  startIndex = 0,
+  isSetValued: YjsSetPropertyResolver = () => false,
+  location: YjsPropertyLocation = { ancestors: [], path: [], root: null }
+): boolean =>
+  replaceCompatibleYjsChildrenWithReader(
+    createYjsVisibleChildrenReader(root),
+    children,
+    oldChildren,
+    newChildren,
+    startIndex,
+    isSetValued,
+    location
   );

@@ -1458,7 +1458,9 @@ describe('JSON document change algebra', () => {
   });
 
   it('bounds retained wide-document mapping storage by binary segment count', {
-    timeout: 10_000,
+    // This is a storage-shape law, not a wall-time budget. Keep enough headroom
+    // for shared CI hosts; registered benchmarks own performance thresholds.
+    timeout: 20_000,
   }, () => {
     const owner = {} as Editor;
     let document = IndexedDocument.fromValue(

@@ -30,9 +30,12 @@ import type { BasePlugin } from '../../../../../../packages/core/src/lib/plugin'
 jsx;
 
 const targetPluginConfig = {
-  config: {
-    targets: [BaseParagraphPlugin, H1Plugin, H2Plugin, H3Plugin],
-  },
+  targetPluginKeys: [
+    BaseParagraphPlugin.key,
+    H1Plugin.key,
+    H2Plugin.key,
+    H3Plugin.key,
+  ],
 };
 
 export const createClipboardData = (html: string, rtf?: string): DataTransfer =>

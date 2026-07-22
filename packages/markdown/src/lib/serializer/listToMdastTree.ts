@@ -1,7 +1,7 @@
 import type { TListElement } from '@platejs/utils';
 
 import type { MdList, MdListItem, MdRootContent } from '../mdast';
-import type { SerializeMdOptions } from './serializeMd';
+import type { SerializeMdContext } from '../types';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
 import { wrapWithBlockId } from './wrapWithBlockId';
@@ -14,22 +14,22 @@ export type MdListFragment = {
 
 export function listToMdastTree(
   nodes: TListElement[],
-  options: SerializeMdOptions,
+  options: SerializeMdContext,
   isBlock?: false
 ): MdList;
 export function listToMdastTree(
   nodes: TListElement[],
-  options: SerializeMdOptions,
+  options: SerializeMdContext,
   isBlock: true
 ): MdList | MdListFragment;
 export function listToMdastTree(
   nodes: TListElement[],
-  options: SerializeMdOptions,
+  options: SerializeMdContext,
   isBlock?: boolean
 ): MdList | MdListFragment;
 export function listToMdastTree(
   nodes: TListElement[],
-  options: SerializeMdOptions,
+  options: SerializeMdContext,
   isBlock = false
 ): MdList | MdListFragment {
   if (nodes.length === 0) {
@@ -168,7 +168,7 @@ export function listToMdastTree(
  */
 function processListWithBlockIds(
   nodes: TListElement[],
-  options: SerializeMdOptions
+  options: SerializeMdContext
 ): MdListFragment {
   const fragments: MdRootContent[] = [];
 

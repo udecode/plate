@@ -1,14 +1,10 @@
-import type { DeserializeMdOptions } from '../deserializeMd';
-
-import { buildRules } from '../../rules/defaultRules';
+import type { DeserializeMdContext } from '../../types';
 
 export const getDeserializerByKey = (
-  key: string,
-  options: DeserializeMdOptions
+  type: string,
+  options: DeserializeMdContext
 ) => {
-  const rules = options.rules;
+  const key = options.getPluginKey(type) ?? type;
 
-  return rules?.[key]?.deserialize === undefined
-    ? buildRules(options.editor!)[key]?.deserialize
-    : rules?.[key]?.deserialize;
+  return options.rules?.[key]?.deserialize;
 };

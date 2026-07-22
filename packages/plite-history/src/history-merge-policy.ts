@@ -1,211 +1,371 @@
-import { type Operation, PathApi, RangeApi } from '@platejs/plite';
-import { getOperationRoot, MAIN_ROOT_KEY } from '@platejs/plite/internal';
+import {
+  type EditorCommit,
+  RangeApi,
+  type RootKey,
+  type Selection,
+} from '@platejs/plite';
+import {
+  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeSet,
+  MAIN_ROOT_KEY,
+  toPublicRoot,
+} from '@platejs/plite/internal';
+
 import type { Batch } from './history';
 
-const shouldMerge = (op: Operation, prev: Operation | undefined): boolean => {
+type HistoryTarget = Readonly<{
+  path: string;
+  runtimeId?: string;
+}>;
+
+type HistoryPoint = Readonly<{
+  offset: number;
+  path: readonly number[];
+}>;
+
+type ChangedRange = readonly [number, number, number, number];
+
+type TextHistoryGroup = Readonly<{
+  afterPoint: HistoryPoint | null;
+  beforePoint: HistoryPoint | null;
+  fromAfter: number;
+  fromBefore: number;
+  kind: 'text';
+  mode: 'delete' | 'insert' | 'replace' | 'structural-replace';
+  replacedSelection: boolean;
+  root: RootKey;
+  target: HistoryTarget;
+  toAfter: number;
+  toBefore: number;
+}>;
+
+export type HistoryBatchGroup =
+  | Readonly<{
+      kind: 'document';
+      root: RootKey;
+    }>
+  | Readonly<{
+      kind: 'properties';
+      root: RootKey;
+      target: HistoryTarget;
+    }>
+  | TextHistoryGroup;
+
+const pathKey = (path: readonly number[]) => path.join('.');
+
+const getChangedRoot = (commit: EditorCommit): RootKey | null => {
+  const roots = new Set<RootKey>([
+    ...[...getInternalDocumentChangeEntries(commit.changes)].map(
+      ([root]) => root
+    ),
+    ...commit.changes.createRoots,
+    ...commit.changes.deleteRoots,
+  ]);
+
+  return roots.size === 1 ? [...roots][0]! : null;
+};
+
+const getDeepestChangedPath = (
+  paths: readonly (readonly number[])[] | undefined
+): readonly number[] | null => {
+  if (!paths || paths.length === 0) return null;
+
+  const deepest = Math.max(...paths.map((path) => path.length));
+  const candidates = new Map(
+    paths
+      .filter((path) => path.length === deepest)
+      .map((path) => [pathKey(path), path] as const)
+  );
+
+  return candidates.size === 1 ? [...candidates.values()][0]! : null;
+};
+
+const getCollapsedPoint = (
+  selection: Selection,
+  fallbackRoot: RootKey,
+  root: RootKey
+): HistoryPoint | null => {
+  if (!selection || !RangeApi.isCollapsed(selection)) return null;
+
+  const point = selection.anchor;
+  const pointRoot = point.root ?? fallbackRoot;
+
+  return pointRoot === root
+    ? Object.freeze({
+        offset: point.offset,
+        path: Object.freeze([...point.path]),
+      })
+    : null;
+};
+
+const selectionIsExpandedInRoot = (
+  selection: Selection,
+  fallbackRoot: RootKey,
+  root: RootKey
+) =>
+  Boolean(
+    selection &&
+      !RangeApi.isCollapsed(selection) &&
+      (selection.anchor.root ?? fallbackRoot) === root &&
+      (selection.focus.root ?? fallbackRoot) === root
+  );
+
+const getTarget = (
+  commit: EditorCommit,
+  root: RootKey,
+  path: readonly number[] | null,
+  kind: 'node' | 'text'
+): HistoryTarget | null => {
+  const runtimeIds = commit.changed.runtimeIds(kind, toPublicRoot(root));
+
+  if (!path && runtimeIds.length !== 1) return null;
+
+  return Object.freeze({
+    path: path ? pathKey(path) : '',
+    ...(runtimeIds.length === 1 ? { runtimeId: runtimeIds[0]! } : {}),
+  });
+};
+
+const sameTarget = (left: HistoryTarget, right: HistoryTarget) =>
+  left.runtimeId && right.runtimeId
+    ? left.runtimeId === right.runtimeId
+    : left.path === right.path;
+
+export const isSameHistoryPath = (
+  left: readonly number[],
+  right: readonly number[]
+) =>
+  left.length === right.length &&
+  left.every((part, index) => part === right[index]);
+
+const samePoint = (left: HistoryPoint | null, right: HistoryPoint | null) =>
+  Boolean(
+    left &&
+      right &&
+      left.offset === right.offset &&
+      isSameHistoryPath(left.path, right.path)
+  );
+
+const getChangedSpan = (
+  ranges: readonly ChangedRange[]
+): ChangedRange | null => {
+  if (ranges.length === 0) return null;
+
+  return Object.freeze([
+    Math.min(...ranges.map((range) => range[0])),
+    Math.max(...ranges.map((range) => range[1])),
+    Math.min(...ranges.map((range) => range[2])),
+    Math.max(...ranges.map((range) => range[3])),
+  ]);
+};
+
+export const createHistoryBatchGroup = (
+  commit: EditorCommit
+): HistoryBatchGroup | null => {
+  const root = getChangedRoot(commit);
+
+  if (!root) return null;
+
+  const rootChange = getInternalDocumentChangeSet(commit.changes, root);
+  const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
+  const ranges: ChangedRange[] = [];
+
+  rootChange?.iterChangedRanges((...range) => ranges.push(range));
+
+  const range = ranges.length === 1 ? ranges[0]! : null;
+  const changedSpan = getChangedSpan(ranges);
+  const changedPath = getDeepestChangedPath(commit.changed.paths(publicRoot));
+  const replacedSelection = selectionIsExpandedInRoot(
+    commit.selectionBefore,
+    commit.selectionBeforeRoot ?? MAIN_ROOT_KEY,
+    root
+  );
+  const afterPoint = getCollapsedPoint(
+    commit.selectionAfter,
+    commit.selectionAfterRoot ?? MAIN_ROOT_KEY,
+    root
+  );
+  const beforePoint = getCollapsedPoint(
+    commit.selectionBefore,
+    commit.selectionBeforeRoot ?? MAIN_ROOT_KEY,
+    root
+  );
+  const selectionStart = commit.selectionBefore
+    ? RangeApi.edges(commit.selectionBefore)[0]
+    : null;
+  const structuralReplacementInsertedText = Boolean(
+    selectionStart &&
+      afterPoint &&
+      (selectionStart.root ?? commit.selectionBeforeRoot ?? MAIN_ROOT_KEY) ===
+        root &&
+      isSameHistoryPath(selectionStart.path, afterPoint.path) &&
+      afterPoint.offset > selectionStart.offset
+  );
+  const textChanged = commit.changed.has('text', publicRoot);
+  const structureChanged = commit.changed.has('structure', publicRoot);
+  const propertiesChanged = commit.changed.has('properties', publicRoot);
+  const textTarget = getTarget(
+    commit,
+    root,
+    changedPath ?? afterPoint?.path ?? beforePoint?.path ?? null,
+    'text'
+  );
+  const propertyTarget = getTarget(commit, root, changedPath, 'node');
+
   if (
-    prev &&
-    getOperationRoot(op) === getOperationRoot(prev) &&
-    op.type === 'insert_text' &&
-    prev.type === 'insert_text' &&
-    op.offset === prev.offset + prev.text.length &&
-    PathApi.equals(op.path, prev.path)
+    changedSpan &&
+    replacedSelection &&
+    structuralReplacementInsertedText &&
+    afterPoint &&
+    structureChanged
+  ) {
+    return Object.freeze({
+      afterPoint,
+      beforePoint,
+      fromAfter: changedSpan[2],
+      fromBefore: changedSpan[0],
+      kind: 'text',
+      mode: 'structural-replace',
+      replacedSelection: true,
+      root,
+      target: getTarget(commit, root, afterPoint.path, 'text')!,
+      toAfter: changedSpan[3],
+      toBefore: changedSpan[1],
+    });
+  }
+
+  if (
+    range &&
+    textTarget &&
+    textChanged &&
+    !structureChanged &&
+    !propertiesChanged
+  ) {
+    const beforeLength = range[1] - range[0];
+    const afterLength = range[3] - range[2];
+    const mode =
+      beforeLength === 0 && afterLength > 0
+        ? 'insert'
+        : beforeLength > 0 && afterLength === 0
+          ? 'delete'
+          : 'replace';
+
+    return Object.freeze({
+      afterPoint,
+      beforePoint,
+      fromAfter: range[2],
+      fromBefore: range[0],
+      kind: 'text',
+      mode,
+      replacedSelection,
+      root,
+      target: textTarget,
+      toAfter: range[3],
+      toBefore: range[1],
+    });
+  }
+
+  if (
+    range &&
+    propertyTarget &&
+    propertiesChanged &&
+    !structureChanged &&
+    !textChanged
+  ) {
+    return Object.freeze({
+      kind: 'properties',
+      root,
+      target: propertyTarget,
+    });
+  }
+
+  return Object.freeze({ kind: 'document', root });
+};
+
+const shouldMergeText = (
+  current: TextHistoryGroup,
+  previous: TextHistoryGroup
+) => {
+  if (
+    current.root !== previous.root ||
+    !sameTarget(current.target, previous.target)
+  ) {
+    return false;
+  }
+
+  if (
+    current.mode === 'insert' &&
+    previous.replacedSelection &&
+    (previous.mode === 'replace' || previous.mode === 'structural-replace') &&
+    (samePoint(previous.afterPoint, current.beforePoint) ||
+      current.fromBefore === previous.toAfter)
   ) {
     return true;
   }
 
-  if (
-    prev &&
-    getOperationRoot(op) === getOperationRoot(prev) &&
-    op.type === 'remove_text' &&
-    prev.type === 'remove_text' &&
-    op.offset + op.text.length === prev.offset &&
-    PathApi.equals(op.path, prev.path)
-  ) {
-    return true;
+  if (current.mode === 'insert' && previous.mode === 'insert') {
+    return current.fromBefore === previous.toAfter;
+  }
+
+  if (current.mode === 'delete' && previous.mode === 'delete') {
+    return current.toBefore === previous.fromAfter;
   }
 
   return false;
 };
 
-const shouldMergeSelectedReplacementFollowup = (
-  operation: Operation,
+export const shouldMergeBatch = (
+  currentBatch: Batch,
+  current: HistoryBatchGroup | null,
   previousBatch: Batch,
-  previousSaveableOperations: readonly Operation[]
+  previous: HistoryBatchGroup | null
 ): boolean => {
-  if (
-    operation.type !== 'insert_text' ||
-    previousBatch.statePatches.length > 0 ||
-    !previousBatch.selectionBefore ||
-    RangeApi.isCollapsed(previousBatch.selectionBefore)
-  ) {
+  if (currentBatch.effects.length > 0 || previousBatch.effects.length > 0) {
     return false;
   }
 
-  const previousOperation = previousSaveableOperations.at(-1);
+  if (!current || !previous || current.root !== previous.root) return false;
 
-  if (
-    previousOperation?.type !== 'insert_text' ||
-    !shouldMerge(operation, previousOperation)
-  ) {
-    return false;
+  if (current.kind === 'text' && previous.kind === 'text') {
+    return shouldMergeText(current, previous);
   }
-
-  const previousRoot = getOperationRoot(previousOperation);
-  const previousBatchSingleRoot = previousSaveableOperations.every(
-    (previous) => getOperationRoot(previous) === previousRoot
-  );
-  const previousBatchDeletedSelection = previousSaveableOperations
-    .slice(0, -1)
-    .some(
-      (previous) =>
-        previous.type === 'remove_text' ||
-        previous.type === 'remove_node' ||
-        previous.type === 'merge_node'
-    );
-
-  return previousBatchSingleRoot && previousBatchDeletedSelection;
-};
-
-const shouldMergeSetNodeBatch = (
-  operation: Operation,
-  previousSaveableOperations: readonly Operation[]
-): boolean => {
-  if (operation.type !== 'set_node') {
-    return false;
-  }
-
-  const previousRoot = getOperationRoot(operation);
 
   return (
-    previousSaveableOperations.length > 0 &&
-    previousSaveableOperations.every(
-      (previous) =>
-        previous.type === 'set_node' &&
-        getOperationRoot(previous) === previousRoot &&
-        PathApi.equals(previous.path, operation.path)
-    )
+    current.kind === 'properties' &&
+    previous.kind === 'properties' &&
+    sameTarget(current.target, previous.target)
   );
-};
-
-export const shouldSaveHistoryOperation = (op: Operation): boolean => {
-  if (op.type === 'set_selection') {
-    return false;
-  }
-
-  return true;
-};
-
-export const shouldMergeBatch = (
-  operations: readonly Operation[],
-  previousBatch: Batch
-): boolean => {
-  const saveableOperations = operations.filter(shouldSaveHistoryOperation);
-  const previousSaveableOperations = previousBatch.operations.filter(
-    shouldSaveHistoryOperation
-  );
-  const previousOperation = previousSaveableOperations.at(-1);
-  const previousRoot = previousOperation
-    ? getOperationRoot(previousOperation)
-    : MAIN_ROOT_KEY;
-  const previousBatchIsTextOnly =
-    previousOperation != null &&
-    previousSaveableOperations.every(
-      (operation) =>
-        operation.type === previousOperation.type &&
-        getOperationRoot(operation) === previousRoot
-    );
-  const previousBatchIsSingleTextPath =
-    previousOperation != null &&
-    (previousOperation.type === 'insert_text' ||
-      previousOperation.type === 'remove_text') &&
-    previousSaveableOperations.every(
-      (operation) =>
-        (operation.type === 'insert_text' ||
-          operation.type === 'remove_text') &&
-        getOperationRoot(operation) === previousRoot &&
-        PathApi.equals(operation.path, previousOperation.path)
-    );
-
-  return saveableOperations.length === 1
-    ? shouldMergeSelectedReplacementFollowup(
-        saveableOperations[0]!,
-        previousBatch,
-        previousSaveableOperations
-      ) ||
-        shouldMergeSetNodeBatch(
-          saveableOperations[0]!,
-          previousSaveableOperations
-        ) ||
-        ((previousBatchIsTextOnly || previousBatchIsSingleTextPath) &&
-          shouldMerge(saveableOperations[0]!, previousOperation))
-    : false;
 };
 
 export const shouldMergeExplicitBatch = (
-  operations: readonly Operation[],
+  currentBatch: Batch,
+  current: HistoryBatchGroup | null,
   previousBatch: Batch,
+  previous: HistoryBatchGroup | null,
   isNativeTextInput: boolean
 ): boolean => {
-  if (shouldMergeBatch(operations, previousBatch)) {
+  if (shouldMergeBatch(currentBatch, current, previousBatch, previous)) {
     return true;
   }
 
-  const saveableOperations = operations.filter(shouldSaveHistoryOperation);
-  const previousSaveableOperations = previousBatch.operations.filter(
-    shouldSaveHistoryOperation
-  );
+  if (!current || !previous || current.root !== previous.root) return false;
+  if (!isNativeTextInput) return true;
 
-  if (
-    saveableOperations.length === 0 ||
-    previousSaveableOperations.length === 0
-  ) {
-    return false;
-  }
-
-  const allSaveableOperations = [
-    ...previousSaveableOperations,
-    ...saveableOperations,
-  ];
-  const firstOperation = allSaveableOperations[0]!;
-  const root = getOperationRoot(firstOperation);
-  const allOperationsShareRoot = allSaveableOperations.every(
-    (operation) => getOperationRoot(operation) === root
-  );
-
-  if (!allOperationsShareRoot) {
-    return false;
-  }
-
-  if (!isNativeTextInput) {
-    return true;
-  }
-
-  if (
-    firstOperation.type !== 'insert_text' &&
-    firstOperation.type !== 'remove_text'
-  ) {
-    return false;
-  }
-
-  const path = firstOperation.path;
-
-  const allOperationsShareTextPath = allSaveableOperations.every(
-    (operation) =>
-      (operation.type === 'insert_text' || operation.type === 'remove_text') &&
-      getOperationRoot(operation) === root &&
-      PathApi.equals(operation.path, path)
-  );
-
-  if (!allOperationsShareTextPath) {
-    return false;
-  }
-
-  return allSaveableOperations.every(
-    (operation, index) =>
-      index === 0 || shouldMerge(operation, allSaveableOperations[index - 1])
+  return (
+    current.kind === 'text' &&
+    previous.kind === 'text' &&
+    shouldMergeText(current, previous)
   );
 };
 
-export const shouldSaveBatch = (operations: readonly Operation[]): boolean =>
-  operations.some((operation) => shouldSaveHistoryOperation(operation));
+export const mergeHistoryBatchGroups = (
+  previous: HistoryBatchGroup | null,
+  current: HistoryBatchGroup | null
+): HistoryBatchGroup | null =>
+  current?.kind === 'text' && previous?.kind === 'text'
+    ? Object.freeze({
+        ...current,
+        replacedSelection:
+          previous.replacedSelection || current.replacedSelection,
+      })
+    : current;

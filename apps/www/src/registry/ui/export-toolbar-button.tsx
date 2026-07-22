@@ -7,7 +7,6 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { exportToDocx } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
-import type { BasePlugin } from 'platejs';
 import { createBaseEditor } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 import { serializeHtml } from 'platejs/static';
@@ -159,7 +158,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
 
   const exportToWord = async () => {
     const blob = await exportToDocx(editor.read.value().children, {
-      editorPlugins: [...BaseEditorKit, ...DocxExportKit] as BasePlugin[],
+      editorPlugins: [...BaseEditorKit, ...DocxExportKit],
     });
 
     const url = URL.createObjectURL(blob);

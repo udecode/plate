@@ -1,5 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import type { EditorUpdateTransaction, Element } from '@platejs/plite';
+import type { EditorTransactionSpecBuilder, Element } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { UpsertLinkOptions } from './upsertLink';
@@ -7,7 +7,7 @@ import type { UpsertLinkOptions } from './upsertLink';
 /** Replace the current link text while preserving its first leaf marks. */
 export const upsertLinkText = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction,
+  tx: EditorTransactionSpecBuilder,
   { text }: UpsertLinkOptions
 ) => {
   const link = tx.nodes.above<Element>({

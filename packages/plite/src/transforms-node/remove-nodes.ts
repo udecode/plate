@@ -1,20 +1,20 @@
 import {
-  applyOperation,
+  applyBuiltDocumentChange,
   getChildren,
+  getCurrentSelection,
   runEditorTransaction,
 } from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import {
-  type Descendant,
   type Location,
   LocationApi,
   NodeApi,
+  SelectionApi,
   type Span,
 } from '../interfaces';
 import {
   isBlock as editorIsBlock,
-  pathRef as editorPathRef,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
@@ -31,16 +31,15 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
     !LocationApi.isSpan(options.at) &&
     options.at.length > 0
   ) {
-    const [node] = getNode(editor, options.at);
+    const at = options.at;
+    const [node] = getNode(editor, at);
     const pathMatch =
-      normalizeNodeMatch(options.match) ?? matchPath(editor, options.at);
+      normalizeNodeMatch(options.match) ?? matchPath(editor, at);
 
-    if (pathMatch(node, options.at)) {
-      applyOperation(editor, {
-        type: 'remove_node',
-        path: options.at,
-        node: node as Descendant,
-      });
+    if (pathMatch(node, at)) {
+      applyBuiltDocumentChange(editor, (builder, root) =>
+        builder.removeNode(root, at)
+      );
     }
 
     return;
@@ -80,11 +79,9 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
       const pathMatch = match ?? matchPath(editor, at);
 
       if (pathMatch(node, at)) {
-        applyOperation(editor, {
-          type: 'remove_node',
-          path: at,
-          node: node as Descendant,
-        });
+        applyBuiltDocumentChange(editor, (builder, root) =>
+          builder.removeNode(root, at)
+        );
       }
 
       return;
@@ -94,20 +91,33 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
       match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
     }
 
+    const selection =
+      options.at === undefined ? getCurrentSelection(editor) : null;
+    const selectionAnchor = SelectionApi.isText(selection)
+      ? editor.anchor(selection, { deletion: 'nearest' })
+      : null;
     const depths = getNodes(editor, { at, match, mode, voids });
-    const pathRefs = Array.from(depths, ([, p]) => editorPathRef(editor, p));
+    const pathAnchors = Array.from(depths, ([, path]) =>
+      editor.anchor(path, {
+        association: 'forward',
+        deletion: 'drop',
+      })
+    );
 
-    for (const pathRef of pathRefs) {
-      const path = pathRef.unref()!;
+    for (const pathAnchor of pathAnchors) {
+      const path = pathAnchor.release();
 
       if (path) {
-        const [node] = getNode(editor, path);
-        applyOperation(editor, {
-          type: 'remove_node',
-          path,
-          node: node as Descendant,
-        });
+        applyBuiltDocumentChange(editor, (builder, root) =>
+          builder.removeNode(root, path)
+        );
       }
+    }
+
+    if (selectionAnchor) {
+      const resolved = selectionAnchor.release();
+
+      tx.setSelection(resolved ? { ...selection, ...resolved } : null);
     }
   });
 };

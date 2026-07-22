@@ -9,7 +9,7 @@ import {
   VoidRemoveSuggestionOverlayStatic,
 } from '@/registry/ui/suggestion-node-static';
 
-const INLINE_SUGGESTION_TARGET_PLUGINS = [
+const INLINE_SUGGESTION_RENDER_TARGETS = [
   KEYS.date,
   KEYS.inlineEquation,
   KEYS.link,
@@ -53,11 +53,11 @@ export const BaseSuggestionKit = [
         },
         transformStyle: () => ({}) as CSSStyleDeclaration,
       },
-      targetPlugins: INLINE_SUGGESTION_TARGET_PLUGINS,
     },
     render: {
       belowRootNodes: VoidRemoveSuggestionOverlayStatic,
       node: SuggestionLeafStatic,
     },
+    targetPluginKeys: INLINE_SUGGESTION_RENDER_TARGETS,
   }),
 ];

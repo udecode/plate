@@ -22,7 +22,7 @@ import {
   isDOMElement,
 } from '../utils/dom';
 import { IS_COMPOSING } from '../utils/weak-maps';
-import type { DOMEditor as DOMEditorType } from './dom-editor';
+import type { DOMEditor as DOMEditorType } from './with-dom';
 
 export const DOM_COVERAGE_BOUNDARY_ATTRIBUTE =
   'data-plite-dom-coverage-boundary';
@@ -774,7 +774,7 @@ export const DOMCoverage = {
     }
 
     return {
-      domPoint: editor.dom.assertDOMPoint(point),
+      domPoint: editor.api.dom.assertDOMPoint(point),
       type: 'dom-point',
     };
   },
@@ -795,7 +795,7 @@ export const DOMCoverage = {
     }
 
     return {
-      domRange: editor.dom.assertDOMRange(range),
+      domRange: editor.api.dom.assertDOMRange(range),
       type: 'dom-range',
     };
   },

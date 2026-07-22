@@ -5,5 +5,4 @@ export default defineDirectPackageConfig({
     index: 'src/index.ts',
     react: 'src/react.tsx',
   },
-  tsconfig: 'tsconfig.json',
 });

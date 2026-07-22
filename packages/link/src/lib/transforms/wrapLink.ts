@@ -1,6 +1,6 @@
 import type { BaseEditor } from '@platejs/core';
 import type {
-  EditorUpdateTransaction,
+  EditorTransactionSpecBuilder,
   Location,
   MaximizeMode,
 } from '@platejs/plite';
@@ -18,13 +18,13 @@ export interface WrapLinkOptions {
 /** Wrap nodes in a link. */
 export const wrapLink = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction,
+  tx: EditorTransactionSpecBuilder,
   { target, url, ...options }: WrapLinkOptions
 ) => {
   tx.nodes.wrap(
     {
       children: [],
-      target,
+      ...(target === undefined ? {} : { target }),
       type: editor.getType(KEYS.link),
       url,
     },

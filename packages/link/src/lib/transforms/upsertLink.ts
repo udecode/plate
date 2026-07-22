@@ -1,8 +1,7 @@
 import type { BaseEditor } from '@platejs/core';
 import type {
-  EditorUpdateTransaction,
-  NodeInsertNodesOptions,
-  Text,
+  EditorTransactionSpecBuilder,
+  TextInsertFragmentOptions,
 } from '@platejs/plite';
 import { NodeApi, RangeApi } from '@platejs/plite';
 import type { TLinkElement } from '@platejs/utils';
@@ -17,7 +16,7 @@ import { upsertLinkText } from './upsertLinkText';
 import { type WrapLinkOptions, wrapLink } from './wrapLink';
 
 export type UpsertLinkOptions = {
-  insertNodesOptions?: NodeInsertNodesOptions<TLinkElement | Text>;
+  insertNodesOptions?: TextInsertFragmentOptions;
   /** Insert text when the selection is already in a link. */
   insertTextInLink?: boolean;
   skipValidation?: boolean;
@@ -28,7 +27,7 @@ export type UpsertLinkOptions = {
 /** Insert or update a link at the current selection. */
 export const upsertLink = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction,
+  tx: EditorTransactionSpecBuilder,
   {
     insertNodesOptions,
     insertTextInLink,
@@ -61,8 +60,15 @@ export const upsertLink = (
   if (linkAbove) {
     const [link] = linkAbove;
 
-    if (url !== link.url || target !== link.target) {
-      tx.nodes.set<TLinkElement>({ target, url }, { at: link });
+    if (url !== link.url) {
+      tx.nodes.set<TLinkElement>({ url }, { at: link });
+    }
+    if (target !== link.target) {
+      if (target === undefined) {
+        tx.nodes.unset('target', { at: link });
+      } else {
+        tx.nodes.set<TLinkElement>({ target }, { at: link });
+      }
     }
 
     upsertLinkText(editor, tx, { target, text: nextText, url });
@@ -94,7 +100,7 @@ export const upsertLink = (
     {
       ...(linkEntry ? NodeApi.extractProps(linkEntry[0]) : {}),
       children: [{ ...leaf[0], text: nextText?.length ? nextText : url }],
-      target,
+      ...(target === undefined ? {} : { target }),
       url,
     },
     insertNodesOptions

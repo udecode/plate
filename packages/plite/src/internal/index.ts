@@ -7,7 +7,6 @@ export {
   addMark,
   after,
   before,
-  bookmark,
   collapse,
   defineEditorExtension,
   delete,
@@ -21,13 +20,10 @@ export {
   first,
   fragment,
   getChildren,
-  getCollabStatePatches,
-  getDirtyPaths,
+  getCollabEffects,
   getExtensionRegistry,
   getFragment,
   getLastCommit,
-  getOperationDirtiness,
-  getOperations,
   getPathByRuntimeId,
   getRuntimeId,
   getSelection,
@@ -37,7 +33,6 @@ export {
   hasPath,
   hasTexts,
   insertBreak,
-  insertFragment,
   insertNode,
   insertNodes,
   insertSoftBreak,
@@ -49,7 +44,6 @@ export {
   isEmpty,
   isEnd,
   isInline,
-  isNormalizing,
   isSelectable,
   isStart,
   isVoid,
@@ -61,24 +55,14 @@ export {
   move,
   moveNodes,
   next,
-  normalize,
   parent,
   path,
-  pathRef,
-  pathRefs,
   point,
-  pointRef,
-  pointRefs,
   positions,
   previous,
   projectRange,
   range,
-  rangeRef,
-  rangeRefs,
   read,
-  registerCapability,
-  registerCommitListener,
-  registerNormalizer,
   removeMark,
   removeNodes,
   replaceChildren,
@@ -86,7 +70,6 @@ export {
   reset,
   select,
   setNodes,
-  setNormalizing,
   setPoint,
   setSelection,
   shouldMergeNodesRemovePrevNode,
@@ -95,6 +78,7 @@ export {
   subscribe,
   subscribeCommit,
   subscribeSource,
+  toggleBlock,
   toggleMark,
   unhangRange,
   unsetNodes,
@@ -106,35 +90,90 @@ export {
 
 export {
   defineCommand,
-  executeCommand,
-  registerCommand,
+  dispatchCommand,
+  hasCommandHandler,
 } from '../core/command-registry';
+export { createDetachedContentSlice } from '../core/content-slice';
+export type { InternalEditorRuntimeElementEntry } from '../core/snapshot-index';
+export { editorCommands } from '../core/editor-commands';
+export {
+  createInternalDocumentChange,
+  getInternalDocumentChangeClassification,
+  getInternalDocumentChangeClassificationEntries,
+  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeSet,
+  mapInternalDocumentChangePosition,
+  getDocumentChangeRelocations,
+  getExactDocumentChangeRelocations,
+  IndexedDocument,
+  type DocumentChangeRelocation,
+} from '../core/document-change';
+export {
+  createInternalClipboardApi,
+  initializeEditorExtensions,
+} from '../create-editor';
+export {
+  areEditorSchemaIdentitiesEqual,
+  compileEditorSchemaContributions,
+  EditorSchemaCompileError,
+  getCompiledSchemaPropertyId,
+  getCompiledPropertyMergeStrategy,
+  matchesCompiledSchemaTarget,
+  readEditorSchemaIdentity,
+  resolveCompiledSchemaProperty,
+  type CompiledEditorSchema,
+  type CompiledSchemaConstructionPlan,
+  type CompiledSchemaContentProgram,
+  type CompiledSchemaElement,
+  type CompiledSchemaProperty,
+  type CompiledSchemaPropertyMergeStrategy,
+  type CompiledSchemaTargetContext,
+  type EditorSchemaContributionRecord,
+  type EditorSchemaDiagnostic,
+} from '../core/schema-compiler';
+export {
+  getCompiledEditorConfiguration,
+  getInstalledEditorExtension,
+  reportEditorLifecycleError,
+} from '../core/editor-extension';
+export { isPropertyPolicyToken } from '../interfaces/property-policy';
+export {
+  assertPublicRootKey,
+  toInternalRoot,
+  toPublicRoot,
+} from '../core/public-root';
+export { getCompiledEditorSchemaFromApi } from '../core/editor-schema';
 export {
   getEditorRuntime,
+  getEditorRuntimeOwner,
   hasEditorRuntime,
   setEditorRuntime,
 } from '../core/editor-runtime';
 export {
+  getCompiledEditorSchema,
   getExtensionRegistry as getEditorExtensionRegistry,
   inheritExtensionRegistry as inheritEditorExtensionRegistry,
 } from '../core/extension-registry';
 export {
-  applyOperation,
-  applyStatePatches,
-  getCachedFullRootReplaceTopLevelRuntimeIds,
+  applyBuiltDocumentChange,
   getActiveEditorTransaction,
+  getCollabEffectTypes,
   getCurrentMarks as getEditorCurrentMarks,
   getCurrentSelectionRoot as getEditorSelectionRoot,
   getEditorDefaultBlockType,
   getEditorMaxLength,
-  getEditorOperationRoot,
+  getEditorRuntimeElementEntries,
+  getEditorRuntimeRootKeys,
+  getEditorStateView,
+  getEditorUpdateRoot,
+  getEditorRuntimeIdForNode,
   getLiveNode as getEditorLiveNode,
   getLiveSelection as getEditorLiveSelection,
   getLiveText as getEditorLiveText,
-  getOperationCount,
   getSnapshotVersion,
-  markInternalOwnedReplayOperation,
+  getStateFieldEffectTypes,
   runTrustedUpdate,
+  scheduleAfterCommitNotification,
   setChildren as setEditorChildren,
   setEditorComposing,
   setEditorDefaultBlockType,
@@ -144,16 +183,26 @@ export {
   setCurrentMarks as setEditorMarks,
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
-  shouldSaveStatePatch,
   subscribeEditorViewState,
-  withOperationRootChildren,
+  toEditorCoreStateView,
+  withEditorUpdateRootScope,
 } from '../core/public-state';
-export { hasTransformMiddleware as hasEditorTransformMiddleware } from '../core/transform-middleware';
-export {
-  getEditorTransformRegistry,
-  setEditorTransformRegistry,
-} from '../core/transform-registry';
 export { projectRangeInSnapshot } from '../range-projection';
+export {
+  assertSelectionSupported,
+  decodeEditorSelection,
+  encodeEditorSelection,
+  mapSelectionThroughChange,
+} from '../core/selection-protocol';
+export { createEditorEffect } from '../core/transaction-values';
+export {
+  areEditorJsonValuesEqual,
+  assertEditorJsonValue,
+  decodeEditorEffect,
+  decodeVersionedValue,
+  encodeEditorEffect,
+  encodeVersionedValue,
+} from '../core/value-codec';
 export { formatDebugValue } from '../utils/format-debug-value';
 export { isObject } from '../utils/is-object';
-export { getOperationRoot, getRangeRoot, MAIN_ROOT_KEY } from './root-location';
+export { getRangeRoot, MAIN_ROOT_KEY } from './root-location';

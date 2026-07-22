@@ -1,65 +1,68 @@
+import { extendEditor, getFragment } from './core';
 import {
-  apply,
-  extendEditor,
-  getDirtyPaths,
-  getFragment,
-  isEditorExtensionInstalled,
-  normalizeNode,
-  shouldNormalize,
-} from './core';
+  prepareInitialEditorExtensionPublication,
+  prepareScopedEditorExtensionPublication,
+  resolveInstalledEditorExtension,
+  setEditorLifecycleErrorSink,
+} from './core/editor-extension';
 import { createEditorQueryRuntime } from './core/editor-query-runtime';
 import {
   createEditorReadApi,
   createEditorUpdateApi,
 } from './core/editor-lifecycle-api';
+import { createCommandDispatch } from './core/command-registry';
 import {
   type InternalEditorExtensionRuntime,
-  type InternalEditorRefRuntime,
   type InternalEditorRuntime,
   type InternalEditorSnapshotRuntime,
   type InternalEditorTransactionRuntime,
-  type InternalEditorTransformRuntime,
+  getEditorSchema,
   setEditorRuntime,
 } from './core/editor-runtime';
 import { createEditorSchema } from './core/editor-schema';
+import { createAnchor } from './core/anchor';
 import {
-  bindEditorMethod,
-  createEditorTransformRegistry,
-  type EditorMethod,
-} from './core/editor-transform-runtime';
-import { getExtensionRegistry } from './core/extension-registry';
+  assertSelectionSupported,
+  mapSelectionThroughChange,
+} from './core/selection-protocol';
+import {
+  createExtensionRegistry,
+  finalizeExtensionRegistry,
+  getExtensionRegistry,
+  initializeBaseExtensionRegistry,
+  registerEffectTypeInRegistry,
+} from './core/extension-registry';
+import { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
 import {
   getChildren,
   getActiveEditorTransaction,
+  getCurrentSelectionRoot,
+  getEditorDocumentValue,
   getLastCommit,
   getLiveSelection,
-  getOperationDirtiness,
-  getOperations,
   getPathByRuntimeId,
   getRuntimeId,
   getSnapshot,
+  initializeEditorSchemaDocument,
   initializePublicState,
   readEditor,
   repairEditorValue,
-  setBaseApply,
+  setCurrentSelection,
   subscribe,
   subscribeCommit,
   subscribeSource,
   updateEditor,
+  withEditorRootChildren,
 } from './core/public-state';
-import { setEditorTransformRegistry } from './core/transform-registry';
 import {
-  pathRef,
-  pathRefs,
-  pointRef,
-  pointRefs,
-  rangeRef,
-  rangeRefs,
-} from './editor';
+  assertPublicLocationRoot,
+  assertPublicRootKey,
+} from './core/public-root';
 import type {
   CreateEditorOptions,
   DescendantIn,
   Editor,
+  EditorAnchorApi,
   EditorClipboardApi,
   EditorClipboardInsertDataCapability,
   EditorCommit,
@@ -68,12 +71,44 @@ import type {
   EditorSnapshot,
   EditorUpdateContext,
   EditorUpdateTransaction,
-  Operation,
+  EditorValueFromExtensions,
+  SchemaExtensionsOf,
   Value,
 } from './interfaces';
 import type { InternalEditorUpdateOptions } from './core/update-policy';
 
 let nextEditorId = 0;
+const PENDING_SCHEMA_BOOTSTRAP = new WeakSet<Editor>();
+
+type ExtensionsFromOptions<TOptions> = TOptions extends {
+  extensions: infer TExtensions extends readonly unknown[];
+}
+  ? TExtensions
+  : readonly [];
+
+type MutableJson<T> = T extends readonly (infer TItem)[]
+  ? MutableJson<TItem>[]
+  : T extends object
+    ? { -readonly [TKey in keyof T]: MutableJson<T[TKey]> }
+    : T;
+
+type InitialValueFromOptions<TOptions> = TOptions extends {
+  initialValue: infer TInitialValue;
+}
+  ? MutableJson<
+      TInitialValue extends { children: infer TChildren }
+        ? TChildren
+        : TInitialValue
+    > extends infer V extends Value
+    ? V
+    : Value
+  : Value;
+
+type ValueFromOptions<TOptions> = [
+  SchemaExtensionsOf<ExtensionsFromOptions<TOptions>>,
+] extends [never]
+  ? InitialValueFromOptions<TOptions>
+  : EditorValueFromExtensions<ExtensionsFromOptions<TOptions>>;
 
 const createEditorId = () => `plite-editor-${++nextEditorId}`;
 
@@ -96,7 +131,7 @@ const resolveApiCapability = (capabilities: unknown[]) => {
   return capabilities.at(-1);
 };
 
-const createClipboardApi = (
+export const createInternalClipboardApi = (
   getEditor: () => Editor,
   getFallback?: () => ((data: DataTransfer) => boolean) | undefined
 ): EditorClipboardApi =>
@@ -126,59 +161,197 @@ const createClipboardApi = (
       const activeTx = getActiveEditorTransaction(editor);
 
       if (activeTx) {
+        activeTx.tags.add('paste');
+
         return dispatch(handlers.length - 1, dataTransfer, activeTx);
       }
 
       let handled = false;
 
-      updateEditor(editor, (tx) => {
-        handled = dispatch(handlers.length - 1, dataTransfer, tx);
-      });
+      updateEditor(
+        editor,
+        (tx) => {
+          handled = dispatch(handlers.length - 1, dataTransfer, tx);
+        },
+        { tags: ['paste'] }
+      );
 
       return handled;
     },
   });
+
+const publishInitialEditorExtensions = <TEditor extends Editor>(
+  editor: TEditor,
+  input: EditorExtensionInput<TEditor>,
+  explicitInitialDocument: boolean
+) => {
+  const publication = prepareInitialEditorExtensionPublication(
+    editor,
+    input,
+    !explicitInitialDocument
+  );
+  const initialDocument = getEditorDocumentValue(editor);
+  const initialSelection = getLiveSelection(editor);
+  const initialSelectionRoot = getCurrentSelectionRoot(editor);
+
+  try {
+    publication.stage();
+    publication.commit();
+    if (!publication.documentChange.empty) {
+      const fittedDocument = publication.documentChange.apply(
+        initialDocument
+      ) as ReturnType<typeof getEditorDocumentValue>;
+
+      initializeEditorSchemaDocument(editor, fittedDocument);
+      if (initialSelection) {
+        const mapped = mapSelectionThroughChange(
+          editor,
+          initialSelection,
+          publication.documentChange,
+          initialDocument,
+          fittedDocument,
+          initialSelectionRoot,
+          { association: 'backward', preferPositionMapping: true }
+        );
+
+        if (!mapped) {
+          throw new Error(
+            'Initial selection cannot be mapped through schema fitting.'
+          );
+        }
+        setCurrentSelection(editor, mapped, initialSelectionRoot);
+      }
+    }
+    const publishedDocument = getEditorDocumentValue(editor);
+
+    if (explicitInitialDocument && publishedDocument.children.length === 0) {
+      throw new Error(
+        '[Plite] initialValue is invalid! Expected at least one element.'
+      );
+    }
+
+    assertSelectionSupported(
+      editor,
+      getLiveSelection(editor),
+      publishedDocument
+    );
+    if (publication.configurationChanged) {
+      publication.validateDocument(publishedDocument);
+    } else {
+      getEditorSchema(editor).validateDocument(publishedDocument);
+    }
+    publication.finalize();
+  } catch (error) {
+    publication.rollback();
+    initializeEditorSchemaDocument(editor, initialDocument);
+    setCurrentSelection(editor, initialSelection, initialSelectionRoot);
+    throw error;
+  }
+  publication.ready();
+
+  if (getExtensionRegistry(editor).schemaContributions.records.size > 0) {
+    PENDING_SCHEMA_BOOTSTRAP.delete(editor);
+  }
+};
+
+/** @internal Replace the derived base schema on one untouched raw editor. */
+export const initializeEditorExtensions = <TEditor extends Editor>(
+  editor: TEditor,
+  input: EditorExtensionInput<TEditor>
+) => {
+  if (!PENDING_SCHEMA_BOOTSTRAP.has(editor)) {
+    throw new Error(
+      'Editor schema initialization requires an untouched editor without an explicit initial document.'
+    );
+  }
+  if (getExtensionRegistry(editor).schemaContributions.records.size > 0) {
+    PENDING_SCHEMA_BOOTSTRAP.delete(editor);
+    throw new Error('Editor schema is already initialized.');
+  }
+  const lastCommit = getLastCommit(editor);
+  const document = getEditorDocumentValue(editor);
+  const hasDocument =
+    document.children.length > 0 ||
+    Object.values(document.roots ?? {}).some((children) => children.length > 0);
+
+  if ((lastCommit && !lastCommit.changes.empty) || hasDocument) {
+    PENDING_SCHEMA_BOOTSTRAP.delete(editor);
+    throw new Error(
+      'Editor schema initialization requires an untouched empty document.'
+    );
+  }
+
+  publishInitialEditorExtensions(editor, input, false);
+};
 
 /**
  * Create a mutable Plite editor with schema, command, query, state, and
  * extension runtime APIs installed.
  */
 export function createEditor<
-  const TExtensions extends readonly unknown[],
-  V extends Value = Value,
+  const TOptions extends CreateEditorOptions<any, readonly unknown[]> & {
+    extensions: readonly unknown[];
+  },
 >(
-  options: CreateEditorOptions<V, TExtensions> & { extensions: TExtensions }
-): Editor<V, TExtensions>;
+  options: TOptions
+): Editor<ValueFromOptions<TOptions>, ExtensionsFromOptions<TOptions>>;
 
 export function createEditor<
-  V extends Value = Value,
-  const TExtensions extends readonly unknown[] = readonly [],
->(options?: CreateEditorOptions<V, TExtensions>): Editor<V, TExtensions>;
+  V extends Value,
+  const TExtensions extends readonly unknown[],
+>(
+  options: CreateEditorOptions<V, TExtensions> & {
+    extensions: TExtensions;
+  }
+): Editor<V, TExtensions>;
+
+export function createEditor<V extends Value = Value>(
+  options?: Omit<CreateEditorOptions<V, readonly []>, 'extensions'> & {
+    extensions?: never;
+  }
+): Editor<V, readonly []>;
 
 export function createEditor<
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
 >(options: CreateEditorOptions<V, TExtensions> = {}): Editor<V, TExtensions> {
+  return createEditorImplementation(options);
+}
+
+/** @internal Generic construction entrypoint for typed runtime wrappers. */
+export const createEditorUnchecked = <
+  V extends Value = Value,
+  const TExtensions extends readonly unknown[] = readonly [],
+>(
+  options: CreateEditorOptions<V, TExtensions> = {}
+): Editor<V, TExtensions> => createEditorImplementation(options);
+
+const createEditorImplementation = <
+  V extends Value,
+  const TExtensions extends readonly unknown[],
+>(
+  options: CreateEditorOptions<V, TExtensions>
+): Editor<V, TExtensions> => {
   let editor!: Editor<V, TExtensions>;
-  const runtimeEditor = () => editor as Editor;
-  const bind = <T extends EditorMethod>(method: T) =>
-    bindEditorMethod(runtimeEditor, method);
+  const runtimeEditor = () => editor;
   const schema = createEditorSchema(runtimeEditor);
 
   const extensionRuntime = {
     schema,
-    extend: (extension) => extendEditor(editor, extension),
+    extend: (extension, extensionOptions) =>
+      extendEditor(editor, extension, extensionOptions),
+    prepareExtensionPublication: (entries, publicationOptions) =>
+      prepareScopedEditorExtensionPublication(
+        editor,
+        entries,
+        publicationOptions
+      ),
   } satisfies InternalEditorExtensionRuntime<V>;
 
   const snapshotRuntime = {
     getChildren: () => getChildren(editor),
-    getDirtyPaths: (operation) => getDirtyPaths(editor, operation),
     getFragment: () => getFragment(editor) as DescendantIn<V>[],
     getLastCommit: () => getLastCommit(editor) as EditorCommit<V> | null,
-    getOperationDirtiness: (operations, options) =>
-      getOperationDirtiness(editor, operations, options) as EditorCommit<V>,
-    getOperations: (startIndex) =>
-      getOperations(editor, startIndex) as readonly Operation<V>[],
     getPathByRuntimeId: (runtimeId) => getPathByRuntimeId(editor, runtimeId),
     getRuntimeId: (path) => getRuntimeId(editor, path),
     getSelection: () => getLiveSelection(editor),
@@ -187,6 +360,7 @@ export function createEditor<
 
   const transactionRuntime = {
     read: (fn) => readEditor(editor, fn),
+    runCommand: createCommandDispatch(() => editor),
     subscribe: (listener) => subscribe(editor, listener),
     subscribeCommit: (listener) => subscribeCommit(editor, listener),
     subscribeSource: (source, listener) =>
@@ -208,11 +382,6 @@ export function createEditor<
       ),
   } satisfies InternalEditorTransactionRuntime<V>;
 
-  const transformRuntime = {
-    normalizeNode: (entry, options) => normalizeNode(editor, entry, options),
-    shouldNormalize: (options) => shouldNormalize(editor, options),
-  } satisfies InternalEditorTransformRuntime;
-
   const createResolvedClipboardApi = () => {
     const capabilities =
       getExtensionRegistry(editor as Editor).capabilities.get('clipboard') ??
@@ -222,30 +391,36 @@ export function createEditor<
     const insertFragmentData = capability.insertFragmentData;
     const insertTextData = capability.insertTextData;
     const fallbackInsertData =
-      typeof insertFragmentData === 'function' &&
-      typeof insertTextData === 'function'
-        ? (data: DataTransfer) =>
-            (insertFragmentData as (data: DataTransfer) => boolean).call(
-              capability,
-              data
-            ) ||
-            (insertTextData as (data: DataTransfer) => boolean).call(
-              capability,
-              data
-            )
-        : typeof capability.insertData === 'function'
-          ? (capability.insertData as (data: DataTransfer) => boolean).bind(
-              capability
-            )
+      typeof capability.insertData === 'function'
+        ? (capability.insertData as (data: DataTransfer) => boolean).bind(
+            capability
+          )
+        : typeof insertFragmentData === 'function' &&
+            typeof insertTextData === 'function'
+          ? (data: DataTransfer) =>
+              (insertFragmentData as (data: DataTransfer) => boolean).call(
+                capability,
+                data
+              ) ||
+              (insertTextData as (data: DataTransfer) => boolean).call(
+                capability,
+                data
+              )
           : undefined;
 
     return Object.freeze({
       ...capability,
-      insertData: createClipboardApi(
+      insertData: createInternalClipboardApi(
         () => editor as Editor,
         () => fallbackInsertData
       ).insertData,
     });
+  };
+  const anchorApi: EditorAnchorApi = (value, anchorOptions) => {
+    assertPublicLocationRoot(value);
+    assertPublicRootKey(anchorOptions.root);
+
+    return createAnchor(editor, value, anchorOptions);
   };
   const api = new Proxy(Object.create(null) as Record<string, unknown>, {
     get(_target, property) {
@@ -269,20 +444,29 @@ export function createEditor<
   }) as Editor<V, TExtensions>['api'];
 
   const getApi = (extension: EditorExtension<any, any>) => {
-    if (!isEditorExtensionInstalled(editor as Editor, extension)) {
+    const installedExtension = resolveInstalledEditorExtension(
+      editor as Editor,
+      extension
+    );
+
+    if (!installedExtension) {
       throw new Error(
         `Editor extension "${extension.name}" is not installed on this editor.`
       );
     }
 
-    const apiNames = Object.keys(extension.api ?? {});
-    const capabilityName = apiNames.includes(extension.name)
-      ? extension.name
-      : (apiNames[0] ?? extension.name);
+    const apiNames =
+      typeof installedExtension.api === 'function'
+        ? []
+        : Object.keys(installedExtension.api ?? {});
+    const installedName = installedExtension.name;
+    const capabilityName = apiNames.includes(installedName)
+      ? installedName
+      : (apiNames[0] ?? installedName);
 
-    if (apiNames.length > 1 && !apiNames.includes(extension.name)) {
+    if (apiNames.length > 1 && !apiNames.includes(installedName)) {
       throw new Error(
-        `Editor extension "${extension.name}" must expose exactly one capability or a capability matching its extension name to be used with editor.getApi().`
+        `Editor extension "${installedName}" must expose exactly one capability or a capability matching its extension name to be used with editor.getApi().`
       );
     }
 
@@ -290,7 +474,7 @@ export function createEditor<
 
     if (capability === undefined) {
       throw new Error(
-        `Editor extension "${extension.name}" capability "${capabilityName}" is not installed.`
+        `Editor extension "${installedName}" capability "${capabilityName}" is not installed.`
       );
     }
 
@@ -298,7 +482,7 @@ export function createEditor<
   };
 
   const read = createEditorReadApi<V, TExtensions>((fn) =>
-    readEditor(editor, fn)
+    withEditorRootChildren(editor, 'main', () => readEditor(editor, fn))
   );
   const update = createEditorUpdateApi<V, TExtensions>(
     (fn, policy) =>
@@ -322,50 +506,63 @@ export function createEditor<
 
   const baseEditor: Editor<V, TExtensions> = {
     api,
+    anchor: anchorApi,
     id: options.id ?? createEditorId(),
     getApi: getApi as Editor<V, TExtensions>['getApi'],
     read,
     subscribe: (listener) => subscribe(editor, listener),
     subscribeCommit: (listener) => subscribeCommit(editor, listener),
     update,
-    extend: (extension) => extendEditor(editor, extension),
+    extend: (extension, extensionOptions) =>
+      extendEditor(editor, extension, extensionOptions),
   };
 
   editor = baseEditor;
+  setEditorLifecycleErrorSink(editor, options.lifecycleErrorSink);
 
   const queryRuntime = createEditorQueryRuntime(editor);
-
-  const refRuntime = {
-    pathRef: bind(pathRef),
-    pathRefs: bind(pathRefs),
-    pointRef: bind(pointRef),
-    pointRefs: bind(pointRefs),
-    rangeRef: bind(rangeRef),
-    rangeRefs: bind(rangeRefs),
-  } satisfies InternalEditorRefRuntime;
 
   const runtime = {
     ...extensionRuntime,
     ...queryRuntime,
-    ...refRuntime,
     ...snapshotRuntime,
     ...transactionRuntime,
-    ...transformRuntime,
   } satisfies InternalEditorRuntime<V>;
 
   setEditorRuntime(editor, runtime);
 
-  setEditorTransformRegistry(
-    editor,
-    createEditorTransformRegistry(runtimeEditor)
-  );
-  setBaseApply(editor, (...args) => apply(editor, ...args));
+  const baseRegistry = createExtensionRegistry();
 
-  initializePublicState(editor, options);
+  registerEffectTypeInRegistry(
+    baseRegistry,
+    'plite:screen-reader-announcement',
+    screenReaderAnnouncementEffect
+  );
+  initializeBaseExtensionRegistry(
+    editor,
+    finalizeExtensionRegistry(baseRegistry)
+  );
+  const initialState = initializePublicState(editor, options);
+
+  if (!initialState.explicit) PENDING_SCHEMA_BOOTSTRAP.add(editor);
 
   if (options.extensions) {
-    extendEditor(editor as Editor, options.extensions as EditorExtensionInput);
+    publishInitialEditorExtensions(
+      editor as Editor,
+      options.extensions as EditorExtensionInput,
+      initialState.explicit
+    );
+  } else {
+    const initialDocument = getEditorDocumentValue(editor);
+
+    if (initialState.explicit && initialDocument.children.length === 0) {
+      throw new Error(
+        '[Plite] initialValue is invalid! Expected at least one element.'
+      );
+    }
+    assertSelectionSupported(editor, getLiveSelection(editor), initialDocument);
+    schema.validateDocument(initialDocument);
   }
 
   return editor;
-}
+};

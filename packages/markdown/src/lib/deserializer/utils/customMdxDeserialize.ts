@@ -6,11 +6,9 @@ import type {
 } from 'mdast-util-mdx';
 import type { Node as UnistNode } from 'unist';
 
-import { getPluginKey, getPluginType } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
-import type { MdDecoration } from '../../types';
-import type { DeserializeMdOptions } from '../deserializeMd';
+import type { DeserializeMdContext, MdDecoration } from '../../types';
 
 import { mdastToPlate } from '../../types';
 import { getDeserializerByKey } from './getDeserializerByKey';
@@ -94,18 +92,17 @@ const serializeUnknownMdxNode = (
 export const customMdxDeserialize = (
   mdastNode: MdxJsxFlowElement | MdxJsxTextElement,
   deco: MdDecoration,
-  options: DeserializeMdOptions
+  options: DeserializeMdContext
 ) => {
   const customJsxElementKey = mdastNode.name;
 
   const key = customJsxElementKey
-    ? (getPluginKey(options.editor!, customJsxElementKey) ??
-      customJsxElementKey)
+    ? (options.getPluginKey(customJsxElementKey) ?? customJsxElementKey)
     : null;
 
   if (key) {
     const nodeParserDeserialize = getDeserializerByKey(
-      mdastToPlate(options.editor!, key),
+      options.getPluginType(mdastToPlate(key)),
       options
     );
 
@@ -135,7 +132,7 @@ export const customMdxDeserialize = (
             text: serializeUnknownMdxNode(mdastNode),
           },
         ],
-        type: getPluginType(options.editor!, KEYS.p),
+        type: options.getPluginType(KEYS.p),
       },
     ];
   }

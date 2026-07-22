@@ -1,10 +1,5 @@
 import { useCallback, useContext } from 'react';
-import {
-  type EditorCommit,
-  type Operation,
-  type Path,
-  RangeApi,
-} from '@platejs/plite';
+import { type EditorCommit, type Path, RangeApi } from '@platejs/plite';
 import { ElementPathContext, NodeRuntimeIdContext } from '../context';
 import {
   getPathByRuntimeId as editorGetPathByRuntimeId,
@@ -58,15 +53,13 @@ export const useElementSelected = ({
   );
 
   const shouldUpdate = useCallback(
-    (_operations?: readonly Operation[], change?: EditorCommit) => {
+    (change?: EditorCommit) => {
       if (path) {
         return (
           !change ||
-          change.fullDocumentChanged ||
-          change.rootRuntimeIdsChanged ||
           change.selectionChanged ||
-          change.structureChanged ||
-          change.topLevelOrderChanged
+          change.changed.hasAny('structure') ||
+          change.changed.hasAny('root-order')
         );
       }
 
@@ -74,20 +67,10 @@ export const useElementSelected = ({
         return true;
       }
 
-      if (
-        change.fullDocumentChanged ||
-        change.rootRuntimeIdsChanged ||
-        change.structureChanged ||
-        change.topLevelOrderChanged
-      ) {
-        return true;
-      }
-
-      if (change.selectionImpactRuntimeIds === null) {
-        return true;
-      }
-
-      return change.selectionImpactRuntimeIds.includes(runtimeId);
+      return (
+        change.changed.hasRuntime(runtimeId, 'selection') ||
+        change.changed.hasRuntime(runtimeId, 'path')
+      );
     },
     [path, runtimeId]
   );

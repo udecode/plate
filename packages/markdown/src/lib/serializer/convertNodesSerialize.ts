@@ -1,4 +1,3 @@
-import { getPluginKey, getPluginType } from '@platejs/core';
 import {
   type Descendant,
   type Element,
@@ -8,7 +7,7 @@ import {
 import { KEYS, type TListElement } from '@platejs/utils';
 
 import type { MdRootContent } from '../mdast';
-import type { SerializeMdOptions } from './serializeMd';
+import type { SerializeMdContext } from '../types';
 
 import { convertTextsSerialize } from './convertTextsSerialize';
 import { listToMdastTree } from './listToMdastTree';
@@ -18,7 +17,7 @@ import { wrapWithBlockId } from './wrapWithBlockId';
 
 export const convertNodesSerialize = (
   nodes: Descendant[],
-  options: SerializeMdOptions,
+  options: SerializeMdContext,
   isBlock = false
 ): MdRootContent[] => {
   const mdastNodes: MdRootContent[] = [];
@@ -46,7 +45,7 @@ export const convertNodesSerialize = (
         continue;
       }
 
-      const pType = getPluginType(options.editor!, KEYS.p) ?? KEYS.p;
+      const pType = options.getPluginType(KEYS.p);
 
       if (isListElement(node, pType)) {
         listBlock.push(node);
@@ -89,12 +88,10 @@ export const convertNodesSerialize = (
 
 export const buildMdastNode = (
   node: Element,
-  options: SerializeMdOptions,
+  options: SerializeMdContext,
   isBlock = false
 ) => {
-  const editor = options.editor!;
-
-  let key = getPluginKey(editor, node.type) ?? node.type;
+  let key = options.getPluginKey(node.type) ?? node.type;
 
   if (KEYS.heading.includes(key)) {
     key = 'heading';
@@ -133,7 +130,7 @@ const isListElement = (
 
 const shouldIncludeText = (
   text: Text,
-  options: SerializeMdOptions
+  options: SerializeMdContext
 ): boolean => {
   const { allowedNodes, allowNode, disallowedNodes } = options;
 
@@ -172,7 +169,7 @@ const shouldIncludeText = (
 
 const shouldIncludeNode = (
   node: Element,
-  options: SerializeMdOptions
+  options: SerializeMdContext
 ): boolean => {
   const { allowedNodes, allowNode, disallowedNodes } = options;
 

@@ -41,7 +41,8 @@ export function RHFEditorForm() {
   });
 
   // Create/configure the Plate editor
-  const editor = usePlateEditor({ value: initialValue });
+  const editor = usePlateEditor({
+     value: initialValue });
 
   // Register the field for react-hook-form
   register('content', { /* validation rules... */ });

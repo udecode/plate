@@ -1,6 +1,8 @@
 import { getEditorSchema } from '../core/editor-runtime';
-import { runEditorTransaction } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
+import {
+  applyBuiltDocumentChange,
+  runEditorTransaction,
+} from '../core/public-state';
 import { nodes as getNodes } from '../editor/nodes';
 import { LocationApi, NodeApi, type Point, RangeApi } from '../interfaces';
 import {
@@ -10,11 +12,11 @@ import {
   isBlock as editorIsBlock,
   isEdge as editorIsEdge,
   leaf as editorLeaf,
-  pathRef as editorPathRef,
   range as editorRange,
 } from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import { select } from '../transforms-selection/select';
 import { matchPath } from '../utils/match-path';
 import { insertNodes } from './insert-nodes';
 import { moveNodes } from './move-nodes';
@@ -26,7 +28,6 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
   options = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
-    const transforms = getEditorTransformRegistry(editor);
     let target = tx.resolveTarget({ at: options.at });
     const mode = options.mode ?? 'lowest';
     const split = options.split ?? false;
@@ -55,18 +56,25 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
     }
 
     if (LocationApi.isPath(target) && options.match == null && !split) {
-      insertNodes(editor, wrapper, { at: target });
-      moveNodes(editor, {
-        at: [...target.slice(0, -1), target.at(-1)! + 1],
-        to: [...target, 0],
-      });
+      if (target.length === 0) return;
+
+      const node = NodeApi.get(editor, target);
+      const parentPath = PathApi.parent(target);
+      const index = target.at(-1)!;
+
+      applyBuiltDocumentChange(editor, (builder, root) =>
+        builder.replaceChildren(root, parentPath, index, 1, [
+          { ...wrapper, children: [node] },
+        ])
+      );
       return;
     }
 
     if (split && LocationApi.isRange(target)) {
       const [start, end] = RangeApi.edges(target);
-      const rangeRef = tx.refs.range(target, {
-        affinity: 'inward',
+      const rangeAnchor = editor.anchor(target, {
+        association: 'inward',
+        deletion: 'nearest',
       });
       const isAtBlockEdge = (point: Point) => {
         const blockAbove = editorAbove(editor, {
@@ -93,7 +101,7 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
         always: shouldAlwaysSplit(start),
       });
 
-      target = rangeRef.unref() ?? target;
+      target = rangeAnchor.release() ?? target;
 
       if (LocationApi.isRange(target)) {
         let [nextStart, nextEnd] = RangeApi.edges(target);
@@ -123,7 +131,7 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
       }
 
       if (options.at == null) {
-        transforms.select(target);
+        select(editor, target);
       }
     }
 
@@ -181,15 +189,23 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
         { length: lastChildIndex - firstChildIndex + 1 },
         (_, offset) => [...commonPath, firstChildIndex + offset]
       );
-      const pathRefs = movePaths.map((path) => editorPathRef(editor, path));
+      const pathAnchors = movePaths.map((path) =>
+        editor.anchor(path, {
+          association: 'forward',
+          deletion: 'drop',
+        })
+      );
 
-      transforms.insertNodes({ ...wrapper }, { at: wrapperPath, voids });
-      const wrapperRef = editorPathRef(editor, wrapperPath);
+      insertNodes(editor, { ...wrapper }, { at: wrapperPath, voids });
+      const wrapperAnchor = editor.anchor(wrapperPath, {
+        association: 'forward',
+        deletion: 'drop',
+      });
 
       try {
-        pathRefs.forEach((pathRef, index) => {
-          const path = pathRef.current;
-          const currentWrapperPath = wrapperRef.current;
+        pathAnchors.forEach((pathAnchor, index) => {
+          const path = pathAnchor.resolve();
+          const currentWrapperPath = wrapperAnchor.resolve();
 
           if (!path || !currentWrapperPath) {
             return;
@@ -201,7 +217,9 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
           });
         });
 
-        if (nextSelection && wrapperRef.current) {
+        const currentWrapperPath = wrapperAnchor.resolve();
+
+        if (nextSelection && currentWrapperPath) {
           const mapPoint = (point: Point) => {
             const matchIndex = movePaths.findIndex((path) =>
               PathApi.equals(path, point.path.slice(0, path.length))
@@ -215,7 +233,7 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
 
             return {
               path: [
-                ...wrapperRef.current!,
+                ...currentWrapperPath,
                 matchIndex,
                 ...point.path.slice(basePath.length),
               ],
@@ -229,15 +247,15 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
           };
         }
       } finally {
-        wrapperRef.unref();
-        for (const pathRef of pathRefs) {
-          pathRef.unref();
+        wrapperAnchor.release();
+        for (const pathAnchor of pathAnchors) {
+          pathAnchor.release();
         }
       }
     }
 
     if (nextSelection) {
-      transforms.select(nextSelection);
+      select(editor, nextSelection);
     }
   });
 };

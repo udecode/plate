@@ -18,11 +18,11 @@ export const insertListItem = (
   const liType = editor.getType(KEYS.li);
   const licType = editor.getType(KEYS.lic);
 
-  const selection = editor.read.selection();
+  const selection = tx.selection();
 
   if (!selection) return false;
 
-  const licEntry = editor.read.nodes.above<Element>({
+  const licEntry = tx.nodes.above<Element>({
     match: { type: licType },
   });
 
@@ -30,7 +30,7 @@ export const insertListItem = (
 
   const [, paragraphPath] = licEntry;
 
-  const listItemEntry = editor.read.nodes.parent<Element>(paragraphPath);
+  const listItemEntry = tx.nodes.parent<Element>(paragraphPath);
 
   if (!listItemEntry) return false;
 
@@ -42,12 +42,12 @@ export const insertListItem = (
     'checked' in listItemNode ? { checked: false } : undefined;
 
   {
-    if (!editor.read.selection.isCollapsed()) {
+    if (!tx.selection.isCollapsed()) {
       tx.text.delete();
     }
 
-    const isStart = editor.read.points.isStart(selection.focus, paragraphPath);
-    const isEnd = editor.read.points.isEnd(selection.focus, paragraphPath);
+    const isStart = tx.points.isStart(selection.focus, paragraphPath);
+    const isEnd = tx.points.isEnd(selection.focus, paragraphPath);
 
     const nextParagraphPath = PathApi.next(paragraphPath);
     const nextListItemPath = PathApi.next(listItemPath);
@@ -75,7 +75,7 @@ export const insertListItem = (
      */
     if (isEnd) {
       /** If end, insert a list item after and select it */
-      const marks = editor.read.marks() || {};
+      const marks = tx.marks() || {};
 
       if (optionalTasklistProps && options.inheritCheckStateOnLineEndBreak) {
         optionalTasklistProps.checked = listItemNode.checked as boolean;

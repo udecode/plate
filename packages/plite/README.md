@@ -2,7 +2,7 @@
 
 Core Plite editor runtime.
 
-`plite` owns the document model, operations, paths, points, ranges,
+`plite` owns the document model, canonical changes, paths, points, ranges,
 transactions, state fields, schema extensions, and pure node/location helper
 namespaces.
 
@@ -37,7 +37,7 @@ const info = editor.read((state) => ({
 }))
 ```
 
-Write document, selection, mark, root, state-field, and operation changes inside
+Write document, selection, mark, root, and state-field changes inside
 `editor.update(...)`. Use direct update methods for one-shot writes and the
 callback form when a command groups related writes into one commit.
 
@@ -50,12 +50,53 @@ editor.update((tx) => {
 })
 ```
 
-Use `defineEditorExtension`, `defineStateField`, and `elementProperty` when a
-library needs schema facts, state groups, transaction groups, normalizers,
-operation middleware, commit listeners, or mounted runtime APIs.
+Use `defineEditorSchema`, `element`, `schema`, and `property` for declarative
+document grammar and property laws. Use `defineEditorExtension` and
+`defineStateField` for state groups, transaction groups, corrections, commit
+listeners, and mounted runtime APIs.
 
-Middleware and debug APIs include transform middleware, query middleware,
-operation apply handlers, and debug value scrubbers for advanced library code.
+Declared schemas reject unknown vocabulary by default. Set
+`unknown: 'preserve'` only when the application intentionally carries
+undeclared elements and properties; an unknown element must also be admitted
+by its parent's compiled content grammar.
+
+Closed application content uses `fragment.replace`. Parsed and clipboard
+content uses `ContentSlice` so structural openness survives fitting.
+
+```ts
+editor.update.fragment.replace([
+  { type: 'paragraph', children: [{ text: 'Hello' }] },
+])
+```
+
+Persist state fields and shared effects through versioned codecs. Primitive
+values use `valueCodecs`; custom values use `defineValueCodec`. Install each
+standalone effect descriptor once through an extension's `effects` resource.
+
+```ts
+import { defineStateField, valueCodecs } from '@platejs/plite'
+
+const documentTitle = defineStateField({
+  key: 'document.title',
+  initial: () => 'Untitled',
+  persist: valueCodecs.string,
+})
+```
+
+```ts
+import { defineEditorExtension, defineEffect } from '@platejs/plite'
+
+const refreshIndex = defineEffect({ key: 'search.refresh-index' })
+
+const searchEffects = defineEditorExtension({
+  effects: [refreshIndex],
+  name: 'search-effects',
+})
+```
+
+Advanced library code can install query middleware and transaction, commit,
+node, or text listeners. Diagnostic tooling can configure the debug value
+scrubber.
 
 Pure data helpers live on namespaces such as `ElementApi`, `NodeApi`,
 `PathApi`, `PointApi`, `RangeApi`, `SpanApi`, and `TextApi`. Inside a live

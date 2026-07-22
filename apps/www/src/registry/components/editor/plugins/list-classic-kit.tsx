@@ -35,15 +35,15 @@ export const ListKit = [
   ListItemPlugin,
   ListItemContentPlugin,
   BulletedListPlugin.configure({
-    node: { component: BulletedListElement },
+    render: { node: BulletedListElement },
     shortcuts: { toggle: { keys: 'mod+alt+5' } },
   }),
   NumberedListPlugin.configure({
-    node: { component: NumberedListElement },
+    render: { node: NumberedListElement },
     shortcuts: { toggle: { keys: 'mod+alt+6' } },
   }),
   TaskListPlugin.configure({
-    node: { component: TaskListElement },
+    render: { node: TaskListElement },
     shortcuts: { toggle: { keys: 'mod+alt+7' } },
   }),
   ListItemPlugin.withComponent(ListItemElement),

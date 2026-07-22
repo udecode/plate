@@ -15,7 +15,6 @@ import {
   TextApi,
 } from '@platejs/plite';
 
-import { schedulePliteReactFocus } from '../hooks/focus-scheduler';
 import {
   type focusPliteEditable,
   focusPliteEditableAfterEventFrame,
@@ -41,9 +40,24 @@ import {
   mouseEventTargetToElement,
 } from './content-root-owner-target';
 import { getDragAutoScrollTarget } from './drag-auto-scroll-target';
+import type {
+  DOMPhase,
+  DOMPhaseScheduler,
+  DOMPhaseTiming,
+} from '@platejs/plite-dom/internal';
+import {
+  findMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+  type EditableDOMRuntime,
+} from './editable-dom-runtime';
 import type { EditableDOMSelectionSyncOptions } from './input-controller';
 import { writeCollapsedModelSelectionDOMPreference } from './model-selection-dom-preference';
-import { failInvariant } from './runtime-editor-api';
+import {
+  dispatchCommand,
+  editorCommands,
+  failInvariant,
+  toInternalRoot,
+} from './runtime-editor-api';
 import {
   getExpandedDOMSelectionInTarget,
   hasExpandedDOMSelectionInTarget,
@@ -98,6 +112,7 @@ export type RootInteractionControllerOptions = {
   getMountedViewEditor: (root: RootKey) => RootInteractionEditor | null;
   ignoreBlankEditableRootClicks?: boolean;
   root: RootKey;
+  runtime?: EditableDOMRuntime;
   selection: RootInteractionSelectionMode;
   selectionBridge?: {
     beforeModelSelection: () => void;
@@ -142,7 +157,7 @@ type PendingProjectedDrag = {
 };
 
 type PendingDragAutoScroll = {
-  animationFrame: number | null;
+  cancelScheduledFrame: (() => void) | null;
   clientX: number;
   clientY: number;
   currentRange: Range;
@@ -508,7 +523,7 @@ const collapseModelSelectionToProjectedDragAnchor = ({
   anchor: RootInteractionDragEndpoint;
   editor: RootInteractionEditor;
 }) => {
-  const viewRoot = editor.read((state) => state.view.root());
+  const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
 
   if (anchor.root !== viewRoot) {
     return;
@@ -527,9 +542,7 @@ const collapseModelSelectionToProjectedDragAnchor = ({
     return;
   }
 
-  editor.update((tx) => {
-    tx.selection.set(range);
-  });
+  dispatchCommand(editor, editorCommands.select, { target: range });
 };
 
 const applyModelProjectedDragSelection = ({
@@ -549,11 +562,11 @@ const applyModelProjectedDragSelection = ({
 
   selectionBridge?.beforeModelSelection();
   writePliteViewSelection(editor, null);
-  editor.update((tx) => {
-    tx.selection.set({
+  dispatchCommand(editor, editorCommands.select, {
+    target: {
       anchor: anchor.point,
       focus: focus.point,
-    });
+    },
   });
 
   return true;
@@ -848,8 +861,8 @@ const applyModelDragSelection = ({
         )
       : null
   );
-  editor.update({ tags: 'skip-scroll-into-view' }, (tx) => {
-    tx.selection.set(rootedRange);
+  editor.update({ tags: 'skip-scroll-into-view' }, () => {
+    dispatchCommand(editor, editorCommands.select, { target: rootedRange });
   });
   selectionBridge?.syncDOMSelectionToEditor({ preserveScroll: true });
 };
@@ -857,11 +870,7 @@ const applyModelDragSelection = ({
 const stopDragAutoScroll = (ref: PendingDragAutoScrollRef) => {
   const state = ref.current;
 
-  if (state && state.animationFrame !== null) {
-    state.rootElement.ownerDocument.defaultView?.cancelAnimationFrame(
-      state.animationFrame
-    );
-  }
+  state?.cancelScheduledFrame?.();
 
   state?.releaseCleanup?.();
   ref.current = null;
@@ -973,34 +982,42 @@ export const applyDragAutoScrollFrame = (state: PendingDragAutoScroll) => {
   return true;
 };
 
-const scheduleDragAutoScroll = (ref: PendingDragAutoScrollRef) => {
+const scheduleDragAutoScroll = (
+  ref: PendingDragAutoScrollRef,
+  domPhaseScheduler: DOMPhaseScheduler
+) => {
   const state = ref.current;
-  const window = state?.rootElement.ownerDocument.defaultView;
 
-  if (!state || !window || state.animationFrame !== null) {
+  if (!state || state.cancelScheduledFrame !== null) {
     return;
   }
 
-  state.animationFrame = window.requestAnimationFrame(() => {
-    const latest = ref.current;
+  state.cancelScheduledFrame = domPhaseScheduler.schedule(
+    'dom-read',
+    'drag-auto-scroll',
+    () => {
+      const latest = ref.current;
 
-    if (!latest) {
-      return;
-    }
+      if (!latest) {
+        return;
+      }
 
-    latest.animationFrame = null;
+      latest.cancelScheduledFrame = null;
 
-    if (applyDragAutoScrollFrame(latest)) {
-      scheduleDragAutoScroll(ref);
-    } else {
-      stopDragAutoScroll(ref);
-    }
-  });
+      if (applyDragAutoScrollFrame(latest)) {
+        scheduleDragAutoScroll(ref, domPhaseScheduler);
+      } else {
+        stopDragAutoScroll(ref);
+      }
+    },
+    { timing: 'animation-frame' }
+  );
 };
 
 const updateDragAutoScroll = (
   ref: PendingDragAutoScrollRef,
-  state: Omit<PendingDragAutoScroll, 'animationFrame' | 'releaseCleanup'>
+  state: Omit<PendingDragAutoScroll, 'cancelScheduledFrame' | 'releaseCleanup'>,
+  domPhaseScheduler: DOMPhaseScheduler
 ) => {
   if (
     !getDragAutoScrollTarget({
@@ -1013,7 +1030,7 @@ const updateDragAutoScroll = (
     return;
   }
 
-  const animationFrame = ref.current?.animationFrame ?? null;
+  const cancelScheduledFrame = ref.current?.cancelScheduledFrame ?? null;
   let releaseCleanup = ref.current?.releaseCleanup ?? null;
 
   if (ref.current?.rootElement !== state.rootElement) {
@@ -1026,10 +1043,10 @@ const updateDragAutoScroll = (
 
   ref.current = {
     ...state,
-    animationFrame,
+    cancelScheduledFrame,
     releaseCleanup,
   };
-  scheduleDragAutoScroll(ref);
+  scheduleDragAutoScroll(ref, domPhaseScheduler);
 };
 
 export const useRootInteractionController = ({
@@ -1039,6 +1056,7 @@ export const useRootInteractionController = ({
   getMountedViewEditor,
   ignoreBlankEditableRootClicks = false,
   root,
+  runtime: rootRuntime,
   selection,
   selectionBridge,
 }: RootInteractionControllerOptions): RootInteractionController => {
@@ -1046,14 +1064,39 @@ export const useRootInteractionController = ({
     ignoreInteraction()
   );
   const pendingDragAutoScrollRef = useRef<PendingDragAutoScroll | null>(null);
-
   useEffect(
     () => () => {
       stopDragAutoScroll(pendingDragAutoScrollRef);
     },
     []
   );
+  const scheduleInteractionFrame = useCallback(
+    (
+      label: string,
+      callback: () => void,
+      {
+        phase = 'selection-repair',
+        target,
+        timing = 'animation-frame',
+      }: {
+        phase?: DOMPhase;
+        target?: HTMLElement | null;
+        timing?: DOMPhaseTiming;
+      } = {}
+    ) => {
+      const mountedEditor = getMountedViewEditor(root) ?? editor;
+      const runtime =
+        rootRuntime ??
+        (target ? findMountedEditableDOMRuntime(target) : null) ??
+        getMountedEditableDOMRuntime(mountedEditor) ??
+        getMountedEditableDOMRuntime(editor);
 
+      return runtime?.domPhaseScheduler.schedule(phase, label, callback, {
+        timing,
+      });
+    },
+    [editor, getMountedViewEditor, root, rootRuntime]
+  );
   const focusRoot = useCallback(
     ({
       fallbackSelection,
@@ -1104,8 +1147,8 @@ export const useRootInteractionController = ({
         }
 
         writePliteViewSelection(focusEditor, null);
-        focusEditor.update((tx) => {
-          tx.selection.set(focusSelection);
+        dispatchCommand(focusEditor, editorCommands.select, {
+          target: focusSelection,
         });
 
         return true;
@@ -1115,13 +1158,24 @@ export const useRootInteractionController = ({
       focusPliteEditableAfterEventFrame(focusEditor);
 
       if (appliedSelection) {
-        globalThis.setTimeout?.(() => {
-          applyFocusSelection();
-          focusPliteEditableAfterEventFrame(focusEditor);
-        }, 0);
+        scheduleInteractionFrame(
+          'root-interaction-focus-selection-replay',
+          () => {
+            applyFocusSelection();
+            focusPliteEditableAfterEventFrame(focusEditor);
+          },
+          { timing: 'timeout' }
+        );
       }
     },
-    [editor, getLastSelectionForRoot, getMountedViewEditor, root, selection]
+    [
+      editor,
+      getLastSelectionForRoot,
+      getMountedViewEditor,
+      root,
+      scheduleInteractionFrame,
+      selection,
+    ]
   );
 
   const applyInteractionAction = useCallback(
@@ -1181,12 +1235,10 @@ export const useRootInteractionController = ({
           range,
           options.placementDOMPoint ?? null
         );
-        focusEditor.update((tx) => {
-          tx.selection.set(range);
-        });
+        dispatchCommand(focusEditor, editorCommands.select, { target: range });
         focusPliteEditableAfterEventFrame(focusEditor);
         selectionBridge?.syncDOMSelectionToEditor();
-        schedulePliteReactFocus(() => {
+        scheduleInteractionFrame('root-interaction-selection-sync', () => {
           selectionBridge?.syncDOMSelectionToEditor();
         });
         return;
@@ -1198,7 +1250,14 @@ export const useRootInteractionController = ({
         selection: action.selection,
       });
     },
-    [editor, focusRoot, getMountedViewEditor, root, selectionBridge]
+    [
+      editor,
+      focusRoot,
+      getMountedViewEditor,
+      root,
+      scheduleInteractionFrame,
+      selectionBridge,
+    ]
   );
 
   const onMouseDownCapture = useCallback<MouseEventHandler<HTMLElement>>(
@@ -1226,7 +1285,12 @@ export const useRootInteractionController = ({
         });
         const nativeEditableTextTarget =
           target.kind === 'native-editable' &&
-          !!target.target.closest(NATIVE_EDITABLE_TEXT_TARGET);
+          Boolean(
+            target.target.closest(NATIVE_EDITABLE_TEXT_TARGET) ??
+              target.target.closest(
+                '[data-plite-inline="true"][data-plite-node="element"]'
+              )
+          );
         const nativeEditableMultiClick =
           nativeEditableTextTarget && event.detail > 1;
         const nativeEditableSelectedTextTarget =
@@ -1451,15 +1515,19 @@ export const useRootInteractionController = ({
           return;
         }
 
-        schedulePliteReactFocus(() => {
-          applyInteractionAction(
-            resolveRootInteractionMouseUp({
-              eventRange: null,
-              pendingAction: action,
-              selection,
-            })
-          );
-        });
+        scheduleInteractionFrame(
+          'root-interaction-mouse-down',
+          () => {
+            applyInteractionAction(
+              resolveRootInteractionMouseUp({
+                eventRange: null,
+                pendingAction: action,
+                selection,
+              })
+            );
+          },
+          { phase: 'model', target: event.currentTarget }
+        );
       }),
     [
       applyInteractionAction,
@@ -1468,6 +1536,7 @@ export const useRootInteractionController = ({
       getMountedViewEditor,
       ignoreBlankEditableRootClicks,
       root,
+      scheduleInteractionFrame,
       selection,
     ]
   );
@@ -1537,22 +1606,37 @@ export const useRootInteractionController = ({
           }
         }
 
-        updateDragAutoScroll(pendingDragAutoScrollRef, {
-          clientX: event.clientX,
-          clientY: event.clientY,
-          currentRange:
-            pendingInteraction.currentRange ?? pendingInteraction.startRange,
-          editor: focusEditor,
-          root,
-          rootElement: event.currentTarget,
-          selectionBridge,
-          startRange: pendingInteraction.startRange,
-        });
+        const runtime =
+          findMountedEditableDOMRuntime(event.currentTarget) ??
+          getMountedEditableDOMRuntime(focusEditor);
+        const phaseScheduler =
+          rootRuntime?.domPhaseScheduler ?? runtime?.domPhaseScheduler;
+
+        if (phaseScheduler) {
+          updateDragAutoScroll(
+            pendingDragAutoScrollRef,
+            {
+              clientX: event.clientX,
+              clientY: event.clientY,
+              currentRange:
+                pendingInteraction.currentRange ??
+                pendingInteraction.startRange,
+              editor: focusEditor,
+              root,
+              rootElement: event.currentTarget,
+              selectionBridge,
+              startRange: pendingInteraction.startRange,
+            },
+            phaseScheduler
+          );
+        } else {
+          stopDragAutoScroll(pendingDragAutoScrollRef);
+        }
       } else {
         stopDragAutoScroll(pendingDragAutoScrollRef);
       }
     },
-    [disabled, editor, getMountedViewEditor, root, selectionBridge]
+    [disabled, editor, getMountedViewEditor, root, rootRuntime, selectionBridge]
   );
 
   const onMouseUpCapture = useCallback<MouseEventHandler<HTMLElement>>(
@@ -1601,19 +1685,27 @@ export const useRootInteractionController = ({
               pointerMoved,
             })
           ) {
-            schedulePliteReactFocus(() => {
-              if (!hasExpandedDOMSelectionInTarget(currentTarget)) {
-                restoreDOMSelectionInTarget(
-                  currentTarget,
-                  expandedDOMSelection
-                );
-                selectionBridge?.importDOMSelection();
-              }
-            });
+            scheduleInteractionFrame(
+              'root-interaction-selection-replay',
+              () => {
+                if (!hasExpandedDOMSelectionInTarget(currentTarget)) {
+                  restoreDOMSelectionInTarget(
+                    currentTarget,
+                    expandedDOMSelection
+                  );
+                  selectionBridge?.importDOMSelection();
+                }
+              },
+              { target: currentTarget }
+            );
           } else if (nativeEditableTextTarget) {
-            schedulePliteReactFocus(() => {
-              selectionBridge?.importDOMSelection();
-            });
+            scheduleInteractionFrame(
+              'root-interaction-selection-import',
+              () => {
+                selectionBridge?.importDOMSelection();
+              },
+              { target: currentTarget }
+            );
           }
         }
 
@@ -1736,6 +1828,7 @@ export const useRootInteractionController = ({
       editor,
       getMountedViewEditor,
       root,
+      scheduleInteractionFrame,
       selection,
       selectionBridge,
     ]

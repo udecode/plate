@@ -3,7 +3,7 @@ import type {
   Editor,
   EditorCommit,
   EditorStateView,
-  Operation,
+  ExtensionsOf,
   ValueOf,
 } from '@platejs/plite';
 
@@ -13,14 +13,11 @@ import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 /** Options for explicit editor runtime-state selectors. */
 export interface EditorRuntimeStateSelectorOptions<
   T,
-  TEditor extends Editor<any> = Editor<any>,
+  TEditor extends Editor<any, any> = Editor<any, any>,
 > {
   deps?: readonly unknown[];
   equalityFn?: (a: T | null, b: T) => boolean;
-  shouldUpdate?: (
-    change?: EditorCommit<ValueOf<TEditor>>,
-    operations?: readonly Operation<ValueOf<TEditor>>[]
-  ) => boolean;
+  shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;
 }
 
 const refEquality = <T>(a: T | null, b: T) => a === b;
@@ -33,10 +30,12 @@ const refEquality = <T>(a: T | null, b: T) => a === b;
  */
 export function useEditorRuntimeState<
   T,
-  TEditor extends Editor<any> = Editor<any>,
+  TEditor extends Editor<any, any> = Editor<any, any>,
 >(
   editor: TEditor,
-  selector: (state: EditorStateView<ValueOf<TEditor>>) => T,
+  selector: (
+    state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
+  ) => T,
   {
     deps,
     equalityFn = refEquality,
@@ -45,7 +44,12 @@ export function useEditorRuntimeState<
 ): T {
   const selectorDeps = deps ? [editor, ...deps] : [editor, selector];
   const readSelectedState = useCallback(
-    () => editor.read((state) => selector(state)),
+    () =>
+      editor.read((state) =>
+        selector(
+          state as EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
+        )
+      ),
     // `deps` intentionally owns inline selector closure freshness.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     selectorDeps
@@ -56,7 +60,7 @@ export function useEditorRuntimeState<
   );
   const updateWithCommit = useCallback(
     (change: EditorCommit<ValueOf<TEditor>>) => {
-      if (shouldUpdate && !shouldUpdate(change, change.operations)) {
+      if (shouldUpdate && !shouldUpdate(change)) {
         return;
       }
 

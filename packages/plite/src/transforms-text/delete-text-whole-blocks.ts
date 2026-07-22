@@ -1,13 +1,17 @@
 import { getEditorSchema } from '../core/editor-runtime';
-import { getCurrentSelection, profileCoreDuration } from '../core/public-state';
-import { NodeApi, PointApi } from '../interfaces';
+import {
+  applyBuiltDocumentChange,
+  getEditorUpdateRoot,
+  profileCoreDuration,
+} from '../core/public-state';
+import { NodeApi, PointApi, SelectionApi } from '../interfaces';
 import {
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
   point as editorPoint,
 } from '../interfaces/editor';
 import type { Editor } from '../interfaces/editor';
-import type { DeleteRangePlan, TransactionWriter } from './delete-text-plan';
+import type { DeleteRangePlan } from './delete-text-plan';
 
 type WholeTopLevelBlockRange = {
   deletesWholeDocument: boolean;
@@ -80,8 +84,7 @@ export const getWholeTopLevelBlockRange = (
 
 export const deleteWholeTopLevelBlockRange = (
   editor: Editor,
-  range: WholeTopLevelBlockRange,
-  tx: TransactionWriter
+  range: WholeTopLevelBlockRange
 ) => {
   const children = editorGetChildren(editor);
   const startBlock = children[range.startIndex];
@@ -105,23 +108,26 @@ export const deleteWholeTopLevelBlockRange = (
     );
 
     profileCoreDuration('delete-whole-range-apply', () => {
-      tx.apply({
-        children: removedChildren,
-        index: 0,
-        newChildren: [
-          {
-            ...startBlock,
-            children: [{ text: '' }],
-          },
-        ],
-        newSelection: {
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 0 },
-        },
-        path: [],
-        selection: getCurrentSelection(editor),
-        type: 'replace_children',
+      const root = getEditorUpdateRoot(editor);
+      const selection = SelectionApi.text({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
       });
+
+      applyBuiltDocumentChange(
+        editor,
+        (builder) =>
+          builder.replaceChildren(root, [], 0, removedChildren.length, [
+            {
+              ...startBlock,
+              children: [{ text: '' }],
+            },
+          ]),
+        {
+          selectionAfter: selection,
+          selectionRoot: root,
+        }
+      );
     });
     return true;
   }
@@ -146,18 +152,27 @@ export const deleteWholeTopLevelBlockRange = (
   );
 
   profileCoreDuration('delete-whole-range-apply', () => {
-    tx.apply({
-      children: removedChildren,
-      index: range.startIndex,
-      newChildren: [],
-      newSelection: {
-        anchor: newSelectionPoint,
-        focus: newSelectionPoint,
-      },
-      path: [],
-      selection: getCurrentSelection(editor),
-      type: 'replace_children',
+    const root = getEditorUpdateRoot(editor);
+    const selection = SelectionApi.text({
+      anchor: newSelectionPoint,
+      focus: newSelectionPoint,
     });
+
+    applyBuiltDocumentChange(
+      editor,
+      (builder) =>
+        builder.replaceChildren(
+          root,
+          [],
+          range.startIndex,
+          removedChildren.length,
+          []
+        ),
+      {
+        selectionAfter: selection,
+        selectionRoot: root,
+      }
+    );
   });
   return true;
 };

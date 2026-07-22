@@ -1,4 +1,5 @@
 import { createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { InsertEquationOptions } from './transforms';
@@ -9,7 +10,12 @@ import 'katex/dist/katex.min.css';
 
 export const BaseEquationPlugin = createBasePlugin({
   key: KEYS.equation,
-  node: { isElement: true, isVoid: true },
+  schema: {
+    element: {
+      properties: { texExpression: property.string() },
+      void: 'block',
+    },
+  },
 }).extendTx(({ type }) => (tx) => ({
   insert: (options?: InsertEquationOptions) =>
     insertEquation(tx, type, options),

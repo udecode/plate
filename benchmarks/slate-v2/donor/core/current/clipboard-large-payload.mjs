@@ -1,4 +1,7 @@
 import { Buffer } from 'node:buffer';
+import { spawnSync } from 'node:child_process';
+import { readFileSync, rmSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import {
   ContentSlice,
@@ -48,7 +51,7 @@ const issueTargetStressLines = Number(
   process.env.PLITE_CLIPBOARD_BENCH_ISSUE_STRESS_LINES || 10_000
 );
 const issueTargetIterations = Number(
-  process.env.PLITE_CLIPBOARD_BENCH_ISSUE_ITERATIONS || 1
+  process.env.PLITE_CLIPBOARD_BENCH_ISSUE_ITERATIONS || 3
 );
 const outputArgument = process.argv.find((candidate) =>
   candidate.startsWith('--output=')
@@ -58,6 +61,9 @@ const outputPath =
   process.env.PLITE_CLIPBOARD_BENCH_OUTPUT ||
   CLIPBOARD_AUTHORITY_ARTIFACT_PATH;
 const authorityArtifact = isClipboardAuthorityArtifactPath(outputPath);
+const benchmarkPartition = process.env.PLITE_CLIPBOARD_BENCH_PARTITION;
+const processIsolationEnabled =
+  authorityArtifact || process.env.PLITE_CLIPBOARD_BENCH_ISOLATE === '1';
 const correctnessFailures = [];
 const gcAvailable = typeof globalThis.gc === 'function';
 
@@ -68,10 +74,11 @@ const assertAuthorityConfiguration = () => {
     !issueTargetsEnabled ||
     hugeCutBlocks !== 50_000 ||
     hugeCutIterations !== 3 ||
-    issueTargetStressLines !== 10_000
+    issueTargetStressLines !== 10_000 ||
+    issueTargetIterations !== 3
   ) {
     throw new Error(
-      'The canonical clipboard authority artifact requires 50,000 cut blocks, three cut samples, and 10,000 issue-stress lines. Use --output=<diagnostic-path> for reduced runs.'
+      'The canonical clipboard authority artifact requires 50,000 cut blocks, three cut samples, 10,000 issue-stress lines, and three issue-target samples. Use --output=<diagnostic-path> for reduced runs.'
     );
   }
 };
@@ -418,7 +425,11 @@ const getCommitMetadata = (editor, versionBefore, beforeChildren) => {
   };
 };
 
-const measurePlainTextInsert = (lineCount, sampleCount) => {
+const measurePlainTextInsert = (
+  lineCount,
+  sampleCount,
+  { collectSetupGarbage = false, warmup = false } = {}
+) => {
   const text = createPlainTextPayload(lineCount);
 
   return measurePreparedLane(
@@ -441,6 +452,7 @@ const measurePlainTextInsert = (lineCount, sampleCount) => {
     },
     ({ data, editor }) => insertDOMTextData(editor, data),
     {
+      collectSetupGarbage,
       inspect: (
         { beforeChildren, editor, versionBefore },
         inserted
@@ -462,6 +474,7 @@ const measurePlainTextInsert = (lineCount, sampleCount) => {
         };
       },
       measureRetained: true,
+      warmup,
     }
   );
 };
@@ -744,7 +757,11 @@ const measureHostCodecSerialize = (lineCount, sampleCount) => {
   );
 };
 
-const measureFullSelectionCopy = (lineCount, sampleCount) => {
+const measureFullSelectionCopy = (
+  lineCount,
+  sampleCount,
+  { collectSetupGarbage = false, warmup = false } = {}
+) => {
   const children = createFragment(lineCount);
   const selection = fullSelection(children);
 
@@ -756,6 +773,7 @@ const measureFullSelectionCopy = (lineCount, sampleCount) => {
     }),
     ({ data, editor }) => writeDOMSelectionData(editor, data),
     {
+      collectSetupGarbage,
       inspect: ({ data }) => {
         const applicationPayload = data.getData(
           `application/${DEFAULT_CLIPBOARD_FORMAT_KEY}`
@@ -775,6 +793,7 @@ const measureFullSelectionCopy = (lineCount, sampleCount) => {
           textPlainBytes: textByteLength(textPlain),
         };
       },
+      warmup,
     }
   );
 };
@@ -782,7 +801,8 @@ const measureFullSelectionCopy = (lineCount, sampleCount) => {
 const measurePopulatedMiddlePlainTextPaste = (
   existingBlockCount,
   lineCount,
-  sampleCount
+  sampleCount,
+  { collectSetupGarbage = false, warmup = false } = {}
 ) => {
   const text = createPlainTextPayload(lineCount);
 
@@ -805,6 +825,7 @@ const measurePopulatedMiddlePlainTextPaste = (
     },
     ({ data, editor }) => insertDOMTextData(editor, data),
     {
+      collectSetupGarbage,
       inspect: (
         { beforeChildren, editor, versionBefore },
         inserted
@@ -831,6 +852,7 @@ const measurePopulatedMiddlePlainTextPaste = (
         };
       },
       measureRetained: true,
+      warmup,
     }
   );
 };
@@ -924,68 +946,202 @@ const cohorts = [
   { lineCount: stressLineCount, name: 'stress' },
 ];
 
-const cohortResults = Object.fromEntries(
-  cohorts.map(({ lineCount, name }) => {
-    const sampleCount = sampleCountFor(lineCount);
+const measureCohorts = () =>
+  Object.fromEntries(
+    cohorts.map(({ lineCount, name }) => {
+      const sampleCount = sampleCountFor(lineCount);
 
-    return [
-      name,
-      {
-        lineCount,
-        sampleCount,
-        fragmentDecodeMs: measureFragmentDecode(lineCount, sampleCount),
-        fragmentEncodeMs: measureFragmentEncode(lineCount, sampleCount),
-        domFragmentInsertMs: measureDOMFragmentInsert(lineCount, sampleCount),
-        fullSelectionCopyMs: measureFullSelectionCopy(lineCount, sampleCount),
-        hostCodecInsertMs: measureHostCodecInsert(lineCount, sampleCount),
-        hostCodecSerializeMs: measureHostCodecSerialize(lineCount, sampleCount),
-        plainTextInsertMs: measurePlainTextInsert(lineCount, sampleCount),
-        sliceCommitMs: measureSliceCommit(lineCount, sampleCount),
-        sliceFitMs: measureSliceFit(lineCount, sampleCount),
-      },
-    ];
-  })
-);
+      return [
+        name,
+        {
+          lineCount,
+          sampleCount,
+          fragmentDecodeMs: measureFragmentDecode(lineCount, sampleCount),
+          fragmentEncodeMs: measureFragmentEncode(lineCount, sampleCount),
+          domFragmentInsertMs: measureDOMFragmentInsert(
+            lineCount,
+            sampleCount
+          ),
+          fullSelectionCopyMs: measureFullSelectionCopy(lineCount, sampleCount),
+          hostCodecInsertMs: measureHostCodecInsert(lineCount, sampleCount),
+          hostCodecSerializeMs: measureHostCodecSerialize(
+            lineCount,
+            sampleCount
+          ),
+          plainTextInsertMs: measurePlainTextInsert(lineCount, sampleCount),
+          sliceCommitMs: measureSliceCommit(lineCount, sampleCount),
+          sliceFitMs: measureSliceFit(lineCount, sampleCount),
+        },
+      ];
+    })
+  );
 
-const pathological = {
-  cutTwoBlocksColdEditMs: measurePreparedCutTwoBlocks(
-    hugeCutBlocks,
-    hugeCutIterations
-  ),
-  cutTwoBlocksColdSetupMs: measureCutTwoBlocks(
-    hugeCutBlocks,
-    hugeCutIterations
-  ),
-  cutTwoBlocksEditMs: measurePreparedCutTwoBlocks(
+const measuredPathological = () => {
+  const cutTwoBlocksEditMs = measurePreparedCutTwoBlocks(
     hugeCutBlocks,
     hugeCutIterations,
     { measureRetained: true, warmSnapshot: true }
-  ),
-  cutTwoBlocksMs: measurePreparedCutTwoBlocks(
+  );
+  const cutTwoBlocksMs = measurePreparedCutTwoBlocks(
     hugeCutBlocks,
     hugeCutIterations,
     { includeCopy: true, warmSnapshot: true }
-  ),
+  );
+
+  return {
+    cutTwoBlocksColdEditMs: measurePreparedCutTwoBlocks(
+      hugeCutBlocks,
+      hugeCutIterations
+    ),
+    cutTwoBlocksColdSetupMs: measureCutTwoBlocks(
+      hugeCutBlocks,
+      hugeCutIterations
+    ),
+    cutTwoBlocksEditMs,
+    cutTwoBlocksMs,
+  };
 };
 
-const issueTargets = issueTargetsEnabled
-  ? {
-      largePlainTextPaste10000: measurePlainTextInsert(
-        issueTargetStressLines,
-        issueTargetIterations
-      ),
-      populatedFullSelectionCopy10000: measureFullSelectionCopy(
-        issueTargetStressLines,
-        issueTargetIterations
-      ),
-      populatedMiddlePlainTextPaste10000Into10000:
-        measurePopulatedMiddlePlainTextPaste(
+const measureIssueTargets = () =>
+  issueTargetsEnabled
+    ? {
+        largePlainTextPaste10000: measurePlainTextInsert(
           issueTargetStressLines,
-          issueTargetStressLines,
-          issueTargetIterations
+          issueTargetIterations,
+          { warmup: true }
         ),
+        populatedFullSelectionCopy10000: measureFullSelectionCopy(
+          issueTargetStressLines,
+          issueTargetIterations,
+          { collectSetupGarbage: true }
+        ),
+        populatedMiddlePlainTextPaste10000Into10000:
+          measurePopulatedMiddlePlainTextPaste(
+            issueTargetStressLines,
+            issueTargetStressLines,
+            issueTargetIterations
+          ),
+      }
+    : undefined;
+
+const workerLanes = ['issue', 'cut', 'support'];
+const workerArtifacts = workerLanes.map(
+  (lane) => `tmp/plite-clipboard-${lane}-${process.pid}.json`
+);
+let workerPids;
+let cohortResults;
+let pathological;
+let issueTargets;
+
+if (benchmarkPartition) {
+  const laneResult =
+    benchmarkPartition === 'support'
+      ? { cohorts: measureCohorts() }
+      : benchmarkPartition === 'cut'
+        ? { pathological: measuredPathological() }
+        : benchmarkPartition === 'issue'
+          ? { issueTargets: measureIssueTargets() }
+          : null;
+
+  if (!laneResult) {
+    throw new Error(`Unknown clipboard benchmark lane: ${benchmarkPartition}`);
+  }
+
+  await writeBenchmarkArtifact(outputPath, {
+    artifactVersion: 2,
+    benchmark: 'plite-clipboard-large-payload-worker',
+    config: {
+      hugeCutBlocks,
+      hugeCutIterations,
+      iterations,
+      issueTargetIterations,
+      issueTargetStressLines,
+      issueTargetsEnabled,
+      stressLineCount,
+      stressIterations,
+    },
+    correctnessFailures,
+    lane: benchmarkPartition,
+    pid: process.pid,
+    ...laneResult,
+  });
+  process.exit(0);
+} else if (processIsolationEnabled) {
+  const benchmarkPath = fileURLToPath(import.meta.url);
+  const baseArguments = [
+    '--expose-gc',
+    '--preload',
+    './config/plite-source-aliases.ts',
+    benchmarkPath,
+  ];
+  const workers = workerLanes.map((lane, index) => {
+    const result = spawnSync(process.execPath, baseArguments, {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLITE_CLIPBOARD_BENCH_OUTPUT: workerArtifacts[index],
+        PLITE_CLIPBOARD_BENCH_PARTITION: lane,
+        PLITE_CLIPBOARD_BENCH_ISSUE_TARGETS: lane === 'issue' ? '1' : '0',
+      },
+      maxBuffer: 10 * 1024 * 1024,
+    });
+
+    if (result.status !== 0) {
+      process.stderr.write(result.stderr);
+      process.stdout.write(result.stdout);
+      workerArtifacts.forEach((artifact) => rmSync(artifact, { force: true }));
+      process.exit(result.status ?? 1);
     }
-  : undefined;
+
+    return JSON.parse(readFileSync(workerArtifacts[index], 'utf8'));
+  });
+
+  workerArtifacts.forEach((artifact) => rmSync(artifact, { force: true }));
+  workers.forEach((worker, index) => {
+    if (
+      worker.lane !== workerLanes[index] ||
+      !Number.isInteger(worker.pid)
+    ) {
+      throw new Error('Clipboard benchmark worker identity mismatch.');
+    }
+  });
+  if (new Set(workers.map(({ pid }) => pid)).size !== workers.length) {
+    throw new Error('Clipboard benchmark workers must use distinct processes.');
+  }
+  const workersByLane = Object.fromEntries(
+    workers.map((worker) => [worker.lane, worker])
+  );
+  if (
+    workersByLane.support.config.iterations !== iterations ||
+    workersByLane.support.config.stressLineCount !== stressLineCount ||
+    workersByLane.support.config.stressIterations !== stressIterations ||
+    workersByLane.cut.config.hugeCutBlocks !== hugeCutBlocks ||
+    workersByLane.cut.config.hugeCutIterations !== hugeCutIterations ||
+    workersByLane.issue.config.issueTargetIterations !==
+      issueTargetIterations ||
+    workersByLane.issue.config.issueTargetStressLines !==
+      issueTargetStressLines ||
+    workersByLane.issue.config.issueTargetsEnabled !== true
+  ) {
+    throw new Error('Clipboard benchmark worker configuration mismatch.');
+  }
+  workers.forEach((worker) => {
+    correctnessFailures.push(...worker.correctnessFailures);
+  });
+  cohortResults = workersByLane.support.cohorts;
+  pathological = workersByLane.cut.pathological;
+  issueTargets = workersByLane.issue.issueTargets;
+  workerPids = Object.freeze({
+    cut: workersByLane.cut.pid,
+    issue: workersByLane.issue.pid,
+    support: workersByLane.support.pid,
+  });
+} else {
+  cohortResults = measureCohorts();
+  pathological = measuredPathological();
+  issueTargets = measureIssueTargets();
+}
 
 const issueTargetThresholds = issueTargetsEnabled
   ? createClipboardIssueTargetThresholds({
@@ -1110,8 +1266,10 @@ const summary = {
     issueTargetIterations,
     issueTargetStressLines,
     issueTargetsEnabled,
+    processIsolation: processIsolationEnabled ? 'support-cut-issue' : 'none',
     stressLineCount,
     stressIterations,
+    ...(workerPids ? { workerPids } : {}),
   },
   cohorts: cohortResults,
   correctnessFailures,
@@ -1138,7 +1296,7 @@ const summary = {
     retained:
       'selected prepared lanes run one separate untimed sample; heapUsed after exposed GC minus its post-setup, post-GC baseline; null on other lanes',
     setupIsolation:
-      'pathological prepared lanes run one unreported warmup and exposed GC after each untimed setup before measured work',
+      'the authority run measures support, 50,000-block cut, and 10,000-line issue lanes in distinct bounded child processes; prepared lanes run one unreported warmup and exposed GC after each untimed setup before measured work',
   },
   metrics,
   pathological,

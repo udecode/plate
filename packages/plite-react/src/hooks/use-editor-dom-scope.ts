@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import type { Editor, RootKey } from '@platejs/plite';
+import type { Editor, NamedRootKey, RootKey } from '@platejs/plite';
 import type { DOMApi } from '@platejs/plite-dom';
 import {
   setEditorDOMScrollElement,
@@ -28,9 +28,9 @@ const useEditorDOMScopeElement = (
   );
 
 /** Return the mounted editable element for a Plite root. */
-export const useEditorEditableElement = (
+export const useEditorEditableElement = <const TRoot extends RootKey = RootKey>(
   editor: DOMScopeEditor,
-  root?: RootKey
+  root?: NamedRootKey<TRoot>
 ) =>
   useEditorDOMScopeElement(
     editor,

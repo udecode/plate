@@ -55,7 +55,7 @@ export const wrapWithBlockId = (
     children: [mdastNode],
     data: {
       _mdxExplicitJsx: true,
-    },
+    } as MdMdxJsxFlowElement['data'] & { _mdxExplicitJsx: true },
     name: 'block',
     type: 'mdxJsxFlowElement',
   };

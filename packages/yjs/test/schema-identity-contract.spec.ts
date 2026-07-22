@@ -18,6 +18,7 @@ import { createYjsExtension } from '../src/core/extension';
 import {
   createYjsSchemaEnvelope,
   getYjsSchemaMetadataName,
+  readYjsSchemaEnvelope,
 } from '../src/core/schema-metadata';
 import { FakeProvider } from './support/provider';
 
@@ -206,6 +207,52 @@ describe('@platejs/yjs schema identity contract', () => {
       () => editor.read.yjs.root(),
       /Invalid Yjs schema metadata envelope/
     );
+  });
+
+  it('rejects hidden, accessor, and exotic schema metadata shapes', () => {
+    const extraKey = Symbol('extra');
+    const derivedIdentity = { fingerprint: 'schema', kind: 'derived' };
+    const envelopeWithSymbol = {
+      format: 2,
+      identity: null,
+      [extraKey]: true,
+    };
+    const identityWithSymbol = {
+      ...derivedIdentity,
+      [extraKey]: true,
+    };
+    const accessorEnvelope = Object.defineProperty(
+      { identity: null },
+      'format',
+      {
+        enumerable: true,
+        get: () => 2,
+      }
+    );
+    const exoticEnvelope = Object.assign(Object.create({ inherited: true }), {
+      format: 2,
+      identity: null,
+    });
+    const exoticIdentity = Object.assign(Object.create({ inherited: true }), {
+      ...derivedIdentity,
+    });
+
+    for (const value of [
+      envelopeWithSymbol,
+      { format: 2, identity: identityWithSymbol },
+      accessorEnvelope,
+      exoticEnvelope,
+      { format: 2, identity: exoticIdentity },
+    ]) {
+      const metadata = {
+        get: () => value,
+      } as unknown as Y.Map<unknown>;
+
+      assert.throws(
+        () => readYjsSchemaEnvelope(metadata),
+        /Invalid Yjs schema metadata envelope/
+      );
+    }
   });
 
   it('rejects schema metadata with a zero schema version', () => {

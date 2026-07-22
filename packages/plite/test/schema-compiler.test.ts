@@ -3,6 +3,7 @@ import { afterEach, describe, it } from 'node:test';
 
 import {
   createEditor,
+  defineEditorExtension,
   defineEditorSchema,
   defineExtensionSlot,
   definePropertyPolicy,
@@ -61,6 +62,41 @@ afterEach(() => {
 });
 
 describe('schema compiler', () => {
+  it('admits contributed inline elements into the derived paragraph', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorExtension({
+          name: 'inline-elements',
+          schema: {
+            elements: {
+              image: { void: 'block' },
+              link: {
+                content: schema.content.text({ default: 'text', min: 1 }),
+                inline: true,
+              },
+              mention: { void: 'markable-inline' },
+            },
+          },
+        }),
+      ],
+    });
+    const paragraph = editor.read.schema.element('paragraph');
+
+    assert.deepEqual(paragraph?.content?.allowedElementTypes, [
+      'link',
+      'mention',
+    ]);
+    assert.equal(paragraph?.content?.allowsText, true);
+    assert.equal(
+      editor.read.schema.allowsElementType('paragraph', 'mention'),
+      true
+    );
+    assert.equal(
+      editor.read.schema.allowsElementType('paragraph', 'image'),
+      false
+    );
+  });
+
   it('reports malformed nested declarations with owner and path provenance', () => {
     const Article = createBasicSchema();
     const malformed = [

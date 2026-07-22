@@ -1,19 +1,18 @@
-import { executeCommand } from '../core/command-registry';
+import { dispatchCommand } from '../core/command-registry';
+import { editorCommands } from '../core/editor-commands';
 import { getCurrentSelection } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
 import {
   after as editorAfter,
   before as editorBefore,
 } from '../interfaces/editor';
 import { type Range, RangeApi } from '../interfaces/range';
 import type { SelectionMutationMethods } from '../interfaces/transforms/selection';
+import { setSelection } from './set-selection';
 
-type MoveSelectionCommand = {
-  options: Parameters<SelectionMutationMethods['move']>[1];
-  type: 'move_selection';
-};
-
-const applyMove: SelectionMutationMethods['move'] = (editor, options = {}) => {
+export const applyMove: SelectionMutationMethods['move'] = (
+  editor,
+  options = {}
+) => {
   const selection = getCurrentSelection(editor);
   const { distance = 1, unit = 'character', reverse = false } = options;
   let { edge = null } = options;
@@ -54,19 +53,14 @@ const applyMove: SelectionMutationMethods['move'] = (editor, options = {}) => {
     }
   }
 
-  getEditorTransformRegistry(editor).setSelection(props);
+  setSelection(editor, props);
 };
 
 export const move: SelectionMutationMethods['move'] = (
   editor,
   options = {}
 ) => {
-  executeCommand<MoveSelectionCommand>(
-    editor,
-    { options, type: 'move_selection' },
-    (command) => {
-      applyMove(editor, command.options);
-      return true;
-    }
-  );
+  dispatchCommand(editor, editorCommands.move, {
+    options,
+  });
 };

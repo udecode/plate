@@ -23,6 +23,7 @@ import {
   getContentRootOwnerFromTarget,
   isSameOwner as isSameContentRootOwner,
 } from './content-root-owner-target';
+import { toInternalRoot } from './runtime-editor-api';
 
 type ProjectedDOMSelectionEndpoint = {
   owner?: ContentRootOwner;
@@ -149,7 +150,7 @@ const resolveProjectedDOMSelectionEndpoint = ({
     return null;
   }
 
-  const root = editor.read((state) => state.view.root());
+  const root = toInternalRoot(editor.read((state) => state.view.root()));
 
   const owner = getContentRootOwnerFromTarget({
     childRoot: root,

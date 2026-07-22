@@ -1,5 +1,5 @@
 import { useCallback, useContext } from 'react';
-import type { EditorCommit, Operation, Path } from '@platejs/plite';
+import type { EditorCommit, Path } from '@platejs/plite';
 import { NodeRuntimeIdContext } from '../context';
 import { getPathByRuntimeId as editorGetPathByRuntimeId } from '../editable/runtime-editor-api';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -30,21 +30,12 @@ export const useElementPath = (): Path | null => {
   );
 
   const shouldUpdate = useCallback(
-    (_operations?: readonly Operation[], change?: EditorCommit) => {
+    (change?: EditorCommit) => {
       if (!runtimeId || !change) {
         return true;
       }
 
-      if (
-        change.fullDocumentChanged ||
-        change.rootRuntimeIdsChanged ||
-        change.structureChanged ||
-        change.topLevelOrderChanged
-      ) {
-        return true;
-      }
-
-      return false;
+      return change.changed.hasRuntime(runtimeId, 'path');
     },
     [runtimeId]
   );

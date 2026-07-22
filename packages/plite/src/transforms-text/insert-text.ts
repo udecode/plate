@@ -1,27 +1,30 @@
 import {
-  applyOperation,
+  applyBuiltDocumentChange,
   getCurrentMarks,
+  getEditorUpdateRoot,
   getPublicSelection,
+  getSelectionMarks,
   setCurrentMarks,
   syncImplicitTargetToCurrentSelection,
-  withEditorOperationRoot,
-  withEditorOperationRootChildren,
+  withEditorUpdateRoot,
+  withEditorUpdateRootChildren,
 } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
+import { getEditorSchema } from '../core/editor-runtime';
 import { elementReadOnly } from '../editor/element-read-only';
 import {
   LocationApi,
   NodeApi,
+  type Path,
   PathApi,
   type Point,
   RangeApi,
+  SelectionApi,
   type Text,
   TextApi,
   type Value,
 } from '../interfaces';
 import {
   getChildren as editorGetChildren,
-  pointRef as editorPointRef,
   range as editorRange,
   void as editorVoid,
 } from '../interfaces/editor';
@@ -30,12 +33,16 @@ import type {
   TextInsertTextOptions,
   TextMutationMethods,
 } from '../interfaces/transforms/text';
+import { insertNodes } from '../transforms-node/insert-nodes';
+import { deselect } from '../transforms-selection/deselect';
+import { setSelection } from '../transforms-selection/set-selection';
 import {
   getConsistentRangeTextMarks,
   type TextMarks,
 } from '../internal/range-text-marks';
 import { getLocationRoot } from '../internal/root-location';
 import { getDefaultInsertLocation } from '../utils';
+import { deleteText } from './delete-text';
 import { isFullDocumentRange } from './full-document-range';
 
 const createFullDocumentTextReplacement = (
@@ -61,8 +68,28 @@ const createFullDocumentTextReplacement = (
 const normalizeTextMarks = (marks: TextMarks | null): TextMarks | null =>
   marks && Object.keys(marks).length > 0 ? marks : null;
 
-const textNodeHasMarks = (node: Text, marks: TextMarks | null) =>
-  TextApi.equals(node, { text: '', ...(marks ?? {}) }, { loose: true });
+const textNodeHasMarks = (
+  editor: Editor,
+  node: Text,
+  marks: TextMarks | null,
+  path: Path,
+  root: string
+) => {
+  const expected = marks ?? {};
+  const keys = new Set([...Object.keys(node), ...Object.keys(expected)]);
+
+  keys.delete('text');
+
+  return [...keys].every((key) =>
+    getEditorSchema(editor).isTextPropertyEqualAt(
+      key,
+      node[key],
+      expected[key],
+      path,
+      root
+    )
+  );
+};
 
 const getPointTextInsertionPoint = (
   editor: Editor,
@@ -74,12 +101,13 @@ const getPointTextInsertionPoint = (
   }
 
   const node = NodeApi.get(editor, at.path);
+  const root = at.root ?? getEditorUpdateRoot(editor);
 
   if (!TextApi.isText(node)) {
     return null;
   }
 
-  if (textNodeHasMarks(node, marks)) {
+  if (textNodeHasMarks(editor, node, marks, at.path, root)) {
     return at;
   }
 
@@ -89,7 +117,10 @@ const getPointTextInsertionPoint = (
       ? NodeApi.get(editor, nextPath)
       : null;
 
-    if (TextApi.isText(next) && textNodeHasMarks(next, marks)) {
+    if (
+      TextApi.isText(next) &&
+      textNodeHasMarks(editor, next, marks, nextPath, root)
+    ) {
       return { ...at, offset: 0, path: nextPath };
     }
   }
@@ -100,7 +131,10 @@ const getPointTextInsertionPoint = (
       ? NodeApi.get(editor, previousPath)
       : null;
 
-    if (TextApi.isText(previous) && textNodeHasMarks(previous, marks)) {
+    if (
+      TextApi.isText(previous) &&
+      textNodeHasMarks(editor, previous, marks, previousPath, root)
+    ) {
       return {
         ...at,
         offset: previous.text.length,
@@ -113,13 +147,12 @@ const getPointTextInsertionPoint = (
 };
 
 const insertTextAtPoint = (editor: Editor, at: Point, text: string) => {
-  applyOperation(editor, {
-    type: 'insert_text',
-    path: at.path,
-    offset: at.offset,
-    root: at.root,
-    text,
-  });
+  applyBuiltDocumentChange(
+    editor,
+    (builder, root) =>
+      builder.insertText(at.root ?? root, at.path, at.offset, text),
+    { selectionAssociation: 'forward' }
+  );
 };
 
 export const applyInsertText: TextMutationMethods['insertText'] = (
@@ -162,31 +195,36 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
     ) {
       const replacementMarks = getConsistentRangeTextMarks(editor, defaultAt);
 
-      applyOperation(editor, {
-        children: [...editorGetChildren(editor)] as Value,
-        index: 0,
-        newChildren: createFullDocumentTextReplacement(
-          editor,
-          text,
-          replacementMarks
-        ) as Value,
-        newSelection: explicitAtPreservesNullSelection
-          ? null
-          : {
-              anchor: { path: [0, 0], offset: text.length },
-              focus: { path: [0, 0], offset: text.length },
-            },
-        path: [],
-        selection: getPublicSelection(editor),
-        type: 'replace_children',
-      });
+      const root = getEditorUpdateRoot(editor);
+      const newSelection = explicitAtPreservesNullSelection
+        ? null
+        : SelectionApi.text({
+            anchor: { path: [0, 0], offset: text.length },
+            focus: { path: [0, 0], offset: text.length },
+          });
+
+      applyBuiltDocumentChange(
+        editor,
+        (builder) =>
+          builder.replaceChildren(
+            root,
+            [],
+            0,
+            editorGetChildren(editor).length,
+            createFullDocumentTextReplacement(
+              editor,
+              text,
+              replacementMarks
+            ) as Value
+          ),
+        { selectionAfter: newSelection, selectionRoot: root }
+      );
       if (options.at == null) {
         syncImplicitTargetToCurrentSelection(editor);
       }
       return;
     }
 
-    const transforms = getEditorTransformRegistry(editor);
     let { at = getDefaultInsertLocation(editor) } = options;
     const insertAt = () => {
       if (LocationApi.isPath(at)) {
@@ -204,13 +242,19 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             return;
           }
           const start = RangeApi.start(at);
-          const startRef = editorPointRef(editor, start);
-          const endRef = editorPointRef(editor, end);
-          transforms.delete({
+          const startAnchor = editor.anchor(start, {
+            association: 'backward',
+            deletion: 'nearest',
+          });
+          const endAnchor = editor.anchor(end, {
+            association: 'forward',
+            deletion: 'nearest',
+          });
+          deleteText(editor, {
             at,
             preserveInlineEdge: true,
             voids,
-          } as Parameters<typeof transforms.delete>[0] & {
+          } as Parameters<typeof deleteText>[1] & {
             preserveInlineEdge: true;
           });
           const selectionAfterDelete = getPublicSelection(editor);
@@ -221,9 +265,12 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
                   path: [...selectionAfterDelete.anchor.path],
                 }
               : null;
-          const startPoint = startRef.unref();
-          const endPoint = endRef.unref();
-          const nextAt = selectionPointAfterDelete ?? startPoint ?? endPoint;
+          const startPoint = startAnchor.release();
+          const endPoint = endAnchor.release();
+          const nextAt =
+            options.at == null
+              ? (selectionPointAfterDelete ?? startPoint ?? endPoint)
+              : (startPoint ?? endPoint);
 
           if (!nextAt) {
             return;
@@ -232,9 +279,9 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
           at = nextAt;
 
           if (options.at == null) {
-            transforms.setSelection({ anchor: nextAt, focus: nextAt });
+            setSelection(editor, { anchor: nextAt, focus: nextAt });
           } else if (explicitAtPreservesNullSelection) {
-            transforms.deselect();
+            deselect(editor);
           }
 
           const normalizedReplacementMarks =
@@ -249,7 +296,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
             if (textInsertionPoint) {
               if (!explicitAtPreservesNullSelection) {
-                transforms.setSelection({
+                setSelection(editor, {
                   anchor: textInsertionPoint,
                   focus: textInsertionPoint,
                 });
@@ -258,7 +305,8 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
               return;
             }
 
-            transforms.insertNodes(
+            insertNodes(
+              editor,
               { text, ...normalizedReplacementMarks },
               {
                 at: nextAt,
@@ -266,6 +314,26 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
                 voids,
               }
             );
+            return;
+          }
+
+          setCurrentMarks(editor, null);
+
+          const inheritedMarks = normalizeTextMarks(getSelectionMarks(editor));
+          const inheritedInsertionPoint = getPointTextInsertionPoint(
+            editor,
+            nextAt,
+            inheritedMarks
+          );
+
+          if (inheritedInsertionPoint) {
+            if (!explicitAtPreservesNullSelection) {
+              setSelection(editor, {
+                anchor: inheritedInsertionPoint,
+                focus: inheritedInsertionPoint,
+              });
+            }
+            insertTextAtPoint(editor, inheritedInsertionPoint, text);
             return;
           }
         }
@@ -297,7 +365,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
           if (textInsertionPoint) {
             if (!explicitAtPreservesNullSelection) {
-              transforms.setSelection({
+              setSelection(editor, {
                 anchor: textInsertionPoint,
                 focus: textInsertionPoint,
               });
@@ -307,7 +375,8 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             return;
           }
 
-          transforms.insertNodes(
+          insertNodes(
+            editor,
             { text, ...(marks ?? {}) },
             { at, select: !explicitAtPreservesNullSelection, voids }
           );
@@ -316,14 +385,22 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
         }
 
         insertTextAtPoint(editor, { path, offset, root }, text);
+
+        if (
+          options.at == null &&
+          options.marks === false &&
+          getCurrentMarks(editor)
+        ) {
+          setCurrentMarks(editor, null);
+        }
       }
     };
     insertAt();
   };
 
   if (explicitRoot) {
-    withEditorOperationRoot(editor, explicitRoot, () =>
-      withEditorOperationRootChildren(editor, explicitRoot, insertText)
+    withEditorUpdateRoot(editor, explicitRoot, () =>
+      withEditorUpdateRootChildren(editor, explicitRoot, insertText)
     );
     return;
   }

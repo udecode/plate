@@ -1,4 +1,3 @@
-import { getPluginType } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import type { MdRules } from '../types';
@@ -18,7 +17,7 @@ export const columnRules = {
           { ...deco },
           options
         ),
-        type: getPluginType(options.editor!, KEYS.column),
+        type: options.getPluginType(KEYS.column),
         ...props,
       };
     },
@@ -49,7 +48,7 @@ export const columnRules = {
           { ...deco },
           options
         ),
-        type: getPluginType(options.editor!, KEYS.columnGroup),
+        type: options.getPluginType(KEYS.columnGroup),
         ...props,
       };
     },

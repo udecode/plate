@@ -38,8 +38,12 @@ export const moveListItemSublistItemsToListItemSublist = (
 
   if (fromSublistIndex === -1) return false;
 
+  const fromSublist = fromListItem[0].children[fromSublistIndex];
+
+  if (!ElementApi.isElement(fromSublist)) return false;
+
   const fromListItemSublist = [
-    fromListItem[0].children[fromSublistIndex] as Element,
+    fromSublist,
     fromListItem[1].concat(fromSublistIndex),
   ] satisfies ElementEntry;
 
@@ -47,17 +51,15 @@ export const moveListItemSublistItemsToListItemSublist = (
     (node) =>
       ElementApi.isElement(node) && getListTypes(editor).includes(node.type)
   );
-  const toListItemSublist =
-    toSublistIndex === -1
-      ? undefined
-      : ([
-          toListItem[0].children[toSublistIndex] as Element,
-          toListItem[1].concat(toSublistIndex),
-        ] satisfies ElementEntry);
+  const toSublist =
+    toSublistIndex === -1 ? undefined : toListItem[0].children[toSublistIndex];
+  const toListItemSublist = ElementApi.isElement(toSublist)
+    ? ([toSublist, toListItem[1].concat(toSublistIndex)] satisfies ElementEntry)
+    : undefined;
   let to: Path;
 
   if (!toListItemSublist) {
-    const fromList = editor.read.nodes.parent<Element>(fromListItem[1]);
+    const fromList = tx.nodes.parent<Element>(fromListItem[1]);
 
     if (!fromList) return false;
 

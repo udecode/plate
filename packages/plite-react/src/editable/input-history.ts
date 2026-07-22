@@ -1,6 +1,7 @@
 import type { EditorUpdateTag, EditorUpdateTransaction } from '@platejs/plite';
 import type { Editor } from './runtime-editor-api';
 import { getEditorRuntime } from './runtime-editor-api';
+import { profileEditableMutationDuration } from './mutation-profiler';
 
 type NativeTextInputLocation = {
   path: readonly number[];
@@ -61,9 +62,15 @@ export const updateNativeTextInput = (
   update: (tx: EditorUpdateTransaction) => void,
   options: { merge?: boolean } = {}
 ) => {
-  getEditorRuntime(editor).update(update, {
-    tags: options.merge
-      ? ['native-text-input', 'history-merge']
-      : getNativeTextInputUpdateTags(editor),
-  });
+  const tags = profileEditableMutationDuration(
+    'native-text-input-history-tags',
+    () =>
+      options.merge
+        ? (['native-text-input', 'history-merge'] as const)
+        : getNativeTextInputUpdateTags(editor)
+  );
+
+  profileEditableMutationDuration('native-text-input-update', () =>
+    getEditorRuntime(editor).update(update, { tags })
+  );
 };

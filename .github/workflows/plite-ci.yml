@@ -249,7 +249,7 @@ jobs:
     name: Plite browser chromium ${{ matrix.shard }}/4
     needs: browser-build
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.53.0-noble
+    container: mcr.microsoft.com/playwright:v1.61.0-noble
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -286,10 +286,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: apps/plite/.tmp/plite-browser-runner
-          key: plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
-            plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-
+            plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
+            plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Run Chromium browser proof
         id: browser-proof
@@ -301,7 +301,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: apps/plite/.tmp/plite-browser-runner
-          key: plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: plite-browser-runner-v2-chromium-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload Chromium proof summary
         if: ${{ always() && !cancelled() }}
@@ -348,7 +348,7 @@ jobs:
     name: Plite browser ${{ matrix.project }} ${{ matrix.shard }}/4
     needs: browser-build
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.53.0-noble
+    container: mcr.microsoft.com/playwright:v1.61.0-noble
     if: ${{ github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 30
     strategy:
@@ -385,10 +385,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: apps/plite/.tmp/plite-browser-runner
-          key: plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
-            plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-
+            plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
+            plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Run browser proof
         id: browser-proof
@@ -400,7 +400,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: apps/plite/.tmp/plite-browser-runner
-          key: plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload browser proof summary
         if: ${{ always() && !cancelled() }}
@@ -470,10 +470,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: apps/plite/.tmp/plite-browser-runner
-          key: plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
-            plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-
+            plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
+            plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Run WebKit browser proof
         id: browser-proof
@@ -485,7 +485,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: apps/plite/.tmp/plite-browser-runner
-          key: plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-1.53.0-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload WebKit proof summary
         if: ${{ always() && !cancelled() }}

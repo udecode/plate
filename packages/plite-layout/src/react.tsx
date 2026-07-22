@@ -410,10 +410,8 @@ const getSelectionPathsKey = (selection: EditorCommit['selectionAfter']) =>
 
 const shouldUpdatePagedEditableSelectedPaths = (change?: EditorCommit) =>
   !change ||
-  change.fullDocumentChanged ||
-  change.rootRuntimeIdsChanged ||
-  change.structureChanged ||
-  change.topLevelOrderChanged ||
+  change.changed.hasAny('structure') ||
+  change.changed.hasAny('root-order') ||
   (change.selectionChanged &&
     getSelectionPathsKey(change.selectionBefore) !==
       getSelectionPathsKey(change.selectionAfter));
@@ -581,7 +579,11 @@ export const PagedEditable = ({
     }
   );
   const snapshot = usePlitePageLayoutSnapshot(layout);
-  const pages = snapshot.pages.length === 0 ? [snapshot.page] : snapshot.pages;
+  // Preserve page-list identity because it feeds DOM subscription boundaries.
+  const pages = useMemo(
+    () => (snapshot.pages.length === 0 ? [snapshot.page] : snapshot.pages),
+    [snapshot.page, snapshot.pages]
+  );
   const normalizedPageView = normalizePagedEditablePageView({
     pageGap,
     pageLayoutMode,
@@ -741,7 +743,7 @@ export const PagedEditable = ({
       );
       observer?.disconnect();
     };
-  }, [geometry.height, tracksContentViewport]);
+  }, [geometry.height, tracksContentViewport, virtualizesPageSurfaces]);
   const pageSurfaceItems = useMemo(
     () =>
       getPagedEditableVisiblePageMountItems(pageMountPlan, {

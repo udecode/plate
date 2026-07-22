@@ -331,6 +331,32 @@ describe('plite transforms contract', () => {
     assert.deepEqual(after.selection, collapsedSelection([0, 1], 5));
   });
 
+  it('insertText preserves the suffix block after replacing full sibling blocks', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [paragraph('one'), paragraph('two'), paragraph('three')],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 3 },
+      },
+    });
+
+    editor.update.text.insert('replacement');
+
+    const after = editorGetSnapshot(editor);
+
+    assert.deepEqual(after.children, [
+      paragraph('replacement'),
+      paragraph('three'),
+    ]);
+    assert.deepEqual(
+      after.selection,
+      collapsedSelection([0, 0], 'replacement'.length)
+    );
+  });
+
   it('insertText normalizes adjacent same-mark leaves after replacing part of a marked leaf', () => {
     const editor = createEditor();
 

@@ -130,23 +130,6 @@ const ignoredDirectories = new Set([
   'test-results',
 ]);
 
-const isInside = (candidate, root) => {
-  const relative = path.relative(root, candidate);
-
-  return (
-    relative === '' ||
-    (!relative.startsWith(`..${path.sep}`) && relative !== '..')
-  );
-};
-
-const hasIgnoredDirectory = (candidate, root) => {
-  const relative = path.relative(root, candidate);
-
-  return relative
-    .split(path.sep)
-    .some((segment) => ignoredDirectories.has(segment));
-};
-
 const collectFiles = (entryPath) => {
   if (!fs.existsSync(entryPath)) return [];
 
@@ -253,69 +236,83 @@ export const fingerprintDigest = (digest, salts = []) => {
   return hash.update(`digest:${digest}\0`).digest('hex');
 };
 
-const collectDirectories = (entryPath) => {
-  if (!fs.existsSync(entryPath)) return [];
+const collectMetadata = (entryPath, excludedPaths, entries) => {
+  const resolved = path.resolve(entryPath);
 
-  const stat = fs.statSync(entryPath);
+  if (excludedPaths.has(resolved)) return;
 
-  if (!stat.isDirectory()) return [];
+  let stat;
 
-  return [
-    entryPath,
-    ...fs.readdirSync(entryPath, { withFileTypes: true }).flatMap((entry) => {
-      if (!entry.isDirectory() || ignoredDirectories.has(entry.name)) {
-        return [];
-      }
-
-      return collectDirectories(path.join(entryPath, entry.name));
-    }),
-  ];
-};
-
-const minimizeDirectoryRoots = (directories) => {
-  const roots = [
-    ...new Set(directories.map((entry) => path.resolve(entry))),
-  ].sort(
-    (left, right) => left.length - right.length || left.localeCompare(right)
-  );
-
-  return roots.filter(
-    (candidate, index) =>
-      !roots.slice(0, index).some((root) => isInside(candidate, root))
-  );
-};
-
-const watchDirectory = ({ directory, onChange, recursive }) => {
   try {
-    return [fs.watch(directory, { recursive }, onChange)];
+    stat = fs.lstatSync(resolved);
   } catch (error) {
-    if (!recursive || error?.code !== 'ERR_FEATURE_UNAVAILABLE_ON_PLATFORM') {
-      throw error;
+    if (error?.code === 'ENOENT') {
+      entries.set(resolved, 'missing');
+      return;
     }
 
-    return collectDirectories(directory).map((nestedDirectory) =>
-      fs.watch(nestedDirectory, (eventType, filename) =>
-        onChange(
-          eventType,
-          filename === null
-            ? null
-            : path.relative(
-                directory,
-                path.join(nestedDirectory, filename.toString())
-              )
-        )
-      )
-    );
+    throw error;
+  }
+
+  entries.set(
+    resolved,
+    `${stat.mode}:${stat.size}:${stat.mtimeMs}:${stat.ctimeMs}:${
+      stat.isDirectory() ? 'directory' : stat.isSymbolicLink() ? 'link' : 'file'
+    }`
+  );
+
+  if (!stat.isDirectory()) return;
+
+  for (const entry of fs.readdirSync(resolved, { withFileTypes: true })) {
+    if (entry.isDirectory() && ignoredDirectories.has(entry.name)) continue;
+
+    collectMetadata(path.join(resolved, entry.name), excludedPaths, entries);
   }
 };
 
-const PROOF_MONITOR_READY_QUIET_MS = 20;
-const PROOF_MONITOR_READY_TIMEOUT_MS = 500;
+const snapshotMetadata = (entries, ignoredPaths) => {
+  const excludedPaths = new Set(
+    ignoredPaths.map((entry) => path.resolve(entry))
+  );
+  const snapshot = new Map();
+
+  for (const entry of new Set(entries.map((value) => path.resolve(value)))) {
+    collectMetadata(entry, excludedPaths, snapshot);
+  }
+
+  return snapshot;
+};
+
+const findMetadataChange = (before, after, kind) => {
+  const paths = new Set([...before.keys(), ...after.keys()]);
+
+  for (const changedPath of [...paths].sort()) {
+    const previous = before.get(changedPath);
+    const current = after.get(changedPath);
+
+    if (previous === current) continue;
+
+    return {
+      eventType:
+        previous === undefined
+          ? 'create'
+          : current === undefined || current === 'missing'
+            ? 'delete'
+            : 'update',
+      kind,
+      path: changedPath,
+    };
+  }
+
+  return null;
+};
 
 /**
- * Watches proof inputs between the runner's byte-level start and end checks.
- * `ready()` drains pre-subscription filesystem events before fingerprinting. A
- * sticky change then records transient edits even when their bytes are restored.
+ * Verifies proof inputs at deterministic batch boundaries. File and directory
+ * metadata catches edit-then-revert and create-then-delete drift without a
+ * recursive watcher, while the runner's byte digests remain the final content
+ * authority. This avoids FSEvents startup failures and kqueue's per-entry file
+ * descriptors on large repositories.
  */
 export const createProofIntegrityMonitor = ({
   sourceEntries,
@@ -323,197 +320,65 @@ export const createProofIntegrityMonitor = ({
   targetIgnoredPaths = [],
   targetRoot,
 }) => {
-  let firstChange = null;
+  const targetEntries = targetRoot ? [path.resolve(targetRoot)] : [];
   let closed = false;
-  let isReady = false;
-  let readyDeadline;
-  let readyQuietWindow;
-  let resolveReady;
-  const watchers = [];
-  const readyPromise = new Promise((resolve) => {
-    resolveReady = resolve;
+  let firstChange = null;
+  let sourceSnapshot;
+  let targetSnapshot;
+  const readyPromise = Promise.resolve().then(() => {
+    sourceSnapshot = snapshotMetadata(sourceEntries, sourceIgnoredPaths);
+    targetSnapshot = snapshotMetadata(targetEntries, targetIgnoredPaths);
   });
-  const finishReady = () => {
-    if (isReady) return;
 
-    isReady = true;
-    clearTimeout(readyDeadline);
-    clearTimeout(readyQuietWindow);
-    resolveReady();
-  };
-  const scheduleReady = () => {
-    if (closed || isReady) return;
+  const checkpoint = async () => {
+    await readyPromise;
 
-    clearTimeout(readyQuietWindow);
-    readyQuietWindow = setTimeout(finishReady, PROOF_MONITOR_READY_QUIET_MS);
-  };
-  const ignoredSourcePaths = new Set(
-    sourceIgnoredPaths.map((entry) => path.resolve(entry))
-  );
-  const ignoredTargetPaths = new Set(
-    targetIgnoredPaths.map((entry) => path.resolve(entry))
-  );
-  const markChanged = (kind, changedPath, eventType) => {
-    if (closed) return;
-    if (!isReady) {
-      scheduleReady();
-      return;
+    if (closed || firstChange) return firstChange;
+
+    try {
+      const currentTarget = snapshotMetadata(targetEntries, targetIgnoredPaths);
+      const targetChange = findMetadataChange(
+        targetSnapshot,
+        currentTarget,
+        'target'
+      );
+
+      if (targetChange) {
+        firstChange = targetChange;
+
+        return firstChange;
+      }
+
+      const currentSource = snapshotMetadata(sourceEntries, sourceIgnoredPaths);
+      const sourceChange = findMetadataChange(
+        sourceSnapshot,
+        currentSource,
+        'source'
+      );
+
+      if (sourceChange) firstChange = sourceChange;
+    } catch (error) {
+      firstChange = {
+        eventType: 'error',
+        kind: 'monitor',
+        path: error instanceof Error ? error.message : String(error),
+      };
     }
 
-    firstChange ??= {
-      eventType,
-      kind,
-      path: changedPath,
-    };
+    return firstChange;
   };
-  const sourceDirectories = [];
-  const sourceFilesByDirectory = new Map();
-
-  for (const entry of new Set(
-    sourceEntries.map((value) => path.resolve(value))
-  )) {
-    if (!fs.existsSync(entry)) continue;
-
-    if (fs.statSync(entry).isDirectory()) {
-      sourceDirectories.push(entry);
-      continue;
-    }
-
-    const directory = path.dirname(entry);
-    const files = sourceFilesByDirectory.get(directory) ?? new Set();
-
-    files.add(entry);
-    sourceFilesByDirectory.set(directory, files);
-  }
-
-  for (const root of minimizeDirectoryRoots(sourceDirectories)) {
-    const ignoredPaths = new Set(
-      [...ignoredSourcePaths].filter((entry) => isInside(entry, root))
-    );
-    let watchedSnapshot =
-      ignoredPaths.size > 0
-        ? snapshotEntriesExcept([root], ignoredPaths)
-        : null;
-    const onChange = (eventType, filename) => {
-      const filenameText = filename?.toString();
-      const changedPath =
-        !filenameText || filenameText === path.basename(root)
-          ? root
-          : path.resolve(root, filenameText);
-
-      if (watchedSnapshot !== null) {
-        const nextSnapshot = snapshotEntriesExcept([root], ignoredPaths);
-
-        if (nextSnapshot === watchedSnapshot) return;
-        watchedSnapshot = nextSnapshot;
-      }
-
-      if (
-        ignoredSourcePaths.has(changedPath) ||
-        hasIgnoredDirectory(changedPath, root)
-      ) {
-        return;
-      }
-
-      markChanged('source', changedPath, eventType);
-    };
-
-    watchers.push(
-      ...watchDirectory({ directory: root, onChange, recursive: true })
-    );
-  }
-
-  for (const [directory, files] of sourceFilesByDirectory) {
-    if (
-      [...files].every((file) =>
-        sourceDirectories.some((root) => isInside(file, root))
-      )
-    ) {
-      continue;
-    }
-
-    const onChange = (eventType, filename) => {
-      if (filename === null) {
-        markChanged('source', directory, eventType);
-        return;
-      }
-
-      const changedPath = path.resolve(directory, filename.toString());
-
-      if (files.has(changedPath) && !ignoredSourcePaths.has(changedPath)) {
-        markChanged('source', changedPath, eventType);
-      }
-    };
-
-    watchers.push(...watchDirectory({ directory, onChange, recursive: false }));
-  }
-
-  if (targetRoot && fs.existsSync(targetRoot)) {
-    const resolvedTargetRoot = path.resolve(targetRoot);
-    const ignoredPaths = new Set(
-      [...ignoredTargetPaths].filter((entry) =>
-        isInside(entry, resolvedTargetRoot)
-      )
-    );
-    let watchedSnapshot =
-      ignoredPaths.size > 0
-        ? snapshotEntriesExcept([resolvedTargetRoot], ignoredPaths)
-        : null;
-    const onChange = (eventType, filename) => {
-      const filenameText = filename?.toString();
-      const changedPath =
-        !filenameText || filenameText === path.basename(resolvedTargetRoot)
-          ? resolvedTargetRoot
-          : path.resolve(resolvedTargetRoot, filenameText);
-
-      if (watchedSnapshot !== null) {
-        const nextSnapshot = snapshotEntriesExcept(
-          [resolvedTargetRoot],
-          ignoredPaths
-        );
-
-        if (nextSnapshot === watchedSnapshot) return;
-        watchedSnapshot = nextSnapshot;
-      }
-
-      if (ignoredTargetPaths.has(changedPath)) return;
-
-      markChanged('target', changedPath, eventType);
-    };
-
-    watchers.push(
-      ...watchDirectory({
-        directory: resolvedTargetRoot,
-        onChange,
-        recursive: true,
-      })
-    );
-  }
-
-  for (const watcher of watchers) {
-    watcher.on('error', (error) => {
-      finishReady();
-      markChanged('monitor', error.message, 'error');
-    });
-  }
-
-  scheduleReady();
-  readyDeadline = setTimeout(finishReady, PROOF_MONITOR_READY_TIMEOUT_MS);
 
   return {
-    checkpoint: async () => {
-      await readyPromise;
-      await new Promise((resolve) => setImmediate(resolve));
-
-      return firstChange;
-    },
-    close: () => {
+    checkpoint,
+    close: async () => {
       closed = true;
-      finishReady();
-      for (const watcher of watchers) watcher.close();
+      await readyPromise;
     },
     get change() {
       return firstChange;
+    },
+    get watcherCount() {
+      return 0;
     },
     ready: () => readyPromise,
   };

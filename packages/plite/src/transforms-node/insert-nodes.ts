@@ -1,19 +1,14 @@
-import { batchDirtyPaths } from '../core/batch-dirty-paths';
-import { getEditorSchema } from '../core/editor-runtime';
+import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
 import {
-  applyOperation,
-  getEditorOperationRoot,
+  applyBuiltDocumentChange,
+  getPathByRuntimeId,
+  isBuildingTransactionSpec,
   runEditorTransaction,
 } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
-import { updateDirtyPaths } from '../core/update-dirty-paths';
 import { nodes as getNodes } from '../editor/nodes';
 import {
-  type BaseInsertNodeOperation,
-  type Descendant,
   type Location,
   LocationApi,
-  type Node,
   NodeApi,
   type Path,
   PathApi,
@@ -23,14 +18,16 @@ import {
   isBlock as editorIsBlock,
   isEnd as editorIsEnd,
   isInline as editorIsInline,
-  pathRef as editorPathRef,
   point as editorPoint,
-  pointRef as editorPointRef,
   unhangRange as editorUnhangRange,
   void as editorVoid,
 } from '../interfaces/editor';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { getDefaultInsertLocation } from '../utils';
+import { getRuntimeIdForNode, seedRuntimeIds } from '../utils/runtime-ids';
+import { select as selectSelection } from '../transforms-selection/select';
+import { deleteText } from '../transforms-text/delete-text';
+import { splitNodes } from './split-nodes';
 
 export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
   editor,
@@ -38,17 +35,11 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
   options = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
-    const transforms = getEditorTransformRegistry(editor);
-    const {
-      hanging = false,
-      voids = false,
-      mode = 'lowest',
-      batchDirty = true,
-    } = options;
+    const { hanging = false, voids = false, mode = 'lowest' } = options;
     let at: Location | undefined = options.at;
     let { match, select } = options;
 
-    const nextNodes = (NodeApi.isNode(nodes) ? [nodes] : nodes) as Node[];
+    const nextNodes = Array.isArray(nodes) ? nodes : [nodes];
 
     if (nextNodes.length === 0) {
       return;
@@ -85,9 +76,12 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
         at = at.anchor;
       } else {
         const [, end] = RangeApi.edges(at);
-        const pointRef = editorPointRef(editor, end);
-        transforms.delete({ at });
-        at = pointRef.unref()!;
+        const pointAnchor = editor.anchor(end, {
+          association: 'forward',
+          deletion: 'nearest',
+        });
+        deleteText(editor, { at });
+        at = pointAnchor.release()!;
       }
     }
 
@@ -119,10 +113,24 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
       }
 
       const [, matchPath] = entry;
-      const pathRef = editorPathRef(editor, matchPath);
+      const pointAnchor = editor.anchor(at, {
+        association: 'forward',
+        deletion: 'nearest',
+      });
       const isAtEnd = editorIsEnd(editor, at, matchPath);
-      transforms.splitNodes({ at, match, mode, voids });
-      const path = pathRef.unref()!;
+      splitNodes(editor, { at, match, mode, voids });
+      const splitPoint = pointAnchor.release();
+
+      if (!splitPoint) return;
+
+      const [splitEntry] = getNodes(editor, {
+        at: splitPoint.path,
+        match,
+        mode,
+        voids,
+      });
+      const path = splitEntry?.[1] ?? matchPath;
+
       at = isAtEnd ? PathApi.next(path) : path;
     }
 
@@ -137,72 +145,28 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
       return;
     }
 
-    if (batchDirty) {
-      const batchedOps: BaseInsertNodeOperation[] = [];
-      const newDirtyPaths: Path[] = PathApi.levels(parentPath);
-      const root = getEditorOperationRoot(editor);
+    for (const child of nextNodes) {
+      const path = parentPath.concat(index);
+      const owner = getEditorRuntimeOwner(editor);
+      const runtimeId = getRuntimeIdForNode(child, owner);
+      const inheritIdentity =
+        runtimeId === null || getPathByRuntimeId(editor, runtimeId) === null;
 
-      batchDirtyPaths(
+      if (inheritIdentity && !isBuildingTransactionSpec(editor)) {
+        seedRuntimeIds([child], owner);
+      }
+      index++;
+
+      applyBuiltDocumentChange(
         editor,
-        () => {
-          for (const child of nextNodes as Node[]) {
-            const path = parentPath.concat(index);
-            index++;
-
-            const op: BaseInsertNodeOperation = {
-              type: 'insert_node',
-              path,
-              node: child as Descendant,
-            };
-
-            applyOperation(editor, op);
-            at = PathApi.next(at as Path);
-            batchedOps.push(op);
-
-            if (NodeApi.isText(child)) {
-              newDirtyPaths.push(path);
-            } else {
-              newDirtyPaths.push(
-                ...Array.from(NodeApi.nodes(child), ([, childPath]) =>
-                  path.concat(childPath)
-                )
-              );
-            }
-          }
-        },
-        () => {
-          updateDirtyPaths(
-            editor,
-            newDirtyPaths,
-            (path) => {
-              let nextPath: Path | null = path;
-
-              for (const op of batchedOps) {
-                nextPath = PathApi.transform(nextPath, op);
-
-                if (!nextPath) {
-                  return null;
-                }
-              }
-
-              return nextPath;
-            },
-            { root }
-          );
+        (builder, root) => builder.insertNode(root, path, child),
+        {
+          runtimeIdTransfers: inheritIdentity
+            ? [{ path, source: child }]
+            : undefined,
         }
       );
-    } else {
-      for (const child of nextNodes as Node[]) {
-        const path = parentPath.concat(index);
-        index++;
-
-        applyOperation(editor, {
-          type: 'insert_node',
-          path,
-          node: child as Descendant,
-        });
-        at = PathApi.next(at as Path);
-      }
+      at = PathApi.next(at as Path);
     }
 
     at = PathApi.previous(at);
@@ -211,7 +175,7 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
       const point = editorPoint(editor, at, { edge: 'end' });
 
       if (point) {
-        transforms.select(point);
+        selectSelection(editor, point);
       }
     }
   });

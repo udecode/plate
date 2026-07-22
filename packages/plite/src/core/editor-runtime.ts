@@ -5,35 +5,39 @@ import type {
   Location,
   Node,
   NodeEntry,
-  Operation,
   Path,
   Point,
   Text,
 } from '../interfaces';
 import type {
+  BaseEditor,
   Editor,
   EditorAboveOptions,
   EditorCommit,
   EditorCommitSource,
+  EditorCommandDispatch,
+  EditorExtension,
   EditorExtensionInput,
+  EditorExtensionReconfigureOptions,
+  EditorDocumentValue,
   EditorLeafOptions,
   EditorLevelsOptions,
   EditorNextOptions,
-  EditorOperationDirtinessOptions,
   EditorPointOptions,
   EditorPreviousOptions,
-  EditorSchemaApi,
   EditorSnapshot,
   EditorStateView,
   EditorStaticApi,
   EditorUpdateContext,
   EditorUpdateTransaction,
+  RootKey,
   RuntimeId,
   Selection,
   SnapshotListener,
   Value,
 } from '../interfaces/editor';
-import type { InternalEditorNormalizeNodeOptions } from './normalize-node';
+import type { InternalEditorSchemaApi } from './editor-schema';
+import type { DocumentChange } from './document-change';
 import type { InternalEditorUpdateOptions } from './update-policy';
 
 type BindEditorMethod<T> = T extends (
@@ -62,7 +66,6 @@ export type InternalEditorQueryRuntime = RuntimeMethods<
   | 'isEdge'
   | 'isEmpty'
   | 'isEnd'
-  | 'isNormalizing'
   | 'isStart'
   | 'last'
   | 'parent'
@@ -91,20 +94,10 @@ export type InternalEditorQueryRuntime = RuntimeMethods<
   ) => NodeEntry<T> | undefined;
 };
 
-export type InternalEditorRefRuntime = RuntimeMethods<
-  'pathRef' | 'pathRefs' | 'pointRef' | 'pointRefs' | 'rangeRef' | 'rangeRefs'
->;
-
 export type InternalEditorSnapshotRuntime<V extends Value = Value> = {
   getChildren: () => V;
-  getDirtyPaths: (operation: Operation<V>) => Path[];
   getFragment: () => DescendantIn<V>[];
   getLastCommit: () => EditorCommit<V> | null;
-  getOperationDirtiness: (
-    operations: readonly Operation<V>[],
-    options?: EditorOperationDirtinessOptions<V>
-  ) => EditorCommit<V>;
-  getOperations: (startIndex?: number) => readonly Operation<V>[];
   getPathByRuntimeId: (runtimeId: RuntimeId) => Path | null;
   getRuntimeId: (path: Path) => RuntimeId | null;
   getSelection: () => Selection;
@@ -113,6 +106,7 @@ export type InternalEditorSnapshotRuntime<V extends Value = Value> = {
 
 export type InternalEditorTransactionRuntime<V extends Value = Value> = {
   read: <T>(fn: (state: EditorStateView<V>) => T) => T;
+  runCommand: EditorCommandDispatch;
   subscribe: (listener: SnapshotListener<V>) => () => void;
   subscribeCommit: (listener: (commit: EditorCommit<V>) => void) => () => void;
   subscribeSource: (
@@ -128,40 +122,52 @@ export type InternalEditorTransactionRuntime<V extends Value = Value> = {
   ) => void;
 };
 
-export type InternalEditorTransformRuntime = {
-  normalizeNode: (
-    entry: NodeEntry,
-    options?: InternalEditorNormalizeNodeOptions
-  ) => void;
-  shouldNormalize: (options: {
-    iteration: number;
-    operation?: Operation;
-  }) => boolean;
+export type InternalEditorExtensionRuntime<V extends Value = Value> = {
+  extend: (
+    extension: EditorExtensionInput<Editor<V>>,
+    options?: EditorExtensionReconfigureOptions
+  ) => () => void;
+  prepareExtensionPublication: (
+    entries: readonly InternalEditorExtensionPublicationEntry[],
+    options?: EditorExtensionReconfigureOptions
+  ) => Readonly<{
+    cleanup: () => void;
+    commit: () => void;
+    configurationChanged: boolean;
+    documentChange: DocumentChange;
+    finalize: () => void;
+    ready: () => void;
+    rollback: () => void;
+    stage: () => void;
+    validateDocument: (value: EditorDocumentValue) => void;
+  }>;
+  schema: InternalEditorSchemaApi<V>;
 };
 
-export type InternalEditorExtensionRuntime<V extends Value = Value> = {
-  extend: (extension: EditorExtensionInput<Editor<V>>) => () => void;
-  schema: EditorSchemaApi;
-};
+export type InternalEditorExtensionPublicationEntry = Readonly<{
+  editor?: Editor;
+  extension: EditorExtension<any, any>;
+}>;
 
 export type InternalEditorRuntime<V extends Value = Value> =
   InternalEditorExtensionRuntime<V> &
     InternalEditorQueryRuntime &
-    InternalEditorRefRuntime &
     InternalEditorSnapshotRuntime<V> &
-    InternalEditorTransactionRuntime<V> &
-    InternalEditorTransformRuntime;
+    InternalEditorTransactionRuntime<V>;
 
 const EDITOR_RUNTIME = new WeakMap<Editor, InternalEditorRuntime>();
 const EDITOR_RUNTIME_OWNER = new WeakMap<Editor, Editor>();
+const EDITOR_RUNTIME_ROOT = new WeakMap<Editor, RootKey>();
 
 export const setEditorRuntime = <V extends Value>(
   editor: Editor<V>,
   runtime: InternalEditorRuntime<V>,
-  owner: Editor = editor
+  owner: Editor = editor,
+  root: RootKey = 'main'
 ) => {
   EDITOR_RUNTIME.set(editor, runtime as unknown as InternalEditorRuntime);
   EDITOR_RUNTIME_OWNER.set(editor, owner);
+  EDITOR_RUNTIME_ROOT.set(editor, root);
 };
 
 export const hasEditorRuntime = (value: unknown): value is Editor =>
@@ -181,8 +187,14 @@ export const getEditorRuntime = <V extends Value = Value>(
   return runtime as unknown as InternalEditorRuntime<V>;
 };
 
-export const getEditorRuntimeOwner = (editor: Editor): Editor =>
-  EDITOR_RUNTIME_OWNER.get(editor) ?? editor;
+export const getEditorRuntimeOwner = <TEditor extends BaseEditor<any, any>>(
+  editor: TEditor
+): Editor =>
+  EDITOR_RUNTIME_OWNER.get(editor as Editor) ?? (editor as unknown as Editor);
 
-export const getEditorSchema = (editor: Editor): EditorSchemaApi =>
-  getEditorRuntime(editor).schema;
+export const getEditorRuntimeRoot = (editor: Editor): RootKey =>
+  EDITOR_RUNTIME_ROOT.get(editor) ?? 'main';
+
+export const getEditorSchema = <V extends Value>(
+  editor: Editor<V, any>
+): InternalEditorSchemaApi<V> => getEditorRuntime(editor).schema;

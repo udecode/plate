@@ -4,10 +4,16 @@ import {
 } from '@platejs/combobox';
 import {
   type PlatePluginTxGroup,
+  type InferConfig,
   type PluginConfig,
   createBasePlugin,
 } from '@platejs/core';
-import type { NodeEntry, NodeInsertNodesOptions, Path } from '@platejs/plite';
+import {
+  property,
+  type NodeEntry,
+  type NodeInsertNodesOptions,
+  type Path,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseFootnoteInputPlugin } from './BaseFootnoteInputPlugin';
@@ -35,7 +41,7 @@ import { insertFootnote } from './transforms/insertFootnote';
 import { normalizeDuplicateFootnoteDefinition } from './transforms/normalizeDuplicateFootnoteDefinition';
 import type { TFootnoteElement } from './types';
 
-export type FootnoteConfig = PluginConfig<
+type FootnoteContract = PluginConfig<
   'footnoteReference',
   TriggerComboboxPluginOptions,
   {
@@ -88,38 +94,40 @@ export type FootnoteConfig = PluginConfig<
   }
 >;
 
+const defaultOptions: TriggerComboboxPluginOptions = {
+  createComboboxInput: () => ({
+    children: [{ text: '' }],
+    type: KEYS.footnoteInput,
+  }),
+  trigger: '^',
+  triggerPreviousCharPattern: /^\[$/,
+};
+const plugins: readonly [typeof BaseFootnoteInputPlugin] = [
+  BaseFootnoteInputPlugin,
+];
+
 /** Enables support for inline footnote references. */
-export const BaseFootnoteReferencePlugin = createBasePlugin<FootnoteConfig>({
+export const BaseFootnoteReferencePlugin = createBasePlugin({
   key: KEYS.footnoteReference,
-  options: {
-    createComboboxInput: () => ({
-      children: [{ text: '' }],
-      type: KEYS.footnoteInput,
-    }),
-    trigger: '^',
-    triggerPreviousCharPattern: /^\[$/,
+  options: defaultOptions,
+  schema: {
+    element: {
+      properties: { identifier: property.string() },
+      void: 'inline',
+    },
   },
-  node: {
-    isElement: true,
-    isInline: true,
-    isVoid: true,
-  },
-  plugins: [BaseFootnoteInputPlugin],
+  plugins,
   render: { as: 'sup' },
 })
   .extendExtension(withTriggerCombobox)
   .extendExtension(({ editor }) => ({
-    operations: {
-      apply({ next, operation }) {
-        if (shouldInvalidateFootnoteRegistry(editor, operation)) {
-          invalidateFootnoteRegistry(editor);
-        }
-
-        next(operation);
-      },
+    onTransactionChange({ after, before, changed }) {
+      if (shouldInvalidateFootnoteRegistry(editor, before, after, changed)) {
+        invalidateFootnoteRegistry(editor);
+      }
     },
   }))
-  .extendEditorApi<FootnoteConfig['api']>(({ editor }) => ({
+  .extendEditorApi<FootnoteContract['api']>(({ editor }) => ({
     footnote: {
       definition(options) {
         return getFootnoteDefinition(editor, options);
@@ -158,7 +166,7 @@ export const BaseFootnoteReferencePlugin = createBasePlugin<FootnoteConfig>({
   }))
   .extendTxGroup<
     'footnote',
-    PlatePluginTxGroup<FootnoteConfig['tx']['footnote']>
+    PlatePluginTxGroup<FootnoteContract['tx']['footnote']>
   >('footnote', ({ editor }) => (tx) => ({
     createDefinition: (options) =>
       createFootnoteDefinition(editor, tx, options),
@@ -167,10 +175,11 @@ export const BaseFootnoteReferencePlugin = createBasePlugin<FootnoteConfig>({
     normalizeDuplicateDefinition: (options) =>
       normalizeDuplicateFootnoteDefinition(editor, tx, options),
   }))
-  .extendTxGroup<'insert', PlatePluginTxGroup<FootnoteConfig['tx']['insert']>>(
+  .extendTxGroup<
     'insert',
-    ({ editor, type }) =>
-      (tx) => ({
-        footnote: (options) => insertFootnote(editor, tx, type, options),
-      })
-  );
+    PlatePluginTxGroup<FootnoteContract['tx']['insert']>
+  >('insert', ({ editor, type }) => (tx) => ({
+    footnote: (options) => insertFootnote(editor, tx, type, options),
+  }));
+
+export type FootnoteConfig = InferConfig<typeof BaseFootnoteReferencePlugin>;

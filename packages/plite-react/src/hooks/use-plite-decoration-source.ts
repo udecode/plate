@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Editor as EditorType } from '@platejs/plite';
 
 import {
@@ -9,7 +9,11 @@ import {
   toPliteRangeDecorations,
 } from '../decoration-source';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
-import type { PliteSourceDirtiness } from '../projection-store';
+import type {
+  PliteSourceDirtiness,
+  PliteSourceDirtinessClass,
+} from '../projection-store';
+import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 /** Hook options for computed decoration sources. */
 export type UsePliteDecorationSourceOptions<T = unknown> =
@@ -29,45 +33,125 @@ export type UsePliteRangeDecorationSourceOptions<T = unknown> =
     deps?: readonly unknown[];
   };
 
+const DIRTINESS_CLASSES = [
+  'always',
+  'selection',
+  'text',
+  'mark',
+  'node',
+  'annotation',
+  'external',
+] as const satisfies readonly PliteSourceDirtinessClass[];
+
 const getDirtinessIdentity = (dirtiness: PliteSourceDirtiness | undefined) => {
   if (!Array.isArray(dirtiness)) {
     return dirtiness;
   }
 
-  return `list:${[...new Set(dirtiness)].sort().join('|')}`;
+  return DIRTINESS_CLASSES.reduce(
+    (identity, dirtinessClass, index) =>
+      dirtiness.includes(dirtinessClass) ? identity | (1 << index) : identity,
+    0
+  );
+};
+
+const getDirtinessFromIdentity = (
+  identity: ReturnType<typeof getDirtinessIdentity>
+): PliteSourceDirtiness | undefined => {
+  if (typeof identity !== 'number') {
+    return identity;
+  }
+
+  return DIRTINESS_CLASSES.filter(
+    (_dirtinessClass, index) => (identity & (1 << index)) !== 0
+  );
 };
 
 const useStableDirtiness = (dirtiness: PliteSourceDirtiness | undefined) => {
   const dirtinessIdentity = getDirtinessIdentity(dirtiness);
 
-  // Structural dirtiness owns source identity for inline class lists.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => dirtiness, [dirtinessIdentity]);
+  // Preserve source identity for structurally equal inline class lists.
+  return useMemo(
+    () => getDirtinessFromIdentity(dirtinessIdentity),
+    [dirtinessIdentity]
+  );
 };
 
 const isReactEditorFocused = (editor: EditorType) =>
   ReactEditor.isFocused(editor as unknown as ReactRuntimeEditor);
 
+const createDecorationSourceLifecycle = <T>() => {
+  let currentSource: PliteDecorationSource<T> | null = null;
+  let effectVersion = 0;
+
+  return {
+    mount(source: PliteDecorationSource<T>) {
+      currentSource = source;
+      const mountedVersion = ++effectVersion;
+
+      return () => {
+        queueMicrotask(() => {
+          if (currentSource !== source || effectVersion === mountedVersion) {
+            source.destroy();
+          }
+        });
+      };
+    },
+  };
+};
+
 const useDecorationSourceLifecycle = <T>(source: PliteDecorationSource<T>) => {
-  const sourceRef = useRef(source);
-  const effectVersionRef = useRef(0);
+  const [lifecycle] = useState(createDecorationSourceLifecycle<T>);
 
-  sourceRef.current = source;
+  useEffect(() => lifecycle.mount(source), [lifecycle, source]);
+};
 
-  useEffect(() => {
-    const effectVersion = ++effectVersionRef.current;
+const areDependencyListsEqual = (
+  previous: readonly unknown[] | null,
+  next: readonly unknown[]
+) =>
+  previous !== null &&
+  previous.length === next.length &&
+  previous.every((value, index) => Object.is(value, next[index]));
 
-    return () => {
-      queueMicrotask(() => {
-        if (
-          sourceRef.current !== source ||
-          effectVersionRef.current === effectVersion
-        ) {
-          source.destroy();
-        }
+const useDecorationSourceCommit = <T>(
+  editor: EditorType,
+  source: PliteDecorationSource<T>,
+  options:
+    | UsePliteDecorationSourceOptions<T>
+    | UsePliteRangeDecorationSourceOptions<T>,
+  optionsCell: {
+    current:
+      | UsePliteDecorationSourceOptions<T>
+      | UsePliteRangeDecorationSourceOptions<T>;
+  }
+) => {
+  const [commit] = useState<{
+    deps: readonly unknown[] | null;
+    source: PliteDecorationSource<T> | null;
+  }>(() => ({
+    deps: null,
+    source: null,
+  }));
+
+  useIsomorphicLayoutEffect(() => {
+    optionsCell.current = options;
+    const refreshDeps = options.deps ?? [options];
+    const shouldRefresh =
+      commit.source !== source ||
+      !areDependencyListsEqual(commit.deps, refreshDeps);
+
+    commit.deps = [...refreshDeps];
+    commit.source = source;
+
+    if (shouldRefresh) {
+      source.refresh({
+        forceInvalidate: true,
+        reason: 'external',
+        requiresDOMSelectionExport: isReactEditorFocused(editor),
       });
-    };
-  }, [source]);
+    }
+  });
 };
 
 /**
@@ -79,11 +163,9 @@ export const usePliteDecorationSource = <T = unknown>(
   editor: EditorType,
   options: UsePliteDecorationSourceOptions<T>
 ): PliteDecorationSource<T> => {
-  const optionsCell = useRef(options);
-  optionsCell.current = options;
+  const [optionsCell] = useState(() => ({ current: options }));
   const optionsId = options.id;
   const dirtiness = useStableDirtiness(options.dirtiness);
-  const refreshDeps = options.deps ?? [options];
   const runtimeScope = options.runtimeScope;
 
   const source = useMemo(
@@ -91,6 +173,7 @@ export const usePliteDecorationSource = <T = unknown>(
       createDecorationSource<T>(editor, {
         dirtiness,
         id: optionsId,
+        onError: options.onError,
         read: (context) => optionsCell.current.read(context),
         runtimeScope: runtimeScope
           ? (context) => {
@@ -106,19 +189,11 @@ export const usePliteDecorationSource = <T = unknown>(
             }
           : undefined,
       }),
-    [dirtiness, editor, optionsCell, optionsId, runtimeScope]
+    [dirtiness, editor, options.onError, optionsCell, optionsId, runtimeScope]
   );
 
   useDecorationSourceLifecycle(source);
-  useEffect(() => {
-    source.refresh({
-      forceInvalidate: true,
-      reason: 'external',
-      requiresDOMSelectionExport: isReactEditorFocused(editor),
-    });
-    // `deps` intentionally owns inline option closure freshness.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, refreshDeps);
+  useDecorationSourceCommit(editor, source, options, optionsCell);
 
   return source;
 };
@@ -131,11 +206,9 @@ export const usePliteRangeDecorationSource = <T = unknown>(
   editor: EditorType,
   options: UsePliteRangeDecorationSourceOptions<T>
 ): PliteDecorationSource<T> => {
-  const optionsCell = useRef(options);
-  optionsCell.current = options;
+  const [optionsCell] = useState(() => ({ current: options }));
   const optionsId = options.id;
   const dirtiness = useStableDirtiness(options.dirtiness);
-  const refreshDeps = options.deps ?? [options];
   const runtimeScope = options.runtimeScope;
 
   const source = useMemo(
@@ -143,6 +216,7 @@ export const usePliteRangeDecorationSource = <T = unknown>(
       createDecorationSource<T>(editor, {
         dirtiness,
         id: optionsId,
+        onError: options.onError,
         read: (context) =>
           toPliteRangeDecorations(optionsCell.current.read(context), {
             data: optionsCell.current.data,
@@ -162,19 +236,11 @@ export const usePliteRangeDecorationSource = <T = unknown>(
             }
           : undefined,
       }),
-    [dirtiness, editor, optionsCell, optionsId, runtimeScope]
+    [dirtiness, editor, options.onError, optionsCell, optionsId, runtimeScope]
   );
 
   useDecorationSourceLifecycle(source);
-  useEffect(() => {
-    source.refresh({
-      forceInvalidate: true,
-      reason: 'external',
-      requiresDOMSelectionExport: isReactEditorFocused(editor),
-    });
-    // `deps` intentionally owns inline option closure freshness.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, refreshDeps);
+  useDecorationSourceCommit(editor, source, options, optionsCell);
 
   return source;
 };

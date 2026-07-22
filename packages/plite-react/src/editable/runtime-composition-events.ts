@@ -5,6 +5,7 @@ import {
   applyEditableCompositionStart,
   applyEditableCompositionUpdate,
 } from './composition-state';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableCompositionKernel } from './editing-kernel';
 import { useEditableCompositionHandler } from './input-router';
 import type { EditableInputController } from './input-state';
@@ -22,6 +23,7 @@ export const useRuntimeCompositionEvents = ({
   onCompositionStart,
   onCompositionUpdate,
   readOnly,
+  runtime,
   setComposing,
   trace,
 }: {
@@ -32,6 +34,7 @@ export const useRuntimeCompositionEvents = ({
   onCompositionStart?: CompositionHandler;
   onCompositionUpdate?: CompositionHandler;
   readOnly: boolean;
+  runtime: EditableDOMRuntime;
   setComposing: EditableEventRuntime['composition']['setComposing'];
   trace: EditableEventRuntime['trace'];
 }) => {
@@ -49,14 +52,20 @@ export const useRuntimeCompositionEvents = ({
         ownership: decision.ownership,
         target: event.target,
       });
-      applyEditableCompositionEnd({
-        androidInputManagerRef,
-        editor,
-        event,
-        inputController,
-        onCompositionEnd,
-        readOnly,
-        setComposing,
+      runtime.runOwnedDOMMutation('composition', () => {
+        applyEditableCompositionEnd({
+          androidInputManagerRef,
+          editor,
+          event,
+          inputController,
+          onCompositionEnd,
+          readOnly,
+          runOwnedDOMMutation: (callback) => {
+            runtime.runOwnedDOMMutation('composition', callback);
+          },
+          scheduleTask: runtime.domPhaseScheduler.schedule,
+          setComposing,
+        });
       });
     },
     [
@@ -65,6 +74,7 @@ export const useRuntimeCompositionEvents = ({
       inputController,
       onCompositionEnd,
       readOnly,
+      runtime,
       setComposing,
       trace,
     ]
@@ -87,13 +97,16 @@ export const useRuntimeCompositionEvents = ({
         ownership: decision.ownership,
         target: event.target,
       });
-      applyEditableCompositionStart({
-        androidInputManagerRef,
-        editor,
-        event,
-        onCompositionStart,
-        readOnly,
-        setComposing,
+      runtime.runOwnedDOMMutation('composition', () => {
+        applyEditableCompositionStart({
+          androidInputManagerRef,
+          editor,
+          event,
+          inputController,
+          onCompositionStart,
+          readOnly,
+          setComposing,
+        });
       });
     },
     [
@@ -102,6 +115,7 @@ export const useRuntimeCompositionEvents = ({
       inputController,
       onCompositionStart,
       readOnly,
+      runtime,
       setComposing,
       trace,
     ]
@@ -124,12 +138,15 @@ export const useRuntimeCompositionEvents = ({
         ownership: decision.ownership,
         target: event.target,
       });
-      applyEditableCompositionUpdate({
-        editor,
-        event,
-        onCompositionUpdate,
-        readOnly,
-        setComposing,
+      runtime.runOwnedDOMMutation('composition', () => {
+        applyEditableCompositionUpdate({
+          editor,
+          event,
+          inputController,
+          onCompositionUpdate,
+          readOnly,
+          setComposing,
+        });
       });
     },
     [
@@ -137,6 +154,7 @@ export const useRuntimeCompositionEvents = ({
       inputController,
       onCompositionUpdate,
       readOnly,
+      runtime,
       setComposing,
       trace,
     ]

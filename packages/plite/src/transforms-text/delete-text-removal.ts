@@ -1,22 +1,21 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import { applyBuiltDocumentChange } from '../core/public-state';
 import { nodes as getNodes } from '../editor/nodes';
 import {
-  type Descendant,
   NodeApi,
   type Path,
   PathApi,
   type Point,
   PointApi,
   RangeApi,
+  SelectionApi,
 } from '../interfaces';
 import {
   after as editorAfter,
   getChildren as editorGetChildren,
   hasPath as editorHasPath,
   leaf as editorLeaf,
-  pathRef as editorPathRef,
   point as editorPoint,
-  pointRef as editorPointRef,
 } from '../interfaces/editor';
 import type { Editor } from '../interfaces/editor';
 import {
@@ -68,29 +67,33 @@ const resolveRemovalEndPoint = (
 export const deletePathTarget = (
   editor: Editor,
   target: DeletePathTarget,
-  tx: TransactionWriter
+  tx: TransactionWriter,
+  select: boolean
 ) => {
-  const fallbackRef = target.fallbackPoint
-    ? editorPointRef(editor, target.fallbackPoint)
+  const fallbackAnchor = target.fallbackPoint
+    ? editor.anchor(target.fallbackPoint, {
+        association: 'backward',
+        deletion: 'nearest',
+      })
     : null;
 
-  tx.apply({
-    type: 'remove_node',
-    path: target.path,
-    node: getCurrentNode(editor, target.path) as Descendant,
-  });
+  applyBuiltDocumentChange(editor, (builder, root) =>
+    builder.removeNode(root, target.path)
+  );
 
   if (editorHasPath(editor, target.path)) {
     maybeMergeAdjacentTextAt(editor, target.path);
   }
 
-  const fallbackPoint = fallbackRef?.unref();
+  const fallbackPoint = fallbackAnchor?.release();
 
-  if (fallbackPoint) {
-    tx.setSelection({
-      anchor: fallbackPoint,
-      focus: fallbackPoint,
-    });
+  if (select && fallbackPoint) {
+    tx.setSelection(
+      SelectionApi.text({
+        anchor: fallbackPoint,
+        focus: fallbackPoint,
+      })
+    );
   }
 };
 
@@ -188,11 +191,7 @@ const collectDeleteMatchPaths = (editor: Editor, plan: DeleteRangePlan) => {
   return matches;
 };
 
-export const removeDeleteContents = (
-  editor: Editor,
-  plan: DeleteRangePlan,
-  tx: TransactionWriter
-) => {
+export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
   const deleteMatchPaths = collectDeleteMatchPaths(editor, plan);
   const skipStartText = deleteMatchPaths.some((path) =>
     PathApi.isCommon(path, plan.start.path)
@@ -200,44 +199,54 @@ export const removeDeleteContents = (
   const skipEndText = deleteMatchPaths.some((path) =>
     PathApi.isCommon(path, plan.end.path)
   );
-  const pathRefs = deleteMatchPaths.map((path) => editorPathRef(editor, path));
-  const startRef = editorPointRef(editor, plan.start);
-  const endRef = editorPointRef(editor, plan.end);
+  const pathAnchors = deleteMatchPaths.map((path) =>
+    editor.anchor(path, {
+      association: 'forward',
+      deletion: 'drop',
+    })
+  );
+  const startAnchor = editor.anchor(plan.start, {
+    association: 'backward',
+    deletion: 'nearest',
+  });
+  const endAnchor = editor.anchor(plan.end, {
+    association: 'forward',
+    deletion: 'nearest',
+  });
   let removedText = '';
 
   if (!plan.isSingleText && !plan.startNonEditable && !skipStartText) {
-    const point = startRef.current!;
+    const point = startAnchor.resolve()!;
     const [node] = editorLeaf(editor, point);
     const text = node.text.slice(plan.start.offset);
 
     if (text.length > 0) {
-      tx.apply({
-        type: 'remove_text',
-        path: point.path,
-        offset: plan.start.offset,
-        text,
-      });
+      applyBuiltDocumentChange(editor, (builder, root) =>
+        builder.removeText(root, point.path, plan.start.offset, text)
+      );
       removedText = text;
     }
   }
 
-  pathRefs
+  pathAnchors
     .slice()
     .reverse()
-    .map((ref) => ref.unref())
+    .map((anchor) => anchor.release())
     .filter((path): path is Path => path !== null)
     .forEach((path) => {
-      tx.apply({
-        type: 'remove_node',
-        path,
-        node: getCurrentNode(editor, path) as Descendant,
-      });
+      applyBuiltDocumentChange(editor, (builder, root) =>
+        builder.removeNode(root, path)
+      );
     });
 
   if (!plan.endNonEditable && !plan.preserveEndBlock && !skipEndText) {
     const point =
-      resolveRemovalEndPoint(editor, plan, startRef.current, endRef.current) ??
-      getLivePoint(editor, startRef.current);
+      resolveRemovalEndPoint(
+        editor,
+        plan,
+        startAnchor.resolve(),
+        endAnchor.resolve()
+      ) ?? getLivePoint(editor, startAnchor.resolve());
 
     if (!point) {
       throw new Error('deleteAt could not resolve a surviving end point');
@@ -248,19 +257,16 @@ export const removeDeleteContents = (
     const text = node.text.slice(offset, plan.end.offset);
 
     if (text.length > 0) {
-      tx.apply({
-        type: 'remove_text',
-        path: point.path,
-        offset,
-        text,
-      });
+      applyBuiltDocumentChange(editor, (builder, root) =>
+        builder.removeText(root, point.path, offset, text)
+      );
       removedText = text;
     }
   }
 
   return {
-    startRef,
-    endRef,
+    startAnchor,
+    endAnchor,
     removedText,
   };
 };

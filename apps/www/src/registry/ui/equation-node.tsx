@@ -19,7 +19,6 @@ import {
   useElement,
   useEditorReadOnly,
   useElementSelected,
-  usePath,
 } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -222,7 +221,6 @@ const EquationPopoverContent = ({
   const editor = useEditorRef();
   const readOnly = useEditorReadOnly();
   const element = useElement<TEquationElement>();
-  const path = usePath();
 
   React.useEffect(() => {
     if (isInline && open) {
@@ -236,7 +234,7 @@ const EquationPopoverContent = ({
     setOpen(false);
 
     if (isInline) {
-      const nextPoint = editor.read.points.after(path);
+      const nextPoint = editor.read.points.after(element);
 
       if (nextPoint) {
         editor.update.selection.set(nextPoint);

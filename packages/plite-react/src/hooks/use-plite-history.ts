@@ -1,25 +1,23 @@
 import { type KeyboardEvent, useCallback, useMemo } from 'react';
-import type { EditorStateView, RootKey } from '@platejs/plite';
+import type { EditorStateView, NamedRootKey, RootKey } from '@platejs/plite';
 import { resolveHistoryFocusEditor } from '../editable/history-focus';
 import {
   getHistoryDirectionFromNativeEvent,
   type HistoryDirection,
 } from '../editable/history-keyboard';
+import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import {
   failInvariant,
+  getInternalDocumentChangeEntries,
   runTrustedUpdate,
+  toInternalRoot,
 } from '../editable/runtime-editor-api';
-import {
-  getOperationRoot,
-  MAIN_ROOT_KEY,
-  toPublicRootOption,
-} from '../root-key';
+import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import {
   readPliteViewSelection,
   readPliteViewSelectionHistoryEntry,
   writePliteViewSelection,
 } from '../view-selection';
-import { schedulePliteReactFocus } from './focus-scheduler';
 import { focusPliteEditableAfterEventFrame } from './focus-plite-editable';
 import {
   useRequiredPliteRuntimeContext,
@@ -32,9 +30,9 @@ import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 export type PliteHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
 
 /** Options for history commands and shortcut handling. */
-export type UsePliteHistoryOptions = {
+export type UsePliteHistoryOptions<TRoot extends RootKey = RootKey> = {
   focusPolicy?: PliteHistoryFocusPolicy;
-  root?: RootKey;
+  root?: NamedRootKey<TRoot>;
 };
 
 /** Undo/redo state and command handlers for one Plite root. */
@@ -72,15 +70,19 @@ const selectSelectionRoot = (state: EditorStateView): RootKey | null => {
     MAIN_ROOT_KEY) as RootKey;
 };
 
-const selectLastCommitSingleOperationRoot = (
+const selectLastCommitSingleChangedRoot = (
   state: EditorStateView
 ): RootKey | null => {
   const commit = state.lastCommit();
-  const roots = new Set(
-    (commit?.operations ?? [])
-      .filter((operation) => operation.type !== 'set_selection')
-      .map(getOperationRoot)
-  );
+  const roots = new Set<RootKey>([
+    ...(commit
+      ? [...getInternalDocumentChangeEntries(commit.changes)].map(
+          ([root]) => root
+        )
+      : []),
+    ...(commit?.changes.createRoots ?? []),
+    ...(commit?.changes.deleteRoots ?? []),
+  ]);
 
   return roots.size === 1 ? (roots.values().next().value ?? null) : null;
 };
@@ -150,10 +152,10 @@ const selectHistoryAvailability = (state: unknown): HistoryAvailability => {
  * `onKeyDown` to editor chrome that owns shortcuts, and choose `focusPolicy`
  * based on whether undo/redo should restore editor focus.
  */
-export function usePliteHistory({
+export function usePliteHistory<const TRoot extends RootKey = RootKey>({
   focusPolicy = 'restore-root',
   root: fixedRoot,
-}: UsePliteHistoryOptions = {}): PliteHistoryController {
+}: UsePliteHistoryOptions<TRoot> = {}): PliteHistoryController {
   if (fixedRoot === MAIN_ROOT_KEY) {
     throw new Error(
       '[Plite] Omit root to bind history to the primary document.'
@@ -225,19 +227,33 @@ export function usePliteHistory({
       }
 
       if (focusPolicy === 'restore-root') {
-        schedulePliteReactFocus(() => {
-          const focusEditor = editor.read((state) =>
-            resolveHistoryFocusEditor({
-              currentRoot: state.view.root(),
+        const schedulerEditor =
+          getMountedViewEditor(MAIN_ROOT_KEY) ??
+          getMountedViewEditor(root) ??
+          editor;
+        const domPhaseScheduler =
+          getMountedEditableDOMRuntime(schedulerEditor)?.domPhaseScheduler;
+        const restoreFocus = () => {
+          const focusEditor = editor.read((state) => {
+            const selectionRoot = selectSelectionRoot(state);
+            const historyRoot =
+              fixedRoot ??
+              selectionRoot ??
+              (root !== MAIN_ROOT_KEY
+                ? root
+                : selectLastCommitSingleChangedRoot(state));
+
+            return resolveHistoryFocusEditor({
+              currentRoot: toInternalRoot(state.view.root()),
               editor,
               fallbackRoot: root,
               getActiveContentRootOwner,
               getContentRootOwnerViewEditor,
               getMountedViewEditor,
-              historyRoot: selectLastCommitSingleOperationRoot(state),
-              selectionRoot: selectSelectionRoot(state),
-            })
-          );
+              historyRoot,
+              selectionRoot: fixedRoot ? null : selectionRoot,
+            });
+          });
 
           if (!focusEditor.read((state) => state.selection())) {
             focusEditor.update((tx) => {
@@ -249,13 +265,27 @@ export function usePliteHistory({
           }
 
           focusPliteEditableAfterEventFrame(focusEditor);
-        });
+        };
+
+        if (!domPhaseScheduler) {
+          restoreFocus();
+
+          return;
+        }
+
+        domPhaseScheduler.schedule(
+          'model',
+          'history-restore-root-focus',
+          restoreFocus,
+          { key: 'history-restore-root-focus', timing: 'animation-frame' }
+        );
       }
     },
     [
       availability.canRedo,
       availability.canUndo,
       editor,
+      fixedRoot,
       focusPolicy,
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,

@@ -72,17 +72,26 @@ export const sameDescendantBinding = (
   left: {
     childRuntimeIds: readonly RuntimeId[];
     directTextChildNodes: readonly (PliteTextNode | null)[];
+    isInline: boolean;
+    isVoid: boolean;
     node: Descendant | null;
     path: Path | null;
+    renderRevision: number;
   } | null,
   right: {
     childRuntimeIds: readonly RuntimeId[];
     directTextChildNodes: readonly (PliteTextNode | null)[];
+    isInline: boolean;
+    isVoid: boolean;
     node: Descendant | null;
     path: Path | null;
+    renderRevision: number;
   }
 ) =>
   left != null &&
+  left.renderRevision === right.renderRevision &&
+  left.isInline === right.isInline &&
+  left.isVoid === right.isVoid &&
   samePath(left.path, right.path) &&
   sameDescendant(left.node, right.node) &&
   sameRuntimeIds(left.childRuntimeIds, right.childRuntimeIds) &&

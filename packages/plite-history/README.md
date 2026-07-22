@@ -1,6 +1,6 @@
 # plite-history
 
-Operation-based undo and redo for Plite editors.
+Canonical-change undo and redo for Plite editors.
 
 Install history with the `history()` extension.
 
@@ -32,7 +32,7 @@ const editor = usePliteEditor({
 ```
 
 Read history through `state.history`, replay it through
-`editor.update.history.*`, and choose update history intent with a policy-first
+`editor.update.history.*`, and choose the history policy with a policy-first
 `editor.update` call.
 
 ```ts
@@ -45,3 +45,16 @@ editor.update({ history: 'skip' }).text.insert('draft')
 
 Use `History.isHistory(value)` when library code needs to validate an unknown
 history value.
+
+Persist and restore validated history with version 3 JSON. The envelope
+includes the editor's schema identity, so decoding fails before batch data is
+read when the installed schema does not match.
+
+```ts
+const json = History.toJSON(editor)
+const decoded = History.fromJSON(editor, json)
+
+editor.update((tx) => {
+  tx.history.restore(decoded)
+})
+```

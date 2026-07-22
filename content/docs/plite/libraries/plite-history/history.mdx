@@ -27,18 +27,27 @@ editor.update({ history: "skip" }).text.insert("draft");
 ## History Object
 
 ```typescript
-import type { EditorStatePatch, Operation, Range } from "@platejs/plite";
+import type {
+  DocumentChange,
+  EditorEffect,
+  EditorSchemaIdentity,
+  Selection,
+} from "@platejs/plite";
 
 export interface History {
-  redos: Batch[];
-  undos: Batch[];
+  readonly redos: readonly Batch[];
+  readonly revision: number;
+  readonly schema: EditorSchemaIdentity | null;
+  readonly undos: readonly Batch[];
 }
 
 interface Batch {
-  operations: Operation[];
-  selectionBefore: Range | null;
-  selectionBeforeRoot?: string;
-  statePatches: EditorStatePatch[];
+  readonly change: DocumentChange;
+  readonly effects: readonly EditorEffect[];
+  readonly selectionAfter: Selection;
+  readonly selectionAfterRoot?: string;
+  readonly selectionBefore: Selection;
+  readonly selectionBeforeRoot?: string;
 }
 ```
 
@@ -49,17 +58,57 @@ interface Batch {
 Returns `true` if the passed in `value` is a `History` object and acts as a
 type guard.
 
+#### `History.toJSON(editor): HistoryJSON`
+
+Encode the installed undo and redo stacks as validated version 3 JSON. The
+envelope records the editor's schema identity, and each batch stores its
+canonical `DocumentChange`, registered effects, and selection envelopes.
+
+Compatible typing and same-node property updates coalesce from canonical
+change classifications and changed ranges. Grouping fingerprints are
+runtime-only; loading persisted history starts a fresh automatic group.
+
+#### `History.fromJSON(editor, json): History`
+
+Decode and validate history without mutating the editor. Effect codecs are
+discovered from installed editor-extension resources, including state fields
+and standalone effects. Install the returned immutable value through
+`tx.history.restore(...)`.
+
+Decoding fails before reading any batch when the persisted schema identity does
+not match the editor. A matching schema ID and version with a different
+fingerprint means the schema semantics need a version bump.
+
+```typescript
+const json = History.toJSON(editor);
+
+localStorage.setItem("plite.history", JSON.stringify(json));
+
+const decoded = History.fromJSON(
+  editor,
+  JSON.parse(localStorage.getItem("plite.history")!)
+);
+
+editor.update((tx) => {
+  tx.history.restore(decoded);
+});
+```
+
+Schema identity, codec versions, effect keys, custom selection kinds, and JSON
+values are validated during decoding. Failed decoding leaves editor state
+untouched.
+
 ## Editor API
 
 #### `state.history(): History`
 
 Read the current undo and redo stacks.
 
-#### `state.history.undos(): Batch[]`
+#### `state.history.undos(): readonly Batch[]`
 
 Read the undo stack.
 
-#### `state.history.redos(): Batch[]`
+#### `state.history.redos(): readonly Batch[]`
 
 Read the redo stack.
 
@@ -70,6 +119,11 @@ Undo the previous history batch.
 #### `tx.history.redo(): void`
 
 Redo the next history batch.
+
+#### `tx.history.restore(history): void`
+
+Replace both history branches when the surrounding update commits. Commit and
+snapshot subscribers observe the restored revision through that one update.
 
 #### `tx.history.skip(): void`
 
@@ -93,7 +147,7 @@ Run one update that merges into the previous compatible undo batch.
 
 #### `editor.update({ history: "new-batch" }, fn): void`
 
-Run one update where the first operation starts a fresh history batch, then the
+Run one update where the first write starts a fresh history batch, then the
 rest of the callback merges into that batch.
 
 For one direct write, configure the update facade instead:
@@ -110,22 +164,25 @@ Undo the previous history batch outside a larger transaction.
 
 Redo the next history batch outside a larger transaction.
 
+#### `editor.update.history.restore(history): void`
+
+Restore decoded history as one direct update.
+
 ## Controlled Previews
 
 Render proposed edits from local state, decorations, or sidecar UI until the
 user accepts them. Do not mutate document content for a preview and then try to
 make that preview history later.
 
-Use a local `defineStateField` with `persist: false` and `history: 'skip'` for
-preview state. Cancel by clearing that field. Accept by clearing the preview and
-applying the real document edit in one normal update.
+Use a local `defineStateField` without a persistence codec and with
+`history: 'skip'` for preview state. Cancel by clearing that field. Accept by
+clearing the preview and applying the real document edit in one normal update.
 
 ```tsx
 const previewReplacement = defineStateField<string | null>({
   key: "local.preview.replacement",
   history: "skip",
   initial: () => null,
-  persist: false,
 });
 
 editor.update((tx) => {

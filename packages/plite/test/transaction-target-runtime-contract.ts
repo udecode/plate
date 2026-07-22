@@ -10,6 +10,7 @@ import {
   createEditor,
   type Descendant,
   type EditorUpdateTransaction,
+  editorCommands,
   NodeApi,
 } from '@platejs/plite';
 
@@ -241,6 +242,46 @@ describe('transaction target runtime', () => {
     assert.deepEqual(editorGetChildren(editor), [
       paragraph('o!ne'),
       paragraph('two'),
+    ]);
+  });
+
+  it('inherits an explicit outer target into nested command specs', () => {
+    const editor = setupEditor();
+    let calls = 0;
+
+    setEditorTargetRuntime(editor, {
+      resolveImplicitTarget() {
+        calls += 1;
+        return {
+          kind: 'text' as const,
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 1 },
+        };
+      },
+    });
+
+    editor.update((tx) => {
+      tx.command(editorCommands.select, {
+        target: {
+          kind: 'text',
+          anchor: { path: [1, 0], offset: 0 },
+          focus: { path: [1, 0], offset: 0 },
+        },
+      });
+      tx.text.delete({
+        at: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 1 },
+        },
+      });
+      tx.command(editorCommands.insertText, { text: '!' });
+    });
+
+    assert.equal(calls, 0);
+    assert.deepEqual(editorGetChildren(editor), [
+      paragraph('ne'),
+      paragraph('!two'),
     ]);
   });
 });

@@ -193,7 +193,7 @@ test('proof monitor catches transient source changes and new files', async () =>
 
     assert.equal(monitor.change, change);
   } finally {
-    monitor.close();
+    await monitor.close();
     fs.rmSync(root, { force: true, recursive: true });
   }
 
@@ -220,8 +220,70 @@ test('proof monitor catches transient source changes and new files', async () =>
       change?.path
     );
   } finally {
-    additionMonitor.close();
+    await additionMonitor.close();
     fs.rmSync(additionRoot, { force: true, recursive: true });
+  }
+});
+
+test('proof monitor allocates no recursive watchers for disjoint inputs', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'plite-proof-topology-'));
+  const sourceEntries = Array.from({ length: 64 }, (_, index) => {
+    const directory = path.join(root, `package-${index}`, 'src');
+
+    fs.mkdirSync(directory, { recursive: true });
+
+    return directory;
+  });
+  const monitor = createProofIntegrityMonitor({ sourceEntries });
+
+  try {
+    await waitForMonitorReady(monitor);
+
+    assert.equal(monitor.watcherCount, 0);
+    assert.equal(await monitor.checkpoint(), null);
+  } finally {
+    await monitor.close();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test('proof monitor handles the real repository topology without native watchers', async () => {
+  const monitor = createProofIntegrityMonitor({
+    sourceEntries: [
+      path.join(repoRoot, 'apps/plite'),
+      path.join(repoRoot, 'apps/www'),
+      path.join(repoRoot, 'packages'),
+    ],
+  });
+
+  try {
+    await waitForMonitorReady(monitor);
+
+    assert.equal(monitor.watcherCount, 0);
+    assert.equal(await monitor.checkpoint(), null);
+  } finally {
+    await monitor.close();
+  }
+});
+
+test('proof monitor ignores baseline metadata but catches later writes', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'plite-proof-stale-'));
+  const sourceFile = path.join(root, 'input.ts');
+
+  fs.writeFileSync(sourceFile, 'before');
+  const monitor = createProofIntegrityMonitor({
+    sourceEntries: [root],
+  });
+
+  try {
+    await waitForMonitorReady(monitor);
+    assert.equal(await monitor.checkpoint(), null);
+
+    fs.writeFileSync(sourceFile, 'after');
+    assert.equal((await monitor.checkpoint())?.kind, 'source');
+  } finally {
+    await monitor.close();
+    fs.rmSync(root, { force: true, recursive: true });
   }
 });
 
@@ -244,7 +306,7 @@ test('proof monitor classifies output and manifest drift', async () => {
 
     assert.equal(manifestChange?.kind, 'target');
   } finally {
-    monitor.close();
+    await monitor.close();
   }
 
   const outputMonitor = createProofIntegrityMonitor({
@@ -259,7 +321,7 @@ test('proof monitor classifies output and manifest drift', async () => {
 
     assert.equal(outputChange?.kind, 'target');
   } finally {
-    outputMonitor.close();
+    await outputMonitor.close();
     fs.rmSync(root, { force: true, recursive: true });
   }
 });
@@ -290,7 +352,37 @@ test('source monitor ignores its build manifest but the run digest does not', as
     assert.equal(runtimeChange?.kind, 'source');
     assert.equal(runtimeChange?.path, runtimePath);
   } finally {
-    monitor.close();
+    await monitor.close();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test('source monitor leaves generated output identity to the content digest', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'plite-source-output-'));
+  const outputRoot = path.join(root, 'dist');
+  const runtimePath = path.join(outputRoot, 'runtime.js');
+
+  fs.mkdirSync(outputRoot);
+  fs.writeFileSync(runtimePath, 'runtime');
+  const initialDigest = hashEntries([outputRoot]);
+  const monitor = createProofIntegrityMonitor({
+    sourceEntries: [outputRoot],
+    sourceIgnoredPaths: [outputRoot],
+  });
+
+  try {
+    await waitForMonitorReady(monitor);
+    fs.writeFileSync(runtimePath, 'runtime');
+
+    assert.equal(await monitor.checkpoint(), null);
+    assert.equal(hashEntries([outputRoot]), initialDigest);
+
+    fs.writeFileSync(runtimePath, 'changed');
+
+    assert.equal(await monitor.checkpoint(), null);
+    assert.notEqual(hashEntries([outputRoot]), initialDigest);
+  } finally {
+    await monitor.close();
     fs.rmSync(root, { force: true, recursive: true });
   }
 });
@@ -332,7 +424,7 @@ test('target monitor ignores its build manifest but freshness does not', async (
     assert.equal(outputChange?.kind, 'target');
     assert.equal(outputChange?.path, outputPath);
   } finally {
-    monitor.close();
+    await monitor.close();
     fs.rmSync(root, { force: true, recursive: true });
   }
 });

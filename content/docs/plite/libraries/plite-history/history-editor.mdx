@@ -12,11 +12,11 @@ object.
 
 Read the full history value.
 
-#### `state.history.undos(): Batch[]`
+#### `state.history.undos(): readonly Batch[]`
 
 Read the undo stack.
 
-#### `state.history.redos(): Batch[]`
+#### `state.history.redos(): readonly Batch[]`
 
 Read the redo stack.
 
@@ -54,7 +54,7 @@ Run one update that merges into the previous compatible undo batch.
 
 #### `editor.update({ history: "new-batch" }, fn): void`
 
-Run one update where the first operation starts a fresh history batch, then the
+Run one update where the first write starts a fresh history batch, then the
 rest of the callback merges into that batch.
 
 Configure a direct write by calling `editor.update(policy)` first.
@@ -74,17 +74,37 @@ Redo the next history batch outside a larger transaction.
 ## Types
 
 ```typescript
-import type { EditorStatePatch, Operation, Range } from "@platejs/plite";
+import type {
+  DocumentChange,
+  EditorEffect,
+  EditorSchemaIdentity,
+  Selection,
+} from "@platejs/plite";
 
 type History = {
-  redos: Batch[];
-  undos: Batch[];
+  readonly redos: readonly Batch[];
+  readonly revision: number;
+  readonly schema: EditorSchemaIdentity | null;
+  readonly undos: readonly Batch[];
 };
 
 type Batch = {
-  operations: Operation[];
-  selectionBefore: Range | null;
-  selectionBeforeRoot?: string;
-  statePatches: EditorStatePatch[];
+  readonly change: DocumentChange;
+  readonly effects: readonly EditorEffect[];
+  readonly selectionAfter: Selection;
+  readonly selectionAfterRoot?: string;
+  readonly selectionBefore: Selection;
+  readonly selectionBeforeRoot?: string;
 };
 ```
+
+Persist the installed stacks with `History.toJSON(editor)`. Decode them with
+`History.fromJSON(editor, json)`, then install the returned value through
+`tx.history.restore(...)`. Custom standalone effects belong to an installed
+extension's `effects` resource so their keyed versioned codecs can decode the
+batch. The version 3 envelope includes the current schema identity and rejects
+mismatched schema semantics before decoding a batch.
+
+Compatible typing and same-node property updates coalesce from canonical
+`DocumentChange` classifications and changed ranges. Grouping fingerprints are
+runtime-only; loading persisted history starts a fresh automatic group.

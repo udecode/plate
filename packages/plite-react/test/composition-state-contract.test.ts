@@ -100,7 +100,7 @@ const createInputController = (
   });
 
 describe('composition state', () => {
-  it('keeps expanded native composition selections intact until input commits', () => {
+  it('predeletes expanded native composition selections before input commits', () => {
     const editor = createTextEditor();
     const event = createCompositionEvent('文');
     const setComposing = vi.fn();
@@ -119,11 +119,11 @@ describe('composition state', () => {
 
       expect(androidInputManager.handleCompositionStart).toHaveBeenCalled();
       expect(setComposing).toHaveBeenCalledWith(true);
-      expect(editorString(editor, [])).toBe('abcd');
+      expect(editorString(editor, [])).toBe('ad');
       expect(editorGetSelection(editor)).toEqual({
         kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 1 },
       });
     } finally {
       hasEditableTarget.mockRestore();

@@ -1,7 +1,71 @@
 export { defineEditorExtension } from './core/editor-extension';
-export { elementProperty } from './core/element-property';
+export { defineCommand } from './core/command-registry';
+export { editorCommands } from './core/editor-commands';
+export type {
+  AddMarkCommand,
+  CollapseSelectionCommand,
+  DeleteCommand,
+  DeleteFragmentCommand,
+  EditorCommands,
+  InsertBreakCommand,
+  InsertNodesCommand,
+  InsertSoftBreakCommand,
+  InsertTextCommand,
+  MoveSelectionCommand,
+  RemoveMarkCommand,
+  RemoveNodesCommand,
+  ReplaceSliceCommand,
+  SelectCommand,
+  SetNodesCommand,
+  SetSelectionCommand,
+  ToggleBlockCommand,
+  ToggleMarkCommand,
+} from './core/editor-commands';
+export { ContentSlice } from './core/content-slice';
+export type {
+  Anchor,
+  AnchorAssociation,
+  AnchorDeletionPolicy,
+  AnchorOptions,
+  AnchorValue,
+  RangeAnchorAssociation,
+} from './core/anchor';
+export { ChangeSet, DocumentChange } from './core/document-change';
+export type {
+  ChangeSection,
+  JsonEditorValue,
+  JsonNode,
+  NodePropertyDelta,
+} from './core/document-change';
+export { defineExtensionSlot } from './core/extension-slot';
+export type {
+  EditorExtensionSlot,
+  EditorExtensionSlotValue,
+} from './core/extension-slot';
+export {
+  defineEditorSchema,
+  property,
+  schema,
+  target,
+} from './core/schema-definition';
+export { definePropertyPolicy } from './interfaces/property-policy';
+export { EditorSchemaValidationError } from './core/schema-validation';
+export { defineFacet } from './core/facet';
 export { setEditorReadOnly } from './core/public-state';
 export { defineStateField } from './core/state-field';
+export { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
+export {
+  decodeEditorEffect,
+  defineValueCodec,
+  encodeEditorEffect,
+  valueCodecs,
+} from './core/value-codec';
+export {
+  defineEffect,
+  defineUpdateAnnotation,
+  invertEffect,
+  mapEffect,
+} from './core/transaction-values';
 export { txOnly } from './core/tx-only';
 export type { TxOnlyMethod } from './core/tx-only';
 export { createEditor } from './create-editor';
@@ -30,11 +94,9 @@ export {
   string,
   unhangRange,
 } from './interfaces/editor';
-export * from './interfaces/bookmark';
 export type {
   BaseEditor,
   CreateEditorOptions,
-  DirtyRegion,
   Editor,
   EditorAboveOptions,
   EditorBlockOptions,
@@ -44,49 +106,69 @@ export type {
   EditorClipboardInsertDataCapability,
   EditorClipboardInsertDataContext,
   EditorClipboardMiddlewareMap,
+  EditorCommand,
+  EditorCommandAroundHandler,
+  EditorCommandContinuation,
+  EditorCommandDispatch,
+  EditorCommandHandler,
+  EditorCommandResult,
   EditorCommit,
-  EditorCommitClass,
-  EditorCommitCommand,
+  EditorCommitChangeKind,
+  EditorCommitChanged,
   EditorCommitContext,
   EditorCommitHandler,
+  EditorCommitRuntimeChangeKind,
   EditorCommitSource,
+  EditorSliceReadOptions,
   EditorCoreStateView,
   EditorCoreUpdateMethods,
   EditorCoreUpdateTransaction,
+  EditorTransactionSliceApi,
   EditorDocumentValue,
+  EditorEffect,
+  EditorEffectCollabDecodeContext,
+  EditorEffectCollabEncodeContext,
+  EditorEffectCollabReplay,
+  EditorEffectCollabTransport,
+  EditorEffectType,
+  EditorValueCodec,
   EditorElementBehavior,
-  EditorElementContentRootSpec,
-  EditorElementPropertyDescriptor,
-  EditorElementPropertyKind,
-  EditorElementSpec,
-  EditorElementVoidKind,
   EditorExtension,
+  EditorExtensionApiFactory,
   EditorInstalledApiGroups,
   EditorInstalledStateGroups,
   EditorInstalledTxGroups,
+  EditorMarkToggleOptions,
+  EditorToggleMarkOptions,
   EditorExtensionInput,
+  EditorExtensionSlotLike,
   EditorNodeChangeContext,
   EditorNodeChangeHandler,
-  EditorExtensionOperations,
-  EditorExtensionRuntimeState,
-  EditorExtensionSetupContext,
-  EditorExtensionSetupOutput,
+  EditorExtensionActivationContext,
+  EditorExtensionCleanupContext,
+  EditorExtensionConfigurationContext,
+  EditorExtensionMigrationContext,
+  EditorExtensionReconfigureOptions,
+  EditorLifecycleError,
+  EditorLifecycleErrorSink,
+  EditorNodeChangeKind,
   EditorExtensionStateGroup,
   EditorExtensionStateGroups,
   EditorExtensionTxGroup,
   EditorExtensionTxGroups,
   EditorExtensionTypeProvider,
   EditorExtensionTypes,
+  EditorFacet,
+  EditorFacetComputeOptions,
+  EditorFacetDependency,
+  EditorFacetDocumentDependency,
+  EditorFacetProvider,
   EditorFragmentReadOptions,
+  EditorFragmentDeletionOptions,
   EditorIsEditorOptions,
   EditorMarks,
   EditorMarksOf,
-  EditorNotifiedNodeOperation,
-  EditorOperationApplyContext,
-  EditorOperationApplyHandler,
-  EditorOperationDirtinessOptions,
   EditorNodesOptions,
-  EditorPublicTransformMiddlewareKey,
   EditorQueryGroup,
   EditorQueryMiddlewareArgs,
   EditorQueryMiddlewareContext,
@@ -94,19 +176,23 @@ export type {
   EditorQueryMiddlewareResult,
   EditorRead,
   EditorReadMethods,
+  EditorStateSliceApi,
   EditorReplaceChildrenOptions,
   EditorReplaceNodeOptions,
   EditorRuntime,
   EditorRuntimeOptions,
   EditorSelectionBlockOptions,
+  EditorSelectionMapContext,
+  EditorSelectionSpec,
   EditorSelectionTargetOptions,
-  EditorSchemaApi,
+  EditorSchemaGetProperty,
+  EditorSchemaPropertyHandle,
+  EditorSchemaVocabulary,
   EditorSnapshot,
   EditorStateField,
   EditorStateFragmentApi,
   EditorStateMarksApi,
   EditorStateNodesApi,
-  EditorStatePatch,
   EditorStatePointsApi,
   EditorStateRangesApi,
   EditorStateRuntimeApi,
@@ -121,21 +207,28 @@ export type {
   EditorTextChangeHandler,
   EditorTransactionBlocksApi,
   EditorTransactionBreakApi,
+  EditorTransactionChangesApi,
+  EditorTransactionAnnotationsApi,
+  EditorTransactionEffectsApi,
+  EditorTransactionExtensionsApi,
   EditorTransactionFragmentApi,
+  EditorTransactionDraftRef,
   EditorTransactionMarksApi,
   EditorTransactionNodesApi,
-  EditorTransactionOperationsApi,
   EditorTransactionRefsApi,
   EditorTransactionRootsApi,
   EditorTransactionSelectionApi,
-  EditorTransactionStatePatchesApi,
+  EditorTransactionSpecBuilder,
   EditorTransactionTagsApi,
+  EditorTransactionChangeContext,
+  EditorTransactionChangeHandler,
+  EditorTransactionChanged,
+  EditorTransactionDocumentChangeKind,
+  EditorTransactionTopLevelRange,
   EditorTransactionTextApi,
   EditorTransactionValueApi,
-  EditorTransformMiddlewareArgs,
-  EditorTransformMiddlewareContext,
-  EditorTransformMiddlewareMap,
-  EditorTransformNext,
+  EditorBlockToggleOptions,
+  EditorToggleBlockOptions,
   EditorUpdateContext,
   EditorUpdate,
   EditorUpdateMethods,
@@ -143,16 +236,18 @@ export type {
   EditorUpdatePolicyFor,
   EditorUpdateTag,
   EditorUpdateTagInput,
+  EditorUpdateAnnotation,
   EditorUpdateTransaction,
+  EditorValueFromExtensions,
   EditorView,
   EditorViewOptions,
+  ExtensionsOf,
   InitialValue,
+  NamedRootKey,
   NodeTarget,
   ProjectedRangeSegment,
   RootKey,
   RuntimeId,
-  Selection,
-  SnapshotDirtyScope,
   SnapshotIndex,
   SnapshotInput,
   SnapshotListener,
@@ -161,23 +256,25 @@ export type {
   StateFieldHistoryPolicy,
   StateFieldInitial,
   StateFieldValueInput,
+  SerializedEditorEffect,
+  SerializedEditorSelection,
+  SerializedEditorValue,
   TargetFreshnessRequest,
   TopLevelRuntimeRange,
+  TransactionSpec,
   Value,
   ValueOf,
 } from './interfaces/editor';
 export * from './interfaces/element';
 export * from './interfaces/location';
 export * from './interfaces/node';
-export * from './interfaces/operation';
+export * from './interfaces/selection';
+export type * from './interfaces/schema';
+export type * from './interfaces/schema-validation';
 export * from './interfaces/path';
-export * from './interfaces/path-ref';
 export * from './interfaces/point';
-export * from './interfaces/point-ref';
 export * from './interfaces/range';
-export * from './interfaces/range-ref';
 export * from './interfaces/text';
-export type * from './interfaces/transforms/general';
 export type * from './interfaces/transforms/node';
 export type * from './interfaces/transforms/selection';
 export type * from './interfaces/transforms/text';

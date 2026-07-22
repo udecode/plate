@@ -17,6 +17,16 @@ import {
   subscribeSource as editorSubscribeSource,
 } from './editable/runtime-editor-api';
 import { recordPliteReactRender } from './render-profiler';
+import {
+  areMappedViewDataEqual,
+  createMappedViewStoreKernel,
+  createViewSourceFaultBoundary,
+} from './mapped-view-store';
+import { createStableIdMappedSource } from './stable-id-mapped-source';
+import type {
+  PliteViewSourceErrorSink,
+  PliteViewSourceStatus,
+} from './view-source';
 
 export type PliteRangeProjection<T = unknown> = {
   data?: T;
@@ -77,6 +87,7 @@ export type PliteSourceDirtiness =
 
 export type PliteProjectionStoreOptions = {
   dirtiness?: PliteSourceDirtiness;
+  onError?: PliteViewSourceErrorSink;
   runtimeScope?: PliteProjectionRuntimeScope;
   sourceId?: string;
 };
@@ -127,6 +138,7 @@ export type PliteProjectionStoreMetrics = Readonly<{
 export type PliteProjectionStore<T = unknown> = {
   destroy: () => void;
   getMetrics: () => PliteProjectionStoreMetrics;
+  getSourceStatus: () => PliteViewSourceStatus;
   getRuntimeSnapshot: (
     runtimeId: RuntimeId
   ) => readonly PliteProjectionSlice<T>[];
@@ -134,6 +146,7 @@ export type PliteProjectionStore<T = unknown> = {
   refresh: (
     options?: PliteProjectionStoreRefreshOptions
   ) => PliteProjectionRefreshResult;
+  retry: () => PliteProjectionRefreshResult;
   subscribe: (listener: () => void) => () => void;
   subscribeProjectionRefresh: (
     listener: PliteProjectionRefreshListener
@@ -144,10 +157,6 @@ export type PliteProjectionStore<T = unknown> = {
   ) => () => void;
   subscribeSourceId: (sourceId: string, listener: () => void) => () => void;
 };
-
-const EMPTY_SNAPSHOT = Object.freeze(
-  Object.create(null)
-) as PliteProjectionStoreSnapshot<unknown>;
 
 const EMPTY_METRICS = Object.freeze({
   changedRuntimeBucketCount: 0,
@@ -246,83 +255,22 @@ const isPliteSourceDirtinessList = (
   value: PliteSourceDirtiness
 ): value is readonly PliteSourceDirtinessClass[] => Array.isArray(value);
 
-const isPlainObject = (value: object) => {
-  const prototype = Object.getPrototypeOf(value);
-
-  return prototype === Object.prototype || prototype === null;
-};
-
-const isJsonComparable = (
-  value: unknown,
-  seen = new WeakSet<object>()
-): boolean => {
-  if (value === null) return true;
-
-  switch (typeof value) {
-    case 'boolean':
-    case 'string':
-      return true;
-    case 'number':
-      return Number.isFinite(value);
-    case 'object': {
-      if (seen.has(value)) return false;
-      if (Array.isArray(value)) {
-        seen.add(value);
-
-        return value.every((entry) => isJsonComparable(entry, seen));
-      }
-      if (!isPlainObject(value)) return false;
-
-      seen.add(value);
-
-      return Object.values(value).every((entry) =>
-        isJsonComparable(entry, seen)
-      );
-    }
-    default:
-      return false;
-  }
-};
-
-const areDataEqual = (left: unknown, right: unknown) => {
-  if (Object.is(left, right)) return true;
-  if (!isJsonComparable(left) || !isJsonComparable(right)) return false;
-
-  return JSON.stringify(left) === JSON.stringify(right);
-};
-
 const areSlicesEqual = <T>(
-  left: readonly PliteProjectionSlice<T>[],
-  right: readonly PliteProjectionSlice<T>[]
+  left: PliteProjectionSlice<T>,
+  right: PliteProjectionSlice<T>
 ) =>
-  left.length === right.length &&
-  left.every((slice, index) => {
-    const other = right[index];
+  left.key === right.key &&
+  left.start === right.start &&
+  left.end === right.end &&
+  areMappedViewDataEqual(left.data, right.data);
 
-    return Boolean(
-      other &&
-        slice.key === other.key &&
-        slice.start === other.start &&
-        slice.end === other.end &&
-        areDataEqual(slice.data, other.data)
-    );
-  });
-
-const getChangedRuntimeIds = (
-  left: PliteProjectionStoreSnapshot,
-  right: PliteProjectionStoreSnapshot
-) => {
-  const runtimeIds = new Set([...Object.keys(left), ...Object.keys(right)]);
-  const changedRuntimeIds: RuntimeId[] = [];
-
-  for (const runtimeId of runtimeIds) {
-    if (!areSlicesEqual(left[runtimeId] ?? [], right[runtimeId] ?? [])) {
-      changedRuntimeIds.push(runtimeId);
-    }
-  }
-
-  return changedRuntimeIds;
-};
+const areProjectionInputsEqual = <T>(
+  left: PliteProjection<T>,
+  right: PliteProjection<T>
+) =>
+  left.key === right.key &&
+  RangeApi.equals(left.range, right.range) &&
+  areMappedViewDataEqual(left.data, right.data);
 
 const matchesDirtinessClass = (
   dirtiness: PliteSourceDirtinessClass,
@@ -335,11 +283,11 @@ const matchesDirtinessClass = (
     case 'selection':
       return context.change.selectionChanged;
     case 'text':
-      return context.change.classes.includes('text');
+      return context.change.changed.hasAny('text');
     case 'mark':
-      return context.change.classes.includes('mark');
+      return context.change.changed.hasAny('marks');
     case 'node':
-      return context.change.childrenChanged;
+      return context.change.changed.hasAny('document');
     case 'annotation':
       return context.reason === 'annotation';
     case 'external':
@@ -485,7 +433,7 @@ const getScopedProjectionRanges = (
   };
 
   runtimeScope.forEach((runtimeId) => {
-    const path = snapshot.index.idToPath[runtimeId];
+    const path = snapshot.index.pathOf(runtimeId);
 
     if (!path) {
       return;
@@ -509,9 +457,7 @@ const isRuntimeScopeDirty = (
   runtimeScope: PliteProjectionRuntimeScope | undefined,
   context: PliteSourceDirtinessContext
 ) => {
-  const decorationImpactRuntimeIds = context.change?.decorationImpactRuntimeIds;
-
-  if (!decorationImpactRuntimeIds) {
+  if (!context.change) {
     return true;
   }
 
@@ -521,83 +467,62 @@ const isRuntimeScopeDirty = (
     return true;
   }
 
-  const impactedRuntimeIds = new Set(decorationImpactRuntimeIds);
-
   return scopedRuntimeIds.some((runtimeId) =>
-    impactedRuntimeIds.has(runtimeId)
+    context.change!.changed.hasRuntime(runtimeId, 'decoration')
   );
 };
 
-const buildProjectionSnapshot = <T>(
+const mapProjection = <T>(
   snapshot: EditorSnapshot,
-  projections: readonly PliteProjection<T>[],
+  projection: PliteProjection<T>,
   runtimeScope: readonly RuntimeId[] | null
-): {
+): Readonly<{
   invalidRangeDropCount: number;
+  outputs: readonly Readonly<{
+    key: RuntimeId;
+    value: PliteProjectionSlice<T>;
+  }>[];
   projectedRangeCount: number;
-  snapshot: PliteProjectionStoreSnapshot<T>;
-} => {
-  if (projections.length === 0) {
+}> => {
+  try {
+    const scopedRanges = getScopedProjectionRanges(
+      snapshot,
+      projection.range,
+      runtimeScope
+    );
+    const segments = scopedRanges.flatMap<ProjectedRangeSegment>(
+      (scopedRange) => [...projectRangeInSnapshot(snapshot, scopedRange)]
+    );
+
     return {
       invalidRangeDropCount: 0,
-      projectedRangeCount: 0,
-      snapshot: EMPTY_SNAPSHOT as PliteProjectionStoreSnapshot<T>,
+      outputs: Object.freeze(
+        segments.map((segment) => ({
+          key: segment.runtimeId,
+          value: Object.freeze({
+            data: projection.data,
+            end: segment.end,
+            key: projection.key,
+            start: segment.start,
+          }),
+        }))
+      ),
+      projectedRangeCount: scopedRanges.length,
     };
-  }
-
-  const projectionByRuntimeId: Record<string, PliteProjectionSlice<T>[]> =
-    Object.create(null);
-  let invalidRangeDropCount = 0;
-  let projectedRangeCount = 0;
-
-  projections.forEach((projection) => {
-    try {
-      const scopedRanges = getScopedProjectionRanges(
-        snapshot,
-        projection.range,
-        runtimeScope
-      );
-      const segments = scopedRanges.flatMap<ProjectedRangeSegment>(
-        (scopedRange) => [...projectRangeInSnapshot(snapshot, scopedRange)]
-      );
-      projectedRangeCount += scopedRanges.length;
-
-      segments.forEach((segment) => {
-        const entries = projectionByRuntimeId[segment.runtimeId] ?? [];
-        entries.push({
-          data: projection.data,
-          end: segment.end,
-          key: projection.key,
-          start: segment.start,
-        });
-        projectionByRuntimeId[segment.runtimeId] = entries;
-      });
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        INVALID_PROJECTION_RANGE_ERROR.test(error.message)
-      ) {
-        invalidRangeDropCount += 1;
-        return;
-      }
-
-      throw error;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      INVALID_PROJECTION_RANGE_ERROR.test(error.message)
+    ) {
+      return {
+        invalidRangeDropCount: 1,
+        outputs: Object.freeze([]),
+        projectedRangeCount: 0,
+      };
     }
-  });
 
-  Object.keys(projectionByRuntimeId).forEach((runtimeId) => {
-    projectionByRuntimeId[runtimeId] = Object.freeze(
-      projectionByRuntimeId[runtimeId]!
-    ) as PliteProjectionSlice<T>[];
-  });
-
-  return {
-    invalidRangeDropCount,
-    projectedRangeCount,
-    snapshot: Object.freeze(
-      projectionByRuntimeId
-    ) as PliteProjectionStoreSnapshot<T>,
-  };
+    throw error;
+  }
 };
 
 export const createPliteProjectionStore = <T>(
@@ -605,11 +530,13 @@ export const createPliteProjectionStore = <T>(
   source: PliteProjectionSource<T>,
   options: PliteProjectionStoreOptions = {}
 ): PliteProjectionStore<T> => {
-  const listeners = new Set<() => void>();
-  const runtimeListeners = new Map<RuntimeId, Set<() => void>>();
-  const sourceListeners = new Map<string, Set<() => void>>();
   const refreshListeners = new Set<PliteProjectionRefreshListener>();
   let destroyed = false;
+  const sourceId = options.sourceId ?? 'projection';
+  const faultBoundary = createViewSourceFaultBoundary({
+    id: sourceId,
+    onError: options.onError,
+  });
   const initialSnapshot = editorGetSnapshot(editor);
   const initialContext = {
     reason: 'refresh',
@@ -620,33 +547,77 @@ export const createPliteProjectionStore = <T>(
     options.runtimeScope,
     initialContext
   );
-  const initialBuild = buildProjectionSnapshot(
-    initialSnapshot,
-    source(initialSnapshot, {
-      ...initialContext,
-      runtimeScope: initialRuntimeScope,
-    }),
-    initialRuntimeScope
+  let mappingSnapshot = initialSnapshot;
+  let mappingRuntimeScope = initialRuntimeScope;
+  let mappedInvalidRangeDropCount = 0;
+  let mappedProjectedRangeCount = 0;
+  const readSource = (
+    snapshot: EditorSnapshot,
+    context: PliteSourceDirtinessContext,
+    runtimeScope: readonly RuntimeId[] | null
+  ) => {
+    const sourceResult = faultBoundary.run('read', () =>
+      profileProjectionStorePhase(
+        options.sourceId
+          ? `projection-store.source-read:${options.sourceId}`
+          : 'projection-store.source-read',
+        () => source(snapshot, { ...context, runtimeScope })
+      )
+    );
+
+    return sourceResult.ok ? sourceResult.value : null;
+  };
+  const initialProjections =
+    readSource(initialSnapshot, initialContext, initialRuntimeScope) ?? [];
+  const createMappedSource = (projections: readonly PliteProjection<T>[]) =>
+    createStableIdMappedSource<
+      PliteProjection<T>,
+      never,
+      PliteProjectionSlice<T>
+    >(projections, {
+      getId: (projection) => projection.key,
+      isItemEqual: areProjectionInputsEqual,
+      isOutputEqual: areSlicesEqual,
+      map: (projection) => {
+        const mapped = mapProjection(
+          mappingSnapshot,
+          projection,
+          mappingRuntimeScope
+        );
+        mappedInvalidRangeDropCount += mapped.invalidRangeDropCount;
+        mappedProjectedRangeCount += mapped.projectedRangeCount;
+
+        return {
+          outputs: mapped.outputs,
+        };
+      },
+    });
+  const initialMappedResult = faultBoundary.run('project', () =>
+    profileProjectionStorePhase(
+      options.sourceId
+        ? `projection-store.build-snapshot:${options.sourceId}`
+        : 'projection-store.build-snapshot',
+      () => createMappedSource(initialProjections)
+    )
+  );
+  if (!initialMappedResult.ok) {
+    mappedInvalidRangeDropCount = 0;
+    mappedProjectedRangeCount = 0;
+  }
+  const mappedSource = initialMappedResult.ok
+    ? initialMappedResult.value
+    : createMappedSource([]);
+  const store = createMappedViewStoreKernel(
+    mappedSource.getSnapshot().byOutputKey as PliteProjectionStoreSnapshot<T>
   );
   let metrics = Object.freeze({
     ...EMPTY_METRICS,
-    invalidRangeDropCount: initialBuild.invalidRangeDropCount,
-    projectedRangeCount: initialBuild.projectedRangeCount,
+    invalidRangeDropCount: mappedInvalidRangeDropCount,
+    projectedRangeCount: mappedProjectedRangeCount,
     sourceReadCount: 1,
   }) as PliteProjectionStoreMetrics;
-  let snapshot = initialBuild.snapshot;
-  const sourceProfileId = options.sourceId
-    ? `projection-store.source-read:${options.sourceId}`
-    : 'projection-store.source-read';
-  const buildProfileId = options.sourceId
-    ? `projection-store.build-snapshot:${options.sourceId}`
-    : 'projection-store.build-snapshot';
-  const diffProfileId = options.sourceId
-    ? `projection-store.diff-runtime-ids:${options.sourceId}`
-    : 'projection-store.diff-runtime-ids';
-  const notifyProfileId = options.sourceId
-    ? `projection-store.notify:${options.sourceId}`
-    : 'projection-store.notify';
+  const runtimeKey = (runtimeId: RuntimeId) => `runtime:${runtimeId}`;
+  const sourceKey = (id: string) => `source:${id}`;
 
   const emitProjectionRefresh = (result: PliteProjectionRefreshResult) => {
     if (!result.didChange) {
@@ -679,39 +650,82 @@ export const createPliteProjectionStore = <T>(
     }
 
     const runtimeScope = getRuntimeScope(options.runtimeScope, context);
-    const projections = profileProjectionStorePhase(sourceProfileId, () =>
-      source(context.snapshot, {
-        ...context,
-        runtimeScope,
-      })
+    const nextProjections = readSource(context.snapshot, context, runtimeScope);
+
+    if (!nextProjections) {
+      return createProjectionRefreshResult({
+        changedRuntimeIds: EMPTY_RUNTIME_IDS,
+        context,
+      });
+    }
+
+    mappingSnapshot = context.snapshot;
+    mappingRuntimeScope = runtimeScope;
+    const previousInvalidRangeDropCount = mappedInvalidRangeDropCount;
+    const previousProjectedRangeCount = mappedProjectedRangeCount;
+    const forceAll = context.forceInvalidate === true || runtimeScope !== null;
+    const forceIds = context.change
+      ? Array.from(
+          new Set([
+            ...mappedSource.getIdsForOutputKeys(
+              context.change.changed.runtimeIdsAll('decoration')
+            ),
+            ...(context.change.changed.hasAny('document')
+              ? mappedSource.getIdsWithoutOutputs()
+              : []),
+          ])
+        )
+      : undefined;
+    const refreshResult = faultBoundary.run('project', () =>
+      profileProjectionStorePhase(
+        options.sourceId
+          ? `projection-store.map-source:${options.sourceId}`
+          : 'projection-store.map-source',
+        () =>
+          mappedSource.refresh(nextProjections, {
+            forceAll,
+            forceIds,
+          })
+      )
     );
-    const nextBuild = profileProjectionStorePhase(buildProfileId, () =>
-      buildProjectionSnapshot(context.snapshot, projections, runtimeScope)
-    );
-    const nextSnapshot = nextBuild.snapshot;
-    const fullFallbackCount = context.forceInvalidate || !runtimeScope ? 1 : 0;
+
+    if (!refreshResult.ok) {
+      return createProjectionRefreshResult({
+        changedRuntimeIds: EMPTY_RUNTIME_IDS,
+        context,
+      });
+    }
+
+    const nextSnapshot = mappedSource.getSnapshot()
+      .byOutputKey as PliteProjectionStoreSnapshot<T>;
+    const fullFallbackCount =
+      refreshResult.value.fullFallback || forceAll ? 1 : 0;
 
     metrics = Object.freeze({
       ...metrics,
       fullFallbackCount: metrics.fullFallbackCount + fullFallbackCount,
       invalidRangeDropCount:
-        metrics.invalidRangeDropCount + nextBuild.invalidRangeDropCount,
+        metrics.invalidRangeDropCount +
+        (mappedInvalidRangeDropCount - previousInvalidRangeDropCount),
       projectedRangeCount:
-        metrics.projectedRangeCount + nextBuild.projectedRangeCount,
+        metrics.projectedRangeCount +
+        (mappedProjectedRangeCount - previousProjectedRangeCount),
       sourceReadCount: metrics.sourceReadCount + 1,
     });
 
-    const changedRuntimeIds = profileProjectionStorePhase(diffProfileId, () =>
-      context.forceInvalidate
-        ? Array.from(
-            new Set([
-              ...Object.keys(snapshot),
-              ...Object.keys(nextSnapshot),
-              ...runtimeListeners.keys(),
-            ])
-          )
-        : getChangedRuntimeIds(snapshot, nextSnapshot)
-    );
+    const currentSnapshot = store.getSnapshot();
+    const changedRuntimeIds = context.forceInvalidate
+      ? Array.from(
+          new Set([
+            ...Object.keys(currentSnapshot),
+            ...Object.keys(nextSnapshot),
+            ...store
+              .getSubscribedKeys()
+              .filter((key) => key.startsWith('runtime:'))
+              .map((key) => key.slice('runtime:'.length)),
+          ])
+        )
+      : (refreshResult.value.changedOutputKeys as readonly RuntimeId[]);
 
     if (changedRuntimeIds.length === 0) {
       return createProjectionRefreshResult({
@@ -720,43 +734,35 @@ export const createPliteProjectionStore = <T>(
       });
     }
 
-    const runtimeSubscriberWakeCount = changedRuntimeIds.reduce(
-      (count, runtimeId) =>
-        count + (runtimeListeners.get(runtimeId)?.size ?? 0),
-      0
-    );
+    const runtimeKeys = changedRuntimeIds.map(runtimeKey);
+    const runtimeSubscriberWakeCount = store.countKeySubscribers(runtimeKeys);
     const sourceSubscriberWakeCount = options.sourceId
-      ? (sourceListeners.get(options.sourceId)?.size ?? 0)
+      ? store.countKeySubscribers([sourceKey(options.sourceId)])
       : 0;
+    const globalSubscriberWakeCount = store.subscriberCount();
 
-    snapshot = nextSnapshot;
     metrics = Object.freeze({
       ...metrics,
       changedRuntimeBucketCount:
         metrics.changedRuntimeBucketCount + changedRuntimeIds.length,
       globalSubscriberWakeCount:
-        metrics.globalSubscriberWakeCount + listeners.size,
+        metrics.globalSubscriberWakeCount + globalSubscriberWakeCount,
       recomputeCount: metrics.recomputeCount + 1,
       runtimeSubscriberWakeCount:
         metrics.runtimeSubscriberWakeCount + runtimeSubscriberWakeCount,
       sourceSubscriberWakeCount:
         metrics.sourceSubscriberWakeCount + sourceSubscriberWakeCount,
     });
-    profileProjectionStorePhase(notifyProfileId, () => {
-      listeners.forEach((listener) => {
-        listener();
-      });
-      changedRuntimeIds.forEach((runtimeId) => {
-        runtimeListeners.get(runtimeId)?.forEach((listener) => {
-          listener();
-        });
-      });
-      if (options.sourceId) {
-        sourceListeners.get(options.sourceId)?.forEach((listener) => {
-          listener();
-        });
-      }
-    });
+    profileProjectionStorePhase(
+      options.sourceId
+        ? `projection-store.notify:${options.sourceId}`
+        : 'projection-store.notify',
+      () =>
+        store.publish(nextSnapshot, [
+          ...runtimeKeys,
+          ...(options.sourceId ? [sourceKey(options.sourceId)] : []),
+        ])
+    );
 
     const result = createProjectionRefreshResult({
       changedRuntimeIds,
@@ -794,25 +800,26 @@ export const createPliteProjectionStore = <T>(
     destroy() {
       if (destroyed) return;
       destroyed = true;
-      listeners.clear();
-      runtimeListeners.clear();
-      sourceListeners.clear();
+      store.destroy();
       refreshListeners.clear();
       unsubscribe();
     },
     getMetrics() {
       return metrics;
     },
+    getSourceStatus() {
+      return faultBoundary.getStatus();
+    },
     getRuntimeSnapshot(runtimeId) {
       return (
-        (snapshot[runtimeId] as
+        (store.getSnapshot()[runtimeId] as
           | readonly PliteProjectionSlice<T>[]
           | undefined) ??
         (EMPTY_RUNTIME_SNAPSHOT as readonly PliteProjectionSlice<T>[])
       );
     },
     getSnapshot() {
-      return snapshot;
+      return store.getSnapshot();
     },
     refresh(refreshOptions = {}) {
       if (
@@ -841,11 +848,18 @@ export const createPliteProjectionStore = <T>(
         sourceId: options.sourceId,
       });
     },
+    retry() {
+      faultBoundary.activate();
+
+      return recompute({
+        forceInvalidate: true,
+        reason: 'refresh',
+        snapshot: editorGetSnapshot(editor),
+        sourceId: options.sourceId,
+      });
+    },
     subscribe(listener) {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
+      return store.subscribe(listener);
     },
     subscribeProjectionRefresh(listener) {
       refreshListeners.add(listener);
@@ -854,29 +868,10 @@ export const createPliteProjectionStore = <T>(
       };
     },
     subscribeRuntimeId(runtimeId, listener) {
-      const listenersForRuntimeId =
-        runtimeListeners.get(runtimeId) ?? new Set();
-      listenersForRuntimeId.add(listener);
-      runtimeListeners.set(runtimeId, listenersForRuntimeId);
-
-      return () => {
-        listenersForRuntimeId.delete(listener);
-        if (listenersForRuntimeId.size === 0) {
-          runtimeListeners.delete(runtimeId);
-        }
-      };
+      return store.subscribeKey(runtimeKey(runtimeId), listener);
     },
     subscribeSourceId(sourceId, listener) {
-      const listenersForSourceId = sourceListeners.get(sourceId) ?? new Set();
-      listenersForSourceId.add(listener);
-      sourceListeners.set(sourceId, listenersForSourceId);
-
-      return () => {
-        listenersForSourceId.delete(listener);
-        if (listenersForSourceId.size === 0) {
-          sourceListeners.delete(sourceId);
-        }
-      };
+      return store.subscribeKey(sourceKey(sourceId), listener);
     },
   };
 };

@@ -198,7 +198,7 @@ const readScopedPliteViewSelectionDecorations = (
   const scopedPaths: Path[] = [];
 
   context.runtimeScope.forEach((runtimeId) => {
-    const path = context.snapshot.index.idToPath[runtimeId];
+    const path = context.snapshot.index.pathOf(runtimeId);
 
     if (!path) {
       return;

@@ -1,20 +1,14 @@
-import { getExtensionRegistry } from '../core/extension-registry';
 import {
-  appendOperation,
-  applyOperation,
-  getEditorOperationRoot,
+  applyBuiltDocumentChange,
+  getActiveUpdateRoot,
   runEditorTransaction,
-  setChildren,
 } from '../core/public-state';
 import { getEditorSchema } from '../core/editor-runtime';
-import { getEditorTransformRegistry } from '../core/transform-registry';
-import { updateDirtyPaths } from '../core/update-dirty-paths';
 import { node as editorNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { end as editorEnd } from '../editor/end';
 import { LocationApi } from '../interfaces';
 import {
-  getChildren as editorGetChildren,
   isBlock as editorIsBlock,
   isEnd as editorIsEnd,
   isStart as editorIsStart,
@@ -23,140 +17,33 @@ import {
   range as editorRange,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
+import type { Editor, Value } from '../interfaces/editor';
 import type { NodeMatchPredicate } from '../interfaces/node';
-import { type Descendant, type Node, NodeApi } from '../interfaces/node';
-import type { Operation } from '../interfaces/operation';
+import { type Node, NodeApi } from '../interfaces/node';
 import { PathApi } from '../interfaces/path';
 import { type Range, RangeApi } from '../interfaces/range';
-import { NON_SETTABLE_NODE_PROPERTIES } from '../interfaces/transforms/general';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import { select } from '../transforms-selection/select';
+import { splitNodes } from './split-nodes';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { matchPath } from '../utils/match-path';
-import { inheritRuntimeId } from '../utils/runtime-ids';
-
-type SetNodeOperation = Extract<Operation, { type: 'set_node' }>;
-
-const applySetNodeProperties = <T extends Descendant>(
-  node: T,
-  operation: SetNodeOperation,
-  editor: Parameters<typeof inheritRuntimeId>[2]
-): T => {
-  const newNode = { ...node } as T;
-
-  for (const key in operation.newProperties) {
-    if (!Object.hasOwn(operation.newProperties, key)) {
-      continue;
-    }
-
-    const value = operation.newProperties[key as keyof Node];
-
-    if (value == null) {
-      delete newNode[key as keyof T];
-    } else {
-      newNode[key as keyof T] = value as T[keyof T];
-    }
-  }
-
-  for (const key in operation.properties) {
-    if (
-      Object.hasOwn(operation.properties, key) &&
-      !Object.hasOwn(operation.newProperties, key)
-    ) {
-      delete newNode[key as keyof T];
-    }
-  }
-
-  inheritRuntimeId(newNode, node, editor);
-
-  return newNode;
+type SetNodeUpdate = {
+  newProperties: Record<string, unknown>;
+  path: number[];
+  properties: Record<string, unknown>;
 };
 
-const applySetNodeAtRelativePath = <T extends Descendant>(
-  node: T,
-  relativePath: readonly number[],
-  operation: SetNodeOperation,
-  editor: Parameters<typeof inheritRuntimeId>[2]
-): T => {
-  if (relativePath.length === 0) {
-    return applySetNodeProperties(node, operation, editor);
-  }
+const NON_SETTABLE_NODE_PROPERTIES = [
+  'children',
+  'text',
+  ...Object.getOwnPropertyNames(Object.prototype),
+];
 
-  if (!NodeApi.isElement(node)) {
-    return node;
-  }
-
-  const [index, ...restPath] = relativePath;
-  const child = typeof index === 'number' ? node.children[index] : undefined;
-
-  if (!child) {
-    return node;
-  }
-
-  const children = [...node.children];
-  children[index!] = applySetNodeAtRelativePath(
-    child,
-    restPath,
-    operation,
-    editor
-  );
-
-  const newNode = { ...node, children } as T;
-
-  inheritRuntimeId(newNode, node, editor);
-
-  return newNode;
-};
-
-const canApplySetNodeBatch = (
-  editor: Parameters<NodeMutationMethods['setNodes']>[0],
-  operations: readonly SetNodeOperation[]
-) =>
-  operations.length > 1 &&
-  operations.every((operation) => operation.path.length > 0) &&
-  getExtensionRegistry(editor).operationMiddlewares.size === 0;
-
-const applySetNodeBatch = (
-  editor: Parameters<NodeMutationMethods['setNodes']>[0],
-  operations: readonly SetNodeOperation[]
-) => {
-  const root = getEditorOperationRoot(editor);
-  const children = editorGetChildren(editor);
-  const nextChildren = [...children];
-
-  for (const operation of operations) {
-    const index = operation.path[0];
-    const node = typeof index === 'number' ? nextChildren[index] : undefined;
-
-    if (!node) {
-      continue;
-    }
-
-    nextChildren[index] = applySetNodeAtRelativePath(
-      node,
-      operation.path.slice(1),
-      operation,
-      editor
-    );
-  }
-
-  setChildren(editor, nextChildren);
-
-  updateDirtyPaths(
-    editor,
-    operations.flatMap((operation) => PathApi.levels(operation.path)),
-    undefined,
-    { root }
-  );
-
-  for (const operation of operations) {
-    const rootedOperation = { ...operation, root };
-
-    appendOperation(editor, rootedOperation);
-  }
-};
-
-const trimSplitRangeEndAtTextStart = (
-  editor: Parameters<NodeMutationMethods['setNodes']>[0],
+const trimSplitRangeEndAtTextStart = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>,
   range: Range,
   match: NodeMatchPredicate<Node>
 ): Range => {
@@ -194,7 +81,6 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
   options = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
-    const transforms = getEditorTransformRegistry(editor);
     const {
       at: optionAt,
       compare: optionCompare,
@@ -217,6 +103,12 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
     if (!at) {
       return;
     }
+    const root =
+      (LocationApi.isRange(at)
+        ? (at.anchor.root ?? at.focus.root)
+        : undefined) ??
+      getActiveUpdateRoot(editor) ??
+      'main';
 
     if (marks) {
       if (LocationApi.isPath(at)) {
@@ -227,6 +119,10 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
       }
 
       const originalMatch = match;
+      const markKeys = Object.keys(props).filter(
+        (key) => !NON_SETTABLE_NODE_PROPERTIES.includes(key)
+      );
+
       const marksMatch: NodeMatchPredicate<Node> = (node, path) => {
         if (!NodeApi.isText(node)) {
           return false;
@@ -242,8 +138,11 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
         }
 
         return (
-          !getEditorSchema(editor).isVoid(parentNode) ||
-          getEditorSchema(editor).markableVoid(parentNode)
+          markKeys.every((key) =>
+            getEditorSchema(editor).isTextPropertyAllowedAt(key, path, root)
+          ) &&
+          (!getEditorSchema(editor).isVoid(parentNode) ||
+            getEditorSchema(editor).markableVoid(parentNode))
         );
       };
       const isExpandedRange = RangeApi.isExpanded(at);
@@ -289,13 +188,14 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
         // set that won't get normalized away
         return;
       }
-      const rangeRef = tx.refs.range(at, {
-        affinity: 'inward',
+      const rangeAnchor = editor.anchor(at, {
+        association: 'inward',
+        deletion: 'nearest',
       });
       const [start, end] = RangeApi.edges(at);
       const splitMode = mode === 'lowest' ? 'lowest' : 'highest';
       const endAtEndOfNode = editorIsEnd(editor, end, end.path);
-      transforms.splitNodes({
+      splitNodes(editor, {
         at: end,
         match,
         mode: splitMode,
@@ -303,21 +203,21 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
         always: !endAtEndOfNode,
       });
       const startAtStartOfNode = editorIsStart(editor, start, start.path);
-      transforms.splitNodes({
+      splitNodes(editor, {
         at: start,
         match,
         mode: splitMode,
         voids,
         always: !startAtStartOfNode,
       });
-      at = rangeRef.unref()!;
+      at = rangeAnchor.release()!;
 
       if (optionAt !== undefined && LocationApi.isRange(at)) {
         at = trimSplitRangeEndAtTextStart(editor, at, match);
       }
 
       if (options.at == null) {
-        transforms.select(at);
+        select(editor, at);
       }
     }
 
@@ -325,7 +225,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
       compare = (prop, nodeProp) => prop !== nodeProp;
     }
 
-    const operations: SetNodeOperation[] = [];
+    const updates: SetNodeUpdate[] = [];
 
     for (const [node, path] of getNodes(editor, {
       at,
@@ -361,13 +261,68 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
           // Omit properties that have been removed from the new properties list
           if (merge) {
             if (newValue != null) newProperties[k] = merge(value, newValue);
-          } else if (newValue != null) newProperties[k] = newValue;
+          } else if (newValue != null) {
+            newProperties[k] = marks
+              ? getEditorSchema(editor).mergeTextPropertyAt(
+                  k,
+                  value,
+                  newValue,
+                  path,
+                  root
+                )
+              : newValue;
+          }
         }
       }
 
       if (hasChanges) {
-        operations.push({
-          type: 'set_node',
+        if (NodeApi.isElement(node) && typeof newProperties.type === 'string') {
+          const nextParent = { ...node, ...newProperties };
+          const preservedElementProperties = getEditorSchema(
+            editor
+          ).elementPropertiesForTypeChangeAt(node, nextParent, path, root);
+
+          for (const [key, value] of Object.entries(
+            NodeApi.extractProps(node)
+          )) {
+            if (
+              key === 'type' ||
+              Object.hasOwn(props, key) ||
+              Object.hasOwn(preservedElementProperties, key)
+            ) {
+              continue;
+            }
+            properties[key] = value;
+          }
+
+          node.children.forEach((child, index) => {
+            if (!NodeApi.isText(child)) return;
+
+            const preserved = getEditorSchema(
+              editor
+            ).textPropertiesForTypeChangeAt(
+              child,
+              node,
+              nextParent,
+              path.concat(index),
+              root
+            );
+            const removedProperties = Object.fromEntries(
+              Object.entries(NodeApi.extractProps(child)).filter(
+                ([key]) => !Object.hasOwn(preserved, key)
+              )
+            );
+
+            if (Object.keys(removedProperties).length === 0) return;
+
+            updates.push({
+              path: path.concat(index),
+              properties: removedProperties,
+              newProperties: {},
+            });
+          });
+        }
+        updates.push({
           path,
           properties,
           newProperties,
@@ -375,13 +330,15 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
       }
     }
 
-    if (canApplySetNodeBatch(editor, operations)) {
-      applySetNodeBatch(editor, operations);
-      return;
-    }
-
-    for (const operation of operations) {
-      applyOperation(editor, operation);
+    for (const update of updates) {
+      applyBuiltDocumentChange(editor, (builder, root) =>
+        builder.setNode(
+          root,
+          update.path,
+          update.newProperties,
+          update.properties
+        )
+      );
     }
   });
 };

@@ -55,8 +55,17 @@ const runTsdown = (watch = false) => {
 
   if (!watch && result.status === 0) {
     const buildTsconfig = path.join(INIT_CWD, 'tsconfig.build.json');
+    const declarations = runPnpm('tsc', ['-p', buildTsconfig]);
 
-    return runPnpm('tsc', ['-p', buildTsconfig]);
+    if (declarations.status !== 0) return declarations;
+
+    return run(process.execPath, [
+      path.join(
+        PROJECT_CWD,
+        'tooling/scripts/check-package-declaration-brands.mjs'
+      ),
+      INIT_CWD,
+    ]);
   }
 
   return result;
@@ -82,9 +91,9 @@ switch (command) {
     break;
   case 'p:test': {
     const bunTestArgs = [
+      '--config',
+      path.join(PROJECT_CWD, 'bunfig.toml'),
       'test',
-      '--preload',
-      path.join(PROJECT_CWD, 'tooling/config/bunTestSetup.ts'),
       ...commandArgs,
     ];
     result = runPnpm('bun', bunTestArgs);
@@ -92,18 +101,18 @@ switch (command) {
   }
   case 'p:test:watch': {
     const bunTestArgs = [
+      '--config',
+      path.join(PROJECT_CWD, 'bunfig.toml'),
       'test',
       '--watch',
-      '--preload',
-      path.join(PROJECT_CWD, 'tooling/config/bunTestSetup.ts'),
       ...commandArgs,
     ];
     result = runPnpm('bun', bunTestArgs);
     break;
   }
   case 'p:typecheck':
-    result = runPnpm('tsc', [
-      '-p',
+    result = run(process.execPath, [
+      path.join(PROJECT_CWD, 'tooling/scripts/typecheck-package-source.mjs'),
       path.join(INIT_CWD, 'tsconfig.json'),
       ...commandArgs,
     ]);

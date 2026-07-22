@@ -49,7 +49,7 @@ export const BasicMarksKit = [
   }),
   CodePlugin.configure({
     inputRules: [CodeRules.markdown()],
-    node: { component: CodeLeaf },
+    render: { node: CodeLeaf },
     shortcuts: { toggle: { keys: 'mod+e' } },
   }),
   StrikethroughPlugin.configure({
@@ -69,7 +69,7 @@ export const BasicMarksKit = [
       HighlightRules.markdown({ variant: '==' }),
       HighlightRules.markdown({ variant: '≡' }),
     ],
-    node: { component: HighlightLeaf },
+    render: { node: HighlightLeaf },
     shortcuts: { toggle: { keys: 'mod+shift+h' } },
   }),
   KbdPlugin.withComponent(KbdLeaf),

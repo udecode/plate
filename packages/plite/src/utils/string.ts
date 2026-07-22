@@ -74,42 +74,277 @@ export const getCharacterDistance = (str: string, isRTL = false): number => {
   return distance || 1;
 };
 
-const SPACE = /\s/;
-const PUNCTUATION =
-  /[\u002B\u0021-\u0023\u0025-\u002A\u002C-\u002F\u003A\u003B\u003F\u0040\u005B-\u005D\u005F\u007B\u007D\u00A1\u00A7\u00AB\u00B6\u00B7\u00BB\u00BF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u0AF0\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166D\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E3B\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]/;
-const CHAMELEON = /['\u2018\u2019]/;
+type WordSegmentKind = 'emoji' | 'separator' | 'word';
+
+type WordSegment = {
+  kind: WordSegmentKind;
+  length: number;
+};
+
+type CodePoint = {
+  code: number;
+  length: number;
+};
+
+const codePointAt = (text: string, offset: number): CodePoint => {
+  const code = text.codePointAt(offset)!;
+
+  return { code, length: code > 0xff_ff ? 2 : 1 };
+};
+
+const inRange = (code: number, start: number, end: number) =>
+  code >= start && code <= end;
+
+/**
+ * Plite's Unicode 17 word-navigation profile avoids host ICU data. CJK
+ * scripts use one Unicode scalar per word unit; other scripts form runs.
+ */
+const isCjkScalar = (code: number) =>
+  inRange(code, 0x2e_80, 0x2f_ff) ||
+  code === 0x30_07 ||
+  inRange(code, 0x30_40, 0x30_ff) ||
+  inRange(code, 0x31_00, 0x31_2f) ||
+  inRange(code, 0x31_a0, 0x31_bf) ||
+  inRange(code, 0x31_f0, 0x31_ff) ||
+  inRange(code, 0x34_00, 0x4d_bf) ||
+  inRange(code, 0x4e_00, 0x9f_ff) ||
+  inRange(code, 0xac_00, 0xd7_a3) ||
+  inRange(code, 0xf9_00, 0xfa_ff) ||
+  inRange(code, 0x2_00_00, 0x2_a6_df) ||
+  inRange(code, 0x2_a7_00, 0x2_b7_3f) ||
+  inRange(code, 0x2_b7_40, 0x2_b8_1f) ||
+  inRange(code, 0x2_b8_20, 0x2_ce_af) ||
+  inRange(code, 0x2_ce_b0, 0x2_eb_ef) ||
+  inRange(code, 0x2_eb_f0, 0x2_ee_5f) ||
+  inRange(code, 0x2_f8_00, 0x2_fa_1f) ||
+  inRange(code, 0x3_00_00, 0x3_34_7f);
+
+const isCombiningContinuation = (code: number) =>
+  inRange(code, 0x03_00, 0x03_6f) ||
+  inRange(code, 0x1a_b0, 0x1a_ff) ||
+  inRange(code, 0x1d_c0, 0x1d_ff) ||
+  inRange(code, 0x20_d0, 0x20_ff) ||
+  inRange(code, 0x30_2a, 0x30_2f) ||
+  inRange(code, 0x30_99, 0x30_9a) ||
+  inRange(code, 0xfe_00, 0xfe_0f) ||
+  inRange(code, 0xfe_20, 0xfe_2f) ||
+  inRange(code, 0x1_6f_e4, 0x1_6f_e4) ||
+  inRange(code, 0x1_6f_f0, 0x1_6f_f1) ||
+  inRange(code, 0xe_01_00, 0xe_01_ef);
+
+const isEmojiBase = (code: number) =>
+  code === 0x00_a9 ||
+  code === 0x00_ae ||
+  code === 0x20_3c ||
+  code === 0x20_49 ||
+  code === 0x21_22 ||
+  code === 0x21_39 ||
+  inRange(code, 0x21_94, 0x21_ff) ||
+  inRange(code, 0x23_00, 0x23_ff) ||
+  inRange(code, 0x25_00, 0x27_bf) ||
+  inRange(code, 0x2b_00, 0x2b_ff) ||
+  inRange(code, 0x1_f0_00, 0x1_fa_ff);
+
+const isEmojiContinuation = (code: number) =>
+  code === 0x20_0d ||
+  code === 0x20_e3 ||
+  inRange(code, 0xfe_00, 0xfe_0f) ||
+  inRange(code, 0x1_f3_fb, 0x1_f3_ff) ||
+  inRange(code, 0xe_00_20, 0xe_00_7f);
+
+const isKeycapBase = (code: number) =>
+  code === 0x00_23 || code === 0x00_2a || inRange(code, 0x00_30, 0x00_39);
+
+const getEmojiLength = (text: string, offset: number) => {
+  const first = codePointAt(text, offset);
+  let cursor = offset + first.length;
+
+  if (isKeycapBase(first.code)) {
+    const variation = cursor < text.length ? codePointAt(text, cursor) : null;
+
+    if (variation?.code === 0xfe_0f) cursor += variation.length;
+
+    const keycap = cursor < text.length ? codePointAt(text, cursor) : null;
+
+    return keycap?.code === 0x20_e3 ? cursor + keycap.length - offset : 0;
+  }
+
+  if (!isEmojiBase(first.code)) return 0;
+
+  while (cursor < text.length) {
+    const next = codePointAt(text, cursor);
+
+    if (next.code === 0x20_0d) {
+      const joinedOffset = cursor + next.length;
+
+      if (joinedOffset >= text.length) break;
+
+      const joined = codePointAt(text, joinedOffset);
+
+      if (!isEmojiBase(joined.code)) break;
+
+      cursor = joinedOffset + joined.length;
+      continue;
+    }
+    if (!isEmojiContinuation(next.code)) break;
+
+    cursor += next.length;
+  }
+
+  return cursor - offset;
+};
+
+const isWordSeparator = (code: number) =>
+  code <= 0x00_2f ||
+  inRange(code, 0x00_3a, 0x00_40) ||
+  inRange(code, 0x00_5b, 0x00_60) ||
+  inRange(code, 0x00_7b, 0x00_bf) ||
+  code === 0x00_d7 ||
+  code === 0x00_f7 ||
+  inRange(code, 0x20_00, 0x20_cf) ||
+  inRange(code, 0x21_00, 0x23_ff) ||
+  inRange(code, 0x25_00, 0x2b_ff) ||
+  inRange(code, 0x2e_00, 0x2e_7f) ||
+  inRange(code, 0x30_00, 0x30_3f) ||
+  inRange(code, 0xfe_10, 0xfe_1f) ||
+  inRange(code, 0xfe_30, 0xfe_4f) ||
+  inRange(code, 0xff_01, 0xff_0f) ||
+  inRange(code, 0xff_1a, 0xff_20) ||
+  inRange(code, 0xff_3b, 0xff_40) ||
+  inRange(code, 0xff_5b, 0xff_65) ||
+  inRange(code, 0xff_f0, 0xff_ff);
+
+const isApostrophe = (code: number) => code === 0x00_27 || code === 0x20_19;
+
+const isWordCore = (code: number) =>
+  !isCjkScalar(code) && !isEmojiBase(code) && !isWordSeparator(code);
+
+const consumeContinuations = (text: string, offset: number) => {
+  let cursor = offset;
+
+  while (cursor < text.length) {
+    const next = codePointAt(text, cursor);
+
+    if (!isCombiningContinuation(next.code)) break;
+
+    cursor += next.length;
+  }
+
+  return cursor;
+};
+
+const getWordSegments = (text: string, isRTL: boolean): WordSegment[] => {
+  const segments: WordSegment[] = [];
+
+  for (let offset = 0; offset < text.length; ) {
+    const emojiLength = getEmojiLength(text, offset);
+
+    if (emojiLength > 0) {
+      segments.push({ kind: 'emoji', length: emojiLength });
+      offset += emojiLength;
+      continue;
+    }
+
+    const first = codePointAt(text, offset);
+
+    if (isCjkScalar(first.code)) {
+      const end = consumeContinuations(text, offset + first.length);
+
+      segments.push({ kind: 'word', length: end - offset });
+      offset = end;
+      continue;
+    }
+
+    if (isWordCore(first.code)) {
+      let cursor = consumeContinuations(text, offset + first.length);
+
+      while (cursor < text.length) {
+        const next = codePointAt(text, cursor);
+
+        if (isWordCore(next.code)) {
+          cursor = consumeContinuations(text, cursor + next.length);
+          continue;
+        }
+
+        if (isApostrophe(next.code)) {
+          const afterOffset = cursor + next.length;
+          const after =
+            afterOffset < text.length ? codePointAt(text, afterOffset) : null;
+
+          if (after && isWordCore(after.code)) {
+            cursor = consumeContinuations(text, afterOffset + after.length);
+            continue;
+          }
+        }
+
+        break;
+      }
+
+      segments.push({ kind: 'word', length: cursor - offset });
+      offset = cursor;
+      continue;
+    }
+
+    segments.push({ kind: 'separator', length: first.length });
+    offset += first.length;
+  }
+
+  return isRTL ? segments.reverse() : segments;
+};
+
+/**
+ * Get the directional distances between word-navigation boundaries.
+ *
+ * Separators attach to the following word in the direction of travel. Unicode
+ * non-CJK word runs each form one unit, CJK uses stable scalar boundaries,
+ * and adjacent emoji form one unit together.
+ */
+export const getWordDistances = (text: string, isRTL = false): number[] => {
+  const segments = getWordSegments(text, isRTL);
+  const distances: number[] = [];
+  let pendingDistance = 0;
+
+  for (let index = 0; index < segments.length; ) {
+    const segment = segments[index]!;
+
+    if (segment.kind === 'separator') {
+      pendingDistance += segment.length;
+      index++;
+      continue;
+    }
+
+    if (segment.kind === 'word') {
+      distances.push(pendingDistance + segment.length);
+      pendingDistance = 0;
+      index++;
+      continue;
+    }
+
+    let distance = pendingDistance;
+
+    pendingDistance = 0;
+
+    while (segments[index]?.kind === 'emoji') {
+      distance += segments[index]!.length;
+      index++;
+    }
+
+    distances.push(distance);
+  }
+
+  if (pendingDistance > 0) {
+    distances.push(pendingDistance);
+  }
+
+  return distances;
+};
 
 /**
  * Get the distance to the end of the first word in a string of text.
  */
 
-export const getWordDistance = (text: string, isRTL = false): number => {
-  let remainingText = text;
-  let dist = 0;
-  let started = false;
-
-  while (remainingText.length > 0) {
-    const charDist = getCharacterDistance(remainingText, isRTL);
-    const [char, remaining] = splitByCharacterDistance(
-      remainingText,
-      charDist,
-      isRTL
-    );
-
-    if (isWordCharacter(char, remaining, isRTL)) {
-      started = true;
-      dist += charDist;
-    } else if (started) {
-      break;
-    } else {
-      dist += charDist;
-    }
-
-    remainingText = remaining;
-  }
-
-  return dist;
-};
+export const getWordDistance = (text: string, isRTL = false): number =>
+  getWordDistances(text, isRTL)[0] ?? 0;
 
 /**
  * Split a string in two parts at a given distance starting from the end when
@@ -127,42 +362,6 @@ export const splitByCharacterDistance = (
   }
 
   return [str.slice(0, dist), str.slice(dist)];
-};
-
-/**
- * Check if a character is a word character. The `remaining` argument is used
- * because sometimes you must read subsequent characters to truly determine it.
- */
-
-const isWordCharacter = (
-  char: string,
-  remaining: string,
-  isRTL = false
-): boolean => {
-  if (SPACE.test(char)) {
-    return false;
-  }
-
-  // Chameleons count as word characters as long as they're in a word, so
-  // recurse to see if the next one is a word character or not.
-  if (CHAMELEON.test(char)) {
-    const charDist = getCharacterDistance(remaining, isRTL);
-    const [nextChar, nextRemaining] = splitByCharacterDistance(
-      remaining,
-      charDist,
-      isRTL
-    );
-
-    if (isWordCharacter(nextChar, nextRemaining, isRTL)) {
-      return true;
-    }
-  }
-
-  if (PUNCTUATION.test(char)) {
-    return false;
-  }
-
-  return true;
 };
 
 /**

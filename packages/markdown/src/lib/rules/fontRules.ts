@@ -2,9 +2,7 @@ import kebabCase from 'lodash/kebabCase.js';
 import type { Text } from '@platejs/plite';
 
 import type { MdMdxJsxTextElement } from '../mdast';
-import type { MdRules } from '../types';
-import type { MdDecoration } from '../types';
-import type { DeserializeMdOptions } from '../deserializer';
+import type { DeserializeMdContext, MdDecoration, MdRules } from '../types';
 
 import { convertChildrenDeserialize, getStyleValue } from '../deserializer';
 
@@ -39,7 +37,7 @@ export const fontRules = {
     deserialize: (
       mdastNode: MdMdxJsxTextElement,
       deco: MdDecoration,
-      options: DeserializeMdOptions
+      options: DeserializeMdContext
     ) => {
       const fontFamily = getStyleValue(mdastNode, 'font-family');
       const fontSize = getStyleValue(mdastNode, 'font-size');

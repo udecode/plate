@@ -2,6 +2,7 @@ import type { BaseEditor } from '@platejs/core';
 import {
   type Element,
   type ElementEntry,
+  type EditorStateView,
   type Location,
   type Path,
   RangeApi,
@@ -16,30 +17,32 @@ import { getListTypes } from './getListTypes';
  */
 export const getListItemEntry = (
   editor: BaseEditor,
-  { at = editor.read.selection() }: { at?: Location | null } = {}
+  { at }: { at?: Location | null } = {},
+  state: Pick<EditorStateView, 'nodes' | 'selection'> = editor.read
 ): { list: ElementEntry; listItem: ElementEntry } | undefined => {
   const liType = editor.getType(KEYS.li);
+  const location = at === undefined ? state.selection() : at;
 
   let _at: Path;
 
-  if (RangeApi.isRange(at) && !RangeApi.isCollapsed(at)) {
-    _at = at.focus.path;
-  } else if (RangeApi.isRange(at)) {
-    _at = at.anchor.path;
+  if (RangeApi.isRange(location) && !RangeApi.isCollapsed(location)) {
+    _at = location.focus.path;
+  } else if (RangeApi.isRange(location)) {
+    _at = location.anchor.path;
   } else {
-    _at = at as Path;
+    _at = location as Path;
   }
   if (_at) {
-    const node = editor.read.nodes.get<Element>(_at);
+    const node = state.nodes.get<Element>(_at);
 
     if (node) {
-      const listItem = editor.read.nodes.above<Element>({
+      const listItem = state.nodes.above<Element>({
         at: _at,
         match: { type: liType },
       });
 
       if (listItem) {
-        const list = editor.read.nodes.parent<Element>(listItem[1]);
+        const list = state.nodes.parent<Element>(listItem[1]);
 
         if (!list || !getListTypes(editor).includes(list[0].type)) return;
 

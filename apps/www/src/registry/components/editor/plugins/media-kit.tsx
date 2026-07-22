@@ -34,10 +34,12 @@ export const MediaKit = [
     render: { afterEditable: MediaUploadToast, node: PlaceholderElement },
   }),
   CaptionPlugin.configure({
-    options: {
-      query: {
-        allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
-      },
-    },
+    targetPluginKeys: [
+      KEYS.img,
+      KEYS.video,
+      KEYS.audio,
+      KEYS.file,
+      KEYS.mediaEmbed,
+    ],
   }),
 ];

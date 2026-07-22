@@ -48,6 +48,23 @@ type HyperscriptElementCreators<TElements extends HyperscriptShorthands> = {
   [TKey in keyof TElements]: HyperscriptCreators<Element>[string];
 };
 
+const stripJsxDevelopmentAttributes = (attributes: Object): Object => {
+  if (
+    !Object.hasOwn(attributes, '__self') &&
+    !Object.hasOwn(attributes, '__source')
+  ) {
+    return attributes;
+  }
+
+  const {
+    __self: _self,
+    __source: _source,
+    ...normalized
+  } = attributes as Record<string, unknown>;
+
+  return normalized;
+};
+
 /**
  * Create a Plite hyperscript factory with optional custom creators and element
  * shorthands.
@@ -95,6 +112,9 @@ const createFactory = <T extends HyperscriptCreators>(creators: T) => {
     if (!isObject(normalizedAttributes)) {
       normalizedChildren = [normalizedAttributes].concat(normalizedChildren);
       normalizedAttributes = {};
+    } else {
+      normalizedAttributes =
+        stripJsxDevelopmentAttributes(normalizedAttributes);
     }
 
     normalizedChildren = normalizedChildren

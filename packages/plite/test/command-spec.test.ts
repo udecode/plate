@@ -12,6 +12,7 @@ import {
   defineEditorSchema,
   defineUpdateAnnotation,
   editorCommands,
+  type Editor,
   type EditorCommand,
   type EditorExtension,
   type EditorTransactionDraftRef,
@@ -22,6 +23,14 @@ import {
   type Value,
 } from '@platejs/plite';
 import { dispatchCommand } from '@platejs/plite/internal';
+import { createCommandRegistration } from '../src/core/command-definition';
+import { registerCommandInRegistry } from '../src/core/command-registry';
+import {
+  createExtensionRegistry,
+  finalizeExtensionRegistry,
+  initializeBaseExtensionRegistry,
+  validateConfiguredExtensionRegistry,
+} from '../src/core/extension-registry';
 import { defineTestSchema } from './support/schema';
 
 type InsertCommand = {
@@ -1094,6 +1103,72 @@ describe('pure command transaction specs', () => {
 
     assert.deepEqual(seen, ['high:z', 'low:z!']);
     assert.equal(editor.read.text.string([]), 'aZ!b');
+  });
+
+  it('keeps dependency-resolved command order ahead of conflicting priority', () => {
+    const seen: string[] = [];
+    const dependency = defineEditorExtension({
+      commands: ({ around }) => [
+        around(insert, ({ input, next }) => {
+          seen.push(`dependency:${input.text}`);
+          return next({ ...input, text: input.text.toUpperCase() });
+        }),
+      ],
+      name: 'command-order-dependency',
+      priority: 1,
+    });
+    const dependent = defineEditorExtension({
+      commands: ({ around }) => [
+        around(insert, ({ input, next }) => {
+          seen.push(`dependent:${input.text}`);
+          return next({ ...input, text: `${input.text}!` });
+        }),
+      ],
+      dependencies: [dependency.name],
+      name: 'command-order-dependent',
+      priority: 100,
+    });
+    const editor = createTextEditorWithExtensions([dependent, dependency]);
+
+    dispatchCommand(editor, insert, { text: 'z' });
+
+    assert.deepEqual(seen, ['dependency:z', 'dependent:Z']);
+    assert.equal(editor.read.text.string([]), 'aZ!b');
+  });
+
+  it('keeps configured command policy ahead of built-in fallback policy', () => {
+    const calls: string[] = [];
+    const editor = {} as Editor;
+    const base = createExtensionRegistry();
+    const configured = createExtensionRegistry({ configurationRevision: 1 });
+
+    registerCommandInRegistry(
+      base.commands,
+      createCommandRegistration(insert, 'handle', () => {
+        calls.push('base');
+        return false as const;
+      })
+    );
+    registerCommandInRegistry(
+      configured.commands,
+      createCommandRegistration(insert, 'handle', () => {
+        calls.push('configured');
+        return false as const;
+      })
+    );
+    initializeBaseExtensionRegistry(editor, finalizeExtensionRegistry(base));
+
+    const registry = validateConfiguredExtensionRegistry(
+      editor,
+      finalizeExtensionRegistry(configured)
+    );
+    const entries = registry.commands.byDescriptor.get(insert)?.entries as
+      | readonly Readonly<{ run: () => false }>[]
+      | undefined;
+
+    for (const entry of entries ?? []) entry.run();
+
+    assert.deepEqual(calls, ['configured', 'base']);
   });
 
   it('rejects multiple delegations from one handler', () => {

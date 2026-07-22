@@ -1,11 +1,13 @@
 import type { BaseEditor } from '@platejs/core';
 import {
-  type EditorUpdateTransaction,
+  type Anchor,
+  type Descendant,
+  type EditorDocumentValue,
+  type EditorTransactionChanged,
   ElementApi,
   type NodeEntry,
   NodeApi,
-  type Operation,
-  type PathRef,
+  type Path,
   PathApi,
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
@@ -13,8 +15,8 @@ import { KEYS } from '@platejs/utils';
 import type { TFootnoteElement } from './types';
 
 type FootnoteRegistry = {
-  definitionsByIdentifier: Map<string, PathRef[]>;
-  referencesByIdentifier: Map<string, PathRef[]>;
+  definitionsByIdentifier: Map<string, Anchor<Path>[]>;
+  referencesByIdentifier: Map<string, Anchor<Path>[]>;
   dirty: boolean;
 };
 
@@ -23,13 +25,13 @@ const FOOTNOTE_REGISTRY = new WeakMap<BaseEditor, FootnoteRegistry>();
 const cleanupRegistry = (registry: FootnoteRegistry) => {
   for (const refs of registry.definitionsByIdentifier.values()) {
     for (const ref of refs) {
-      ref.unref();
+      ref.release();
     }
   }
 
   for (const refs of registry.referencesByIdentifier.values()) {
     for (const ref of refs) {
-      ref.unref();
+      ref.release();
     }
   }
 
@@ -52,13 +54,7 @@ const getRegistry = (editor: BaseEditor) => {
   return registry;
 };
 
-type FootnoteRegistryTransaction = Pick<EditorUpdateTransaction, 'refs'>;
-
-const rebuildRegistry = (
-  editor: BaseEditor,
-  registry: FootnoteRegistry,
-  tx?: FootnoteRegistryTransaction
-) => {
+const rebuildRegistry = (editor: BaseEditor, registry: FootnoteRegistry) => {
   cleanupRegistry(registry);
 
   const definitionType = editor.getType(KEYS.footnoteDefinition);
@@ -72,7 +68,10 @@ const rebuildRegistry = (
 
     if (!identifier) continue;
 
-    const ref = tx ? tx.refs.path(path) : editor.update.refs.path(path);
+    const ref = editor.anchor(path, {
+      association: 'forward',
+      deletion: 'drop',
+    });
 
     if (node.type === definitionType) {
       const refs = registry.definitionsByIdentifier.get(identifier) ?? [];
@@ -96,61 +95,76 @@ export const invalidateFootnoteRegistry = (editor: BaseEditor) => {
 
 export const shouldInvalidateFootnoteRegistry = (
   editor: BaseEditor,
-  operation: Operation
+  before: EditorDocumentValue,
+  after: EditorDocumentValue,
+  changed: EditorTransactionChanged
 ) => {
+  if (changed.has('structure')) return true;
+  if (!changed.has('properties')) return false;
+
   const definitionType = editor.getType(KEYS.footnoteDefinition);
   const referenceType = editor.getType(KEYS.footnoteReference);
-  const isFootnoteType = (type?: string | null) =>
-    type === definitionType || type === referenceType;
-  if (operation.type === 'insert_node' || operation.type === 'remove_node') {
-    for (const [node] of NodeApi.nodes(operation.node)) {
-      if (ElementApi.isElement(node) && isFootnoteType(node.type)) {
+  const containsFootnote = (node: Descendant) => {
+    for (const [candidate] of NodeApi.nodes(node)) {
+      if (
+        ElementApi.isElement(candidate) &&
+        (candidate.type === definitionType || candidate.type === referenceType)
+      ) {
         return true;
       }
     }
 
     return false;
-  }
+  };
+  const nodeAt = (
+    value: EditorDocumentValue,
+    path: readonly number[]
+  ): Descendant | null => {
+    let children = value.children as readonly Descendant[];
+    let node: Descendant | undefined;
 
-  if (operation.type === 'set_node') {
-    const previousType =
-      'type' in operation.properties &&
-      typeof operation.properties.type === 'string'
-        ? operation.properties.type
-        : undefined;
-    const nextType =
-      'type' in operation.newProperties &&
-      typeof operation.newProperties.type === 'string'
-        ? operation.newProperties.type
-        : undefined;
+    for (const index of path) {
+      node = children[index];
+
+      if (!node) return null;
+      children = ElementApi.isElement(node) ? node.children : [];
+    }
+
+    return node ?? null;
+  };
+  const affectedPaths = changed.paths();
+
+  for (const path of affectedPaths) {
+    if (path.length === 0) {
+      if (
+        before.children.some((node) => containsFootnote(node)) ||
+        after.children.some((node) => containsFootnote(node))
+      ) {
+        return true;
+      }
+
+      continue;
+    }
+
+    const previousNode = nodeAt(before, path);
+    const nextNode = nodeAt(after, path);
 
     if (
-      isFootnoteType(previousType) ||
-      isFootnoteType(nextType) ||
-      'identifier' in operation.properties ||
-      'identifier' in operation.newProperties
+      (previousNode && containsFootnote(previousNode)) ||
+      (nextNode && containsFootnote(nextNode))
     ) {
       return true;
     }
-
-    const current = editor.read.nodes.get<TFootnoteElement>(
-      operation.path
-    )?.[0];
-
-    return isFootnoteType(current?.type);
   }
 
   return false;
 };
 
-export const ensureFootnoteRegistry = (
-  editor: BaseEditor,
-  tx?: FootnoteRegistryTransaction
-) => {
+export const ensureFootnoteRegistry = (editor: BaseEditor) => {
   const registry = getRegistry(editor);
 
   if (registry.dirty) {
-    rebuildRegistry(editor, registry, tx);
+    rebuildRegistry(editor, registry);
   }
 
   return registry;
@@ -158,36 +172,34 @@ export const ensureFootnoteRegistry = (
 
 export const getRegistryDefinition = (
   editor: BaseEditor,
-  { identifier }: { identifier: string },
-  tx?: FootnoteRegistryTransaction
+  { identifier }: { identifier: string }
 ) => {
-  const definitions = getRegistryDefinitions(editor, { identifier }, tx);
+  const definitions = getRegistryDefinitions(editor, { identifier });
 
   return definitions[0];
 };
 
 export const getRegistryReferences = (
   editor: BaseEditor,
-  { identifier }: { identifier: string },
-  tx?: FootnoteRegistryTransaction
+  { identifier }: { identifier: string }
 ) => {
-  const registry = ensureFootnoteRegistry(editor, tx);
+  const registry = ensureFootnoteRegistry(editor);
   const refs = registry.referencesByIdentifier.get(identifier) ?? [];
   const liveEntries: NodeEntry<TFootnoteElement>[] = [];
-  const liveRefs: PathRef[] = [];
+  const liveRefs: Anchor<Path>[] = [];
 
   for (const ref of refs) {
-    const path = ref.current;
+    const path = ref.resolve();
 
     if (!path) {
-      ref.unref();
+      ref.release();
       continue;
     }
 
     const entry = editor.read.nodes.get<TFootnoteElement>(path);
 
     if (!entry) {
-      ref.unref();
+      ref.release();
       continue;
     }
 
@@ -203,26 +215,25 @@ export const getRegistryReferences = (
 
 export const getRegistryDefinitions = (
   editor: BaseEditor,
-  { identifier }: { identifier: string },
-  tx?: FootnoteRegistryTransaction
+  { identifier }: { identifier: string }
 ) => {
-  const registry = ensureFootnoteRegistry(editor, tx);
+  const registry = ensureFootnoteRegistry(editor);
   const refs = registry.definitionsByIdentifier.get(identifier) ?? [];
   const liveEntries: NodeEntry<TFootnoteElement>[] = [];
-  const liveRefs: PathRef[] = [];
+  const liveRefs: Anchor<Path>[] = [];
 
   for (const ref of refs) {
-    const path = ref.current;
+    const path = ref.resolve();
 
     if (!path) {
-      ref.unref();
+      ref.release();
       continue;
     }
 
     const entry = editor.read.nodes.get<TFootnoteElement>(path);
 
     if (!entry) {
-      ref.unref();
+      ref.release();
       continue;
     }
 

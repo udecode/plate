@@ -1047,7 +1047,7 @@ test('bounds discovery and local build setup subprocesses', () => {
   );
   assert.match(
     runnerSource,
-    /const runCaptured = \([\s\S]*?runBoundedProcess\(\{/u
+    /const runCaptured = async \([\s\S]*?runBoundedProcess\(\{/u
   );
   assert.match(
     runnerSource,
@@ -1101,6 +1101,10 @@ test('fans CI proof into independent project jobs with one build owner', () => {
     path.resolve(appRoot, '../../.github/workflows/plite-ci.yml'),
     'utf8'
   );
+  const { dependencies } = JSON.parse(
+    fs.readFileSync(path.join(appRoot, 'package.json'), 'utf8')
+  );
+  const playwrightVersion = dependencies['@playwright/test'];
 
   assert.equal(
     workflow.match(/name: Build Plite proof app/g)?.length,
@@ -1125,6 +1129,25 @@ test('fans CI proof into independent project jobs with one build owner', () => {
   assert.match(workflow, /Verify exact browser-matrix coverage/);
   assert.match(workflow, /run: pnpm check:plite:contracts/);
   assert.doesNotMatch(workflow, /run: pnpm --filter plite test:runner/);
+  assert.equal(
+    workflow.match(
+      new RegExp(
+        `mcr\\.microsoft\\.com/playwright:v${playwrightVersion}-noble`,
+        'g'
+      )
+    )?.length,
+    2,
+    'Linux browser jobs must use the workspace Playwright release'
+  );
+  assert.doesNotMatch(
+    workflow,
+    /plite-browser-runner-v2-.*-playwright-\d+\.\d+\.\d+-/u,
+    'proof-state caches must derive their Playwright identity from the workspace package'
+  );
+  assert.match(
+    workflow,
+    /playwright-\$\{\{ hashFiles\('apps\/plite\/package\.json'\) \}\}/u
+  );
 });
 
 test('splits CI jobs by workload and executes longest units first', () => {

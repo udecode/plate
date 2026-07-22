@@ -23,7 +23,7 @@ export const removeListItem = (
   const [liNode, liPath] = listItem;
 
   // Stop if the list item has no sublist
-  if (editor.read.selection.isExpanded() || !hasListChild(editor, liNode)) {
+  if (tx.selection.isExpanded() || !hasListChild(editor, liNode)) {
     return false;
   }
 
@@ -43,7 +43,7 @@ export const removeListItem = (
    * 5. Remove tempLi
    */
   if (previousLiPath) {
-    const previousLi = editor.read.nodes.get<Element>(previousLiPath);
+    const previousLi = tx.nodes.get<Element>(previousLiPath);
 
     if (!previousLi) return;
 
@@ -66,11 +66,14 @@ export const removeListItem = (
       { at: tempLiPath }
     );
 
-    const tempLi = editor.read.nodes.get<Element>(tempLiPath);
+    const tempLi = tx.nodes.get<Element>(tempLiPath);
 
     if (!tempLi) return;
 
-    const tempLiPathRef = tx.refs.path(tempLi[1]);
+    const tempLiRef = tx.refs.path(tempLi[1], {
+      association: 'forward',
+      deletion: 'drop',
+    });
 
     // 2
     moveListItemSublistItemsToListItemSublist(editor, tx, {
@@ -81,13 +84,13 @@ export const removeListItem = (
     // 3
     tx.text.delete({ reverse });
 
-    const currentTempLiPath = tempLiPathRef.unref();
+    const currentTempLiPath = tempLiRef.resolve();
 
     if (!currentTempLiPath) return;
 
     tempLiPath = currentTempLiPath;
-    const currentTempLi = editor.read.nodes.get<Element>(tempLiPath);
-    const currentPreviousLi = editor.read.nodes.get<Element>(previousLiPath);
+    const currentTempLi = tx.nodes.get<Element>(tempLiPath);
+    const currentPreviousLi = tx.nodes.get<Element>(previousLiPath);
 
     if (!currentTempLi || !currentPreviousLi) return;
 

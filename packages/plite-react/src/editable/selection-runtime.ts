@@ -1,22 +1,11 @@
-import {
-  type EditorCommit,
-  type Operation,
-  type Range,
-  RangeApi,
-} from '@platejs/plite';
+import { type EditorCommit, type Range, RangeApi } from '@platejs/plite';
 import type { EditableInputController } from './input-state';
 
-type SelectorListener = (
-  operations?: readonly Operation[],
-  change?: EditorCommit
-) => void;
+type SelectorListener = (change?: EditorCommit) => void;
 
 type SelectorSubscriptionOptions = {
   profileId?: string;
-  shouldUpdate?: (
-    operations?: readonly Operation[],
-    change?: EditorCommit
-  ) => boolean;
+  shouldUpdate?: (change?: EditorCommit) => boolean;
 };
 
 type AddSelectorEventListener = (
@@ -41,8 +30,8 @@ export const shouldExportModelSelectionToDOM = (
   } = {}
 ) => {
   if (
-    commit?.command?.origin === 'command' &&
-    commit?.childrenChanged &&
+    commit?.tags.includes('semantic-command') &&
+    commit?.changed.hasAny('document') &&
     modelSelection &&
     RangeApi.isExpanded(modelSelection)
   ) {
@@ -62,57 +51,36 @@ export const isTextInputSelectionHandledByCaretRepair = (
   Boolean(
     inputController.state.activeIntent === 'text-insert' &&
       !inputController.state.isComposing &&
-      commit?.childrenChanged &&
+      commit?.changed.hasAny('document') &&
       commit.selectionChanged &&
-      !commit.fullDocumentChanged &&
-      !commit.rootRuntimeIdsChanged &&
-      !commit.structureChanged &&
-      !commit.topLevelOrderChanged
+      !commit.changed.hasAny('structure') &&
+      !commit.changed.hasAny('root-order')
   );
 
 const isSyncedTextOnlySelectionCommit = (
-  operations?: readonly Operation[],
   commit?: EditorCommit,
   inputController?: EditableInputController
 ) => {
   if (
-    !operations ||
-    operations.length === 0 ||
-    inputController?.state.isComposing ||
-    !commit?.childrenChanged ||
+    !inputController ||
+    inputController.state.isComposing ||
+    !commit?.changed.hasAny('text') ||
     !commit.selectionChanged ||
-    commit.fullDocumentChanged ||
-    commit.rootRuntimeIdsChanged ||
-    commit.structureChanged ||
-    commit.topLevelOrderChanged
+    commit.changed.hasAny('structure') ||
+    commit.changed.hasAny('properties') ||
+    commit.changed.hasAny('root-order')
   ) {
     return false;
   }
 
-  if (commit.command?.origin === 'command') {
+  if (commit.tags.includes('semantic-command')) {
     return false;
   }
 
-  let hasTextOperation = false;
-
-  for (const operation of operations) {
-    if (operation.type === 'insert_text' || operation.type === 'remove_text') {
-      hasTextOperation = true;
-      continue;
-    }
-
-    if (operation.type === 'set_selection') {
-      continue;
-    }
-
-    return false;
-  }
-
-  return hasTextOperation;
+  return true;
 };
 
 export const shouldSyncModelSelectionAfterCommit = (
-  _operations?: readonly Operation[],
   commit?: EditorCommit,
   inputController?: EditableInputController
 ) => {
@@ -123,16 +91,14 @@ export const shouldSyncModelSelectionAfterCommit = (
     return false;
   }
 
-  if (isSyncedTextOnlySelectionCommit(_operations, commit, inputController)) {
+  if (isSyncedTextOnlySelectionCommit(commit, inputController)) {
     return false;
   }
 
   return Boolean(
     commit?.selectionChanged ||
-      commit?.fullDocumentChanged ||
-      commit?.rootRuntimeIdsChanged ||
-      commit?.structureChanged ||
-      commit?.topLevelOrderChanged
+      commit?.changed.hasAny('structure') ||
+      commit?.changed.hasAny('root-order')
   );
 };
 
@@ -140,28 +106,14 @@ export const subscribeSelectionOnlyDOMExport = ({
   addSelectorEventListener,
   getModelSelection = () => null,
   inputController,
-  scheduleDOMExport = (callback) => {
-    if (typeof requestAnimationFrame === 'function') {
-      const animationFrame = requestAnimationFrame(callback);
-
-      return () => {
-        cancelAnimationFrame(animationFrame);
-      };
-    }
-
-    const timeout = setTimeout(callback);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  },
+  scheduleDOMExport,
   shouldSkipDOMExport,
   syncDOMSelectionToEditor,
 }: {
   addSelectorEventListener: AddSelectorEventListener;
   getModelSelection?: () => Range | null;
   inputController: EditableInputController;
-  scheduleDOMExport?: ScheduleDOMExport;
+  scheduleDOMExport: ScheduleDOMExport;
   shouldSkipDOMExport?: (
     selection: Range | null,
     commit?: EditorCommit
@@ -172,7 +124,7 @@ export const subscribeSelectionOnlyDOMExport = ({
   let subscribed = true;
 
   const unsubscribeSelector = addSelectorEventListener(
-    (_operations, commit) => {
+    (commit) => {
       const sync = () => {
         if (!subscribed) {
           return;
@@ -196,7 +148,7 @@ export const subscribeSelectionOnlyDOMExport = ({
         syncDOMSelectionToEditor();
       };
 
-      if (commit?.childrenChanged) {
+      if (commit?.changed.hasAny('document')) {
         let cancelScheduledDOMExport: CancelScheduledDOMExport | undefined;
         let didRunScheduledDOMExport = false;
         const runScheduledDOMExport = () => {
@@ -226,12 +178,8 @@ export const subscribeSelectionOnlyDOMExport = ({
     },
     {
       profileId: 'selection-dom-export',
-      shouldUpdate: (operations, commit) =>
-        shouldSyncModelSelectionAfterCommit(
-          operations,
-          commit,
-          inputController
-        ),
+      shouldUpdate: (commit) =>
+        shouldSyncModelSelectionAfterCommit(commit, inputController),
     }
   );
 

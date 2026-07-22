@@ -1,114 +1,66 @@
-import { type Descendant, NodeApi, type Range, RangeApi } from '@platejs/plite';
-import { getDOMClipboardFormatKey } from '@platejs/plite-dom/internal';
-
 import {
-  createPliteViewBoundaryRootMap,
-  resolvePliteViewBoundarySegmentEndpoint,
-} from '../view-boundary-graph';
+  ContentSlice,
+  type ContentSlice as ContentSliceValue,
+  type NamedRootKey,
+  type Range,
+  RangeApi,
+} from '@platejs/plite';
+import {
+  getDOMClipboardFormatKey,
+  readDOMFragmentData,
+  writeDOMHostFragmentData,
+} from '@platejs/plite-dom/internal';
+
+import { resolvePliteViewBoundarySegmentEndpoint } from '../view-boundary-graph';
 import {
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
   type PliteViewSelection,
 } from '../view-selection';
-import type { Editor as RuntimeEditor } from './runtime-editor-api';
-
-const DEFAULT_PLITE_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
-const PLITE_FRAGMENT_FORMAT_ATTRIBUTE = 'data-plite-fragment-format';
+import type { ReactRuntimeEditor } from '../plugin/react-editor';
+import {
+  type Editor as RuntimeEditor,
+  getEditorRuntimeOwner,
+} from './runtime-editor-api';
 
 const escapeHtmlText = (text: string) =>
   text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
-const escapeHtmlAttribute = (text: string) =>
-  escapeHtmlText(text).replaceAll('"', '&quot;');
-
-const getFragmentText = (fragment: readonly Descendant[]) =>
-  fragment.map((node) => NodeApi.string(node)).join('\n');
-
-const encodeClipboardFragment = (fragment: readonly Descendant[]) =>
-  globalThis.btoa(encodeURIComponent(JSON.stringify(fragment)));
-
-const getCanonicalRuntimeEditor = (editor: RuntimeEditor): RuntimeEditor =>
-  ((editor as { runtime?: { editor?: RuntimeEditor } }).runtime?.editor ??
-    editor) as RuntimeEditor;
+const getCanonicalRuntimeEditor = (editor: RuntimeEditor) =>
+  getEditorRuntimeOwner(editor);
 
 const getProjectedClipboardFormatKey = (editor: RuntimeEditor) => {
   const viewEditorKey = getDOMClipboardFormatKey(editor);
 
-  return viewEditorKey === DEFAULT_PLITE_CLIPBOARD_FORMAT_KEY
+  return viewEditorKey === 'x-plite-fragment'
     ? getDOMClipboardFormatKey(getCanonicalRuntimeEditor(editor))
     : viewEditorKey;
-};
-
-export const getProjectedClipboardFragmentData = (
-  editor: RuntimeEditor,
-  data: Pick<DataTransfer, 'getData'>
-) => {
-  const clipboardFormatKey = getDOMClipboardFormatKey(editor);
-  const clipboardFragment = data.getData(`application/${clipboardFormatKey}`);
-
-  if (clipboardFragment) {
-    return clipboardFragment;
-  }
-
-  const html = data.getData('text/html');
-  const DOMParser = globalThis.DOMParser;
-
-  if (!html || typeof DOMParser !== 'function') {
-    return '';
-  }
-
-  const document = new DOMParser().parseFromString(html, 'text/html');
-  const htmlFragment = document.querySelector('[data-plite-fragment]');
-
-  if (!htmlFragment) {
-    return '';
-  }
-
-  const htmlFragmentData =
-    htmlFragment.getAttribute('data-plite-fragment') ?? '';
-
-  if (!htmlFragmentData) {
-    return '';
-  }
-
-  const fragmentFormat =
-    htmlFragment.getAttribute(PLITE_FRAGMENT_FORMAT_ATTRIBUTE) ?? undefined;
-
-  if (fragmentFormat) {
-    return fragmentFormat === clipboardFormatKey ? htmlFragmentData : '';
-  }
-
-  return clipboardFormatKey === DEFAULT_PLITE_CLIPBOARD_FORMAT_KEY
-    ? htmlFragmentData
-    : '';
 };
 
 export const decodeProjectedClipboardFragment = (
   editor: RuntimeEditor,
   data: Pick<DataTransfer, 'getData'>
-): Descendant[] | null => {
-  const fragment = getProjectedClipboardFragmentData(editor, data);
-
-  if (!fragment || typeof globalThis.atob !== 'function') {
-    return null;
-  }
-
-  try {
-    const decoded = decodeURIComponent(globalThis.atob(fragment));
-    const parsed = JSON.parse(decoded);
-
-    return Array.isArray(parsed) ? (parsed as Descendant[]) : null;
-  } catch {
-    return null;
-  }
-};
+): ContentSliceValue | null =>
+  readDOMFragmentData(editor, data, getProjectedClipboardFormatKey(editor));
 
 const getProjectedViewSelectionClipboardRanges = (
-  editor: RuntimeEditor,
+  editor: ReactRuntimeEditor,
   viewSelection: PliteViewSelection
 ): Range[] | null =>
   editor.read((state) => {
-    const roots = createPliteViewBoundaryRootMap(state.value());
+    const rootKeys = new Set(
+      viewSelection.segments.parts.flatMap((segment) => [
+        segment.root,
+        ...(segment.start.kind === 'boundary' ? [segment.start.node.root] : []),
+        ...(segment.end.kind === 'boundary' ? [segment.end.node.root] : []),
+      ])
+    );
+    const roots = Object.fromEntries(
+      [...rootKeys].map((root) => [
+        root,
+        root === 'main' ? state.children() : state.root(root as NamedRootKey),
+      ])
+    );
     const ranges: Range[] = [];
 
     for (const segment of viewSelection.segments.parts) {
@@ -137,9 +89,9 @@ const getProjectedViewSelectionClipboardRanges = (
     return ranges;
   });
 
-export const getProjectedViewSelectionFragment = (
-  editor: RuntimeEditor
-): Descendant[] | null => {
+export const getProjectedViewSelectionSlice = (
+  editor: ReactRuntimeEditor
+): ContentSliceValue | null => {
   const viewSelection = readPliteViewSelection(editor);
 
   if (!viewSelection || isPliteViewSelectionCollapsed(viewSelection)) {
@@ -151,36 +103,44 @@ export const getProjectedViewSelectionFragment = (
     viewSelection
   );
 
-  if (!ranges) {
-    return null;
-  }
+  if (!ranges) return null;
 
-  return editor.read((state) =>
-    ranges.flatMap((range) => state.fragment({ at: range }))
-  );
+  return editor.read((state) => {
+    const slices = ranges
+      .map((range) => state.slice.get({ at: range }))
+      .filter((slice) => slice.content.length > 0);
+    const first = slices[0];
+    const last = slices.at(-1);
+
+    if (!first || !last) return null;
+
+    // Projected segments meet at closed root boundaries. Only the two outer
+    // document edges carry slice openness into the clipboard envelope.
+    return ContentSlice.fromJSON({
+      content: slices.flatMap((slice) => slice.content),
+      openEnd: last.openEnd,
+      openStart: first.openStart,
+    });
+  });
 };
 
 export const writeProjectedViewSelectionClipboardData = (
-  editor: RuntimeEditor,
-  data: Pick<DataTransfer, 'setData'>
+  editor: ReactRuntimeEditor,
+  data: Pick<DataTransfer, 'getData' | 'setData'>
 ) => {
-  const fragment = getProjectedViewSelectionFragment(editor);
+  const slice = getProjectedViewSelectionSlice(editor);
 
-  if (!fragment || fragment.length === 0) {
+  if (!slice || slice.content.length === 0) {
     return false;
   }
 
-  const encoded = encodeClipboardFragment(fragment);
-  const text = getFragmentText(fragment);
   const clipboardFormatKey = getProjectedClipboardFormatKey(editor);
-  const escapedClipboardFormatKey = escapeHtmlAttribute(clipboardFormatKey);
 
-  data.setData(`application/${clipboardFormatKey}`, encoded);
-  data.setData('text/plain', text);
-  data.setData(
-    'text/html',
-    `<span data-plite-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapedClipboardFormatKey}">${escapeHtmlText(text)}</span>`
-  );
+  writeDOMHostFragmentData(getCanonicalRuntimeEditor(editor), data, {
+    clipboardFormatKey,
+    html: ({ text }) => `<span>${escapeHtmlText(text)}</span>`,
+    slice,
+  });
 
   return true;
 };

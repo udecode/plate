@@ -4,7 +4,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useState,
 } from 'react';
 import type { DOMRange } from '@platejs/plite-dom';
 import { IS_READ_ONLY } from '@platejs/plite-dom/internal';
@@ -13,16 +12,13 @@ import type {
   EditableDOMStrategyRuntime,
   EditableKeyDownHandler,
 } from '../components/editable';
-import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { useFlushDeferredSelectorsOnRender } from '../hooks/use-editor-selector';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { usePendingInsertionMarksEffect } from './composition-state';
-import { createEditableInputController } from './input-controller';
 import { useEditableRootRef } from './input-router';
 import { useProjectionDOMRepairBridge } from './projection-repair-bridge';
 import { useEditableRootCommitWakeup } from './root-selector-sources';
 import { useRuntimeAndroidEngine } from './runtime-android-engine';
-import { useRuntimeCompositionEngine } from './runtime-composition-engine';
 import { useEditableEventRuntime } from './runtime-event-engine';
 import { useRuntimeKernelTraceEngine } from './runtime-kernel-trace';
 import { useRuntimeRepairEngine } from './runtime-repair-engine';
@@ -113,44 +109,18 @@ export const useEditableRootRuntime = ({
   const rootRuntimeState = useEditableRootRuntimeState({
     domStrategyRuntime,
     editor,
+    readOnly,
   });
   const {
-    browserHandleNextId,
-    browserHandleRangeRefs,
-    controllerState,
-    deferredOperations,
-    detachNativeInputListenersRef,
-    domRepairQueueRef,
-    handledDOMBeforeInputRef,
     isComposing,
     isPartialDOMBackedSelection,
-    onUserInput,
     partialDOMBackedSelection,
-    preferModelSelectionForInputRef,
-    processing,
-    receivedUserInput,
-    rootRef,
-    setExplicitPartialDOMBackedSelection,
-    setIsComposing,
+    runtime,
   } = rootRuntimeState;
+  const { domPhaseScheduler, inputController, rootRef } = runtime;
 
   IS_READ_ONLY.set(editor, readOnly);
   setEditorReadOnly(editor, readOnly);
-  const inputController = useMemo(
-    () =>
-      createEditableInputController({
-        preferModelSelectionForInputRef,
-        state: controllerState,
-      }),
-    [controllerState, preferModelSelectionForInputRef]
-  );
-  const state = inputController.state;
-
-  const runtimeSetComposing = useRuntimeCompositionEngine({
-    editor,
-    inputController,
-    setIsComposing,
-  });
 
   useEffect(() => {
     if (rootRef.current && autoFocus) {
@@ -158,49 +128,32 @@ export const useEditableRootRuntime = ({
     }
   }, [autoFocus, rootRef]);
 
-  const [androidInputManagerRef] = useState<{
-    current: AndroidInputManager | null | undefined;
-  }>(() => ({ current: undefined }));
   const {
     onDOMSelectionChange,
     scheduleOnDOMSelectionChange,
     selectionImportController,
   } = useEditableRootSelectionImport({
-    androidInputManagerRef,
-    domRepairQueueRef,
-    editor,
-    inputController,
-    processing,
-    readOnly,
+    runtime,
   });
 
-  androidInputManagerRef.current = useRuntimeAndroidEngine({
-    inputController,
-    node: rootRef,
+  useRuntimeAndroidEngine({
     onDOMSelectionChange,
-    receivedUserInput,
+    runtime,
     scheduleOnDOMSelectionChange,
   });
 
   const { syncDOMSelectionToEditor } = useEditableSelectionReconciler({
-    androidInputManagerRef,
-    editor,
-    inputController,
-    rootRef,
-    scrollSelectionIntoView,
     partialDOMBackedSelection,
-    state,
+    runtime,
+    scrollSelectionIntoView,
   });
   useEditableRootSelectionExport({
-    editor,
-    inputController,
-    isPartialDOMBackedSelection,
+    runtime,
     syncDOMSelectionToEditor,
   });
 
   const repairRuntime = useRuntimeRepairEngine({
-    editor,
-    inputController,
+    runtime,
     scrollSelectionIntoView,
     syncDOMSelectionToEditor,
   });
@@ -208,8 +161,9 @@ export const useEditableRootRuntime = ({
     inputController,
     requestEditableRepair: repairRuntime.requestEditableRepair,
   });
-  domRepairQueueRef.current = repairRuntime.domRepairQueue;
+  runtime.domRepairQueueRef.current = repairRuntime.domRepairQueue;
   const traceRuntime = useRuntimeKernelTraceEngine({
+    domPhaseScheduler,
     domRepairQueue: repairRuntime.domRepairQueue,
     editor,
     inputController,
@@ -248,42 +202,25 @@ export const useEditableRootRuntime = ({
   const applyInputRules = useCallback(() => false, []);
 
   const eventRuntime = useEditableEventRuntime({
-    androidInputManagerRef,
     applyInputRules,
-    browserHandleNextId,
-    browserHandleRangeRefs,
     callbacks,
-    deferredOperations,
     deferNativeTextInputRepair,
-    editor,
-    handledDOMBeforeInputRef,
-    inputController,
-    isPartialDOMBackedSelection,
-    domStrategyRuntime,
     onDOMBeforeInput,
     onKeyDown,
-    onUserInput,
-    processing,
-    readOnly,
-    repair: repairRuntime,
-    rootRef,
-    selection: selectionImportController,
-    setComposing: runtimeSetComposing,
-    setExplicitPartialDOMBackedSelection,
     partialDOMBackedSelection,
-    state,
+    repair: repairRuntime,
+    runtime,
+    selection: selectionImportController,
     syncDOMSelectionToEditor,
     trace: traceRuntime,
   });
 
   const callbackRef = useEditableRootRef({
-    detachNativeInputListenersRef,
-    editor,
     forwardedRef,
     onDOMBeforeInput: eventRuntime.handlers.onDOMBeforeInput,
     onDOMInput: eventRuntime.handlers.onDOMInput,
     onDOMSelectionChange,
-    rootRef,
+    runtime,
     scheduleOnDOMSelectionChange,
   });
   const editableEventBindings = useMemo(() => {
@@ -316,22 +253,20 @@ export const useEditableRootRuntime = ({
   }, [callbackRef, eventRuntime.handlers]);
 
   useEditableRootGlobalLifecycle({
-    editor,
-    readOnly,
-    rootRef,
+    runtime,
     scheduleOnDOMSelectionChange,
-    state,
   });
 
   const marks = editor.read((state) => state.marks());
   usePendingInsertionMarksEffect({ editor, marks });
 
   return {
+    domPhaseScheduler,
     editableEventBindings,
     isComposing,
-    receivedUserInput,
     rootRef,
     rootInteractionSelectionBridge,
     partialDOMBackedSelection,
+    runtime,
   };
 };

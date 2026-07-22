@@ -1,4 +1,5 @@
 import type {
+  Anchor,
   EditorCommit,
   Range,
   RuntimeId,
@@ -12,12 +13,21 @@ import type {
   PliteProjectionEntry,
   PliteProjectionStore,
 } from './hooks/use-plite-projection-entries';
+import {
+  areMappedViewDataEqual,
+  createMappedViewStoreKernel,
+  createViewSourceFaultBoundary,
+} from './mapped-view-store';
+import { createStableIdMappedSource } from './stable-id-mapped-source';
+import type {
+  PliteViewSourceErrorSink,
+  PliteViewSourceStatus,
+} from './view-source';
 
-export interface PliteAnnotationAnchor {
+export interface PliteAnnotationAnchor
+  extends Pick<Anchor<Range>, 'release' | 'resolve'> {
   /** Resolve the annotation against the current committed editor snapshot. */
   resolve: () => Range | null;
-  /** Release local anchor resources when the application removes it. */
-  unref?: () => Range | null;
 }
 
 /** A durable, identified range owned by app or collaboration state. */
@@ -75,6 +85,11 @@ export type PliteAnnotationStoreMetrics = Readonly<{
   runtimeSubscriberWakeCount: number;
 }>;
 
+export type PliteAnnotationStoreOptions = Readonly<{
+  id?: string;
+  onError?: PliteViewSourceErrorSink;
+}>;
+
 /**
  * Store that resolves app-owned annotations and exposes both sidebar snapshots
  * and text projection data.
@@ -88,24 +103,17 @@ export interface PliteAnnotationStore<
     id: string
   ) => PliteResolvedAnnotation<TData, TProjection> | null;
   getMetrics: () => PliteAnnotationStoreMetrics;
+  getSourceStatus: () => PliteViewSourceStatus;
   getSnapshot: () => PliteAnnotationSnapshot<TData, TProjection>;
   projectionStore: PliteProjectionStore<
     PliteAnnotationProjectionData<TProjection>
   >;
   refresh: (options?: PliteAnnotationRefreshOptions) => void;
+  retry: () => void;
   subscribe: (listener: () => void) => () => void;
   subscribeAnnotation: (id: string, listener: () => void) => () => void;
 }
 
-const EMPTY_ANNOTATION_IDS: readonly string[] = Object.freeze([]);
-const EMPTY_ANNOTATION_BY_ID = new Map<string, PliteResolvedAnnotation>();
-const EMPTY_ANNOTATION_SNAPSHOT = Object.freeze({
-  allIds: EMPTY_ANNOTATION_IDS,
-  byId: EMPTY_ANNOTATION_BY_ID,
-}) as PliteAnnotationSnapshot<any, any>;
-const EMPTY_PROJECTION_SNAPSHOT = Object.freeze({}) as Readonly<
-  Record<string, readonly PliteProjectionEntry<PliteAnnotationProjectionData>[]>
->;
 const EMPTY_PROJECTION_ENTRIES = Object.freeze(
   []
 ) as readonly PliteProjectionEntry<PliteAnnotationProjectionData>[];
@@ -127,49 +135,6 @@ const INVALID_ANNOTATION_RANGE_ERROR =
 const isInvalidAnnotationRangeError = (error: unknown) =>
   error instanceof Error && INVALID_ANNOTATION_RANGE_ERROR.test(error.message);
 
-const addMappedListener = (
-  listeners: Map<string, Set<() => void>>,
-  id: string,
-  listener: () => void
-) => {
-  let listenersForId = listeners.get(id);
-
-  if (!listenersForId) {
-    listenersForId = new Set();
-    listeners.set(id, listenersForId);
-  }
-
-  listenersForId.add(listener);
-
-  return () => {
-    listenersForId.delete(listener);
-
-    if (listenersForId.size === 0) {
-      listeners.delete(id);
-    }
-  };
-};
-
-const notifyListeners = (listeners: Iterable<() => void>) => {
-  for (const listener of listeners) {
-    listener();
-  }
-};
-
-const notifyMappedListeners = (
-  listeners: Map<string, Set<() => void>>,
-  ids: readonly string[]
-) => {
-  for (const id of ids) {
-    notifyListeners(listeners.get(id) ?? []);
-  }
-};
-
-const countMappedListeners = (
-  listeners: Map<string, Set<() => void>>,
-  ids: readonly string[]
-) => ids.reduce((count, id) => count + (listeners.get(id)?.size ?? 0), 0);
-
 const areRangesEqual = (left: Range | null, right: Range | null) => {
   if (left === right) return true;
   if (!left || !right) return false;
@@ -186,51 +151,6 @@ const areRangesEqual = (left: Range | null, right: Range | null) => {
       (segment, index) => segment === right.focus.path[index]
     )
   );
-};
-
-const isPlainObject = (value: object) => {
-  const prototype = Object.getPrototypeOf(value);
-
-  return prototype === Object.prototype || prototype === null;
-};
-
-const isJsonComparable = (
-  value: unknown,
-  seen = new WeakSet<object>()
-): boolean => {
-  if (value === null) return true;
-
-  switch (typeof value) {
-    case 'boolean':
-    case 'string':
-      return true;
-    case 'number':
-      return Number.isFinite(value);
-    case 'object': {
-      if (seen.has(value)) return false;
-      if (Array.isArray(value)) {
-        seen.add(value);
-
-        return value.every((entry) => isJsonComparable(entry, seen));
-      }
-      if (!isPlainObject(value)) return false;
-
-      seen.add(value);
-
-      return Object.values(value).every((entry) =>
-        isJsonComparable(entry, seen)
-      );
-    }
-    default:
-      return false;
-  }
-};
-
-const areDataEqual = (left: unknown, right: unknown) => {
-  if (Object.is(left, right)) return true;
-  if (!isJsonComparable(left) || !isJsonComparable(right)) return false;
-
-  return JSON.stringify(left) === JSON.stringify(right);
 };
 
 const annotationProjectionDataSources = new WeakMap<object, unknown>();
@@ -278,7 +198,7 @@ const areAnnotationProjectionDataEqual = (left: unknown, right: unknown) => {
     );
   }
 
-  return areDataEqual(left, right);
+  return areMappedViewDataEqual(left, right);
 };
 
 const projectAnnotationRange = (editor: EditorType, range: Range) => {
@@ -293,507 +213,46 @@ const projectAnnotationRange = (editor: EditorType, range: Range) => {
   }
 };
 
-const resolveAnnotationRange = (
-  editor: EditorType,
-  anchor: PliteAnnotationAnchor
-) => {
-  const range = anchor.resolve();
-
-  if (!range) {
-    return null;
-  }
-
-  return projectAnnotationRange(editor, range) ? range : null;
-};
-
-const buildAnnotationSnapshot = <
-  TData,
-  TProjection extends Record<string, unknown>,
->(
-  editor: EditorType,
-  annotations: readonly PliteAnnotation<TData, TProjection>[]
-): PliteAnnotationSnapshot<TData, TProjection> => {
-  if (annotations.length === 0) {
-    return EMPTY_ANNOTATION_SNAPSHOT;
-  }
-
-  const allIds = Object.freeze(annotations.map((annotation) => annotation.id));
-  const byId = new Map<string, PliteResolvedAnnotation<TData, TProjection>>();
-
-  annotations.forEach((annotation) => {
-    byId.set(annotation.id, {
-      data: annotation.data,
-      id: annotation.id,
-      projection: annotation.projection,
-      range: resolveAnnotationRange(editor, annotation.anchor),
-    });
-  });
-
-  return Object.freeze({
-    allIds,
-    byId,
-  });
-};
-
-const haveSameAnnotationIds = <
-  TData,
-  TProjection extends Record<string, unknown>,
->(
-  snapshot: PliteAnnotationSnapshot<TData, TProjection>,
-  annotations: readonly PliteAnnotation<TData, TProjection>[]
-) =>
-  snapshot.allIds.length === annotations.length &&
-  snapshot.allIds.every((id, index) => id === annotations[index]?.id);
-
-const buildAnnotationSnapshotForCandidates = <
-  TData,
-  TProjection extends Record<string, unknown>,
->(
-  editor: EditorType,
-  current: PliteAnnotationSnapshot<TData, TProjection>,
-  annotations: readonly PliteAnnotation<TData, TProjection>[],
-  candidateAnnotationIds: readonly string[] | null
-) => {
-  if (!candidateAnnotationIds || !haveSameAnnotationIds(current, annotations)) {
-    return {
-      fullFallback: true,
-      resolveCount: annotations.length,
-      snapshot: buildAnnotationSnapshot(editor, annotations),
-    };
-  }
-
-  if (candidateAnnotationIds.length === 0) {
-    return {
-      fullFallback: false,
-      resolveCount: 0,
-      snapshot: current,
-    };
-  }
-
-  const annotationsById = new Map(
-    annotations.map((annotation) => [annotation.id, annotation])
-  );
-  const byId = new Map(current.byId);
-
-  candidateAnnotationIds.forEach((id) => {
-    const annotation = annotationsById.get(id);
-
-    if (!annotation) {
-      return;
-    }
-
-    byId.set(id, {
-      data: annotation.data,
-      id: annotation.id,
-      projection: annotation.projection,
-      range: resolveAnnotationRange(editor, annotation.anchor),
-    });
-  });
-
-  return {
-    fullFallback: false,
-    resolveCount: candidateAnnotationIds.length,
-    snapshot: Object.freeze({
-      allIds: current.allIds,
-      byId,
-    }) as PliteAnnotationSnapshot<TData, TProjection>,
-  };
-};
-
-const buildProjectionSnapshot = <
-  TData,
-  TProjection extends Record<string, unknown>,
->(
-  editor: EditorType,
-  annotationSnapshot: PliteAnnotationSnapshot<TData, TProjection>
-): Readonly<
-  Record<
-    RuntimeId,
-    readonly PliteProjectionEntry<PliteAnnotationProjectionData<TProjection>>[]
-  >
-> => {
-  if (annotationSnapshot.allIds.length === 0) {
-    return EMPTY_PROJECTION_SNAPSHOT as Readonly<
-      Record<
-        RuntimeId,
-        readonly PliteProjectionEntry<
-          PliteAnnotationProjectionData<TProjection>
-        >[]
-      >
-    >;
-  }
-
-  const projectionByRuntimeId: Record<
-    string,
-    readonly PliteProjectionEntry<PliteAnnotationProjectionData<TProjection>>[]
-  > = Object.create(null);
-
-  annotationSnapshot.allIds.forEach((annotationId) => {
-    const annotation = annotationSnapshot.byId.get(annotationId);
-
-    if (!annotation?.range) {
-      return;
-    }
-
-    const projected = projectAnnotationRange(editor, annotation.range);
-
-    if (!projected) {
-      return;
-    }
-
-    projected.forEach((segment) => {
-      const entries = [
-        ...(projectionByRuntimeId[segment.runtimeId] ?? []),
-        {
-          data: createAnnotationProjectionData(annotation),
-          end: segment.end,
-          key: annotationId,
-          start: segment.start,
-        },
-      ] as const;
-      projectionByRuntimeId[segment.runtimeId] = entries;
-    });
-  });
-
-  Object.keys(projectionByRuntimeId).forEach((runtimeId) => {
-    projectionByRuntimeId[runtimeId] = Object.freeze(
-      projectionByRuntimeId[runtimeId]!
-    );
-  });
-
-  return Object.freeze(projectionByRuntimeId);
-};
-
-const buildProjectionSnapshotForCandidates = <
-  TData,
-  TProjection extends Record<string, unknown>,
->(
-  editor: EditorType,
-  current: Readonly<
-    Record<
-      RuntimeId,
-      readonly PliteProjectionEntry<
-        PliteAnnotationProjectionData<TProjection>
-      >[]
-    >
-  >,
-  annotationSnapshot: PliteAnnotationSnapshot<TData, TProjection>,
-  candidateAnnotationIds: readonly string[] | null
-) => {
-  if (!candidateAnnotationIds) {
-    return {
-      fullFallback: true,
-      projectCount: countProjectedAnnotations(annotationSnapshot),
-      snapshot: buildProjectionSnapshot(editor, annotationSnapshot),
-    };
-  }
-
-  if (candidateAnnotationIds.length === 0) {
-    return {
-      fullFallback: false,
-      projectCount: 0,
-      snapshot: current,
-    };
-  }
-
-  const candidateSet = new Set(candidateAnnotationIds);
-  const annotationOrder = new Map(
-    annotationSnapshot.allIds.map((id, index) => [id, index])
-  );
-  const nextProjectionByRuntimeId: Record<
-    RuntimeId,
-    PliteProjectionEntry<PliteAnnotationProjectionData<TProjection>>[]
-  > = Object.create(null);
-
-  Object.entries(current).forEach(([runtimeId, entries]) => {
-    const remainingEntries = entries.filter(
-      (entry) => !candidateSet.has(entry.data?.annotationId ?? '')
-    );
-
-    if (remainingEntries.length > 0) {
-      nextProjectionByRuntimeId[runtimeId] = [...remainingEntries];
-    }
-  });
-
-  const candidateById = new Map<
-    string,
-    PliteResolvedAnnotation<TData, TProjection>
-  >();
-
-  candidateAnnotationIds.forEach((id) => {
-    const annotation = annotationSnapshot.byId.get(id);
-
-    if (annotation) {
-      candidateById.set(id, annotation);
-    }
-  });
-
-  const candidateProjectionSnapshot = buildProjectionSnapshot(editor, {
-    allIds: Object.freeze([...candidateById.keys()]),
-    byId: candidateById,
-  });
-
-  Object.entries(candidateProjectionSnapshot).forEach(
-    ([runtimeId, entries]) => {
-      nextProjectionByRuntimeId[runtimeId] = [
-        ...(nextProjectionByRuntimeId[runtimeId] ?? []),
-        ...entries,
-      ];
-    }
-  );
-
-  Object.keys(nextProjectionByRuntimeId).forEach((runtimeId) => {
-    const entries = nextProjectionByRuntimeId[runtimeId]!;
-
-    entries.sort((left, right) => {
-      const leftOrder =
-        annotationOrder.get(left.data?.annotationId ?? '') ??
-        Number.MAX_SAFE_INTEGER;
-      const rightOrder =
-        annotationOrder.get(right.data?.annotationId ?? '') ??
-        Number.MAX_SAFE_INTEGER;
-
-      return leftOrder - rightOrder;
-    });
-
-    nextProjectionByRuntimeId[runtimeId] = Object.freeze(
-      entries
-    ) as PliteProjectionEntry<PliteAnnotationProjectionData<TProjection>>[];
-  });
-
-  return {
-    fullFallback: false,
-    projectCount: countProjectedAnnotations({
-      allIds: Object.freeze([...candidateById.keys()]),
-      byId: candidateById,
-    }),
-    snapshot: Object.freeze(nextProjectionByRuntimeId),
-  };
-};
-
-const areAnnotationSnapshotsEqual = <
-  TData,
-  TProjection extends Record<string, unknown>,
->(
-  left: PliteAnnotationSnapshot<TData, TProjection>,
-  right: PliteAnnotationSnapshot<TData, TProjection>
-) => {
-  if (left === right) return true;
-  if (left.allIds.length !== right.allIds.length) return false;
-
-  for (let index = 0; index < left.allIds.length; index += 1) {
-    if (left.allIds[index] !== right.allIds[index]) {
-      return false;
-    }
-
-    const leftAnnotation = left.byId.get(left.allIds[index]!);
-    const rightAnnotation = right.byId.get(right.allIds[index]!);
-
-    if (!leftAnnotation || !rightAnnotation) {
-      return false;
-    }
-
-    if (
-      leftAnnotation.id !== rightAnnotation.id ||
-      !areRangesEqual(leftAnnotation.range, rightAnnotation.range) ||
-      !areDataEqual(leftAnnotation.data, rightAnnotation.data) ||
-      !areDataEqual(leftAnnotation.projection, rightAnnotation.projection)
-    ) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
-const getChangedAnnotationIds = <
-  TData,
-  TProjection extends Record<string, unknown>,
->(
-  left: PliteAnnotationSnapshot<TData, TProjection>,
-  right: PliteAnnotationSnapshot<TData, TProjection>
-) => {
-  const ids = new Set([...left.allIds, ...right.allIds]);
-  const changedIds: string[] = [];
-
-  ids.forEach((id) => {
-    const leftAnnotation = left.byId.get(id);
-    const rightAnnotation = right.byId.get(id);
-
-    if (
-      !leftAnnotation ||
-      !rightAnnotation ||
-      leftAnnotation.id !== rightAnnotation.id ||
-      !areRangesEqual(leftAnnotation.range, rightAnnotation.range) ||
-      !areDataEqual(leftAnnotation.data, rightAnnotation.data) ||
-      !areDataEqual(leftAnnotation.projection, rightAnnotation.projection)
-    ) {
-      changedIds.push(id);
-    }
-  });
-
-  return changedIds;
-};
-
-const areProjectionSnapshotsEqual = (
-  left: Readonly<Record<string, readonly PliteProjectionEntry[]>>,
-  right: Readonly<Record<string, readonly PliteProjectionEntry[]>>
-) => {
-  const leftKeys = Object.keys(left);
-  const rightKeys = Object.keys(right);
-
-  if (leftKeys.length !== rightKeys.length) return false;
-
-  for (const runtimeId of leftKeys) {
-    if (!right[runtimeId]) {
-      return false;
-    }
-
-    const leftEntries = left[runtimeId]!;
-    const rightEntries = right[runtimeId]!;
-
-    if (leftEntries.length !== rightEntries.length) {
-      return false;
-    }
-
-    for (let index = 0; index < leftEntries.length; index += 1) {
-      const leftEntry = leftEntries[index]!;
-      const rightEntry = rightEntries[index]!;
-
-      if (
-        leftEntry.key !== rightEntry.key ||
-        leftEntry.start !== rightEntry.start ||
-        leftEntry.end !== rightEntry.end ||
-        !areAnnotationProjectionDataEqual(leftEntry.data, rightEntry.data)
-      ) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-};
-
-const getChangedProjectionRuntimeIds = (
-  left: Readonly<Record<string, readonly PliteProjectionEntry[]>>,
-  right: Readonly<Record<string, readonly PliteProjectionEntry[]>>
-) => {
-  const runtimeIds = new Set([...Object.keys(left), ...Object.keys(right)]);
-  const changedRuntimeIds: string[] = [];
-
-  runtimeIds.forEach((runtimeId) => {
-    const leftEntries = left[runtimeId] ?? EMPTY_PROJECTION_ENTRIES;
-    const rightEntries = right[runtimeId] ?? EMPTY_PROJECTION_ENTRIES;
-
-    if (
-      !areProjectionSnapshotsEqual(
-        { [runtimeId]: leftEntries },
-        { [runtimeId]: rightEntries }
-      )
-    ) {
-      changedRuntimeIds.push(runtimeId);
-    }
-  });
-
-  return changedRuntimeIds;
-};
-
-const buildAnnotationRuntimeIds = (
-  projectionSnapshot: Readonly<
-    Record<
-      RuntimeId,
-      readonly PliteProjectionEntry<PliteAnnotationProjectionData>[]
-    >
-  >
-) => {
-  const runtimeIdsByAnnotationId = new Map<string, Set<RuntimeId>>();
-
-  Object.entries(projectionSnapshot).forEach(([runtimeId, entries]) => {
-    entries.forEach((entry) => {
-      const annotationId = entry.data?.annotationId;
-
-      if (!annotationId) {
-        return;
-      }
-
-      let runtimeIds = runtimeIdsByAnnotationId.get(annotationId);
-
-      if (!runtimeIds) {
-        runtimeIds = new Set();
-        runtimeIdsByAnnotationId.set(annotationId, runtimeIds);
-      }
-
-      runtimeIds.add(runtimeId);
-    });
-  });
-
-  return runtimeIdsByAnnotationId;
-};
-
-const getCandidateAnnotationIds = (
-  change: EditorCommit | undefined,
-  runtimeIdsByAnnotationId: ReadonlyMap<string, ReadonlySet<RuntimeId>>
-) => {
-  if (!change) {
-    return null;
-  }
-
-  if (!shouldRefreshForEditorChange(change)) {
-    return [];
-  }
-
-  if (
-    change.fullDocumentChanged ||
-    change.rootRuntimeIdsChanged ||
-    change.topLevelOrderChanged
-  ) {
-    return null;
-  }
-
-  if (!change.decorationImpactRuntimeIds) {
-    return null;
-  }
-
-  const impactedRuntimeIds = new Set(change.decorationImpactRuntimeIds);
-  const annotationIds: string[] = [];
-
-  runtimeIdsByAnnotationId.forEach((runtimeIds, annotationId) => {
-    for (const runtimeId of runtimeIds) {
-      if (impactedRuntimeIds.has(runtimeId)) {
-        annotationIds.push(annotationId);
-        return;
-      }
-    }
-  });
-
-  return annotationIds;
-};
-
-const countProjectedAnnotations = <
-  TData,
-  TProjection extends Record<string, unknown>,
->(
-  annotationSnapshot: PliteAnnotationSnapshot<TData, TProjection>
-) =>
-  annotationSnapshot.allIds.reduce((count, id) => {
-    const annotation = annotationSnapshot.byId.get(id);
-
-    return annotation?.range ? count + 1 : count;
-  }, 0);
-
 const shouldRefreshForEditorChange = (change: EditorCommit | undefined) => {
   if (!change) {
     return true;
   }
 
-  return (
-    change.childrenChanged ||
-    change.classes.includes('mark') ||
-    change.classes.includes('replace') ||
-    change.classes.includes('structural') ||
-    change.classes.includes('text')
-  );
+  return change.changed.hasAny('document') || change.changed.hasAny('marks');
 };
+
+const areAnnotationInputsEqual = <
+  TData,
+  TProjection extends Record<string, unknown>,
+>(
+  left: PliteAnnotation<TData, TProjection>,
+  right: PliteAnnotation<TData, TProjection>
+) =>
+  left.id === right.id &&
+  left.anchor === right.anchor &&
+  areMappedViewDataEqual(left.data, right.data) &&
+  areMappedViewDataEqual(left.projection, right.projection);
+
+const areResolvedAnnotationsEqual = <
+  TData,
+  TProjection extends Record<string, unknown>,
+>(
+  left: PliteResolvedAnnotation<TData, TProjection>,
+  right: PliteResolvedAnnotation<TData, TProjection>
+) =>
+  left.id === right.id &&
+  areRangesEqual(left.range, right.range) &&
+  areMappedViewDataEqual(left.data, right.data) &&
+  areMappedViewDataEqual(left.projection, right.projection);
+
+const areAnnotationProjectionEntriesEqual = (
+  left: PliteProjectionEntry,
+  right: PliteProjectionEntry
+) =>
+  left.key === right.key &&
+  left.start === right.start &&
+  left.end === right.end &&
+  areAnnotationProjectionDataEqual(left.data, right.data);
 
 export function createPliteAnnotationStore<
   TData = unknown,
@@ -802,116 +261,204 @@ export function createPliteAnnotationStore<
   editor: EditorType,
   source:
     | readonly PliteAnnotation<TData, TProjection>[]
-    | (() => readonly PliteAnnotation<TData, TProjection>[])
+    | (() => readonly PliteAnnotation<TData, TProjection>[]),
+  options: PliteAnnotationStoreOptions = {}
 ): PliteAnnotationStore<TData, TProjection> {
   const getAnnotations = typeof source === 'function' ? source : () => source;
+  const faultBoundary = createViewSourceFaultBoundary({
+    id: options.id ?? 'annotations',
+    onError: options.onError,
+  });
+  let mappedResolveCount = 0;
+  let mappedProjectCount = 0;
+  const createMappedSource = (
+    annotations: readonly PliteAnnotation<TData, TProjection>[]
+  ) =>
+    createStableIdMappedSource<
+      PliteAnnotation<TData, TProjection>,
+      PliteResolvedAnnotation<TData, TProjection>,
+      PliteProjectionEntry<PliteAnnotationProjectionData<TProjection>>
+    >(annotations, {
+      getId: (annotation) => annotation.id,
+      isEntityEqual: areResolvedAnnotationsEqual,
+      isItemEqual: areAnnotationInputsEqual,
+      isOutputEqual: areAnnotationProjectionEntriesEqual,
+      map: (annotation) => {
+        mappedResolveCount += 1;
+        const resolvedRange = annotation.anchor.resolve();
+        const projected = resolvedRange
+          ? projectAnnotationRange(editor, resolvedRange)
+          : null;
+        const range = projected ? resolvedRange : null;
 
-  const initialAnnotations = getAnnotations();
-  let annotationSnapshot = buildAnnotationSnapshot(editor, initialAnnotations);
-  let projectionSnapshot = buildProjectionSnapshot(editor, annotationSnapshot);
-  let annotationRuntimeIds = buildAnnotationRuntimeIds(projectionSnapshot);
+        if (range) mappedProjectCount += 1;
+
+        const resolved = Object.freeze({
+          data: annotation.data,
+          id: annotation.id,
+          projection: annotation.projection,
+          range,
+        }) as PliteResolvedAnnotation<TData, TProjection>;
+        const projectionData = createAnnotationProjectionData(resolved);
+
+        return {
+          entity: resolved,
+          outputs:
+            projected?.map((segment) => ({
+              key: segment.runtimeId,
+              value: Object.freeze({
+                data: projectionData,
+                end: segment.end,
+                key: annotation.id,
+                start: segment.start,
+              }),
+            })) ?? [],
+        };
+      },
+    });
+  const initialAnnotationsResult = faultBoundary.run('read', getAnnotations);
+  const initialMappedResult = initialAnnotationsResult.ok
+    ? faultBoundary.run('resolve', () =>
+        createMappedSource(initialAnnotationsResult.value)
+      )
+    : ({ ok: false } as const);
+  if (!initialMappedResult.ok) {
+    mappedResolveCount = 0;
+    mappedProjectCount = 0;
+  }
+  const mappedSource = initialMappedResult.ok
+    ? initialMappedResult.value
+    : createMappedSource([]);
+  const toAnnotationSnapshot = () => {
+    const snapshot = mappedSource.getSnapshot();
+
+    return Object.freeze({
+      allIds: snapshot.allIds,
+      byId: snapshot.byId,
+    }) as PliteAnnotationSnapshot<TData, TProjection>;
+  };
+  const getProjectionSnapshot = () =>
+    mappedSource.getSnapshot().byOutputKey as Readonly<
+      Record<
+        RuntimeId,
+        readonly PliteProjectionEntry<
+          PliteAnnotationProjectionData<TProjection>
+        >[]
+      >
+    >;
+  const annotationsStore = createMappedViewStoreKernel(toAnnotationSnapshot());
+  const projectionsStore = createMappedViewStoreKernel(getProjectionSnapshot());
   let metrics = Object.freeze({
     ...EMPTY_METRICS,
-    annotationProjectCount: countProjectedAnnotations(annotationSnapshot),
-    annotationResolveCount: initialAnnotations.length,
+    annotationProjectCount: mappedProjectCount,
+    annotationResolveCount: mappedResolveCount,
   }) as PliteAnnotationStoreMetrics;
-  const listeners = new Set<() => void>();
-  const annotationListeners = new Map<string, Set<() => void>>();
-  const projectionListeners = new Set<() => void>();
-  const runtimeListeners = new Map<string, Set<() => void>>();
 
   const refreshCandidates = (
-    candidateAnnotationIds: readonly string[] | null = null
+    candidateAnnotationIds: readonly string[] | null = null,
+    forceAll = candidateAnnotationIds === null
   ) => {
-    const annotations = getAnnotations();
-    const annotationBuild = buildAnnotationSnapshotForCandidates(
-      editor,
-      annotationSnapshot,
-      annotations,
-      candidateAnnotationIds
+    const annotationsResult = faultBoundary.run('read', getAnnotations);
+
+    if (!annotationsResult.ok) return;
+
+    const previousResolveCount = mappedResolveCount;
+    const previousProjectCount = mappedProjectCount;
+    const mappedResult = faultBoundary.run('resolve', () =>
+      mappedSource.refresh(annotationsResult.value, {
+        forceAll,
+        forceIds: candidateAnnotationIds ?? undefined,
+      })
     );
-    const nextAnnotationSnapshot = annotationBuild.snapshot;
-    const projectionBuild = buildProjectionSnapshotForCandidates(
-      editor,
-      projectionSnapshot,
-      nextAnnotationSnapshot,
-      candidateAnnotationIds
-    );
-    const nextProjectionSnapshot = projectionBuild.snapshot;
-    const annotationChangedIds = getChangedAnnotationIds(
-      annotationSnapshot,
-      nextAnnotationSnapshot
-    );
-    const projectionChangedRuntimeIds = getChangedProjectionRuntimeIds(
-      projectionSnapshot,
-      nextProjectionSnapshot
-    );
+
+    if (!mappedResult.ok) return;
+
+    const annotationChangedIds = mappedResult.value.changedEntityIds;
+    const projectionChangedRuntimeIds = mappedResult.value
+      .changedOutputKeys as readonly RuntimeId[];
 
     metrics = Object.freeze({
       ...metrics,
       annotationProjectCount:
-        metrics.annotationProjectCount + projectionBuild.projectCount,
+        metrics.annotationProjectCount +
+        (mappedProjectCount - previousProjectCount),
       annotationResolveCount:
-        metrics.annotationResolveCount + annotationBuild.resolveCount,
+        metrics.annotationResolveCount +
+        (mappedResolveCount - previousResolveCount),
       fullFallbackCount:
         metrics.fullFallbackCount +
-        (annotationBuild.fullFallback || projectionBuild.fullFallback ? 1 : 0),
+        (mappedResult.value.fullFallback || forceAll ? 1 : 0),
     });
 
     if (
-      areAnnotationSnapshotsEqual(annotationSnapshot, nextAnnotationSnapshot) &&
-      areProjectionSnapshotsEqual(projectionSnapshot, nextProjectionSnapshot)
+      annotationChangedIds.length === 0 &&
+      projectionChangedRuntimeIds.length === 0 &&
+      !mappedResult.value.orderChanged
     ) {
       return;
     }
 
-    annotationSnapshot = nextAnnotationSnapshot;
-    projectionSnapshot = nextProjectionSnapshot;
-    annotationRuntimeIds = buildAnnotationRuntimeIds(projectionSnapshot);
+    const annotationSubscriberWakeCount =
+      annotationChangedIds.length > 0 || mappedResult.value.orderChanged
+        ? annotationsStore.subscriberCount() +
+          annotationsStore.countKeySubscribers(annotationChangedIds)
+        : 0;
+    const projectionSubscriberWakeCount =
+      projectionChangedRuntimeIds.length > 0
+        ? projectionsStore.subscriberCount()
+        : 0;
+    const runtimeSubscriberWakeCount = projectionsStore.countKeySubscribers(
+      projectionChangedRuntimeIds
+    );
 
     metrics = Object.freeze({
       ...metrics,
       annotationSubscriberWakeCount:
-        metrics.annotationSubscriberWakeCount +
-        (annotationChangedIds.length > 0
-          ? listeners.size +
-            countMappedListeners(annotationListeners, annotationChangedIds)
-          : 0),
+        metrics.annotationSubscriberWakeCount + annotationSubscriberWakeCount,
       changedAnnotationCount:
         metrics.changedAnnotationCount + annotationChangedIds.length,
       changedRuntimeBucketCount:
         metrics.changedRuntimeBucketCount + projectionChangedRuntimeIds.length,
       projectionSubscriberWakeCount:
-        metrics.projectionSubscriberWakeCount +
-        (projectionChangedRuntimeIds.length > 0 ? projectionListeners.size : 0),
+        metrics.projectionSubscriberWakeCount + projectionSubscriberWakeCount,
       recomputeCount: metrics.recomputeCount + 1,
       runtimeSubscriberWakeCount:
-        metrics.runtimeSubscriberWakeCount +
-        countMappedListeners(runtimeListeners, projectionChangedRuntimeIds),
+        metrics.runtimeSubscriberWakeCount + runtimeSubscriberWakeCount,
     });
 
-    if (annotationChangedIds.length > 0) {
-      notifyListeners(listeners);
-      notifyMappedListeners(annotationListeners, annotationChangedIds);
+    if (annotationChangedIds.length > 0 || mappedResult.value.orderChanged) {
+      annotationsStore.publish(toAnnotationSnapshot(), annotationChangedIds);
     }
 
     if (projectionChangedRuntimeIds.length > 0) {
-      notifyListeners(projectionListeners);
-      notifyMappedListeners(runtimeListeners, projectionChangedRuntimeIds);
+      projectionsStore.publish(
+        getProjectionSnapshot(),
+        projectionChangedRuntimeIds
+      );
     }
   };
 
   const unsubscribeEditor = editorSubscribeCommit(editor, (change) => {
-    const candidateAnnotationIds = getCandidateAnnotationIds(
-      change,
-      annotationRuntimeIds
-    );
+    if (!shouldRefreshForEditorChange(change)) return;
+
+    const candidateAnnotationIds = change
+      ? Array.from(
+          new Set([
+            ...mappedSource.getIdsForOutputKeys(
+              change.changed.runtimeIdsAll('decoration')
+            ),
+            ...(change.changed.hasAny('document')
+              ? mappedSource.getIdsWithoutOutputs()
+              : []),
+          ])
+        )
+      : null;
 
     if (candidateAnnotationIds && candidateAnnotationIds.length === 0) {
       return;
     }
 
-    refreshCandidates(candidateAnnotationIds);
+    refreshCandidates(candidateAnnotationIds, candidateAnnotationIds === null);
   });
 
   const refresh = (options: PliteAnnotationRefreshOptions = {}) => {
@@ -919,52 +466,53 @@ export function createPliteAnnotationStore<
       return;
     }
 
-    refreshCandidates(options.ids ?? null);
+    refreshCandidates(options.ids ?? null, options.ids === undefined);
   };
 
   return {
     destroy() {
       unsubscribeEditor();
-      listeners.clear();
-      annotationListeners.clear();
-      projectionListeners.clear();
-      runtimeListeners.clear();
+      annotationsStore.destroy();
+      projectionsStore.destroy();
     },
     getAnnotation(id) {
-      return annotationSnapshot.byId.get(id) ?? null;
+      return annotationsStore.getSnapshot().byId.get(id) ?? null;
     },
     getMetrics() {
       return metrics;
     },
+    getSourceStatus() {
+      return faultBoundary.getStatus();
+    },
     getSnapshot() {
-      return annotationSnapshot;
+      return annotationsStore.getSnapshot();
     },
     projectionStore: {
       getRuntimeSnapshot(runtimeId) {
-        return projectionSnapshot[runtimeId] ?? EMPTY_PROJECTION_ENTRIES;
+        return (
+          projectionsStore.getSnapshot()[runtimeId] ?? EMPTY_PROJECTION_ENTRIES
+        );
       },
       getSnapshot() {
-        return projectionSnapshot;
+        return projectionsStore.getSnapshot();
       },
       subscribe(listener) {
-        projectionListeners.add(listener);
-        return () => {
-          projectionListeners.delete(listener);
-        };
+        return projectionsStore.subscribe(listener);
       },
       subscribeRuntimeId(runtimeId, listener) {
-        return addMappedListener(runtimeListeners, runtimeId, listener);
+        return projectionsStore.subscribeKey(runtimeId, listener);
       },
     },
     refresh,
+    retry() {
+      faultBoundary.activate();
+      refreshCandidates(null, true);
+    },
     subscribe(listener) {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
+      return annotationsStore.subscribe(listener);
     },
     subscribeAnnotation(id, listener) {
-      return addMappedListener(annotationListeners, id, listener);
+      return annotationsStore.subscribeKey(id, listener);
     },
   };
 }

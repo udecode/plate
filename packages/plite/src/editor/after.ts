@@ -1,4 +1,4 @@
-import { getEditorSchema } from '../core/editor-runtime';
+import { isEditorNodeSelectable } from '../core/query-middleware';
 import {
   above as editorAbove,
   point as editorPoint,
@@ -36,7 +36,7 @@ export const after: EditorStaticApi['after'] = (editor, at, options = {}) => {
     const insideNonSelectable = editorAbove(editor, {
       at: p,
       match: (node) =>
-        NodeApi.isElement(node) && !getEditorSchema(editor).isSelectable(node),
+        NodeApi.isElement(node) && !isEditorNodeSelectable(editor, node),
       mode: 'highest',
       voids: true,
     });

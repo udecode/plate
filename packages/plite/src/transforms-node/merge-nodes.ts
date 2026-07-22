@@ -1,6 +1,8 @@
 import { getEditorSchema } from '../core/editor-runtime';
-import { applyOperation, runEditorTransaction } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
+import {
+  applyBuiltDocumentChange,
+  runEditorTransaction,
+} from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { LocationApi } from '../interfaces';
@@ -11,19 +13,19 @@ import {
   isVoid as editorIsVoid,
   levels as editorLevels,
   parent as editorParent,
-  pathRef as editorPathRef,
-  pointRef as editorPointRef,
   previous as editorPrevious,
   shouldMergeNodesRemovePrevNode as editorShouldMergeNodesRemovePrevNode,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
 import type { Editor } from '../interfaces/editor';
-import type { Element } from '../interfaces/element';
 import { type Ancestor, type Node, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
-import type { Text } from '../interfaces/text';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import { select } from '../transforms-selection/select';
+import { deleteText } from '../transforms-text/delete-text';
+import { moveNodes } from './move-nodes';
+import { removeNodes } from './remove-nodes';
 import { formatDebugValue } from '../utils/format-debug-value';
 
 const getChildren = (editor: Editor, node: Ancestor) =>
@@ -76,7 +78,6 @@ export const mergeNodes: NodeMutationMethods['mergeNodes'] = (
   options = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
-    const transforms = getEditorTransformRegistry(editor);
     let { match } = options;
     let at = tx.resolveTarget({ at: options.at });
     const { hanging = false, voids = false, mode = 'lowest' } = options;
@@ -108,12 +109,15 @@ export const mergeNodes: NodeMutationMethods['mergeNodes'] = (
         at = at.anchor;
       } else {
         const [, end] = RangeApi.edges(at);
-        const pointRef = editorPointRef(editor, end);
-        transforms.delete({ at });
-        at = pointRef.unref()!;
+        const pointAnchor = editor.anchor(end, {
+          association: 'forward',
+          deletion: 'nearest',
+        });
+        deleteText(editor, { at });
+        at = pointAnchor.release()!;
 
         if (options.at == null) {
-          transforms.select(at);
+          select(editor, at);
         }
       }
     }
@@ -157,21 +161,18 @@ export const mergeNodes: NodeMutationMethods['mergeNodes'] = (
       match: (n) => levels.includes(n) && hasSingleChildNest(editor, n),
     });
 
-    const emptyRef = emptyAncestor && editorPathRef(editor, emptyAncestor[1]);
-    let properties: Partial<Text> | Partial<Element>;
-    let position: number;
-
-    // Ensure that the nodes are equivalent, and figure out what the position
-    // and extra properties of the merge will be.
-    if (NodeApi.isText(node) && NodeApi.isText(prevNode)) {
-      const { text, ...rest } = node;
-      position = prevNode.text.length;
-      properties = rest as Partial<Text>;
-    } else if (NodeApi.isElement(node) && NodeApi.isElement(prevNode)) {
-      const { children, ...rest } = node;
-      position = prevNode.children.length;
-      properties = rest as Partial<Element>;
-    } else {
+    const emptyAnchor = emptyAncestor
+      ? editor.anchor(emptyAncestor[1], {
+          association: 'forward',
+          deletion: 'drop',
+        })
+      : null;
+    if (
+      !(
+        (NodeApi.isText(node) && NodeApi.isText(prevNode)) ||
+        (NodeApi.isElement(node) && NodeApi.isElement(prevNode))
+      )
+    ) {
       throw new Error(
         `Cannot merge the node at path [${path}] with the previous sibling because it is not the same kind: ${formatDebugValue(
           node
@@ -182,28 +183,25 @@ export const mergeNodes: NodeMutationMethods['mergeNodes'] = (
     // If the node isn't already the next sibling of the previous node, move
     // it so that it is before merging.
     if (!isPreviousSibling) {
-      transforms.moveNodes({ at: path, to: newPath, voids });
+      moveNodes(editor, { at: path, to: newPath, voids });
     }
 
     // If there was going to be an empty ancestor of the node that was merged,
     // we remove it from the tree.
-    if (emptyRef) {
-      transforms.removeNodes({ at: emptyRef.current!, voids });
+    const emptyPath = emptyAnchor?.resolve();
+
+    if (emptyPath) {
+      removeNodes(editor, { at: emptyPath, voids });
     }
 
     if (editorShouldMergeNodesRemovePrevNode(editor, prev, current)) {
-      transforms.removeNodes({ at: prevPath, voids });
+      removeNodes(editor, { at: prevPath, voids });
     } else {
-      applyOperation(editor, {
-        type: 'merge_node',
-        path: newPath,
-        position,
-        properties,
-      });
+      applyBuiltDocumentChange(editor, (builder, root) =>
+        builder.mergeNode(root, newPath)
+      );
     }
 
-    if (emptyRef) {
-      emptyRef.unref();
-    }
+    emptyAnchor?.release();
   });
 };

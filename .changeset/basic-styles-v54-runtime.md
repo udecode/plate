@@ -7,4 +7,5 @@
 
 **Migration:** Replace `setAlign(editor, value)` with
 `editor.update.textAlign.set(value)` and `setLineHeight(editor, value)` with
-`editor.update.lineHeight.set(value)`.
+`editor.update.lineHeight.set(value)`. Configure style targets through the
+plugin's top-level `targetPluginKeys` field.

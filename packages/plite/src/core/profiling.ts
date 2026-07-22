@@ -4,6 +4,7 @@ export const profileCoreDuration = <T>(id: string, callback: () => T): T => {
   const profiler = (
     globalThis as typeof globalThis & {
       __PLITE_REACT_RENDER_PROFILER__?: {
+        acceptsCoreDuration?: (id: string) => boolean;
         record?: (event: {
           duration: number;
           id: string;
@@ -13,7 +14,7 @@ export const profileCoreDuration = <T>(id: string, callback: () => T): T => {
     }
   ).__PLITE_REACT_RENDER_PROFILER__;
 
-  if (!profiler) {
+  if (!profiler || profiler.acceptsCoreDuration?.(id) === false) {
     return callback();
   }
 

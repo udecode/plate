@@ -18,12 +18,6 @@ export type LinkConfig = ExtendConfig<
     text: string;
     updated: boolean;
     url: string;
-    /**
-     * Default HTML attributes for link elements.
-     *
-     * @default { }
-     */
-    triggerFloatingLinkHotkeys?: string;
   },
   {
     floatingLink: {
@@ -52,7 +46,6 @@ export const LinkPlugin = toPlatePlugin<LinkConfig, BaseLinkConfig>(
       newTab: false,
       openEditorId: null,
       text: '',
-      triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
       updated: false,
       url: '',
     },

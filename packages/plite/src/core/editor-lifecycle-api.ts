@@ -1,5 +1,8 @@
 import type {
   Editor,
+  EditorCommand,
+  EditorCommandDispatch,
+  EditorCoreUpdateMethods,
   EditorRead,
   EditorReadMethods,
   EditorStateView,
@@ -11,6 +14,7 @@ import type {
   Value,
 } from '../interfaces';
 import { isTxOnlyMethod } from './tx-only';
+import { getSemanticUpdateLowering } from './semantic-update-method';
 import {
   compileEditorUpdatePolicy,
   type CompiledEditorUpdatePolicy,
@@ -39,7 +43,9 @@ type EditorUpdateApiOptions = {
   repairValue: () => void;
 };
 
-const assertHistoryCapability = (options: EditorUpdateApiOptions) => {
+const assertHistoryCapability = (options: {
+  hasTxGroup?: (groupName: string) => boolean;
+}) => {
   if (!options.hasTxGroup?.('history')) {
     throw new Error(
       'Editor update history policy requires the history extension.'
@@ -49,7 +55,7 @@ const assertHistoryCapability = (options: EditorUpdateApiOptions) => {
 
 const assertUpdatePolicy = (
   policy: EditorUpdatePolicy,
-  options: EditorUpdateApiOptions
+  options: { hasTxGroup?: (groupName: string) => boolean }
 ) => {
   if (policy.history) {
     assertHistoryCapability(options);
@@ -127,13 +133,17 @@ const createUpdateExtensionPath = <
 
         if (typeof method !== 'function') {
           throw new Error(
-            `Editor update group "${groupName}" method "${path.join('.')}" is not installed.`
+            `Editor update group "${groupName}" method "${path.join(
+              '.'
+            )}" is not installed.`
           );
         }
 
         if (isTxOnlyMethod(method)) {
           throw new Error(
-            `Editor update group "${groupName}" method "${path.join('.')}" is transaction-only.`
+            `Editor update group "${groupName}" method "${path.join(
+              '.'
+            )}" is transaction-only.`
           );
         }
 
@@ -219,6 +229,8 @@ export const createEditorReadApi = <
       read((state) =>
         state.children(...args)
       )) as EditorReadMethods<V>['children'],
+    facet: ((...args) =>
+      read((state) => state.facet(...args))) as EditorReadMethods<V>['facet'],
     fragment: createCallableGroup('fragment'),
     getField: ((...args) =>
       read((state) =>
@@ -232,10 +244,6 @@ export const createEditorReadApi = <
     meta: ((...args) =>
       read((state) => state.meta(...args))) as EditorReadMethods<V>['meta'],
     nodes: createGroup('nodes'),
-    operations: ((...args) =>
-      read((state) =>
-        state.operations(...args)
-      )) as EditorReadMethods<V>['operations'],
     points: createGroup('points'),
     ranges: createGroup('ranges'),
     root: ((...args) =>
@@ -243,6 +251,7 @@ export const createEditorReadApi = <
     runtime: createGroup('runtime'),
     schema: createGroup('schema'),
     selection: createCallableGroup('selection'),
+    slice: createGroup('slice'),
     text: createGroup('text'),
     value: ((...args) =>
       read((state) => state.value(...args))) as EditorReadMethods<V>['value'],
@@ -384,9 +393,20 @@ export const createEditorUpdateApi = <
       return getConfiguredFacade(policyOrFn);
     }) as EditorUpdate<V, TExtensions>;
 
-    const createGroup = <TGroup extends keyof EditorUpdateMethods<V>>(
+    const createGroup = <
+      TGroup extends
+        | 'blocks'
+        | 'break'
+        | 'fragment'
+        | 'marks'
+        | 'nodes'
+        | 'roots'
+        | 'selection'
+        | 'slice'
+        | 'text',
+    >(
       groupName: TGroup
-    ): EditorUpdateMethods<V>[TGroup] => {
+    ): EditorCoreUpdateMethods<V, TExtensions>[TGroup] => {
       const methodCache = new Map<string, (...args: unknown[]) => unknown>();
 
       return new Proxy(
@@ -405,12 +425,17 @@ export const createEditorUpdateApi = <
               let result: unknown;
 
               invoke((tx) => {
-                result = (
+                const transactionMethod = (
                   tx[groupName] as Record<
                     string,
                     (...args: unknown[]) => unknown
                   >
-                )[key]!(...args);
+                )[key]!;
+                const lower = getSemanticUpdateLowering(transactionMethod);
+
+                result = lower
+                  ? lower(tx.command, args, transactionMethod)
+                  : transactionMethod(...args);
               });
 
               return result;
@@ -421,7 +446,7 @@ export const createEditorUpdateApi = <
             return method;
           },
         }
-      ) as EditorUpdateMethods<V>[TGroup];
+      ) as EditorCoreUpdateMethods<V, TExtensions>[TGroup];
     };
 
     const getUpdateProperty = (property: string): unknown => {
@@ -434,32 +459,47 @@ export const createEditorUpdateApi = <
       let value: unknown;
 
       switch (property) {
+        case 'command': {
+          value = ((command: EditorCommand<unknown>, input?: unknown) => {
+            let handled = false;
+
+            invoke((tx) => {
+              handled = tx.command(command, input);
+            });
+
+            return handled;
+          }) as EditorCommandDispatch;
+          break;
+        }
         case 'blocks':
         case 'break':
         case 'fragment':
         case 'marks':
         case 'nodes':
-        case 'operations':
-        case 'refs':
         case 'roots':
         case 'selection':
-        case 'statePatches':
+        case 'slice':
         case 'text': {
           value = createGroup(property);
           break;
         }
         case 'setField': {
-          value = (...args: Parameters<EditorUpdateMethods<V>['setField']>) =>
-            invoke((tx) => tx.setField(...args));
+          value = (
+            ...args: Parameters<
+              EditorCoreUpdateMethods<V, TExtensions>['setField']
+            >
+          ) => invoke((tx) => tx.setField(...args));
           break;
         }
         case 'value': {
           value = Object.freeze({
             repair: () => apiOptions.repairValue(),
             replace: (
-              input: Parameters<EditorUpdateMethods<V>['value']['replace']>[0]
+              input: Parameters<
+                EditorCoreUpdateMethods<V, TExtensions>['value']['replace']
+              >[0]
             ) => invoke((tx) => tx.value.replace(input)),
-          }) as EditorUpdateMethods<V>['value'];
+          }) as EditorCoreUpdateMethods<V, TExtensions>['value'];
           break;
         }
         default: {

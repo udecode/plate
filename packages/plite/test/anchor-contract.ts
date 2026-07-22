@@ -19,6 +19,45 @@ const paragraph = (text: string): Element => ({
 });
 
 describe('canonical anchor contract', () => {
+  it('rejects an explicit primary root key', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+
+    assert.throws(
+      () =>
+        Reflect.apply(editor.anchor, editor, [
+          [],
+          { deletion: 'nearest', root: 'main' },
+        ]),
+      /Omit root to target the primary document/
+    );
+
+    assert.throws(
+      () =>
+        Reflect.apply(editor.anchor, editor, [
+          { offset: 0, path: [0, 0], root: 'main' },
+          { deletion: 'nearest' },
+        ]),
+      /Omit root to target the primary document/
+    );
+  });
+
+  it('keeps the primary root implicit in public anchor metadata', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('main')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const primary = editor.anchor([], { deletion: 'nearest' });
+    const header = editor.anchor([], {
+      deletion: 'nearest',
+      root: 'header',
+    });
+
+    assert.equal(primary.root, undefined);
+    assert.equal(header.root, 'header');
+  });
+
   it('creates anchors from the transaction current state', () => {
     const editor = createEditor({ initialValue: [paragraph('one')] });
     let anchor: Anchor<Path> | null = null;

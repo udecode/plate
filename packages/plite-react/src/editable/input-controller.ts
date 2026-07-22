@@ -9,6 +9,7 @@ import { Hotkeys, isDOMElement, isDOMText } from '@platejs/plite-dom';
 import { IS_COMPOSING } from '@platejs/plite-dom/internal';
 
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
 import {
   shouldModelOwnPlainVerticalDOMCoverageExtension,
   shouldModelOwnPlainVerticalLargeDocumentExtension,
@@ -275,6 +276,10 @@ export const classifyKeyboardIntent = ({
     return 'clipboard';
   }
 
+  if (isSelectAllHotkey(nativeEvent)) {
+    return 'model-selection-move';
+  }
+
   if (
     Hotkeys.isSoftBreak(nativeEvent) ||
     Hotkeys.isSplitBlock(nativeEvent) ||
@@ -323,6 +328,13 @@ export const classifyKeyboardIntent = ({
 
   if (Hotkeys.isBold(nativeEvent) || Hotkeys.isItalic(nativeEvent)) {
     return 'format';
+  }
+
+  if (
+    nativeEvent.key.length === 1 &&
+    (nativeEvent.altKey || nativeEvent.ctrlKey || nativeEvent.metaKey)
+  ) {
+    return null;
   }
 
   if (isPlainTextKeyboardIntent(nativeEvent)) {
@@ -416,11 +428,13 @@ export const setEditableComposingState = ({
   editor,
   inputController,
   nextValue,
+  preserveEditorComposing = false,
   setIsComposing,
 }: {
   editor: ReactRuntimeEditor | Editor;
   inputController: EditableInputController;
   nextValue: boolean;
+  preserveEditorComposing?: boolean;
   setIsComposing: (nextValue: boolean) => void;
 }) => {
   inputController.state.isComposing = nextValue;
@@ -430,6 +444,8 @@ export const setEditableComposingState = ({
     inputController.state.selectionSource = 'unknown';
   }
   setIsComposing(nextValue);
-  IS_COMPOSING.set(editor, nextValue);
-  setEditorComposing(editor, nextValue);
+  const editorIsComposing = nextValue || preserveEditorComposing;
+
+  IS_COMPOSING.set(editor, editorIsComposing);
+  setEditorComposing(editor, editorIsComposing);
 };

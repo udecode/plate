@@ -1,12 +1,12 @@
 import { type ReactNode, useCallback, useMemo, useRef } from 'react';
-import type { EditorCommit, Operation, Path, RuntimeId } from '@platejs/plite';
+import type { EditorCommit, Path, RuntimeId } from '@platejs/plite';
 import { NodeApi } from '@platejs/plite';
-import { getSelectionRoot } from '../hooks/root-selection-cache';
+import { toInternalRoot } from './runtime-editor-api';
+import { toPublicRootOption } from '../root-key';
 import { useEditor } from '../hooks/use-editor';
 import { useEditorSelector } from '../hooks/use-editor-selector';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
-import { getCachedFullRootReplaceTopLevelRuntimeIds } from './runtime-editor-api';
 
 export type DOMStrategyRootConfig = {
   overscan: number;
@@ -119,173 +119,62 @@ const createSegmentPlanFromGroups = ({
   };
 };
 
-const isTextOperation = (operation: Operation | undefined) =>
-  operation?.type === 'insert_text' || operation?.type === 'remove_text';
-
-const isSelectionOperation = (operation: Operation | undefined) =>
-  operation?.type === 'set_selection';
-
-const hasNoOperations = (operations: readonly Operation[] | undefined) =>
-  !operations || operations.length === 0;
-
-const getOperationRoot = (operation: Operation) =>
-  ((operation as { root?: string }).root ?? 'main') as string;
-
-const getSingleFullRootReplaceOperation = (
-  operations: readonly Operation[] | undefined,
-  root: string
-) => {
-  if (!operations || operations.length === 0) {
-    return null;
-  }
-
-  const contentOperations = operations.filter(
-    (operation) => operation.type !== 'set_selection'
-  );
-
-  if (contentOperations.length !== 1) {
-    return null;
-  }
-
-  const operation = contentOperations[0];
-
-  return operation?.type === 'replace_children' &&
-    operation.path.length === 0 &&
-    operation.index === 0 &&
-    getOperationRoot(operation) === root
-    ? operation
-    : null;
-};
-
-const getChangedOperations = (
-  operations?: readonly Operation[],
-  change?: EditorCommit
-) => operations ?? change?.operations;
-
-const hasOperationForRoot = (root: string, operations?: readonly Operation[]) =>
-  operations?.some((operation) => getOperationRoot(operation) === root);
-
-const isRuntimeIdOperationForRoot = (operation: Operation, root: string) =>
-  !isTextOperation(operation) &&
-  !isSelectionOperation(operation) &&
-  getOperationRoot(operation) === root;
-
-const isStructureOperationForRoot = (operation: Operation, root: string) =>
-  !isTextOperation(operation) &&
-  !isSelectionOperation(operation) &&
-  getOperationRoot(operation) === root;
-
 const isSelectionChangeForRoot = (root: string, change: EditorCommit) =>
   change.selectionChanged &&
-  (getSelectionRoot(change.selectionBefore) === root ||
-    getSelectionRoot(change.selectionAfter) === root);
+  ((change.selectionBefore !== null &&
+    toInternalRoot(change.selectionBeforeRoot) === root) ||
+    (change.selectionAfter !== null &&
+      toInternalRoot(change.selectionAfterRoot) === root));
 
-const getSelectionPathKey = (selection: EditorCommit['selectionAfter']) =>
+const getSelectionPathKey = (
+  selection: EditorCommit['selectionAfter'],
+  root: string | undefined
+) =>
   selection
-    ? `${getSelectionRoot(selection)}:${selection.anchor.path.join('.')}:${selection.focus.path.join('.')}`
+    ? `${toInternalRoot(root)}:${selection.anchor.path.join('.')}:${selection.focus.path.join('.')}`
     : 'null';
 
 const isSelectionPathChangeForRoot = (root: string, change: EditorCommit) =>
   isSelectionChangeForRoot(root, change) &&
-  getSelectionPathKey(change.selectionBefore) !==
-    getSelectionPathKey(change.selectionAfter);
+  getSelectionPathKey(change.selectionBefore, change.selectionBeforeRoot) !==
+    getSelectionPathKey(change.selectionAfter, change.selectionAfterRoot);
 
 const topLevelRangesIncludeIndex = (
-  ranges: readonly (readonly [number, number])[] | null | undefined,
+  ranges: readonly (readonly [number, number])[],
   index: number
-) =>
-  ranges == null ||
-  ranges.some(([start, end]) => start <= index && end >= index);
+) => ranges.some(([start, end]) => start <= index && end >= index);
 
-const shouldUpdateRootRuntimeIds = (
-  root: string,
-  operations?: readonly Operation[],
-  change?: EditorCommit
-) => {
-  const changedOperations = getChangedOperations(operations, change);
-
-  return change
-    ? change.fullDocumentChanged ||
-        ((change.rootRuntimeIdsChanged || change.topLevelOrderChanged) &&
-          (changedOperations?.some((operation) =>
-            isRuntimeIdOperationForRoot(operation, root)
-          ) ??
-            true))
-    : hasNoOperations(changedOperations) ||
-        (changedOperations ?? []).some((operation) =>
-          isRuntimeIdOperationForRoot(operation, root)
-        );
-};
+const shouldUpdateRootRuntimeIds = (root: string, change?: EditorCommit) =>
+  !change || change.changed.has('root-order', toPublicRootOption(root));
 
 const shouldUpdateSelectedTopLevelIndex = (
   root: string,
-  operations?: readonly Operation[],
   change?: EditorCommit
-) => {
-  const changedOperations = getChangedOperations(operations, change);
+) =>
+  !change ||
+  isSelectionPathChangeForRoot(root, change) ||
+  change.changed.has('root-order', toPublicRootOption(root));
 
-  return change
-    ? change.fullDocumentChanged ||
-        isSelectionPathChangeForRoot(root, change) ||
-        ((change.rootRuntimeIdsChanged || change.topLevelOrderChanged) &&
-          (hasOperationForRoot(root, changedOperations) ?? true))
-    : hasNoOperations(changedOperations) ||
-        (changedOperations ?? []).some(
-          (operation) =>
-            isSelectionOperation(operation) || !isTextOperation(operation)
-        );
-};
+const shouldUpdatePlaceholderValue = (root: string, change?: EditorCommit) => {
+  const publicRoot = toPublicRootOption(root);
+  const firstTopLevelChanged = change
+    ? topLevelRangesIncludeIndex(change.changed.topLevelRanges(publicRoot), 0)
+    : false;
 
-const shouldUpdatePlaceholderValue = (
-  root: string,
-  operations?: readonly Operation[],
-  change?: EditorCommit
-) => {
-  const changedOperations = getChangedOperations(operations, change);
-  const firstTopLevelChanged = topLevelRangesIncludeIndex(
-    change?.dirtyTopLevelRanges,
-    0
+  return (
+    !change ||
+    change.changed.has('root-order', publicRoot) ||
+    (change.changed.has('document', publicRoot) && firstTopLevelChanged)
   );
-
-  return change
-    ? change.fullDocumentChanged ||
-        ((change.topLevelOrderChanged ||
-          ((change.textChanged || change.structureChanged) &&
-            firstTopLevelChanged)) &&
-          (hasOperationForRoot(root, changedOperations) ?? true))
-    : hasNoOperations(changedOperations) ||
-        (changedOperations ?? []).some(
-          (operation) => !isSelectionOperation(operation)
-        );
 };
 
-const shouldUpdateEditableRootCommit = (
-  root: string,
-  operations?: readonly Operation[],
-  change?: EditorCommit
-) => {
-  const changedOperations = getChangedOperations(operations, change);
+const shouldUpdateEditableRootCommit = (root: string, change?: EditorCommit) =>
+  !change ||
+  change.changed.has('structure', toPublicRootOption(root)) ||
+  change.changed.hasAny('state');
 
-  return change
-    ? change.fullDocumentChanged ||
-        ((change.rootRuntimeIdsChanged ||
-          change.structureChanged ||
-          change.topLevelOrderChanged) &&
-          (changedOperations?.some((operation) =>
-            isStructureOperationForRoot(operation, root)
-          ) ??
-            true)) ||
-        change.dirtyStateKeys.length > 0
-    : hasNoOperations(changedOperations) ||
-        (changedOperations ?? []).some((operation) =>
-          isStructureOperationForRoot(operation, root)
-        );
-};
-
-const shouldUpdateRootDocumentEpoch = (
-  operations?: readonly Operation[],
-  change?: EditorCommit
-) => (change ? change.fullDocumentChanged : hasNoOperations(operations));
+const shouldUpdateRootDocumentEpoch = (root: string, change?: EditorCommit) =>
+  !change || change.changed.has('replace', toPublicRootOption(root));
 
 const sameRuntimeIds = (
   left: readonly RuntimeId[],
@@ -294,21 +183,8 @@ const sameRuntimeIds = (
   left.length === right.length &&
   left.every((runtimeId, index) => runtimeId === right[index]);
 
-const selectRootRuntimeIds = (
-  editor: ReactRuntimeEditor,
-  root: string,
-  operations?: readonly Operation[]
-) => {
-  const fullRootReplace = getSingleFullRootReplaceOperation(operations, root);
-  const cachedRuntimeIds = fullRootReplace
-    ? getCachedFullRootReplaceTopLevelRuntimeIds(fullRootReplace)
-    : null;
-
-  if (cachedRuntimeIds) {
-    return cachedRuntimeIds;
-  }
-
-  return editor.read(
+const selectRootRuntimeIds = (editor: ReactRuntimeEditor) =>
+  editor.read(
     (state) =>
       state.nodes
         .children()
@@ -319,19 +195,16 @@ const selectRootRuntimeIds = (
         })
         .filter(Boolean) as RuntimeId[]
   );
-};
 
 export const useRootRuntimeIds = () => {
   const editor = useEditor<ReactRuntimeEditor>();
-  const root = editor.read((state) => state.view.root());
+  const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
-    (editor: ReactRuntimeEditor, operations?: readonly Operation[]) =>
-      selectRootRuntimeIds(editor, root, operations),
+    (editor: ReactRuntimeEditor) => selectRootRuntimeIds(editor),
     [root]
   );
   const shouldUpdate = useCallback(
-    (operations?: readonly Operation[], change?: EditorCommit) =>
-      shouldUpdateRootRuntimeIds(root, operations, change),
+    (change?: EditorCommit) => shouldUpdateRootRuntimeIds(root, change),
     [root]
   );
 
@@ -346,30 +219,40 @@ export const useRootRuntimeIds = () => {
 };
 
 export const useRootDocumentEpoch = () => {
-  const lastEpochRef = useRef(0);
+  const editor = useEditor<ReactRuntimeEditor>();
+  const root = toInternalRoot(editor.read((state) => state.view.root()));
+  const lastEpochRef = useRef({ root, value: 0 });
+
+  if (lastEpochRef.current.root !== root) {
+    lastEpochRef.current = { root, value: 0 };
+  }
   const selector = useCallback(
     (editor: ReactRuntimeEditor) =>
       editor.read((state) => {
         const commit = state.lastCommit();
 
-        if (commit?.fullDocumentChanged) {
-          lastEpochRef.current = commit.version;
+        if (commit?.changed.has('replace', toPublicRootOption(root))) {
+          lastEpochRef.current.value = commit.version;
         }
 
-        return lastEpochRef.current;
+        return lastEpochRef.current.value;
       }),
-    []
+    [root]
+  );
+  const shouldUpdate = useCallback(
+    (change?: EditorCommit) => shouldUpdateRootDocumentEpoch(root, change),
+    [root]
   );
 
   return useEditorSelector(selector, Object.is, {
     profileId: 'root-document-epoch',
-    shouldUpdate: shouldUpdateRootDocumentEpoch,
+    shouldUpdate,
   });
 };
 
 export const useTopLevelSelectionIndex = (enabled: boolean) => {
   const editor = useEditor<ReactRuntimeEditor>();
-  const root = editor.read((state) => state.view.root());
+  const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
     (editor: ReactRuntimeEditor) => {
       if (!enabled) {
@@ -389,8 +272,8 @@ export const useTopLevelSelectionIndex = (enabled: boolean) => {
     [enabled]
   );
   const shouldUpdate = useCallback(
-    (operations?: readonly Operation[], change?: EditorCommit) =>
-      enabled && shouldUpdateSelectedTopLevelIndex(root, operations, change),
+    (change?: EditorCommit) =>
+      enabled && shouldUpdateSelectedTopLevelIndex(root, change),
     [enabled, root]
   );
 
@@ -418,7 +301,7 @@ const sameSelectionPaths = (
 
 export const useSelectionPaths = (enabled: boolean) => {
   const editor = useEditor<ReactRuntimeEditor>();
-  const root = editor.read((state) => state.view.root());
+  const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
     (editor: ReactRuntimeEditor) => {
       if (!enabled) {
@@ -436,8 +319,8 @@ export const useSelectionPaths = (enabled: boolean) => {
     [enabled]
   );
   const shouldUpdate = useCallback(
-    (operations?: readonly Operation[], change?: EditorCommit) =>
-      enabled && shouldUpdateSelectedTopLevelIndex(root, operations, change),
+    (change?: EditorCommit) =>
+      enabled && shouldUpdateSelectedTopLevelIndex(root, change),
     [enabled, root]
   );
 
@@ -449,7 +332,7 @@ export const useSelectionPaths = (enabled: boolean) => {
 
 export const usePlaceholderValue = (placeholder?: ReactNode) => {
   const editor = useEditor<ReactRuntimeEditor>();
-  const root = editor.read((state) => state.view.root());
+  const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
     (editor: ReactRuntimeEditor) =>
       editor.read(
@@ -465,8 +348,7 @@ export const usePlaceholderValue = (placeholder?: ReactNode) => {
   );
 
   const shouldUpdate = useCallback(
-    (operations?: readonly Operation[], change?: EditorCommit) =>
-      shouldUpdatePlaceholderValue(root, operations, change),
+    (change?: EditorCommit) => shouldUpdatePlaceholderValue(root, change),
     [root]
   );
 
@@ -478,10 +360,9 @@ export const usePlaceholderValue = (placeholder?: ReactNode) => {
 
 export const useEditableRootCommitWakeup = () => {
   const editor = useEditor<ReactRuntimeEditor>();
-  const root = editor.read((state) => state.view.root());
+  const root = toInternalRoot(editor.read((state) => state.view.root()));
   const shouldUpdate = useCallback(
-    (operations?: readonly Operation[], change?: EditorCommit) =>
-      shouldUpdateEditableRootCommit(root, operations, change),
+    (change?: EditorCommit) => shouldUpdateEditableRootCommit(root, change),
     [root]
   );
 

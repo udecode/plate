@@ -105,12 +105,9 @@ const isElement = (
   { deep = false }: ElementIsElementOptions = {}
 ): value is Element => {
   if (!isObject(value)) return false;
-
   if (
-    Array.isArray(value.children) &&
-    Array.isArray(value.operations) &&
-    'selection' in value &&
-    'marks' in value
+    (typeof value.read === 'function' && typeof value.update === 'function') ||
+    ('selection' in value && typeof value.insertText === 'function')
   ) {
     return false;
   }

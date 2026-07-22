@@ -62,36 +62,24 @@ export const getSourcesForChange = (
 
   if (
     change.selectionChanged ||
-    (change.selectionImpactRuntimeIds?.length ?? 0) > 0
+    change.changed.runtimeIdsAll('selection').length > 0
   ) {
     sources.push('selection');
   }
 
-  if (change.classes.includes('text')) {
+  if (change.changed.hasAny('text')) {
     sources.push('text');
   }
 
-  if (
-    change.classes.includes('structural') ||
-    change.nodeImpactRuntimeIds == null ||
-    change.nodeImpactRuntimeIds.length > 0
-  ) {
+  if (change.changed.hasAny('document')) {
     sources.push('node');
   }
 
-  if (
-    change.classes.includes('text') ||
-    change.classes.includes('structural') ||
-    change.classes.includes('replace')
-  ) {
+  if (change.changed.hasAny('document')) {
     sources.push('decoration');
   }
 
-  if (
-    change.classes.includes('text') ||
-    change.classes.includes('structural') ||
-    change.classes.includes('replace')
-  ) {
+  if (change.changed.hasAny('document')) {
     sources.push('root');
   }
 

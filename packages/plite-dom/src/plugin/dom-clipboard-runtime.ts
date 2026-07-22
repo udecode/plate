@@ -1,26 +1,14 @@
+import { dispatchCommand, void as editorVoid } from '@platejs/plite/internal';
 import {
-  above as editorAbove,
-  elementReadOnly as editorElementReadOnly,
-  getActiveEditorTransaction,
-  getExtensionRegistry as editorGetExtensionRegistry,
-  getSnapshot as editorGetSnapshot,
-  isBlock as editorIsBlock,
-  isInline as editorIsInline,
-  void as editorVoid,
-} from '@platejs/plite/internal';
-import {
-  type DescendantIn,
-  RangeApi,
+  ContentSlice,
+  type ContentSlice as ContentSliceValue,
+  type Descendant,
+  editorCommands,
   NodeApi as PliteNode,
-  type Text,
+  type Range,
+  RangeApi,
   type Value,
 } from '@platejs/plite';
-import {
-  applyOperation,
-  getEditorCurrentMarks,
-  getEditorTransformRegistry,
-  setEditorMarks,
-} from '@platejs/plite/internal';
 import {
   getPlainText,
   getPliteFragmentAttribute,
@@ -28,9 +16,11 @@ import {
   isDOMText,
 } from '../utils/dom';
 import { DOMCoverage } from './dom-coverage';
-import { type DOMClipboardInsertDataHandler, DOMEditor } from './dom-editor';
+import { DOMEditor } from './dom-editor';
+import { insertHostData, writeHostFragmentData } from './host-codec';
 
-const NEWLINE_SPLIT_RE = /\r\n|\r|\n/;
+const PLITE_FRAGMENT_ATTRIBUTE_RE = /\bdata-plite-fragment\s*=/i;
+const OPENING_HTML_TAG_RE = /<[A-Za-z][^<>]*?>/;
 const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
 const PLITE_FRAGMENT_FORMAT_ATTRIBUTE = 'data-plite-fragment-format';
 
@@ -57,6 +47,11 @@ export const setDOMClipboardFormatKey = (
   EDITOR_TO_CLIPBOARD_FORMAT_KEY.set(editor, clipboardFormatKey);
 };
 
+export const clearDOMClipboardFormatKey = (editor: object) => {
+  EDITOR_TO_CLIPBOARD_FORMAT_KEY.delete(editor);
+};
+
+/** Read the configured MIME suffix used for exact Plite clipboard payloads. */
 export const getDOMClipboardFormatKey = (editor: object) =>
   EDITOR_TO_CLIPBOARD_FORMAT_KEY.get(editor) ?? DEFAULT_CLIPBOARD_FORMAT_KEY;
 
@@ -66,9 +61,57 @@ const escapeHtmlText = (text: string) =>
 const escapeHtmlAttribute = (text: string) =>
   escapeHtmlText(text).replaceAll('"', '&quot;');
 
-const getFragmentText = <V extends Value>(
-  fragment: readonly DescendantIn<V>[]
-) => fragment.map((node) => PliteNode.string(node)).join('\n');
+const attachFragmentMetadataToHtml = (
+  html: string,
+  encoded: string,
+  clipboardFormatKey: string
+) => {
+  const escapedEncoded = escapeHtmlAttribute(encoded);
+  const escapedFormatKey = escapeHtmlAttribute(clipboardFormatKey);
+  const attributes = ` data-plite-fragment="${escapedEncoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapedFormatKey}"`;
+
+  if (
+    html.includes(`data-plite-fragment="${escapedEncoded}"`) &&
+    html.includes(`${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapedFormatKey}"`)
+  ) {
+    return html;
+  }
+
+  if (PLITE_FRAGMENT_ATTRIBUTE_RE.test(html)) {
+    return `<span${attributes}>${html}</span>`;
+  }
+
+  const openingTag = OPENING_HTML_TAG_RE.exec(html);
+
+  if (!openingTag) return `<span${attributes}>${html}</span>`;
+
+  const tag = openingTag[0];
+  const insertionOffset = tag.endsWith('/>') ? tag.length - 2 : tag.length - 1;
+  const markedTag = `${tag.slice(0, insertionOffset)}${attributes}${tag.slice(insertionOffset)}`;
+
+  return `${html.slice(0, openingTag.index)}${markedTag}${html.slice(openingTag.index + tag.length)}`;
+};
+
+const preserveFragmentMetadataInHostHtml = (
+  data: Pick<DataTransfer, 'getData' | 'setData'>,
+  encoded: string,
+  clipboardFormatKey: string,
+  writtenFormats: readonly string[]
+) => {
+  if (!writtenFormats.includes('text/html')) return;
+
+  data.setData(
+    'text/html',
+    attachFragmentMetadataToHtml(
+      data.getData('text/html'),
+      encoded,
+      clipboardFormatKey
+    )
+  );
+};
+
+const getFragmentText = <V extends Value>(slice: ContentSliceValue<V>) =>
+  slice.content.map((node) => PliteNode.string(node)).join('\n');
 
 /** HTML payload for a serialized Plite fragment. */
 export type DOMFragmentDataHtml =
@@ -82,17 +125,57 @@ export type DOMFragmentDataHtml =
 /** Payload written to browser clipboard data for a Plite fragment. */
 export type DOMFragmentDataPayload<V extends Value = Value> = {
   clipboardFormatKey?: string;
-  fragment: readonly DescendantIn<V>[];
   html: DOMFragmentDataHtml;
+  slice: ContentSliceValue<V>;
   text?: string;
   window?: Pick<Window, 'btoa'>;
 };
 
+const DOM_FRAGMENT_DATA_VERSION = 1;
+
+const stringifyDOMFragmentData = <V extends Value>(
+  slice: ContentSliceValue<V>
+) => {
+  const nodes = new WeakSet<object>();
+  const pending: Descendant[] = [...slice.content];
+
+  while (pending.length > 0) {
+    const node = pending.pop()!;
+
+    nodes.add(node);
+
+    if (PliteNode.isElement(node)) {
+      pending.push(...node.children);
+    }
+  }
+
+  return JSON.stringify(
+    { slice, version: DOM_FRAGMENT_DATA_VERSION },
+    (_key, value: unknown) => {
+      if (typeof value !== 'object' || value === null || !nodes.has(value)) {
+        return value;
+      }
+
+      if (PliteNode.isText(value)) {
+        const { text, ...props } = value;
+
+        return { ...props, text };
+      }
+
+      if (!PliteNode.isElement(value)) return value;
+
+      const { children, ...props } = value;
+
+      return { ...props, children };
+    }
+  );
+};
+
 const encodeDOMFragmentData = <V extends Value>(
-  fragment: readonly DescendantIn<V>[],
+  slice: ContentSliceValue<V>,
   window?: Pick<Window, 'btoa'>
 ) => {
-  const string = JSON.stringify(fragment);
+  const string = stringifyDOMFragmentData(slice);
   const btoa = window?.btoa ?? globalThis.btoa;
 
   return btoa(encodeURIComponent(string));
@@ -103,219 +186,112 @@ export const writeDOMFragmentData = <V extends Value>(
   data: Pick<DataTransfer, 'setData'>,
   {
     clipboardFormatKey = DEFAULT_CLIPBOARD_FORMAT_KEY,
-    fragment,
     html,
-    text = getFragmentText(fragment),
+    slice,
+    text,
     window,
   }: DOMFragmentDataPayload<V>
 ) => {
-  const encoded = encodeDOMFragmentData(fragment, window);
+  const sourceSlice = ContentSlice.fromJSON<V>(slice);
+  const sourceText = text ?? getFragmentText(sourceSlice);
+  const encoded = encodeDOMFragmentData(sourceSlice, window);
   const htmlPayload =
     typeof html === 'function'
-      ? html({ clipboardFormatKey, encoded, text })
+      ? html({ clipboardFormatKey, encoded, text: sourceText })
       : html;
 
   data.setData(`application/${clipboardFormatKey}`, encoded);
-  data.setData('text/plain', text);
-  data.setData('text/html', htmlPayload);
+  data.setData('text/plain', sourceText);
+  data.setData(
+    'text/html',
+    attachFragmentMetadataToHtml(htmlPayload, encoded, clipboardFormatKey)
+  );
 
   return encoded;
 };
 
-const samePoint = (
-  left: { offset: number; path: readonly number[] },
-  right: { offset: number; path: readonly number[] }
-) =>
-  left.offset === right.offset &&
-  left.path.length === right.path.length &&
-  left.path.every((segment, index) => segment === right.path[index]);
-
-const createPlainTextFallbackText = (
-  textNode: Text,
-  text: string,
-  activeMarks: ReturnType<typeof getEditorCurrentMarks>
-) => {
-  const next = { ...textNode, text };
-
-  return activeMarks ? { ...next, ...activeMarks } : next;
-};
-
-const replaceSingleEmptyBlockWithPlainTextLines = (
-  editor: DOMEditor<any>,
-  lines: string[],
-  activeMarks: ReturnType<typeof getEditorCurrentMarks>
-) => {
-  const snapshot = editorGetSnapshot(editor);
-  const { selection } = snapshot;
-
-  if (
-    !selection ||
-    !RangeApi.isCollapsed(selection) ||
-    snapshot.children.length !== 1 ||
-    !samePoint(selection.anchor, { path: [0, 0], offset: 0 })
-  ) {
-    return false;
-  }
-
-  if (
-    editorVoid(editor, { at: selection.anchor }) ||
-    editorElementReadOnly(editor, { at: selection.anchor })
-  ) {
-    return false;
-  }
-
-  const [block] = snapshot.children;
-
-  if (
-    !PliteNode.isElement(block) ||
-    block.children.length !== 1 ||
-    !PliteNode.isText(block.children[0]) ||
-    block.children[0].text !== ''
-  ) {
-    return false;
-  }
-
-  const [textNode] = block.children;
-  const lastLine = lines.at(-1) ?? '';
-  const newChildren = lines.map((line) => ({
-    ...block,
-    children: [createPlainTextFallbackText(textNode, line, activeMarks)],
-  }));
-  const newSelection = {
-    anchor: { path: [lines.length - 1, 0], offset: lastLine.length },
-    focus: { path: [lines.length - 1, 0], offset: lastLine.length },
-  };
-
-  applyOperation(editor, {
-    children: snapshot.children,
-    index: 0,
-    newChildren,
-    newSelection,
-    path: [],
-    selection: snapshot.selection,
-    type: 'replace_children',
-  });
-
-  return true;
-};
-
-const insertPlainTextLinesAsFragment = (
-  editor: DOMEditor<any>,
-  lines: string[],
-  activeMarks: ReturnType<typeof getEditorCurrentMarks>
-) => {
-  const snapshot = editorGetSnapshot(editor);
-  const { selection } = snapshot;
-
-  if (!selection) {
-    return false;
-  }
-
-  const [start] = RangeApi.edges(selection);
-
-  if (
-    editorVoid(editor, { at: start }) ||
-    editorElementReadOnly(editor, { at: start })
-  ) {
-    return false;
-  }
-
-  const blockMatch = editorAbove(editor, {
-    at: start,
-    match: (node) => PliteNode.isElement(node) && editorIsBlock(editor, node),
-  });
-
-  if (!blockMatch) {
-    return false;
-  }
-
-  const [block] = blockMatch;
-  const text = PliteNode.get(editor, start.path);
-
-  if (!PliteNode.isElement(block) || !PliteNode.isText(text)) {
-    return false;
-  }
-
-  const fragment = lines.map((line) => ({
-    ...block,
-    children: [createPlainTextFallbackText(text, line, activeMarks)],
-  }));
-
-  getEditorTransformRegistry(editor).insertFragment(fragment);
-  return true;
-};
-
-const isSelectedInlineTextRange = (editor: DOMEditor<any>) => {
-  const selection = editorGetSnapshot(editor).selection;
-
-  if (!selection || RangeApi.isCollapsed(selection)) {
-    return false;
-  }
-
-  const [start, end] = RangeApi.edges(selection);
-
-  if (
-    start.path.length === 0 ||
-    end.path.length === 0 ||
-    start.path.length !== end.path.length ||
-    !start.path.every((segment, index) => segment === end.path[index])
-  ) {
-    return false;
-  }
-
-  const inlineMatch = editorAbove(editor, {
-    at: start,
-    match: (node) => PliteNode.isElement(node) && editorIsInline(editor, node),
-  });
-
-  if (!inlineMatch) {
-    return false;
-  }
-
-  const [, inlinePath] = inlineMatch;
-
-  return (
-    start.path.length > inlinePath.length &&
-    inlinePath.every(
-      (segment, index) =>
-        start.path[index] === segment && end.path[index] === segment
-    )
-  );
-};
-
-const decodeClipboardFragment = <V extends Value>(
+/** Write one exact Plite slice plus every configured host representation. */
+export const writeDOMHostFragmentData = <V extends Value>(
   editor: DOMEditor<V>,
-  fragment: string
-): DescendantIn<V>[] | null => {
+  data: Pick<DataTransfer, 'getData' | 'setData'>,
+  payload: DOMFragmentDataPayload<V>
+) => {
+  const clipboardFormatKey =
+    payload.clipboardFormatKey ?? getDOMClipboardFormatKey(editor);
+  let window = payload.window;
+
+  if (!window) {
+    try {
+      window = DOMEditor.getWindow(editor);
+    } catch {
+      // Headless host adapters use the ambient encoder.
+    }
+  }
+  const encoded = writeDOMFragmentData(data, {
+    ...payload,
+    clipboardFormatKey,
+    window,
+  });
+
+  preserveFragmentMetadataInHostHtml(
+    data,
+    encoded,
+    clipboardFormatKey,
+    writeHostFragmentData(editor, data, payload.slice)
+  );
+
+  return encoded;
+};
+
+const decodeClipboardSlice = <V extends Value>(
+  fragment: string,
+  window?: Pick<Window, 'atob'>
+): ContentSliceValue<V> | null => {
   try {
     const decoded = decodeURIComponent(
-      DOMEditor.getWindow(editor).atob(fragment)
+      (window?.atob ?? globalThis.atob)(fragment)
     );
-    const parsed = JSON.parse(decoded);
+    const parsed: unknown = JSON.parse(decoded);
 
-    if (Array.isArray(parsed)) {
-      return parsed as DescendantIn<V>[];
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      return null;
     }
+
+    const envelope = parsed as Record<string, unknown>;
+    const keys = Object.keys(envelope).sort();
+
+    if (
+      keys.length !== 2 ||
+      keys[0] !== 'slice' ||
+      keys[1] !== 'version' ||
+      envelope.version !== DOM_FRAGMENT_DATA_VERSION
+    ) {
+      return null;
+    }
+
+    return ContentSlice.fromJSON<V>(envelope.slice);
   } catch {
     return null;
   }
-
-  return null;
 };
 
-const writeModelBackedSelectionData = <V extends Value>(
+const writeModelBackedRangeData = <V extends Value>(
   editor: DOMEditor<V>,
-  data: Pick<DataTransfer, 'setData'>,
-  clipboardFormatKey: string
+  data: Pick<DataTransfer, 'getData' | 'setData'>,
+  clipboardFormatKey: string,
+  range: Range
 ) => {
-  const fragment = editor.read((state) => state.fragment());
+  const slice = editor.read.slice.get({ at: range });
 
-  writeDOMFragmentData(data, {
+  writeDOMHostFragmentData(editor, data, {
     clipboardFormatKey,
-    fragment,
     html: ({ clipboardFormatKey, encoded, text }) =>
       `<span data-plite-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(clipboardFormatKey)}">${escapeHtmlText(text)}</span>`,
-    window: DOMEditor.getWindow(editor),
+    slice,
   });
 };
 
@@ -335,22 +311,30 @@ export const writeDOMSelectionData = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>
 ) => {
-  const clipboardFormatKey = getDOMClipboardFormatKey(editor);
   const selection = editor.read((state) => state.selection());
 
-  if (!selection) {
-    return;
-  }
+  if (!selection) return;
 
-  const [start, end] = RangeApi.edges(selection);
+  return writeDOMRangeData(editor, data, selection);
+};
+
+/** Write clipboard payloads for one model range without changing selection. */
+export const writeDOMRangeData = <V extends Value>(
+  editor: DOMEditor<V>,
+  data: Pick<DataTransfer, 'getData' | 'setData'>,
+  range: Range
+) => {
+  const clipboardFormatKey = getDOMClipboardFormatKey(editor);
+
+  const [start, end] = RangeApi.edges(range);
   const startVoid = editorVoid(editor, { at: start.path });
   const endVoid = editorVoid(editor, { at: end.path });
 
-  if (RangeApi.isCollapsed(selection) && !startVoid) {
+  if (RangeApi.isCollapsed(range) && !startVoid) {
     return;
   }
 
-  let coveredBoundaries = DOMCoverage.getBoundariesForRange(editor, selection);
+  let coveredBoundaries = DOMCoverage.getBoundariesForRange(editor, range);
   const materializedBoundaryIds = new Set<string>();
 
   for (const boundary of coveredBoundaries) {
@@ -360,7 +344,7 @@ export const writeDOMSelectionData = <V extends Value>(
         boundary.boundaryId,
         'copy',
         {
-          range: selection,
+          range,
         }
       );
 
@@ -371,7 +355,7 @@ export const writeDOMSelectionData = <V extends Value>(
   }
 
   if (materializedBoundaryIds.size > 0) {
-    coveredBoundaries = DOMCoverage.getBoundariesForRange(editor, selection);
+    coveredBoundaries = DOMCoverage.getBoundariesForRange(editor, range);
   }
 
   const hasPolicyBoundaries = coveredBoundaries.length > 0;
@@ -383,20 +367,19 @@ export const writeDOMSelectionData = <V extends Value>(
   );
 
   if (shouldWriteModelBackedSelection) {
-    writeModelBackedSelectionData(editor, data, clipboardFormatKey);
+    writeModelBackedRangeData(editor, data, clipboardFormatKey, range);
     return;
   }
 
-  // Create a fake selection so that we can add a Base64-encoded copy of the
-  // fragment to the HTML, to decode on future pastes.
-  const domRange = DOMEditor.resolveDOMRange(editor, selection);
+  // Clone the range so the encoded fragment can be recovered from HTML paste.
+  const domRange = DOMEditor.resolveDOMRange(editor, range);
 
   if (!domRange) {
     if (hasPolicyBoundaries) {
       return;
     }
 
-    writeModelBackedSelectionData(editor, data, clipboardFormatKey);
+    writeModelBackedRangeData(editor, data, clipboardFormatKey, range);
     return;
   }
   let contents = domRange.cloneContents();
@@ -482,11 +465,10 @@ export const writeDOMSelectionData = <V extends Value>(
   contents.ownerDocument.body.appendChild(div);
 
   if (!hasPolicyBoundaries) {
-    const fragment = editor.read((state) => state.fragment());
+    const slice = editor.read.slice.get({ at: range });
 
-    writeDOMFragmentData(data, {
+    writeDOMHostFragmentData(editor, data, {
       clipboardFormatKey,
-      fragment,
       html: ({ encoded }) => {
         attachElement.setAttribute('data-plite-fragment', encoded);
         attachElement.setAttribute(
@@ -497,7 +479,7 @@ export const writeDOMSelectionData = <V extends Value>(
         return div.innerHTML;
       },
       text: getPlainText(div),
-      window: DOMEditor.getWindow(editor),
+      slice,
     });
   } else {
     data.setData('text/html', div.innerHTML);
@@ -511,30 +493,30 @@ export const insertDOMData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
 ): boolean => {
-  const handlers = editorGetExtensionRegistry(editor).capabilities.get(
-    'clipboard.insertData'
-  ) as DOMClipboardInsertDataHandler<V>[] | undefined;
+  if (insertDOMFragmentData(editor, data)) return true;
 
-  for (const handler of handlers ?? []) {
-    if (handler(editor, data)) {
-      return true;
-    }
-  }
-
-  return insertDOMFragmentData(editor, data) || insertDOMTextData(editor, data);
+  return insertHostData(editor, data);
 };
 
 export const readDOMFragmentData = <V extends Value>(
   editor: DOMEditor<V>,
-  data: DataTransfer
-): DescendantIn<V>[] | null => {
-  const clipboardFormatKey = getDOMClipboardFormatKey(editor);
+  data: Pick<DataTransfer, 'getData'>,
+  clipboardFormatKey = getDOMClipboardFormatKey(editor)
+): ContentSliceValue<V> | null => {
   const fragment =
     data.getData(`application/${clipboardFormatKey}`) ||
     getPliteFragmentAttribute(data, clipboardFormatKey);
 
   if (fragment) {
-    return decodeClipboardFragment(editor, fragment);
+    let window: Pick<Window, 'atob'> | undefined;
+
+    try {
+      window = DOMEditor.getWindow(editor);
+    } catch {
+      // Headless host adapters use the ambient decoder.
+    }
+
+    return decodeClipboardSlice(fragment, window);
   }
 
   return null;
@@ -544,87 +526,18 @@ export const insertDOMFragmentData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
 ): boolean => {
-  const parsed = readDOMFragmentData(editor, data);
+  const slice = readDOMFragmentData(editor, data);
 
-  if (parsed) {
-    getEditorTransformRegistry(editor).insertFragment(parsed);
-    return true;
+  if (slice) {
+    return dispatchCommand(editor, editorCommands.replaceSlice, {
+      slice,
+    });
   }
 
   return false;
 };
 
-const insertDOMTextDataInTransaction = (
-  editor: DOMEditor<any>,
+export const insertDOMTextData = <V extends Value>(
+  editor: DOMEditor<V>,
   data: DataTransfer
-): boolean => {
-  const text = data.getData('text/plain');
-
-  if (text) {
-    const lines = text.split(NEWLINE_SPLIT_RE);
-    const activeMarks = getEditorCurrentMarks(editor);
-
-    if (
-      lines.length === 1 &&
-      isSelectedInlineTextRange(editor) &&
-      insertPlainTextLinesAsFragment(editor, lines, activeMarks)
-    ) {
-      if (activeMarks) {
-        setEditorMarks(editor, null);
-      }
-      return true;
-    }
-
-    if (
-      lines.length > 1 &&
-      (replaceSingleEmptyBlockWithPlainTextLines(editor, lines, activeMarks) ||
-        insertPlainTextLinesAsFragment(editor, lines, activeMarks))
-    ) {
-      if (activeMarks) {
-        setEditorMarks(editor, null);
-      }
-      return true;
-    }
-
-    const transforms = getEditorTransformRegistry(editor);
-    let split = false;
-
-    for (const line of lines) {
-      if (split) {
-        transforms.splitNodes({ always: true });
-      }
-
-      if (activeMarks && line.length > 0) {
-        transforms.insertNodes(
-          { text: line, ...activeMarks },
-          { select: true }
-        );
-      } else {
-        transforms.insertText(line);
-      }
-      split = true;
-    }
-    if (activeMarks) {
-      setEditorMarks(editor, null);
-    }
-    return true;
-  }
-  return false;
-};
-
-export const insertDOMTextData = (
-  editor: DOMEditor<any>,
-  data: DataTransfer
-): boolean => {
-  if (getActiveEditorTransaction(editor)) {
-    return insertDOMTextDataInTransaction(editor, data);
-  }
-
-  let inserted = false;
-
-  editor.update(() => {
-    inserted = insertDOMTextDataInTransaction(editor, data);
-  });
-
-  return inserted;
-};
+): boolean => insertHostData(editor, data, { format: 'text/plain' });

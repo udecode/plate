@@ -32,7 +32,7 @@ export const moveListItemDown = (
   }
 
   // Previous sibling is the new parent
-  const previousSiblingItem = editor.read.nodes.get(previousListItemPath);
+  const previousSiblingItem = tx.nodes.get(previousListItemPath);
 
   if (previousSiblingItem) {
     const [previousNode, previousPath] = previousSiblingItem;

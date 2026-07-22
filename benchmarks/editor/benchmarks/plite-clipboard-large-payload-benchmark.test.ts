@@ -50,8 +50,11 @@ type BenchmarkSummary = {
   config: {
     authorityArtifact: boolean;
     hugeCutBlocks: number;
+    issueTargetIterations: number;
     issueTargetStressLines: number;
     issueTargetsEnabled: boolean;
+    processIsolation: 'none' | 'support-cut-issue';
+    workerPids?: { cut: number; issue: number; support: number };
   };
   correctnessFailures: string[];
   issueTargets: Record<string, BenchmarkLane>;
@@ -274,6 +277,7 @@ describe('clipboard large-payload benchmark authority', () => {
           ...process.env,
           PLITE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS: '20',
           PLITE_CLIPBOARD_BENCH_HUGE_CUT_ITERATIONS: '1',
+          PLITE_CLIPBOARD_BENCH_ISOLATE: '1',
           PLITE_CLIPBOARD_BENCH_ISSUE_ITERATIONS: '1',
           PLITE_CLIPBOARD_BENCH_ISSUE_STRESS_LINES: '20',
           PLITE_CLIPBOARD_BENCH_ISSUE_TARGETS: '1',
@@ -301,8 +305,14 @@ describe('clipboard large-payload benchmark authority', () => {
     assert.deepEqual(summary.correctnessFailures, []);
     assert.equal(summary.config.authorityArtifact, false);
     assert.equal(summary.config.hugeCutBlocks, 20);
+    assert.equal(summary.config.issueTargetIterations, 1);
     assert.equal(summary.config.issueTargetStressLines, 20);
     assert.equal(summary.config.issueTargetsEnabled, true);
+    assert.equal(summary.config.processIsolation, 'support-cut-issue');
+    assert.equal(
+      new Set(Object.values(summary.config.workerPids ?? {})).size,
+      3
+    );
     assert.equal(summary.metrics.plite_clipboard_correctness_failures, 0);
     assert.equal(summary.metrics.plite_clipboard_gc_available, 1);
     assert.equal(summary.thresholdPolicy.releaseGate, false);

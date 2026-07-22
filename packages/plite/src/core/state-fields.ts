@@ -1,26 +1,71 @@
 import type {
   Editor,
   EditorStateField,
-  EditorStatePatch,
   StateFieldValueInput,
 } from '../interfaces/editor';
-import { cloneValue } from './clone';
+import { getExtensionRegistry } from './extension-registry';
 
-const STATE_FIELDS = new WeakMap<Editor, Map<string, EditorStateField<any>>>();
+const HYDRATED_STATE_FIELDS = new WeakMap<Editor, Set<string>>();
 
-export const getStateFieldMap = (editor: Editor) => {
-  let fields = STATE_FIELDS.get(editor);
+export const getStateFieldMap = (editor: Editor) =>
+  new Map(
+    [...getExtensionRegistry(editor).stateFields].map(([key, registration]) => [
+      key,
+      registration.field,
+    ])
+  );
 
-  if (!fields) {
-    fields = new Map();
-    STATE_FIELDS.set(editor, fields);
+/**
+ * All descriptors whose identity has belonged to this editor revision.
+ *
+ * Inactive descriptors remain serialization authorities for their stored
+ * values, without becoming readable or participating in effects.
+ */
+export const getStateFieldIdentityMap = (editor: Editor) =>
+  new Map(getExtensionRegistry(editor).stateFieldIdentities);
+
+export const getInstalledStateField = <TValue>(
+  editor: Editor,
+  field: EditorStateField<TValue>
+): EditorStateField<TValue> => {
+  const installed = getExtensionRegistry(editor).stateFields.get(field.key);
+
+  if (!installed) {
+    throw new Error(`State field "${field.key}" is not installed.`);
+  }
+  if (installed.field !== field) {
+    throw new Error(
+      `State field "${field.key}" does not match the installed stable descriptor.`
+    );
   }
 
-  return fields;
+  return field;
 };
 
 export const initializeStateFieldMap = (editor: Editor) => {
-  STATE_FIELDS.set(editor, new Map());
+  HYDRATED_STATE_FIELDS.set(editor, new Set());
+};
+
+export const isStateFieldHydrated = (editor: Editor, key: string) =>
+  HYDRATED_STATE_FIELDS.get(editor)?.has(key) ?? false;
+
+export const markStateFieldHydrated = (editor: Editor, key: string) => {
+  const hydrated = HYDRATED_STATE_FIELDS.get(editor) ?? new Set<string>();
+
+  hydrated.add(key);
+  HYDRATED_STATE_FIELDS.set(editor, hydrated);
+};
+
+export const restoreStateFieldHydration = (
+  editor: Editor,
+  key: string,
+  hydrated: boolean
+) => {
+  const fields = HYDRATED_STATE_FIELDS.get(editor) ?? new Set<string>();
+
+  if (hydrated) fields.add(key);
+  else fields.delete(key);
+  HYDRATED_STATE_FIELDS.set(editor, fields);
 };
 
 export const resolveStateFieldInitial = <TValue>(
@@ -39,66 +84,3 @@ export const resolveStateFieldValue = <TValue>(
   typeof value === 'function'
     ? (value as (previous: TValue) => TValue)(previous)
     : value;
-
-export const hasStateFieldPatchHooks = <TValue>(
-  field: EditorStateField<TValue>
-) =>
-  typeof field.diff === 'function' &&
-  typeof field.applyPatch === 'function' &&
-  typeof field.invertPatch === 'function';
-
-export const isCompactStatePatch = (
-  patch: EditorStatePatch
-): patch is EditorStatePatch & { inversePatch: unknown; patch: unknown } =>
-  Object.hasOwn(patch, 'patch') && Object.hasOwn(patch, 'inversePatch');
-
-export const createStateFieldPatch = (
-  field: EditorStateField<any> | undefined,
-  key: string,
-  previousValue: unknown,
-  nextValue: unknown
-): EditorStatePatch => {
-  if (field && hasStateFieldPatchHooks(field)) {
-    const patch = field.diff!(previousValue, nextValue);
-
-    return {
-      inversePatch: field.invertPatch!(patch, previousValue, nextValue),
-      key,
-      patch,
-    };
-  }
-
-  return {
-    key,
-    previousValue: cloneValue(previousValue),
-    value: cloneValue(nextValue),
-  };
-};
-
-export const assertStateFieldPatchPolicy = <TValue>(
-  field: EditorStateField<TValue>,
-  previousValue: TValue,
-  nextValue: TValue
-) => {
-  const needsReplayablePatch =
-    field.history !== 'skip' || field.collab === 'shared';
-
-  if (!needsReplayablePatch || hasStateFieldPatchHooks(field)) {
-    return;
-  }
-
-  const serializedSize =
-    JSON.stringify({
-      key: field.key,
-      previousValue,
-      value: nextValue,
-    })?.length ?? 0;
-
-  if (serializedSize <= 32_768) {
-    return;
-  }
-
-  throw new Error(
-    `State field "${field.key}" stores a large shared/history value without patch hooks. Add diff/applyPatch/invertPatch or mark the field non-shared/history-skip.`
-  );
-};

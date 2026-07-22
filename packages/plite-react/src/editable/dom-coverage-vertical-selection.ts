@@ -5,7 +5,12 @@ import {
   PointApi,
   type Range,
 } from '@platejs/plite';
-import { DOMCoverage } from '@platejs/plite-dom/internal';
+import {
+  createDOMGeometryKernel,
+  DOMCoverage,
+  type DOMGeometryPoint,
+  type DOMGeometryRect,
+} from '@platejs/plite-dom/internal';
 
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
@@ -44,15 +49,8 @@ type PlainVerticalDOMCoverageExtension = {
   target: Point;
 };
 
-type RectLike = {
-  bottom: number;
-  height: number;
-  left: number;
-  right: number;
-  top: number;
-  width: number;
-};
-type ResolvedDOMPoint = [globalThis.Node, number];
+type RectLike = DOMGeometryRect;
+type ResolvedDOMPoint = DOMGeometryPoint;
 
 const VERTICAL_LINE_EDGE_TOLERANCE = 2;
 const LARGE_DOCUMENT_PLAIN_VERTICAL_EXTENSION_THRESHOLD = 1000;
@@ -80,126 +78,45 @@ type DOMStrategyRuntimeLike = {
   type?: unknown;
 };
 
-const getUsableRects = (range: globalThis.Range) =>
-  Array.from(range.getClientRects()).filter(
-    (rect) => rect.width > 0 || rect.height > 0
-  );
+const getEditorGeometry = (
+  editor: ReactRuntimeEditor,
+  target?: Element | null
+) => {
+  const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);
 
-const getVisualLineRects = (range: globalThis.Range): RectLike[] => {
-  const lines: RectLike[] = [];
-
-  for (const rect of getUsableRects(range).sort(
-    (left, right) => left.top - right.top || left.left - right.left
-  )) {
-    const line = lines.find((candidate) => {
-      const overlap =
-        Math.min(rect.bottom, candidate.bottom) -
-        Math.max(rect.top, candidate.top);
-
-      return overlap > VERTICAL_LINE_EDGE_TOLERANCE;
-    });
-
-    if (!line) {
-      lines.push({
-        bottom: rect.bottom,
-        height: rect.height,
-        left: rect.left,
-        right: rect.right,
-        top: rect.top,
-        width: rect.width,
-      });
-      continue;
-    }
-
-    line.bottom = Math.max(line.bottom, rect.bottom);
-    line.left = Math.min(line.left, rect.left);
-    line.right = Math.max(line.right, rect.right);
-    line.top = Math.min(line.top, rect.top);
-    line.height = line.bottom - line.top;
-    line.width = line.right - line.left;
-  }
-
-  return lines;
+  return root ? createDOMGeometryKernel({ root, target }) : null;
 };
 
-const getRenderedLineHostFromDOMPoint = (domPoint: ResolvedDOMPoint) => {
-  const [node] = domPoint;
-  const element =
-    node.nodeType === Node.ELEMENT_NODE
-      ? (node as Element)
-      : node.parentElement;
+const getVisualLineRects = (
+  editor: ReactRuntimeEditor,
+  range: globalThis.Range
+): RectLike[] => getEditorGeometry(editor)?.visualLines(range) ?? [];
 
-  const textHost =
-    element?.closest<HTMLElement>('[data-plite-node="text"]') ?? null;
+const getRenderedLineHostFromDOMPoint = (
+  editor: ReactRuntimeEditor,
+  domPoint: ResolvedDOMPoint
+) => getEditorGeometry(editor)?.visualLineHost(domPoint) ?? null;
 
-  return (
-    textHost?.closest<HTMLElement>(
-      '[data-plite-node="element"][data-plite-path]'
-    ) ?? textHost
-  );
-};
+const getPointProbeRect = (
+  editor: ReactRuntimeEditor,
+  domPoint: ResolvedDOMPoint
+) => getEditorGeometry(editor)?.pointRect(domPoint, { mode: 'probe' }) ?? null;
 
-const getPointProbeRect = (domPoint: ResolvedDOMPoint) => {
-  const [node, offset] = domPoint;
-
-  if (node.nodeType !== Node.TEXT_NODE) {
-    return node instanceof Element ? node.getBoundingClientRect() : null;
-  }
-
-  if (!node.ownerDocument) {
-    return null;
-  }
-
-  const text = node.textContent ?? '';
-  const range = node.ownerDocument.createRange();
-  const start =
-    offset >= text.length ? Math.max(0, text.length - 1) : Math.max(0, offset);
-  const end =
-    offset >= text.length
-      ? text.length
-      : Math.min(text.length, Math.max(offset + 1, 1));
-
-  if (end <= start) {
-    return null;
-  }
-
-  range.setStart(node, start);
-  range.setEnd(node, end);
-
-  return getUsableRects(range)[0] ?? range.getBoundingClientRect();
-};
-
-const getPointCaretRect = (domPoint: ResolvedDOMPoint) => {
-  const [node, offset] = domPoint;
-
-  if (node.nodeType !== Node.TEXT_NODE) {
-    return getPointProbeRect(domPoint);
-  }
-
-  if (!node.ownerDocument) {
-    return null;
-  }
-
-  const text = node.textContent ?? '';
-  const range = node.ownerDocument.createRange();
-  const caretOffset = clamp(offset, 0, text.length);
-
-  range.setStart(node, caretOffset);
-  range.collapse(true);
-
-  return getUsableRects(range)[0] ?? range.getBoundingClientRect();
-};
+const getPointCaretRect = (
+  editor: ReactRuntimeEditor,
+  domPoint: ResolvedDOMPoint
+) => getEditorGeometry(editor)?.pointRect(domPoint) ?? null;
 
 const resolvePointProbeRect = (editor: ReactRuntimeEditor, point: Point) => {
   const domPoint = editor.api.dom.resolveDOMPoint(point);
 
-  return domPoint ? getPointProbeRect(domPoint) : null;
+  return domPoint ? getPointProbeRect(editor, domPoint) : null;
 };
 
 const resolvePointCaretRect = (editor: ReactRuntimeEditor, point: Point) => {
   const domPoint = editor.api.dom.resolveDOMPoint(point);
 
-  return domPoint ? getPointCaretRect(domPoint) : null;
+  return domPoint ? getPointCaretRect(editor, domPoint) : null;
 };
 
 const isLeavingRenderedLine = ({
@@ -218,7 +135,7 @@ const isLeavingRenderedLine = ({
       return true;
     }
 
-    const lineHost = getRenderedLineHostFromDOMPoint(domPoint);
+    const lineHost = getRenderedLineHostFromDOMPoint(editor, domPoint);
 
     if (!lineHost) {
       return true;
@@ -226,13 +143,13 @@ const isLeavingRenderedLine = ({
 
     const range = lineHost.ownerDocument.createRange();
     range.selectNodeContents(lineHost);
-    const lineRects = getVisualLineRects(range);
+    const lineRects = getVisualLineRects(editor, range);
 
     if (lineRects.length <= 1) {
       return true;
     }
 
-    const pointRect = getPointProbeRect(domPoint);
+    const pointRect = getPointProbeRect(editor, domPoint);
 
     if (!pointRect) {
       return true;
@@ -277,217 +194,39 @@ const isSameBlockPoint = ({
   );
 };
 
-const resolveCaretDOMPointFromClientPoint = (
-  document: Document,
-  x: number,
-  y: number
-): ResolvedDOMPoint | null => {
-  if (document.caretRangeFromPoint) {
-    const range = document.caretRangeFromPoint(x, y);
-
-    return range ? [range.startContainer, range.startOffset] : null;
-  }
-
-  const position = document.caretPositionFromPoint?.(x, y);
-
-  return position ? [position.offsetNode, position.offset] : null;
-};
-
-const isDOMPointInsideHost = (
-  domPoint: ResolvedDOMPoint | null,
-  host: HTMLElement
-) => {
-  if (!domPoint) {
-    return false;
-  }
-
-  const [node] = domPoint;
-
-  return node === host || host.contains(node);
-};
-
 const resolveDOMPointInVisualLineByX = ({
+  editor,
   lineHost,
   targetLine,
   targetX,
 }: {
+  editor: ReactRuntimeEditor;
   lineHost: HTMLElement;
   targetLine: RectLike;
   targetX: number;
-}): ResolvedDOMPoint | null => {
-  const document = lineHost.ownerDocument;
-  const direction =
-    document.defaultView?.getComputedStyle(lineHost).direction ?? 'ltr';
-  const targetPixelX = Math.floor(targetX);
-  const range = document.createRange();
-  const walker = document.createTreeWalker(lineHost, NodeFilter.SHOW_TEXT);
-  let best: {
-    distance: number;
-    point: ResolvedDOMPoint;
-  } | null = null;
-
-  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    const text = node.textContent ?? '';
-
-    for (let offset = 0; offset < text.length; offset += 1) {
-      range.setStart(node, offset);
-      range.setEnd(node, offset + 1);
-
-      for (const rect of getUsableRects(range)) {
-        const overlap =
-          Math.min(rect.bottom, targetLine.bottom) -
-          Math.max(rect.top, targetLine.top);
-
-        if (overlap <= VERTICAL_LINE_EDGE_TOLERANCE) {
-          continue;
-        }
-
-        if (targetPixelX >= rect.left && targetPixelX <= rect.right) {
-          const midpoint = rect.left + rect.width / 2;
-          const useStart =
-            direction === 'rtl'
-              ? targetPixelX > midpoint
-              : targetPixelX <= midpoint;
-
-          return useStart ? [node, offset] : [node, offset + 1];
-        }
-
-        const candidates: ResolvedDOMPoint[] = [
-          [node, offset],
-          [node, offset + 1],
-        ];
-        const candidateXs = [rect.left, rect.right];
-
-        for (const [index, candidate] of candidates.entries()) {
-          const distance = Math.abs(
-            (candidateXs[index] ?? rect.left) - targetPixelX
-          );
-
-          if (!best || distance < best.distance) {
-            best = { distance, point: candidate };
-          }
-        }
-      }
-    }
-  }
-
-  return best?.point ?? null;
-};
-
-const resolveTextOffsetInVisualLineByX = ({
-  targetLine,
-  targetX,
-  textNode,
-}: {
-  targetLine: RectLike;
-  targetX: number;
-  textNode: Text;
-}) => {
-  const document = textNode.ownerDocument;
-  const direction =
-    document.defaultView?.getComputedStyle(textNode.parentElement!).direction ??
-    'ltr';
-  const targetPixelX = Math.floor(targetX);
-  const range = document.createRange();
-  const text = textNode.textContent ?? '';
-  let best: {
-    distance: number;
-    offset: number;
-  } | null = null;
-
-  for (let offset = 0; offset < text.length; offset += 1) {
-    range.setStart(textNode, offset);
-    range.setEnd(textNode, offset + 1);
-
-    for (const rect of getUsableRects(range)) {
-      const overlap =
-        Math.min(rect.bottom, targetLine.bottom) -
-        Math.max(rect.top, targetLine.top);
-
-      if (overlap <= VERTICAL_LINE_EDGE_TOLERANCE) {
-        continue;
-      }
-
-      if (targetPixelX >= rect.left && targetPixelX <= rect.right) {
-        const midpoint = rect.left + rect.width / 2;
-        const useStart =
-          direction === 'rtl'
-            ? targetPixelX > midpoint
-            : targetPixelX <= midpoint;
-
-        return useStart ? offset : offset + 1;
-      }
-
-      const candidates = [
-        { offset, x: rect.left },
-        { offset: offset + 1, x: rect.right },
-      ];
-
-      for (const candidate of candidates) {
-        const distance = Math.abs(candidate.x - targetPixelX);
-
-        if (!best || distance < best.distance) {
-          best = { distance, offset: candidate.offset };
-        }
-      }
-    }
-  }
-
-  return best?.offset ?? null;
-};
+}): ResolvedDOMPoint | null =>
+  getEditorGeometry(editor, lineHost)?.pointInVisualLine({
+    host: lineHost,
+    line: targetLine,
+    x: targetX,
+  }) ?? null;
 
 const resolveDOMPointAtVisualLineEdge = ({
+  editor,
   lineHost,
   reverse,
   targetLine,
 }: {
+  editor: ReactRuntimeEditor;
   lineHost: HTMLElement;
   reverse: boolean;
   targetLine: RectLike;
-}): ResolvedDOMPoint | null => {
-  const document = lineHost.ownerDocument;
-  const direction =
-    document.defaultView?.getComputedStyle(lineHost).direction ?? 'ltr';
-  const useLeftEdge = reverse ? direction !== 'rtl' : direction === 'rtl';
-  const range = document.createRange();
-  const walker = document.createTreeWalker(lineHost, NodeFilter.SHOW_TEXT);
-  let best: {
-    point: ResolvedDOMPoint;
-    x: number;
-  } | null = null;
-
-  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    const text = node.textContent ?? '';
-
-    for (let offset = 0; offset < text.length; offset += 1) {
-      range.setStart(node, offset);
-      range.setEnd(node, offset + 1);
-
-      for (const rect of getUsableRects(range)) {
-        const overlap =
-          Math.min(rect.bottom, targetLine.bottom) -
-          Math.max(rect.top, targetLine.top);
-
-        if (overlap <= VERTICAL_LINE_EDGE_TOLERANCE) {
-          continue;
-        }
-
-        const candidate = useLeftEdge
-          ? { point: [node, offset] as ResolvedDOMPoint, x: rect.left }
-          : { point: [node, offset + 1] as ResolvedDOMPoint, x: rect.right };
-
-        if (
-          !best ||
-          (useLeftEdge ? candidate.x < best.x : candidate.x > best.x)
-        ) {
-          best = candidate;
-        }
-      }
-    }
-  }
-
-  return best?.point ?? null;
-};
+}): ResolvedDOMPoint | null =>
+  getEditorGeometry(editor, lineHost)?.pointAtVisualLineEdge({
+    edge: reverse ? 'start' : 'end',
+    host: lineHost,
+    line: targetLine,
+  }) ?? null;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -589,13 +328,13 @@ const resolveVisualLineTargetPoint = ({
       return null;
     }
 
-    const lineHost = getRenderedLineHostFromDOMPoint(domPoint);
+    const lineHost = getRenderedLineHostFromDOMPoint(editor, domPoint);
 
     if (!lineHost) {
       return null;
     }
 
-    const pointRect = getPointProbeRect(domPoint);
+    const pointRect = getPointProbeRect(editor, domPoint);
 
     if (!pointRect) {
       return null;
@@ -603,7 +342,7 @@ const resolveVisualLineTargetPoint = ({
 
     const range = lineHost.ownerDocument.createRange();
     range.selectNodeContents(lineHost);
-    const lineRects = getVisualLineRects(range);
+    const lineRects = getVisualLineRects(editor, range);
 
     if (lineRects.length === 0) {
       return null;
@@ -627,12 +366,7 @@ const resolveVisualLineTargetPoint = ({
         : null;
     const targetLine = lineRects[
       reverse ? currentLineIndex - 1 : currentLineIndex + 1
-    ] as DOMRect | undefined;
-    const targetY = targetLine
-      ? targetLine.top + targetLine.height / 2
-      : reverse
-        ? currentLine.top - Math.max(4, currentLine.height / 2)
-        : currentLine.bottom + Math.max(4, currentLine.height / 2);
+    ] as RectLike | undefined;
 
     const targetRect = targetLine ?? currentLine;
     const targetX = clamp(
@@ -642,39 +376,28 @@ const resolveVisualLineTargetPoint = ({
       targetRect.left + 1,
       Math.max(targetRect.left + 1, targetRect.right - 1)
     );
-    const measuredDOMPoint = targetLine
+    const targetDOMPoint = targetLine
       ? resolveDOMPointInVisualLineByX({
+          editor,
           lineHost,
           targetLine,
           targetX,
         })
-      : null;
-    const caretDOMPoint = measuredDOMPoint
-      ? null
-      : resolveCaretDOMPointFromClientPoint(
-          lineHost.ownerDocument,
-          targetX,
-          targetY
-        );
-    const targetDOMPoint =
-      measuredDOMPoint ??
-      (isDOMPointInsideHost(caretDOMPoint, lineHost)
-        ? caretDOMPoint
-        : targetLine
-          ? null
-          : resolveDOMPointAtVisualLineEdge({
-              lineHost,
-              reverse,
-              targetLine: currentLine,
-            }));
+      : resolveDOMPointAtVisualLineEdge({
+          editor,
+          lineHost,
+          reverse,
+          targetLine: currentLine,
+        });
 
     if (!targetDOMPoint) {
       return null;
     }
 
-    const targetPoint = editor.api.dom.resolvePlitePoint(targetDOMPoint, {
-      exactMatch: false,
-    });
+    const targetPoint = editor.api.dom.resolvePlitePoint(
+      [targetDOMPoint[0], targetDOMPoint[1]],
+      { exactMatch: false }
+    );
 
     if (!targetPoint) {
       return null;
@@ -860,25 +583,6 @@ const getSingleTextInTopLevelBlock = ({
     };
   });
 
-const copyTextMeasureStyles = (from: HTMLElement, to: HTMLElement) => {
-  const style = from.ownerDocument.defaultView?.getComputedStyle(from);
-
-  if (!style) {
-    return;
-  }
-
-  to.style.boxSizing = 'border-box';
-  to.style.font = style.font;
-  to.style.letterSpacing = style.letterSpacing;
-  to.style.lineHeight = style.lineHeight;
-  to.style.overflowWrap = style.overflowWrap;
-  to.style.padding = style.padding;
-  to.style.textTransform = style.textTransform;
-  to.style.whiteSpace = style.whiteSpace;
-  to.style.wordBreak = style.wordBreak;
-  to.style.wordSpacing = style.wordSpacing;
-};
-
 const resolveMeasuredAdjacentBlockVisualLineTargetPoint = ({
   blockIndex,
   editor,
@@ -911,52 +615,19 @@ const resolveMeasuredAdjacentBlockVisualLineTargetPoint = ({
     return null;
   }
 
-  const document = sourceLineHost.ownerDocument;
-  const probe = document.createElement(sourceLineHost.tagName.toLowerCase());
-  const textNode = document.createTextNode(adjacentText.text);
-  const sourceRectHost = sourceLineHost.getBoundingClientRect();
+  const offset = getEditorGeometry(
+    editor,
+    sourceLineHost
+  )?.measureTextVisualLineOffset({
+    edge: reverse ? 'end' : 'start',
+    sourceHost: sourceLineHost,
+    text: adjacentText.text,
+    x: preferredXRect?.left ?? sourceCaretRect?.left ?? sourceRect!.left,
+  });
 
-  copyTextMeasureStyles(sourceLineHost, probe);
-  probe.style.contain = 'layout style paint';
-  probe.style.left = `${sourceRectHost.left}px`;
-  probe.style.pointerEvents = 'none';
-  probe.style.position = 'fixed';
-  probe.style.top = '0';
-  probe.style.visibility = 'hidden';
-  probe.style.width = `${sourceRectHost.width}px`;
-  probe.appendChild(textNode);
-  document.body.appendChild(probe);
-
-  try {
-    const range = document.createRange();
-    range.selectNodeContents(probe);
-    const lineRects = getVisualLineRects(range);
-    const targetLine = reverse ? lineRects.at(-1) : lineRects[0];
-
-    if (!targetLine) {
-      return null;
-    }
-
-    const targetX = clamp(
-      preferredXRect?.left ?? sourceCaretRect?.left ?? sourceRect!.left,
-      targetLine.left + 1,
-      Math.max(targetLine.left + 1, targetLine.right - 1)
-    );
-    const offset = resolveTextOffsetInVisualLineByX({
-      targetLine,
-      targetX,
-      textNode,
-    });
-
-    return typeof offset === 'number'
-      ? {
-          path: adjacentText.path,
-          offset,
-        }
-      : null;
-  } finally {
-    probe.remove();
-  }
+  return typeof offset === 'number'
+    ? { path: adjacentText.path, offset }
+    : null;
 };
 
 const resolveAdjacentBlockVisualLineTargetPoint = ({
@@ -985,7 +656,7 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
   try {
     const sourceDOMPoint = editor.api.dom.resolveDOMPoint(sourcePoint);
     const sourceLineHost = sourceDOMPoint
-      ? getRenderedLineHostFromDOMPoint(sourceDOMPoint)
+      ? getRenderedLineHostFromDOMPoint(editor, sourceDOMPoint)
       : null;
     const adjacentDOMPoint = editor.api.dom.resolveDOMPoint(adjacentPoint);
 
@@ -1002,7 +673,7 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
         : null;
     }
 
-    const lineHost = getRenderedLineHostFromDOMPoint(adjacentDOMPoint);
+    const lineHost = getRenderedLineHostFromDOMPoint(editor, adjacentDOMPoint);
 
     if (!lineHost) {
       return null;
@@ -1010,7 +681,7 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
 
     const range = lineHost.ownerDocument.createRange();
     range.selectNodeContents(lineHost);
-    const lineRects = getVisualLineRects(range);
+    const lineRects = getVisualLineRects(editor, range);
     const targetLine = reverse ? lineRects.at(-1) : lineRects[0];
 
     if (!targetLine) {
@@ -1033,22 +704,12 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
       targetLine.left + 1,
       Math.max(targetLine.left + 1, targetLine.right - 1)
     );
-    const targetY = targetLine.top + targetLine.height / 2;
-    const measuredDOMPoint = resolveDOMPointInVisualLineByX({
+    const targetDOMPoint = resolveDOMPointInVisualLineByX({
+      editor,
       lineHost,
       targetLine,
       targetX,
     });
-    const caretDOMPoint = measuredDOMPoint
-      ? null
-      : resolveCaretDOMPointFromClientPoint(
-          lineHost.ownerDocument,
-          targetX,
-          targetY
-        );
-    const targetDOMPoint =
-      measuredDOMPoint ??
-      (isDOMPointInsideHost(caretDOMPoint, lineHost) ? caretDOMPoint : null);
 
     if (!targetDOMPoint) {
       return sourceLineHost
@@ -1063,9 +724,10 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
         : null;
     }
 
-    return editor.api.dom.resolvePlitePoint(targetDOMPoint, {
-      exactMatch: false,
-    });
+    return editor.api.dom.resolvePlitePoint(
+      [targetDOMPoint[0], targetDOMPoint[1]],
+      { exactMatch: false }
+    );
   } catch {
     return null;
   }

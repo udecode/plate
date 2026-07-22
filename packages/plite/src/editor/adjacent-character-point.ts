@@ -1,4 +1,4 @@
-import { getEditorSchema } from '../core/editor-runtime';
+import { isEditorNodeSelectable } from '../core/query-middleware';
 import { getLiveNode, getLiveText } from '../core/public-state';
 import {
   above as editorAbove,
@@ -212,7 +212,7 @@ const isSelectablePoint = (editor: Editor, point: Point, voids: boolean) => {
   return !editorAbove(editor, {
     at: point,
     match: (node) =>
-      NodeApi.isElement(node) && !getEditorSchema(editor).isSelectable(node),
+      NodeApi.isElement(node) && !isEditorNodeSelectable(editor, node),
     mode: 'highest',
     voids: true,
   });

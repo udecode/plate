@@ -452,8 +452,12 @@ export function useYjsRemoteCursorDecorationSource<
     deps: [awarenessRevision, ...decorateRefreshDeps],
     id,
     read: () =>
-      readYjsState(editor, (state) => {
-        const cursors = state.remoteCursors<TCursorData>();
+      editor.read((state) => {
+        const yjs = getEditorYjsState(state) as YjsState | undefined;
+
+        if (yjs === undefined) return [];
+
+        const cursors = yjs.remoteCursors<TCursorData>();
         const slices = new Array<{
           readonly data: TDecorationData;
           readonly key: string;

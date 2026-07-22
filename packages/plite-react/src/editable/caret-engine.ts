@@ -1,14 +1,16 @@
 import type { KeyboardEvent } from 'react';
 import {
   type EditorUpdatePolicyFor,
-  type EditorUpdateTransaction,
   type MoveUnit,
   type Point,
   type Range,
   RangeApi,
 } from '@platejs/plite';
 import { Hotkeys } from '@platejs/plite-dom';
-import { DOMCoverage } from '@platejs/plite-dom/internal';
+import {
+  DOMCoverage,
+  type DOMPhaseScheduler,
+} from '@platejs/plite-dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import {
@@ -27,7 +29,10 @@ import type { EditableRepairRequest } from './mutation-controller';
 import {
   before as editorBefore,
   after as editorAfter,
+  dispatchCommand,
+  editorCommands,
   failInvariant,
+  toInternalRoot,
 } from './runtime-editor-api';
 
 export type EditableCaretMovementResult = {
@@ -101,7 +106,8 @@ const measureCaretPhase = <T>(id: string, run: () => T): T => {
 const writeMainRootViewSelection = (
   editor: ReactRuntimeEditor,
   selection: Range | null,
-  rootElement?: HTMLElement
+  rootElement: HTMLElement | undefined,
+  domPhaseScheduler: DOMPhaseScheduler
 ) => {
   const viewSelection = measureCaretPhase(
     'caret.main-root-view-selection.create',
@@ -109,7 +115,7 @@ const writeMainRootViewSelection = (
       selection && RangeApi.isExpanded(selection)
         ? createMainRootPliteViewSelection(
             selection,
-            editor.read((state) => state.view.root())
+            toInternalRoot(editor.read((state) => state.view.root()))
           )
         : null
   );
@@ -118,13 +124,18 @@ const writeMainRootViewSelection = (
     writePliteViewSelection(editor, viewSelection);
   });
   measureCaretPhase('caret.main-root-view-selection.clear-native', () => {
-    clearNativeSelectionForViewSelection(viewSelection, rootElement);
+    clearNativeSelectionForViewSelection(
+      viewSelection,
+      rootElement,
+      domPhaseScheduler
+    );
   });
 };
 
 const clearNativeSelectionForViewSelection = (
   viewSelection: PliteViewSelection | null,
-  rootElement?: HTMLElement
+  rootElement: HTMLElement | undefined,
+  domPhaseScheduler: DOMPhaseScheduler
 ) => {
   if (!viewSelection || !rootElement) {
     return;
@@ -135,8 +146,18 @@ const clearNativeSelectionForViewSelection = (
   };
 
   clear();
-  rootElement.ownerDocument.defaultView?.queueMicrotask(clear);
-  rootElement.ownerDocument.defaultView?.requestAnimationFrame(clear);
+  domPhaseScheduler.schedule(
+    'selection-repair',
+    'clear-caret-view-selection-microtask',
+    clear,
+    { timing: 'microtask' }
+  );
+  domPhaseScheduler.schedule(
+    'selection-repair',
+    'clear-caret-view-selection-frame',
+    clear,
+    { timing: 'animation-frame' }
+  );
 };
 
 const getOwnerlessViewSelectionRange = (
@@ -219,17 +240,15 @@ const restoreSelectionIfMovementEnteredBoundary = ({
         })
       : skipPoint;
 
-  editor.update((tx) => {
-    tx.selection.set(
-      focusPoint
-        ? {
-            anchor: preserveAnchorOnBoundarySkip
-              ? previousSelection.anchor
-              : focusPoint,
-            focus: focusPoint,
-          }
-        : previousSelection
-    );
+  dispatchCommand(editor, editorCommands.select, {
+    target: focusPoint
+      ? {
+          anchor: preserveAnchorOnBoundarySkip
+            ? previousSelection.anchor
+            : focusPoint,
+          focus: focusPoint,
+        }
+      : previousSelection,
   });
 };
 
@@ -282,6 +301,7 @@ const getPointPastBoundarySkip = ({
 
 const moveSelectionAndRespectBoundaries = ({
   boundarySkipUnit,
+  domPhaseScheduler,
   editor,
   move,
   preserveAnchorOnBoundarySkip = false,
@@ -292,8 +312,9 @@ const moveSelectionAndRespectBoundaries = ({
   viewSelectionRootElement,
 }: {
   boundarySkipUnit?: MoveUnit;
+  domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
-  move: (tx: EditorUpdateTransaction) => void;
+  move: () => void;
   preserveAnchorOnBoundarySkip?: boolean;
   reverse: boolean;
   selection: Range | null;
@@ -303,9 +324,9 @@ const moveSelectionAndRespectBoundaries = ({
 }) => {
   writePliteViewSelection(editor, null);
   if (updatePolicy) {
-    editor.update(updatePolicy, move);
+    editor.update(updatePolicy, () => move());
   } else {
-    editor.update(move);
+    editor.update(() => move());
   }
   restoreSelectionIfMovementEnteredBoundary({
     boundarySkipUnit,
@@ -318,18 +339,21 @@ const moveSelectionAndRespectBoundaries = ({
     writeMainRootViewSelection(
       editor,
       editor.read((state) => state.selection()),
-      viewSelectionRootElement
+      viewSelectionRootElement,
+      domPhaseScheduler
     );
   }
 };
 
 export const applyEditableCaretMovement = ({
+  domPhaseScheduler,
   editor,
   event,
   isRTL,
   selection,
   domStrategyRuntime,
 }: {
+  domPhaseScheduler: DOMPhaseScheduler;
   domStrategyRuntime: unknown;
   editor: ReactRuntimeEditor;
   event: KeyboardEvent<HTMLDivElement>;
@@ -374,12 +398,17 @@ export const applyEditableCaretMovement = ({
       focus: plainVerticalLargeDocumentExtension.target,
     };
     measureCaretPhase('caret.large-document-select', () => {
-      editor.update(largeDocumentVerticalSelectionUpdatePolicy, (tx) => {
-        tx.selection.set(nextSelection);
-      });
+      editor
+        .update(largeDocumentVerticalSelectionUpdatePolicy)
+        .selection.set(nextSelection);
     });
     measureCaretPhase('caret.large-document-view-selection', () => {
-      writeMainRootViewSelection(editor, nextSelection, event.currentTarget);
+      writeMainRootViewSelection(
+        editor,
+        nextSelection,
+        event.currentTarget,
+        domPhaseScheduler
+      );
     });
 
     return caretMovementHandled({
@@ -401,11 +430,15 @@ export const applyEditableCaretMovement = ({
   if (plainVerticalDOMCoverageExtension) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
-        tx.selection.set({
-          anchor: selection?.anchor ?? plainVerticalDOMCoverageExtension.target,
-          focus: plainVerticalDOMCoverageExtension.target,
+      move: () => {
+        dispatchCommand(editor, editorCommands.select, {
+          target: {
+            anchor:
+              selection?.anchor ?? plainVerticalDOMCoverageExtension.target,
+            focus: plainVerticalDOMCoverageExtension.target,
+          },
         });
       },
       reverse: plainVerticalDOMCoverageExtension.reverse,
@@ -419,19 +452,24 @@ export const applyEditableCaretMovement = ({
   if (documentBoundaryMove) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
-        const point = documentBoundaryMove.reverse
-          ? (tx.points.start([]) ??
-            failInvariant('Expected a document start point for caret movement'))
-          : (tx.points.end([]) ??
-            failInvariant('Expected a document end point for caret movement'));
-
-        tx.selection.set(
-          documentBoundaryMove.extend
-            ? { anchor: selection?.anchor ?? point, focus: point }
-            : { anchor: point, focus: point }
+      move: () => {
+        const point = editor.read((state) =>
+          documentBoundaryMove.reverse
+            ? (state.points.start([]) ??
+              failInvariant(
+                'Expected a document start point for caret movement'
+              ))
+            : (state.points.end([]) ??
+              failInvariant('Expected a document end point for caret movement'))
         );
+
+        dispatchCommand(editor, editorCommands.select, {
+          target: documentBoundaryMove.extend
+            ? { anchor: selection?.anchor ?? point, focus: point }
+            : { anchor: point, focus: point },
+        });
       },
       preserveAnchorOnBoundarySkip: documentBoundaryMove.extend,
       reverse: documentBoundaryMove.reverse,
@@ -446,9 +484,12 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isMoveLineBackward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
-        tx.selection.move({ unit: 'line', reverse: true });
+      move: () => {
+        dispatchCommand(editor, editorCommands.move, {
+          options: { reverse: true, unit: 'line' },
+        });
       },
       reverse: true,
       selection,
@@ -464,9 +505,12 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isMoveLineForward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
-        tx.selection.move({ unit: 'line' });
+      move: () => {
+        dispatchCommand(editor, editorCommands.move, {
+          options: { unit: 'line' },
+        });
       },
       reverse: false,
       selection,
@@ -482,12 +526,11 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isExtendLineBackward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
-        tx.selection.move({
-          edge: 'focus',
-          reverse: true,
-          unit: 'line',
+      move: () => {
+        dispatchCommand(editor, editorCommands.move, {
+          options: { edge: 'focus', reverse: true, unit: 'line' },
         });
       },
       boundarySkipUnit: 'line',
@@ -506,9 +549,12 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isExtendLineForward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
-        tx.selection.move({ edge: 'focus', unit: 'line' });
+      move: () => {
+        dispatchCommand(editor, editorCommands.move, {
+          options: { edge: 'focus', unit: 'line' },
+        });
       },
       boundarySkipUnit: 'line',
       preserveAnchorOnBoundarySkip: true,
@@ -526,11 +572,11 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isExtendBackward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
-        tx.selection.move({
-          edge: 'focus',
-          reverse: !isRTL,
+      move: () => {
+        dispatchCommand(editor, editorCommands.move, {
+          options: { edge: 'focus', reverse: !isRTL },
         });
       },
       boundarySkipUnit: 'character',
@@ -544,11 +590,11 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isExtendForward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
-        tx.selection.move({
-          edge: 'focus',
-          reverse: isRTL,
+      move: () => {
+        dispatchCommand(editor, editorCommands.move, {
+          options: { edge: 'focus', reverse: isRTL },
         });
       },
       boundarySkipUnit: 'character',
@@ -562,12 +608,11 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isExtendWordBackward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
-        tx.selection.move({
-          edge: 'focus',
-          reverse: !isRTL,
-          unit: 'word',
+      move: () => {
+        dispatchCommand(editor, editorCommands.move, {
+          options: { edge: 'focus', reverse: !isRTL, unit: 'word' },
         });
       },
       boundarySkipUnit: 'word',
@@ -581,12 +626,11 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isExtendWordForward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
-        tx.selection.move({
-          edge: 'focus',
-          reverse: isRTL,
-          unit: 'word',
+      move: () => {
+        dispatchCommand(editor, editorCommands.move, {
+          options: { edge: 'focus', reverse: isRTL, unit: 'word' },
         });
       },
       boundarySkipUnit: 'word',
@@ -604,13 +648,16 @@ export const applyEditableCaretMovement = ({
     event.preventDefault();
 
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
+      move: () => {
         if (selection && RangeApi.isCollapsed(selection)) {
-          tx.selection.move({ reverse: !isRTL });
-        } else {
-          tx.selection.collapse({
-            edge: isRTL ? 'end' : 'start',
+          dispatchCommand(editor, editorCommands.move, {
+            options: { reverse: !isRTL },
+          });
+        } else if (selection) {
+          dispatchCommand(editor, editorCommands.select, {
+            target: isRTL ? RangeApi.end(selection) : RangeApi.start(selection),
           });
         }
       },
@@ -625,13 +672,16 @@ export const applyEditableCaretMovement = ({
     event.preventDefault();
 
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
+      move: () => {
         if (selection && RangeApi.isCollapsed(selection)) {
-          tx.selection.move({ reverse: isRTL });
-        } else {
-          tx.selection.collapse({
-            edge: isRTL ? 'start' : 'end',
+          dispatchCommand(editor, editorCommands.move, {
+            options: { reverse: isRTL },
+          });
+        } else if (selection) {
+          dispatchCommand(editor, editorCommands.select, {
+            target: isRTL ? RangeApi.start(selection) : RangeApi.end(selection),
           });
         }
       },
@@ -646,15 +696,17 @@ export const applyEditableCaretMovement = ({
     event.preventDefault();
 
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
+      move: () => {
         if (selection && RangeApi.isExpanded(selection)) {
-          tx.selection.collapse({ edge: 'focus' });
+          dispatchCommand(editor, editorCommands.select, {
+            target: selection.focus,
+          });
         }
 
-        tx.selection.move({
-          reverse: !isRTL,
-          unit: 'word',
+        dispatchCommand(editor, editorCommands.move, {
+          options: { reverse: !isRTL, unit: 'word' },
         });
       },
       reverse: !isRTL,
@@ -667,15 +719,17 @@ export const applyEditableCaretMovement = ({
     event.preventDefault();
 
     moveSelectionAndRespectBoundaries({
+      domPhaseScheduler,
       editor,
-      move: (tx) => {
+      move: () => {
         if (selection && RangeApi.isExpanded(selection)) {
-          tx.selection.collapse({ edge: 'focus' });
+          dispatchCommand(editor, editorCommands.select, {
+            target: selection.focus,
+          });
         }
 
-        tx.selection.move({
-          reverse: isRTL,
-          unit: 'word',
+        dispatchCommand(editor, editorCommands.move, {
+          options: { reverse: isRTL, unit: 'word' },
         });
       },
       reverse: isRTL,

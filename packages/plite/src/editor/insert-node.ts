@@ -1,4 +1,5 @@
-import { getEditorTransformRegistry } from '../core/transform-registry';
+import { dispatchCommand } from '../core/command-registry';
+import { editorCommands } from '../core/editor-commands';
 import type { EditorStaticApi } from '../interfaces/editor';
 
 export const insertNode: EditorStaticApi['insertNode'] = (
@@ -6,5 +7,8 @@ export const insertNode: EditorStaticApi['insertNode'] = (
   node,
   options
 ) => {
-  getEditorTransformRegistry(editor).insertNodes(node, options);
+  dispatchCommand(editor, editorCommands.insertNodes, {
+    nodes: node,
+    options,
+  });
 };

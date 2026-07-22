@@ -147,6 +147,7 @@ const createFixture = () => {
     'packages/browser/dist/.plite-browser-build.json'
   );
   const packageRoot = path.join(fixtureRoot, 'node_modules/@playwright/test');
+  fs.mkdirSync(path.join(fixtureRoot, 'node_modules'), { recursive: true });
 
   writeFile(testFile, '// fake discovery input\n');
   writeFile(path.join(appRoot, 'playwright.config.ts'), 'export default {};\n');

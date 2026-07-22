@@ -1,5 +1,6 @@
 import type { Range, RuntimeId, Editor as EditorType } from '@platejs/plite';
 import { RangeApi } from '@platejs/plite';
+import type { PliteViewSourceStatus } from './view-source';
 
 import {
   createPliteProjectionStore,
@@ -54,6 +55,7 @@ export type PliteRangeDecorationSourceOptions<T = unknown> = Omit<
 export type PliteDecorationSource<T = unknown> = {
   destroy: () => void;
   getMetrics: () => PliteProjectionStoreMetrics;
+  getSourceStatus: () => PliteViewSourceStatus;
   getRuntimeSnapshot: (
     runtimeId: RuntimeId
   ) => readonly PliteProjectionSlice<T>[];
@@ -64,6 +66,7 @@ export type PliteDecorationSource<T = unknown> = {
   refresh: (
     options?: PliteProjectionStoreRefreshOptions
   ) => PliteProjectionRefreshResult;
+  retry: () => PliteProjectionRefreshResult;
   subscribe: (listener: () => void) => () => void;
   subscribeProjectionRefresh: (
     listener: PliteProjectionRefreshListener
@@ -156,19 +159,29 @@ export const toPliteRangeDecorations = <T>(
 ): PliteDecoration<T>[] =>
   ranges.map((rangeDecoration, index) => {
     const isRange = RangeApi.isRange(rangeDecoration);
-    const range = isRange ? rangeDecoration : rangeDecoration.range;
+    const sourceRange = isRange ? rangeDecoration : rangeDecoration.range;
+    const { anchor, focus, ...inlineData } = sourceRange as Range &
+      Record<string, unknown>;
+    const range = { anchor, focus };
+    const hasInlineData = Object.keys(inlineData).length > 0;
     const data = isRange
-      ? options.data
+      ? hasInlineData
+        ? typeof options.data === 'object' &&
+          options.data !== null &&
+          !Array.isArray(options.data)
+          ? { ...options.data, ...inlineData }
+          : inlineData
+        : options.data
       : 'data' in rangeDecoration
         ? rangeDecoration.data
         : options.data;
 
     return {
-      data,
+      data: data as T | undefined,
       key: isRange
-        ? getRangeDecorationKey(options.id, range, index)
+        ? getRangeDecorationKey(options.id, sourceRange, index)
         : (rangeDecoration.key ??
-          getRangeDecorationKey(options.id, range, index)),
+          getRangeDecorationKey(options.id, sourceRange, index)),
       range,
     };
   });
@@ -182,6 +195,7 @@ export const createDecorationSource = <T = unknown>(
     (snapshot, context) => options.read({ ...context, editor, snapshot }),
     {
       dirtiness: options.dirtiness,
+      onError: options.onError,
       runtimeScope: options.runtimeScope,
       sourceId: options.id,
     }

@@ -24,16 +24,16 @@ export const BaseListKit = [
           },
         }),
       },
-      targetPlugins: [
-        ...KEYS.heading,
-        KEYS.p,
-        KEYS.blockquote,
-        KEYS.codeBlock,
-        KEYS.toggle,
-      ],
     },
     render: {
       belowNodes: BlockListStatic,
     },
+    targetPluginKeys: [
+      ...KEYS.heading,
+      KEYS.p,
+      KEYS.blockquote,
+      KEYS.codeBlock,
+      KEYS.toggle,
+    ],
   }),
 ];

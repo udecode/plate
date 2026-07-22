@@ -1,20 +1,16 @@
-import { executeCommand } from '../core/command-registry';
+import { dispatchCommand } from '../core/command-registry';
+import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
-import { getCurrentMarks, runEditorTransaction } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
+import { runEditorTransaction } from '../core/public-state';
 import { parent as editorParent } from '../interfaces/editor';
 import type { EditorStaticApi } from '../interfaces/editor';
 import { type Node, NodeApi } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
+import { unsetNodes } from '../transforms-node/unset-nodes';
 import { node } from './node';
 
-type RemoveMarkCommand = {
-  key: string;
-  type: 'remove_mark';
-};
-
-const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
+export const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
   runEditorTransaction(editor, (tx) => {
     const selection = tx.resolveTarget();
 
@@ -37,23 +33,31 @@ const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
     };
     const expandedSelection = RangeApi.isExpanded(selection);
     let markAcceptingVoidSelected = false;
+    let selectedPath: Path | undefined;
     if (!expandedSelection) {
-      const [selectedNode, selectedPath] = node(editor, selection);
-      if (selectedNode && match(selectedNode, selectedPath)) {
-        const [parentNode] = editorParent(editor, selectedPath);
+      const [selectedNode, path] = node(editor, selection);
+      selectedPath = path;
+      if (selectedNode && match(selectedNode, path)) {
+        const [parentNode] = editorParent(editor, path);
         markAcceptingVoidSelected =
           NodeApi.isElement(parentNode) &&
           getEditorSchema(editor).markableVoid(parentNode);
       }
     }
-    if (expandedSelection || markAcceptingVoidSelected) {
-      getEditorTransformRegistry(editor).unsetNodes(key, {
+    if (markAcceptingVoidSelected && selectedPath) {
+      unsetNodes(editor, key, {
+        at: selectedPath,
+        match,
+        voids: true,
+      });
+    } else if (expandedSelection) {
+      unsetNodes(editor, key, {
         match,
         split: true,
         voids: true,
       });
     } else {
-      const marks = { ...(getCurrentMarks(editor) || {}) };
+      const marks = { ...(tx.marks || {}) };
       delete marks[<keyof Node>key];
       tx.setMarks(marks);
     }
@@ -61,13 +65,7 @@ const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
 };
 
 export const removeMark: EditorStaticApi['removeMark'] = (editor, key) => {
-  executeCommand<RemoveMarkCommand>(
-    editor,
-    { key, type: 'remove_mark' },
-    (command) => {
-      applyRemoveMark(editor, command.key);
-      return true;
-    },
-    { implicitUpdate: true }
-  );
+  dispatchCommand(editor, editorCommands.removeMark, {
+    key,
+  });
 };

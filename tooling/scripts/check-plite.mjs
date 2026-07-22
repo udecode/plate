@@ -453,20 +453,24 @@ export const getComparisonBase = (environment = process.env) =>
   environment.PLITE_CHECK_BASE ?? environment.GITHUB_BASE_SHA ?? null;
 
 const pnpmStep = (id, args) => Object.freeze({ args, command: 'pnpm', id });
+const DEV_WORKSPACE_CONCURRENCY = '8';
 
 const packageTypecheckStep = (packageNames) =>
   pnpmStep('typecheck', [
-    '--parallel',
+    `--workspace-concurrency=${DEV_WORKSPACE_CONCURRENCY}`,
     ...packageNames.flatMap((name) => ['--filter', name]),
     'typecheck',
   ]);
 
 const packageTestStep = (packageNames) =>
   pnpmStep('package-tests', [
-    '--parallel',
+    `--workspace-concurrency=${DEV_WORKSPACE_CONCURRENCY}`,
     ...packageNames.flatMap((name) => ['--filter', name]),
     'test',
   ]);
+
+const browserCoreTestStep = () =>
+  pnpmStep('browser-core-tests', ['--filter', '@platejs/browser', 'test:core']);
 
 export const createCheckSteps = (mode, affectedPlan) => {
   if (mode === 'strict' || mode === 'packages') {
@@ -527,7 +531,16 @@ export const createCheckSteps = (mode, affectedPlan) => {
     );
   }
   if (affectedPlan.testPackageNames.length > 0) {
-    steps.push(packageTestStep(affectedPlan.testPackageNames));
+    const packageNames = affectedPlan.testPackageNames.filter(
+      (name) => name !== '@platejs/browser'
+    );
+
+    if (packageNames.length > 0) {
+      steps.push(packageTestStep(packageNames));
+    }
+    if (packageNames.length !== affectedPlan.testPackageNames.length) {
+      steps.push(browserCoreTestStep());
+    }
   }
   if (affectedPlan.contracts) {
     steps.push(pnpmStep('contracts', ['check:plite:contracts']));

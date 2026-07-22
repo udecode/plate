@@ -146,11 +146,11 @@ export function BlockSuggestionCard({
             {suggestion.type === 'update' && (
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground text-sm">
-                  {Object.keys(suggestion.properties).map((key) => (
+                  {Object.keys(suggestion.properties ?? {}).map((key) => (
                     <span key={key}>Un{key}</span>
                   ))}
 
-                  {Object.keys(suggestion.newProperties).map((key) => (
+                  {Object.keys(suggestion.newProperties ?? {}).map((key) => (
                     <span key={key}>
                       {key.charAt(0).toUpperCase() + key.slice(1)}
                     </span>

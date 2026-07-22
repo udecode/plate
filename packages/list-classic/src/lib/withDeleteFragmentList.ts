@@ -1,58 +1,67 @@
-import type { BaseEditor, ExtendPlateEditorExtension } from '@platejs/core';
+import type { BaseEditor, PlateEditorExtension } from '@platejs/core';
 import {
   type Descendant,
+  type EditorStateView,
   type Element,
   type Range,
+  editorCommands,
   NodeApi,
   PathApi,
   TextApi,
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type { ListConfig } from './BaseListPlugin';
-
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 
-const getLiStart = (editor: BaseEditor, selection: Range) => {
-  const start = editor.read.points.start(selection);
+const getLiStart = (
+  editor: BaseEditor,
+  selection: Range,
+  state: Pick<EditorStateView, 'nodes' | 'points'>
+) => {
+  const start = state.points.start(selection);
 
   return start
-    ? editor.read.nodes.above({
+    ? state.nodes.above({
         at: start,
         match: { type: editor.getType(KEYS.li) },
       })
     : undefined;
 };
 
-export const withDeleteFragmentList: ExtendPlateEditorExtension<ListConfig> = ({
+export const withDeleteFragmentList = ({
   editor,
-}) => ({
+}: {
+  editor: BaseEditor;
+}): PlateEditorExtension => ({
   priority: 100,
-  transforms: {
-    deleteFragment({ next, options, tx }) {
-      const selection = editor.read.selection();
+  commands: ({ around }) => [
+    around(editorCommands.deleteFragment, ({ input, state, next }) => {
+      const selection =
+        input.at === undefined ? state.selection() : state.ranges.get(input.at);
 
-      if (!selection || !isAcrossListItems(editor)) return next({ options });
+      if (!selection || !isAcrossListItems(editor, selection, state)) {
+        return false;
+      }
 
-      const end = editor.read.points.end(selection);
+      const end = state.points.end(selection);
       const liEnd = end
-        ? editor.read.nodes.above<Element>({
+        ? state.nodes.above<Element>({
             at: end,
             match: { type: editor.getType(KEYS.li) },
           })
         : undefined;
-      const liStartBeforeDelete = getLiStart(editor, selection);
+      const liStartBeforeDelete = getLiStart(editor, selection, state);
 
-      if (!liStartBeforeDelete || !liEnd) return next({ options });
+      if (!liStartBeforeDelete || !liEnd) return false;
 
       if (PathApi.isAncestor(liStartBeforeDelete[1], liEnd[1])) {
-        const startContent = editor.read.nodes.get<Element>([
+        const startContent = state.nodes.get<Element>([
           ...liStartBeforeDelete[1],
           0,
         ]);
-        const endContent = editor.read.nodes.get<Element>([...liEnd[1], 0]);
+        const endContent = state.nodes.get<Element>([...liEnd[1], 0]);
 
         if (startContent && endContent) {
           const children = structuredClone(
@@ -83,40 +92,42 @@ export const withDeleteFragmentList: ExtendPlateEditorExtension<ListConfig> = ({
             path: [...startContent[1], ...lastPath],
           };
 
-          tx.nodes.replaceChildren(children, {
-            at: startContent[1],
-            newSelection: { anchor: point, focus: point },
+          return state.transaction((tx) => {
+            tx.nodes.replaceChildren(children, {
+              at: startContent[1],
+              newSelection: { kind: 'text', anchor: point, focus: point },
+            });
+            tx.nodes.remove({ at: PathApi.parent(liEnd[1]) });
           });
-          tx.nodes.remove({ at: PathApi.parent(liEnd[1]) });
-
-          return true;
         }
       }
 
-      const liEndPathRef = !hasListChild(editor, liEnd[0])
-        ? tx.refs.path(liEnd[1])
+      const liEndRuntimeId = !hasListChild(editor, liEnd[0])
+        ? state.runtime.idAt(liEnd[1])
         : undefined;
+      const result = next();
 
-      next({ options });
+      if (result === false || !liEndRuntimeId) return result;
 
-      if (liEndPathRef) {
-        const liEndPath = liEndPathRef.unref();
+      return state.transaction.extend(result, (tx) => {
+        const liEndPath = tx.runtime.pathOf(liEndRuntimeId);
+        const nextSelection = tx.selection();
 
-        if (liEndPath) {
-          const liStart = getLiStart(editor, editor.read.selection()!);
-          const listStart = liStart
-            ? editor.read.nodes.parent(liStart[1])
-            : undefined;
-          const deletePath = getHighestEmptyList(editor, {
+        if (!liEndPath || !nextSelection) return;
+
+        const liStart = getLiStart(editor, nextSelection, tx);
+        const listStart = liStart ? tx.nodes.parent(liStart[1]) : undefined;
+        const deletePath = getHighestEmptyList(
+          editor,
+          {
             diffListPath: listStart?.[1],
             liPath: liEndPath,
-          });
+          },
+          tx
+        );
 
-          if (deletePath) tx.nodes.remove({ at: deletePath });
-        }
-      }
-
-      return true;
-    },
-  },
+        if (deletePath) tx.nodes.remove({ at: deletePath });
+      });
+    }),
+  ],
 });

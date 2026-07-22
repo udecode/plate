@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { Element, PointRef } from '@platejs/plite';
+import type { Anchor, Element, Point } from '@platejs/plite';
 
 import {
   type ComboboxItemProps,
@@ -127,11 +127,11 @@ const InlineCombobox = ({
    * Track the point just before the input element so we know where to
    * insertText if the combobox closes due to a selection change.
    */
-  const insertPointRef = React.useRef<PointRef | null>(null);
+  const insertPointAnchor = React.useRef<Anchor<Point> | null>(null);
 
   React.useEffect(() => {
-    insertPointRef.current?.unref();
-    insertPointRef.current = null;
+    insertPointAnchor.current?.release();
+    insertPointAnchor.current = null;
 
     if (!path) return;
 
@@ -139,14 +139,17 @@ const InlineCombobox = ({
 
     if (!point) return;
 
-    const nextPointRef = editor.update.refs.point(point);
-    insertPointRef.current = nextPointRef;
+    const nextPointAnchor = editor.anchor(point, {
+      association: 'forward',
+      deletion: 'drop',
+    });
+    insertPointAnchor.current = nextPointAnchor;
 
     return () => {
-      if (insertPointRef.current === nextPointRef) {
-        insertPointRef.current = null;
+      if (insertPointAnchor.current === nextPointAnchor) {
+        insertPointAnchor.current = null;
       }
-      nextPointRef.unref();
+      nextPointAnchor.release();
     };
   }, [editor, path]);
 
@@ -160,7 +163,7 @@ const InlineCombobox = ({
 
       editor.update((tx) => {
         tx.text.insert(trigger + value, {
-          at: insertPointRef.current?.current ?? undefined,
+          at: insertPointAnchor.current?.resolve() ?? undefined,
         });
 
         if (cause === 'arrowLeft' || cause === 'arrowRight') {

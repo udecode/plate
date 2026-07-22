@@ -1,10 +1,6 @@
-import type { Operation } from '../interfaces/operation';
 import type { Path } from '../interfaces/path';
-import type { PathRef } from '../interfaces/path-ref';
 import type { Point } from '../interfaces/point';
-import type { PointRef } from '../interfaces/point-ref';
 import type { Range } from '../interfaces/range';
-import type { RangeRef } from '../interfaces/range-ref';
 
 export const MAIN_ROOT_KEY = 'main';
 
@@ -20,19 +16,6 @@ export type RangeRootMeta = {
   focus: PointRootMeta;
   root: string | null;
 };
-
-export type RangeRefVisibility = 'public' | 'internal';
-
-const PATH_REF_ROOT = new WeakMap<PathRef, string>();
-const POINT_REF_ROOT = new WeakMap<PointRef, PointRootMeta>();
-const RANGE_REF_ROOT = new WeakMap<RangeRef, RangeRootMeta>();
-const RANGE_REF_DRAFT = new WeakMap<RangeRef, Range | null>();
-const RANGE_REF_VISIBILITY = new WeakMap<RangeRef, RangeRefVisibility>();
-
-export const getOperationRoot = (operation: Operation): string =>
-  'root' in operation && typeof operation.root === 'string'
-    ? operation.root
-    : MAIN_ROOT_KEY;
 
 export const getPointRoot = (
   point: Point,
@@ -205,46 +188,3 @@ export const stripLocationRoots = <TLocation extends Path | Point | Range>(
     focus: stripLocationRoots(location.focus),
   } as TLocation;
 };
-
-export const setPathRefRoot = (ref: PathRef, root: string) => {
-  PATH_REF_ROOT.set(ref, root);
-};
-
-export const getPathRefRoot = (ref: PathRef): string =>
-  PATH_REF_ROOT.get(ref) ?? MAIN_ROOT_KEY;
-
-export const setPointRefRootMeta = (ref: PointRef, meta: PointRootMeta) => {
-  POINT_REF_ROOT.set(ref, meta);
-};
-
-export const getPointRefRootMeta = (ref: PointRef) => POINT_REF_ROOT.get(ref);
-
-export const setRangeRefRootMeta = (ref: RangeRef, meta: RangeRootMeta) => {
-  RANGE_REF_ROOT.set(ref, meta);
-};
-
-export const getRangeRefRootMeta = (ref: RangeRef) => RANGE_REF_ROOT.get(ref);
-
-export const setRangeRefDraftCurrent = (ref: RangeRef, range: Range | null) => {
-  RANGE_REF_DRAFT.set(ref, range);
-};
-
-export const getRangeRefDraftCurrent = (ref: RangeRef) =>
-  RANGE_REF_DRAFT.get(ref);
-
-export const hasRangeRefDraftCurrent = (ref: RangeRef) =>
-  RANGE_REF_DRAFT.has(ref);
-
-export const clearRangeRefDraftCurrent = (ref: RangeRef) => {
-  RANGE_REF_DRAFT.delete(ref);
-};
-
-export const setRangeRefVisibility = (
-  ref: RangeRef,
-  visibility: RangeRefVisibility
-) => {
-  RANGE_REF_VISIBILITY.set(ref, visibility);
-};
-
-export const getRangeRefVisibility = (ref: RangeRef): RangeRefVisibility =>
-  RANGE_REF_VISIBILITY.get(ref) ?? 'public';

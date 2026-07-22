@@ -1,38 +1,22 @@
-import type { Root } from 'mdast';
-import type { Pluggable, Plugin } from 'unified';
+import type { Pluggable } from 'unified';
 
-import { type BaseEditor, getPluginKey } from '@platejs/core';
-import {
-  type Descendant,
-  type Element,
-  type Value,
-  TextApi,
-} from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
+import type { BaseEditor } from '@platejs/core';
+import type { Descendant, Value } from '@platejs/plite';
 
 import type { AllowNodeConfig } from '../MarkdownPlugin';
 import type { MdRules, PlateType } from '../types';
 
-import { mdastToSlate } from './mdastToSlate';
 import {
-  type ParseMarkdownBlocksOptions,
-  htmlToJsx,
-  parseMarkdownBlocks,
-} from './utils';
-import { getMergedOptionsDeserialize } from './utils/getMergedOptionsDeserialize';
-import { markdownToSlateNodesSafely } from './utils/markdownToSlateNodesSafely';
-
-// TODO: fixes tests
+  deserializeMdWithRuntime,
+  markdownToAstProcessorWithRuntime,
+  markdownToSlateNodesWithRuntime,
+} from '../internal/markdownDeserializer';
+import { withMarkdownRuntime } from '../internal/markdownRuntime';
 
 export type DeserializeMdOptions = {
   allowedNodes?: PlateType[] | null;
   allowNode?: AllowNodeConfig;
   disallowedNodes?: PlateType[] | null;
-  editor?: BaseEditor;
-  memoize?: boolean;
-  parser?: ParseMarkdownBlocksOptions;
   preserveEmptyParagraphs?: boolean;
   remarkPlugins?: Pluggable[];
   rules?: MdRules | null;
@@ -45,89 +29,25 @@ export const markdownToAstProcessor = (
   editor: BaseEditor,
   data: string,
   options?: DeserializeMdOptions
-) => {
-  const mergedOptions = getMergedOptionsDeserialize(editor, options);
-
-  return unified()
-    .use(remarkParse)
-    .use(mergedOptions.remarkPlugins ?? [])
-    .parse(data);
-};
+) =>
+  withMarkdownRuntime(editor, (runtime) =>
+    markdownToAstProcessorWithRuntime(runtime, data, options)
+  );
 
 export const markdownToSlateNodes = (
   editor: BaseEditor,
   data: string,
-  options?: Omit<DeserializeMdOptions, 'editor'>
-): Descendant[] => {
-  const processedData = options?.withoutMdx ? data : htmlToJsx(data);
-
-  const mergedOptions = getMergedOptionsDeserialize(editor, options);
-
-  const toSlateProcessor = unified()
-    .use(remarkParse)
-    .use(mergedOptions.remarkPlugins ?? [])
-    .use(remarkToSlate, mergedOptions);
-
-  if (options?.memoize) {
-    return parseMarkdownBlocks(processedData, options.parser).flatMap(
-      (token) => {
-        if (token.type === 'space') {
-          return {
-            children: [{ text: '' }],
-            type: editor.getType(KEYS.p),
-            _memo: token.raw,
-          };
-        }
-
-        return toSlateProcessor.processSync(token.raw).result.map((result) => ({
-          _memo: token.raw,
-          ...result,
-        }));
-      }
-    );
-  }
-
-  return toSlateProcessor.processSync(processedData).result;
-};
+  options?: DeserializeMdOptions
+): Descendant[] =>
+  withMarkdownRuntime(editor, (runtime) =>
+    markdownToSlateNodesWithRuntime(runtime, data, options)
+  );
 
 export const deserializeMd = (
   editor: BaseEditor,
   data: string,
-  options?: Omit<DeserializeMdOptions, 'editor'>
-): Value => {
-  let output: Descendant[] | null = null;
-
-  try {
-    output = markdownToSlateNodes(editor, data, options);
-  } catch (error) {
-    options?.onError?.(error as Error);
-
-    if (!options?.withoutMdx) {
-      output = markdownToSlateNodesSafely(editor, data, options);
-    }
-  }
-
-  if (!output) return [];
-
-  // when output is inline text, we need to wrap the text in a paragraph
-  return output.map((item) =>
-    TextApi.isText(item)
-      ? ({
-          children: [item],
-          type: getPluginKey(editor, KEYS.p) ?? KEYS.p,
-        } as Element)
-      : item
+  options?: DeserializeMdOptions
+): Value =>
+  withMarkdownRuntime(editor, (runtime) =>
+    deserializeMdWithRuntime(runtime, data, options)
   );
-};
-
-declare module 'unified' {
-  interface CompileResultMap {
-    remarkToSlateNode: Descendant[];
-  }
-}
-
-const remarkToSlate: Plugin<[DeserializeMdOptions?], Root, Descendant[]> =
-  // TODO: options
-  function (options = {}) {
-    this.compiler = (node) => mdastToSlate(node as Root, options);
-  };

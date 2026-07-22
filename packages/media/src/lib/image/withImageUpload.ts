@@ -1,7 +1,6 @@
 import {
   type ExtendPlateEditorExtension,
-  getInjectedPlugins,
-  pipeInsertDataQuery,
+  prepareInsertDataQuery,
 } from '@platejs/core';
 
 import type { ImageConfig } from './BaseImagePlugin';
@@ -16,34 +15,38 @@ export const withImageUpload: ExtendPlateEditorExtension<ImageConfig> = ({
   editor,
   getOptions,
   plugin,
-}) => ({
-  clipboard: {
-    insertData(dataTransfer, { next }) {
-      if (getOptions().disableUploadInsert) {
-        return next(dataTransfer);
-      }
+}) => {
+  const queryInsertData = prepareInsertDataQuery(editor, plugin);
 
-      const mimeType = 'text/plain';
-      const text = dataTransfer.getData(mimeType);
-      const { files } = dataTransfer;
-
-      if (!text && files && files.length > 0) {
-        const injectedPlugins = getInjectedPlugins(editor, plugin);
-
-        if (
-          !pipeInsertDataQuery(editor, injectedPlugins, {
-            data: text,
-            dataTransfer,
-            mimeType,
-          })
-        ) {
+  return {
+    clipboard: {
+      insertData(dataTransfer, { next }) {
+        if (getOptions().disableUploadInsert) {
           return next(dataTransfer);
         }
 
-        insertImageFromFiles(editor, files);
-        return true;
-      }
-      return next(dataTransfer);
+        const mimeType = 'text/plain';
+        const text = dataTransfer.getData(mimeType);
+        const { files } = dataTransfer;
+
+        if (!text && files && files.length > 0) {
+          if (
+            !editor.read((state) =>
+              queryInsertData(state, {
+                data: text,
+                format: mimeType,
+                source: dataTransfer,
+              })
+            )
+          ) {
+            return next(dataTransfer);
+          }
+
+          insertImageFromFiles(editor, files);
+          return true;
+        }
+        return next(dataTransfer);
+      },
     },
-  },
-});
+  };
+};

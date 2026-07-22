@@ -12,6 +12,7 @@ import {
   property,
   schema,
   SelectionApi,
+  type Value,
 } from '@platejs/plite';
 
 import {
@@ -1247,6 +1248,78 @@ describe('contextual schema slice fitting', () => {
     assert.deepEqual(fitted.changes.apply(value).children, [paragraph('xaby')]);
   });
 
+  it('opens a closed nested slice against matching target ancestors', () => {
+    const value: { children: Value } = {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                { children: [{ text: '' }], type: 'table-cell' },
+                {
+                  children: [{ bold: true, text: 'Human' }],
+                  type: 'table-cell',
+                },
+                { children: [{ bold: true, text: 'Dog' }], type: 'table-cell' },
+              ],
+              type: 'table-row',
+            },
+          ],
+          type: 'table',
+        },
+      ],
+    };
+    const editor = createEditor({ initialValue: value.children });
+    const fitted = editor.read.slice.fit(
+      ContentSlice.closed([
+        {
+          children: [
+            {
+              children: [
+                { children: [{ text: 'New 1' }], type: 'table-cell' },
+                { children: [{ text: 'New 2' }], type: 'table-cell' },
+              ],
+              type: 'table-row',
+            },
+          ],
+          type: 'table',
+        },
+      ]),
+      {
+        at: {
+          anchor: { offset: 5, path: [0, 0, 1, 0] },
+          focus: { offset: 5, path: [0, 0, 1, 0] },
+        },
+      }
+    );
+
+    assert.ok(fitted);
+    assert.deepEqual(fitted.changes.apply(value).children, [
+      {
+        children: [
+          {
+            children: [
+              { children: [{ text: '' }], type: 'table-cell' },
+              {
+                children: [{ bold: true, text: 'Human' }, { text: 'New 1' }],
+                type: 'table-cell',
+              },
+              { children: [{ text: 'New 2' }], type: 'table-cell' },
+              { children: [{ bold: true, text: 'Dog' }], type: 'table-cell' },
+            ],
+            type: 'table-row',
+          },
+        ],
+        type: 'table',
+      },
+    ]);
+    assert.deepEqual(fitted.selection?.value, {
+      anchor: { offset: 5, path: [0, 0, 2, 0] },
+      focus: { offset: 5, path: [0, 0, 2, 0] },
+      kind: 'text',
+    });
+  });
+
   it('binds canonical fit proof to one insertion and schema revision', () => {
     const editor = createSchemaEditor([paragraph('')]);
     const firstRevision = {};
@@ -2049,7 +2122,7 @@ describe('contextual schema slice fitting', () => {
     assert.equal(commits, 0);
   });
 
-  it('rejects raw top-level inline content without a closed schema', () => {
+  it('rejects raw top-level inline content through the derived schema', () => {
     const editor = createEditor({ initialValue: [paragraph('safe')] });
     const before = { children: editor.read.children() };
     const malformed = DocumentChange.between(before, {
@@ -2058,7 +2131,7 @@ describe('contextual schema slice fitting', () => {
 
     assert.throws(
       () => editor.update((tx) => tx.changes.apply(malformed)),
-      /canonical editor representation/i
+      /primary root cannot contain "text"/i
     );
     assert.deepEqual(editor.read.children(), before.children);
   });

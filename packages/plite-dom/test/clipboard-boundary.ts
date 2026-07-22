@@ -2063,6 +2063,40 @@ describe('plite-dom clipboard boundary', () => {
     });
   });
 
+  it('inherits marks from the collapsed target leaf for plain text fallback', () => {
+    const editor = createClipboardEditor(
+      [
+        {
+          type: 'paragraph',
+          children: [{ text: 'plain' }, { bold: true, text: 'marked' }],
+        },
+      ],
+      {
+        kind: 'text',
+        anchor: { path: [0, 1], offset: 0 },
+        focus: { path: [0, 1], offset: 0 },
+      }
+    );
+    const clipboard = new FakeDataTransfer();
+
+    clipboard.setData('text/plain', 'hello');
+
+    expect(
+      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+    ).toBe(true);
+    expect(editorGetSnapshot(editor).children).toEqual([
+      {
+        type: 'paragraph',
+        children: [{ text: 'plain' }, { bold: true, text: 'hellomarked' }],
+      },
+    ]);
+    expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 1], offset: 'hello'.length },
+      focus: { path: [0, 1], offset: 'hello'.length },
+    });
+  });
+
   it('applies collapsed active marks to multiline plain text fallback', () => {
     const editor = createClipboardEditor(
       [

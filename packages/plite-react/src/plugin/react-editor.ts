@@ -25,12 +25,10 @@ export interface ReactEditorInterface extends DOMEditorInterface {}
 
 export const ReactEditor: ReactEditorInterface = DOMEditor;
 
-// React owns DOM capability through api.dom and weak maps. Keep the structural
-// cast at this boundary while DOMEditor helpers still require a root dom field.
 export const toReactRuntimeEditor = <
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: unknown
+  editor: DOMEditor<V, TExtensions>
 ): ReactRuntimeEditor<V, TExtensions> =>
   editor as ReactRuntimeEditor<V, TExtensions>;

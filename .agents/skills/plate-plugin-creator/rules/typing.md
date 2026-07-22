@@ -33,7 +33,7 @@ For shipped/shared plugin surfaces, prefer `KEYS` from
 
 ```ts
 key: KEYS.blockSelection
-targetPlugins: [KEYS.p]
+targetPluginKeys: [KEYS.p]
 editor.getType(KEYS.codeBlock)
 ```
 

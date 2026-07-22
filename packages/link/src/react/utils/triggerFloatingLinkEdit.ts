@@ -10,7 +10,7 @@ export const triggerFloatingLinkEdit = (editor: PlateEditor) => {
 
   if (!selection) return;
 
-  const entry = editor.read.nodes.find<TLinkElement>({
+  const entry = editor.read.nodes.above<TLinkElement>({
     at: selection,
     match: { type: editor.getType(KEYS.link) },
   });

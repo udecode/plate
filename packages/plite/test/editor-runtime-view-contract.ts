@@ -1111,13 +1111,9 @@ describe('editor runtime/view contract', () => {
   });
 
   it('normalizes writes in the invoking view root', () => {
-    const emptyParagraph = {
-      type: 'paragraph',
-      children: [],
-    } as Element;
     const runtime = createEditorRuntime({
       initialValue: {
-        children: [emptyParagraph],
+        children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
       },
     });
@@ -1125,15 +1121,20 @@ describe('editor runtime/view contract', () => {
 
     assert.doesNotThrow(() => {
       headerEditor.update((tx) => {
-        tx.nodes.insert(paragraph('inserted'), { at: [0] });
+        tx.nodes.insert(
+          { type: 'paragraph', children: [] },
+          {
+            at: [0],
+          }
+        );
       });
     });
 
     assert.deepEqual(
       runtime.read((state) => state.value()),
       {
-        children: [emptyParagraph],
-        roots: { header: [paragraph('inserted'), paragraph('header')] },
+        children: [paragraph('body')],
+        roots: { header: [paragraph(''), paragraph('header')] },
       }
     );
   });

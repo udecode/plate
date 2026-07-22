@@ -12,10 +12,14 @@ export function getPackageBuildArtifacts(packageJson) {
   const artifacts = new Set();
 
   for (const value of Object.values(packageJson.exports ?? {})) {
-    const runtimeTarget = readRuntimeTarget(value);
-    const typesTarget = readTypesTarget(value) ?? toTypesTarget(runtimeTarget);
+    const runtimeTargets = readRuntimeTargets(value);
+    const explicitTypesTargets = readTypesTargets(value);
+    const typesTargets =
+      explicitTypesTargets.length > 0
+        ? explicitTypesTargets
+        : runtimeTargets.map(toTypesTarget);
 
-    for (const target of [runtimeTarget, typesTarget]) {
+    for (const target of [...runtimeTargets, ...typesTargets]) {
       if (!target) continue;
       if (target === './package.json') continue;
       if (!target.startsWith('./dist/')) {
@@ -48,38 +52,23 @@ export function assertPackageBuildArtifacts(packageRoot = process.cwd()) {
   assertNoPrivatePlateDeclarationBrands(packageRoot);
 }
 
-function readRuntimeTarget(value) {
+function readRuntimeTargets(value) {
   if (typeof value === 'string') {
-    return runtimeExtensionPattern.test(value) ? value : null;
+    return runtimeExtensionPattern.test(value) ? [value] : [];
   }
-  if (!value || typeof value !== 'object') return null;
+  if (!value || typeof value !== 'object') return [];
 
-  for (const key of ['import', 'default', 'node']) {
-    const target = readRuntimeTarget(value[key]);
-
-    if (target) return target;
-  }
-
-  for (const nestedValue of Object.values(value)) {
-    const target = readRuntimeTarget(nestedValue);
-
-    if (target) return target;
-  }
-
-  return null;
+  return Object.values(value).flatMap(readRuntimeTargets);
 }
 
-function readTypesTarget(value) {
-  if (!value || typeof value !== 'object') return null;
-  if (typeof value.types === 'string') return value.types;
+function readTypesTargets(value) {
+  if (!value || typeof value !== 'object') return [];
 
-  for (const nestedValue of Object.values(value)) {
-    const target = readTypesTarget(nestedValue);
-
-    if (target) return target;
-  }
-
-  return null;
+  return Object.entries(value).flatMap(([key, nestedValue]) =>
+    key === 'types' && typeof nestedValue === 'string'
+      ? [nestedValue]
+      : readTypesTargets(nestedValue)
+  );
 }
 
 const toTypesTarget = (runtimeTarget) =>

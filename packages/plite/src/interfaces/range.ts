@@ -1,13 +1,11 @@
 import {
   type Location,
   LocationApi,
-  type Operation,
   PathApi,
   type Point,
   PointApi,
   type PointEntry,
 } from '..';
-import type { RangeDirection } from '../types/types';
 import { isObject } from '../utils/is-object';
 
 /**
@@ -25,10 +23,6 @@ export type Range = BaseRange;
 
 export interface RangeEdgesOptions {
   reverse?: boolean;
-}
-
-export interface RangeTransformOptions {
-  affinity?: RangeDirection | null;
 }
 
 export interface RangeInterface {
@@ -103,15 +97,6 @@ export interface RangeInterface {
    * Get the start point of a range.
    */
   start: (range: Range) => Point;
-
-  /**
-   * Transform a range by an operation.
-   */
-  transform: (
-    range: Range,
-    op: Operation,
-    options?: RangeTransformOptions
-  ) => Range | null;
 }
 
 // eslint-disable-next-line no-redeclare
@@ -220,56 +205,5 @@ export const RangeApi: RangeInterface = {
   start(range: Range): Point {
     const [start] = RangeApi.edges(range);
     return start;
-  },
-
-  transform(
-    range: Range | null,
-    op: Operation,
-    options: RangeTransformOptions = {}
-  ): Range | null {
-    if (range === null) {
-      return null;
-    }
-
-    const { affinity = 'inward' } = options;
-    let affinityAnchor: 'forward' | 'backward' | null;
-    let affinityFocus: 'forward' | 'backward' | null;
-
-    if (affinity === 'inward') {
-      // If the range is collapsed, make sure to use the same affinity to
-      // avoid the two points passing each other and expanding in the opposite
-      // direction
-      const isCollapsed = RangeApi.isCollapsed(range);
-      if (RangeApi.isForward(range)) {
-        affinityAnchor = 'forward';
-        affinityFocus = isCollapsed ? affinityAnchor : 'backward';
-      } else {
-        affinityAnchor = 'backward';
-        affinityFocus = isCollapsed ? affinityAnchor : 'forward';
-      }
-    } else if (affinity === 'outward') {
-      if (RangeApi.isForward(range)) {
-        affinityAnchor = 'backward';
-        affinityFocus = 'forward';
-      } else {
-        affinityAnchor = 'forward';
-        affinityFocus = 'backward';
-      }
-    } else {
-      affinityAnchor = affinity;
-      affinityFocus = affinity;
-    }
-    const anchor = PointApi.transform(range.anchor, op, {
-      affinity: affinityAnchor,
-    });
-    const focus = PointApi.transform(range.focus, op, {
-      affinity: affinityFocus,
-    });
-
-    if (!anchor || !focus) {
-      return null;
-    }
-
-    return { anchor, focus };
   },
 };

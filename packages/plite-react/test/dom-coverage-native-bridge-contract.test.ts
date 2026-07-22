@@ -18,7 +18,6 @@ import {
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
-
 import { createReactEditor } from '../src';
 import {
   applyEditableCopy,
@@ -552,6 +551,70 @@ describe('DOM coverage native bridge', () => {
       });
 
       expect(editorString(editor, [])).toBe('abcdXef');
+    } finally {
+      resolveEventRange.mockRestore();
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('internal expanded text drop moves the captured source range', () => {
+    const text = 'This is editable plain text, just like a <textarea>!';
+    const editor = createReactEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text }],
+        },
+      ],
+    });
+
+    editor.update.selection.set({
+      kind: 'text',
+      anchor: { offset: 8, path: [0, 0] },
+      focus: { offset: 16, path: [0, 0] },
+    });
+
+    const root = mountEditorRoot(editor);
+    const source = mountVisibleDragTarget(root);
+    source.setAttribute('data-plite-path', '0');
+    const dataTransfer = new FakeDataTransfer();
+    const state = {
+      draggedBlock: false,
+      draggedRange: null,
+      isDraggingInternally: false,
+    };
+    const resolveEventRange = jest
+      .spyOn(ReactEditor, 'resolveEventRange')
+      .mockReturnValue({
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      });
+
+    try {
+      applyEditableDragStart({
+        editor,
+        event: createDragEvent(source, dataTransfer),
+        readOnly: false,
+        state,
+      });
+
+      expect(dataTransfer.getData('application/x-plite-fragment')).not.toBe('');
+      applyEditableDrop({
+        editor,
+        event: createDragEvent(root, dataTransfer),
+        readOnly: false,
+        state,
+      });
+
+      expect(editorString(editor, [])).toBe(
+        'editableThis is  plain text, just like a <textarea>!'
+      );
+      expect(editorGetSnapshot(editor).selection).toEqual({
+        kind: 'text',
+        anchor: { offset: 8, path: [0, 0] },
+        focus: { offset: 8, path: [0, 0] },
+      });
     } finally {
       resolveEventRange.mockRestore();
       cleanupEditorRoot(editor, root);

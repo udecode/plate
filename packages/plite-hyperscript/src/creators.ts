@@ -8,10 +8,12 @@ import {
   type Range,
   RangeApi,
   type Selection,
+  SelectionApi,
   type Text,
+  type TextSelection,
   TextApi,
 } from '@platejs/plite';
-import { setEditorChildren, setEditorSelection } from '@platejs/plite/internal';
+import { replace as replaceEditor } from '@platejs/plite/internal';
 import {
   AnchorToken,
   addAnchorToken,
@@ -161,7 +163,7 @@ export function createSelection(
   _tagName: string,
   attributes: { [key: string]: any },
   children: any[]
-): Range {
+): TextSelection {
   const anchor = children.find((c) => c instanceof AnchorToken);
   const focus = children.find((c) => c instanceof FocusToken);
 
@@ -179,6 +181,7 @@ export function createSelection(
 
   return {
     ...attributes,
+    kind: 'text',
     anchor: {
       offset: anchor.offset,
       path: anchor.path,
@@ -231,10 +234,10 @@ export function createText(
 
 const resolveEditorFixture = (children: any[]): HyperscriptEditorFixture => {
   const otherChildren: any[] = [];
-  let selectionChild: Range | undefined;
+  let selectionChild: TextSelection | undefined;
 
   for (const child of children) {
-    if (RangeApi.isRange(child)) {
+    if (SelectionApi.isText(child)) {
       selectionChild = child;
     } else {
       otherChildren.push(child);
@@ -276,7 +279,8 @@ const resolveEditorFixture = (children: any[]): HyperscriptEditorFixture => {
   return {
     children: descendants,
     selection:
-      selectionChild ?? (RangeApi.isRange(selection) ? selection : null),
+      selectionChild ??
+      (RangeApi.isRange(selection) ? SelectionApi.text(selection) : null),
   };
 };
 
@@ -311,8 +315,10 @@ export const createEditor =
     const editor = makeEditor();
     Object.assign(editor, attributes);
 
-    setEditorChildren(editor, fixture.children);
-    setEditorSelection(editor, fixture.selection);
+    replaceEditor(editor, {
+      children: fixture.children,
+      selection: fixture.selection,
+    });
 
     return editor;
   };

@@ -301,7 +301,7 @@ describe('plite-dom public surface contract', () => {
     });
     assert.equal(
       packageJson.scripts.build,
-      'node ../../tooling/scripts/build-plite-package.mjs'
+      'tsdown --config tsdown.config.mts --log-level warn'
     );
   });
 

@@ -1,4 +1,4 @@
-import type { DescendantIn, Editor, Location, Value } from '../../index';
+import type { Editor, Location, Value } from '../../index';
 import type { TextUnit } from '../../types/types';
 
 export interface TextDeleteOptions {
@@ -23,7 +23,6 @@ export interface TextInsertFragmentOptions {
   hanging?: boolean;
   /** Allow insertion into void elements. */
   voids?: boolean;
-  batchDirty?: boolean;
 }
 
 export interface TextInsertTextOptions {
@@ -43,22 +42,16 @@ export interface TextMutationMethods<V extends Value = Value> {
   /**
    * Delete content at a location, or at the transaction target when omitted.
    */
-  delete: (editor: Editor<V>, options?: TextDeleteOptions) => void;
-
-  /**
-   * Insert a fragment at a location, or at the transaction target when omitted.
-   */
-  insertFragment: (
-    editor: Editor<V>,
-    fragment: DescendantIn<V>[],
-    options?: TextInsertFragmentOptions
+  delete: <TValue extends V, TExtensions extends readonly unknown[]>(
+    editor: Editor<TValue, TExtensions>,
+    options?: TextDeleteOptions
   ) => void;
 
   /**
    * Insert text at a location, or at the transaction target when omitted.
    */
-  insertText: (
-    editor: Editor<V>,
+  insertText: <TValue extends V, TExtensions extends readonly unknown[]>(
+    editor: Editor<TValue, TExtensions>,
     text: string,
     options?: TextInsertTextOptions
   ) => void;
@@ -66,8 +59,8 @@ export interface TextMutationMethods<V extends Value = Value> {
   /**
    * Remove a string of text at a point or the current selection anchor.
    */
-  removeText: (
-    editor: Editor<V>,
+  removeText: <TValue extends V, TExtensions extends readonly unknown[]>(
+    editor: Editor<TValue, TExtensions>,
     text: string,
     options?: TextRemoveTextOptions
   ) => void;

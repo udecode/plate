@@ -11,7 +11,7 @@ import type {
   WithAnyKey,
   WithRequiredKey,
 } from 'platejs';
-import { KEYS } from 'platejs';
+import { KEYS, NODES } from 'platejs';
 import type {
   PlateEditor,
   PlateLeafProps,
@@ -71,7 +71,7 @@ export function getBlockSuggestionWrapperClassName({
   isRemove: boolean;
 }) {
   return cn(
-    elementType === KEYS.columnGroup && 'flex size-full rounded',
+    elementType === NODES.columnGroup && 'flex size-full rounded',
     suggestionVariants({
       insertActive: isInsert && (isActive || isHover),
       remove: isRemove,

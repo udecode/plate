@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Element, RootKey } from '@platejs/plite';
+import type { Element, NamedRootKey } from '@platejs/plite';
 import { useEditor } from './use-editor';
 import { useOptionalElementContext } from './use-element';
 import { usePliteChildRoot } from './use-plite-child-root';
@@ -11,17 +11,14 @@ import {
 
 /** Options for resolving a schema-owned child content root. */
 export type UsePliteContentRootOptions = UsePliteRootChromeOptions & {
-  /**
-   * Override the schema `contentRoot.slot` when one component can render more
-   * than one projected content root.
-   */
+  /** Select one schema `contentRoots` slot. Optional for single-slot elements. */
   slot?: string;
 };
 
 /** Resolved child root and chrome controller for nested editable content. */
 export type PliteContentRootController = {
   chrome: PliteRootChromeController;
-  root: RootKey;
+  root: NamedRootKey;
 };
 
 /**
@@ -35,25 +32,23 @@ export function usePliteContentRoot(
   const contextElement = useOptionalElementContext();
   const targetElement = element ?? contextElement;
   const { slot: slotOverride, ...chromeOptions } = options;
+  const declaredSlots = targetElement
+    ? editor.read((state) =>
+        Object.keys(
+          state.schema.element(targetElement.type)?.contentRoots ?? {}
+        )
+      )
+    : [];
   const slot =
-    slotOverride ??
-    (targetElement
-      ? editor.read(
-          (state) =>
-            state.schema.getElementSpec(targetElement.type)?.contentRoot
-        )?.slot
-      : undefined);
-  const root = usePliteChildRoot(
-    targetElement,
-    slot ?? '__missing_content_root__'
-  );
-  const chrome = usePliteRootChrome(root, chromeOptions);
+    slotOverride ?? (declaredSlots.length === 1 ? declaredSlots[0] : undefined);
 
-  if (!slot) {
+  if (!slot || !declaredSlots.includes(slot)) {
     throw new Error(
-      '`usePliteContentRoot` needs a contentRoot slot in the element spec or options.slot.'
+      '`usePliteContentRoot` needs a declared contentRoots slot; pass options.slot when the element declares more than one.'
     );
   }
+  const root = usePliteChildRoot(targetElement, slot);
+  const chrome = usePliteRootChrome(root, chromeOptions);
 
   return useMemo(() => ({ chrome, root }), [chrome, root]);
 }

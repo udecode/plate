@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable react-hooks/refs */
 
 import * as React from 'react';
 
@@ -40,6 +39,18 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { ToolbarButton } from '@/registry/ui/toolbar';
+
+const assignEmojiPickerRef = (
+  refs: UseEmojiPickerType['refs'],
+  key: 'content' | 'contentRoot',
+  element: HTMLDivElement | null
+) => {
+  const targetRef = refs.current[key];
+
+  if (targetRef) {
+    targetRef.current = element;
+  }
+};
 
 export function EmojiToolbarButton({
   options,
@@ -257,6 +268,12 @@ function EmojiPickerContent({
   | 'visibleCategories'
 >) {
   const getRowWidth = settings.perLine.value * settings.buttonSize.value;
+  const setContentRootRef = (element: HTMLDivElement | null) => {
+    assignEmojiPickerRef(refs, 'contentRoot', element);
+  };
+  const setContentRef = (element: HTMLDivElement | null) => {
+    assignEmojiPickerRef(refs, 'content', element);
+  };
 
   const isCategoryVisible = React.useCallback(
     (categoryId: EmojiCategoryList) =>
@@ -335,19 +352,12 @@ function EmojiPickerContent({
         </div>
       </div>
     ),
-    [
-      emojiLibrary,
-      getRowWidth,
-      i18n.searchResult,
-      searchResult,
-      onSelectEmoji,
-      onMouseOver,
-    ]
+    [getRowWidth, i18n.searchResult, searchResult, onSelectEmoji, onMouseOver]
   );
 
   return (
     <div
-      ref={refs.current.contentRoot}
+      ref={setContentRootRef}
       className={cn(
         'h-full min-h-[50%] overflow-y-auto overflow-x-hidden px-2',
         '[&::-webkit-scrollbar]:w-4',
@@ -357,7 +367,7 @@ function EmojiPickerContent({
       )}
       data-id="scroll"
     >
-      <div ref={refs.current.content} className="h-full">
+      <div ref={setContentRef} className="h-full">
         {isSearching ? SearchList() : EmojiList()}
       </div>
     </div>

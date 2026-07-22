@@ -14,7 +14,6 @@ import {
   isEdge,
   isEmpty,
   isEnd,
-  isNormalizing,
   isStart,
   last,
   leaf,
@@ -297,7 +296,6 @@ export const createEditorQueryRuntime = <V extends Value>(
       ({ at, point }) =>
         withQueryRoot(editor, [point, at], () => isEnd(editor, point, at))
     ),
-  isNormalizing: () => isNormalizing(editor),
   isStart: (point, at) =>
     executeQueryMiddleware(
       editor,

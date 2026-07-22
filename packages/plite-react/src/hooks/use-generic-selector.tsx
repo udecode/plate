@@ -1,4 +1,6 @@
-import { useCallback, useState, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
+
+import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 /**
  * Create a selector that updates when an `update` function is called, and
@@ -23,117 +25,131 @@ type GenericSelectorSnapshot = {
   version: number;
 };
 
-type GenericSelectorCell<T> = {
+type CommittedGenericSelector<T> = {
   equalityFn: (a: T | null, b: T) => boolean;
-  listeners: Set<() => void>;
   selector: (() => T) | null;
   selectedState: T | null;
-  snapshot: GenericSelectorSnapshot;
   subscriptionCallbackError: Error | undefined;
-  version: number;
 };
 
-const createGenericSelectorCell = <T,>(
+const createGenericSelectorStore = <T,>(
   equalityFn: (a: T | null, b: T) => boolean
-): GenericSelectorCell<T> => ({
-  equalityFn,
-  listeners: new Set<() => void>(),
-  selector: null,
-  selectedState: null,
-  snapshot: { version: 0 },
-  subscriptionCallbackError: undefined,
-  version: 0,
-});
+) => {
+  let committed: CommittedGenericSelector<T> = {
+    equalityFn,
+    selector: null,
+    selectedState: null,
+    subscriptionCallbackError: undefined,
+  };
+  let snapshot: GenericSelectorSnapshot = { version: 0 };
+  const listeners = new Set<() => void>();
+
+  const notify = () => {
+    snapshot = { version: snapshot.version + 1 };
+    listeners.forEach((listener) => {
+      listener();
+    });
+  };
+
+  return {
+    commitRender: (
+      renderSnapshot: GenericSelectorSnapshot,
+      selector: () => T,
+      nextEqualityFn: (a: T | null, b: T) => boolean,
+      selectedState: T
+    ) => {
+      if (snapshot !== renderSnapshot) {
+        return;
+      }
+
+      committed = {
+        equalityFn: nextEqualityFn,
+        selector,
+        selectedState,
+        subscriptionCallbackError: undefined,
+      };
+    },
+    getCommitted: () => committed,
+    getSnapshot: () => snapshot,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    update: () => {
+      if (!committed.selector) {
+        return;
+      }
+
+      try {
+        const newSelectedState = committed.selector();
+
+        if (committed.equalityFn(committed.selectedState, newSelectedState)) {
+          return;
+        }
+
+        committed = {
+          ...committed,
+          selectedState: newSelectedState,
+          subscriptionCallbackError: undefined,
+        };
+      } catch (err) {
+        committed = {
+          ...committed,
+          subscriptionCallbackError:
+            err instanceof Error ? err : new Error(String(err)),
+        };
+      }
+
+      notify();
+    },
+  };
+};
 
 export function useGenericSelector<T>(
   selector: () => T,
   equalityFn: (a: T | null, b: T) => boolean
 ): [state: T, update: () => void] {
-  const [cell] = useState(() => createGenericSelectorCell(equalityFn));
-
-  cell.equalityFn = equalityFn;
-
-  const notify = useCallback(() => {
-    cell.version += 1;
-    cell.snapshot = { version: cell.version };
-    cell.listeners.forEach((listener) => {
-      listener();
-    });
-  }, [cell]);
-
-  const subscribe = useCallback(
-    (listener: () => void) => {
-      cell.listeners.add(listener);
-
-      return () => {
-        cell.listeners.delete(listener);
-      };
-    },
-    [cell]
+  const [store] = useState(() => createGenericSelectorStore(equalityFn));
+  const renderSnapshot = useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getSnapshot
   );
-
-  const getSnapshot = useCallback(() => cell.snapshot, [cell]);
-
-  const update = useCallback(() => {
-    const currentSelector = cell.selector;
-
-    if (!currentSelector) {
-      return;
-    }
-
-    try {
-      const newSelectedState = currentSelector();
-
-      if (cell.equalityFn(cell.selectedState, newSelectedState)) {
-        return;
-      }
-
-      cell.selectedState = newSelectedState;
-      cell.subscriptionCallbackError = undefined;
-    } catch (err) {
-      // we ignore all errors here, since when the component
-      // is re-rendered, the selectors are called again, and
-      // will throw again, if neither props nor store state
-      // changed
-      if (err instanceof Error) {
-        cell.subscriptionCallbackError = err;
-      } else {
-        cell.subscriptionCallbackError = new Error(String(err));
-      }
-    }
-
-    notify();
-  }, [cell, notify]);
-
-  useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const committed = store.getCommitted();
 
   let selectedState: T;
 
   try {
-    if (selector !== cell.selector || cell.subscriptionCallbackError) {
+    if (
+      selector !== committed.selector ||
+      committed.subscriptionCallbackError
+    ) {
       const selectorResult = selector();
 
-      if (cell.equalityFn(cell.selectedState, selectorResult)) {
-        selectedState = cell.selectedState as T;
+      if (equalityFn(committed.selectedState, selectorResult)) {
+        selectedState = committed.selectedState as T;
       } else {
         selectedState = selectorResult;
       }
     } else {
-      selectedState = cell.selectedState as T;
+      selectedState = committed.selectedState as T;
     }
   } catch (err) {
-    if (cell.subscriptionCallbackError && isError(err)) {
-      err.message += `\nThe error may be correlated with this previous error:\n${cell.subscriptionCallbackError.stack}\n\n`;
+    if (committed.subscriptionCallbackError && isError(err)) {
+      err.message += `\nThe error may be correlated with this previous error:\n${committed.subscriptionCallbackError.stack}\n\n`;
     }
 
     throw err;
   }
 
-  cell.selector = selector;
-  cell.selectedState = selectedState;
-  cell.subscriptionCallbackError = undefined;
+  useIsomorphicLayoutEffect(() => {
+    store.commitRender(renderSnapshot, selector, equalityFn, selectedState);
+  }, [equalityFn, renderSnapshot, selectedState, selector, store]);
 
-  return [selectedState, update];
+  return [selectedState, store.update];
 }
 
 function isError(error: any): error is Error {

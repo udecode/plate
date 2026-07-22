@@ -15,7 +15,7 @@ export const createLinkNode = (
   { children, target, text = '', url }: CreateLinkNodeOptions
 ): TLinkElement => ({
   children: children ?? [{ text }],
-  target,
+  ...(target === undefined ? {} : { target }),
   type: editor.getType(KEYS.link),
   url,
 });

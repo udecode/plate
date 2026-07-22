@@ -49,16 +49,19 @@ export const useEquationInput = ({
   useEffect(() => {
     const { editor, element, isInline } = effectContextRef.current;
 
-    editor.update((tx) => {
-      if (isInline) {
-        tx.tags.add('history-merge');
-      }
-
-      tx.nodes.set<TEquationElement>(
+    if (isInline) {
+      editor
+        .update({ tags: 'history-merge' })
+        .nodes.set<TEquationElement>(
+          { texExpression: expressionInput },
+          { at: element }
+        );
+    } else {
+      editor.update.nodes.set<TEquationElement>(
         { texExpression: expressionInput },
         { at: element }
       );
-    });
+    }
   }, [expressionInput]);
 
   const onSubmit = () => {
@@ -67,11 +70,9 @@ export const useEquationInput = ({
 
   const onDismiss = () => {
     if (isInline) {
-      editor.update((tx) =>
-        tx.nodes.set(
-          { texExpression: initialExpressionRef.current },
-          { at: element }
-        )
+      editor.update.nodes.set<TEquationElement>(
+        { texExpression: initialExpressionRef.current },
+        { at: element }
       );
     }
 
@@ -140,9 +141,6 @@ export const useEquationInput = ({
 
     if (!point) return;
 
-    editor.update((tx) => {
-      tx.tags.add('focus');
-      tx.selection.set(point);
-    });
+    editor.update({ tags: 'focus' }).selection.set(point);
   }
 };

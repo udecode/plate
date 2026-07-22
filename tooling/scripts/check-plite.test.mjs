@@ -58,6 +58,34 @@ test('strict and package checks compose each proof owner exactly once', () => {
   );
 });
 
+test('affected package work uses bounded workspace concurrency', () => {
+  const plan = createAffectedPlan(['packages/plite/src/index.ts']);
+  const steps = createCheckSteps('dev', plan);
+
+  for (const step of steps.filter(({ id }) =>
+    ['package-tests', 'typecheck'].includes(id)
+  )) {
+    assert.ok(step.args.includes('--workspace-concurrency=8'));
+    assert.equal(step.args.includes('--parallel'), false);
+  }
+});
+
+test('development proof keeps Browser core tests out of browser-server proof', () => {
+  const plan = createAffectedPlan(['packages/browser/src/core/index.ts']);
+  const steps = createCheckSteps('dev', plan);
+
+  assert.deepEqual(ids(steps), [
+    'typecheck',
+    'browser-core-tests',
+    'browser-smoke',
+  ]);
+  assert.deepEqual(steps.find(({ id }) => id === 'browser-core-tests')?.args, [
+    '--filter',
+    '@platejs/browser',
+    'test:core',
+  ]);
+});
+
 test('a core source change invalidates every dependent Plite package', () => {
   const plan = createAffectedPlan(['packages/plite/src/index.ts']);
 
@@ -607,6 +635,18 @@ test('root scripts keep source-first typecheck and strict browser closure separa
   assert.doesNotMatch(scripts['plite:typecheck'], /\b(?:build|turbo)\b/);
   assert.equal(scripts['test:plite'], 'pnpm plite:test');
   assert.equal(scripts['check:plite'].includes('browser-matrix'), false);
+  assert.equal(
+    scripts['check:plite:browser-matrix'],
+    'pnpm --filter plite test:plite-browser'
+  );
+  assert.equal(
+    scripts['test:plite:browser'],
+    'pnpm --filter plite test:plite-browser'
+  );
+  assert.doesNotMatch(
+    `${scripts['check:plite:browser-matrix']} ${scripts['test:plite:browser']}`,
+    /playwright install|plite:browser:install/u
+  );
 });
 
 test('www package integration inherits the complete source map', () => {

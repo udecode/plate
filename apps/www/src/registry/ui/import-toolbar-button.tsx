@@ -53,7 +53,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
 
       const nodes = getFileNodes(text, 'markdown');
 
-      editor.update.nodes.insert(nodes);
+      editor.update.fragment.replace(nodes);
     },
   });
 
@@ -65,7 +65,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
 
       const nodes = getFileNodes(text, 'html');
 
-      editor.update.nodes.insert(nodes);
+      editor.update.fragment.replace(nodes);
     },
   });
 
@@ -76,7 +76,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
       const arrayBuffer = await plainFiles[0].arrayBuffer();
       const result = await importDocx(editor, arrayBuffer);
 
-      editor.update.nodes.insert(result.nodes);
+      editor.update.fragment.replace(result.nodes);
     },
   });
 

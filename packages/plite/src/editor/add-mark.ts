@@ -1,27 +1,28 @@
-import { executeCommand } from '../core/command-registry';
+import { dispatchCommand } from '../core/command-registry';
+import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
 import { runEditorTransaction } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
 import { parent as editorParent } from '../interfaces/editor';
 import type { EditorStaticApi } from '../interfaces/editor';
 import { type Node, NodeApi } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
+import { setNodes } from '../transforms-node/set-nodes';
 import { node } from './node';
 
-type AddMarkCommand = {
-  key: string;
-  type: 'add_mark';
-  value: Parameters<EditorStaticApi['addMark']>[2];
-};
-
-const applyAddMark: EditorStaticApi['addMark'] = (editor, key, value) => {
+export const applyAddMark: EditorStaticApi['addMark'] = (
+  editor,
+  key,
+  value
+) => {
   runEditorTransaction(editor, (tx) => {
     const selection = tx.resolveTarget();
 
     if (!selection || !RangeApi.isRange(selection)) {
       return;
     }
+    const schema = getEditorSchema(editor);
+    const root = selection.anchor.root ?? selection.focus.root ?? 'main';
 
     const match = (node: Node, path: Path) => {
       if (!NodeApi.isText(node)) {
@@ -32,34 +33,65 @@ const applyAddMark: EditorStaticApi['addMark'] = (editor, key, value) => {
         return false;
       }
       return (
-        !getEditorSchema(editor).isVoid(parentNode) ||
-        getEditorSchema(editor).markableVoid(parentNode)
+        schema.isTextPropertyAllowedAt(key, path, root) &&
+        (!schema.isVoid(parentNode) || schema.markableVoid(parentNode))
       );
     };
     const expandedSelection = RangeApi.isExpanded(selection);
     let markAcceptingVoidSelected = false;
+    let selectedPath: Path | undefined;
     if (!expandedSelection) {
-      const [selectedNode, selectedPath] = node(editor, selection);
-      if (selectedNode && match(selectedNode, selectedPath)) {
-        const [parentNode] = editorParent(editor, selectedPath);
+      const [selectedNode, path] = node(editor, selection);
+      selectedPath = path;
+      if (selectedNode && match(selectedNode, path)) {
+        const [parentNode] = editorParent(editor, path);
         markAcceptingVoidSelected =
           NodeApi.isElement(parentNode) &&
           getEditorSchema(editor).markableVoid(parentNode);
       }
     }
-    if (expandedSelection || markAcceptingVoidSelected) {
-      getEditorTransformRegistry(editor).setNodes(
+    if (markAcceptingVoidSelected && selectedPath) {
+      setNodes(
+        editor,
         { [key]: value },
         {
+          at: selectedPath,
+          marks: true,
+          match,
+          voids: true,
+        }
+      );
+    } else if (expandedSelection) {
+      setNodes(
+        editor,
+        { [key]: value },
+        {
+          marks: true,
           match,
           split: true,
           voids: true,
         }
       );
     } else {
+      const [, currentPath] = node(editor, selection);
+      const [parentNode] = editorParent(editor, currentPath);
+
+      if (
+        !NodeApi.isElement(parentNode) ||
+        !schema.isTextPropertyAllowedAt(key, currentPath, root)
+      ) {
+        return;
+      }
+      const currentMarks = tx.marks ?? tx.getSelectionMarks() ?? {};
       const marks = {
-        ...(editor.read((state) => state.marks()) || {}),
-        [key]: value,
+        ...currentMarks,
+        [key]: schema.mergeTextPropertyAt(
+          key,
+          currentMarks[key],
+          value,
+          currentPath,
+          root
+        ),
       };
 
       tx.setMarks(marks);
@@ -68,13 +100,8 @@ const applyAddMark: EditorStaticApi['addMark'] = (editor, key, value) => {
 };
 
 export const addMark: EditorStaticApi['addMark'] = (editor, key, value) => {
-  executeCommand<AddMarkCommand>(
-    editor,
-    { key, type: 'add_mark', value },
-    (command) => {
-      applyAddMark(editor, command.key, command.value);
-      return true;
-    },
-    { implicitUpdate: true }
-  );
+  dispatchCommand(editor, editorCommands.addMark, {
+    key,
+    value,
+  });
 };

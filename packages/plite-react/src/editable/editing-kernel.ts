@@ -8,14 +8,15 @@ import type {
 } from 'react';
 import {
   type Editor,
-  type Operation,
   type Range,
   RangeApi,
   type RootKey,
 } from '@platejs/plite';
+import { toInternalRoot } from './runtime-editor-api';
 import { Hotkeys } from '@platejs/plite-dom';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
+import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
 import { getInputEventData, isDataTransferInput } from './dom-input-event';
 import type { EditableCommand } from './editable-command-types';
 import {
@@ -272,7 +273,6 @@ export type EditableKernelTraceEntry = {
   intent: InputIntent | null;
   movement: EditableMovementOwnershipTrace | null;
   nativeAllowed: boolean;
-  operations: readonly Operation[];
   ownership: EditableOwnership;
   repair: EditableRepairRequest | null;
   repairPolicy: EditableRepairPolicy;
@@ -426,14 +426,12 @@ export type EditableKernelTraceInput = Omit<
   | 'frameId'
   | 'commandDefinition'
   | 'movement'
-  | 'operations'
   | 'repairPolicy'
   | 'selectionChangeOrigin'
   | 'selectionAfter'
   | 'selectionPolicy'
   | 'transition'
 > & {
-  operations?: readonly Operation[];
   movement?: EditableMovementOwnershipTrace | null;
   repairPolicy?: EditableRepairPolicy;
   selectionChangeOrigin?: SelectionChangeOrigin;
@@ -526,7 +524,8 @@ export const beginEditableEventFrame = (
     lifecyclePhase: input.lifecyclePhase ?? 'event',
     modelSelectionBefore:
       input.modelSelectionBefore ?? readLiveSelection(editor),
-    root: input.root ?? editor.read((state) => state.view.root()),
+    root:
+      input.root ?? toInternalRoot(editor.read((state) => state.view.root())),
     selectionSource: input.selectionSource ?? 'unknown',
     startedAt: input.startedAt ?? Date.now(),
     targetOwner: input.targetOwner ?? 'unknown',
@@ -786,8 +785,6 @@ export const createEditableKernelTraceEntry = ({
     frame,
     frameId: frame?.id ?? null,
     movement: trace.movement ?? null,
-    operations:
-      trace.operations ?? editor.read((state) => [...state.operations()]),
     repairPolicy:
       trace.repairPolicy ??
       getEditableRepairPolicy({
@@ -1010,6 +1007,9 @@ export const getEditableCommandFromKeyDown = ({
 
   if (historyDirection) {
     return { direction: historyDirection, kind: 'history' };
+  }
+  if (isSelectAllHotkey(nativeEvent)) {
+    return { kind: 'select-all' };
   }
   if (Hotkeys.isBold(nativeEvent)) {
     return { format: 'bold', kind: 'format' };

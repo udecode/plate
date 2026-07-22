@@ -71,10 +71,7 @@ const summaryDirectory = path.join(
   'test-results/plite-browser-runner'
 );
 const appBuildManifest = path.join(appRoot, 'out/.plite-proof-build.json');
-const browserBuildManifest = path.join(
-  repoRoot,
-  'packages/browser/dist/.plite-browser-build.json'
-);
+const browserOutputRoot = path.join(repoRoot, 'packages/browser/dist');
 const appOutputRoot = path.join(appRoot, 'out');
 const projectOutputDirectory = (project) =>
   path.join(appRoot, 'test-results/plite-browser', project);
@@ -185,15 +182,14 @@ const runDirect = async (args, extraEnv = {}) => {
   return result.status;
 };
 
-const runCaptured = (
+const runCaptured = async (
   args,
   extraEnv = {},
   { echo = true, outputFile, projectRun, timeoutMs } = {}
 ) => {
   projectRun?.throwIfCancelled();
   const startedAt = performance.now();
-
-  return runBoundedProcess({
+  const result = await runBoundedProcess({
     args: [playwrightCli, ...baseArgs, ...args],
     captureLimitBytes: captureLimit,
     command: process.execPath,
@@ -209,19 +205,18 @@ const runCaptured = (
     onProcessStart: (child) => {
       activeProcesses.add(child);
     },
-    stdio: ['inherit', 'pipe', 'pipe'],
+    stdio: ['ignore', 'pipe', 'pipe'],
     timeoutMs,
-  }).then((result) => {
-    const output = `${result.stdout}\n${result.stderr}`;
-
-    if (outputFile) fs.writeFileSync(outputFile, output);
-
-    return {
-      ...result,
-      durationMs: Math.round(performance.now() - startedAt),
-      output,
-    };
   });
+  const output = `${result.stdout}\n${result.stderr}`;
+
+  if (outputFile) fs.writeFileSync(outputFile, output);
+
+  return {
+    ...result,
+    durationMs: Math.round(performance.now() - startedAt),
+    output,
+  };
 };
 
 const readJson = (file) => {
@@ -637,7 +632,10 @@ const getProofSession = () => {
   proofSessionPromise ??= (async () => {
     const monitor = createProofIntegrityMonitor({
       sourceEntries: browserRunEntries,
-      sourceIgnoredPaths: [browserBuildManifest],
+      // Generated browser output is content-checked by runInputDigest after
+      // every unit. Ignore its metadata so an identical rebuild cannot
+      // invalidate an otherwise coherent proof.
+      sourceIgnoredPaths: [browserOutputRoot],
       targetIgnoredPaths: [appBuildManifest],
       targetRoot: process.env.PLAYWRIGHT_BASE_URL ? undefined : appOutputRoot,
     });
@@ -652,8 +650,17 @@ const getProofSession = () => {
       const change = await monitor.checkpoint();
 
       if (change) {
+        if (change.kind === 'monitor') {
+          throw new Error(
+            `Plite proof monitor failed while its identity was captured: ${change.path}`
+          );
+        }
+
+        const changedPath = path.relative(repoRoot, change.path);
+
         throw new Error(
-          `Plite proof ${change.kind} changed while its identity was captured`
+          `Plite proof ${change.kind} changed while its identity was captured: ` +
+            `${changedPath || '.'} (${change.eventType})`
         );
       }
       if (!process.env.PLAYWRIGHT_BASE_URL && !localTargetFingerprint) {
@@ -669,7 +676,7 @@ const getProofSession = () => {
         runInputDigest,
       };
     } catch (error) {
-      monitor.close();
+      await monitor.close();
       throw error;
     }
   })();
@@ -683,7 +690,7 @@ const closeProofSession = async () => {
   try {
     const proofSession = await proofSessionPromise;
 
-    proofSession.monitor.close();
+    await proofSession.monitor.close();
   } catch {
     // Session setup closes its own monitor before rejecting.
   }

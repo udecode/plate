@@ -9,7 +9,6 @@ import { PathApi } from '@platejs/plite';
 import { getNextFootnoteIdentifier } from '../queries/getNextFootnoteIdentifier';
 import type { TFootnoteElement } from '../types';
 import { createFootnoteDefinition } from './createFootnoteDefinition';
-import { focusFootnoteDefinition } from './focusFootnoteDefinition';
 
 export type InsertFootnoteOptions = NodeInsertNodesOptions<TFootnoteElement> & {
   focusDefinition?: boolean;
@@ -30,7 +29,7 @@ export const insertFootnote = (
 
   if (!selection && options.at === undefined) return;
 
-  const nextIdentifier = identifier ?? getNextFootnoteIdentifier(editor, tx);
+  const nextIdentifier = identifier ?? getNextFootnoteIdentifier(editor);
   const fragment =
     selection && tx.selection.isExpanded()
       ? tx.fragment({ at: selection })
@@ -53,14 +52,12 @@ export const insertFootnote = (
   tx.nodes.insert(reference, options);
 
   createFootnoteDefinition(editor, tx, {
-    focus: false,
+    focus: shouldFocusDefinition,
     fragment,
     identifier: nextIdentifier,
   });
 
   if (shouldFocusDefinition) {
-    focusFootnoteDefinition(editor, tx, { identifier: nextIdentifier });
-
     return;
   }
 

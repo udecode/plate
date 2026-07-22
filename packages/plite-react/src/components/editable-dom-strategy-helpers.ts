@@ -44,11 +44,11 @@ export const mergeMountedRuntimeScope = (
   const mountedTopLevelRuntimeIds = new Set(mountedRuntimeScope);
 
   return explicitRuntimeScope.filter((runtimeId) => {
-    const path = snapshot.index.idToPath[runtimeId];
+    const path = snapshot.index.pathOf(runtimeId);
     const topLevelPath = path ? [path[0]] : null;
     const topLevelRuntimeId =
       topLevelPath && typeof topLevelPath[0] === 'number'
-        ? snapshot.index.pathToId[getSnapshotPathKey(topLevelPath)]
+        ? snapshot.index.idAt(topLevelPath)
         : null;
 
     return topLevelRuntimeId

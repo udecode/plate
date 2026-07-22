@@ -1,4 +1,3 @@
-import { getEditorTransformRegistry } from '../core/transform-registry';
 import type { EditorStaticApi } from '../interfaces/editor';
 import {
   getSelection as editorGetSelection,
@@ -6,6 +5,7 @@ import {
   void as editorVoid,
 } from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
+import { insertNodes } from '../transforms-node/insert-nodes';
 import { RangeApi } from '../interfaces/range';
 
 type BreakEditor = Parameters<EditorStaticApi['insertBreak']>[0];
@@ -32,7 +32,8 @@ export const insertParagraphAfterSelectedBlockVoid = (editor: BreakEditor) => {
     return false;
   }
 
-  getEditorTransformRegistry(editor).insertNodes(
+  insertNodes(
+    editor,
     {
       type: 'paragraph',
       children: [{ text: '' }],

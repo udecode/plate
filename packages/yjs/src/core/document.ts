@@ -1,10 +1,14 @@
-import type { Descendant, Path } from '@platejs/plite';
+import {
+  NodeApi,
+  type Descendant,
+  type JsonNode,
+  type Path,
+} from '@platejs/plite';
 import * as Y from 'yjs';
 
 import {
   getPliteYjsElementType,
   getYjsAttributes,
-  hasYjsAttributes,
   PLITE_TYPE_ATTRIBUTE,
   setYjsAttribute,
   setYjsAttributes,
@@ -13,6 +17,11 @@ import {
 } from './attributes';
 import { areJsonLikeValuesEqual } from './json-equality';
 import { copyPath, lastPathIndex, parentPath } from './path';
+import {
+  encodeYjsSetValueAttributes,
+  isYjsSetValueAttribute,
+  readYjsSetValueAttributes,
+} from './set-valued-attributes';
 import {
   getYjsTextDeltaPartText,
   isNonEmptyYjsTextDeltaPart,
@@ -34,8 +43,154 @@ const INTERNAL_YJS_ATTRIBUTES = [
 ] as const;
 const INTERNAL_YJS_ATTRIBUTE_SET = new Set<string>(INTERNAL_YJS_ATTRIBUTES);
 
+export type YjsPropertyContext = Readonly<{
+  /** Immediate element parent first. */
+  ancestors: readonly string[];
+  parent: string | null;
+  path: Path;
+  /** `null` addresses the implicit primary root. */
+  root: string | null;
+  /** Element type targeted by schema property rules. */
+  type: string;
+  placement: 'element' | 'text';
+}>;
+
+export type YjsPropertyLocation = Readonly<{
+  /** Immediate element parent first. */
+  ancestors: readonly string[];
+  /** First child index when encoding a window rather than the whole parent. */
+  offset?: number;
+  /** Parent path. */
+  path: Path;
+  /** `null` addresses the implicit primary root. */
+  root: string | null;
+}>;
+
+export type YjsSetPropertyResolver = (
+  node: JsonNode,
+  key: string,
+  context: YjsPropertyContext
+) => boolean;
+
+const noSetProperties: YjsSetPropertyResolver = () => false;
+
+const rootPropertyLocation = (): YjsPropertyLocation => ({
+  ancestors: [],
+  path: [],
+  root: null,
+});
+
+export const createYjsPropertyContext = (
+  node: JsonNode,
+  location: YjsPropertyLocation
+): YjsPropertyContext => {
+  const placement = NodeApi.isText(node) ? 'text' : 'element';
+  const parent = location.ancestors[0] ?? null;
+
+  return {
+    ancestors:
+      placement === 'text' ? location.ancestors.slice(1) : location.ancestors,
+    parent,
+    path: location.path,
+    placement,
+    root: location.root,
+    type:
+      placement === 'text'
+        ? (parent ?? 'text')
+        : String((node as Readonly<Record<string, unknown>>).type ?? 'element'),
+  };
+};
+
+export const createYjsPropertyLocationAt = (
+  children: readonly Descendant[],
+  path: Path,
+  root: string | null,
+  offset?: number
+): YjsPropertyLocation => {
+  let current = children;
+  const ancestors: string[] = [];
+
+  for (const index of path) {
+    const parent = current[index];
+
+    if (!parent || !NodeApi.isElement(parent)) {
+      throw new Error(
+        `Cannot resolve Yjs property parent context at ${path.join('.')}.`
+      );
+    }
+
+    ancestors.unshift(String(parent.type ?? 'element'));
+    current = parent.children;
+  }
+
+  return {
+    ancestors,
+    ...(offset === undefined ? {} : { offset }),
+    path,
+    root,
+  };
+};
+
+export const indexYjsPropertyContexts = (
+  children: readonly Descendant[],
+  root: string | null
+): WeakMap<JsonNode, YjsPropertyContext> => {
+  const contexts = new WeakMap<JsonNode, YjsPropertyContext>();
+
+  const visit = (
+    nodes: readonly Descendant[],
+    parentPath: Path,
+    ancestors: readonly string[]
+  ): void => {
+    nodes.forEach((node, index) => {
+      const path = [...parentPath, index];
+      const context = createYjsPropertyContext(node, {
+        ancestors,
+        path,
+        root,
+      });
+
+      contexts.set(node, context);
+
+      if (NodeApi.isElement(node)) {
+        visit(node.children, path, [context.type, ...ancestors]);
+      }
+    });
+  };
+
+  visit(children, [], []);
+
+  return contexts;
+};
+
 let nextNodeId = 0;
 const nodeIdScope = Math.random().toString(36).slice(2);
+
+const createYjsNodeId = (scope: string): string =>
+  `plite-yjs-${scope}-${++nextNodeId}`;
+
+const assignFreshYjsNodeId = (node: YjsNode): string => {
+  const id = createYjsNodeId(nodeIdScope);
+
+  setYjsAttribute(node, NODE_ID_ATTRIBUTE, id);
+
+  return id;
+};
+
+const ensureYjsNodeId = (node: YjsNode): string => {
+  const currentId = node.getAttribute(NODE_ID_ATTRIBUTE);
+
+  if (typeof currentId === 'string') {
+    return currentId;
+  }
+
+  const scope = node.doc ? String(node.doc.clientID) : nodeIdScope;
+  const nextId = createYjsNodeId(scope);
+
+  setYjsAttribute(node, NODE_ID_ATTRIBUTE, nextId);
+
+  return nextId;
+};
 
 export const getYjsLength = (node: YjsNode): number => node.length;
 
@@ -221,7 +376,7 @@ const isHiddenYjsNode = (node: YjsNode): boolean =>
 const isEmptyAttributeFreeYjsText = (node: YjsNode): boolean =>
   node instanceof Y.XmlText &&
   getYjsLength(node) === 0 &&
-  !hasYjsAttributes(node);
+  Object.keys(getYjsAttributes(node)).every((key) => key === NODE_ID_ATTRIBUTE);
 
 const copyRecordAttributes = (
   target: YjsAttributeRecord,
@@ -303,6 +458,7 @@ const getYjsVisibleChildSlots = (
   rawChildren = getRawYjsChildren(node)
 ): YjsVisibleChildSlot[] => {
   const rawSlots = new Array<YjsVisibleChildSlot>(rawChildren.length + 1);
+  const visibleNodes = new Set<YjsNode>();
   let writeIndex = 0;
 
   if (!isVirtualYjsPlaceholder(node)) {
@@ -318,6 +474,7 @@ const getYjsVisibleChildSlots = (
         node: virtualChild,
         rawIndex: VIRTUAL_YJS_CHILD_RAW_INDEX,
       };
+      visibleNodes.add(virtualChild);
       writeIndex++;
     }
   }
@@ -345,8 +502,9 @@ const getYjsVisibleChildSlots = (
         resolveNodeById
       );
 
-      if (virtualChild !== null) {
+      if (virtualChild !== null && !visibleNodes.has(virtualChild)) {
         rawSlots[writeIndex] = { node: virtualChild, rawIndex };
+        visibleNodes.add(virtualChild);
         writeIndex++;
       }
 
@@ -355,6 +513,7 @@ const getYjsVisibleChildSlots = (
     }
 
     rawSlots[writeIndex] = { node: child, rawIndex };
+    visibleNodes.add(child);
     writeIndex++;
     rawIndex++;
   }
@@ -371,6 +530,7 @@ const getYjsVisibleChildNodes = (
   rawChildren = getRawYjsChildren(node)
 ): YjsNode[] => {
   const children = new Array<YjsNode>(rawChildren.length + 1);
+  const visibleNodes = new Set<YjsNode>();
   let writeIndex = 0;
 
   if (!isVirtualYjsPlaceholder(node)) {
@@ -383,6 +543,7 @@ const getYjsVisibleChildNodes = (
 
     if (virtualChild !== null) {
       children[writeIndex] = virtualChild;
+      visibleNodes.add(virtualChild);
       writeIndex++;
     }
   }
@@ -410,8 +571,9 @@ const getYjsVisibleChildNodes = (
         resolveNodeById
       );
 
-      if (virtualChild !== null) {
+      if (virtualChild !== null && !visibleNodes.has(virtualChild)) {
         children[writeIndex] = virtualChild;
+        visibleNodes.add(virtualChild);
         writeIndex++;
       }
 
@@ -420,6 +582,7 @@ const getYjsVisibleChildNodes = (
     }
 
     children[writeIndex] = child;
+    visibleNodes.add(child);
     writeIndex++;
     rawIndex++;
   }
@@ -440,6 +603,7 @@ const getYjsVisibleChildSlotAt = (
     return;
   }
 
+  const visibleNodes = new Set<YjsNode>();
   let visibleIndex = 0;
 
   if (!isVirtualYjsPlaceholder(node)) {
@@ -458,6 +622,7 @@ const getYjsVisibleChildSlotAt = (
         };
       }
 
+      visibleNodes.add(virtualChild);
       visibleIndex++;
     }
   }
@@ -480,17 +645,20 @@ const getYjsVisibleChildSlotAt = (
         resolveNodeById
       );
 
-      if (virtualChild !== null) {
+      if (virtualChild !== null && !visibleNodes.has(virtualChild)) {
         if (visibleIndex === index) {
           return { node: virtualChild, rawIndex };
         }
 
+        visibleNodes.add(virtualChild);
         visibleIndex++;
       }
 
       rawIndex++;
       continue;
     }
+
+    visibleNodes.add(child);
 
     if (visibleIndex === index) {
       return { node: child, rawIndex };
@@ -587,7 +755,7 @@ export const resolveYjsTextPoint = (
   const target = getYjsNode(root, path);
 
   if (!(target instanceof Y.XmlText)) {
-    throw new Error('text operation target is not a Y.XmlText.');
+    throw new Error('Text target is not a Y.XmlText.');
   }
 
   const { index, parent } = getYjsParent(root, path);
@@ -668,9 +836,18 @@ export const createYjsText = (
   text: string,
   attributes: YjsAttributeRecord
 ): Y.XmlText => {
+  assertPublicYjsAttributesCanBeSet(attributes);
+
+  return createYjsTextWithAttributes(text, attributes);
+};
+
+const createYjsTextWithAttributes = (
+  text: string,
+  attributes: YjsAttributeRecord
+): Y.XmlText => {
   const yjsText = new Y.XmlText();
 
-  assertPublicYjsAttributesCanBeSet(attributes);
+  assignFreshYjsNodeId(yjsText);
   setYjsAttributes(yjsText, attributes);
 
   if (text.length > 0) {
@@ -680,33 +857,84 @@ export const createYjsText = (
   return yjsText;
 };
 
-export const createYjsNode = (node: Descendant): YjsNode => {
-  if ('text' in node) {
-    const attributes: YjsAttributeRecord = {};
+const createYjsNodeAttributes = (
+  node: Descendant,
+  isSetValued: YjsSetPropertyResolver,
+  context: YjsPropertyContext,
+  ...excluded: readonly string[]
+): YjsAttributeRecord => {
+  const attributes: YjsAttributeRecord = {};
 
-    copyRecordAttributes(attributes, node, 'text');
+  for (const key in node) {
+    if (!Object.hasOwn(node, key) || excluded.includes(key)) continue;
 
-    return createYjsText(String(node.text), attributes);
+    assertPublicYjsAttributeCanBeSet(key);
+
+    const value = (node as Readonly<Record<string, unknown>>)[key];
+
+    if (isSetValued(node, key, context)) {
+      if (!Array.isArray(value)) {
+        throw new Error(`Set-valued Yjs property "${key}" must be an array.`);
+      }
+
+      Object.assign(attributes, encodeYjsSetValueAttributes(key, value));
+    } else {
+      attributes[key] = value;
+    }
   }
 
-  const attributes: YjsAttributeRecord = {};
+  return attributes;
+};
+
+export const createYjsNode = (
+  node: Descendant,
+  isSetValued: YjsSetPropertyResolver = noSetProperties,
+  context = createYjsPropertyContext(node, rootPropertyLocation())
+): YjsNode => {
+  if (NodeApi.isText(node)) {
+    const attributes = createYjsNodeAttributes(
+      node,
+      isSetValued,
+      context,
+      'text'
+    );
+
+    return createYjsTextWithAttributes(String(node.text), attributes);
+  }
+
+  const attributes = createYjsNodeAttributes(
+    node,
+    isSetValued,
+    context,
+    'children',
+    'type'
+  );
   const elementType = String(node.type ?? 'element');
   const element = new Y.XmlElement(elementType);
 
-  copyRecordAttributes(attributes, node, 'children', 'type');
-
-  assertPublicYjsAttributesCanBeSet(attributes);
+  assignFreshYjsNodeId(element);
   setYjsAttribute(element, PLITE_TYPE_ATTRIBUTE, elementType);
   setYjsAttributes(element, attributes);
 
   if (node.children.length > 0) {
-    element.insert(0, createYjsNodes(node.children));
+    element.insert(
+      0,
+      createYjsNodes(node.children, isSetValued, {
+        ancestors: [context.type, ...context.ancestors],
+        path: context.path,
+        root: context.root,
+      })
+    );
   }
 
   return element;
 };
 
-export const createYjsNodes = (nodes: readonly Descendant[]): YjsNode[] => {
+export const createYjsNodes = (
+  nodes: readonly Descendant[],
+  isSetValued: YjsSetPropertyResolver = noSetProperties,
+  location: YjsPropertyLocation = rootPropertyLocation()
+): YjsNode[] => {
   const yjsNodes = new Array<YjsNode>(nodes.length);
 
   let index = 0;
@@ -720,7 +948,15 @@ export const createYjsNodes = (nodes: readonly Descendant[]): YjsNode[] => {
       );
     }
 
-    yjsNodes[index] = createYjsNode(node);
+    yjsNodes[index] = createYjsNode(
+      node,
+      isSetValued,
+      createYjsPropertyContext(node, {
+        ancestors: location.ancestors,
+        path: [...location.path, (location.offset ?? 0) + index],
+        root: location.root,
+      })
+    );
     index++;
   }
 
@@ -729,7 +965,9 @@ export const createYjsNodes = (nodes: readonly Descendant[]): YjsNode[] => {
 
 export const replaceYjsChildren = (
   parent: Y.XmlElement,
-  children: readonly Descendant[]
+  children: readonly Descendant[],
+  isSetValued: YjsSetPropertyResolver = noSetProperties,
+  location: YjsPropertyLocation = rootPropertyLocation()
 ): void => {
   const length = getYjsLength(parent);
 
@@ -740,11 +978,16 @@ export const replaceYjsChildren = (
   }
 
   if (children.length > 0) {
-    parent.insert(0, createYjsNodes(children));
+    parent.insert(0, createYjsNodes(children, isSetValued, location));
   }
 };
 
-export const readPliteValueFromYjs = (root: Y.XmlElement): Descendant[] => {
+const EMPTY_YJS_VALUE = Object.freeze([]) as readonly Descendant[];
+
+export const readPliteValueFromYjs = (
+  root: Y.XmlElement,
+  emptyValue: readonly Descendant[] = EMPTY_YJS_VALUE
+): Descendant[] => {
   const resolveNodeById = createLazyYjsNodeIdResolver(root);
   const visibleChildren = getYjsVisibleChildrenWithResolver(
     root,
@@ -762,61 +1005,183 @@ export const readPliteValueFromYjs = (root: Y.XmlElement): Descendant[] => {
       throw new Error('Cannot read Plite value from a sparse Yjs node array.');
     }
 
-    children[index] = readPliteNodeFromYjs(root, node, resolveNodeById);
+    children[index] = readPliteNodeFromYjsWithResolver(
+      root,
+      node,
+      resolveNodeById
+    );
     index++;
   }
 
-  return children.length > 0
-    ? children
-    : [{ children: [{ text: '' }], type: 'paragraph' }];
+  return children.length > 0 ? children : [...emptyValue];
+};
+
+export const readPliteNodeFromYjs = (
+  root: Y.XmlElement,
+  node: YjsNode
+): Descendant =>
+  readPliteNodeFromYjsWithResolver(
+    root,
+    node,
+    createLazyYjsNodeIdResolver(root)
+  );
+
+const removeDuplicateVirtualYjsChildReferences = (
+  root: Y.XmlElement,
+  parent: Y.XmlElement,
+  resolveNodeById: YjsNodeIdResolver,
+  removed: Set<YjsNode>
+): void => {
+  const visibleNodes = new Set<YjsNode>();
+
+  if (!isVirtualYjsPlaceholder(parent)) {
+    const virtualChild = getVirtualYjsChild(
+      root,
+      parent,
+      undefined,
+      resolveNodeById
+    );
+
+    if (virtualChild !== null) visibleNodes.add(virtualChild);
+  }
+
+  const rawChildren = getRawYjsChildren(parent);
+  let deleted = 0;
+
+  for (let rawIndex = 0; rawIndex < rawChildren.length; rawIndex++) {
+    const child = rawChildren[rawIndex];
+
+    if (child === undefined || isHiddenYjsNode(child)) continue;
+
+    if (child instanceof Y.XmlElement && isVirtualYjsPlaceholder(child)) {
+      const virtualChild = getVirtualYjsChild(
+        root,
+        child,
+        undefined,
+        resolveNodeById
+      );
+
+      if (virtualChild !== null && visibleNodes.has(virtualChild)) {
+        parent.delete(rawIndex - deleted, 1);
+        removed.add(child);
+        deleted++;
+      } else if (virtualChild !== null) {
+        visibleNodes.add(virtualChild);
+      }
+
+      continue;
+    }
+
+    visibleNodes.add(child);
+  }
+};
+
+const removeRedundantEmptyYjsTextChildren = (
+  root: Y.XmlElement,
+  parent: Y.XmlElement,
+  resolveNodeById: YjsNodeIdResolver,
+  removed: Set<YjsNode>
+): void => {
+  removeDuplicateVirtualYjsChildReferences(
+    root,
+    parent,
+    resolveNodeById,
+    removed
+  );
+
+  const rawChildren = getRawYjsChildren(parent);
+  const visibleSlots = getYjsVisibleChildSlots(
+    root,
+    parent,
+    resolveNodeById,
+    rawChildren
+  );
+
+  if (visibleSlots.length <= 1) return;
+
+  let slotIndex = visibleSlots.length - 1;
+
+  while (slotIndex >= 0) {
+    const slot = visibleSlots[slotIndex];
+
+    if (
+      slot !== undefined &&
+      hasRawYjsChildSlot(slot) &&
+      isEmptyAttributeFreeYjsText(slot.node)
+    ) {
+      removed.add(slot.node);
+      parent.delete(slot.rawIndex, 1);
+    }
+    slotIndex--;
+  }
+};
+
+const removeRedundantEmptyYjsTextTree = (
+  root: Y.XmlElement,
+  parent: Y.XmlElement,
+  resolveNodeById: YjsNodeIdResolver,
+  removed: Set<YjsNode>,
+  visited: Set<Y.XmlElement>
+): void => {
+  if (visited.has(parent)) return;
+
+  visited.add(parent);
+
+  const rawChildren = getRawYjsChildren(parent);
+  let index = 0;
+
+  while (index < rawChildren.length) {
+    const child = rawChildren[index];
+
+    if (child instanceof Y.XmlElement) {
+      removeRedundantEmptyYjsTextTree(
+        root,
+        child,
+        resolveNodeById,
+        removed,
+        visited
+      );
+    }
+    index++;
+  }
+
+  removeRedundantEmptyYjsTextChildren(root, parent, resolveNodeById, removed);
 };
 
 export const removeRedundantEmptyYjsTextNodes = (root: Y.XmlElement): void => {
   const resolveNodeById = createLazyYjsNodeIdResolver(root);
-  const visit = (parent: Y.XmlElement): void => {
-    const rawChildren = getRawYjsChildren(parent);
-    let index = 0;
+  removeRedundantEmptyYjsTextTree(
+    root,
+    root,
+    resolveNodeById,
+    new Set(),
+    new Set()
+  );
+};
 
-    while (index < rawChildren.length) {
-      const child = rawChildren[index];
+export const removeRedundantEmptyYjsTextNodesAt = (
+  root: Y.XmlElement,
+  parents: ReadonlySet<Y.XmlElement>,
+  recursiveRoots: ReadonlySet<Y.XmlElement>
+): ReadonlySet<YjsNode> => {
+  const resolveNodeById = createLazyYjsNodeIdResolver(root);
+  const removed = new Set<YjsNode>();
+  const visited = new Set<Y.XmlElement>();
 
-      if (child instanceof Y.XmlElement) {
-        visit(child);
-      }
-      index++;
-    }
-
-    const visibleSlots = getYjsVisibleChildSlots(
+  for (const recursiveRoot of recursiveRoots) {
+    removeRedundantEmptyYjsTextTree(
       root,
-      parent,
+      recursiveRoot,
       resolveNodeById,
-      rawChildren
+      removed,
+      visited
     );
+  }
+  for (const parent of parents) {
+    removeRedundantEmptyYjsTextChildren(root, parent, resolveNodeById, removed);
+  }
 
-    if (visibleSlots.length <= 1) {
-      return;
-    }
-
-    let slotIndex = visibleSlots.length - 1;
-
-    while (slotIndex >= 0) {
-      const slot = visibleSlots[slotIndex];
-
-      if (slot === undefined) {
-        slotIndex--;
-        continue;
-      }
-
-      const child = slot.node;
-
-      if (hasRawYjsChildSlot(slot) && isEmptyAttributeFreeYjsText(child)) {
-        parent.delete(slot.rawIndex, 1);
-      }
-      slotIndex--;
-    }
-  };
-
-  visit(root);
+  return removed;
 };
 
 const yjsAttributeRecordsEqual = (
@@ -858,13 +1223,16 @@ const getPublicAttributes = (
   for (const key in attributes) {
     if (
       !Object.hasOwn(attributes, key) ||
-      INTERNAL_YJS_ATTRIBUTE_SET.has(key)
+      INTERNAL_YJS_ATTRIBUTE_SET.has(key) ||
+      isYjsSetValueAttribute(key)
     ) {
       continue;
     }
 
     publicAttributes[key] = attributes[key];
   }
+
+  Object.assign(publicAttributes, readYjsSetValueAttributes(attributes));
 
   return publicAttributes;
 };
@@ -912,6 +1280,20 @@ const readYjsTextForPlite = (
 const getPublicYjsAttributes = (node: YjsNode): YjsAttributeRecord =>
   getPublicAttributes(getYjsAttributes(node));
 
+const getCloneableYjsAttributes = (node: YjsNode): YjsAttributeRecord => {
+  const attributes: YjsAttributeRecord = {};
+
+  for (const [key, value] of Object.entries(getYjsAttributes(node))) {
+    if (INTERNAL_YJS_ATTRIBUTE_SET.has(key) && !isYjsSetValueAttribute(key)) {
+      continue;
+    }
+
+    attributes[key] = value;
+  }
+
+  return attributes;
+};
+
 const getPublicYjsElementAttributes = (
   node: Y.XmlElement
 ): YjsAttributeRecord => {
@@ -922,7 +1304,7 @@ const getPublicYjsElementAttributes = (
   return attributes;
 };
 
-const readPliteNodeFromYjs = (
+const readPliteNodeFromYjsWithResolver = (
   root: Y.XmlElement,
   node: YjsNode,
   resolveNodeById: YjsNodeIdResolver
@@ -959,7 +1341,11 @@ const readPliteNodeFromYjs = (
       );
     }
 
-    children[index] = readPliteNodeFromYjs(root, child, resolveNodeById);
+    children[index] = readPliteNodeFromYjsWithResolver(
+      root,
+      child,
+      resolveNodeById
+    );
     index++;
   }
 
@@ -990,11 +1376,12 @@ const cloneYjsNodeWithRoot = (
       : cloneYjsNodeWithRoot(virtualChild, root, resolveNodeById);
   }
 
-  const attributes = getPublicYjsAttributes(node);
+  const attributes = getCloneableYjsAttributes(node);
 
   if (node instanceof Y.XmlText) {
     const clone = new Y.XmlText();
 
+    assignFreshYjsNodeId(clone);
     setYjsAttributes(clone, attributes);
 
     if (getYjsLength(node) > 0) {
@@ -1038,6 +1425,7 @@ const cloneYjsNodeWithRoot = (
   }
 
   children.length = writeIndex;
+  assignFreshYjsNodeId(clone);
   setYjsAttributes(clone, attributes);
 
   if (children.length > 0) {
@@ -1496,7 +1884,7 @@ export const assertPublicYjsAttributeCanBeSet = (key: string): void => {
     throw new Error(`Cannot set the "${key}" property on a Yjs node.`);
   }
 
-  if (INTERNAL_YJS_ATTRIBUTE_SET.has(key)) {
+  if (INTERNAL_YJS_ATTRIBUTE_SET.has(key) || isYjsSetValueAttribute(key)) {
     throw new Error(`Cannot set internal Yjs attribute "${key}".`);
   }
 };
@@ -1513,21 +1901,6 @@ const assertPublicYjsAttributesCanBeSet = (
   }
 };
 
-const ensureYjsNodeId = (node: YjsNode): string => {
-  const currentId = node.getAttribute(NODE_ID_ATTRIBUTE);
-
-  if (typeof currentId === 'string') {
-    return currentId;
-  }
-
-  const scope = node.doc ? String(node.doc.clientID) : nodeIdScope;
-  const nextId = `plite-yjs-${scope}-${++nextNodeId}`;
-
-  setYjsAttribute(node, NODE_ID_ATTRIBUTE, nextId);
-
-  return nextId;
-};
-
 const matchesPliteNode = (
   yjsNode: YjsNode,
   pliteNode?: Descendant
@@ -1536,7 +1909,7 @@ const matchesPliteNode = (
     return false;
   }
 
-  if ('text' in pliteNode) {
+  if (NodeApi.isText(pliteNode)) {
     return yjsNode instanceof Y.XmlText;
   }
 
@@ -1559,7 +1932,7 @@ const matchesPliteNodeContent = (
     return false;
   }
 
-  if ('text' in pliteNode) {
+  if (NodeApi.isText(pliteNode)) {
     const text = String(pliteNode.text);
 
     return (

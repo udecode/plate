@@ -25,6 +25,12 @@ const pluginConfigurationMethods = new Set([
   'extend',
   'extendPlugin',
 ]);
+const contextualConfigureKeys = new Set([
+  'handlers',
+  'options',
+  'render',
+  'shortcuts',
+]);
 const plateEditorConstructionOptionIndexes = new Map([
   ['createBaseEditor', 0],
   ['createPlateEditor', 0],
@@ -82,6 +88,7 @@ const allowedSchemaFactoryBindings = new Set([
   'key',
   'own',
   'plugins',
+  'targetPluginKeys',
   'type',
 ]);
 // Raw queries are reserved for runtime discovery and contextual contract laws.
@@ -101,11 +108,15 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts', 10],
 ]);
 const intentionalExplicitSchemaFactoryCounts = new Map([
-  ['packages/core/src/internal/plugin/compilePlateModel.spec.ts', 3],
+  ['packages/core/src/internal/plugin/compilePlateModel.spec.ts', 2],
   ['packages/core/src/lib/plugin/createBasePlugin.spec.ts', 1],
   ['packages/core/src/lib/plugin/createBasePlugin.typed.spec.ts', 1],
 ]);
 const intentionalNamedSchemaLineages = new Map([
+  [
+    'packages/core/src/react/editor/TPlateEditorCore.spec.ts',
+    new Map([['persisted-document@7', 1]]),
+  ],
   [
     'packages/core/src/lib/editor/withPlite.slow.ts',
     new Map([['plate-core-test@4', 1]]),
@@ -137,6 +148,7 @@ const requiredNamedSchemaLineageFiles = new Set([
   'content/docs/(plugins)/(collaboration)/yjs.mdx',
   'packages/core/src/internal/plugin/plateModelPublication.spec.ts',
   'packages/core/src/lib/editor/withPlite.slow.ts',
+  'packages/core/src/react/editor/TPlateEditorCore.spec.ts',
   'packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts',
   'packages/yjs/README.md',
 ]);
@@ -336,6 +348,50 @@ const isFunction = (node) =>
   node?.type === 'ArrowFunctionExpression' ||
   node?.type === 'FunctionExpression' ||
   node?.type === 'ObjectMethod';
+
+const inspectContextualConfigure = (callback) => {
+  const body = unwrapTypedExpression(callback?.body);
+
+  if (body?.type === 'ObjectExpression') {
+    return { invalidReturns: [], properties: body.properties };
+  }
+  if (body?.type !== 'BlockStatement') {
+    return { invalidReturns: [body ?? callback], properties: [] };
+  }
+
+  const invalidReturns = [];
+  const properties = [];
+  let returnCount = 0;
+  const visitReturns = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (node !== body && isFunction(node)) return;
+    if (node.type === 'ReturnStatement') {
+      const value = unwrapTypedExpression(node.argument);
+
+      returnCount++;
+      if (value?.type === 'ObjectExpression') {
+        properties.push(...value.properties);
+      } else {
+        invalidReturns.push(value ?? node);
+      }
+
+      return;
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) visitReturns(child);
+      } else {
+        visitReturns(value);
+      }
+    }
+  };
+
+  visitReturns(body);
+
+  if (returnCount === 0) invalidReturns.push(callback);
+
+  return { invalidReturns, properties };
+};
 
 const isSchemaApiCall = (node, method) =>
   node?.type === 'CallExpression' &&
@@ -649,7 +705,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       if (key === 'targetPluginKeys' && isInsidePluginOptions(ancestors)) {
         report(
           node,
-          'schema target descriptors belong in immutable config.targets'
+          'schema target descriptors belong in top-level targetPluginKeys'
         );
       }
 
@@ -766,10 +822,32 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         getPropertyName(node.callee.property) === 'configure' &&
         isFunction(node.arguments[0])
       ) {
-        report(
-          node,
-          'plugin configure is immutable object-only; runtime callbacks use extend'
-        );
+        const inspection = inspectContextualConfigure(node.arguments[0]);
+
+        for (const invalidReturn of inspection.invalidReturns) {
+          if (!hasExpectError(source, invalidReturn)) {
+            report(
+              invalidReturn,
+              'contextual plugin configure callbacks must return an explicit object'
+            );
+          }
+        }
+        for (const property of inspection.properties) {
+          const key =
+            property.type === 'SpreadElement'
+              ? undefined
+              : getPropertyName(property.key);
+
+          if (
+            (!key || !contextualConfigureKeys.has(key)) &&
+            !hasExpectError(source, property)
+          ) {
+            report(
+              property,
+              'contextual plugin configure only accepts explicit options, handlers, render, and shortcuts overrides'
+            );
+          }
+        }
       }
 
       const schemaCall = readCallName(node.callee);

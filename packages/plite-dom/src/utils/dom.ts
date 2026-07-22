@@ -265,31 +265,32 @@ export const getPlainText = (domNode: DOMNode) => {
 };
 
 const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
-const catchPliteFragment = /data-plite-fragment="(.+?)"/m;
-const catchPliteFragmentFormat = /data-plite-fragment-format="(.+?)"/m;
+const catchOpeningHtmlTag = /<[A-Za-z][^<>]*?>/g;
+const catchPliteFragment = /\bdata-plite-fragment\s*=\s*(["'])(.*?)\1/i;
+const catchPliteFragmentFormat =
+  /\bdata-plite-fragment-format\s*=\s*(["'])(.*?)\1/i;
 
 /**
  * Get x-plite-fragment attribute from data-plite-fragment
  */
 export const getPliteFragmentAttribute = (
-  dataTransfer: DataTransfer,
+  dataTransfer: Pick<DataTransfer, 'getData'>,
   clipboardFormatKey = DEFAULT_CLIPBOARD_FORMAT_KEY
 ): string | void => {
   const htmlData = dataTransfer.getData('text/html');
-  const [, fragment] = htmlData.match(catchPliteFragment) || [];
+  const openingTags = htmlData.match(catchOpeningHtmlTag) ?? [];
 
-  if (!fragment) {
-    return;
-  }
+  for (const tag of openingTags) {
+    const fragment = tag.match(catchPliteFragment)?.[2];
 
-  const [, fragmentFormat] = htmlData.match(catchPliteFragmentFormat) || [];
+    if (!fragment) continue;
+    const fragmentFormat = tag.match(catchPliteFragmentFormat)?.[2];
 
-  if (fragmentFormat) {
-    return fragmentFormat === clipboardFormatKey ? fragment : undefined;
-  }
-
-  if (clipboardFormatKey === DEFAULT_CLIPBOARD_FORMAT_KEY) {
-    return fragment;
+    if (fragmentFormat) {
+      if (fragmentFormat === clipboardFormatKey) return fragment;
+      continue;
+    }
+    if (clipboardFormatKey === DEFAULT_CLIPBOARD_FORMAT_KEY) return fragment;
   }
 
   return;

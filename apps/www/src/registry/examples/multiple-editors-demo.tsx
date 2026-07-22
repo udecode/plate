@@ -5,6 +5,7 @@ import * as React from 'react';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Separator } from '@/components/ui/separator';
+import { AlignKit } from '@/registry/components/editor/plugins/align-kit';
 import { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';
 import { MediaKit } from '@/registry/components/editor/plugins/media-kit';
 import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
@@ -29,7 +30,7 @@ export default function MultipleEditorsDemo() {
 
   const editorImage = usePlateEditor({
     id: 'image',
-    plugins: [...BasicNodesKit, ...MediaKit],
+    plugins: [...BasicNodesKit, ...AlignKit, ...MediaKit],
     value: imageValue,
   });
 

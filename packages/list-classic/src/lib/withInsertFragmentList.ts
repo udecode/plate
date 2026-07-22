@@ -1,11 +1,13 @@
-import type { ExtendPlateEditorExtension } from '@platejs/core';
+import type { BaseEditor, PlateEditorExtension } from '@platejs/core';
 import {
   type Ancestor,
+  ContentSlice,
   type Descendant,
+  editorCommands,
+  type Element,
   type ElementEntry,
   type NodeEntry,
   type Path,
-  type Element,
   ElementApi,
   NodeApi,
   PathApi,
@@ -14,15 +16,55 @@ import {
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type { ListConfig } from './BaseListPlugin';
+import type { ListPluginConfiguration } from './BaseListPlugin';
 
 import { getPropsIfTaskListLiNode, isListRoot } from './queries';
 
-export const withInsertFragmentList: ExtendPlateEditorExtension<ListConfig> = ({
+export const withInsertFragmentList = ({
   editor,
-}) => {
+  plugin,
+}: {
+  editor: BaseEditor;
+  plugin: { config: ListPluginConfiguration };
+}): PlateEditorExtension => {
   const listItemType = editor.getType(KEYS.li);
   const listItemContentType = editor.getType(KEYS.lic);
+  const validListItemContentTypes = new Set([
+    listItemContentType,
+    ...(plugin.config.validLiChildren ?? []).map(({ key }) =>
+      editor.getType(key)
+    ),
+  ]);
+
+  const prepareListRoot = (node: Element): Element => ({
+    ...node,
+    children: node.children.map((child) =>
+      ElementApi.isElement(child) && child.type === listItemType
+        ? prepareListItem(child)
+        : child
+    ),
+  });
+
+  const prepareListItem = (node: Element): Element => ({
+    ...node,
+    children: node.children.map((child) => {
+      if (NodeApi.isText(child)) {
+        return { children: [child], type: listItemContentType };
+      }
+      if (isListRoot(editor, child)) return prepareListRoot(child);
+      if (validListItemContentTypes.has(child.type)) return child;
+
+      return { children: child.children, type: listItemContentType };
+    }),
+  });
+
+  const preparePastedNode = (node: Descendant): Descendant => {
+    if (!ElementApi.isElement(node)) return node;
+    if (node.type === listItemType) return prepareListItem(node);
+    if (isListRoot(editor, node)) return prepareListRoot(node);
+
+    return node;
+  };
 
   const getFirstAncestorOfType = (
     root: Descendant,
@@ -95,14 +137,28 @@ export const withInsertFragmentList: ExtendPlateEditorExtension<ListConfig> = ({
   const wrapNodeIntoListItem = (
     node: Descendant,
     props?: Record<string, any>
-  ): Element =>
-    ElementApi.isElement(node) && node.type === listItemType
-      ? (node as Element)
-      : ({
-          children: [node],
-          ...props,
-          type: listItemType,
-        } as Element);
+  ): Element => {
+    if (ElementApi.isElement(node) && node.type === listItemType) {
+      return prepareListItem(node);
+    }
+
+    const child =
+      NodeApi.isText(node) ||
+      (ElementApi.isElement(node) &&
+        !isListRoot(editor, node) &&
+        !validListItemContentTypes.has(node.type))
+        ? {
+            children: NodeApi.isText(node) ? [node] : node.children,
+            type: listItemContentType,
+          }
+        : node;
+
+    return {
+      children: [child],
+      ...props,
+      type: listItemType,
+    } as Element;
+  };
 
   const sliceElementAtPoint = (
     element: Element,
@@ -195,34 +251,22 @@ export const withInsertFragmentList: ExtendPlateEditorExtension<ListConfig> = ({
   };
 
   return {
-    transforms: {
-      insertFragment({ fragment, next, tx }) {
-        const selection = editor.read.selection();
+    commands: ({ around }) => [
+      around(editorCommands.replaceSlice, ({ input, state, next }) => {
+        const { slice } = input;
+        const fragment = [...slice.content].map(preparePastedNode);
+        const selection = state.selection();
         const insertionPoint = selection
           ? RangeApi.edges(selection)[0]
           : undefined;
-        const liEntry = editor.read.nodes.above<Element>({
+        const liEntry = state.nodes.above<Element>({
           at: insertionPoint,
           match: { type: listItemType },
           mode: 'lowest',
         });
 
         // not inserting into a list item, delegate to other plugins
-        if (!liEntry) {
-          return next({
-            fragment: isListRoot(editor, fragment[0])
-              ? [{ text: '' }, ...fragment]
-              : fragment,
-          });
-        }
-
-        if (
-          selection &&
-          RangeApi.isExpanded(selection) &&
-          !isListRoot(editor, fragment[0])
-        ) {
-          return next({ fragment });
-        }
+        if (!liEntry) return next();
 
         if (
           selection &&
@@ -230,18 +274,18 @@ export const withInsertFragmentList: ExtendPlateEditorExtension<ListConfig> = ({
           isListRoot(editor, fragment[0])
         ) {
           const [start, end] = RangeApi.edges(selection);
-          const startLi = editor.read.nodes.above<Element>({
+          const startLi = state.nodes.above<Element>({
             at: start,
             match: { type: listItemType },
             mode: 'lowest',
           });
-          const endLi = editor.read.nodes.above<Element>({
+          const endLi = state.nodes.above<Element>({
             at: end,
             match: { type: listItemType },
             mode: 'lowest',
           });
           const startList = startLi
-            ? editor.read.nodes.parent<Element>(startLi[1])
+            ? state.nodes.parent<Element>(startLi[1])
             : undefined;
 
           if (
@@ -280,28 +324,27 @@ export const withInsertFragmentList: ExtendPlateEditorExtension<ListConfig> = ({
               path: [...startList[1], pastedEndIndex, ...lastPath],
             };
 
-            tx.nodes.replaceChildren(replacements, {
-              at: startList[1],
-              count: endLi[1].at(-1)! - startLi[1].at(-1)! + 1,
-              index: startLi[1].at(-1)!,
-              newSelection: { anchor: point, focus: point },
+            return state.transaction((tx) => {
+              tx.nodes.replaceChildren(replacements, {
+                at: startList[1],
+                count: endLi[1].at(-1)! - startLi[1].at(-1)! + 1,
+                index: startLi[1].at(-1)!,
+                newSelection: { kind: 'text', anchor: point, focus: point },
+              });
             });
-
-            return true;
           }
         }
 
-        const licEntry = editor.read.nodes.above<Element>({
+        const licEntry = state.nodes.above<Element>({
+          at: insertionPoint,
           match: { type: listItemContentType },
           mode: 'lowest',
         });
 
-        if (!licEntry) {
-          return true;
-        }
+        if (!licEntry) return next();
 
-        const licStart = editor.read.points.start(licEntry[1]);
-        const licEnd = editor.read.points.end(licEntry[1]);
+        const licStart = state.points.start(licEntry[1]);
+        const licEnd = state.points.end(licEntry[1]);
         const [selectionStart, selectionEnd] = selection
           ? RangeApi.edges(selection)
           : [];
@@ -318,39 +361,56 @@ export const withInsertFragmentList: ExtendPlateEditorExtension<ListConfig> = ({
           liEntry!,
           isEmptyNode
         );
+        const continuation = {
+          ...input,
+          slice: ContentSlice.withContent(slice, textNodes, {
+            open: 'closed',
+          }),
+        };
+        const delegated =
+          selection &&
+          RangeApi.isExpanded(selection) &&
+          !isListRoot(editor, fragment[0])
+            ? next.after(
+                state.transaction((tx) => {
+                  tx.fragment.delete();
+                }),
+                continuation
+              )
+            : next(continuation);
 
-        next({ fragment: textNodes });
+        if (delegated === false) return false;
 
-        const nextLiEntry = editor.read.nodes.get<Element>(liEntry[1]);
+        return state.transaction.extend(delegated, (tx) => {
+          const nextLiEntry = tx.nodes.get<Element>(liEntry[1]);
 
-        if (!nextLiEntry) return true;
+          if (!nextLiEntry) return;
 
-        const [, liPath] = nextLiEntry;
+          const [, liPath] = nextLiEntry;
 
-        if (sublists.length > 0) {
-          const li = editor.read.nodes.get<Element>(liPath)?.[0];
-          const currentSublist = li?.children[1];
+          if (sublists.length > 0) {
+            const li = tx.nodes.get<Element>(liPath)?.[0];
+            const currentSublist = li?.children[1];
 
-          if (ElementApi.isElement(currentSublist)) {
-            tx.nodes.insert(sublists[0].children as Element[], {
-              at: [...liPath, 1, 0],
-              select: true,
-            });
-          } else {
-            tx.nodes.insert(sublists, {
-              at: [...liPath, 1],
-              select: true,
-            });
+            if (ElementApi.isElement(currentSublist)) {
+              tx.nodes.insert(sublists[0].children as Element[], {
+                at: [...liPath, 1, 0],
+                select: true,
+              });
+            } else {
+              tx.nodes.insert(sublists, {
+                at: [...liPath, 1],
+                select: true,
+              });
+            }
           }
-        }
 
-        tx.nodes.insert(listItemNodes, {
-          at: PathApi.next(liPath),
-          select: true,
+          tx.nodes.insert(listItemNodes, {
+            at: PathApi.next(liPath),
+            select: true,
+          });
         });
-
-        return true;
-      },
-    },
+      }),
+    ],
   };
 };

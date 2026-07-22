@@ -37,8 +37,8 @@ Plite gives you a document model, an explicit runtime, and React rendering hooks
 
 | Layer          | What it owns                                                                                                                    |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Document model | nested JSON nodes, paths, points, ranges, operations, primary `children`, extra `roots`, and document `state`                   |
-| Runtime        | `editor.read.<group>.<method>()`, `editor.update.<group>.<method>()`, grouped read/update callbacks, transactions, commits, normalization, refs, history integration, and extension groups |
+| Document model | nested JSON nodes, paths, points, ranges, immutable snapshots, primary `children`, extra `roots`, and document `state`          |
+| Runtime        | `editor.read.<group>.<method>()`, `editor.update.<group>.<method>()`, grouped read/update callbacks, transactions, canonical changes, commits, correction, anchors, history integration, and extension groups |
 | React          | `<Plite>`, `<Editable>`, render functions, editor hooks, DOM repair, selection sync, overlays, and root-aware chrome            |
 | Proof          | browser tests that check model state, rendered DOM, native selection where observable, focus, replay, and follow-up typing      |
 

@@ -1,6 +1,6 @@
 import { type FormEvent, type RefObject, useCallback } from 'react';
 import { PathApi, type Range, RangeApi } from '@platejs/plite';
-import { getSelection } from '@platejs/plite-dom';
+import { getSelection, IS_WEBKIT } from '@platejs/plite-dom';
 import type {
   EditableDOMBeforeInputContext,
   EditableDOMBeforeInputHandler,
@@ -11,7 +11,10 @@ import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import { getInputEventTargetRanges } from './dom-input-event';
 import { completeDuplicateEditableEditingEpochCommand } from './editing-epoch-kernel';
-import { prepareEditableBeforeInputKernel } from './editing-kernel';
+import {
+  type EditableCommand,
+  prepareEditableBeforeInputKernel,
+} from './editing-kernel';
 import {
   armModelOwnedTextInputGuard,
   getNestedEditableDOMSelectionRoot,
@@ -29,17 +32,22 @@ import {
 import {
   clearExpiredTextInputRepairEcho,
   type EditableInputController,
+  runTrackedEditableCompositionMutation,
 } from './input-state';
 import {
-  applyModelOwnedBeforeInputOperation,
+  applyModelOwnedBeforeInputMutation,
   applyModelOwnedNativeHistoryEvent,
-  type DeferredOperation,
+  type DeferredMutation,
   shouldForceRenderAfterModelOwnedHistory,
 } from './model-input-strategy';
 import { getNativeBeforeInputDecision } from './native-input-strategy';
-import { hasEditorTransformMiddleware } from './runtime-editor-api';
+import {
+  editorCommands,
+  hasCommandHandler,
+  toInternalRoot,
+} from './runtime-editor-api';
 import type { EditableEventRuntime } from './runtime-event-engine';
-import { readLiveSelection } from './runtime-selection-state';
+import { readRuntimeSelectionRange } from './runtime-selection-state';
 import {
   handleWebKitShadowDOMBeforeInput,
   restoreUserSelectionAfterBeforeInput,
@@ -105,6 +113,211 @@ const isDOMBeforeInputHandled = (
 };
 
 const getSelectionRoot = (selection: Range | null) => selection?.anchor.root;
+
+type CompositionFinalInputType = 'insertFromComposition' | 'insertText';
+
+const isCompositionFinalInputType = (
+  inputType: string
+): inputType is CompositionFinalInputType =>
+  inputType === 'insertFromComposition' || inputType === 'insertText';
+
+export type CapturedCompositionModelInput = Readonly<{
+  command: Readonly<Extract<EditableCommand, { kind: 'insert-text' }>> | null;
+  data: string;
+  inputType: CompositionFinalInputType;
+}>;
+
+export const captureCompositionModelInput = ({
+  command,
+  data,
+  inputType,
+}: {
+  command: EditableCommand | null;
+  data: string;
+  inputType: CapturedCompositionModelInput['inputType'];
+}): CapturedCompositionModelInput =>
+  Object.freeze({
+    command:
+      command?.kind === 'insert-text' ? Object.freeze({ ...command }) : null,
+    data,
+    inputType,
+  });
+
+export const getPendingCompositionInputOwnership = ({
+  editor,
+  inputController,
+  inputType,
+  native,
+}: {
+  editor: ReactRuntimeEditor;
+  inputController: EditableInputController;
+  inputType: string;
+  native: boolean;
+}): 'external' | 'none' | 'plite' | 'settled' => {
+  const pending = inputController.state.pendingCompositionEnd;
+
+  if (!pending || !isCompositionFinalInputType(inputType)) {
+    return 'none';
+  }
+
+  if (pending.ownership === 'settled') return 'settled';
+  if (pending.ownership === 'external') return 'external';
+  if (native || IS_WEBKIT) return 'none';
+  if (!ReactEditor.isComposing(editor)) return 'none';
+
+  return 'plite';
+};
+
+export const claimSettledCompositionInput = ({
+  data,
+  inputController,
+  inputType,
+}: {
+  data: unknown;
+  inputController: EditableInputController;
+  inputType: string;
+}) => {
+  const pending = inputController.state.pendingCompositionEnd;
+
+  if (pending?.ownership !== 'settled') return false;
+
+  const matches =
+    typeof data === 'string' &&
+    isCompositionFinalInputType(inputType) &&
+    pending.data === data &&
+    pending.inputTypes.includes(inputType);
+
+  pending.cancel();
+  return matches;
+};
+
+export const queuePendingCompositionModelInput = ({
+  applyInputRules,
+  command,
+  data,
+  editor,
+  inputController,
+  inputType,
+  onCommitted,
+  repair,
+  selection,
+  setComposing,
+}: {
+  applyInputRules?: ApplyInputRules;
+  command: EditableCommand | null;
+  data: string;
+  editor: ReactRuntimeEditor;
+  inputController: EditableInputController;
+  inputType: CompositionFinalInputType;
+  onCommitted?: () => void;
+  repair: Pick<EditableEventRuntime['repair'], 'requestEditableRepair'>;
+  selection: Range | null;
+  setComposing: EditableEventRuntime['composition']['setComposing'];
+}) => {
+  const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+
+  if (pendingCompositionEnd?.ownership !== 'plite') return false;
+
+  const capturedInput = captureCompositionModelInput({
+    command,
+    data,
+    inputType,
+  });
+  const selectionAnchor = selection
+    ? editor.anchor(selection, {
+        association: 'inward',
+        deletion: 'nearest',
+      })
+    : null;
+  let selectionReleased = false;
+  let request: ReturnType<typeof applyModelOwnedBeforeInputMutation> = null;
+
+  const releaseSelection = () => {
+    if (selectionReleased) return null;
+
+    selectionReleased = true;
+    return selectionAnchor?.release() ?? null;
+  };
+
+  return pendingCompositionEnd.replaceWithInput(
+    Object.freeze({
+      commit: (fallbackSelection, { publish }) => {
+        if (inputController.state.compositionSession?.modelCommitted) {
+          return false;
+        }
+
+        const liveSelection = releaseSelection() ?? fallbackSelection;
+
+        if (!liveSelection) return false;
+
+        const { committed } = runTrackedEditableCompositionMutation({
+          callback: () => {
+            if (
+              publish &&
+              applyInputRules?.({
+                data: capturedInput.data,
+                inputType: capturedInput.inputType,
+                selection: liveSelection,
+              })
+            ) {
+              return;
+            }
+
+            request = applyModelOwnedBeforeInputMutation({
+              command: capturedInput.command,
+              data: capturedInput.data,
+              editor,
+              inputType: capturedInput.inputType,
+              native: false,
+              preserveComposing: true,
+              selection: liveSelection,
+              setComposing,
+            });
+          },
+          editor,
+          inputController,
+        });
+        if (publish && committed) {
+          setEditableModelSelectionPreference({
+            inputController,
+            preferModelSelection: true,
+            reason: 'composition',
+            selectionSource: 'model-owned',
+          });
+          armModelOwnedTextInputGuard({ inputController });
+          inputController.state.selectionChangeOrigin = 'programmatic-export';
+        }
+        return committed;
+      },
+      complete: () => {
+        repair.requestEditableRepair(
+          request && request.kind !== 'none'
+            ? request
+            : {
+                focus: true,
+                forceRender: true,
+                kind: 'repair-caret',
+                selectionSourceTransition: {
+                  preferModelSelection: true,
+                  reason: 'model-command',
+                  selectionSource: 'model-owned',
+                },
+              }
+        );
+        onCommitted?.();
+
+        if (!capturedInput.command) {
+          restoreUserSelectionAfterBeforeInput({ editor });
+        }
+      },
+      data: capturedInput.data,
+      discard: () => {
+        releaseSelection();
+      },
+      inputType: capturedInput.inputType,
+    })
+  );
+};
 
 export const getDeferredNativeTextInputRepairPathKey = ({
   data,
@@ -178,7 +391,7 @@ export const useRuntimeBeforeInputEvents = ({
   androidInputManagerRef,
   applyInputRules,
   deferNativeTextInputRepair = false,
-  deferredOperations,
+  deferredMutations,
   editor,
   handledDOMBeforeInputRef,
   inputController,
@@ -198,7 +411,7 @@ export const useRuntimeBeforeInputEvents = ({
   androidInputManagerRef: EditableEventRuntime['android']['managerRef'];
   applyInputRules: ApplyInputRules;
   deferNativeTextInputRepair?: boolean;
-  deferredOperations: RefObject<DeferredOperation[]>;
+  deferredMutations: RefObject<DeferredMutation[]>;
   editor: ReactRuntimeEditor;
   handledDOMBeforeInputRef: RefObject<boolean>;
   inputController: EditableInputController;
@@ -363,7 +576,7 @@ export const useRuntimeBeforeInputEvents = ({
 
           let currentSelection = profileBeforeInputDuration(
             'beforeinput-read-selection',
-            () => readLiveSelection(editor)
+            () => readRuntimeSelectionRange(editor)
           );
 
           if (
@@ -378,14 +591,14 @@ export const useRuntimeBeforeInputEvents = ({
             onDOMBeforeInput ||
               onBeforeInput ||
               onInput ||
-              hasEditorTransformMiddleware(editor, 'insertText')
+              hasCommandHandler(editor, editorCommands.insertText)
           );
 
           if (hasAppInputPolicy) {
             flushPendingNativeTextInput?.();
             currentSelection = profileBeforeInputDuration(
               'beforeinput-reread-selection-after-native-text-flush',
-              () => readLiveSelection(editor)
+              () => readRuntimeSelectionRange(editor)
             );
           }
 
@@ -415,7 +628,7 @@ export const useRuntimeBeforeInputEvents = ({
             getNestedEditableDOMSelectionRoot(el);
           const viewRoot = profileBeforeInputDuration(
             'beforeinput-read-view-root',
-            () => editor.read((state) => state.view.root())
+            () => toInternalRoot(editor.read((state) => state.view.root()))
           );
           const targetEditor =
             selectionRoot && selectionRoot !== viewRoot
@@ -426,25 +639,81 @@ export const useRuntimeBeforeInputEvents = ({
             return;
           }
 
+          if (
+            claimSettledCompositionInput({
+              data,
+              inputController,
+              inputType: type,
+            })
+          ) {
+            event.preventDefault();
+            return;
+          }
+
+          if (targetEditor && androidInputManagerRef.current) {
+            return androidInputManagerRef.current.handleDOMBeforeInput(event);
+          }
+
           if (targetEditor && targetEditor !== editor) {
+            const pendingCompositionInputOwnership =
+              getPendingCompositionInputOwnership({
+                editor,
+                inputController,
+                inputType: type,
+                native: false,
+              });
+
+            if (pendingCompositionInputOwnership === 'external') return;
+
             event.preventDefault();
             event.stopImmediatePropagation();
             handledDOMBeforeInputRef.current = true;
 
+            if (
+              pendingCompositionInputOwnership === 'plite' &&
+              typeof data === 'string' &&
+              isCompositionFinalInputType(type) &&
+              queuePendingCompositionModelInput({
+                command: decision.command,
+                data,
+                editor: targetEditor,
+                inputController,
+                inputType: type,
+                onCommitted: () => focusPliteEditable(targetEditor),
+                repair,
+                selection:
+                  currentSelection ??
+                  targetEditor.read((state) => state.selection()),
+                setComposing,
+              })
+            ) {
+              return;
+            }
+
             const request = profileBeforeInputDuration(
               'beforeinput-redirect-root',
-              () =>
-                applyModelOwnedBeforeInputOperation({
-                  command: decision.command,
-                  data,
-                  editor: targetEditor,
-                  inputType: type,
-                  native: false,
-                  selection:
-                    currentSelection ??
-                    targetEditor.read((state) => state.selection()),
-                  setComposing,
-                })
+              () => {
+                const applyMutation = () =>
+                  applyModelOwnedBeforeInputMutation({
+                    command: decision.command,
+                    data,
+                    editor: targetEditor,
+                    inputType: type,
+                    native: false,
+                    selection:
+                      currentSelection ??
+                      targetEditor.read((state) => state.selection()),
+                    setComposing,
+                  });
+
+                return isCompositionFinalInputType(type)
+                  ? runTrackedEditableCompositionMutation({
+                      callback: applyMutation,
+                      editor: targetEditor,
+                      inputController,
+                    }).result
+                  : applyMutation();
+              }
             );
 
             if (request) {
@@ -464,15 +733,25 @@ export const useRuntimeBeforeInputEvents = ({
             selection: currentSelection,
           };
 
-          if (
-            profileBeforeInputDuration('beforeinput-dom-handler', () =>
-              isDOMBeforeInputHandled(
-                event,
-                onDOMBeforeInput,
-                domBeforeInputContext
-              )
-            )
-          ) {
+          const runDOMBeforeInputHandler = () =>
+            isDOMBeforeInputHandled(
+              event,
+              onDOMBeforeInput,
+              domBeforeInputContext
+            );
+          const domBeforeInputHandled = profileBeforeInputDuration(
+            'beforeinput-dom-handler',
+            () =>
+              isCompositionFinalInputType(type)
+                ? runTrackedEditableCompositionMutation({
+                    callback: runDOMBeforeInputHandler,
+                    editor,
+                    inputController,
+                  }).result
+                : runDOMBeforeInputHandler()
+          );
+
+          if (domBeforeInputHandled) {
             return;
           }
 
@@ -484,14 +763,17 @@ export const useRuntimeBeforeInputEvents = ({
             return;
           }
 
-          profileBeforeInputDuration(
-            'beforeinput-run-deferred-operations',
-            () => {
-              for (const operation of deferredOperations.current) {
-                operation();
-              }
-              deferredOperations.current = [];
-            }
+          profileBeforeInputDuration('beforeinput-run-deferred-intents', () =>
+            runTrackedEditableCompositionMutation({
+              callback: () => {
+                for (const intent of deferredMutations.current) {
+                  intent();
+                }
+                deferredMutations.current = [];
+              },
+              editor,
+              inputController,
+            })
           );
 
           let native = beforeInputDecision.native;
@@ -541,9 +823,21 @@ export const useRuntimeBeforeInputEvents = ({
           );
           native = beforeInputSelection.native;
           currentSelection = beforeInputSelection.selection;
+          const pendingCompositionInputOwnership =
+            getPendingCompositionInputOwnership({
+              editor,
+              inputController,
+              inputType: type,
+              native,
+            });
+
+          if (pendingCompositionInputOwnership === 'external') {
+            return;
+          }
           let didRepairNonNativeDOMTextInput = false;
 
           if (
+            pendingCompositionInputOwnership !== 'plite' &&
             deferNativeTextInputRepair &&
             !native &&
             type === 'insertText' &&
@@ -553,32 +847,46 @@ export const useRuntimeBeforeInputEvents = ({
             RangeApi.isCollapsed(currentSelection)
           ) {
             flushPendingNativeTextInput?.();
-            currentSelection = readLiveSelection(editor);
+            currentSelection = profileBeforeInputDuration(
+              'beforeinput-reread-selection-for-dom-repair',
+              () => readRuntimeSelectionRange(editor)
+            );
 
             if (currentSelection && RangeApi.isCollapsed(currentSelection)) {
-              const pendingTarget = getDOMInputRepairTarget(
-                editor,
-                el,
-                {
-                  data,
-                  inputType: type,
-                },
-                {
-                  preferRuntimeSelection: true,
-                }
+              const pendingTarget = profileBeforeInputDuration(
+                'beforeinput-dom-repair-target',
+                () =>
+                  getDOMInputRepairTarget(
+                    editor,
+                    el,
+                    {
+                      data,
+                      inputType: type,
+                    },
+                    {
+                      preferRuntimeSelection: true,
+                    }
+                  )
               );
 
               if (
                 pendingTarget?.insert &&
                 PathApi.equals(pendingTarget.path, currentSelection.anchor.path)
               ) {
-                trace.repairDOMInputWithTrace(
-                  {
-                    data,
-                    inputType: type,
-                    target: pendingTarget,
-                  },
-                  el
+                profileBeforeInputDuration('beforeinput-repair-dom-input', () =>
+                  runTrackedEditableCompositionMutation({
+                    callback: () =>
+                      trace.repairDOMInputWithTrace(
+                        {
+                          data,
+                          inputType: type,
+                          target: pendingTarget,
+                        },
+                        el
+                      ),
+                    editor,
+                    inputController,
+                  })
                 );
                 setEditableModelSelectionPreference({
                   inputController,
@@ -588,7 +896,10 @@ export const useRuntimeBeforeInputEvents = ({
                 });
                 armModelOwnedTextInputGuard({ inputController });
                 didRepairNonNativeDOMTextInput = true;
-                currentSelection = readLiveSelection(editor);
+                currentSelection = profileBeforeInputDuration(
+                  'beforeinput-reread-selection-after-dom-repair',
+                  () => readRuntimeSelectionRange(editor)
+                );
               }
             }
           }
@@ -613,15 +924,51 @@ export const useRuntimeBeforeInputEvents = ({
           }
 
           if (
-            profileBeforeInputDuration('beforeinput-input-rules', () =>
-              applyInputRules({
-                data,
-                event,
-                inputType: type,
-                selection: currentSelection,
-              })
-            )
+            pendingCompositionInputOwnership === 'plite' &&
+            typeof data === 'string' &&
+            isCompositionFinalInputType(type)
           ) {
+            event.preventDefault();
+
+            if (
+              queuePendingCompositionModelInput({
+                applyInputRules,
+                command: decision.command,
+                data,
+                editor,
+                inputController,
+                inputType: type,
+                repair,
+                selection: currentSelection,
+                setComposing,
+              })
+            ) {
+              inputController.state.pendingNativeTextInputRepairPathKey = null;
+              inputController.state.pendingNativeTextInputRepairOffset = null;
+              return;
+            }
+          }
+
+          const applyCurrentInputRules = () =>
+            applyInputRules({
+              data,
+              event,
+              inputType: type,
+              selection: currentSelection,
+            });
+          const inputRulesHandled = profileBeforeInputDuration(
+            'beforeinput-input-rules',
+            () =>
+              isCompositionFinalInputType(type)
+                ? runTrackedEditableCompositionMutation({
+                    callback: applyCurrentInputRules,
+                    editor,
+                    inputController,
+                  }).result
+                : applyCurrentInputRules()
+          );
+
+          if (inputRulesHandled) {
             return;
           }
 
@@ -651,17 +998,26 @@ export const useRuntimeBeforeInputEvents = ({
 
           const request = didRepairNonNativeDOMTextInput
             ? null
-            : profileBeforeInputDuration('beforeinput-apply-model', () =>
-                applyModelOwnedBeforeInputOperation({
-                  command: decision.command,
-                  data,
-                  editor,
-                  inputType: type,
-                  native,
-                  selection: currentSelection,
-                  setComposing,
-                })
-              );
+            : profileBeforeInputDuration('beforeinput-apply-model', () => {
+                const applyMutation = () =>
+                  applyModelOwnedBeforeInputMutation({
+                    command: decision.command,
+                    data,
+                    editor,
+                    inputType: type,
+                    native,
+                    selection: currentSelection,
+                    setComposing,
+                  });
+
+                return isCompositionFinalInputType(type)
+                  ? runTrackedEditableCompositionMutation({
+                      callback: applyMutation,
+                      editor,
+                      inputController,
+                    }).result
+                  : applyMutation();
+              });
           if (request) {
             const shouldDeferNativeTextRepair =
               deferNativeTextInputRepair &&
@@ -691,7 +1047,7 @@ export const useRuntimeBeforeInputEvents = ({
       androidInputManagerRef,
       applyInputRules,
       deferNativeTextInputRepair,
-      deferredOperations,
+      deferredMutations,
       editor,
       flushPendingNativeTextInput,
       handledDOMBeforeInputRef,
@@ -716,26 +1072,40 @@ export const useRuntimeBeforeInputEvents = ({
 
   const handleReactBeforeInputFallback = useCallback(
     (text: string) => {
-      const request = applyModelOwnedBeforeInputOperation({
-        command: { inputType: 'insertText', kind: 'insert-text', text },
-        data: text,
+      const request = runTrackedEditableCompositionMutation({
+        callback: () =>
+          applyModelOwnedBeforeInputMutation({
+            command: { inputType: 'insertText', kind: 'insert-text', text },
+            data: text,
+            editor,
+            inputType: 'insertText',
+            native: false,
+            selection: readRuntimeSelectionRange(editor),
+            setComposing,
+          }),
         editor,
-        inputType: 'insertText',
-        native: false,
-        selection: readLiveSelection(editor),
-        setComposing,
-      });
+        inputController,
+      }).result;
 
       if (request) {
         repair.requestEditableRepair(request);
       }
     },
-    [deferredOperations, editor, repair, setComposing]
+    [editor, inputController, repair, setComposing]
+  );
+  const handleTrackedReactBeforeInput = useCallback(
+    (event: FormEvent<HTMLDivElement>) =>
+      runTrackedEditableCompositionMutation({
+        callback: () => onBeforeInput?.(event),
+        editor,
+        inputController,
+      }).result,
+    [editor, inputController, onBeforeInput]
   );
   const onRuntimeReactBeforeInput = useEditableReactBeforeInputHandler({
     editor,
     handleFallbackInsertText: handleReactBeforeInputFallback,
-    onBeforeInput,
+    onBeforeInput: handleTrackedReactBeforeInput,
     readOnly,
   });
 

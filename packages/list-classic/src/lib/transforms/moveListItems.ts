@@ -1,6 +1,6 @@
 import type { BaseEditor } from '@platejs/core';
 import type { EditorNodesOptions } from '@platejs/plite';
-import { type Element, type Path, type PathRef, PathApi } from '@platejs/plite';
+import { type Element, type Path, PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { ListTransaction } from '../BaseListPlugin';
@@ -20,12 +20,12 @@ export const moveListItems = (
   editor: BaseEditor,
   tx: ListTransaction,
   {
-    at = editor.read.selection() ?? undefined,
+    at = tx.selection() ?? undefined,
     enableResetOnShiftTab,
     increase = true,
   }: MoveListItemsOptions = {}
 ) => {
-  const _nodes = editor.read.nodes.entries({
+  const _nodes = tx.nodes.entries<Element>({
     at,
     match: {
       type: editor.getType(KEYS.lic),
@@ -38,7 +38,6 @@ export const moveListItems = (
   if (lics.length === 0) return;
 
   const highestLicPaths: Path[] = [];
-  const highestLicPathRefs: PathRef[] = [];
 
   // Filter out the nested lic, we just need to move the highest ones
   lics.forEach((lic) => {
@@ -53,27 +52,30 @@ export const moveListItems = (
 
     if (!isAncestor) {
       highestLicPaths.push(licPath);
-      highestLicPathRefs.push(tx.refs.path(licPath));
     }
   });
 
-  const licPathRefsToMove = increase
-    ? highestLicPathRefs
-    : highestLicPathRefs.reverse();
+  const highestLicRefs = highestLicPaths.map((licPath) =>
+    tx.refs.path(licPath, {
+      association: 'forward',
+      deletion: 'drop',
+    })
+  );
+  const licRefsToMove = increase ? highestLicRefs : highestLicRefs.reverse();
 
   {
     let moved = false;
 
-    licPathRefsToMove.forEach((licPathRef) => {
-      const licPath = licPathRef.unref();
+    licRefsToMove.forEach((licRef) => {
+      const licPath = licRef.resolve();
 
       if (!licPath) return;
 
-      const listItem = editor.read.nodes.parent(licPath);
+      const listItem = tx.nodes.parent<Element>(licPath);
 
       if (!listItem) return;
 
-      const parentList = editor.read.nodes.parent(listItem[1]);
+      const parentList = tx.nodes.parent<Element>(listItem[1]);
 
       if (!parentList) return;
 
@@ -81,20 +83,20 @@ export const moveListItems = (
 
       if (increase) {
         itemMoved = !!moveListItemDown(editor, tx, {
-          list: parentList as [Element, Path],
-          listItem: listItem as [Element, Path],
+          list: parentList,
+          listItem,
         });
-      } else if (isListNested(editor, parentList[1])) {
+      } else if (isListNested(editor, parentList[1], tx)) {
         // un-indent a sub-list item
         itemMoved = !!moveListItemUp(editor, tx, {
-          list: parentList as [Element, Path],
-          listItem: listItem as [Element, Path],
+          list: parentList,
+          listItem,
         });
       } else if (enableResetOnShiftTab) {
         // unindenting a top level list item, effectively breaking apart the list.
         itemMoved = removeFirstListItem(editor, tx, {
-          list: parentList as [Element, Path],
-          listItem: listItem as [Element, Path],
+          list: parentList,
+          listItem,
         });
       }
 

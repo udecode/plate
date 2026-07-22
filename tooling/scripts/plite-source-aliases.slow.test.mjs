@@ -8,8 +8,8 @@ test('source preload bypasses stale direct and transitive workspace artifacts', 
   const result = spawnSync(
     'bun',
     [
-      '--preload',
-      './config/plite-source-aliases.ts',
+      '--config',
+      './bunfig.toml',
       '-e',
       [
         "const { BaseAIPlugin } = await import('@platejs/ai');",

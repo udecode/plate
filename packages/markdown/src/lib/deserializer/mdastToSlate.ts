@@ -1,22 +1,21 @@
 import type { Root } from 'mdast';
 
-import { getPluginKey } from '@platejs/core';
 import type { Descendant } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { MdRoot } from '../mdast';
-import type { DeserializeMdOptions } from './deserializeMd';
+import type { DeserializeMdContext } from '../types';
 
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
 export const mdastToSlate = (
   node: Root,
-  options: DeserializeMdOptions
+  options: DeserializeMdContext
 ): Descendant[] => buildSlateRoot(node, options);
 
 const buildSlateRoot = (
   root: MdRoot,
-  options: DeserializeMdOptions
+  options: DeserializeMdContext
 ): Descendant[] => {
   if (!options.splitLineBreaks) {
     root.children = root.children.map((child) => {
@@ -40,9 +39,7 @@ const buildSlateRoot = (
       results.push(
         ...Array.from({ length: count }).map(() => ({
           children: [{ text: '' }],
-          type: options.editor
-            ? (getPluginKey(options.editor, KEYS.p) ?? KEYS.p)
-            : KEYS.p,
+          type: options.getPluginType(KEYS.p),
         }))
       );
     }

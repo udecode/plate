@@ -1,34 +1,33 @@
-import { executeCommand } from '../core/command-registry';
 import {
-  applyOperation,
   getCurrentSelection,
   getCurrentSelectionRoot,
-  getEditorOperationRoot,
+  getEditorUpdateRoot,
+  setCurrentSelection,
+  syncImplicitTargetToCurrentSelection,
 } from '../core/public-state';
-import type { Operation } from '../interfaces/operation';
 import { PointApi } from '../interfaces/point';
+import type { Editor, Value } from '../interfaces/editor';
 import type { Range } from '../interfaces/range';
-import { NON_SETTABLE_SELECTION_PROPERTIES } from '../interfaces/transforms/general';
+import type { Selection } from '../interfaces/selection';
+import { SelectionApi } from '../interfaces/selection';
 import type { SelectionMutationMethods } from '../interfaces/transforms/selection';
 import { withImplicitPointRoot } from '../internal/root-location';
 
-export type SetSelectionCommand = Extract<Operation, { type: 'set_selection' }>;
+const NON_SETTABLE_SELECTION_PROPERTIES = Object.getOwnPropertyNames(
+  Object.prototype
+);
 
-export const applySetSelectionCommand = (
-  editor: Parameters<SelectionMutationMethods['setSelection']>[0],
-  command: SetSelectionCommand
+export const writeSelection = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>,
+  selection: Selection,
+  root = getEditorUpdateRoot(editor)
 ) => {
-  applyOperation(editor, command);
+  setCurrentSelection(editor, selection, root);
+  syncImplicitTargetToCurrentSelection(editor);
 };
-
-export const executeSetSelectionCommand = (
-  editor: Parameters<SelectionMutationMethods['setSelection']>[0],
-  command: SetSelectionCommand
-) =>
-  executeCommand<SetSelectionCommand>(editor, command, (nextCommand) => {
-    applySetSelectionCommand(editor, nextCommand);
-    return true;
-  });
 
 export const setSelection: SelectionMutationMethods['setSelection'] = (
   editor,
@@ -38,7 +37,7 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
   const oldProps: Partial<Range> = {};
   const newProps: Partial<Range> = {};
   const selectionRoot = getCurrentSelectionRoot(editor);
-  const operationRoot = getEditorOperationRoot(editor);
+  const updateRoot = getEditorUpdateRoot(editor);
 
   if (!selection) {
     return;
@@ -60,7 +59,7 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
         value,
         newValue,
         selectionRoot,
-        operationRoot
+        updateRoot
       )
     ) {
       oldProps[<keyof Range>key] = selection[<keyof Range>key];
@@ -72,11 +71,24 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
     return;
   }
 
-  executeSetSelectionCommand(editor, {
-    type: 'set_selection',
-    properties: oldProps,
-    newProperties: newProps,
-  });
+  let nextSelection = { ...selection, ...newProps };
+
+  if (
+    SelectionApi.isText(selection) &&
+    selection.marks !== undefined &&
+    SelectionApi.isText(nextSelection) &&
+    !Object.hasOwn(newProps, 'marks') &&
+    ((Object.hasOwn(newProps, 'anchor') &&
+      !PointApi.equals(selection.anchor, nextSelection.anchor)) ||
+      (Object.hasOwn(newProps, 'focus') &&
+        !PointApi.equals(selection.focus, nextSelection.focus)))
+  ) {
+    const { marks: _marks, ...selectionWithoutMarks } = nextSelection;
+
+    nextSelection = selectionWithoutMarks as typeof nextSelection;
+  }
+
+  writeSelection(editor, nextSelection, updateRoot);
 };
 
 const compareSelectionProps = (

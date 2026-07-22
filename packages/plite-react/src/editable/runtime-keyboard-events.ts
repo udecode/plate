@@ -1,5 +1,5 @@
 import { type KeyboardEvent, useCallback } from 'react';
-import type { RuntimeId } from '@platejs/plite';
+import type { Point, Range, RuntimeId } from '@platejs/plite';
 import type { EditableKeyDownHandler } from '../components/editable';
 import type { MountedTopLevelRange } from '../dom-strategy/dom-strategy-commands';
 import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
@@ -11,15 +11,21 @@ import {
   getContentRootNavigationTarget,
   shouldModelOwnContentRootVerticalSelection,
 } from './content-root-navigation';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import {
   isMountedPlainVerticalLargeDocumentMovement,
   shouldModelOwnPlainVerticalLargeDocumentExtension,
 } from './dom-coverage-vertical-selection';
+import { resolveUsableRangeRect } from './content-root-coordinate-navigation';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableKeyDownKernel } from './editing-kernel';
 import { useEditableKeyboardHandler } from './input-router';
 import type { EditableInputController } from './input-state';
 import { applyEditableKeyDown } from './keyboard-input-strategy';
-import { getSnapshot as editorGetSnapshot } from './runtime-editor-api';
+import {
+  getSnapshot as editorGetSnapshot,
+  toInternalRoot,
+} from './runtime-editor-api';
 import type { EditableEventRuntimeCore } from './runtime-event-engine';
 
 const WHITESPACE_KEY_RE = /\s/;
@@ -37,6 +43,28 @@ const MODIFIER_ONLY_KEYS = new Set([
   'Symbol',
   'SymbolLock',
 ]);
+
+const getVerticalNavigationFocus = (
+  editor: ReactRuntimeEditor,
+  selection: Range | null
+): Point | null =>
+  readPliteViewSelection(editor)?.focus.point ?? selection?.focus ?? null;
+
+const resolveVerticalGoalX = (
+  editor: ReactRuntimeEditor,
+  focus: Point
+): number | null => {
+  try {
+    return (
+      resolveUsableRangeRect(editor, {
+        anchor: focus,
+        focus,
+      })?.left ?? null
+    );
+  } catch {
+    return null;
+  }
+};
 
 const isProjectedSelectionCaptureKey = (event: KeyboardEvent<HTMLDivElement>) =>
   event.shiftKey &&
@@ -214,6 +242,7 @@ export const isNativeVerticalKeyFastPathFullyMounted = ({
 };
 
 export const useRuntimeKeyboardEvents = ({
+  domPhaseScheduler,
   editor,
   inputController,
   domStrategyRuntime,
@@ -222,8 +251,10 @@ export const useRuntimeKeyboardEvents = ({
   readOnly,
   runtime,
   setExplicitPartialDOMBackedSelection,
+  verticalNavigation,
   partialDOMBackedSelection,
 }: {
+  domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   domStrategyRuntime: {
@@ -236,6 +267,10 @@ export const useRuntimeKeyboardEvents = ({
   readOnly: boolean;
   runtime: EditableEventRuntimeCore;
   setExplicitPartialDOMBackedSelection: (nextValue: boolean) => void;
+  verticalNavigation: Pick<
+    EditableDOMRuntime,
+    'clearVerticalGoal' | 'readVerticalGoalX' | 'setVerticalGoalX'
+  >;
   partialDOMBackedSelection: boolean;
 }) => {
   const pliteRuntimeContext = useOptionalPliteRuntimeContext();
@@ -249,10 +284,24 @@ export const useRuntimeKeyboardEvents = ({
 
       const isVerticalArrowKey =
         event.key === 'ArrowUp' || event.key === 'ArrowDown';
+      const isPhysicalVerticalMove =
+        isVerticalArrowKey && !event.altKey && !event.ctrlKey && !event.metaKey;
       const snapshotSelection = measureRuntimeKeyDownPhase(
         'keydown.snapshot-selection',
         () => editorGetSnapshot(editor).selection
       );
+      const verticalFocus = isPhysicalVerticalMove
+        ? getVerticalNavigationFocus(editor, snapshotSelection)
+        : null;
+      const preferredVerticalX = verticalFocus
+        ? (verticalNavigation.readVerticalGoalX(verticalFocus) ??
+          resolveVerticalGoalX(editor, verticalFocus) ??
+          undefined)
+        : undefined;
+
+      if (!isPhysicalVerticalMove) {
+        verticalNavigation.clearVerticalGoal();
+      }
       const modelOwnsVerticalShift = measureRuntimeKeyDownPhase(
         'keydown.model-owns-vertical-shift',
         () =>
@@ -302,6 +351,7 @@ export const useRuntimeKeyboardEvents = ({
                 pliteRuntimeContext?.getContentRootOwnerViewEditor,
               getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
               isRTL: false,
+              preferredX: preferredVerticalX,
               selection: snapshotSelection,
             })
           )
@@ -359,6 +409,7 @@ export const useRuntimeKeyboardEvents = ({
         () =>
           applyEditableKeyDown({
             androidInputManagerRef: runtime.android.managerRef,
+            domPhaseScheduler,
             editor,
             event,
             forceRender: runtime.repair.forceRender,
@@ -370,6 +421,7 @@ export const useRuntimeKeyboardEvents = ({
               pliteRuntimeContext?.getContentRootOwnerViewEditor,
             getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
             onKeyDown,
+            preferredVerticalX,
             readOnly,
             setExplicitPartialDOMBackedSelection,
             setComposing: runtime.composition.setComposing,
@@ -385,15 +437,35 @@ export const useRuntimeKeyboardEvents = ({
         });
       }
 
+      if (isPhysicalVerticalMove) {
+        const nextFocus = getVerticalNavigationFocus(
+          editor,
+          editorGetSnapshot(editor).selection
+        );
+
+        if (
+          keyDownWorkerResult.handled &&
+          preferredVerticalX !== undefined &&
+          nextFocus
+        ) {
+          verticalNavigation.setVerticalGoalX(preferredVerticalX, nextFocus);
+        } else {
+          verticalNavigation.clearVerticalGoal();
+        }
+      }
+
       if (
         !readOnly &&
         !keyDownWorkerResult.handled &&
         decision.intent === 'native-selection-move' &&
         (event.key === 'ArrowUp' || event.key === 'ArrowDown')
       ) {
-        setTimeout(() => {
-          runtime.selection.syncDOMSelectionFromRuntime();
-        });
+        domPhaseScheduler.schedule(
+          'selection-repair',
+          'native-vertical-selection-import',
+          () => runtime.selection.syncDOMSelectionFromRuntime(),
+          { timing: 'timeout' }
+        );
       }
       measureRuntimeKeyDownPhase('keydown.trace-record', () => {
         runtime.trace.recordKeyDownTrace({
@@ -405,6 +477,7 @@ export const useRuntimeKeyboardEvents = ({
     },
     [
       editor,
+      domPhaseScheduler,
       flushPendingNativeTextInput,
       inputController,
       domStrategyRuntime,
@@ -414,6 +487,7 @@ export const useRuntimeKeyboardEvents = ({
       pliteRuntimeContext,
       setExplicitPartialDOMBackedSelection,
       partialDOMBackedSelection,
+      verticalNavigation,
     ]
   );
 
@@ -443,7 +517,9 @@ export const useRuntimeKeyboardEvents = ({
             return false;
           }
 
-          const viewRoot = editor.read((state) => state.view.root());
+          const viewRoot = toInternalRoot(
+            editor.read((state) => state.view.root())
+          );
           const anchorRoot = selection.anchor.root ?? MAIN_ROOT_KEY;
           const focusRoot = selection.focus.root ?? MAIN_ROOT_KEY;
 
@@ -470,6 +546,7 @@ export const useRuntimeKeyboardEvents = ({
       runtime.trace.beginKeyDownEventFrame(decision);
       const keyDownWorkerResult = applyEditableKeyDown({
         androidInputManagerRef: runtime.android.managerRef,
+        domPhaseScheduler,
         editor,
         event,
         forceRender: runtime.repair.forceRender,

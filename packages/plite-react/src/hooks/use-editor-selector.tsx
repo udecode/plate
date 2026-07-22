@@ -3,7 +3,7 @@ import type {
   Editor,
   EditorCommit,
   EditorStateView,
-  Operation,
+  ExtensionsOf,
   RuntimeId,
   ValueOf,
 } from '@platejs/plite';
@@ -12,14 +12,10 @@ import { useEditor } from './use-editor';
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
-type Callback = (
-  operations?: readonly Operation[],
-  change?: EditorCommit
-) => void;
+type Callback = (change?: EditorCommit) => void;
 
 type DeferredCallbackPayload = {
   change?: EditorCommit;
-  operations?: readonly Operation[];
 };
 
 export type EditorSelectorContextValue = {
@@ -32,7 +28,7 @@ export type EditorSelectorContextValue = {
 
 /** Commit-subscription options for selectors that read from the editor. */
 export interface EditorSelectorOptions<
-  TEditor extends Editor<any> = Editor<any>,
+  TEditor extends Editor<any, any> = Editor<any, any>,
 > {
   deferred?: boolean;
   includeRootOrderChanges?: boolean;
@@ -40,24 +36,18 @@ export interface EditorSelectorOptions<
   runtimeEventSource?: 'node' | 'path' | 'render';
   runtimeId?: RuntimeId | null;
   runtimeIds?: readonly RuntimeId[] | null;
-  shouldUpdate?: (
-    operations?: readonly Operation<ValueOf<TEditor>>[],
-    change?: EditorCommit<ValueOf<TEditor>>
-  ) => boolean;
+  shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;
 }
 
 /** Options for selectors that read from the immutable editor state view. */
 export interface EditorStateSelectorOptions<
   T,
-  TEditor extends Editor<any> = Editor<any>,
+  TEditor extends Editor<any, any> = Editor<any, any>,
 > {
   deferred?: boolean;
   deps?: readonly unknown[];
   equalityFn?: (a: T | null, b: T) => boolean;
-  shouldUpdate?: (
-    change?: EditorCommit<ValueOf<TEditor>>,
-    operations?: readonly Operation<ValueOf<TEditor>>[]
-  ) => boolean;
+  shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;
 }
 
 export const EditorSelectorContext =
@@ -71,11 +61,6 @@ const getSelectorProfileId = (
   phase: 'check' | 'notify'
 ) => `selector-${profileId ?? (runtimeId ? 'runtime' : 'global')}-${phase}`;
 
-const isTextRenderOperation = (operation: Operation) =>
-  operation.type === 'insert_text' ||
-  operation.type === 'remove_text' ||
-  operation.type === 'set_selection';
-
 const scheduleMicrotask =
   typeof queueMicrotask === 'function'
     ? queueMicrotask
@@ -86,17 +71,12 @@ const scheduleMicrotask =
 const queueDeferredCallback = (
   queue: Map<Callback, DeferredCallbackPayload>,
   callback: Callback,
-  operations?: readonly Operation[],
   change?: EditorCommit
 ) => {
   const existing = queue.get(callback);
 
   queue.set(callback, {
-    change,
-    operations:
-      existing?.operations && operations
-        ? [...existing.operations, ...operations]
-        : (operations ?? existing?.operations),
+    change: change ?? existing?.change,
   });
 };
 
@@ -114,15 +94,14 @@ export function useRequiredEditorSelectorContext() {
 /**
  * Subscribe to editor commits and derive a render value from the editor.
  *
- * The selector receives the operations for the triggering commit. Scope updates
- * with roots/runtime ids or `shouldUpdate`, and use `useEditorState` when the
- * selector only needs the immutable state view.
+ * Scope updates with roots/runtime ids or `shouldUpdate`, and use
+ * `useEditorState` when the selector only needs the immutable state view.
  */
-export function useEditorSelector<T, TEditor extends Editor<any> = Editor<any>>(
-  selector: (
-    editor: TEditor,
-    operations?: readonly Operation<ValueOf<TEditor>>[]
-  ) => T,
+export function useEditorSelector<
+  T,
+  TEditor extends Editor<any, any> = Editor<any, any>,
+>(
+  selector: (editor: TEditor) => T,
   equalityFn: (a: T | null, b: T) => boolean = refEquality,
   {
     deferred,
@@ -137,45 +116,25 @@ export function useEditorSelector<T, TEditor extends Editor<any> = Editor<any>>(
   const { addEventListener } = useRequiredEditorSelectorContext();
 
   const editor = useEditor<TEditor>();
-  const latestOperations = useRef<readonly Operation[] | undefined>(undefined);
   const genericSelector = useCallback(
-    () =>
-      selector(
-        editor,
-        latestOperations.current as
-          | readonly Operation<ValueOf<TEditor>>[]
-          | undefined
-      ),
+    () => selector(editor),
     [editor, selector]
   );
   const [selectedState, update] = useGenericSelector(
     genericSelector,
     equalityFn
   );
-  const updateWithOperations = useCallback(
-    (operations?: readonly Operation[]) => {
-      latestOperations.current = operations;
-      try {
-        update();
-      } finally {
-        latestOperations.current = undefined;
-      }
-    },
-    [update]
-  );
+  const updateFromCommit = useCallback(() => update(), [update]);
   const shouldUpdateWithEditor = useCallback(
-    (operations?: readonly Operation[], change?: EditorCommit) =>
+    (change?: EditorCommit) =>
       shouldUpdate
-        ? shouldUpdate(
-            operations as readonly Operation<ValueOf<TEditor>>[] | undefined,
-            change as EditorCommit<ValueOf<TEditor>> | undefined
-          )
+        ? shouldUpdate(change as EditorCommit<ValueOf<TEditor>> | undefined)
         : true,
     [shouldUpdate]
   );
 
   useIsomorphicLayoutEffect(() => {
-    const unsubscribe = addEventListener(updateWithOperations, {
+    const unsubscribe = addEventListener(updateFromCommit, {
       deferred,
       includeRootOrderChanges,
       profileId,
@@ -189,7 +148,7 @@ export function useEditorSelector<T, TEditor extends Editor<any> = Editor<any>>(
   }, [
     addEventListener,
     update,
-    updateWithOperations,
+    updateFromCommit,
     deferred,
     profileId,
     runtimeEventSource,
@@ -209,8 +168,13 @@ export function useEditorSelector<T, TEditor extends Editor<any> = Editor<any>>(
  *
  * Pass `deps` when the selector closes over changing values.
  */
-export function useEditorState<T, TEditor extends Editor<any> = Editor<any>>(
-  selector: (state: EditorStateView<ValueOf<TEditor>>) => T,
+export function useEditorState<
+  T,
+  TEditor extends Editor<any, any> = Editor<any, any>,
+>(
+  selector: (
+    state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
+  ) => T,
   {
     deferred,
     deps,
@@ -220,18 +184,20 @@ export function useEditorState<T, TEditor extends Editor<any> = Editor<any>>(
 ): T {
   const selectorDeps = deps ?? [selector];
   const stateSelector = useCallback(
-    (editor: TEditor) => editor.read((state) => selector(state)),
+    (editor: TEditor) =>
+      editor.read((state) =>
+        selector(
+          state as EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
+        )
+      ),
     // `deps` intentionally owns inline selector closure freshness.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     selectorDeps
   );
   const shouldUpdateWithChange = useCallback(
-    (operations?: readonly Operation[], change?: EditorCommit) =>
+    (change?: EditorCommit) =>
       shouldUpdate
-        ? shouldUpdate(
-            change as EditorCommit<ValueOf<TEditor>> | undefined,
-            operations as readonly Operation<ValueOf<TEditor>>[] | undefined
-          )
+        ? shouldUpdate(change as EditorCommit<ValueOf<TEditor>> | undefined)
         : true,
     [shouldUpdate]
   );
@@ -258,7 +224,7 @@ export function useEditorSelectorContext() {
   const flushDeferred = useCallback(() => {
     deferredFlushScheduled.current = false;
     deferredEventListeners.current.forEach((payload, listener) => {
-      listener(payload.operations, payload.change);
+      listener(payload.change);
     });
     deferredEventListeners.current.clear();
   }, []);
@@ -273,71 +239,65 @@ export function useEditorSelectorContext() {
   }, [flushDeferred]);
 
   const onChange = useCallback(
-    (operations?: readonly Operation[], change?: EditorCommit) => {
+    (
+      change?: EditorCommit,
+      invalidatedRuntimeIds: readonly RuntimeId[] = []
+    ) => {
       eventListeners.current.forEach((listener) => {
-        listener(operations, change);
+        listener(change);
       });
 
       const shouldRouteRootOrderRuntimeListeners = Boolean(
-        change &&
-          (change.fullDocumentChanged ||
-            change.rootRuntimeIdsChanged ||
-            change.structureChanged ||
-            change.topLevelOrderChanged)
+        change?.changed.hasAny('root-order')
       );
-      const affectedRuntimeIds = change?.fullDocumentChanged
-        ? change.affectedNodeRuntimeIds
-        : change?.nodeImpactRuntimeIds;
-      const shouldRoutePathRuntimeListeners = Boolean(
-        !change ||
-          change.fullDocumentChanged ||
-          change.rootRuntimeIdsChanged ||
-          change.structureChanged ||
-          change.topLevelOrderChanged
-      );
+      const affectedRuntimeIds = change?.changed.runtimeIdsAll('node') ?? [];
+      const affectedPathRuntimeIds =
+        change?.changed.runtimeIdsAll('path') ?? [];
       const syncedTextOnlyChange = Boolean(
-        change?.textChanged &&
-          operations &&
-          operations.length > 0 &&
-          operations.every(isTextRenderOperation)
+        change?.changed.hasAny('text') &&
+          !change.tags.includes('historic') &&
+          !change.changed.hasAny('structure') &&
+          !change.changed.hasAny('properties')
       );
       const shouldRouteRenderRuntimeListeners = Boolean(
         !change || !syncedTextOnlyChange
       );
       const runtimeCallbacks = new Set<Callback>();
+      const invalidatedRuntimeCallbacks = new Set<Callback>();
 
-      if (!change || affectedRuntimeIds == null) {
+      if (!change) {
         runtimeEventListeners.current.forEach((listeners) => {
           listeners.forEach((listener) => {
             runtimeCallbacks.add(listener);
           });
         });
       } else {
-        for (const runtimeId of affectedRuntimeIds) {
+        for (const runtimeId of new Set([
+          ...affectedRuntimeIds,
+          ...affectedPathRuntimeIds,
+        ])) {
           runtimeEventListeners.current.get(runtimeId)?.forEach((listener) => {
             runtimeCallbacks.add(listener);
           });
         }
       }
-      if (shouldRoutePathRuntimeListeners) {
-        if (!change || affectedRuntimeIds == null) {
-          runtimePathEventListeners.current.forEach((listeners) => {
-            listeners.forEach((listener) => {
+      if (!change) {
+        runtimePathEventListeners.current.forEach((listeners) => {
+          listeners.forEach((listener) => {
+            runtimeCallbacks.add(listener);
+          });
+        });
+      } else {
+        for (const runtimeId of affectedPathRuntimeIds) {
+          runtimePathEventListeners.current
+            .get(runtimeId)
+            ?.forEach((listener) => {
               runtimeCallbacks.add(listener);
             });
-          });
-        } else {
-          for (const runtimeId of affectedRuntimeIds) {
-            runtimePathEventListeners.current
-              .get(runtimeId)
-              ?.forEach((listener) => {
-                runtimeCallbacks.add(listener);
-              });
-          }
         }
       }
       if (shouldRouteRenderRuntimeListeners) {
-        if (!change || affectedRuntimeIds == null) {
+        if (!change) {
           runtimeRenderEventListeners.current.forEach((listeners) => {
             listeners.forEach((listener) => {
               runtimeCallbacks.add(listener);
@@ -353,6 +313,18 @@ export function useEditorSelectorContext() {
           }
         }
       }
+      for (const runtimeId of invalidatedRuntimeIds) {
+        runtimeEventListeners.current.get(runtimeId)?.forEach((listener) => {
+          runtimeCallbacks.add(listener);
+          invalidatedRuntimeCallbacks.add(listener);
+        });
+        runtimeRenderEventListeners.current
+          .get(runtimeId)
+          ?.forEach((listener) => {
+            runtimeCallbacks.add(listener);
+            invalidatedRuntimeCallbacks.add(listener);
+          });
+      }
       if (shouldRouteRootOrderRuntimeListeners) {
         rootOrderRuntimeEventListeners.current.forEach((listener) => {
           runtimeCallbacks.add(listener);
@@ -360,7 +332,9 @@ export function useEditorSelectorContext() {
       }
 
       runtimeCallbacks.forEach((listener) => {
-        listener(operations, change);
+        listener(
+          invalidatedRuntimeCallbacks.has(listener) ? undefined : change
+        );
       });
 
       if (deferredEventListeners.current.size > 0) {
@@ -393,29 +367,26 @@ export function useEditorSelectorContext() {
         subscribedRuntimeIds?.length === 1
           ? subscribedRuntimeIds[0]
           : runtimeId;
-      const shouldNotify = (
-        operations?: readonly Operation[],
-        change?: EditorCommit
-      ) => {
+      const shouldNotify = (change?: EditorCommit) => {
         recordPliteReactRender({
           id: getSelectorProfileId(profileId, profileRuntimeId, 'check'),
           kind: 'selector',
           runtimeId: profileRuntimeId,
         });
 
-        return shouldUpdate ? shouldUpdate(operations, change) : true;
+        return shouldUpdate ? shouldUpdate(change) : true;
       };
       let isSubscribed = true;
       const queuedCallback = deferred
-        ? (operations?: readonly Operation[], change?: EditorCommit) => {
+        ? (change?: EditorCommit) => {
             if (isSubscribed) {
-              callbackProp(operations, change);
+              callbackProp(change);
             }
           }
         : callbackProp;
       const callback = deferred
-        ? (operations?: readonly Operation[], change?: EditorCommit) => {
-            if (shouldNotify(operations, change)) {
+        ? (change?: EditorCommit) => {
+            if (shouldNotify(change)) {
               recordPliteReactRender({
                 id: getSelectorProfileId(profileId, profileRuntimeId, 'notify'),
                 kind: 'selector',
@@ -424,19 +395,18 @@ export function useEditorSelectorContext() {
               queueDeferredCallback(
                 deferredEventListeners.current,
                 queuedCallback,
-                operations,
                 change
               );
             }
           }
-        : (operations?: readonly Operation[], change?: EditorCommit) => {
-            if (shouldNotify(operations, change)) {
+        : (change?: EditorCommit) => {
+            if (shouldNotify(change)) {
               recordPliteReactRender({
                 id: getSelectorProfileId(profileId, profileRuntimeId, 'notify'),
                 kind: 'selector',
                 runtimeId: profileRuntimeId,
               });
-              callbackProp(operations, change);
+              callbackProp(change);
             }
           };
 

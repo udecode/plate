@@ -1,11 +1,13 @@
-import { runEditorTransaction } from '../core/public-state';
+import {
+  applyBuiltDocumentChange,
+  runEditorTransaction,
+} from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { LocationApi, NodeApi } from '../interfaces';
 import {
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
-  pathRef as editorPathRef,
 } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
@@ -49,11 +51,9 @@ export const moveNodes: NodeMutationMethods['moveNodes'] = (
               ]
             : to;
 
-          tx.apply({
-            type: 'move_node',
-            path: at,
-            newPath: effectiveTo,
-          });
+          applyBuiltDocumentChange(editor, (builder, root) =>
+            builder.moveNode(root, at, effectiveTo)
+          );
         }
 
         return;
@@ -62,35 +62,41 @@ export const moveNodes: NodeMutationMethods['moveNodes'] = (
       match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
     }
 
-    const toRef = editorPathRef(editor, to);
-    const pathRefs = Array.from(
+    const toAnchor = editor.anchor(to, {
+      association: 'forward',
+      deletion: 'nearest',
+    });
+    const pathAnchors = Array.from(
       getNodes(editor, { at, match, mode, voids }),
-      ([, path]) => editorPathRef(editor, path)
+      ([, path]) =>
+        editor.anchor(path, {
+          association: 'forward',
+          deletion: 'drop',
+        })
     );
+    let followsDestination = false;
 
-    for (const pathRef of pathRefs) {
-      const path = pathRef.unref();
-      const newPath = toRef.current;
+    for (const pathAnchor of pathAnchors) {
+      const path = pathAnchor.release();
+      const destination = toAnchor.resolve();
+      const newPath =
+        followsDestination && destination
+          ? PathApi.next(destination)
+          : destination;
 
       if (!path || !newPath || path.length === 0) {
         continue;
       }
 
-      tx.apply({
-        type: 'move_node',
-        path,
-        newPath,
-      });
+      applyBuiltDocumentChange(editor, (builder, root) =>
+        builder.moveNode(root, path, newPath)
+      );
 
-      if (
-        toRef.current &&
-        PathApi.isSibling(newPath, path) &&
-        PathApi.isAfter(newPath, path)
-      ) {
-        toRef.current = PathApi.next(toRef.current);
+      if (PathApi.isSibling(newPath, path) && PathApi.isAfter(newPath, path)) {
+        followsDestination = true;
       }
     }
 
-    toRef.unref();
+    toAnchor.release();
   });
 };

@@ -1,6 +1,6 @@
 ---
 title: "Transforms API"
-description: "Transaction transform groups for node, text, selection, mark, root, state, and operation writes."
+description: "Transaction transform groups for node, text, selection, mark, root, state, effect, and canonical change writes."
 ---
 
 Transforms are transaction helpers used inside `editor.update(...)`.
@@ -20,13 +20,15 @@ editor.update((tx) => {
 - [Block methods](transforms#block-methods)
 - [Break methods](transforms#break-methods)
 - [Fragment methods](transforms#fragment-methods)
+- [Slice methods](transforms#slice-methods)
 - [Text methods](transforms#text-methods)
 - [Selection methods](transforms#selection-methods)
 - [Mark methods](transforms#mark-methods)
 - [Value and root methods](transforms#value-and-root-methods)
 - [State field methods](transforms#state-field-methods)
-- [Normalization methods](transforms#normalization-methods)
-- [Operation methods](transforms#operation-methods)
+- [Correction methods](transforms#correction-methods)
+- [Effect methods](transforms#effect-methods)
+- [Canonical change methods](transforms#canonical-change-methods)
 
 ## Node options
 
@@ -59,11 +61,10 @@ Use node methods from `tx.nodes`.
 
 Insert nodes at `options.at` or the transaction target.
 
-Options: `at`, `match`, `mode`, `hanging`, `select`, `voids`, `batchDirty`.
+Options: `at`, `match`, `mode`, `hanging`, `select`, `voids`.
 
 - `hanging?: boolean`: Preserve hanging range edges.
 - `select?: boolean`: Select the inserted nodes.
-- `batchDirty?: boolean`: Batch dirty-path work for a multi-node insert.
 
 ```javascript
 editor.update((tx) => {
@@ -204,22 +205,8 @@ Read the fragment at `options.at` or the current selection.
 Options:
 
 - `at?: Range`: Range to read. Defaults to the active selection.
-
-#### `tx.fragment.insert(fragment: Node[], options?)`
-
-Insert a fragment at `options.at` or the transaction target.
-Plite's default insertion policy is structural. When a fragment contains nested
-blocks that match the active structural container, the first compatible source
-block can merge into the active block and later source siblings stay as inserted
-siblings. Product-specific positional behavior, such as multi-cell table-grid
-paste, belongs in an extension clipboard/fragment policy.
-
-Options:
-
-- `at?: NodeTarget`: Where to insert. Defaults to the transaction target.
-- `hanging?: boolean`: Preserve hanging range edges instead of un-hanging first.
-- `voids?: boolean`: Allow insertion into void elements.
-- `batchDirty?: boolean`: Batch dirty-path work for the fragment insert.
+- `unwrap?: readonly string[]`: Omit matching wrapper element types from the
+  returned fragment.
 
 #### `tx.fragment.delete(options?)`
 
@@ -229,6 +216,49 @@ Options:
 
 - `at?: NodeTarget`: Location or live descendant to delete. Defaults to the transaction target.
 - `direction?: 'forward' | 'backward'`: Direction used for collapsed deletion.
+
+#### `tx.fragment.replace(content, options?)`
+
+Fit and replace known-closed content at `options.at` or the transaction target.
+The method returns `false` without mutating when the target cannot be resolved,
+is a protected void, or the content cannot fit the compiled schema.
+
+```typescript
+editor.update((tx) => {
+  tx.fragment.replace([
+    {
+      type: "paragraph",
+      children: [{ text: "Imported paragraph" }],
+    },
+  ]);
+});
+```
+
+Options:
+
+- `at?: NodeTarget`: Replacement range, point, path, or live descendant.
+- `hanging?: boolean`: Preserve hanging range edges instead of un-hanging first.
+- `voids?: boolean`: Allow replacement inside void elements.
+
+## Slice methods
+
+Use `tx.slice` for parsed or imported content whose open edges must be fitted
+against the compiled schema at its actual replacement range.
+
+#### `tx.slice.replace(slice: ContentSlice, options?)`
+
+Fit and atomically replace content at `options.at` or the transaction target.
+The method returns `false` without mutating when the target cannot be resolved,
+is a protected void, or a well-formed slice cannot fit. Malformed slice shapes
+are programmer errors and throw. The method returns `true` once a fitted
+replacement is accepted, including a valid replacement whose canonical change
+is empty.
+
+Options:
+
+- `at?: NodeTarget`: Replacement range, point, path, or live descendant.
+- `hanging?: boolean`: Preserve hanging range edges instead of un-hanging first.
+- `voids?: boolean`: Allow replacement inside void elements.
 
 ## Text methods
 
@@ -425,31 +455,36 @@ editor.update((tx) => {
 });
 ```
 
-State-field writes appear in `commit.statePatches`.
+State-field writes emit the field's typed effect and list the field key in
+`commit.dirtyStateKeys`.
 
-#### `tx.statePatches.replay(statePatches)`
+## Effect methods
 
-Replay accepted state-field patches through the transaction boundary.
+#### `tx.effects.emit(type, value)`
 
-Filter remote or collaborative patches before replaying them.
+Emit a typed effect. Installed state fields reduce effects during the same
+transaction. Effect descriptors define history inversion, collaboration policy,
+and mapping through canonical document changes.
 
-## Normalization methods
+## Correction methods
 
 #### `editor.update.value.repair()`
 
-Repair every document root with the installed normalizers. This maintenance
+Repair every document root with the installed corrections. This maintenance
 method starts a history-skipped update, cannot run inside another update, and
 publishes no commit when the value is already canonical. Ordinary grouped
-updates normalize their dirty paths automatically.
+updates run deterministic corrections over ranges changed by the transaction.
 
-## Operation methods
+## Canonical change methods
 
-#### `tx.operations.replay(operations: Operation[])`
+#### `tx.changes.apply(change: DocumentChange)`
 
-Replay operations through the transaction boundary.
+Apply one root-aware canonical document change to the active draft. This is the
+adapter and history boundary for serialized or remote changes; ordinary editing
+uses semantic transaction groups.
 
 ```javascript
 editor.update({ tags: "remote-import" }, (tx) => {
-  tx.operations.replay(remoteOperations);
+  tx.changes.apply(DocumentChange.fromJSON(remoteChange));
 });
 ```

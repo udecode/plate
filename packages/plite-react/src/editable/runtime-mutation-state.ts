@@ -1,24 +1,27 @@
-import type {
-  Editor,
-  EditorMarks,
-  EditorTargetRuntime,
-  Selection,
-} from '@platejs/plite';
-import {
-  setEditorMarks,
-  setEditorSelection,
-  setEditorTargetRuntime,
-} from './runtime-editor-api';
+import type { Editor, EditorMarks, EditorTargetRuntime } from '@platejs/plite';
+import { getActiveEditorTransaction } from '@platejs/plite/internal';
+import { setEditorMarks, setEditorTargetRuntime } from './runtime-editor-api';
+
+export const writeRuntimeSelection = (
+  editor: Editor,
+  target: Parameters<Editor['update']['selection']['set']>[0]
+) => {
+  const transaction = getActiveEditorTransaction(editor);
+
+  if (transaction) {
+    transaction.selection.set(target);
+    return;
+  }
+
+  // DOM imports bypass command dispatch while preserving correction policy.
+  editor.update((tx) => tx.selection.set(target));
+};
 
 export const writeRuntimeMarks = (
   editor: Editor,
   marks: EditorMarks | null
 ) => {
   setEditorMarks(editor, marks);
-};
-
-export const writeRuntimeSelection = (editor: Editor, selection: Selection) => {
-  setEditorSelection(editor, selection);
 };
 
 export const writeTargetRuntime = (

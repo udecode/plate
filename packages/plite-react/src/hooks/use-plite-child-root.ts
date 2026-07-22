@@ -1,5 +1,5 @@
 import { useContext, useMemo } from 'react';
-import type { Element, RootKey } from '@platejs/plite';
+import type { Element, NamedRootKey, RootKey } from '@platejs/plite';
 
 import { NodeRuntimeIdContext } from '../context';
 import { useOptionalElementContext } from './use-element';
@@ -44,7 +44,7 @@ const getExplicitChildRoot = (
 export function usePliteChildRoot(
   element?: Element | null,
   slot: string = DEFAULT_CHILD_ROOT_SLOT
-): RootKey {
+): NamedRootKey {
   const contextElement = useOptionalElementContext();
   const runtimeId = useContext(NodeRuntimeIdContext);
   const targetElement = element ?? contextElement;
@@ -59,7 +59,13 @@ export function usePliteChildRoot(
     const explicitRoot = getExplicitChildRoot(targetElement, slot);
 
     if (explicitRoot) {
-      return explicitRoot;
+      if (explicitRoot === 'main') {
+        throw new Error(
+          '[Plite] A child content root cannot target the primary document.'
+        );
+      }
+
+      return explicitRoot as NamedRootKey;
     }
 
     if (!runtimeId) {

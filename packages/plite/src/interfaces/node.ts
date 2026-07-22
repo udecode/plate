@@ -8,13 +8,11 @@ import {
 } from '..';
 import { hasEditorRuntime } from '../core/editor-runtime';
 import { formatDebugValue } from '../utils/format-debug-value';
-import { modifyChildren, modifyLeaf, removeChildren } from '../utils/modify';
 import type { Editor as EditorType, Value } from './editor';
 import {
   getChildren as editorGetChildren,
   isEditor as editorIsEditor,
 } from './editor';
-import type { Editor } from './editor';
 import {
   type Element,
   ElementApi,
@@ -29,14 +27,16 @@ import type { TextOf } from './text';
  * occur in a Plite document tree.
  */
 
-export type BaseNode = Editor | Element | Text;
-export type Node = Editor | Element | Text;
+type AnyExtensionEditor = EditorType<any, any>;
+
+export type BaseNode = AnyExtensionEditor | Element | Text;
+export type Node = AnyExtensionEditor | Element | Text;
 
 export type DescendantOf<N> = N extends { getChildren: () => infer V }
   ? V extends readonly (infer Child)[]
     ? ElementOf<Child> | TextOf<Child>
     : never
-  : N extends EditorType<infer V>
+  : N extends EditorType<infer V, any>
     ? DescendantIn<V>
     : N extends Element
       ? ElementOf<N> | TextOf<N>
@@ -46,7 +46,7 @@ export type DescendantOf<N> = N extends { getChildren: () => infer V }
 
 export type AncestorOf<N> = N extends { getChildren: () => infer V }
   ? N | (V extends readonly (infer Child)[] ? ElementOf<Child> : never)
-  : N extends EditorType<infer V>
+  : N extends EditorType<infer V, any>
     ? N | ElementIn<V>
     : N extends Element
       ? N | ElementOf<N>
@@ -252,7 +252,7 @@ export interface NodeInterface {
   /**
    * Get the sliced fragment represented by a range inside a root node.
    */
-  fragment: <T extends Ancestor = Editor>(
+  fragment: <T extends Ancestor = AnyExtensionEditor>(
     root: T,
     range: Range
   ) => Descendant[];
@@ -277,7 +277,7 @@ export interface NodeInterface {
   /**
    * Similar to get, but returns undefined if the node does not exist.
    */
-  getIf: (root: Node, path: Path) => Node | undefined;
+  getIf: (root: Node, path: readonly number[]) => Node | undefined;
 
   /**
    * Check if a descendant node exists at a specific path.
@@ -297,7 +297,7 @@ export interface NodeInterface {
   /**
    * Check if a node is an `Editor` object.
    */
-  isEditor: (value: unknown) => value is Editor;
+  isEditor: (value: unknown) => value is AnyExtensionEditor;
 
   /**
    * Check if a node is an `Element` object.
@@ -425,6 +425,49 @@ const getWholeTopLevelChildFragment = (
   }
 
   return children.slice(startIndex, endIndex + 1);
+};
+
+const getRangeFragmentChildren = (
+  children: readonly Descendant[],
+  startPath: readonly number[] | null,
+  endPath: readonly number[] | null,
+  startOffset: number,
+  endOffset: number
+): Descendant[] => {
+  const startIndex = startPath?.[0] ?? 0;
+  const endIndex = endPath?.[0] ?? children.length - 1;
+
+  return children
+    .slice(startIndex, endIndex + 1)
+    .map((node, index): Descendant => {
+      const sourceIndex = startIndex + index;
+      const nodeStartPath =
+        startPath && sourceIndex === startIndex ? startPath.slice(1) : null;
+      const nodeEndPath =
+        endPath && sourceIndex === endIndex ? endPath.slice(1) : null;
+
+      if (!nodeStartPath && !nodeEndPath) return node;
+      if (NodeApi.isText(node)) {
+        return {
+          ...node,
+          text: node.text.slice(
+            nodeStartPath ? startOffset : 0,
+            nodeEndPath ? endOffset : node.text.length
+          ),
+        };
+      }
+
+      return {
+        ...node,
+        children: getRangeFragmentChildren(
+          node.children,
+          nodeStartPath,
+          nodeEndPath,
+          startOffset,
+          endOffset
+        ),
+      };
+    });
 };
 
 const getTextRangeChildren = (
@@ -744,46 +787,24 @@ export const NodeApi: NodeInterface = {
     return [n, p];
   },
 
-  fragment<T extends Ancestor = Editor>(root: T, range: Range): Descendant[] {
+  fragment<T extends Ancestor = AnyExtensionEditor>(
+    root: T,
+    range: Range
+  ): Descendant[] {
     const wholeTopLevelFragment = getWholeTopLevelChildFragment(root, range);
 
     if (wholeTopLevelFragment) {
       return wholeTopLevelFragment;
     }
-
-    const newRoot = { children: getAncestorChildren(root) };
-
     const [start, end] = RangeApi.edges(range);
-    const nodeEntries = NodeApi.nodes(newRoot as Ancestor, {
-      reverse: true,
-      pass: ([, path]) => !RangeApi.includes(range, path),
-    });
 
-    for (const [, path] of nodeEntries) {
-      if (!RangeApi.includes(range, path)) {
-        const index = path.at(-1)!;
-
-        modifyChildren(newRoot as Ancestor, PathApi.parent(path), (children) =>
-          removeChildren(children, index, 1)
-        );
-      }
-
-      if (PathApi.equals(path, end.path)) {
-        modifyLeaf(newRoot as Ancestor, path, (node) => {
-          const before = node.text.slice(0, end.offset);
-          return { ...node, text: before };
-        });
-      }
-
-      if (PathApi.equals(path, start.path)) {
-        modifyLeaf(newRoot as Ancestor, path, (node) => {
-          const before = node.text.slice(start.offset);
-          return { ...node, text: before };
-        });
-      }
-    }
-
-    return newRoot.children;
+    return getRangeFragmentChildren(
+      getAncestorChildren(root),
+      start.path,
+      end.path,
+      start.offset,
+      end.offset
+    );
   },
 
   findTextRanges(
@@ -844,7 +865,7 @@ export const NodeApi: NodeInterface = {
     return node;
   },
 
-  getIf(root: Node, path: Path): Node | undefined {
+  getIf(root: Node, path: readonly number[]): Node | undefined {
     let node = root;
 
     for (const p of path) {
@@ -900,7 +921,7 @@ export const NodeApi: NodeInterface = {
     return NodeApi.isElement(value) || NodeApi.isText(value);
   },
 
-  isEditor(value: unknown): value is Editor {
+  isEditor(value: unknown): value is AnyExtensionEditor {
     return editorIsEditor(value);
   },
 
@@ -1098,7 +1119,7 @@ export type Descendant = Element | Text;
  * than the more generic `Node` union.
  */
 
-export type Ancestor = Editor | Element;
+export type Ancestor = AnyExtensionEditor | Element;
 
 /**
  * `NodeEntry` objects are returned when iterating over the nodes in a Plite

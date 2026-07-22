@@ -1,44 +1,59 @@
-import type { ExtendPlateEditorExtension } from '@platejs/core';
-import type { Element } from '@platejs/plite';
-import { PathApi } from '@platejs/plite';
-
-import type { BaseLinkConfig } from './BaseLinkPlugin';
+import type { PlateEditorExtension } from '@platejs/core';
+import {
+  editorCommands,
+  type Element,
+  ElementApi,
+  PathApi,
+} from '@platejs/plite';
 
 /** Moves text insertion outside a link when the caret is at its end. */
-export const withLink: ExtendPlateEditorExtension<BaseLinkConfig> = ({
-  type,
-}) => ({
-  transforms: {
-    insertText({ next, options, text, tx }) {
-      if (options?.at) return next({ options, text });
+export const withLink = ({ type }: { type: string }): PlateEditorExtension => ({
+  commands: ({ around }) => [
+    around(editorCommands.insertText, ({ input, state, next }) => {
+      if (input.options?.at) return next();
 
-      const selection = tx.selection();
+      const selection = state.selection();
 
-      if (!selection || !tx.selection.isCollapsed()) {
-        return next({ options, text });
+      if (!selection || !state.selection.isCollapsed()) {
+        return next();
       }
 
-      const link = tx.nodes.above<Element>({
+      const link = state.nodes.above<Element>({
         at: selection,
         match: { type },
       });
 
-      if (!link || !tx.points.isEnd(selection.focus, link[1])) {
-        return next({ options, text });
+      if (!link || !state.points.isEnd(selection.focus, link[1])) {
+        return next();
       }
 
-      const nextPoint = tx.points.after(link[1]);
+      const nextPoint = state.points.after(link[1]);
+      const prefix = state.transaction((tx) => {
+        if (nextPoint) {
+          tx.selection.set(nextPoint);
+        } else {
+          const nextPath = PathApi.next(link[1]);
 
-      if (nextPoint) {
-        tx.selection.set(nextPoint);
-      } else {
-        const nextPath = PathApi.next(link[1]);
+          tx.nodes.insert({ text: '' }, { at: nextPath });
+          tx.selection.set({ offset: 0, path: nextPath });
+        }
+      });
 
-        tx.nodes.insert({ text: '' }, { at: nextPath });
-        tx.selection.set({ offset: 0, path: nextPath });
-      }
-
-      return next({ options, text });
+      return next.after(prefix);
+    }),
+  ],
+  corrections: [
+    {
+      event: 'content',
+      correct({ entry: [node, path], tx }) {
+        if (
+          ElementApi.isElement(node) &&
+          node.type === type &&
+          tx.text.string(path).length === 0
+        ) {
+          tx.nodes.remove({ at: path });
+        }
+      },
     },
-  },
+  ],
 });

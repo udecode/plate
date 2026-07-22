@@ -24,6 +24,7 @@ import {
   verifyDiffState,
 } from '@platejs/plite-dom';
 import {
+  type DOMPhaseScheduler,
   EDITOR_TO_FORCE_RENDER,
   EDITOR_TO_PENDING_ACTION,
   EDITOR_TO_PENDING_DIFFS,
@@ -42,23 +43,29 @@ import {
   type EditableCommand,
   getEditableCommandFromBeforeInputType,
 } from '../../editable/editing-kernel';
-import type { EditableInputController } from '../../editable/input-state';
+import type {
+  DOMInputRepairTarget,
+  EditableInputController,
+} from '../../editable/input-state';
 import { applyEditableCommand } from '../../editable/mutation-controller';
 import {
-  hasEditorTransformMiddleware,
+  editorCommands,
+  hasCommandHandler,
   range as editorRange,
-  rangeRef as editorRangeRef,
   leaf as editorLeaf,
   next as editorNext,
   setEditorComposing,
 } from '../../editable/runtime-editor-api';
-import { writeRuntimeMarks } from '../../editable/runtime-mutation-state';
+import {
+  writeRuntimeMarks,
+  writeRuntimeSelection,
+} from '../../editable/runtime-mutation-state';
 import { readRuntimeSelection } from '../../editable/runtime-selection-state';
 import {
   ReactEditor,
   type ReactRuntimeEditor,
 } from '../../plugin/react-editor';
-import { isDOMTextSyncMutation } from '../use-plite-node-ref';
+import { isDOMSyncMutation } from '../../editable/dom-sync-mutation-ownership';
 
 export type Action = { at?: Point | Range; run: () => void };
 
@@ -89,15 +96,17 @@ const cloneRange = (range: Range): Range => ({
   focus: clonePoint(range.focus),
 });
 
-export const shouldFlushStoredTextDiffForTransformMiddleware = (
+export const shouldFlushStoredTextDiffForInsertTextHandler = (
   editor: ReactRuntimeEditor,
   diff: StringDiff
-) => diff.text.length > 0 && hasEditorTransformMiddleware(editor, 'insertText');
+) =>
+  diff.text.length > 0 && hasCommandHandler(editor, editorCommands.insertText);
 
 export type CreateAndroidInputManagerOptions = {
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   receivedUserInput: RefObject<boolean>;
+  scheduleTask: DOMPhaseScheduler['schedule'];
 
   scheduleOnDOMSelectionChange: DebouncedFunc<() => void>;
   onDOMSelectionChange: DebouncedFunc<() => void>;
@@ -105,6 +114,7 @@ export type CreateAndroidInputManagerOptions = {
 
 export type AndroidInputManager = {
   flush: () => void;
+  prepareDOMTeardown: () => void;
   scheduleFlush: () => void;
 
   hasPendingDiffs: () => boolean;
@@ -121,20 +131,23 @@ export type AndroidInputManager = {
   handleKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
 
   handleDomMutations: (mutations: MutationRecord[]) => void;
-  handleInput: () => void;
+  handleInput: (target?: DOMInputRepairTarget | null) => boolean;
 };
 
 export function createAndroidInputManager({
   editor,
   inputController,
   receivedUserInput,
+  scheduleTask,
   scheduleOnDOMSelectionChange,
   onDOMSelectionChange,
 }: CreateAndroidInputManagerOptions): AndroidInputManager {
   let flushing: 'action' | boolean = false;
-  let compositionEndTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  let flushTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  let actionTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  let cancelActionFlush: (() => void) | null = null;
+  let cancelCompositionEnd: (() => void) | null = null;
+  let cancelFlushingReset: (() => void) | null = null;
+  let cancelPlaceholderVisibility: (() => void) | null = null;
+  let cancelSelectionFlush: (() => void) | null = null;
 
   let idCounter = 0;
   let insertPositionHint: StringDiff | null | false = false;
@@ -151,9 +164,7 @@ export function createAndroidInputManager({
         normalized &&
         (!selection || !RangeApi.equals(normalized, selection))
       ) {
-        editor.update((tx) => {
-          tx.selection.set(normalized);
-        });
+        writeRuntimeSelection(editor, normalized);
       }
     }
   };
@@ -177,9 +188,7 @@ export function createAndroidInputManager({
       const targetRange = editorRange(editor, target);
       const selection = readRuntimeSelection(editor);
       if (!selection || !RangeApi.equals(selection, targetRange)) {
-        editor.update((tx) => {
-          tx.selection.set(target);
-        });
+        writeRuntimeSelection(editor, target);
       }
     }
 
@@ -187,15 +196,10 @@ export function createAndroidInputManager({
   };
 
   const flush = () => {
-    if (flushTimeoutId) {
-      clearTimeout(flushTimeoutId);
-      flushTimeoutId = null;
-    }
-
-    if (actionTimeoutId) {
-      clearTimeout(actionTimeoutId);
-      actionTimeoutId = null;
-    }
+    cancelSelectionFlush?.();
+    cancelSelectionFlush = null;
+    cancelActionFlush?.();
+    cancelActionFlush = null;
 
     if (!hasPendingDiffs() && !hasPendingAction()) {
       applyPendingSelection();
@@ -204,7 +208,19 @@ export function createAndroidInputManager({
 
     if (!flushing) {
       flushing = true;
-      setTimeout(() => (flushing = false));
+      cancelFlushingReset?.();
+      cancelFlushingReset = scheduleTask(
+        'model',
+        'android-flushing-reset',
+        () => {
+          flushing = false;
+          cancelFlushingReset = null;
+        },
+        {
+          key: 'android-flushing-reset',
+          timing: 'timeout',
+        }
+      );
     }
 
     if (hasPendingAction()) {
@@ -212,15 +228,19 @@ export function createAndroidInputManager({
     }
 
     const liveSelection = readRuntimeSelection(editor);
-    const selectionRef =
+    const selectionAnchor =
       liveSelection &&
-      editorRangeRef(editor, liveSelection, { affinity: 'forward' });
+      editor.anchor(liveSelection, {
+        association: 'forward',
+        deletion: 'nearest',
+      });
     EDITOR_TO_USER_MARKS.set(
       editor,
       editor.read((state) => state.marks())
     );
 
     let scheduleSelectionChange = hasPendingDiffs();
+    let restoreSelection = true;
 
     while (true) {
       const diff = EDITOR_TO_PENDING_DIFFS.get(editor)?.[0];
@@ -270,9 +290,7 @@ export function createAndroidInputManager({
       const range = targetRange(diff);
       const selection = readRuntimeSelection(editor);
       if (!selection || !RangeApi.equals(selection, range)) {
-        editor.update((tx) => {
-          tx.selection.set(range);
-        });
+        writeRuntimeSelection(editor, range);
       }
 
       if (diff.diff.text) {
@@ -307,20 +325,19 @@ export function createAndroidInputManager({
         EDITOR_TO_PENDING_SELECTION.delete(editor);
         scheduleOnDOMSelectionChange.cancel();
         onDOMSelectionChange.cancel();
-        selectionRef?.unref();
+        selectionAnchor?.release();
+        restoreSelection = false;
       }
     }
 
-    const selection = selectionRef?.unref();
+    const selection = restoreSelection ? selectionAnchor?.release() : null;
     if (
       selection &&
       !EDITOR_TO_PENDING_SELECTION.get(editor) &&
       (!readRuntimeSelection(editor) ||
         !RangeApi.equals(selection, readRuntimeSelection(editor)!))
     ) {
-      editor.update((tx) => {
-        tx.selection.set(selection);
-      });
+      writeRuntimeSelection(editor, selection);
     }
 
     if (hasPendingAction()) {
@@ -349,18 +366,55 @@ export function createAndroidInputManager({
     }
   };
 
+  const cancelScheduledWork = () => {
+    cancelActionFlush?.();
+    cancelActionFlush = null;
+    cancelCompositionEnd?.();
+    cancelCompositionEnd = null;
+    cancelFlushingReset?.();
+    cancelFlushingReset = null;
+    cancelPlaceholderVisibility?.();
+    cancelPlaceholderVisibility = null;
+    cancelSelectionFlush?.();
+    cancelSelectionFlush = null;
+  };
+
+  const prepareDOMTeardown = () => {
+    cancelCompositionEnd?.();
+    cancelCompositionEnd = null;
+
+    if (IS_COMPOSING.get(editor)) {
+      IS_COMPOSING.set(editor, false);
+      setEditorComposing(editor, false);
+    }
+
+    cancelFlushingReset?.();
+    cancelFlushingReset = null;
+    flushing = false;
+    flush();
+    cancelScheduledWork();
+    flushing = false;
+  };
+
   const handleCompositionEnd = (
     _event: React.CompositionEvent<HTMLDivElement>
   ) => {
-    if (compositionEndTimeoutId) {
-      clearTimeout(compositionEndTimeoutId);
-    }
-
-    compositionEndTimeoutId = setTimeout(() => {
-      IS_COMPOSING.set(editor, false);
-      setEditorComposing(editor, false);
-      flush();
-    }, RESOLVE_DELAY);
+    cancelCompositionEnd?.();
+    cancelCompositionEnd = scheduleTask(
+      'model',
+      'android-composition-end',
+      () => {
+        cancelCompositionEnd = null;
+        IS_COMPOSING.set(editor, false);
+        setEditorComposing(editor, false);
+        flush();
+      },
+      {
+        delay: RESOLVE_DELAY,
+        key: 'android-composition-end',
+        timing: 'timeout',
+      }
+    );
   };
 
   const handleCompositionStart = (
@@ -369,10 +423,8 @@ export function createAndroidInputManager({
     IS_COMPOSING.set(editor, true);
     setEditorComposing(editor, true);
 
-    if (compositionEndTimeoutId) {
-      clearTimeout(compositionEndTimeoutId);
-      compositionEndTimeoutId = null;
-    }
+    cancelCompositionEnd?.();
+    cancelCompositionEnd = null;
   };
 
   const updatePlaceholderVisibility = (forceHide = false) => {
@@ -576,7 +628,11 @@ export function createAndroidInputManager({
     // COMPAT: When deleting before a non-contenteditable element chrome only fires a beforeinput,
     // (no input) and doesn't perform any dom mutations. Without a flush timeout we would never flush
     // in this case and thus never actually perform the action.
-    actionTimeoutId = setTimeout(flush);
+    cancelActionFlush?.();
+    cancelActionFlush = scheduleTask('model', 'android-action-flush', flush, {
+      key: 'android-action-flush',
+      timing: 'timeout',
+    });
   };
 
   const scheduleCommand = (
@@ -587,17 +643,26 @@ export function createAndroidInputManager({
   };
 
   const handleDOMBeforeInput = (event: InputEvent): void => {
-    if (flushTimeoutId) {
-      clearTimeout(flushTimeoutId);
-      flushTimeoutId = null;
-    }
+    cancelSelectionFlush?.();
+    cancelSelectionFlush = null;
 
     if (IS_NODE_MAP_DIRTY.get(editor)) {
       return;
     }
 
     const { inputType: type } = event;
-    let targetRange: Range | null = null;
+    const selectionWasSyncedFromDOM =
+      inputController.state.modelSelectionPreference?.reason ===
+        'native-selection' &&
+      inputController.state.modelSelectionPreference.selectionSource ===
+        'dom-current';
+    const preferRuntimeSelection =
+      selectionWasSyncedFromDOM ||
+      (inputController.state.selectionSource === 'dom-current' &&
+        inputController.state.selectionChangeOrigin !== 'native-user');
+    let targetRange: Range | null = preferRuntimeSelection
+      ? readRuntimeSelection(editor)
+      : null;
     const data: DataTransfer | string | undefined =
       getInputEventData(event) ?? undefined;
 
@@ -620,9 +685,12 @@ export function createAndroidInputManager({
       insertPositionHint = false;
     }
 
+    const preferLiveDOMSelection =
+      inputController.state.selectionSource === 'dom-current' &&
+      !preferRuntimeSelection;
     let nativeTargetRange: StaticRange | globalThis.Selection | undefined =
-      getInputEventTargetRanges(event)[0];
-    if (nativeTargetRange) {
+      preferLiveDOMSelection ? undefined : getInputEventTargetRanges(event)[0];
+    if (!targetRange && nativeTargetRange) {
       targetRange = ReactEditor.resolvePliteRange(editor, nativeTargetRange, {
         exactMatch: false,
       });
@@ -632,7 +700,7 @@ export function createAndroidInputManager({
     // have to manually get the selection here to ensure it's up-to-date.
     const window = ReactEditor.getWindow(editor);
     const domSelection = window.getSelection();
-    if (!targetRange && domSelection) {
+    if ((preferLiveDOMSelection || !targetRange) && domSelection) {
       nativeTargetRange = domSelection;
       targetRange = ReactEditor.resolvePliteRange(editor, domSelection, {
         exactMatch: false,
@@ -643,7 +711,6 @@ export function createAndroidInputManager({
     if (!targetRange) {
       return;
     }
-
     // By default, the input manager tries to store text diffs so that we can
     // defer flushing them at a later point in time. We don't want to flush
     // for every input event as this can be expensive. However, there are some
@@ -1035,7 +1102,7 @@ export function createAndroidInputManager({
                 preserveInsertPositionHint: true,
               });
             }
-            if (shouldFlushStoredTextDiffForTransformMiddleware(editor, diff)) {
+            if (shouldFlushStoredTextDiffForInsertTextHandler(editor, diff)) {
               scheduleFlush();
             }
             return;
@@ -1068,10 +1135,8 @@ export function createAndroidInputManager({
   const handleUserSelect = (range: Range | null) => {
     EDITOR_TO_PENDING_SELECTION.set(editor, range);
 
-    if (flushTimeoutId) {
-      clearTimeout(flushTimeoutId);
-      flushTimeoutId = null;
-    }
+    cancelSelectionFlush?.();
+    cancelSelectionFlush = null;
 
     const selection = editor.read((state) => state.selection());
     if (!range) {
@@ -1092,20 +1157,61 @@ export function createAndroidInputManager({
     }
 
     if (pathChanged || hasPendingDiffs()) {
-      flushTimeoutId = setTimeout(flush, FLUSH_DELAY);
+      cancelSelectionFlush = scheduleTask(
+        'model',
+        'android-selection-flush',
+        flush,
+        {
+          delay: FLUSH_DELAY,
+          key: 'android-selection-flush',
+          timing: 'timeout',
+        }
+      );
     }
   };
 
-  const handleInput = () => {
+  const handleInput = (target?: DOMInputRepairTarget | null) => {
+    if (target?.insert) {
+      const pendingDiffs = EDITOR_TO_PENDING_DIFFS.get(editor) ?? [];
+      const pendingDiff = pendingDiffs.findLast(
+        (candidate) =>
+          PathApi.equals(candidate.path, target.path) &&
+          candidate.diff.start === candidate.diff.end &&
+          candidate.diff.text === target.insert?.text
+      );
+
+      if (pendingDiff && pendingDiffs.length === 1) {
+        // The verified root receipt owns this insert. A stored insert diff is
+        // paired only with the no-op caret action scheduled above.
+        EDITOR_TO_PENDING_DIFFS.set(editor, []);
+        EDITOR_TO_PENDING_ACTION.delete(editor);
+        insertPositionHint = false;
+        updatePlaceholderVisibility();
+
+        cancelActionFlush?.();
+        cancelActionFlush = null;
+
+        return false;
+      }
+    }
+
+    const ownsInput = hasPendingChanges();
+
+    if (!ownsInput) {
+      return false;
+    }
+
     const shouldFlushPendingDiffs =
       hasPendingDiffs() &&
       !IS_COMPOSING.get(editor) &&
       (inputController.state.selectionSource !== 'dom-current' ||
         inputController.state.selectionChangeOrigin === 'repair-induced');
 
-    if (hasPendingAction() || !hasPendingDiffs() || shouldFlushPendingDiffs) {
+    if (hasPendingAction() || shouldFlushPendingDiffs) {
       flush();
     }
+
+    return true;
   };
 
   const handleKeyDown = (_: React.KeyboardEvent) => {
@@ -1116,13 +1222,29 @@ export function createAndroidInputManager({
     // here. See https://github.com/ianstormtaylor/slate/pull/4988#issuecomment-1201050535
     if (!hasPendingDiffs()) {
       updatePlaceholderVisibility(true);
-      setTimeout(updatePlaceholderVisibility);
+      cancelPlaceholderVisibility?.();
+      cancelPlaceholderVisibility = scheduleTask(
+        'dom-write',
+        'android-placeholder-visibility',
+        () => {
+          cancelPlaceholderVisibility = null;
+          updatePlaceholderVisibility();
+        },
+        {
+          key: 'android-placeholder-visibility',
+          timing: 'timeout',
+        }
+      );
     }
   };
 
   const scheduleFlush = () => {
     if (!hasPendingAction()) {
-      actionTimeoutId = setTimeout(flush);
+      cancelActionFlush?.();
+      cancelActionFlush = scheduleTask('model', 'android-action-flush', flush, {
+        key: 'android-action-flush',
+        timing: 'timeout',
+      });
     }
   };
 
@@ -1138,7 +1260,7 @@ export function createAndroidInputManager({
     if (
       mutations.some(
         (mutation) =>
-          !isDOMTextSyncMutation(mutation) &&
+          !isDOMSyncMutation(mutation) &&
           isTrackedMutation(editor, mutation, mutations)
       )
     ) {
@@ -1150,6 +1272,7 @@ export function createAndroidInputManager({
 
   return {
     flush,
+    prepareDOMTeardown,
     scheduleFlush,
 
     hasPendingDiffs,

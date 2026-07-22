@@ -14,6 +14,5 @@ export * from './withInsertBreakList';
 export * from './withInsertFragmentList';
 export * from './withList';
 export * from './withNormalizeList';
-export * from './normalizers/index';
 export * from './queries/index';
 export * from './transforms/index';

@@ -6,6 +6,7 @@ import {
   type PliteAnnotation,
   type PliteAnnotationStore,
 } from '../annotation-store';
+import type { PliteViewSourceErrorSink } from '../view-source';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 /** React-state projector used to refresh an annotation store. */
@@ -14,6 +15,8 @@ export type PliteAnnotationStoreProjector<
   TProjection extends Record<string, unknown> = Record<string, unknown>,
 > = {
   deps: readonly unknown[];
+  id?: string;
+  onError?: PliteViewSourceErrorSink;
   project: () => readonly PliteAnnotation<TData, TProjection>[];
 };
 
@@ -45,6 +48,12 @@ export function usePliteAnnotationStore<
   const annotationDeps = isPliteAnnotationStoreProjector(annotationsOrOptions)
     ? annotationsOrOptions.deps
     : [annotationsOrOptions];
+  const sourceId = isPliteAnnotationStoreProjector(annotationsOrOptions)
+    ? annotationsOrOptions.id
+    : undefined;
+  const onError = isPliteAnnotationStoreProjector(annotationsOrOptions)
+    ? annotationsOrOptions.onError
+    : undefined;
   const annotations = useMemo(
     () =>
       isPliteAnnotationStoreProjector(annotationsOrOptions)
@@ -57,8 +66,12 @@ export function usePliteAnnotationStore<
   const [annotationsCell] = useState(() => ({ current: annotations }));
 
   const store = useMemo(
-    () => createPliteAnnotationStore(editor, () => annotationsCell.current),
-    [annotationsCell, editor]
+    () =>
+      createPliteAnnotationStore(editor, () => annotationsCell.current, {
+        id: sourceId,
+        onError,
+      }),
+    [annotationsCell, editor, onError, sourceId]
   );
   const storeRef = useRef(store);
   const effectVersionRef = useRef(0);

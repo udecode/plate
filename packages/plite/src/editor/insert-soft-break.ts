@@ -1,27 +1,22 @@
-import { executeCommand } from '../core/command-registry';
-import { getEditorTransformRegistry } from '../core/transform-registry';
+import { dispatchCommand } from '../core/command-registry';
+import { editorCommands } from '../core/editor-commands';
+import { limitTextInsert } from '../core/insert-limit';
 import type { EditorStaticApi } from '../interfaces/editor';
+import { applyInsertTextCommand } from './insert-text';
 import { insertParagraphAfterSelectedBlockVoid } from './block-void-break';
 
-type InsertSoftBreakCommand = {
-  type: 'insert_soft_break';
-};
-
-const applyInsertSoftBreak: EditorStaticApi['insertSoftBreak'] = (editor) => {
+export const applyInsertSoftBreak: EditorStaticApi['insertSoftBreak'] = (
+  editor
+) => {
   if (insertParagraphAfterSelectedBlockVoid(editor)) {
     return;
   }
 
-  getEditorTransformRegistry(editor).insertText('\n');
+  const text = limitTextInsert(editor, '\n', undefined);
+
+  if (text) applyInsertTextCommand(editor, text);
 };
 
 export const insertSoftBreak: EditorStaticApi['insertSoftBreak'] = (editor) => {
-  executeCommand<InsertSoftBreakCommand>(
-    editor,
-    { type: 'insert_soft_break' },
-    () => {
-      applyInsertSoftBreak(editor);
-      return true;
-    }
-  );
+  dispatchCommand(editor, editorCommands.insertSoftBreak);
 };

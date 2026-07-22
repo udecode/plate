@@ -1,15 +1,14 @@
 import type { Descendant } from '@platejs/plite';
 
 import type { MdRootContent } from '../mdast';
-import type { MdDecoration } from '../types';
-import type { DeserializeMdOptions } from './deserializeMd';
+import type { DeserializeMdContext, MdDecoration } from '../types';
 
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
 export const convertChildrenDeserialize = (
   children: MdRootContent[],
   deco: MdDecoration,
-  options: DeserializeMdOptions
+  options: DeserializeMdContext
 ): Descendant[] => {
   if (children.length === 0) {
     return [{ text: '' }];

@@ -9,7 +9,6 @@ import {
   RangeApi,
   type RootKey,
 } from '@platejs/plite';
-import { schedulePliteReactFocus } from '../hooks/focus-scheduler';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { readRootChildren } from '../root-key';
 import {
@@ -61,7 +60,7 @@ import {
   getOwnerForCurrentViewEditor,
   getOwnerForRoot,
   getRegisteredRootViewEditor,
-  hasContentRootElementSpec,
+  hasContentRootOwner,
   isKnownContentRootOwner,
   isSameContentRootOwner,
 } from './content-root-owners';
@@ -74,7 +73,11 @@ import {
 import {
   after as editorAfter,
   before as editorBefore,
+  dispatchCommand,
+  editorCommands,
+  toInternalRoot,
 } from './runtime-editor-api';
+import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 
 export {
   type ContentRootOwner,
@@ -151,8 +154,23 @@ const collapseNativeSelectionForProjectedSelection = (
   };
 
   clear();
-  document.defaultView?.queueMicrotask(clear);
-  document.defaultView?.requestAnimationFrame(clear);
+  const domPhaseScheduler =
+    getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
+
+  if (!domPhaseScheduler) return;
+
+  domPhaseScheduler.schedule(
+    'selection-repair',
+    'clear-projected-selection-microtask',
+    clear,
+    { timing: 'microtask' }
+  );
+  domPhaseScheduler.schedule(
+    'selection-repair',
+    'clear-projected-selection-frame',
+    clear,
+    { timing: 'animation-frame' }
+  );
 };
 
 const collapseModelSelectionForProjectedSelection = (
@@ -172,9 +190,7 @@ const collapseModelSelectionForProjectedSelection = (
     return;
   }
 
-  editor.update((tx) => {
-    tx.selection.set(range);
-  });
+  dispatchCommand(editor, editorCommands.select, { target: range });
 };
 
 const getRootViewEditor = ({
@@ -188,7 +204,7 @@ const getRootViewEditor = ({
 }): ReactRuntimeEditor | null =>
   getMountedViewEditor?.(root) ??
   getRegisteredRootViewEditor(editor as ReactRuntimeEditor, root) ??
-  (editor.read((state) => state.view.root()) === root
+  (toInternalRoot(editor.read((state) => state.view.root())) === root
     ? (editor as ReactRuntimeEditor)
     : null);
 
@@ -224,6 +240,7 @@ const getVerticalNavigationTarget = ({
   getMountedViewEditor,
   owners,
   point,
+  preferredX,
 }: {
   currentRoot: RootKey;
   direction: ContentRootNavigationDirection;
@@ -235,6 +252,7 @@ const getVerticalNavigationTarget = ({
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   owners: ContentRootOwner[];
   point: Point;
+  preferredX?: number;
 }): ContentRootNavigationTarget | null => {
   const activeOwner = getActiveContentRootOwner?.(currentRoot);
   const ownerForCurrentRoot = isKnownContentRootOwner(owners, activeOwner)
@@ -296,6 +314,7 @@ const getVerticalNavigationTarget = ({
             direction,
             fallbackPoint: exitPoint,
             point,
+            preferredX,
             sourceEditor,
             targetEditor,
             targetRoot: ownerForCurrentRoot.ownerRoot,
@@ -366,6 +385,7 @@ const getVerticalNavigationTarget = ({
             direction,
             fallbackPoint: fallbackTarget.point,
             point,
+            preferredX,
             sourceEditor,
             targetEditor,
             targetRoot: owner.childRoot,
@@ -711,7 +731,7 @@ const getRootLocalVerticalModelSelectionTarget = ({
 }): ContentRootNavigationTarget | null =>
   sourceEditor.read((state) => {
     const children = (
-      state.view.root() === root
+      toInternalRoot(state.view.root()) === root
         ? state.nodes.children()
         : readRootChildren(state, root)
     ) as readonly Descendant[];
@@ -770,11 +790,13 @@ const isPointInRootTerminalBlock = ({
 const getRootLocalVerticalSelectionTarget = ({
   direction,
   point,
+  preferredX,
   root,
   sourceEditor,
 }: {
   direction: ContentRootNavigationDirection;
   point: Point;
+  preferredX?: number;
   root: RootKey;
   sourceEditor: ReactRuntimeEditor;
 }): ContentRootNavigationTarget | null => {
@@ -805,7 +827,7 @@ const getRootLocalVerticalSelectionTarget = ({
     sourceElementRect.bottom - 1
   );
   const x = clamp(
-    sourceRect.left,
+    preferredX ?? sourceRect.left,
     sourceElementRect.left + 1,
     sourceElementRect.right - 1
   );
@@ -943,6 +965,7 @@ const getContentRootMovementTarget = ({
   getMountedViewEditor,
   owners,
   point,
+  preferredX,
 }: {
   action: Extract<ContentRootViewSelectionAction, { kind: 'move' }>;
   allowRootLocalMovement: boolean;
@@ -957,6 +980,7 @@ const getContentRootMovementTarget = ({
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   owners: ContentRootOwner[];
   point: Point;
+  preferredX?: number;
 }): ContentRootNavigationTarget | null => {
   const getCurrentRootOwner = (root: RootKey) =>
     root === currentRoot && isKnownContentRootOwner(owners, currentOwner)
@@ -973,6 +997,7 @@ const getContentRootMovementTarget = ({
           getMountedViewEditor,
           owners,
           point,
+          preferredX,
         })
       : action.kind === 'move'
         ? getHorizontalNavigationTarget({
@@ -1018,6 +1043,7 @@ const getContentRootMovementTarget = ({
       ? getRootLocalVerticalSelectionTarget({
           direction: action.direction,
           point,
+          preferredX,
           root: currentRoot,
           sourceEditor,
         })
@@ -1046,6 +1072,7 @@ export const getContentRootNavigationTarget = ({
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
   isRTL,
+  preferredX,
   selection,
 }: {
   editor: ContentRootNavigationEditor;
@@ -1056,11 +1083,12 @@ export const getContentRootNavigationTarget = ({
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   isRTL: boolean;
+  preferredX?: number;
   selection: Range | null;
 }): ContentRootNavigationTarget | null => {
   const action = getContentRootNavigationAction({ event, isRTL });
 
-  if (!action || !hasContentRootElementSpec(editor)) {
+  if (!action || !hasContentRootOwner(editor)) {
     return null;
   }
 
@@ -1069,7 +1097,8 @@ export const getContentRootNavigationTarget = ({
   }
 
   const point = selection.anchor;
-  const currentRoot = point.root ?? editor.read((state) => state.view.root());
+  const currentRoot =
+    point.root ?? toInternalRoot(editor.read((state) => state.view.root()));
   const owners = findContentRootOwners(editor);
   const currentViewOwner = getOwnerForCurrentViewEditor({
     editor,
@@ -1127,6 +1156,7 @@ export const getContentRootNavigationTarget = ({
     getMountedViewEditor,
     owners,
     point,
+    preferredX,
   });
 };
 
@@ -1149,14 +1179,15 @@ export const shouldModelOwnContentRootVerticalSelection = ({
     event.metaKey ||
     !event.shiftKey ||
     (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') ||
-    !hasContentRootElementSpec(editor)
+    !hasContentRootOwner(editor)
   ) {
     return false;
   }
 
   const owners = findContentRootOwners(editor);
   const currentRoot =
-    selection.focus.root ?? editor.read((state) => state.view.root());
+    selection.focus.root ??
+    toInternalRoot(editor.read((state) => state.view.root()));
   const graph = createContentRootProjectionGraph(editor, owners);
   const anchor = getInitialProjectedSelectionAnchor({
     currentOwner: null,
@@ -1191,6 +1222,7 @@ const applyContentRootViewSelectionAction = ({
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
   preventDefault,
+  preferredX,
   selection,
 }: {
   editor: ReactRuntimeEditor;
@@ -1201,9 +1233,10 @@ const applyContentRootViewSelectionAction = ({
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   preventDefault?: () => void;
+  preferredX?: number;
   selection: Range | null;
 }): ContentRootNavigationResult => {
-  if (!action || !hasContentRootElementSpec(editor)) {
+  if (!action || !hasContentRootOwner(editor)) {
     return { handled: false };
   }
 
@@ -1220,7 +1253,8 @@ const applyContentRootViewSelectionAction = ({
   const point = viewSelection?.focus.point ?? selection?.focus;
   const currentRoot = viewSelection
     ? getPliteViewBoundaryPointRoot(viewSelection.focus)
-    : (point?.root ?? editor.read((state) => state.view.root()));
+    : (point?.root ??
+      toInternalRoot(editor.read((state) => state.view.root())));
   const selectionAnchorRoot =
     selection && !viewSelection
       ? (selection.anchor.root ?? currentRoot)
@@ -1265,6 +1299,7 @@ const applyContentRootViewSelectionAction = ({
           getMountedViewEditor,
           owners,
           point,
+          preferredX,
         });
 
   if (
@@ -1431,6 +1466,7 @@ export const applyContentRootViewSelection = ({
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
   isRTL,
+  preferredX,
   selection,
 }: {
   editor: ReactRuntimeEditor;
@@ -1441,6 +1477,7 @@ export const applyContentRootViewSelection = ({
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   isRTL: boolean;
+  preferredX?: number;
   selection: Range | null;
 }): ContentRootNavigationResult =>
   applyContentRootViewSelectionAction({
@@ -1449,6 +1486,7 @@ export const applyContentRootViewSelection = ({
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
+    preferredX,
     preventDefault: () => event.preventDefault(),
     selection,
   });
@@ -1461,6 +1499,7 @@ export const applyContentRootNavigation = ({
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
   isRTL,
+  preferredX,
   selection,
 }: {
   editor: ReactRuntimeEditor;
@@ -1472,6 +1511,7 @@ export const applyContentRootNavigation = ({
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   isRTL: boolean;
+  preferredX?: number;
   selection: Range | null;
 }): ContentRootNavigationResult => {
   const target = getContentRootNavigationTarget({
@@ -1481,6 +1521,7 @@ export const applyContentRootNavigation = ({
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
     isRTL,
+    preferredX,
     selection,
   });
 
@@ -1496,15 +1537,22 @@ export const applyContentRootNavigation = ({
 
   event.preventDefault();
   writePliteViewSelection(editor, null);
-  targetEditor.update((tx) => {
-    tx.selection.set(rootedRange(target.point, target.root));
+  dispatchCommand(targetEditor, editorCommands.select, {
+    target: rootedRange(target.point, target.root),
   });
 
   if (targetEditor !== editor) {
     focusEditor?.(targetEditor);
-    schedulePliteReactFocus(() => {
-      focusEditor?.(targetEditor);
-    });
+    const domPhaseScheduler =
+      getMountedEditableDOMRuntime(targetEditor)?.domPhaseScheduler ??
+      getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
+
+    domPhaseScheduler?.schedule(
+      'dom-write',
+      'focus-content-root-editor',
+      () => focusEditor?.(targetEditor),
+      { timing: 'animation-frame' }
+    );
   }
 
   return {

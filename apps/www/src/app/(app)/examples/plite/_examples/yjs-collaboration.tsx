@@ -36,6 +36,7 @@ import type {
 } from './custom-types.d';
 
 type YjsEditor = CustomEditor<readonly [ReturnType<typeof createYjsExtension>]>;
+type NamedSchemaIdentity = Extract<EditorSchemaIdentity, { kind: 'named' }>;
 
 type PeerId = 'a' | 'b' | 'c' | 'd';
 
@@ -83,7 +84,7 @@ type ExampleNetwork = {
     commit: EditorCommit<CustomValue>
   ) => void;
   runWithoutLocalHistory: (fn: () => void) => void;
-  roomSchemaIdentity: EditorSchemaIdentity;
+  roomSchemaIdentity: NamedSchemaIdentity;
   subscribeNotify: (notify: () => void) => () => void;
   syncAll: () => void;
   syncAwareness: () => void;
@@ -271,9 +272,9 @@ const createSeedSnapshot = () => {
   });
   const identity = seedEditor.read.schema.identity();
 
-  if (!identity) {
+  if (identity?.kind !== 'named') {
     throw new Error(
-      'The Yjs collaboration example requires a schema identity.'
+      'The Yjs collaboration example requires a named schema identity.'
     );
   }
 

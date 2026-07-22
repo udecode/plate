@@ -26,7 +26,7 @@ export type CompiledEditorUpdatePolicy = Readonly<{
 }>;
 
 export type InternalEditorUpdateOptions = {
-  skipNormalize?: boolean;
+  skipCorrections?: boolean;
   tags?: readonly EditorUpdateTag[];
 };
 

@@ -57,9 +57,7 @@ export const useExcalidrawElement = ({
       const path = editor.read.nodes.path(element);
       if (path) {
         lastSavedDataRef.current = newData;
-        editor.update((tx) => {
-          tx.nodes.set({ data: newData }, { at: path });
-        });
+        editor.update.nodes.set({ data: newData }, { at: path });
       }
     } catch (error) {
       console.error('Failed to save Excalidraw data:', error);

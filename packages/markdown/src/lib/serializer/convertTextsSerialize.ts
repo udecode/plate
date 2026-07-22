@@ -1,9 +1,7 @@
-import { getPluginType } from '@platejs/core';
 import type { Text } from '@platejs/plite';
 
-import type { MdMark } from '../types';
+import type { MdMark, SerializeMdContext } from '../types';
 import type { MdRootContent } from '../mdast';
-import type { SerializeMdOptions } from './serializeMd';
 
 import { getCustomMark } from './utils';
 import { getSerializerByKey } from './utils/getSerializerByKey';
@@ -14,7 +12,7 @@ export const basicMarkdownMarks = ['italic', 'bold', 'strikethrough', 'code'];
 
 export const convertTextsSerialize = (
   slateTexts: readonly Text[],
-  options: SerializeMdOptions,
+  options: SerializeMdContext,
   _key?: string
 ): MdMark[] => {
   const customLeaf: string[] = getCustomMark(options);
@@ -42,7 +40,7 @@ export const convertTextsSerialize = (
         ...customLeaf.filter((k) => !basicMarkdownMarks.includes(k)),
       ] as const
     ).forEach((key) => {
-      const nodeType = getPluginType(options.editor!, key);
+      const nodeType = options.getPluginType(key);
 
       if (cur[nodeType]) {
         // Skip marks that should be treated as plain text

@@ -1,27 +1,12 @@
-import type { Editor, EditorMarks, Selection } from '../interfaces/editor';
+import type { Editor, Selection } from '../interfaces/editor';
 import { MAIN_ROOT_KEY } from '../internal/root-location';
-import { cloneValue } from './clone';
+import { cloneEditorJsonValue } from './value-codec';
 
-const CURRENT_MARKS = new WeakMap<Editor, EditorMarks | null>();
 const CURRENT_SELECTION = new WeakMap<Editor, Selection>();
 const CURRENT_SELECTION_ROOT = new WeakMap<Editor, string>();
 
-export const getSelectionStateMarks = (editor: Editor): EditorMarks | null =>
-  cloneValue(
-    CURRENT_MARKS.has(editor)
-      ? (CURRENT_MARKS.get(editor) as EditorMarks | null)
-      : null
-  );
-
-export const setSelectionStateMarks = (
-  editor: Editor,
-  marks: EditorMarks | null
-) => {
-  CURRENT_MARKS.set(editor, cloneValue(marks ?? null));
-};
-
 export const getSelectionStateSelection = (editor: Editor): Selection =>
-  cloneValue(
+  cloneEditorJsonValue(
     CURRENT_SELECTION.has(editor)
       ? (CURRENT_SELECTION.get(editor) as Selection)
       : null
@@ -34,7 +19,7 @@ const normalizeSelectionRoot = (
   selection: Selection,
   root: string
 ): Selection => {
-  const cloned = cloneValue(selection ?? null);
+  const cloned = cloneEditorJsonValue(selection ?? null);
 
   if (!cloned) {
     return cloned;
@@ -51,6 +36,7 @@ const normalizeSelectionRoot = (
   };
 
   return {
+    ...cloned,
     anchor: normalizePointRoot(cloned.anchor),
     focus: normalizePointRoot(cloned.focus),
   };
@@ -70,7 +56,6 @@ export const initializeSelectionState = (
   selection: Selection,
   root: string
 ) => {
-  CURRENT_SELECTION.set(editor, selection);
+  CURRENT_SELECTION.set(editor, normalizeSelectionRoot(selection, root));
   CURRENT_SELECTION_ROOT.set(editor, root);
-  CURRENT_MARKS.set(editor, null);
 };

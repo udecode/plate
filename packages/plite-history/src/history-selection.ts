@@ -1,23 +1,18 @@
 import {
-  type Editor,
   type EditorUpdateTransaction,
-  type Operation,
-  type Range,
-  RangeApi,
+  type Point,
+  type Selection,
+  SelectionApi,
   type Value,
 } from '@platejs/plite';
 import {
-  getEditorOperationRoot,
-  getOperationRoot,
+  getInternalDocumentChangeEntries,
   getRangeRoot as getRangeRootMeta,
   MAIN_ROOT_KEY,
 } from '@platejs/plite/internal';
 import type { Batch } from './history';
 
-export const clonePoint = (
-  point: Range['anchor'],
-  root?: string
-): Range['anchor'] => {
+export const clonePoint = (point: Point, root?: string): Point => {
   const nextRoot = point.root ?? root;
 
   return {
@@ -27,207 +22,91 @@ export const clonePoint = (
   };
 };
 
-export const cloneRange = (range: Range | null, root?: string): Range | null =>
+export const cloneRange = (range: Selection, root?: string): Selection =>
   range
     ? {
+        ...range,
         anchor: clonePoint(range.anchor, root),
         focus: clonePoint(range.focus, root),
       }
     : null;
 
-export const getRangeRoot = (range: Range | null): string | undefined =>
-  range ? (getRangeRootMeta(range).root ?? undefined) : undefined;
+export const getRangeRoot = (range: Selection): string | undefined => {
+  if (!range) return;
 
-export const getRangeRootOrMain = (range: Range | null): string =>
+  const meta = getRangeRootMeta(range);
+
+  return meta.anchor.visibility === 'implicit' &&
+    meta.focus.visibility === 'implicit'
+    ? undefined
+    : (meta.root ?? undefined);
+};
+
+export const getRangeRootOrMain = (range: Selection): string =>
   getRangeRoot(range) ?? MAIN_ROOT_KEY;
 
-export const getOperationRootOrMain = (operation: Operation): string =>
-  getOperationRoot(operation);
+const getBatchRoots = <V extends Value>(batch: Batch<V>) =>
+  new Set([
+    ...[...getInternalDocumentChangeEntries(batch.change)].map(
+      ([root]) => root
+    ),
+    ...batch.change.createRoots,
+    ...batch.change.deleteRoots,
+  ]);
 
-const getBatchOperationRoot = <V extends Value>(
+const getBatchChangeRoot = <V extends Value>(
   batch: Batch<V>
 ): string | undefined => {
-  let root: string | undefined;
+  const roots = [...getBatchRoots(batch)];
 
-  for (const operation of batch.operations) {
-    const operationRoot = getOperationRootOrMain(operation);
-
-    if (root === undefined) {
-      root = operationRoot;
-      continue;
-    }
-
-    if (root !== operationRoot) {
-      return;
-    }
-  }
-
-  return root;
+  return roots.length === 1 ? roots[0] : undefined;
 };
 
 export const getHistoricSelectionRoot = <V extends Value>(
-  batch: Batch<V>
+  batch: Batch<V>,
+  target: 'after' | 'before' = 'before'
 ): string | undefined => {
-  const selectionRoot = getRangeRoot(batch.selectionBefore);
+  const selection =
+    target === 'before' ? batch.selectionBefore : batch.selectionAfter;
+  const explicitRoot = getRangeRoot(selection);
 
-  if (selectionRoot) {
-    return selectionRoot;
-  }
+  if (explicitRoot) return explicitRoot;
+  if (selection == null) return getBatchChangeRoot(batch);
 
-  if (batch.selectionBefore == null) {
-    return getBatchOperationRoot(batch);
-  }
-
-  return batch.selectionBeforeRoot ?? MAIN_ROOT_KEY;
+  return target === 'before'
+    ? (batch.selectionBeforeRoot ?? MAIN_ROOT_KEY)
+    : (batch.selectionAfterRoot ?? MAIN_ROOT_KEY);
 };
 
-const batchHasOperationRoot = <V extends Value>(
-  batch: Batch<V>,
-  root: string
-) =>
-  batch.operations.some(
-    (operation) => getOperationRootOrMain(operation) === root
-  );
-
-export const filterHistoricSelectionOperations = <V extends Value>(
-  operations: readonly Operation<V>[],
-  root: string
-) =>
-  operations.filter(
-    (operation) =>
-      operation.type !== 'set_selection' ||
-      getOperationRootOrMain(operation) === root
-  );
-
-export const filterHistoricUndoOperations = <V extends Value>(
-  operations: readonly Operation<V>[],
-  root: string
-) =>
-  filterHistoricSelectionOperations(operations, root).filter(
-    (operation) => operation.type !== 'set_selection'
-  );
+const batchHasRoot = <V extends Value>(batch: Batch<V>, root: string) =>
+  getBatchRoots(batch).has(root);
 
 export const shouldPreserveHistoricDOMSelection = <V extends Value>(
-  editor: Editor<V>,
+  root: string,
   batch: Batch<V>
-) =>
-  batch.operations.length > 0 &&
-  !batchHasOperationRoot(batch, getEditorOperationRoot(editor));
+) => !batch.change.empty && !batchHasRoot(batch, root);
 
 export const shouldRestoreHistoricSelection = <V extends Value>(
   root: string,
-  batch: Batch<V>
-) => {
-  const selectionRoot = getHistoricSelectionRoot(batch);
-
-  return (
-    batch.operations.length > 0 &&
-    selectionRoot === root &&
-    batchHasOperationRoot(batch, root)
-  );
-};
-
-const createHistoricSelectionOperation = <V extends Value>(
-  previous: Range | null,
-  next: Range | null,
-  root: string
-): Extract<Operation<V>, { type: 'set_selection' }> | null => {
-  if (previous == null && next == null) {
-    return null;
-  }
-
-  if (previous == null) {
-    return {
-      newProperties: cloneRange(next)!,
-      properties: null,
-      root,
-      type: 'set_selection',
-    };
-  }
-
-  if (next == null) {
-    return {
-      newProperties: null,
-      properties: cloneRange(previous)!,
-      root,
-      type: 'set_selection',
-    };
-  }
-
-  if (RangeApi.equals(previous, next)) {
-    return null;
-  }
-
-  return {
-    newProperties: cloneRange(next)!,
-    properties: cloneRange(previous)!,
-    root,
-    type: 'set_selection',
-  };
-};
+  batch: Batch<V>,
+  target: 'after' | 'before'
+) =>
+  !batch.change.empty &&
+  getHistoricSelectionRoot(batch, target) === root &&
+  batchHasRoot(batch, root);
 
 export const restoreHistoricSelection = <V extends Value>(
-  tx: EditorUpdateTransaction<V>,
+  tx: Pick<EditorUpdateTransaction<V>, 'selection'>,
   batch: Batch<V>,
-  viewRoot: string
+  viewRoot: string,
+  target: 'after' | 'before'
 ) => {
-  const selection = batch.selectionBefore;
-  const root = getHistoricSelectionRoot(batch) ?? getRangeRootOrMain(selection);
+  const selection =
+    target === 'before' ? batch.selectionBefore : batch.selectionAfter;
+  const root =
+    getHistoricSelectionRoot(batch, target) ?? getRangeRootOrMain(selection);
 
-  if (root === viewRoot && !getRangeRoot(selection)) {
+  if (root === viewRoot && !SelectionApi.equals(tx.selection(), selection)) {
     tx.selection.set(selection);
-    return;
   }
-
-  const operation = createHistoricSelectionOperation<V>(
-    tx.selection(),
-    selection,
-    root
-  );
-
-  if (operation) {
-    tx.operations.replay([operation]);
-  }
-};
-
-export const applySelectionPatch = (
-  selection: Range | null,
-  newProperties: Partial<Range> | null,
-  root?: string
-): Range | null => {
-  if (newProperties == null) {
-    return null;
-  }
-
-  if (selection == null) {
-    if (!(newProperties.anchor && newProperties.focus)) {
-      throw new Error(
-        `set_selection patch requires an existing selection or a full range. Received: ${JSON.stringify(
-          newProperties
-        )}`
-      );
-    }
-
-    return cloneRange(newProperties as Range, root);
-  }
-
-  const next = cloneRange(selection)!;
-
-  if (Object.hasOwn(newProperties, 'anchor')) {
-    if (!newProperties.anchor) {
-      throw new Error('Cannot remove the "anchor" selection property');
-    }
-
-    next.anchor = clonePoint(newProperties.anchor, root);
-  }
-
-  if (Object.hasOwn(newProperties, 'focus')) {
-    if (!newProperties.focus) {
-      throw new Error('Cannot remove the "focus" selection property');
-    }
-
-    next.focus = clonePoint(newProperties.focus, root);
-  }
-
-  return next;
 };

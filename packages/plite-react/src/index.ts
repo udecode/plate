@@ -9,6 +9,7 @@ export type {
   PliteAnnotationSnapshot,
   PliteAnnotationStore,
   PliteAnnotationStoreMetrics,
+  PliteAnnotationStoreOptions,
   PliteResolvedAnnotation,
 } from './annotation-store';
 export type {
@@ -219,4 +220,12 @@ export type {
   PliteWidgetSnapshot,
   PliteWidgetStore,
   PliteWidgetStoreMetrics,
+  PliteWidgetStoreOptions,
 } from './widget-store';
+export type {
+  PliteViewSourceError,
+  PliteViewSourceErrorSink,
+  PliteViewSourceOptions,
+  PliteViewSourcePhase,
+  PliteViewSourceStatus,
+} from './view-source';

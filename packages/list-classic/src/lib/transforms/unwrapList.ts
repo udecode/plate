@@ -1,5 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import { type Element, type Path, ElementApi, NodeApi } from '@platejs/plite';
+import { type Element, type Path, ElementApi, PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { ListTransaction } from '../BaseListPlugin';
@@ -11,10 +11,10 @@ export const unwrapList = (
   tx: ListTransaction,
   { at }: { at?: Path } = {}
 ) => {
-  const selection = editor.read.selection();
+  const selection = tx.selection();
   const selectedListItem =
-    !at && selection && editor.read.selection.isCollapsed()
-      ? editor.read.nodes.above<Element>({
+    !at && selection && tx.selection.isCollapsed()
+      ? tx.nodes.above<Element>({
           at: selection.focus,
           match: { type: editor.getType(KEYS.li) },
           mode: 'lowest',
@@ -22,9 +22,9 @@ export const unwrapList = (
       : undefined;
 
   if (selectedListItem && selectedListItem[1].at(-1) === 0) {
-    const list = editor.read.nodes.parent<Element>(selectedListItem[1]);
-    const content = editor.read.nodes.get<Element>([...selectedListItem[1], 0]);
-    const sublist = editor.read.nodes.get<Element>([...selectedListItem[1], 1]);
+    const list = tx.nodes.parent<Element>(selectedListItem[1]);
+    const content = tx.nodes.get<Element>([...selectedListItem[1], 0]);
+    const sublist = tx.nodes.get<Element>([...selectedListItem[1], 1]);
 
     if (list && content && sublist && list[0].children.length > 1) {
       const paragraph = {
@@ -52,22 +52,21 @@ export const unwrapList = (
   }
 
   const ancestorListTypeCheck = () => {
-    if (
-      editor.read.nodes.above({ at, match: { type: getListTypes(editor) } })
-    ) {
+    if (tx.nodes.above({ at, match: { type: getListTypes(editor) } })) {
       return true;
     }
     // The selection's common node might be a list type
-    const selection = editor.read.selection();
+    const selection = tx.selection();
 
     if (!at && selection) {
-      const commonNode = NodeApi.common(
-        editor,
+      const commonPath = PathApi.common(
         selection.anchor.path,
         selection.focus.path
-      )!;
+      );
+      const commonNode = tx.nodes.get(commonPath);
 
       if (
+        commonNode &&
         ElementApi.isElement(commonNode[0]) &&
         getListTypes(editor).includes(commonNode[0].type)
       ) {
@@ -79,20 +78,20 @@ export const unwrapList = (
   };
 
   const unwrap = () => {
+    const contentRefs = Array.from(
+      tx.nodes.entries<Element>({
+        at,
+        match: { type: editor.getType(KEYS.lic) },
+        mode: 'all',
+      }),
+      ([, path]) =>
+        tx.refs.path(path, {
+          association: 'forward',
+          deletion: 'nearest',
+        })
+    );
+
     do {
-      // const licEntry = editor.read.nodes.block({
-      //   at,
-      //   match: { type: editor.getType(BaseListItemContentPlugin) },
-      // });
-
-      // Allow other LIC types
-      // if (licEntry) {
-      //   editor.update.nodes.set(
-      //     { type: editor.getType(BaseParagraphPlugin) },
-      //     { at }
-      //   );
-      // }
-
       tx.nodes.unwrap({
         at,
         match: { type: editor.getType(KEYS.li) },
@@ -107,6 +106,22 @@ export const unwrapList = (
         split: true,
       });
     } while (ancestorListTypeCheck());
+
+    for (const ref of contentRefs) {
+      const path = ref.resolve();
+
+      if (!path) continue;
+
+      const entry = tx.nodes.get<Element>(path);
+      const parent = tx.nodes.parent<Element>(path);
+
+      if (
+        entry?.[0].type === editor.getType(KEYS.lic) &&
+        parent?.[0].type !== editor.getType(KEYS.li)
+      ) {
+        tx.nodes.set({ type: editor.getType(KEYS.p) }, { at: path });
+      }
+    }
   };
 
   unwrap();

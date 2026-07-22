@@ -1,28 +1,24 @@
-import { executeCommand } from '../core/command-registry';
+import { dispatchCommand } from '../core/command-registry';
+import { editorCommands } from '../core/editor-commands';
+import { getEditorSchema } from '../core/editor-runtime';
 import { runEditorTransaction } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
-import { leaf as editorLeaf } from '../interfaces/editor';
 import type {
+  Editor,
+  EditorMarkToggleOptions,
   EditorStaticApi,
-  EditorToggleMarkOptions,
 } from '../interfaces/editor';
 import { RangeApi } from '../interfaces/range';
+import { applyAddMark } from './add-mark';
+import { applyRemoveMark } from './remove-mark';
 
-type ToggleMarkCommand = {
-  key: string;
-  options?: EditorToggleMarkOptions;
-  type: 'toggle_mark';
-  value: Parameters<EditorStaticApi['toggleMark']>[2];
-};
-
-const getClearMarks = (clear: EditorToggleMarkOptions['clear']) =>
+const getClearMarks = (clear: EditorMarkToggleOptions['clear']) =>
   clear ? (Array.isArray(clear) ? clear : [clear]) : [];
 
-const applyToggleMark: EditorStaticApi['toggleMark'] = (
-  editor,
-  key,
-  value,
-  options
+export const applyToggleMark = (
+  editor: Editor,
+  key: string,
+  value?: unknown,
+  options?: EditorMarkToggleOptions
 ) => {
   const nextValue = value === undefined ? true : value;
 
@@ -33,26 +29,28 @@ const applyToggleMark: EditorStaticApi['toggleMark'] = (
       return;
     }
 
-    const marks = editor.read((state) => state.marks()) as Record<
+    const marks = (tx.marks ?? tx.getSelectionMarks()) as Record<
       string,
       unknown
     > | null;
-    const inheritedCollapsedMark =
-      marks === null && RangeApi.isCollapsed(selection)
-        ? editorLeaf(editor, selection.anchor)[0]
-        : null;
+    const currentValue = marks?.[key];
     const isActive =
-      marks?.[key] === nextValue ||
-      inheritedCollapsedMark?.[key as keyof typeof inheritedCollapsedMark] ===
-        nextValue;
+      currentValue !== undefined &&
+      getEditorSchema(editor).isTextPropertyEqualAt(
+        key,
+        currentValue,
+        nextValue,
+        selection.focus.path,
+        selection.focus.root ?? selection.anchor.root ?? 'main'
+      );
 
     if (isActive) {
-      getEditorTransformRegistry(editor).removeMark(key);
+      applyRemoveMark(editor, key);
     } else {
       getClearMarks(options?.clear).forEach((mark) => {
-        getEditorTransformRegistry(editor).removeMark(mark);
+        applyRemoveMark(editor, mark);
       });
-      getEditorTransformRegistry(editor).addMark(key, nextValue);
+      applyAddMark(editor, key, nextValue);
     }
   });
 };
@@ -65,13 +63,9 @@ export const toggleMark: EditorStaticApi['toggleMark'] = (
 ) => {
   const nextValue = value === undefined ? true : value;
 
-  executeCommand<ToggleMarkCommand>(
-    editor,
-    { key, options, type: 'toggle_mark', value: nextValue },
-    (command) => {
-      applyToggleMark(editor, command.key, command.value, command.options);
-      return true;
-    },
-    { implicitUpdate: true }
-  );
+  dispatchCommand(editor, editorCommands.toggleMark, {
+    key,
+    options,
+    value: nextValue,
+  });
 };

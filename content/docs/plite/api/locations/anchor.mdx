@@ -1,0 +1,45 @@
+---
+title: "Anchor API"
+description: "Root-aware live paths, points, and ranges mapped by canonical document changes."
+---
+
+An anchor keeps a path, point, or range mapped across committed
+`DocumentChange` values.
+
+## Create an anchor
+
+#### `editor.anchor(value, options) => Anchor`
+
+```typescript
+const selection = editor.read.selection();
+
+if (!selection || selection.kind !== "text") return;
+
+const target = editor.anchor(selection, {
+  association: "inward",
+  deletion: "drop",
+});
+```
+
+`deletion` is required:
+
+- `"drop"` resolves to `null` when the target is deleted.
+- `"nearest"` resolves to the nearest valid location.
+
+Paths and points accept `"backward"` or `"forward"` association. Ranges also
+accept `"inward"` and `"outward"`. Pass `root` for a rootless value that belongs
+to a named document root.
+
+## Resolve and release
+
+```typescript
+const current = target.resolve();
+const finalValue = target.release();
+```
+
+`resolve()` returns the current mapped value without ending tracking.
+`release()` returns the current value and permanently detaches the anchor.
+Both return `null` after a dropped target or release.
+
+Anchors are runtime values. Persist the resolved path, point, or range only when
+the application owns a durable serialization policy.

@@ -1,9 +1,9 @@
 import {
   getCurrentSelection,
-  getEditorOperationRoot,
+  getCurrentSelectionRoot,
+  getEditorUpdateRoot,
 } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
-import { type Location, LocationApi } from '../interfaces';
+import { type Location, LocationApi, SelectionApi } from '../interfaces';
 import { range as editorRange } from '../interfaces/editor';
 import type { SelectionMutationMethods } from '../interfaces/transforms/selection';
 import {
@@ -13,7 +13,8 @@ import {
   stripImplicitRangeRoots,
 } from '../internal/root-location';
 import { formatDebugValue } from '../utils/format-debug-value';
-import { executeSetSelectionCommand } from './set-selection';
+import { writeSelection } from './set-selection';
+import { setSelection } from './set-selection';
 
 const getCommandRangeRootMeta = (
   target: Location,
@@ -49,27 +50,44 @@ export const select: SelectionMutationMethods['select'] = (editor, target) => {
   const selection = getCurrentSelection(editor);
   const commandRangeRootMeta = getCommandRangeRootMeta(
     target,
-    getEditorOperationRoot(editor)
+    getEditorUpdateRoot(editor) ?? getCurrentSelectionRoot(editor)
   );
+
+  if (commandRangeRootMeta.root === null) {
+    throw new Error('An editor selection range cannot cross document roots.');
+  }
+
   const range = editorRange(editor, target);
   const commandRange = stripImplicitRangeRoots(range, commandRangeRootMeta);
 
-  if (selection) {
-    getEditorTransformRegistry(editor).setSelection(commandRange);
+  if (SelectionApi.isSelection(target)) {
+    writeSelection(
+      editor,
+      {
+        ...target,
+        ...commandRange,
+      },
+      commandRangeRootMeta.root
+    );
     return;
   }
 
   if (!LocationApi.isRange(commandRange)) {
     throw new Error(
-      `When setting the selection and the current selection is \`null\` you must provide at least an \`anchor\` and \`focus\`, but you passed: ${formatDebugValue(
+      `When setting the selection you must provide at least an \`anchor\` and \`focus\`, but you passed: ${formatDebugValue(
         commandRange
       )}`
     );
   }
 
-  executeSetSelectionCommand(editor, {
-    type: 'set_selection',
-    properties: selection,
-    newProperties: commandRange,
-  });
+  if (selection && SelectionApi.isText(selection)) {
+    setSelection(editor, commandRange);
+    return;
+  }
+
+  writeSelection(
+    editor,
+    SelectionApi.text(commandRange),
+    commandRangeRootMeta.root
+  );
 };

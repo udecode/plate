@@ -1,14 +1,19 @@
 import { type Range, RangeApi } from '@platejs/plite';
-import { getDefaultView, getSelection } from '@platejs/plite-dom';
-import { EDITOR_TO_ELEMENT } from '@platejs/plite-dom/internal';
+import { getSelection } from '@platejs/plite-dom';
+import {
+  type DOMPhaseScheduler,
+  EDITOR_TO_ELEMENT,
+} from '@platejs/plite-dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableInputController } from './input-controller';
 
 export const exportTripleClickSelectionToDOM = ({
+  domPhaseScheduler,
   editor,
   inputController,
   range,
 }: {
+  domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   range: Range;
@@ -59,14 +64,14 @@ export const exportTripleClickSelectionToDOM = ({
   editorElement.ownerDocument.dispatchEvent(
     new Event('selectionchange', { bubbles: true })
   );
-  const rootWindow = getDefaultView(editorElement);
   const resetUpdatingSelection = () => {
     inputController.state.isUpdatingSelection = false;
   };
 
-  if (rootWindow) {
-    rootWindow.setTimeout(resetUpdatingSelection);
-  } else {
-    setTimeout(resetUpdatingSelection);
-  }
+  domPhaseScheduler.schedule(
+    'selection-repair',
+    'triple-click-selection-settle',
+    resetUpdatingSelection,
+    { timing: 'timeout' }
+  );
 };

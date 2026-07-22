@@ -74,14 +74,17 @@ test('Core proof does not build workspace artifacts or serialize package lint', 
   );
 });
 
-test('ordinary package tests preload workspace source before test setup', () => {
+test('ordinary package tests use the root source-first Bun config', () => {
   const source = readFileSync(
     path.join(repoRoot, 'packages/plate-scripts/run-with-pkg-dir.cjs'),
     'utf8'
   );
-  const sourcePreloads = source.match(/config\/plite-source-aliases\.ts/g);
+  const bunConfigUses = source.match(
+    /path\.join\(PROJECT_CWD, 'bunfig\.toml'\)/g
+  );
 
-  assert.equal(sourcePreloads?.length, 2);
+  assert.equal(bunConfigUses?.length, 2);
+  assert.doesNotMatch(source, /--preload/);
 });
 
 test('package typecheck gets source paths without exposing them to Bun', () => {
@@ -103,7 +106,11 @@ test('package typecheck gets source paths without exposing them to Bun', () => {
     readFileSync(path.join(repoRoot, 'package.json'), 'utf8')
   );
 
-  assert.match(rootManifest.scripts['plite:typecheck'], /^pnpm --parallel /);
+  assert.match(
+    rootManifest.scripts['plite:typecheck'],
+    /^pnpm --workspace-concurrency=8 /
+  );
+  assert.doesNotMatch(rootManifest.scripts['plite:typecheck'], /--parallel/);
 });
 
 test('type-test fixtures resolve the Plite React internal entry from source', () => {

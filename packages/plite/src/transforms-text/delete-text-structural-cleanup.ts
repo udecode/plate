@@ -1,5 +1,4 @@
 import { getEditorSchema } from '../core/editor-runtime';
-import { getEditorTransformRegistry } from '../core/transform-registry';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import {
@@ -16,7 +15,7 @@ import {
   isBlock as editorIsBlock,
 } from '../interfaces/editor';
 import type { Editor } from '../interfaces/editor';
-import { mergeNodes } from '../transforms-node';
+import { insertNodes, mergeNodes, removeNodes } from '../transforms-node';
 
 export type DeleteStructuralCleanupPlan = {
   effectiveEndBlockPath?: Path | null;
@@ -234,7 +233,7 @@ export const removeEmptyStructuralArtifacts = (
         return;
       }
 
-      getEditorTransformRegistry(editor).removeNodes({ at: path });
+      removeNodes(editor, { at: path });
     }
   });
 };
@@ -276,7 +275,7 @@ export const restorePreservedEmptyStartBlock = (
     return;
   }
 
-  getEditorTransformRegistry(editor).insertNodes(preservedBlock, {
+  insertNodes(editor, preservedBlock, {
     at: preservePath,
   });
 };

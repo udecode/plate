@@ -1,6 +1,7 @@
 import { type FocusEvent, type MouseEvent, useCallback, useRef } from 'react';
 import { isDOMNode } from '@platejs/plite-dom';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import { prepareEditableFocusMouseKernel } from './editing-kernel';
 import {
   getNestedEditableDOMSelectionRoot,
@@ -27,6 +28,8 @@ type FocusHandler = (event: FocusEvent<HTMLDivElement>) => boolean | void;
 type MouseHandler = (event: MouseEvent<HTMLDivElement>) => boolean | void;
 
 export const useRuntimeFocusMouseEvents = ({
+  clearVerticalGoal,
+  domPhaseScheduler,
   editor,
   flushPendingNativeTextInput,
   inputController,
@@ -35,12 +38,15 @@ export const useRuntimeFocusMouseEvents = ({
   onFocus,
   onMouseDown,
   onMouseUp,
+  publishFocusState,
   readOnly,
   selection,
   state,
   syncDOMSelectionToEditor,
   trace,
 }: {
+  clearVerticalGoal: () => void;
+  domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   flushPendingNativeTextInput?: () => void;
   inputController: EditableInputController;
@@ -49,6 +55,7 @@ export const useRuntimeFocusMouseEvents = ({
   onFocus?: FocusHandler;
   onMouseDown?: MouseHandler;
   onMouseUp?: MouseHandler;
+  publishFocusState: () => void;
   readOnly: boolean;
   selection: EditableEventRuntime['selection'];
   state: EditableSelectionReconcilerState;
@@ -64,11 +71,16 @@ export const useRuntimeFocusMouseEvents = ({
         editor,
         event.target
       );
-      setTimeout(() => {
-        nativePointerFocusRef.current = false;
-      });
+      domPhaseScheduler.schedule(
+        'model',
+        'clear-native-pointer-focus',
+        () => {
+          nativePointerFocusRef.current = false;
+        },
+        { timing: 'timeout' }
+      );
     },
-    [editor]
+    [domPhaseScheduler, editor]
   );
 
   const handleBlur = useCallback(
@@ -100,6 +112,7 @@ export const useRuntimeFocusMouseEvents = ({
         readOnly,
         state,
       });
+      publishFocusState();
 
       const relatedTarget = event.relatedTarget;
       const movingWithinEditor =
@@ -125,6 +138,7 @@ export const useRuntimeFocusMouseEvents = ({
       flushPendingNativeTextInput,
       inputController,
       onBlur,
+      publishFocusState,
       readOnly,
       state,
       syncDOMSelectionToEditor,
@@ -153,6 +167,7 @@ export const useRuntimeFocusMouseEvents = ({
           selectionSource: 'internal-control',
         });
         nativeInternalFocusRef.current = true;
+        publishFocusState();
         return;
       }
 
@@ -163,6 +178,7 @@ export const useRuntimeFocusMouseEvents = ({
       ) {
         nativeInternalFocusRef.current = false;
         syncDOMSelectionToEditor();
+        publishFocusState();
         return;
       }
 
@@ -172,6 +188,7 @@ export const useRuntimeFocusMouseEvents = ({
         getNestedEditableDOMSelectionRoot(editorElement)
       ) {
         nativeInternalFocusRef.current = false;
+        publishFocusState();
         return;
       }
 
@@ -192,14 +209,27 @@ export const useRuntimeFocusMouseEvents = ({
 
         nativeInternalFocusRef.current = false;
         syncProgrammaticFocusSelection();
-        queueMicrotask(syncProgrammaticFocusSelection);
-        setTimeout(syncProgrammaticFocusSelection);
+        domPhaseScheduler.schedule(
+          'selection-repair',
+          'programmatic-focus-selection-microtask',
+          syncProgrammaticFocusSelection,
+          { timing: 'microtask' }
+        );
+        domPhaseScheduler.schedule(
+          'selection-repair',
+          'programmatic-focus-selection-timeout',
+          syncProgrammaticFocusSelection,
+          { timing: 'timeout' }
+        );
       }
+      publishFocusState();
     },
     [
       editor,
+      domPhaseScheduler,
       inputController,
       onFocus,
+      publishFocusState,
       readOnly,
       state,
       syncDOMSelectionToEditor,
@@ -222,6 +252,7 @@ export const useRuntimeFocusMouseEvents = ({
         target: event.target,
       });
       applyEditableClick({
+        domPhaseScheduler,
         editor,
         event,
         inputController,
@@ -229,12 +260,13 @@ export const useRuntimeFocusMouseEvents = ({
         readOnly,
       });
     },
-    [editor, inputController, onClick, readOnly, trace]
+    [domPhaseScheduler, editor, inputController, onClick, readOnly, trace]
   );
   const onRuntimeClick = useEditableMouseHandler({ handleMouse: handleClick });
 
   const handleMouseDownCapture = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
+      clearVerticalGoal();
       markNativePointerFocus(event);
 
       if (readOnly) {
@@ -251,7 +283,13 @@ export const useRuntimeFocusMouseEvents = ({
         event.preventDefault();
       }
     },
-    [editor, inputController, markNativePointerFocus, readOnly]
+    [
+      clearVerticalGoal,
+      editor,
+      inputController,
+      markNativePointerFocus,
+      readOnly,
+    ]
   );
   const onRuntimeMouseDownCapture = useEditableMouseHandler({
     handleMouse: handleMouseDownCapture,

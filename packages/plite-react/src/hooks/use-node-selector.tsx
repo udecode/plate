@@ -2,7 +2,6 @@ import { useCallback, useContext } from 'react';
 import {
   type EditorCommit,
   type Node,
-  type Operation,
   type Path,
   type RuntimeId,
   type Text,
@@ -45,44 +44,16 @@ type InternalEditorRuntimeSelectorOptions = EditorRuntimeSelectorOptions & {
   updatePolicy?: PliteRuntimeSelectorUpdatePolicy;
 };
 
-const includesRuntimeId = (
-  runtimeIds: readonly RuntimeId[] | null | undefined,
-  runtimeId: RuntimeId
-) => Array.isArray(runtimeIds) && runtimeIds.includes(runtimeId);
-
-const shouldSkipPathOnlyTopLevelOrderRender = (
-  runtimeId: RuntimeId | null,
-  change?: EditorCommit
-) => {
-  if (
-    !runtimeId ||
-    !change?.topLevelOrderChanged ||
-    change.fullDocumentChanged ||
-    !Array.isArray(change.touchedRuntimeIds)
-  ) {
-    return false;
-  }
-
-  return (
-    !includesRuntimeId(change.touchedRuntimeIds, runtimeId) &&
-    !includesRuntimeId(change.selectionImpactRuntimeIds, runtimeId) &&
-    !includesRuntimeId(change.dirtyTextRuntimeIds, runtimeId) &&
-    !includesRuntimeId(change.dirtyElementRuntimeIds, runtimeId) &&
-    !includesRuntimeId(change.structuralDirtyRuntimeIds, runtimeId)
-  );
-};
-
 const shouldUpdateRuntimeNode = (
   editor: ReactRuntimeEditor,
   runtimeId: RuntimeId | null,
-  operations?: readonly Operation[],
   change?: EditorCommit,
   updatePolicy: PliteRuntimeSelectorUpdatePolicy = 'model-truth',
   includeRootOrderChanges = false
 ) => {
   if (
     updatePolicy === 'skip-synced-text-render' &&
-    shouldSkipSyncedTextRender(editor, runtimeId, operations)
+    shouldSkipSyncedTextRender(editor, runtimeId, change)
   ) {
     return false;
   }
@@ -91,33 +62,15 @@ const shouldUpdateRuntimeNode = (
     return true;
   }
 
-  if (
-    updatePolicy === 'skip-synced-text-render' &&
-    shouldSkipPathOnlyTopLevelOrderRender(runtimeId, change)
-  ) {
-    return false;
-  }
-
-  if (change.nodeImpactRuntimeIds === null) {
+  if (includeRootOrderChanges && change.changed.hasAny('root-order')) {
     return true;
   }
 
-  if (includeRootOrderChanges && change.topLevelOrderChanged) {
-    return true;
-  }
-
-  return change.nodeImpactRuntimeIds.includes(runtimeId);
+  return (
+    change.changed.hasRuntime(runtimeId, 'node') ||
+    change.changed.hasRuntime(runtimeId, 'path')
+  );
 };
-
-const isTextRenderOperation = (operation: Operation) =>
-  operation.type === 'insert_text' ||
-  operation.type === 'remove_text' ||
-  operation.type === 'set_selection';
-
-const isTextOperation = (
-  operation: Operation
-): operation is Extract<Operation, { type: 'insert_text' | 'remove_text' }> =>
-  operation.type === 'insert_text' || operation.type === 'remove_text';
 
 const isAncestorOrSelfPath = (
   ancestor: readonly number[],
@@ -129,20 +82,15 @@ const isAncestorOrSelfPath = (
 const shouldSkipSyncedTextRender = (
   editor: ReactRuntimeEditor,
   runtimeId: RuntimeId | null,
-  operations?: readonly Operation[]
+  change?: EditorCommit
 ) => {
   if (
-    !operations ||
-    operations.length === 0 ||
-    !operations.every(isTextRenderOperation)
+    !change?.changed.hasAny('text') ||
+    change.tags.includes('historic') ||
+    change.changed.hasAny('structure') ||
+    change.changed.hasAny('properties')
   ) {
     return false;
-  }
-
-  const textOperations = operations.filter(isTextOperation);
-
-  if (textOperations.length === 0) {
-    return true;
   }
 
   if (!runtimeId) {
@@ -155,14 +103,18 @@ const shouldSkipSyncedTextRender = (
     return false;
   }
 
-  const relevantTextOperations = textOperations.filter((operation) =>
-    isAncestorOrSelfPath(path, operation.path)
-  );
+  const relevantTextPaths = change.changed
+    .runtimeIds('text')
+    .flatMap((textRuntimeId) => {
+      const textPath = readRuntimeNodeById(editor, textRuntimeId).path;
+
+      return textPath && isAncestorOrSelfPath(path, textPath) ? [textPath] : [];
+    });
 
   return (
-    relevantTextOperations.length === 0 ||
-    relevantTextOperations.every((operation) =>
-      didSyncTextPathToDOM(editor, operation.path)
+    relevantTextPaths.length === 0 ||
+    relevantTextPaths.every((textPath) =>
+      didSyncTextPathToDOM(editor, textPath)
     )
   );
 };
@@ -194,11 +146,10 @@ function useRuntimeNodeSelector<T>(
     [runtimeId, selector]
   );
   const shouldUpdate = useCallback(
-    (operations?: readonly Operation[], change?: EditorCommit) =>
+    (change?: EditorCommit) =>
       shouldUpdateRuntimeNode(
         editor,
         runtimeId,
-        operations,
         change,
         updatePolicy,
         includeRootOrderChanges

@@ -3,7 +3,6 @@ import React, { useCallback } from 'react';
 import type {
   Descendant,
   EditorCommit,
-  Operation,
   Path,
   RuntimeId,
   Editor as EditorType,
@@ -81,12 +80,10 @@ const sameSegmentPreview = (
   left.lines.every((line, index) => line === right.lines[index]);
 
 const topLevelRangesOverlap = (
-  ranges: readonly (readonly [number, number])[] | null | undefined,
+  ranges: readonly (readonly [number, number])[],
   startIndex: number,
   endIndex: number
-) =>
-  ranges == null ||
-  ranges.some(([start, end]) => start <= endIndex && end >= startIndex);
+) => ranges.some(([start, end]) => start <= endIndex && end >= startIndex);
 
 const shouldRefreshPreview = ({
   endIndex,
@@ -100,23 +97,19 @@ const shouldRefreshPreview = ({
     startIndex + MAX_PREVIEW_LINES - 1
   );
 
-  return (_operations?: readonly Operation[], change?: EditorCommit) => {
+  return (change?: EditorCommit) => {
     if (!change) {
       return true;
     }
 
-    if (
-      change.fullDocumentChanged ||
-      change.rootRuntimeIdsChanged ||
-      change.topLevelOrderChanged
-    ) {
+    if (change.changed.hasAny('root-order')) {
       return true;
     }
 
     return (
-      (change.structureChanged || change.textChanged) &&
+      (change.changed.hasAny('structure') || change.changed.hasAny('text')) &&
       topLevelRangesOverlap(
-        change.dirtyTopLevelRanges,
+        change.changed.topLevelRanges(),
         startIndex,
         previewEndIndex
       )
@@ -211,7 +204,7 @@ export const DOMStrategySegmentPlaceholder = React.memo(
           const snapshot = editorGetSnapshot(editorValue);
           const path =
             editorGetPathByRuntimeId(editorValue, runtimeId) ??
-            snapshot.index.idToPath[runtimeId];
+            snapshot.index.pathOf(runtimeId);
 
           if (!path || !editorHasPath(editorValue, path)) {
             return;

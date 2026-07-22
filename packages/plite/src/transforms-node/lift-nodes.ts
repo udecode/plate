@@ -1,22 +1,20 @@
-import { runEditorTransaction } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
+import {
+  applyBuiltDocumentChange,
+  runEditorTransaction,
+} from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
-import {
-  type Ancestor,
-  LocationApi,
-  NodeApi,
-  type Operation,
-  RangeApi,
-} from '../interfaces';
+import { type Ancestor, LocationApi, NodeApi, RangeApi } from '../interfaces';
 import {
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
-  pathRef as editorPathRef,
 } from '../interfaces/editor';
 import type { Editor } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import { deselect, select } from '../transforms-selection';
+import { moveNodes } from './move-nodes';
+import { removeNodes } from './remove-nodes';
 import { matchPath } from '../utils/match-path';
 
 const getChildren = (editor: Editor, node: Ancestor) =>
@@ -26,11 +24,7 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
   editor,
   options = {}
 ) => {
-  const liftNodeAtPath = (
-    path: Path,
-    tx: { apply: (operation: Operation) => void }
-  ) => {
-    const transforms = getEditorTransformRegistry(editor);
+  const liftNodeAtPath = (path: Path) => {
     const [node] = getNode(editor, path);
 
     if (NodeApi.isText(node)) {
@@ -52,16 +46,16 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
     const childCount = getChildren(editor, parent).length;
 
     if (childCount === 1) {
-      transforms.moveNodes({
+      moveNodes(editor, {
         at: path,
         to: [...parentPath.slice(0, -1), parentPath.at(-1)! + 1],
       });
-      transforms.removeNodes({ at: parentPath });
+      removeNodes(editor, { at: parentPath });
       return;
     }
 
     if (index === 0) {
-      transforms.moveNodes({
+      moveNodes(editor, {
         at: path,
         to: parentPath,
       });
@@ -69,24 +63,25 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
     }
 
     if (index === childCount - 1) {
-      transforms.moveNodes({
+      moveNodes(editor, {
         at: path,
         to: [...parentPath.slice(0, -1), parentPath.at(-1)! + 1],
       });
       return;
     }
 
-    tx.apply({
-      type: 'split_node',
-      path: parentPath,
-      position: index + 1,
-      properties:
+    applyBuiltDocumentChange(editor, (builder, root) =>
+      builder.splitNode(
+        root,
+        parentPath,
+        index + 1,
         PathApi.equals(parentPath, []) || NodeApi.isEditor(parent)
           ? {}
-          : NodeApi.extractProps(parent),
-    });
+          : NodeApi.extractProps(parent)
+      )
+    );
 
-    transforms.moveNodes({
+    moveNodes(editor, {
       at: path,
       to: [...parentPath.slice(0, -1), parentPath.at(-1)! + 1],
     });
@@ -111,25 +106,29 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
       }
 
       if (LocationApi.isPath(target) && options.match == null) {
-        liftNodeAtPath(target, tx);
+        liftNodeAtPath(target);
 
         if (selectionBefore == null) {
-          getEditorTransformRegistry(editor).deselect();
+          deselect(editor);
         }
 
         return;
       }
 
-      const pathRefs = Array.from(
+      const pathAnchors = Array.from(
         getNodes(editor, { at: target, match, mode, voids }),
-        ([, path]) => editorPathRef(editor, path)
+        ([, path]) =>
+          editor.anchor(path, {
+            association: 'forward',
+            deletion: 'drop',
+          })
       );
 
-      for (const pathRef of pathRefs) {
-        const path = pathRef.unref();
+      for (const pathAnchor of pathAnchors) {
+        const path = pathAnchor.release();
 
         if (path) {
-          liftNodeAtPath(path, tx);
+          liftNodeAtPath(path);
         }
       }
 
@@ -161,7 +160,7 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
     const selectedBaseIndex = wrapperIndex + (startIndex > 0 ? 1 : 0);
 
     for (let childIndex = endIndex; childIndex >= startIndex; childIndex -= 1) {
-      liftNodeAtPath([...startParentPath, childIndex], tx);
+      liftNodeAtPath([...startParentPath, childIndex]);
     }
 
     const mapPoint = (point: typeof start) => ({
@@ -172,7 +171,7 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
       offset: point.offset,
     });
 
-    getEditorTransformRegistry(editor).select({
+    select(editor, {
       anchor: mapPoint(start),
       focus: mapPoint(end),
     });

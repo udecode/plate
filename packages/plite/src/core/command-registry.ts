@@ -1,149 +1,318 @@
 import type {
+  BaseEditor,
   Editor,
   EditorCommand,
-  EditorCommandDefinition,
-  EditorCommandHandler,
-  EditorCommandOptions,
-  EditorCommandReference,
+  EditorCommandDescriptor,
+  EditorCommandInput,
+  EditorCommandContinuation,
+  EditorCommandDispatch,
+  EditorCommandRegistration,
+  EditorCommandResult,
+  EditorStateView,
+  TransactionSpec,
 } from '../interfaces/editor';
-import { getExtensionRegistry } from './extension-registry';
+import {
+  getCommandRegistrationRuntime,
+  getCommandRuntime,
+} from './command-definition';
+import { getEditorRuntimeOwner } from './editor-runtime';
+import {
+  type CompiledCommandPipeline,
+  type CompiledCommandRegistry,
+  getExtensionRegistry,
+} from './extension-registry';
 import { profileCoreDuration } from './profiling';
 import {
-  getCommandContext,
+  applyTransactionSpec,
+  continueTransactionSpec,
+  getActiveEditorUpdateTags,
+  getActiveEditorTransaction,
   isInTransaction,
-  updateEditor,
-  withCommandContext,
+  isTransactionSpec,
+  isTransactionSpecContinuation,
+  withTransactionSpecDraftRead,
 } from './public-state';
 
-type RegisteredCommand = {
-  handler: EditorCommandHandler<any>;
-  order: number;
-  priority: number;
-};
+export { defineCommand } from './command-definition';
 
-let commandOrder = 0;
+type RegisteredCommand = Readonly<{
+  command: Readonly<{ id: string }>;
+  kind: 'around' | 'handle';
+  run: (context: unknown) => EditorCommandResult;
+}>;
+
+const commandStacks = new WeakMap<Editor, EditorCommand<unknown>[]>();
 
 const getCommandRegistry = (editor: Editor) =>
-  getExtensionRegistry(editor).commands as Map<string, RegisteredCommand[]>;
+  getExtensionRegistry(editor).commands.byDescriptor as ReadonlyMap<
+    object,
+    Readonly<{ entries: readonly RegisteredCommand[] }>
+  >;
 
-const getCommandType = <TCommand extends EditorCommand>(
-  command: EditorCommandReference<TCommand>
-) => (typeof command === 'string' ? command : command.type);
-
-export const defineCommand = <TCommand extends EditorCommand>(
-  type: TCommand['type']
-): EditorCommandDefinition<TCommand> =>
-  Object.freeze({ type }) as EditorCommandDefinition<TCommand>;
-
-export const registerCommand = <TCommand extends EditorCommand>(
+export const hasCommandHandler = <Input>(
   editor: Editor,
-  command: EditorCommandReference<TCommand>,
-  handler: EditorCommandHandler<TCommand>,
-  { priority = 0 }: EditorCommandOptions = {}
-) => {
-  const commands = getCommandRegistry(editor);
-  const type = getCommandType(command);
-  const handlers = commands.get(type) ?? [];
-  const registration = {
-    handler,
-    order: commandOrder++,
-    priority,
-  };
+  command: EditorCommand<Input>
+) => (getCommandRegistry(editor).get(command)?.entries.length ?? 0) > 0;
 
-  handlers.push(registration);
-  handlers.sort((a, b) => b.priority - a.priority || a.order - b.order);
-  commands.set(type, handlers);
+/** Compile one pure command registration into a detached extension registry. */
+export const registerCommandInRegistry = <TEditor extends BaseEditor<any, any>>(
+  commands: CompiledCommandRegistry,
+  registration: EditorCommandRegistration<TEditor>
+) => {
+  const byDescriptor = commands.byDescriptor as Map<
+    object,
+    CompiledCommandPipeline
+  >;
+  const byId = commands.byId as Map<string, object>;
+  const { command, kind, run } = getCommandRegistrationRuntime(registration);
+
+  if (command.id.length === 0) {
+    throw new Error('Editor command ids must not be empty.');
+  }
+
+  const known = byId.get(command.id);
+
+  if (known && known !== command) {
+    throw new Error(
+      `Editor command id "${command.id}" cannot install multiple descriptor identities.`
+    );
+  }
+
+  const pipeline = byDescriptor.get(command);
+  const entries = (pipeline?.entries ?? []) as RegisteredCommand[];
+  const compiled = Object.freeze({
+    command,
+    kind,
+    run: run as (context: unknown) => EditorCommandResult,
+  });
+
+  entries.push(compiled);
+  byDescriptor.set(command, {
+    descriptor: command,
+    entries,
+    hasAround: entries.some((entry) => entry.kind === 'around'),
+    id: command.id,
+  });
+  byId.set(command.id, command);
 
   return () => {
-    const current = getCommandRegistry(editor).get(type);
+    const current = byDescriptor.get(command)?.entries as
+      | RegisteredCommand[]
+      | undefined;
 
-    if (!current) {
+    if (!current) return;
+
+    const index = current.indexOf(compiled);
+    if (index >= 0) current.splice(index, 1);
+    if (current.length === 0) {
+      byDescriptor.delete(command);
+      byId.delete(command.id);
       return;
     }
 
-    const index = current.indexOf(registration);
-    if (index >= 0) {
-      current.splice(index, 1);
-    }
+    byDescriptor.set(command, {
+      descriptor: command,
+      entries: current,
+      hasAround: current.some((entry) => entry.kind === 'around'),
+      id: command.id,
+    });
   };
 };
 
-export const executeCommand = <TCommand extends EditorCommand>(
-  editor: Editor,
-  command: TCommand,
-  defaultHandler: (command: TCommand) => boolean,
-  options: { implicitUpdate?: boolean } = {}
-): boolean => {
-  const handlers = getCommandRegistry(editor).get(command.type) ?? [];
+const assertCommandResult = (
+  id: string,
+  result: unknown
+): EditorCommandResult => {
+  if (result === false) return false;
+  if (isTransactionSpec(result)) return result;
 
-  const dispatch = (index: number, nextCommand: TCommand): boolean => {
+  throw new Error(`Command "${id}" must return false or a transaction spec.`);
+};
+
+const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
+  editor: TEditor,
+  command: EditorCommand<Input, TEditor>,
+  input: Input
+): boolean => {
+  if (editor.read.view.isReadOnly()) {
+    throw new Error('Cannot update a read-only editor view.');
+  }
+
+  const owner = getEditorRuntimeOwner(editor);
+  const entries = getCommandRegistry(owner).get(command)?.entries ?? [];
+  const runtime = getCommandRuntime(command);
+  const readState = () =>
+    withTransactionSpecDraftRead(owner, () =>
+      editor.read((state) => state as EditorStateView)
+    ) as unknown as EditorStateView<
+      import('../interfaces/editor').ValueOf<TEditor>,
+      import('../interfaces/editor').ExtensionsOf<TEditor>
+    >;
+  const tags = () => getActiveEditorUpdateTags(owner);
+
+  const dispatch = (
+    index: number,
+    nextInput: Input,
+    prepared = false
+  ): EditorCommandResult => {
+    const preparedInput = prepared ? nextInput : runtime.prepare(nextInput);
     const registration = profileCoreDuration(
-      `command-${command.type}-read-handler`,
-      () => handlers[index]
+      `command-${command.id}-read-handler`,
+      () => entries[index]
     );
 
     if (!registration) {
-      return profileCoreDuration(`command-${command.type}-default`, () =>
-        defaultHandler(nextCommand)
+      return profileCoreDuration(`command-${command.id}-default`, () =>
+        assertCommandResult(
+          command.id,
+          runtime.build({
+            input: preparedInput,
+            state: readState(),
+            tags: tags(),
+          })
+        )
       );
+    }
+
+    if (registration.kind === 'handle') {
+      const result = profileCoreDuration(`command-${command.id}-handler`, () =>
+        registration.run({
+          input: preparedInput as Readonly<Input>,
+          state: readState(),
+          tags: tags(),
+        })
+      );
+      const commandResult = assertCommandResult(command.id, result);
+
+      return commandResult === false
+        ? dispatch(index + 1, preparedInput, true)
+        : commandResult;
     }
 
     let delegated = false;
-    const result = profileCoreDuration(`command-${command.type}-handler`, () =>
-      registration.handler(
-        {
-          command: nextCommand,
-          editor,
+    let delegatedResult: EditorCommandResult | undefined;
+    const beginDelegation = () => {
+      if (delegated) {
+        throw new Error(
+          `Command "${command.id}" handlers may delegate only once.`
+        );
+      }
+      delegated = true;
+    };
+    const next = Object.assign(
+      (...overrideInput: [] | [Input]) => {
+        beginDelegation();
+        delegatedResult = dispatch(
+          index + 1,
+          overrideInput.length === 0 ? preparedInput : overrideInput[0]!,
+          overrideInput.length === 0
+        );
+        return delegatedResult;
+      },
+      {
+        after(prefix: TransactionSpec, ...overrideInput: [] | [Input]) {
+          beginDelegation();
+          delegatedResult = continueTransactionSpec(owner, prefix, () =>
+            dispatch(
+              index + 1,
+              overrideInput.length === 0 ? preparedInput : overrideInput[0]!,
+              overrideInput.length === 0
+            )
+          );
+          return delegatedResult;
         },
-        (overrideCommand = nextCommand) => {
-          delegated = true;
-          return dispatch(index + 1, overrideCommand);
-        }
-      )
+      }
+    ) as EditorCommandContinuation<Input>;
+    const result = profileCoreDuration(`command-${command.id}-around`, () =>
+      registration.run({
+        input: preparedInput as Readonly<Input>,
+        next: next as EditorCommandContinuation<unknown>,
+        state: readState(),
+        tags: tags(),
+      })
     );
+    const commandResult = assertCommandResult(command.id, result);
 
-    if (result) {
-      return true;
-    }
     if (delegated) {
-      return false;
+      if (
+        commandResult !== delegatedResult &&
+        !(
+          commandResult !== false &&
+          delegatedResult !== undefined &&
+          delegatedResult !== false &&
+          isTransactionSpecContinuation(commandResult, delegatedResult)
+        )
+      ) {
+        throw new Error(
+          `Command "${command.id}" handlers must return their delegated result.`
+        );
+      }
+      return commandResult;
     }
 
-    return dispatch(index + 1, nextCommand);
+    return commandResult === false
+      ? dispatch(index + 1, preparedInput, true)
+      : commandResult;
   };
 
-  if (getCommandContext(editor)) {
-    return profileCoreDuration(`command-${command.type}-dispatch`, () =>
-      dispatch(0, command)
+  const stack = commandStacks.get(owner) ?? [];
+  if (stack.includes(command as unknown as EditorCommand<unknown>)) {
+    throw new Error(
+      `Command recursion cycle: ${[
+        ...stack.map((item) => item.id),
+        command.id,
+      ].join(' -> ')}`
     );
   }
-
-  if (!options.implicitUpdate || isInTransaction(editor)) {
-    return profileCoreDuration(`command-${command.type}-context`, () =>
-      withCommandContext(
-        editor,
-        { origin: 'command', type: command.type },
-        () =>
-          profileCoreDuration(`command-${command.type}-dispatch`, () =>
-            dispatch(0, command)
-          )
-      )
-    );
+  if (stack.length >= 64) {
+    throw new Error('Command recursion depth exceeded 64.');
   }
 
-  let result = false;
-  profileCoreDuration(`command-${command.type}-implicit-update`, () =>
-    updateEditor(editor, () => {
-      result = withCommandContext(
-        editor,
-        { origin: 'command', type: command.type },
-        () =>
-          profileCoreDuration(`command-${command.type}-dispatch`, () =>
-            dispatch(0, command)
-          )
+  stack.push(command as unknown as EditorCommand<unknown>);
+  commandStacks.set(owner, stack);
+  try {
+    const result = profileCoreDuration(`command-${command.id}-dispatch`, () =>
+      dispatch(0, input)
+    );
+
+    if (result === false) return false;
+
+    if (isInTransaction(owner)) {
+      getActiveEditorTransaction(owner)?.tags.add('semantic-command');
+      applyTransactionSpec(owner, result);
+    } else {
+      editor.update({ tags: 'semantic-command' }, () =>
+        applyTransactionSpec(owner, result)
       );
-    })
+    }
+    return true;
+  } finally {
+    stack.pop();
+    if (stack.length === 0) commandStacks.delete(owner);
+  }
+};
+
+/** @internal Imperatively dispatch a pure command at a host boundary. */
+export const dispatchCommand = <TCommand extends EditorCommandDescriptor>(
+  editor: Editor<any, any>,
+  command: TCommand,
+  ...input: [EditorCommandInput<TCommand>] extends [void]
+    ? [] | [input: EditorCommandInput<TCommand>]
+    : [input: EditorCommandInput<TCommand>]
+): boolean =>
+  runCommandChain(
+    editor as Editor,
+    command as unknown as EditorCommand<unknown, Editor>,
+    input[0]
   );
 
-  return result;
-};
+/** @internal Bind typed command dispatch to a runtime editor owner. */
+export const createCommandDispatch = <TEditor extends Editor>(
+  getEditor: () => TEditor
+): EditorCommandDispatch<TEditor> =>
+  ((command: EditorCommand<unknown>, input?: unknown) =>
+    runCommandChain(
+      getEditor(),
+      command as unknown as EditorCommand<unknown, TEditor>,
+      input
+    )) as unknown as EditorCommandDispatch<TEditor>;

@@ -16,7 +16,6 @@ type Path = number[];
 - [Static methods](path#static-methods)
   - [Retrieval methods](path#retrieval-methods)
   - [Check methods](path#check-methods)
-  - [Transform method](path#transform-method)
 
 ## Static methods
 
@@ -123,15 +122,3 @@ Check if a value implements the `Path` interface.
 #### `PathApi.isSibling(path: Path, another: Path) => boolean`
 
 Check if a path is a sibling of another.
-
-#### `PathApi.operationCanTransformPath(operation: Operation) => operation is InsertNodeOperation | RemoveNodeOperation | MergeNodeOperation | SplitNodeOperation | MoveNodeOperation`
-
-Returns whether this operation can affect paths or not.
-
-### Transform method
-
-#### `PathApi.transform(path: Path, operation: Operation, options?) => Path | null`
-
-Transform a path by an operation.
-
-Options: `{ affinity?: 'forward' | 'backward' | null }`

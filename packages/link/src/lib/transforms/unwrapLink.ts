@@ -1,6 +1,6 @@
 import type { BaseEditor } from '@platejs/core';
 import type {
-  EditorUpdateTransaction,
+  EditorTransactionSpecBuilder,
   Location,
   MaximizeMode,
 } from '@platejs/plite';
@@ -17,7 +17,7 @@ export type UnwrapLinkOptions = {
 /** Unwrap link nodes. */
 export const unwrapLink = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction,
+  tx: EditorTransactionSpecBuilder,
   options?: UnwrapLinkOptions
 ) => {
   const selection = tx.selection();

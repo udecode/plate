@@ -319,6 +319,14 @@ declare const slice: import('@platejs/plite').ContentSlice;
 declare const publicParent: import('@platejs/plite').Element;
 declare const transaction: import('@platejs/plite').EditorUpdateTransaction;
 
+const publicAnchor = editor.anchor([], { deletion: 'nearest' });
+editor.anchor([], { deletion: 'nearest', root: 'header' });
+// @ts-expect-error the primary anchor root is selected by omitting root
+editor.anchor([], { deletion: 'nearest', root: 'main' });
+type _PublicAnchorRootIncludesImplicitPrimary = ExpectTrue<
+  undefined extends typeof publicAnchor.root ? true : false
+>;
+
 documentChange.mapPosition(0);
 documentChange.mapPosition(0, { root: 'header' });
 // @ts-expect-error the primary document is selected by omitting root

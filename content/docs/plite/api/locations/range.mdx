@@ -20,7 +20,6 @@ implicit; extra roots are stored on each point with `root`.
 - [Static methods](range#static-methods)
   - [Retrieval methods](range#retrieval-methods)
   - [Check methods](range#check-methods)
-  - [Transform methods](range#transform-methods)
 
 ## Static Methods
 
@@ -86,11 +85,3 @@ Check if a `range` is forward. This is the opposite of `RangeApi.isBackward` and
 #### `RangeApi.isRange(value: unknown) => value is Range`
 
 Check if a `value` implements the `Range` interface.
-
-### Transform Methods
-
-#### `RangeApi.transform(range: Range, op: Operation, options) => Range | null`
-
-Transform a `range` by an `op`.
-
-Options: `{affinity: 'forward' | 'backward' | 'outward' | 'inward' | null}`

@@ -3,6 +3,7 @@ import React, { type CSSProperties, type ReactNode } from 'react';
 import {
   type Ancestor,
   type Descendant,
+  type NamedRootKey,
   NodeApi,
   type Path,
   type RootKey,
@@ -62,17 +63,21 @@ import {
   getEditorMaxLength,
   isEditor as editorIsEditor,
   isInline as editorIsInline,
-  isVoid as editorIsVoid,
   point as editorPoint,
   setEditorMaxLength,
+  toInternalRoot,
 } from '../editable/runtime-editor-api';
 import { readRuntimeNode } from '../editable/runtime-live-state';
+import { writeRuntimeSelection } from '../editable/runtime-mutation-state';
 import { useEditor } from '../hooks/use-editor';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { useMountedNodeRenderSelector } from '../hooks/use-node-selector';
 import { usePliteContentRoot } from '../hooks/use-plite-content-root';
-import { usePliteNodeRef } from '../hooks/use-plite-node-ref';
+import {
+  getDOMTextRenderRevision,
+  usePliteNodeRef,
+} from '../hooks/use-plite-node-ref';
 import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { ProjectionContext } from '../projection-context';
@@ -378,7 +383,9 @@ function EditableContentRootSlot({
   slot: string;
 }) {
   const ownerEditor = useEditor<ReactRuntimeEditor>();
-  const ownerRoot = ownerEditor.read((state) => state.view.root());
+  const ownerRoot = toInternalRoot(
+    ownerEditor.read((state) => state.view.root())
+  );
   const { root } = usePliteContentRoot(element, { slot });
   const inheritedReadOnly = useEditorReadOnly();
   const readOnly = Boolean(options.readOnly || inheritedReadOnly);
@@ -654,6 +661,7 @@ export type EditableDOMStrategyLayout = {
 export type EditableProps<
   T = unknown,
   TElement extends PliteElementNode = PliteElementNode,
+  TRoot extends RootKey = RootKey,
 > = {
   autoFocus?: boolean;
   className?: string;
@@ -694,7 +702,7 @@ export type EditableProps<
   ) => ReactNode;
   renderText?: (props: RenderTextProps) => ReactNode;
   renderVoid?: RenderVoidRenderer<TElement>;
-  root?: RootKey;
+  root?: NamedRootKey<TRoot>;
   scrollSelectionIntoView?: (
     editor: Editor,
     domRange: globalThis.Range
@@ -756,7 +764,14 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
     { runtimeId }
   );
 
-  const { childRuntimeIds, node, path } = binding;
+  const {
+    childRuntimeIds,
+    isInline: inline,
+    isVoid: voidNode,
+    node,
+    path,
+    renderRevision,
+  } = binding;
   const bindNodeRef = usePliteNodeRef(runtimeId, { path, pliteNode: node });
 
   if (!node || !path) {
@@ -782,6 +797,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
 
     return (
       <EditableText
+        key={`${runtimeId}:${renderRevision}`}
         marks={marks}
         path={path}
         placeholder={placeholder}
@@ -798,8 +814,6 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
     );
   }
 
-  const inline = editorIsInline(editor, node);
-  const voidNode = editorIsVoid(editor, node);
   const attributes = {
     'data-plite-inline': inline ? (true as const) : undefined,
     'data-plite-node': 'element' as const,
@@ -832,7 +846,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
 
     return (
       <EditableText
-        key={childRuntimeId}
+        key={`${childRuntimeId}:${getDOMTextRenderRevision(editor, [childRuntimeId])}`}
         marks={marks}
         path={childPath}
         placeholder={placeholder}
@@ -1100,7 +1114,9 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       : null;
   const editor = useEditor();
   const { runtime } = useRequiredPliteRuntimeContext();
-  const editableRoot = editor.read((state) => state.view.root());
+  const editableRoot = toInternalRoot(
+    editor.read((state) => state.view.root())
+  );
   const inheritedReadOnly = useEditorReadOnly();
   const effectiveReadOnly = readOnly || inheritedReadOnly;
   const upstreamProjectionStore = React.useContext(ProjectionContext);
@@ -1109,6 +1125,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   const autoDecorateRuntimeScopeRef = React.useRef<readonly RuntimeId[] | null>(
     null
   );
+
   const activeDecorateRuntimeScope = React.useCallback(
     (context: PliteSourceDirtinessContext) =>
       mergeMountedRuntimeScope(
@@ -1352,6 +1369,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   const { activeGroupIds, mountedGroupIds, mountGroupIds } =
     useMountedRootGroupIds({
       activeGroupIds: activeRootGroupIds,
+      documentEpoch: rootDocumentEpoch,
       groups: rootGroups,
       planKey: rootGroupPlanKey,
     });
@@ -1444,7 +1462,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     const anchorPathKey = getSnapshotPathKey(anchorPath);
     const lastCommit = editor.read((state) => state.lastCommit());
 
-    if (lastCommit?.textChanged) {
+    if (lastCommit?.changed.hasAny('text')) {
       return;
     }
 
@@ -1546,9 +1564,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       if (options.select && internalSegmentDOMStrategySize != null) {
         try {
           const start = editorPoint(editor, [startIndex!], { edge: 'start' });
-          editor.update((tx) => {
-            tx.selection.set({ anchor: start, focus: start });
-          });
+          writeRuntimeSelection(editor, { anchor: start, focus: start });
         } catch {
           // Leave selection unchanged for non-text-startable segments.
         }
@@ -2074,10 +2090,18 @@ const EditableNonVirtualized = <T, TElement extends PliteElementNode>(
  * `Editable` owns DOM strategy, renderers, events, selection sync, and optional
  * root scoping. Pass `root` to mount the editor surface for a specific root.
  */
-export const Editable = <T, TElement extends PliteElementNode>(
-  props: EditableProps<T, TElement>
+export const Editable = <
+  T,
+  TElement extends PliteElementNode,
+  const TRoot extends RootKey = RootKey,
+>(
+  props: EditableProps<T, TElement, TRoot>
 ) => {
   const { root, ...editableProps } = props;
+
+  if (root === 'main') {
+    throw new Error('[Plite] Omit root to render the primary editable.');
+  }
   const inheritedReadOnly = useEditorReadOnly();
   const rootReadOnly = props.readOnly || inheritedReadOnly;
   const editable =

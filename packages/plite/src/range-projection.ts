@@ -78,7 +78,7 @@ const collectTextEntries = (
     const path = [...parentPath, index] as Path;
 
     if (isText(node)) {
-      const runtimeId = snapshot.index.pathToId[pathKey(path)];
+      const runtimeId = snapshot.index.idAt(path);
 
       if (!runtimeId) {
         throw new Error(`Missing runtime id for text path ${pathKey(path)}`);
@@ -124,7 +124,7 @@ const getTextEntryAtPath = (
     return null;
   }
 
-  const runtimeId = snapshot.index.pathToId[pathKey(path)];
+  const runtimeId = snapshot.index.idAt(path);
 
   if (!runtimeId) {
     throw new Error(`Missing runtime id for text path ${pathKey(path)}`);
@@ -148,7 +148,7 @@ const getTopLevelBlockTextEntries = (
   }
 
   if (isText(block)) {
-    const runtimeId = snapshot.index.pathToId[pathKey([blockIndex])];
+    const runtimeId = snapshot.index.idAt([blockIndex]);
 
     if (!runtimeId) {
       throw new Error(`Missing runtime id for text path ${blockIndex}`);

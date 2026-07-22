@@ -22,13 +22,17 @@ export type {
 export { DOMCoverage } from './plugin/dom-coverage';
 export type {
   DOMApi,
-  DOMCapableEditor,
   DOMEditorClipboardCapability,
   DOMClipboardApi,
   DOMClipboardInsertDataHandler,
   ScrollIntoViewOptions,
   ScrollIntoViewTarget,
 } from './plugin/dom-editor';
+export type {
+  DOMEditor,
+  DOMExtension,
+  DOMExtensionTypes,
+} from './plugin/with-dom';
 export { PliteDOMResolutionError } from './plugin/dom-editor';
 export type { DOMEditorOptions } from './plugin/with-dom';
 export { dom } from './plugin/with-dom';
@@ -36,7 +40,25 @@ export type {
   DOMFragmentDataHtml,
   DOMFragmentDataPayload,
 } from './plugin/dom-clipboard-runtime';
-export { writeDOMFragmentData } from './plugin/dom-clipboard-runtime';
+export {
+  getDOMClipboardFormatKey,
+  writeDOMFragmentData,
+  writeDOMRangeData,
+} from './plugin/dom-clipboard-runtime';
+export {
+  defineHostCodec,
+  hostCodecs,
+  writeHostFragmentData,
+} from './plugin/host-codec';
+export { parseDOMClipboardHtml } from './plugin/dom-html';
+export type {
+  HostDataSource,
+  HostCodec,
+  HostCodecParseContext,
+  HostCodecPhase,
+  HostCodecSchemaTarget,
+  HostCodecSerializeContext,
+} from './plugin/host-codec';
 
 // Utils
 export { TRIPLE_CLICK } from './utils/constants';
@@ -87,6 +109,7 @@ export {
   IS_UC_MOBILE,
   IS_WEBKIT,
   IS_WECHATBROWSER,
+  isApplePlatform,
 } from './utils/environment';
 export type {
   HotkeyMatchOptions,

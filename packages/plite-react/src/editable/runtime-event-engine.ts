@@ -2,30 +2,21 @@ import {
   type ComponentPropsWithRef,
   type FormEvent,
   type InputEvent as ReactInputEvent,
-  type RefObject,
   useMemo,
 } from 'react';
 import type { Range } from '@platejs/plite';
 import type {
   EditableDOMBeforeInputHandler,
-  EditableDOMStrategyRuntime,
   EditableKeyDownHandler,
 } from '../components/editable';
-import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
-import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { DOMRepairQueue } from './dom-repair-queue';
-import type {
-  EditableInputController,
-  EditableInputControllerState,
-} from './input-state';
-import type { DeferredOperation } from './model-input-strategy';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableRepairRequest } from './mutation-controller';
 import { useRuntimeBeforeInputEvents } from './runtime-before-input-events';
 import { useRuntimeBrowserHandle } from './runtime-browser-handle-events';
 import { useRuntimeClipboardEvents } from './runtime-clipboard-events';
 import { useRuntimeCompositionEvents } from './runtime-composition-events';
 import { useRuntimeDragEvents } from './runtime-drag-events';
-import type { rangeRef as editorRangeRef } from './runtime-editor-api';
 import { useRuntimeFocusMouseEvents } from './runtime-focus-mouse-events';
 import { useRuntimeInputEvents } from './runtime-input-events';
 import type { useRuntimeKernelTraceEngine } from './runtime-kernel-trace';
@@ -89,7 +80,7 @@ type EditableKernelTraceRuntime = ReturnType<
 
 export type EditableEventRuntimeCore = {
   android: {
-    managerRef: RefObject<AndroidInputManager | null | undefined>;
+    managerRef: EditableDOMRuntime['androidInputManagerRef'];
   };
   composition: {
     setComposing: (nextValue: boolean) => void;
@@ -104,95 +95,80 @@ export type EditableEventRuntime = EditableEventRuntimeCore & {
 };
 
 export const useEditableEventRuntime = ({
-  androidInputManagerRef,
   applyInputRules,
-  browserHandleNextId,
-  browserHandleRangeRefs,
   callbacks,
   deferNativeTextInputRepair = false,
-  deferredOperations,
-  editor,
-  handledDOMBeforeInputRef,
-  inputController,
-  isPartialDOMBackedSelection,
-  domStrategyRuntime,
   onDOMBeforeInput,
   onKeyDown,
-  onUserInput,
-  processing,
-  readOnly,
-  repair,
-  rootRef,
-  selection,
-  setComposing,
-  setExplicitPartialDOMBackedSelection,
   partialDOMBackedSelection,
-  state,
+  repair,
+  runtime,
+  selection,
   syncDOMSelectionToEditor,
   trace,
 }: {
-  androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
   applyInputRules: ApplyInputRules;
-  browserHandleNextId: RefObject<number>;
-  browserHandleRangeRefs: RefObject<
-    Map<string, ReturnType<typeof editorRangeRef>>
-  >;
   callbacks: EditableRootCallbackProps;
   deferNativeTextInputRepair?: boolean;
-  deferredOperations: RefObject<DeferredOperation[]>;
-  editor: ReactRuntimeEditor;
-  handledDOMBeforeInputRef: RefObject<boolean>;
-  inputController: EditableInputController;
-  isPartialDOMBackedSelection: (selection: Range | null) => boolean;
-  domStrategyRuntime: EditableDOMStrategyRuntime | null;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onKeyDown?: EditableKeyDownHandler;
-  onUserInput: () => void;
-  processing: RefObject<boolean>;
-  readOnly: boolean;
-  repair: EditableRepairRuntime;
-  rootRef: RefObject<HTMLDivElement | null>;
-  selection: RuntimeSelectionImportController;
-  setComposing: (nextValue: boolean) => void;
-  setExplicitPartialDOMBackedSelection: (nextValue: boolean) => void;
   partialDOMBackedSelection: boolean;
-  state: EditableInputControllerState;
+  repair: EditableRepairRuntime;
+  runtime: EditableDOMRuntime;
+  selection: RuntimeSelectionImportController;
   syncDOMSelectionToEditor: (options?: EditableDOMSelectionSyncOptions) => void;
   trace: EditableKernelTraceRuntime;
 }): EditableEventRuntime => {
-  const runtime = useMemo(
+  const {
+    androidInputManagerRef,
+    browserHandleNextId,
+    browserHandleRangeAnchors,
+    deferredMutations,
+    domPhaseScheduler,
+    domStrategyRuntime,
+    editor,
+    handledDOMBeforeInputRef,
+    inputController,
+    processing,
+    readOnly,
+    rootRef,
+    state,
+  } = runtime;
+  const eventCore = useMemo(
     () =>
       ({
         android: {
           managerRef: androidInputManagerRef,
         },
         composition: {
-          setComposing,
+          setComposing: runtime.setComposing,
         },
         repair,
         selection,
         trace,
       }) satisfies EditableEventRuntimeCore,
-    [androidInputManagerRef, repair, selection, setComposing, trace]
+    [androidInputManagerRef, repair, runtime.setComposing, selection, trace]
   );
 
   useRuntimeTargetBridge({
+    domPhaseScheduler: runtime.domPhaseScheduler,
     editor,
     inputController,
     syncDOMSelectionToEditor,
   });
   const inputHandlers = useRuntimeInputEvents({
-    androidInputManagerRef: runtime.android.managerRef,
+    androidInputManagerRef: eventCore.android.managerRef,
     deferNativeTextInputRepair,
-    deferredOperations,
+    deferredMutations,
     editor,
     handledDOMBeforeInputRef,
     inputController,
     readOnly,
-    repair: runtime.repair,
+    repair: eventCore.repair,
     rootRef,
+    runtime,
     syncDOMSelectionToEditor,
-    trace: runtime.trace,
+    trace: eventCore.trace,
     onInput: callbacks.onInput as
       | ((event: ReactInputEvent<HTMLDivElement>) => boolean | void)
       | undefined,
@@ -200,21 +176,23 @@ export const useEditableEventRuntime = ({
   useRuntimeBrowserHandle({
     applyInputRules,
     browserHandleNextId,
-    browserHandleRangeRefs,
+    browserHandleRangeAnchors,
+    domPhaseScheduler,
     editor,
     flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
-    forceRender: runtime.repair.forceRender,
+    forceRender: eventCore.repair.forceRender,
     inputController,
-    isPartialDOMBackedSelection,
+    isPartialDOMBackedSelection: runtime.isPartialDOMBackedSelection,
     rootRef,
     scrollPathIntoView: domStrategyRuntime?.scrollToPath,
-    setExplicitPartialDOMBackedSelection,
+    setExplicitPartialDOMBackedSelection:
+      runtime.setExplicitPartialDOMBackedSelection,
   });
   const beforeInputHandlers = useRuntimeBeforeInputEvents({
-    androidInputManagerRef: runtime.android.managerRef,
+    androidInputManagerRef: eventCore.android.managerRef,
     applyInputRules,
     deferNativeTextInputRepair,
-    deferredOperations,
+    deferredMutations,
     editor,
     flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
     handledDOMBeforeInputRef,
@@ -226,14 +204,14 @@ export const useEditableEventRuntime = ({
     onInput: callbacks.onInput as
       | ((event: ReactInputEvent<HTMLDivElement>) => boolean | void)
       | undefined,
-    onUserInput,
+    onUserInput: runtime.onUserInput,
     processing,
     queuePendingNativeTextInput: inputHandlers.queuePendingNativeTextInput,
     readOnly,
-    repair: runtime.repair,
-    selection: runtime.selection,
-    setComposing: runtime.composition.setComposing,
-    trace: runtime.trace,
+    repair: eventCore.repair,
+    selection: eventCore.selection,
+    setComposing: eventCore.composition.setComposing,
+    trace: eventCore.trace,
   });
   const clipboardHandlers = useRuntimeClipboardEvents({
     editor,
@@ -243,10 +221,11 @@ export const useEditableEventRuntime = ({
     onCut: callbacks.onCut,
     onPaste: callbacks.onPaste,
     readOnly,
-    repair: runtime.repair,
-    setExplicitPartialDOMBackedSelection,
+    repair: eventCore.repair,
+    setExplicitPartialDOMBackedSelection:
+      runtime.setExplicitPartialDOMBackedSelection,
     partialDOMBackedSelection,
-    trace: runtime.trace,
+    trace: eventCore.trace,
   });
   const dragHandlers = useRuntimeDragEvents({
     editor,
@@ -256,22 +235,25 @@ export const useEditableEventRuntime = ({
     onDragStart: callbacks.onDragStart,
     onDrop: callbacks.onDrop,
     readOnly,
-    repair: runtime.repair,
+    repair: eventCore.repair,
     state,
-    trace: runtime.trace,
+    trace: eventCore.trace,
   });
   const compositionHandlers = useRuntimeCompositionEvents({
-    androidInputManagerRef: runtime.android.managerRef,
+    androidInputManagerRef: eventCore.android.managerRef,
     editor,
     inputController,
     onCompositionEnd: callbacks.onCompositionEnd,
     onCompositionStart: callbacks.onCompositionStart,
     onCompositionUpdate: callbacks.onCompositionUpdate,
     readOnly,
-    setComposing: runtime.composition.setComposing,
-    trace: runtime.trace,
+    runtime,
+    setComposing: eventCore.composition.setComposing,
+    trace: eventCore.trace,
   });
   const focusMouseHandlers = useRuntimeFocusMouseEvents({
+    clearVerticalGoal: runtime.clearVerticalGoal,
+    domPhaseScheduler,
     editor,
     flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
     inputController,
@@ -280,21 +262,25 @@ export const useEditableEventRuntime = ({
     onFocus: callbacks.onFocus,
     onMouseDown: callbacks.onMouseDown,
     onMouseUp: callbacks.onMouseUp,
+    publishFocusState: runtime.publishFocusState,
     readOnly,
-    selection: runtime.selection,
+    selection: eventCore.selection,
     state,
     syncDOMSelectionToEditor,
-    trace: runtime.trace,
+    trace: eventCore.trace,
   });
   const keyboardHandlers = useRuntimeKeyboardEvents({
+    domPhaseScheduler,
     editor,
     inputController,
     domStrategyRuntime,
     flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
     onKeyDown,
     readOnly,
-    runtime,
-    setExplicitPartialDOMBackedSelection,
+    runtime: eventCore,
+    setExplicitPartialDOMBackedSelection:
+      runtime.setExplicitPartialDOMBackedSelection,
+    verticalNavigation: runtime,
     partialDOMBackedSelection,
   });
   const handlers = useMemo(
@@ -320,9 +306,9 @@ export const useEditableEventRuntime = ({
 
   return useMemo(
     () => ({
-      ...runtime,
+      ...eventCore,
       handlers,
     }),
-    [handlers, runtime]
+    [eventCore, handlers]
   );
 };

@@ -14,11 +14,11 @@ export const insertTodoListItem = (
     editor.plugin(BaseTodoListPlugin).getOptions();
   const todoType = editor.getType(KEYS.listTodoClassic);
 
-  const selection = editor.read.selection();
+  const selection = tx.selection();
 
   if (!selection) return false;
 
-  const todoEntry = editor.read.nodes.above<Element>({
+  const todoEntry = tx.nodes.above<Element>({
     match: { type: todoType },
   });
 
@@ -27,12 +27,12 @@ export const insertTodoListItem = (
   const [todo, paragraphPath] = todoEntry;
 
   {
-    if (!editor.read.selection.isCollapsed()) {
+    if (!tx.selection.isCollapsed()) {
       tx.text.delete();
     }
 
-    const isStart = editor.read.points.isStart(selection.focus, paragraphPath);
-    const isEnd = editor.read.points.isEnd(selection.focus, paragraphPath);
+    const isStart = tx.points.isStart(selection.focus, paragraphPath);
+    const isEnd = tx.points.isEnd(selection.focus, paragraphPath);
 
     const nextParagraphPath = PathApi.next(paragraphPath);
 
@@ -52,7 +52,7 @@ export const insertTodoListItem = (
     /** If not end, split the nodes */
     if (isEnd) {
       /** If end, insert a list item after and select it */
-      const marks = editor.read.marks() || {};
+      const marks = tx.marks() || {};
       tx.nodes.insert(
         {
           checked: inheritCheckStateOnLineEndBreak ? todo.checked : false,

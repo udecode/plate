@@ -1,12 +1,15 @@
-import type { Descendant, RuntimeId, SnapshotIndex } from '../interfaces';
+import type { Descendant, RuntimeId } from '../interfaces';
 import type { Editor } from '../interfaces/editor';
-import type { Path } from '../interfaces/path';
 
 const NODE_OWNERS = new WeakMap<object, Editor>();
 const NODE_RUNTIME_IDS = new WeakMap<object, WeakMap<Editor, RuntimeId>>();
 const NEXT_RUNTIME_ID = new WeakMap<Editor, number>();
+let nextPreparedRuntimeIdOrdinal = 0;
 
-const pathKey = (path: Path) => path.join('.');
+export type PreparedRuntimeIdRange = Readonly<{
+  from: number;
+  to: number;
+}>;
 
 const allocateRuntimeId = (editor: Editor): RuntimeId => {
   const next = NEXT_RUNTIME_ID.get(editor) ?? 0;
@@ -28,9 +31,61 @@ const getRuntimeIds = (node: object) => {
 export const getRuntimeIdForNode = (
   node: object,
   editor: Editor
-): RuntimeId | null => NODE_RUNTIME_IDS.get(node)?.get(editor) ?? null;
+): RuntimeId | null => {
+  const existing = NODE_RUNTIME_IDS.get(node)?.get(editor);
+
+  if (existing) return existing;
+  return null;
+};
+
+/** @internal Reserve query-order-independent identities for one prepared forest. */
+export const reservePreparedRuntimeIdRange = (
+  span: number
+): PreparedRuntimeIdRange => {
+  if (!Number.isSafeInteger(span) || span < 0) {
+    throw new RangeError(`Invalid prepared runtime-id range span ${span}.`);
+  }
+
+  const from = nextPreparedRuntimeIdOrdinal;
+  const to = from + span;
+
+  if (!Number.isSafeInteger(to)) {
+    throw new RangeError(
+      'Prepared runtime-id range exceeds safe integer space.'
+    );
+  }
+  nextPreparedRuntimeIdOrdinal = to;
+
+  return Object.freeze({ from, to });
+};
+
+/** @internal Resolve the opaque identity reserved for one node-open offset. */
+export const preparedRuntimeIdAt = (
+  range: PreparedRuntimeIdRange,
+  offset: number
+): RuntimeId | null =>
+  Number.isSafeInteger(offset) && offset >= 0 && range.from + offset < range.to
+    ? (`p${range.from + offset}` as RuntimeId)
+    : null;
+
+/** @internal Resolve a prepared identity back to its node-open offset. */
+export const preparedRuntimeIdOffset = (
+  range: PreparedRuntimeIdRange,
+  runtimeId: RuntimeId
+) => {
+  if (!runtimeId.startsWith('p')) return null;
+  const ordinal = Number.parseInt(runtimeId.slice(1), 10);
+
+  return Number.isSafeInteger(ordinal) &&
+    runtimeId === `p${ordinal}` &&
+    ordinal >= range.from &&
+    ordinal < range.to
+    ? ordinal - range.from
+    : null;
+};
 
 const advanceNextRuntimeId = (editor: Editor, runtimeId: RuntimeId) => {
+  if (!runtimeId.startsWith('n')) return;
   const numericPart = Number.parseInt(runtimeId.slice(1), 10);
   const next = NEXT_RUNTIME_ID.get(editor) ?? 0;
 
@@ -73,6 +128,18 @@ export const setRuntimeId = (
   advanceNextRuntimeId(editor, runtimeId);
 };
 
+export const assignFreshRuntimeId = (
+  node: object,
+  editor: Editor
+): RuntimeId => {
+  const runtimeId = allocateRuntimeId(editor);
+
+  NODE_OWNERS.set(node, editor);
+  getRuntimeIds(node).set(editor, runtimeId);
+
+  return runtimeId;
+};
+
 export const inheritRuntimeId = (
   nextNode: object,
   previousNode: object,
@@ -90,6 +157,32 @@ export const inheritRuntimeId = (
   setRuntimeId(nextNode, editor, runtimeId);
 };
 
+export const inheritRuntimeIds = (
+  nextNode: Descendant,
+  previousNode: Descendant,
+  editor: Editor
+) => {
+  inheritRuntimeId(nextNode, previousNode, editor);
+
+  if (
+    !('children' in nextNode) ||
+    !('children' in previousNode) ||
+    !Array.isArray(nextNode.children) ||
+    !Array.isArray(previousNode.children)
+  ) {
+    return;
+  }
+
+  for (let index = 0; index < previousNode.children.length; index += 1) {
+    const nextChild = nextNode.children[index];
+    const previousChild = previousNode.children[index];
+
+    if (nextChild && previousChild) {
+      inheritRuntimeIds(nextChild, previousChild, editor);
+    }
+  }
+};
+
 export const seedRuntimeIds = (
   children: readonly Descendant[],
   editor: Editor
@@ -101,26 +194,4 @@ export const seedRuntimeIds = (
       seedRuntimeIds(child.children, editor);
     }
   }
-};
-
-export const seedRuntimeIdsFromIndex = (
-  children: readonly Descendant[],
-  editor: Editor,
-  existingIndex: SnapshotIndex,
-  parentPath: Path = []
-) => {
-  children.forEach((child, index) => {
-    const path = [...parentPath, index] as Path;
-    const runtimeId = existingIndex.pathToId[pathKey(path)];
-
-    if (runtimeId) {
-      setRuntimeId(child, editor, runtimeId);
-    } else {
-      getOrCreateRuntimeId(child, editor);
-    }
-
-    if ('children' in child && Array.isArray(child.children)) {
-      seedRuntimeIdsFromIndex(child.children, editor, existingIndex, path);
-    }
-  });
 };

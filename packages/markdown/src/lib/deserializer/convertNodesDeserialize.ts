@@ -3,8 +3,7 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { Node as UnistNode } from 'unist';
 
 import type { MdRootContent } from '../mdast';
-import type { MdDecoration } from '../types';
-import type { DeserializeMdOptions } from './deserializeMd';
+import type { DeserializeMdContext, MdDecoration } from '../types';
 
 import { mdastToPlate } from '../types';
 import { customMdxDeserialize } from './utils';
@@ -13,7 +12,7 @@ import { getDeserializerByKey } from './utils/getDeserializerByKey';
 export const convertNodesDeserialize = (
   nodes: MdRootContent[],
   deco: MdDecoration,
-  options: DeserializeMdOptions
+  options: DeserializeMdContext
 ): Descendant[] => {
   return nodes.reduce<Descendant[]>((acc, node) => {
     // Only process nodes that pass the filtering
@@ -27,7 +26,7 @@ export const convertNodesDeserialize = (
 export const buildSlateNode = (
   mdastNode: UnistNode,
   deco: MdDecoration,
-  options: DeserializeMdOptions
+  options: DeserializeMdContext
 ): Descendant[] => {
   /** Handle custom mdx nodes */
   if (isMdxJsxNode(mdastNode)) {
@@ -35,7 +34,7 @@ export const buildSlateNode = (
     return Array.isArray(result) ? result : [result];
   }
 
-  const type = mdastToPlate(options.editor!, mdastNode.type);
+  const type = options.getPluginType(mdastToPlate(mdastNode.type));
 
   const nodeParser = getDeserializerByKey(type, options);
 
@@ -53,13 +52,13 @@ const isMdxJsxNode = (
 
 const shouldIncludeNode = (
   node: MdRootContent,
-  options: DeserializeMdOptions
+  options: DeserializeMdContext
 ): boolean => {
   const { allowedNodes, allowNode, disallowedNodes } = options;
 
   if (!node.type) return true;
 
-  const type = mdastToPlate(options.editor!, node.type);
+  const type = options.getPluginType(mdastToPlate(node.type));
 
   // First check allowedNodes/disallowedNodes
   if (

@@ -1,11 +1,11 @@
 import {
+  type Anchor,
   NodeApi,
   PathApi,
   type EditorUpdateTransaction,
   type Point,
   type Range,
   RangeApi,
-  type RangeRef,
 } from '@platejs/plite';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -16,6 +16,7 @@ import {
   writePliteViewSelection,
 } from '../view-selection';
 import { applyContentRootSelectionMoveCommand } from './content-root-navigation';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import {
   type EditableCommand,
@@ -27,16 +28,10 @@ import type {
   EditableSelectionSourceTransition,
 } from './input-state';
 import {
-  applyBackspaceAfterBlockVoid,
-  applyBackspaceAtLeadingInlineVoidBlockBoundary,
   applyParagraphBreakAfterSelectedBlockVoid,
   createDefaultParagraph,
 } from './mutation-block-editing';
-import {
-  applyFullBlockDeleteFragment,
-  applyFullBlockTextReplacement,
-  canUseCachedCollapsedTextInsert,
-} from './mutation-full-block-editing';
+import { canUseCachedCollapsedTextInsert } from './mutation-full-block-editing';
 import { applyModelOwnedHistoryIntent } from './mutation-history';
 import { profileEditableMutationDuration } from './mutation-profiler';
 import { withProjectedMutationRoot } from './mutation-root-scope';
@@ -47,10 +42,14 @@ import {
   failInvariant,
   getEditorExtensionRegistry,
   type Editor as RuntimeEditor,
-  rangeRef as editorRangeRef,
   before as editorBefore,
   after as editorAfter,
+  dispatchCommand,
+  editorCommands,
+  insertText as editorInsertText,
+  move as editorMove,
   string as editorString,
+  toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
@@ -82,24 +81,9 @@ export const applyModelOwnedDeleteIntent = ({
   editor: Editor;
   unit?: 'block' | 'line' | 'word';
 }) => {
-  const selection = readRuntimeSelection(editor);
-
-  if (
-    direction === 'backward' &&
-    unit == null &&
-    (applyBackspaceAtLeadingInlineVoidBlockBoundary(editor, selection) ||
-      applyBackspaceAfterBlockVoid(editor, selection))
-  ) {
-    return;
-  }
-
-  editor.update((tx) => {
-    if (direction === 'backward') {
-      tx.text.deleteBackward({ unit: unit ?? 'character' });
-      return;
-    }
-
-    tx.text.deleteForward({ unit: unit ?? 'character' });
+  dispatchCommand(editor, editorCommands.delete, {
+    direction,
+    unit: unit ?? 'character',
   });
 };
 
@@ -110,8 +94,8 @@ export const applyModelOwnedExpandedDelete = ({
   direction: 'backward' | 'forward';
   editor: Editor;
 }) => {
-  editor.update((tx) => {
-    tx.fragment.delete({ direction });
+  dispatchCommand(editor, editorCommands.deleteFragment, {
+    direction,
   });
 };
 
@@ -122,8 +106,16 @@ export const applyModelOwnedLineBreak = ({
   editor: RuntimeEditor;
   kind: 'open-line' | 'paragraph' | 'soft';
 }) => {
+  if (kind === 'paragraph') {
+    dispatchCommand(editor, editorCommands.insertBreak);
+    return;
+  }
+  if (kind === 'soft') {
+    dispatchCommand(editor, editorCommands.insertSoftBreak);
+    return;
+  }
+
   if (
-    kind !== 'soft' &&
     applyParagraphBreakAfterSelectedBlockVoid(
       editor,
       readRuntimeSelection(editor)
@@ -132,37 +124,35 @@ export const applyModelOwnedLineBreak = ({
     return;
   }
 
+  const selection = readRuntimeSelection(editor);
+  const blockEntry =
+    selection && RangeApi.isCollapsed(selection)
+      ? editor.read((state) =>
+          state.nodes.above({
+            at: selection.anchor,
+            match: (node) =>
+              NodeApi.isElement(node) && state.nodes.isBlock(node),
+          })
+        )
+      : undefined;
+
+  if (!blockEntry) {
+    dispatchCommand(editor, editorCommands.insertBreak);
+    return;
+  }
+
+  const [, blockPath] = blockEntry;
+  const insertionPoint = { path: blockPath.concat(0), offset: 0 };
+
   editor.update((tx) => {
-    if (kind === 'open-line') {
-      const selection = tx.selection();
-      const blockEntry =
-        selection && RangeApi.isCollapsed(selection)
-          ? tx.nodes.above({
-              at: selection.anchor,
-              match: (node) =>
-                NodeApi.isElement(node) && tx.nodes.isBlock(node),
-            })
-          : undefined;
-
-      if (!blockEntry) {
-        tx.break.insert();
-        return;
-      }
-
-      const [, blockPath] = blockEntry;
-      const insertionPoint = { path: blockPath.concat(0), offset: 0 };
-
-      tx.nodes.insert(createDefaultParagraph(), { at: blockPath });
-      tx.selection.set({ anchor: insertionPoint, focus: insertionPoint });
-      return;
-    }
-
-    if (kind === 'paragraph') {
-      tx.break.insert();
-      return;
-    }
-
-    tx.break.insertSoft();
+    tx.command(editorCommands.insertNodes, {
+      nodes: createDefaultParagraph(),
+      options: { at: blockPath },
+    });
+    tx.selection.set({
+      anchor: insertionPoint,
+      focus: insertionPoint,
+    });
   });
 };
 
@@ -200,24 +190,42 @@ const applyProjectedClipboardInsertDataHandlers = (
   return false;
 };
 
-const deleteProjectedRangeRefs = (
-  tx: { text: { delete: (options: { at: Range }) => void } },
-  rangeRefs: RangeRef[]
+const deleteProjectedRanges = (
+  editor: RuntimeEditor,
+  tx: EditorUpdateTransaction,
+  ranges: readonly Range[]
 ) => {
-  const ranges = rangeRefs
-    .map((rangeRef) => rangeRef.unref())
-    .filter((range): range is Range => !!range);
+  for (const range of [...ranges].reverse()) {
+    if (RangeApi.isCollapsed(range)) continue;
 
-  for (const range of ranges.reverse()) {
-    if (!RangeApi.isCollapsed(range)) {
-      tx.text.delete({ at: range });
-    }
+    withProjectedMutationRoot(
+      editor,
+      range.anchor.root ?? range.focus.root,
+      () => {
+        tx.command(editorCommands.deleteFragment, {
+          at: range,
+          direction: 'forward',
+        });
+      }
+    );
   }
 };
 
-const releaseProjectedRangeRefs = (rangeRefs: RangeRef[]) => {
-  for (const rangeRef of rangeRefs) {
-    rangeRef.unref();
+const deleteProjectedRangeAnchors = (
+  editor: RuntimeEditor,
+  tx: EditorUpdateTransaction,
+  rangeAnchors: Anchor<Range>[]
+) => {
+  const ranges = rangeAnchors
+    .map((rangeAnchor) => rangeAnchor.release())
+    .filter((range): range is Range => !!range);
+
+  deleteProjectedRanges(editor, tx, ranges);
+};
+
+const releaseProjectedRangeAnchors = (rangeAnchors: Anchor<Range>[]) => {
+  for (const rangeAnchor of rangeAnchors) {
+    rangeAnchor.release();
   }
 };
 
@@ -235,30 +243,6 @@ const applyProjectedViewSelectionTextCommand = ({
   }
 
   const runtimeEditor = getCanonicalRuntimeEditor(editor);
-  const modelSelection = readRuntimeSelection(runtimeEditor);
-
-  if (
-    text &&
-    applyFullBlockTextReplacement(runtimeEditor, modelSelection, text)
-  ) {
-    savePliteViewSelectionHistoryEntry(runtimeEditor, {
-      redo: null,
-      undo: viewSelection,
-    });
-    writePliteViewSelection(editor, null);
-
-    return true;
-  }
-
-  if (!text && applyFullBlockDeleteFragment(runtimeEditor, modelSelection)) {
-    savePliteViewSelectionHistoryEntry(runtimeEditor, {
-      redo: null,
-      undo: viewSelection,
-    });
-    writePliteViewSelection(editor, null);
-
-    return true;
-  }
 
   const resolution = resolveProjectedSelectionTarget(
     runtimeEditor,
@@ -276,21 +260,23 @@ const applyProjectedViewSelectionTextCommand = ({
   const { target } = resolution;
 
   runtimeEditor.update((tx) => {
-    for (const range of [...target.ranges].reverse()) {
-      if (!RangeApi.isCollapsed(range)) {
-        tx.text.delete({ at: range });
-      }
-    }
+    deleteProjectedRanges(runtimeEditor, tx, target.ranges);
 
     if (text) {
-      tx.text.insert(text, { at: target.start });
+      tx.command(editorCommands.insertText, {
+        options: { at: target.start },
+        text,
+      });
     }
 
     const selectionPoint = text
       ? advancePointByText(target.start, text)
       : target.start;
 
-    tx.selection.set({ anchor: selectionPoint, focus: selectionPoint });
+    tx.selection.set({
+      anchor: selectionPoint,
+      focus: selectionPoint,
+    });
   });
   savePliteViewSelectionHistoryEntry(runtimeEditor, {
     redo: null,
@@ -329,10 +315,9 @@ const applyProjectedViewSelectionDataCommand = ({
   }
 
   const { target } = resolution;
-  const fragment = decodeProjectedClipboardFragment(runtimeEditor, data);
+  const slice = decodeProjectedClipboardFragment(editor, data);
   const text = data.getData('text/plain');
-  const modelSelection = readRuntimeSelection(runtimeEditor);
-  const hasFragmentPayload = !!fragment && fragment.length > 0;
+  const hasFragmentPayload = !!slice && slice.content.length > 0;
   const hasFallbackPayload = !!text || hasFragmentPayload;
   const hasInsertDataHandlers =
     getProjectedClipboardInsertDataHandlers(runtimeEditor).length > 0;
@@ -345,13 +330,19 @@ const applyProjectedViewSelectionDataCommand = ({
   if (!hasFallbackPayload) {
     const previousSelection = runtimeEditor.read((state) => state.selection());
 
-    runtimeEditor.update((tx) => {
-      const rangeRefs = target.ranges.map((range) =>
-        editorRangeRef(runtimeEditor, range, { affinity: 'inward' })
+    runtimeEditor.update({ tags: 'paste' }, (tx) => {
+      const rangeAnchors = target.ranges.map((range) =>
+        runtimeEditor.anchor(range, {
+          association: 'inward',
+          deletion: 'nearest',
+        })
       );
 
       try {
-        tx.selection.set({ anchor: target.start, focus: target.start });
+        tx.selection.set({
+          anchor: target.start,
+          focus: target.start,
+        });
         handled = withProjectedMutationRoot(
           runtimeEditor,
           target.start.root,
@@ -360,13 +351,17 @@ const applyProjectedViewSelectionDataCommand = ({
         );
 
         if (handled) {
-          deleteProjectedRangeRefs(tx, rangeRefs);
+          deleteProjectedRangeAnchors(runtimeEditor, tx, rangeAnchors);
         } else {
-          releaseProjectedRangeRefs(rangeRefs);
-          tx.selection.set(previousSelection);
+          releaseProjectedRangeAnchors(rangeAnchors);
+          if (previousSelection) {
+            tx.selection.set(previousSelection);
+          } else {
+            tx.selection.clear();
+          }
         }
       } catch (error) {
-        releaseProjectedRangeRefs(rangeRefs);
+        releaseProjectedRangeAnchors(rangeAnchors);
         throw error;
       }
     });
@@ -382,28 +377,19 @@ const applyProjectedViewSelectionDataCommand = ({
     return true;
   }
 
-  if (
-    text &&
-    !hasFragmentPayload &&
-    !hasInsertDataHandlers &&
-    applyFullBlockTextReplacement(runtimeEditor, modelSelection, text)
-  ) {
-    savePliteViewSelectionHistoryEntry(runtimeEditor, {
-      redo: null,
-      undo: viewSelection,
-    });
-    writePliteViewSelection(editor, null);
-
-    return true;
-  }
-
-  runtimeEditor.update((tx) => {
-    const rangeRefs = target.ranges.map((range) =>
-      editorRangeRef(runtimeEditor, range, { affinity: 'inward' })
+  runtimeEditor.update({ tags: 'paste' }, (tx) => {
+    const rangeAnchors = target.ranges.map((range) =>
+      runtimeEditor.anchor(range, {
+        association: 'inward',
+        deletion: 'nearest',
+      })
     );
 
     try {
-      tx.selection.set({ anchor: target.start, focus: target.start });
+      tx.selection.set({
+        anchor: target.start,
+        focus: target.start,
+      });
       handled = withProjectedMutationRoot(
         runtimeEditor,
         target.start.root,
@@ -411,14 +397,17 @@ const applyProjectedViewSelectionDataCommand = ({
       );
 
       if (handled) {
-        deleteProjectedRangeRefs(tx, rangeRefs);
+        deleteProjectedRangeAnchors(runtimeEditor, tx, rangeAnchors);
         return;
       }
 
-      deleteProjectedRangeRefs(tx, rangeRefs);
+      deleteProjectedRangeAnchors(runtimeEditor, tx, rangeAnchors);
       if (hasFragmentPayload) {
         withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
-          tx.fragment.insert(fragment);
+          tx.command(editorCommands.replaceSlice, {
+            options: { at: target.start },
+            slice,
+          });
         });
       } else {
         withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
@@ -430,7 +419,7 @@ const applyProjectedViewSelectionDataCommand = ({
         });
       }
     } catch (error) {
-      releaseProjectedRangeRefs(rangeRefs);
+      releaseProjectedRangeAnchors(rangeAnchors);
       throw error;
     }
   });
@@ -473,22 +462,21 @@ const applyProjectedViewSelectionLineBreakCommand = ({
   const { target } = resolution;
 
   runtimeEditor.update((tx) => {
-    for (const range of [...target.ranges].reverse()) {
-      if (!RangeApi.isCollapsed(range)) {
-        tx.text.delete({ at: range });
-      }
-    }
+    deleteProjectedRanges(runtimeEditor, tx, target.ranges);
 
-    tx.selection.set({ anchor: target.start, focus: target.start });
+    tx.selection.set({
+      anchor: target.start,
+      focus: target.start,
+    });
 
     withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
       if (kind !== 'open-line') {
         if (kind === 'paragraph') {
-          tx.break.insert();
+          tx.command(editorCommands.insertBreak);
           return;
         }
 
-        tx.break.insertSoft();
+        tx.command(editorCommands.insertSoftBreak);
         return;
       }
 
@@ -498,15 +486,21 @@ const applyProjectedViewSelectionLineBreakCommand = ({
       });
 
       if (!blockEntry) {
-        tx.break.insert();
+        tx.command(editorCommands.insertBreak);
         return;
       }
 
       const [, blockPath] = blockEntry;
       const insertionPoint = { path: blockPath.concat(0), offset: 0 };
 
-      tx.nodes.insert(createDefaultParagraph(), { at: blockPath });
-      tx.selection.set({ anchor: insertionPoint, focus: insertionPoint });
+      tx.command(editorCommands.insertNodes, {
+        nodes: createDefaultParagraph(),
+        options: { at: blockPath },
+      });
+      tx.selection.set({
+        anchor: insertionPoint,
+        focus: insertionPoint,
+      });
     });
   });
   savePliteViewSelectionHistoryEntry(runtimeEditor, {
@@ -547,42 +541,43 @@ const applyRootLocalSelectionMoveCommand = ({
   }
 
   writePliteViewSelection(editor, null);
-  editor.update((tx) => {
-    if (command.axis === 'document') {
-      const point = command.reverse
-        ? (tx.points.start([]) ??
-          failInvariant('Expected a document start point for selection move'))
-        : (tx.points.end([]) ??
-          failInvariant('Expected a document end point for selection move'));
 
-      tx.selection.set(
-        command.extend
-          ? createRange(selection.anchor, point)
-          : createRange(point, point)
-      );
-      return;
+  if (command.axis === 'document') {
+    const point = editor.read((state) =>
+      command.reverse ? state.points.start([]) : state.points.end([])
+    );
+
+    if (!point) {
+      failInvariant('Expected a document edge point for selection move');
     }
 
-    if (command.extend) {
-      tx.selection.move({
-        edge: 'focus',
-        reverse: command.reverse,
-        unit: getSelectionMoveUnit(command),
-      });
-      return;
-    }
-
-    if (RangeApi.isCollapsed(selection)) {
-      tx.selection.move({
-        reverse: command.reverse,
-        unit: getSelectionMoveUnit(command),
-      });
-      return;
-    }
-
-    tx.selection.collapse({
-      edge: command.reverse ? 'start' : 'end',
+    dispatchCommand(editor, editorCommands.select, {
+      target: command.extend
+        ? createRange(selection.anchor, point)
+        : createRange(point, point),
     });
+    return true;
+  }
+
+  if (command.extend) {
+    editorMove(editor, {
+      edge: 'focus',
+      reverse: command.reverse,
+      unit: getSelectionMoveUnit(command),
+    });
+    return true;
+  }
+
+  if (RangeApi.isCollapsed(selection)) {
+    editorMove(editor, {
+      reverse: command.reverse,
+      unit: getSelectionMoveUnit(command),
+    });
+    return true;
+  }
+
+  dispatchCommand(editor, editorCommands.collapse, {
+    options: { edge: command.reverse ? 'start' : 'end' },
   });
 
   return true;
@@ -649,8 +644,10 @@ export const applyModelOwnedTransposeCharacterIntent = ({
   };
 
   editor.update((tx) => {
-    tx.text.delete({ at: createRange(start, end) });
-    tx.text.insert(swapped, { at: clonePoint(start) });
+    tx.command(editorCommands.insertText, {
+      options: { at: createRange(start, end) },
+      text: swapped,
+    });
     tx.selection.set(nextSelection);
   });
 
@@ -702,23 +699,15 @@ export const applyEditableCommand = ({
       {
         const selection = command.selection ?? readRuntimeSelection(editor);
 
-        if (applyFullBlockDeleteFragment(editor, selection)) {
-          return true;
-        }
-
         if (selection && RangeApi.isCollapsed(selection)) {
           return true;
         }
 
-        editor.update((tx) => {
-          if (selection && RangeApi.isExpanded(selection)) {
-            tx.fragment.delete({ at: selection });
-            return;
-          }
-
-          tx.fragment.delete(
-            command.direction ? { direction: command.direction } : undefined
-          );
+        dispatchCommand(editor, editorCommands.deleteFragment, {
+          ...(selection && RangeApi.isExpanded(selection)
+            ? { at: selection }
+            : {}),
+          direction: command.direction ?? 'forward',
         });
         return true;
       }
@@ -755,12 +744,11 @@ export const applyEditableCommand = ({
         return true;
       }
 
-      (
+      return (
         editor.api as unknown as {
           clipboard: { insertData: (data: DataTransfer) => boolean };
         }
       ).clipboard.insertData(command.data);
-      return true;
 
     case 'insert-text':
       if (
@@ -772,9 +760,7 @@ export const applyEditableCommand = ({
         return true;
       }
 
-      editor.update((tx) => {
-        tx.text.insert(command.text);
-      });
+      editorInsertText(editor, command.text);
       return true;
 
     case 'transpose-character':
@@ -785,34 +771,33 @@ export const applyEditableCommand = ({
 
     case 'select':
     case 'select-all': {
-      let nextSelection: Range | null = null;
-      editor.update((tx) => {
-        nextSelection =
-          command.kind === 'select'
-            ? command.selection
-            : {
-                anchor:
-                  tx.points.start([]) ??
-                  failInvariant(
-                    'Expected a document start point for select all'
-                  ),
-                focus:
-                  tx.points.end([]) ??
-                  failInvariant('Expected a document end point for select all'),
-              };
-        tx.selection.set(nextSelection);
+      const nextSelection =
+        command.kind === 'select'
+          ? command.selection
+          : {
+              anchor:
+                editor.read((state) => state.points.start([])) ??
+                failInvariant('Expected a document start point for select all'),
+              focus:
+                editor.read((state) => state.points.end([])) ??
+                failInvariant('Expected a document end point for select all'),
+            };
+
+      dispatchCommand(editor, editorCommands.select, {
+        target: nextSelection,
       });
+      const appliedSelection = readRuntimeSelection(editor);
       writePliteViewSelection(
         editor,
         command.kind === 'select-all' &&
-          nextSelection &&
+          appliedSelection &&
           shouldUseModelBackedSelectAllSelection({
             editor: editor as ReactRuntimeEditor,
-            selection: nextSelection,
+            selection: appliedSelection,
           })
           ? createMainRootPliteViewSelection(
-              nextSelection,
-              editor.read((state) => state.view.root())
+              appliedSelection,
+              toInternalRoot(editor.read((state) => state.view.root()))
             )
           : null
       );
@@ -925,8 +910,9 @@ export const applyModelOwnedTextInput = ({
     profileEditableMutationDuration(
       'model-text-input-insert-at-selection',
       () =>
-        editor.update((tx) => {
-          tx.text.insert(data, { at: selection });
+        dispatchCommand(editor, editorCommands.insertText, {
+          options: { at: selection },
+          text: data,
         })
     );
   } else if (
@@ -934,15 +920,14 @@ export const applyModelOwnedTextInput = ({
     (RangeApi.isExpanded(selection) || inputType !== 'insertText')
   ) {
     writePliteViewSelection(editor, null);
-    if (!applyFullBlockTextReplacement(editor, selection, data)) {
-      profileEditableMutationDuration(
-        'model-text-input-insert-at-target-selection',
-        () =>
-          editor.update((tx) => {
-            tx.text.insert(data, { at: selection });
-          })
-      );
-    }
+    profileEditableMutationDuration(
+      'model-text-input-insert-at-target-selection',
+      () =>
+        dispatchCommand(editor, editorCommands.insertText, {
+          options: { at: selection },
+          text: data,
+        })
+    );
   } else {
     profileEditableMutationDuration('model-text-input-apply-command', () =>
       applyEditableCommand({
@@ -968,6 +953,7 @@ export const applyModelOwnedTextInput = ({
 };
 
 export const applyEditableRepairRequest = ({
+  domPhaseScheduler,
   domRepairQueue,
   editor,
   forceRender,
@@ -975,6 +961,7 @@ export const applyEditableRepairRequest = ({
   request,
   syncDOMSelectionToEditor,
 }: {
+  domPhaseScheduler: DOMPhaseScheduler;
   domRepairQueue: DOMRepairQueue;
   editor: ReactRuntimeEditor;
   forceRender: () => void;
@@ -1048,14 +1035,21 @@ export const applyEditableRepairRequest = ({
 
         if (request.syncDOMSelection === false) {
           markProgrammaticSelectionUpdate();
-          globalThis.setTimeout?.(() => {
+          const clearProgrammaticSelectionUpdate = () => {
             if (
               inputController.state.selectionChangeOrigin ===
               'programmatic-export'
             ) {
               inputController.state.isUpdatingSelection = false;
             }
-          }, 160);
+          };
+
+          domPhaseScheduler.schedule(
+            'selection-repair',
+            'clear-programmatic-selection-update',
+            clearProgrammaticSelectionUpdate,
+            { delay: 160, timing: 'timeout' }
+          );
           return;
         }
 
@@ -1073,17 +1067,39 @@ export const applyEditableRepairRequest = ({
         };
 
         syncProgrammaticDOMSelection();
-        globalThis.queueMicrotask?.(syncProgrammaticDOMSelection);
-        globalThis.setTimeout?.(syncProgrammaticDOMSelection);
-        globalThis.setTimeout?.(syncProgrammaticDOMSelection, 80);
-        globalThis.setTimeout?.(() => {
+        const clearProgrammaticSelectionUpdate = () => {
           if (
             inputController.state.selectionChangeOrigin ===
             'programmatic-export'
           ) {
             inputController.state.isUpdatingSelection = false;
           }
-        }, 160);
+        };
+
+        domPhaseScheduler.schedule(
+          'selection-repair',
+          'sync-programmatic-selection-microtask',
+          syncProgrammaticDOMSelection,
+          { timing: 'microtask' }
+        );
+        domPhaseScheduler.schedule(
+          'selection-repair',
+          'sync-programmatic-selection-timeout',
+          syncProgrammaticDOMSelection,
+          { timing: 'timeout' }
+        );
+        domPhaseScheduler.schedule(
+          'selection-repair',
+          'sync-programmatic-selection-settle',
+          syncProgrammaticDOMSelection,
+          { delay: 80, timing: 'timeout' }
+        );
+        domPhaseScheduler.schedule(
+          'selection-repair',
+          'clear-programmatic-selection-update',
+          clearProgrammaticSelectionUpdate,
+          { delay: 160, timing: 'timeout' }
+        );
         return;
       }
 

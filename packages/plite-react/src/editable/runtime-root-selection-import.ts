@@ -1,9 +1,6 @@
-import { type RefObject, useMemo } from 'react';
-import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
+import { useMemo } from 'react';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
-import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import type { DOMRepairQueue } from './dom-repair-queue';
-import type { EditableInputController } from './input-controller';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
   createRuntimeSelectionChangeHandler,
   createRuntimeSelectionChangeScheduler,
@@ -11,50 +8,37 @@ import {
 } from './runtime-selection-engine';
 
 export const useEditableRootSelectionImport = ({
-  androidInputManagerRef,
-  domRepairQueueRef,
-  editor,
-  inputController,
-  processing,
-  readOnly,
+  runtime,
 }: {
-  androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
-  domRepairQueueRef: RefObject<DOMRepairQueue | null>;
-  editor: ReactRuntimeEditor;
-  inputController: EditableInputController;
-  processing: RefObject<boolean>;
-  readOnly: boolean;
+  runtime: EditableDOMRuntime;
 }) => {
+  const { editor, inputController, readOnly } = runtime;
   const onDOMSelectionChange = useMemo(
     () =>
       createRuntimeSelectionChangeHandler({
-        androidInputManagerRef,
-        domRepairQueueRef,
+        androidInputManagerRef: runtime.androidInputManagerRef,
+        domRepairQueueRef: runtime.domRepairQueueRef,
         editor,
         inputController,
-        processing,
+        processing: runtime.processing,
         readOnly,
       }),
-    [
-      androidInputManagerRef,
-      domRepairQueueRef,
-      editor,
-      inputController,
-      processing,
-      readOnly,
-    ]
+    [editor, inputController, readOnly, runtime]
   );
   const scheduleOnDOMSelectionChange = useMemo(
     () => createRuntimeSelectionChangeScheduler(onDOMSelectionChange),
     [onDOMSelectionChange]
   );
+
   useIsomorphicLayoutEffect(
-    () => () => {
-      scheduleOnDOMSelectionChange.cancel();
-      onDOMSelectionChange.cancel();
-    },
-    [onDOMSelectionChange, scheduleOnDOMSelectionChange]
+    () =>
+      runtime.installDisposable('selection-import', () => {
+        scheduleOnDOMSelectionChange.cancel();
+        onDOMSelectionChange.cancel();
+      }),
+    [onDOMSelectionChange, runtime, scheduleOnDOMSelectionChange]
   );
+
   const selectionImportController = useMemo(
     () =>
       createRuntimeSelectionImportController({

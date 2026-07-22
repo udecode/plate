@@ -102,28 +102,29 @@ To log errors instead of throwing them, set `throwErrors` to `false` in the conf
 
 Besides using the DebugPlugin, there are other effective ways to debug your Plate editor:
 
-### 1. Override Editor Methods with Logging
+### 1. Inspect Committed Changes
 
-Use `overrideEditor` to wrap editor methods and add logging:
+Subscribe to commits when you need to inspect editor writes. Each commit exposes the canonical `DocumentChange`, tags, version, and changed-state queries without patching editor methods:
 
 ```ts
-const LoggingPlugin = createPlatePlugin({
-  key: 'logging',
-}).overrideEditor(({ editor, tf: { apply } }) => ({
-  tf: {
-    apply(operation) {
-      console.debug('Operation:', operation);
-      apply(operation);
-    },
-  },
-}));
-
 const editor = createPlateEditor({
-  plugins: [LoggingPlugin],
+  plugins: [],
 });
+
+const unsubscribe = editor.subscribeCommit((commit) => {
+  console.debug('Editor commit:', {
+    change: commit.changes.toJSON(),
+    documentChanged: commit.changed.has('document'),
+    tags: commit.tags,
+    version: commit.version,
+  });
+});
+
+// Call this when the debugging session ends.
+unsubscribe();
 ```
 
-This approach allows you to log operations, selections, or any other editor behavior you want to inspect.
+Use `editor.subscribe(...)` instead when the listener also needs the current snapshot. For a reusable editing policy, install a Plite command handler or correction with `.extendExtension()` and test that behavior directly.
 
 ### 2. Remove Suspected Plugins
 
@@ -210,4 +211,4 @@ Indicates that the `useElement` hook is being used outside of the appropriate el
 
 ### PLUGIN_NODE_TYPE
 
-Thrown when a plugin is incorrectly configured as both an element and a leaf. This error occurs when a plugin's configuration contradicts itself by setting both `isElement` and `isLeaf` to true.
+Thrown when a plugin declares both `schema.element` and `schema.mark`. A plugin owns either an element type or a text property, never both.

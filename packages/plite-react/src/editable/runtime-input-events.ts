@@ -5,17 +5,22 @@ import {
   useRef,
 } from 'react';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableInputKernel } from './editing-kernel';
 import { isSelectionInEditorView } from './input-controller';
 import {
-  getDOMInputRepairTarget,
   useEditableDOMInputHandler,
   useEditableInputHandler,
 } from './input-router';
-import type { EditableInputController } from './input-state';
+import {
+  type RepairDOMInput,
+  type EditableInputController,
+  runTrackedEditableCompositionMutation,
+} from './input-state';
 import {
   applyEditableInput,
-  type DeferredOperation,
+  type DeferredMutation,
 } from './model-input-strategy';
 import type { EditableEventRuntime } from './runtime-event-engine';
 import { readRuntimeSelection } from './runtime-selection-state';
@@ -24,26 +29,35 @@ import { armModelOwnedTextInputGuard } from './selection-controller';
 type InputHandler = (event: ReactInputEvent<HTMLDivElement>) => boolean | void;
 
 const syncModelOwnedTextInputSelectionToDOM = ({
-  rootElement,
+  domPhaseScheduler,
   syncDOMSelectionToEditor,
 }: {
-  rootElement: HTMLDivElement;
+  domPhaseScheduler: DOMPhaseScheduler;
   syncDOMSelectionToEditor: () => void;
 }) => {
   const sync = () => {
     syncDOMSelectionToEditor();
   };
-  const window = rootElement.ownerDocument.defaultView;
 
   sync();
-  window?.queueMicrotask(sync);
-  window?.requestAnimationFrame(sync);
+  domPhaseScheduler.schedule(
+    'selection-repair',
+    'input-selection-sync-microtask',
+    sync,
+    { timing: 'microtask' }
+  );
+  domPhaseScheduler.schedule(
+    'selection-repair',
+    'input-selection-sync-frame',
+    sync,
+    { timing: 'animation-frame' }
+  );
 };
 
 export const useRuntimeInputEvents = ({
   androidInputManagerRef,
   deferNativeTextInputRepair = false,
-  deferredOperations,
+  deferredMutations,
   editor,
   handledDOMBeforeInputRef,
   inputController,
@@ -51,12 +65,13 @@ export const useRuntimeInputEvents = ({
   readOnly,
   repair,
   rootRef,
+  runtime,
   syncDOMSelectionToEditor,
   trace,
 }: {
   androidInputManagerRef: EditableEventRuntime['android']['managerRef'];
   deferNativeTextInputRepair?: boolean;
-  deferredOperations: RefObject<DeferredOperation[]>;
+  deferredMutations: RefObject<DeferredMutation[]>;
   editor: ReactRuntimeEditor;
   handledDOMBeforeInputRef: RefObject<boolean>;
   inputController: EditableInputController;
@@ -64,22 +79,46 @@ export const useRuntimeInputEvents = ({
   readOnly: boolean;
   repair: EditableEventRuntime['repair'];
   rootRef: RefObject<HTMLDivElement | null>;
+  runtime: EditableDOMRuntime;
   syncDOMSelectionToEditor: () => void;
   trace: EditableEventRuntime['trace'];
 }) => {
+  const { domPhaseScheduler } = runtime;
   const handledDOMInputEventsRef = useRef<WeakSet<Event>>(new WeakSet());
-  const markHandledDOMInput = useCallback((event: Event) => {
+  const claimDOMInput = useCallback((event: Event) => {
+    const claimed = handledDOMInputEventsRef.current.has(event);
+
     handledDOMInputEventsRef.current.add(event);
+    return claimed;
   }, []);
+  const runOwnedDOMMutation = useCallback(
+    (callback: () => void) =>
+      runtime.runOwnedDOMMutation('scheduler', callback),
+    [runtime]
+  );
+  const repairDOMInput = useCallback<RepairDOMInput>(
+    (nativeInput, rootElement) =>
+      runTrackedEditableCompositionMutation({
+        callback: () => trace.repairDOMInputWithTrace(nativeInput, rootElement),
+        editor,
+        inputController,
+      }).result,
+    [editor, inputController, trace]
+  );
   const domInput = useEditableDOMInputHandler({
+    claimDOMInput,
     deferNativeTextInputRepair,
+    domPhaseScheduler,
     editor,
     inputController,
-    onHandledDOMInput: markHandledDOMInput,
     onReadOnlyDOMInput: repair.forceRender,
-    repairDOMInput: trace.repairDOMInputWithTrace,
+    preferRuntimeDOMInputTarget: () =>
+      androidInputManagerRef.current ? true : undefined,
+    repairDOMInput,
     readOnly,
     rootRef,
+    runOwnedDOMMutation,
+    shouldRepairDOMInput: () => !androidInputManagerRef.current,
   });
 
   const handleInput = useCallback(
@@ -103,34 +142,78 @@ export const useRuntimeInputEvents = ({
         return;
       }
 
-      const skipNativeTextInputRepair = handledDOMInputEventsRef.current.has(
-        event.nativeEvent
-      );
+      const nativeInput = event.nativeEvent as InputEvent;
+      const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+      const settledCompositionInputMatches =
+        pendingCompositionEnd?.ownership === 'settled' &&
+        pendingCompositionEnd.data === nativeInput.data &&
+        (nativeInput.inputType === 'insertFromComposition' ||
+          nativeInput.inputType === 'insertText') &&
+        pendingCompositionEnd.inputTypes.includes(nativeInput.inputType);
+
+      if (pendingCompositionEnd?.ownership === 'settled') {
+        pendingCompositionEnd.cancel();
+      }
+      const compositionEndPending =
+        pendingCompositionEnd?.ownership === 'external' ||
+        pendingCompositionEnd?.ownership === 'plite' ||
+        settledCompositionInputMatches;
+      const pendingRootDOMInput = inputController.state.pendingRootDOMInput;
+      const rootDOMInputMatches =
+        !!pendingRootDOMInput &&
+        pendingRootDOMInput.inputType === nativeInput.inputType &&
+        pendingRootDOMInput.data === nativeInput.data;
+      const rootHandledDOMInput =
+        rootDOMInputMatches && pendingRootDOMInput.handled;
+      const capturedDOMInputRepair =
+        !compositionEndPending &&
+        rootDOMInputMatches &&
+        !pendingRootDOMInput.handled &&
+        rootRef.current
+          ? {
+              repairDOMInput: trace.repairDOMInputWithTrace,
+              rootElement: rootRef.current,
+              target: pendingRootDOMInput.target,
+            }
+          : null;
+
+      if (pendingRootDOMInput) {
+        inputController.state.pendingRootDOMInput = null;
+      }
+      const skipNativeTextInputRepair =
+        compositionEndPending || rootHandledDOMInput;
       trace.recordKernelEventTrace({
         family: 'input',
         intent: decision.intent,
         ownership: decision.ownership,
         target: event.target,
       });
-      const inputResult = applyEditableInput({
-        androidInputManagerRef,
-        deferredOperations,
+      const inputResult = runTrackedEditableCompositionMutation({
+        callback: () =>
+          applyEditableInput({
+            androidInputManagerRef,
+            capturedDOMInputRepair,
+            deferredMutations,
+            editor,
+            event,
+            handledDOMBeforeInputRef,
+            inputController,
+            onInput,
+            readOnly,
+            skipNativeTextInputRepair,
+          }),
         editor,
-        event,
-        handledDOMBeforeInputRef,
         inputController,
-        onInput,
-        readOnly,
-        skipNativeTextInputRepair,
-      });
+      }).result;
       if (
+        !compositionEndPending &&
         decision.intent === 'composition' &&
         (decision.ownership === 'model-owned' ||
           inputController.state.selectionSource === 'model-owned')
       ) {
         armModelOwnedTextInputGuard({ inputController });
         syncModelOwnedTextInputSelectionToDOM({
-          rootElement: event.currentTarget,
+          domPhaseScheduler,
           syncDOMSelectionToEditor,
         });
       }
@@ -140,7 +223,8 @@ export const useRuntimeInputEvents = ({
     },
     [
       androidInputManagerRef,
-      deferredOperations,
+      deferredMutations,
+      domPhaseScheduler,
       editor,
       handledDOMBeforeInputRef,
       inputController,
@@ -180,54 +264,8 @@ export const useRuntimeInputEvents = ({
         ownership: decision.ownership,
         target: event.target,
       });
-
-      const rootElement = event.currentTarget;
-      const { data, inputType } = event.nativeEvent as InputEvent;
-      const frameId = trace.getCurrentKernelFrameId();
-
-      if (readOnly) {
-        return;
-      }
-
-      if (
-        deferNativeTextInputRepair &&
-        inputType === 'insertText' &&
-        typeof data === 'string' &&
-        data.length > 0
-      ) {
-        return;
-      }
-
-      const target =
-        inputType === 'insertText'
-          ? getDOMInputRepairTarget(
-              editor,
-              rootElement,
-              { data, inputType },
-              {
-                preferRuntimeSelection:
-                  (inputController.state.modelOwnedTextInputGuard ?? 0) > 0 ||
-                  (inputController.preferModelSelectionForInputRef.current &&
-                    inputController.state.selectionSource === 'model-owned'),
-              }
-            )
-          : null;
-
-      markHandledDOMInput(event.nativeEvent);
-      trace.repairDOMInputAfterFrame(
-        { data, inputType, target },
-        rootElement,
-        frameId
-      );
     },
-    [
-      deferNativeTextInputRepair,
-      editor,
-      inputController,
-      markHandledDOMInput,
-      readOnly,
-      trace,
-    ]
+    [editor, inputController, trace]
   );
   const onRuntimeInputCapture = useEditableInputHandler({
     handleInput: handleInputCapture,

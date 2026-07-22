@@ -1,5 +1,5 @@
 import type {
-  EditorUpdateTransaction,
+  EditorTransactionSpecBuilder,
   NodeInsertNodesOptions,
 } from '@platejs/plite';
 import type { TEquationElement } from '@platejs/utils';
@@ -7,7 +7,7 @@ import type { TEquationElement } from '@platejs/utils';
 export type InsertEquationOptions = NodeInsertNodesOptions<TEquationElement>;
 
 export const insertEquation = (
-  tx: EditorUpdateTransaction,
+  tx: Pick<EditorTransactionSpecBuilder, 'nodes'>,
   type: string,
   options?: InsertEquationOptions
 ) => {

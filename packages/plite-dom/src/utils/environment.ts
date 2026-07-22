@@ -1,3 +1,6 @@
+const APPLE_PLATFORM_RE = /Mac|iPad|iPhone|iPod/;
+const MAC_OS_USER_AGENT_RE = /Mac OS X/;
+
 /** True when the current browser user agent is iOS. */
 export const IS_IOS =
   typeof navigator !== 'undefined' &&
@@ -5,8 +8,17 @@ export const IS_IOS =
   /iPad|iPhone|iPod/.test(navigator.userAgent) &&
   !(window as Window & { MSStream?: boolean }).MSStream;
 
-export const IS_APPLE =
-  typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent);
+/** Detects the host's Apple modifier semantics, including spoofed user agents. */
+export const isApplePlatform = (
+  hostNavigator:
+    | Pick<Navigator, 'platform' | 'userAgent'>
+    | undefined = typeof navigator === 'undefined' ? undefined : navigator
+) =>
+  !!hostNavigator &&
+  (APPLE_PLATFORM_RE.test(hostNavigator.platform) ||
+    MAC_OS_USER_AGENT_RE.test(hostNavigator.userAgent));
+
+export const IS_APPLE = isApplePlatform();
 
 /** True when the current browser user agent is Android. */
 export const IS_ANDROID =

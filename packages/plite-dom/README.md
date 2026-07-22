@@ -41,26 +41,69 @@ Public root exports are grouped around:
   `IS_WEBKIT`, and `IS_WECHATBROWSER`.
 - Decoration helpers `isElementDecorationsEqual`, `isTextDecorationsEqual`, and
   `splitDecorationsByChild`.
+- `defineHostCodec`, `hostCodecs`, and `writeHostFragmentData` for
+  schema-linked clipboard formats that decode and encode immutable
+  `ContentSlice` values. Codecs receive a read-only model snapshot and a
+  snapshotted host payload; fitted slice replacement exclusively owns writes.
 - `PliteDOMResolutionError` for failed assert-style DOM resolution.
 
 Public type exports are grouped around:
 
 - DOM bridge APIs: `DOMApi`, `DOMClipboardApi`,
-  `DOMClipboardInsertDataHandler`, and `DOMEditorOptions`.
+  `DOMClipboardInsertDataHandler`, `DOMEditorOptions`, `ScrollIntoViewOptions`,
+  and `ScrollIntoViewTarget`.
 - DOM coverage policies and results such as `DOMCoverageBoundary`,
   `DOMCoverageSelectionPolicy`, `DOMCoveragePlitePointResult`, and
   `DOMCoverageDOMRangeResult`.
 - DOM primitive type names: `DOMNode`, `DOMElement`, `DOMText`, `DOMPoint`,
   `DOMRange`, `DOMStaticRange`, and `DOMSelection`.
+- Host codec types: `HostCodec`, `HostCodecParseContext`, `HostCodecPhase`,
+  `HostCodecSerializeContext`, `HostDataSource`, and `HostCodecSchemaTarget`.
 - Hotkey and diff helper types: `HotkeySpec`, `HotkeyPlatform`,
   `HotkeyMatchOptions`, `KeyboardEventLike`, `StringDiff`, and `TextDiff`.
 
-The `/internal` package subpath is reserved for sibling Plite packages in this
-repo. Apps, extension libraries, and framework adapters should use the root
-`plite-dom` export.
+## Host codecs
+
+```ts
+import { ContentSlice } from '@platejs/plite'
+import { defineHostCodec, hostCodecs } from '@platejs/plite-dom'
+
+const json = defineHostCodec({
+  format: 'application/x-example+json',
+  key: 'example-json',
+  parse: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
+  schema: [{ kind: 'schema' }],
+  serialize: ({ slice }) => JSON.stringify(slice),
+})
+
+const extension = hostCodecs('example-host-codecs', [json])
+```
+
+Ordinary element and property ownership comes from the host integration's
+compiled schema binding. A property claim has
+`{ kind: 'property', id: bindingPropertyId }`; it never repeats or retains the
+source schema declaration. Low-level integrations should pass the compiler-owned
+ID unchanged instead of reconstructing it from a key or target.
+
+Parse and query callbacks receive `{ data, format, source, state }`.
+Serialization receives `{ format, slice, state }`. `source` is an immutable
+snapshot of the incoming host formats and files; `state` is a read-only editor
+snapshot. Codecs never receive the editor, the live `DataTransfer`, a fitter,
+or a write transaction. Return `null` from `parse` or `serialize` to delegate
+to the next eligible codec. Framework clipboard writers use
+`writeHostFragmentData(editor, data, slice)` to serialize each registered MIME
+format into a `setData`-compatible host sink.
+
+## DOM coverage
 
 DOM coverage boundaries model same-root content whose DOM is hidden, staged, or
 virtualized. They keep selection, copy, find, and Plite-to-DOM conversion tied
 to explicit policies instead of assuming every document node is mounted.
+
+## Internal subpath
+
+The `/internal` package subpath is reserved for sibling Plite packages in this
+repo. Apps, extension libraries, and framework adapters should use the root
+`plite-dom` export.
 
 Framework packages own bridge installation.

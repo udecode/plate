@@ -1,47 +1,122 @@
 import {
-  type EditorStatePatch,
-  type Operation,
-  OperationApi,
-  type Range,
+  DocumentChange,
+  type Editor,
+  type EditorEffect,
+  type EditorSchemaIdentity,
+  type Selection,
+  SelectionApi,
   type Value,
 } from '@platejs/plite';
-import { isObject } from '@platejs/plite/internal';
+import {
+  type encodeEditorEffect,
+  type encodeEditorSelection,
+  isObject,
+  MAIN_ROOT_KEY,
+} from '@platejs/plite/internal';
 
-export interface Batch<V extends Value = Value> {
-  /** Operations captured in one undo or redo unit. */
-  operations: Operation<V>[];
-  /** Selection before the batch was applied. */
-  selectionBefore: Range | null;
-  /** Root owning `selectionBefore` when the batch belongs to a non-main root. */
-  selectionBeforeRoot?: string;
-  /** State-field patches captured in the same undo or redo unit. */
-  statePatches: EditorStatePatch[];
+import {
+  decodeHistoryValue,
+  encodeHistoryValue,
+  isHistorySchemaIdentity,
+} from './history-codec';
+import { getHistory } from './history-state';
+
+export interface Batch<_V extends Value = Value> {
+  /** Canonical change to apply when this batch is consumed. */
+  readonly change: DocumentChange;
+  /** Effects to emit when this batch is consumed. */
+  readonly effects: readonly EditorEffect[];
+  /** Selection after the original batch was applied. */
+  readonly selectionAfter: Selection;
+  /** Additional named root owning `selectionAfter`; omit for the primary root. */
+  readonly selectionAfterRoot?: string;
+  /** Selection before the original batch was applied. */
+  readonly selectionBefore: Selection;
+  /** Additional named root owning `selectionBefore`; omit for the primary root. */
+  readonly selectionBeforeRoot?: string;
 }
 
-/**
- * Undo and redo stacks for editor operations and state-field patches.
- */
-
+/** Undo and redo stacks of inverse document changes. */
 export interface History<V extends Value = Value> {
-  redos: Batch<V>[];
-  undos: Batch<V>[];
+  /** Monotonic revision of the published history value. */
+  readonly revision: number;
+  readonly redos: readonly Batch<V>[];
+  /** Schema identity that owns every persisted change in this history. */
+  readonly schema: EditorSchemaIdentity | null;
+  readonly undos: readonly Batch<V>[];
 }
+
+export type HistoryJSON = Readonly<{
+  redos: readonly HistoryBatchJSON[];
+  schema: EditorSchemaIdentity | null;
+  undos: readonly HistoryBatchJSON[];
+  version: 4;
+}>;
+
+export type HistoryBatchJSON = Readonly<{
+  change: ReturnType<DocumentChange['toJSON']>;
+  effects: readonly ReturnType<typeof encodeEditorEffect>[];
+  selectionAfter: ReturnType<typeof encodeEditorSelection>;
+  /** Additional named root; omitted for the primary root. */
+  selectionAfterRoot?: string;
+  selectionBefore: ReturnType<typeof encodeEditorSelection>;
+  /** Additional named root; omitted for the primary root. */
+  selectionBeforeRoot?: string;
+}>;
+
+const hasFunctions = (
+  value: Record<PropertyKey, unknown>,
+  keys: readonly PropertyKey[]
+) => keys.every((key) => typeof value[key] === 'function');
+
+const isSelection = (value: unknown): value is Selection =>
+  value === null ||
+  (SelectionApi.isSelection(value) &&
+    value.anchor.root !== MAIN_ROOT_KEY &&
+    value.focus.root !== MAIN_ROOT_KEY);
+
+const isAdditionalRoot = (value: unknown) =>
+  value === undefined ||
+  (typeof value === 'string' && value.length > 0 && value !== MAIN_ROOT_KEY);
+
+const isEffect = (value: unknown): value is EditorEffect =>
+  isObject(value) &&
+  Object.hasOwn(value, 'value') &&
+  isObject(value.type) &&
+  typeof value.type.key === 'string' &&
+  hasFunctions(value.type, ['invert', 'map']);
+
+const isBatch = (value: unknown): value is Batch =>
+  isObject(value) &&
+  DocumentChange.isDocumentChange(value.change) &&
+  Array.isArray(value.effects) &&
+  value.effects.every(isEffect) &&
+  isSelection(value.selectionAfter) &&
+  isSelection(value.selectionBefore) &&
+  isAdditionalRoot(value.selectionAfterRoot) &&
+  isAdditionalRoot(value.selectionBeforeRoot);
 
 // eslint-disable-next-line no-redeclare
 export const History = {
-  /**
-   * Check if a value is a `History` object.
-   */
-
+  /** Check whether a value is an in-memory history object. */
   isHistory(value: unknown): value is History {
     return (
       isObject(value) &&
+      Number.isSafeInteger(value.revision) &&
+      (value.revision as number) >= 0 &&
       Array.isArray(value.redos) &&
+      value.redos.every(isBatch) &&
+      (value.schema === null || isHistorySchemaIdentity(value.schema)) &&
       Array.isArray(value.undos) &&
-      (value.redos.length === 0 ||
-        OperationApi.isOperationList(value.redos[0].operations)) &&
-      (value.undos.length === 0 ||
-        OperationApi.isOperationList(value.undos[0].operations))
+      value.undos.every(isBatch)
     );
+  },
+  /** Decode and validate history against an editor without installing it. */
+  fromJSON<V extends Value>(editor: Editor<V>, json: unknown): History<V> {
+    return decodeHistoryValue(editor, json);
+  },
+  /** Encode the editor's current history as validated versioned JSON. */
+  toJSON<V extends Value>(editor: Editor<V>): HistoryJSON {
+    return encodeHistoryValue(editor, getHistory(editor));
   },
 };

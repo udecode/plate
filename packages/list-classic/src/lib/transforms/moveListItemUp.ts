@@ -28,7 +28,7 @@ export const moveListItemUp = (
     const [listNode, listPath] = list;
     const [liNode, liPath] = listItem;
 
-    const liParent = editor.read.nodes.above<Element>({
+    const liParent = tx.nodes.above<Element>({
       at: listPath,
       match: { type: editor.getType(KEYS.li) },
     });
@@ -43,7 +43,7 @@ export const moveListItemUp = (
       }
 
       const condA = hasListChild(editor, liNode);
-      const listParent = editor.read.nodes.parent<Element>(liPath);
+      const listParent = tx.nodes.parent<Element>(liPath);
       const condB =
         !!listParent && liPath.at(-1)! < listParent[0].children.length - 1;
 
@@ -58,7 +58,7 @@ export const moveListItemUp = (
         );
       }
       if (condA) {
-        const toListNode = editor.read.nodes.get<Element>(toListPath)?.[0];
+        const toListNode = tx.nodes.get<Element>(toListPath)?.[0];
 
         if (!toListNode) return;
 
@@ -70,7 +70,7 @@ export const moveListItemUp = (
       }
       // If there is siblings li, move them to the new list
       if (condB) {
-        const toListNode = editor.read.nodes.get<Element>(toListPath)?.[0];
+        const toListNode = tx.nodes.get<Element>(toListPath)?.[0];
 
         if (!toListNode) return;
 
@@ -94,7 +94,7 @@ export const moveListItemUp = (
     const toListPath = liPath.concat([1]);
 
     // If li has next siblings, we need to move them.
-    const listParent = editor.read.nodes.parent<Element>(liPath);
+    const listParent = tx.nodes.parent<Element>(liPath);
 
     if (listParent && liPath.at(-1)! < listParent[0].children.length - 1) {
       // If li has no sublist, insert one.
@@ -108,7 +108,7 @@ export const moveListItemUp = (
         );
       }
 
-      const toListNode = editor.read.nodes.get<Element>(toListPath)?.[0];
+      const toListNode = tx.nodes.get<Element>(toListPath)?.[0];
 
       if (!toListNode) return;
 
@@ -122,12 +122,18 @@ export const moveListItemUp = (
     }
 
     const movedUpLiPath = PathApi.next(liParentPath);
+    const removeSourceList =
+      tx.nodes.get<Element>(listPath)?.[0].children.length === 1;
 
     // Move li one level up: next to the li parent.
     tx.nodes.move({
       at: liPath,
       to: movedUpLiPath,
     });
+
+    if (removeSourceList) {
+      tx.nodes.remove({ at: listPath });
+    }
 
     return true;
   };

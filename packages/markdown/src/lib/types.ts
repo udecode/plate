@@ -3,7 +3,6 @@ export type * as unistLib from 'unist';
 import type { StrictExtract } from 'ts-essentials';
 import type { Node as UnistNode } from 'unist';
 
-import { type BaseEditor, getPluginKey } from '@platejs/core';
 import type { Descendant, Element, Text } from '@platejs/plite';
 import type { NodeKey, NodeMap, TListElement } from '@platejs/utils';
 import type { Nullable } from '@udecode/utils';
@@ -45,6 +44,22 @@ import type { MentionNode } from './plugins/remarkMention';
 
 import 'mdast-util-mdx';
 
+export type MarkdownConversionContext = Readonly<{
+  getPluginKey: (type: string) => string | undefined;
+  getPluginType: (key: string) => string;
+  hasPlugin: (key: string) => boolean;
+  isBlock: (node: Descendant) => boolean;
+  isInline: (node: Descendant) => boolean;
+}>;
+
+/** Prepared Markdown deserialization context supplied to conversion rules. */
+export type DeserializeMdContext = Readonly<DeserializeMdOptions> &
+  MarkdownConversionContext;
+
+/** Prepared Markdown serialization context supplied to conversion rules. */
+export type SerializeMdContext = Readonly<SerializeMdOptions> &
+  MarkdownConversionContext;
+
 export type MdRules = Partial<{
   [K in keyof PlateNodeMap]: Nullable<MdNodeParser<K>>;
 }> &
@@ -55,11 +70,11 @@ export type MdNodeParser<K extends keyof PlateNodeMap> = {
   deserialize?(
     mdastNode: MdNodeMap[K],
     deco: MdDecoration,
-    options: DeserializeMdOptions
+    options: DeserializeMdContext
   ): Descendant | Descendant[];
   serialize?(
     slateNode: PlateNodeMap[K],
-    options: SerializeMdOptions
+    options: SerializeMdContext
   ): MdRootContent;
 };
 
@@ -70,11 +85,11 @@ type BivariantCallback<TArgs extends readonly unknown[], TResult> = {
 type AnyNodeParser = {
   mark?: boolean;
   deserialize?: BivariantCallback<
-    [UnistNode, MdDecoration, DeserializeMdOptions],
+    [UnistNode, MdDecoration, DeserializeMdContext],
     Descendant | Descendant[]
   >;
   serialize?: BivariantCallback<
-    [Descendant, SerializeMdOptions],
+    [Descendant, SerializeMdContext],
     MdRootContent
   >;
 };
@@ -349,16 +364,9 @@ const MDAST_TO_PLATE_MAP = new Map<string, PlateType>(
   Object.entries(MDAST_TO_PLATE)
 );
 
-/**
- * Get plate node type from mdast node type if the mdast is mdast only return
- * the mdast type itself.
- */
-export const mdastToPlate = (editor: BaseEditor, mdastType: string) => {
-  const plateKey = MDAST_TO_PLATE_MAP.get(mdastType);
-  const pluginKey = plateKey ? getPluginKey(editor, plateKey) : undefined;
-
-  return pluginKey ?? plateKey ?? mdastType;
-};
+/** Map an mdast node type to its canonical Markdown rule key. */
+export const mdastToPlate = (mdastType: string) =>
+  MDAST_TO_PLATE_MAP.get(mdastType) ?? mdastType;
 
 /**
  * Get mdast node type from plate element type if the plateType is plate only

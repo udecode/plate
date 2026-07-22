@@ -8,6 +8,7 @@ import {
   type PliteWidgetStore,
 } from '../widget-store';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
+import type { PliteViewSourceErrorSink } from '../view-source';
 
 /** React-state projector used to refresh a widget store. */
 export type PliteWidgetStoreProjector<
@@ -16,6 +17,8 @@ export type PliteWidgetStoreProjector<
 > = {
   annotationStore?: PliteAnnotationStore<TAnnotation> | null;
   deps: readonly unknown[];
+  id?: string;
+  onError?: PliteViewSourceErrorSink;
   project: () => readonly PliteWidget<T>[];
 };
 
@@ -55,6 +58,12 @@ export function usePliteWidgetStore<
   const annotationStore = isPliteWidgetStoreProjector(widgetsOrOptions)
     ? widgetsOrOptions.annotationStore
     : annotationStoreArg;
+  const sourceId = isPliteWidgetStoreProjector(widgetsOrOptions)
+    ? widgetsOrOptions.id
+    : undefined;
+  const onError = isPliteWidgetStoreProjector(widgetsOrOptions)
+    ? widgetsOrOptions.onError
+    : undefined;
   const [widgetsCell] = useState(() => ({ current: widgets }));
 
   const store = useMemo(
@@ -62,9 +71,13 @@ export function usePliteWidgetStore<
       createPliteWidgetStore(
         editor,
         () => widgetsCell.current,
-        annotationStore
+        annotationStore,
+        {
+          id: sourceId,
+          onError,
+        }
       ),
-    [annotationStore, editor, widgetsCell]
+    [annotationStore, editor, onError, sourceId, widgetsCell]
   );
   const storeRef = useRef(store);
   const effectVersionRef = useRef(0);

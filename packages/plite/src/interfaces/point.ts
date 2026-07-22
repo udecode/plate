@@ -1,6 +1,5 @@
-import { type Operation, type Path, PathApi } from '..';
-import { getOperationRoot, getPointRoot } from '../internal/root-location';
-import type { TextDirection } from '../types/types';
+import { type Path, PathApi } from '..';
+import { getPointRoot } from '../internal/root-location';
 import { isObject } from '../utils/is-object';
 
 /**
@@ -17,10 +16,6 @@ export interface BasePoint {
 }
 
 export type Point = BasePoint;
-
-export interface PointTransformOptions {
-  affinity?: TextDirection | null;
-}
 
 export interface PointInterface {
   /**
@@ -48,15 +43,6 @@ export interface PointInterface {
    * Check if a value implements the `Point` interface.
    */
   isPoint: (value: unknown) => value is Point;
-
-  /**
-   * Transform a point by an operation.
-   */
-  transform: (
-    point: Point,
-    op: Operation,
-    options?: PointTransformOptions
-  ) => Point | null;
 }
 
 // eslint-disable-next-line no-redeclare
@@ -104,123 +90,6 @@ export const PointApi: PointInterface = {
       (value.root === undefined || typeof value.root === 'string') &&
       PathApi.isPath(value.path)
     );
-  },
-
-  transform(
-    point: Point | null,
-    op: Operation,
-    options: PointTransformOptions = {}
-  ): Point | null {
-    if (point === null) {
-      return null;
-    }
-
-    const { affinity = 'forward' } = options;
-    let { path, offset } = point;
-
-    if (getPointRoot(point).root !== getOperationRoot(op)) {
-      return point;
-    }
-
-    switch (op.type) {
-      case 'insert_node':
-      case 'move_node': {
-        path = PathApi.transform(path, op, options)!;
-        break;
-      }
-
-      case 'insert_text': {
-        if (
-          PathApi.equals(op.path, path) &&
-          (op.offset < offset ||
-            (op.offset === offset && affinity === 'forward'))
-        ) {
-          offset += op.text.length;
-        }
-
-        break;
-      }
-
-      case 'merge_node': {
-        if (PathApi.equals(op.path, path)) {
-          offset += op.position;
-        }
-
-        path = PathApi.transform(path, op, options)!;
-        break;
-      }
-
-      case 'remove_text': {
-        if (PathApi.equals(op.path, path) && op.offset <= offset) {
-          offset -= Math.min(offset - op.offset, op.text.length);
-        }
-
-        break;
-      }
-
-      case 'remove_node': {
-        if (
-          PathApi.equals(op.path, path) ||
-          PathApi.isAncestor(op.path, path)
-        ) {
-          return null;
-        }
-
-        path = PathApi.transform(path, op, options)!;
-        break;
-      }
-
-      case 'replace_fragment': {
-        if (
-          PathApi.equals(op.path, path) ||
-          PathApi.isAncestor(op.path, path)
-        ) {
-          return null;
-        }
-
-        path = PathApi.transform(path, op, options)!;
-        break;
-      }
-
-      case 'replace_children': {
-        const nextPath = PathApi.transform(path, op, options);
-
-        if (!nextPath) {
-          return null;
-        }
-
-        path = nextPath;
-        break;
-      }
-
-      case 'split_node': {
-        if (PathApi.equals(op.path, path)) {
-          if (op.position === offset && affinity == null) {
-            return null;
-          }
-          if (
-            op.position < offset ||
-            (op.position === offset && affinity === 'forward')
-          ) {
-            offset -= op.position;
-
-            path = PathApi.transform(path, op, {
-              ...options,
-              affinity: 'forward',
-            })!;
-          }
-        } else {
-          path = PathApi.transform(path, op, options)!;
-        }
-
-        break;
-      }
-
-      default:
-        return point;
-    }
-
-    return { ...point, path, offset };
   },
 };
 

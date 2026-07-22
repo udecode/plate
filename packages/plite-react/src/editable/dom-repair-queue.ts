@@ -5,7 +5,6 @@ import {
   isDOMElement,
   isDOMText,
 } from '@platejs/plite-dom';
-import { EDITOR_TO_WINDOW } from '@platejs/plite-dom/internal';
 import {
   getPliteNodeElementByPath,
   getPliteNodePathFromDOMElement,
@@ -18,6 +17,7 @@ import {
   getTextHostSelectionOffset,
   isInsideVirtualizedDOM,
 } from './dom-repair-text';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import type { EditableRepairPolicy } from './editing-kernel';
 import {
   getCurrentEditableEventFrame,
@@ -57,7 +57,7 @@ export type DOMRepairQueue = {
     frameId?: number | null
   ) => void;
   repair: (repairPolicy: EditableRepairPolicy) => void;
-  repairCaretAfterModelOperation: (
+  repairCaretAfterModelIntent: (
     kind?: 'repair-caret' | 'repair-caret-after-text-insert'
   ) => void;
   repairCaretAfterModelTextInsert: () => void;
@@ -70,11 +70,6 @@ export type DOMRepairFrameState = {
   cancelledBeforeFrameId: number;
   currentFrameId: number | null;
 };
-
-type DOMRepairSchedulerWindow =
-  | Pick<Window, 'queueMicrotask' | 'requestAnimationFrame' | 'setTimeout'>
-  | null
-  | undefined;
 
 const now = () => globalThis.performance?.now?.() ?? Date.now();
 
@@ -133,54 +128,13 @@ export const isDOMRepairFrameCurrent = (
 ) =>
   state.currentFrameId === frameId && frameId >= state.cancelledBeforeFrameId;
 
-const createDOMRepairScheduler = (
-  getRepairWindow: () => DOMRepairSchedulerWindow
-) => {
-  const scheduleRepairTimeout = (callback: () => void, delay = 0) => {
-    const repairWindow = getRepairWindow();
-
-    if (typeof repairWindow?.setTimeout === 'function') {
-      repairWindow.setTimeout(callback, delay);
-      return;
-    }
-
-    setTimeout(callback, delay);
-  };
-
-  const scheduleRepairMicrotask = (callback: () => void) => {
-    const repairWindow = getRepairWindow();
-
-    if (typeof repairWindow?.queueMicrotask === 'function') {
-      repairWindow.queueMicrotask(callback);
-      return;
-    }
-
-    queueMicrotask(callback);
-  };
-
-  const scheduleRepairAnimationFrame = (callback: () => void) => {
-    const repairWindow = getRepairWindow();
-
-    if (typeof repairWindow?.requestAnimationFrame === 'function') {
-      repairWindow.requestAnimationFrame(callback);
-      return;
-    }
-
-    scheduleRepairTimeout(callback, 16);
-  };
-
-  return {
-    scheduleRepairAnimationFrame,
-    scheduleRepairMicrotask,
-    scheduleRepairTimeout,
-  };
-};
-
 export const createDOMRepairQueue = ({
+  domPhaseScheduler,
   editor,
   inputController,
   scrollSelectionIntoView,
 }: {
+  domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   scrollSelectionIntoView: (
@@ -191,25 +145,20 @@ export const createDOMRepairQueue = ({
 }): DOMRepairQueue => {
   const frameState = createDOMRepairFrameState();
   let queue: DOMRepairQueue;
-
-  const getRepairWindow = () => {
-    const mappedWindow = EDITOR_TO_WINDOW.get(editor);
-
-    if (mappedWindow) {
-      return mappedWindow;
-    }
-
-    const root = ReactEditor.findDocumentOrShadowRoot(editor);
-
-    return 'defaultView' in root
-      ? root.defaultView
-      : root.ownerDocument.defaultView;
-  };
-  const {
-    scheduleRepairAnimationFrame,
-    scheduleRepairMicrotask,
-    scheduleRepairTimeout,
-  } = createDOMRepairScheduler(getRepairWindow);
+  const scheduler = domPhaseScheduler;
+  const scheduleRepairAnimationFrame = (callback: () => void) =>
+    scheduler.schedule('selection-repair', 'dom-repair-frame', callback, {
+      timing: 'animation-frame',
+    });
+  const scheduleRepairMicrotask = (callback: () => void) =>
+    scheduler.schedule('selection-repair', 'dom-repair-microtask', callback, {
+      timing: 'microtask',
+    });
+  const scheduleRepairTimeout = (callback: () => void, delay = 0) =>
+    scheduler.schedule('selection-repair', 'dom-repair-timeout', callback, {
+      delay,
+      timing: 'timeout',
+    });
 
   const scheduleTextInsertCaretRepair = ({
     delays = [],
@@ -236,15 +185,130 @@ export const createDOMRepairQueue = ({
     inputController.state.repairInducedSelectionOriginVersion =
       repairOriginVersion;
     inputController.state.selectionChangeOrigin = 'repair-induced';
-    setTimeout(() => {
-      if (
-        inputController.state.repairInducedSelectionOriginVersion ===
-          repairOriginVersion &&
-        inputController.state.selectionChangeOrigin === 'repair-induced'
-      ) {
-        inputController.state.selectionChangeOrigin = null;
+    scheduler.schedule(
+      'selection-repair',
+      'clear-repair-induced-selection-origin',
+      () => {
+        if (
+          inputController.state.repairInducedSelectionOriginVersion ===
+            repairOriginVersion &&
+          inputController.state.selectionChangeOrigin === 'repair-induced'
+        ) {
+          inputController.state.selectionChangeOrigin = null;
+        }
+      },
+      {
+        delay: REPAIR_INDUCED_SELECTION_ORIGIN_GUARD_MS,
+        timing: 'timeout',
       }
-    }, REPAIR_INDUCED_SELECTION_ORIGIN_GUARD_MS);
+    );
+  };
+
+  const applyCapturedModelTextInsert = (
+    nativeInput: DOMInputRepair,
+    rootElement: HTMLElement
+  ) => {
+    const target = nativeInput.target;
+    const insert = target?.insert;
+
+    if (!target?.preferCapturedInsert || !insert) {
+      return false;
+    }
+
+    const selection = profileDOMRepairDuration('captured-read-selection', () =>
+      readRuntimeSelection(editor)
+    );
+
+    if (
+      !selection ||
+      !RangeApi.isCollapsed(selection) ||
+      !PathApi.equals(selection.anchor.path, target.path) ||
+      selection.anchor.offset !== insert.offset
+    ) {
+      return false;
+    }
+
+    const pliteNode = profileDOMRepairDuration('captured-read-text', () =>
+      readRuntimeText(editor, target.path)
+    );
+    const textHost = profileDOMRepairDuration('captured-find-text-host', () =>
+      getPliteNodeElementByPath(editor, target.path)
+    );
+
+    if (
+      !pliteNode ||
+      !textHost ||
+      !rootElement.contains(textHost) ||
+      applyTextInsert(pliteNode.text, insert) !== target.text
+    ) {
+      return false;
+    }
+
+    const root = profileDOMRepairDuration('captured-find-root', () =>
+      ReactEditor.findDocumentOrShadowRoot(editor)
+    );
+    const domSelection = profileDOMRepairDuration(
+      'captured-read-dom-selection',
+      () => getSelection(root)
+    );
+    const anchorNode = domSelection?.anchorNode ?? null;
+    const anchorOffset = domSelection?.anchorOffset ?? null;
+
+    if (
+      anchorNode == null ||
+      anchorOffset == null ||
+      !textHost.contains(anchorNode)
+    ) {
+      return false;
+    }
+
+    const domOffset = profileDOMRepairDuration('captured-read-dom-offset', () =>
+      getTextHostSelectionOffset({
+        anchorNode,
+        anchorOffset,
+        textHost,
+      })
+    );
+
+    if (domOffset !== insert.offset) return false;
+
+    if (isInsideVirtualizedDOM(textHost)) {
+      setEditableModelSelectionPreference({
+        inputController,
+        preferModelSelection: true,
+        reason: 'repair-induced',
+        selectionSource: 'model-owned',
+      });
+      armModelOwnedTextInputGuard({ inputController });
+    }
+
+    const nextOffset = insert.offset + insert.text.length;
+
+    profileDOMRepairDuration('captured-update-model', () =>
+      updateNativeTextInput(editor, (tx) => {
+        tx.text.insert(insert.text, {
+          at: { path: target.path, offset: insert.offset },
+        });
+        const selectionAfter = tx.selection();
+
+        if (
+          !selectionAfter ||
+          !RangeApi.isCollapsed(selectionAfter) ||
+          !PathApi.equals(selectionAfter.anchor.path, target.path) ||
+          selectionAfter.anchor.offset !== nextOffset
+        ) {
+          tx.selection.set({
+            anchor: { path: target.path, offset: nextOffset },
+            focus: { path: target.path, offset: nextOffset },
+          });
+        }
+      })
+    );
+    profileDOMRepairDuration('captured-repair-caret', () =>
+      scheduleTextInsertCaretRepair()
+    );
+
+    return true;
   };
 
   queue = {
@@ -273,6 +337,10 @@ export const createDOMRepairQueue = ({
         typeof nativeInput.data !== 'string' ||
         nativeInput.data.length === 0
       ) {
+        return;
+      }
+
+      if (applyCapturedModelTextInsert(nativeInput, rootElement)) {
         return;
       }
 
@@ -514,22 +582,13 @@ export const createDOMRepairQueue = ({
         if (shouldMoveSelection) {
           armRepairInducedSelectionOriginGuard();
           if (textHost && isInsideVirtualizedDOM(textHost)) {
-            if (targetStillOwnsDOMSelection) {
-              setEditableModelSelectionPreference({
-                inputController,
-                preferModelSelection: false,
-                reason: 'native-selection',
-                selectionSource: 'dom-current',
-              });
-            } else {
-              setEditableModelSelectionPreference({
-                inputController,
-                preferModelSelection: true,
-                reason: 'repair-induced',
-                selectionSource: 'model-owned',
-              });
-              armModelOwnedTextInputGuard({ inputController });
-            }
+            setEditableModelSelectionPreference({
+              inputController,
+              preferModelSelection: true,
+              reason: 'repair-induced',
+              selectionSource: 'model-owned',
+            });
+            armModelOwnedTextInputGuard({ inputController });
           }
         }
         updateNativeTextInput(editor, (tx) => {
@@ -546,7 +605,6 @@ export const createDOMRepairQueue = ({
             });
           }
         });
-
         if (shouldRepairCaretAfterTextInsert) {
           scheduleTextInsertCaretRepair();
         } else if (shouldArmVirtualizedTextInsertCaretRepair) {
@@ -560,7 +618,7 @@ export const createDOMRepairQueue = ({
 
     repair(repairPolicy) {
       if (repairPolicy.kind === 'repair-caret') {
-        this.repairCaretAfterModelOperation(
+        this.repairCaretAfterModelIntent(
           repairPolicy.reason === 'repair-caret-after-text-insert'
             ? 'repair-caret-after-text-insert'
             : 'repair-caret'
@@ -568,7 +626,7 @@ export const createDOMRepairQueue = ({
       }
     },
 
-    repairCaretAfterModelOperation(
+    repairCaretAfterModelIntent(
       kind: 'repair-caret' | 'repair-caret-after-text-insert' = 'repair-caret'
     ) {
       const currentFrameId = profileDOMRepairDuration(
@@ -603,7 +661,6 @@ export const createDOMRepairQueue = ({
             intent: null,
             nativeAllowed: false,
             ownership: 'model-owned',
-            operations: [],
             repair: { kind },
             selectionChangeOrigin: 'repair-induced',
             selectionAfter: selectionBefore,
@@ -851,7 +908,9 @@ export const createDOMRepairQueue = ({
               }
               if (
                 kind === 'repair-caret-after-text-insert' &&
-                pendingTextInsertRepairMatches &&
+                (pendingTextInsertRepairMatches ||
+                  (isModelOwnedTextInsertRepair &&
+                    !hasPendingTextInsertRepair)) &&
                 domSelection.anchorNode === domNode &&
                 domSelection.anchorOffset === domOffset &&
                 domSelection.focusNode === domNode &&

@@ -89,9 +89,15 @@ const packageTestTargets = packageSlugs.map((slug) => {
     roots: ['src', 'test'].filter((rootName) =>
       existsSync(join(dir, rootName))
     ),
-    bunArgs: ['--preload', '../../config/plite-source-test-setup.ts'],
+    bunArgs: ['--config', '../../bunfig.toml'],
   };
 });
+
+export const createPackageTestCommandArgs = (target, batch) => [
+  ...target.bunArgs,
+  'test',
+  ...batch,
+];
 
 const run = (label, command, args, options = {}) => {
   console.info(`\n[check:core] ${label}`);
@@ -308,7 +314,7 @@ const runPackageTests = (target) => {
   for (const [index, batch] of batches.entries()) {
     const label = `${target.name} test batch ${index + 1}/${batches.length}`;
 
-    run(label, 'bun', ['test', ...target.bunArgs, ...batch], {
+    run(label, 'bun', createPackageTestCommandArgs(target, batch), {
       cwd: target.dir,
     });
   }

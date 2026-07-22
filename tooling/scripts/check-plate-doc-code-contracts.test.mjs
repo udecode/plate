@@ -122,15 +122,27 @@ test('requires typed handles for known schema properties', () => {
   assert.ok(issues.every((issue) => issue.reason.includes('typed handle')));
 });
 
-test('rejects callback configure and accepts runtime extension callbacks', () => {
+test('accepts contextual configure runtime fields and rejects model fields', () => {
   const source = [
     '```ts',
     'ParagraphPlugin.configure(({ editor }) => ({ options: { editor } }));',
+    'ParagraphPlugin.configure(() => ({ schema: { element: {} } }));',
+    "ParagraphPlugin.configure(() => { return { type: 'other' }; });",
+    'ParagraphPlugin.configure(() => runtimeConfig);',
     'ParagraphPlugin.extend(({ editor }) => ({ options: { editor } }));',
     '```',
   ].join('\n');
   const issues = auditPlateDocCode(source);
 
-  assert.equal(issues.length, 1);
-  assert.match(issues[0].reason, /configure is immutable object-only/);
+  assert.equal(issues.length, 3);
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('contextual plugin configure only accepts')
+    ).length,
+    2
+  );
+  assert.equal(
+    issues.filter((issue) => issue.reason.includes('explicit object')).length,
+    1
+  );
 });

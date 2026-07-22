@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   collectPackageTestFiles,
+  createPackageTestCommandArgs,
   createGenericTypecheckGates,
   discoverGenericTypeConfigs,
 } from './check-core.mjs';
@@ -88,6 +89,16 @@ test('typechecks generic files from their owning config and excludes them from B
     },
   ]);
   assert.deepEqual(runtimeFiles, [runtimeContract, runtimeTest]);
+});
+
+test('loads the root source-first Bun config before package test dispatch', () => {
+  assert.deepEqual(
+    createPackageTestCommandArgs(
+      { bunArgs: ['--config', '../../bunfig.toml'] },
+      ['./src/example.spec.ts']
+    ),
+    ['--config', '../../bunfig.toml', 'test', './src/example.spec.ts']
+  );
 });
 
 test('rejects ambient value declarations from the Bun runtime inventory', () => {

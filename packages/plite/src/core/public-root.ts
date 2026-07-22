@@ -1,13 +1,10 @@
-import type { RootKey, Value } from '../interfaces/editor';
+import type { NamedRootKey, RootKey } from '../interfaces/editor';
 import type { Location, Span } from '../interfaces/location';
-import type { Descendant, DescendantIn } from '../interfaces/node';
-import type { Operation } from '../interfaces/operation';
 import { RangeApi } from '../interfaces/range';
 import {
   getCommonLocationRoot,
   MAIN_ROOT_KEY,
 } from '../internal/root-location';
-import { cloneValue } from './clone';
 
 export { MAIN_ROOT_KEY } from '../internal/root-location';
 
@@ -109,61 +106,19 @@ export const getPublicExplicitLocationRoot = (
   return getPublicExplicitRangeRoot(location);
 };
 
-export const toPublicCommitOperation = (operation: Operation): Operation => {
-  if (!('root' in operation) || operation.root !== MAIN_ROOT_KEY) {
-    return operation;
-  }
-
-  const {
-    root: _root,
-    rootIsPresent: _rootIsPresent,
-    rootWasPresent: _rootWasPresent,
-    ...rest
-  } = operation as Operation & {
-    root?: RootKey;
-    rootIsPresent?: boolean;
-    rootWasPresent?: boolean;
-  };
-
-  return rest as Operation;
-};
-
-export const freezePublicCommitOperations = (
-  operations: readonly Operation[]
-): readonly Operation[] =>
-  Object.freeze(operations.map(toPublicCommitOperation));
-
-export const createRootReplaceChildrenOperation = <V extends Value>(
-  root: RootKey,
-  children: readonly Descendant[],
-  newChildren: readonly Descendant[],
-  options: {
-    rootIsPresent: boolean;
-    rootWasPresent: boolean;
-  }
-): Extract<Operation<V>, { type: 'replace_children' }> => ({
-  children: cloneValue([...children]) as DescendantIn<V>[],
-  index: 0,
-  newChildren: cloneValue([...newChildren]) as DescendantIn<V>[],
-  newSelection: null,
-  path: [],
-  root,
-  rootIsPresent: options.rootIsPresent,
-  rootWasPresent: options.rootWasPresent,
-  selection: null,
-  type: 'replace_children',
-});
-
 export const requireMutableRoot = (root: RootKey) => {
   if (root === MAIN_ROOT_KEY) {
     throw new Error('Cannot mutate the primary editor root through tx.roots.');
   }
 };
 
-export const getPublicRootReadKey = (root: RootKey | undefined): RootKey => {
-  if (root === MAIN_ROOT_KEY) {
-    throw new Error('Cannot read the primary editor root by key. Omit root.');
-  }
+/** Project an internal root without exposing the primary-root sentinel. */
+export const toPublicRoot = (root: RootKey): NamedRootKey | undefined =>
+  root === MAIN_ROOT_KEY ? undefined : root;
+
+/** Normalize a public root option into the private runtime root key. */
+export const toInternalRoot = (root: RootKey | undefined): RootKey => {
+  assertPublicRootKey(root);
 
   return root ?? MAIN_ROOT_KEY;
 };

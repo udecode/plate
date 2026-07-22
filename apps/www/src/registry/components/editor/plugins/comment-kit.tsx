@@ -82,7 +82,7 @@ export const commentPlugin = toPlatePlugin<
     },
   }))
   .configure({
-    node: { component: CommentLeaf },
+    render: { node: CommentLeaf },
     shortcuts: {
       setDraft: { keys: 'mod+shift+m' },
     },

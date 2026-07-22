@@ -14,6 +14,7 @@ import type {
   EditableCompositionStateSetter,
   EditableRepairRequest,
 } from './input-controller';
+import type { DOMInputRepairTarget, RepairDOMInput } from './input-state';
 import {
   applyEditableCommand,
   applyModelOwnedDataTransferInput,
@@ -21,6 +22,7 @@ import {
   applyModelOwnedTextInput,
 } from './mutation-controller';
 import { readRuntimeText } from './runtime-live-state';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 export {
   applyModelOwnedHistoryIntent,
@@ -32,7 +34,7 @@ type RefBox<T> = {
   current: T;
 };
 
-export type DeferredOperation = () => void;
+export type DeferredMutation = () => void;
 
 type EditableInputHandler = (
   event: ReactInputEvent<HTMLDivElement>
@@ -68,7 +70,8 @@ const isInputEventHandled = ({
 
 export const applyEditableInput = ({
   androidInputManagerRef,
-  deferredOperations,
+  capturedDOMInputRepair,
+  deferredMutations,
   editor,
   event,
   handledDOMBeforeInputRef,
@@ -78,7 +81,12 @@ export const applyEditableInput = ({
   skipNativeTextInputRepair = false,
 }: {
   androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
-  deferredOperations: RefBox<DeferredOperation[]>;
+  capturedDOMInputRepair?: {
+    repairDOMInput: RepairDOMInput;
+    rootElement: HTMLElement;
+    target: DOMInputRepairTarget | null;
+  } | null;
+  deferredMutations: RefBox<DeferredMutation[]>;
   editor: ReactRuntimeEditor;
   event: ReactInputEvent<HTMLDivElement>;
   handledDOMBeforeInputRef: RefBox<boolean>;
@@ -91,16 +99,39 @@ export const applyEditableInput = ({
     return inputResult();
   }
 
-  if (androidInputManagerRef.current) {
-    androidInputManagerRef.current.handleInput();
-    return inputResult();
-  }
-
   if (
     skipNativeTextInputRepair &&
     !readOnly &&
-    deferredOperations.current.length === 0
+    deferredMutations.current.length === 0
   ) {
+    handledDOMBeforeInputRef.current = false;
+    return inputResult();
+  }
+
+  const nativeInput = event.nativeEvent as InputEvent;
+  const isModelOwnedTextInputGuardActive =
+    (inputController.state.modelOwnedTextInputGuard ?? 0) > 0;
+  const modelOwnsTextInput =
+    isModelOwnedTextInputGuardActive ||
+    (inputController.preferModelSelectionForInputRef.current &&
+      inputController.state.selectionSource === 'model-owned');
+  const androidInputManager = androidInputManagerRef.current;
+  const androidOwnsInput =
+    androidInputManager?.handleInput(capturedDOMInputRepair?.target) ?? false;
+
+  if (androidOwnsInput) {
+    return inputResult();
+  }
+
+  if (capturedDOMInputRepair) {
+    capturedDOMInputRepair.repairDOMInput(
+      {
+        data: nativeInput.data,
+        inputType: nativeInput.inputType,
+        target: capturedDOMInputRepair.target,
+      },
+      capturedDOMInputRepair.rootElement
+    );
     handledDOMBeforeInputRef.current = false;
     return inputResult();
   }
@@ -118,16 +149,16 @@ export const applyEditableInput = ({
     );
   }
 
-  // Flush native operations, as native events will have propogated
+  // Flush native intents, as native events will have propogated
   // and we can correctly compare DOM text values in components
   // to stop rendering, so that browser functions like autocorrect
   // and spellcheck work as expected.
-  const hadDeferredOperations = deferredOperations.current.length > 0;
-  for (const operation of deferredOperations.current) {
-    operation();
+  const hadDeferredMutations = deferredMutations.current.length > 0;
+  for (const intent of deferredMutations.current) {
+    intent();
   }
-  deferredOperations.current = [];
-  if (hadDeferredOperations) {
+  deferredMutations.current = [];
+  if (hadDeferredMutations) {
     repairs.push({
       focus: true,
       kind: 'repair-caret',
@@ -139,18 +170,10 @@ export const applyEditableInput = ({
     });
   }
 
-  const nativeInput = event.nativeEvent as InputEvent;
-  const isModelOwnedTextInputGuardActive =
-    (inputController.state.modelOwnedTextInputGuard ?? 0) > 0;
-  const modelOwnsTextInput =
-    isModelOwnedTextInputGuardActive ||
-    (inputController.preferModelSelectionForInputRef.current &&
-      inputController.state.selectionSource === 'model-owned');
-
   if (
     !skipNativeTextInputRepair &&
-    !hadDeferredOperations &&
-    !modelOwnsTextInput &&
+    !hadDeferredMutations &&
+    (!modelOwnsTextInput || !!androidInputManager) &&
     nativeInput.inputType === 'insertText' &&
     typeof nativeInput.data === 'string' &&
     nativeInput.data.length > 0 &&
@@ -165,14 +188,29 @@ export const applyEditableInput = ({
       : isDOMElement(anchorNode)
         ? anchorNode.closest('[data-plite-node="text"]')
         : null;
-    const path = textHost ? getPliteNodePathFromDOMElement(textHost) : null;
+    const runtimeSelection = readRuntimeSelection(editor);
+    const runtimePoint =
+      androidInputManager &&
+      modelOwnsTextInput &&
+      runtimeSelection &&
+      RangeApi.isCollapsed(runtimeSelection)
+        ? runtimeSelection.anchor
+        : null;
+    const path =
+      runtimePoint?.path ??
+      (textHost ? getPliteNodePathFromDOMElement(textHost) : null);
     const pliteNode = path ? readRuntimeText(editor, path) : null;
 
-    if (pliteNode && anchorOffset != null && path) {
-      const offset = Math.max(
-        0,
-        Math.min(pliteNode.text.length, anchorOffset - nativeInput.data.length)
-      );
+    if (pliteNode && path && (runtimePoint || anchorOffset != null)) {
+      const offset = runtimePoint
+        ? runtimePoint.offset
+        : Math.max(
+            0,
+            Math.min(
+              pliteNode.text.length,
+              anchorOffset! - nativeInput.data.length
+            )
+          );
 
       applyEditableCommand({
         command: {
@@ -225,12 +263,13 @@ export const applyEditableInput = ({
   return inputResult(repairs);
 };
 
-export const applyModelOwnedBeforeInputOperation = ({
+export const applyModelOwnedBeforeInputMutation = ({
   command: preparedCommand,
   data,
   editor,
   inputType: type,
   native,
+  preserveComposing = false,
   selection,
   setComposing,
 }: {
@@ -239,6 +278,7 @@ export const applyModelOwnedBeforeInputOperation = ({
   editor: ReactRuntimeEditor;
   inputType: string;
   native: boolean;
+  preserveComposing?: boolean;
   selection: Range | null;
   setComposing: EditableCompositionStateSetter;
 }): EditableRepairRequest | null => {
@@ -325,6 +365,7 @@ export const applyModelOwnedBeforeInputOperation = ({
     case 'insertText': {
       if (type === 'insertFromComposition' && ReactEditor.isComposing(editor)) {
         commitInsertFromComposition({
+          preserveComposing,
           setComposing,
         });
       }

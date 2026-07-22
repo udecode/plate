@@ -61,7 +61,7 @@ export const readEditableDecorations = <T>(
 
   if (runtimeScope) {
     for (const runtimeId of runtimeScope) {
-      const scopedRootPath = snapshot.index.idToPath[runtimeId];
+      const scopedRootPath = snapshot.index.pathOf(runtimeId);
 
       if (!scopedRootPath) {
         continue;

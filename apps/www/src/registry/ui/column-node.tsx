@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TColumnElement } from 'platejs';
+import type { TColumnElement, TColumnGroupElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
 import { useDraggable, useDropLine } from '@platejs/dnd';
@@ -19,7 +19,6 @@ import {
   useEditorSelector,
   useElement,
   useFocusedLast,
-  usePath,
   usePluginOption,
   useEditorReadOnly,
   useRemoveNodeButton,
@@ -141,7 +140,9 @@ function DropLine() {
   );
 }
 
-export function ColumnGroupElement(props: PlateElementProps) {
+export function ColumnGroupElement(
+  props: PlateElementProps<TColumnGroupElement>
+) {
   return (
     <PlateElement className="mb-2" {...props}>
       <ColumnFloatingToolbar>
@@ -154,8 +155,7 @@ export function ColumnGroupElement(props: PlateElementProps) {
 function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
   const editor = useEditorRef();
   const readOnly = useEditorReadOnly();
-  const element = useElement<TColumnElement>();
-  const path = usePath();
+  const element = useElement<TColumnGroupElement>();
   const { props: buttonProps } = useRemoveNodeButton({ element });
   const selected = useElementSelected();
   const isCollapsed = useEditorSelector(
@@ -167,10 +167,8 @@ function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
   const open = isFocusedLast && !readOnly && selected && isCollapsed;
 
   const onColumnChange = (widths: string[]) => {
-    if (!path) return;
-
     editor.plugin(BaseColumnItemPlugin).update.set({
-      at: path,
+      at: element,
       widths,
     });
   };

@@ -11,7 +11,6 @@ import {
   useCallback,
   useEffect,
   useRef,
-  useState,
 } from 'react';
 import { type Path, type Range, RangeApi } from '@platejs/plite';
 import {
@@ -21,6 +20,7 @@ import {
   isDOMText,
 } from '@platejs/plite-dom';
 import {
+  type DOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
   NODE_TO_ELEMENT,
   setEditorDOMEditableElement,
@@ -32,22 +32,25 @@ import {
 } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { isInteractiveInternalTarget } from './input-controller';
-import type { EditableInputController } from './input-state';
+import type {
+  DOMInputRepairTarget,
+  EditableInputController,
+  RepairDOMInput,
+} from './input-state';
 import { getNativeTextInsertDelta } from './native-text-input-delta';
 import { readRuntimeText } from './runtime-live-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 import { armModelOwnedTextInputGuard } from './selection-controller';
-
-type MutableRefBox<T> = {
-  current: T;
-};
 
 type CancelableCallback = {
   cancel: () => void;
 };
 
 type DeferredTextInputRepair = {
+  data: string;
+  inputType: string;
   pathKey: string | null;
   repair: () => boolean;
   source: 'beforeinput' | 'input';
@@ -307,25 +310,7 @@ const createDOMInputRepair =
     return true;
   };
 
-export type DOMInputRepairTarget = {
-  insert?: {
-    offset: number;
-    text: string;
-  };
-  path: Path;
-  preferCapturedInsert?: boolean;
-  selectionOffset: number;
-  text: string;
-};
-
-export type RepairDOMInput = (
-  nativeInput: {
-    data: string | null;
-    inputType: string;
-    target?: DOMInputRepairTarget | null;
-  },
-  rootElement: HTMLElement
-) => void;
+export type { DOMInputRepairTarget, RepairDOMInput } from './input-state';
 
 export const repairPendingNativeTextInputModelSelection = ({
   editor,
@@ -618,6 +603,15 @@ const shouldPreferRuntimeTextInputRepairTarget = ({
     return false;
   }
 
+  if (
+    inputController.state.modelSelectionPreference?.reason ===
+      'native-selection' &&
+    inputController.state.modelSelectionPreference.selectionSource ===
+      'dom-current'
+  ) {
+    return true;
+  }
+
   const selection = readRuntimeSelection(editor);
 
   if (!selection || !RangeApi.isCollapsed(selection)) {
@@ -824,7 +818,7 @@ export const attachEditableGlobalDragLifecycleListeners = ({
   targetDocument: Document;
 }) => {
   // Listen for dragend and drop globally. In Firefox, if a drop handler
-  // initiates an operation that causes the originally dragged element to
+  // initiates an intent that causes the originally dragged element to
   // unmount, that element will not emit a dragend event. (2024/06/21)
   const stoppedDragging = () => {
     state.draggedBlock = false;
@@ -840,138 +834,101 @@ export const attachEditableGlobalDragLifecycleListeners = ({
   };
 };
 
-export const attachEditableNativeInputListeners = ({
-  node,
-  onDOMBeforeInput,
-  onDOMInput,
-}: {
-  node: HTMLElement;
-  onDOMBeforeInput: (event: InputEvent) => void;
-  onDOMInput: (event: Event) => void;
-}) => {
-  // Attach a native DOM event handler for `beforeinput` events, because React's
-  // built-in `onBeforeInput` is actually a leaky polyfill that doesn't expose
-  // real `beforeinput` events sadly... (2019/11/04)
-  // https://github.com/facebook/react/issues/11211
-  // `beforeinput` is attached directly because React's polyfill does
-  // not expose the real event on this path.
-  node.addEventListener('beforeinput', onDOMBeforeInput);
-  node.addEventListener('input', onDOMInput);
-
-  return () => {
-    // `beforeinput` is attached directly because React's polyfill does
-    // not expose the real event on this path.
-    node.removeEventListener('beforeinput', onDOMBeforeInput);
-    node.removeEventListener('input', onDOMInput);
-  };
-};
-
 export const useEditableRootRef = ({
-  detachNativeInputListenersRef,
-  editor,
   forwardedRef,
   onDOMBeforeInput,
   onDOMInput,
   onDOMSelectionChange,
-  rootRef,
+  runtime,
   scheduleOnDOMSelectionChange,
 }: {
-  detachNativeInputListenersRef: MutableRefBox<(() => void) | null>;
-  editor: ReactRuntimeEditor;
   forwardedRef?: ForwardedRef<HTMLDivElement>;
   onDOMBeforeInput: (event: InputEvent) => void;
   onDOMInput: (event: Event) => void;
   onDOMSelectionChange: CancelableCallback;
-  rootRef: MutableRefBox<HTMLDivElement | null>;
+  runtime: EditableDOMRuntime;
   scheduleOnDOMSelectionChange: CancelableCallback;
 }) => {
-  const [nativeInputHandlers] = useState(() => {
-    const handlers = {
-      onDOMBeforeInput: null as ((event: InputEvent) => void) | null,
-      onDOMInput: null as ((event: Event) => void) | null,
-      handleDOMBeforeInput(event: InputEvent) {
-        handlers.onDOMBeforeInput?.(event);
-      },
-      handleDOMInput(event: Event) {
-        handlers.onDOMInput?.(event);
-      },
-    };
+  const editor = runtime.editor;
 
-    return handlers;
+  runtime.updateNativeInputHandlers({
+    onDOMBeforeInput,
+    onDOMInput,
   });
-
-  nativeInputHandlers.onDOMBeforeInput = onDOMBeforeInput;
-  nativeInputHandlers.onDOMInput = onDOMInput;
+  runtime.updateSelectionChangeHandlers({
+    onDOMSelectionChange,
+    scheduleOnDOMSelectionChange,
+  });
 
   return useCallback(
     (node: HTMLDivElement | null) => {
       if (node == null) {
-        onDOMSelectionChange.cancel();
-        scheduleOnDOMSelectionChange.cancel();
+        runtime.cancelSelectionChangeHandlers();
 
         EDITOR_TO_ELEMENT.delete(editor);
         NODE_TO_ELEMENT.delete(editor);
         setEditorDOMEditableElement(editor, null);
         setEditorDOMRootElement(editor, null);
-
-        if (rootRef.current) {
-          detachNativeInputListenersRef.current?.();
-          detachNativeInputListenersRef.current = null;
-        }
       } else {
         setEditorDOMRootElement(editor, node);
         setEditorDOMEditableElement(editor, node);
-        detachNativeInputListenersRef.current =
-          attachEditableNativeInputListeners({
-            node,
-            onDOMBeforeInput: nativeInputHandlers.handleDOMBeforeInput,
-            onDOMInput: nativeInputHandlers.handleDOMInput,
-          });
       }
-      rootRef.current = node;
+      runtime.setRoot(node);
       if (typeof forwardedRef === 'function') {
         forwardedRef(node);
       } else if (forwardedRef) {
         forwardedRef.current = node;
       }
     },
-    [
-      detachNativeInputListenersRef,
-      editor,
-      forwardedRef,
-      nativeInputHandlers,
-      onDOMSelectionChange,
-      rootRef,
-      scheduleOnDOMSelectionChange,
-    ]
+    [editor, forwardedRef, runtime]
   );
 };
 
 export const useEditableDOMInputHandler = ({
+  claimDOMInput,
   deferNativeTextInputRepair = false,
+  domPhaseScheduler,
   editor,
   inputController,
-  onHandledDOMInput,
   onReadOnlyDOMInput,
   repairDOMInput,
   readOnly,
   rootRef,
+  preferRuntimeDOMInputTarget,
+  shouldRepairDOMInput,
+  runOwnedDOMMutation,
 }: {
+  claimDOMInput?: (event: Event) => boolean;
   deferNativeTextInputRepair?: boolean;
+  domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   inputController?: EditableInputController;
-  onHandledDOMInput?: (event: Event) => void;
   onReadOnlyDOMInput?: () => void;
   repairDOMInput: RepairDOMInput;
   readOnly: boolean;
   rootRef: RefObject<HTMLElement | null>;
+  runOwnedDOMMutation?: (callback: () => void) => void;
+  preferRuntimeDOMInputTarget?: (event: InputEvent) => boolean | undefined;
+  shouldRepairDOMInput?: (event: InputEvent) => boolean;
 }) => {
-  const deferredTextInputRepairFrameRef = useRef<number | null>(null);
+  const phaseScheduler = domPhaseScheduler;
+  const restoreOwnedDOMText = useCallback(
+    (nativeInput: InputEvent, rootElement: HTMLElement) => {
+      const restore = () =>
+        restoreReadOnlyDOMText({ editor, nativeInput, rootElement });
+
+      if (runOwnedDOMMutation) {
+        runOwnedDOMMutation(restore);
+      } else {
+        restore();
+      }
+    },
+    [editor, runOwnedDOMMutation]
+  );
+  const deferredTextInputRepairFrameRef = useRef<(() => void) | null>(null);
   const deferredTextInputRepairFirstAtRef = useRef(0);
   const deferredTextInputRepairLastAtRef = useRef(0);
-  const deferredTextInputRepairTimeoutRef = useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null);
+  const deferredTextInputRepairTimeoutRef = useRef<(() => void) | null>(null);
   const deferredTextInputRepairsRef = useRef<DeferredTextInputRepair[]>([]);
   const clearSettledPendingNativeTextInputRepair = useCallback(() => {
     if (!inputController) {
@@ -1045,11 +1002,11 @@ export const useEditableDOMInputHandler = ({
   }, [editor, inputController]);
   const flushDeferredTextInputRepairs = useCallback(() => {
     if (deferredTextInputRepairFrameRef.current !== null) {
-      cancelAnimationFrame(deferredTextInputRepairFrameRef.current);
+      deferredTextInputRepairFrameRef.current();
       deferredTextInputRepairFrameRef.current = null;
     }
     if (deferredTextInputRepairTimeoutRef.current !== null) {
-      clearTimeout(deferredTextInputRepairTimeoutRef.current);
+      deferredTextInputRepairTimeoutRef.current();
       deferredTextInputRepairTimeoutRef.current = null;
     }
     deferredTextInputRepairFirstAtRef.current = 0;
@@ -1094,11 +1051,31 @@ export const useEditableDOMInputHandler = ({
       inputController.state.pendingNativeTextInputRepairOffset = null;
       inputController.state.pendingNativeTextInputRepairPathKey = null;
     } else if (repairedPendingNativeTextInputSelection) {
-      queueMicrotask(clearSettledPendingNativeTextInputRepair);
-      requestAnimationFrame(clearSettledPendingNativeTextInputRepair);
-      setTimeout(clearSettledPendingNativeTextInputRepair, 25);
+      phaseScheduler.schedule(
+        'selection-repair',
+        'clear-settled-native-input-repair-microtask',
+        clearSettledPendingNativeTextInputRepair,
+        { timing: 'microtask' }
+      );
+      phaseScheduler.schedule(
+        'selection-repair',
+        'clear-settled-native-input-repair-frame',
+        clearSettledPendingNativeTextInputRepair,
+        { timing: 'animation-frame' }
+      );
+      phaseScheduler.schedule(
+        'selection-repair',
+        'clear-settled-native-input-repair-timeout',
+        clearSettledPendingNativeTextInputRepair,
+        { delay: 25, timing: 'timeout' }
+      );
     }
-  }, [clearSettledPendingNativeTextInputRepair, editor, inputController]);
+  }, [
+    clearSettledPendingNativeTextInputRepair,
+    editor,
+    inputController,
+    phaseScheduler,
+  ]);
   const scheduleDeferredTextInputRepairs = useCallback(() => {
     const scheduledAt = now();
 
@@ -1107,18 +1084,24 @@ export const useEditableDOMInputHandler = ({
     deferredTextInputRepairLastAtRef.current = scheduledAt;
 
     if (deferredTextInputRepairTimeoutRef.current !== null) {
-      clearTimeout(deferredTextInputRepairTimeoutRef.current);
+      deferredTextInputRepairTimeoutRef.current();
     }
-    deferredTextInputRepairTimeoutRef.current = setTimeout(
+    deferredTextInputRepairTimeoutRef.current = phaseScheduler.schedule(
+      'selection-repair',
+      'deferred-native-input-repair-idle-timeout',
       flushDeferredTextInputRepairs,
-      DEFERRED_NATIVE_TEXT_INPUT_REPAIR_IDLE_MS
+      {
+        delay: DEFERRED_NATIVE_TEXT_INPUT_REPAIR_IDLE_MS,
+        timing: 'timeout',
+      }
     );
 
     if (deferredTextInputRepairFrameRef.current !== null) {
       return;
     }
 
-    const waitForInputIdle = (frameTime: number) => {
+    const waitForInputIdle = (scheduledFrameTime?: number) => {
+      const frameTime = scheduledFrameTime ?? now();
       const idleMs = frameTime - deferredTextInputRepairLastAtRef.current;
       const pendingMs = frameTime - deferredTextInputRepairFirstAtRef.current;
 
@@ -1126,8 +1109,12 @@ export const useEditableDOMInputHandler = ({
         idleMs < DEFERRED_NATIVE_TEXT_INPUT_REPAIR_IDLE_MS &&
         pendingMs < DEFERRED_NATIVE_TEXT_INPUT_REPAIR_MAX_MS
       ) {
-        deferredTextInputRepairFrameRef.current =
-          requestAnimationFrame(waitForInputIdle);
+        deferredTextInputRepairFrameRef.current = phaseScheduler.schedule(
+          'dom-read',
+          'deferred-native-input-repair-idle-frame',
+          waitForInputIdle,
+          { timing: 'animation-frame' }
+        );
         return;
       }
 
@@ -1135,9 +1122,13 @@ export const useEditableDOMInputHandler = ({
       flushDeferredTextInputRepairs();
     };
 
-    deferredTextInputRepairFrameRef.current =
-      requestAnimationFrame(waitForInputIdle);
-  }, [flushDeferredTextInputRepairs]);
+    deferredTextInputRepairFrameRef.current = phaseScheduler.schedule(
+      'dom-read',
+      'deferred-native-input-repair-idle-frame',
+      waitForInputIdle,
+      { timing: 'animation-frame' }
+    );
+  }, [flushDeferredTextInputRepairs, phaseScheduler]);
   const queuePendingNativeTextInput = useCallback(
     ({
       data,
@@ -1195,10 +1186,14 @@ export const useEditableDOMInputHandler = ({
         })
       ) {
         previousRepair.repair = repair;
+        previousRepair.data = data;
+        previousRepair.inputType = inputType;
         previousRepair.source = 'beforeinput';
         previousRepair.target = target;
       } else {
         deferredTextInputRepairsRef.current.push({
+          data,
+          inputType,
           pathKey,
           repair,
           source: 'beforeinput',
@@ -1258,7 +1253,6 @@ export const useEditableDOMInputHandler = ({
       flushDeferredTextInputRepairs();
     };
   }, [flushDeferredTextInputRepairs, rootRef]);
-
   const onDOMInput = useCallback(
     (event: Event) =>
       profileDOMInputDuration('dom-input-total', () => {
@@ -1276,18 +1270,18 @@ export const useEditableDOMInputHandler = ({
         if (readOnly) {
           event.preventDefault();
           event.stopImmediatePropagation();
-          restoreReadOnlyDOMText({
-            editor,
-            nativeInput,
-            rootElement: rootRef.current,
-          });
+          restoreOwnedDOMText(nativeInput, rootRef.current);
           onReadOnlyDOMInput?.();
           return;
         }
 
-        onHandledDOMInput?.(event);
+        if (claimDOMInput?.(event)) {
+          return;
+        }
         const rootElement = rootRef.current;
+        const repairAtRoot = shouldRepairDOMInput?.(nativeInput) ?? true;
         let preferRuntimeRepairTarget =
+          preferRuntimeDOMInputTarget?.(nativeInput) ??
           shouldPreferRuntimeTextInputRepairTarget({
             editor,
             inputController,
@@ -1299,6 +1293,28 @@ export const useEditableDOMInputHandler = ({
                 preferRuntimeSelection: preferRuntimeRepairTarget,
               })
             : null;
+
+        if (inputController) {
+          inputController.state.pendingRootDOMInput = {
+            data: nativeInput.data,
+            handled: repairAtRoot,
+            inputType: nativeInput.inputType,
+            target,
+          };
+        }
+        if (!repairAtRoot) {
+          return;
+        }
+        if (
+          nativeInput.inputType === 'insertText' &&
+          inputController &&
+          (inputController.state.modelOwnedTextInputGuard ?? 0) > 0
+        ) {
+          inputController.state.pendingNativeTextInputRepairOffset = null;
+          inputController.state.pendingNativeTextInputRepairPathKey = null;
+          restoreOwnedDOMText(nativeInput, rootElement);
+          return;
+        }
 
         if (
           deferNativeTextInputRepair &&
@@ -1317,11 +1333,7 @@ export const useEditableDOMInputHandler = ({
               inputController.state.pendingNativeTextInputRepairOffset = null;
               inputController.state.pendingNativeTextInputRepairPathKey = null;
             }
-            restoreReadOnlyDOMText({
-              editor,
-              nativeInput,
-              rootElement,
-            });
+            restoreOwnedDOMText(nativeInput, rootElement);
             return;
           }
 
@@ -1332,6 +1344,49 @@ export const useEditableDOMInputHandler = ({
             previousRepair,
             target,
           });
+
+          if (
+            previousRepair?.source === 'beforeinput' &&
+            previousRepair.data === nativeInput.data &&
+            previousRepair.inputType === nativeInput.inputType &&
+            previousRepair.target &&
+            (!pathKey || previousRepair.pathKey === pathKey)
+          ) {
+            const previousInsert = previousRepair.target.insert;
+            const inputConfirmsCapturedInsert =
+              !!previousInsert &&
+              !!target?.insert &&
+              target.insert.offset === previousInsert.offset &&
+              target.insert.text === previousInsert.text;
+
+            const repairTarget =
+              inputConfirmsCapturedInsert && target
+                ? target
+                : previousRepair.target;
+
+            target = repairTarget;
+            previousRepair.repair = createDOMInputRepair({
+              data: nativeInput.data,
+              inputType: nativeInput.inputType,
+              repairDOMInput,
+              rootElement,
+              target: repairTarget,
+            });
+            previousRepair.data = nativeInput.data;
+            previousRepair.inputType = nativeInput.inputType;
+            previousRepair.source = 'input';
+            previousRepair.target = repairTarget;
+
+            if (inputController) {
+              inputController.state.pendingNativeTextInputRepairOffset =
+                repairTarget.selectionOffset;
+              inputController.state.pendingNativeTextInputRepairPathKey =
+                repairTarget.path.join(',');
+            }
+
+            scheduleDeferredTextInputRepairs();
+            return;
+          }
 
           if (
             previousRepair &&
@@ -1376,6 +1431,8 @@ export const useEditableDOMInputHandler = ({
             });
 
             previousRepair.repair = repair;
+            previousRepair.data = nativeInput.data;
+            previousRepair.inputType = nativeInput.inputType;
             previousRepair.source = 'input';
             previousRepair.target = target;
           } else {
@@ -1388,13 +1445,14 @@ export const useEditableDOMInputHandler = ({
             });
 
             deferredTextInputRepairsRef.current.push({
+              data: nativeInput.data,
+              inputType: nativeInput.inputType,
               pathKey,
               repair,
               source: 'input',
               target,
             });
           }
-
           scheduleDeferredTextInputRepairs();
           return;
         }
@@ -1413,12 +1471,16 @@ export const useEditableDOMInputHandler = ({
       editor,
       flushDeferredTextInputRepairs,
       inputController,
-      onHandledDOMInput,
+      claimDOMInput,
       onReadOnlyDOMInput,
+      phaseScheduler,
       readOnly,
       repairDOMInput,
+      restoreOwnedDOMText,
       rootRef,
+      preferRuntimeDOMInputTarget,
       scheduleDeferredTextInputRepairs,
+      shouldRepairDOMInput,
     ]
   );
 

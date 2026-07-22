@@ -1,7 +1,7 @@
 import { getCurrentSelection } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
 import { RangeApi } from '../interfaces/range';
 import type { SelectionMutationMethods } from '../interfaces/transforms/selection';
+import { select } from './select';
 
 export const collapse: SelectionMutationMethods['collapse'] = (
   editor,
@@ -14,14 +14,14 @@ export const collapse: SelectionMutationMethods['collapse'] = (
     return;
   }
   if (edge === 'anchor') {
-    getEditorTransformRegistry(editor).select(selection.anchor);
+    select(editor, selection.anchor);
   } else if (edge === 'focus') {
-    getEditorTransformRegistry(editor).select(selection.focus);
+    select(editor, selection.focus);
   } else if (edge === 'start') {
     const [start] = RangeApi.edges(selection);
-    getEditorTransformRegistry(editor).select(start);
+    select(editor, start);
   } else if (edge === 'end') {
     const [, end] = RangeApi.edges(selection);
-    getEditorTransformRegistry(editor).select(end);
+    select(editor, end);
   }
 };

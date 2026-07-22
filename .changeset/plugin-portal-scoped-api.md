@@ -37,10 +37,15 @@ Yjs, or migration lineage. `createBaseEditor`, `createPlateEditor`,
 `createStaticEditor`, `usePlateEditor`, and `usePlateViewEditor` accept no
 options.
 
-Keep plugin configuration immutable. Use object-form `.configure(...)` for
-descriptor data, `.extend(context => ...)` for runtime-derived behavior, and
-`editor.configure(plugin, config)` for atomic live reconfiguration of the
-compiled schema, APIs, updates, parsers, renderers, handlers, and lifecycle.
+Keep plugin model configuration immutable. Use object-form `.configure(...)`
+for descriptor data, contextual `.configure(context => ...)` for existing
+runtime options, handlers, renderers, and shortcuts, and `.extend(...)` for
+additive plugin contracts. Use `editor.configure(plugin, config)` for atomic
+live reconfiguration of the compiled schema, APIs, updates, parsers, renderers,
+handlers, and lifecycle.
+
+Declare cross-plugin schema and host targets with the plugin's top-level
+`targetPluginKeys` field.
 
 Register semantic command policy through extension
 `commands: ({ handle, around }) => [...]` factories. Handlers return
@@ -101,4 +106,14 @@ FooPlugin.configure(({ editor }) => ({
 FooPlugin.extend(({ editor }) => ({
   options: { enabled: editor.api.isEnabled() },
 }));
+```
+
+Move injection target lists to the plugin descriptor:
+
+```tsx
+createPlatePlugin({
+  key: 'align',
+  targetPluginKeys: [KEYS.p],
+  inject: { nodeProps: { styleKey: 'textAlign' } },
+});
 ```

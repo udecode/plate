@@ -1,6 +1,6 @@
 import { createBasePlugin } from '@platejs/core';
-import type { Element } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { editorCommands, property, schema, type Element } from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { getTodoListItemEntry } from './queries';
 import { insertTodoListItem } from './transforms';
@@ -11,24 +11,35 @@ export interface TTodoListItemElement extends Element {
 
 export const BaseTodoListPlugin = createBasePlugin({
   key: KEYS.listTodoClassic,
-  node: { isElement: true },
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: { checked: property.boolean({ default: false }) },
+    },
+  },
+  type: NODES.listTodoClassic,
   options: {
     inheritCheckStateOnLineEndBreak: false,
     inheritCheckStateOnLineStartBreak: false,
   },
 })
   .extendExtension(({ editor }) => ({
-    transforms: {
-      insertBreak({ next, tx }) {
-        if (!editor.read.selection()) return next();
+    commands: ({ around }) => [
+      around(editorCommands.insertBreak, ({ state, next }) => {
+        let handled = false;
+        const prefix = state.transaction((tx) => {
+          const selection = tx.selection();
 
-        const res = getTodoListItemEntry(editor);
+          if (!selection) return;
 
-        if (res && insertTodoListItem(editor, tx)) return true;
+          const res = getTodoListItemEntry(editor, { at: selection }, tx);
 
-        return next();
-      },
-    },
+          if (res) handled = insertTodoListItem(editor, tx);
+        });
+
+        return handled ? prefix : next.after(prefix);
+      }),
+    ],
   }))
   .extendTx(({ type }) => (tx) => ({
     toggle: () => tx.nodes.toggle(type),

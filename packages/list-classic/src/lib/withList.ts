@@ -1,8 +1,11 @@
-import type { ExtendTx, PlatePluginTxGroup } from '@platejs/core';
-import { RangeApi } from '@platejs/plite';
+import type { BaseEditor, PlatePluginTxGroup } from '@platejs/core';
+import { RangeApi, SelectionApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type { ListConfig } from './BaseListPlugin';
+import type {
+  ListPluginOptions,
+  ListPluginTransaction,
+} from './BaseListPlugin';
 
 import { moveListItems } from './transforms';
 import {
@@ -12,20 +15,25 @@ import {
   toggleTaskList,
 } from './transforms';
 
-export const withList: ExtendTx<
-  ListConfig,
-  PlatePluginTxGroup<ListConfig['tx']>
-> =
-  ({ editor, getOptions }) =>
+type ListTransactionContext = {
+  editor: BaseEditor;
+  getOptions: () => ListPluginOptions;
+};
+
+export const withList =
+  ({
+    editor,
+    getOptions,
+  }: ListTransactionContext): PlatePluginTxGroup<ListPluginTransaction> =>
   (tx) => {
     const apply = (reverse: boolean) => {
-      const selection = editor.read.selection();
+      const selection = tx.selection();
 
       if (!selection) return false;
 
       let workRange = selection;
 
-      if (!editor.read.selection.isCollapsed()) {
+      if (!tx.selection.isCollapsed()) {
         const { anchor, focus } = RangeApi.isBackward(selection)
           ? {
               anchor: { ...selection.focus },
@@ -35,16 +43,16 @@ export const withList: ExtendTx<
               anchor: { ...selection.anchor },
               focus: { ...selection.focus },
             };
-        const unhangRange = editor.read.ranges.unhang({ anchor, focus });
+        const unhangRange = tx.ranges.unhang({ anchor, focus });
 
         if (unhangRange) {
-          workRange = unhangRange;
-          tx.selection.set(unhangRange);
+          workRange = SelectionApi.text(unhangRange);
+          tx.selection.set(workRange);
         }
       }
 
       if (
-        !editor.read.nodes.some({
+        !tx.nodes.some({
           at: workRange,
           match: { type: editor.getType(KEYS.li) },
         })

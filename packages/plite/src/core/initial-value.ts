@@ -1,6 +1,6 @@
 import type { Descendant } from '../interfaces/node';
 import { MAIN_ROOT_KEY } from '../internal/root-location';
-import { cloneValue } from './clone';
+import { assertEditorJsonValue, cloneEditorJsonValue } from './value-codec';
 
 export type NormalizedInitialValue = {
   children: Descendant[];
@@ -25,7 +25,9 @@ export const cloneDocumentMeta = (
     );
   }
 
-  return cloneValue(meta);
+  assertEditorJsonValue(meta, '[Plite] initialValue.meta');
+
+  return cloneEditorJsonValue(meta);
 };
 
 const cloneInitialExtraRoots = (
@@ -56,7 +58,7 @@ const cloneInitialExtraRoots = (
       );
     }
 
-    roots[key] = cloneValue([...value]) as Descendant[];
+    roots[key] = cloneEditorJsonValue([...value]) as Descendant[];
   }
 
   return roots;
@@ -75,7 +77,8 @@ export const normalizeEditorValue = (
   }
 
   if (Array.isArray(input)) {
-    const children = cloneValue([...input]) as Descendant[];
+    assertEditorJsonValue(input, '[Plite] initialValue');
+    const children = cloneEditorJsonValue([...input]) as Descendant[];
 
     return {
       children,
@@ -91,8 +94,15 @@ export const normalizeEditorValue = (
     );
   }
 
+  assertEditorJsonValue(input, '[Plite] initialValue');
+
   if (Array.isArray(input.children)) {
-    const children = cloneValue([...input.children]) as Descendant[];
+    assertEditorJsonValue(input.children, '[Plite] initialValue.children');
+    if (input.roots !== undefined) {
+      assertEditorJsonValue(input.roots, '[Plite] initialValue.roots');
+    }
+
+    const children = cloneEditorJsonValue([...input.children]) as Descendant[];
     const roots = cloneInitialExtraRoots(input.roots);
 
     return {

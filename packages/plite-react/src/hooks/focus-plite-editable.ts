@@ -3,6 +3,7 @@ import { getSelection } from '@platejs/plite-dom';
 import { IS_FOCUSED } from '@platejs/plite-dom/internal';
 
 import { readModelSelectionDOMPreference } from '../editable/model-selection-dom-preference';
+import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import { setEditorFocused } from '../editable/runtime-editor-api';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -10,7 +11,6 @@ import {
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
 } from '../view-selection';
-import { schedulePliteReactFocus } from './focus-scheduler';
 
 const syncPreferredModelSelectionToDOM = <
   V extends Value = Value,
@@ -20,9 +20,7 @@ const syncPreferredModelSelectionToDOM = <
   element: HTMLElement
 ) => {
   try {
-    const selection = readRuntimeSelection(
-      editor as Parameters<typeof readRuntimeSelection>[0]
-    );
+    const selection = readRuntimeSelection(editor);
 
     if (!selection) {
       return false;
@@ -46,7 +44,7 @@ const syncPreferredModelSelectionToDOM = <
       return false;
     }
 
-    IS_FOCUSED.set(editor as Parameters<typeof IS_FOCUSED.set>[0], true);
+    IS_FOCUSED.set(editor, true);
     setEditorFocused(editor, true);
     element.focus({ preventScroll: true });
 
@@ -90,7 +88,7 @@ export const focusPliteEditable = <
 
   if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
     if (element) {
-      IS_FOCUSED.set(editor as Parameters<typeof IS_FOCUSED.set>[0], true);
+      IS_FOCUSED.set(editor, true);
       setEditorFocused(editor, true);
       element.focus({ preventScroll: true });
     }
@@ -119,10 +117,19 @@ export const focusPliteEditableAfterEventFrame = <
   editor: ReactRuntimeEditor<V, TExtensions>
 ) => {
   focusPliteEditable(editor);
-  schedulePliteReactFocus(() => {
-    focusPliteEditable(editor);
-  });
-  globalThis.setTimeout?.(() => {
-    focusPliteEditable(editor);
-  }, 0);
+  const domPhaseScheduler =
+    getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
+
+  domPhaseScheduler?.schedule(
+    'dom-write',
+    'focus-editable-frame',
+    () => focusPliteEditable(editor),
+    { timing: 'animation-frame' }
+  );
+  domPhaseScheduler?.schedule(
+    'dom-write',
+    'focus-editable-settle',
+    () => focusPliteEditable(editor),
+    { timing: 'timeout' }
+  );
 };

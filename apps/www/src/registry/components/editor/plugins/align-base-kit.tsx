@@ -10,7 +10,7 @@ export const BaseAlignKit = [
         styleKey: 'textAlign',
         validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
       },
-      targetPlugins: [...KEYS.heading, KEYS.p, KEYS.img, KEYS.mediaEmbed],
     },
+    targetPluginKeys: [...KEYS.heading, KEYS.p, KEYS.img, KEYS.mediaEmbed],
   }),
 ];

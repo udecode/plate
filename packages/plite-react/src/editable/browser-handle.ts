@@ -1,10 +1,14 @@
 import {
+  type Anchor,
+  DocumentChange,
   type EditorUpdatePolicyFor,
-  type Operation,
+  type JsonEditorValue,
   type Path,
+  type Point,
   type Range,
   RangeApi,
   type RuntimeId,
+  type TextSelection,
 } from '@platejs/plite';
 import type { EditableDOMStrategyScrollAlign } from '../components/editable';
 import {
@@ -28,21 +32,28 @@ import {
   getEditableKernelTrace,
   recordEditableKernelTrace,
 } from './editing-kernel';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import type { EditableInputController } from './input-state';
 import {
   applyEditableCommand,
   applyModelOwnedHistoryIntent,
+  shouldForceRenderAfterModelOwnedHistory,
 } from './mutation-controller';
 import { getProjectedNativeAffordanceMatrix } from './projected-native-affordance';
 import {
-  rangeRef as editorRangeRef,
+  deleteFragment as editorDeleteFragment,
   getLastCommit as editorGetLastCommit,
   getPathByRuntimeId as editorGetPathByRuntimeId,
   getRuntimeId as editorGetRuntimeId,
+  getSelection as editorGetSelection,
+  getEditorSelectionRoot,
   getSnapshot as editorGetSnapshot,
+  insertText as editorInsertText,
   string as editorString,
+  toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
+import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
   executeEditableSelectionImport,
@@ -52,17 +63,25 @@ import {
 } from './selection-controller';
 
 export type PliteBrowserHandle = {
-  applyOperations: (
-    operations: readonly Operation[],
+  applyChange: (
+    change: ReturnType<DocumentChange['toJSON']>,
     policy?: EditorUpdatePolicyFor<ReactRuntimeEditor>
   ) => void;
-  createRangeRef: (
+  applyValueChange: (
+    value: JsonEditorValue,
+    policy?: EditorUpdatePolicyFor<ReactRuntimeEditor>
+  ) => void;
+  createRangeAnchor: (
     selection: Range,
-    affinity?: 'forward' | 'backward' | 'outward' | 'inward'
+    association?: 'forward' | 'backward' | 'outward' | 'inward'
   ) => string;
   deleteBackward: () => void;
   deleteForward: () => void;
   deleteFragment: () => void;
+  deleteTextAt: (
+    range: Range,
+    policy?: EditorUpdatePolicyFor<ReactRuntimeEditor>
+  ) => void;
   clearSettledPendingNativeTextInputRepair: () => boolean;
   focus: () => void;
   getKernelTrace: () => unknown[];
@@ -72,11 +91,14 @@ export type PliteBrowserHandle = {
   getBlockText: (index: number) => string | null;
   getBlockTexts: () => string[];
   getDOMSelection: () => Range | null;
+  getDOMPhaseSchedulerDiagnostics: () => ReturnType<
+    DOMPhaseScheduler['diagnostics']
+  > | null;
   getElementByPath: (path: Path) => HTMLElement | null;
   getPathByRuntimeId: (runtimeId: RuntimeId) => Path | null;
   getProjectedNativeAffordanceMatrix: () => unknown;
   getRuntimeId: (path: Path) => RuntimeId | null;
-  getSelection: () => Range | null;
+  getSelection: () => TextSelection | null;
   getText: () => string;
   getViewSelection: () => unknown;
   importDOMSelection: () => Range | null;
@@ -87,8 +109,13 @@ export type PliteBrowserHandle = {
     text?: string | null;
   }) => void;
   insertText: (text: string) => void;
+  insertTextAt: (
+    text: string,
+    at: Point,
+    policy?: EditorUpdatePolicyFor<ReactRuntimeEditor>
+  ) => void;
   redo: () => void;
-  resolveRangeRef: (id: string) => Range | null;
+  resolveRangeAnchor: (id: string) => TextSelection | null;
   selectAll: () => void;
   selectRange: (selection: Range) => void;
   setNativeDOMSelection: (selection: Range) => boolean;
@@ -104,7 +131,7 @@ export type PliteBrowserHandle = {
     } | null
   ) => void;
   undo: () => void;
-  unrefRangeRef: (id: string) => Range | null;
+  releaseRangeAnchor: (id: string) => TextSelection | null;
 };
 
 export type PliteBrowserHandleElement = HTMLDivElement & {
@@ -114,6 +141,13 @@ export type PliteBrowserHandleElement = HTMLDivElement & {
 type RefBox<T> = {
   current: T;
 };
+
+const getPublicDocumentChangeRoots = (change: DocumentChange) => [
+  ...(change.primary ? [null] : []),
+  ...change.roots.keys(),
+  ...change.createRoots,
+  ...change.deleteRoots,
+];
 
 const createBrowserHandleDataTransfer = ({
   html,
@@ -161,7 +195,8 @@ const createBrowserHandleDataTransfer = ({
 
 export const attachPliteBrowserHandle = ({
   browserHandleNextId,
-  browserHandleRangeRefs,
+  browserHandleRangeAnchors,
+  domPhaseScheduler,
   editor,
   element,
   inputController,
@@ -178,9 +213,8 @@ export const attachPliteBrowserHandle = ({
     selection: Range | null;
   }) => boolean;
   browserHandleNextId: RefBox<number>;
-  browserHandleRangeRefs: RefBox<
-    Map<string, ReturnType<typeof editorRangeRef>>
-  >;
+  browserHandleRangeAnchors: RefBox<Map<string, Anchor<Range>>>;
+  domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   element: PliteBrowserHandleElement;
   inputController: EditableInputController;
@@ -193,10 +227,15 @@ export const attachPliteBrowserHandle = ({
   ) => boolean;
   setExplicitPartialDOMBackedSelection: (nextValue: boolean) => void;
 }) => {
-  const getCurrentHandleElement = () =>
-    (editor.api.dom.resolveDOMNode(
-      editor
-    ) as PliteBrowserHandleElement | null) ?? element;
+  const getCurrentHandleElement = () => {
+    if (element.isConnected) return element;
+
+    return (
+      (editor.api.dom.resolveDOMNode(
+        editor
+      ) as PliteBrowserHandleElement | null) ?? element
+    );
+  };
 
   const refocusHandleElement = () => {
     const focusHandleElement = () => {
@@ -204,8 +243,18 @@ export const attachPliteBrowserHandle = ({
     };
 
     focusHandleElement();
-    queueMicrotask(focusHandleElement);
-    setTimeout(focusHandleElement);
+    domPhaseScheduler.schedule(
+      'dom-write',
+      'focus-browser-handle-microtask',
+      focusHandleElement,
+      { timing: 'microtask' }
+    );
+    domPhaseScheduler.schedule(
+      'dom-write',
+      'focus-browser-handle-timeout',
+      focusHandleElement,
+      { timing: 'timeout' }
+    );
   };
   const runCommand = (
     command: EditableCommand,
@@ -250,6 +299,8 @@ export const attachPliteBrowserHandle = ({
     setExplicitPartialDOMBackedSelection(partialDOMBackedSelection);
     syncEditableDOMSelectionToEditor({
       editor,
+      editorElement: getCurrentHandleElement(),
+      options: { forceModelExport: true },
       scrollSelectionIntoView: () => {},
       partialDOMBackedSelection,
       state: inputController.state,
@@ -280,33 +331,57 @@ export const attachPliteBrowserHandle = ({
       forceRender();
     }
 
-    setTimeout(() => {
+    const clearBrowserHandleSelectionUpdate = () => {
       if (inputController.state.selectionChangeOrigin === 'browser-handle') {
         inputController.state.isUpdatingSelection = previousIsUpdatingSelection;
       }
-    });
+    };
+
+    domPhaseScheduler.schedule(
+      'selection-repair',
+      'clear-browser-handle-selection-update',
+      clearBrowserHandleSelectionUpdate,
+      { timing: 'timeout' }
+    );
   };
 
   const handle: PliteBrowserHandle = {
-    applyOperations: (operations, policy) => {
+    applyChange: (change, policy) => {
+      const documentChange = DocumentChange.fromJSON(change);
+
       if (policy) {
         editor.update(policy, (tx) => {
-          tx.operations.replay(operations);
+          tx.changes.apply(documentChange);
         });
       } else {
         editor.update((tx) => {
-          tx.operations.replay(operations);
+          tx.changes.apply(documentChange);
         });
       }
       forceRender();
     },
-    createRangeRef: (selection, affinity) => {
+    applyValueChange: (value, policy) => {
+      const documentChange = DocumentChange.between(editor.read.value(), value);
+
+      if (policy) {
+        editor.update(policy, (tx) => {
+          tx.changes.apply(documentChange);
+        });
+      } else {
+        editor.update((tx) => {
+          tx.changes.apply(documentChange);
+        });
+      }
+      forceRender();
+    },
+    createRangeAnchor: (selection, association) => {
       const id = String(browserHandleNextId.current++);
-      const rangeRef = editorRangeRef(editor, selection, {
-        affinity,
+      const rangeAnchor = editor.anchor(selection, {
+        association,
+        deletion: 'nearest',
       });
 
-      browserHandleRangeRefs.current.set(id, rangeRef);
+      browserHandleRangeAnchors.current.set(id, rangeAnchor);
 
       return id;
     },
@@ -318,6 +393,16 @@ export const attachPliteBrowserHandle = ({
     },
     deleteFragment: () => {
       runCommand({ kind: 'delete-fragment' });
+    },
+    deleteTextAt: (range, policy) => {
+      if (policy) {
+        editor.update(policy, () =>
+          editorDeleteFragment(editor, { at: range })
+        );
+      } else {
+        editorDeleteFragment(editor, { at: range });
+      }
+      forceRender();
     },
     clearSettledPendingNativeTextInputRepair: () => {
       const pathKey = inputController.state.pendingNativeTextInputRepairPathKey;
@@ -391,8 +476,34 @@ export const attachPliteBrowserHandle = ({
         selectionSource: 'model-owned',
       });
       inputController.state.selectionChangeOrigin = 'browser-handle';
-      editor.api.dom.focus();
+      const viewRoot = toInternalRoot(
+        editor.read((state) => state.view.root())
+      );
+
+      if (
+        !editorGetSelection(editor) ||
+        getEditorSelectionRoot(editor) !== viewRoot
+      ) {
+        const point = editor.read((state) => state.points.start([]));
+
+        if (point) writeRuntimeSelection(editor, point);
+      }
+      const editorElement = getCurrentHandleElement();
+
+      editorElement.focus({ preventScroll: true });
       forceRender();
+      const selection = readRuntimeSelection(editor);
+      const partialDOMBackedSelection = isPartialDOMBackedSelection(selection);
+
+      setExplicitPartialDOMBackedSelection(partialDOMBackedSelection);
+      syncEditableDOMSelectionToEditor({
+        editor,
+        editorElement,
+        options: { forceModelExport: true },
+        scrollSelectionIntoView: () => {},
+        partialDOMBackedSelection,
+        state: inputController.state,
+      });
     },
     getKernelTrace: () => [...getEditableKernelTrace(editor)],
     getHistory: () =>
@@ -407,20 +518,16 @@ export const attachPliteBrowserHandle = ({
         ).history;
         const summarizeBatch = (batch: unknown) => {
           const record = batch as {
-            operations?: readonly Record<string, unknown>[];
-            statePatches?: readonly unknown[];
+            change?: DocumentChange;
+            effects?: readonly unknown[];
           };
 
           return {
-            operations:
-              record.operations?.map((operation) => ({
-                offset: operation.offset,
-                path: operation.path,
-                root: operation.root,
-                text: operation.text,
-                type: operation.type,
-              })) ?? [],
-            statePatchCount: record.statePatches?.length ?? 0,
+            change: record.change?.toJSON() ?? null,
+            effectCount: record.effects?.length ?? 0,
+            roots: record.change
+              ? [...new Set(getPublicDocumentChangeRoots(record.change))]
+              : [],
           };
         };
 
@@ -429,7 +536,32 @@ export const attachPliteBrowserHandle = ({
           undos: history?.undos?.().map(summarizeBatch) ?? [],
         };
       }),
-    getLastCommit: () => editorGetLastCommit(editor),
+    getLastCommit: () => {
+      const commit = editorGetLastCommit(editor);
+
+      if (!commit) return null;
+      const changedRoots = [
+        ...new Set(getPublicDocumentChangeRoots(commit.changes)),
+      ];
+
+      return {
+        change: commit.changes.toJSON(),
+        changedRoots,
+        classifications: changedRoots.map((root) => ({
+          document: commit.changed.has('document', root ?? undefined),
+          properties: commit.changed.has('properties', root ?? undefined),
+          root,
+          structure: commit.changed.has('structure', root ?? undefined),
+          text: commit.changed.has('text', root ?? undefined),
+        })),
+        effectCount: commit.effects.length,
+        selectionAfter: commit.selectionAfter,
+        selectionBefore: commit.selectionBefore,
+        selectionChanged: commit.selectionChanged,
+        tags: commit.tags,
+        version: commit.version,
+      };
+    },
     getElementByPath: (path) => getPliteNodeElementByPath(editor, path),
     getPathByRuntimeId: (runtimeId) =>
       editorGetPathByRuntimeId(editor, runtimeId),
@@ -448,6 +580,7 @@ export const attachPliteBrowserHandle = ({
               offset: selection.focus.offset,
               path: [...selection.focus.path],
             },
+            kind: 'text',
           }
         : null;
     },
@@ -496,6 +629,8 @@ export const attachPliteBrowserHandle = ({
         return null;
       }
     },
+    getDOMPhaseSchedulerDiagnostics: () =>
+      domPhaseScheduler?.diagnostics() ?? null,
     getText: () => editorString(editor, []),
     getViewSelection: () => readPliteViewSelection(editor),
     importDOMSelection: () => {
@@ -574,17 +709,27 @@ export const attachPliteBrowserHandle = ({
         forceRender();
       }
     },
+    insertTextAt: (text, at, policy) => {
+      if (policy) {
+        editor.update(policy, () => editorInsertText(editor, text, { at }));
+      } else {
+        editorInsertText(editor, text, { at });
+      }
+      forceRender();
+    },
     redo: () => {
       if (!applyModelOwnedHistoryIntent({ direction: 'redo', editor })) {
         return;
       }
 
-      forceRender();
+      if (shouldForceRenderAfterModelOwnedHistory(editor)) {
+        forceRender();
+      }
       refocusHandleElement();
     },
-    resolveRangeRef: (id) => {
-      const rangeRef = browserHandleRangeRefs.current.get(id);
-      const selection = rangeRef?.current ?? null;
+    resolveRangeAnchor: (id) => {
+      const rangeAnchor = browserHandleRangeAnchors.current.get(id);
+      const selection = rangeAnchor?.resolve() ?? null;
 
       return selection
         ? {
@@ -596,6 +741,7 @@ export const attachPliteBrowserHandle = ({
               offset: selection.focus.offset,
               path: [...selection.focus.path],
             },
+            kind: 'text',
           }
         : null;
     },
@@ -616,17 +762,17 @@ export const attachPliteBrowserHandle = ({
       inputController.state.isUpdatingSelection = true;
       inputController.state.selectionChangeOrigin = 'browser-handle';
       writePliteViewSelection(editor, null);
-      editor.update((tx) => {
-        tx.selection.set(selection);
-      });
+      writeRuntimeSelection(editor, selection);
       setExplicitPartialDOMBackedSelection(partialDOMBackedSelection);
       if (partialDOMBackedSelection) {
         scrollPathIntoView?.(RangeApi.start(selection).path, 'center');
       }
-      editor.api.dom.focus();
+      getCurrentHandleElement().focus({ preventScroll: true });
       const syncDOMSelection = () => {
         syncEditableDOMSelectionToEditor({
           editor,
+          editorElement: getCurrentHandleElement(),
+          options: { forceModelExport: true },
           scrollSelectionIntoView: () => {},
           partialDOMBackedSelection,
           state: inputController.state,
@@ -634,14 +780,31 @@ export const attachPliteBrowserHandle = ({
       };
 
       syncDOMSelection();
-      queueMicrotask(syncDOMSelection);
-      setTimeout(syncDOMSelection);
-      setTimeout(() => {
+      const clearBrowserHandleSelectionUpdate = () => {
         if (inputController.state.selectionChangeOrigin === 'browser-handle') {
           inputController.state.isUpdatingSelection =
             previousIsUpdatingSelection;
         }
-      });
+      };
+
+      domPhaseScheduler.schedule(
+        'selection-repair',
+        'sync-browser-handle-selection-microtask',
+        syncDOMSelection,
+        { timing: 'microtask' }
+      );
+      domPhaseScheduler.schedule(
+        'selection-repair',
+        'sync-browser-handle-selection-timeout',
+        syncDOMSelection,
+        { timing: 'timeout' }
+      );
+      domPhaseScheduler.schedule(
+        'selection-repair',
+        'clear-browser-handle-selection-update',
+        clearBrowserHandleSelectionUpdate,
+        { timing: 'timeout' }
+      );
     },
     setNativeDOMSelection: (selection) => {
       const domRange = editor.api.dom.resolveDOMRange(selection);
@@ -724,19 +887,21 @@ export const attachPliteBrowserHandle = ({
         return;
       }
 
-      forceRender();
+      if (shouldForceRenderAfterModelOwnedHistory(editor)) {
+        forceRender();
+      }
       refocusHandleElement();
     },
-    unrefRangeRef: (id) => {
-      const rangeRef = browserHandleRangeRefs.current.get(id);
+    releaseRangeAnchor: (id) => {
+      const rangeAnchor = browserHandleRangeAnchors.current.get(id);
 
-      if (!rangeRef) {
+      if (!rangeAnchor) {
         return null;
       }
 
-      browserHandleRangeRefs.current.delete(id);
+      browserHandleRangeAnchors.current.delete(id);
 
-      const selection = rangeRef.unref();
+      const selection = rangeAnchor.release();
 
       return selection
         ? {
@@ -748,6 +913,7 @@ export const attachPliteBrowserHandle = ({
               offset: selection.focus.offset,
               path: [...selection.focus.path],
             },
+            kind: 'text',
           }
         : null;
     },

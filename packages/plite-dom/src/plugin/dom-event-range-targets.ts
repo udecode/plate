@@ -31,10 +31,10 @@ export const eventCarriesBlockFragment = <V extends Value>(
     return false;
   }
 
-  const fragment = readDOMFragmentData(editor, data);
+  const slice = readDOMFragmentData(editor, data);
 
   return (
-    fragment?.some(
+    slice?.content.some(
       (node) => NodeApi.isElement(node) && !editorIsInline(editor, node)
     ) ?? false
   );

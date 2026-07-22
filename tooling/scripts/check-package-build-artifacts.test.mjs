@@ -31,6 +31,7 @@ test('derives runtime and declaration artifacts from public exports', () => {
         './internal': {
           default: './dist/internal/index.js',
           import: './dist/internal/index.js',
+          node: './dist/internal/index.cjs',
           types: './dist/internal/index.d.ts',
         },
         './package.json': './package.json',
@@ -40,6 +41,7 @@ test('derives runtime and declaration artifacts from public exports', () => {
       'dist/index.js',
       'dist/index.d.ts',
       'dist/internal/index.js',
+      'dist/internal/index.cjs',
       'dist/internal/index.d.ts',
     ]
   );
@@ -78,6 +80,11 @@ test('asserts every public runtime and declaration artifact', (t) => {
 
 test('all Plite release packages use one direct tsdown build', async () => {
   for (const packageDirectory of directPackageDirectories) {
+    const { default: buildConfig } = await import(
+      `../../packages/${packageDirectory}/tsdown.config.mts`
+    );
+    const resolvedBuildConfig =
+      typeof buildConfig === 'function' ? await buildConfig({}) : buildConfig;
     const packageJson = JSON.parse(
       await readFile(
         new URL(
@@ -97,5 +104,10 @@ test('all Plite release packages use one direct tsdown build', async () => {
       getPackageBuildArtifacts(packageJson).length > 0,
       packageDirectory
     );
+    for (const config of Array.isArray(resolvedBuildConfig)
+      ? resolvedBuildConfig
+      : [resolvedBuildConfig]) {
+      assert.equal(config.tsconfig, 'tsconfig.build.json', packageDirectory);
+    }
   }
 });

@@ -29,9 +29,12 @@ import { BaseListPlugin } from '../../../../../../packages/list/src/lib/BaseList
 jsxt;
 
 const targetPluginConfig = {
-  config: {
-    targets: [BaseParagraphPlugin, H1Plugin, H2Plugin, H3Plugin],
-  },
+  targetPluginKeys: [
+    BaseParagraphPlugin.key,
+    H1Plugin.key,
+    H2Plugin.key,
+    H3Plugin.key,
+  ],
 };
 
 const createClipboardData = (html: string, rtf?: string): DataTransfer =>

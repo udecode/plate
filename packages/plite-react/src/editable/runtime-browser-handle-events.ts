@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import type { Range } from '@platejs/plite';
+import type { Anchor, Range } from '@platejs/plite';
 import type { EditableDOMStrategyScrollAlign } from '../components/editable';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -7,8 +7,8 @@ import {
   attachPliteBrowserHandle,
   type PliteBrowserHandleElement,
 } from './browser-handle';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import type { EditableInputController } from './input-state';
-import type { rangeRef as editorRangeRef } from './runtime-editor-api';
 
 type DeferredInputRule = ({
   data,
@@ -25,7 +25,8 @@ type DeferredInputRule = ({
 export const useRuntimeBrowserHandle = ({
   applyInputRules,
   browserHandleNextId,
-  browserHandleRangeRefs,
+  browserHandleRangeAnchors,
+  domPhaseScheduler,
   editor,
   forceRender,
   flushPendingNativeTextInput,
@@ -37,9 +38,8 @@ export const useRuntimeBrowserHandle = ({
 }: {
   applyInputRules: DeferredInputRule;
   browserHandleNextId: RefObject<number>;
-  browserHandleRangeRefs: RefObject<
-    Map<string, ReturnType<typeof editorRangeRef>>
-  >;
+  browserHandleRangeAnchors: RefObject<Map<string, Anchor<Range>>>;
+  domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   forceRender: () => void;
   flushPendingNativeTextInput?: () => void;
@@ -59,7 +59,8 @@ export const useRuntimeBrowserHandle = ({
 
     return attachPliteBrowserHandle({
       browserHandleNextId,
-      browserHandleRangeRefs,
+      browserHandleRangeAnchors,
+      domPhaseScheduler,
       editor,
       element: rootRef.current as PliteBrowserHandleElement,
       inputController,
@@ -73,7 +74,8 @@ export const useRuntimeBrowserHandle = ({
   }, [
     applyInputRules,
     browserHandleNextId,
-    browserHandleRangeRefs,
+    browserHandleRangeAnchors,
+    domPhaseScheduler,
     editor,
     forceRender,
     flushPendingNativeTextInput,

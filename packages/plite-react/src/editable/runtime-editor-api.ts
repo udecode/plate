@@ -1,24 +1,26 @@
 import type { Editor as EditorType } from '@platejs/plite';
-import {
-  inheritEditorExtensionRegistry as inheritEditorExtensionRegistryCore,
-  getEditorTransformRegistry as readEditorTransformRegistry,
-  setEditorTransformRegistry as writeEditorTransformRegistry,
-} from '@platejs/plite/internal';
+import { inheritEditorExtensionRegistry as inheritEditorExtensionRegistryCore } from '@platejs/plite/internal';
 
 export {
-  getCachedFullRootReplaceTopLevelRuntimeIds,
+  areEditorJsonValuesEqual,
+  createInternalClipboardApi,
+  dispatchCommand,
+  editorCommands,
   getEditorCurrentMarks,
   getEditorExtensionRegistry,
   getEditorLiveNode,
   getEditorLiveSelection,
   getEditorLiveText,
+  getEditorRuntimeElementEntries,
+  getEditorRuntimeRootKeys,
+  getInternalDocumentChangeEntries,
   getEditorMaxLength,
   getEditorRuntime,
-  getEditorTransformRegistry,
-  getOperationCount,
+  getEditorRuntimeOwner,
+  getEditorSelectionRoot,
   failInvariant,
-  hasEditorTransformMiddleware,
-  markInternalOwnedReplayOperation,
+  hasCommandHandler,
+  hasEditorRuntime,
   projectRangeInSnapshot,
   runTrustedUpdate,
   setEditorMarks,
@@ -27,31 +29,24 @@ export {
   setEditorMaxLength,
   setEditorReadOnly,
   setEditorRuntime,
-  setEditorSelection,
   setEditorTargetRuntime,
-  setEditorTransformRegistry,
-  withOperationRootChildren,
+  withEditorUpdateRootScope,
   subscribeEditorViewState,
+  toInternalRoot,
 } from '@platejs/plite/internal';
 
 export const inheritEditorExtensionRegistry = (
-  editor: EditorType,
-  source: EditorType
+  editor: EditorType<any, any>,
+  source: EditorType<any, any>
 ) => {
   inheritEditorExtensionRegistryCore(editor, source);
-};
-
-export const inheritEditorTransformRegistry = (
-  editor: EditorType,
-  source: EditorType
-) => {
-  writeEditorTransformRegistry(editor, readEditorTransformRegistry(source));
 };
 
 export {
   above,
   after,
   before,
+  deleteFragment,
   defineEditorExtension,
   getLastCommit,
   getPathByRuntimeId,
@@ -65,17 +60,17 @@ export {
   isInline,
   isStart,
   isVoid,
+  insertText,
   leaf,
+  move,
   next,
   point,
-  pointRef,
   projectRange,
   range,
-  rangeRef,
   string,
   subscribeCommit,
   subscribeSource,
   void,
 } from '@platejs/plite/internal';
 
-export type Editor = EditorType;
+export type Editor = EditorType<any, any>;

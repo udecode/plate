@@ -84,7 +84,8 @@ const removedRootMutationFacadePattern =
   /\b(?:editor\.(?:tf|transforms)|overrideEditor)\b|\btf\s*:\s*\{/;
 const removedPlateSchemaFlagsPattern =
   /\bnode\.(?:component|element|mark|isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp)\b|\bisMarkableVoid\b|\b(?:isElement\b[^\n]{0,160}\bisLeaf|isLeaf\b[^\n]{0,160}\bisElement)\b/;
-const removedSchemaTargetOptionsPattern = /\btargetPluginKeys\b/;
+const removedSchemaTargetOptionsPattern =
+  /\boptions\s*:\s*\{[^}\n]*\btargetPluginKeys\b/;
 const removedCaptionTargetOptionsPattern =
   /\boptions\s*:\s*\{\s*query\s*:\s*\{\s*allow\s*:/;
 const removedHeadingLevelsOptionsPattern =
@@ -106,12 +107,12 @@ const deletedArchitecturePatterns = [
   {
     pattern: removedSchemaTargetOptionsPattern,
     reason:
-      'schema target plugin descriptors belong in immutable config.targets',
+      'schema target plugin descriptors belong in top-level targetPluginKeys',
   },
   {
     pattern: removedCaptionTargetOptionsPattern,
     reason:
-      'caption target plugin descriptors belong in immutable config.targets',
+      'caption target plugin descriptors belong in top-level targetPluginKeys',
   },
   {
     pattern: removedHeadingLevelsOptionsPattern,

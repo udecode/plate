@@ -93,37 +93,52 @@ export type YjsRemoteCursor<
   readonly data?: TCursorData;
 };
 
-export type YjsTraceMode =
-  | 'operation'
-  | 'remote-reconcile'
-  | 'seed'
-  | 'traceable-fallback';
+export type YjsTraceMode = 'canonical-change' | 'remote-reconcile' | 'seed';
 
 export type YjsTraceFallback =
-  | 'empty-text-merge-elided'
-  | 'empty-text-remove-elided'
-  | 'incompatible-structural-merge-elided'
-  | 'missing-move-destination-elided'
-  | 'missing-move-source-elided'
-  | 'replace-children-virtual-removal'
-  | 'replace-fragment-scoped-replace-identity-risk'
-  | 'text-merge-preserve-yjs-boundary'
-  | 'virtual-merge-ref'
-  | 'virtual-move-parent-remove'
-  | 'virtual-move-placeholder'
-  | 'virtual-move-ref'
-  | 'virtual-unwrap-ref'
-  | 'virtual-unwrap-wrapper-remove';
+  | 'canonical-change-mirror-mismatch'
+  | 'canonical-change-projected-content'
+  | 'remote-event-empty-root'
+  | 'remote-event-invalid-delta'
+  | 'remote-event-mirror-mismatch'
+  | 'remote-event-projected-content'
+  | 'remote-event-read-failed'
+  | 'remote-event-root-attributes'
+  | 'remote-event-unknown-target';
 
 export type YjsTraceEntry = {
+  readonly canonicalStrategy?: 'compatible' | 'range';
+  /** Number of top-level children inserted or removed by canonical lowering. */
+  readonly changedChildren?: number;
   readonly fallback?: YjsTraceFallback;
-  /** Number of top-level Plite children read from Yjs during a full import. */
-  readonly importedChildren?: number;
   /** Describes the import strategy used when Yjs state is read into Plite. */
-  readonly importKind?: 'full-read-replace';
+  readonly importKind?:
+    | 'event-change'
+    | 'full-diff-fallback'
+    | 'snapshot-change';
   readonly mode: YjsTraceMode;
-  readonly operationType?: string;
+  /** Number of disjoint canonical ranges compiled from the Yjs event batch. */
+  readonly changedRanges?: number;
+  /** Number of top-level Yjs nodes decoded for the import. */
+  readonly readTopLevelNodes?: number;
+  /** Number of Plite nodes visited to refresh outbound token lengths. */
+  readonly tokenLengthNodes?: number;
 };
+
+export type YjsSharedEffectCompactionOptions = Readonly<{
+  /**
+   * Stable host-owned identity for the authority that compacts this shared
+   * document's effect log. A restarted authority reuses the same identity
+   * even though its Y.Doc client generation changes.
+   *
+   * Exactly one active peer for this identity may compact the effect log.
+   * A live recipient must acknowledge or be explicitly retired by this
+   * authority before its targeted events become checkpoint-safe.
+   */
+  authorityId: string;
+  /** Compact after this many checkpoint-safe events. */
+  threshold?: number;
+}>;
 
 export type YjsExtensionOptions = {
   readonly autoSendSelection?: boolean;
@@ -136,6 +151,7 @@ export type YjsExtensionOptions = {
   readonly provider?: YjsProviderLike;
   readonly rootName?: string;
   readonly seedProviderOnSync?: boolean;
+  readonly sharedEffectCompaction?: YjsSharedEffectCompactionOptions;
 };
 
 export type YjsState = {
@@ -171,6 +187,11 @@ export type YjsTx = {
   readonly reconnect: () => void;
   readonly redo: () => void;
   readonly resume: () => void;
+  /**
+   * Permanently retire one crashed Y.Doc client generation from shared-effect
+   * delivery. Compaction-authority only; a returning peer needs a fresh Y.Doc.
+   */
+  readonly retireSharedEffectPeer: (peerId: number | string) => void;
   readonly sendCursorData: (data: YjsRemoteCursorData | null) => void;
   readonly sendSelection: (
     range?: Range | null,

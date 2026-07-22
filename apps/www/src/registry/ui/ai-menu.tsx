@@ -107,7 +107,7 @@ export function AIMenu() {
 
   const chat = usePluginOption(AIChatPlugin, 'chat');
 
-  const messages = chat?.messages ?? [];
+  const messages = chat?.messages;
   const status = chat?.status ?? 'ready';
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
     null
@@ -125,10 +125,14 @@ export function AIMenu() {
 
     const anchorDom = getDomNode(editor, anchorEntry[0]);
     if (!anchorDom) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Position the popover from editor DOM while the edit stream is active.
-    setAnchorElement(anchorDom);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [streaming]);
+    const animationFrame = window.requestAnimationFrame(() => {
+      setAnchorElement(anchorDom);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [api, editor, streaming]);
 
   const setOpen = (open: boolean) => {
     if (open) {
@@ -218,10 +222,14 @@ export function AIMenu() {
 
     if (!domNode) return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Position the popover from editor DOM after the edit stream completes.
-    setAnchorElement(domNode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
+    const animationFrame = window.requestAnimationFrame(() => {
+      setAnchorElement(domNode);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [editor, isLoading, mode, toolName]);
 
   if (isLoading && mode === 'insert') return null;
 
@@ -259,7 +267,7 @@ export function AIMenu() {
           {isLoading ? (
             <div className="flex grow select-none items-center gap-2 p-2 text-muted-foreground text-sm">
               <Loader2Icon className="size-4 animate-spin" />
-              {messages.length > 1 ? 'Editing...' : 'Thinking...'}
+              {(messages?.length ?? 0) > 1 ? 'Editing...' : 'Thinking...'}
             </div>
           ) : (
             <CommandPrimitive.Input
@@ -626,29 +634,27 @@ export const AIMenuItems = ({
   setValue: (value: string) => void;
 }) => {
   const editor = useEditorRef();
-  const messages = usePluginOption(AIChatPlugin, 'chat')?.messages ?? [];
+  const messages = usePluginOption(AIChatPlugin, 'chat')?.messages;
   const aiEditor = usePluginOption(AIChatPlugin, 'aiEditor')!;
   const isSelecting = useIsSelecting();
 
-  const menuState = React.useMemo(() => {
-    if (messages && messages.length > 0) {
-      return isSelecting ? 'selectionSuggestion' : 'cursorSuggestion';
-    }
-
-    return isSelecting ? 'selectionCommand' : 'cursorCommand';
-  }, [isSelecting, messages]);
-
-  const menuGroups = React.useMemo(() => {
-    const items = menuStateItems[menuState];
-
-    return items;
-  }, [menuState]);
+  const menuState: EditorChatState =
+    (messages?.length ?? 0) > 0
+      ? isSelecting
+        ? 'selectionSuggestion'
+        : 'cursorSuggestion'
+      : isSelecting
+        ? 'selectionCommand'
+        : 'cursorCommand';
+  const menuGroups = menuStateItems[menuState];
 
   React.useEffect(() => {
-    if (menuGroups.length > 0 && menuGroups[0].items.length > 0) {
-      setValue(menuGroups[0].items[0].value);
+    const firstItem = menuStateItems[menuState][0]?.items[0];
+
+    if (firstItem) {
+      setValue(firstItem.value);
     }
-  }, [menuGroups, setValue]);
+  }, [menuState, setValue]);
 
   return (
     <>

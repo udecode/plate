@@ -1,33 +1,40 @@
-import type { Operation, RootKey } from '@platejs/plite';
-import { getOperationRoot } from '../root-key';
+import type { DocumentChange, RootKey } from '@platejs/plite';
 import {
   readPliteViewSelection,
   readPliteViewSelectionHistoryEntry,
   writePliteViewSelection,
 } from '../view-selection';
-import { type Editor, runTrustedUpdate } from './runtime-editor-api';
+import {
+  type Editor,
+  getInternalDocumentChangeEntries,
+  runTrustedUpdate,
+} from './runtime-editor-api';
 
 const EDITOR_TO_HISTORY_FOCUS_ROOT = new WeakMap<Editor, RootKey | null>();
 
-const getHistoryBatchSingleOperationRoot = (
+const getHistoryBatchSingleChangedRoot = (
   editor: Editor,
   direction: 'redo' | 'undo'
 ): RootKey | null =>
   editor.read((state) => {
     const history = (state as { history?: unknown }).history as
       | {
-          redos?: () => readonly { operations?: readonly Operation[] }[];
-          undos?: () => readonly { operations?: readonly Operation[] }[];
+          redos?: () => readonly { change?: DocumentChange }[];
+          undos?: () => readonly { change?: DocumentChange }[];
         }
       | undefined;
     const stack =
       direction === 'undo' ? history?.undos?.() : history?.redos?.();
     const batch = stack?.at(-1);
-    const roots = new Set(
-      (batch?.operations ?? [])
-        .filter((operation) => operation.type !== 'set_selection')
-        .map(getOperationRoot)
-    );
+    const roots = new Set<RootKey>([
+      ...(batch?.change
+        ? [...getInternalDocumentChangeEntries(batch.change)].map(
+            ([root]) => root
+          )
+        : []),
+      ...(batch?.change?.createRoots ?? []),
+      ...(batch?.change?.deleteRoots ?? []),
+    ]);
 
     return roots.size === 1 ? (roots.values().next().value ?? null) : null;
   });
@@ -43,7 +50,7 @@ export const applyModelOwnedHistoryIntent = ({
     editor,
     direction
   );
-  const focusRoot = getHistoryBatchSingleOperationRoot(editor, direction);
+  const focusRoot = getHistoryBatchSingleChangedRoot(editor, direction);
   const hasHistory = editor.read((state) => {
     const history = (state as { history?: unknown }).history as
       | { redos?: unknown; undos?: unknown }
@@ -103,12 +110,10 @@ export const shouldForceRenderAfterModelOwnedHistory = (editor: Editor) => {
 
   return (
     !commit ||
-    commit.operations.some(
-      (operation) =>
-        operation.type !== 'insert_text' &&
-        operation.type !== 'remove_text' &&
-        operation.type !== 'set_selection'
-    )
+    commit.changed.hasAny('structure') ||
+    commit.changed.hasAny('properties') ||
+    commit.changed.hasAny('root-order') ||
+    commit.changed.hasAny('replace')
   );
 };
 

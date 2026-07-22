@@ -4,7 +4,10 @@ import {
   getSelection,
   isDOMNode,
 } from '@platejs/plite-dom';
-import { IS_FOCUSED } from '@platejs/plite-dom/internal';
+import {
+  type DOMPhaseScheduler,
+  IS_FOCUSED,
+} from '@platejs/plite-dom/internal';
 
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -14,16 +17,21 @@ import {
 } from './input-controller';
 import { attachEditableGlobalDragLifecycleListeners } from './input-router';
 import { setEditorFocused } from './runtime-editor-api';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { attachEditableSelectionChangeListener } from './selection-reconciler';
 
 export const attachEditableOutsideFocusBoundaryListener = ({
+  domPhaseScheduler,
   editor,
+  publishFocusState,
   readOnly,
   rootRef,
   state,
   targetDocument,
 }: {
+  domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
+  publishFocusState: () => void;
   readOnly: boolean;
   rootRef: RefObject<HTMLElement | null>;
   state: EditableInputControllerState;
@@ -76,6 +84,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
 
     IS_FOCUSED.delete(editor);
     setEditorFocused(editor, false);
+    publishFocusState();
 
     if (hasReadOnlyModelSelection) {
       editor.update((tx) => {
@@ -101,9 +110,12 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     }
 
     state.outsideFocusBoundarySettleUntil = getEditableInputTimestamp() + 100;
-    targetWindow?.setTimeout(() => {
-      releaseRootOwnedNativeState();
-    });
+    domPhaseScheduler.schedule(
+      'dom-write',
+      'release-outside-focus-native-state',
+      releaseRootOwnedNativeState,
+      { timing: 'timeout' }
+    );
   };
 
   targetDocument.addEventListener(eventName, handleOutsidePointerDown);
@@ -114,18 +126,14 @@ export const attachEditableOutsideFocusBoundaryListener = ({
 };
 
 export const useEditableRootGlobalLifecycle = ({
-  editor,
-  readOnly,
-  rootRef,
+  runtime,
   scheduleOnDOMSelectionChange,
-  state,
 }: {
-  editor: ReactRuntimeEditor;
-  readOnly: boolean;
-  rootRef: RefObject<HTMLElement | null>;
+  runtime: EditableDOMRuntime;
   scheduleOnDOMSelectionChange: () => void;
-  state: EditableInputControllerState;
 }) => {
+  const { domPhaseScheduler, editor, readOnly, rootRef, state } = runtime;
+
   useIsomorphicLayoutEffect(() => {
     const window = ReactEditor.getWindow(editor);
     const detachSelectionChangeListener = attachEditableSelectionChangeListener(
@@ -142,17 +150,27 @@ export const useEditableRootGlobalLifecycle = ({
       });
     const detachOutsideFocusBoundaryListener =
       attachEditableOutsideFocusBoundaryListener({
+        domPhaseScheduler,
         editor,
+        publishFocusState: runtime.publishFocusState,
         readOnly,
         rootRef,
         state,
         targetDocument: window.document,
       });
 
-    return () => {
+    return runtime.installDisposable('global-listeners', () => {
       detachSelectionChangeListener();
       detachGlobalDragLifecycleListeners();
       detachOutsideFocusBoundaryListener();
-    };
-  }, [editor, readOnly, rootRef, scheduleOnDOMSelectionChange, state]);
+    });
+  }, [
+    domPhaseScheduler,
+    editor,
+    readOnly,
+    rootRef,
+    runtime,
+    scheduleOnDOMSelectionChange,
+    state,
+  ]);
 };

@@ -4,7 +4,13 @@ import {
   type RefObject,
   useCallback,
 } from 'react';
-import { NodeApi, PathApi, type Range, RangeApi } from '@platejs/plite';
+import {
+  NodeApi,
+  PathApi,
+  type Range,
+  RangeApi,
+  SelectionApi,
+} from '@platejs/plite';
 import {
   containsShadowAware,
   type DOMElement,
@@ -20,6 +26,7 @@ import {
   TRIPLE_CLICK,
 } from '@platejs/plite-dom';
 import {
+  type DOMPhaseScheduler,
   DOMCoverage,
   EDITOR_TO_ELEMENT,
   EDITOR_TO_USER_SELECTION,
@@ -29,7 +36,6 @@ import {
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
-import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -37,6 +43,7 @@ import {
   writePliteViewSelection,
 } from '../view-selection';
 import { applyDOMCoverageSelectionPolicy } from './dom-coverage-selection';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { getInputEventTargetRanges } from './dom-input-event';
 import { createFastDOMSelectionRange } from './fast-dom-selection-range';
 import {
@@ -59,7 +66,6 @@ import {
   isInline as editorIsInline,
   point as editorPoint,
   void as editorVoid,
-  rangeRef as editorRangeRef,
   hasPath as editorHasPath,
   setEditorFocused,
   string as editorString,
@@ -344,12 +350,14 @@ export const applyEditableFocus = ({
 };
 
 export const applyEditableClick = ({
+  domPhaseScheduler,
   editor,
   event,
   onClick,
   inputController,
   readOnly,
 }: {
+  domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   event: MouseEvent<HTMLDivElement>;
   inputController: EditableInputController;
@@ -417,7 +425,12 @@ export const applyEditableClick = ({
       editor.update((tx) => {
         tx.selection.set(range);
       });
-      exportTripleClickSelectionToDOM({ editor, inputController, range });
+      exportTripleClickSelectionToDOM({
+        domPhaseScheduler,
+        editor,
+        inputController,
+        range,
+      });
       return;
     }
 
@@ -555,6 +568,19 @@ export const syncSelectionForBeforeInput = ({
     domSelectionAnchorElement?.closest('[data-plite-node="text"]') ?? null;
   const domSelectionUsesProjectedTextHost =
     type === 'insertText' && isProjectedTextHost(domSelectionTextHost);
+
+  if (
+    type === 'insertText' &&
+    !isCompositionChange &&
+    selection &&
+    RangeApi.isCollapsed(selection) &&
+    typeof data === 'string' &&
+    data.length === 1 &&
+    (forceModelOwnedTextInput || domSelectionUsesProjectedTextHost)
+  ) {
+    return { native: false, selection };
+  }
+
   const domSelectionBelongsToEditor =
     !domSelection ||
     domSelection.rangeCount === 0 ||
@@ -679,11 +705,14 @@ export const syncSelectionForBeforeInput = ({
       ) {
         nextNative = false;
 
-        const selectionRef =
+        const selectionAnchor =
           !isCompositionChange &&
           type !== 'insertText' &&
           nextSelection &&
-          editorRangeRef(editor, nextSelection);
+          editor.anchor(nextSelection, {
+            association: 'inward',
+            deletion: 'nearest',
+          });
 
         writePliteViewSelection(editor, null);
         editor.update((tx) => {
@@ -691,8 +720,8 @@ export const syncSelectionForBeforeInput = ({
         });
         nextSelection = range;
 
-        if (selectionRef) {
-          EDITOR_TO_USER_SELECTION.set(editor, selectionRef);
+        if (selectionAnchor) {
+          EDITOR_TO_USER_SELECTION.set(editor, selectionAnchor);
         }
       }
     }
@@ -860,7 +889,7 @@ export const restoreUserSelectionAfterBeforeInput = ({
   editor: ReactRuntimeEditor;
 }) => {
   // Restore the actual user section if nothing manually set it.
-  const toRestore = EDITOR_TO_USER_SELECTION.get(editor)?.unref();
+  const toRestore = EDITOR_TO_USER_SELECTION.get(editor)?.release();
   EDITOR_TO_USER_SELECTION.delete(editor);
 
   if (
@@ -934,25 +963,24 @@ export const handleWebKitShadowDOMBeforeInput = ({
 };
 
 export const useEditableSelectionReconciler = ({
-  androidInputManagerRef,
-  editor,
-  inputController: _inputController,
-  rootRef,
-  scrollSelectionIntoView,
   partialDOMBackedSelection,
-  state,
+  runtime,
+  scrollSelectionIntoView,
 }: {
-  androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
-  editor: ReactRuntimeEditor;
-  inputController: EditableInputController;
-  rootRef: RefObject<HTMLDivElement | null>;
+  partialDOMBackedSelection: boolean;
+  runtime: EditableDOMRuntime;
   scrollSelectionIntoView: (
     editor: ReactRuntimeEditor,
     domRange: DOMRange
   ) => void;
-  partialDOMBackedSelection: boolean;
-  state: EditableSelectionReconcilerState;
 }) => {
+  const {
+    androidInputManagerRef,
+    domPhaseScheduler: phaseScheduler,
+    editor,
+    rootRef,
+    state,
+  } = runtime;
   useIsomorphicLayoutEffect(() => {
     // Update element-related weak maps with the DOM element ref.
     const editorWindow = rootRef.current
@@ -1026,9 +1054,14 @@ export const useEditableSelectionReconciler = ({
     }
 
     const clearUpdatingSelection = () => {
-      setTimeout(() => {
-        state.isUpdatingSelection = false;
-      }, 80);
+      phaseScheduler.schedule(
+        'selection-repair',
+        'clear-reconciled-selection-update',
+        () => {
+          state.isUpdatingSelection = false;
+        },
+        { delay: 80, timing: 'timeout' }
+      );
     };
 
     const setDomSelection = (forceChange?: boolean) => {
@@ -1098,14 +1131,18 @@ export const useEditableSelectionReconciler = ({
 
       // when <Editable/> is being controlled through external value
       // then its children might just change - DOM responds to it on its own
-      // but Plite's value is not being updated through any operation
+      // but Plite's value is not being updated through any intent
       // and thus it doesn't transform selection on its own
       if (selection && !ReactEditor.hasRange(editor, selection)) {
+        const resolvedRange = ReactEditor.resolvePliteRange(
+          editor,
+          domSelection,
+          { exactMatch: false }
+        );
+
         writeRuntimeSelection(
           editor,
-          ReactEditor.resolvePliteRange(editor, domSelection, {
-            exactMatch: false,
-          })
+          resolvedRange ? SelectionApi.text(resolvedRange) : null
         );
         return;
       }
@@ -1219,43 +1256,51 @@ export const useEditableSelectionReconciler = ({
       return;
     }
 
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    const animationFrameId = requestAnimationFrame(() => {
-      if (ensureSelection) {
-        const ensureDomSelection = (forceChange?: boolean) => {
-          try {
-            const el = ReactEditor.assertDOMNode(editor, editor);
-            if (!shouldSkipSelectionFocus(editor)) {
-              el.focus();
+    let cancelTimeout = () => {};
+    const cancelAnimationFrame = phaseScheduler.schedule(
+      'selection-repair',
+      'android-selection-reapply-frame',
+      () => {
+        if (ensureSelection) {
+          const ensureDomSelection = (forceChange?: boolean) => {
+            try {
+              const el = ReactEditor.assertDOMNode(editor, editor);
+              if (!shouldSkipSelectionFocus(editor)) {
+                el.focus();
+              }
+
+              setDomSelection(forceChange);
+            } catch (_e) {
+              // Ignore, dom and state might be out of sync
             }
+          };
 
-            setDomSelection(forceChange);
-          } catch (_e) {
-            // Ignore, dom and state might be out of sync
-          }
-        };
+          // Compat: Android IMEs try to force their selection by manually re-applying it even after we set it.
+          // This essentially would make setting the Plite selection during an update meaningless, so we force it
+          // again here. We can't only do it in the setTimeout after the animation frame since that would cause a
+          // visible flicker.
+          ensureDomSelection();
 
-        // Compat: Android IMEs try to force their selection by manually re-applying it even after we set it.
-        // This essentially would make setting the Plite selection during an update meaningless, so we force it
-        // again here. We can't only do it in the setTimeout after the animation frame since that would cause a
-        // visible flicker.
-        ensureDomSelection();
-
-        timeoutId = setTimeout(() => {
-          // COMPAT: While setting the selection in an animation frame visually correctly sets the selection,
-          // it doesn't update GBoards spellchecker state. We have to manually trigger a selection change after
-          // the animation frame to ensure it displays the correct state.
-          ensureDomSelection(true);
-          state.isUpdatingSelection = false;
-        });
-      }
-    });
+          cancelTimeout = phaseScheduler.schedule(
+            'selection-repair',
+            'android-selection-spellcheck-refresh',
+            () => {
+              // COMPAT: While setting the selection in an animation frame visually correctly sets the selection,
+              // it doesn't update GBoards spellchecker state. We have to manually trigger a selection change after
+              // the animation frame to ensure it displays the correct state.
+              ensureDomSelection(true);
+              state.isUpdatingSelection = false;
+            },
+            { timing: 'timeout' }
+          );
+        }
+      },
+      { timing: 'animation-frame' }
+    );
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      cancelAnimationFrame();
+      cancelTimeout();
     };
   });
 
@@ -1274,7 +1319,13 @@ export const useEditableSelectionReconciler = ({
         selectionPolicy: { kind: 'export-model', reason: 'model-owned' },
       });
     },
-    [editor, scrollSelectionIntoView, partialDOMBackedSelection, state]
+    [
+      phaseScheduler,
+      editor,
+      scrollSelectionIntoView,
+      partialDOMBackedSelection,
+      state,
+    ]
   );
 
   return { syncDOMSelectionToEditor };

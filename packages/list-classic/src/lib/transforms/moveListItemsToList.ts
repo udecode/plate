@@ -83,17 +83,22 @@ export const moveListItemsToList = (
   }
   if (!to) return;
 
-  const fromListNode = editor.read.nodes.get<Element>(fromListPath)?.[0];
+  const fromListNode = tx.nodes.get<Element>(fromListPath)?.[0];
 
   if (!fromListNode) return;
 
   const childRefs = fromListNode.children
     .map((_, index) => fromListPath!.concat(index))
     .slice(fromStartIndex)
-    .map((path) => tx.refs.path(path));
+    .map((path) =>
+      tx.refs.path(path, {
+        association: 'forward',
+        deletion: 'drop',
+      })
+    );
 
-  for (const ref of childRefs.reverse()) {
-    const at = ref.unref();
+  for (const childRef of childRefs.reverse()) {
+    const at = childRef.resolve();
 
     if (at) tx.nodes.move({ at, to });
   }

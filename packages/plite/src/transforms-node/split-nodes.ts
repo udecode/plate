@@ -1,10 +1,15 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import type { Anchor } from '../core/anchor';
+import { mapCanonicalRepresentationPoint } from '../core/representation';
 import {
-  applyOperation,
+  applyBuiltDocumentChange,
+  finalizeTransactionRepresentation,
+  getActiveDocumentChangeBuilder,
+  getActiveUpdateRoot,
+  getCurrentSelection,
   profileCoreDuration,
   runEditorTransaction,
 } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { LocationApi } from '../interfaces';
@@ -18,26 +23,47 @@ import {
   levels as editorLevels,
   parent as editorParent,
   point as editorPoint,
-  pointRef as editorPointRef,
   void as editorVoid,
 } from '../interfaces/editor';
 import type { Editor } from '../interfaces/editor';
 import { type Node, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
-import type { PointRef } from '../interfaces/point-ref';
 import { type Range, RangeApi } from '../interfaces/range';
+import { SelectionApi } from '../interfaces/selection';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import { select } from '../transforms-selection/select';
+import { deleteText } from '../transforms-text/delete-text';
+import { insertNodes } from './insert-nodes';
 
 const deleteRange = (editor: Editor, range: Range): Point | null => {
   if (RangeApi.isCollapsed(range)) {
     return range.anchor;
   }
 
-  const [, end] = RangeApi.edges(range);
-  const pointRef = editorPointRef(editor, end);
-  getEditorTransformRegistry(editor).delete({ at: range });
-  return pointRef.unref();
+  const [start, end] = RangeApi.edges(range);
+  const [endBlock] = getNodes(editor, {
+    at: end,
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
+    mode: 'highest',
+  });
+  const preserveEndPoint =
+    Boolean(editorVoid(editor, { at: start, mode: 'highest' })) ||
+    Boolean(endBlock && editorIsStart(editor, end, endBlock[1]));
+  const endAnchor = editor.anchor(end, {
+    association: 'forward',
+    deletion: 'nearest',
+  });
+
+  deleteText(editor, { at: range });
+  const selection = getCurrentSelection(editor);
+  const preservedEnd = endAnchor.release();
+
+  return preserveEndPoint
+    ? preservedEnd
+    : SelectionApi.isText(selection)
+      ? selection.anchor
+      : preservedEnd;
 };
 
 const getTextEndForwardPoint = (
@@ -83,15 +109,38 @@ const isInlineStartSplit = (
   getEditorSchema(editor).isInline(node) &&
   editorIsStart(editor, point, path);
 
+const getActiveDraftRoot = (editor: Editor): Node => {
+  const value = getActiveDocumentChangeBuilder(editor).value;
+  const root = getActiveUpdateRoot(editor) ?? 'main';
+
+  return {
+    children: root === 'main' ? value.children : (value.roots?.[root] ?? []),
+  } as Node;
+};
+
+const getSplitProperties = (
+  editor: Editor,
+  node: Node,
+  path: Path,
+  root: string
+) =>
+  NodeApi.isText(node)
+    ? {
+        ...getEditorSchema(editor).textPropertiesForSplitAt(node, path, root),
+      }
+    : NodeApi.isElement(node)
+      ? getEditorSchema(editor).elementPropertiesForSplitAt(node, path, root)
+      : NodeApi.extractProps(node);
+
 const ensureStartPointAfterHighestSplit = (
   editor: Editor,
   path: Path
 ): Point | null => {
-  if (!NodeApi.has(editor, path)) {
-    return null;
-  }
+  const draft = getActiveDraftRoot(editor);
+  const target = NodeApi.getIf(draft, path);
 
-  const [node, textPath] = NodeApi.first(editor, path);
+  if (!target) return null;
+  const [node, textPath] = NodeApi.first(draft, path);
 
   if (NodeApi.isText(node)) {
     return { path: textPath, offset: 0 };
@@ -100,11 +149,9 @@ const ensureStartPointAfterHighestSplit = (
   if (NodeApi.isElement(node) && node.children.length === 0) {
     const point = { path: textPath.concat(0), offset: 0 };
 
-    applyOperation(editor, {
-      type: 'insert_node',
-      path: point.path,
-      node: { text: '' },
-    });
+    applyBuiltDocumentChange(editor, (builder, root) =>
+      builder.insertNode(root, point.path, { text: '' })
+    );
 
     return point;
   }
@@ -118,7 +165,6 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
 ) => {
   runEditorTransaction(editor, (tx) => {
     profileCoreDuration('split-nodes-transaction', () => {
-      const transforms = getEditorTransformRegistry(editor);
       const { mode = 'lowest', voids = false } = options;
       let { match, height = 0, always = false } = options;
       let at = profileCoreDuration('split-nodes-resolve-target', () =>
@@ -153,12 +199,14 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
           const path = at;
           const [node] = getNode(editor, path);
 
-          applyOperation(editor, {
-            type: 'split_node',
-            path,
-            position: options.position,
-            properties: NodeApi.extractProps(node),
-          });
+          applyBuiltDocumentChange(editor, (builder, root) =>
+            builder.splitNode(
+              root,
+              path,
+              options.position!,
+              getSplitProperties(editor, node, path, root)
+            )
+          );
 
           return;
         }
@@ -182,14 +230,15 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
       }
 
       let splitPoint: Point = at;
-      const beforeRef = profileCoreDuration(
-        'split-nodes-before-point-ref',
+      const beforeAnchor = profileCoreDuration(
+        'split-nodes-before-anchor',
         () =>
-          editorPointRef(editor, splitPoint, {
-            affinity: 'backward',
+          editor.anchor(splitPoint, {
+            association: 'backward',
+            deletion: 'nearest',
           })
       );
-      let afterRef: PointRef | undefined;
+      let afterAnchor: Anchor<Point> | undefined;
 
       try {
         const [highest] = profileCoreDuration('split-nodes-find-highest', () =>
@@ -221,7 +270,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
             if (!after) {
               const text = { text: '' };
               const afterPath = PathApi.next(voidPath);
-              transforms.insertNodes(text, { at: afterPath, voids });
+              insertNodes(editor, text, { at: afterPath, voids });
               after = editorPoint(editor, afterPath)!;
             }
 
@@ -236,20 +285,27 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
 
         const depth = splitPoint.path.length - height;
         const [, highestPath] = highest;
+        const [splitText] = getNode(editor, splitPoint.path);
+        const preserveLeftPoint =
+          !always &&
+          NodeApi.isText(splitText) &&
+          splitPoint.offset === splitText.text.length;
         const textEndForwardPoint = always
           ? profileCoreDuration('split-nodes-text-end-forward-point', () =>
               getTextEndForwardPoint(editor, splitPoint, highestPath)
             )
           : null;
-        afterRef = profileCoreDuration('split-nodes-after-point-ref', () =>
-          editorPointRef(editor, textEndForwardPoint ?? splitPoint, {
-            affinity: 'forward',
+        afterAnchor = profileCoreDuration('split-nodes-after-anchor', () =>
+          editor.anchor(textEndForwardPoint ?? splitPoint, {
+            association: 'forward',
+            deletion: 'nearest',
           })
         );
         const lowestPath = splitPoint.path.slice(0, depth);
         let rightHighestPath: Path | null = null;
         let position =
           height === 0 ? splitPoint.offset : splitPoint.path[depth]!;
+        let didSplitDescendant = false;
 
         profileCoreDuration('split-nodes-levels-loop', () => {
           for (const [node, path] of editorLevels(editor, {
@@ -267,7 +323,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
               break;
             }
 
-            const point = beforeRef.current!;
+            const point = beforeAnchor.resolve()!;
             const isEnd = editorIsEnd(editor, point, path);
 
             if (
@@ -278,18 +334,22 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
                     isInlineStartSplit(editor, node, splitPoint, path))))
             ) {
               split = false;
-            } else if (always || !editorIsEdge(editor, point, path)) {
+            } else if (
+              didSplitDescendant ||
+              always ||
+              !editorIsEdge(editor, point, path)
+            ) {
               split = true;
-              applyOperation(editor, {
-                type: 'split_node',
-                path,
-                position,
-                properties: NodeApi.extractProps(node),
-              });
-
-              if (always && PathApi.equals(path, highestPath)) {
-                rightHighestPath = PathApi.next(path);
-              }
+              applyBuiltDocumentChange(editor, (builder, root) =>
+                builder.splitNode(
+                  root,
+                  path,
+                  position,
+                  getSplitProperties(editor, node, path, root)
+                )
+              );
+              didSplitDescendant = true;
+              rightHighestPath = PathApi.next(path);
             }
 
             position = path.at(-1)! + (split || isEnd ? 1 : 0);
@@ -298,21 +358,46 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
 
         if (options.at == null) {
           profileCoreDuration('split-nodes-select-after', () => {
-            const rightHighestPoint =
-              rightHighestPath === null
-                ? null
-                : ensureStartPointAfterHighestSplit(editor, rightHighestPath);
+            const rawResultPoint = preserveLeftPoint
+              ? editorPoint(editor, highestPath, { edge: 'end' })
+              : rightHighestPath
+                ? ensureStartPointAfterHighestSplit(editor, rightHighestPath)
+                : null;
+            const representationStep =
+              finalizeTransactionRepresentation(editor);
+            const root = getActiveUpdateRoot(editor) ?? 'main';
+            const representationBefore =
+              representationStep?.indexedBefore.get(root);
+            const representationAfter =
+              representationStep?.indexedAfter.get(root);
+            const mappedResultPoint =
+              rawResultPoint &&
+              representationStep &&
+              representationBefore &&
+              representationAfter
+                ? mapCanonicalRepresentationPoint(
+                    editor,
+                    representationBefore,
+                    representationAfter,
+                    representationStep.change,
+                    root,
+                    rawResultPoint,
+                    preserveLeftPoint ? -1 : 1
+                  )
+                : rawResultPoint;
             const point =
-              rightHighestPoint ||
-              afterRef?.current ||
+              mappedResultPoint ||
+              afterAnchor?.resolve() ||
+              beforeAnchor.resolve() ||
               editorPoint(editor, [], { edge: 'end' });
-            transforms.select(point);
+
+            select(editor, point);
           });
         }
       } finally {
-        profileCoreDuration('split-nodes-unref', () => {
-          beforeRef.unref();
-          afterRef?.unref();
+        profileCoreDuration('split-nodes-release-anchors', () => {
+          beforeAnchor.release();
+          afterAnchor?.release();
         });
       }
     });

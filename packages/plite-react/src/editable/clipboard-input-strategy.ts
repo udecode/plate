@@ -1,5 +1,5 @@
 import type { ClipboardEvent, DragEvent } from 'react';
-import { NodeApi, type Range, RangeApi } from '@platejs/plite';
+import { NodeApi, PathApi, type Range, RangeApi } from '@platejs/plite';
 import {
   HAS_BEFORE_INPUT_SUPPORT,
   IS_WEBKIT,
@@ -35,10 +35,14 @@ import {
   before as editorBefore,
   after as editorAfter,
   range as editorRange,
-  pointRef as editorPointRef,
+  dispatchCommand,
+  editorCommands,
 } from './runtime-editor-api';
 import { readRuntimeNode } from './runtime-live-state';
-import { readRuntimeSelection } from './runtime-selection-state';
+import {
+  readRuntimeSelection,
+  readRuntimeSelectionRange,
+} from './runtime-selection-state';
 
 type EditablePasteHandler = (
   event: ClipboardEvent<HTMLDivElement>
@@ -376,13 +380,13 @@ export const applyEditableCut = ({
         const inlineBeforePoint = inlinePath
           ? editorBefore(editor, inlinePath)
           : null;
-        const collapsePointRef = editorPointRef(
-          editor,
-          RangeApi.start(selection)
-        );
+        const collapsePointAnchor = editor.anchor(RangeApi.start(selection), {
+          association: 'forward',
+          deletion: 'nearest',
+        });
         applyEditableCommand({ command, editor });
         writePliteViewSelection(editor, null);
-        const collapsePoint = collapsePointRef.unref();
+        const collapsePoint = collapsePointAnchor.release();
         const shouldRemoveEmptyInline =
           inlinePath &&
           (() => {
@@ -459,10 +463,30 @@ export const applyEditableCut = ({
       const node = NodeApi.parent(editor, selection.anchor.path);
       if (NodeApi.isElement(node) && editorIsVoid(editor, node)) {
         const command: EditableCommand = { kind: 'delete-fragment' };
+        const voidPath = PathApi.parent(selection.anchor.path);
+        const previousPoint =
+          voidPath.at(-1) === 0
+            ? null
+            : editorPoint(editor, PathApi.previous(voidPath), { edge: 'end' });
 
-        editor.update((tx) => {
-          tx.text.delete();
+        dispatchCommand(editor, editorCommands.removeNodes, {
+          options: {
+            at: voidPath,
+            voids: true,
+          },
         });
+        if (previousPoint) {
+          applyEditableCommand({
+            command: {
+              kind: 'select',
+              selection: {
+                anchor: previousPoint,
+                focus: previousPoint,
+              },
+            },
+            editor,
+          });
+        }
 
         return clipboardResult({
           command,
@@ -572,7 +596,7 @@ export const applyEditableDragStart = ({
         ? ([node, path] as const)
         : editorVoid(editor, { at: path, voids: true });
     let draggedBlock = false;
-    let draggedRange = readRuntimeSelection(editor);
+    let draggedRange = readRuntimeSelectionRange(editor);
 
     // If starting a drag on a void node, make sure it is selected
     // so that it shows up in the selection's fragment.
@@ -651,27 +675,56 @@ export const applyEditableDrop = ({
 
     const data = event.dataTransfer;
     const command: EditableCommand = { data, kind: 'insert-data' };
-
-    applyEditableCommand({
-      command: { kind: 'select', selection: range },
-      editor,
-    });
-
-    if (
+    const movesDraggedRange =
       state.isDraggingInternally &&
-      draggedRange &&
+      draggedRange !== null &&
+      (RangeApi.isExpanded(draggedRange) ||
+        !!editorVoid(editor, { at: draggedRange, voids: true })) &&
       !RangeApi.equals(draggedRange, range) &&
-      !editorVoid(editor, { at: range, voids: true })
-    ) {
-      editor.update((tx) => {
-        tx.text.delete({
-          at: draggedRange,
-        });
+      !editorVoid(editor, { at: range, voids: true });
+
+    editor.update((tx) => {
+      applyEditableCommand({
+        command: { kind: 'select', selection: range },
+        editor,
       });
-    }
 
-    applyEditableCommand({ command, editor });
+      if (movesDraggedRange) {
+        tx.text.delete({ at: draggedRange });
+      }
 
+      const inserted = applyEditableCommand({ command, editor });
+
+      if (inserted && movesDraggedRange && isBlockDrag) {
+        const selection = tx.selection();
+        const selectedVoid = selection
+          ? tx.nodes.void({ at: selection, voids: true })
+          : undefined;
+
+        if (
+          !selectedVoid ||
+          !NodeApi.isElement(selectedVoid[0]) ||
+          editorIsInline(editor, selectedVoid[0])
+        ) {
+          const previousBlock = selection
+            ? tx.nodes.previous({
+                at: selection,
+                match: (node) =>
+                  NodeApi.isElement(node) && editorIsBlock(editor, node),
+              })
+            : undefined;
+
+          if (
+            previousBlock &&
+            NodeApi.isElement(previousBlock[0]) &&
+            editorIsVoid(editor, previousBlock[0]) &&
+            !editorIsInline(editor, previousBlock[0])
+          ) {
+            tx.selection.set(previousBlock[1]);
+          }
+        }
+      }
+    });
     // When dragging from another source into the editor, it's possible
     // that the current editor does not have focus.
     if (!ReactEditor.isFocused(editor)) {

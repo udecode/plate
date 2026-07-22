@@ -33,9 +33,7 @@ export const BasicBlocksKit = [
   ParagraphPlugin.withComponent(ParagraphElement),
   H1Plugin.configure({
     inputRules: [HeadingRules.markdown()],
-    node: {
-      component: H1Element,
-    },
+    render: { node: H1Element },
     rules: {
       break: { empty: 'reset' },
     },
@@ -43,9 +41,7 @@ export const BasicBlocksKit = [
   }),
   H2Plugin.configure({
     inputRules: [HeadingRules.markdown()],
-    node: {
-      component: H2Element,
-    },
+    render: { node: H2Element },
     rules: {
       break: { empty: 'reset' },
     },
@@ -53,9 +49,7 @@ export const BasicBlocksKit = [
   }),
   H3Plugin.configure({
     inputRules: [HeadingRules.markdown()],
-    node: {
-      component: H3Element,
-    },
+    render: { node: H3Element },
     rules: {
       break: { empty: 'reset' },
     },
@@ -63,9 +57,7 @@ export const BasicBlocksKit = [
   }),
   H4Plugin.configure({
     inputRules: [HeadingRules.markdown()],
-    node: {
-      component: H4Element,
-    },
+    render: { node: H4Element },
     rules: {
       break: { empty: 'reset' },
     },
@@ -73,9 +65,7 @@ export const BasicBlocksKit = [
   }),
   H5Plugin.configure({
     inputRules: [HeadingRules.markdown()],
-    node: {
-      component: H5Element,
-    },
+    render: { node: H5Element },
     rules: {
       break: { empty: 'reset' },
     },
@@ -83,9 +73,7 @@ export const BasicBlocksKit = [
   }),
   H6Plugin.configure({
     inputRules: [HeadingRules.markdown()],
-    node: {
-      component: H6Element,
-    },
+    render: { node: H6Element },
     rules: {
       break: { empty: 'reset' },
     },
@@ -93,7 +81,7 @@ export const BasicBlocksKit = [
   }),
   BlockquotePlugin.configure({
     inputRules: [BlockquoteRules.markdown()],
-    node: { component: BlockquoteElement },
+    render: { node: BlockquoteElement },
     shortcuts: { toggle: { keys: 'mod+shift+period' } },
   }),
   HorizontalRulePlugin.configure({
@@ -101,8 +89,6 @@ export const BasicBlocksKit = [
       HorizontalRuleRules.markdown({ variant: '-' }),
       HorizontalRuleRules.markdown({ variant: '_' }),
     ],
-    node: {
-      component: HrElement,
-    },
+    render: { node: HrElement },
   }),
 ];

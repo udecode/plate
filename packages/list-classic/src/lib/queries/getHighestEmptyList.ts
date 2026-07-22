@@ -1,5 +1,10 @@
 import type { BaseEditor } from '@platejs/core';
-import { type Element, type Path, PathApi } from '@platejs/plite';
+import {
+  type EditorStateView,
+  type Element,
+  type Path,
+  PathApi,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { getListTypes } from './getListTypes';
@@ -20,9 +25,10 @@ export const getHighestEmptyList = (
   }: {
     liPath: Path;
     diffListPath?: Path;
-  }
+  },
+  state: Pick<EditorStateView, 'nodes'> = editor.read
 ): Path | undefined => {
-  const list = editor.read.nodes.above<Element>({
+  const list = state.nodes.above<Element>({
     at: liPath,
     match: { type: getListTypes(editor) },
   });
@@ -33,15 +39,18 @@ export const getHighestEmptyList = (
 
   if (!diffListPath || !PathApi.equals(listPath, diffListPath)) {
     if (listNode.children.length < 2) {
-      const liParent = editor.read.nodes.above({
+      const liParent = state.nodes.above({
         at: listPath,
         match: { type: editor.getType(KEYS.li) },
       });
 
       if (liParent) {
         return (
-          getHighestEmptyList(editor, { diffListPath, liPath: liParent[1] }) ||
-          listPath
+          getHighestEmptyList(
+            editor,
+            { diffListPath, liPath: liParent[1] },
+            state
+          ) || listPath
         );
       }
     }

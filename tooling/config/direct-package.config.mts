@@ -12,6 +12,7 @@ export const withDirectPackageConfig = (config: UserConfig): UserConfig => {
 
   const packageRoot = process.cwd();
   const onBuildDone = config.hooks?.['build:done'];
+  const suppressWarnings = config.suppressWarnings;
 
   return {
     clean: true,
@@ -22,7 +23,10 @@ export const withDirectPackageConfig = (config: UserConfig): UserConfig => {
     tsconfig: 'tsconfig.build.json',
     ...config,
     deps: { ...config.deps, neverBundle: true },
-    dts: { sourcemap: false },
+    dts: {
+      ...(typeof config.dts === 'object' ? config.dts : {}),
+      sourcemap: false,
+    },
     exports: false,
     failOnWarn: 'ci-only',
     hooks: {
@@ -32,7 +36,18 @@ export const withDirectPackageConfig = (config: UserConfig): UserConfig => {
         assertPackageBuildArtifacts(packageRoot);
       },
     },
-    suppressWarnings: [typescript7Warning],
+    suppressWarnings:
+      typeof suppressWarnings === 'function'
+        ? (message) =>
+            message.includes(typescript7Warning) || suppressWarnings(message)
+        : [
+            typescript7Warning,
+            ...(Array.isArray(suppressWarnings)
+              ? suppressWarnings
+              : suppressWarnings
+                ? [suppressWarnings]
+                : []),
+          ],
   };
 };
 

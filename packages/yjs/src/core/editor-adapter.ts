@@ -1,28 +1,28 @@
 import type {
   Descendant,
+  DocumentChange,
   Editor,
+  EditorEffect,
   EditorUpdatePolicy,
   Element,
-  Operation,
   Range,
+  TextSelection,
 } from '@platejs/plite';
-import { createEditor, NodeApi, OperationApi } from '@platejs/plite';
-import {
-  getActiveEditorTransaction,
-  getSnapshot as editorGetSnapshot,
-  replace as editorReplace,
-} from '@platejs/plite/internal';
+import { NodeApi, SelectionApi } from '@platejs/plite';
+import { runTrustedUpdate, toInternalRoot } from '@platejs/plite/internal';
 
 export type YjsEditorAdapter = {
+  readonly applyRemote: (input: {
+    readonly change?: DocumentChange;
+    readonly effects: readonly EditorEffect[];
+    readonly selection?: Range | null;
+  }) => void;
+  readonly canonicalize: (
+    children: readonly Descendant[]
+  ) => readonly Descendant[];
+  readonly canonicalizeNode: (node: Descendant) => Descendant;
   readonly importing: () => boolean;
-  readonly readChildren: () => Element[];
-  readonly readChildrenBeforeOperations: (
-    operations: readonly Operation[]
-  ) => Element[];
-  readonly replaceValue: (
-    children: readonly Descendant[],
-    selection: Range | null
-  ) => void;
+  readonly readChildren: () => readonly Descendant[];
 };
 
 export const YjsUpdatePolicy = Object.freeze({
@@ -40,32 +40,14 @@ export const YjsUpdatePolicy = Object.freeze({
 
 const SELECTION_ROOT_TYPE = 'plite-yjs-selection-root';
 
-const copyReadonlyArray = <T>(items: readonly T[]): T[] => {
-  const copy = new Array<T>(items.length);
-
-  let index = 0;
-
-  while (index < items.length) {
-    const item = items[index];
-
-    if (item === undefined) {
-      throw new Error('Cannot copy a sparse array.');
-    }
-
-    copy[index] = item;
-    index++;
-  }
-
-  return copy;
-};
-
 const sanitizeImportSelection = (
   children: readonly Descendant[],
   selection: Range | null
-): Range | null => {
+): TextSelection | null => {
   if (selection === null) {
     return null;
   }
+  if ('kind' in selection && selection.kind !== 'text') return null;
 
   // Selection validation is read-only; avoid a second shallow copy of large
   // remote imports before the actual replace payload is copied.
@@ -76,7 +58,7 @@ const sanitizeImportSelection = (
 
   return isValidImportSelectionPoint(root, selection.anchor) &&
     isValidImportSelectionPoint(root, selection.focus)
-    ? selection
+    ? SelectionApi.text(selection)
     : null;
 };
 
@@ -94,79 +76,71 @@ const isValidImportSelectionPoint = (
   );
 };
 
-export const createYjsEditorAdapter = (editor: Editor): YjsEditorAdapter => {
+export const createYjsEditorAdapter = (
+  editor: Editor,
+  canonicalize: YjsEditorAdapter['canonicalize']
+): YjsEditorAdapter => {
   let importing = false;
 
-  const readChildren = (): Element[] =>
-    copyReadonlyArray(editor.read.children());
+  const readChildren = (): readonly Descendant[] => editor.read.children();
+  const canonicalizeNode = (node: Descendant): Descendant => {
+    const children = canonicalize([node]);
 
-  const readChildrenBeforeOperations = (
-    operations: readonly Operation[]
-  ): Element[] => {
-    const baselineEditor = createEditor();
+    if (children.length !== 1 || children[0] === undefined) {
+      throw new Error(
+        'A Yjs top-level node must canonicalize to one editor node.'
+      );
+    }
 
-    editorReplace(baselineEditor, {
-      children: readChildren(),
-      marks: null,
-      selection: null,
-    });
-    baselineEditor.update((tx) => {
-      const inverseOperations = new Array<Operation>(operations.length);
-      let inverseOperationCount = 0;
-
-      let index = operations.length - 1;
-
-      while (index >= 0) {
-        const operation = operations[index];
-
-        if (operation !== undefined) {
-          inverseOperations[inverseOperationCount] =
-            OperationApi.inverse(operation);
-          inverseOperationCount++;
-        }
-        index--;
-      }
-
-      inverseOperations.length = inverseOperationCount;
-      tx.operations.replay(inverseOperations);
-    });
-
-    return editorGetSnapshot(baselineEditor).children;
+    return children[0];
   };
 
-  const replaceValue = (
-    children: readonly Descendant[],
-    selection: Range | null
-  ): void => {
-    const nextSelection = sanitizeImportSelection(children, selection);
+  const applyRemote: YjsEditorAdapter['applyRemote'] = ({
+    change,
+    effects,
+    selection,
+  }) => {
+    const currentValue = editor.read.value();
+    const nextValue = change ? change.apply(currentValue) : currentValue;
+    const editorRoot = toInternalRoot(editor.read.view.root());
+    const nextChildren =
+      editorRoot === 'main'
+        ? nextValue.children
+        : (nextValue.roots?.[editorRoot] ?? []);
+    const nextSelection = sanitizeImportSelection(
+      nextChildren,
+      selection ?? null
+    );
 
     importing = true;
 
     try {
-      const value = {
-        children: copyReadonlyArray(children),
-        marks: null,
-        selection: nextSelection,
-      };
-      const activeTx = getActiveEditorTransaction(editor);
+      runTrustedUpdate(
+        editor,
+        (tx) => {
+          if (change && !change.empty) {
+            tx.changes.apply(change);
+          }
+          if (selection !== undefined) {
+            tx.selection.set(nextSelection);
+          }
 
-      if (activeTx) {
-        for (const tag of YjsUpdatePolicy.remote.tags) {
-          activeTx.tags.add(tag);
-        }
-        activeTx.value.replace(value);
-      } else {
-        editor.update(YjsUpdatePolicy.remote).value.replace(value);
-      }
+          for (const effect of effects) {
+            tx.effects.emit(effect.type, effect.value);
+          }
+        },
+        { tags: YjsUpdatePolicy.remote.tags }
+      );
     } finally {
       importing = false;
     }
   };
 
   return {
+    applyRemote,
+    canonicalize,
+    canonicalizeNode,
     importing: () => importing,
     readChildren,
-    readChildrenBeforeOperations,
-    replaceValue,
   };
 };

@@ -2,7 +2,7 @@ import type { Range } from '@platejs/plite';
 import { MAIN_ROOT_KEY } from '../root-key';
 
 const INTERACTIVE_CHROME_TARGET =
-  'a[href], button, input, select, textarea, [contenteditable="true"]:not([data-plite-editor="true"]), [role="button"], [data-plite-root-chrome-ignore="true"]';
+  'a[href]:not([data-plite-inline="true"]), button, input, select, textarea, [contenteditable="true"]:not([data-plite-editor="true"]), [role="button"], [data-plite-root-chrome-ignore="true"]';
 const NATIVE_EDITABLE_TARGET =
   '[data-plite-string], [data-plite-zero-width], [data-plite-leaf], [data-plite-node="text"], [data-plite-node="element"]';
 const EDITABLE_ROOT_TARGET = '[data-plite-editor="true"]';

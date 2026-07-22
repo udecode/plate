@@ -27,7 +27,7 @@ export type SuggestionConfig = ExtendConfig<
   }
 >;
 
-const INLINE_SUGGESTION_TARGET_PLUGINS = [
+const INLINE_SUGGESTION_RENDER_TARGETS = [
   KEYS.date,
   KEYS.inlineEquation,
   KEYS.link,
@@ -110,13 +110,13 @@ export const suggestionPlugin = toPlatePlugin<
       },
       transformStyle: () => ({}) as CSSStyleDeclaration,
     },
-    targetPlugins: INLINE_SUGGESTION_TARGET_PLUGINS,
   },
   render: {
     belowNodes: SuggestionLineBreak,
     belowRootNodes: VoidRemoveSuggestionOverlay,
     node: SuggestionLeaf,
   },
+  targetPluginKeys: INLINE_SUGGESTION_RENDER_TARGETS,
 });
 
 const trailingBlockPlugin = TrailingBlockPlugin.configure({

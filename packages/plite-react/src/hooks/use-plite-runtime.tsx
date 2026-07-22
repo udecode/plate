@@ -15,7 +15,8 @@ import {
   type EditorStateView,
   type EditorView,
   type EditorViewOptions,
-  type Operation,
+  type ExtensionsOf,
+  type NamedRootKey,
   type Path,
   type RootKey,
   type Selection,
@@ -31,14 +32,13 @@ import { PliteEditableRootContext } from '../context';
 import { refreshEditorDecorations } from '../decoration-refresh';
 import {
   getEditorRuntime,
-  getOperationCount,
+  getEditorRuntimeOwner,
   inheritEditorExtensionRegistry,
-  inheritEditorTransformRegistry,
+  createInternalClipboardApi,
   setEditorRuntime,
   getLastCommit as editorGetLastCommit,
 } from '../editable/runtime-editor-api';
 import {
-  ReactEditor,
   type ReactRuntimeEditor,
   toReactRuntimeEditor,
 } from '../plugin/react-editor';
@@ -48,11 +48,8 @@ import {
   type ReactEditor as ReactEditorType,
 } from '../plugin/with-react';
 import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
-import {
-  getOperationRoot,
-  MAIN_ROOT_KEY,
-  toPublicRootOption,
-} from '../root-key';
+import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
+import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-live-region';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { setPliteViewSelectionStoreKey } from '../view-selection';
 import { focusPliteEditable } from './focus-plite-editable';
@@ -60,6 +57,7 @@ import {
   createRootSelectionCache,
   getSelectionRoot,
 } from './root-selection-cache';
+import { getSchemaInvalidatedRuntimeIds } from '../editable/schema-runtime-invalidation';
 import {
   type EditorSelectorContextValue,
   type EditorStateSelectorOptions,
@@ -67,7 +65,11 @@ import {
 } from './use-editor-selector';
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
-import { syncTextOperationsToDOM } from './use-plite-node-ref';
+import {
+  syncChangedTextToDOM,
+  syncPliteNodePathBindingsToDOM,
+} from './use-plite-node-ref';
+import { useRuntimeFocusState } from './use-runtime-focus-state';
 
 const refEquality = <T,>(a: T | null, b: T) => a === b;
 const rootKeyEquality = (
@@ -157,6 +159,7 @@ export type PliteRuntimeValue<
   TExtensions extends readonly unknown[] = readonly [],
 > = Pick<
   ReactEditorType<V, TExtensions>,
+  | 'anchor'
   | 'api'
   | 'extend'
   | 'getApi'
@@ -183,22 +186,44 @@ type PliteRuntimeContextValue<
   getActiveContentRootOwner: (root: RootKey) => PliteContentRootOwner | null;
   getContentRootOwnerViewEditor: (
     owner: PliteContentRootOwner
-  ) => ReactRuntimeEditor<V> | null;
+  ) => ReactRuntimeEditor<
+    V,
+    ExtensionsOf<ReactEditorType<V, TExtensions>>
+  > | null;
   getLastSelectionForRoot: (root: RootKey) => Selection;
-  getMountedViewEditor: (root: RootKey) => ReactRuntimeEditor<V> | null;
-  getView: (options?: EditorViewOptions) => EditorView<V, TExtensions>;
+  getMountedViewEditor: (
+    root: RootKey
+  ) => ReactRuntimeEditor<
+    V,
+    ExtensionsOf<ReactEditorType<V, TExtensions>>
+  > | null;
+  getView: (
+    options?: EditorViewOptions
+  ) => EditorView<V, ExtensionsOf<ReactEditorType<V, TExtensions>>>;
   registerContentRootOwner: (
-    editor: ReactRuntimeEditor<V>,
+    editor: ReactRuntimeEditor<
+      V,
+      ExtensionsOf<ReactEditorType<V, TExtensions>>
+    >,
     owner: PliteContentRootOwner
   ) => () => void;
   registerViewEffect: (effect: () => void) => () => void;
   registerViewEditor: (
-    editor: ReactRuntimeEditor<V>,
+    editor: ReactRuntimeEditor<
+      V,
+      ExtensionsOf<ReactEditorType<V, TExtensions>>
+    >,
     root: RootKey
   ) => () => void;
   runtime: PliteRuntimeValue<V, TExtensions>;
   selectorContext: EditorSelectorContextValue;
-  setActiveViewEditor: (editor: ReactRuntimeEditor<V>, root: RootKey) => void;
+  setActiveViewEditor: (
+    editor: ReactRuntimeEditor<
+      V,
+      ExtensionsOf<ReactEditorType<V, TExtensions>>
+    >,
+    root: RootKey
+  ) => void;
 };
 
 /** Props for the `<PliteRuntime>` provider. */
@@ -213,7 +238,7 @@ export type PliteRuntimeProps<
 /** Selector options for `usePliteRuntimeState` and `usePliteRootState`. */
 export type PliteRuntimeStateSelectorOptions<
   T,
-  TRuntime extends PliteRuntimeValue<any> = PliteRuntimeValue<any>,
+  TRuntime extends PliteRuntimeValue<any, any> = PliteRuntimeValue<any, any>,
 > = Pick<
   EditorStateSelectorOptions<T, TRuntime['editor']>,
   'deferred' | 'deps' | 'equalityFn' | 'shouldUpdate'
@@ -234,6 +259,7 @@ const createReactRuntime = <
 
   return Object.freeze({
     api: editor.api,
+    anchor: editor.anchor,
     editor,
     extend: editor.extend,
     getApi: editor.getApi,
@@ -247,7 +273,7 @@ const createReactRuntime = <
 export type ReactRuntimeViewEditor<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = ReactRuntimeEditor<V> & EditorView<V, TExtensions>;
+> = ReactRuntimeEditor<V, TExtensions> & EditorView<V, TExtensions>;
 
 export const createReactRuntimeViewEditor = <
   V extends Value = Value,
@@ -256,6 +282,7 @@ export const createReactRuntimeViewEditor = <
   view: EditorView<V, TExtensions>
 ): ReactRuntimeViewEditor<V, TExtensions> => {
   const runtime = getEditorRuntime(view as any);
+  const runtimeOwner = getEditorRuntimeOwner(view as any);
   const {
     api: _api,
     getApi: _getApi,
@@ -267,13 +294,19 @@ export const createReactRuntimeViewEditor = <
   >;
 
   Object.defineProperties(editor, descriptors);
-  setEditorRuntime(editor as any, runtime);
+  setEditorRuntime(editor as any, runtime, runtimeOwner);
   inheritEditorExtensionRegistry(editor as any, view as any);
-  inheritEditorTransformRegistry(editor as any, view as any);
 
-  const { clipboard, ...domApi } = createDOMEditorCapability(
-    toReactRuntimeEditor<V>(editor)
+  const { clipboard: domClipboard, ...domApi } = createDOMEditorCapability(
+    toReactRuntimeEditor(editor)
   );
+  const clipboard = Object.freeze({
+    ...domClipboard,
+    insertData: createInternalClipboardApi(
+      () => editor as any,
+      () => domClipboard.insertData
+    ).insertData,
+  });
   const reactApi = createReactApi(editor, domApi);
   const baseApi = view.api as Record<PropertyKey, unknown>;
   const viewApi = new Proxy(baseApi, {
@@ -290,7 +323,7 @@ export const createReactRuntimeViewEditor = <
 
       return Reflect.get(target, property, receiver);
     },
-  }) as ReactRuntimeEditor<V>['api'];
+  }) as ReactRuntimeEditor<V, TExtensions>['api'];
 
   Object.defineProperties(editor, {
     api: {
@@ -314,58 +347,8 @@ export const createReactRuntimeViewEditor = <
   return Object.freeze(editor) as ReactRuntimeViewEditor<V, TExtensions>;
 };
 
-const isTextOperation = (operation: Operation) =>
-  operation.type === 'insert_text' || operation.type === 'remove_text';
-
-const getTextOperations = (operations: readonly Operation[]) =>
-  operations.every(isTextOperation)
-    ? operations
-    : operations.filter(isTextOperation);
-
-const isRootAffected = (
-  root: RootKey,
-  operations?: readonly Operation[],
-  change?: EditorCommit
-) => {
-  if (!change) {
-    return true;
-  }
-
-  if (
-    change.fullDocumentChanged ||
-    change.rootRuntimeIdsChanged ||
-    change.topLevelOrderChanged ||
-    change.dirtyStateKeys.length > 0
-  ) {
-    return true;
-  }
-
-  const changedOperations = operations ?? change.operations;
-
-  if (
-    change.selectionChanged &&
-    (getSelectionRoot(change.selectionBefore) === root ||
-      getSelectionRoot(change.selectionAfter) === root)
-  ) {
-    return true;
-  }
-
-  if (
-    change.marksChanged &&
-    (getSelectionRoot(change.selectionBefore) === root ||
-      getSelectionRoot(change.selectionAfter) === root)
-  ) {
-    return true;
-  }
-
-  if (changedOperations.length === 0) {
-    return change.selectionChanged;
-  }
-
-  return changedOperations.some(
-    (operation) => getOperationRoot(operation) === root
-  );
-};
+const isRootAffected = (root: RootKey, change?: EditorCommit) =>
+  !change || change.changed.has('snapshot', toPublicRootOption(root));
 
 /**
  * Create or read the current Plite runtime.
@@ -414,38 +397,55 @@ export function useRequiredPliteRuntimeContext() {
 export function PliteRuntime<
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
+>(props: PliteRuntimeProps<V, TExtensions>) {
+  const parent = useOptionalPliteRuntimeContext();
+
+  if (
+    parent &&
+    getEditorRuntimeOwner(parent.runtime.editor) ===
+      getEditorRuntimeOwner(props.runtime.editor)
+  ) {
+    return <>{props.children}</>;
+  }
+
+  return <OwnedPliteRuntime {...props} />;
+}
+
+function OwnedPliteRuntime<
+  V extends Value = Value,
+  const TExtensions extends readonly unknown[] = readonly [],
 >({ children, runtime }: PliteRuntimeProps<V, TExtensions>) {
   const { selectorContext, onChange: handleSelectorChange } =
     useEditorSelectorContext();
-  const lastOperationCountRef = useRef(getOperationCount(runtime.editor));
   const lastCommitVersionRef = useRef(
     editorGetLastCommit(runtime.editor)?.version ?? 0
   );
-  const reactEditor = toReactRuntimeEditor<V>(runtime.editor);
+  const reactEditor = toReactRuntimeEditor(runtime.editor);
   const mountedViewEditorsRef = useRef(
-    new Map<RootKey, Set<ReactRuntimeEditor<V>>>()
+    new Map<RootKey, Set<typeof reactEditor>>()
   );
-  const activeViewEditorsRef = useRef(
-    new Map<RootKey, ReactRuntimeEditor<V>>()
-  );
+  const activeViewEditorsRef = useRef(new Map<RootKey, typeof reactEditor>());
   const contentRootOwnersRef = useRef(
-    new Map<ReactRuntimeEditor<V>, PliteContentRootOwner>()
+    new Map<typeof reactEditor, PliteContentRootOwner>()
   );
   const contentRootOwnerViewEditorsRef = useRef(
-    new Map<string, ReactRuntimeEditor<V>>()
+    new Map<string, typeof reactEditor>()
+  );
+  const activeContentRootOwnersRef = useRef(
+    new Map<RootKey, PliteContentRootOwner>()
   );
   const [viewEffectQueue] = useState(createPliteViewEffectQueue);
   const [viewEffectVersion, setViewEffectVersion] = useState(0);
   const lastSelectionCacheRef = useRef(createRootSelectionCache());
-  const [focused, setFocused] = useState(ReactEditor.isFocused(reactEditor));
-  const [focusVersion, setFocusVersion] = useState(0);
+  const { focused, focusVersion, refreshFocused } =
+    useRuntimeFocusState(reactEditor);
 
   const getView = useCallback(
     (options: EditorViewOptions = {}) => createEditorView(runtime, options),
     [runtime]
   );
   const registerViewEditor = useCallback(
-    (editor: ReactRuntimeEditor<V>, root: RootKey) => {
+    (editor: typeof reactEditor, root: RootKey) => {
       const viewEditors = mountedViewEditorsRef.current.get(root) ?? new Set();
       const rootViewEditors =
         EDITOR_TO_ROOT_VIEW_EDITORS.get(runtime.editor) ?? new Set();
@@ -490,11 +490,16 @@ export function PliteRuntime<
     [runtime.editor]
   );
   const setActiveViewEditor = useCallback(
-    (editor: ReactRuntimeEditor<V>, root: RootKey) => {
+    (editor: typeof reactEditor, root: RootKey) => {
       const viewEditors = mountedViewEditorsRef.current.get(root);
 
       if (viewEditors?.has(editor) || root === MAIN_ROOT_KEY) {
         activeViewEditorsRef.current.set(root, editor);
+        const owner = contentRootOwnersRef.current.get(editor);
+
+        if (owner) {
+          activeContentRootOwnersRef.current.set(root, owner);
+        }
       }
     },
     []
@@ -508,15 +513,12 @@ export function PliteRuntime<
           ? activeViewEditor
           : viewEditors?.values().next().value;
 
-      return (viewEditor ??
-        (root === MAIN_ROOT_KEY
-          ? reactEditor
-          : null)) as ReactRuntimeEditor<V> | null;
+      return viewEditor ?? (root === MAIN_ROOT_KEY ? reactEditor : null);
     },
     [reactEditor]
   );
   const registerContentRootOwner = useCallback(
-    (editor: ReactRuntimeEditor<V>, owner: PliteContentRootOwner) => {
+    (editor: typeof reactEditor, owner: PliteContentRootOwner) => {
       contentRootOwnersRef.current.set(editor, owner);
       contentRootOwnerViewEditorsRef.current.set(
         getContentRootOwnerKey(owner),
@@ -542,6 +544,17 @@ export function PliteRuntime<
     []
   );
   const getActiveContentRootOwner = useCallback((root: RootKey) => {
+    const activeOwner = activeContentRootOwnersRef.current.get(root);
+
+    if (
+      activeOwner &&
+      contentRootOwnerViewEditorsRef.current.has(
+        getContentRootOwnerKey(activeOwner)
+      )
+    ) {
+      return activeOwner;
+    }
+
     const activeViewEditor = activeViewEditorsRef.current.get(root);
 
     return activeViewEditor
@@ -562,62 +575,46 @@ export function PliteRuntime<
     },
     [viewEffectQueue]
   );
-  const syncRuntimeTextOperationsToDOM = useCallback(
-    (operations: readonly Operation[], modelOwned: boolean) => {
-      if (mountedViewEditorsRef.current.size === 0) {
-        return { syncedTextOperationCount: 0, textOperationCount: 0 };
-      }
+  const syncRuntimeChangesToDOM = useCallback((commit: EditorCommit) => {
+    if (mountedViewEditorsRef.current.size === 0) {
+      return { changedTextCount: 0, syncedTextCount: 0 };
+    }
 
-      const textOperations = getTextOperations(operations);
+    let changedTextCount = 0;
+    let syncedTextCount = 0;
 
-      if (textOperations.length === 0) {
-        return { syncedTextOperationCount: 0, textOperationCount: 0 };
-      }
+    for (const [root, viewEditors] of mountedViewEditorsRef.current) {
+      const publicRoot = toPublicRootOption(root);
+      const changedTextRuntimeIds = commit.changed.runtimeIds(
+        'text',
+        publicRoot
+      );
+      const changedPathRuntimeIds = commit.changed.runtimeIds(
+        'path',
+        publicRoot
+      );
+      let didSyncEveryView = changedTextRuntimeIds.length > 0;
 
-      const operationsByRoot = new Map<RootKey, Operation[]>();
+      for (const viewEditor of viewEditors) {
+        const textSync = syncChangedTextToDOM(
+          viewEditor,
+          changedTextRuntimeIds
+        );
 
-      for (const operation of textOperations) {
-        const root = getOperationRoot(operation);
-        const rootOperations = operationsByRoot.get(root) ?? [];
-
-        rootOperations.push(operation);
-        operationsByRoot.set(root, rootOperations);
-      }
-
-      for (const [root, rootOperations] of operationsByRoot) {
-        const viewEditors = mountedViewEditorsRef.current.get(root);
-
-        if (!viewEditors) {
-          continue;
+        if (textSync.syncedTextCount < textSync.changedTextCount) {
+          didSyncEveryView = false;
         }
-
-        let didSyncEveryView = true;
-
-        for (const viewEditor of viewEditors) {
-          const textSync = syncTextOperationsToDOM(viewEditor, rootOperations, {
-            modelOwned,
-          });
-
-          if (textSync.syncedTextOperationCount < textSync.textOperationCount) {
-            didSyncEveryView = false;
-          }
-        }
-
-        if (!didSyncEveryView) {
-          return {
-            syncedTextOperationCount: 0,
-            textOperationCount: textOperations.length,
-          };
+        if (changedPathRuntimeIds.length > 0) {
+          syncPliteNodePathBindingsToDOM(viewEditor, changedPathRuntimeIds);
         }
       }
 
-      return {
-        syncedTextOperationCount: textOperations.length,
-        textOperationCount: textOperations.length,
-      };
-    },
-    []
-  );
+      changedTextCount += changedTextRuntimeIds.length;
+      if (didSyncEveryView) syncedTextCount += changedTextRuntimeIds.length;
+    }
+
+    return { changedTextCount, syncedTextCount };
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
     const maybeBatchUpdates =
@@ -628,31 +625,24 @@ export function PliteRuntime<
     const onContextChange: Parameters<typeof runtime.subscribeCommit>[0] = (
       commit
     ) => {
-      lastSelectionCacheRef.current.record(commit.selectionAfter);
+      lastSelectionCacheRef.current.record(
+        commit.selectionAfter,
+        commit.selectionAfterRoot
+      );
 
-      const nextOperations = commit.operations;
-
-      lastSelectionCacheRef.current.recordOperations(nextOperations);
-
-      lastOperationCountRef.current += nextOperations.length;
       lastCommitVersionRef.current = commit.version;
 
       maybeBatchUpdates(() => {
-        setFocused(ReactEditor.isFocused(reactEditor));
+        refreshFocused();
 
-        const modelOwnedDOMUpdate =
-          commit.command?.type === 'history_undo' ||
-          commit.command?.type === 'history_redo';
-        const textSync = syncRuntimeTextOperationsToDOM(
-          nextOperations,
-          modelOwnedDOMUpdate
-        );
-        const hasUnsyncedTextOperation =
-          textSync.textOperationCount > textSync.syncedTextOperationCount;
+        const textSync = syncRuntimeChangesToDOM(commit);
+        const hasUnsyncedTextChange =
+          commit.changed.hasAny('text') &&
+          textSync.changedTextCount > textSync.syncedTextCount;
 
         handleSelectorChange(
-          hasUnsyncedTextOperation ? undefined : nextOperations,
-          commit
+          hasUnsyncedTextChange ? undefined : commit,
+          getSchemaInvalidatedRuntimeIds(runtime.editor, commit)
         );
 
         if (viewEffectQueue.hasEffects()) {
@@ -672,41 +662,11 @@ export function PliteRuntime<
   }, [
     handleSelectorChange,
     reactEditor,
+    refreshFocused,
     runtime,
-    syncRuntimeTextOperationsToDOM,
+    syncRuntimeChangesToDOM,
     viewEffectQueue,
   ]);
-
-  useIsomorphicLayoutEffect(() => {
-    const updateFocusState = () => {
-      setFocused(ReactEditor.isFocused(reactEditor));
-      setFocusVersion((version) => version + 1);
-    };
-    const fn = () => {
-      updateFocusState();
-      queueMicrotask(() => {
-        updateFocusState();
-      });
-    };
-
-    if (REACT_MAJOR_VERSION >= 17) {
-      document.addEventListener('focusin', fn);
-      document.addEventListener('focusout', fn);
-
-      return () => {
-        document.removeEventListener('focusin', fn);
-        document.removeEventListener('focusout', fn);
-      };
-    }
-
-    document.addEventListener('focus', fn, true);
-    document.addEventListener('blur', fn, true);
-
-    return () => {
-      document.removeEventListener('focus', fn, true);
-      document.removeEventListener('blur', fn, true);
-    };
-  }, [reactEditor]);
 
   useIsomorphicLayoutEffect(() => {
     if (viewEffectVersion === 0) {
@@ -753,6 +713,7 @@ export function PliteRuntime<
     <PliteRuntimeContext.Provider
       value={value as PliteRuntimeContextValue<any, any>}
     >
+      <EditorAnnouncementLiveRegion editor={runtime.editor} />
       {children}
     </PliteRuntimeContext.Provider>
   );
@@ -768,9 +729,14 @@ export function PliteRuntime<
  */
 export function usePliteRuntimeState<
   T,
-  TRuntime extends PliteRuntimeValue<any> = PliteRuntimeValue<any>,
+  TRuntime extends PliteRuntimeValue<any, any> = PliteRuntimeValue<any, any>,
 >(
-  selector: (state: EditorStateView<ValueOf<TRuntime['editor']>>) => T,
+  selector: (
+    state: EditorStateView<
+      ValueOf<TRuntime['editor']>,
+      ExtensionsOf<TRuntime['editor']>
+    >
+  ) => T,
   {
     deferred,
     deps,
@@ -781,7 +747,15 @@ export function usePliteRuntimeState<
   const { runtime, selectorContext } = useRequiredPliteRuntimeContext();
   const selectorDeps = deps ?? [selector];
   const stateSelector = useCallback(
-    () => runtime.read((state) => selector(state)),
+    () =>
+      runtime.read((state) =>
+        selector(
+          state as EditorStateView<
+            ValueOf<TRuntime['editor']>,
+            ExtensionsOf<TRuntime['editor']>
+          >
+        )
+      ),
     // `deps` intentionally owns inline selector closure freshness.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [runtime, ...selectorDeps]
@@ -792,12 +766,9 @@ export function usePliteRuntimeState<
     const unsubscribe = selectorContext.addEventListener(update, {
       deferred,
       shouldUpdate: shouldUpdate
-        ? (operations, change) =>
+        ? (change) =>
             shouldUpdate(
-              change as EditorCommit<ValueOf<TRuntime['editor']>>,
-              operations as
-                | readonly Operation<ValueOf<TRuntime['editor']>>[]
-                | undefined
+              change as EditorCommit<ValueOf<TRuntime['editor']>> | undefined
             )
         : undefined,
     });
@@ -820,10 +791,16 @@ export function usePliteRuntimeState<
  */
 export function usePliteRootState<
   T,
-  TRuntime extends PliteRuntimeValue<any> = PliteRuntimeValue<any>,
+  TRuntime extends PliteRuntimeValue<any, any> = PliteRuntimeValue<any, any>,
+  const TRoot extends RootKey = RootKey,
 >(
-  root: RootKey | undefined,
-  selector: (state: EditorStateView<ValueOf<TRuntime['editor']>>) => T,
+  root: NamedRootKey<TRoot> | undefined,
+  selector: (
+    state: EditorStateView<
+      ValueOf<TRuntime['editor']>,
+      ExtensionsOf<TRuntime['editor']>
+    >
+  ) => T,
   {
     deferred,
     deps,
@@ -841,24 +818,29 @@ export function usePliteRootState<
   const internalRoot = root ?? MAIN_ROOT_KEY;
   const selectorDeps = deps ?? [selector];
   const stateSelector = useCallback(
-    () => getView({ root }).read((state) => selector(state)),
+    () =>
+      getView({ root }).read((state) =>
+        selector(
+          state as EditorStateView<
+            ValueOf<TRuntime['editor']>,
+            ExtensionsOf<TRuntime['editor']>
+          >
+        )
+      ),
     // `deps` owns inline selector closure freshness; `root` is a hook input.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [getView, root, ...selectorDeps]
   );
   const [selectedState, update] = useGenericSelector(stateSelector, equalityFn);
   const shouldUpdateView = useCallback(
-    (operations?: readonly Operation[], change?: EditorCommit) => {
-      if (!isRootAffected(internalRoot, operations, change)) {
+    (change?: EditorCommit) => {
+      if (!isRootAffected(internalRoot, change)) {
         return false;
       }
 
       return shouldUpdate
         ? shouldUpdate(
-            change as EditorCommit<ValueOf<TRuntime['editor']>> | undefined,
-            operations as
-              | readonly Operation<ValueOf<TRuntime['editor']>>[]
-              | undefined
+            change as EditorCommit<ValueOf<TRuntime['editor']>> | undefined
           )
         : true;
     },
@@ -918,8 +900,9 @@ export type PliteRootEditor<
 export function usePliteRootEditor<
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
+  const TRoot extends RootKey = RootKey,
 >(
-  root?: RootKey,
+  root?: NamedRootKey<TRoot>,
   options: UsePliteRootEditorOptions = {}
 ): PliteRootEditor<V, TExtensions> {
   if (root === MAIN_ROOT_KEY) {
@@ -959,21 +942,21 @@ export function usePliteActiveEditor<
 }
 
 /** Options for effects that run with a mounted root editor. */
-export type UsePliteRootEffectOptions = {
+export type UsePliteRootEffectOptions<TRoot extends RootKey = RootKey> = {
   deps?: DependencyList;
-  root?: RootKey;
+  root?: NamedRootKey<TRoot>;
 };
 
 /** Focus behavior before or after root command callbacks. */
 export type PliteCommandFocusPolicy = 'none' | 'preserve' | 'restore-root';
 
 /** Options for `usePliteCommandCallback`. */
-export type UsePliteCommandCallbackOptions = {
+export type UsePliteCommandCallbackOptions<TRoot extends RootKey = RootKey> = {
   focus?: PliteCommandFocusPolicy;
-  root?: RootKey;
+  root?: NamedRootKey<TRoot>;
 };
 
-const usePliteResolvedRoot = (root: RootKey | undefined): RootKey => {
+const usePliteResolvedRoot = (root: NamedRootKey | undefined): RootKey => {
   if (root === MAIN_ROOT_KEY) {
     throw new Error('[Plite] Omit root to target the primary document.');
   }
@@ -1007,9 +990,10 @@ const useLatestCallbackCell = <T extends (...args: any[]) => any>(
 export function usePliteRootEffect<
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
+  const TRoot extends RootKey = RootKey,
 >(
   effect: (editor: PliteRootEditor<V, TExtensions>) => void | (() => void),
-  options: UsePliteRootEffectOptions = {}
+  options: UsePliteRootEffectOptions<TRoot> = {}
 ) {
   const { deps, root } = options;
   const resolvedRoot = usePliteResolvedRoot(root);
@@ -1074,12 +1058,13 @@ export function usePliteCommandCallback<
   TResult,
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
+  const TRoot extends RootKey = RootKey,
 >(
   callback: (
     editor: PliteRootEditor<V, TExtensions>,
     ...args: TArgs
   ) => TResult,
-  options: UsePliteCommandCallbackOptions = {}
+  options: UsePliteCommandCallbackOptions<TRoot> = {}
 ): (...args: TArgs) => TResult {
   const { focus = 'preserve', root } = options;
   const resolvedRoot = usePliteResolvedRoot(root);

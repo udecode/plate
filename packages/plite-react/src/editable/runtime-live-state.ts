@@ -52,7 +52,7 @@ export const readRuntimeNodeById = (
   const snapshot = editorGetSnapshot(editor);
   const path =
     editorGetPathByRuntimeId(editor, runtimeId) ??
-    snapshot.index.idToPath[runtimeId] ??
+    snapshot.index.pathOf(runtimeId) ??
     null;
 
   if (!path) {

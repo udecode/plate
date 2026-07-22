@@ -377,7 +377,7 @@ const value = normalizeStaticValue([
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -400,7 +400,7 @@ const value = normalizeStaticValue([
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -423,7 +423,7 @@ const value = normalizeStaticValue([
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -448,7 +448,7 @@ const value = normalizeStaticValue([
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -473,7 +473,7 @@ const value = normalizeStaticValue([
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -496,7 +496,7 @@ const value = normalizeStaticValue([
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -521,7 +521,7 @@ const value = normalizeStaticValue([
           {
             children: [
               {
-                attributes: { align: 'center' },
+                align: 'center',
                 children: [{ text: '✅' }],
                 type: 'p',
               },
@@ -570,7 +570,7 @@ const value = normalizeStaticValue([
     type: 'p',
   },
   {
-    attributes: { align: 'center' },
+    align: 'center',
     caption: [
       {
         children: [{ text: 'Images with captions provide context.' }],

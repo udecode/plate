@@ -1,19 +1,17 @@
 import type { BaseEditor } from '@platejs/core';
 import type {
-  EditorUpdateTransaction,
-  NodeInsertNodesOptions,
-  Text,
+  EditorTransactionSpecBuilder,
+  TextInsertFragmentOptions,
 } from '@platejs/plite';
-import type { TLinkElement } from '@platejs/utils';
 
 import { type CreateLinkNodeOptions, createLinkNode } from '../utils';
 
 /** Insert a link node. */
 export const insertLink = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction,
+  tx: EditorTransactionSpecBuilder,
   createLinkNodeOptions: CreateLinkNodeOptions,
-  options?: NodeInsertNodesOptions<TLinkElement | Text>
+  options?: TextInsertFragmentOptions
 ) => {
-  tx.nodes.insert(createLinkNode(editor, createLinkNodeOptions), options);
+  tx.fragment.replace([createLinkNode(editor, createLinkNodeOptions)], options);
 };

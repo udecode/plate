@@ -20,11 +20,13 @@ export const BaseMediaKit = [
   BaseAudioPlugin.withComponent(AudioElementStatic),
   BaseFilePlugin.withComponent(FileElementStatic),
   BaseCaptionPlugin.configure({
-    options: {
-      query: {
-        allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
-      },
-    },
+    targetPluginKeys: [
+      KEYS.img,
+      KEYS.video,
+      KEYS.audio,
+      KEYS.file,
+      KEYS.mediaEmbed,
+    ],
   }),
   BaseMediaEmbedPlugin,
   BasePlaceholderPlugin,

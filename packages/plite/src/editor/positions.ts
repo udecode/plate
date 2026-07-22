@@ -18,7 +18,7 @@ import { NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
-import { getCharacterDistance, getWordDistance } from '../utils/string';
+import { getCharacterDistance, getWordDistances } from '../utils/string';
 
 type PositionSegment = {
   atomic?: boolean;
@@ -83,9 +83,9 @@ const getAtomicNonTraversablePoint = (
 const assertValidPoint = (entry: LiveTextEntry, point: Point) => {
   if (point.offset < 0 || point.offset > entry.text.length) {
     throw new Error(
-      `Point offset ${point.offset} is outside text bounds for ${entry.path.join(
-        '.'
-      )}`
+      `Point offset ${
+        point.offset
+      } is outside text bounds for ${entry.path.join('.')}`
     );
   }
 };
@@ -591,12 +591,7 @@ export function* positions(
     const logicalPositions = [reverse ? text.length : 0];
     let consumed = 0;
 
-    while (consumed < text.length) {
-      const remaining = reverse
-        ? text.slice(0, text.length - consumed)
-        : text.slice(consumed);
-      const distance = getWordDistance(remaining, reverse);
-
+    for (const distance of getWordDistances(text, reverse)) {
       consumed = Math.min(text.length, consumed + distance);
       logicalPositions.push(reverse ? text.length - consumed : consumed);
     }

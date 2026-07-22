@@ -15,8 +15,8 @@ const lowlight = createLowlight(all);
 
 export const BaseCodeBlockKit = [
   BaseCodeBlockPlugin.configure({
-    node: { component: CodeBlockElementStatic },
     options: { lowlight },
+    render: { node: CodeBlockElementStatic },
   }),
   BaseCodeLinePlugin.withComponent(CodeLineElementStatic),
   BaseCodeSyntaxPlugin.withComponent(CodeSyntaxLeafStatic),

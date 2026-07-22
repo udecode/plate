@@ -1,7 +1,8 @@
 import {
-  applyOperation,
+  applyBuiltDocumentChange,
   getChildren,
-  getCurrentSelection,
+  getEditorUpdateRoot,
+  getPublicSelection,
 } from '../core/public-state';
 import {
   type Descendant,
@@ -10,11 +11,8 @@ import {
   type Editor,
   type Node,
   NodeApi,
-  type Path,
-  PathApi,
   type Point,
-  type Range,
-  RangeApi,
+  SelectionApi,
   type Value,
 } from '../interfaces';
 import type {
@@ -41,106 +39,24 @@ const getParentChildren = <V extends Value>(
   return parent.children;
 };
 
-const findNodeIdentityPath = (
-  nodes: readonly Descendant[],
-  target: Node
-): number[] | undefined => {
-  for (const [index, node] of nodes.entries()) {
-    if (node === target) {
-      return [index];
-    }
+const findNodeReferencePath = (
+  nodes: readonly Node[],
+  target: Node,
+  parentPath: readonly number[] = []
+): readonly number[] | null => {
+  for (let index = 0; index < nodes.length; index++) {
+    const node = nodes[index]!;
+    const path = [...parentPath, index];
 
-    if (!ElementApi.isElement(node)) continue;
+    if (node === target) return path;
+    if (ElementApi.isElement(node)) {
+      const nested = findNodeReferencePath(node.children, target, path);
 
-    const childPath = findNodeIdentityPath(node.children, target);
-
-    if (childPath) {
-      return [index, ...childPath];
+      if (nested) return nested;
     }
   }
-};
 
-const getPointIdentityRemap = ({
-  index,
-  newChildren,
-  parentPath,
-  point,
-  replacedChildren,
-}: {
-  index: number;
-  newChildren: readonly Descendant[];
-  parentPath: Path;
-  point: Point;
-  replacedChildren: readonly Descendant[];
-}): Point | undefined => {
-  if (!PathApi.isAncestor(parentPath, point.path)) return;
-
-  const childIndex = point.path[parentPath.length];
-
-  if (childIndex === undefined) return;
-  if (childIndex < index || childIndex >= index + replacedChildren.length) {
-    return;
-  }
-
-  const oldChild = replacedChildren[childIndex - index];
-
-  if (!oldChild) return;
-
-  const oldTargetPath = point.path.slice(parentPath.length + 1);
-  const oldTargetNode = NodeApi.getIf(oldChild, oldTargetPath);
-
-  if (!oldTargetNode) return;
-
-  const newTargetPath = findNodeIdentityPath(newChildren, oldTargetNode);
-
-  if (!newTargetPath) return;
-
-  return {
-    ...point,
-    path: [...parentPath, ...newTargetPath],
-  };
-};
-
-const getDefaultNewSelection = ({
-  index,
-  newChildren,
-  parentPath,
-  replacedChildren,
-  selection,
-}: {
-  index: number;
-  newChildren: readonly Descendant[];
-  parentPath: Path;
-  replacedChildren: readonly Descendant[];
-  selection: Range | null;
-}): Range | null => {
-  if (!selection) return null;
-
-  const op = {
-    children: replacedChildren as Descendant[],
-    index,
-    newChildren: newChildren as Descendant[],
-    newSelection: selection,
-    path: parentPath,
-    selection,
-    type: 'replace_children' as const,
-  };
-
-  const mapPoint = (point: Point) =>
-    getPointIdentityRemap({
-      index,
-      newChildren,
-      parentPath,
-      point,
-      replacedChildren,
-    }) ?? RangeApi.transform({ anchor: point, focus: point }, op)?.anchor;
-
-  const anchor = mapPoint(selection.anchor);
-  const focus = mapPoint(selection.focus);
-
-  if (!anchor || !focus) return null;
-
-  return { anchor, focus };
+  return null;
 };
 
 export const replaceChildren: NodeMutationMethods['replaceChildren'] = <
@@ -157,25 +73,67 @@ export const replaceChildren: NodeMutationMethods['replaceChildren'] = <
     index,
     index + replacementCount
   ) as Descendant[];
-  const selection = getCurrentSelection(editor);
-  const nextSelection =
-    newSelection === undefined
-      ? getDefaultNewSelection({
-          index,
-          newChildren: children as Descendant[],
-          parentPath: at,
-          replacedChildren,
-          selection,
-        })
-      : newSelection;
+  const selection = getPublicSelection(editor);
+  const pointIsReplaced = (point: Point) =>
+    point.path.length > at.length &&
+    at.every((part, depth) => point.path[depth] === part) &&
+    point.path[at.length]! >= index &&
+    point.path[at.length]! < index + replacedChildren.length;
+  const mapPointByReference = (point: Point) => {
+    const target = NodeApi.get(editor, point.path);
+    const relativePath = findNodeReferencePath(children, target);
 
-  applyOperation(editor, {
-    children: replacedChildren,
-    index,
-    newChildren: children as Descendant[],
-    newSelection: nextSelection,
-    path: at,
-    selection,
-    type: 'replace_children',
-  });
+    return relativePath
+      ? {
+          ...point,
+          path: [...at, index + relativePath[0]!, ...relativePath.slice(1)],
+        }
+      : null;
+  };
+  const retainedSelection =
+    selection &&
+    (SelectionApi.isText(selection) || SelectionApi.isNode(selection)) &&
+    pointIsReplaced(selection.anchor) &&
+    pointIsReplaced(selection.focus)
+      ? (() => {
+          const anchor = mapPointByReference(selection.anchor);
+          const focus = mapPointByReference(selection.focus);
+
+          if (!anchor || !focus) return null;
+
+          if (SelectionApi.isNode(selection)) {
+            const target = NodeApi.get(editor, selection.path);
+            const relativePath = findNodeReferencePath(children, target);
+
+            if (!relativePath) return null;
+
+            return {
+              ...selection,
+              anchor,
+              focus,
+              path: [...at, index + relativePath[0]!, ...relativePath.slice(1)],
+            };
+          }
+
+          return { ...selection, anchor, focus };
+        })()
+      : undefined;
+  const selectionAfter =
+    newSelection === undefined ? retainedSelection : newSelection;
+
+  applyBuiltDocumentChange(
+    editor,
+    (builder, root) =>
+      builder.replaceChildren(
+        root,
+        at,
+        index,
+        replacedChildren.length,
+        children as Descendant[]
+      ),
+    {
+      ...(selectionAfter === undefined ? {} : { selectionAfter }),
+      selectionRoot: getEditorUpdateRoot(editor),
+    }
+  );
 };

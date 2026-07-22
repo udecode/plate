@@ -1,12 +1,11 @@
 import { getEditorSchema } from '../core/editor-runtime';
-import { cleanupTextLeafLifecycle } from '../core/leaf-lifecycle';
 import {
   getCurrentSelection,
+  profileCoreDuration,
   runEditorTransaction,
-  withEditorOperationRoot,
-  withEditorOperationRootChildren,
+  withEditorUpdateRoot,
+  withEditorUpdateRootChildren,
 } from '../core/public-state';
-import { getEditorTransformRegistry } from '../core/transform-registry';
 import {
   type Location,
   LocationApi,
@@ -16,6 +15,7 @@ import {
   type Point,
   PointApi,
   RangeApi,
+  SelectionApi,
   TextApi,
   type Element as PliteElement,
 } from '../interfaces';
@@ -34,7 +34,7 @@ import type { Editor } from '../interfaces/editor';
 import type { TextMutationMethods } from '../interfaces/transforms/text';
 import { getConsistentRangeTextMarks } from '../internal/range-text-marks';
 import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
-import { mergeNodes } from '../transforms-node';
+import { mergeNodes, removeNodes } from '../transforms-node';
 import {
   getEmptyEditableInlinePathAtPoint,
   getPreviousEmptyBlockPathAtBlockStart,
@@ -123,11 +123,22 @@ const shouldClearDeletedMarksAtMarkedSuffix = (
   }
 
   const node = NodeApi.get(editor, anchor.path);
+  const keys = new Set([...Object.keys(node), ...Object.keys(deletedMarks)]);
+
+  keys.delete('text');
 
   return (
     TextApi.isText(node) &&
     node.text.length > 0 &&
-    TextApi.equals(node, { text: '', ...deletedMarks }, { loose: true })
+    [...keys].every((key) =>
+      getEditorSchema(editor).isTextPropertyEqualAt(
+        key,
+        node[key],
+        deletedMarks[key],
+        anchor.path,
+        anchor.root ?? 'main'
+      )
+    )
   );
 };
 
@@ -465,8 +476,8 @@ const reconcileDeleteStructure = (
       ? resolveMergePoint(
           editor,
           plan,
-          removal.startRef.current,
-          removal.endRef.current
+          removal.startAnchor.resolve(),
+          removal.endAnchor.resolve()
         )
       : null;
 
@@ -499,7 +510,7 @@ const reconcileDeleteStructure = (
       );
       mergeAdjacentTextRuns(editor);
     } else if (shouldRemoveEmptyForwardStartBlock(editor, plan)) {
-      getEditorTransformRegistry(editor).removeNodes({
+      removeNodes(editor, {
         at: plan.effectiveStartBlockPath!,
         voids: plan.voids,
       });
@@ -551,7 +562,7 @@ const reconcileDeleteStructure = (
   );
 
   if (plan.initialAt == null) {
-    maybeMergeAdjacentTextAt(editor, removal.endRef.current?.path);
+    maybeMergeAdjacentTextAt(editor, removal.endAnchor.resolve()?.path);
   }
 };
 
@@ -561,17 +572,21 @@ const resolveDeleteSelection = (
   removal: ReturnType<typeof removeDeleteContents>,
   tx: TransactionWriter
 ) => {
-  const startPoint = removal.startRef.unref();
-  const endPoint = removal.endRef.unref();
-  const currentSelection = getCurrentSelection(editor);
+  const startPoint = removal.startAnchor.release();
+  const endPoint = removal.endAnchor.release();
+  const reverseMergePoint =
+    plan.reverse &&
+    plan.isCollapsed &&
+    plan.isAcrossBlocks &&
+    startPoint &&
+    endPoint &&
+    !PathApi.equals(startPoint.path.slice(0, -1), endPoint.path.slice(0, -1))
+      ? endPoint
+      : (startPoint ?? endPoint);
   const collapseTarget =
-    !plan.isCollapsed &&
-    currentSelection &&
-    (plan.startNonEditable != null || plan.endNonEditable != null)
-      ? currentSelection.anchor
-      : !plan.isCollapsed && editorHasPath(editor, plan.start.path)
-        ? { path: [...plan.start.path], offset: plan.start.offset }
-        : (startPoint ?? endPoint);
+    !plan.isCollapsed && editorHasPath(editor, plan.start.path)
+      ? { path: [...plan.start.path], offset: plan.start.offset }
+      : reverseMergePoint;
   let point = normalizeFinalDeletePoint(editor, collapseTarget, {
     reverse: plan.reverse,
     allowForwardBoundaryJump:
@@ -642,10 +657,12 @@ const resolveDeleteSelection = (
   }
 
   if ((!plan.initialAt || !LocationApi.isPath(plan.initialAt)) && point) {
-    tx.setSelection({
-      anchor: point,
-      focus: point,
-    });
+    tx.setSelection(
+      SelectionApi.text({
+        anchor: point,
+        focus: point,
+      })
+    );
   }
 
   const finalSelection = getCurrentSelection(editor);
@@ -695,18 +712,14 @@ const resolveDeleteSelection = (
       normalizedSelectionPoint &&
       !PointApi.equals(normalizedSelectionPoint, finalSelection.anchor)
     ) {
-      tx.setSelection({
-        anchor: normalizedSelectionPoint,
-        focus: normalizedSelectionPoint,
-      });
+      tx.setSelection(
+        SelectionApi.text({
+          anchor: normalizedSelectionPoint,
+          focus: normalizedSelectionPoint,
+        })
+      );
     }
   }
-};
-
-const cleanupDeleteLeafLifecycle = (editor: Editor, plan: DeleteRangePlan) => {
-  cleanupTextLeafLifecycle(editor, {
-    affinity: plan.reverse ? 'backward' : 'forward',
-  });
 };
 
 const normalizeFinalDeletePoint = (
@@ -1156,24 +1169,42 @@ export const deleteText: TextMutationMethods['delete'] = (
         return;
       }
 
+      const selection = getCurrentSelection(editor);
+      const shouldWriteSelection =
+        options.at === undefined ||
+        (selection !== null &&
+          LocationApi.isRange(at) &&
+          RangeApi.equals(selection, at));
+
       const deleteAt = (targetAt: Location) => {
-        const target = resolveDeleteTarget(editor, options, targetAt);
+        const target = profileCoreDuration('delete-resolve-target', () =>
+          resolveDeleteTarget(editor, options, targetAt)
+        );
 
         if (!target) {
           return;
         }
 
+        const shouldWriteTargetSelection =
+          shouldWriteSelection ||
+          target.kind === 'path' ||
+          !target.isSingleText;
+
         if (target.kind === 'path') {
-          deletePathTarget(editor, target, tx);
+          deletePathTarget(editor, target, tx, shouldWriteTargetSelection);
           return;
         }
 
-        const deletedMarks = getConsistentRangeTextMarks(
-          editor,
-          target.effectiveRange
+        const deletedMarks = profileCoreDuration(
+          'delete-range-text-marks',
+          () => getConsistentRangeTextMarks(editor, target.effectiveRange)
         );
         const setDeletedMarks = () => {
-          if (!deletedMarks || !getCurrentSelection(editor)) {
+          if (
+            !shouldWriteTargetSelection ||
+            !deletedMarks ||
+            !getCurrentSelection(editor)
+          ) {
             return;
           }
 
@@ -1183,32 +1214,36 @@ export const deleteText: TextMutationMethods['delete'] = (
               : deletedMarks
           );
         };
-        const wholeTopLevelBlockRange = getWholeTopLevelBlockRange(
-          editor,
-          target
+        const wholeTopLevelBlockRange = profileCoreDuration(
+          'delete-whole-range-plan',
+          () => getWholeTopLevelBlockRange(editor, target)
         );
 
         if (
           wholeTopLevelBlockRange &&
-          deleteWholeTopLevelBlockRange(editor, wholeTopLevelBlockRange, tx)
+          deleteWholeTopLevelBlockRange(editor, wholeTopLevelBlockRange)
         ) {
           setDeletedMarks();
           return;
         }
 
-        const removal = removeDeleteContents(editor, target, tx);
+        const removal = removeDeleteContents(editor, target);
 
         reconcileDeleteStructure(editor, target, removal);
-        cleanupDeleteLeafLifecycle(editor, target);
-        resolveDeleteSelection(editor, target, removal, tx);
+        if (shouldWriteTargetSelection) {
+          resolveDeleteSelection(editor, target, removal, tx);
+        } else {
+          removal.startAnchor.release();
+          removal.endAnchor.release();
+        }
         setDeletedMarks();
       };
 
       const root = getLocationRoot(at);
 
       if (root) {
-        withEditorOperationRoot(editor, root, () =>
-          withEditorOperationRootChildren(editor, root, () =>
+        withEditorUpdateRoot(editor, root, () =>
+          withEditorUpdateRootChildren(editor, root, () =>
             deleteAt(stripLocationRoots(at))
           )
         );
@@ -1219,8 +1254,8 @@ export const deleteText: TextMutationMethods['delete'] = (
   };
 
   if (transactionRoot) {
-    withEditorOperationRoot(editor, transactionRoot, () =>
-      withEditorOperationRootChildren(editor, transactionRoot, run)
+    withEditorUpdateRoot(editor, transactionRoot, () =>
+      withEditorUpdateRootChildren(editor, transactionRoot, run)
     );
   } else {
     run();

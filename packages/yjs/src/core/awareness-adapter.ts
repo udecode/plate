@@ -96,7 +96,7 @@ export const createYjsAwarenessAdapter = ({
   isConnected,
   root,
 }: YjsAwarenessAdapterOptions): YjsAwarenessAdapter => {
-  const currentSelection = (): Range | null => editor.read.selection();
+  const currentSelection = (): Range | null => editor.read.selection.domRange();
 
   const getLocalAwarenessClientId = (): number =>
     awareness?.doc?.clientID ??

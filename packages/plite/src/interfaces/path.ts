@@ -1,15 +1,3 @@
-import type {
-  InsertNodeOperation,
-  MergeNodeOperation,
-  MoveNodeOperation,
-  Operation,
-  RemoveNodeOperation,
-  ReplaceChildrenOperation,
-  ReplaceFragmentOperation,
-  SplitNodeOperation,
-} from '..';
-import type { TextDirection } from '../types/types';
-
 /**
  * `Path` arrays are a list of indexes that describe a node's exact position in
  * a Plite node tree. Although they are usually relative to the root `Editor`
@@ -24,10 +12,6 @@ export interface PathAncestorsOptions {
 
 export interface PathLevelsOptions {
   reverse?: boolean;
-}
-
-export interface PathTransformOptions {
-  affinity?: TextDirection | null;
 }
 
 export interface PathInterface {
@@ -72,7 +56,7 @@ export interface PathInterface {
   /**
    * Check if a path is exactly equal to another.
    */
-  equals: (path: Path, another: Path) => boolean;
+  equals: (path: readonly number[], another: readonly number[]) => boolean;
 
   /**
    * Check if the path of previous sibling node exists
@@ -139,24 +123,6 @@ export interface PathInterface {
   next: (path: Path) => Path;
 
   /**
-   * Returns whether this operation can affect paths or not. Used as an
-   * optimization when updating dirty paths during normalization
-   *
-   * NOTE: This *must* be kept in sync with the implementation of 'transform'
-   * below
-   */
-  operationCanTransformPath: (
-    operation: Operation
-  ) => operation is
-    | InsertNodeOperation
-    | RemoveNodeOperation
-    | MergeNodeOperation
-    | SplitNodeOperation
-    | MoveNodeOperation
-    | ReplaceChildrenOperation
-    | ReplaceFragmentOperation;
-
-  /**
    * Given a path, return a new path referring to the parent node above it.
    */
   parent: (path: Path) => Path;
@@ -170,15 +136,6 @@ export interface PathInterface {
    * Get a path relative to an ancestor.
    */
   relative: (path: Path, ancestor: Path) => Path;
-
-  /**
-   * Transform a path by an operation.
-   */
-  transform: (
-    path: Path,
-    operation: Operation,
-    options?: PathTransformOptions
-  ) => Path | null;
 }
 
 // eslint-disable-next-line no-redeclare
@@ -253,7 +210,7 @@ export const PathApi: PathInterface = {
     return PathApi.equals(as, bs) && av < bv;
   },
 
-  equals(path: Path, another: Path): boolean {
+  equals(path: readonly number[], another: readonly number[]): boolean {
     return (
       path.length === another.length && path.every((n, i) => n === another[i])
     );
@@ -339,30 +296,6 @@ export const PathApi: PathInterface = {
     return path.slice(0, -1).concat(last + 1);
   },
 
-  operationCanTransformPath(
-    operation: Operation
-  ): operation is
-    | InsertNodeOperation
-    | RemoveNodeOperation
-    | ReplaceFragmentOperation
-    | ReplaceChildrenOperation
-    | MergeNodeOperation
-    | SplitNodeOperation
-    | MoveNodeOperation {
-    switch (operation.type) {
-      case 'insert_node':
-      case 'remove_node':
-      case 'merge_node':
-      case 'split_node':
-      case 'move_node':
-      case 'replace_children':
-      case 'replace_fragment':
-        return true;
-      default:
-        return false;
-    }
-  },
-
   parent(path: Path): Path {
     if (path.length === 0) {
       throw new Error(`Cannot get the parent path of the root path [${path}].`);
@@ -400,171 +333,5 @@ export const PathApi: PathInterface = {
     }
 
     return path.slice(ancestor.length);
-  },
-
-  transform(
-    path: Path | null,
-    operation: Operation,
-    options: PathTransformOptions = {}
-  ): Path | null {
-    if (!path) return null;
-
-    // PERF: use destructing instead of immer
-    const p = [...path];
-    const { affinity = 'forward' } = options;
-
-    // PERF: Exit early if the operation is guaranteed not to have an effect.
-    if (path.length === 0) {
-      return p;
-    }
-
-    switch (operation.type) {
-      case 'insert_node': {
-        const { path: op } = operation;
-
-        if (
-          PathApi.equals(op, p) ||
-          PathApi.endsBefore(op, p) ||
-          PathApi.isAncestor(op, p)
-        ) {
-          p[op.length - 1] += 1;
-        }
-
-        break;
-      }
-
-      case 'remove_node': {
-        const { path: op } = operation;
-
-        if (PathApi.equals(op, p) || PathApi.isAncestor(op, p)) {
-          return null;
-        }
-        if (PathApi.endsBefore(op, p)) {
-          p[op.length - 1] -= 1;
-        }
-
-        break;
-      }
-
-      case 'replace_fragment': {
-        const { path: op } = operation;
-
-        if (PathApi.isAncestor(op, p)) {
-          return null;
-        }
-
-        break;
-      }
-
-      case 'replace_children': {
-        const { children, index, newChildren, path: parentPath } = operation;
-
-        if (!PathApi.isAncestor(parentPath, p)) {
-          break;
-        }
-
-        const childIndex = p[parentPath.length];
-
-        if (childIndex == null) {
-          break;
-        }
-
-        if (childIndex < index) {
-          break;
-        }
-
-        const end = index + children.length;
-
-        if (childIndex < end) {
-          return null;
-        }
-
-        p[parentPath.length] += newChildren.length - children.length;
-        break;
-      }
-
-      case 'merge_node': {
-        const { path: op, position } = operation;
-
-        if (PathApi.equals(op, p) || PathApi.endsBefore(op, p)) {
-          p[op.length - 1] -= 1;
-        } else if (PathApi.isAncestor(op, p)) {
-          p[op.length - 1] -= 1;
-          p[op.length] += position;
-        }
-
-        break;
-      }
-
-      case 'split_node': {
-        const { path: op, position } = operation;
-
-        if (PathApi.equals(op, p)) {
-          if (affinity === 'forward') {
-            p[p.length - 1]! += 1;
-          } else if (affinity === 'backward') {
-            // Nothing, because it still refers to the right path.
-          } else {
-            return null;
-          }
-        } else if (PathApi.endsBefore(op, p)) {
-          p[op.length - 1] += 1;
-        } else if (PathApi.isAncestor(op, p) && path[op.length] >= position) {
-          p[op.length - 1] += 1;
-          p[op.length] -= position;
-        }
-
-        break;
-      }
-
-      case 'move_node': {
-        const { path: op, newPath: onp } = operation;
-
-        // If the old and new path are the same, it's a no-op.
-        if (PathApi.equals(op, onp)) {
-          return p;
-        }
-
-        if (PathApi.isAncestor(op, p) || PathApi.equals(op, p)) {
-          const copy = onp.slice();
-
-          if (PathApi.endsBefore(op, onp) && op.length < onp.length) {
-            copy[op.length - 1] -= 1;
-          }
-
-          return copy.concat(p.slice(op.length));
-        }
-        if (
-          PathApi.isSibling(op, onp) &&
-          (PathApi.isAncestor(onp, p) || PathApi.equals(onp, p))
-        ) {
-          if (PathApi.endsBefore(op, p)) {
-            p[op.length - 1] -= 1;
-          } else {
-            p[op.length - 1] += 1;
-          }
-        } else if (
-          PathApi.endsBefore(onp, p) ||
-          PathApi.equals(onp, p) ||
-          PathApi.isAncestor(onp, p)
-        ) {
-          if (PathApi.endsBefore(op, p)) {
-            p[op.length - 1] -= 1;
-          }
-
-          p[onp.length - 1] += 1;
-        } else if (PathApi.endsBefore(op, p)) {
-          if (PathApi.equals(onp, p)) {
-            p[onp.length - 1] += 1;
-          }
-
-          p[op.length - 1] -= 1;
-        }
-
-        break;
-      }
-    }
-
-    return p;
   },
 };

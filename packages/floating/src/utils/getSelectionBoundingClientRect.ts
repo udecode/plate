@@ -1,16 +1,13 @@
 import type { ClientRectObject } from '@floating-ui/core';
 import { RangeApi, type Value } from '@platejs/plite';
-import type { DOMCapableEditor } from '@platejs/plite-dom';
+import type { DOMEditor } from '@platejs/plite-dom';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
 import { getRangeBoundingClientRect } from './getRangeBoundingClientRect';
 
 /** Get bounding client rect of the editor selection */
-export const getSelectionBoundingClientRect = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: DOMCapableEditor<V, TExtensions>
+export const getSelectionBoundingClientRect = <V extends Value>(
+  editor: DOMEditor<V>
 ): ClientRectObject => {
   const selection = editor.read.selection();
 

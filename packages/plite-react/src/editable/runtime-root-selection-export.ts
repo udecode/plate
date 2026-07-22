@@ -1,44 +1,47 @@
-import type { Range } from '@platejs/plite';
 import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
-import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import type {
-  EditableDOMSelectionSyncOptions,
-  EditableInputController,
-} from './input-controller';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
+import type { EditableDOMSelectionSyncOptions } from './input-controller';
 import { readRuntimeSelection } from './runtime-selection-state';
 import { subscribeSelectionOnlyDOMExport } from './selection-runtime';
 
 export const useEditableRootSelectionExport = ({
-  editor,
-  inputController,
-  isPartialDOMBackedSelection,
+  runtime,
   syncDOMSelectionToEditor,
 }: {
-  editor: ReactRuntimeEditor;
-  inputController: EditableInputController;
-  isPartialDOMBackedSelection: (selection: Range | null) => boolean;
+  runtime: EditableDOMRuntime;
   syncDOMSelectionToEditor: (options?: EditableDOMSelectionSyncOptions) => void;
 }) => {
   const { addEventListener: addSelectorEventListener } =
     useRequiredEditorSelectorContext();
+  const { domPhaseScheduler, editor, inputController } = runtime;
 
-  useIsomorphicLayoutEffect(
-    () =>
-      subscribeSelectionOnlyDOMExport({
-        addSelectorEventListener,
-        getModelSelection: () => readRuntimeSelection(editor),
-        inputController,
-        shouldSkipDOMExport: (modelSelection) =>
-          isPartialDOMBackedSelection(modelSelection),
-        syncDOMSelectionToEditor,
-      }),
-    [
+  useIsomorphicLayoutEffect(() => {
+    const unsubscribe = subscribeSelectionOnlyDOMExport({
       addSelectorEventListener,
-      editor,
+      getModelSelection: () => readRuntimeSelection(editor),
       inputController,
-      isPartialDOMBackedSelection,
+      scheduleDOMExport: (callback) =>
+        domPhaseScheduler.schedule(
+          'selection-repair',
+          'selection-dom-export',
+          callback,
+          {
+            key: 'selection-dom-export',
+            timing: 'animation-frame',
+          }
+        ),
+      shouldSkipDOMExport: runtime.isPartialDOMBackedSelection,
       syncDOMSelectionToEditor,
-    ]
-  );
+    });
+
+    return runtime.installDisposable('selection-export', unsubscribe);
+  }, [
+    addSelectorEventListener,
+    domPhaseScheduler,
+    editor,
+    inputController,
+    runtime,
+    syncDOMSelectionToEditor,
+  ]);
 };

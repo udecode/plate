@@ -133,23 +133,27 @@ export const getRootGroupIdsForBoundary = (
 
 export const useMountedRootGroupIds = ({
   activeGroupIds,
+  documentEpoch,
   groups,
   planKey,
 }: {
   activeGroupIds: ReadonlySet<string>;
+  documentEpoch: number;
   groups: readonly EditableRootGroupRecord[] | null;
   planKey: string | null;
 }) => {
   const [mountedState, setMountedState] = React.useState<{
+    documentEpoch: number | null;
     groupIds: ReadonlySet<string>;
     planKey: string | null;
   }>(() => ({
+    documentEpoch: null,
     groupIds: new Set(),
     planKey: null,
   }));
 
   const mountedGroupIds =
-    mountedState.planKey === planKey
+    mountedState.documentEpoch === documentEpoch
       ? mountedState.groupIds
       : new Set<string>();
   const mountGroupIds = React.useCallback(
@@ -160,10 +164,12 @@ export const useMountedRootGroupIds = ({
 
       setMountedState((previous) => {
         const nextGroupIds =
-          previous.planKey === planKey
+          previous.documentEpoch === documentEpoch
             ? new Set(previous.groupIds)
             : new Set<string>();
-        let changed = previous.planKey !== planKey;
+        let changed =
+          previous.documentEpoch !== documentEpoch ||
+          previous.planKey !== planKey;
 
         for (const groupId of groupIds) {
           if (!nextGroupIds.has(groupId)) {
@@ -172,39 +178,49 @@ export const useMountedRootGroupIds = ({
           }
         }
 
-        return changed ? { groupIds: nextGroupIds, planKey } : previous;
+        return changed
+          ? { documentEpoch, groupIds: nextGroupIds, planKey }
+          : previous;
       });
     },
-    [planKey]
+    [documentEpoch, planKey]
   );
 
   React.useEffect(() => {
     if (!groups || !planKey) {
       setMountedState((previous) =>
-        previous.planKey == null && previous.groupIds.size === 0
+        previous.documentEpoch == null &&
+        previous.planKey == null &&
+        previous.groupIds.size === 0
           ? previous
-          : { groupIds: new Set(), planKey: null }
+          : { documentEpoch: null, groupIds: new Set(), planKey: null }
       );
 
       return;
     }
 
     setMountedState((previous) => {
+      const validGroupIds = new Set(groups.map((group) => group.groupId));
       const nextGroupIds =
-        previous.planKey === planKey
-          ? new Set(previous.groupIds)
+        previous.documentEpoch === documentEpoch
+          ? new Set(
+              [...previous.groupIds].filter((groupId) =>
+                validGroupIds.has(groupId)
+              )
+            )
           : new Set<string>();
 
       for (const groupId of activeGroupIds) {
         nextGroupIds.add(groupId);
       }
 
-      return previous.planKey === planKey &&
+      return previous.documentEpoch === documentEpoch &&
+        previous.planKey === planKey &&
         sameStringSet(previous.groupIds, nextGroupIds)
         ? previous
-        : { groupIds: nextGroupIds, planKey };
+        : { documentEpoch, groupIds: nextGroupIds, planKey };
     });
-  }, [activeGroupIds, groups, planKey]);
+  }, [activeGroupIds, documentEpoch, groups, planKey]);
 
   return { activeGroupIds, mountedGroupIds, mountGroupIds };
 };

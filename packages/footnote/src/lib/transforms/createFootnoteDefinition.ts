@@ -3,8 +3,10 @@ import {
   type Descendant,
   type EditorUpdateTransaction,
   ElementApi,
+  type Path,
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
+import { navigateToFootnote } from '../../internal/navigateToFootnote';
 import { getFootnoteDefinition } from '../queries/getFootnoteDefinition';
 import type { TFootnoteElement } from '../types';
 import { focusFootnoteDefinition } from './focusFootnoteDefinition';
@@ -36,6 +38,18 @@ const getDefinitionChildren = (
   return blocks;
 };
 
+const focusDefinitionAt = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  path: Path
+) => {
+  const point = tx.points.start(path);
+
+  return point
+    ? navigateToFootnote(editor, tx, { point, targetPath: path })
+    : false;
+};
+
 export const createFootnoteDefinition = (
   editor: BaseEditor,
   tx: EditorUpdateTransaction,
@@ -45,7 +59,7 @@ export const createFootnoteDefinition = (
     identifier,
   }: CreateFootnoteDefinitionOptions
 ) => {
-  const existingDefinition = getFootnoteDefinition(editor, { identifier }, tx);
+  const existingDefinition = getFootnoteDefinition(editor, { identifier });
 
   if (existingDefinition) {
     if (shouldFocusDefinition) {
@@ -67,7 +81,7 @@ export const createFootnoteDefinition = (
   );
 
   if (shouldFocusDefinition) {
-    focusFootnoteDefinition(editor, tx, { identifier });
+    focusDefinitionAt(editor, tx, definitionPath);
   }
 
   return definitionPath;

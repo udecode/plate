@@ -1,4 +1,5 @@
-import type { Editor, EditorSnapshot, RuntimeId } from '@platejs/plite';
+import type { Editor, EditorSnapshot, Range, RuntimeId } from '@platejs/plite';
+import { isApplePlatform } from '@platejs/plite-dom';
 import { point as editorPoint } from '../editable/runtime-editor-api';
 
 export type MountedTopLevelRange = {
@@ -39,7 +40,7 @@ export const isFullDocumentSelection = (
 };
 
 export const isSelectionPartialDOMBacked = (
-  selection: EditorSnapshot['selection'],
+  selection: Range | null,
   mountedTopLevelRuntimeIds: ReadonlySet<RuntimeId> | null,
   mountedTopLevelRanges?: readonly MountedTopLevelRange[] | null
 ) => {
@@ -68,14 +69,6 @@ export const isSelectionPartialDOMBacked = (
 
 type SelectAllHotkeyPlatform = 'apple' | 'other';
 
-const APPLE_USER_AGENT_PATTERN = /Mac OS X/;
-
-const getSelectAllHotkeyPlatform = (): SelectAllHotkeyPlatform =>
-  typeof navigator !== 'undefined' &&
-  APPLE_USER_AGENT_PATTERN.test(navigator.userAgent)
-    ? 'apple'
-    : 'other';
-
 export const isSelectAllHotkey = (
   {
     altKey,
@@ -90,7 +83,7 @@ export const isSelectAllHotkey = (
     metaKey: boolean;
     shiftKey: boolean;
   },
-  platform: SelectAllHotkeyPlatform = getSelectAllHotkeyPlatform()
+  platform: SelectAllHotkeyPlatform = isApplePlatform() ? 'apple' : 'other'
 ) =>
   !altKey &&
   !shiftKey &&

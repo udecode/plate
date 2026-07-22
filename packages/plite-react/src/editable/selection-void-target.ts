@@ -5,6 +5,8 @@ import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { writePliteViewSelection } from '../view-selection';
 import type { EditableInputController } from './input-controller';
 import {
+  dispatchCommand,
+  editorCommands,
   hasPath as editorHasPath,
   isVoid as editorIsVoid,
   point as editorPoint,
@@ -146,9 +148,7 @@ export const selectEditableVoidPath = ({
 
   ReactEditor.focus(editor);
   writePliteViewSelection(editor, null);
-  editor.update((tx) => {
-    tx.selection.set(range);
-  });
+  dispatchCommand(editor, editorCommands.select, { target: range });
 
   return path;
 };

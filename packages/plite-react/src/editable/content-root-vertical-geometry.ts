@@ -7,6 +7,7 @@ import {
   type RootKey,
   type Node as PliteNode,
 } from '@platejs/plite';
+import { createDOMGeometryKernel } from '@platejs/plite-dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { rootPlitePoint } from '../view-boundary-graph';
 import {
@@ -41,32 +42,6 @@ export const getPathElement = (
   return node ? editor.api.dom.resolveDOMNode(node as PliteNode) : null;
 };
 
-const getPliteLineRects = (element: HTMLElement): DOMRect[] => {
-  const rects: DOMRect[] = [];
-  const strings = Array.from(
-    element.querySelectorAll('[data-plite-string], [data-plite-zero-width]')
-  );
-
-  for (const string of strings) {
-    const clientRects = Array.from(string.getClientRects()).filter(
-      hasUsableRect
-    );
-
-    if (clientRects.length > 0) {
-      rects.push(...clientRects);
-      continue;
-    }
-
-    const rect = string.getBoundingClientRect();
-
-    if (hasUsableRect(rect)) {
-      rects.push(rect);
-    }
-  }
-
-  return rects;
-};
-
 export const isPointOnVisualBoundaryLine = ({
   container,
   direction,
@@ -86,7 +61,14 @@ export const isPointOnVisualBoundaryLine = ({
     return false;
   }
 
-  const lineRects = getPliteLineRects(container);
+  const geometryRoot =
+    editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);
+  const lineRects = geometryRoot
+    ? createDOMGeometryKernel({
+        root: geometryRoot,
+        target: container,
+      }).visualLines(container)
+    : [];
 
   if (lineRects.length === 0) {
     return false;
@@ -108,6 +90,7 @@ export const resolveVerticalNavigationPoint = ({
   direction,
   fallbackPoint,
   point,
+  preferredX,
   sourceEditor,
   targetEditor,
   targetRoot,
@@ -116,6 +99,7 @@ export const resolveVerticalNavigationPoint = ({
   direction: ContentRootNavigationDirection;
   fallbackPoint: Point;
   point: Point;
+  preferredX?: number;
   sourceEditor: ReactRuntimeEditor;
   targetEditor: ReactRuntimeEditor;
   targetRoot: RootKey;
@@ -135,13 +119,19 @@ export const resolveVerticalNavigationPoint = ({
   }
 
   const targetRect = targetElement.getBoundingClientRect();
-  const x = clamp(sourceRect.left, targetRect.left + 1, targetRect.right - 1);
+  const x = clamp(
+    preferredX ?? sourceRect.left,
+    targetRect.left + 1,
+    targetRect.right - 1
+  );
   const yRect = hasUsableRect(fallbackRect) ? fallbackRect : targetRect;
   const y =
     direction === 'forward'
       ? yRect.top + Math.min(Math.max(yRect.height / 2, 1), 4)
       : yRect.bottom - Math.min(Math.max(yRect.height / 2, 1), 4);
-  const targetPoint = getPointAtCoordinates(targetEditor, x, y);
+  const targetPoint = getPointAtCoordinates(targetEditor, x, y, {
+    root: targetElement,
+  });
 
   if (!targetPoint) {
     const emptyFallback = targetEditor.read((state) => {

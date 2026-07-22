@@ -139,7 +139,7 @@ test('detects schema target strings stored in runtime options', () => {
     removedSchemaTargetOptionsPattern
   );
   assert.doesNotMatch(
-    'config: { targets: [ParagraphPlugin] }',
+    'targetPluginKeys: [KEYS.p]',
     removedSchemaTargetOptionsPattern
   );
 });
@@ -150,7 +150,7 @@ test('detects caption targets stored in runtime query options', () => {
     removedCaptionTargetOptionsPattern
   );
   assert.doesNotMatch(
-    'config: { targets: [ImagePlugin] }',
+    'targetPluginKeys: [KEYS.img]',
     removedCaptionTargetOptionsPattern
   );
 });

@@ -4,6 +4,7 @@ import {
   PointApi,
   type Range,
   RangeApi,
+  SelectionApi,
   type Selection,
   type TargetFreshnessRequest,
 } from '@platejs/plite';
@@ -19,6 +20,7 @@ import {
 } from '@platejs/plite-dom';
 import {
   DOMCoverage,
+  type DOMPhaseScheduler,
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
 } from '@platejs/plite-dom/internal';
@@ -41,6 +43,7 @@ import {
   isRangeAcrossContentRootOwners,
 } from './content-root-owners';
 import { applyDOMCoverageSelectionPolicy } from './dom-coverage-selection';
+import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableSelectionPolicy } from './editing-kernel';
 import { createFastDOMSelectionRange } from './fast-dom-selection-range';
 import type {
@@ -55,7 +58,9 @@ import { readModelSelectionDOMPreference } from './model-selection-dom-preferenc
 import {
   getSelection as editorGetSelection,
   setEditorFocused,
+  toInternalRoot,
 } from './runtime-editor-api';
+import { writeRuntimeSelection } from './runtime-mutation-state';
 import {
   readLiveSelection,
   readRuntimeSelection,
@@ -170,7 +175,7 @@ export const isSelectionInEditorView = (
   }
 
   const selectionRoot = selection.anchor.root ?? MAIN_ROOT_KEY;
-  const viewRoot = editor.read((state) => state.view.root());
+  const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
 
   return selectionRoot === viewRoot;
 };
@@ -284,6 +289,7 @@ export const shouldUseModelBackedSelectAllSelection = ({
 };
 
 export type EditableDOMSelectionSyncOptions = {
+  forceModelExport?: boolean;
   preserveScroll?: boolean;
 };
 
@@ -346,17 +352,25 @@ const captureScrollOffsets = (startElement: HTMLElement) => {
 
 const restoreScrollOffsets = (
   restoreScroll: (() => void) | null,
-  editorElement: HTMLElement
+  domPhaseScheduler: DOMPhaseScheduler
 ) => {
   if (!restoreScroll) {
     return;
   }
 
   restoreScroll();
-  queueMicrotask(restoreScroll);
-  editorElement.ownerDocument.defaultView?.requestAnimationFrame(() => {
-    restoreScroll();
-  });
+  domPhaseScheduler.schedule(
+    'dom-write',
+    'restore-selection-scroll-microtask',
+    restoreScroll,
+    { timing: 'microtask' }
+  );
+  domPhaseScheduler.schedule(
+    'dom-write',
+    'restore-selection-scroll-frame',
+    restoreScroll,
+    { timing: 'animation-frame' }
+  );
 };
 
 export const isStaleModelOwnedTextInputDOMRange = ({
@@ -391,14 +405,25 @@ export const isStaleModelOwnedTextInputDOMRange = ({
     selectionSource === 'model-owned' ||
     recentRepairEchoOwnsSelection;
 
+  if (
+    !modelOwnsTextInput ||
+    !hasModelOwnedSelectionAuthority ||
+    !RangeApi.isCollapsed(range) ||
+    !RangeApi.isRange(modelSelection) ||
+    !RangeApi.isCollapsed(modelSelection)
+  ) {
+    return false;
+  }
+
+  const samePath = PathApi.equals(
+    range.anchor.path,
+    modelSelection.anchor.path
+  );
+
   return (
-    modelOwnsTextInput &&
-    hasModelOwnedSelectionAuthority &&
-    RangeApi.isCollapsed(range) &&
-    RangeApi.isRange(modelSelection) &&
-    RangeApi.isCollapsed(modelSelection) &&
-    PathApi.equals(range.anchor.path, modelSelection.anchor.path) &&
-    range.anchor.offset < modelSelection.anchor.offset
+    (!samePath &&
+      (activeIntent === 'composition' || activeIntent === 'text-insert')) ||
+    (samePath && range.anchor.offset < modelSelection.anchor.offset)
   );
 };
 
@@ -484,9 +509,7 @@ export const syncEditorSelectionFromDOM = ({
     }
 
     writePliteViewSelection(editor, null);
-    editor.update((tx) => {
-      tx.selection.set(range);
-    });
+    writeRuntimeSelection(editor, range);
   }
 };
 
@@ -583,7 +606,8 @@ export const isEditableModelSelectionPreferredForInput = ({
     preference.reason === 'composition' ||
     preference.reason === 'internal-control' ||
     preference.reason === 'model-command' ||
-    preference.reason === 'partial-dom-backed'
+    preference.reason === 'partial-dom-backed' ||
+    preference.reason === 'repair-induced'
   );
 };
 
@@ -619,7 +643,15 @@ export const armModelOwnedTextInputGuard = ({
     }
   };
 
-  setTimeout(clearGuard, MODEL_OWNED_TEXT_INPUT_GUARD_MS);
+  inputController.scheduleTask?.(
+    'model',
+    'clear-model-owned-text-input-guard',
+    clearGuard,
+    {
+      delay: MODEL_OWNED_TEXT_INPUT_GUARD_MS,
+      timing: 'timeout',
+    }
+  );
 };
 
 export const shouldImportChangedExpandedDOMSelection = ({
@@ -827,15 +859,13 @@ export const resolveEditableImplicitTarget = ({
   editor,
   inputController,
   request,
-  scheduleSelectionSync = (callback) => {
-    setTimeout(callback);
-  },
+  scheduleSelectionSync,
   syncDOMSelectionToEditor,
 }: {
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   request: TargetFreshnessRequest;
-  scheduleSelectionSync?: (callback: () => void) => void;
+  scheduleSelectionSync: (callback: () => void) => void;
   syncDOMSelectionToEditor: () => void;
 }): Selection => {
   const preferModelSelection =
@@ -862,10 +892,10 @@ export const resolveEditableImplicitTarget = ({
     return request.fallback;
   }
 
-  const target =
-    ReactEditor.resolvePliteRange(editor, domSelection, {
-      exactMatch: false,
-    }) ?? request.fallback;
+  const domTarget = ReactEditor.resolvePliteRange(editor, domSelection, {
+    exactMatch: false,
+  });
+  const target = domTarget ? SelectionApi.text(domTarget) : request.fallback;
 
   if (
     preferModelSelection &&
@@ -983,11 +1013,9 @@ export const applyEditableDOMSelectionChange = ({
   });
 
   if (projectedSelection) {
-    editor.update((tx) => {
-      tx.selection.set({
-        anchor: projectedSelection.anchor.point,
-        focus: projectedSelection.anchor.point,
-      });
+    writeRuntimeSelection(editor, {
+      anchor: projectedSelection.anchor.point,
+      focus: projectedSelection.anchor.point,
     });
     writePliteViewSelection(editor, projectedSelection);
     setEditableModelSelectionPreference({
@@ -1249,9 +1277,7 @@ export const applyEditableDOMSelectionChange = ({
       !androidInputManager?.hasPendingChanges() &&
       !androidInputManager?.isFlushing()
     ) {
-      editor.update((tx) => {
-        tx.selection.set(range);
-      });
+      writeRuntimeSelection(editor, range);
     } else {
       androidInputManager?.handleUserSelect(range);
     }
@@ -1273,12 +1299,14 @@ export const applyEditableDOMSelectionChange = ({
 
 export const syncEditableDOMSelectionToEditor = ({
   editor,
+  editorElement: explicitEditorElement,
   options,
   scrollSelectionIntoView,
   partialDOMBackedSelection,
   state,
 }: {
   editor: ReactRuntimeEditor;
+  editorElement?: HTMLElement;
   options?: EditableDOMSelectionSyncOptions;
   scrollSelectionIntoView: (
     editor: ReactRuntimeEditor,
@@ -1291,21 +1319,38 @@ export const syncEditableDOMSelectionToEditor = ({
     selectionChangeOrigin?: SelectionChangeOrigin | null;
   };
 }) => {
+  const runtime = getMountedEditableDOMRuntime(editor);
+
+  if (!runtime) return;
+  const { domPhaseScheduler } = runtime;
   const selection = readRuntimeSelection(editor);
   const selectionHasDOMCoverage =
     !!selection &&
     DOMCoverage.getBoundariesForRange(editor, selection).length > 0;
+  const scheduleClearSelectionUpdate = (label: string, delay = 0) => {
+    const clear = () => {
+      state.isUpdatingSelection = false;
+    };
+
+    domPhaseScheduler.schedule('selection-repair', label, clear, {
+      delay,
+      timing: 'timeout',
+    });
+  };
 
   if (
     (partialDOMBackedSelection && selectionHasDOMCoverage) ||
     !selection ||
     !isSelectionInEditorView(editor, selection) ||
-    shouldSkipDOMSelection(editor)
+    (!options?.forceModelExport && shouldSkipDOMSelection(editor))
   ) {
     return;
   }
 
-  if (isEditableOutsideFocusBoundarySettling(state)) {
+  if (
+    !options?.forceModelExport &&
+    isEditableOutsideFocusBoundarySettling(state)
+  ) {
     return;
   }
 
@@ -1317,7 +1362,8 @@ export const syncEditableDOMSelectionToEditor = ({
       return;
     }
 
-    const editorElement = ReactEditor.assertDOMNode(editor, editor);
+    const editorElement =
+      explicitEditorElement ?? ReactEditor.assertDOMNode(editor, editor);
     const activeElement = root.activeElement;
     const editorHasDOMFocus =
       activeElement != null &&
@@ -1340,16 +1386,21 @@ export const syncEditableDOMSelectionToEditor = ({
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
       domSelection.removeAllRanges();
-      const rootWindow =
-        'defaultView' in root
-          ? root.defaultView
-          : root.ownerDocument.defaultView;
+      const clearNativeSelection = () => domSelection.removeAllRanges();
 
-      rootWindow?.queueMicrotask(() => domSelection.removeAllRanges());
-      rootWindow?.requestAnimationFrame(() => domSelection.removeAllRanges());
-      setTimeout(() => {
-        state.isUpdatingSelection = false;
-      });
+      domPhaseScheduler.schedule(
+        'selection-repair',
+        'clear-view-selection-microtask',
+        clearNativeSelection,
+        { timing: 'microtask' }
+      );
+      domPhaseScheduler.schedule(
+        'selection-repair',
+        'clear-view-selection-frame',
+        clearNativeSelection,
+        { timing: 'animation-frame' }
+      );
+      scheduleClearSelectionUpdate('clear-view-selection-update');
       return;
     }
 
@@ -1371,9 +1422,7 @@ export const syncEditableDOMSelectionToEditor = ({
         onDOMSelectionWillChange: () => {
           state.isUpdatingSelection = true;
           state.selectionChangeOrigin = 'programmatic-export';
-          setTimeout(() => {
-            state.isUpdatingSelection = false;
-          });
+          scheduleClearSelectionUpdate('clear-dom-coverage-selection-update');
         },
         selection,
       })
@@ -1426,15 +1475,13 @@ export const syncEditableDOMSelectionToEditor = ({
         );
       }
 
-      restoreScrollOffsets(restoreScroll, editorElement);
+      restoreScrollOffsets(restoreScroll, domPhaseScheduler);
 
       if (!preserveScroll) {
         scrollSelectionIntoView(editor, domRange);
       }
     } finally {
-      setTimeout(() => {
-        state.isUpdatingSelection = false;
-      }, 80);
+      scheduleClearSelectionUpdate('clear-exported-selection-update', 80);
     }
   } catch {
     // Leave browser selection unchanged if the DOM bridge is between commits.

@@ -8,21 +8,28 @@ import type {
   NodeIn,
   NodeProps,
   Path,
-  Range,
+  Selection,
   Value,
 } from '../../index';
 import type { MaximizeMode, RangeMode } from '../../types/types';
 import type { PropsCompare, PropsMerge } from '../editor';
 import type { NodeMatch } from '../node';
 
-export interface NodeInsertNodesOptions<T extends Node> {
+export interface NodeInsertNodesOptions<T extends Node = Node> {
   at?: Location;
   match?: NodeMatch<T>;
   mode?: RangeMode;
   hanging?: boolean;
   select?: boolean;
   voids?: boolean;
-  batchDirty?: boolean;
+}
+
+export interface NodeRemoveNodesOptions<T extends Node = Node> {
+  at?: Location;
+  match?: NodeMatch<T>;
+  mode?: MaximizeMode;
+  hanging?: boolean;
+  voids?: boolean;
 }
 
 export type NodeDuplicateOptions<T extends Node> = Omit<
@@ -35,13 +42,13 @@ export type BlockDuplicateOptions<T extends Element = Element> = {
   match?: NodeMatch<T>;
   mode?: RangeMode;
   voids?: boolean;
-} & Pick<NodeInsertNodesOptions<T>, 'batchDirty' | 'hanging' | 'select'>;
+} & Pick<NodeInsertNodesOptions<T>, 'hanging' | 'select'>;
 
 export interface NodeReplaceChildrenOptions {
   at: Path;
   count?: number;
   index?: number;
-  newSelection?: Range | null;
+  newSelection?: Selection;
 }
 
 export interface NodeSetNodesOptions<T extends Node = Node> {
@@ -70,8 +77,11 @@ export interface NodeMutationMethods<V extends Value = Value> {
    * Insert nodes in the editor
    * at the specified location or (if not defined) the current selection or (if not defined) the end of the document.
    */
-  insertNodes: <T extends ElementOrTextIn<V>>(
-    editor: Editor<V>,
+  insertNodes: <
+    TExtensions extends readonly unknown[],
+    T extends ElementOrTextIn<V>,
+  >(
+    editor: Editor<V, TExtensions>,
     nodes: T | T[],
     options?: NodeInsertNodesOptions<T>
   ) => void;
@@ -80,8 +90,12 @@ export interface NodeMutationMethods<V extends Value = Value> {
    * Lift nodes at a specific location upwards in the document tree, splitting
    * their parent in two if necessary.
    */
-  liftNodes: <T extends NodeIn<V>>(
-    editor: Editor<V>,
+  liftNodes: <
+    TValue extends V,
+    TExtensions extends readonly unknown[],
+    T extends NodeIn<TValue>,
+  >(
+    editor: Editor<TValue, TExtensions>,
     options?: {
       at?: Location;
       match?: NodeMatch<T>;
@@ -94,8 +108,12 @@ export interface NodeMutationMethods<V extends Value = Value> {
    * Merge a node at a location with the previous node of the same depth,
    * removing any empty containing nodes after the merge if necessary.
    */
-  mergeNodes: <T extends NodeIn<V>>(
-    editor: Editor<V>,
+  mergeNodes: <
+    TValue extends V,
+    TExtensions extends readonly unknown[],
+    T extends NodeIn<TValue>,
+  >(
+    editor: Editor<TValue, TExtensions>,
     options?: {
       at?: Location;
       match?: NodeMatch<T>;
@@ -108,8 +126,12 @@ export interface NodeMutationMethods<V extends Value = Value> {
   /**
    * Move the nodes at a location to a new location.
    */
-  moveNodes: <T extends NodeIn<V>>(
-    editor: Editor<V>,
+  moveNodes: <
+    TValue extends V,
+    TExtensions extends readonly unknown[],
+    T extends NodeIn<TValue>,
+  >(
+    editor: Editor<TValue, TExtensions>,
     options: {
       at?: Location;
       match?: NodeMatch<T>;
@@ -122,23 +144,22 @@ export interface NodeMutationMethods<V extends Value = Value> {
   /**
    * Remove the nodes at a specific location in the document.
    */
-  removeNodes: <T extends NodeIn<V>>(
-    editor: Editor<V>,
-    options?: {
-      at?: Location;
-      match?: NodeMatch<T>;
-      mode?: MaximizeMode;
-      hanging?: boolean;
-      voids?: boolean;
-    }
+  removeNodes: <
+    TValue extends V,
+    TExtensions extends readonly unknown[],
+    T extends NodeIn<TValue>,
+  >(
+    editor: Editor<TValue, TExtensions>,
+    options?: NodeRemoveNodesOptions<T>
   ) => void;
 
-  /**
-   * Replace a range of children under an ancestor node as one logical
-   * `replace_children` operation.
-   */
-  replaceChildren: <T extends ElementOrTextIn<V>>(
-    editor: Editor<V>,
+  /** Replace a range of children under an ancestor node atomically. */
+  replaceChildren: <
+    TValue extends V,
+    TExtensions extends readonly unknown[],
+    T extends ElementOrTextIn<TValue>,
+  >(
+    editor: Editor<TValue, TExtensions>,
     children: T[],
     options: NodeReplaceChildrenOptions
   ) => void;
@@ -146,8 +167,12 @@ export interface NodeMutationMethods<V extends Value = Value> {
   /**
    * Set new properties on the nodes at a location.
    */
-  setNodes: <T extends NodeIn<V>>(
-    editor: Editor<V>,
+  setNodes: <
+    TValue extends V,
+    TExtensions extends readonly unknown[],
+    T extends NodeIn<TValue>,
+  >(
+    editor: Editor<TValue, TExtensions>,
     props: Partial<NodeProps<T>>,
     options?: NodeSetNodesOptions<T>
   ) => void;
@@ -155,8 +180,12 @@ export interface NodeMutationMethods<V extends Value = Value> {
   /**
    * Split the nodes at a specific location.
    */
-  splitNodes: <T extends NodeIn<V>>(
-    editor: Editor<V>,
+  splitNodes: <
+    TValue extends V,
+    TExtensions extends readonly unknown[],
+    T extends NodeIn<TValue>,
+  >(
+    editor: Editor<TValue, TExtensions>,
     options?: {
       at?: Location;
       match?: NodeMatch<T>;
@@ -171,8 +200,12 @@ export interface NodeMutationMethods<V extends Value = Value> {
   /**
    * Unset properties on the nodes at a location.
    */
-  unsetNodes: <T extends NodeIn<V>>(
-    editor: Editor<V>,
+  unsetNodes: <
+    TValue extends V,
+    TExtensions extends readonly unknown[],
+    T extends NodeIn<TValue>,
+  >(
+    editor: Editor<TValue, TExtensions>,
     props: string | string[],
     options?: NodeUnsetNodesOptions<T>
   ) => void;
@@ -181,8 +214,12 @@ export interface NodeMutationMethods<V extends Value = Value> {
    * Unwrap the nodes at a location from a parent node, splitting the parent if
    * necessary to ensure that only the content in the range is unwrapped.
    */
-  unwrapNodes: <T extends NodeIn<V>>(
-    editor: Editor<V>,
+  unwrapNodes: <
+    TValue extends V,
+    TExtensions extends readonly unknown[],
+    T extends NodeIn<TValue>,
+  >(
+    editor: Editor<TValue, TExtensions>,
     options?: {
       at?: Location;
       match?: NodeMatch<T>;
@@ -196,8 +233,13 @@ export interface NodeMutationMethods<V extends Value = Value> {
    * Wrap the nodes at a location in a new container node, splitting the edges
    * of the range first to ensure that only the content in the range is wrapped.
    */
-  wrapNodes: <T extends NodeIn<V>, E extends ElementIn<V>>(
-    editor: Editor<V>,
+  wrapNodes: <
+    TValue extends V,
+    TExtensions extends readonly unknown[],
+    T extends NodeIn<TValue>,
+    E extends ElementIn<TValue>,
+  >(
+    editor: Editor<TValue, TExtensions>,
     element: E,
     options?: {
       at?: Location;

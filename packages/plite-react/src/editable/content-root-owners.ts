@@ -1,6 +1,6 @@
 import {
   type Descendant,
-  type Element,
+  type Editor,
   NodeApi,
   type Path,
   PathApi,
@@ -13,9 +13,16 @@ import { MAIN_ROOT_KEY } from '../root-key';
 import {
   createPliteViewBoundaryGraph,
   createPliteViewBoundaryRootMap,
+  getPliteDescendantAtPath,
   type PliteViewBoundaryGraphNodeInput,
 } from '../view-boundary-graph';
-import { getEditorExtensionRegistry } from './runtime-editor-api';
+import {
+  getEditorRuntimeElementEntries,
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+  hasEditorRuntime,
+  toInternalRoot,
+} from './runtime-editor-api';
 
 export type ContentRootOwner = {
   childRoot: RootKey;
@@ -28,37 +35,28 @@ export type ContentRootNavigationEditor = Pick<
   'api' | 'read' | 'update'
 >;
 
-const isRootKey = (value: unknown): value is RootKey =>
-  typeof value === 'string' && value.length > 0;
+const getRuntimeEditor = (
+  editor: ContentRootNavigationEditor
+): Editor | null => {
+  let runtimeEditor: object | null = editor;
 
-const getChildRoot = (element: Element, slot: string): RootKey | null => {
-  const childRoots = (element as { childRoots?: unknown }).childRoots;
+  while (runtimeEditor) {
+    if (hasEditorRuntime(runtimeEditor)) {
+      return runtimeEditor;
+    }
 
-  if (
-    typeof childRoots !== 'object' ||
-    childRoots === null ||
-    !Object.hasOwn(childRoots, slot)
-  ) {
-    return null;
+    runtimeEditor = Object.getPrototypeOf(runtimeEditor) as object | null;
   }
 
-  const childRoot = (childRoots as Record<string, unknown>)[slot];
-
-  return isRootKey(childRoot) ? childRoot : null;
+  return null;
 };
 
-export const hasContentRootElementSpec = (
-  editor: ContentRootNavigationEditor
-) => {
-  const registry = getEditorExtensionRegistry(editor as ReactRuntimeEditor);
+const hasCompiledContentRoots = (editor: ContentRootNavigationEditor) => {
+  const runtimeEditor = getRuntimeEditor(editor);
 
-  for (const registration of registry.elementSpecs.values()) {
-    if (registration.spec.contentRoot?.slot) {
-      return true;
-    }
-  }
-
-  return false;
+  return Boolean(
+    runtimeEditor && getEditorRuntime(runtimeEditor).schema.hasContentRoots()
+  );
 };
 
 export const getRegisteredRootViewEditor = (
@@ -72,7 +70,9 @@ export const getRegisteredRootViewEditor = (
   }
 
   for (const viewEditor of viewEditors) {
-    if (viewEditor.read((state) => state.view.root()) === root) {
+    if (
+      toInternalRoot(viewEditor.read((state) => state.view.root())) === root
+    ) {
       return viewEditor as ReactRuntimeEditor;
     }
   }
@@ -83,44 +83,53 @@ export const getRegisteredRootViewEditor = (
 export const findContentRootOwners = (
   editor: ContentRootNavigationEditor
 ): ContentRootOwner[] => {
-  if (!hasContentRootElementSpec(editor)) {
+  const runtimeEditor = getRuntimeEditor(editor);
+
+  if (
+    !runtimeEditor ||
+    !getEditorRuntime(runtimeEditor).schema.hasContentRoots()
+  ) {
     return [];
   }
+  const runtimeOwner = getEditorRuntimeOwner(runtimeEditor);
 
   return editor.read((state) => {
     const owners: ContentRootOwner[] = [];
     const roots = createPliteViewBoundaryRootMap(state.value());
-
-    const visit = (node: Descendant, ownerRoot: RootKey, ownerPath: Path) => {
-      if (!NodeApi.isElement(node)) {
-        return;
-      }
-
-      const slot = state.schema.getElementSpec(node.type)?.contentRoot?.slot;
-      const childRoot = slot ? getChildRoot(node, slot) : null;
-
-      if (childRoot) {
-        owners.push({
-          childRoot,
-          ownerPath: [...ownerPath],
-          ownerRoot,
-        });
-      }
-
-      node.children.forEach((child, index) => {
-        visit(child, ownerRoot, ownerPath.concat(index));
-      });
-    };
+    const ownerTypes = state.schema
+      .getVocabulary()
+      .elementTypes.filter(
+        (type) =>
+          Object.keys(state.schema.element(type)?.contentRoots ?? {}).length > 0
+      );
 
     for (const [ownerRoot, children] of Object.entries(roots)) {
-      children.forEach((child, index) => {
-        visit(child, ownerRoot, [index]);
-      });
+      for (const { path } of getEditorRuntimeElementEntries(
+        runtimeOwner,
+        ownerTypes,
+        ownerRoot
+      )) {
+        const node = getPliteDescendantAtPath(children, path);
+
+        if (!node || !NodeApi.isElement(node)) continue;
+        for (const childRoot of Object.values(
+          state.schema.getElementContentRoots(node)
+        )) {
+          owners.push({
+            childRoot,
+            ownerPath: [...path],
+            ownerRoot,
+          });
+        }
+      }
     }
 
     return owners;
   });
 };
+
+export const hasContentRootOwner = (editor: ContentRootNavigationEditor) =>
+  hasCompiledContentRoots(editor);
 
 const comparePoints = (left: Range['anchor'], right: Range['anchor']) => {
   const pathComparison = PathApi.compare(left.path, right.path);
@@ -144,7 +153,9 @@ export const isRangeAcrossContentRootOwners = (
     return false;
   }
 
-  const fallbackRoot = editor.read((state) => state.view.root());
+  const fallbackRoot = toInternalRoot(
+    editor.read((state) => state.view.root())
+  );
   const anchorRoot = range.anchor.root ?? fallbackRoot;
   const focusRoot = range.focus.root ?? fallbackRoot;
 

@@ -32,6 +32,12 @@ const codeFencePattern =
 const whitespacePattern = /\s+/;
 const pluginFactoryNamePattern = /^(?:create|define).*(?:Extension|Plugin)$/;
 const pliteExtensionNamePattern = /^define.*Extension$/;
+const contextualConfigureKeys = new Set([
+  'handlers',
+  'options',
+  'render',
+  'shortcuts',
+]);
 
 const toPosixPath = (path) => path.split(sep).join('/');
 
@@ -170,6 +176,50 @@ const isFunction = (node) =>
   node?.type === 'ArrowFunctionExpression' ||
   node?.type === 'FunctionExpression';
 
+const inspectContextualConfigure = (callback) => {
+  const body = unwrapTypedExpression(callback?.body);
+
+  if (body?.type === 'ObjectExpression') {
+    return { invalidReturns: [], properties: body.properties };
+  }
+  if (body?.type !== 'BlockStatement') {
+    return { invalidReturns: [body ?? callback], properties: [] };
+  }
+
+  const invalidReturns = [];
+  const properties = [];
+  let returnCount = 0;
+  const visitReturns = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (node !== body && isFunction(node)) return;
+    if (node.type === 'ReturnStatement') {
+      const value = unwrapTypedExpression(node.argument);
+
+      returnCount++;
+      if (value?.type === 'ObjectExpression') {
+        properties.push(...value.properties);
+      } else {
+        invalidReturns.push(value ?? node);
+      }
+
+      return;
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) visitReturns(child);
+      } else {
+        visitReturns(value);
+      }
+    }
+  };
+
+  visitReturns(body);
+
+  if (returnCount === 0) invalidReturns.push(callback);
+
+  return { invalidReturns, properties };
+};
+
 const isSchemaApiCall = (node, method) =>
   node?.type === 'CallExpression' &&
   node.callee.type === 'MemberExpression' &&
@@ -301,14 +351,35 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
         getPropertyName(node.callee.property) === 'configure' &&
         isFunction(node.arguments[0])
       ) {
-        issues.push(
-          createIssue(
-            file,
-            fence,
-            node,
-            'plugin configure is immutable object-only; runtime callbacks use extend'
-          )
-        );
+        const inspection = inspectContextualConfigure(node.arguments[0]);
+
+        for (const invalidReturn of inspection.invalidReturns) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              invalidReturn,
+              'contextual plugin configure callbacks must return an explicit object'
+            )
+          );
+        }
+        for (const property of inspection.properties) {
+          const key =
+            property.type === 'SpreadElement'
+              ? undefined
+              : getPropertyName(property.key);
+
+          if (!key || !contextualConfigureKeys.has(key)) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                'contextual plugin configure only accepts explicit options, handlers, render, and shortcuts overrides'
+              )
+            );
+          }
+        }
       }
 
       if (

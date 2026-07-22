@@ -1,12 +1,12 @@
 import { useCallback, useContext, useRef } from 'react';
 import type {
-  Operation,
+  Editor as PliteEditor,
+  Node as PliteNode,
   Path,
   RuntimeId,
-  Node as PliteNode,
 } from '@platejs/plite';
-import type { DOMEditor } from '@platejs/plite-dom/internal';
 import {
+  DOMEditor,
   EDITOR_TO_KEY_TO_ELEMENT,
   ELEMENT_TO_NODE,
   IS_COMPOSING,
@@ -14,9 +14,10 @@ import {
   NODE_TO_RUNTIME_ID,
 } from '@platejs/plite-dom/internal';
 import { EditorContext } from '../context';
+import { markDOMSyncMutationTarget } from '../editable/dom-sync-mutation-ownership';
 import {
   type Editor,
-  withOperationRootChildren,
+  getEditorRuntimeOwner,
   getPathByRuntimeId as editorGetPathByRuntimeId,
   hasPath as editorHasPath,
 } from '../editable/runtime-editor-api';
@@ -32,8 +33,15 @@ const EDITOR_TO_RUNTIME_ID_TO_ELEMENTS = new WeakMap<
   Map<RuntimeId, Set<HTMLElement>>
 >();
 const EDITOR_TO_SYNCED_TEXT_PATHS = new WeakMap<Editor, Set<string>>();
+const EDITOR_TO_SYNCED_TEXT_VALUES = new WeakMap<
+  Editor,
+  Map<RuntimeId, string>
+>();
+const EDITOR_TO_TEXT_RENDER_REVISIONS = new WeakMap<
+  Editor,
+  Map<RuntimeId, number>
+>();
 const ELEMENT_TO_PATH = new WeakMap<HTMLElement, Path>();
-const DOM_TEXT_SYNC_MUTATION_TARGETS = new WeakSet<Node>();
 
 const pathKey = (path: readonly number[]) => path.join('.');
 
@@ -145,13 +153,15 @@ const syncPliteElementPath = ({
   }
 
   ELEMENT_TO_PATH.set(element, [...path] as Path);
+  markDOMSyncMutationTarget(element, 'attributes', 'data-plite-path');
   element.setAttribute('data-plite-path', path.join(','));
+  markDOMSyncMutationTarget(element, 'attributes', 'data-plite-runtime-id');
   element.setAttribute('data-plite-runtime-id', runtimeId);
   bindPathElement(editor, path, element);
 };
 
 export const syncPliteNodePathBindingsToDOM = (
-  editor: Editor,
+  editor: PliteEditor<any, any>,
   runtimeIds?: readonly RuntimeId[] | null
 ) => {
   const runtimeElementMap = EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(editor);
@@ -186,6 +196,7 @@ export const syncPliteNodePathBindingsToDOM = (
         }
 
         ELEMENT_TO_PATH.delete(element);
+        markDOMSyncMutationTarget(element, 'attributes', 'data-plite-path');
         element.removeAttribute('data-plite-path');
         continue;
       }
@@ -234,15 +245,28 @@ export const getPliteNodeElementByPath = (
 export const didSyncTextPathToDOM = (editor: Editor, path: readonly number[]) =>
   EDITOR_TO_SYNCED_TEXT_PATHS.get(editor)?.has(pathKey(path)) ?? false;
 
-const markDOMTextSyncMutationTarget = (target: Node) => {
-  DOM_TEXT_SYNC_MUTATION_TARGETS.add(target);
-  setTimeout(() => {
-    DOM_TEXT_SYNC_MUTATION_TARGETS.delete(target);
-  });
+export const getDOMTextRenderRevision = (
+  editor: Editor,
+  runtimeIds: readonly RuntimeId[]
+) => {
+  const revisions = EDITOR_TO_TEXT_RENDER_REVISIONS.get(
+    getEditorRuntimeOwner(editor)
+  );
+
+  return runtimeIds.reduce(
+    (revision, runtimeId) => revision + (revisions?.get(runtimeId) ?? 0),
+    0
+  );
 };
 
-export const isDOMTextSyncMutation = (mutation: MutationRecord) =>
-  DOM_TEXT_SYNC_MUTATION_TARGETS.has(mutation.target);
+const bumpDOMTextRenderRevision = (editor: Editor, runtimeId: RuntimeId) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const revisions =
+    EDITOR_TO_TEXT_RENDER_REVISIONS.get(owner) ?? new Map<RuntimeId, number>();
+
+  revisions.set(runtimeId, (revisions.get(runtimeId) ?? 0) + 1);
+  EDITOR_TO_TEXT_RENDER_REVISIONS.set(owner, revisions);
+};
 
 const parseDOMPath = (value: string | null): Path | null => {
   if (!value) {
@@ -316,79 +340,21 @@ const getProjectedDOMTextSyncLeafRanges = (
   return ranges;
 };
 
-const transformRemovedOffset = ({
-  offset,
-  removeEnd,
-  removeStart,
-}: {
-  offset: number;
-  removeEnd: number;
-  removeStart: number;
-}) => {
-  if (offset <= removeStart) {
-    return offset;
-  }
-
-  if (offset >= removeEnd) {
-    return offset - (removeEnd - removeStart);
-  }
-
-  return removeStart;
-};
-
-const transformProjectedLeafRange = (
-  range: DOMTextSyncLeafRange,
-  operation: Extract<Operation, { type: 'insert_text' | 'remove_text' }>,
-  index: number,
-  insertLeafIndex: number
-) => {
-  if (operation.type === 'insert_text') {
-    const insertLength = operation.text.length;
-
-    if (index === insertLeafIndex) {
-      return { end: range.end + insertLength, start: range.start };
-    }
-
-    if (range.start >= operation.offset) {
-      return {
-        end: range.end + insertLength,
-        start: range.start + insertLength,
-      };
-    }
-
-    return { end: range.end, start: range.start };
-  }
-
-  const removeStart = operation.offset;
-  const removeEnd = operation.offset + operation.text.length;
-  const start = transformRemovedOffset({
-    offset: range.start,
-    removeEnd,
-    removeStart,
-  });
-  const end = transformRemovedOffset({
-    offset: range.end,
-    removeEnd,
-    removeStart,
-  });
-
-  return {
-    end: Math.max(start, end),
-    start,
-  };
-};
-
-const syncProjectedTextOperationToDOM = ({
+const syncChangedProjectedTextToDOM = ({
   element,
-  operation,
-  strings,
-  text,
+  nextText,
+  previousText,
 }: {
   element: HTMLElement;
-  operation: Extract<Operation, { type: 'insert_text' | 'remove_text' }>;
-  strings: NodeListOf<Element>;
-  text: string;
+  nextText: string;
+  previousText: string;
 }) => {
+  const strings = element.querySelectorAll('[data-plite-string="true"]');
+
+  if (strings.length <= 1) {
+    return null;
+  }
+
   const ranges = getProjectedDOMTextSyncLeafRanges(element, strings);
 
   if (!ranges) {
@@ -396,31 +362,74 @@ const syncProjectedTextOperationToDOM = ({
     return false;
   }
 
-  const insertLeafIndex =
-    operation.type === 'insert_text'
-      ? Math.max(
-          0,
-          ranges.findIndex(
-            (range) =>
-              operation.offset >= range.start && operation.offset <= range.end
-          )
-        )
-      : -1;
+  let prefix = 0;
+  const prefixLimit = Math.min(previousText.length, nextText.length);
+
+  while (prefix < prefixLimit && previousText[prefix] === nextText[prefix]) {
+    prefix += 1;
+  }
+
+  let suffix = 0;
+  const suffixLimit = Math.min(previousText.length, nextText.length) - prefix;
+
+  while (
+    suffix < suffixLimit &&
+    previousText.at(-1 - suffix) === nextText.at(-1 - suffix)
+  ) {
+    suffix += 1;
+  }
+
+  const removeEnd = previousText.length - suffix;
+  const removedLength = removeEnd - prefix;
+  const insertedLength = nextText.length - prefix - suffix;
+  const removedRanges = ranges.map((range) => {
+    const mapOffset = (offset: number) => {
+      if (offset <= prefix) return offset;
+      if (offset >= removeEnd) return offset - removedLength;
+
+      return prefix;
+    };
+    const start = mapOffset(range.start);
+
+    return {
+      end: Math.max(start, mapOffset(range.end)),
+      start,
+    };
+  });
+  const insertLeafIndex = Math.max(
+    0,
+    removedRanges.findIndex(
+      (range) => prefix >= range.start && prefix <= range.end
+    )
+  );
 
   ranges.forEach((range, index) => {
-    const nextRange = transformProjectedLeafRange(
-      range,
-      operation,
-      index,
-      insertLeafIndex
-    );
-    const nextText = text.slice(nextRange.start, nextRange.end);
+    const removedRange = removedRanges[index]!;
+    const start =
+      index !== insertLeafIndex && removedRange.start >= prefix
+        ? removedRange.start + insertedLength
+        : removedRange.start;
+    const end =
+      index === insertLeafIndex
+        ? removedRange.end + insertedLength
+        : index !== insertLeafIndex && removedRange.start >= prefix
+          ? removedRange.end + insertedLength
+          : removedRange.end;
+    const leafText = nextText.slice(start, end);
 
-    range.leaf.setAttribute('data-plite-leaf-start', String(nextRange.start));
-    range.leaf.setAttribute('data-plite-leaf-end', String(nextRange.end));
-    if (range.string.textContent !== nextText) {
-      markDOMTextSyncMutationTarget(range.string);
-      range.string.textContent = nextText;
+    markDOMSyncMutationTarget(
+      range.leaf,
+      'attributes',
+      'data-plite-leaf-start'
+    );
+    range.leaf.setAttribute('data-plite-leaf-start', String(start));
+    markDOMSyncMutationTarget(range.leaf, 'attributes', 'data-plite-leaf-end');
+    range.leaf.setAttribute('data-plite-leaf-end', String(end));
+    if (range.string.textContent !== leafText) {
+      markDOMSyncMutationTarget(range.string, 'childList');
+      range.string.textContent = leafText;
+    } else {
+      claimCanonicalStringDOM(range.string);
     }
   });
 
@@ -428,29 +437,30 @@ const syncProjectedTextOperationToDOM = ({
   return true;
 };
 
-const syncTextOperationToElement = ({
+const syncChangedTextToElement = ({
   element,
-  operation,
-  text,
+  nextText,
+  previousText,
 }: {
   element: HTMLElement;
-  operation: Extract<Operation, { type: 'insert_text' | 'remove_text' }>;
-  text: string;
+  nextText: string;
+  previousText: string;
 }) => {
   const canUseDOMTextSync =
     element.getAttribute('data-plite-dom-sync') === 'true';
   const strings = element.querySelectorAll('[data-plite-string="true"]');
 
   if (!canUseDOMTextSync || strings.length !== 1) {
-    if (element.textContent?.replace(/\uFEFF/g, '') === text) {
-      recordDOMTextSyncProfile('already-synced-dom-text');
+    if (
+      element.getAttribute('data-plite-projected-dom-sync') === 'true' &&
+      syncChangedProjectedTextToDOM({ element, nextText, previousText })
+    ) {
       return true;
     }
 
-    if (
-      element.getAttribute('data-plite-projected-dom-sync') === 'true' &&
-      syncProjectedTextOperationToDOM({ element, operation, strings, text })
-    ) {
+    if (element.textContent?.replace(/\uFEFF/g, '') === nextText) {
+      strings.forEach(claimCanonicalStringDOM);
+      recordDOMTextSyncProfile('already-synced-dom-text');
       return true;
     }
 
@@ -460,8 +470,8 @@ const syncTextOperationToElement = ({
 
   const stringElement = strings[0]!;
 
-  if (text.length === 0) {
-    markDOMTextSyncMutationTarget(stringElement);
+  if (nextText.length === 0) {
+    markDOMSyncMutationTarget(stringElement, 'childList');
     stringElement.textContent = '';
     recordDOMTextSyncProfile('skip-empty-text');
     return false;
@@ -472,48 +482,89 @@ const syncTextOperationToElement = ({
   );
 
   if (textNode) {
-    if (textNode.nodeValue === text) {
+    if (textNode.nodeValue === nextText) {
+      markDOMSyncMutationTarget(textNode, 'characterData');
       recordDOMTextSyncProfile('already-synced');
       return true;
     }
-    markDOMTextSyncMutationTarget(textNode);
-    textNode.nodeValue = text;
+    markDOMSyncMutationTarget(textNode, 'characterData');
+    textNode.nodeValue = nextText;
   } else {
-    if (stringElement.textContent === text) {
+    if (stringElement.textContent === nextText) {
+      markDOMSyncMutationTarget(stringElement, 'childList');
       recordDOMTextSyncProfile('already-synced');
       return true;
     }
-    markDOMTextSyncMutationTarget(stringElement);
-    stringElement.textContent = text;
+    markDOMSyncMutationTarget(stringElement, 'childList');
+    stringElement.textContent = nextText;
   }
 
   recordDOMTextSyncProfile('success');
   return true;
 };
 
-export const syncTextOperationsToDOM = (
-  editor: Editor,
-  operations: readonly Operation[],
-  { modelOwned = false } = {}
+const getMappedTextElements = (
+  runtimeElementMap: Map<RuntimeId, Set<HTMLElement>>,
+  runtimeId: RuntimeId
+) => {
+  const mappedElements = runtimeElementMap.get(runtimeId);
+
+  if (!mappedElements) return [];
+
+  const elements: HTMLElement[] = [];
+
+  for (const element of mappedElements) {
+    if (
+      element.isConnected &&
+      element.getAttribute('data-plite-runtime-id') === runtimeId
+    ) {
+      elements.push(element);
+    } else {
+      mappedElements.delete(element);
+    }
+  }
+
+  if (mappedElements.size === 0) runtimeElementMap.delete(runtimeId);
+
+  return elements;
+};
+
+const claimCanonicalStringDOM = (stringElement: Element) => {
+  markDOMSyncMutationTarget(stringElement, 'childList');
+
+  for (const child of stringElement.childNodes) {
+    if (child.nodeType === Node.TEXT_NODE) {
+      markDOMSyncMutationTarget(child, 'characterData');
+    }
+  }
+};
+
+const readTextAtPath = (editor: Editor, path: Path) => {
+  if (!editorHasPath(editor, path)) return;
+
+  const entry = editor.read((state) => state.nodes.get(path));
+
+  if (!entry) return null;
+
+  const [node] = entry;
+
+  return 'text' in node && typeof node.text === 'string' ? node.text : null;
+};
+
+export const syncChangedTextToDOM = (
+  editor: PliteEditor<any, any>,
+  changedTextRuntimeIds: readonly RuntimeId[]
 ) => {
   const synced = new Set<string>();
-  const pathToElement = EDITOR_TO_PATH_TO_ELEMENT.get(editor);
-  const textOperationCount = operations.filter(
-    (operation) =>
-      operation.type === 'insert_text' || operation.type === 'remove_text'
-  ).length;
+  const runtimeElementMap = EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(editor);
+  const syncedValues =
+    EDITOR_TO_SYNCED_TEXT_VALUES.get(editor) ?? new Map<RuntimeId, string>();
   const result = () => ({
-    syncedTextOperationCount: operations.filter(
-      (operation) =>
-        (operation.type === 'insert_text' ||
-          operation.type === 'remove_text') &&
-        operation.path &&
-        synced.has(pathKey(operation.path))
-    ).length,
-    textOperationCount,
+    changedTextCount: changedTextRuntimeIds.length,
+    syncedTextCount: synced.size,
   });
 
-  if (textOperationCount > 0) {
+  if (changedTextRuntimeIds.length > 0) {
     recordDOMTextSyncProfile('attempt');
   }
 
@@ -523,18 +574,14 @@ export const syncTextOperationsToDOM = (
     return result();
   }
 
-  if (!pathToElement) {
-    recordDOMTextSyncProfile('skip-no-path-map');
+  if (!runtimeElementMap) {
+    recordDOMTextSyncProfile('skip-no-runtime-map');
     EDITOR_TO_SYNCED_TEXT_PATHS.set(editor, synced);
     return result();
   }
 
-  for (const operation of operations) {
-    if (operation.type !== 'insert_text' && operation.type !== 'remove_text') {
-      continue;
-    }
-
-    const path = operation.path;
+  for (const runtimeId of changedTextRuntimeIds) {
+    const path = editorGetPathByRuntimeId(editor, runtimeId);
 
     if (!path) {
       recordDOMTextSyncProfile('skip-no-path');
@@ -542,48 +589,14 @@ export const syncTextOperationsToDOM = (
     }
 
     const key = pathKey(path);
-    const mappedElements = pathToElement.get(key);
-
-    if (!mappedElements) {
-      recordDOMTextSyncProfile('skip-no-element');
-      continue;
-    }
-
-    const elements: HTMLElement[] = [];
-
-    for (const element of mappedElements) {
-      if (
-        element.isConnected &&
-        element.getAttribute('data-plite-path') === path.join(',')
-      ) {
-        elements.push(element);
-      } else {
-        mappedElements.delete(element);
-      }
-    }
-
-    if (mappedElements.size === 0) {
-      pathToElement.delete(key);
-    }
+    const elements = getMappedTextElements(runtimeElementMap, runtimeId);
 
     if (elements.length === 0) {
       recordDOMTextSyncProfile('skip-no-element');
       continue;
     }
 
-    const text = withOperationRootChildren(editor, operation, () => {
-      if (!editorHasPath(editor, path)) {
-        return;
-      }
-
-      const entry = editor.read((state) => state.nodes.get(path));
-
-      if (!entry) return null;
-
-      const [node] = entry;
-
-      return 'text' in node && typeof node.text === 'string' ? node.text : null;
-    });
+    const text = readTextAtPath(editor, path);
 
     if (text === undefined) {
       recordDOMTextSyncProfile('skip-missing-path');
@@ -595,26 +608,33 @@ export const syncTextOperationsToDOM = (
       continue;
     }
 
-    let didSyncEveryElement = true;
+    const previousText =
+      syncedValues.get(runtimeId) ??
+      elements[0]!.textContent?.replace(/\uFEFF/g, '');
 
-    for (const element of elements) {
-      if (!syncTextOperationToElement({ element, operation, text })) {
-        didSyncEveryElement = false;
-      }
+    if (previousText == null) {
+      recordDOMTextSyncProfile('skip-no-previous-text');
+      continue;
     }
+
+    const didSyncEveryElement = elements.every((element) =>
+      syncChangedTextToElement({
+        element,
+        nextText: text,
+        previousText,
+      })
+    );
+
+    syncedValues.set(runtimeId, text);
 
     if (didSyncEveryElement) {
       synced.add(key);
     } else {
-      synced.delete(key);
+      bumpDOMTextRenderRevision(editor, runtimeId);
     }
   }
 
-  if (modelOwned) {
-    recordDOMTextSyncProfile('model-owned-react-fallback');
-    synced.clear();
-  }
-
+  EDITOR_TO_SYNCED_TEXT_VALUES.set(editor, syncedValues);
   EDITOR_TO_SYNCED_TEXT_PATHS.set(editor, synced);
   return result();
 };
@@ -647,9 +667,7 @@ const bindPliteNodeElement = ({
   if (!pliteNode) {
     return null;
   }
-  const key = (
-    (editor as DOMEditor).api as unknown as { dom: DOMEditor['dom'] }
-  ).dom.findKey(pliteNode);
+  const key = DOMEditor.findKey(editor, pliteNode);
   const keyToElement = EDITOR_TO_KEY_TO_ELEMENT.get(editor) ?? new WeakMap();
 
   if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
@@ -660,6 +678,13 @@ const bindPliteNodeElement = ({
   NODE_TO_ELEMENT.set(pliteNode, node);
   NODE_TO_RUNTIME_ID.set(pliteNode, runtimeId);
   ELEMENT_TO_NODE.set(node, pliteNode);
+  if ('text' in pliteNode && typeof pliteNode.text === 'string') {
+    const syncedValues =
+      EDITOR_TO_SYNCED_TEXT_VALUES.get(editor) ?? new Map<RuntimeId, string>();
+
+    syncedValues.set(runtimeId, pliteNode.text);
+    EDITOR_TO_SYNCED_TEXT_VALUES.set(editor, syncedValues);
+  }
   syncPliteElementPath({ editor, element: node, path, runtimeId });
   const cleanupRuntimeIdElement = bindRuntimeIdElement(editor, runtimeId, node);
 
@@ -690,8 +715,14 @@ const bindPliteNodeElement = ({
     }
 
     if (node.getAttribute('data-plite-runtime-id') === runtimeId) {
+      markDOMSyncMutationTarget(node, 'attributes', 'data-plite-path');
       node.removeAttribute('data-plite-path');
+      markDOMSyncMutationTarget(node, 'attributes', 'data-plite-runtime-id');
       node.removeAttribute('data-plite-runtime-id');
+    }
+
+    if (!getRuntimeIdElementMap(editor).has(runtimeId)) {
+      EDITOR_TO_SYNCED_TEXT_VALUES.get(editor)?.delete(runtimeId);
     }
   };
 };

@@ -201,6 +201,24 @@ export type RenderPlaceholderProps = {
   children: ReactNode;
 };
 
+const RenderCallback = <TProps,>({
+  props,
+  render,
+}: {
+  props: TProps;
+  render: (props: TProps) => ReactNode;
+}) => render(props);
+
+const RenderSegmentCallback = <T,>({
+  children,
+  render,
+  segment,
+}: {
+  children: ReactNode;
+  render: (segment: EditableTextSegment<T>, children: ReactNode) => ReactNode;
+  segment: EditableTextSegment<T>;
+}) => render(segment, children);
+
 const splitTextByProjections = <T,>(
   text: string,
   slices: readonly PliteProjectionSlice<T>[],
@@ -419,9 +437,13 @@ const RenderEditableText = <T,>({
             ) : (
               <TextString text={segment.text} />
             );
-          const segmentContent = renderSegment
-            ? renderSegment(segment, baseContent)
-            : baseContent;
+          const segmentContent = renderSegment ? (
+            <RenderSegmentCallback render={renderSegment} segment={segment}>
+              {baseContent}
+            </RenderSegmentCallback>
+          ) : (
+            baseContent
+          );
           const decoratedSegmentContent =
             hasVisiblePliteViewSelectionDecoration(segment.slices, {
               owner: contentRootOwner,
@@ -455,14 +477,17 @@ const RenderEditableText = <T,>({
           return (
             <React.Fragment key={`${segment.start}:${segment.end}:${index}`}>
               {renderLeaf ? (
-                renderLeaf({
-                  attributes: leafAttributes,
-                  children: decoratedSegmentContent,
-                  leaf: leafNode,
-                  leafPosition,
-                  segment,
-                  text: textNode,
-                })
+                <RenderCallback
+                  props={{
+                    attributes: leafAttributes,
+                    children: decoratedSegmentContent,
+                    leaf: leafNode,
+                    leafPosition,
+                    segment,
+                    text: textNode,
+                  }}
+                  render={renderLeaf}
+                />
               ) : (
                 <PliteLeaf attributes={leafAttributes}>
                   {decoratedSegmentContent}
@@ -471,8 +496,7 @@ const RenderEditableText = <T,>({
             </React.Fragment>
           );
         })
-      : // eslint-disable-next-line react-hooks/refs -- Plite render-prop API passes callback refs through attributes; no ref.current read happens here.
-        (() => {
+      : (() => {
           const segment: EditableTextSegment<T> = {
             end: 0,
             marks: resolvedMarks,
@@ -482,10 +506,13 @@ const RenderEditableText = <T,>({
           };
           const placeholderNode = placeholder ? (
             renderPlaceholder ? (
-              renderPlaceholder({
-                attributes: placeholderAttributes,
-                children: placeholder,
-              })
+              <RenderCallback
+                props={{
+                  attributes: placeholderAttributes,
+                  children: placeholder,
+                }}
+                render={renderPlaceholder}
+              />
             ) : (
               <PlitePlaceholder
                 as={placeholderAs}
@@ -523,25 +550,32 @@ const RenderEditableText = <T,>({
           const leafAttributes = getLeafAttributes();
 
           return renderLeaf ? (
-            renderLeaf({
-              attributes: leafAttributes,
-              children: content,
-              leaf: leafNode,
-              segment,
-              text: textNode,
-            })
+            <RenderCallback
+              props={{
+                attributes: leafAttributes,
+                children: content,
+                leaf: leafNode,
+                segment,
+                text: textNode,
+              }}
+              render={renderLeaf}
+            />
           ) : (
             <PliteLeaf>{content}</PliteLeaf>
           );
         })();
 
   if (renderText) {
-    // eslint-disable-next-line react-hooks/refs -- Plite render-prop API passes callback refs through attributes; no ref.current read happens here.
-    return renderText({
-      attributes: textAttributes,
-      children: content,
-      text: textNode,
-    });
+    return (
+      <RenderCallback
+        props={{
+          attributes: textAttributes,
+          children: content,
+          text: textNode,
+        }}
+        render={renderText}
+      />
+    );
   }
 
   return (

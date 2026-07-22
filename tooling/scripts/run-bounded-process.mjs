@@ -27,7 +27,17 @@ const signalProcessGroup = (child, pid, signal) => {
       child.kill(signal);
     }
   } catch (error) {
-    if (error?.code !== 'ESRCH') throw error;
+    if (error?.code === 'ESRCH') return;
+    if (
+      error?.code === 'EPERM' &&
+      child.exitCode === null &&
+      child.signalCode === null
+    ) {
+      child.kill(signal);
+      return;
+    }
+
+    throw error;
   }
 };
 
@@ -41,6 +51,9 @@ const processGroupIsAlive = (child, pid) => {
     return child.exitCode === null && child.signalCode === null;
   } catch (error) {
     if (error?.code === 'ESRCH') return false;
+    if (error?.code === 'EPERM') {
+      return child.exitCode === null && child.signalCode === null;
+    }
     throw error;
   }
 };

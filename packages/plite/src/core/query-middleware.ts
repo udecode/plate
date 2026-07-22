@@ -6,11 +6,13 @@ import type {
   EditorQueryMiddlewareResult,
   Value,
 } from '../interfaces/editor';
+import type { Node } from '../interfaces/node';
 import {
   getExtensionRegistry,
   getQueryMiddlewareKey,
 } from './extension-registry';
 import { getEditorStateView } from './public-state';
+import { getEditorSchema } from './editor-runtime';
 
 type QueryMethod<
   V extends Value,
@@ -202,3 +204,13 @@ export const executeQueryMiddleware = <
 
   return run(0, args);
 };
+
+/** Execute the runtime-selectability query, falling back to compiled schema. */
+export const isEditorNodeSelectable = (editor: Editor, element: Node) =>
+  executeQueryMiddleware(
+    editor,
+    'nodes',
+    'isSelectable',
+    { element },
+    ({ element }) => getEditorSchema(editor).isSelectable(element)
+  );

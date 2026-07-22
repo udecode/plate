@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import type { DOMInputRepair, DOMRepairQueue } from './dom-repair-queue';
 import {
   beginEditableEditingEpoch,
@@ -30,10 +31,12 @@ type RuntimeKernelIntent = ReturnType<typeof classifyKeyboardIntent>;
 type RuntimeNativeInput = DOMInputRepair;
 
 export const useRuntimeKernelTraceEngine = ({
+  domPhaseScheduler,
   domRepairQueue,
   editor,
   inputController,
 }: {
+  domPhaseScheduler: DOMPhaseScheduler;
   domRepairQueue: DOMRepairQueue;
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
@@ -148,7 +151,6 @@ export const useRuntimeKernelTraceEngine = ({
           intent,
           nativeAllowed: nextOwnership === 'native-allowed',
           ownership: nextOwnership,
-          operations: [],
           repair: null,
           selectionAfter: selection,
           selectionBefore: selection,
@@ -202,7 +204,6 @@ export const useRuntimeKernelTraceEngine = ({
           intent: inputController.state.activeIntent,
           nativeAllowed: ownership === 'native-allowed',
           ownership,
-          operations: [],
           repair: null,
           selectionAfter: readLiveSelection(editor),
           selectionBefore,
@@ -229,11 +230,16 @@ export const useRuntimeKernelTraceEngine = ({
       rootElement: HTMLElement,
       frameId: number | null
     ) => {
-      setTimeout(() => {
-        domRepairQueue.repairDOMInput(nativeInput, rootElement, frameId);
-      });
+      domPhaseScheduler.schedule(
+        'selection-repair',
+        'repair-dom-input-after-frame',
+        () => {
+          domRepairQueue.repairDOMInput(nativeInput, rootElement, frameId);
+        },
+        { timing: 'timeout' }
+      );
     },
-    [domRepairQueue]
+    [domPhaseScheduler, domRepairQueue]
   );
 
   const beginKeyDownEventFrame = useCallback(
@@ -291,7 +297,6 @@ export const useRuntimeKernelTraceEngine = ({
           }),
           nativeAllowed: decision.nativeAllowed,
           ownership: decision.ownership,
-          operations: [],
           repair: null,
           selectionAfter: readLiveSelection(editor),
           selectionBefore: decision.selectionBefore,

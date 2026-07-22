@@ -10,6 +10,7 @@ import {
 } from '@chenglou/pretext/rich-inline';
 import {
   type Descendant,
+  defineValueCodec,
   type EditorStateField,
   type Element,
   NodeApi,
@@ -21,6 +22,7 @@ import {
   type Text,
   type Value,
 } from '@platejs/plite';
+import { toInternalRoot } from '@platejs/plite/internal';
 
 const MAIN_ROOT_KEY: RootKey = 'main';
 
@@ -49,6 +51,52 @@ export type PlitePageSettings = {
   margins: PlitePageMargins;
   preset: PlitePagePreset;
 };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const decodePageMargins = (value: unknown): PlitePageMargins => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (!isRecord(value)) throw new Error('Invalid Plite page margins.');
+
+  const { bottom, left, right, top } = value;
+
+  if (
+    ![bottom, left, right, top].every(
+      (margin) => typeof margin === 'number' && Number.isFinite(margin)
+    )
+  ) {
+    throw new Error('Invalid Plite page margins.');
+  }
+
+  return {
+    bottom: bottom as number,
+    left: left as number,
+    right: right as number,
+    top: top as number,
+  };
+};
+
+const decodePageSettings = (value: unknown): PlitePageSettings => {
+  if (
+    !isRecord(value) ||
+    (value.preset !== 'a4' && value.preset !== 'letter')
+  ) {
+    throw new Error('Invalid Plite page settings.');
+  }
+
+  return {
+    margins: decodePageMargins(value.margins),
+    preset: value.preset,
+  };
+};
+
+/** Versioned persistence codec for Plite page settings. */
+export const plitePageSettingsCodec = defineValueCodec<PlitePageSettings>({
+  decode: decodePageSettings,
+  encode: decodePageSettings,
+  version: 1,
+});
 
 /** Rectangle in layout coordinates. */
 export type PlitePageRect = {
@@ -384,6 +432,95 @@ export type PlitePageBreakSnapshot = {
   schemaVersion: 1;
   writerId?: string;
 };
+
+const decodePageBreakSnapshot = (
+  value: unknown
+): PlitePageBreakSnapshot | null => {
+  if (value === null) return null;
+  if (
+    !isRecord(value) ||
+    !Array.isArray(value.breaks) ||
+    typeof value.documentKey !== 'string' ||
+    value.documentKey.length === 0 ||
+    !Number.isSafeInteger(value.documentVersion) ||
+    (value.documentVersion as number) < 0 ||
+    !isRecord(value.measurementProfile) ||
+    typeof value.root !== 'string' ||
+    value.root.length === 0 ||
+    value.schemaVersion !== 1 ||
+    (value.writerId !== undefined &&
+      (typeof value.writerId !== 'string' || value.writerId.length === 0))
+  ) {
+    throw new Error('Invalid Plite page-break snapshot.');
+  }
+
+  const breaks = value.breaks.map((entry) => {
+    if (
+      !isRecord(entry) ||
+      !Number.isSafeInteger(entry.blockIndex) ||
+      (entry.blockIndex as number) < 0 ||
+      typeof entry.fragmentId !== 'string' ||
+      entry.fragmentId.length === 0 ||
+      !Number.isSafeInteger(entry.pageIndex) ||
+      (entry.pageIndex as number) < 0 ||
+      !Array.isArray(entry.path) ||
+      !entry.path.every(
+        (index) => Number.isSafeInteger(index) && (index as number) >= 0
+      )
+    ) {
+      throw new Error('Invalid Plite page break.');
+    }
+
+    return {
+      blockIndex: entry.blockIndex as number,
+      fragmentId: entry.fragmentId,
+      pageIndex: entry.pageIndex as number,
+      path: entry.path as Path,
+    };
+  });
+  const profile = value.measurementProfile;
+
+  if (
+    !isRecord(profile.engine) ||
+    typeof profile.engine.id !== 'string' ||
+    profile.engine.id.length === 0 ||
+    typeof profile.root !== 'string' ||
+    profile.root.length === 0 ||
+    profile.schemaVersion !== 1 ||
+    (profile.typography !== 'custom' && profile.typography !== 'default')
+  ) {
+    throw new Error('Invalid Plite page-layout measurement profile.');
+  }
+
+  return {
+    breaks,
+    documentKey: value.documentKey,
+    documentVersion: value.documentVersion as number,
+    measurementProfile: {
+      engine: {
+        id: profile.engine.id,
+        ...(profile.engine.profile === undefined
+          ? {}
+          : { profile: profile.engine.profile }),
+      },
+      page: decodePageSettings(profile.page),
+      root: profile.root,
+      schemaVersion: 1,
+      typography: profile.typography,
+    },
+    root: value.root,
+    schemaVersion: 1,
+    ...(value.writerId === undefined ? {} : { writerId: value.writerId }),
+  };
+};
+
+/** Versioned persistence codec for authoritative page-break snapshots. */
+export const plitePageBreakSnapshotCodec =
+  defineValueCodec<PlitePageBreakSnapshot | null>({
+    decode: decodePageBreakSnapshot,
+    encode: decodePageBreakSnapshot,
+    version: 1,
+  });
 
 export type PlitePageBreakSnapshotStatus =
   | 'accepted'
@@ -1901,7 +2038,9 @@ const readLayoutRoot = <TSettings extends PlitePageSettings>(
 ): RootKey => {
   assertPublicRootKey(options.root);
 
-  return options.root ?? editor.read((state) => state.view.root());
+  return toInternalRoot(
+    options.root ?? editor.read((state) => state.view.root())
+  );
 };
 
 const resolveProjectionRoot = (
@@ -3120,7 +3259,7 @@ export const createPlitePageLayout = <
 
     if (
       writePageBreaks &&
-      change.operations.length === 0 &&
+      !change.changed.hasAny('document') &&
       change.dirtyStateKeys.length > 0 &&
       change.dirtyStateKeys.every((key) => key === writePageBreaks.source.key)
     ) {
@@ -3128,19 +3267,16 @@ export const createPlitePageLayout = <
     }
 
     const shouldRefresh =
-      change.childrenChanged ||
-      change.dirtyStateKeys.length > 0 ||
-      change.textChanged ||
-      change.structureChanged;
+      change.changed.hasAny('document') || change.changed.hasAny('state');
 
     if (!shouldRefresh) {
       return;
     }
 
     const textOnlyChange = Boolean(
-      change?.textChanged &&
-        change.dirtyStateKeys.length === 0 &&
-        !change.structureChanged
+      change.changed.hasAny('text') &&
+        !change.changed.hasAny('state') &&
+        !change.changed.hasAny('structure')
     );
     const textChangeRefresh = getTextChangeRefreshOptions(
       options.textChangeRefresh

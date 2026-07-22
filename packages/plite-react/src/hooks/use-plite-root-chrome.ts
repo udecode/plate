@@ -1,5 +1,5 @@
 import { type MouseEventHandler, useMemo } from 'react';
-import type { RootKey } from '@platejs/plite';
+import type { NamedRootKey, RootKey } from '@platejs/plite';
 
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import { MAIN_ROOT_KEY } from '../root-key';
@@ -17,19 +17,19 @@ export type UsePliteRootChromeOptions = {
 /** Props and root metadata for root-level mouse interaction chrome. */
 export type PliteRootChromeController = {
   props: {
-    'data-plite-root-chrome': RootKey;
+    'data-plite-root-chrome'?: NamedRootKey;
     onMouseDownCapture: MouseEventHandler<HTMLElement>;
     onMouseMoveCapture: MouseEventHandler<HTMLElement>;
     onMouseUpCapture: MouseEventHandler<HTMLElement>;
   };
-  root: RootKey;
+  root: NamedRootKey | undefined;
 };
 
 /**
  * Create props for root-level mouse interaction outside editable content.
  */
-export function usePliteRootChrome(
-  root?: RootKey,
+export function usePliteRootChrome<const TRoot extends RootKey = RootKey>(
+  root?: NamedRootKey<TRoot>,
   { disabled = false, selection = 'restore' }: UsePliteRootChromeOptions = {}
 ): PliteRootChromeController {
   if (root === MAIN_ROOT_KEY) {
@@ -55,13 +55,13 @@ export function usePliteRootChrome(
   return useMemo(
     () => ({
       props: {
-        'data-plite-root-chrome': internalRoot,
+        ...(root ? { 'data-plite-root-chrome': root } : {}),
         onMouseDownCapture,
         onMouseMoveCapture,
         onMouseUpCapture,
       },
-      root: internalRoot,
+      root,
     }),
-    [internalRoot, onMouseDownCapture, onMouseMoveCapture, onMouseUpCapture]
+    [onMouseDownCapture, onMouseMoveCapture, onMouseUpCapture, root]
   );
 }

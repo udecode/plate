@@ -727,7 +727,7 @@ describe('plite normalization contract', () => {
     assert.equal(calls, 0);
   });
 
-  it('removes stray top-level text during replace-time block-only cleanup', () => {
+  it('fits stray top-level text through the derived root default', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -741,7 +741,9 @@ describe('plite normalization contract', () => {
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'block', children: [{ text: 'two' }] },
+      { type: 'paragraph', children: [{ text: 'three' }] },
       { type: 'block', children: [{ text: 'four' }] },
     ]);
   });

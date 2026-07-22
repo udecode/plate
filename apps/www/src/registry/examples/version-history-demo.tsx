@@ -220,8 +220,8 @@ export const createVersionSnapshot = (value: Value): Value => cloneDeep(value);
 
 const basePlugins = [
   ...BasicMarksKit,
-  InlinePlugin.extend({ render: { node: InlineElement } }),
-  InlineVoidPlugin.extend({ render: { node: InlineVoidElement } }),
+  InlinePlugin.withComponent(InlineElement),
+  InlineVoidPlugin.withComponent(InlineVoidElement),
 ];
 
 const diffPlugins = [...basePlugins, DiffPlugin];

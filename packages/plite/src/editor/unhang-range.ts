@@ -18,12 +18,13 @@ export const unhangRange: EditorStaticApi['unhangRange'] = (
   options = {}
 ) => {
   const { character = false, unhang = true, voids = false } = options;
+  const inputRange = { anchor: range.anchor, focus: range.focus };
 
   if (character) {
     let [start, end] = RangeApi.edges(range);
 
     if (PathApi.equals(start.path, end.path)) {
-      return range;
+      return inputRange;
     }
 
     if (end.offset === 0) {
@@ -44,7 +45,7 @@ export const unhangRange: EditorStaticApi['unhangRange'] = (
   }
 
   if (!unhang) {
-    return range;
+    return inputRange;
   }
 
   let [start, end] = RangeApi.edges(range);
@@ -56,7 +57,7 @@ export const unhangRange: EditorStaticApi['unhangRange'] = (
     RangeApi.isCollapsed(range) ||
     PathApi.hasPrevious(end.path)
   ) {
-    return range;
+    return inputRange;
   }
 
   const endBlock = editorAbove(editor, {

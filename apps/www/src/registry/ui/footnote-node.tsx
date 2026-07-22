@@ -15,7 +15,6 @@ import {
   useEditorSelector,
   useEditorFocused,
   useNavigationHighlight,
-  usePath,
   useElementSelected,
 } from 'platejs/react';
 
@@ -102,7 +101,7 @@ const getReferenceContextLabel = (
 export function FootnoteReferenceElement(
   props: PlateElementProps<TFootnoteElement>
 ) {
-  const { element } = props;
+  const { element, path } = props;
   const {
     api: { footnote: footnoteApi },
     editor,
@@ -110,7 +109,6 @@ export function FootnoteReferenceElement(
   const identifier = element.identifier ?? '';
   const [hoverOpen, setHoverOpen] = React.useState(false);
   const focused = useEditorFocused();
-  const path = usePath();
   const navigationHighlight = useNavigationHighlight(path);
   const fallbackResolved =
     identifier && footnoteApi ? footnoteApi.isResolved({ identifier }) : false;
@@ -229,13 +227,12 @@ export function FootnoteReferenceElement(
 export function FootnoteDefinitionElement(
   props: PlateElementProps<TFootnoteElement>
 ) {
-  const { element } = props;
+  const { element, path } = props;
   const {
     api: { footnote: footnoteApi },
     editor,
   } = useEditorPlugin(BaseFootnoteReferencePlugin);
   const identifier = element.identifier ?? '';
-  const path = usePath();
   const definitionState = useEditorSelector(() => {
     const isDuplicateDefinition =
       !!path && !!footnoteApi.isDuplicateDefinition?.({ path });

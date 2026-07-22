@@ -9,7 +9,7 @@ export const focusFootnoteDefinition = (
   tx: EditorUpdateTransaction,
   { identifier }: { identifier: string }
 ) => {
-  const definition = getFootnoteDefinition(editor, { identifier }, tx);
+  const definition = getFootnoteDefinition(editor, { identifier });
 
   if (!definition) return false;
 

@@ -23,9 +23,11 @@ import { useRootInteractionController } from '../editable/root-interaction-contr
 import {
   isVoid as editorIsVoid,
   isInline as editorIsInline,
+  toInternalRoot,
 } from '../editable/runtime-editor-api';
 import { useEditableRootRuntime } from '../editable/runtime-root-engine';
 import { readLiveSelection } from '../editable/runtime-selection-state';
+import { EditableDOMRuntimeContext } from '../hooks/use-claim-editable-dom-commit';
 import { useEditor } from '../hooks/use-editor';
 import { ComposingContext } from '../hooks/use-editor-composing';
 import { ReadOnlyContext } from '../hooks/use-editor-read-only';
@@ -34,7 +36,7 @@ import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import { usePliteViewSelectionPresence } from '../view-selection-decoration';
-import { RestoreDOM } from './restore-dom/restore-dom';
+import { EditableDOMCommitFence } from './editable-dom-commit-fence';
 
 /**
  * `EditableProps` are passed to the `<Editable>` component.
@@ -398,7 +400,7 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
     ...attributes
   } = editableProps;
   const editor = useEditor<ReactRuntimeEditor>();
-  const editorRoot = editor.read((state) => state.view.root());
+  const editorRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const hasViewSelection = usePliteViewSelectionPresence(editor);
   const { getLastSelectionForRoot, getMountedViewEditor, setActiveViewEditor } =
     useRequiredPliteRuntimeContext();
@@ -418,11 +420,12 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
     scrollSelectionIntoView,
   });
   const {
+    domPhaseScheduler,
     editableEventBindings,
     isComposing,
-    receivedUserInput,
     rootRef: ref,
     rootInteractionSelectionBridge,
+    runtime,
     partialDOMBackedSelection,
   } = rootRuntime;
   const rootInteraction = useRootInteractionController({
@@ -433,6 +436,7 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
     ignoreBlankEditableRootClicks:
       ignoreBlankEditableRootClicks || domStrategyRuntime !== null,
     root: editorRoot,
+    runtime,
     selection: 'restore',
     selectionBridge: rootInteractionSelectionBridge,
   });
@@ -536,100 +540,118 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
       return;
     }
 
-    let cancelled = false;
+    let cancelWrite = () => {};
+    const cancelRead = domPhaseScheduler.schedule(
+      'dom-read',
+      'read-dom-strategy-metrics',
+      () => {
+        const nextMetrics = getEditableDOMStrategyMetrics({
+          editor,
+          metrics: domStrategyMetrics,
+          rootElement,
+        });
 
-    queueMicrotask(() => {
-      if (cancelled) {
-        return;
-      }
+        if (
+          areEditableDOMStrategyMetricsEqual(
+            lastDOMStrategyMetricsRef.current,
+            nextMetrics
+          )
+        ) {
+          return;
+        }
 
-      const nextMetrics = getEditableDOMStrategyMetrics({
-        editor,
-        metrics: domStrategyMetrics,
-        rootElement,
-      });
-
-      if (
-        areEditableDOMStrategyMetricsEqual(
-          lastDOMStrategyMetricsRef.current,
-          nextMetrics
-        )
-      ) {
-        return;
-      }
-
-      lastDOMStrategyMetricsRef.current = nextMetrics;
-      onDOMStrategyMetrics(nextMetrics);
-    });
+        cancelWrite = domPhaseScheduler.schedule(
+          'dom-write',
+          'publish-dom-strategy-metrics',
+          () => {
+            lastDOMStrategyMetricsRef.current = nextMetrics;
+            onDOMStrategyMetrics(nextMetrics);
+          },
+          { timing: 'immediate' }
+        );
+      },
+      { timing: 'microtask' }
+    );
 
     return () => {
-      cancelled = true;
+      cancelRead();
+      cancelWrite();
     };
-  }, [editor, domStrategyMetrics, onDOMStrategyMetrics, ref]);
+  }, [
+    domPhaseScheduler,
+    editor,
+    domStrategyMetrics,
+    onDOMStrategyMetrics,
+    ref,
+  ]);
 
   return (
     <ReadOnlyContext.Provider value={readOnly}>
       <ComposingContext.Provider value={isComposing}>
-        <RestoreDOM node={ref} receivedUserInput={receivedUserInput}>
-          <Component
-            aria-multiline
-            aria-readonly={readOnly ? true : undefined}
-            role="textbox"
-            translate="no"
-            {...attributes}
-            autoCapitalize={
-              HAS_BEFORE_INPUT_SUPPORT || !CAN_USE_DOM
-                ? attributes.autoCapitalize
-                : 'false'
-            }
-            autoCorrect={
-              HAS_BEFORE_INPUT_SUPPORT || !CAN_USE_DOM
-                ? attributes.autoCorrect
-                : 'false'
-            }
-            // explicitly set this
-            contentEditable
-            data-plite-dom-strategy-selection={
-              partialDOMBackedSelection ? 'partial-dom-backed' : undefined
-            }
-            data-plite-editor
-            data-plite-node="value"
-            data-plite-root={editorRoot}
-            {...editableEventBindingsWithDropCursor}
-            {...rootInteractionEventBindings}
-            // Browsers without `beforeinput` need a separate replacement-input
-            // implementation. During SSR, pass through consumer props to avoid a
-            // hydration mismatch; in the browser, default to a falsy value.
-            spellCheck={
-              HAS_BEFORE_INPUT_SUPPORT || !CAN_USE_DOM
-                ? attributes.spellCheck
-                : false
-            }
-            style={{
-              ...(disableDefaultStyles
-                ? {}
-                : {
-                    // Keep read-only editors selectable without showing an
-                    // insertion caret.
-                    caretColor:
-                      readOnly || hasViewSelection ? 'transparent' : undefined,
-                    // Allow positioning relative to the editable element.
-                    position: 'relative',
-                    // Preserve adjacent whitespace and new lines.
-                    whiteSpace: 'pre-wrap',
-                    // Allow words to break if they are too long.
-                    wordWrap: 'break-word',
-                    // Keep the public editable root visible and hittable.
-                    zIndex: 0,
-                  }),
-              // Allow for passed-in styles to override anything.
-              ...userStyle,
-            }}
-            suppressContentEditableWarning
-          >
-            {customChildren}
-          </Component>
-        </RestoreDOM>
+        <EditableDOMRuntimeContext.Provider value={runtime}>
+          <EditableDOMCommitFence runtime={runtime}>
+            <Component
+              aria-multiline
+              aria-readonly={readOnly ? true : undefined}
+              role="textbox"
+              translate="no"
+              {...attributes}
+              autoCapitalize={
+                HAS_BEFORE_INPUT_SUPPORT || !CAN_USE_DOM
+                  ? attributes.autoCapitalize
+                  : 'false'
+              }
+              autoCorrect={
+                HAS_BEFORE_INPUT_SUPPORT || !CAN_USE_DOM
+                  ? attributes.autoCorrect
+                  : 'false'
+              }
+              // explicitly set this
+              contentEditable
+              data-plite-dom-strategy-selection={
+                partialDOMBackedSelection ? 'partial-dom-backed' : undefined
+              }
+              data-plite-editor
+              data-plite-node="value"
+              data-plite-root={editorRoot}
+              {...editableEventBindingsWithDropCursor}
+              {...rootInteractionEventBindings}
+              // Browsers without `beforeinput` need a separate replacement-input
+              // implementation. During SSR, pass through consumer props to avoid a
+              // hydration mismatch; in the browser, default to a falsy value.
+              spellCheck={
+                HAS_BEFORE_INPUT_SUPPORT || !CAN_USE_DOM
+                  ? attributes.spellCheck
+                  : false
+              }
+              style={{
+                ...(disableDefaultStyles
+                  ? {}
+                  : {
+                      // Keep read-only editors selectable without showing an
+                      // insertion caret.
+                      caretColor:
+                        readOnly || hasViewSelection
+                          ? 'transparent'
+                          : undefined,
+                      // Allow positioning relative to the editable element.
+                      position: 'relative',
+                      // Preserve adjacent whitespace and new lines.
+                      whiteSpace: 'pre-wrap',
+                      // Allow words to break if they are too long.
+                      wordWrap: 'break-word',
+                      // Keep the public editable root visible and hittable.
+                      zIndex: 0,
+                    }),
+                // Allow for passed-in styles to override anything.
+                ...userStyle,
+              }}
+              suppressContentEditableWarning
+            >
+              {customChildren}
+            </Component>
+          </EditableDOMCommitFence>
+        </EditableDOMRuntimeContext.Provider>
       </ComposingContext.Provider>
     </ReadOnlyContext.Provider>
   );

@@ -695,6 +695,68 @@ describe('createPlitePageLayout', () => {
     staleReader.destroy();
   });
 
+  it('rejects negative page-break coordinates and empty stable identifiers', () => {
+    const snapshot = {
+      breaks: [
+        {
+          blockIndex: 0,
+          fragmentId: 'fragment-0',
+          pageIndex: 0,
+          path: [0],
+        },
+      ],
+      documentKey: 'document',
+      documentVersion: 0,
+      measurementProfile: {
+        engine: { id: 'estimated' },
+        page: { margins: 96, preset: 'a4' },
+        root: 'main',
+        schemaVersion: 1,
+        typography: 'default',
+      },
+      root: 'main',
+      schemaVersion: 1,
+      writerId: 'writer',
+    } satisfies PlitePageBreakSnapshot;
+
+    expect(plitePageBreakSnapshotCodec.decode(snapshot)).toEqual(snapshot);
+
+    for (const invalid of [
+      { ...snapshot, documentKey: '' },
+      { ...snapshot, documentVersion: -1 },
+      { ...snapshot, root: '' },
+      { ...snapshot, writerId: '' },
+      {
+        ...snapshot,
+        breaks: [{ ...snapshot.breaks[0]!, blockIndex: -1 }],
+      },
+      {
+        ...snapshot,
+        breaks: [{ ...snapshot.breaks[0]!, fragmentId: '' }],
+      },
+      {
+        ...snapshot,
+        breaks: [{ ...snapshot.breaks[0]!, pageIndex: -1 }],
+      },
+      {
+        ...snapshot,
+        measurementProfile: {
+          ...snapshot.measurementProfile,
+          engine: { id: '' },
+        },
+      },
+      {
+        ...snapshot,
+        measurementProfile: {
+          ...snapshot.measurementProfile,
+          root: '',
+        },
+      },
+    ]) {
+      expect(() => plitePageBreakSnapshotCodec.decode(invalid)).toThrow();
+    }
+  });
+
   it('refreshes subscribers after editor text changes', async () => {
     const editor = createEditor({
       extensions: [pageSettings],

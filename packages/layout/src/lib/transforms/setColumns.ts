@@ -1,5 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import type { EditorUpdateTransaction, Location } from '@platejs/plite';
+import type { EditorUpdateTransaction, NodeTarget } from '@platejs/plite';
 import type { TColumnElement, TColumnGroupElement } from '@platejs/utils';
 import { KEYS } from '@platejs/utils';
 
@@ -7,7 +7,7 @@ import { columnsToWidths } from '../utils/columnsToWidths';
 
 export type SetColumnsOptions = {
   /** Column group location. */
-  at?: Location;
+  at?: NodeTarget<TColumnGroupElement>;
   columns?: number;
   widths?: string[];
 };

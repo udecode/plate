@@ -66,7 +66,6 @@ import {
   useEditorReadOnly,
   useRemoveNodeButton,
   useElementSelected,
-  usePath,
   withHOC,
 } from 'platejs/react';
 import { useElementSelector } from 'platejs/react';
@@ -183,12 +182,12 @@ function useTableResizeController({
 }) {
   const { editor, getOptions } = useEditorPlugin(TablePlugin);
   const { disableMarginLeft = false, minColumnWidth = 0 } = getOptions();
-  const colSizes =
-    useTableColSizes({
-      disableOverrides: true,
-    }) ?? [];
+  const colSizes = useTableColSizes({
+    disableOverrides: true,
+  });
   const effectiveColSizes = React.useMemo(
-    () => colSizes.map((colSize) => colSize || TABLE_DEFAULT_COLUMN_WIDTH),
+    () =>
+      (colSizes ?? []).map((colSize) => colSize || TABLE_DEFAULT_COLUMN_WIDTH),
     [colSizes]
   );
   const effectiveColSizesRef = React.useRef(effectiveColSizes);
@@ -620,12 +619,12 @@ export const TableElement = withHOC(
     );
     const hasControls = !readOnly && !isSelectionAreaVisible;
     const { marginLeft, props: tableProps } = useTableElement();
-    const colSizes = useTableColSizes() ?? [];
+    const colSizes = useTableColSizes();
     const controlColumnWidth = hasControls ? TABLE_CONTROL_COLUMN_WIDTH : 0;
     const dragIndicatorRef = React.useRef<HTMLDivElement>(null);
     const hoverIndicatorRef = React.useRef<HTMLDivElement>(null);
     const deferColumnResize =
-      colSizes.length * (props.element.children?.length ?? 0) >
+      (colSizes?.length ?? 0) * (props.element.children?.length ?? 0) >
       TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
     const tablePath = useElementSelector(([, path]) => path, [], {
       key: KEYS.table,
@@ -644,7 +643,7 @@ export const TableElement = withHOC(
       wrapperRef,
     });
     const resolvedColSizes = React.useMemo(() => {
-      if (colSizes.length > 0) {
+      if (colSizes && colSizes.length > 0) {
         return colSizes.map((colSize) => colSize || TABLE_DEFAULT_COLUMN_WIDTH);
       }
 
@@ -777,33 +776,10 @@ function TableFloatingToolbar({
     [selected]
   );
   const isFocusedLast = useFocusedLast();
-  const [isExpandedSelectionToolbarReady, setIsExpandedSelectionToolbarReady] =
-    React.useState(false);
   const isCollapsedToolbarOpen = isFocusedLast && collapsedInside;
   const isExpandedSelectionPending =
     isFocusedLast && !collapsedInside && selectedCellCount > 1;
-
-  React.useEffect(() => {
-    if (!isExpandedSelectionPending) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset the delayed toolbar gate when selection is no longer expanded.
-      setIsExpandedSelectionToolbarReady(false);
-
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setIsExpandedSelectionToolbarReady(true);
-    }, TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [isExpandedSelectionPending]);
-
-  const shouldRenderExpandedSelectionToolbar =
-    isExpandedSelectionToolbarReady && isExpandedSelectionPending;
-  const isToolbarOpen =
-    isCollapsedToolbarOpen || shouldRenderExpandedSelectionToolbar;
+  const isToolbarOpen = isCollapsedToolbarOpen || isExpandedSelectionPending;
 
   return (
     <Popover open={isToolbarOpen} modal={false}>
@@ -811,11 +787,31 @@ function TableFloatingToolbar({
       {isCollapsedToolbarOpen && (
         <CollapsedTableFloatingToolbarContent {...props} />
       )}
-      {shouldRenderExpandedSelectionToolbar && (
-        <ExpandedSelectionTableFloatingToolbarContent {...props} />
+      {isExpandedSelectionPending && (
+        <DelayedExpandedSelectionTableFloatingToolbarContent {...props} />
       )}
     </Popover>
   );
+}
+
+function DelayedExpandedSelectionTableFloatingToolbarContent(
+  props: React.ComponentProps<typeof PopoverContent>
+) {
+  const [isReady, setIsReady] = React.useState(false);
+
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setIsReady(true);
+    }, TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  if (!isReady) return null;
+
+  return <ExpandedSelectionTableFloatingToolbarContent {...props} />;
 }
 
 function ExpandedSelectionTableFloatingToolbarContent(
@@ -1250,7 +1246,7 @@ function useTableCellPresentation(element: TTableCellElement) {
 
 function RowDragHandle({ dragRef }: { dragRef: React.Ref<HTMLButtonElement> }) {
   const editor = useEditorRef();
-  const path = usePath();
+  const element = useElement<TTableRowElement>();
 
   return (
     <Button
@@ -1262,7 +1258,7 @@ function RowDragHandle({ dragRef }: { dragRef: React.Ref<HTMLButtonElement> }) {
         'opacity-0 transition-opacity duration-100 group-hover/row:opacity-100 group-data-[table-resizing=true]/row:opacity-0'
       )}
       onClick={() => {
-        const range = editor.read.ranges.get(path);
+        const range = editor.read.ranges.get(element);
 
         if (!range) return;
 

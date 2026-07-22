@@ -1,6 +1,8 @@
 export {
   getDOMClipboardFormatKey,
+  readDOMFragmentData,
   setDOMClipboardFormatKey,
+  writeDOMHostFragmentData,
 } from '../plugin/dom-clipboard-runtime';
 export type {
   DOMCoverageBoundary,
@@ -32,10 +34,36 @@ export {
   subscribeEditorDOMScope,
 } from '../plugin/dom-editor';
 export {
+  createDOMGeometryKernel,
   getPliteStringCoordinatePlacement,
+  getPliteStringDocumentOffset,
+  getPliteStringEdgeOffset,
   getPliteStringLength,
   getPliteStringLineEdgeTextOffset,
-} from '../plugin/plite-string-coordinate-placement';
+  getPliteStringPlacementDOMPoint,
+  hasUsableDOMRect,
+} from '../plugin/dom-geometry';
+export {
+  createDOMPhaseScheduler,
+  destroyEditorDOMPhaseSchedulerFallback,
+  installEditorDOMPhaseScheduler,
+  scheduleEditorDOMPhase,
+} from '../plugin/dom-phase-scheduler';
+export { parseDOMClipboardHtml } from '../plugin/dom-html';
+export type {
+  DOMPhase,
+  DOMPhaseScheduleOptions,
+  DOMPhaseScheduler,
+  DOMPhaseSchedulerDiagnostic,
+  DOMPhaseSchedulerDiagnostics,
+  DOMPhaseTiming,
+} from '../plugin/dom-phase-scheduler';
+export type {
+  DOMGeometryAssociation,
+  DOMGeometryPoint,
+  DOMGeometryRect,
+  PliteStringCoordinatePlacement,
+} from '../plugin/dom-geometry';
 export {
   getNodeDataAttributeKeys,
   getElements,
@@ -48,7 +76,6 @@ export {
   isVoid,
   keyToDataAttribute,
 } from '../utils/plite-dom-markers';
-export { installDOM } from '../plugin/with-dom';
 export {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_DOM_EDITABLE,

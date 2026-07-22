@@ -1,52 +1,73 @@
 import { useCallback, useMemo, useReducer } from 'react';
 import { EDITOR_TO_FORCE_RENDER } from '@platejs/plite-dom/internal';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
-import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { createDOMRepairQueue } from './dom-repair-queue';
-import type { EditableInputController } from './input-state';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
   applyEditableRepairRequest,
   type EditableRepairRequest,
 } from './mutation-controller';
 
 export const useRuntimeRepairEngine = ({
-  editor,
-  inputController,
+  runtime,
   scrollSelectionIntoView,
   syncDOMSelectionToEditor,
 }: {
-  editor: ReactRuntimeEditor;
-  inputController: EditableInputController;
+  runtime: EditableDOMRuntime;
   scrollSelectionIntoView: Parameters<
     typeof createDOMRepairQueue
   >[0]['scrollSelectionIntoView'];
   syncDOMSelectionToEditor: () => void;
 }) => {
   const [, forceRender] = useReducer((s) => s + 1, 0);
+  const { domPhaseScheduler, editor, inputController } = runtime;
   const domRepairQueue = useMemo(
     () =>
       createDOMRepairQueue({
+        domPhaseScheduler,
         editor,
         inputController,
         scrollSelectionIntoView,
         syncDOMSelectionToEditor,
       }),
-    [editor, inputController, scrollSelectionIntoView, syncDOMSelectionToEditor]
+    [
+      domPhaseScheduler,
+      editor,
+      inputController,
+      scrollSelectionIntoView,
+      syncDOMSelectionToEditor,
+    ]
   );
 
   useIsomorphicLayoutEffect(() => {
     EDITOR_TO_FORCE_RENDER.set(editor, forceRender);
 
-    return () => {
+    return runtime.installDisposable('force-render', () => {
       if (EDITOR_TO_FORCE_RENDER.get(editor) === forceRender) {
         EDITOR_TO_FORCE_RENDER.delete(editor);
       }
-    };
-  }, [editor, forceRender]);
+    });
+  }, [editor, forceRender, runtime]);
+
+  runtime.domRepairQueueRef.current = domRepairQueue;
+
+  runtime.updateDOMIntegrityRepairHandler(() => {
+    forceRender();
+    domPhaseScheduler.schedule(
+      'selection-repair',
+      'dom-integrity-selection-export',
+      syncDOMSelectionToEditor,
+      {
+        key: 'dom-integrity-selection-export',
+        timing: 'microtask',
+      }
+    );
+  });
 
   const requestEditableRepair = useCallback(
     (request: EditableRepairRequest) => {
       applyEditableRepairRequest({
+        domPhaseScheduler,
         domRepairQueue,
         editor,
         forceRender,
@@ -56,6 +77,7 @@ export const useRuntimeRepairEngine = ({
       });
     },
     [
+      domPhaseScheduler,
       domRepairQueue,
       editor,
       forceRender,
@@ -64,5 +86,9 @@ export const useRuntimeRepairEngine = ({
     ]
   );
 
-  return { domRepairQueue, forceRender, requestEditableRepair };
+  return {
+    domRepairQueue,
+    forceRender,
+    requestEditableRepair,
+  };
 };

@@ -1,16 +1,19 @@
-import { executeCommand } from '../core/command-registry';
+import { dispatchCommand } from '../core/command-registry';
+import { editorCommands } from '../core/editor-commands';
 import {
+  getCurrentMarks,
   getCurrentSelection,
   getCurrentSelectionRoot,
   runEditorTransaction,
   setCurrentMarks,
-  withEditorOperationRoot,
-  withEditorOperationRootChildren,
+  withEditorUpdateRoot,
+  withEditorUpdateRootChildren,
 } from '../core/public-state';
 import {
   LocationApi,
   type Range,
   RangeApi,
+  SelectionApi,
   type Location as PliteLocation,
 } from '../interfaces';
 import type { EditorStaticApi } from '../interfaces/editor';
@@ -19,12 +22,6 @@ import type { TextInsertTextOptions } from '../interfaces/transforms/text';
 import { applyInsertText } from '../transforms-text/insert-text';
 import { getDefaultInsertLocation } from '../utils';
 import { elementReadOnly } from './element-read-only';
-
-type InsertTextCommand = {
-  options: Parameters<EditorStaticApi['insertText']>[2];
-  text: string;
-  type: 'insert_text';
-};
 
 const shouldIgnoreTarget = (
   editor: Parameters<EditorStaticApi['insertText']>[0],
@@ -76,69 +73,76 @@ const getImplicitSelectionRoot = (
 ) =>
   getCurrentSelection(editor) ? getCurrentSelectionRoot(editor) : undefined;
 
+export const applyInsertTextCommand: EditorStaticApi['insertText'] = (
+  editor,
+  text,
+  options = {}
+) => {
+  const explicitRoot = getExplicitLocationRoot(options.at);
+  const transactionRoot =
+    explicitRoot ??
+    (options.at === undefined ? getImplicitSelectionRoot(editor) : undefined);
+  const run = () => {
+    runEditorTransaction(editor, (tx) => {
+      const hasExplicitAt = options.at !== undefined;
+      const pendingMarks =
+        !hasExplicitAt && options.marks !== false
+          ? getCurrentMarks(editor)
+          : null;
+      let target = tx.resolveTarget({ at: options.at });
+      if (!target && !hasExplicitAt && tx.getModelSelection() == null) {
+        target = getDefaultInsertLocation(editor);
+      }
+
+      if (!target || shouldIgnoreTarget(editor, target, options)) {
+        return;
+      }
+
+      if (!hasExplicitAt) {
+        if (LocationApi.isPoint(target)) {
+          tx.setSelection(SelectionApi.text({ anchor: target, focus: target }));
+        } else if (LocationApi.isRange(target)) {
+          tx.setSelection(SelectionApi.text(target));
+        }
+
+        const selection = tx.getModelSelection();
+
+        if (
+          pendingMarks &&
+          SelectionApi.isText(selection) &&
+          RangeApi.isCollapsed(selection)
+        ) {
+          tx.setMarks(pendingMarks);
+        }
+      }
+
+      applyInsertText(editor, text, {
+        ...options,
+        at: hasExplicitAt ? target : undefined,
+      });
+
+      if (!hasExplicitAt && options.marks !== false) {
+        setCurrentMarks(editor, null);
+      }
+    });
+  };
+
+  if (transactionRoot) {
+    withEditorUpdateRoot(editor, transactionRoot, () =>
+      withEditorUpdateRootChildren(editor, transactionRoot, run)
+    );
+  } else {
+    run();
+  }
+};
+
 export const insertText: EditorStaticApi['insertText'] = (
   editor,
   text,
   options = {}
 ) => {
-  executeCommand<InsertTextCommand>(
-    editor,
-    { options, text, type: 'insert_text' },
-    (command) => {
-      const explicitRoot = getExplicitLocationRoot(command.options?.at);
-      const transactionRoot =
-        explicitRoot ??
-        (command.options?.at === undefined
-          ? getImplicitSelectionRoot(editor)
-          : undefined);
-      let handled = false;
-
-      const run = () => {
-        runEditorTransaction(editor, (tx) => {
-          const hasExplicitAt = command.options?.at !== undefined;
-          let target = tx.resolveTarget({ at: command.options?.at });
-          if (!target && !hasExplicitAt && tx.getModelSelection() == null) {
-            target = getDefaultInsertLocation(editor);
-          }
-
-          if (!target) {
-            return;
-          }
-
-          if (shouldIgnoreTarget(editor, target, command.options)) {
-            handled = true;
-            return;
-          }
-
-          if (!hasExplicitAt) {
-            if (LocationApi.isPoint(target)) {
-              tx.setSelection({ anchor: target, focus: target });
-            } else if (LocationApi.isRange(target)) {
-              tx.setSelection(target);
-            }
-          }
-
-          applyInsertText(editor, command.text, {
-            ...command.options,
-            at: hasExplicitAt ? target : undefined,
-          });
-
-          if (!hasExplicitAt && command.options?.marks !== false) {
-            setCurrentMarks(editor, null);
-          }
-          handled = true;
-        });
-      };
-
-      if (transactionRoot) {
-        withEditorOperationRoot(editor, transactionRoot, () =>
-          withEditorOperationRootChildren(editor, transactionRoot, run)
-        );
-      } else {
-        run();
-      }
-
-      return handled;
-    }
-  );
+  dispatchCommand(editor, editorCommands.insertText, {
+    options,
+    text,
+  });
 };

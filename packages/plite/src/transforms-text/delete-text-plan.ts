@@ -8,12 +8,12 @@ import {
   type Location,
   LocationApi,
   NodeApi,
-  type Operation,
   type Path,
   PathApi,
   type Point,
   PointApi,
   type Range,
+  type Selection,
   type Element as PliteElement,
 } from '../interfaces';
 import {
@@ -39,9 +39,8 @@ export type DeletePathTarget = {
 };
 
 export type TransactionWriter = {
-  apply: (operation: Operation) => void;
   setMarks: (marks: Record<string, unknown> | null) => void;
-  setSelection: (selection: Range | null) => void;
+  setSelection: (selection: Selection) => void;
 };
 
 export const getCurrentNode = (editor: Editor, path: Path) =>

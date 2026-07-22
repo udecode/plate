@@ -10,7 +10,6 @@ import {
   type PlateLeafProps,
   PlateElement,
   PlateLeaf,
-  usePath,
 } from 'platejs/react';
 import { useEditorRef, useElement, useEditorReadOnly } from 'platejs/react';
 
@@ -192,7 +191,6 @@ function CodeBlockCombobox({
   const readOnly = useEditorReadOnly();
   const editor = useEditorRef();
   const element = useElement<TCodeBlockElement>();
-  const path = usePath();
   const value = element.lang || 'plaintext';
   const [searchValue, setSearchValue] = React.useState('');
 
@@ -246,12 +244,10 @@ function CodeBlockCombobox({
                   className="cursor-pointer"
                   value={language.value}
                   onSelect={(value) => {
-                    if (path) {
-                      editor.update.nodes.set<TCodeBlockElement>(
-                        { lang: value },
-                        { at: path }
-                      );
-                    }
+                    editor.update.nodes.set<TCodeBlockElement>(
+                      { lang: value },
+                      { at: element }
+                    );
                     setSearchValue(value);
                     setOpen(false);
                   }}

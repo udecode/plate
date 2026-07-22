@@ -214,6 +214,33 @@ describe('root interaction resolver', () => {
     ).toEqual({ type: 'place-native-editable' });
   });
 
+  test('treats editable inline links as native text, not interactive chrome', () => {
+    const editable = document.createElement('div');
+    const link = document.createElement('a');
+    const text = document.createElement('span');
+
+    editable.dataset.pliteEditor = 'true';
+    link.dataset.pliteInline = 'true';
+    link.dataset.pliteNode = 'element';
+    link.href = '/docs';
+    text.dataset.pliteString = 'true';
+    link.append(text);
+    editable.append(link);
+
+    const target = resolveRootInteractionTarget({
+      currentTarget: editable,
+      target: text,
+    });
+
+    expect(target.kind).toBe('native-editable');
+    expect(
+      resolveRootInteractionMouseDown({
+        editableRootFocused: true,
+        target,
+      })
+    ).toEqual({ type: 'place-native-editable' });
+  });
+
   test('lets root chrome ignore editable descendants', () => {
     const root = createRootChrome();
     const editable = document.createElement('div');

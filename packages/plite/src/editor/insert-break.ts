@@ -1,16 +1,14 @@
-import { executeCommand } from '../core/command-registry';
-import { getEditorTransformRegistry } from '../core/transform-registry';
+import { dispatchCommand } from '../core/command-registry';
+import { editorCommands } from '../core/editor-commands';
 import type { EditorStaticApi } from '../interfaces/editor';
 import {
   getSelection as editorGetSelection,
   leaf as editorLeaf,
 } from '../interfaces/editor';
 import { RangeApi } from '../interfaces/range';
+import { splitNodes } from '../transforms-node/split-nodes';
+import { deleteText } from '../transforms-text/delete-text';
 import { insertParagraphAfterSelectedBlockVoid } from './block-void-break';
-
-type InsertBreakCommand = {
-  type: 'insert_break';
-};
 
 const getNextSoftBreakRange = (
   editor: Parameters<EditorStaticApi['insertBreak']>[0]
@@ -34,25 +32,21 @@ const getNextSoftBreakRange = (
   };
 };
 
-const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
-  const transforms = getEditorTransformRegistry(editor);
+export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
   const softBreakRange = getNextSoftBreakRange(editor);
   const selection = editorGetSelection(editor);
 
   if (softBreakRange) {
-    transforms.delete({ at: softBreakRange, hanging: true });
+    deleteText(editor, { at: softBreakRange, hanging: true });
   }
 
   if (selection && insertParagraphAfterSelectedBlockVoid(editor)) {
     return;
   }
 
-  transforms.splitNodes({ always: true });
+  splitNodes(editor, { always: true });
 };
 
 export const insertBreak: EditorStaticApi['insertBreak'] = (editor) => {
-  executeCommand<InsertBreakCommand>(editor, { type: 'insert_break' }, () => {
-    applyInsertBreak(editor);
-    return true;
-  });
+  dispatchCommand(editor, editorCommands.insertBreak);
 };

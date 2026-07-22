@@ -10,7 +10,17 @@ import type {
   PliteResolvedAnnotation,
 } from './annotation-store';
 import { getSnapshot as editorGetSnapshot } from './editable/runtime-editor-api';
+import {
+  areMappedViewDataEqual,
+  createMappedViewStoreKernel,
+  createViewSourceFaultBoundary,
+} from './mapped-view-store';
 import { isPliteSourceDirty } from './projection-store';
+import { createStableIdMappedSource } from './stable-id-mapped-source';
+import type {
+  PliteViewSourceErrorSink,
+  PliteViewSourceStatus,
+} from './view-source';
 
 export type PliteWidgetAnchor =
   | {
@@ -60,12 +70,19 @@ export type PliteWidgetStore<
 > = {
   destroy: () => void;
   getMetrics: () => PliteWidgetStoreMetrics;
+  getSourceStatus: () => PliteViewSourceStatus;
   getSnapshot: () => PliteWidgetSnapshot<T, TAnnotation>;
   getWidget: (id: string) => PliteResolvedWidget<T, TAnnotation> | null;
   refresh: () => void;
+  retry: () => void;
   subscribe: (listener: () => void) => () => void;
   subscribeWidget: (id: string, listener: () => void) => () => void;
 };
+
+export type PliteWidgetStoreOptions = Readonly<{
+  id?: string;
+  onError?: PliteViewSourceErrorSink;
+}>;
 
 /** Diagnostic counters for widget projection and subscriber fan-out. */
 export type PliteWidgetStoreMetrics = Readonly<{
@@ -76,10 +93,6 @@ export type PliteWidgetStoreMetrics = Readonly<{
   widgetSubscriberWakeCount: number;
 }>;
 
-const EMPTY_WIDGET_SNAPSHOT = Object.freeze({
-  allIds: Object.freeze([]),
-  byId: new Map(),
-}) as PliteWidgetSnapshot<Record<string, never>, Record<string, never>>;
 const EMPTY_METRICS = Object.freeze({
   changedWidgetCount: 0,
   fullFallbackCount: 0,
@@ -106,187 +119,71 @@ const sameRange = (left: Range | null, right: Range | null) => {
 const isVisibleSelection = (range: Range | null) =>
   !!range && !PointApi.equals(range.anchor, range.focus);
 
-const addMappedListener = (
-  listeners: Map<string, Set<() => void>>,
-  id: string,
-  listener: () => void
+const areWidgetAnchorsEqual = (
+  left: PliteWidgetAnchor,
+  right: PliteWidgetAnchor
 ) => {
-  let listenersForId = listeners.get(id);
+  if (left.type !== right.type) return false;
 
-  if (!listenersForId) {
-    listenersForId = new Set();
-    listeners.set(id, listenersForId);
-  }
-
-  listenersForId.add(listener);
-
-  return () => {
-    listenersForId.delete(listener);
-
-    if (listenersForId.size === 0) {
-      listeners.delete(id);
-    }
-  };
-};
-
-const notifyListeners = (listeners: Iterable<() => void>) => {
-  for (const listener of listeners) {
-    listener();
+  switch (left.type) {
+    case 'annotation':
+      return (
+        right.type === 'annotation' && left.annotationId === right.annotationId
+      );
+    case 'node':
+      return right.type === 'node' && left.runtimeId === right.runtimeId;
+    case 'selection':
+      return true;
   }
 };
 
-const notifyMappedListeners = (
-  listeners: Map<string, Set<() => void>>,
-  ids: readonly string[]
-) => {
-  for (const id of ids) {
-    notifyListeners(listeners.get(id) ?? []);
-  }
-};
+const areWidgetInputsEqual = <T extends Record<string, unknown>>(
+  left: PliteWidget<T>,
+  right: PliteWidget<T>
+) =>
+  left.id === right.id &&
+  areWidgetAnchorsEqual(left.anchor, right.anchor) &&
+  areMappedViewDataEqual(left.data, right.data);
 
-const countMappedListeners = (
-  listeners: Map<string, Set<() => void>>,
-  ids: readonly string[]
-) => ids.reduce((count, id) => count + (listeners.get(id)?.size ?? 0), 0);
+const areResolvedWidgetsEqual = <
+  T extends Record<string, unknown>,
+  TAnnotation extends Record<string, unknown>,
+>(
+  left: PliteResolvedWidget<T, TAnnotation>,
+  right: PliteResolvedWidget<T, TAnnotation>
+) =>
+  areWidgetInputsEqual(left, right) &&
+  left.annotation === right.annotation &&
+  sameRange(left.range, right.range) &&
+  left.visible === right.visible;
 
-const shouldRecomputeForEditorChange = <T extends Record<string, unknown>>(
+const getEditorChangeWidgetIds = <T extends Record<string, unknown>>(
   widgets: readonly PliteWidget<T>[],
-  change: EditorCommit | undefined,
+  change: EditorCommit,
   editor: EditorType
 ) => {
-  if (!change) {
-    return true;
-  }
-
   const snapshot = editorGetSnapshot(editor);
-
-  return widgets.some((widget) => {
-    switch (widget.anchor.type) {
-      case 'selection':
-        return isPliteSourceDirty('selection', {
-          change,
-          reason: 'editor',
-          snapshot,
-        });
-      case 'node':
-        return isPliteSourceDirty('node', {
-          change,
-          reason: 'editor',
-          snapshot,
-        });
-      case 'annotation':
-        return false;
-    }
-
-    return false;
+  const selectionDirty = isPliteSourceDirty('selection', {
+    change,
+    reason: 'editor',
+    snapshot,
   });
-};
-
-const buildWidgetSnapshot = <
-  T extends Record<string, unknown>,
-  TAnnotation extends Record<string, unknown>,
->(
-  previous: PliteWidgetSnapshot<T, TAnnotation>,
-  widgets: readonly PliteWidget<T>[],
-  editor: EditorType,
-  annotationStore?: PliteAnnotationStore<TAnnotation> | null
-) => {
-  const editorSnapshot = editorGetSnapshot(editor);
-  const annotationSnapshot = annotationStore?.getSnapshot() ?? null;
-  const allIds = widgets.map((widget) => widget.id);
-  const byId = new Map<string, PliteResolvedWidget<T, TAnnotation>>();
-
-  widgets.forEach((widget) => {
-    let annotation: PliteResolvedAnnotation<TAnnotation> | null = null;
-    let range: Range | null = null;
-    let visible = false;
-
-    switch (widget.anchor.type) {
-      case 'annotation': {
-        annotation =
-          annotationSnapshot?.byId.get(widget.anchor.annotationId) ?? null;
-        range = annotation?.range ?? null;
-        visible = !!range;
-        break;
-      }
-
-      case 'node': {
-        visible = Boolean(
-          editorSnapshot.index.idToPath[widget.anchor.runtimeId]
-        );
-        break;
-      }
-
-      case 'selection': {
-        range = editorSnapshot.selection;
-        visible = isVisibleSelection(range);
-        break;
-      }
-    }
-
-    byId.set(widget.id, {
-      ...widget,
-      annotation,
-      range,
-      visible,
-    });
+  const nodesDirty = isPliteSourceDirty('node', {
+    change,
+    reason: 'editor',
+    snapshot,
   });
 
-  if (
-    previous.allIds.length === allIds.length &&
-    previous.allIds.every((id, index) => id === allIds[index]) &&
-    allIds.every((id: string) => {
-      const next = byId.get(id);
-      const current = previous.byId.get(id);
-
-      return (
-        next &&
-        current &&
-        next.anchor === current.anchor &&
-        Object.is(next.data, current.data) &&
-        next.annotation === current.annotation &&
-        sameRange(next.range, current.range) &&
-        next.visible === current.visible
-      );
-    })
-  ) {
-    return previous;
-  }
-
-  return Object.freeze({
-    allIds: Object.freeze(allIds),
-    byId,
-  }) as PliteWidgetSnapshot<T, TAnnotation>;
-};
-
-const getChangedWidgetIds = <
-  T extends Record<string, unknown>,
-  TAnnotation extends Record<string, unknown>,
->(
-  left: PliteWidgetSnapshot<T, TAnnotation>,
-  right: PliteWidgetSnapshot<T, TAnnotation>
-) => {
-  const ids = new Set([...left.allIds, ...right.allIds]);
-  const changedIds: string[] = [];
-
-  ids.forEach((id) => {
-    const leftWidget = left.byId.get(id);
-    const rightWidget = right.byId.get(id);
-
-    if (
-      !leftWidget ||
-      !rightWidget ||
-      leftWidget.anchor !== rightWidget.anchor ||
-      leftWidget.annotation !== rightWidget.annotation ||
-      !Object.is(leftWidget.data, rightWidget.data) ||
-      !sameRange(leftWidget.range, rightWidget.range) ||
-      leftWidget.visible !== rightWidget.visible
-    ) {
-      changedIds.push(id);
+  return widgets.flatMap((widget) => {
+    if (widget.anchor.type === 'selection' && selectionDirty) {
+      return [widget.id];
     }
-  });
+    if (widget.anchor.type === 'node' && nodesDirty) {
+      return [widget.id];
+    }
 
-  return changedIds;
+    return [];
+  });
 };
 
 /** Create a widget store backed by a live widget projector. */
@@ -296,54 +193,146 @@ export const createPliteWidgetStore = <
 >(
   editor: EditorType,
   getWidgets: () => readonly PliteWidget<T>[],
-  annotationStore?: PliteAnnotationStore<TAnnotation> | null
+  annotationStore?: PliteAnnotationStore<TAnnotation> | null,
+  options: PliteWidgetStoreOptions = {}
 ): PliteWidgetStore<T, TAnnotation> => {
-  const listeners = new Set<() => void>();
-  const widgetListeners = new Map<string, Set<() => void>>();
   let destroyed = false;
-  let metrics = EMPTY_METRICS;
-  let snapshot = EMPTY_WIDGET_SNAPSHOT as unknown as PliteWidgetSnapshot<
-    T,
-    TAnnotation
-  >;
+  const faultBoundary = createViewSourceFaultBoundary({
+    id: options.id ?? 'widgets',
+    onError: options.onError,
+  });
+  let mappingEditorSnapshot = editorGetSnapshot(editor);
+  let mappingAnnotationSnapshot = annotationStore?.getSnapshot() ?? null;
+  const resolveWidget = (widget: PliteWidget<T>) => {
+    let annotation: PliteResolvedAnnotation<TAnnotation> | null = null;
+    let range: Range | null = null;
+    let visible = false;
 
-  const commitSnapshot = (
-    nextSnapshot: PliteWidgetSnapshot<T, TAnnotation>
+    switch (widget.anchor.type) {
+      case 'annotation': {
+        annotation =
+          mappingAnnotationSnapshot?.byId.get(widget.anchor.annotationId) ??
+          null;
+        range = annotation?.range ?? null;
+        visible = !!range;
+        break;
+      }
+      case 'node': {
+        visible = Boolean(
+          mappingEditorSnapshot.index.pathOf(widget.anchor.runtimeId)
+        );
+        break;
+      }
+      case 'selection': {
+        range = mappingEditorSnapshot.selection;
+        visible = isVisibleSelection(range);
+        break;
+      }
+    }
+
+    return Object.freeze({
+      ...widget,
+      annotation,
+      range,
+      visible,
+    }) as PliteResolvedWidget<T, TAnnotation>;
+  };
+  const createMappedSource = (widgets: readonly PliteWidget<T>[]) =>
+    createStableIdMappedSource<
+      PliteWidget<T>,
+      PliteResolvedWidget<T, TAnnotation>,
+      never
+    >(widgets, {
+      getId: (widget) => widget.id,
+      isEntityEqual: areResolvedWidgetsEqual,
+      isItemEqual: areWidgetInputsEqual,
+      isOutputEqual: Object.is,
+      map: (widget) => ({
+        entity: resolveWidget(widget),
+        outputs: [],
+      }),
+    });
+  const initialWidgetsResult = faultBoundary.run('read', getWidgets);
+  const initialMappedResult = initialWidgetsResult.ok
+    ? faultBoundary.run('resolve', () =>
+        createMappedSource(initialWidgetsResult.value)
+      )
+    : ({ ok: false } as const);
+  const mappedSource = initialMappedResult.ok
+    ? initialMappedResult.value
+    : createMappedSource([]);
+  const toWidgetSnapshot = () => {
+    const snapshot = mappedSource.getSnapshot();
+
+    return Object.freeze({
+      allIds: snapshot.allIds,
+      byId: snapshot.byId,
+    }) as PliteWidgetSnapshot<T, TAnnotation>;
+  };
+  const store = createMappedViewStoreKernel(toWidgetSnapshot());
+  const initialWidgetCount = initialWidgetsResult.ok
+    ? initialWidgetsResult.value.length
+    : 0;
+  let metrics = Object.freeze({
+    ...EMPTY_METRICS,
+    changedWidgetCount: initialWidgetCount,
+    fullFallbackCount: initialWidgetsResult.ok ? 1 : 0,
+    recomputeCount: initialWidgetCount > 0 ? 1 : 0,
+    widgetResolveCount: initialWidgetCount,
+  }) as PliteWidgetStoreMetrics;
+
+  const syncWidgets = (
+    widgets: readonly PliteWidget<T>[],
+    syncOptions: Readonly<{
+      forceAll?: boolean;
+      forceIds?: readonly string[];
+    }> = {}
   ) => {
-    if (nextSnapshot === snapshot) {
+    mappingEditorSnapshot = editorGetSnapshot(editor);
+    mappingAnnotationSnapshot = annotationStore?.getSnapshot() ?? null;
+    const mappedResult = faultBoundary.run('resolve', () =>
+      mappedSource.refresh(widgets, syncOptions)
+    );
+
+    if (!mappedResult.ok) return;
+
+    const changedWidgetIds = mappedResult.value.changedEntityIds;
+    metrics = Object.freeze({
+      ...metrics,
+      fullFallbackCount:
+        metrics.fullFallbackCount +
+        (mappedResult.value.fullFallback || syncOptions.forceAll ? 1 : 0),
+      widgetResolveCount:
+        metrics.widgetResolveCount + mappedResult.value.mapped.length,
+    });
+
+    if (changedWidgetIds.length === 0 && !mappedResult.value.orderChanged) {
       return;
     }
 
-    const changedWidgetIds = getChangedWidgetIds(snapshot, nextSnapshot);
-    snapshot = nextSnapshot;
+    const widgetSubscriberWakeCount =
+      store.subscriberCount() + store.countKeySubscribers(changedWidgetIds);
     metrics = Object.freeze({
       ...metrics,
       changedWidgetCount: metrics.changedWidgetCount + changedWidgetIds.length,
       recomputeCount: metrics.recomputeCount + 1,
       widgetSubscriberWakeCount:
-        metrics.widgetSubscriberWakeCount +
-        listeners.size +
-        countMappedListeners(widgetListeners, changedWidgetIds),
+        metrics.widgetSubscriberWakeCount + widgetSubscriberWakeCount,
     });
-    notifyListeners(listeners);
-    notifyMappedListeners(widgetListeners, changedWidgetIds);
+    store.publish(toWidgetSnapshot(), changedWidgetIds);
   };
 
-  const recomputeSnapshot = () => {
-    const widgets = getWidgets();
-    const nextSnapshot = buildWidgetSnapshot(
-      snapshot,
-      widgets,
-      editor,
-      annotationStore
-    );
+  const readAndSyncWidgets = (
+    syncOptions?: Readonly<{
+      forceAll?: boolean;
+      forceIds?: readonly string[];
+    }>
+  ) => {
+    const widgetsResult = faultBoundary.run('read', getWidgets);
 
-    metrics = Object.freeze({
-      ...metrics,
-      fullFallbackCount: metrics.fullFallbackCount + 1,
-      widgetResolveCount: metrics.widgetResolveCount + widgets.length,
-    });
-    commitSnapshot(nextSnapshot);
+    if (widgetsResult.ok) {
+      syncWidgets(widgetsResult.value, syncOptions);
+    }
   };
 
   const unsubscribeEditor = editor.subscribeCommit((change) => {
@@ -351,25 +340,18 @@ export const createPliteWidgetStore = <
       return;
     }
 
-    const widgets = getWidgets();
+    const widgetsResult = faultBoundary.run('read', getWidgets);
 
-    if (!shouldRecomputeForEditorChange(widgets, change, editor)) {
-      return;
-    }
-
-    const nextSnapshot = buildWidgetSnapshot(
-      snapshot,
-      widgets,
-      editor,
-      annotationStore
+    if (!widgetsResult.ok) return;
+    const forceIds = getEditorChangeWidgetIds(
+      widgetsResult.value,
+      change,
+      editor
     );
 
-    metrics = Object.freeze({
-      ...metrics,
-      fullFallbackCount: metrics.fullFallbackCount + 1,
-      widgetResolveCount: metrics.widgetResolveCount + widgets.length,
-    });
-    commitSnapshot(nextSnapshot);
+    if (forceIds.length > 0) {
+      syncWidgets(widgetsResult.value, { forceIds });
+    }
   });
 
   const unsubscribeAnnotation = annotationStore?.subscribe(() => {
@@ -377,10 +359,18 @@ export const createPliteWidgetStore = <
       return;
     }
 
-    recomputeSnapshot();
-  });
+    const widgetsResult = faultBoundary.run('read', getWidgets);
 
-  recomputeSnapshot();
+    if (!widgetsResult.ok) return;
+
+    const forceIds = widgetsResult.value.flatMap((widget) =>
+      widget.anchor.type === 'annotation' ? [widget.id] : []
+    );
+
+    if (forceIds.length > 0) {
+      syncWidgets(widgetsResult.value, { forceIds });
+    }
+  });
 
   return {
     destroy() {
@@ -391,34 +381,38 @@ export const createPliteWidgetStore = <
       destroyed = true;
       unsubscribeEditor();
       unsubscribeAnnotation?.();
-      listeners.clear();
-      widgetListeners.clear();
+      store.destroy();
     },
     getMetrics() {
       return metrics;
     },
+    getSourceStatus() {
+      return faultBoundary.getStatus();
+    },
     getSnapshot() {
-      return snapshot;
+      return store.getSnapshot();
     },
     getWidget(id) {
-      return snapshot.byId.get(id) ?? null;
+      return store.getSnapshot().byId.get(id) ?? null;
     },
     refresh() {
       if (destroyed) {
         return;
       }
 
-      recomputeSnapshot();
+      readAndSyncWidgets();
+    },
+    retry() {
+      if (destroyed) return;
+
+      faultBoundary.activate();
+      readAndSyncWidgets({ forceAll: true });
     },
     subscribe(listener) {
-      listeners.add(listener);
-
-      return () => {
-        listeners.delete(listener);
-      };
+      return store.subscribe(listener);
     },
     subscribeWidget(id, listener) {
-      return addMappedListener(widgetListeners, id, listener);
+      return store.subscribeKey(id, listener);
     },
   };
 };
