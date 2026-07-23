@@ -1,5 +1,9 @@
-import { type PluginConfig, createBasePlugin } from '@platejs/core';
-import type { NodeInsertNodesOptions } from '@platejs/plite';
+import {
+  type InferConfig,
+  type PluginConfig,
+  createBasePlugin,
+} from '@platejs/core';
+import { type NodeInsertNodesOptions, property } from '@platejs/plite';
 import type { TPlaceholderElement } from '@platejs/utils';
 import { KEYS } from '@platejs/utils';
 
@@ -14,7 +18,7 @@ export type MediaPlaceholderOptions = {
   rules?: PlaceholderRule[];
 };
 
-export type PlaceholderConfig = PluginConfig<
+type PlaceholderContract = PluginConfig<
   'placeholder',
   MediaPlaceholderOptions,
   {},
@@ -36,20 +40,35 @@ export type PlaceholderConfig = PluginConfig<
   }
 >;
 
+const defaultOptions: PlaceholderContract['options'] = {};
+
 export type PlaceholderRule = {
   mediaType: string;
 };
 
-export const BasePlaceholderPlugin = createBasePlugin<PlaceholderConfig>({
+export const BasePlaceholderPlugin = createBasePlugin({
   key: KEYS.placeholder,
-  node: { isElement: true, isVoid: true },
-}).extendTx(({ type }) => (tx) => ({
-  audioPlaceholder: (options?: NodeInsertNodesOptions<TPlaceholderElement>) =>
-    insertAudioPlaceholder(tx, type, options),
-  filePlaceholder: (options?: NodeInsertNodesOptions<TPlaceholderElement>) =>
-    insertFilePlaceholder(tx, type, options),
-  imagePlaceholder: (options?: NodeInsertNodesOptions<TPlaceholderElement>) =>
-    insertImagePlaceholder(tx, type, options),
-  videoPlaceholder: (options?: NodeInsertNodesOptions<TPlaceholderElement>) =>
-    insertVideoPlaceholder(tx, type, options),
-}));
+  options: defaultOptions,
+  schema: {
+    element: {
+      properties: {
+        mediaType: property.string(),
+      },
+      void: 'block',
+    },
+  },
+}).extendTx(
+  ({ type }) =>
+    (tx) =>
+      ({
+        audioPlaceholder: (options) =>
+          insertAudioPlaceholder(tx, type, options),
+        filePlaceholder: (options) => insertFilePlaceholder(tx, type, options),
+        imagePlaceholder: (options) =>
+          insertImagePlaceholder(tx, type, options),
+        videoPlaceholder: (options) =>
+          insertVideoPlaceholder(tx, type, options),
+      }) satisfies PlaceholderContract['tx']['placeholder']
+);
+
+export type PlaceholderConfig = InferConfig<typeof BasePlaceholderPlugin>;

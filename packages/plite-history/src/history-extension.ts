@@ -104,6 +104,7 @@ type HistoryMode = 'merge' | 'push' | 'skip';
 type HistoryAction = 'redo' | 'undo';
 
 const HISTORY_ACTIVATION = new WeakMap<Editor, object>();
+const PENDING_HISTORY_SCHEMA_ACTIVATION = new WeakMap<Editor, object>();
 
 const getHistoryMaxDepth = (options: Pick<HistoryOptions, 'maxDepth'>) => {
   const maxDepth = options.maxDepth ?? 100;
@@ -435,11 +436,16 @@ const createHistoryExtension = <
     },
     activate(editor, context) {
       const previousActivation = HISTORY_ACTIVATION.get(editor);
+      const previousPendingSchemaActivation =
+        PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor);
       const previousState = captureHistoryState(editor);
       const activation = {};
 
       HISTORY_ACTIVATION.set(editor, activation);
       context.onCleanup(({ reason }) => {
+        if (PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor) === activation) {
+          PENDING_HISTORY_SCHEMA_ACTIVATION.delete(editor);
+        }
         if (HISTORY_ACTIVATION.get(editor) !== activation) return;
 
         if (reason === 'rollback') {
@@ -449,16 +455,34 @@ const createHistoryExtension = <
           } else {
             HISTORY_ACTIVATION.delete(editor);
           }
+          if (previousPendingSchemaActivation) {
+            PENDING_HISTORY_SCHEMA_ACTIVATION.set(
+              editor,
+              previousPendingSchemaActivation
+            );
+          }
           return;
         }
 
         clearHistoryState(editor);
         HISTORY_ACTIVATION.delete(editor);
       });
-      configureHistoryState(editor, getHistoryMaxDepth(options));
+      if (configureHistoryState(editor, getHistoryMaxDepth(options))) {
+        PENDING_HISTORY_SCHEMA_ACTIVATION.set(editor, activation);
+        context.onReady(() => {
+          if (PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor) === activation) {
+            PENDING_HISTORY_SCHEMA_ACTIVATION.delete(editor);
+          }
+        });
+      }
     },
     onCommit({ commit, editor }) {
-      if (synchronizeHistorySchema(editor)) return;
+      if (
+        synchronizeHistorySchema(editor) ||
+        PENDING_HISTORY_SCHEMA_ACTIVATION.has(editor)
+      ) {
+        return;
+      }
 
       const changes = commit.changes;
       const inverseChanges = commit.inverseChanges;

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-23-terminal-plugin-configure",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-23-terminal-plugin-configure.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Keep plugin configuration terminal",
+  "targets": [
+    {
+      "name": "discussion-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/discussion-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/mention-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "tabbable-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/tabbable-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/toc-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-23-discussion-keep-plugin-configuration-terminal-6e64085f",
+      "kind": "wiring",
+      "summary": "Keep plugin configuration terminal",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion-kit", "mention-kit", "tabbable-kit", "toc-kit"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-23",
+          "entry": "2026-07-23-terminal-plugin-configure",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

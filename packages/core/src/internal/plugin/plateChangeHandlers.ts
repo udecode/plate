@@ -1,82 +1,105 @@
-import type { Descendant, NodeOperation, TextOperation } from '@platejs/plite';
+import type {
+  EditorNodeChangeContext,
+  EditorTextChangeContext,
+} from '@platejs/plite';
 import { defineEditorExtension } from '@platejs/plite';
 
 import type { BaseEditor } from '../../lib/editor';
 import { pipeOnNodeChange } from '../../lib/utils/pipeOnNodeChange';
 import { pipeOnTextChange } from '../../lib/utils/pipeOnTextChange';
+import { getPlateRuntime } from './compilePlateModel';
 
-type PlateNodeChangeCallback = (options: {
-  editor: BaseEditor;
-  node: Descendant;
-  operation: NodeOperation;
-  prevNode: Descendant;
-}) => void;
+type PlateNodeChangeCallback<E extends BaseEditor = BaseEditor> = (
+  options: EditorNodeChangeContext<E>
+) => void;
 
-type PlateTextChangeCallback = (options: {
-  editor: BaseEditor;
-  node: Descendant;
-  operation: TextOperation;
-  prevText: string;
-  text: string;
-}) => void;
+type PlateTextChangeCallback<E extends BaseEditor = BaseEditor> = (
+  options: EditorTextChangeContext<E>
+) => void;
 
-type PlateChangeCallbacks = {
-  onNodeChange?: PlateNodeChangeCallback | null;
-  onTextChange?: PlateTextChangeCallback | null;
+type PlateChangeCallbacks<E extends BaseEditor = BaseEditor> = {
+  onNodeChange?: PlateNodeChangeCallback<E>;
+  onTextChange?: PlateTextChangeCallback<E>;
 };
 
-const PLATE_CHANGE_CALLBACKS = new WeakMap<BaseEditor, PlateChangeCallbacks>();
+const PLATE_CHANGE_CALLBACKS = new WeakMap<
+  BaseEditor,
+  Set<PlateChangeCallbacks>
+>();
 
-export const setPlateChangeCallbacks = (
-  editor: BaseEditor,
-  callbacks: PlateChangeCallbacks
+export const subscribePlateChangeCallbacks = <E extends BaseEditor>(
+  editor: E,
+  callbacks: PlateChangeCallbacks<E>
 ) => {
-  PLATE_CHANGE_CALLBACKS.set(editor, callbacks);
+  const listeners = PLATE_CHANGE_CALLBACKS.get(editor) ?? new Set();
+  const { onNodeChange, onTextChange } = callbacks;
+  const listener: PlateChangeCallbacks = {
+    onNodeChange: onNodeChange
+      ? (context) => onNodeChange(context as EditorNodeChangeContext<E>)
+      : undefined,
+    onTextChange: onTextChange
+      ? (context) => onTextChange(context as EditorTextChangeContext<E>)
+      : undefined,
+  };
+
+  listeners.add(listener);
+  PLATE_CHANGE_CALLBACKS.set(editor, listeners);
+
+  return () => {
+    listeners.delete(listener);
+
+    if (listeners.size === 0) {
+      PLATE_CHANGE_CALLBACKS.delete(editor);
+    }
+  };
 };
 
-const getPlateChangeCallbacks = (editor: BaseEditor): PlateChangeCallbacks =>
-  PLATE_CHANGE_CALLBACKS.get(editor) ?? {};
+const getPlateChangeCallbacks = (editor: BaseEditor) =>
+  PLATE_CHANGE_CALLBACKS.get(editor);
 
 export const createPlateChangeHandlersExtension = (editor: BaseEditor) =>
   defineEditorExtension({
     name: 'plate:change-handlers',
-    onNodeChange({ node, operation, prevNode }) {
+    onNodeChange(context) {
+      const callbacks = getPlateChangeCallbacks(editor);
+
       if (
-        editor.runtime.pluginCache.handlers.onNodeChange.length === 0 &&
-        !getPlateChangeCallbacks(editor).onNodeChange
+        getPlateRuntime(editor).pluginCache.handlers.onNodeChange.length ===
+          0 &&
+        !callbacks?.size
       ) {
         return;
       }
 
-      const handled = pipeOnNodeChange(editor, node, prevNode, operation);
-
-      if (handled) return;
-
-      getPlateChangeCallbacks(editor).onNodeChange?.({
+      const change = {
+        ...context,
         editor,
-        node,
-        operation,
-        prevNode,
-      });
+      } as EditorNodeChangeContext<BaseEditor>;
+      pipeOnNodeChange(editor, change);
+
+      for (const callback of callbacks ?? []) {
+        callback.onNodeChange?.(change);
+      }
     },
-    onTextChange({ node, operation, prevText, text }) {
+    onTextChange(context) {
+      const callbacks = getPlateChangeCallbacks(editor);
+
       if (
-        editor.runtime.pluginCache.handlers.onTextChange.length === 0 &&
-        !getPlateChangeCallbacks(editor).onTextChange
+        getPlateRuntime(editor).pluginCache.handlers.onTextChange.length ===
+          0 &&
+        !callbacks?.size
       ) {
         return;
       }
 
-      const handled = pipeOnTextChange(editor, node, text, prevText, operation);
-
-      if (handled) return;
-
-      getPlateChangeCallbacks(editor).onTextChange?.({
+      const change = {
+        ...context,
         editor,
-        node,
-        operation,
-        prevText,
-        text,
-      });
+      } as EditorTextChangeContext<BaseEditor>;
+      pipeOnTextChange(editor, change);
+
+      for (const callback of callbacks ?? []) {
+        callback.onTextChange?.(change);
+      }
     },
   });

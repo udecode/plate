@@ -201,12 +201,10 @@ const editor = createPlateEditor({
 - `ListItemPlugin`
 - `ListItemContentPlugin`
 
-不可变配置：
+选项：
 
 - `validLiChildren?: PluginReference[]` — 允许作为列表项直接子节点的元素插件。
-  例如：`config: { validLiChildren: [ImagePlugin] }`。
-
-运行时选项：
+  例如：`options: { validLiChildren: [ImagePlugin] }`。
 
 <APIOptions type="object">
   <APIItem name="enableResetOnShiftTab" type="boolean" optional>

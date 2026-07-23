@@ -48,7 +48,8 @@ Clusters and matrices route work. They never close an issue row.
   to this skill, then continues safe checkpoints.
 - `slate-patch` or `tdd`: write local Slate v2 or Plate tests/fixes once an
   issue row names owner, proof kind, and verification command.
-- `plite-plan`: defer broad architecture/API gaps that cannot be proved by one
+- `best-api`: review broad public API/DX gaps.
+- `plite-plan`: defer broad runtime/adoption gaps that cannot be proved by one
   small test.
 
 ## Scope
@@ -331,7 +332,8 @@ Stop only when:
 - all relevant rows for the objective are checked;
 - a real blocker prevents all useful issue progress;
 - commit, push, PR, or destructive cleanup authority is needed;
-- a broad API/runtime decision belongs in `plite-plan`;
+- a broad API decision belongs in `best-api`; runtime/adoption belongs in
+  `plite-plan`;
 - the timebox expires and the active issue packet has a keep/defer/block
   decision.
 

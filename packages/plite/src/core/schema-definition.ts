@@ -389,9 +389,10 @@ type PropertyJsonOptionsWithoutPolicy<TValue extends PropertyJsonValue> = Omit<
 
 type PropertyJsonOptionsWithPolicy<TValue> = Omit<
   PropertyJsonOptions<TValue>,
-  'policy'
+  'default' | 'policy'
 > &
   Readonly<{
+    default?: NoInfer<TValue>;
     policy: PropertyPolicy<TValue>;
   }>;
 

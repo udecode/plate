@@ -8,6 +8,7 @@ import {
 } from '@platejs/plite';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import {
   type AnyBasePlugin,
   type PluginConfig,
@@ -75,10 +76,7 @@ describe('createBasePlugin', () => {
   });
 
   it('contextually types schema factories over options', () => {
-    type Config = PluginConfig<
-      'typed-node-schema',
-      { targetTypes: string[] }
-    >;
+    type Config = PluginConfig<'typed-node-schema', { targetTypes: string[] }>;
 
     const plugin = createBasePlugin<Config>({
       key: 'typed-node-schema',
@@ -188,7 +186,7 @@ describe('createBasePlugin', () => {
         ],
       });
 
-      expect(editor.plugins.heading).toMatchObject({
+      expect(getPlateRuntime(editor).plugins.heading).toMatchObject({
         type: 'heading',
         options: { levels: 5 },
       });
@@ -565,55 +563,87 @@ describe('createBasePlugin', () => {
       });
     });
 
-    it('applies chained object configuration layers in order', () => {
-      const configured = basePlugin
-        .configure({ options: { optionA: 'first change' } })
-        .configure({ options: { optionB: 30 } })
-        .configure({ options: { optionB: 40 } });
+    it('keeps consumer configuration final while extensions read it', () => {
+      const plugin = createBasePlugin({
+        key: 'consumerConfiguration',
+        options: {
+          derivedFrom: 'base',
+          value: 'base',
+        },
+      })
+        .extend(({ getOptions }) => ({
+          options: {
+            derivedFrom: getOptions().value,
+            value: 'package',
+          },
+        }))
+        .configure({
+          options: {
+            value: 'consumer',
+          },
+        });
 
-      expect(resolvePluginTest(configured).options).toEqual({
-        optionA: 'first change',
-        optionB: 40,
+      expect(resolvePluginTest(plugin).options).toEqual({
+        derivedFrom: 'consumer',
+        value: 'consumer',
       });
     });
 
+    it('rejects a second consumer configuration', () => {
+      const configured = basePlugin.configure({
+        options: { optionA: 'first change' },
+      });
+
+      expect(() =>
+        (configured.configure as any)({
+          options: { optionB: 30 },
+        })
+      ).toThrow('already configured');
+    });
+
     it('resolves contextual configuration per editor before extensions', () => {
+      const configuredEditors: string[] = [];
       const plugin = createBasePlugin<
         PluginConfig<'contextual', { editorId: string; value: string }>
       >({
         key: 'contextual',
         options: { editorId: '', value: 'initial' },
       })
-        .configure({ options: { value: 'static' } })
-        .configure(({ editor }) => ({
-          options: { editorId: editor.id },
-        }))
         .extend(({ getOptions }) => ({
           options: { value: `${getOptions().value}:extended` },
-        }));
+        }))
+        .configure(({ editor }) => {
+          configuredEditors.push(editor.id);
+
+          return {
+            options: { editorId: editor.id, value: 'configured' },
+          };
+        });
       const first = createBaseEditor({ id: 'first', plugins: [plugin] });
       const second = createBaseEditor({ id: 'second', plugins: [plugin] });
 
       expect(first.plugin(plugin).getOptions()).toEqual({
         editorId: 'first',
-        value: 'static:extended',
+        value: 'configured',
       });
       expect(second.plugin(plugin).getOptions()).toEqual({
         editorId: 'second',
-        value: 'static:extended',
+        value: 'configured',
       });
+      expect(configuredEditors).toEqual(['first', 'second']);
     });
 
-    it('applies contextual configuration layers in order', () => {
-      const plugin = basePlugin
-        .configure({ options: { optionA: 'static' } })
-        .configure(() => ({ options: { optionB: 20 } }))
-        .configure(() => ({ options: { optionB: 30 } }));
-
-      expect(resolvePluginTest(plugin).options).toEqual({
-        optionA: 'static',
-        optionB: 30,
+    it('rejects authoring after consumer configuration', () => {
+      const configured = basePlugin.configure({
+        options: { optionA: 'configured' },
       });
+
+      expect(() =>
+        (configured.extend as any)({
+          options: { optionB: 30 },
+        })
+      ).toThrow('already configured');
+      expect(() => (configured.clone as any)()).toThrow('already configured');
     });
 
     it('rejects model fields from untyped configure callbacks', () => {
@@ -768,7 +798,7 @@ describe('createBasePlugin', () => {
         ],
       });
 
-      expect(editor.plugins.aa.options).toEqual({
+      expect(getPlateRuntime(editor).plugins.aa.options).toEqual({
         another: 'b',
         initialValue: 'aaa',
       });
@@ -789,10 +819,10 @@ describe('createBasePlugin', () => {
         ],
       });
 
-      expect(editor.plugins.aa.options).toEqual({
+      expect(getPlateRuntime(editor).plugins.aa.options).toEqual({
         initialValue: 'aa',
       });
-      expect(editor.plugins.bb).toBeUndefined();
+      expect(getPlateRuntime(editor).plugins.bb).toBeUndefined();
     });
 
     it('configures deeply nested plugins', () => {

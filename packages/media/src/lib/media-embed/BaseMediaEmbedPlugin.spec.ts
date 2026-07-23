@@ -2,9 +2,8 @@ import { createBaseEditor, HtmlPlugin } from '@platejs/core';
 import { ElementApi } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
-import { parseMediaUrl } from '../media/parseMediaUrl';
-import { BaseMediaEmbedPlugin } from './BaseMediaEmbedPlugin';
-import { parseVideoUrl } from './parseVideoUrl';
+import { parseMediaUrl, parseVideoUrl } from '../media/parseMediaUrl';
+import { BaseMediaEmbedPlugin, insertMediaEmbed } from './BaseMediaEmbedPlugin';
 
 describe('BaseMediaEmbedPlugin', () => {
   it('configures media embeds as void elements with iframe parsing', () => {
@@ -51,8 +50,7 @@ describe('BaseMediaEmbedPlugin', () => {
     ).toEqual([]);
   });
 
-  it('insert transform stores normalized embed metadata for supported providers', async () => {
-    const { insertMediaEmbed } = await import('./transforms/insertMediaEmbed');
+  it('stores normalized embed metadata for supported providers', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
       selection: {
@@ -87,6 +85,31 @@ describe('BaseMediaEmbedPlugin', () => {
     expect(parseMediaUrl(media.url, { urlParsers: [parseVideoUrl] })?.id).toBe(
       'M7lc1UVf-VE'
     );
+  });
+
+  it('does nothing without a selection or explicit target', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMediaEmbedPlugin],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    insertMediaEmbed(editor, { url: 'https://platejs.org/embed' });
+
+    expect(editor.read.children()).toHaveLength(1);
+  });
+
+  it('inserts after an explicit block target without a selection', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMediaEmbedPlugin],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    insertMediaEmbed(editor, { url: 'https://platejs.org/embed' }, { at: [0] });
+
+    expect(editor.read.children()[1]).toMatchObject({
+      type: NODES.mediaEmbed,
+      url: 'https://platejs.org/embed',
+    });
   });
 
   it('coexists with the global node-id schema without claiming provider IDs', () => {

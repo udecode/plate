@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from '@platejs/core';
+import { traverseHtmlElements } from '@platejs/core/internal';
 
 /** Clean elements style mso-list to mso-list:Ignore */
 export const cleanDocxListElements = (rootNode: Node): void => {

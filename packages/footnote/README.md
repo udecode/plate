@@ -30,7 +30,7 @@ import {
   FootnoteReferencePlugin,
 } from '@platejs/footnote/react';
 import { createPlateEditor } from '@platejs/core/react';
-import { MarkdownPlugin, defineMarkdownConfig } from '@platejs/markdown';
+import { MarkdownPlugin } from '@platejs/markdown';
 import remarkGfm from 'remark-gfm';
 
 const editor = createPlateEditor({
@@ -38,11 +38,9 @@ const editor = createPlateEditor({
     FootnoteReferencePlugin,
     FootnoteDefinitionPlugin,
     MarkdownPlugin.configure({
-      config: defineMarkdownConfig({
-        id: 'footnote-example:markdown',
+      options: {
         remarkPlugins: [remarkGfm],
-        version: 1,
-      }),
+      },
     }),
   ],
 });

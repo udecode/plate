@@ -88,14 +88,6 @@ describe('getEditorPlugin', () => {
     expect(context.plugin.key).toBe('test');
   });
 
-  it('exposes key-based plugin context as an editor method', () => {
-    const context = editor.plugin<TestConfig>('test');
-    const option = context.getOption('testOption');
-
-    expect(option satisfies string).toBe('testValue');
-    expect(context.plugin.key).toBe('test');
-  });
-
   it('get plugin context by plugin key', () => {
     const context = getEditorPlugin(editor, { key: 'test' });
 

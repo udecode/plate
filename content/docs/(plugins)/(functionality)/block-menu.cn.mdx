@@ -137,15 +137,15 @@ const editor = createPlateEditor({
 
 ## API 接口
 
-### `api.blockMenu.hide`
+### `editor.plugin(BlockMenuPlugin).api.hide()`
 
 隐藏块菜单
 
-### `api.blockMenu.show`
+### `editor.plugin(BlockMenuPlugin).api.show(id, position?)`
 
 为指定块显示菜单
 
-<API name="show">
+<API name="editor.plugin(BlockMenuPlugin).api.show">
 <APIParameters>
   <APIItem name="id" type="'context' | string">
     要显示菜单的块ID，或使用'context'表示上下文菜单
@@ -156,11 +156,11 @@ const editor = createPlateEditor({
 </APIParameters>
 </API>
 
-### `api.blockMenu.showContextMenu`
+### `editor.plugin(BlockMenuPlugin).api.showContextMenu(blockId, position)`
 
 为指定块显示上下文菜单并自动选中该块
 
-<API name="showContextMenu">
+<API name="editor.plugin(BlockMenuPlugin).api.showContextMenu">
 <APIParameters>
   <APIItem name="blockId" type="string">
     要显示上下文菜单的块ID

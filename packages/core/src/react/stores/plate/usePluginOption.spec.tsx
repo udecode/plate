@@ -33,7 +33,7 @@ describe('usePluginOption', () => {
       <Plate editor={editor}>{children}</Plate>
     );
 
-    const { result, rerender } = renderHook(
+    const { result } = renderHook(
       () => {
         const doubled = usePluginOption(CounterPlugin, 'doubleValue', 3);
         const state = usePluginOption(CounterPlugin, 'state');
@@ -76,8 +76,6 @@ describe('usePluginOption', () => {
     act(() => {
       editor.plugin(CounterPlugin).setOption('value', 2);
     });
-    rerender();
-
     expect(result.current.value).toBe(2);
     expect(result.current.doubled).toBe(6);
     expect(result.current.state).toEqual({ value: 2 });

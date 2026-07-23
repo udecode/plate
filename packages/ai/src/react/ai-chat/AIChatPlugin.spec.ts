@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import { BaseParagraphPlugin } from '@platejs/core';
+import { getPlateRuntime } from '@platejs/core/internal';
 import { createPlateEditor } from '@platejs/core/react';
 import { editorCommands } from '@platejs/plite';
 
@@ -8,14 +9,16 @@ import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
 describe('AIChatPlugin', () => {
-  it('installs its AI dependency once', () => {
+  it('installs its AI and Markdown dependencies once', () => {
     const editor = createPlateEditor({
       plugins: [AIChatPlugin],
     });
-    const keys = editor.runtime.pluginList.map((plugin) => plugin.key);
+    const keys = getPlateRuntime(editor).pluginList.map((plugin) => plugin.key);
 
     expect(keys.indexOf('ai')).toBeLessThan(keys.indexOf('aiChat'));
+    expect(keys.indexOf('markdown')).toBeLessThan(keys.indexOf('aiChat'));
     expect(keys.filter((key) => key === 'ai')).toHaveLength(1);
+    expect(keys.filter((key) => key === 'markdown')).toHaveLength(1);
   });
 
   it('clears internal streaming state when stop is called', () => {

@@ -1,20 +1,21 @@
 # Vision
 
-This is the mandatory first read for Plate and Slate direction.
+This is the mandatory first read for Plate and Plite direction.
 
 Root `VISION.md` keeps the essential doctrine every agent must see. Detailed
 owner doctrine lives in `docs/vision/*.md`; read only the relevant detail file
 after this root file.
 
-The `vision` skill is only a router. Do not maintain doctrine in a skill body.
-When reusable taste, architecture, proof, or automation doctrine changes,
-update this file and the relevant `docs/vision/*.md` file.
+The `vision` skill is only a router. Durable product doctrine belongs here and
+in `docs/vision/*.md`; operational skills may own the compact method that
+applies it. When reusable taste, architecture, proof, or automation doctrine
+changes, update this file and the relevant detail owner.
 
 ## Detail Files
 
 - `docs/vision/common.md`: shared taste, proof, automation, research,
   maintainer policy, correction patterns, repair, and consolidation.
-- `docs/vision/slate.md`: Slate substrate, API/runtime/browser/perf doctrine,
+- `docs/vision/plite.md`: Plite substrate, API/runtime/browser/perf doctrine,
   proof hierarchy, and Slate skill topology.
 - `docs/vision/plate.md`: Plate framework/product doctrine, plugin/component
   policy, docs/API ownership, security, AI, setup, and non-merge lines.
@@ -40,6 +41,10 @@ detail file for durable direction.
 - Names, flags, config keys, output shapes, docs examples, and workflow
   conventions are API surface. Add fewer conventions, make them clearer, and
   do not churn them casually.
+- Public API design starts from ideal call sites. Current code, compatibility,
+  machinery, ecosystem precedent, and accepted plans are evidence and adoption
+  cost, not requirements. Use `best-api` to choose or review the target before
+  a layer plan turns it into implementation.
 - Do not hide latency behind debounce, delayed repair, or benchmark tricks.
 - Do not call browser/editor behavior correct from model-only proof.
 - Do not call perf closed from rerender/locality evidence alone.
@@ -150,8 +155,9 @@ selection, history, browser proof, package API, and benchmarks.
   addressed by omission; explicit roots are for additional roots only.
 - Slate stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.
-- Behavior should be profile-driven. Capabilities expose what can happen;
-  behavior profiles decide when it applies.
+- Behavior should be composable and inspectable without making every caller
+  learn composition machinery. Add named profiles or runtime switching only
+  when real reuse or control requirements earn that public surface.
 - Page layout is not core editor truth. Active caret, selection, and
   composition stay on the native/browser editing path.
 - Browser editing claims require model, DOM, selection/caret where observable,
@@ -178,6 +184,9 @@ on top of Slate-first primitives.
   and agents.
 - Plugin and feature pages are headless first. UI components are render
   examples unless source proves they own behavior.
+- Plugin authoring keeps one-owner behavior colocated and inferred. Every
+  public builder or configuration method must represent a distinct user job;
+  current assembly machinery is never doctrine.
 - Optional capability should usually ship as packages, plugins, registry code,
   or app-owned components, not core.
 - Plate can re-export Slate surface where it improves DX, but bugs that

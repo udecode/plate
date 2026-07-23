@@ -118,7 +118,7 @@ const initialValue: Value = [
 export default function App() {
   const editor = usePlateEditor({
     plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin],
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -223,7 +223,7 @@ export default function App() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -326,7 +326,7 @@ export default function App() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: () => {
+    initialValue: () => {
       const savedValue = localStorage.getItem('plate-manual-demo');
       if (savedValue) {
         return JSON.parse(savedValue);
@@ -375,8 +375,8 @@ export default function App() {
 
 <Callout type="info" title="值管理">
   上例演示了管理编辑器值的基础模式：
-  - 通过`usePlateEditor`的`value`选项设置初始值
-  - 通过`<Plate>`的`onChange`属性处理变化
+  - 通过 `usePlateEditor` 的 `initialValue` 选项设置初始值
+  - 通过 `<Plate>` 的 `onValueChange` 属性处理变化
   - 重置按钮使用 `editor.update((tx) => tx.value.replace(...))` 恢复初始值
   - 如需控制值，请参阅[受控值](/docs/controlled)
 </Callout>

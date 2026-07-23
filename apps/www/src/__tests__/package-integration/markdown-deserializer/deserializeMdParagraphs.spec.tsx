@@ -8,9 +8,7 @@ import { createBaseEditor } from 'platejs';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import {
-  MarkdownPlugin,
-} from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
+import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
 import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deserializer/deserializeMd';
 
 jsxt;

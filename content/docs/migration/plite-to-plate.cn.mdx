@@ -36,7 +36,7 @@ const editor = useMemo(() => withReact(withHistory(createBaseEditor())), []);
 
 // 之后
 const editor = createPlateEditor({
-  value,
+  initialValue: value,
   plugins: [
     // 在此处添加其他插件
   ],
@@ -76,7 +76,7 @@ const renderElement = useCallback(({ attributes, children, element }) => {
 }, []);
 
 // 之后
-import { schema } from '@platejs/plite';
+import { schema } from 'platejs';
 import { type PlateElement, type PlateElementProps } from 'platejs/react';
 import { cn } from '@/lib/utils';
 

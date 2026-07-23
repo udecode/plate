@@ -78,11 +78,71 @@ test('asserts every public runtime and declaration artifact', (t) => {
   assert.doesNotThrow(() => assertPackageBuildArtifacts(packageRoot));
 });
 
+test('shared package config builds from the invoking package root', async () => {
+  const packageRoot = path.resolve(import.meta.dirname, '../../packages/media');
+  const repositoryRoot = path.resolve(import.meta.dirname, '../..');
+  const previousInitCwd = process.env.INIT_CWD;
+
+  process.env.INIT_CWD = packageRoot;
+
+  try {
+    const { default: buildConfig, resolvePlatePackageRoot } = await import(
+      `../config/tsdown.config.ts?test=${Date.now()}`
+    );
+    const resolvedBuildConfig = await buildConfig({});
+
+    assert.equal(
+      resolvePlatePackageRoot({
+        cwd: packageRoot,
+        initCwd: repositoryRoot,
+      }),
+      packageRoot
+    );
+    assert.equal(
+      resolvePlatePackageRoot({
+        cwd: path.join(repositoryRoot, 'tooling/config'),
+        initCwd: packageRoot,
+      }),
+      packageRoot
+    );
+
+    for (const config of Array.isArray(resolvedBuildConfig)
+      ? resolvedBuildConfig
+      : [resolvedBuildConfig]) {
+      assert.equal(config.cwd, packageRoot);
+      assert.ok(
+        config.entry.every((entry) => entry.startsWith(packageRoot)),
+        config.entry
+      );
+    }
+  } finally {
+    if (previousInitCwd === undefined) {
+      delete process.env.INIT_CWD;
+    } else {
+      process.env.INIT_CWD = previousInitCwd;
+    }
+  }
+});
+
 test('all Plite release packages use one direct tsdown build', async () => {
   for (const packageDirectory of directPackageDirectories) {
+    const packageRoot = path.resolve(
+      import.meta.dirname,
+      `../../packages/${packageDirectory}`
+    );
+    const previousInitCwd = process.env.INIT_CWD;
+
+    process.env.INIT_CWD = packageRoot;
+
     const { default: buildConfig } = await import(
       `../../packages/${packageDirectory}/tsdown.config.mts`
-    );
+    ).finally(() => {
+      if (previousInitCwd === undefined) {
+        delete process.env.INIT_CWD;
+      } else {
+        process.env.INIT_CWD = previousInitCwd;
+      }
+    });
     const resolvedBuildConfig =
       typeof buildConfig === 'function' ? await buildConfig({}) : buildConfig;
     const packageJson = JSON.parse(

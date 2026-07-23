@@ -1,4 +1,5 @@
 import { createPlateEditor } from '@platejs/core/react';
+import { getPlateRuntime } from '@platejs/core/internal';
 
 import {
   TestBoldPlugin,
@@ -31,7 +32,7 @@ const createBlockSelectionEditor = () =>
 const runSelectAllShortcut = (
   editor: ReturnType<typeof createBlockSelectionEditor>
 ) =>
-  editor.runtime.shortcuts['blockSelection.selectAll']?.handler?.({
+  getPlateRuntime(editor).shortcuts['blockSelection.selectAll']?.handler?.({
     editor,
     event: new KeyboardEvent('keydown'),
     eventDetails: {},

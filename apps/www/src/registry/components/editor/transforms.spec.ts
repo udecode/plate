@@ -14,13 +14,13 @@ const createEditor = ({
     anchor: { offset: 2, path: [1, 0] },
     focus: { offset: 2, path: [1, 0] },
   },
-  value = [
+  initialValue = [
     { children: [{ text: 'one' }], type: 'p' },
     { children: [{ text: 'two' }], type: 'p' },
   ],
 }: Partial<{
+  initialValue: Value;
   selection: Selection;
-  value: Value;
 }> = {}) =>
   createPlateEditor({
     plugins: [
@@ -31,7 +31,7 @@ const createEditor = ({
       SuggestionPlugin,
     ],
     selection,
-    initialValue: value,
+    initialValue,
   });
 
 describe('editor block transforms', () => {
@@ -80,7 +80,7 @@ describe('editor block transforms', () => {
         anchor: { offset: 2, path: [0, 0, 0] },
         focus: { offset: 2, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: 'two' }], type: 'p' }],
           type: KEYS.blockquote,
@@ -141,7 +141,7 @@ describe('editor block transforms', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: 'one' }], type: 'p' },
         { children: [{ text: '' }], type: 'p' },
       ],
@@ -170,7 +170,7 @@ describe('editor block transforms', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: 'one' }], type: 'p' },
         { children: [{ text: '' }], type: 'p' },
       ],
@@ -193,7 +193,7 @@ describe('editor block transforms', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         { children: [{ text: 'one' }], type: 'p' },
         { children: [{ text: '' }], type: 'p' },
       ],

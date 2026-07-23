@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { Editor, Value } from '@platejs/plite';
 
+import { hasPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import {
   type CreatePlateEditorOptions,
   type PlateCorePlugin,
@@ -33,10 +34,7 @@ type PlateTestProps = Omit<PlateProps, 'children' | 'editor'> &
   );
 
 const isPlateEditor = (editor: Editor | PlateEditor): editor is PlateEditor =>
-  'runtime' in editor &&
-  typeof editor.runtime === 'object' &&
-  editor.runtime !== null &&
-  'pluginList' in editor.runtime;
+  hasPlateRuntime(editor);
 
 export function PlateTest({
   children: _children,

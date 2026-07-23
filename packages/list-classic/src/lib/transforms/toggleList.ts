@@ -11,10 +11,7 @@ import {
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type {
-  ListPluginOptions,
-  ListTransaction,
-} from '../BaseListPlugin';
+import type { ListPluginOptions, ListTransaction } from '../BaseListPlugin';
 import { getListItemEntry, getListTypes, getPropsIfTaskList } from '../queries';
 import { unwrapList } from './unwrapList';
 
@@ -91,9 +88,9 @@ const _toggleList = (
 
   if (!selection) return;
 
-  const { validLiChildren } = editor.plugin<ListOptionsContract>(
-    KEYS.listClassic
-  ).getOptions();
+  const { validLiChildren } = editor
+    .plugin<ListOptionsContract>({ key: KEYS.listClassic })
+    .getOptions();
   const validLiChildrenTypes = validLiChildren?.map(({ key }) =>
     editor.getType(key)
   );

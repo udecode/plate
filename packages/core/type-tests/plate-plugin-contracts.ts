@@ -82,10 +82,46 @@ const ExplicitPlugin = createPlatePlugin<ExplicitPluginConfig>({
   isEnabled: () => getOptions().enabled,
 }));
 
+type DeclaredPlateTx = {
+  run: (value: 'typed', options?: { count?: number }) => number;
+};
+
+const DeclaredPlateTxPlugin = createPlatePlugin({
+  key: 'declaredPlateTx',
+}).extendTx<DeclaredPlateTx>(() => () => ({
+  run: (value, options = {}) => {
+    const exactValue: 'typed' = value;
+    const exactCount: number | undefined = options.count;
+
+    return exactValue.length + (exactCount ?? 0);
+  },
+}));
+
+void DeclaredPlateTxPlugin;
+
 const ReactFactoryExtensionPlugin = createPlatePlugin({
   key: 'reactFactoryExtension',
   options: {
     mode: 'inline' as 'inline' | 'block',
+  },
+});
+
+const DependencyApiPlugin = createPlatePlugin({
+  key: 'dependencyApi',
+}).extendEditorApi(() => ({
+  dependencyApi: {
+    read: () => true,
+  },
+}));
+
+const DependentHooksPlugin = createPlatePlugin({
+  dependencies: [DependencyApiPlugin],
+  key: 'dependentHooks',
+}).extend({
+  useHooks: ({ editor }) => {
+    const dependencyValue: boolean = editor.api.dependencyApi.read();
+
+    void dependencyValue;
   },
 });
 
@@ -99,6 +135,7 @@ const createdPlateEditor = createPlateEditor({
     MentionPlugin,
     ExplicitPlugin,
     ReactFactoryExtensionPlugin,
+    DependentHooksPlugin,
   ],
 });
 

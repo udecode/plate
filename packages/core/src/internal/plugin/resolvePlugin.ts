@@ -1,11 +1,13 @@
-import merge from 'lodash/merge.js';
-
 import type { BaseEditor } from '../../lib/editor';
 import type { AnyPluginTx, PluginConfig } from '../../lib/plugin/PluginConfig';
 import type { AnyBasePlugin, BasePlugin } from '../../lib/plugin/BasePlugin';
 
 import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';
-import { mergePlugins } from '../utils/mergePlugins';
+import {
+  freezePluginDescriptorValue,
+  mergePlugins,
+} from '../utils/mergePlugins';
+import { withResolvingPlatePlugin } from './compilePlateModel';
 
 const normalizeConfiguredInputRules = (config: unknown) => {
   if (config === undefined) return [];
@@ -40,15 +42,22 @@ export const resolvePlugin = <P extends AnyBasePlugin>(
 
   plugin.__resolved = true;
 
-  // Apply the stored configuration first
-  if (plugin.__configuration) {
-    const rawConfigResult = plugin.__configuration(
-      getEditorPlugin(editor, plugin as any)
-    ) as any;
-    // Copy before mutating: the user's config object is captured by closure
-    // and reused across editor instances, so mutating it would clear
-    // inputRules on subsequent resolutions.
-    const { inputRules: configInputRules, ...configResult } = rawConfigResult;
+  // Configuration layers are applied in call order. Object overlays and
+  // contextual overlays deliberately share one ordered pipeline so a later
+  // configure call always wins, regardless of which form it uses.
+  const configurationLayers = [...plugin.__configurationLayers];
+
+  for (const layer of configurationLayers) {
+    const rawConfigResult =
+      layer.kind === 'context'
+        ? withResolvingPlatePlugin(editor, plugin, () =>
+            layer.value(getEditorPlugin(editor, plugin))
+          )
+        : layer.value;
+    // Copy before inspecting: descriptor snapshots and callback results can be
+    // reused across editor instances.
+    const { inputRules: configInputRules, ...configResult } =
+      rawConfigResult as any;
 
     if (configInputRules !== undefined) {
       const normalizedInputRules =
@@ -63,46 +72,26 @@ export const resolvePlugin = <P extends AnyBasePlugin>(
     }
 
     plugin = mergePlugins(plugin, configResult);
-
-    (plugin as any).__configuration = undefined;
+    plugin.__configurationLayers = configurationLayers;
   }
   // Apply all stored extensions
   if (plugin.__extensions && plugin.__extensions.length > 0) {
-    for (const extension of plugin.__extensions) {
+    const extensions = [...plugin.__extensions];
+
+    for (const extension of extensions) {
       plugin = mergePlugins(
         plugin,
-        extension(getEditorPlugin(editor, plugin as any))
+        withResolvingPlatePlugin(editor, plugin, () =>
+          extension(getEditorPlugin(editor, plugin))
+        )
       );
     }
-    plugin.__extensions = [];
+    plugin.__extensions = extensions;
   }
 
-  const targetPluginToInject = plugin.inject?.targetPluginToInject;
-  const targetPlugins = plugin.inject?.targetPlugins;
-
-  if (targetPluginToInject && targetPlugins && targetPlugins.length > 0) {
-    plugin.inject = plugin.inject || {};
-    plugin.inject.plugins = merge(
-      {},
-      plugin.inject.plugins,
-      Object.fromEntries(
-        targetPlugins.map((targetPlugin) => {
-          const injectedPlugin = targetPluginToInject({
-            ...getEditorPlugin(editor, plugin),
-            targetPlugin,
-          });
-
-          return [targetPlugin, injectedPlugin];
-        })
-      )
-    );
-  }
-  if (plugin.node?.component) {
-    plugin.render.node = plugin.node.component;
-  }
-  if (plugin.render?.node) {
-    plugin.node.component = plugin.render.node;
-  }
+  plugin.schema = freezePluginDescriptorValue(plugin.schema);
+  (plugin as { targetPluginKeys: readonly string[] }).targetPluginKeys =
+    Object.freeze([...plugin.targetPluginKeys]);
 
   (validatePlugin as any)(editor, plugin);
 
@@ -123,12 +112,6 @@ export const validatePlugin = <
     editor.api.debug.error(
       `Invalid plugin '${plugin.key}', you should use createBasePlugin.`,
       'USE_CREATE_PLUGIN'
-    );
-  }
-  if (plugin.node.isElement && plugin.node.isLeaf) {
-    editor.api.debug.error(
-      `Plugin ${plugin.key} cannot be both an element and a leaf.`,
-      'PLUGIN_NODE_TYPE'
     );
   }
 };

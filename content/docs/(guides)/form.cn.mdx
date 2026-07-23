@@ -41,8 +41,7 @@ export function RHFEditorForm() {
   });
 
   // 创建/配置 Plate 编辑器
-  const editor = usePlateEditor({
-     value: initialValue });
+  const editor = usePlateEditor({ initialValue });
 
   // 为 react-hook-form 注册字段
   register('content', { /* 验证规则... */ });

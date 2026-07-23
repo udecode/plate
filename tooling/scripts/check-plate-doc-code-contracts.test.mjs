@@ -26,7 +26,7 @@ test('derives editor schema identity when direct construction omits it', () => {
   const source = [
     '```tsx',
     'const editor = usePlateEditor({ plugins: [] });',
-    'createBaseEditor({ value: [] });',
+    "createBaseEditor({ initialValue: [{ children: [{ text: '' }], type: 'p' }] });",
     'createStaticEditor();',
     'usePlateViewEditor();',
     'createPlateEditor(undefined);',
@@ -45,6 +45,37 @@ test('rejects invalid editor options', () => {
   ].join('\n');
 
   assert.equal(auditPlateDocCode(source).length, 2);
+});
+
+test('rejects removed and invalid editor initialization shapes', () => {
+  const source = [
+    '```tsx',
+    'createBaseEditor({ value: [] });',
+    'createPlateEditor({ onReady() {} });',
+    'usePlateEditor({ initialValue: null });',
+    'createStaticEditor({ initialValue: [] });',
+    "createBaseEditor({ initialValue: 'html' });",
+    'createPlateEditor({ initialValue: async () => [] });',
+    'createPlateEditor({ async initialValue() { return []; } });',
+    'createPlateEditor({ initialValue: () => [] });',
+    'createPlateEditor({ initialValue() { return []; } });',
+    'createPlateEditor({ initialValue: Promise.resolve([]) });',
+    'createPlateEditor({ initialValue: new Promise(() => {}) });',
+    '```',
+  ].join('\n');
+  const issues = auditPlateDocCode(source);
+
+  assert.equal(issues.length, 11);
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('callbacks must be synchronous')
+    ).length,
+    2
+  );
+  assert.equal(
+    issues.filter((issue) => issue.reason.includes('at least one')).length,
+    3
+  );
 });
 
 test('accepts complete named lineages and typed pass-through options', () => {
@@ -144,5 +175,24 @@ test('accepts contextual configure runtime fields and rejects model fields', () 
   assert.equal(
     issues.filter((issue) => issue.reason.includes('explicit object')).length,
     1
+  );
+});
+
+test('requires configure to be the final plugin authoring call in docs', () => {
+  const source = [
+    '```ts',
+    'ParagraphPlugin.configure({}).configure({});',
+    'ParagraphPlugin.configure({}).extend({});',
+    'ParagraphPlugin.configure({}).withComponent(ParagraphElement);',
+    'ParagraphPlugin.extend({}).configure({});',
+    '```',
+  ].join('\n');
+  const issues = auditPlateDocCode(source);
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('configure must be the final plugin authoring call')
+    ).length,
+    3
   );
 });

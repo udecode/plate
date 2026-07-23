@@ -2,7 +2,7 @@ import { createPlateEditor } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
 import { KEYS } from '@platejs/utils';
 
-import { PlaceholderPlugin } from './PlaceholderPlugin';
+import { PlaceholderPlugin, UploadErrorCode } from './PlaceholderPlugin';
 
 const createDropEvent = () => {
   const preventDefault = mock();
@@ -95,6 +95,23 @@ describe('PlaceholderPlugin', () => {
     ]);
   });
 
+  it('removes an uploading file without mutating the published snapshot', () => {
+    const editor = createPlateEditor({ plugins: [PlaceholderPlugin] });
+    const file = new File(['image'], 'image.png', { type: 'image/png' });
+    const placeholder = editor.plugin(PlaceholderPlugin);
+
+    placeholder.api.addUploadingFile('image', file);
+    const publishedFiles = placeholder.getOption('uploadingFiles');
+
+    expect(Object.isFrozen(publishedFiles)).toBe(true);
+
+    placeholder.api.removeUploadingFile('image');
+
+    expect(publishedFiles).toEqual({ image: file });
+    expect(placeholder.getOption('uploadingFiles')).toEqual({});
+    expect(placeholder.getOption('uploadingFiles')).not.toBe(publishedFiles);
+  });
+
   it('does not publish uploading files when the document update aborts', () => {
     const editor = createPlateEditor({
       plugins: [PlaceholderPlugin],
@@ -119,5 +136,157 @@ describe('PlaceholderPlugin', () => {
     expect(editor.read.children()).toEqual([
       { children: [{ text: '' }], type: KEYS.p },
     ]);
+  });
+
+  it('rejects unsupported file types before inserting', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        PlaceholderPlugin.configure({
+          options: {
+            uploadConfig: {
+              image: { mediaType: KEYS.img },
+            },
+          },
+        }),
+      ],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor
+      .plugin(PlaceholderPlugin)
+      .update.insertMedia([
+        new File(['text'], 'notes.txt', { type: 'text/plain' }),
+      ]);
+
+    expect(editor.plugin(PlaceholderPlugin).getOption('error')?.code).toBe(
+      UploadErrorCode.INVALID_FILE_TYPE
+    );
+    expect(editor.read.children()).toHaveLength(1);
+  });
+
+  it('uses blob as the configured fallback', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        PlaceholderPlugin.configure({
+          options: {
+            uploadConfig: {
+              blob: { mediaType: KEYS.file },
+            },
+          },
+        }),
+      ],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor
+      .plugin(PlaceholderPlugin)
+      .update.insertMedia(
+        [new File(['text'], 'notes.txt', { type: 'text/plain' })],
+        { at: [1] }
+      );
+
+    expect(editor.read.children().at(1)).toMatchObject({
+      mediaType: KEYS.file,
+      type: KEYS.placeholder,
+    });
+  });
+
+  it('looks up missing MIME types by extension', () => {
+    const editor = createPlateEditor({
+      plugins: [PlaceholderPlugin],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor
+      .plugin(PlaceholderPlugin)
+      .update.insertMedia([new File(['image'], 'image.png')], { at: [1] });
+
+    expect(editor.read.children().at(1)).toMatchObject({
+      mediaType: KEYS.img,
+      type: KEYS.placeholder,
+    });
+  });
+
+  it('enforces per-type file count atomically', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        PlaceholderPlugin.configure({
+          options: {
+            uploadConfig: {
+              image: {
+                maxFileCount: 1,
+                mediaType: KEYS.img,
+              },
+            },
+          },
+        }),
+      ],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor
+      .plugin(PlaceholderPlugin)
+      .update.insertMedia([
+        new File(['one'], 'one.png', { type: 'image/png' }),
+        new File(['two'], 'two.png', { type: 'image/png' }),
+      ]);
+
+    expect(editor.plugin(PlaceholderPlugin).getOption('error')?.code).toBe(
+      UploadErrorCode.TOO_MANY_FILES
+    );
+    expect(editor.read.children()).toHaveLength(1);
+  });
+
+  it('enforces file size without requiring a size limit', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        PlaceholderPlugin.configure({
+          options: {
+            uploadConfig: {
+              image: {
+                maxFileSize: '1KB',
+                mediaType: KEYS.img,
+              },
+            },
+          },
+        }),
+      ],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor
+      .plugin(PlaceholderPlugin)
+      .update.insertMedia([
+        new File([new Uint8Array(1025)], 'large.png', { type: 'image/png' }),
+      ]);
+
+    expect(editor.plugin(PlaceholderPlugin).getOption('error')?.code).toBe(
+      UploadErrorCode.TOO_LARGE
+    );
+    expect(editor.read.children()).toHaveLength(1);
+  });
+
+  it('enforces the global multiple-files option', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        PlaceholderPlugin.configure({
+          options: { multiple: false },
+        }),
+      ],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor
+      .plugin(PlaceholderPlugin)
+      .update.insertMedia([
+        new File(['one'], 'one.png', { type: 'image/png' }),
+        new File(['two'], 'two.png', { type: 'image/png' }),
+      ]);
+
+    expect(editor.plugin(PlaceholderPlugin).getOption('error')).toMatchObject({
+      code: UploadErrorCode.TOO_MANY_FILES,
+      data: { fileType: null, maxFileCount: 1 },
+    });
+    expect(editor.read.children()).toHaveLength(1);
   });
 });

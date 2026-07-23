@@ -1,7 +1,7 @@
 import type { BaseEditor } from '@platejs/core';
 import type { NodeInsertNodesOptions } from '@platejs/plite';
 import type { TImageElement, TMediaEmbedElement } from '@platejs/utils';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { insertImage, insertMediaEmbed } from '../..';
 
@@ -28,7 +28,7 @@ export const insertMedia = async (
     ? await getUrl()
     : // biome-ignore lint/suspicious/noAlert: intentional user input for media URL
       window.prompt(
-        `Enter the URL of the ${type === KEYS.img ? KEYS.img : KEYS.mediaEmbed}`
+        `Enter the URL of the ${type === KEYS.img ? KEYS.img : NODES.mediaEmbed}`
       );
 
   if (!url) return;

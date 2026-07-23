@@ -6,6 +6,7 @@ import { jsxt } from '@platejs/test-utils';
 jsxt;
 import { createPlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 
 const BoldPlugin = createPlatePlugin({
   key: 'bold',
@@ -78,8 +79,10 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.runtime.shortcuts['testPlugin.bold']).toBeDefined();
-    expect(editor.runtime.shortcuts['testPlugin.italic']).toBeDefined();
+    expect(getPlateRuntime(editor).shortcuts['testPlugin.bold']).toBeDefined();
+    expect(
+      getPlateRuntime(editor).shortcuts['testPlugin.italic']
+    ).toBeDefined();
   });
 
   it('override existing shortcuts in a plugin', () => {
@@ -107,7 +110,7 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    editor.runtime.shortcuts['testPlugin.bold']?.handler?.({
+    getPlateRuntime(editor).shortcuts['testPlugin.bold']?.handler?.({
       editor,
       event: {} as KeyboardEvent,
       handler: {} as any,
@@ -142,7 +145,9 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.runtime.shortcuts['testPlugin.bold']?.keys).toBe('mod+bb');
+    expect(getPlateRuntime(editor).shortcuts['testPlugin.bold']?.keys).toBe(
+      'mod+bb'
+    );
   });
 
   it('allow removing shortcuts by setting them to null', () => {
@@ -168,7 +173,11 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.runtime.shortcuts['testPlugin.bold']).toBeUndefined();
-    expect(editor.runtime.shortcuts['testPlugin.italic']).toBeDefined();
+    expect(
+      getPlateRuntime(editor).shortcuts['testPlugin.bold']
+    ).toBeUndefined();
+    expect(
+      getPlateRuntime(editor).shortcuts['testPlugin.italic']
+    ).toBeDefined();
   });
 });

@@ -1,4 +1,4 @@
-import { createZustandStore } from '@platejs/core/react';
+import { createZustandStore } from '@platejs/core/react/internal';
 
 export type PreviewItem = {
   url: string;

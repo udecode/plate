@@ -118,6 +118,10 @@ Before writing, read only what actually grounds the page:
 
 Start from code plus the best baseline doc. Not from old prose alone.
 
+Docs teach the verified shipped API; they do not choose it. When source exposes
+a materially bad, contradictory, or missing public shape, route the decision to
+`best-api` and keep docs work on the settled surface.
+
 When the task is a docs gap review, read sideways before writing:
 
 - the likely target lane

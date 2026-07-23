@@ -54,8 +54,9 @@ target -> requirements -> changed-surface map -> coherence audit
   `architecture-cleanup`.
 - The user asks for one ordinary patch with no existing diff/branch/merge
   context: use `task`, `slate-patch`, or the package owner.
-- The next move is a public API/runtime/product design fork: route to
-  `plite-plan`, `plate-plan`, or `major-task`.
+- The next move is a public call-shape fork: route to `best-api`; route
+  runtime/product adoption afterward to `plite-plan`, `plate-plan`, or
+  `major-task`.
 
 ## Invocation
 
@@ -166,6 +167,8 @@ Repeat until clean:
    invariants.
 5. **Autoreview:** load `autoreview`, choose the correct target mode, and run
    it. Verify every accepted finding against current source before patching.
+   When the diff materially changes public API, also run `best-api review` and
+   resolve or explicitly reject every P0/P1 finding.
 6. **Patch/reject:** patch safe findings at the right owner. Reject stale,
    speculative, out-of-scope, or over-complex findings with a reason in the
    plan.
@@ -225,7 +228,8 @@ the answer gates the next safe closure move.
   a bigger lane than "make this diff clean".
 - `maintainer`: public GitHub issue/PR/security queue decisions or public
   mutations.
-- `plite-plan` / `plate-plan`: public API/runtime/product architecture forks.
+- `best-api`: public call-shape forks and changed-public-API closure review.
+- `plite-plan` / `plate-plan`: runtime/product architecture and adoption.
 - `task`, `slate-patch`, package owners: narrow implementation fixes found by
   closure.
 - `sync-vision`: reusable taste discovered during closure.

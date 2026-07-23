@@ -10,6 +10,7 @@ import type {
 
 import { isEditOnly } from './isEditOnlyDisabled';
 import { pluginInjectNodeProps } from './pluginInjectNodeProps';
+import { getPlateRuntime } from './compilePlateModel';
 
 /** Inject plugin props, editor. */
 export const pipeInjectNodeProps = <
@@ -25,7 +26,7 @@ export const pipeInjectNodeProps = <
   let attributes: TNodeProps['attributes'] & GetInjectNodePropsReturnType =
     nodeProps.attributes;
 
-  editor.runtime.pluginCache.inject.nodeProps.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.inject.nodeProps.forEach((key) => {
     const plugin = editor.getPlugin({ key });
 
     const newAttributes = pluginInjectNodeProps(

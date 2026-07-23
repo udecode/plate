@@ -16,8 +16,10 @@ Treat each review comment as a chance to infer a broader rule, then apply that r
 - Fix the same pattern everywhere in the current diff when the rule is objective and low-ambiguity.
 - Do not cargo-cult a reviewer suggestion across unrelated code.
 - If the feedback is architectural or taste-heavy, decide once and either:
-  - refactor intentionally across the relevant seam, or
+  - refactor intentionally across the relevant boundary, or
   - prepare a concise pushback draft with reasoning.
+- If that decision changes reusable public API, use `best-api review`; this
+  skill owns pattern mining, not API taste.
 - Prefer one coherent follow-up refactor over many tiny copy-paste fixes.
 - Keep the blast radius proportional to confidence.
 - If a suggested sweep depends on another PR or pending upstream change, call that out explicitly instead of guessing.

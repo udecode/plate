@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-23-terminal-plugin-configure",
+      "href": "/registry/changelog/2026-07-23-terminal-plugin-configure.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Keep plugin configuration terminal",
+      "change": {
+        "type": "source",
+        "date": "2026-07-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion-kit", "mention-kit", "tabbable-kit", "toc-kit"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-22-plugin-portal-wiring",
       "href": "/registry/changelog/2026-07-22-plugin-portal-wiring.json",
       "status": "draft",

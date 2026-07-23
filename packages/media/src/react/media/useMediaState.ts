@@ -10,7 +10,7 @@ import {
   type TResizableElement,
   KEYS,
 } from '@platejs/utils';
-import { useEditorRef, useElement } from '@platejs/core/react';
+import { useEditor, useElement } from '@platejs/core/react';
 
 import { VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {
@@ -23,7 +23,7 @@ export const useMediaState = ({
 }: {
   urlParsers?: EmbedUrlParser[];
 } = {}) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const element = useElement<TMediaElement & TResizableElement>();
   const focused = useEditorFocused();
   const selected = useElementSelected();

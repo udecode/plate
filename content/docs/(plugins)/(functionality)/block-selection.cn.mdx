@@ -244,11 +244,11 @@ render: {
 
 ## API
 
-### `api.blockSelection.add`
+### `editor.plugin(BlockSelectionPlugin).api.add(id)`
 
 将一个或多个块添加到选择中。
 
-<API name="add">
+<API name="editor.plugin(BlockSelectionPlugin).api.add">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       要选择的块的 ID。
@@ -256,15 +256,15 @@ render: {
   </APIParameters>
 </API>
 
-### `api.blockSelection.clear`
+### `editor.plugin(BlockSelectionPlugin).api.clear()`
 
 将选中的 ID 集合重置为空集合。
 
-### `api.blockSelection.delete`
+### `editor.plugin(BlockSelectionPlugin).api.delete(id)`
 
 从选择中移除一个或多个块。
 
-<API name="delete">
+<API name="editor.plugin(BlockSelectionPlugin).api.delete">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       要从选择中移除的块的 ID。
@@ -272,19 +272,19 @@ render: {
   </APIParameters>
 </API>
 
-### `api.blockSelection.deselect`
+### `editor.plugin(BlockSelectionPlugin).api.deselect()`
 
 取消选择所有块并将 `isSelecting` 标志设置为 false。
 
-### `api.blockSelection.focus`
+### `editor.plugin(BlockSelectionPlugin).api.focus()`
 
 聚焦块选择的影子输入框。此输入框处理选中块的复制、删除和粘贴事件。
 
-### `api.blockSelection.getNodes`
+### `editor.plugin(BlockSelectionPlugin).api.getNodes(options?)`
 
 获取编辑器中选中的块。
 
-<API name="getNodes">
+<API name="editor.plugin(BlockSelectionPlugin).api.getNodes">
 <APIParameters>
   <APIItem name="options" type="{ selectionFallback?: boolean }" optional>
     获取节点的选项。
@@ -302,11 +302,11 @@ render: {
 </APIReturns>
 </API>
 
-### `api.blockSelection.has`
+### `editor.plugin(BlockSelectionPlugin).api.has(id)`
 
 检查一个或多个块是否被选中。
 
-<API name="has">
+<API name="editor.plugin(BlockSelectionPlugin).api.has">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       要检查的块的 ID。
@@ -317,11 +317,11 @@ render: {
   </APIReturns>
 </API>
 
-### `api.blockSelection.isSelectable`
+### `editor.plugin(BlockSelectionPlugin).api.isSelectable(element, path)`
 
 根据 `isSelectable` 插件选项检查给定路径的块是否可选择。
 
-<API name="isSelectable">
+<API name="editor.plugin(BlockSelectionPlugin).api.isSelectable">
   <APIParameters>
     <APIItem name="element" type="Element">
       要检查的块元素。
@@ -333,7 +333,7 @@ render: {
   <APIReturns type="boolean">块是否可选择。</APIReturns>
 </API>
 
-### `api.blockSelection.moveSelection`
+### `editor.plugin(BlockSelectionPlugin).api.moveSelection(direction)`
 
 将选择向上或向下移动到下一个可选择的块。
 
@@ -347,7 +347,7 @@ render: {
 - 将其设置为新的锚点
 - 清除之前的选择并仅选择此块
 
-<API name="moveSelection">
+<API name="editor.plugin(BlockSelectionPlugin).api.moveSelection">
   <APIParameters>
     <APIItem name="direction" type="'up' | 'down'">
       移动选择的方向。
@@ -355,15 +355,15 @@ render: {
   </APIParameters>
 </API>
 
-### `api.blockSelection.selectAll`
+### `editor.plugin(BlockSelectionPlugin).api.selectAll()`
 
 选择编辑器中所有可选择的块。
 
-### `api.blockSelection.set`
+### `editor.plugin(BlockSelectionPlugin).api.set(id)`
 
 将选择设置为一个或多个块，清除任何现有选择。
 
-<API name="set">
+<API name="editor.plugin(BlockSelectionPlugin).api.set">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       要选择的块的 ID。
@@ -371,7 +371,7 @@ render: {
   </APIParameters>
 </API>
 
-### `api.blockSelection.shiftSelection`
+### `editor.plugin(BlockSelectionPlugin).api.shiftSelection(direction)`
 
 根据锚点块扩展或收缩选择。
 
@@ -386,7 +386,7 @@ render: {
 - `Shift+ArrowUp` 时为最底部的块
 - `Shift+ArrowDown` 时为最顶部的块
 
-<API name="shiftSelection">
+<API name="editor.plugin(BlockSelectionPlugin).api.shiftSelection">
   <APIParameters>
     <APIItem name="direction" type="'up' | 'down'">
       扩展/收缩选择的方向。
@@ -406,7 +406,7 @@ render: {
 
 ### `editor.update.blockSelection.select`
 
-在编辑器中选择由 `getNodes()` 返回的节点并重置选中的 ID。
+在编辑器中选择由 `editor.plugin(BlockSelectionPlugin).api.getNodes()` 返回的节点并重置选中的 ID。
 
 ### `editor.update.blockSelection.setNodes`
 

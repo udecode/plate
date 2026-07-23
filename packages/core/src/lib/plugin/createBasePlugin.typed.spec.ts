@@ -3,27 +3,23 @@ import { property, schema, target } from '@platejs/plite';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
+import { toPlatePlugin } from '../../react/plugin/toPlatePlugin';
 import { createBaseEditor } from '../editor';
 import { createBasePlugin } from './createBasePlugin';
 
 const assertTypedSchemaContributions = () => {
-  type SchemaConfig = PluginConfig<
-    'validSchema',
-    { targetTypes: string[] }
-  >;
+  type SchemaConfig = PluginConfig<'validSchema', { targetTypes: string[] }>;
 
   createBasePlugin<SchemaConfig>({
     key: 'validSchema',
     options: { targetTypes: ['cell', 'header'] },
-    schema: ({ options }) => {
-      return {
-        properties: [
-          schema.elementProperty('status', property.string(), {
-            target: target.types(options.targetTypes),
-          }),
-        ],
-      };
-    },
+    schema: ({ options }) => ({
+      properties: [
+        schema.elementProperty('status', property.string(), {
+          target: target.types(options.targetTypes),
+        }),
+      ],
+    }),
   });
 
   createBasePlugin({
@@ -82,6 +78,21 @@ const assertTypedContextualConfiguration = () => {
 
     return { options: { enabled: true } };
   });
+  const ConfiguredBasePlugin = BasePlugin.configure({
+    options: { enabled: true },
+  });
+
+  // @ts-expect-error configured descriptors accept one consumer configuration
+  ConfiguredBasePlugin.configure({ options: { enabled: false } });
+  // @ts-expect-error configured descriptors are terminal authoring inputs
+  ConfiguredBasePlugin.extend({ options: { enabled: false } });
+
+  const WrappedConfiguredBasePlugin = toPlatePlugin(ConfiguredBasePlugin);
+
+  // @ts-expect-error Base-to-Plate wrapping preserves terminal authoring state
+  WrappedConfiguredBasePlugin.withComponent(() => null);
+  // @ts-expect-error React extension config must be applied before consumer configure
+  toPlatePlugin(ConfiguredBasePlugin, { render: { node: () => null } });
 
   // @ts-expect-error contextual configure cannot add option fields
   BasePlugin.configure(() => ({ options: { missing: true } }));
@@ -101,6 +112,14 @@ const assertTypedContextualConfiguration = () => {
 
     return { options: { enabled: true } };
   });
+  const ConfiguredPlatePlugin = PlatePlugin.configure({
+    options: { enabled: true },
+  });
+
+  // @ts-expect-error configured descriptors accept one consumer configuration
+  ConfiguredPlatePlugin.configure({ options: { enabled: false } });
+  // @ts-expect-error configured descriptors are terminal authoring inputs
+  ConfiguredPlatePlugin.withComponent(() => null);
 
   // @ts-expect-error contextual configure cannot add option fields
   PlatePlugin.configure(() => ({ options: { missing: true } }));
@@ -238,9 +257,9 @@ describe('createBasePlugin', () => {
     });
 
     // Test basic plugin creation
-    expect(baseEditor.plugins.testPlugin.key).toBe('testPlugin');
-    expect(baseEditor.plugins.testPlugin.type).toBe('test');
-    expect(baseEditor.plugins.testPlugin.options).toEqual({
+    expect(baseEditor.getPlugin(basePlugin).key).toBe('testPlugin');
+    expect(baseEditor.getPlugin(basePlugin).type).toBe('test');
+    expect(baseEditor.getPlugin(basePlugin).options).toEqual({
       optionA: 'initial',
       optionB: 10,
     });
@@ -252,7 +271,7 @@ describe('createBasePlugin', () => {
     const configuredEditor = createBaseEditor({
       plugins: [configuredPlugin],
     });
-    expect(configuredEditor.plugins.testPlugin.options).toEqual({
+    expect(configuredEditor.getPlugin(configuredPlugin).options).toEqual({
       optionA: 'modified',
       optionB: 10,
     });
@@ -265,8 +284,8 @@ describe('createBasePlugin', () => {
     const extendedEditor = createBaseEditor({
       plugins: [extendedPlugin],
     });
-    expect(extendedEditor.plugins.testPlugin.type).toBe('extended');
-    expect(extendedEditor.plugins.testPlugin.options).toEqual({
+    expect(extendedEditor.getPlugin(extendedPlugin).type).toBe('extended');
+    expect(extendedEditor.getPlugin(extendedPlugin).options).toEqual({
       optionA: 'initial',
       optionB: 20,
     });
@@ -277,7 +296,7 @@ describe('createBasePlugin', () => {
     const editorWithComponent = createBaseEditor({
       plugins: [componentPlugin],
     });
-    expect(editorWithComponent.plugins.testPlugin.render.node).toBe(
+    expect(editorWithComponent.getPlugin(componentPlugin).render.node).toBe(
       MockComponent
     );
 
@@ -304,7 +323,7 @@ describe('createBasePlugin', () => {
     const resolvedParentEditor = createBaseEditor({
       plugins: [extendedParentPlugin],
     });
-    expect(resolvedParentEditor.plugins.nested.options).toEqual({
+    expect(resolvedParentEditor.getPlugin(nestedPlugin).options).toEqual({
       nestedOption: 'modified',
     });
 
@@ -316,21 +335,27 @@ describe('createBasePlugin', () => {
     const resolvedConfiguredParentEditor = createBaseEditor({
       plugins: [configuredParentPlugin],
     });
-    expect(resolvedConfiguredParentEditor.plugins.nested.options).toEqual({
+    expect(
+      resolvedConfiguredParentEditor.getPlugin(nestedPlugin).options
+    ).toEqual({
       nestedOption: 'configured',
     });
 
-    // Test multiple extends and configurations
+    // Test multiple extensions before the one consumer configuration
     const multiExtendedPlugin = basePlugin
       .extend({ type: 'firstExtend' })
-      .configure({ options: { optionA: 'firstConfigure' } })
       .extend({ type: 'secondExtend' })
-      .configure({ options: { optionB: 30 } });
+      .configure({
+        options: {
+          optionA: 'configured',
+          optionB: 30,
+        },
+      });
 
     const resolvedMultiExtended = resolvePluginTest(multiExtendedPlugin);
     expect(resolvedMultiExtended.type).toBe('secondExtend');
     expect(resolvedMultiExtended.options).toEqual({
-      optionA: 'firstConfigure',
+      optionA: 'configured',
       optionB: 30,
     });
   });

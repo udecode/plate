@@ -23,8 +23,9 @@ const getNodePropClassValue = (value: unknown) =>
 
 /**
  * Return if `element`, `text`, `nodeKey` is defined. Return if `node.type` is
- * not in `targetPlugins` (if defined). Return if `value = node[nodeKey]` is not
- * in `validNodeValues` (if defined). If `classNames[value]` is defined,
+ * not in `targetPluginKeys` (when configured). Return if `value =
+ * node[nodeKey]` is not in `validNodeValues` (if defined). If
+ * `classNames[value]` is defined,
  * override `className` with it. If `styleKey` is defined, override `style` with
  * `[styleKey]: value`.
  */

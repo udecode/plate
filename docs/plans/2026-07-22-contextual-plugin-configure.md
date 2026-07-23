@@ -1,9 +1,17 @@
 # contextual plugin configure
 
+Current contract correction (2026-07-23):
+Contextual `.configure()` remains supported, but a descriptor accepts one
+terminal consumer configuration only. Package definitions use `create*Plugin()`
+and `.extend*()`; app and registry consumers may finish the descriptor with one
+object or contextual `.configure()` call. The correction and fresh proof are
+owned by `docs/plans/2026-07-23-single-consumer-plugin-configure.md`.
+
 Objective:
 Restore contextual Plate plugin configuration without reopening mutable model
-configuration: `.configure(({ editor }) => runtimeOverrides)` may override only
-the plugin's existing runtime surface, while `.extend` remains the additive,
+configuration: one terminal
+`.configure(({ editor }) => runtimeOverrides)` may override only the plugin's
+existing runtime surface, while `.extend*()` remains the package authoring and
 type-widening API.
 
 Flow mode:
@@ -144,37 +152,38 @@ Phase / pass table:
 | Phase | Status | Evidence | Next |
 | --- | --- | --- | --- |
 | Ground | completed | Owners, constraints, accepted target, and proof surface recorded | Decide |
-| Decide | completed | Static and contextual configuration use separate descriptor slots and ordering | Implement and prove |
+| Decide | completed | Object and contextual configuration share one terminal consumer step | Implement and prove |
 | Prove and hand off | completed | Full Core gate, Browser interaction, and clean final autoreview | User review |
 
 Decision brief:
 - outcome: Contextual `.configure` is ergonomic again without weakening the
   immutable model boundary.
 - chosen shape: overload `.configure` with an editor-context callback returning
-  a non-additive runtime override type; store it separately from immutable
-  `__configuration`; resolve it before `.extend` callbacks.
-- strongest rejected alternative: keep all editor-bound overrides on `.extend`.
-  It is type-safe but semantically dishonest because ordinary configuration is
-  presented as contract extension.
-- consequence: `.configure` and `.extend` remain visibly different: configure
-  can only use existing fields/types; extend can add option/API/selector shape.
+  a non-additive runtime override type; accept one object or callback
+  configuration per descriptor; resolve it before contextual extensions and
+  reapply its captured result as the final override.
+- strongest rejected alternative: allow repeated `.configure()` layers. That
+  erases the ownership boundary between reusable plugin definition and consumer
+  installation.
+- consequence: package authors use `.extend*()`; consumers get one terminal
+  `.configure()` that cannot add option/API/selector shape.
 
 Decision ledger:
 | Surface | Current | Target | Owner | Reason | Adoption | Proof | Risk | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Contextual configure typing | Static object only | Callback overload returning existing runtime overrides | Core plugin types | Honest DX without type widening | Base and React descriptors | Type tests, typecheck | Excess-property inference loopholes | complete |
-| Descriptor storage | Immutable object in `__configuration` | Separate immutable and contextual slots | `createBasePlugin` | Never mix closures into model snapshots | Clone/recreate/type-erased boundaries | Runtime tests | Lost callback during clone/reconfigure | complete |
-| Resolution order | Static configure then extensions | Static configure, contextual configure, extensions | `resolvePlugin` | Configure must precede additive wrapping | All editors and repeated resolution | Precedence/multi-editor tests | mutation across editors | complete |
-| Runtime guard | Extension-only wording and partial type omission | Shared contextual callback guard with model-field rejection | Core runtime | Runtime consumers can bypass TS | configure and extend callbacks | negative runtime tests | accidental semantic field admission | complete |
-| `.extend` callers | Runtime-only overrides use additive API | Runtime-only existing overrides use contextual configure | Package/registry owners | API name reflects intent | Block selection plus bounded sweep | source audit, typecheck, Browser | misclassifying true additions | complete |
+| Descriptor storage | Configuration stored on immutable descriptors | One terminal public configuration entry; internal nested-plugin overlays may share the private list | `createBasePlugin` | Preserve one consumer owner without rewriting nested configuration | Clone/recreate/type-erased boundaries | Runtime tests | lost callbacks or accidental second public layer | corrected |
+| Resolution order | Configuration and extensions can overlap | Evaluate configuration once, let contextual extensions read it, then reapply the captured consumer result | `resolvePlugin` | Consumer intent must be visible to extensions and final in precedence | All editors and repeated resolution | Precedence/multi-editor tests | duplicate callback effects or input rules | corrected |
+| Runtime guard | Callback field guard only | Callback field guard plus terminal descriptor guard | Core runtime | Runtime consumers can bypass TS | every plugin authoring method after configure | negative runtime tests | accidental post-config authoring | corrected |
+| `.extend` callers | Package and consumer ownership mixed | Package definitions use `.extend*()`; app/registry installation may use one `.configure()` | Package/registry owners | API name reflects ownership, not merely whether fields exist | package sweep plus registry callers | source audit, typecheck, Browser | misclassifying package defaults as user config | corrected |
 | Release artifact | Branch hard cut diverges from main | Final callback surface matches `origin/main` | release classification | No user-visible published delta from main | none | main comparison | unrelated WIP changesets | no artifact |
 
 Execution slices:
 | Slice | Owner | Scope | Entry | Exit | Proof |
 | --- | --- | --- | --- | --- | --- |
 | 1. Type law | Core types/tests | Add non-additive callback overload and negative contracts | Current static-only configure | Valid editor inference; new keys/model fields rejected | typed specs and Core typecheck |
-| 2. Runtime law | Core constructor/resolver | Store, guard, resolve contextual config separately | Immutable static slot exists | Correct precedence, cloning, and editor-specific values | focused runtime specs |
-| 3. Adoption | Package/registry callers | Replace runtime-only `.extend(callback)`; retain genuine additive calls | Callback configure works | BlockSelection and same-class callers use honest API | scoped `rg`, package/www typechecks |
+| 2. Runtime law | Core constructor/resolver | Store one terminal configuration, guard authoring, resolve once, and preserve final precedence | Immutable descriptor exists | Correct precedence and editor-specific values without duplicate effects | focused runtime specs |
+| 3. Adoption | Package/registry callers | Keep package definitions on `.extend*()` and make consumer `.configure()` calls terminal | Callback configure works | Production packages contain no definition-time `.configure()` calls outside reviewed Core installation owners | source audit, package/www typechecks |
 | 4. Closure | Core + www | Lint, package gate, Browser, review | Implementation complete | All applicable gates green, no accepted review finding | `check:core`, Browser, autoreview, checker |
 
 Proof matrix:
@@ -183,8 +192,8 @@ Proof matrix:
 | Callback configure sees the correctly typed editor/plugin context | Existing `.extend` context types and resolver context | Base and Plate type contracts plus runtime editor-specific spec | passed |
 | Callback configure cannot alter model semantics | Immutable config/schema snapshot owner and runtime guard audited | Type-negative, runtime-throw, and source/docs audit specs | passed |
 | Configure does not add option/API/selector types | Configure return remains `Plugin<C>` | Excess-key type contracts | passed |
-| Configure resolves before extend | Resolver applies static, contextual, then extension layers | Precedence spec | passed |
-| Callback is isolated per editor | Resolver evaluates descriptor callbacks per editor | Two-editor IDs/options spec | passed |
+| Configure is visible to extensions and remains final | Resolver evaluates configuration, applies extensions, then reapplies the captured result | Precedence spec | corrected |
+| Callback is isolated and evaluated once per editor | Resolver captures each callback result once per editor | Two-editor IDs/options/call-count spec | corrected |
 | Registry behavior remains usable | `BlockSelectionKit` only needs options/render | Browser context-click produced menu/marker/overlay | passed |
 
 Conditional evidence:
@@ -208,10 +217,10 @@ Findings:
   current `.extend` is semantic drift.
 
 Decisions and tradeoffs:
-- Keep static and contextual configure as two replaceable layers. Static always
-  resolves first; contextual resolves second; extensions wrap last.
-- Repeated configure calls replace the matching layer rather than accumulating
-  callback middleware.
+- Keep one public configure step per descriptor. It accepts either an object or
+  a contextual callback.
+- Declare every `.extend*()`, `.withComponent()`, and nested-plugin authoring
+  step before terminal `.configure()`.
 - Do not restore contextual `configurePlugin` in this packet.
 - Prefer an explicit runtime allow-list over a broad config type with omitted
   model keys if the type audit shows unrelated semantic fields remain exposed.
@@ -241,11 +250,12 @@ Verification evidence:
 
 Final handoff prepared:
 - Ownership and target API: Core owns contextual `.configure`; only existing
-  options, handlers, renderers, and shortcuts are allowed.
-- Public breaks and adoption: runtime-only production callers migrated;
-  structural plugin/nested-plugin/priority additions remain on `.extend`.
-- Applicable runtime/package/docs/browser decisions: separate static/contextual
-  descriptor slots; audits and existing Core major changeset updated.
+  options, handlers, renderers, and shortcuts are allowed in callback form.
+- Public breaks and adoption: package definitions use `.extend*()`; app and
+  registry consumers may apply one terminal object or contextual configure.
+- Applicable runtime/package/docs/browser decisions: one public configuration
+  entry; terminal types/runtime guards; source/docs audits and the existing
+  Core major changeset updated.
 - Proof and execution risks: all scoped gates pass; unrelated playground table
   IDs still emit an existing hydration mismatch.
 - Execution order and user attention: complete; no remaining scoped action.
@@ -256,6 +266,8 @@ Timeline:
   type contracts pass; runtime-only caller sweep applied.
 - 2026-07-22 Repaired the object-only schema/docs audit doctrine, accepted and
   fixed one review bypass, passed Core/package/browser proof, and closed review.
+- 2026-07-23 Corrected the ownership/cardinality contract to one terminal
+  consumer configure; fresh proof moved to the correction plan named above.
 
 Reboot status:
 | Question | Answer |

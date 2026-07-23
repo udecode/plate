@@ -14,6 +14,7 @@ import {
   type InferConfig,
   type InferPluginDocumentType,
   NodeIdPlugin,
+  type NormalizePluginOption,
   type PluginConfig,
   type PluginReference,
 } from '@platejs/core';
@@ -161,6 +162,83 @@ const configuredPrefix: string = ConfiguredPropertyPlugin.options.prefix;
 const configuredTargetPluginKey: string =
   ConfiguredPropertyPlugin.targetPluginKeys[0];
 
+const PluginReferenceOptions = createBasePlugin({
+  key: 'pluginReferenceOptions',
+  options: {
+    nested: { targets: [TargetPlugin] as const },
+    target: TargetPlugin,
+  },
+}).configure({
+  options: { target: TargetPlugin },
+});
+const pluginReferenceOptionsEditor = createBaseEditor({
+  plugins: [TargetPlugin, PluginReferenceOptions],
+});
+const targetOption = pluginReferenceOptionsEditor
+  .plugin(PluginReferenceOptions)
+  .getOption('target');
+const nestedTargetOption = pluginReferenceOptionsEditor
+  .plugin(PluginReferenceOptions)
+  .getOption('nested').targets[0];
+const exactTargetOption: PluginReference<'schemaTarget', 'schema-target'> =
+  targetOption;
+const exactNestedTargetOption: PluginReference<
+  'schemaTarget',
+  'schema-target'
+> = nestedTargetOption;
+const readonlyPluginReferenceOptions = pluginReferenceOptionsEditor
+  .plugin(PluginReferenceOptions)
+  .getOptions();
+
+// @ts-expect-error Runtime plugin-valued options expose references, not descriptors.
+targetOption.configure({ priority: 101 });
+// @ts-expect-error Nested runtime option references do not expose descriptor methods.
+nestedTargetOption.extend({ priority: 101 });
+// @ts-expect-error Runtime option records are immutable snapshots.
+readonlyPluginReferenceOptions.target = TargetPlugin;
+// @ts-expect-error Nested runtime option arrays are immutable snapshots.
+readonlyPluginReferenceOptions.nested.targets.push(TargetPlugin);
+
+void exactTargetOption;
+void exactNestedTargetOption;
+
+class PluginOptionResource {
+  readonly #value = 'opaque';
+
+  read() {
+    return this.#value;
+  }
+}
+
+const pluginOptionResource = new PluginOptionResource();
+const PluginResourceOptions = createBasePlugin({
+  key: 'pluginResourceOptions',
+  options: { resource: pluginOptionResource },
+});
+const pluginResourceEditor = createBaseEditor({
+  plugins: [PluginResourceOptions],
+});
+const exactPluginOptionResource: PluginOptionResource = pluginResourceEditor
+  .plugin(PluginResourceOptions)
+  .getOption('resource');
+
+void exactPluginOptionResource;
+
+type ThirdPartyPreset = {
+  plugins: Array<() => void>;
+  settings: { joins: string[] };
+};
+declare const configuredThirdPartyPreset: NormalizePluginOption<ThirdPartyPreset>;
+const configuredThirdPartyPlugin: () => void =
+  configuredThirdPartyPreset.plugins[0];
+
+// @ts-expect-error Plain third-party option arrays are immutable snapshots.
+configuredThirdPartyPreset.plugins.push(() => {});
+// @ts-expect-error Nested third-party option arrays are immutable snapshots.
+configuredThirdPartyPreset.settings.joins.push('mutable');
+
+void configuredThirdPartyPlugin;
+
 // @ts-expect-error Plugin target keys are immutable.
 ConfiguredPropertyPlugin.targetPluginKeys.push(TargetPlugin.key);
 
@@ -173,35 +251,6 @@ const editor = createBaseEditor({
     AmbiguousPropertyPlugin,
   ],
 });
-
-// @ts-expect-error Published components are immutable.
-editor.runtime.components.test = () => null;
-// @ts-expect-error Published component registries cannot be replaced.
-editor.runtime.components = {};
-// @ts-expect-error Published plugin lists are immutable.
-editor.runtime.pluginList.push(TargetPlugin);
-// @ts-expect-error Published plugin lists cannot be replaced.
-editor.runtime.pluginList = [];
-// @ts-expect-error Published plugin-cache indexes are immutable.
-editor.runtime.pluginCache.decorate.push('test');
-// @ts-expect-error Published plugin-cache maps are immutable.
-editor.runtime.pluginCache.node.types.test = 'test';
-// @ts-expect-error Published plugin caches cannot be replaced.
-editor.runtime.pluginCache = {};
-// @ts-expect-error Published input-rule indexes are immutable.
-editor.runtime.inputRules.insertBreak.push();
-// @ts-expect-error Published input-rule maps are immutable.
-editor.runtime.inputRules.insertText.byTrigger.test = [];
-// @ts-expect-error Published input-rule descriptors are immutable.
-editor.runtime.inputRules.insertBreak[0].priority = 0;
-// @ts-expect-error Published input-rule registries cannot be replaced.
-editor.runtime.inputRules = {};
-// @ts-expect-error Published shortcut maps are immutable.
-editor.runtime.shortcuts.test = null;
-// @ts-expect-error Published shortcut descriptors are immutable.
-editor.runtime.shortcuts.test!.priority = 0;
-// @ts-expect-error Published shortcut registries cannot be replaced.
-editor.runtime.shortcuts = {};
 
 const requirePluginReference = <T extends PluginReference>(plugin: T) => plugin;
 const ReferenceChildPlugin = createBasePlugin({

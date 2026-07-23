@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
 import { isHotkey } from '@platejs/core';
-import { useEditorRef } from '@platejs/core/react';
+import { useEditor } from '@platejs/core/react';
 
 import type { PreviewItem } from './ImagePreviewStore';
 import { ImagePreviewStore, useImagePreviewValue } from './ImagePreviewStore';
 import { useZoom } from './useZoom';
 
 export const useImagePreview = ({ scrollSpeed }: { scrollSpeed: number }) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const isOpen = useImagePreviewValue('isOpen', editor.id);
   const scale = useImagePreviewValue('scale');
   const translate = useImagePreviewValue('translate');

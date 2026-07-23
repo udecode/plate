@@ -117,8 +117,9 @@ Execution owners still do the work:
   applied work.
 - `auto`: internal Plate/Slate quality, behavior, perf, API, proof, and
   workflow self-repair.
-- `plite-plan` / `plate-plan`: architecture, public API, behavior law, and
-  maintainer-objection plans.
+- `best-api`: concrete public call-shape design/review.
+- `plite-plan` / `plate-plan`: architecture, adoption, behavior law, and
+  maintainer-objection plans after the API target is clear.
 - `architecture-cleanup`: repo-grounded architecture/code cleanup for
   cross-package refactors, testability gaps, shallow modules, over-splits,
   deslop, and agent-navigation friction before a plan or patch owner is chosen.
@@ -244,7 +245,7 @@ Read the exact item first. Then classify route:
 | Item | Default owner |
 | --- | --- |
 | Slate substrate bug | `resolve-slate-issue` or `slate-patch` |
-| Slate architecture/API fork | `plite-plan` |
+| Plite public call-shape fork | `best-api`, then `plite-plan` if adoption/runtime planning is needed |
 | Already-applied PR/branch/current-tree closure | `autoclosure` |
 | Plate/Slate internal quality/perf/browser gap | `auto` |
 | Cross-package architecture/testability/refactor/deslop candidate | `architecture-cleanup`, then `major-task`, `plite-plan`, or `plate-plan` |
@@ -262,7 +263,7 @@ Read the exact item first. Then classify route:
 3. Root `VISION.md`.
 4. Relevant detail file:
    - `docs/vision/common.md` for maintainer/automation/security/proof policy;
-   - `docs/vision/slate.md` for Slate substrate;
+   - `docs/vision/plite.md` for Plite substrate;
    - `docs/vision/plate.md` for Plate framework/product/docs;
    - `docs/vision/sync.md` only for doctrine sync.
 5. `.agents/AGENTS.md` for repo command/authority policy.

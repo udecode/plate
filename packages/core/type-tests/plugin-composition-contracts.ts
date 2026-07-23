@@ -1,6 +1,42 @@
 import type { PluginConfig } from '@platejs/core';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { createPlateEditor, toPlatePlugin } from '@platejs/core/react';
+import {
+  createPlateEditor,
+  createPlatePlugin,
+  toPlatePlugin,
+} from '@platejs/core/react';
+
+export const DeclarationSafeBaseExtensionPlugin = createBasePlugin({
+  key: 'declarationSafeBaseExtension',
+  options: { enabled: true },
+})
+  .extendExtension(({ getOptions }) => ({
+    corrections: [
+      {
+        correct() {
+          void getOptions().enabled;
+        },
+        event: 'content',
+      },
+    ],
+  }))
+  .configure(({ getOptions }) => ({
+    options: { enabled: getOptions().enabled },
+  }));
+
+export const DeclarationSafeReactExtensionPlugin = createPlatePlugin({
+  key: 'declarationSafeReactExtension',
+  options: { enabled: true },
+}).extendExtension(({ getOptions }) => ({
+  corrections: [
+    {
+      correct() {
+        void getOptions().enabled;
+      },
+      event: 'content',
+    },
+  ],
+}));
 
 type ChildMode = 'edit' | 'view';
 type ChildLabel = `${ChildMode}:${1 | 2}`;
@@ -41,9 +77,9 @@ const ChildPlugin = createBasePlugin<ChildConfig>({
     getLabel: () => `${getOptions().mode}:${getOptions().level}` as ChildLabel,
     getMode: () => getOptions().mode,
   }))
-  .extendTx(({ plugin }) => () => ({
+  .extendTx(({ setOption }) => () => ({
     setMode: (mode) => {
-      plugin.options.mode = mode;
+      setOption('mode', mode);
     },
   }));
 
@@ -88,9 +124,9 @@ const FormatPlugin = createBasePlugin({
   .extendEditorApi(({ getOptions }) => ({
     format: () => getOptions().tone,
   }))
-  .extendTx(({ plugin }) => () => ({
+  .extendTx(({ setOption }) => () => ({
     setTone: (tone: FormatTone) => {
-      plugin.options.tone = tone;
+      setOption('tone', tone);
     },
   }));
 

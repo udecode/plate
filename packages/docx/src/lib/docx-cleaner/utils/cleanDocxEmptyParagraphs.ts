@@ -1,4 +1,5 @@
-import { NO_BREAK_SPACE, traverseHtmlElements } from '@platejs/core';
+import { NO_BREAK_SPACE } from '@platejs/core';
+import { traverseHtmlElements } from '@platejs/core/internal';
 
 const isHtmlOpEmpty = (element: Element): boolean =>
   element.nodeName === 'O:P' && element.textContent === NO_BREAK_SPACE;

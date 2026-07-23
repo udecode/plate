@@ -894,6 +894,243 @@ describe('scenario helpers', () => {
     }
   });
 
+  test('rejects a render-count budget that combines exact and range assertions', () => {
+    expect(() =>
+      createScenarioReplay([
+        {
+          budget: { total: { exact: 1, min: 0 } },
+          kind: 'assertRenderBudget',
+        } as PliteBrowserScenarioStep,
+      ])
+    ).toThrow();
+  });
+
+  test('rejects negative or fractional render-count budgets', () => {
+    const invalidBudgets = [
+      -1,
+      0.5,
+      { exact: -1 },
+      { exact: 0.5 },
+      { max: -1 },
+      { max: 0.5 },
+      { min: -1 },
+      { min: 0.5 },
+    ];
+
+    for (const total of invalidBudgets) {
+      expect(() =>
+        createScenarioReplay([
+          {
+            budget: { total },
+            kind: 'assertRenderBudget',
+          } as PliteBrowserScenarioStep,
+        ])
+      ).toThrow();
+    }
+  });
+
+  test('accepts scalar, exact, and bounded render-count budgets', () => {
+    const validBudgets = [
+      0,
+      { exact: 0 },
+      { max: 2 },
+      { min: 0 },
+      { max: 2, min: 0 },
+    ];
+
+    for (const total of validBudgets) {
+      expect(() =>
+        createScenarioReplay([
+          {
+            budget: { total },
+            kind: 'assertRenderBudget',
+          } as PliteBrowserScenarioStep,
+        ])
+      ).not.toThrow();
+    }
+  });
+
+  test('rejects negative or fractional rendered line-box counts', () => {
+    const invalidCounts = [
+      -1,
+      0.5,
+      { max: -1 },
+      { max: 0.5 },
+      { min: -1 },
+      { min: 0.5 },
+    ];
+
+    for (const lineBoxCount of invalidCounts) {
+      expect(() =>
+        createScenarioReplay([
+          {
+            kind: 'assertRenderedDOMShape',
+            shape: { lineBoxCount },
+          } as PliteBrowserScenarioStep,
+        ])
+      ).toThrow();
+    }
+  });
+
+  test('rejects count ranges whose minimum exceeds their maximum', () => {
+    const invalidSteps = [
+      {
+        budget: { total: { max: 1, min: 2 } },
+        kind: 'assertRenderBudget',
+      },
+      {
+        kind: 'assertRenderedDOMShape',
+        shape: { lineBoxCount: { max: 1, min: 2 } },
+      },
+      {
+        kind: 'assertLocatorCount',
+        max: 1,
+        min: 2,
+        selector: '[data-editor]',
+      },
+    ];
+
+    for (const step of invalidSteps) {
+      expect(() =>
+        createScenarioReplay([step as PliteBrowserScenarioStep])
+      ).toThrow();
+    }
+  });
+
+  test('rejects invalid discrete offsets across replay steps', () => {
+    const selection = (offset: unknown) => ({
+      anchor: { offset, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+      kind: 'text',
+    });
+    const invalidSteps = [
+      { kind: 'assertDOMCaret', offset: -1, text: 'a' },
+      { kind: 'assertDOMCaret', offset: 0.5, text: 'a' },
+      { kind: 'clickTextOffset', offset: -1, path: [0, 0] },
+      { kind: 'doubleClickTextOffset', offset: 0.5, path: [0, 0] },
+      {
+        kind: 'mutateTextDOM',
+        path: [0, 0],
+        selectionOffset: -1,
+        text: 'a',
+      },
+      { kind: 'select', selection: selection(0.5) },
+      { kind: 'selectDOM', selection: selection(-1) },
+      {
+        kind: 'assertSelectionLocation',
+        location: { anchorOffset: 0.5 },
+      },
+      {
+        caretAfterType: { offset: -1, text: 'a' },
+        caretAfterUndo: { offset: 0, text: 'a' },
+        expectedModelTextAfterType: 'a',
+        expectedModelTextAfterUndo: 'a',
+        kind: 'typeThenUndo',
+        text: 'a',
+      },
+    ];
+
+    for (const step of invalidSteps) {
+      expect(() =>
+        createScenarioReplay([step as PliteBrowserScenarioStep])
+      ).toThrow();
+    }
+  });
+
+  test('rejects invalid inclusive offset ranges', () => {
+    const invalidRanges = [
+      [-1, 0],
+      [0, 0.5],
+      [2, 1],
+    ];
+
+    for (const offset of invalidRanges) {
+      const invalidSteps = [
+        {
+          kind: 'assertSelection',
+          selection: {
+            anchor: { offset, path: [0, 0] },
+            focus: { offset: 0, path: [0, 0] },
+            kind: 'text',
+          },
+        },
+        {
+          kind: 'assertDOMSelection',
+          selection: {
+            anchorNodeText: 'a',
+            anchorOffset: offset,
+            focusNodeText: 'a',
+            focusOffset: 0,
+          },
+        },
+      ];
+
+      for (const step of invalidSteps) {
+        expect(() =>
+          createScenarioReplay([step as PliteBrowserScenarioStep])
+        ).toThrow();
+      }
+    }
+  });
+
+  test('orders geometric ranges without rejecting finite fractions', () => {
+    const reversedGeometry = [
+      {
+        afterSelector: '[data-after]',
+        beforeSelector: '[data-before]',
+        kind: 'assertLocatorVerticalGap',
+        max: 1,
+        min: 2,
+      },
+      {
+        innerSelector: '[data-inner]',
+        kind: 'assertLocatorVerticalOffset',
+        max: -1,
+        min: 0,
+        selector: '[data-outer]',
+      },
+    ];
+    const validGeometry = [
+      {
+        afterSelector: '[data-after]',
+        beforeSelector: '[data-before]',
+        kind: 'assertLocatorVerticalGap',
+        max: 0,
+        min: -0.5,
+      },
+      {
+        innerSelector: '[data-inner]',
+        kind: 'assertLocatorVerticalOffset',
+        max: 1.5,
+        min: 0.25,
+        selector: '[data-outer]',
+      },
+    ];
+
+    for (const step of reversedGeometry) {
+      expect(() =>
+        createScenarioReplay([step as PliteBrowserScenarioStep])
+      ).toThrow();
+    }
+    for (const step of validGeometry) {
+      expect(() =>
+        createScenarioReplay([step as PliteBrowserScenarioStep])
+      ).not.toThrow();
+    }
+  });
+
+  test('requires nonnegative finite settle timeouts', () => {
+    expect(() =>
+      createScenarioReplay([{ kind: 'settle', timeoutMs: -1 }])
+    ).toThrow();
+
+    for (const timeoutMs of [0, 0.5]) {
+      expect(() =>
+        createScenarioReplay([{ kind: 'settle', timeoutMs }])
+      ).not.toThrow();
+    }
+  });
+
   test('fails closed when an unsupported step reaches scenario execution', async () => {
     const scenario = createEditorHarnessScenario({
       getHarness: () => ({}) as PliteBrowserEditorHarness,
@@ -1250,6 +1487,37 @@ describe('scenario helpers', () => {
       { iteration: 2, warmLoop: 'warm-toolbar' },
       { iteration: 2, warmLoop: 'warm-toolbar' },
     ]);
+  });
+
+  test('rejects invalid generated scenario iteration counts', () => {
+    const invalidCounts = [0, -1, 0.5, Number.POSITIVE_INFINITY, Number.NaN];
+    const selection = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+      kind: 'text' as const,
+    };
+
+    for (const iterations of invalidCounts) {
+      expect(() =>
+        createPliteBrowserWarmLoopSteps({
+          createIteration: () => [{ kind: 'focus' }],
+          iterations,
+        })
+      ).toThrow();
+      expect(() =>
+        createPliteBrowserDestructiveEditingGauntlet({
+          followUpText: 'a',
+          pasteSelection: selection,
+          pastedText: 'a',
+          tailBlockTextsAfterWordDelete: [],
+          textAfterDeleteAfterPaste: 'a',
+          textAfterFollowUp: 'a',
+          textAfterPaste: 'a',
+          wordDeleteIterations: iterations,
+          wordDeleteSelection: selection,
+        })
+      ).toThrow();
+    }
   });
 
   test('creates iteration-level reduction candidates for warm loops', () => {

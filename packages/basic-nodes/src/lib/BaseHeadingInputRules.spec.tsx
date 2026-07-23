@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { createBaseEditor } from '@platejs/core';
+import { getPlateRuntime } from '@platejs/core/internal';
 import { jsxt } from '@platejs/test-utils';
 
 import { BaseH1Plugin, BaseH2Plugin, BaseH3Plugin } from './BaseHeadingPlugin';
@@ -20,16 +21,17 @@ describe('heading input rules', () => {
         }),
       ],
     });
+    const inputRules = getPlateRuntime(editor).inputRules;
 
-    expect(
-      editor.runtime.inputRules.plugins.h1.rules.map((rule) => rule.id)
-    ).toEqual(['h1.0']);
-    expect(
-      editor.runtime.inputRules.plugins.h3.rules.map((rule) => rule.id)
-    ).toEqual(['h3.0']);
-    expect(
-      editor.runtime.inputRules.insertText.byTrigger[' '].map((rule) => rule.id)
-    ).toEqual(['h1.0', 'h3.0']);
+    expect(inputRules.plugins.h1.rules.map((rule) => rule.id)).toEqual([
+      'h1.0',
+    ]);
+    expect(inputRules.plugins.h3.rules.map((rule) => rule.id)).toEqual([
+      'h3.0',
+    ]);
+    expect(inputRules.insertText.byTrigger[' '].map((rule) => rule.id)).toEqual(
+      ['h1.0', 'h3.0']
+    );
   });
 
   it.each([

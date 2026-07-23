@@ -59,7 +59,7 @@ export default function RSCPage() {
       TrailingBlockPlugin,
       DocxPlugin,
     ],
-    value: [...basicBlocksValue, ...basicMarksValue],
+    initialValue: [...basicBlocksValue, ...basicMarksValue],
   });
 
   const md = editor.api.markdown.serialize();

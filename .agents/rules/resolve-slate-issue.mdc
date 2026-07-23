@@ -34,6 +34,8 @@ verification discipline.
   comment with current verification.
 - If current `Plate repo root` is red, add the smallest proof row first, fix the
   real owner, then verify.
+- If an honest fix materially changes reusable public API, stop issue-local
+  design and route the call shape through `best-api` before implementation.
 - Do not claim manual IME/mobile/device closure from synthetic browser rows.
 - `plate-2` commands prove planning/docs state only. Slate behavior proof must
   run in `Plate repo root`.

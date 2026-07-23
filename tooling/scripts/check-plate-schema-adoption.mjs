@@ -19,11 +19,26 @@ const markdownFilePattern = /\.mdx?$/;
 const auditedFilePattern = /\.(?:cjs|cts|js|jsx|md|mdx|mjs|mts|ts|tsx)$/;
 const typescriptFilePattern = /\.(?:cts|mts|ts|tsx)$/;
 const pluginFactoryNamePattern = /^(?:create|define).*(?:Extension|Plugin)$/;
+const platePluginFactoryNamePattern = /Plugin$/;
 const pliteExtensionNamePattern = /^define.*Extension$/;
 const pluginConfigurationMethods = new Set([
   'configure',
   'extend',
   'extendPlugin',
+]);
+const pluginAuthoringMethods = new Set([
+  'clone',
+  'configure',
+  'configurePlugin',
+  'extend',
+  'extendApi',
+  'extendEditorApi',
+  'extendExtension',
+  'extendPlugin',
+  'extendSelectors',
+  'extendTx',
+  'extendTxGroup',
+  'withComponent',
 ]);
 const contextualConfigureKeys = new Set([
   'handlers',
@@ -83,6 +98,14 @@ const deletedSymbols = new Set([
 const privateSchemaGroupOwners = new Set([
   'packages/core/src/internal/plugin/compilePlateModel.ts',
 ]);
+const packageConfigureInstallationOwners = new Set([
+  'packages/core/src/lib/plugins/getCorePlugins.ts',
+  'packages/core/src/react/editor/getPlateCorePlugins.ts',
+]);
+const packagePluginSourcePattern =
+  /^packages\/[^/]+\/src\/.*\.(?:cjs|cts|js|jsx|mjs|mts|ts|tsx)$/;
+const packageTestSourcePattern =
+  /(?:^|\/)(?:__tests__|type-tests)(?:\/|$)|\.(?:slow|spec|test)\.[cm]?[jt]sx?$/;
 const allowedSchemaFactoryBindings = new Set([
   'key',
   'options',
@@ -419,7 +442,7 @@ const isPlatePluginFactoryCall = (node) => {
   if (node?.type !== 'CallExpression') return false;
 
   if (node.callee.type === 'Identifier') {
-    return /Plugin$/.test(node.callee.name);
+    return platePluginFactoryNamePattern.test(node.callee.name);
   }
 
   if (node.callee.type !== 'MemberExpression' || node.callee.computed) {
@@ -558,6 +581,18 @@ const readSchemaContentCallName = (callee) => {
 
   return getPropertyName(callee.property);
 };
+
+const readMemberCallName = (node) =>
+  node?.type === 'CallExpression' &&
+  node.callee.type === 'MemberExpression' &&
+  !node.callee.computed
+    ? getPropertyName(node.callee.property)
+    : undefined;
+
+const isPackagePluginDefinitionSource = (file) =>
+  packagePluginSourcePattern.test(file) &&
+  !packageTestSourcePattern.test(file) &&
+  !packageConfigureInstallationOwners.has(file);
 
 const isPluginTypeReference = (node) => {
   if (node?.type !== 'MemberExpression') return false;
@@ -764,6 +799,30 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     }
 
     if (node.type === 'CallExpression') {
+      const memberCallName = readMemberCallName(node);
+      const memberCallOwner =
+        node.callee.type === 'MemberExpression'
+          ? unwrapTypedExpression(node.callee.object)
+          : undefined;
+
+      if (
+        memberCallName === 'configure' &&
+        isPackagePluginDefinitionSource(file)
+      ) {
+        report(
+          node,
+          'package plugin definitions must use extend; reserve configure for consumer installation'
+        );
+      }
+
+      if (
+        memberCallName &&
+        pluginAuthoringMethods.has(memberCallName) &&
+        readMemberCallName(memberCallOwner) === 'configure'
+      ) {
+        report(node, 'configure must be the final plugin authoring call');
+      }
+
       const namedLineageIssue = recordNamedSchemaLineage(
         node,
         file,

@@ -64,11 +64,13 @@ Start Gates:
 | Prompt requirements captured | pending | pending |
 | Active goal and plan verified | pending | pending |
 | Current owners read | pending | pending |
+| Best API target resolved | pending | `best-api design/review`, or N/A because no reusable call shape changes |
 | Mode and execution boundary resolved | pending | pending |
 
 Work Checklist:
 - [ ] Outcome, scope, non-goals, constraints, and owners are concrete.
 - [ ] Current API/docs/tests/exports/behavior claims cite live source.
+- [ ] Reusable public call shape has one `best-api` verdict before target lock.
 - [ ] Every concept-level decision row has owner, adoption, proof, risk, and verdict.
 - [ ] Public breaks and any private bridge have complete adoption/deletion answers.
 - [ ] Execution slices and focused proof matrix are concrete.
@@ -79,6 +81,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | pending | Resolve every readiness condition | pending |
 | Fresh source evidence | pending | Recheck decision-changing current claims | pending |
+| Best API review | pending | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | pending |
 | Conditional risk and adoption | pending | Complete triggered risk/browser/benchmark/provenance work or give one scoped N/A reason | pending |
 | Verification recorded | pending | Record fresh planning proof and exact execution gates | pending |
 | Handoff prepared | pending | Prepare concise ownership, breaks, proof, risks, and execution order | pending |

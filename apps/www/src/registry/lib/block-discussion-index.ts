@@ -10,6 +10,7 @@ import { BaseCommentPlugin } from '@platejs/comment';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import {
   type TCommentText,
+  type NormalizePluginOption,
   ElementApi,
   KEYS,
   NodeApi,
@@ -36,6 +37,7 @@ export interface ResolvedSuggestion extends TResolvedSuggestion {
 export const BLOCK_SUGGESTION_TOKEN = '__block__';
 
 type BlockDiscussionEntry = NodeEntry<TCommentText | Element>;
+type DiscussionSnapshot = NormalizePluginOption<TDiscussion>;
 type SuggestionEntry = NodeEntry<Element | Text>;
 
 type BlockDiscussionIndex = {
@@ -45,7 +47,7 @@ type BlockDiscussionIndex = {
 
 type BuildBlockDiscussionIndexOptions = {
   entries: BlockDiscussionEntry[];
-  discussions: TDiscussion[];
+  discussions: readonly DiscussionSnapshot[];
   getCommentId: (node: TCommentText) => string | undefined;
   getSuggestionData: (node: Node) =>
     | {
@@ -72,7 +74,7 @@ type BuildBlockDiscussionIndexOptions = {
 const discussionIndexCache = new WeakMap<
   PlateEditor,
   {
-    discussions: TDiscussion[];
+    discussions: readonly DiscussionSnapshot[];
     index: BlockDiscussionIndex;
     version: number;
   }
@@ -378,12 +380,15 @@ export const buildBlockDiscussionIndex = ({
   getSuggestionKey,
   isBlockSuggestion,
 }: BuildBlockDiscussionIndexOptions): BlockDiscussionIndex => {
+  const materializedDiscussions = discussions.map(
+    (discussion) => structuredClone(discussion) as TDiscussion
+  );
   const commentOwnerById = new Map<string, Path>();
   const suggestionOwnerById = new Map<string, Path>();
   const commentIds = new Set<string>();
   const suggestionEntriesById = new Map<string, SuggestionEntry[]>();
   const discussionsById = new Map(
-    discussions.map((discussion) => [discussion.id, discussion])
+    materializedDiscussions.map((discussion) => [discussion.id, discussion])
   );
 
   entries.forEach(([node, path]) => {
@@ -416,7 +421,7 @@ export const buildBlockDiscussionIndex = ({
 
   const discussionsByBlock = new Map<string, TDiscussion[]>();
 
-  discussions.forEach((discussion) => {
+  materializedDiscussions.forEach((discussion) => {
     const ownerPath = commentOwnerById.get(discussion.id);
 
     if (!ownerPath || !commentIds.has(discussion.id) || discussion.isResolved) {
@@ -459,7 +464,7 @@ export const buildBlockDiscussionIndex = ({
 
 const getDiscussionIndex = (
   editor: PlateEditor,
-  discussions: TDiscussion[],
+  discussions: readonly DiscussionSnapshot[],
   version: number
 ) => {
   const cached = discussionIndexCache.get(editor);

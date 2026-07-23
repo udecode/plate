@@ -576,6 +576,7 @@ const createPagedEditableTopLevelLayoutItems = ({
 
 /** Render an `Editable` through page surfaces derived from `plite-layout`. */
 export const PagedEditable = ({
+  ignoreBlankEditableRootClicks = true,
   layout,
   pageGap,
   pageLayoutMode,
@@ -906,7 +907,7 @@ export const PagedEditable = ({
 
     return ((editor, domRange) => {
       if (
-        virtualizesPageSurfaces &&
+        tracksContentViewport &&
         getNow() - lastViewportScrollAtRef.current <
           USER_SCROLL_SELECTION_SCROLL_SUPPRESSION_MS
       ) {
@@ -926,11 +927,12 @@ export const PagedEditable = ({
         domRange
       );
     }) satisfies NonNullable<EditableProps['scrollSelectionIntoView']>;
-  }, [editableProps.scrollSelectionIntoView, virtualizesPageSurfaces]);
+  }, [editableProps.scrollSelectionIntoView, tracksContentViewport]);
   const editable = (
     <Editable
       {...editableProps}
       domStrategy={domStrategy}
+      ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
       scrollSelectionIntoView={scrollSelectionIntoView}
       style={{
         minHeight: geometry.height,

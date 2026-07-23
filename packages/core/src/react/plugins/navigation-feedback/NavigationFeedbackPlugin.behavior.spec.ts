@@ -1,5 +1,6 @@
 import { defineEditorExtension } from '@platejs/plite';
 
+import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { createPlateEditor } from '../../editor';
 import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
 
@@ -260,9 +261,9 @@ describe('NavigationFeedbackPlugin', () => {
       initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
-    expect(editor.runtime.pluginList.map((plugin) => plugin.key)).not.toContain(
-      NavigationFeedbackPlugin.key
-    );
+    expect(
+      getPlateRuntime(editor).pluginList.map((plugin) => plugin.key)
+    ).not.toContain(NavigationFeedbackPlugin.key);
     expect(editor.api.navigation).toBeUndefined();
   });
 });

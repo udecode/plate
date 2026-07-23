@@ -2,7 +2,7 @@ import { MarkdownPlugin } from '@platejs/markdown';
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { type TTableElement, KEYS } from '@platejs/utils';
-import { type Value, schema } from '@platejs/plite';
+import { schema } from '@platejs/plite';
 import { BaseParagraphPlugin } from '@platejs/core';
 import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
 
@@ -73,7 +73,7 @@ const TableCellPlugin = createPlatePlugin({
 const createSuggestionEditor = (type: 'insert' | 'remove') => {
   const suggestionKey = `${KEYS.suggestion}_s1`;
 
-  return createPlateEditor<Value>({
+  return createPlateEditor({
     plugins: [
       BaseParagraphPlugin,
       SuggestionPlugin.configure({ options: { currentUserId: 'u1' } }),
@@ -101,7 +101,7 @@ const createSuggestionEditor = (type: 'insert' | 'remove') => {
 
 describe('ai chat action utils', () => {
   it('diffs a table cell update and replaces only its children', () => {
-    const editor = createPlateEditor<Value>({
+    const editor = createPlateEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseAIPlugin,
@@ -169,7 +169,7 @@ describe('ai chat action utils', () => {
   it('stops chat, resets options, and undoes the active AI batch', () => {
     const stop = mock();
     const clear = mock();
-    const editor = createPlateEditor<Value>({
+    const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
@@ -208,7 +208,7 @@ describe('ai chat action utils', () => {
   });
 
   it('discards preview bookkeeping when reset skips undo', () => {
-    const editor = createPlateEditor<Value>({
+    const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
     });
 

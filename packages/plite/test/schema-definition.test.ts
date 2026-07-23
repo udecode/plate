@@ -564,6 +564,10 @@ describe('schema declaration builders', () => {
       version: 1,
     });
     const payload = property.json({ policy: Payload });
+    const payloadWithDefault = property.json({
+      default: { id: 'default' },
+      policy: Payload,
+    });
     const unconstrained = property.json({ significant: false });
     const explicitJson = property.json<{ id: string }>();
     const inferredJson = property.json({ default: { id: 'json' } });
@@ -578,6 +582,8 @@ describe('schema declaration builders', () => {
     };
     const jsonValue: PropertyJsonValue = unconstrainedValue;
     const validPayload: PropertyValueOf<typeof payload> = { id: 'ok' };
+    const validPayloadWithDefault: PropertyValueOf<typeof payloadWithDefault> =
+      { id: 'ok' };
     // @ts-expect-error property.json infers its value from the policy
     const invalidPayload: PropertyValueOf<typeof payload> = 'wrong';
     // @ts-expect-error unconstrained property.json still accepts JSON only
@@ -586,6 +592,11 @@ describe('schema declaration builders', () => {
     property.json<Date>();
     // @ts-expect-error default inference cannot widen no-policy JSON to Date
     property.json({ default: new Date(0) });
+    property.json({
+      // @ts-expect-error the policy owns TValue; default cannot widen it
+      default: 'wrong',
+      policy: Payload,
+    });
 
     void contribution;
     void explicitJsonValue;
@@ -598,6 +609,7 @@ describe('schema declaration builders', () => {
     void jsonValue;
     void unconstrainedValue;
     void validPayload;
+    void validPayloadWithDefault;
     definePropertyPolicy<{ id: string }>({
       id: 'unsafe-property-access',
       validate: (value): value is { id: string } => {

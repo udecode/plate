@@ -1,5 +1,12 @@
 # Schema contribution completion recheck
 
+Current contract correction (2026-07-23):
+This recheck correctly exposed that its object-only configure hard cut was not
+implemented, but that target is superseded. Plate supports one terminal
+consumer `.configure()` call in object or contextual form; package definitions
+use `.extend*()`. The accepted correction and fresh proof live in
+`docs/plans/2026-07-23-single-consumer-plugin-configure.md`.
+
 Objective:
 Recheck schema contribution completion; done when prior blockers and required
 closure gates are freshly verified.

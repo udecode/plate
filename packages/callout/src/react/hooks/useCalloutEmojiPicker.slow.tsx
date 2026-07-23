@@ -13,7 +13,7 @@ const element = {
 
 describe('useCalloutEmojiPicker', () => {
   let useEditorReadOnlySpy: ReturnType<typeof spyOn>;
-  let useEditorRefSpy: ReturnType<typeof spyOn>;
+  let useEditorSpy: ReturnType<typeof spyOn>;
   let useElementSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
@@ -23,15 +23,15 @@ describe('useCalloutEmojiPicker', () => {
       platejsReact,
       'useEditorReadOnly'
     ).mockReturnValue(false);
-    useEditorRefSpy = spyOn(platejsReact, 'useEditorRef').mockReturnValue({
+    useEditorSpy = spyOn(platejsReact, 'useEditor').mockReturnValue({
       update: { nodes: { set: mock() } },
-    } as unknown as ReturnType<typeof platejsReact.useEditorRef>);
+    } as unknown as ReturnType<typeof platejsReact.useEditor>);
     useElementSpy = spyOn(platejsReact, 'useElement').mockReturnValue(element);
   });
 
   afterEach(() => {
     useEditorReadOnlySpy?.mockRestore();
-    useEditorRefSpy?.mockRestore();
+    useEditorSpy?.mockRestore();
     useElementSpy?.mockRestore();
   });
 
@@ -51,10 +51,10 @@ describe('useCalloutEmojiPicker', () => {
     ];
     const editor = platejsReact.createPlateEditor({
       plugins: [BaseCalloutPlugin],
-      value,
+      initialValue: value,
     });
 
-    useEditorRefSpy.mockReturnValue(editor);
+    useEditorSpy.mockReturnValue(editor);
     const liveElement = editor.read.nodes.get([0])?.[0];
 
     if (!liveElement) throw new Error('Expected the first callout element.');

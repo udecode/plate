@@ -1565,8 +1565,10 @@ export const createEditorSchema = <V extends Value = Value>(
     content: CompiledSchemaContentProgram,
     child: Descendant
   ) =>
-    (schema.identity.kind === 'derived' && ElementApi.isElement(child)) ||
-    contentAllows(schema, content, child);
+    contentAllows(schema, content, child) ||
+    (schema.identity.kind === 'derived' &&
+      ElementApi.isElement(child) &&
+      !getCompiledElement(child));
 
   const elementUsesInlineContent = (element: Element) => {
     const behavior = getElementBehavior(element);

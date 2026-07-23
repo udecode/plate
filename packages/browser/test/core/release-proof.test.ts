@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   assertPliteBrowserReleaseProof,
   createBrowserMobileReleaseProofArtifact,
+  createPersistentBrowserSoakProofArtifact,
   createReleaseDisciplineProofArtifact,
   PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS,
   type PliteBrowserMobileDeviceProofArtifact,
@@ -143,6 +144,55 @@ describe('release proof helpers', () => {
     });
 
     expect(result).toEqual({ issues: [], ok: true });
+  });
+
+  test('requires positive integer soak iteration counts', () => {
+    const validArtifact = createPersistentBrowserSoakProofArtifact({
+      browserName: 'chromium',
+      iterations: 5,
+      passed: true,
+      profilePersistence: 'persistent',
+      replayable: true,
+      scenario: 'caret',
+    });
+
+    expect(
+      validatePliteBrowserReleaseProof({
+        artifacts: [validArtifact],
+        claims: ['persistent-browser-caret-soak'],
+        requiredSoakIterations: 5,
+      })
+    ).toEqual({ issues: [], ok: true });
+
+    for (const iterations of [
+      0,
+      -1,
+      0.5,
+      Number.POSITIVE_INFINITY,
+      Number.NaN,
+    ]) {
+      expect(() =>
+        createPersistentBrowserSoakProofArtifact({
+          ...validArtifact,
+          iterations,
+        })
+      ).toThrow();
+
+      expect(
+        validatePliteBrowserReleaseProof({
+          artifacts: [{ ...validArtifact, iterations }],
+          claims: ['persistent-browser-caret-soak'],
+          requiredSoakIterations: 1,
+        }).ok
+      ).toBe(false);
+      expect(
+        validatePliteBrowserReleaseProof({
+          artifacts: [validArtifact],
+          claims: ['persistent-browser-caret-soak'],
+          requiredSoakIterations: iterations,
+        }).ok
+      ).toBe(false);
+    }
   });
 
   test('throws with actionable release proof failures', () => {

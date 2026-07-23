@@ -6,7 +6,35 @@ import { defineConfig } from 'tsdown';
 
 import { withDirectPackageConfig } from './direct-package.config.mts';
 
-const PACKAGE_ROOT_PATH = process.cwd();
+export const resolvePlatePackageRoot = ({
+  cwd = process.cwd(),
+  initCwd = process.env.INIT_CWD,
+}: {
+  cwd?: string;
+  initCwd?: string;
+} = {}) => {
+  const packageRoot = [cwd, initCwd]
+    .filter((candidate): candidate is string => !!candidate)
+    .map((candidate) => path.resolve(candidate))
+    .find(
+      (candidate) =>
+        fs.existsSync(path.join(candidate, 'package.json')) &&
+        (fs.existsSync(path.join(candidate, 'src/index.ts')) ||
+          fs.existsSync(path.join(candidate, 'src/index.tsx')))
+    );
+
+  if (!packageRoot) {
+    throw new Error(
+      `Could not resolve a package root from: ${[cwd, initCwd]
+        .filter(Boolean)
+        .join(', ')}`
+    );
+  }
+
+  return packageRoot;
+};
+
+const PACKAGE_ROOT_PATH = resolvePlatePackageRoot();
 const TS_FILE_RE = /\.ts$/;
 const TSX_FILE_RE = /\.tsx$/;
 
@@ -63,6 +91,7 @@ export const createPlatePackageConfig = ({
   defineConfig((opts) => {
     const config = {
       ...opts,
+      cwd: PACKAGE_ROOT_PATH,
       deps: { neverBundle: true },
       entry: [
         ...entry,

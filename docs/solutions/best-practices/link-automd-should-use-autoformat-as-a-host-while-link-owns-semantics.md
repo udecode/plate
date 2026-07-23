@@ -74,7 +74,6 @@ const { transformInput } = editor.plugin(BaseLinkPlugin).getOptions();
 const url = transformInput ? (transformInput(rawUrl) ?? '') : rawUrl;
 
 if (!url || !validateUrl(editor, url)) return;
-if (!editor.plugins[KEYS.link]) return;
 ```
 
 Then the current kits just host it:

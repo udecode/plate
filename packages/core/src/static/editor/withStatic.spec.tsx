@@ -3,6 +3,7 @@ import { createEditor, type Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
 import { createBasePlugin, DOMPlugin } from '../../lib';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { ViewPlugin } from '../plugins/ViewPlugin';
 import { createStaticEditor } from './withStatic';
 
@@ -16,14 +17,16 @@ describe('extendStaticEditor', () => {
       });
 
       expect(editor.id).toBe('1');
-      expect(editor.plugins).toBeDefined();
+      expect(getPlateRuntime(editor).plugins).toBeDefined();
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
     it('include ViewPlugin in the plugin list', () => {
       const editor = createStaticEditor();
 
-      const pluginKeys = editor.runtime.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = getPlateRuntime(editor).pluginList.map(
+        (plugin) => plugin.key
+      );
       expect(pluginKeys).toContain(DOMPlugin.key);
     });
 
@@ -46,7 +49,9 @@ describe('extendStaticEditor', () => {
         plugins: [customPlugin],
       });
 
-      const pluginKeys = editor.runtime.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = getPlateRuntime(editor).pluginList.map(
+        (plugin) => plugin.key
+      );
       expect(pluginKeys).toContain('custom');
       expect(pluginKeys).toContain(DOMPlugin.key);
 
@@ -200,11 +205,15 @@ describe('extendStaticEditor', () => {
         plugins: [customPlugin],
       });
 
-      const pluginKeys = editor.runtime.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = getPlateRuntime(editor).pluginList.map(
+        (plugin) => plugin.key
+      );
 
       // ViewPlugin (static) should come before custom plugins
       const viewPluginIndex = pluginKeys.findIndex((key) =>
-        editor.runtime.pluginList.find((p) => p.key === key && p === ViewPlugin)
+        getPlateRuntime(editor).pluginList.find(
+          (p) => p.key === key && p === ViewPlugin
+        )
       );
       const customIndex = pluginKeys.indexOf('custom');
 

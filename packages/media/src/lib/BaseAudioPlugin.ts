@@ -1,7 +1,14 @@
 import { createBasePlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
+import { mediaElementProperties } from './media/types';
+
 export const BaseAudioPlugin = createBasePlugin({
   key: KEYS.audio,
-  node: { isElement: true, isVoid: true },
+  schema: {
+    element: {
+      properties: mediaElementProperties,
+      void: 'block',
+    },
+  },
 });

@@ -183,12 +183,10 @@ describe('createPlatePlugin', () => {
       plugins: [MethodPlugin],
     });
     const pluginContext = editor.plugin(MethodPlugin);
-    const keyedContext = editor.plugin<MethodConfig>('methodPlugin');
 
     expect(pluginContext.getOption('enabled') satisfies boolean).toBe(true);
     expect(editor.api.method.isEnabled() satisfies boolean).toBe(true);
     // @ts-expect-error root editor APIs do not leak into plugin portals
     expect(pluginContext.api.method).toBeUndefined();
-    expect(keyedContext.getOptions().enabled satisfies boolean).toBe(true);
   });
 });

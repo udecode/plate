@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+import { getPlateRuntime } from '@platejs/core/internal';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
@@ -279,7 +280,9 @@ describe('selectAll', () => {
 
     const editor = createEditor({ input });
 
-    expect(editor.runtime.shortcuts['codeBlock.selectAll']?.keys).toBe('mod+a');
+    expect(getPlateRuntime(editor).shortcuts['codeBlock.selectAll']?.keys).toBe(
+      'mod+a'
+    );
     expect(editor.update.codeBlock.selectAll()).toBe(false);
     expect(input.selection).toEqual(editor.read.selection());
   });

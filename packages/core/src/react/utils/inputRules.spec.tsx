@@ -4,6 +4,7 @@ import { jsxt } from '@platejs/test-utils';
 import { property, schema } from '@platejs/plite';
 import { insertBreak, insertText } from '@platejs/plite/internal';
 import { BaseParagraphPlugin } from '../../lib/plugins';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 
 import { createPlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin';
@@ -57,11 +58,15 @@ describe('input rules', () => {
       ],
     });
 
-    expect(editor.runtime.inputRules.plugins.testPlugin.rules).toHaveLength(1);
-    expect(editor.runtime.inputRules.plugins.testPlugin.rules[0].id).toBe(
-      'testPlugin.0'
-    );
-    expect(editor.runtime.inputRules.insertText.byTrigger['*']).toHaveLength(1);
+    expect(
+      getPlateRuntime(editor).inputRules.plugins.testPlugin.rules
+    ).toHaveLength(1);
+    expect(
+      getPlateRuntime(editor).inputRules.plugins.testPlugin.rules[0].id
+    ).toBe('testPlugin.0');
+    expect(
+      getPlateRuntime(editor).inputRules.insertText.byTrigger['*']
+    ).toHaveLength(1);
   });
 
   it('dispatches configured insertText rules through the core runtime', () => {
@@ -286,9 +291,15 @@ describe('input rules', () => {
       ],
     });
 
-    expect(editor.runtime.inputRules.plugins.testPlugin.rules).toHaveLength(2);
-    expect(editor.runtime.inputRules.insertText.byTrigger['*']).toHaveLength(1);
-    expect(editor.runtime.inputRules.insertText.byTrigger._).toHaveLength(1);
+    expect(
+      getPlateRuntime(editor).inputRules.plugins.testPlugin.rules
+    ).toHaveLength(2);
+    expect(
+      getPlateRuntime(editor).inputRules.insertText.byTrigger['*']
+    ).toHaveLength(1);
+    expect(
+      getPlateRuntime(editor).inputRules.insertText.byTrigger._
+    ).toHaveLength(1);
   });
 
   it('provides lazy cached selection getters and pluginKey to insertText resolve', () => {
@@ -396,7 +407,9 @@ describe('input rules', () => {
     });
 
     expect(
-      editor.runtime.inputRules.insertText.byTrigger['*'].map((rule) => rule.id)
+      getPlateRuntime(editor).inputRules.insertText.byTrigger['*'].map(
+        (rule) => rule.id
+      )
     ).toEqual(['beta.0', 'alpha.0', 'alpha.1']);
   });
 
@@ -427,8 +440,12 @@ describe('input rules', () => {
     });
     insertText(editor, '*');
 
-    expect(editor.runtime.inputRules.plugins.bold.rules).toHaveLength(1);
-    expect(editor.runtime.inputRules.insertText.byTrigger['*']).toHaveLength(1);
+    expect(getPlateRuntime(editor).inputRules.plugins.bold.rules).toHaveLength(
+      1
+    );
+    expect(
+      getPlateRuntime(editor).inputRules.insertText.byTrigger['*']
+    ).toHaveLength(1);
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ bold: true, text: 'hello' }],
@@ -493,8 +510,12 @@ describe('input rules', () => {
     insertText(editor, '`');
 
     expect(apply).toHaveBeenCalledTimes(1);
-    expect(editor.runtime.inputRules.plugins.codeBlock.rules).toHaveLength(1);
-    expect(editor.runtime.inputRules.insertText.byTrigger['`']).toHaveLength(1);
+    expect(
+      getPlateRuntime(editor).inputRules.plugins.codeBlock.rules
+    ).toHaveLength(1);
+    expect(
+      getPlateRuntime(editor).inputRules.insertText.byTrigger['`']
+    ).toHaveLength(1);
   });
 
   it('registers configured match-triggered fences through createPlateEditor', () => {
@@ -523,8 +544,12 @@ describe('input rules', () => {
       focus: { offset: 2, path: [0, 0] },
     });
 
-    expect(editor.runtime.inputRules.plugins.codeBlock.rules).toHaveLength(1);
-    expect(editor.runtime.inputRules.insertText.byTrigger['`']).toHaveLength(1);
+    expect(
+      getPlateRuntime(editor).inputRules.plugins.codeBlock.rules
+    ).toHaveLength(1);
+    expect(
+      getPlateRuntime(editor).inputRules.insertText.byTrigger['`']
+    ).toHaveLength(1);
   });
 
   it('registers configured break-triggered rules through createPlateEditor', () => {
@@ -545,8 +570,10 @@ describe('input rules', () => {
       initialValue: [{ children: [{ text: '$$' }], type: 'p' }],
     } as any);
 
-    expect(editor.runtime.inputRules.plugins.equation.rules).toHaveLength(1);
-    expect(editor.runtime.inputRules.insertBreak).toContainEqual(
+    expect(
+      getPlateRuntime(editor).inputRules.plugins.equation.rules
+    ).toHaveLength(1);
+    expect(getPlateRuntime(editor).inputRules.insertBreak).toContainEqual(
       expect.objectContaining({ pluginKey: 'equation' })
     );
   });

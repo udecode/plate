@@ -718,6 +718,8 @@ accepted slice and proceed through `task`.
   when upstream already owns the better model.
 - Prefer upstream docs infrastructure unless Plate has a real product or
   registry reason to diverge.
+- Upstream owns its external protocol, not Plate's public component/editor API.
+  Route a reusable Plate API fork to `best-api`; upstream is evidence there.
 - Keep output comprehensive. If a diff is too large for the chat, save complete
   TSV inventories under `docs/sync/shadcn/runs/<range>/` and summarize the
   artifact paths in the response.

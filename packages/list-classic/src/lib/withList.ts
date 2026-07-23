@@ -26,9 +26,11 @@ type ListTransactionContext<C extends AnyPluginConfig> = {
   plugin: BasePlugin<C>;
 };
 
-export const withList = <C extends AnyPluginConfig>(
-  { editor, getOptions }: ListTransactionContext<C>
-): PlatePluginTxGroup<ListPluginTransaction, C> =>
+export const withList =
+  <C extends AnyPluginConfig>({
+    editor,
+    getOptions,
+  }: ListTransactionContext<C>): PlatePluginTxGroup<ListPluginTransaction, C> =>
   (tx) => {
     const apply = (reverse: boolean) => {
       const selection = tx.selection();

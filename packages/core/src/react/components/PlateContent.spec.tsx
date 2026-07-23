@@ -91,6 +91,20 @@ const ReadOnlyProbe = () => {
   return <span data-testid="read-only">{String(readOnly)}</span>;
 };
 
+const CommitFromLayoutEffect = ({ text }: { text?: string }) => {
+  const editor = useEditor();
+
+  React.useLayoutEffect(() => {
+    if (!text) return;
+
+    editor.update.text.insert(text, {
+      at: { offset: 3, path: [0, 0] },
+    });
+  }, [editor, text]);
+
+  return null;
+};
+
 describe('PlateContent', () => {
   it('renders inside the Plate container without mutating editor runtime', () => {
     const editor = createPlateEditor({
@@ -250,6 +264,34 @@ describe('PlateContent', () => {
       selection,
     });
     expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it('publishes rerendered callbacks before child layout effects', () => {
+    const editor = createPlateEditor({
+      initialValue: value,
+    });
+    const initialOnCommit = mock();
+    const latestOnCommit = mock();
+
+    const Shell = ({
+      onCommit,
+      text,
+    }: {
+      onCommit: typeof initialOnCommit;
+      text?: string;
+    }) => (
+      <Plate editor={editor} onCommit={onCommit}>
+        <CommitFromLayoutEffect text={text} />
+      </Plate>
+    );
+
+    const { rerender } = render(<Shell onCommit={initialOnCommit} />);
+
+    initialOnCommit.mockClear();
+    rerender(<Shell onCommit={latestOnCommit} text="!" />);
+
+    expect(initialOnCommit).not.toHaveBeenCalled();
+    expect(latestOnCommit).toHaveBeenCalledTimes(1);
   });
 
   it('focuses the editor end when autoFocusOnEditable flips readOnly off', async () => {

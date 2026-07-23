@@ -74,7 +74,7 @@ const editor = createBaseEditor({
     BaseH3Plugin,
     BaseBlockquotePlugin,
   ],
-  value: initialValue,
+  initialValue,
 });
 
 // 现在可以使用 editor.children、editor.api、editor.update 等
@@ -110,7 +110,7 @@ async function processDocument(value: any[]) {
       BaseH3Plugin,
       BaseBlockquotePlugin,
     ],
-    value,
+    initialValue: value,
   });
 
   // 提取文本内容

@@ -163,6 +163,8 @@ Do not promote:
    `captured` clusters. Write current-state doctrine, not changelog prose.
 9. Route owner-specific misses to the owner:
    - skill/rule miss -> `.agents/rules/**`, then `pnpm install`;
+   - reusable API design/review correction -> `best-api repair`, plus the
+     smallest relevant Vision owner;
    - editor behavior law -> `docs/editor-behavior/**` or `plite-plan`;
    - Slate automation loop miss -> `auto`;
    - research system miss -> `slate-research`;
@@ -183,6 +185,8 @@ Advance baseline when all are true:
 - root or detail vision docs were patched or explicitly reaffirmed for reusable
   taste;
 - owner-routed items have concrete owners;
+- reusable API-taste changes record `best-api repair` or an explicit
+  `best-api` reaffirmation;
 - deferred questions are listed with recommendations;
 - generated mirrors are synced when source rules changed;
 - the active plan passes `check-complete.mjs`.
@@ -191,6 +195,7 @@ Do not advance baseline when:
 
 - the run is `status` or `preview`;
 - a candidate changes product/API taste and no default can be inferred;
+- a reusable API-taste change has not repaired or reaffirmed `best-api`;
 - a source rule changed but generated mirror sync failed;
 - the helper reports a git/ref error;
 - only uncommitted overlay input exists.

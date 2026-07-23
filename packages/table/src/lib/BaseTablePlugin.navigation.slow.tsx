@@ -1,0 +1,118 @@
+/** @jsx jsxt */
+
+import { BaseTablePlugin } from './BaseTablePlugin';
+import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
+import { createPlateEditor } from '@platejs/core/react';
+import type { Element } from '@platejs/plite';
+import { jsxt } from '@platejs/test-utils';
+import type { TestEditor } from '@platejs/test-utils';
+
+describe('table navigation slow contracts', () => {
+  jsxt;
+
+  const createEditorInstance = (input: TestEditor) =>
+    createPlateEditor({
+      nodeId: true,
+      plugins: getTestTablePlugins(),
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+  describe('getTopTableCell', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>11</hp>
+            </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>21</hp>
+            </htd>
+            <htd>
+              <hp>
+                22
+                <cursor />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+
+    it('returns the cell above the current cell', () => {
+      const editor = createEditorInstance(input);
+      const cellAbove = editor.plugin(BaseTablePlugin).api.getTopCell();
+      expect((cellAbove?.[0].children as Element[])[0].children[0].text).toBe(
+        '12'
+      );
+    });
+
+    it('returns undefined if the current cell is in the first row', () => {
+      const editor = createEditorInstance(input);
+      editor.update.selection.set({
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
+        focus: { offset: 0, path: [0, 0, 0, 0, 0] },
+      });
+      const cellAbove = editor.plugin(BaseTablePlugin).api.getTopCell({
+        at: editor.read.selection()!.anchor.path,
+      });
+      expect(cellAbove).toBeUndefined();
+    });
+
+    it('returns undefined if no matching cell is found', () => {
+      const editor = createEditorInstance(
+        (
+          <editor>
+            <hp>outside table</hp>
+          </editor>
+        ) as TestEditor
+      );
+      const cellAbove = editor.plugin(BaseTablePlugin).api.getTopCell();
+      expect(cellAbove).toBeUndefined();
+    });
+
+    it('returns the spanning cell above when the row above has a merged column', () => {
+      const mergedInput = (
+        <editor>
+          <htable>
+            <htr>
+              <htd colSpan={2} id="c11">
+                <hp>11</hp>
+              </htd>
+              <htd id="c13">
+                <hp>13</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd id="c21">
+                <hp>21</hp>
+              </htd>
+              <htd id="c22">
+                <hp>
+                  22
+                  <cursor />
+                </hp>
+              </htd>
+              <htd id="c23">
+                <hp>23</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+      const editor = createEditorInstance(mergedInput);
+
+      expect(editor.plugin(BaseTablePlugin).api.getTopCell()).toEqual([
+        expect.objectContaining({ id: 'c11' }),
+        [0, 0, 0],
+      ]);
+    });
+  });
+});

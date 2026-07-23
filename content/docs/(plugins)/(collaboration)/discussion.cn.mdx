@@ -93,13 +93,13 @@ export const discussionPlugin = createPlatePlugin({
     users: usersData,
   },
 })
-  .configure({
-    render: { aboveNodes: BlockDiscussion },
-  })
   .extendSelectors(({ getOption }) => ({
     currentUser: () => getOption('users')[getOption('currentUserId')],
     user: (id: string) => getOption('users')[id],
-  }));
+  }))
+  .configure({
+    render: { aboveNodes: BlockDiscussion },
+  });
 ```
 
 - `options.currentUserId`: 当前活跃用户的 ID

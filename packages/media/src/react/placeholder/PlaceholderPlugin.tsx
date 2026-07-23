@@ -1,4 +1,3 @@
-import type { ExtendConfig } from '@platejs/core';
 import { toPlatePlugin } from '@platejs/core/react';
 import { NodeApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
@@ -30,74 +29,70 @@ export type PlaceholderTransforms = {
 
 export type UploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
 
-export const PlaceholderPlugin = toPlatePlugin<
-  ExtendConfig<
-    PlaceholderConfig,
-    {
-      disableEmptyPlaceholder: boolean;
-      disableFileDrop: boolean;
-      uploadConfig: UploadConfig;
-      uploadingFiles: Record<string, File>;
-      error?: UploadError | null;
-      maxFileCount?: number;
-      // Whether multiple files of the same type can be uploaded.
-      multiple?: boolean;
+type PlaceholderPluginOptions = PlaceholderConfig['options'] & {
+  disableEmptyPlaceholder: boolean;
+  disableFileDrop: boolean;
+  uploadConfig: UploadConfig;
+  uploadingFiles: Record<string, File>;
+  error?: UploadError | null;
+  maxFileCount?: number;
+  // Whether multiple files of the same type can be uploaded.
+  multiple?: boolean;
+};
+
+const defaultOptions: PlaceholderPluginOptions = {
+  disableEmptyPlaceholder: false,
+  disableFileDrop: false,
+  error: null,
+  maxFileCount: 5,
+  multiple: true,
+  uploadConfig: {
+    audio: {
+      maxFileCount: 1,
+      maxFileSize: '8MB',
+      mediaType: KEYS.audio,
+      minFileCount: 1,
     },
-    { placeholder: PlaceholderApi },
-    PlaceholderTransforms
-  >,
-  PlaceholderConfig
->(BasePlaceholderPlugin, {
-  options: {
-    disableEmptyPlaceholder: false,
-    disableFileDrop: false,
-    error: null,
-    maxFileCount: 5,
-    multiple: true,
-    uploadConfig: {
-      audio: {
-        maxFileCount: 1,
-        maxFileSize: '8MB',
-        mediaType: KEYS.audio,
-        minFileCount: 1,
-      },
-      blob: {
-        maxFileCount: 1,
-        maxFileSize: '8MB',
-        mediaType: KEYS.file,
-        minFileCount: 1,
-      },
-      image: {
-        maxFileCount: 3,
-        maxFileSize: '4MB',
-        mediaType: KEYS.img,
-        minFileCount: 1,
-      },
-      pdf: {
-        maxFileCount: 1,
-        maxFileSize: '4MB',
-        mediaType: KEYS.file,
-        minFileCount: 1,
-      },
-      text: {
-        maxFileCount: 1,
-        maxFileSize: '64KB',
-        mediaType: KEYS.file,
-        minFileCount: 1,
-      },
-      video: {
-        maxFileCount: 1,
-        maxFileSize: '16MB',
-        mediaType: KEYS.video,
-        minFileCount: 1,
-      },
+    blob: {
+      maxFileCount: 1,
+      maxFileSize: '8MB',
+      mediaType: KEYS.file,
+      minFileCount: 1,
     },
-    uploadingFiles: {},
+    image: {
+      maxFileCount: 3,
+      maxFileSize: '4MB',
+      mediaType: KEYS.img,
+      minFileCount: 1,
+    },
+    pdf: {
+      maxFileCount: 1,
+      maxFileSize: '4MB',
+      mediaType: KEYS.file,
+      minFileCount: 1,
+    },
+    text: {
+      maxFileCount: 1,
+      maxFileSize: '64KB',
+      mediaType: KEYS.file,
+      minFileCount: 1,
+    },
+    video: {
+      maxFileCount: 1,
+      maxFileSize: '16MB',
+      mediaType: KEYS.video,
+      minFileCount: 1,
+    },
   },
+  uploadingFiles: {},
+};
+
+export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
+  options: defaultOptions,
 })
-  .extendTx(({ editor }) => (tx) => ({
+  .extendTx(({ editor }) => (tx, _editor, context) => ({
     insertMedia: (files: File[] | FileList, options?: InsertMediaOptions) =>
-      insertMediaWithTx(editor, tx, files, options),
+      insertMediaWithTx(editor, tx, context, files, options),
   }))
   .extendApi(({ getOption, setOption }) => ({
     addUploadingFile: (id: string, file: File) => {
@@ -114,7 +109,7 @@ export const PlaceholderPlugin = toPlatePlugin<
       return uploadingFiles[id];
     },
     removeUploadingFile: (id: string) => {
-      const uploadingFiles = getOption('uploadingFiles');
+      const uploadingFiles = { ...getOption('uploadingFiles') };
 
       delete uploadingFiles[id];
 
@@ -164,9 +159,9 @@ export const PlaceholderPlugin = toPlatePlugin<
             const [node, path] = ancestor;
 
             if (NodeApi.string(node).length === 0) {
-              editor.update((tx) => {
+              editor.update((tx, context) => {
                 tx.nodes.remove({ at: path });
-                insertMediaWithTx(editor, tx, files, { at: path });
+                insertMediaWithTx(editor, tx, context, files, { at: path });
               });
               inserted = true;
             }

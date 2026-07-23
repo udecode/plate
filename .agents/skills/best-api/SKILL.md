@@ -1,0 +1,225 @@
+---
+description: Design, review, audit, or repair Plate/Plite public APIs for the best attainable balance of DX, AX, simplicity, cleanliness, and scalability. Use before layer plans when API shape is the real decision.
+argument-hint: '[design|review|audit|repair] <API surface | diff | plan | correction>'
+name: best-api
+metadata:
+  skiller:
+    source: .agents/rules/best-api.mdc
+---
+
+# Best API
+
+Handle $ARGUMENTS.
+
+Own the public call-site decision. Start from the cleanest truthful API that
+Plate and Plite should want long term, then account for adoption cost. Current
+code, compatibility, plans, and machinery are evidence, not requirements.
+Breaking proposals are valid when they buy materially better lasting value.
+
+This is a taste and decision skill, not an implementation engine:
+
+- `VISION.md` and `docs/vision/**` own durable doctrine.
+- `best-api` applies that doctrine to concrete API shapes and repairs it when
+  reusable taste changes.
+- `plate-plan` and `plite-plan` own layer architecture, adoption, execution,
+  and proof after the target API is chosen.
+- package, `task`, and supervisor skills implement accepted work.
+
+## Modes
+
+Infer the mode when omitted:
+
+- `design`: choose the best API for a new or materially redesigned surface.
+- `review`: judge one current/proposed API, diff, or plan and recommend the
+  better target.
+- `audit`: inspect a bounded surface and publish ranked P0-P3 API debt.
+- `repair`: update this source rule and the smallest durable Vision owner after
+  a reusable correction changes API taste or routing.
+
+Do not invent more modes for workflow stages that another skill already owns.
+Do not create a goal, plan, panel, or ledger for ordinary `design`/`review`.
+Use an active plan when one already exists; write an audit artifact only when
+the requested scope needs durable ranking.
+
+## Required Inputs
+
+Read only what can change the decision:
+
+1. Root `VISION.md`, `docs/vision/common.md`, and the relevant Plate or Plite
+   detail file.
+2. The public types, exports, docs, representative call sites, and owning
+   implementation for the named surface.
+3. Existing plans or compatibility constraints only after the ideal target is
+   independently clear.
+4. External editor/framework precedent only when local evidence cannot settle
+   a real design question. Familiarity is a useful prior, never a ceiling.
+
+User-stated product requirements, correctness, security, serialized data, and
+runtime laws are hard constraints. Incidental implementation structure is not.
+
+## Two-Pass Decision
+
+### 1. Ideal target
+
+Ignore migration convenience and design the smallest honest public surface.
+Show concrete call sites before naming abstractions:
+
+- the normal path;
+- one realistic customization path;
+- the advanced or escape path only when a real job needs it.
+
+If the normal path needs explanation before it reads naturally, the API is not
+done.
+
+### 2. Reality check
+
+Then inspect current ownership, runtime truth, adoption, inference, and breaking
+cost. Keep the ideal target visible. Prefer a staged hard cut over a permanent
+hybrid when compatibility would make the final API worse.
+
+Never silently downgrade the target because the current implementation already
+contains a registry, profile, lifecycle, builder, compatibility alias, or
+accepted plan. Say when those should be deleted, hidden, or redesigned.
+
+## Taste
+
+Optimize the whole surface, in this order:
+
+1. Correct ownership and truthful semantics.
+2. One obvious common path with the fewest concepts and least nesting.
+3. Type inference, autocomplete, JSDoc, and examples that let humans and agents
+   discover the path without annotations or source archaeology.
+4. Progressive disclosure: common use stays tiny; advanced composition,
+   inspection, and runtime control appear only when requested.
+5. Stable composition and extension points that add capability without
+   multiplying verbs, flags, or parallel APIs.
+6. Locality: colocate one-owner behavior and inline one-use declarations;
+   extract only for reuse or a durable independent owner.
+7. Ecosystem fit. Prefer Slate/Plate idiom when two designs are equally good;
+   depart when a different shape is materially cleaner or more scalable.
+
+Inline means one coherent owner declaration, not a mandatory object-literal or
+chain spelling. Prefer the single inference-preserving shape with the fewest
+learned concepts; reject one public verb per compiler destination.
+
+Prefer deep public interfaces: callers learn a small stable surface while the
+owner contains the honest implementation complexity. If examples, tests, or
+normal customization must punch through that surface into internals, the
+boundary is wrong.
+
+An API is not scalable because it exposes every possible mechanism. It scales
+when future capability can be added without making every caller learn it.
+
+## Public Complexity Budget
+
+Every public noun, verb, nesting level, mode, option, profile, registry,
+handle, lifecycle, and configuration channel must earn its cost with a current
+user job.
+
+Reject:
+
+- machinery justified only by hypothetical future reuse, serialization,
+  observability, or runtime control;
+- method families that encode taxonomy instead of user intent;
+- parallel ways to perform the same common operation;
+- option soup and one verb per internal implementation fragment;
+- explicit callback annotations or helper types that compensate for a broken
+  owning generic;
+- public composition models copied from current internals;
+- debug/profiling concerns embedded in ordinary authoring APIs;
+- abstractions whose explanation is longer than the call site they replace.
+
+Internal complexity may be justified when it keeps the public surface smaller
+and preserves real runtime, safety, or performance laws.
+
+## Review Questions
+
+Ask:
+
+- What is the user trying to say, and does the call site say exactly that?
+- Can one owner noun be removed from a scoped API?
+- Can nesting become a flat domain verb?
+- Can inference remove a type, cast, helper, or duplicated contract?
+- Is a customization path paying for an advanced case on every basic call?
+- Is composition about user-visible capability or merely internal fragments?
+- Could colocation or inlining remove navigation without hiding reuse?
+- Does the API remain coherent after three plausible future additions?
+- Can an agent find the canonical path from types, JSDoc, and one example?
+- What should be deleted if this target is accepted?
+
+Do not preserve a weaker proposal because it is more elaborate, more generic,
+more observable, or already documented.
+
+## Output Contract
+
+Lead with one recommendation, not a menu.
+
+For `design` and `review`, return:
+
+1. verdict;
+2. ideal call sites;
+3. current source and caller evidence;
+4. why this is the simplest truthful model;
+5. machinery or alternatives rejected;
+6. ownership and non-negotiable runtime/safety laws;
+7. breaking/adoption impact;
+8. verification performed or explicit N/A;
+9. exact next owner.
+
+For `audit`, use:
+
+| Priority | Surface | Current friction | Best direction | Delete / hide | Owner | Proof |
+| --- | --- | --- | --- | --- | --- | --- |
+
+- `P0`: wrong public ontology, unsafe contract, or foundational shape that
+  would spread costly damage if more code adopts it.
+- `P1`: high-frequency DX/AX, inference, discoverability, or composition debt.
+- `P2`: consistency and polish after the owning P0/P1 shape is settled.
+- `P3`: optional naming, JSDoc, or teaching polish with no structural impact.
+
+Rank severity by user and ecosystem cost, not by how interesting a redesign is.
+Ground every row in current source and call sites. Separate implemented debt
+from speculative future ideas.
+
+## Self-Maintenance
+
+Run `best-api repair` when any of these occurs:
+
+- the user corrects an API recommendation in a reusable way;
+- an accepted design establishes or rejects a reusable public API principle;
+- repeated reviews expose a missing or contradictory heuristic;
+- a builder, portal, extension model, or routing change makes this skill stale.
+
+In an explicitly read-only or review-only request, report the exact repair
+instead of writing it. Otherwise repair it in the same authorized workflow.
+
+Repair the smallest durable ownership chain:
+
+1. update `.agents/rules/best-api.mdc`;
+2. update only the relevant `VISION.md` / `docs/vision/**` doctrine when the
+   correction is durable taste rather than procedure;
+3. remove duplicated or contradictory wording from worker skills and link this
+   owner instead;
+4. run `pnpm install` to regenerate skills;
+5. when the trigger, rubric, output, or routing changed, run
+   `agent-native-reviewer` and forward-test the affected action on a real API
+   without seeding the expected answer.
+
+Use the active `autogoal` plan when one exists, but do not create a goal,
+hook, registry, state file, template, or review panel merely to maintain this
+skill.
+
+If the miss belongs to every goal-backed workflow rather than API judgment,
+route it to `autogoal repair`; do not absorb lifecycle policy here.
+
+Do not turn product-specific decisions into universal rules. Preserve the
+principle; keep package details in source, plans, or the API debt ledger.
+
+## Stop
+
+Stop API design when one target clearly wins and its unresolved questions are
+implementation/proof questions. Route those questions to `plate-plan`,
+`plite-plan`, `major-task`, or the package owner.
+
+Do not implement product API changes unless the user explicitly asks and the
+owning execution skill is loaded.

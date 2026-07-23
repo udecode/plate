@@ -12,8 +12,9 @@ Repo-specific companion to Plate's core plugin APIs.
 
 Before shaping a reusable public API, architecture decision, builder/factory
 pattern, naming convention, runtime/service boundary, or perf-sensitive public
-surface, read [vision](../vision/SKILL.md) first. This skill is the
-execution companion, not the constitutional source of truth.
+surface, read [vision](../vision/SKILL.md), then use
+[best-api](../best-api/SKILL.md) for the target call shape. This skill is the
+execution companion.
 
 Use this skill for Plate-specific plugin authorship: semantic ownership,
 authoring order, type-contract fidelity, and React/Plate wrapper boundaries.
@@ -24,18 +25,23 @@ Use [docs-creator](../docs-creator/SKILL.md) for public plugin docs.
 
 Binary contract:
 
-- If the lane materially changes reusable API shape, runtime boundaries,
-  builder/factory patterns, or reusable naming/layering, stop and route to
-  [vision](../vision/SKILL.md) first. Then include:
+- If the lane materially changes reusable API shape, builder/factory patterns,
+  or reusable naming, stop and route to
+  [best-api](../best-api/SKILL.md) after reading Vision. Then include:
   - `VISION.md updated`
-  - or `VISION.md reaffirmed: <section-name>`
+  - or `VISION.md reaffirmed: <section-name>`;
+  - `best-api design/review: <verdict>`.
+- If the lane changes runtime boundaries or perf law, route to the relevant
+  Plate/Plite plan after the API target is clear.
 - If not, continue here for plugin execution mechanics.
 
 Owner map:
 
 | Owner | Scope |
 | --- | --- |
-| `vision` | doctrine, API shape, runtime boundaries, perf law |
+| `vision` | durable doctrine, ownership boundaries, perf law |
+| `best-api` | reusable call shape, naming, composition, DX/AX |
+| `plate-plan` / `plite-plan` | layer adoption, runtime law, rollout, proof |
 | `plate-plugin-creator` | plugin mechanics, typing, wrappers, file placement |
 
 Do not restate long-form `vision` law, precedence, or anti-pattern prose
@@ -202,7 +208,7 @@ export const BasicBlocksPlugin = createPlatePlugin({
    - a Plate/React wrapper
    - a React-native exception
    - a bundle plugin
-4. Lock the contract shape:
+4. After a `best-api` verdict when the contract is reusable, lock:
    - options
    - plugin-specific API/update groups
    - merged editor API, only when root ownership is intentional

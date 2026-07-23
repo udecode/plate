@@ -130,6 +130,8 @@ it('should collapse selection on backspace', () => {
 当你需要直接测试键盘处理程序时：
 
 ```typescript
+import { createPlateEditor, createPlatePlugin } from 'platejs/react';
+
 it('should call the onKeyDown handler', () => {
   const input = (
     <editor>
@@ -142,17 +144,17 @@ it('should call the onKeyDown handler', () => {
   // Create a mock handler to verify it's called
   const onKeyDownMock = jest.fn();
 
+  const TestPlugin = createPlatePlugin({
+    key: 'test',
+    handlers: {
+      onKeyDown: onKeyDownMock,
+    },
+  });
+
   const editor = createPlateEditor({
     initialValue: input.children,
     selection: input.selection,
-    plugins: [
-      {
-        key: 'test',
-        handlers: {
-          onKeyDown: onKeyDownMock,
-        },
-      },
-    ],
+    plugins: [TestPlugin],
   });
 
   // Create the keyboard event
@@ -160,9 +162,11 @@ it('should call the onKeyDown handler', () => {
     key: 'Enter',
   }) as any;
 
-  // Call the handler directly
-  editor.plugins.test.handlers.onKeyDown({
-    ...getBasePlugin(editor, { key: 'test' }),
+  // 通过类型化 portal 解析已安装的描述符
+  const testPlugin = editor.plugin(TestPlugin);
+
+  testPlugin.plugin.handlers.onKeyDown?.({
+    ...testPlugin,
     event,
   });
 

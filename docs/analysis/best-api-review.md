@@ -1,0 +1,188 @@
+# Best API Review
+
+Date: 2026-07-23
+
+Scope: current Plate and Plite public types, exports, docs, representative call
+sites, and owning implementations. This ranks public API debt only. It does not
+authorize product API changes.
+
+## Verdict
+
+Plate's consumer-side direction is mostly right: scoped plugin portals, flat
+domain verbs, one root Markdown namespace, and a headless/React split. Its
+authoring surface is not. It exposes compiler taxonomy, contradictory API
+ownership, and mixed configuration/state lifetimes.
+
+Plite's `editor.read` / `editor.update` model is strong. Its extension identity,
+host boundaries, React composition, and a few global policies are not yet clean
+enough to be the substrate Plate should standardize on.
+
+Do not answer this with a global profile system, behavior registry, runtime
+toggle graph, or receipt/fingerprint protocol. Plate needs small feature-local
+composition; Plite needs truthful ownership metadata and an optional read-only
+diagnostic view. Those are different jobs.
+
+## P0
+
+| Surface | Current friction | Best direction | Delete / hide | Owner | Proof |
+| --- | --- | --- | --- | --- | --- |
+| Plate plugin authoring | The public Base and React descriptors expose 12 authoring verbs and capability-specific generic accumulators. The reference teaches the builder's compiler taxonomy instead of letting authors describe one plugin. | Use one inferred owner declaration and one terminal consumer configuration path. Keep one-use `api`, selectors, tx, and behavior inline in that declaration; allow at most one inference-preserving structural stage, not one verb per compiler destination. Extract or extend only for real reuse or another durable owner. | Contribution-specific authoring verbs from the common path; positional `PluginConfig` threading; public accumulator internals; helper types or callback annotations used to recover inference. | `best-api design` → `plate-plan` → Core plugin typing | `packages/core/src/lib/plugin/BasePlugin.ts:793-1060`; `packages/core/src/react/plugin/PlatePlugin.ts:664+`; `content/docs/(guides)/plugin-methods.mdx:21-38`. Compile-only inference tests plus Table, Link, Suggestion, and AI adoption. |
+| Plate API ownership | Bare `api` declarations are moved into editor-wide `__editorApi` during plugin merging, while the public reference says `api` is plugin-owned. The same noun means opposite ownership depending on the authoring path. | `api` and `tx` always mean plugin-scoped capability. Exceptional root augmentation is explicit, for example `editorApi`; Markdown deliberately declares the root `markdown` capability there. | Hidden `pluginApi` terminology and silent bare-`api` rewriting. | `best-api design` → `plate-plan` → Core plugin resolution | `packages/core/src/internal/utils/mergePlugins.ts:206-223`; `content/docs/api/core/plate-plugin.mdx:22-31`. Type/runtime ownership tests plus Markdown and CSV adoption. |
+| Plate option lifetime | One `options` channel carries consumer configuration, mutable state, selectors, and private caches. Table exposes `_cellIndices`, `_selectionOverrides`, and `_selectionVersion`; `@private` comments do not remove them from the portal type. | Keep one user-facing mutable `options` bag for resolved per-editor settings. Put mutable runtime data in explicit plugin state and keep caches private. Do not recreate a public immutable `config` bag. | Private caches and ambient state from public `getOptions`, `setOption`, and consumer configuration. | `best-api design` → `plate-plan` → Core plus representative feature owners | `packages/core/src/lib/plugin/PluginConfig.ts:237-238`; `packages/table/src/lib/BaseTablePlugin.ts:2030-2052,2414-2420`; `packages/core/src/lib/plugin/getEditorPlugin.ts:154+`. Lifetime/inference tests and option-update proof. |
+| Plite extension identity and scoped access | Extensions depend/conflict through raw strings, same-name installation is latest-wins, `getApi` guesses a capability key, and command/profiling records lose contribution ownership. | Use one real typed extension descriptor identity for dependencies, installation, scoped access, slot contracts, inspection, and opt-in tracing. Keep inspection advanced and read-only. Atomic replacement remains the existing validated reconfiguration lifecycle, not a new behavior DSL. | Heuristic `getApi`; raw dependency names; silent same-name replacement; duplicate registries, profiles, or handles layered above the descriptor. | `best-api design` → `plite-plan` → Plite extension owner | `packages/plite/src/interfaces/editor.ts:2088-2145`; `packages/plite/src/create-editor.ts:509-535`; `packages/plite/test/generic-extension-install-contract.ts:138-168`; `packages/plite/src/core/profiling.ts:1-31`. Positive/negative type tests, duplicate/dependency diagnostics, inspection proof, and disabled-cost benchmarks. |
+| Plite extension-slot replacement | `defineExtensionSlot('x').of(A)` contributes A's API/state/tx to the editor type, but `reconfigure(slot, UnrelatedB)` is type-valid because the slot and replacement input are uncorrelated. Runtime can replace A with B while the editor statically retains A. | Make the slot token carry the structural contract admitted by its initial value or explicit generic, and derive `reconfigure(slot, input)` from it. Preserve migration, validation, rollback, and one-commit publication without adding a public variants registry. | Uncorrelated `TInput` on `reconfigure`; broad `EditorExtensionSlotLike` replacement input. | `best-api design` → `plite-plan` → Plite extension owner | `packages/plite/src/interfaces/editor.ts:398-405,2140-2145`; `packages/plite/src/core/extension-slot.ts:24-69`. Add a compile-only rejection for an incompatible replacement plus existing reconfiguration lifecycle tests. |
+| Plite extension configuration | `EditorExtension<TEditor, TOptions, TConfig>`, `EditorImmutableConfig`, `config`, schema-factory context, and overload machinery create a second public configuration ontology. Repository production code does not use it; tests are teaching machinery rather than a user job. | Use one frozen extension `options` input plus a concrete normalized schema or a closure that emits the descriptor. | Public `config`, `EditorImmutableConfig`, the third generic, and config-specific clone/equality/factory machinery. | `best-api review` → `plite-plan` → extension type owner | `packages/plite/src/interfaces/editor.ts:2059-2126`; `packages/plite/src/core/editor-extension.ts:359-398`. Repository consumer sweep, schema inference, frozen descriptor, reconfiguration, and declaration proof. |
+| DOM clipboard ownership | Public Plite core types expose browser `DataTransfer`, clipboard middleware, and a root clipboard API, so every extension shape carries host concerns. | `plite-dom` owns browser transfer types, host codecs, and clipboard command wiring. Plite core sees `ContentSlice` and model commands only. | Browser host types and generic host-event middleware from model core. | `best-api design` → `plite-plan` → Plite/Plite DOM owners | `packages/plite/src/interfaces/editor.ts:1899-1939,2099`; `packages/plite-dom/src/plugin/with-dom.ts`. Package declaration tests plus copy/cut/paste browser proof. |
+| `ChangeSet` leakage | Plite exports `ChangeSet` beside `DocumentChange`, and public document-change construction exposes the backing change algebra. Collaboration code can reconstruct implementation detail instead of using the semantic owner. | `DocumentChange` owns public semantic methods and codecs. Keep its backing algebra internal. | Root `ChangeSet` export and public reconstruction hooks without a real external job. | `best-api review` → `plite-plan` → document-change/Yjs owners | `packages/plite/src/index.ts:24-40`; `packages/plite/src/core/document-change.ts`. Import sweep, codec/round-trip, mapping, collaboration, declaration, and tarball proof. |
+| React editor composition | `react()` copies a `dom()` extension and conflicts with its string name; `createReactEditor` silently installs History. Public construction lies about installed capabilities and duplicates one owner. | React has a typed dependency on the real DOM descriptor. `createReactEditor` composes React + DOM only. History is explicit; Plate may own a batteries-included preset. | Copied DOM implementation, fake React/DOM conflict, implicit History, and disabled-History escape flags. | `best-api design` → `plite-plan` → Plite React/DOM/History owners | `packages/plite-react/src/plugin/with-react.ts:97-165`. Capability type tests, lifecycle rollback, Editable/browser proof, and Plate preset adoption. |
+| `maxLength` ownership | Core creation declares the policy, insertion reads editor-global state, mounted `Editable` mutates/restores it, and Plate configures it again. Multiple views can fight over document policy. | One semantic insertion-limit owner with defined document/root scope. Plate may configure it conveniently; mounted views never mutate document policy. | Multiple setters and `Editable.maxLength` lifecycle side effects. | `best-api design` → `plite-plan` → Plite policy owner, then React/Core adoption | `packages/plite/src/interfaces/editor.ts:1558-1571`; `packages/plite/src/core/insert-limit.ts:23-48`; `packages/plite-react/src/components/editable-text-blocks.tsx:1127-1138`; `packages/core/src/lib/editor/withPlite.ts:633-640`. Concurrent-view, multi-root, paste/IME/command, and browser proof. |
+
+## P1
+
+| Surface | Current friction | Best direction | Delete / hide | Owner | Proof |
+| --- | --- | --- | --- | --- | --- |
+| Table behavior composition | Table ships seven anonymous `.extendExtension(...)` blocks. Consumers get the full bundle; six public options, four of them booleans, change details but cannot omit or replace paste, delete, navigation, selection, or correction as coherent capabilities. | Keep `TablePlugin` as the full preset. Give only proven-optional capabilities ordinary named plugin/Plite-extension descriptor identities, colocated inline at the Table owner. Advanced callers compose those descriptors statically through the same generic plugin mechanism; settle the smallest syntax in `best-api design`. Keep schema, grid correction, cache invalidation, and command invariants mandatory. | A Table-only `behaviors` DSL, global profiles, `TablePlugin.extensions.*`, option soup, a universal omit/replace method family, and runtime toggles in the common path. | `best-api design` → `plate-plan` → Table/Core extension owner | `packages/table/src/lib/BaseTablePlugin.ts:2030-2052,4492-5050`; exact source audit finds 7 `.extendExtension` blocks. Add compile-only descriptor inference plus focused default/omitted/replaced behavior tests. |
+| Table plugin portal | `TableApi` publishes 43 methods, including navigation primitives, grid algorithms, selection internals, factories, and clipboard mechanics. Several exist to connect files inside the same package, while docs present the inventory as user API. | Keep stable app jobs on `editor.plugin(TablePlugin).api` and the current flat Table update verbs. Direct-import or inline one-owner algorithms inside the package. Classify every method by a real external caller before keeping it public. | One-owner implementation helpers and React-package plumbing from the public portal. Do not add taxonomy-only nesting to organize leftovers. | `best-api audit` → `plate-plan` → Table owner | `packages/table/src/lib/BaseTablePlugin.ts:2091-2201`; `content/docs/(plugins)/(elements)/table.mdx:427-602`; representative package-internal calls in `packages/table/src/react/useTableCellElement.ts`. Export/call-site audit plus focused Table typecheck/tests. |
+| Suggestion plugin portal | `BaseSuggestionApi` publishes 21 methods. `findProps` is called by the plugin implementation and its tests, yet public docs teach it beside genuine app jobs such as `nodeId`, `nodes`, and `untracked`. Key parsing and property construction similarly expose storage mechanics. | Keep the smallest stable suggestion query/control surface. Inline one-owner helpers inside the colocated plugin implementation; use direct package helpers only where another real owner reuses them. | `findProps` and other storage/assembly helpers with no external production job; tests that exist only because an internal helper was public. | `best-api audit` → `plate-plan` → Suggestion owner | `packages/suggestion/src/lib/BaseSuggestionPlugin.ts:73-126,334-420`; `content/docs/(plugins)/(collaboration)/suggestion.mdx:284-306`; production call audit distinguishes package-internal from app callers. |
+| DOM/static projection policy | `host.toDataAttributes` overlaps `render.nodeProps` and has no production plugin author. The remaining `dangerouslyAllowAttributes` policy is consumed by the same React/static render path, so `host` adds a public noun without an independent job. | Delete `toDataAttributes`; move the explicit allowlist under the existing `render` owner. Security remains a hard law even though the policy lives with projection. | The duplicate projection hook and then the empty `host` namespace. Preserve the XSS warning and allowlist semantics. | `best-api design` → `plate-plan` → Core render/static owner | `packages/core/src/lib/plugin/PluginConfig.ts:228-236`; `packages/core/src/static/utils/getNodeDataAttributes.ts:54-75`; `packages/core/src/lib/utils/getPluginNodeProps.ts:35-60`. Exact author/caller audit plus React/static security proof. |
+| Extension inspection and attribution | Plite retains extension names in parts of the registry, but command pipeline entries keep only command/kind/run, and profiling emits global string IDs through a private sink. Plate's Debug plugin is a logger. There is no supported way to answer which installed extension contributed a handler or where time went. | First preserve extension ownership on every compiled contribution internally. Then expose one optional, read-only development inspector/tracer that reports installed owners, ordered contributions, and bounded timings. Keep authoring and normal editor calls unchanged. | Profiling flags/options on every plugin; public registries; runtime enable/disable controls; serialized profiles or fingerprints without a current job. | `best-api design` → `plite-plan` → extension registry/profiling owner | `packages/plite/src/core/extension-registry.ts:28-73`; `packages/plite/src/core/command-registry.ts:38-95`; `packages/plite/src/core/profiling.ts:1-31`; `packages/core/src/lib/plugins/debug/DebugPlugin.ts:27-75`. Inspector contract tests must verify owner/order and zero work when disabled. |
+| Plate plugin lookup | `editor.plugin`, `editor.getPlugin`, exported `getEditorPlugin`, React portal hooks, and key-based lookup overlap. The raw resolved descriptor is documented beside the canonical portal and can bypass its boundary. | `editor.plugin(Plugin)` is the canonical required lookup. Add one explicit optional lookup only if absence is a real external job. React gets one portal hook over the same owner; resolved metadata stays clearly advanced or internal. | Raw/key lookup helpers from common public use; fabricated or empty descriptors; public teaching of compiled registries. | `best-api design` → `plate-plan` → Core/React portal owner | `packages/core/src/lib/editor/BaseEditor.ts:46-75`; `packages/core/src/lib/plugin/getEditorPlugin.ts`; `packages/core/src/react/stores/plate/useEditorPlugin.ts`; `content/docs/api/core/plate-editor.mdx:71-97`. Usage sweep, missing-plugin diagnostics, type tests, and app adoption. |
+| Duplicate editor-bound exports | Feature barrels expose free editor-bound helpers beside intentional editor/plugin capabilities. Markdown still exports serializer/deserializer internals beside the accepted root `editor.api.markdown` route. | One canonical route per editor-bound capability. Keep standalone pure codecs only when they have a real editor-free job; curate package and root exports accordingly. | Duplicate free editor-bound helpers and accidental root-barrel internals. | `best-api audit` → feature/Core owners | `packages/markdown/src/lib/index.ts`; package/app import sweep finds direct `deserializeMd` use beside broad root-API adoption. Declaration and tarball export proof after the cut. |
+| `defaultBlockType` | Editor creation stores a duplicate global default and falls back to hard-coded `"p"`, while the compiled schema already owns canonical root children. | Derive the canonical default from the compiled schema. Features needing an alternate reset target pass or own it explicitly. | Editor-global duplicate and hard-coded paragraph fallback. | `best-api review` → `plite-plan` → schema/command owner | `packages/plite/src/interfaces/editor.ts:1558-1571`; `packages/plite/src/core/public-state.ts:4847-4868`. Custom-schema, schema-less, and toggle proof. |
+| View-state writes | Canonical reads live under `editor.read.view`, while React/DOM mirror focus, composition, and read-only state; Plite exports free imperative setters such as `setEditorReadOnly`. | Keep `editor.read.view.*`; use one scoped controller for imperative host writes. React props remain the normal declarative path. | Duplicate React/DOM read mirrors and free process-looking setters. | `best-api design` → `plite-plan` → Plite runtime/view owner | `packages/plite/src/interfaces/editor.ts:472-478`; `packages/plite/src/core/public-state.ts:4825-4897`; `packages/plite/src/index.ts:51-55`. Subscription, multi-root, provider-change, and toolbar browser proof. |
+| Model `domRange` | `editor.read.selection.domRange()` returns a model `Range`; Yjs consumes it without DOM. The name assigns browser ownership to model selection. | Rename the model projection to `primaryRange`; let Plite DOM own conversion to a browser range. | DOM terminology from the model selection protocol. | `best-api review` → `plite-plan` → selection/Yjs/DOM owners | `packages/plite/src/interfaces/editor.ts:457-470`; `packages/yjs/src/core/awareness-adapter.ts:99`. Custom-selection, mapping, awareness, and caret browser proof. |
+| Global debug scrubber | `setDebugValueScrubber` mutates process-global state and is exported/documented despite no production caller. It is unsafe for concurrent editors and SSR. | Keep safe default redaction. If customization earns a job, scope it to an editor diagnostic sink; otherwise callers scrub at their logging boundary. | Global setter. | `best-api review` → `plite-plan` → diagnostics owner | `packages/plite/src/utils/format-debug-value.ts:1-49`; `packages/plite/src/index.ts:286-289`; docs and call-site audit. Concurrent-editor/SSR isolation and export proof. |
+| Free editor queries | Plite's root exports `above`, `before`, `fragment`, `next`, and similar editor-bound functions beside the coherent `editor.read.*` surface. Current repository consumers mainly need structural APIs and `isEditor`, not two query styles. | Keep `editor.read.*`, structural APIs such as `NodeApi`, and `isEditor` validation. | Free compatibility queries from the root package. | `best-api audit` → `plite-plan` → Plite barrel owner | `packages/plite/src/index.ts:71-95`; `packages/plite/src/editor/*.ts`. Exact export test, import sweep, declaration, and tarball proof. |
+
+## P2
+
+| Surface | Current friction | Best direction | Delete / hide | Owner | Proof |
+| --- | --- | --- | --- | --- | --- |
+| Scoped Plate update fallback | The scoped plugin update proxy can fall through to root transaction groups, so a portal may execute capability its plugin does not own. | A scoped portal exposes only its plugin's tx group. Root updates remain explicitly root. | Cross-owner fallback from the scoped proxy. | `best-api review` → Core portal owner | `packages/core/src/lib/plugin/getEditorPlugin.ts:94-126`. Positive/negative type tests and runtime missing-method diagnostics. |
+| Plate React hook family | Core React exposes near-overlapping plugin, option, selector, and editor-bound hook variants. Selector reads masquerade as option reads while option/state lifetime is already wrong. | One plugin portal hook plus one reactive plugin-state selector. Keep component-family hook families colocated; do not split subcomponent hooks into file confetti. | Redundant hook variants after P0 option/state ownership lands. | `best-api review` → `plate-plan` → Core React owner | `packages/core/src/react/stores/plate/useEditorPlugin.ts`; `packages/core/src/react/stores/plate/usePluginOption.ts`. Usage census plus render/subscription tests. |
+| `<Plite>` invalid modes | `PliteProps` independently allows `editor?` and `root?`, then rejects `editor + root` and missing-runtime cases at runtime. | Prefer distinct main component modes such as `<Plite editor>` and `<PliteRoot>` under `<PliteRuntime>`; at minimum encode a discriminated union. | Runtime-only invalid combinations. | `best-api review` → `plite-plan` → Plite React owner | `packages/plite-react/src/components/plite.tsx:240-285`. Negative type tests and provider/multi-root adoption. |
+| Curried extension definition | `defineEditorExtension<CustomEditor>()({...})` is an empty-call inference workaround repeated in packages, examples, and docs. | Fix direct-call inference through typed dependencies/capabilities. Do not add cosmetic `.for()` machinery. | Empty generic-only call layer. | `best-api review` → `plite-plan` → Plite type owner | `packages/plite/src/core/editor-extension.ts`; repository audit of `defineEditorExtension<...>()`. Compile-only positive/negative inference tests. |
+| Editor/runtime/view constructors | `createEditorRuntime` and `createEditorView` create peer facades around the editor and copy a broad surface. The advanced multi-root owner is not obvious. | Keep ergonomic `createEditor`; let one advanced runtime owner create scoped views. Do not cut until multi-root identity and subscription semantics are audited. | Peer constructors that do not retain an independent external job. | `best-api design` → `plite-plan` → Plite runtime owner | `packages/plite/src/editor-runtime-view.ts`; identity, subscription, history/collaboration, and multi-root proof. |
+| Dynamic Plite installation naming | `editor.extend(extension)` performs host-level installation and returns an uninstall function. The behavior is sound, but `extend` is also Plate's authoring verb and does not say “install” at the call site. | Review `editor.install(extension) -> uninstall` against current ecosystem use. Rename only if the clearer verb wins after real caller and migration cost; this is not a reason to redesign the lifecycle. | Parallel aliases. Hard-cut one name if changed. | `best-api review` → `plite-plan` | `packages/plite/src/interfaces/editor.ts:1284-1305`; `content/docs/plite/api/nodes/editor.mdx:478-507`. Call-site audit plus lifecycle tests. |
+
+## P3
+
+| Surface | Current friction | Best direction | Delete / hide | Owner | Proof |
+| --- | --- | --- | --- | --- | --- |
+| API teaching after structural cuts | Current reference pages faithfully teach surfaces that P1 work should shrink. Editing wording first would polish the wrong ontology. | Update method maps, JSDoc, English/Chinese reference pages, and one canonical example only after each owning API decision lands. | Stale method inventories and examples for removed helpers. | `docs-creator` after owner implementation | Current method maps cited above; docs/source exact-name audit after each cut. |
+
+## Keep
+
+These are not debt:
+
+- `editor.api.markdown.{serialize, deserialize, deserializeInline}` is the right
+  root capability surface. It is implemented at
+  `packages/markdown/src/lib/MarkdownPlugin.ts:72-89`. Markdown options
+  correctly remain under `editor.plugin(MarkdownPlugin)`. Duplicate
+  editor-bound free helpers are P1 debt, not a second accepted route.
+- Table update verbs are already flat:
+  `table.update.insert`, `insertColumn`, `insertRow`, `remove`, `removeColumn`,
+  `removeRow`, `merge`, and `split`
+  (`packages/table/src/lib/BaseTablePlugin.ts:2146-2184`). Do not replace them
+  with `update.insert.table` taxonomy.
+- Plite's common lifecycle is coherent:
+  `editor.read.group.method`, `editor.read(fn)`,
+  `editor.update.group.method`, configured `editor.update(policy).group.method`,
+  and atomic `editor.update(policy?, fn)`. The callable implementation is deep
+  internal typing, not user-facing complexity.
+- Descriptor-scoped access and root `editor.api` have distinct jobs:
+  token-owned inference versus installed root groups. Keep both concepts, but
+  replace current `getApi` key guessing with truthful descriptor identity.
+- One mutable Plate `options` channel is enough. Internal runtime state should
+  leave it; an immutable `config` twin should not return.
+- `ContentSlice` is transport and `DocumentChange` is public mutation truth.
+- Plite command descriptors with `handle` for fallback and `around` only for
+  real delegation/composition are the right behavior primitive.
+- Atomic validated extension reconfiguration with rollback and one publication
+  commit is correct runtime law; the slot type must catch up to it.
+- Large coherent owner files are valid. File length alone is not API debt.
+
+## Rejected Architecture
+
+- No global behavior profiles.
+- No typed `TablePlugin.extensions.paste` registry.
+- No `.omitExtension()` / `.replaceExtension()` method family.
+- No safe-runtime-toggle promise before a real runtime host requires it.
+- No diagnostics configuration on every plugin.
+- No file splitting or extraction because a coherent owner is large.
+
+The scalable shape is smaller: inline named contributions at the plugin owner,
+feature-local static composition where users need it, private runtime state,
+and one optional central inspector built from truthful internal ownership.
+
+## Target Call-Site Sketches
+
+These test the ontology. Exact spelling remains a `best-api design` decision
+inside the owning plan.
+
+### One inferred Plate definition
+
+```ts
+export const CounterPlugin = createPlatePlugin({
+  key: 'counter',
+  options: { value: 0 },
+  selectors: ({ getOption }) => ({
+    doubled: () => getOption('value') * 2,
+  }),
+  api: ({ getOption }) => ({
+    isEmpty: () => getOption('value') === 0,
+  }),
+  tx: ({ getOption, tx }) => ({
+    insertLabel: () => tx.text.insert(`Count: ${getOption('value')}`),
+  }),
+});
+
+const counter = editor.plugin(CounterPlugin);
+
+counter.api.isEmpty();
+counter.update.insertLabel();
+```
+
+`api` and `tx` are scoped. A deliberate root contribution uses a visibly
+different advanced field such as `editorApi`; Markdown owns
+`editorApi.markdown`.
+
+### Full default, small static composition
+
+```ts
+plugins: [TablePlugin]
+```
+
+The advanced spelling is deliberately unresolved. `best-api design` must
+compare ordinary descriptor composition with at most one generic static
+composition primitive; it must reject a Table-only `behaviors` map. The
+important contract is:
+
+- ordinary callers still install one Table plugin;
+- only meaningful optional capabilities get ordinary descriptor identities;
+- those descriptors stay colocated inline at the Table owner unless another
+  owner actually reuses them;
+- schema, grid integrity, index invalidation, and command invariants remain
+  mandatory Table ownership;
+- composition is installation-time by default;
+- no second behavior DSL, global registry, profile, receipt, or runtime-control
+  system appears.
+
+## Recommended Execution Order
+
+1. `plite-plan`: settle typed extension identity, descriptor-scoped access,
+   slot replacement typing, duplicate/dependency law, and advanced read-only
+   inspection.
+2. `plate-plan`: replace the Core method taxonomy and contradictory API
+   ownership with one inferred definition shape; settle option/state lifetime
+   in the same type model.
+3. `plate-plan`: pilot static optional capability composition in Table, then
+   shrink Table and Suggestion portals using real external callers.
+4. Separate owner plans hard-cut DOM clipboard leakage, public `ChangeSet`,
+   implicit React History, and multi-owner `maxLength`.
+5. P1/P2 cleanup follows the owning P0 shapes. Do not polish docs for rejected
+   APIs first.
+
+Do not implement these rows as independent local patches. P0 rows change
+foundational type or runtime ownership and need accepted targets plus
+coordinated adoption proof.

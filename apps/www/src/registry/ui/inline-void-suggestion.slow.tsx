@@ -13,7 +13,7 @@ import type { PlateEditor } from 'platejs/react';
 const useFocusedMock = mock();
 const useReadOnlyMock = mock();
 const useSelectedMock = mock();
-const useEditorRefMock = mock();
+const useEditorMock = mock();
 const useEditorSelectorMock = mock();
 const useElementMock = mock();
 const useMountedMock = mock();
@@ -60,7 +60,7 @@ mock.module('platejs/react', () => ({
   ),
   createPrimitiveComponent: () => () => () => null,
   useEditorPlugin: useEditorPluginMock,
-  useEditorRef: useEditorRefMock,
+  useEditor: useEditorMock,
   useEditorSelector: useEditorSelectorMock,
   useElement: useElementMock,
   useEditorFocused: useFocusedMock,
@@ -76,7 +76,10 @@ mock.module('@platejs/math/react', () => ({
 
 mock.module('@platejs/date', () => ({
   formatDateValue: (date: Date) =>
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      '0'
+    )}-${String(date.getDate()).padStart(2, '0')}`,
   getDateDisplayLabel: ({
     date,
     rawDate,
@@ -89,12 +92,6 @@ mock.module('@platejs/date', () => ({
 
 mock.module('@platejs/mention', () => ({
   getMentionOnSelectItem: () => () => {},
-}));
-
-mock.module('@platejs/link', () => ({
-  getLinkAttributes: () => ({
-    href: 'https://example.com',
-  }),
 }));
 
 mock.module('@platejs/selection/react', () => ({
@@ -152,13 +149,19 @@ mock.module('./inline-combobox', () => ({
 }));
 
 describe('inline void suggestion styling', () => {
-  const editor = {} as PlateEditor;
+  const editor = {
+    plugin: () => ({
+      api: {
+        getAttributes: () => ({ href: 'https://example.com' }),
+      },
+    }),
+  } as unknown as PlateEditor;
 
   beforeEach(() => {
     useFocusedMock.mockReset();
     useReadOnlyMock.mockReset();
     useSelectedMock.mockReset();
-    useEditorRefMock.mockReset();
+    useEditorMock.mockReset();
     useEditorSelectorMock.mockReset();
     useEditorPluginMock.mockReset();
     useElementMock.mockReset();
@@ -169,7 +172,7 @@ describe('inline void suggestion styling', () => {
     useFocusedMock.mockReturnValue(false);
     useReadOnlyMock.mockReturnValue(false);
     useSelectedMock.mockReturnValue(false);
-    useEditorRefMock.mockReturnValue(editor);
+    useEditorMock.mockReturnValue(editor);
     useEditorSelectorMock.mockReturnValue(false);
     useEditorPluginMock.mockReturnValue({
       api: {

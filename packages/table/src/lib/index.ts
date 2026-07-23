@@ -3,20 +3,4 @@
  */
 
 export * from './BaseTablePlugin';
-export * from './constants';
-export * from './normalizeInitialValueTable';
 export * from './types';
-export * from './withApplyTable';
-export * from './withDeleteTable';
-export * from './withGetFragmentTable';
-export * from './withInsertFragmentTable';
-export * from './withInsertTextTable';
-export * from './withNormalizeTable';
-export * from './withSetFragmentDataTable';
-export * from './withTable';
-export * from './withTableCellSelection';
-export * from './api/index';
-export * from './merge/index';
-export * from './queries/index';
-export * from './transforms/index';
-export * from './utils/index';

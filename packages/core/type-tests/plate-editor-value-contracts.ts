@@ -49,19 +49,19 @@ const LayoutPlugin = createPlatePlugin<LayoutConfig>({
   .extendEditorApi(({ getOptions }) => ({
     getVariant: () => getOptions().variant,
   }))
-  .extendTx(({ plugin }) => () => ({
+  .extendTx(({ setOption }) => () => ({
     setDensity: (density) => {
-      plugin.options.density = density;
+      setOption('density', density);
     },
   }));
 
-const ConfiguredLayoutPlugin = LayoutPlugin.configure({
-  options: {
-    variant: 'compact',
-  },
-}).extend({
+const ConfiguredLayoutPlugin = LayoutPlugin.extend({
   options: {
     density: 2,
+  },
+}).configure({
+  options: {
+    variant: 'compact',
   },
 });
 
@@ -127,7 +127,7 @@ void layoutVariant;
 void mentionTrigger;
 void toolbarDescription;
 
-ConfiguredLayoutPlugin.configure({
+LayoutPlugin.configure({
   options: {
     // @ts-expect-error invalid configured option value
     density: 3,

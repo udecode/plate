@@ -2,7 +2,7 @@ import {
   isHtmlComment,
   removeHtmlNodesBetweenComments,
   traverseHtmlElements,
-} from '@platejs/core';
+} from '@platejs/core/internal';
 
 /** Remove HTML nodes between comments in the next sibling after BR. */
 export const cleanDocxBrComments = (rootNode: Node): void => {

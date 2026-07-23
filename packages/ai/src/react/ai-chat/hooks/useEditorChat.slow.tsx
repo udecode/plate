@@ -21,7 +21,7 @@ describe('useEditorChat', () => {
         BlockSelectionPlugin,
         AIChatPlugin,
       ],
-      value: [
+      initialValue: [
         { children: [{ text: 'one' }], id: 'b1', type: 'p' },
         { children: [{ text: 'two' }], id: 'b2', type: 'p' },
       ],

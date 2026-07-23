@@ -46,6 +46,9 @@ Current priorities:
 
 - Core stays lean; optional capability should usually ship as packages,
   plugins, or app-owned components.
+- Plugin authoring keeps one-owner behavior colocated and inferred. Public
+  builders, configuration paths, and contribution namespaces each need a
+  distinct user job; current assembly machinery is evidence, not doctrine.
 - React files follow durable families rather than individual symbols. Keep a
   component family in one `<Family>.tsx` file and a hook family in one
   `use<Family>.ts` file; related public primitives and hooks may remain separate
@@ -67,11 +70,12 @@ Current priorities:
 ## Public API And Plugin Doctrine
 
 - If work touches a reusable public/editor-platform API, use root `VISION.md`
-  and this file first.
+  and this file first, then use `best-api` to choose or review the call shape.
 - If work touches runtime/service-boundary architecture, use root `VISION.md`
   and this file first.
 - If work is ambiguous between reusable API design and implementation, route
-  upward to vision first.
+  API shape to `best-api`; route adoption and implementation to the layer
+  owner after the target is clear.
 - If the public pattern is settled and the task is plugin execution, hand off
   to `plate-plugin-creator`.
 - App-local convenience, one-off demos, and package-local mechanics do not need
@@ -88,7 +92,9 @@ Owner map:
 | internal Plate/Plite long quality loops | `auto` |
 | post-merge/current-tree until-clean closure | `autoclosure` |
 | reusable architecture doctrine | root `VISION.md` and `docs/vision/*.md` |
-| public API shape decisions | root `VISION.md` and `docs/vision/*.md` |
+| durable public API doctrine | root `VISION.md` and `docs/vision/*.md` |
+| concrete public API design, review, and debt ranking | `best-api` |
+| Plate API adoption, rollout, and proof plan | `plate-plan` |
 | runtime/service-boundary patterns | root `VISION.md` and `docs/vision/*.md` |
 | layering / ownership law | root `VISION.md` and `docs/vision/*.md` |
 | performance/scalability law | root `VISION.md` and `docs/vision/*.md` |

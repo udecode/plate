@@ -4,43 +4,6 @@ import { openExample } from '@platejs/browser/playwright';
 
 const commentModeIntroSelectionText = 'Comment mode in Plite';
 
-const selectCommentModeIntro = async (page: Page) => {
-  await page.locator('#comment-mode').evaluate((root, selectionText) => {
-    const document = root.ownerDocument;
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    let textNode: Node | null = null;
-
-    let nextNode = walker.nextNode();
-
-    while (nextNode) {
-      if (nextNode.textContent?.startsWith(selectionText)) {
-        textNode = nextNode;
-        break;
-      }
-
-      nextNode = walker.nextNode();
-    }
-
-    if (!textNode?.textContent) {
-      throw new Error('Comment mode intro text node was not found');
-    }
-
-    const range = document.createRange();
-    range.setStart(textNode, 0);
-    range.setEnd(textNode, selectionText.length);
-
-    const selection = document.defaultView?.getSelection();
-
-    if (!selection) {
-      throw new Error('Window selection is unavailable');
-    }
-
-    selection.removeAllRanges();
-    selection.addRange(range);
-    document.dispatchEvent(new Event('selectionchange'));
-  }, commentModeIntroSelectionText);
-};
-
 const selectCommentModeIntroWithPointer = async (
   page: Page,
   rootSelector = '#comment-mode'
@@ -315,7 +278,7 @@ test.describe('comment mode example', () => {
       'Comment mode in Plite'
     );
 
-    await selectCommentModeIntro(page);
+    await selectCommentModeIntroWithPointer(page);
     await expect(
       page.getByRole('button', { name: 'Add comment on selection' })
     ).toBeEnabled();

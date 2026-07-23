@@ -1,5 +1,6 @@
 import { property, createEditor, type Value } from '@platejs/plite';
 
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { someHtmlElement } from '../../lib/plugins/html/utils/findHtmlElement';
@@ -164,7 +165,7 @@ describe('PlateEditor', () => {
         plugins: [BoldPlugin],
       });
 
-      expect(editor.plugins[BoldPlugin.key]).toBeDefined();
+      expect(getPlateRuntime(editor).plugins[BoldPlugin.key]).toBeDefined();
     });
   });
 });

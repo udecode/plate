@@ -36,13 +36,15 @@ const ExampleComboboxPlugin = createBasePlugin<ExampleComboboxConfig>({
   ],
 }).extendExtension(withTriggerCombobox);
 
+const readonlyTriggers = ['@', '#'] as const;
+
 const plugins = [
   BaseParagraphPlugin,
 
   ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
     key: 'exampleCombobox1',
     options: {
-      trigger: ['@', '#'],
+      trigger: readonlyTriggers,
       triggerPreviousCharPattern: /^$|^[\s"']$/,
       createComboboxInput: (trigger: string) => ({
         children: [{ text: '' }],

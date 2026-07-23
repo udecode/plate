@@ -1,9 +1,4 @@
-import {
-  createEditor,
-  property,
-  schema,
-  target,
-} from '@platejs/plite';
+import { createEditor, property, schema, target } from '@platejs/plite';
 
 import type { PluginConfig, PluginReference } from '../../lib/plugin';
 
@@ -11,6 +6,7 @@ import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins';
 import {
+  getPlateRuntime,
   getPlateModelPublication,
   getResolvedPluginTargetBinding,
 } from './compilePlateModel';
@@ -313,18 +309,22 @@ describe('compilePlateModel', () => {
       plugins: [ElementPlugin, MarkPlugin, RuntimeOnlyPlugin],
     });
 
-    expect(editor.runtime.components).toEqual({
+    expect(getPlateRuntime(editor).components).toEqual({
       renderElement: ElementComponent,
       renderMark: MarkComponent,
     });
-    expect(editor.runtime.pluginCache.node.leafProps).toEqual(['renderMark']);
-    expect(editor.runtime.pluginCache.node.textProps).toEqual(['renderMark']);
-    expect(editor.runtime.pluginCache.node.types).toMatchObject({
+    expect(getPlateRuntime(editor).pluginCache.node.leafProps).toEqual([
+      'renderMark',
+    ]);
+    expect(getPlateRuntime(editor).pluginCache.node.textProps).toEqual([
+      'renderMark',
+    ]);
+    expect(getPlateRuntime(editor).pluginCache.node.types).toMatchObject({
       'render-element': 'renderElement',
       'render-mark': 'renderMark',
     });
     expect(
-      editor.runtime.pluginCache.node.types['runtime-only']
+      getPlateRuntime(editor).pluginCache.node.types['runtime-only']
     ).toBeUndefined();
   });
 
@@ -393,15 +393,16 @@ describe('compilePlateModel', () => {
         TextOnlyPlugin,
       ],
     });
-    const customContainerTypes =
-      editor.runtime.pluginCache.node.containerTypes.filter((key) =>
-        [
-          DirectContainerPlugin.key,
-          GroupContainerPlugin.key,
-          InlineContainerPlugin.key,
-          TextOnlyPlugin.key,
-        ].includes(key)
-      );
+    const customContainerTypes = getPlateRuntime(
+      editor
+    ).pluginCache.node.containerTypes.filter((key) =>
+      [
+        DirectContainerPlugin.key,
+        GroupContainerPlugin.key,
+        InlineContainerPlugin.key,
+        TextOnlyPlugin.key,
+      ].includes(key)
+    );
 
     expect(customContainerTypes).toEqual([
       DirectContainerPlugin.key,
@@ -443,7 +444,7 @@ describe('compilePlateModel', () => {
     expect(resolved.options).toEqual({
       label: 'configured',
       nested: { value: 1 },
-      targets: [TargetPlugin],
+      targets: [{ key: 'configuredTarget', type: 'configuredTarget' }],
     });
   });
 
@@ -530,9 +531,9 @@ describe('compilePlateModel', () => {
       'missingOptionalHeading',
       'configuredHeading',
     ]);
-    expect(
-      Object.isFrozen(installedPropertyPlugin.targetPluginKeys)
-    ).toBe(true);
+    expect(Object.isFrozen(installedPropertyPlugin.targetPluginKeys)).toBe(
+      true
+    );
     expect(targetBinding.keys).toEqual(['configuredHeading']);
     expect(targetBinding.missingKeys).toEqual(['missingOptionalHeading']);
     expect(targetBinding.types).toEqual(['heading']);

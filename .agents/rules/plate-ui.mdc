@@ -94,16 +94,12 @@ and registry wiring.
 - Prefer one readable file with local subparts over scattering tiny hooks.
 - Review custom code like an upstream diff: would this still feel like open source, or like framework sludge?
 
-## Major-Release Law
+## Reusable Hook API Gate
 
-For the future redesign, use this as the default:
-
-**Package React hooks that mainly return renderer-specific UI props/state
-should be deprecated and moved app-local. Package layers keep cross-platform
-semantic/view-model contracts only.**
-
-If an existing hook breaks this law, do not copy it into new work just because
-it already exists.
+Renderer-specific UI state usually stays app-local; cross-platform semantic
+contracts are stronger package candidates. This is ownership pressure, not a
+frozen public API answer. Use `best-api design/review` before introducing,
+moving, or breaking a reusable component/hook surface.
 
 ## Extraction Test
 

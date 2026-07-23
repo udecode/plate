@@ -93,21 +93,19 @@ const editor = createPlateEditor({
     FilePlugin,
     MediaEmbedPlugin,
     CaptionPlugin.configure({
-      config: {
-        targets: [
-          ImagePlugin,
-          VideoPlugin,
-          AudioPlugin,
-          FilePlugin,
-          MediaEmbedPlugin,
-        ],
-      },
+      targetPluginKeys: [
+        ImagePlugin.key,
+        VideoPlugin.key,
+        AudioPlugin.key,
+        FilePlugin.key,
+        MediaEmbedPlugin.key,
+      ],
     }),
   ],
 });
 ```
 
-- `config.targets`: 支持标题功能的元素插件描述符
+- `targetPluginKeys`: 支持标题功能的元素插件 key
 
 </Steps>
 
@@ -119,11 +117,11 @@ const editor = createPlateEditor({
 
 <API name="CaptionPlugin">
 
-不可变配置：
+Schema 目标：
 
-- `targets?: PluginReference[]` — 节点可存储标题内容的元素插件。
+- `targetPluginKeys?: string[]` — 节点可存储标题内容的元素插件 key。
 
-运行时选项：
+选项：
 
 <APIOptions>
   <APIItem name="focusEndPath" type="Path" optional>

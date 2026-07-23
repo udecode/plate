@@ -55,6 +55,8 @@ Advance baseline only when all are true:
 - root or detail vision docs were patched or explicitly reaffirmed for
   reusable taste;
 - owner-routed items have concrete owners;
+- reusable API-taste changes record `best-api repair` or an explicit
+  `best-api` reaffirmation;
 - deferred questions are listed with recommendations;
 - generated mirrors are synced when source rules changed;
 - the active plan passes `check-complete.mjs`.
@@ -63,6 +65,7 @@ Do not advance baseline when:
 
 - the run is `status` or `preview`;
 - a candidate changes product/API taste and no default can be inferred;
+- a reusable API-taste change has not repaired or reaffirmed `best-api`;
 - a source rule changed but generated mirror sync failed;
 - the helper reports a git/ref error;
 - only uncommitted overlay input exists.
@@ -90,3 +93,7 @@ Capture shape:
   file;
 - add an example trigger under correction patterns when wording matters;
 - keep evidence and raw answer text in the active goal plan.
+
+For reusable API taste, repair or explicitly reaffirm `best-api` in the same
+workflow. Vision stores the durable principle; the skill stores how agents
+apply and review it.

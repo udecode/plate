@@ -38,6 +38,21 @@ const contextualConfigureKeys = new Set([
   'render',
   'shortcuts',
 ]);
+const pluginAuthoringMethods = new Set([
+  'clone',
+  'configure',
+  'configurePlugin',
+  'extend',
+  'extendApi',
+  'extendEditorApi',
+  'extendExtension',
+  'extendPlugin',
+  'extendSelectors',
+  'extendTx',
+  'extendTxGroup',
+  'withComponent',
+]);
+const removedEditorConstructorKeys = new Set(['onReady', 'value']);
 
 const toPosixPath = (path) => path.split(sep).join('/');
 
@@ -172,9 +187,79 @@ const isPluginFactoryCall = (node) =>
   node.callee.type === 'Identifier' &&
   pluginFactoryNamePattern.test(node.callee.name);
 
+const readMemberCallName = (node) =>
+  node?.type === 'CallExpression' &&
+  node.callee.type === 'MemberExpression' &&
+  !node.callee.computed
+    ? getPropertyName(node.callee.property)
+    : undefined;
+
 const isFunction = (node) =>
   node?.type === 'ArrowFunctionExpression' ||
-  node?.type === 'FunctionExpression';
+  node?.type === 'FunctionExpression' ||
+  node?.type === 'ObjectMethod';
+
+const getStaticFunctionResult = (node) => {
+  if (!isFunction(node)) return;
+
+  const body = unwrapTypedExpression(node.body);
+
+  if (body?.type !== 'BlockStatement') return body;
+  const returns = body.body.filter(
+    (statement) => statement.type === 'ReturnStatement'
+  );
+
+  return returns.length === 1
+    ? unwrapTypedExpression(returns[0].argument)
+    : undefined;
+};
+
+const isPromiseExpression = (node) =>
+  (node?.type === 'NewExpression' &&
+    node.callee.type === 'Identifier' &&
+    node.callee.name === 'Promise') ||
+  (node?.type === 'CallExpression' &&
+    node.callee.type === 'MemberExpression' &&
+    getPropertyName(node.callee.object) === 'Promise');
+
+const readInvalidInitialValueReason = (property) => {
+  if (!property) return;
+  const value =
+    property.type === 'ObjectMethod'
+      ? property
+      : unwrapTypedExpression(property.value);
+
+  if (isFunction(value)) {
+    if (value.async) return 'editor initialValue callbacks must be synchronous';
+
+    return readInvalidInitialValueReason({
+      type: 'ObjectProperty',
+      value: getStaticFunctionResult(value),
+    });
+  }
+  if (isPromiseExpression(value)) {
+    return 'editor initialValue cannot be a Promise; applications own async loading';
+  }
+  if (value?.type === 'NullLiteral') {
+    return 'editor initialValue cannot be null';
+  }
+  if (value?.type === 'ArrayExpression' && value.elements.length === 0) {
+    return 'editor initialValue must contain at least one element';
+  }
+  if (
+    value &&
+    [
+      'BigIntLiteral',
+      'BooleanLiteral',
+      'DecimalLiteral',
+      'NumericLiteral',
+      'RegExpLiteral',
+      'StringLiteral',
+    ].includes(value.type)
+  ) {
+    return 'editor initialValue must be a document value or synchronous callback';
+  }
+};
 
 const inspectContextualConfigure = (callback) => {
   const body = unwrapTypedExpression(callback?.body);
@@ -287,6 +372,27 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
     }
 
     visit(ast, (node) => {
+      const memberCallName = readMemberCallName(node);
+      const memberCallOwner =
+        node?.callee?.type === 'MemberExpression'
+          ? unwrapTypedExpression(node.callee.object)
+          : undefined;
+
+      if (
+        memberCallName &&
+        pluginAuthoringMethods.has(memberCallName) &&
+        readMemberCallName(memberCallOwner) === 'configure'
+      ) {
+        issues.push(
+          createIssue(
+            file,
+            fence,
+            node,
+            'configure must be the final plugin authoring call'
+          )
+        );
+      }
+
       const pliteElements = getStaticPliteElementMap(node);
 
       for (const elementProperty of pliteElements?.properties ?? []) {
@@ -412,6 +518,36 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
         }
 
         const options = argument;
+
+        for (const property of options.properties) {
+          if (
+            property.type !== 'SpreadElement' &&
+            removedEditorConstructorKeys.has(getPropertyName(property.key))
+          ) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                `editor construction does not accept ${getPropertyName(property.key)}`
+              )
+            );
+          }
+        }
+        const initialValueProperty = getObjectProperty(options, 'initialValue');
+        const invalidInitialValueReason =
+          readInvalidInitialValueReason(initialValueProperty);
+
+        if (invalidInitialValueReason) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              initialValueProperty,
+              invalidInitialValueReason
+            )
+          );
+        }
         const schemaProperty = getObjectProperty(options, 'schema');
         const identity = readSchemaIdentity(schemaProperty);
 

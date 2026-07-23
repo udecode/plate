@@ -2,6 +2,7 @@ import { schema } from '@platejs/plite';
 
 import type { PlatePlugin, RenderNodeWrapper } from './PlatePlugin';
 
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import {
   type ExtendConfig,
@@ -71,7 +72,7 @@ describe('toPlatePlugin', () => {
     const editor = createPlateEditor({
       plugins: [ParagraphPlugin],
     });
-    const resolvedPlugin = editor.plugins.p as any;
+    const resolvedPlugin = getPlateRuntime(editor).plugins.p as any;
 
     expect(resolvedPlugin.render.node).toBe(MockComponent);
     expect(resolvedPlugin.render.aboveEditable).toBe(MockAboveComponent);
@@ -98,7 +99,7 @@ describe('toPlatePlugin', () => {
     const editor = createPlateEditor({
       plugins: [ParagraphPlugin],
     });
-    const resolvedPlugin = editor.plugins.p as any;
+    const resolvedPlugin = getPlateRuntime(editor).plugins.p as any;
 
     expect(resolvedPlugin.render.node).toBe(MockComponent);
     expect(resolvedPlugin.options).toHaveProperty('editorId');
@@ -122,7 +123,7 @@ describe('toPlatePlugin', () => {
     const editor = createPlateEditor({
       plugins: [ParagraphPlugin],
     });
-    const resolvedPlugin = editor.plugins.p as any;
+    const resolvedPlugin = getPlateRuntime(editor).plugins.p as any;
 
     expect(resolvedPlugin.handlers).toHaveProperty('onKeyDown', mockOnKeyDown);
     expect(resolvedPlugin.handlers).toHaveProperty(
@@ -577,5 +578,14 @@ describe('toPlatePlugin with direct merge for object configs', () => {
     const resolvedPlugin = resolvePluginTest(componentPlugin);
 
     expect(resolvedPlugin.render.node).toBe(NewComponent);
+  });
+
+  it('preserves terminal configuration through the Plate wrapper', () => {
+    const configured = createBasePlugin({
+      key: 'configuredBase',
+    }).configure({});
+    const plugin = toPlatePlugin(configured);
+
+    expect(() => (plugin.extend as any)({})).toThrow('already configured');
   });
 });

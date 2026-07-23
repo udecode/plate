@@ -100,4 +100,47 @@ describe('useSelectionArea', () => {
     expect(setOption).toHaveBeenCalledWith('isSelectionAreaVisible', true);
     expect(setOption).toHaveBeenCalledWith('isSelectionAreaVisible', false);
   });
+
+  it('materializes immutable selector arrays at the SelectionArea boundary', async () => {
+    const boundaries = Object.freeze(['#boundary']);
+    const container = Object.freeze(['#container']);
+    const modifiers = Object.freeze(['shift'] as const);
+    const selectables = Object.freeze(['.selectable']);
+    const startAreas = Object.freeze(['#start']);
+    const triggers = Object.freeze([{ button: 0 as const, modifiers }]);
+    const areaOptions = Object.freeze({
+      behaviour: Object.freeze({ triggers }),
+      boundaries,
+      container,
+      selectables,
+      startAreas,
+    });
+
+    useEditorPluginMock.mockReturnValue({
+      api: { clear: mock() },
+      editor: { id: 'editor' },
+      getOption: mock(),
+      getOptions: mock(() => ({ areaOptions })),
+      setOption: mock(),
+    });
+
+    const { useSelectionArea } = await loadModule();
+    renderHook(() => useSelectionArea());
+
+    const options = lastSelectionArea!.options as {
+      behaviour: { triggers: Array<{ modifiers: string[] }> };
+      boundaries: string[];
+      container: string[];
+      selectables: string[];
+      startAreas: string[];
+    };
+
+    expect(options.boundaries).toEqual(['#boundary']);
+    expect(options.boundaries).not.toBe(boundaries);
+    expect(options.container).not.toBe(container);
+    expect(options.selectables).not.toBe(selectables);
+    expect(options.startAreas).not.toBe(startAreas);
+    expect(options.behaviour.triggers).not.toBe(triggers);
+    expect(options.behaviour.triggers[0]!.modifiers).not.toBe(modifiers);
+  });
 });

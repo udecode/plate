@@ -22,6 +22,7 @@ import {
 } from './core/editor-runtime';
 import { createEditorSchema } from './core/editor-schema';
 import { createAnchor } from './core/anchor';
+import { hasActiveAnchors } from './core/anchor-state';
 import {
   assertSelectionSupported,
   mapSelectionThroughChange,
@@ -44,11 +45,13 @@ import {
   getPathByRuntimeId,
   getRuntimeId,
   getSnapshot,
+  createTransactionSpec,
+  initializeEditorSchemaSelection,
   initializeEditorSchemaDocument,
+  invalidateEditorTransactionSpecs,
   initializePublicState,
   readEditor,
   repairEditorValue,
-  setCurrentSelection,
   subscribe,
   subscribeCommit,
   subscribeSource,
@@ -70,6 +73,7 @@ import type {
   EditorExtension,
   EditorExtensionInput,
   EditorSnapshot,
+  EditorTransactionSpecBuilder,
   EditorUpdateContext,
   EditorUpdateTransaction,
   EditorValueFromExtensions,
@@ -184,8 +188,18 @@ export const createInternalClipboardApi = (
 const publishInitialEditorExtensions = <TEditor extends Editor>(
   editor: TEditor,
   input: EditorExtensionInput<TEditor>,
-  explicitInitialDocument: boolean
+  explicitInitialDocument: boolean,
+  initialize?: (
+    transaction: EditorTransactionSpecBuilder<
+      TEditor extends Editor<infer V> ? V : Value
+    >
+  ) => void
 ) => {
+  if (hasActiveAnchors(editor)) {
+    throw new Error(
+      'Editor schema initialization requires an editor without active anchors.'
+    );
+  }
   const publication = prepareInitialEditorExtensionPublication(
     editor,
     input,
@@ -220,32 +234,68 @@ const publishInitialEditorExtensions = <TEditor extends Editor>(
             'Initial selection cannot be mapped through schema fitting.'
           );
         }
-        setCurrentSelection(editor, mapped, initialSelectionRoot);
+        initializeEditorSchemaSelection(editor, mapped, initialSelectionRoot);
       }
     }
-    const publishedDocument = getEditorDocumentValue(editor);
+    const validatePublishedDocument = () => {
+      const publishedDocument = getEditorDocumentValue(editor);
 
-    if (explicitInitialDocument && publishedDocument.children.length === 0) {
-      throw new Error(
-        '[Plite] initialValue is invalid! Expected at least one element.'
+      if (explicitInitialDocument && publishedDocument.children.length === 0) {
+        throw new Error(
+          '[Plite] initialValue is invalid! Expected at least one element.'
+        );
+      }
+
+      assertSelectionSupported(
+        editor,
+        getLiveSelection(editor),
+        publishedDocument
       );
-    }
+      if (publication.configurationChanged) {
+        publication.validateDocument(publishedDocument);
+      } else {
+        getEditorSchema(editor).validateDocument(publishedDocument);
+      }
+    };
 
-    assertSelectionSupported(
-      editor,
-      getLiveSelection(editor),
-      publishedDocument
-    );
-    if (publication.configurationChanged) {
-      publication.validateDocument(publishedDocument);
-    } else {
-      getEditorSchema(editor).validateDocument(publishedDocument);
+    validatePublishedDocument();
+
+    if (initialize) {
+      const spec = createTransactionSpec(editor, initialize as never);
+
+      if (
+        spec.effects.length > 0 ||
+        spec.annotations.length > 0 ||
+        spec.tags.length > 0
+      ) {
+        throw new Error(
+          'Editor schema initialization cannot publish effects, annotations, or tags.'
+        );
+      }
+      const initializedDocument = spec.changes.apply(
+        getEditorDocumentValue(editor)
+      );
+
+      initializeEditorSchemaDocument(editor, initializedDocument);
+      if (spec.selection) {
+        initializeEditorSchemaSelection(
+          editor,
+          spec.selection.value,
+          spec.selection.root ?? 'main'
+        );
+      }
+      validatePublishedDocument();
     }
     publication.finalize();
+    invalidateEditorTransactionSpecs(editor);
   } catch (error) {
     publication.rollback();
     initializeEditorSchemaDocument(editor, initialDocument);
-    setCurrentSelection(editor, initialSelection, initialSelectionRoot);
+    initializeEditorSchemaSelection(
+      editor,
+      initialSelection,
+      initialSelectionRoot
+    );
     throw error;
   }
   publication.ready();
@@ -258,7 +308,14 @@ const publishInitialEditorExtensions = <TEditor extends Editor>(
 /** @internal Replace the derived base schema on one unchanged raw editor. */
 export const initializeEditorExtensions = <TEditor extends Editor>(
   editor: TEditor,
-  input: EditorExtensionInput<TEditor>
+  input: EditorExtensionInput<TEditor>,
+  options: Readonly<{
+    initialize?: (
+      transaction: EditorTransactionSpecBuilder<
+        TEditor extends Editor<infer V> ? V : Value
+      >
+    ) => void;
+  }> = {}
 ) => {
   if (!PENDING_SCHEMA_BOOTSTRAP.has(editor)) {
     throw new Error(
@@ -282,7 +339,12 @@ export const initializeEditorExtensions = <TEditor extends Editor>(
     );
   }
 
-  publishInitialEditorExtensions(editor, input, hasDocument);
+  publishInitialEditorExtensions(
+    editor,
+    input,
+    hasDocument,
+    options.initialize
+  );
 };
 
 /**

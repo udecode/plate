@@ -32,14 +32,14 @@
 
 'use client';
 
-import type { BasePlugins, NodeComponents, PluginConfig } from '@platejs/core';
+import type { BasePlugins, InferConfig, NodeComponents } from '@platejs/core';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import type { Value } from '@platejs/plite';
 import type {
   PlateStaticProps,
-  SerializeHtmlOptions,
+  RenderStaticHtmlOptions,
 } from '@platejs/core/static';
-import { serializeHtml } from '@platejs/core/static';
+import { renderStaticHtml } from '@platejs/core/static';
 
 import juice from 'juice';
 
@@ -250,12 +250,6 @@ export type DocxExportPluginOptions = {
 export type DocxExportOptions = DocxExportOperationOptions &
   DocxExportPluginOptions;
 
-export type DocxExportPluginConfig = PluginConfig<
-  'docxExport',
-  DocxExportPluginOptions,
-  { docxExport: DocxExportApiMethods }
->;
-
 // =============================================================================
 // Plugin Config Types
 // =============================================================================
@@ -347,19 +341,12 @@ async function serializeToHtml(
     options;
 
   const editorStatic = createBaseEditor({
+    components,
     plugins: plugins ?? [],
-    value,
+    initialValue: value,
   });
 
-  // Apply explicit component overrides after plugin resolution.
-  if (components) {
-    editorStatic.runtime.components = {
-      ...editorStatic.runtime.components,
-      ...components,
-    };
-  }
-
-  const htmlOptions: Partial<SerializeHtmlOptions> = {};
+  const htmlOptions: Partial<RenderStaticHtmlOptions> = {};
 
   if (EditorStaticComponent) {
     htmlOptions.editorComponent = EditorStaticComponent;
@@ -371,7 +358,7 @@ async function serializeToHtml(
     };
   }
 
-  const html = await serializeHtml(editorStatic, htmlOptions);
+  const html = await renderStaticHtml(editorStatic, htmlOptions);
 
   return html;
 }
@@ -610,42 +597,43 @@ export async function exportEditorToDocx(
  * downloadDocx(blob, 'my-document.docx');
  * ```
  */
-export const DocxExportPlugin = createBasePlugin<DocxExportPluginConfig>({
+const defaultDocxExportPluginOptions: DocxExportPluginOptions = {};
+
+export const DocxExportPlugin = createBasePlugin({
   key: 'docxExport',
-  options: {
-    editorPlugins: undefined,
-    editorStaticComponent: undefined as
-      | React.ComponentType<PlateStaticProps>
-      | undefined,
-  },
-}).extendEditorApi(({ editor, getOptions, plugin }) => ({
-  docxExport: {
-    download: (blob: Blob, filename: string): void => {
-      downloadDocx(blob, filename);
-    },
-    exportAndDownload: async (
-      filename: string,
-      options: DocxExportOperationOptions = {}
-    ): Promise<void> => {
-      const blob = await editor.api.docxExport.exportToBlob(options);
+  options: defaultDocxExportPluginOptions,
+}).extendEditorApi(({ editor, getOptions, plugin }) => {
+  const exportToBlob = async (
+    options: DocxExportOperationOptions = {}
+  ): Promise<Blob> => {
+    const pluginOptions = getOptions();
 
-      editor.api.docxExport.download(blob, filename);
-    },
-    exportToBlob: async (
-      options: DocxExportOperationOptions = {}
-    ): Promise<Blob> => {
-      const pluginOptions = getOptions();
+    return exportToDocxInternal({
+      ...options,
+      components: plugin.override.components,
+      editorPlugins: pluginOptions.editorPlugins?.map((pluginReference) =>
+        editor.getPlugin(pluginReference)
+      ),
+      editorStaticComponent: pluginOptions.editorStaticComponent,
+      value: [...editor.read.children()],
+    });
+  };
 
-      return exportToDocxInternal({
-        ...options,
-        components: plugin.override.components,
-        editorPlugins: pluginOptions.editorPlugins,
-        editorStaticComponent: pluginOptions.editorStaticComponent,
-        value: [...editor.read.children()],
-      });
+  return {
+    docxExport: {
+      download: downloadDocx,
+      exportAndDownload: async (
+        filename: string,
+        options: DocxExportOperationOptions = {}
+      ): Promise<void> => {
+        downloadDocx(await exportToBlob(options), filename);
+      },
+      exportToBlob,
     },
-  },
-}));
+  };
+});
+
+export type DocxExportPluginConfig = InferConfig<typeof DocxExportPlugin>;
 
 // =============================================================================
 // Re-exports

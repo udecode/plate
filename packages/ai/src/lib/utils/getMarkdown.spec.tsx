@@ -47,8 +47,6 @@ const getTableGridAbove = (editor: BaseEditor): ElementEntry[] => {
   return entries;
 };
 
-mock.module('@platejs/table', () => ({ getTableGridAbove }));
-
 afterAll(() => {
   mock.restore();
 });
@@ -60,7 +58,9 @@ const TableFixturePlugin = createBasePlugin({
       content: schema.content.type(plugins.elementType(TableRowFixturePlugin)),
     },
   }),
-});
+}).extendApi(({ editor }) => ({
+  getGridAbove: () => getTableGridAbove(editor),
+}));
 
 const TableRowFixturePlugin = createBasePlugin({
   key: KEYS.tr,
@@ -93,6 +93,10 @@ const TableHeaderCellFixturePlugin = createBasePlugin({
     },
   }),
 });
+
+mock.module('@platejs/table', () => ({
+  BaseTablePlugin: TableFixturePlugin,
+}));
 
 const createTestEditor = (input: TestEditor) =>
   createBaseEditor({

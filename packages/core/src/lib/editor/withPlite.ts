@@ -1,12 +1,19 @@
 import {
   createEditor,
   defineEditorExtension,
+  defineEditorSchema,
   type Editor,
-  type EditorExtensionInput,
+  type EditorExtension,
+  type EditorExtensionApiFactory,
+  type EditorSchemaPropertyHandle,
+  type EditorSchemaPropertyQuery,
+  type Element,
   type Selection,
   type Value,
 } from '@platejs/plite';
 import {
+  getEditorDefaultBlockType,
+  initializeEditorExtensions,
   runTrustedUpdate,
   setEditorDefaultBlockType,
   setEditorMaxLength,
@@ -14,27 +21,49 @@ import {
 } from '@platejs/plite/internal';
 
 import type { NoInfer } from '../../internal/types';
-import type { PluginStoreFactory } from '../../internal/plugin/resolvePlugins';
+import {
+  attachPlateModelPublication,
+  clearPlateModelPublication,
+  compilePlateModel,
+  createPlateBlockContent,
+  getPlateModelPublication,
+  getPlateRuntime,
+  withCompiledPlateModelCandidate,
+  withCompiledPlatePluginCandidate,
+} from '../../internal/plugin/compilePlateModel';
+import { clearPlateRuntimeCandidate } from '../../internal/plugin/plateRuntime';
+import { clearPluginOptionsStores } from '../../internal/plugin/pluginOptionsStore';
+import { isNominalPluginReference } from '../../internal/utils/mergePlugins';
 import { createPlateChangeHandlersExtension } from '../../internal/plugin/plateChangeHandlers';
 import type {
   AnyPluginConfig,
   NodeComponents,
   PluginConfig,
+  PluginReference,
   WithRequiredKey,
 } from '../plugin/PluginConfig';
 import type {
   AnyBasePlugin,
   BasePlugin,
-  BasePluginContext,
+  InferConfig,
   InjectNodeProps,
-  PlatePluginTxGroup,
 } from '../plugin/BasePlugin';
-import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
+import type { NodeIdOptions } from '../plugins/node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from '../plugins/paragraph/BaseParagraphPlugin';
-import type { InferPlugins, BaseEditor, BasePluginInput } from './BaseEditor';
+import type {
+  InferPlugins,
+  BaseEditor,
+  BasePluginInput,
+  PlateSchemaIdentity,
+} from './BaseEditor';
 
-import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
-import { pipeTransformInitialValue } from '../../internal/plugin/pipeTransformInitialValue';
+import {
+  createPlateModelPublication,
+  createPlateRuntimeExtension,
+  resolvePlugins,
+  snapshotPlatePluginSources,
+} from '../../internal/plugin/resolvePlugins';
+import { transformInitialValue } from '../../internal/plugin/pipeTransformInitialValue';
 import { createBasePlugin } from '../plugin/createBasePlugin';
 import { getBasePlugin, getPluginType } from '../plugin/getBasePlugin';
 import { getEditorPlugin } from '../plugin/getEditorPlugin';
@@ -42,10 +71,19 @@ import {
   type CorePluginConfig,
   getCorePlugins,
 } from '../plugins/getCorePlugins';
-import { deserializeHtml } from '../plugins/html';
 
 type PluginLookupInput = AnyBasePlugin | WithRequiredKey<BasePluginInput>;
-type PluginContextLookupInput = PluginLookupInput | string;
+type PluginContextLookupInput = PluginLookupInput;
+
+type PlateSchemaDescriptor = PluginReference;
+
+const hasPlateSchemaDescriptorShape = (
+  value: unknown
+): value is PlateSchemaDescriptor =>
+  typeof value === 'object' &&
+  value !== null &&
+  'key' in value &&
+  'type' in value;
 
 export type EditorValueInput<V extends Value> = V | Readonly<V>;
 
@@ -53,100 +91,84 @@ const normalizeBaseInitialValue = <V extends Value>(
   editor: BaseEditor,
   value: unknown
 ): V => {
-  if (typeof value === 'string') {
-    return deserializeHtml(editor, { element: value }) as V;
-  }
+  if (value !== undefined) {
+    if (!Array.isArray(value) || value.length === 0) {
+      throw new Error(
+        'Plate initialValue must contain at least one primary-root element.'
+      );
+    }
 
-  if (Array.isArray(value) && value.length > 0) {
     return value as V;
   }
 
   const currentValue = editor.read.children() as V;
 
-  return currentValue.length > 0
-    ? currentValue
-    : ([
-        {
-          children: [{ text: '' }],
-          type: editor.getType(BaseParagraphPlugin.key),
-        },
-      ] as V);
+  if (currentValue.length > 0) return currentValue;
+
+  const defaultChild = editor.read.schema.createDefaultRootChild();
+
+  if (!defaultChild) {
+    throw new Error('Plate schema must declare a default primary-root child.');
+  }
+
+  return [defaultChild] as V;
 };
 
 const initializeBaseEditor = <V extends Value>(
   editor: BaseEditor,
   {
     autoSelect,
+    initialValue,
     selection,
     shouldNormalizeEditor,
-    value,
-    onReady,
   }: {
     autoSelect?: boolean | 'end' | 'start';
-    onReady?: (ctx: { editor: BaseEditor; isAsync: boolean; value: V }) => void;
+    initialValue?:
+      | ((context: { editor: BaseEditor }) => EditorValueInput<V>)
+      | EditorValueInput<V>;
     selection?: Selection;
     shouldNormalizeEditor?: boolean;
-    value?:
-      | ((
-          editor: BaseEditor
-        ) => EditorValueInput<V> | Promise<EditorValueInput<V>>)
-      | EditorValueInput<V>
-      | string
-      | null;
   }
 ) => {
-  const applyValue = (nextValueInput: unknown, isAsync = false) => {
-    const nextValue = normalizeBaseInitialValue<V>(editor, nextValueInput);
-    const selectionInput =
-      selection ??
-      (autoSelect === true
-        ? 'end'
-        : autoSelect === 'start' || autoSelect === 'end'
-          ? autoSelect
-          : null);
+  const nextValue = normalizeBaseInitialValue<V>(
+    editor,
+    typeof initialValue === 'function' ? initialValue({ editor }) : initialValue
+  );
+  const selectionInput =
+    selection ??
+    (autoSelect === true
+      ? 'end'
+      : autoSelect === 'start' || autoSelect === 'end'
+        ? autoSelect
+        : null);
 
-    const wasInitializing = editor.runtime.isNormalizing;
+  const wasInitializing = editor.runtime.isNormalizing;
 
-    editor.runtime.isNormalizing = true;
-    try {
-      runTrustedUpdate(editor, (tx) => {
-        tx.value.replace({
-          children: nextValue,
-          selection: selectionInput,
-        });
-      });
-    } finally {
-      editor.runtime.isNormalizing = wasInitializing;
-    }
-
-    pipeTransformInitialValue(editor);
-
-    if (shouldNormalizeEditor) {
-      editor.update.value.repair();
-    }
-
-    onReady?.({
+  editor.runtime.isNormalizing = true;
+  try {
+    const transformed = transformInitialValue(
       editor,
-      isAsync,
-      value: editor.read.children() as V,
-    });
-  };
-
-  if (typeof value === 'function') {
-    const result = value(editor);
-
-    if (result && typeof (result as Promise<V>).then === 'function') {
-      (result as Promise<V>).then((resolvedValue) => {
-        applyValue(resolvedValue, true);
+      nextValue,
+      typeof selectionInput === 'string' ? null : selectionInput
+    );
+    runTrustedUpdate(editor, (tx) => {
+      tx.value.replace({
+        children: transformed.value,
+        selection:
+          typeof selectionInput === 'string'
+            ? selectionInput
+            : transformed.selection,
       });
-      return;
-    }
-
-    applyValue(result);
-    return;
+    });
+  } finally {
+    editor.runtime.isNormalizing = wasInitializing;
   }
 
-  applyValue(value);
+  if (shouldNormalizeEditor) {
+    editor.update.value.repair();
+  }
+
+  editor.read.schema.validateDocument(editor.read.value());
 };
 
 const PLATE_IMPLICIT_EXTENSION_NAME = Symbol.for(
@@ -177,9 +199,34 @@ const markImplicitPlateEditorExtension = <T extends object>(
   return extension;
 };
 
-const mergeEditorExtensionValue = (base: unknown, next: unknown): unknown => {
+type EditorCommandFactory = NonNullable<EditorExtension['commands']>;
+
+const isEditorCommandFactory = (
+  value: unknown
+): value is EditorCommandFactory => typeof value === 'function';
+
+const composeEditorCommandFactories =
+  (
+    base: EditorCommandFactory,
+    next: EditorCommandFactory
+  ): EditorCommandFactory =>
+  (context) => [...base(context), ...next(context)];
+
+const mergeEditorExtensionValue = (
+  key: string,
+  base: unknown,
+  next: unknown
+): unknown => {
   if (Array.isArray(base) && Array.isArray(next)) {
     return [...base, ...next];
+  }
+
+  if (
+    key === 'commands' &&
+    isEditorCommandFactory(base) &&
+    isEditorCommandFactory(next)
+  ) {
+    return composeEditorCommandFactories(base, next);
   }
 
   if (isPlainObject(base) && isPlainObject(next)) {
@@ -196,21 +243,21 @@ const mergeEditorExtensionObjects = (
   const merged: Record<PropertyKey, unknown> = { ...base };
 
   for (const [key, value] of Object.entries(next)) {
-    merged[key] = mergeEditorExtensionValue(merged[key], value);
+    merged[key] = mergeEditorExtensionValue(key, merged[key], value);
   }
 
   return markImplicitPlateEditorExtension(merged);
 };
 
-const mergeImplicitPlateEditorExtensions = (extensions: unknown[]) => {
-  const mergedExtensions: unknown[] = [];
+const mergeImplicitPlateEditorExtensions = (
+  extensions: readonly EditorExtension[]
+) => {
+  const mergedExtensions: EditorExtension[] = [];
   const implicitIndexByName = new Map<string, number>();
 
   for (const extension of extensions) {
-    if (!isImplicitPlateEditorExtension(extension)) {
-      if (isRecord(extension) && typeof extension.name === 'string') {
-        implicitIndexByName.delete(extension.name);
-      }
+    if (!isImplicitPlateEditorExtension(extension as unknown)) {
+      implicitIndexByName.delete(extension.name);
 
       mergedExtensions.push(extension);
       continue;
@@ -224,10 +271,12 @@ const mergeImplicitPlateEditorExtensions = (extensions: unknown[]) => {
       continue;
     }
 
+    const previous = mergedExtensions[index]!;
+
     mergedExtensions[index] = mergeEditorExtensionObjects(
-      mergedExtensions[index] as Record<PropertyKey, unknown>,
-      extension
-    );
+      previous as Record<PropertyKey, unknown>,
+      extension as Record<PropertyKey, unknown>
+    ) as EditorExtension;
   }
 
   return mergedExtensions;
@@ -242,95 +291,289 @@ const normalizePlateEditorExtensions = (extensions: unknown) => {
 const resolvePlateEditorExtensions = (
   editor: BaseEditor,
   plugin: AnyBasePlugin
-) =>
+): EditorExtension[] =>
   mergeImplicitPlateEditorExtensions(
-    (plugin.__editorExtensions ?? []).flatMap((extension) =>
-      normalizePlateEditorExtensions(
-        extension(getEditorPlugin(editor, plugin as any) as never)
-      )
+    (plugin.__editorExtensions ?? []).flatMap(
+      (extensionFactory) =>
+        normalizePlateEditorExtensions(
+          extensionFactory(getEditorPlugin(editor, plugin as any) as never)
+        ) as EditorExtension[]
     )
   );
 
-const installPlateEditorExtensions = (editor: BaseEditor) => {
-  for (const plugin of editor.runtime.pluginList) {
-    const extensions = resolvePlateEditorExtensions(editor, plugin);
+const groupPlateEditorExtensions = (extensions: readonly EditorExtension[]) => {
+  const groups = new Map<string, EditorExtension[]>();
 
-    for (const extension of extensions) {
-      editor.extend(extension as EditorExtensionInput);
-    }
+  for (const extension of extensions) {
+    const name = extension.name;
+    const group = groups.get(name) ?? [];
+
+    group.push(extension);
+    groups.delete(name);
+    groups.set(name, group);
   }
+
+  return Object.freeze(
+    Object.fromEntries(
+      [...groups].map(([name, group]) => [name, Object.freeze(group)])
+    )
+  );
 };
 
-type PlateRuntimePluginContext = BasePluginContext<AnyPluginConfig>;
+export type PlateSchemaOptions = PlateSchemaIdentity;
 
-const plateTxExtensionCleanups = new WeakMap<object, () => void>();
-
-const createPlateRuntimePluginContext = (
+const createPlateSchemaExtensions = (
   editor: BaseEditor,
-  plugin: AnyBasePlugin
-): PlateRuntimePluginContext => getEditorPlugin(editor, plugin);
+  identityOptions: PlateSchemaOptions | undefined,
+  model: ReturnType<typeof compilePlateModel>,
+  pluginList: readonly AnyBasePlugin[]
+) => {
+  const contribution = model.contribution;
+  const identity = defineEditorSchema({
+    elements: contribution.elements ?? {},
+    groups: contribution.groups ?? {},
+    ...(identityOptions
+      ? { id: identityOptions.id, version: identityOptions.version }
+      : { identity: 'derived' as const }),
+    properties: contribution.properties ?? [],
+    root: {
+      content: createPlateBlockContent({
+        default: { type: getEditorDefaultBlockType(editor) },
+        min: 1,
+      }),
+    },
+    roots: contribution.roots ?? {},
+    unknown: 'reject',
+  });
+  const { extensionGroups, runtime } = withCompiledPlateModelCandidate(
+    editor,
+    model,
+    () => {
+      const runtime = createPlateRuntimeExtension(editor, pluginList);
 
-const collectPlateTxGroupFactories = (editor: BaseEditor) => {
-  const txGroups = new Map<string, PlatePluginTxGroup[]>();
-  const addGroup = (groupKey: string, groupFactory: unknown) => {
-    if (!groupFactory) return;
+      return {
+        extensionGroups: groupPlateEditorExtensions(
+          pluginList.flatMap((plugin) =>
+            resolvePlateEditorExtensions(editor, plugin)
+          )
+        ),
+        runtime,
+      };
+    }
+  );
+  let publication: ReturnType<typeof createPlateModelPublication> | undefined;
+  const publishModel: EditorExtensionApiFactory = (
+    _editor,
+    { schema: compiledSchema }
+  ) => {
+    publication ??= createPlateModelPublication(
+      editor,
+      identityOptions ?? null,
+      model,
+      pluginList,
+      compiledSchema,
+      runtime.apiByPlugin,
+      runtime.shortcutApiByPlugin,
+      runtime.updateMethods
+    );
+    attachPlateModelPublication(editor, publication);
 
-    const list = txGroups.get(groupKey) ?? [];
-
-    list.push(groupFactory as PlatePluginTxGroup);
-    txGroups.set(groupKey, list);
+    return {};
   };
 
-  editor.runtime.pluginList.forEach((plugin: AnyBasePlugin) => {
-    plugin.__txExtensions.forEach((txExtension) => {
-      Object.entries(
-        txExtension(createPlateRuntimePluginContext(editor, plugin))
-      ).forEach(([groupKey, groupFactory]) => {
-        addGroup(groupKey, groupFactory);
-      });
-    });
-
-    Object.entries(plugin.tx ?? {}).forEach(([groupKey, groupFactory]) => {
-      addGroup(groupKey, groupFactory);
-    });
+  const modelExtension = defineEditorExtension({
+    api: publishModel,
+    name: 'plate:model',
   });
 
-  return txGroups;
+  return Object.freeze({
+    extensionGroups,
+    modelExtensions: Object.freeze([
+      identity,
+      modelExtension,
+      runtime.extension,
+    ]),
+  });
 };
 
-const installPlateRuntimeTxExtensions = (editor: BaseEditor) => {
-  plateTxExtensionCleanups.get(editor)?.();
-  plateTxExtensionCleanups.delete(editor);
-
-  const txGroups = collectPlateTxGroupFactories(editor);
-
-  if (txGroups.size === 0) return;
-
-  const tx = Object.create(null) as Record<string, PlatePluginTxGroup>;
-
-  txGroups.forEach((groupFactories, groupKey) => {
-    tx[groupKey] = (transaction, runtimeEditor, context) => {
-      const group = Object.create(null) as Record<string, unknown>;
-
-      groupFactories.forEach((groupFactory) => {
-        Object.assign(
-          group,
-          groupFactory(transaction, runtimeEditor as BaseEditor, context as any)
-        );
-      });
-
-      return group;
-    };
+const createPlateConfiguration = (
+  editor: BaseEditor,
+  identity: PlateSchemaOptions | undefined,
+  pluginList: readonly AnyBasePlugin[]
+) =>
+  withCompiledPlatePluginCandidate(editor, pluginList, () => {
+    const model = compilePlateModel(editor);
+    const { extensionGroups, modelExtensions } = createPlateSchemaExtensions(
+      editor,
+      identity,
+      model,
+      pluginList
+    );
+    return Object.freeze([
+      ...modelExtensions,
+      ...Object.values(extensionGroups).flatMap((group) => group ?? []),
+    ]);
   });
 
-  const cleanup = editor.extend(
-    defineEditorExtension({
-      name: 'plate-plugin-tx',
-      tx,
-    })
+const installPlateModelAccessors = (editor: BaseEditor) => {
+  const getPublication = () => {
+    const publication = getPlateModelPublication(editor);
+
+    if (!publication) {
+      throw new Error('Plate model is not installed.');
+    }
+
+    return publication;
+  };
+
+  const rawSchema = editor.read.schema;
+  const resolveDescriptor = (
+    descriptor: PlateSchemaDescriptor,
+    requireElement: boolean
+  ) => {
+    if (!isNominalPluginReference(descriptor)) {
+      throw new Error('Plate schema received an invalid plugin descriptor.');
+    }
+    const publication = getPublication();
+    const plugin = publication.plugins[descriptor.key];
+    const binding = publication.model.byKey[descriptor.key];
+
+    if (!plugin || !binding) {
+      throw new Error(
+        `Plate schema descriptor "${descriptor.key}" is not installed.`
+      );
+    }
+    if (plugin.type !== descriptor.type) {
+      throw new Error(
+        `Plate schema descriptor "${descriptor.key}" expects type "${descriptor.type}" but the installed plugin owns "${plugin.type}".`
+      );
+    }
+    if (requireElement && !binding.elementType) {
+      throw new Error(
+        `Plate plugin "${descriptor.key}" does not declare schema.element.`
+      );
+    }
+
+    return { binding, plugin };
+  };
+  const schemaFacade = new Proxy(rawSchema, {
+    get(target, key, receiver) {
+      if (key === 'createAndFill') {
+        return (
+          descriptor: Parameters<typeof rawSchema.createAndFill>[0] | unknown,
+          properties?: Readonly<Record<string, unknown>>
+        ) => {
+          if (!hasPlateSchemaDescriptorShape(descriptor)) {
+            return rawSchema.createAndFill(
+              descriptor as Parameters<typeof rawSchema.createAndFill>[0],
+              properties
+            );
+          }
+          const { plugin } = resolveDescriptor(descriptor, true);
+
+          return rawSchema.createAndFill(plugin.type, properties);
+        };
+      }
+      if (key === 'element') {
+        return (descriptor: PlateSchemaDescriptor | string) => {
+          if (!hasPlateSchemaDescriptorShape(descriptor)) {
+            return rawSchema.element(descriptor);
+          }
+          const { plugin } = resolveDescriptor(descriptor, true);
+
+          return rawSchema.element(plugin.type);
+        };
+      }
+      if (key === 'getElementProperty') {
+        return (
+          element: Element,
+          property:
+            | Parameters<typeof rawSchema.getElementProperty>[1]
+            | PlateSchemaDescriptor
+        ) => {
+          if (!hasPlateSchemaDescriptorShape(property)) {
+            return rawSchema.getElementProperty(element, property);
+          }
+          const { binding, plugin } = resolveDescriptor(property, false);
+
+          if (binding.elementPropertyKeys.length !== 1) {
+            throw new Error(
+              `Plate plugin "${plugin.key}" cannot identify one element property. Declare exactly one element property, or pass a raw Plite property handle or string.`
+            );
+          }
+
+          return rawSchema.getElementProperty(
+            element,
+            binding.elementPropertyKeys[0]
+          );
+        };
+      }
+      if (key === 'property') {
+        return (
+          property:
+            | EditorSchemaPropertyHandle
+            | EditorSchemaPropertyQuery
+            | PlateSchemaDescriptor
+        ) => {
+          if ('placement' in property) {
+            return rawSchema.property(property);
+          }
+          if ('kind' in property) {
+            return rawSchema.property(property);
+          }
+          const { binding, plugin } = resolveDescriptor(property, false);
+          const propertyIds = [
+            ...binding.propertyIds,
+            ...(binding.textPropertyId ? [binding.textPropertyId] : []),
+          ];
+
+          if (propertyIds.length !== 1) {
+            throw new Error(
+              `Plate plugin "${plugin.key}" cannot identify one schema property. Declare exactly one element or text property, or pass a raw Plite property handle or query.`
+            );
+          }
+
+          return rawSchema.property({
+            id: propertyIds[0]!,
+            kind: 'schema-property',
+          });
+        };
+      }
+      if (key === 'handle') {
+        return (descriptor: PlateSchemaDescriptor) => {
+          const { plugin } = resolveDescriptor(descriptor, true);
+
+          return Object.freeze({
+            kind: 'schema-element',
+            schema: editor,
+            type: plugin.type,
+          });
+        };
+      }
+
+      return Reflect.get(target, key, receiver);
+    },
+  });
+
+  Object.defineProperty(editor.read, 'schema', {
+    configurable: true,
+    enumerable: true,
+    value: schemaFacade,
+  });
+};
+
+const installPlateEditorExtensions = (
+  editor: BaseEditor,
+  identity: PlateSchemaOptions | undefined
+) => {
+  const configuration = createPlateConfiguration(
+    editor,
+    identity,
+    getPlateRuntime(editor).pluginList
   );
 
-  plateTxExtensionCleanups.set(editor, cleanup);
+  initializeEditorExtensions<Editor>(editor, configuration);
+  installPlateModelAccessors(editor);
 };
 
 export type BaseExtendBaseEditorOptions<
@@ -378,18 +621,13 @@ export type BaseExtendBaseEditorOptions<
    *
    * - Normalizes the initial value for missing IDs
    * - Adds IDs to new nodes during insertion
-   * - Preserves or reuses IDs on undo/redo and copy/paste operations
+   * - Preserves explicit target-unique IDs on generic inserts
+   * - Generates fresh clipboard-paste IDs unless `reuseId` is true
    * - Handles ID conflicts and duplicates
    *
    * @default { idKey: 'id', filterInline: true, filterText: true, idCreator: () => nanoid(10) }
    */
-  nodeId?: NodeIdConfig['options'] | boolean;
-  /**
-   * Factory used to create the per-plugin options store
-   *
-   * @default createVanillaStore from zustand-x/vanilla
-   */
-  optionsStoreFactory?: PluginStoreFactory;
+  nodeId?: NodeIdOptions | boolean;
   /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
@@ -403,12 +641,17 @@ export type BaseExtendBaseEditorOptions<
    */
   readOnly?: boolean;
   /**
+   * Application-owned lineage for History, Yjs, and schema migrations.
+   * Omit it for a schema identified only by its compiled semantics.
+   */
+  schema?: PlateSchemaOptions;
+  /**
    * Initial selection state for the editor. Defines where the cursor should be
    * positioned when the editor loads.
    */
   selection?: Selection;
   /**
-   * When `true`, normalizes the initial `value` passed to the editor. This is
+   * When `true`, normalizes the `initialValue` passed to the editor. This is
    * useful when adding normalization rules to already existing content or when
    * the initial value might not conform to the current schema.
    *
@@ -418,7 +661,7 @@ export type BaseExtendBaseEditorOptions<
    */
   shouldNormalizeEditor?: boolean;
   /**
-   * When `true`, skips the initial value, selection, and normalization logic.
+   * When `true`, skips `initialValue`, selection, and normalization.
    * Useful when the editor state is managed externally (e.g., with Yjs
    * collaboration) or when you want to manually control the initialization
    * process.
@@ -432,47 +675,29 @@ export type ExtendBaseEditorOptions<
   V extends Value = Value,
   P extends BasePluginInput = CorePluginConfig,
 > = Omit<BaseExtendBaseEditorOptions<P>, 'id'> &
-  Pick<
-    Partial<AnyBasePlugin>,
-    | 'api'
-    | 'decorate'
-    | 'inject'
-    | 'transformInitialValue'
-    | 'options'
-    | 'override'
+  Partial<
+    Pick<
+      AnyBasePlugin,
+      'decorate' | 'inject' | 'transformInitialValue' | 'options' | 'override'
+    >
   > & {
+    /** Root editor API declarations for the synthetic root plugin. */
+    api?: AnyPluginConfig['api'];
     /**
-     * Initial content for the editor.
+     * One-shot primary-root content. The callback runs synchronously after the
+     * plugin model and schema are compiled, so feature-owned decoders can use
+     * the configured editor.
      *
-     * Can be:
-     *
-     * - A static value (array of nodes)
-     * - An HTML string that will be deserialized
-     * - A function that returns a value or Promise<value>
-     * - `null` for an empty editor
-     *
-     * @default [{ type: 'p'; children: [{ text: '' }] }]
+     * Omit this option to preserve an existing editor document or construct the
+     * schema's default primary-root child for a new editor.
      */
-    value?:
-      | ((
-          editor: BaseEditor
-        ) =>
-          | EditorValueInput<NoInfer<V>>
-          | Promise<EditorValueInput<NoInfer<V>>>)
-      | EditorValueInput<NoInfer<V>>
-      | string
-      | null;
+    initialValue?:
+      | ((context: {
+          editor: BaseEditor<V, CorePluginConfig | InferPlugins<P[]>>;
+        }) => EditorValueInput<NoInfer<V>>)
+      | EditorValueInput<NoInfer<V>>;
     /** Function to configure the root plugin */
     rootPlugin?: (plugin: AnyBasePlugin) => AnyBasePlugin;
-    /**
-     * Callback called when the editor is ready (after initialization
-     * completes).
-     */
-    onReady?: (ctx: {
-      editor: BaseEditor;
-      isAsync: boolean;
-      value: NoInfer<V>;
-    }) => void;
   };
 
 /**
@@ -494,25 +719,23 @@ export const extendBaseEditor = <
   {
     affinity,
     autoSelect,
+    initialValue,
     maxLength,
     nodeId,
-    optionsStoreFactory,
     plugins = [],
     readOnly,
+    schema: schemaIdentity,
     rootPlugin,
     selection,
     shouldNormalizeEditor,
     skipInitialization,
     userId,
-    value,
-    onReady,
     ...pluginConfig
-  }: ExtendBaseEditorOptions<V, P> = {}
+  }: ExtendBaseEditorOptions<V, P>
 ): BaseEditor<V, CorePluginConfig | InferPlugins<P[]>> => {
   const editor = e as unknown as BaseEditor;
 
   editor.runtime = editor.runtime ?? ({} as BaseEditor['runtime']);
-  editor.runtime.isFallback = false;
   editor.runtime.userId = userId;
   if (readOnly !== undefined) {
     setEditorReadOnly(editor, readOnly);
@@ -524,10 +747,7 @@ export const extendBaseEditor = <
   editor.getPlugin = ((plugin: PluginLookupInput) =>
     getBasePlugin(editor, plugin)) as BaseEditor['getPlugin'];
   editor.plugin = ((plugin: PluginContextLookupInput) =>
-    getEditorPlugin(
-      editor,
-      typeof plugin === 'string' ? { key: plugin } : plugin
-    )) as BaseEditor['plugin'];
+    getEditorPlugin(editor, plugin)) as BaseEditor['plugin'];
   editor.getType = (pluginKey) => getPluginType(editor, pluginKey);
   editor.getInjectProps = (<C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
@@ -536,14 +756,14 @@ export const extendBaseEditor = <
     const nodeProps = (resolvedPlugin.inject?.nodeProps ??
       {}) as InjectNodeProps<C>;
 
-    nodeProps.nodeKey = nodeProps.nodeKey ?? editor.getType(plugin.key);
-    nodeProps.styleKey = nodeProps.styleKey ?? nodeProps.nodeKey;
+    const nodeKey = nodeProps.nodeKey ?? editor.getType(plugin.key);
 
-    return nodeProps;
+    return {
+      ...nodeProps,
+      nodeKey,
+      styleKey: nodeProps.styleKey ?? nodeKey,
+    };
   }) satisfies BaseEditor['getInjectProps'];
-  editor.getOptionsStore = (plugin) =>
-    getBasePlugin(editor, plugin).optionsStore;
-
   const pluginList = [...plugins];
   const corePlugins = getCorePlugins({
     affinity,
@@ -569,29 +789,53 @@ export const extendBaseEditor = <
     rootPluginInstance = rootPlugin(rootPluginInstance) as any;
   }
 
-  resolvePlugins(editor, [rootPluginInstance], optionsStoreFactory);
-  setEditorDefaultBlockType(editor, editor.getType(BaseParagraphPlugin.key));
-  installPlateEditorExtensions(editor);
-  editor.extend(createPlateChangeHandlersExtension(editor));
-  installPlateRuntimeTxExtensions(editor);
+  const sourcePlugins = snapshotPlatePluginSources([rootPluginInstance]);
+  const schemaIdentitySnapshot = schemaIdentity
+    ? Object.freeze({
+        id: schemaIdentity.id,
+        version: schemaIdentity.version,
+      })
+    : undefined;
+  const publicationBeforeExtension = getPlateModelPublication(editor);
 
-  if (!skipInitialization) {
-    initializeBaseEditor(editor, {
-      autoSelect,
-      selection,
-      shouldNormalizeEditor,
-      value,
-      onReady: onReady as any,
-    });
+  try {
+    resolvePlugins(editor, sourcePlugins);
+    setEditorDefaultBlockType(editor, editor.getType(BaseParagraphPlugin.key));
+    installPlateEditorExtensions(editor, schemaIdentitySnapshot);
+    editor.extend(createPlateChangeHandlersExtension(editor));
+
+    if (!skipInitialization) {
+      initializeBaseEditor(editor, {
+        autoSelect,
+        initialValue:
+          typeof initialValue === 'function'
+            ? () =>
+                initialValue({
+                  editor: editor as unknown as BaseEditor<
+                    V,
+                    CorePluginConfig | InferPlugins<P[]>
+                  >,
+                })
+            : initialValue,
+        selection,
+        shouldNormalizeEditor,
+      });
+    }
+
+    return editor as any;
+  } catch (error) {
+    if (!publicationBeforeExtension) clearPlateModelPublication(editor);
+    clearPluginOptionsStores(editor);
+    throw error;
+  } finally {
+    clearPlateRuntimeCandidate(editor);
   }
-
-  return editor as any;
 };
 
 export type CreateBaseEditorOptions<
   V extends Value = Value,
   P extends readonly unknown[] = readonly CreateBaseEditorPluginInput[],
-> = Omit<ExtendBaseEditorOptions<V, BasePluginInput>, 'plugins'> & {
+> = Partial<Omit<ExtendBaseEditorOptions<V, BasePluginInput>, 'plugins'>> & {
   /** Stable logical identity for the created editor. */
   id?: string;
   /**
@@ -607,22 +851,12 @@ export type CreateBaseEditorOptions<
   plugins?: P;
 };
 
-type CreateBaseEditorPluginInput<C extends AnyPluginConfig = AnyPluginConfig> =
-  | BasePlugin<C>
-  | AnyPluginConfig;
-
-type InferCreateBaseEditorPluginConfig<P> = P extends {
-  readonly __config: infer C extends AnyPluginConfig;
-}
-  ? C
-  : P extends BasePlugin<infer C>
-    ? C
-    : P extends AnyPluginConfig
-      ? P
-      : never;
+type CreateBaseEditorPluginInput<_C extends AnyPluginConfig = AnyPluginConfig> =
+  BasePluginInput;
 
 type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
-  InferCreateBaseEditorPluginConfig<P[number]>;
+  | InferConfig<typeof BaseParagraphPlugin>
+  | InferPlugins<P>;
 
 /**
  * Creates a base Plate editor (non-React version).
@@ -636,7 +870,7 @@ type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
  * ```ts
  * const editor = createBaseEditor({
  *   plugins: [ParagraphPlugin, HeadingPlugin],
- *   value: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
+ *   initialValue: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
  * });
  *
  * // Editor with custom configuration
@@ -647,11 +881,18 @@ type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
  *   autoSelect: 'end',
  * });
  *
- * // Server-side editor
+ * // Server-side editor with feature-owned HTML conversion
  * const editor = createBaseEditor({
- *   plugins: [ParagraphPlugin],
- *   value: '<p>HTML content</p>',
- *   skipInitialization: true,
+ *   plugins: [ParagraphPlugin, HtmlPlugin],
+ *   initialValue: ({ editor }) =>
+ *     editor.plugin(HtmlPlugin).api.deserialize({
+ *       element: '<p>HTML content</p>',
+ *     }),
+ * });
+ *
+ * // Name the schema only when persisted or collaborative state needs lineage.
+ * const persistedEditor = createBaseEditor({
+ *   schema: { id: 'acme-document', version: 1 },
  * });
  * ```
  *
@@ -689,6 +930,6 @@ export function createBaseEditor<
 
   return extendBaseEditor<V, BasePluginInput>(
     baseEditor,
-    options as unknown as ExtendBaseEditorOptions<V, InferPlugins<P>>
+    options as unknown as ExtendBaseEditorOptions<V, BasePluginInput>
   ) as unknown as BaseEditor<V, InferCreateBaseEditorPlugins<P>>;
 }

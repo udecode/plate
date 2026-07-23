@@ -135,6 +135,61 @@ test('accepts current plugin syntax and unrelated document or Markdown AST shape
   }
 });
 
+test('reserves package configure calls for reviewed consumer installation owners', () => {
+  assert.match(
+    auditPlateSchemaSource(
+      `export const ExamplePlugin = createBasePlugin({ key: 'example' }).configure({ options: { enabled: true } });`,
+      'packages/example/src/ExamplePlugin.ts'
+    )[0]?.reason ?? '',
+    /package plugin definitions must use extend/
+  );
+
+  for (const [source, file] of [
+    [
+      `export const ExamplePlugin = createBasePlugin({ key: 'example' }).extend({ options: { enabled: true } });`,
+      'packages/example/src/ExamplePlugin.ts',
+    ],
+    [
+      `ExamplePlugin.configure({ options: { enabled: true } })`,
+      'packages/example/src/ExamplePlugin.spec.ts',
+    ],
+    [
+      `ExamplePlugin.configure({ options: { enabled: true } })`,
+      'packages/core/src/lib/plugins/getCorePlugins.ts',
+    ],
+    [
+      `ExamplePlugin.configure({ options: { enabled: true } })`,
+      'packages/core/src/react/editor/getPlateCorePlugins.ts',
+    ],
+    [
+      `ExamplePlugin.configure({ options: { enabled: true } })`,
+      'apps/www/src/registry/components/editor/plugins/example-kit.ts',
+    ],
+  ]) {
+    assert.deepEqual(auditPlateSchemaSource(source, file), []);
+  }
+});
+
+test('rejects authoring chained after terminal configure', () => {
+  for (const source of [
+    `ExamplePlugin.configure({}).configure({})`,
+    `ExamplePlugin.configure({}).extend({})`,
+    `ExamplePlugin.configure({}).extendApi(() => ({}))`,
+    `ExamplePlugin.configure({}).extendEditorApi(() => ({}))`,
+    `ExamplePlugin.configure({}).extendExtension({})`,
+    `ExamplePlugin.configure({}).extendPlugin(OtherPlugin, {})`,
+    `ExamplePlugin.configure({}).extendSelectors(() => ({}))`,
+    `ExamplePlugin.configure({}).extendTx(() => ({}))`,
+    `ExamplePlugin.configure({}).extendTxGroup(() => ({}))`,
+    `ExamplePlugin.configure({}).withComponent(Component)`,
+  ]) {
+    assert.match(
+      auditPlateSchemaSource(source)[0]?.reason ?? '',
+      /configure must be the final plugin authoring call/
+    );
+  }
+});
+
 test('rejects local named lineage on ordinary package editor construction', () => {
   for (const source of [
     `createBaseEditor({ schema: { id: 'ordinary', version: 1 } })`,

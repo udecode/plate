@@ -145,15 +145,13 @@ const editor = createPlateEditor({
 
 链接格式化插件。
 
-URL 解析策略属于不可变配置。回调函数、UI 状态和交互行为属于运行时选项：
+URL 解析、回调函数、UI 状态和交互行为共享同一个 options 对象：
 
 ```tsx
 LinkPlugin.configure({
-  config: {
+  options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     dangerouslySkipSanitization: false,
-  },
-  options: {
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
 });
@@ -161,14 +159,12 @@ LinkPlugin.configure({
 
 <API name="LinkPlugin">
 
-不可变配置：
+选项：
 
 - `allowedSchemes?: string[]` — 解析和链接清理接受的 URL 协议。默认值：
   `['http', 'https', 'mailto', 'tel']`。
 - `dangerouslySkipSanitization?: boolean` — 设置为 `true` 时跳过 URL 清理。
   默认值：`false`。
-
-运行时选项：
 
 <APIOptions type="object">
 <APIItem name="forceSubmit" type="boolean" optional>

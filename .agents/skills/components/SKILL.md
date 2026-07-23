@@ -8,6 +8,11 @@ metadata:
 
 # Accessibility
 
+Accessibility and platform behavior below are hard constraints. Component
+shape rules are heuristics, not a ceiling for exported Plate APIs; use
+`best-api design/review` when a reusable public component or hook surface is
+the decision.
+
 URL: /accessibility
 
 
@@ -456,7 +461,8 @@ Expectations:
 - Completely unstyled (headless).
 - Single responsibility; composable into styled components.
 - Ships with exhaustive a11y behavior for its role.
-- Versioning favors stability; breaking changes are rare and documented.
+- Versioning values stability, but breaking cost does not veto a materially
+  better long-term API. Document accepted breaks.
 
 <Callout>
   The terms primitive and component are typically used interchangeably across the web, but they are not the same.
@@ -1234,7 +1240,9 @@ export const ShareButton = (props: ShareButtonProps) => <button {...props} />;
 
 ## Exporting Types
 
-Always export your component prop types. This makes them accessible to consumers for various use cases.
+Export component prop types when consumers need to reference or extend the
+contract. Do not add a public type alias solely because every component could
+have one.
 
 Exporting types enables several important patterns:
 

@@ -1,16 +1,16 @@
-import type { Descendant } from '@platejs/plite';
+import type { Descendant, EditorCoreStateView } from '@platejs/plite';
 
-import type { BaseEditor } from '../../lib/editor';
 import type { ParserOptions } from '../../lib/plugin/PluginConfig';
-import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
-
-import { getEditorPlugin } from '../../lib/plugin';
+import {
+  createParserPluginContext,
+  type PreparedParserPluginEntry,
+} from './prepareParserRegistry';
 
 /** Pipe insert-data transformFragment hooks. */
 export const pipeTransformFragment = (
-  editor: BaseEditor,
-  plugins: AnyBasePlugin[],
-  { fragment, ...options }: ParserOptions & { fragment: Descendant[] }
+  state: EditorCoreStateView,
+  plugins: readonly PreparedParserPluginEntry[],
+  { fragment, ...options }: ParserOptions & { fragment: readonly Descendant[] }
 ) => {
   plugins.forEach((p) => {
     const transformFragment = p.parser?.transformFragment;
@@ -20,7 +20,7 @@ export const pipeTransformFragment = (
     fragment = transformFragment({
       fragment,
       ...options,
-      ...getEditorPlugin(editor, p),
+      ...createParserPluginContext(p, state),
     });
   });
 

@@ -5,8 +5,11 @@ import {
 } from '@platejs/core';
 import { ContentSlice, property } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
+import type { Pluggable, Preset, Settings } from 'unified';
 
 import { MarkdownPlugin } from './MarkdownPlugin';
+import { remarkMdx } from './plugins';
+import { materializeRemarkPlugins } from './utils/getRemarkPluginsWithoutMdx';
 
 const BoldPlugin = createBasePlugin({
   key: 'bold',
@@ -85,23 +88,75 @@ describe('MarkdownPlugin', () => {
     expect(editor.plugin(MarkdownPlugin).getOptions().remarkPlugins?.[0]).toBe(
       remarkPlugin
     );
-    expect(editor.plugin(MarkdownPlugin).api.serialize({ value })).toBe(
-      '+ Item\n'
-    );
+    expect(editor.api.markdown.serialize({ value })).toBe('+ Item\n');
     expect(serializeHost()).toBe('+ Item\n');
 
     editor.plugin(MarkdownPlugin).setOptions({
       remarkStringifyOptions: { bullet: '*' },
     });
 
-    expect(editor.plugin(MarkdownPlugin).api.serialize({ value })).toBe(
-      '* Item\n'
-    );
+    expect(editor.api.markdown.serialize({ value })).toBe('* Item\n');
     expect(serializeHost()).toBe('* Item\n');
     expect(editor.read.schema.identity()).toEqual(identity);
   });
 
-  it('exposes default options, bound markdown api, and text parser deserialization', () => {
+  it('materializes frozen plugin presets only at the unified boundary', () => {
+    const remarkPlugin = () => undefined;
+    const joins: NonNullable<Settings['join']> = [];
+    const nestedPlugins: Pluggable[] = [remarkPlugin];
+    const preset: Preset = {
+      plugins: nestedPlugins,
+      settings: { join: joins },
+    };
+    const configuredPlugins: Pluggable[] = [preset];
+    const editor = createBaseEditor({
+      plugins: [
+        MarkdownPlugin.configure({
+          options: { remarkPlugins: configuredPlugins },
+        }),
+      ],
+    });
+    const snapshot = editor.plugin(MarkdownPlugin).getOptions().remarkPlugins!;
+    const snapshotPreset = snapshot[0] as {
+      readonly plugins: readonly Pluggable[];
+      readonly settings: {
+        readonly join: readonly unknown[];
+      };
+    };
+
+    configuredPlugins.push(() => undefined);
+    nestedPlugins.push(() => undefined);
+
+    expect(snapshot).toHaveLength(1);
+    expect(snapshotPreset.plugins).toHaveLength(1);
+    expect(Object.isFrozen(snapshot)).toBe(true);
+    expect(Object.isFrozen(snapshotPreset.plugins)).toBe(true);
+    expect(Object.isFrozen(snapshotPreset.settings.join)).toBe(true);
+
+    const materialized = materializeRemarkPlugins(snapshot);
+    const materializedPreset = materialized[0];
+
+    if (
+      !materializedPreset ||
+      typeof materializedPreset === 'function' ||
+      Array.isArray(materializedPreset)
+    ) {
+      throw new Error('Expected a materialized remark preset.');
+    }
+
+    expect(materialized).not.toBe(snapshot);
+    expect(materializedPreset.plugins).not.toBe(snapshotPreset.plugins);
+    expect(materializedPreset.settings?.join).not.toBe(
+      snapshotPreset.settings.join
+    );
+    expect(Object.isFrozen(materializedPreset.plugins)).toBe(false);
+    expect(Object.isFrozen(materializedPreset.settings?.join)).toBe(false);
+    materializedPreset.plugins!.push(() => undefined);
+    expect(snapshotPreset.plugins).toHaveLength(1);
+    expect(typeof editor.api.markdown.serialize()).toBe('string');
+  });
+
+  it('exposes default options, root markdown api, and text parser deserialization', () => {
     const editor = createBaseEditor({
       plugins: [MarkdownPlugin],
     });
@@ -115,19 +170,15 @@ describe('MarkdownPlugin', () => {
       remarkStringifyOptions: null,
       rules: null,
     });
-    expect(typeof editor.plugin(MarkdownPlugin).api.deserialize).toBe(
-      'function'
-    );
-    expect(typeof editor.plugin(MarkdownPlugin).api.deserializeInline).toBe(
-      'function'
-    );
-    expect(typeof editor.plugin(MarkdownPlugin).api.serialize).toBe('function');
+    expect(typeof editor.api.markdown.deserialize).toBe('function');
+    expect(typeof editor.api.markdown.deserializeInline).toBe('function');
+    expect(typeof editor.api.markdown.serialize).toBe('function');
     expect(plugin.parser.format).toEqual(['text/plain', 'text/markdown']);
     expect(
       plugin.parser.deserialize?.({
         ...createParserContext(editor, createDataTransfer({}), '**bold**'),
       })
-    ).toEqual(editor.plugin(MarkdownPlugin).api.deserialize('**bold**'));
+    ).toEqual(editor.api.markdown.deserialize('**bold**'));
   });
 
   it('skips plain-text parsing when html is present', () => {
@@ -205,11 +256,29 @@ describe('MarkdownPlugin', () => {
       plugins: [MarkdownPlugin],
     });
     const data = new DataTransfer();
-    const fragment = editor.plugin(MarkdownPlugin).api.deserialize('**bold**');
+    const fragment = editor.api.markdown.deserialize('**bold**');
 
     writeHostFragmentData(editor, data, ContentSlice.closed(fragment));
 
     expect(data.getData('text/markdown')).toBe('**bold**\n');
+  });
+
+  it('deserializes partially styled MDX spans into JSON-compatible content', () => {
+    const editor = createBaseEditor({
+      plugins: [MarkdownPlugin],
+    });
+    const value = editor.api.markdown.deserialize(
+      '<span style="color: #93C47D;">colored</span>',
+      { remarkPlugins: [remarkMdx] }
+    );
+
+    expect(value).toEqual([
+      {
+        children: [{ color: '#93C47D', text: 'colored' }],
+        type: 'p',
+      },
+    ]);
+    expect(ContentSlice.closed(value).content).toEqual(value);
   });
 
   it('parses the registered Markdown clipboard format', () => {
@@ -223,7 +292,7 @@ describe('MarkdownPlugin', () => {
 
     expect(editor.api.clipboard.insertData(data)).toBe(true);
     expect(editor.read.children()).toEqual(
-      editor.plugin(MarkdownPlugin).api.deserialize('**bold**')
+      editor.api.markdown.deserialize('**bold**')
     );
   });
 

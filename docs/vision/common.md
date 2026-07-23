@@ -17,6 +17,10 @@ common doctrine after the lane is selected.
 - Conventions are API surface: names, flags, config keys, persisted fields,
   output shapes, docs examples, and workflow keywords must be intentional,
   stable, and worth their long-term compatibility cost.
+- Public API design starts from ideal call sites. Current implementation,
+  compatibility, machinery, ecosystem precedent, and accepted plans inform
+  adoption; they do not define the best target. `best-api` owns that concrete
+  design/review step before layer planning.
 - Do not hide latency behind debounce, delayed repair, or benchmark tricks.
 - Do not call browser/editor behavior correct from model-only proof.
 - Do not call perf closed from rerender/locality evidence alone.
@@ -208,11 +212,16 @@ honest", "all next", "go next", or reports visible editor weirdness.
   reusable proof-harness helper when the pattern should become first-class;
 - stale docs/decision memory -> update root `VISION.md` or the relevant
   `docs/vision/*.md`;
-- bad API -> plan or accepted implementation;
+- bad API -> `best-api` design/review, then the layer plan or accepted
+  implementation owner;
 - wrong/missing/overlapping skill -> patch `.agents/rules/**`, sync, verify;
 - output-budget miss -> split the goal into smaller checkpoints.
 
 Learning is only real when future loop behavior changes.
+
+Reusable API corrections must repair `.agents/rules/best-api.mdc` and the
+smallest relevant Vision owner in the same workflow. Keep package-specific
+answers in source or plans; promote only the durable principle.
 
 ## Durable Intent Capture
 

@@ -32,8 +32,9 @@ donor checkout as proof after the transplant.
 - Plite stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.
 - Do not make child-count chunking foundational again.
-- Behavior should be profile-driven. Capabilities expose what can happen;
-  behavior profiles decide when it applies.
+- Behavior should be composable and inspectable without making ordinary
+  callers learn composition machinery. Named profiles or runtime switching
+  need real reuse or control requirements.
 - Layering beats feature buckets: document truth, DOM transport, React runtime,
   browser proof, projections/services, layout, lightweight surfaces, and
   productization need clear owners.
@@ -143,7 +144,10 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
   research ledgers, and promotion into owners.
 - `plite-patch`: direct bug fix, reproduction, class-level behavior coverage,
   proof, and autoreview.
-- `plite-plan`: architecture/API plan pressure and accepted plan execution.
+- `best-api`: concrete public API design, review, and P0/P1/P2/P3 debt
+  ranking.
+- `plite-plan`: substrate architecture, adoption/proof planning, and accepted
+  plan execution after the target API is clear.
 - `plite-migration`: migration closure and stale API audits.
 - `tdd`: missing oracle/test design when the proof itself does not exist.
 

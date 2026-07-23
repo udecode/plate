@@ -53,7 +53,8 @@ answers if the search is managed like engineering work.
 - `slate-ar gate`: repeats existing proof gates once a command/oracle exists.
 - `slate-ar perf`: optimizes benchmark-backed performance targets.
 - `slate-patch`: fixes concrete bugs or missing oracles.
-- `plite-plan`: decides architecture/API shape.
+- `best-api`: decides public call shape from the gathered evidence.
+- `plite-plan`: decides substrate architecture, adoption, and proof.
 - `issue-harvester`: owns exhaustive issue-by-issue external corpus closure.
 
 Flow:
@@ -65,7 +66,8 @@ auto
       -> slate-ar gate     # repeat existing proof
       -> slate-ar perf     # optimize benchmark target
       -> slate-patch       # bug/oracle fix
-      -> plite-plan        # architecture/API decision
+      -> best-api          # public API decision
+      -> plite-plan        # substrate architecture/adoption
       -> issue-harvester   # exhaustive issue closure
 ```
 
@@ -93,7 +95,8 @@ first belongs here; execution after promotion belongs to the target owner.
   closure. Use `issue-harvester` for ledger detection/resume, latest refresh,
   and unchecked-row processing.
 - The user wants one narrow local bug fix with a live repro. Use `slate-patch`.
-- The next safe move is an accepted runtime/API decision. Use `plite-plan`.
+- The next safe move is a public API decision. Use `best-api`; use
+  `plite-plan` for accepted runtime/adoption planning.
 - The work is a measured packet loop with known target/checklist/command. Use
   the matching `slate-ar` mode.
 - The only work left is measured perf packet execution. Use `slate-ar perf`.
@@ -270,8 +273,8 @@ Do not patch Slate directly from research. A lead must first become one of:
   verification command;
 - `benchmark-packet`: a metric or harness repair with target and before/after
   command;
-- `plan-packet`: a `plite-plan` decision row when runtime/API ownership is
-  unclear;
+- `plan-packet`: a `best-api` verdict for public call shape and a `plite-plan`
+  row when runtime/adoption ownership is unclear;
 - `docs-packet`: accepted durable research note or current-state decision;
 - `no-code-decision`: rejected/quarantined with reason and reopen condition.
 

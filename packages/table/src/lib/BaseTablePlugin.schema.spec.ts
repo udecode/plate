@@ -87,14 +87,24 @@ describe('BaseTablePlugin schema', () => {
       editor.read.schema.validateDocument({ children: [cell(KEYS.td)] })
     ).toThrow(/root.*cannot contain|cannot contain.*root/i);
     expect(() =>
-      editor.read.schema.validateFragment([
-        { children: [paragraph('invalid')], type: KEYS.tr },
-      ])
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            children: [{ children: [paragraph('invalid')], type: KEYS.tr }],
+            type: KEYS.table,
+          },
+        ],
+      })
     ).toThrow(/cannot contain/i);
     expect(() =>
-      editor.read.schema.validateFragment([
-        { children: [paragraph('invalid')], type: KEYS.table },
-      ])
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            children: [paragraph('invalid')],
+            type: KEYS.table,
+          },
+        ],
+      })
     ).toThrow(/cannot contain/i);
     expect(() =>
       editor.read.schema.validateFragment([

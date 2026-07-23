@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { property, type Element } from '@platejs/plite';
+import { property, schema, type Element } from '@platejs/plite';
 
 import { act, render } from '@testing-library/react';
 
@@ -46,15 +46,25 @@ describe('ElementProvider', () => {
 
   const NamePlugin = createBasePlugin({
     key: 'name',
-    schema: { element: { properties: { name: property.string() } } },
+    schema: {
+      element: {
+        content: schema.content.text(),
+        properties: { name: property.string() },
+      },
+    },
   });
   const AgePlugin = createBasePlugin({
     key: 'age',
-    schema: { element: { properties: { age: property.number() } } },
+    schema: {
+      element: {
+        content: schema.content.text(),
+        properties: { age: property.number() },
+      },
+    },
   });
   const MissingPlugin = createBasePlugin({
     key: 'missing',
-    schema: { element: {} },
+    schema: { element: { content: schema.content.text() } },
   });
 
   const makeNameElement = (name: string): NameElement => ({

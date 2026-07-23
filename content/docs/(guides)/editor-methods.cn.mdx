@@ -120,29 +120,29 @@ editor.update((tx) => {
 
 ## 插件方法
 
-插件 helper 让 TypeScript 从传入的插件推断 API。插件命令通过 `editor.update` 执行。
+将插件描述符传给 `editor.plugin(plugin)`，即可打开它的类型化 portal。该 portal 包含插件拥有的 API、一次性 update 命令、type 和实时 options。
 
-```ts title="table-methods.ts" showLineNumbers
-import { TablePlugin } from '@platejs/table/react';
+```ts title="html-methods.ts" showLineNumbers
+import { HtmlPlugin } from 'platejs';
 
-const cell = editor.api.create.tableCell();
+const html = editor.plugin(HtmlPlugin);
 
-editor.update((tx) => tx.insert.tableRow());
+const nodes = html.api.deserialize({ element: '<p>Hello</p>' });
 ```
 
 | 方法 | 用途 |
 | --- | --- |
+| `editor.plugin(plugin)` | 类型安全地访问一个插件的 API、updates、type 和 options。 |
 | `editor.getPlugin(plugin)` | 读取已解析插件实例。 |
 | `editor.getType(pluginKey)` | 读取插件 key 注册的节点 type。 |
 | `editor.getInjectProps(plugin)` | 读取已解析 injected node props。 |
 
 ### getPlugin
 
-通过键或基础插件获取编辑器插件实例：
+通过插件描述符获取编辑器插件实例：
 
 ```ts
 const codeBlockPlugin = editor.getPlugin(CodeBlockPlugin);
-const headingPlugin = editor.getPlugin({ key: KEYS.heading });
 ```
 
 ### getType
@@ -199,12 +199,4 @@ editor.plugin(FindReplacePlugin).setOptions((draft) => {
   draft.search = 'hello';
   draft.caseSensitive = true;
 });
-```
-
-### getOptionsStore
-
-获取插件的[zustand-x](https://github.com/udecode/zustand-x)选项存储：
-
-```ts
-const store = editor.getOptionsStore(FindReplacePlugin);
 ```

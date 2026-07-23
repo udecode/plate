@@ -99,7 +99,7 @@ export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
     render: {
       node: SuggestionLeaf,
       belowRootNodes: ({ api, element }) => {
-        if (!api.suggestion!.isBlockSuggestion(element)) {
+        if (!api.isBlockSuggestion(element)) {
           return null;
         }
 
@@ -143,14 +143,14 @@ export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
           !isEditor(leaf.parentElement)
         ) {
           if (leaf.classList.contains(`plite-${type}`)) {
-            const suggestionEntry = api.suggestion!.node({ isText: true });
+            const suggestionEntry = api.node({ isText: true });
 
             if (!suggestionEntry) {
               unsetActiveSuggestion();
               break;
             }
 
-            const id = api.suggestion!.nodeId(suggestionEntry[0]);
+            const id = api.nodeId(suggestionEntry[0]);
             setOption('activeId', id ?? null);
             isSet = true;
             break;

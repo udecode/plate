@@ -31,7 +31,7 @@ const createEditor = (
   chatNodes: TIdElement[],
   selection: TextSelection | null = null
 ) =>
-  createPlateEditor<Value>({
+  createPlateEditor({
     plugins: [
       BaseParagraphPlugin,
       SchemaOnlyNodeIdPlugin,

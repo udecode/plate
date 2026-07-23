@@ -3,14 +3,14 @@ title: Plate 插件
 description: Plate 插件的 API 参考文档。
 ---
 
-Plate 插件是通过 `Plate` 组件的 [plugins](/docs/api/core/plate-components#plugins) 属性传递的对象。
+Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#plugins) 属性的描述符。将同一个描述符传给 `editor.plugin(MyPlugin)`，即可类型安全地访问插件 API、update 命令和实时 options；React 组件通过 `usePluginOption` 或 `usePluginOptions` 订阅变化。
 
 ## 插件属性
 
 <API name="Properties">
 <APIAttributes>
 <APIItem name="key" type="C['key']" required>
-Plate 用于在 `editor.plugins` 中按 key 存储插件的唯一标识符。
+Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符。
 </APIItem>
 
 <APIItem name="targetPluginKeys" type="readonly string[]">
@@ -20,17 +20,21 @@ Plate 用于在 `editor.plugins` 中按 key 存储插件的唯一标识符。
 </APIItem>
 
 <APIItem name="api" type="Record<string, Function>">
-插件提供的 API 函数对象。这些函数可通过 `editor.api[key]` 访问。
+插件拥有的 API 函数，通过 `editor.plugin(MyPlugin).api` 访问。只有属于根
+`editor.api` 表面的 API 才使用 `.extendEditorApi()`。
 </APIItem>
 
 <APIItem name="tx" type="Record<string, Function>">
-插件提供的事务命令。通过 `editor.update((tx) => tx[key].method())` 调用。
+插件提供的事务命令。通过 `editor.plugin(MyPlugin).update.method()` 执行单个命令，
+或在 `editor.update((tx) => tx[key].method())` 中组合命令。
 </APIItem>
 
 <APIItem name="options" type="Record<string, any>">
-插件拥有的值，用于 schema 工厂、parser、host codec 与运行时行为。通过
-`.configure({ options: { ... } })` 设置描述符值；通过 `getOptions`、
-`setOption` 或 `setOptions` 读取或更新实时值。更新 options 不会重新编译 schema。
+插件拥有的值，用于 schema 工厂、parser、host codec 与运行时行为。包作者通过
+`create*Plugin()` 或 `.extend()` 声明默认值；应用用户通过一次最终
+`.configure({ options: { ... } })` 设置描述符值；通过
+`editor.plugin(MyPlugin).getOptions()`、`.setOption()` 或 `.setOptions()`
+读取或更新实时值。更新 options 不会重新编译 schema。
 </APIItem>
 
 <APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
@@ -287,9 +291,9 @@ HTML React 序列化器配置。
 - 声明 `schema.mark` 且 `render.isDecoration: false` 时渲染在文本节点下方
 - 声明 `schema.mark` 且 `render.isDecoration: true` 时渲染在 leaf 下方
 
-如果唯一的变更是绑定组件，优先使用 `.withComponent(Component)`。当同一个
-`.configure()` 或 `.extend()` 调用还包含其他插件配置时，再直接设置
-`render.node`。
+如果唯一的变更是绑定组件，优先使用 `.withComponent(Component)`，并在
+`.configure()` 之前调用。可复用行为在 `.extend()` 中设置 `render.node`；
+用户同时拥有其他覆盖时，在最终 `.configure()` 中设置。
 </APISubListItem>
 <APISubListItem parent="render" name="isDecoration" type="boolean" optional>
 为 `true` 时将标记值渲染为 decorated leaves；为 `false` 时每个文本节点只渲染一次。
@@ -307,10 +311,6 @@ HTML React 序列化器配置。
 
 <APIItem name="shortcuts" type="Shortcuts">
 定义插件的键盘快捷键。
-</APIItem>
-
-<APIItem name="useOptionsStore" type="StoreApi<C['key'], C['options']>">
-用于管理插件选项的 Zustand store。
 </APIItem>
 
 <APIItem name="dependencies" type="readonly PluginReference[]">
@@ -390,9 +390,10 @@ editOnly: {
 
 <API name="Methods">
 <APIMethods>
-<APIItem name="configure" type="(config: PlatePluginConfig) => PlatePlugin">
-返回应用定义更新后的新插件描述符。参数始终是对象。需要读取已解析编辑器上下文时，
-使用 `.extend((ctx) => config)`。
+<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => Partial<Pick<PlatePluginConfig, 'options' | 'handlers' | 'render' | 'shortcuts'>>)) => ConfiguredPlatePlugin">
+应用一次最终用户配置，并返回不能再次配置或扩展的描述符。对象形式用于定义字段；
+回调形式可根据已解析编辑器上下文生成已有的 `options`、`handlers`、`render` 或
+`shortcuts`。此前声明的运行时扩展可以读取配置值，重叠字段最终仍以用户配置为准。
 
 ```ts
 HeadingPlugin.configure({
@@ -407,7 +408,8 @@ HeadingPlugin.configure({
 </APIItem>
 
 <APIItem name="extend" type="(config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
-创建一个具有额外配置的新插件实例。
+创建一个包含包内或可复用行为的新插件实例。所有 `.extend*()` 调用必须在用户
+`.configure()` 之前完成。
 
 ```ts
 (
@@ -432,7 +434,8 @@ HeadingPlugin.configure({
 </APIItem>
 
 <APIItem name="withComponent" type="function">
-设置或替换与插件关联的组件。当唯一的变更是绑定组件时，这是首选方式。
+设置或替换与插件关联的组件。当唯一的变更是绑定组件时，这是首选方式，并应在最终
+用户配置之前调用。
 
 ```ts
 (component: NodeComponent) => PlatePlugin<C>;

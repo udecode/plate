@@ -373,34 +373,30 @@ const fromBatches = <V extends Value>(
   return value;
 };
 
+/** Publish activation options and the live schema as one history revision. */
 export const configureHistoryState = <V extends Value>(
   editor: Editor<V>,
   maxDepth: number
 ) => {
   const store = getStore(editor);
+  const schema = getSchemaIdentity(editor);
+  const schemaChanged = !areEditorSchemaIdentitiesEqual(store.schema, schema);
 
-  if (store.maxDepth === maxDepth) return;
+  if (store.maxDepth === maxDepth && !schemaChanged) return false;
 
   publish(editor, store, {
     maxDepth,
-    redos: clipBranch(store.redos, maxDepth),
-    undos: clipBranch(store.undos, maxDepth),
+    redos: schemaChanged ? null : clipBranch(store.redos, maxDepth),
+    schema,
+    undos: schemaChanged ? null : clipBranch(store.undos, maxDepth),
   });
+
+  return schemaChanged;
 };
 
 /** Reset both branches when a configuration publishes a new schema identity. */
-export const synchronizeHistorySchema = <V extends Value>(
-  editor: Editor<V>
-) => {
-  const store = getStore(editor);
-  const schema = getSchemaIdentity(editor);
-
-  if (areEditorSchemaIdentitiesEqual(store.schema, schema)) return false;
-
-  publish(editor, store, { redos: null, schema, undos: null });
-
-  return true;
-};
+export const synchronizeHistorySchema = <V extends Value>(editor: Editor<V>) =>
+  configureHistoryState(editor, getStore(editor).maxDepth);
 
 export const getHistory = <V extends Value>(editor: Editor<V>): History<V> => {
   const store = getStore(editor);

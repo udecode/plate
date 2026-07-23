@@ -1,4 +1,4 @@
-import { useEditorRef } from '@platejs/core/react';
+import { useEditor } from '@platejs/core/react';
 
 import { insertMedia } from '../../lib/media/insertMedia';
 
@@ -7,7 +7,7 @@ export const useMediaToolbarButton = ({
 }: {
   nodeType?: string;
 } = {}) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return {
     props: {

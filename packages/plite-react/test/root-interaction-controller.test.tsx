@@ -308,6 +308,73 @@ describe('root interaction controller', () => {
     expect(fireEvent.mouseDown(editable)).toBe(false);
   });
 
+  test('preserves model selection when capture owns a blank native-editable mousedown', () => {
+    const editor = createReactEditor({
+      initialValue: {
+        children: [paragraph('first'), paragraph('second')],
+      },
+    });
+    const onMouseDown = vi.fn();
+
+    render(
+      <Plite editor={editor}>
+        <Editable
+          aria-label="Main editor"
+          ignoreBlankEditableRootClicks
+          onMouseDown={onMouseDown}
+        />
+      </Plite>
+    );
+
+    const editable = screen.getByLabelText('Main editor');
+    const blocks = editable.querySelectorAll<HTMLElement>(
+      '[data-plite-node="element"]'
+    );
+    const strings = editable.querySelectorAll<HTMLElement>(
+      '[data-plite-string]'
+    );
+
+    expect(blocks).toHaveLength(2);
+    expect(strings).toHaveLength(2);
+
+    Object.defineProperty(editable, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => rect({ bottom: 120, left: 0, right: 240, top: 0 }),
+    });
+    Object.defineProperty(strings[0], 'getClientRects', {
+      configurable: true,
+      value: () => [rect({ bottom: 60, left: 20, right: 80, top: 40 })],
+    });
+    Object.defineProperty(strings[1], 'getClientRects', {
+      configurable: true,
+      value: () => [rect({ bottom: 100, left: 20, right: 80, top: 80 })],
+    });
+    Object.defineProperty(Range.prototype, 'getClientRects', {
+      configurable: true,
+      value: () => [],
+    });
+
+    act(() => {
+      editor.update((tx) => {
+        tx.selection.set({ path: [1, 0], offset: 0 });
+      });
+    });
+
+    const dispatched = fireEvent.mouseDown(blocks[1]!, {
+      clientX: 4,
+      clientY: 4,
+    });
+
+    expect(dispatched).toBe(false);
+    expect(onMouseDown).toHaveBeenCalledOnce();
+    expect(onMouseDown.mock.calls[0]![0].defaultPrevented).toBe(true);
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: { path: [1, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 0 },
+      kind: 'text',
+    });
+  });
+
   test('owns focused native-editable coordinate placements in DOM strategy layout mode', async () => {
     const editor = createReactEditor({
       initialValue: { children: [paragraph('body')] },

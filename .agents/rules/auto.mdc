@@ -311,8 +311,9 @@ Split long work into checkpoints that fit one high-quality prompt:
   record pass/fail signatures.
 - **Patch checkpoint:** fix one correctness class or one missing oracle.
 - **Perf checkpoint:** optimize one measured hot lane with correctness green.
-- **Architecture checkpoint:** run `plite-plan` for Slate API/runtime
-  boundaries, `plate-plan` for Plate behavior/product boundaries, and
+- **Architecture checkpoint:** run `best-api` first when public call shape is
+  unresolved, `plite-plan` for Plite runtime/adoption boundaries,
+  `plate-plan` for Plate behavior/product adoption, and
   `architecture-cleanup` for source shape/deslop/navigation friction before
   choosing either when the issue is structural.
 - **Closure handoff checkpoint:** when the current work becomes already-landed,
@@ -1070,7 +1071,8 @@ Then repair the owning layer:
 - missing/lying metric -> benchmark target/script repair;
 - visual proof gap -> Browser/screenshot/Playwright geometry proof;
 - stale docs -> decision consolidation;
-- bad API -> `plite-plan` or accepted implementation;
+- bad API -> `best-api` design/review, then `plite-plan`, `plate-plan`, or the
+  accepted implementation owner;
 - missing taste coverage -> stop, capture the answer, and patch
   `vision` before resuming when the answer is reusable;
 - wrong/missing/overlapping skill -> `.agents/rules/**` repair;
@@ -1102,8 +1104,9 @@ Each loop cycle has one primary owner and one packet-ledger decision.
 8. **Architecture cleanup:** use `architecture-cleanup` when the evidence
    points to shallow modules, split ownership, copied proof helpers, over-splits,
    deslop, or poor test locality rather than one obvious API decision.
-9. **API cleanup:** use `plite-plan` or `plate-plan` when repeated bugs show
-   bad public or internal API shape.
+9. **API cleanup:** use `best-api` when repeated bugs show bad public shape,
+   then the relevant plan or implementation owner. Keep purely internal
+   runtime boundaries with `plite-plan` or `plate-plan`.
 10. **Skill repair:** patch source rules when the loop itself missed policy.
 11. **Decision consolidation:** update durable docs before ship readiness.
 12. **Readiness:** use the lane readiness owner when the current tree is
@@ -1312,8 +1315,8 @@ The supervisor repairs whatever layer is missing:
 - **Architecture smell:** use `architecture-cleanup` when the smell is spread
   across modules, package ownership, proof harnesses, over-splits, deslop, or
   testability.
-- **API smell:** use `plite-plan` or implement the accepted shape when the plan
-  is already accepted.
+- **API smell:** use `best-api` unless the target shape is already accepted;
+  then use the layer plan or implementation owner.
 - **Missing taste coverage:** stop at the checkpoint, record the missing taste
   in the plan, capture the user's answer, and patch root `VISION.md` when
   reusable.
@@ -1376,9 +1379,10 @@ Do not write public changelog prose. Write latest-state decisions, proof
 commands, accepted tradeoffs, rejected alternatives, and next owner.
 
 For "think like me" work, create or update compact `VISION.md` rules only after
-decisions are accepted and reusable. Do not dump raw chat history into the
-skill. The skill should route to `VISION.md`, not carry doctrine in its own
-body.
+decisions are accepted and reusable. Do not dump raw chat history into a
+skill. Skills may carry their operational decision method; durable product
+taste belongs in Vision. Reusable API corrections repair both `best-api` and
+the smallest Vision owner.
 
 When the task is to improve root `VISION.md` itself, use numbered
 source-read passes over the owner docs instead of a vague docs review. Record

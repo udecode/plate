@@ -1,13 +1,15 @@
-import type { BaseEditor } from '../../lib/editor';
-import type { ParserOptions } from '../../lib/plugin/PluginConfig';
-import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
+import type { EditorCoreStateView } from '@platejs/plite';
 
-import { getEditorPlugin } from '../../lib/plugin';
+import type { ParserOptions } from '../../lib/plugin/PluginConfig';
+import {
+  createParserPluginContext,
+  type PreparedParserPluginEntry,
+} from './prepareParserRegistry';
 
 /** Pipe insert-data transformData hooks. */
 export const pipeTransformData = (
-  editor: BaseEditor,
-  plugins: AnyBasePlugin[],
+  state: EditorCoreStateView,
+  plugins: readonly PreparedParserPluginEntry[],
   { data, ...options }: ParserOptions
 ) => {
   plugins.forEach((p) => {
@@ -16,9 +18,9 @@ export const pipeTransformData = (
     if (!transformData) return;
 
     data = transformData({
-      ...getEditorPlugin(editor, p),
       data,
       ...options,
+      ...createParserPluginContext(p, state),
     });
   });
 

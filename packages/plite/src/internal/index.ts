@@ -174,6 +174,7 @@ export {
   getLiveText as getEditorLiveText,
   getSnapshotVersion,
   getStateFieldEffectTypes,
+  repairEditorValue,
   runTrustedUpdate,
   scheduleAfterCommitNotification,
   setChildren as setEditorChildren,

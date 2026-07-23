@@ -1,4 +1,5 @@
-import { definePropertyPolicy, property } from '@platejs/plite';
+import React from 'react';
+import { property } from '@platejs/plite';
 import { createBaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
@@ -7,11 +8,10 @@ import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { createPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
-import {
-  isEquivalentPlatePluginValue,
-  resolveAndSortPlugins,
-  resolvePlugins,
-} from './resolvePlugins';
+import { getPlateRuntime } from './compilePlateModel';
+import { getInjectedParserPluginProjections } from './getInjectedParserPluginProjections';
+import { getPluginOptionsStore } from './pluginOptionsStore';
+import { resolveAndSortPlugins, resolvePlugins } from './resolvePlugins';
 
 const getSortedKeys = (plugins: readonly AnyBasePlugin[]) => {
   const editor = createBaseEditor();
@@ -20,24 +20,20 @@ const getSortedKeys = (plugins: readonly AnyBasePlugin[]) => {
 };
 
 describe('resolvePlugins', () => {
-  it('compares nominal schema tokens by identity', () => {
-    const first = definePropertyPolicy({
-      id: 'identity-policy',
-      validate: (value): value is string => typeof value === 'string',
-      version: 1,
-    });
-    const second = definePropertyPolicy({
-      id: 'identity-policy',
-      validate: (value): value is string => typeof value === 'string',
-      version: 1,
+  it('compiles input-rule declarations once into the published runtime', () => {
+    let calls = 0;
+    const Plugin = createBasePlugin({
+      key: 'singleInputRuleCompilation',
+      inputRules: () => {
+        calls++;
+
+        return [];
+      },
     });
 
-    expect(
-      isEquivalentPlatePluginValue({ policy: first }, { policy: first })
-    ).toBe(true);
-    expect(
-      isEquivalentPlatePluginValue({ policy: first }, { policy: second })
-    ).toBe(false);
+    createBaseEditor({ plugins: [Plugin] });
+
+    expect(calls).toBe(1);
   });
 
   it('initialize plugins with correct order based on priority', () => {
@@ -92,7 +88,7 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    expect(editor.plugins.b.type).toBe('overridden');
+    expect(getPlateRuntime(editor).plugins.b.type).toBe('overridden');
   });
 
   it('merge all plugin APIs into editor.api', () => {
@@ -171,38 +167,54 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    expect(editor.runtime.pluginCache.decorate).toContain('cachey');
-    expect(editor.runtime.pluginCache.handlers.onNodeChange).toContain(
+    expect(getPlateRuntime(editor).pluginCache.decorate).toContain('cachey');
+    expect(getPlateRuntime(editor).pluginCache.handlers.onNodeChange).toContain(
       'cachey'
     );
-    expect(editor.runtime.pluginCache.handlers.onTextChange).toContain(
+    expect(getPlateRuntime(editor).pluginCache.handlers.onTextChange).toContain(
       'cachey'
     );
-    expect(editor.runtime.pluginCache.node.textMarks).toContain('cachey');
-    expect(editor.runtime.pluginCache.node.leafProps).toContain('cachey');
-    expect(editor.runtime.pluginCache.node.textProps).toContain('cachey');
-    expect(editor.runtime.pluginCache.transformInitialValue).toContain(
+    expect(getPlateRuntime(editor).pluginCache.node.textMarks).toContain(
       'cachey'
     );
-    expect(editor.runtime.pluginCache.render.aboveEditable).toContain('cachey');
-    expect(editor.runtime.pluginCache.render.aboveNodes).toContain('cachey');
-    expect(editor.runtime.pluginCache.render.abovePlite).toContain('cachey');
-    expect(editor.runtime.pluginCache.render.afterContainer).toContain(
+    expect(getPlateRuntime(editor).pluginCache.node.leafProps).toContain(
       'cachey'
     );
-    expect(editor.runtime.pluginCache.render.afterEditable).toContain('cachey');
-    expect(editor.runtime.pluginCache.render.beforeContainer).toContain(
+    expect(getPlateRuntime(editor).pluginCache.node.textProps).toContain(
       'cachey'
     );
-    expect(editor.runtime.pluginCache.render.beforeEditable).toContain(
+    expect(getPlateRuntime(editor).pluginCache.transformInitialValue).toContain(
       'cachey'
     );
-    expect(editor.runtime.pluginCache.render.belowNodes).toContain('cachey');
-    expect(editor.runtime.pluginCache.render.belowRootNodes).toContain(
+    expect(getPlateRuntime(editor).pluginCache.render.aboveEditable).toContain(
       'cachey'
     );
-    expect(editor.runtime.pluginCache.rules.match).toContain('cachey');
-    expect(editor.runtime.pluginCache.useHooks).toContain('cachey');
+    expect(getPlateRuntime(editor).pluginCache.render.aboveNodes).toContain(
+      'cachey'
+    );
+    expect(getPlateRuntime(editor).pluginCache.render.abovePlite).toContain(
+      'cachey'
+    );
+    expect(getPlateRuntime(editor).pluginCache.render.afterContainer).toContain(
+      'cachey'
+    );
+    expect(getPlateRuntime(editor).pluginCache.render.afterEditable).toContain(
+      'cachey'
+    );
+    expect(
+      getPlateRuntime(editor).pluginCache.render.beforeContainer
+    ).toContain('cachey');
+    expect(getPlateRuntime(editor).pluginCache.render.beforeEditable).toContain(
+      'cachey'
+    );
+    expect(getPlateRuntime(editor).pluginCache.render.belowNodes).toContain(
+      'cachey'
+    );
+    expect(getPlateRuntime(editor).pluginCache.render.belowRootNodes).toContain(
+      'cachey'
+    );
+    expect(getPlateRuntime(editor).pluginCache.rules.match).toContain('cachey');
+    expect(getPlateRuntime(editor).pluginCache.useHooks).toContain('cachey');
   });
 
   it('creates a shortcut handler from plugin-specific tx commands', () => {
@@ -215,7 +227,9 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    editor.runtime.shortcuts['shortcutTx.toggle']?.handler?.({} as any);
+    getPlateRuntime(editor).shortcuts['shortcutTx.toggle']?.handler?.(
+      {} as any
+    );
 
     expect(toggle).toHaveBeenCalledTimes(1);
   });
@@ -232,7 +246,9 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    editor.runtime.shortcuts['shortcutMixed.toggle']?.handler?.({} as any);
+    getPlateRuntime(editor).shortcuts['shortcutMixed.toggle']?.handler?.(
+      {} as any
+    );
 
     expect(other).not.toHaveBeenCalled();
     expect(toggle).toHaveBeenCalledTimes(1);
@@ -269,9 +285,9 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    const result = editor.runtime.shortcuts['shortcutTxFalse.untab']?.handler?.(
-      {} as any
-    );
+    const result = getPlateRuntime(editor).shortcuts[
+      'shortcutTxFalse.untab'
+    ]?.handler?.({} as any);
 
     expect(untab).toHaveBeenCalledTimes(1);
     expect(result).toBe(false);
@@ -317,9 +333,9 @@ describe('resolvePlugins', () => {
     const apiEditor = createBaseEditor({ plugins: [ApiPlugin] });
 
     expect(
-      apiEditor.runtime.shortcuts['shortcutAmbiguous.toggle']
+      getPlateRuntime(apiEditor).shortcuts['shortcutAmbiguous.toggle']
     ).not.toHaveProperty('target');
-    apiEditor.runtime.shortcuts['shortcutAmbiguous.toggle']?.handler?.(
+    getPlateRuntime(apiEditor).shortcuts['shortcutAmbiguous.toggle']?.handler?.(
       {} as any
     );
     expect(apiToggle).toHaveBeenCalledTimes(1);
@@ -330,9 +346,9 @@ describe('resolvePlugins', () => {
     });
     const updateEditor = createBaseEditor({ plugins: [UpdatePlugin] });
 
-    updateEditor.runtime.shortcuts['shortcutAmbiguous.toggle']?.handler?.(
-      {} as any
-    );
+    getPlateRuntime(updateEditor).shortcuts[
+      'shortcutAmbiguous.toggle'
+    ]?.handler?.({} as any);
     expect(updateToggle).toHaveBeenCalledTimes(1);
   });
 
@@ -368,7 +384,9 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    editor.runtime.shortcuts['shortcutApi.toggle']?.handler?.({} as any);
+    getPlateRuntime(editor).shortcuts['shortcutApi.toggle']?.handler?.(
+      {} as any
+    );
 
     expect(toggle).toHaveBeenCalledTimes(1);
   });
@@ -383,7 +401,9 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    editor.runtime.shortcuts['shortcutRootApi.inspect']?.handler?.({} as any);
+    getPlateRuntime(editor).shortcuts['shortcutRootApi.inspect']?.handler?.(
+      {} as any
+    );
 
     expect(inspect).toHaveBeenCalledTimes(1);
   });
@@ -416,7 +436,7 @@ describe('resolvePlugins', () => {
     expect(Reflect.get(editor.api, 'pluginApi')).toBeUndefined();
 
     expect(() => resolvePlugins(editor, [])).toThrow(
-      'Plate plugins are immutable after model publication.'
+      'Plate plugins are fixed after model publication. Configure plugin options before creating the editor.'
     );
     expect(editor.plugin({ key: 'pluginApi' }).api.run()).toBe('run');
   });
@@ -432,7 +452,9 @@ describe('resolvePlugins', () => {
           }),
         ],
       })
-    ).toThrow('inputRules config must be an array of explicit rule instances.');
+    ).toThrow(
+      'inputRules config must be an array of explicit rule instances or a factory.'
+    );
   });
 });
 
@@ -453,6 +475,60 @@ describe('resolveAndSortPlugins', () => {
     const a = createBasePlugin({ dependencies: [b, c], key: 'a' });
 
     expect(getSortedKeys([a])).toEqual(['c', 'b', 'a']);
+  });
+
+  it('resolves one configured descriptor once across dependency and root paths', () => {
+    let calls = 0;
+    const dependency = createBasePlugin({
+      key: 'configuredDependency',
+      options: { source: 'base' },
+    }).configure(() => {
+      calls++;
+
+      return { options: { source: 'configured' } };
+    });
+    const dependent = createBasePlugin({
+      dependencies: [dependency],
+      key: 'dependent',
+    });
+    const editor = createBaseEditor();
+    const resolved = resolveAndSortPlugins(editor, [dependent, dependency]);
+
+    expect(calls).toBe(1);
+    expect(
+      resolved.find((plugin) => plugin.key === dependency.key)?.options.source
+    ).toBe('configured');
+  });
+
+  it('keeps editor extensions from distinct same-key descriptors', () => {
+    const dependency = createBasePlugin({
+      key: 'extendedDependency',
+    }).extendExtension({
+      api: {
+        dependencyExtension: {
+          read: () => 'dependency',
+        },
+      },
+    });
+    const explicitDependency = createBasePlugin({
+      key: dependency.key,
+    }).extendExtension({
+      api: {
+        explicitExtension: {
+          read: () => 'explicit',
+        },
+      },
+    });
+    const dependent = createBasePlugin({
+      dependencies: [dependency],
+      key: 'dependent',
+    });
+    const editor = createBaseEditor({
+      plugins: [dependent, explicitDependency],
+    });
+
+    expect(editor.api.dependencyExtension.read()).toBe('dependency');
+    expect(editor.api.explicitExtension.read()).toBe('explicit');
   });
 
   it('keeps independent root priority around dependency ordering', () => {
@@ -552,8 +628,8 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    expect(editor.plugins.a.type).toBe('originalA');
-    expect(editor.plugins.b.type).toBe('overriddenB');
+    expect(getPlateRuntime(editor).plugins.a.type).toBe('originalA');
+    expect(getPlateRuntime(editor).plugins.b.type).toBe('overriddenB');
   });
 
   it('handle nested overrides', () => {
@@ -571,7 +647,7 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    expect(editor.plugins.child.type).toBe('overriddenChild');
+    expect(getPlateRuntime(editor).plugins.child.type).toBe('overriddenChild');
   });
 
   it('apply multiple overrides in correct order', () => {
@@ -599,7 +675,7 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    expect(editor.plugins.c.type).toBe('overriddenByB');
+    expect(getPlateRuntime(editor).plugins.c.type).toBe('overriddenByB');
   });
 
   it('override components based on priority only if target plugin has a component', () => {
@@ -674,6 +750,32 @@ describe('applyPluginOverrides', () => {
   });
 
   describe('targetPluginKeys', () => {
+    it('preserves __proto__ as an own null-prototype injection key', () => {
+      const Target = createBasePlugin({ key: '__proto__' });
+      const Injector = createBasePlugin({
+        inject: {
+          targetPluginToInject: () => ({
+            parser: { format: 'application/x-proto-target' },
+          }),
+        },
+        key: 'protoInjector',
+        targetPluginKeys: [Target.key],
+      });
+      const editor = createBaseEditor({ plugins: [Target, Injector] });
+      const overlays = editor.getPlugin(Injector).inject!.plugins!;
+      const [projection] = getInjectedParserPluginProjections(
+        editor,
+        editor.getPlugin(Target)
+      );
+
+      expect(Object.getPrototypeOf(overlays)).toBeNull();
+      expect(Object.hasOwn(overlays, '__proto__')).toBe(true);
+      expect(Reflect.get(overlays, '__proto__')?.parser?.format).toBe(
+        'application/x-proto-target'
+      );
+      expect(projection?.parser.format).toBe('application/x-proto-target');
+    });
+
     it('injects only installed optional targets and preserves explicit entries', () => {
       const Plugin = createBasePlugin({
         targetPluginKeys: ['plugin1', 'missingPlugin', 'plugin2'],
@@ -839,9 +941,9 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    expect(editor.plugins).toHaveProperty('a');
-    expect(editor.plugins).not.toHaveProperty('b');
-    expect(editor.plugins).toHaveProperty('c');
+    expect(getPlateRuntime(editor).plugins).toHaveProperty('a');
+    expect(getPlateRuntime(editor).plugins).not.toHaveProperty('b');
+    expect(getPlateRuntime(editor).plugins).toHaveProperty('c');
   });
 });
 
@@ -854,20 +956,17 @@ describe('mergePlugins behavior in resolvePlugins', () => {
         nullValue: 'kept',
         objectValue: 'kept',
       },
-    })
-      .configure({
-        options: {
-          nullValue: null as unknown as string,
-          objectValue: undefined as unknown as string,
-        },
-      })
-      .configure(() => ({
-        options: { contextValue: undefined as unknown as string },
-      }));
+    }).configure(() => ({
+      options: {
+        contextValue: undefined as unknown as string,
+        nullValue: null as unknown as string,
+        objectValue: undefined as unknown as string,
+      },
+    }));
 
     const editor = createBaseEditor({ plugins: [plugin] });
 
-    expect(editor.plugins.test.options).toEqual({
+    expect(getPlateRuntime(editor).plugins.test.options).toEqual({
       contextValue: 'kept',
       nullValue: null,
       objectValue: 'kept',
@@ -875,7 +974,10 @@ describe('mergePlugins behavior in resolvePlugins', () => {
   });
 
   it('freezes the options record without cloning runtime resources', () => {
-    const runtimeResource = { value: 'original' };
+    class RuntimeResource {
+      value = 'original';
+    }
+    const runtimeResource = new RuntimeResource();
     const plugin = createBasePlugin({
       key: 'test',
       options: { resource: runtimeResource },
@@ -885,13 +987,189 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       plugins: [plugin],
     });
 
-    const published = editor.plugins.test;
+    const published = getPlateRuntime(editor).plugins.test;
 
     expect(published.options).not.toBe(plugin.options);
     expect(Object.isFrozen(published.options)).toBe(true);
     expect(published.options.resource).toBe(runtimeResource);
     expect(editor.plugin(plugin).getOption('resource')).toBe(runtimeResource);
     expect(Object.isFrozen(published.options.resource)).toBe(false);
+  });
+
+  it('snapshots nested plain options away from caller-owned mutation', () => {
+    const nested = { label: 'one' };
+    const entries = [nested];
+    const plugin = createBasePlugin({
+      key: 'test',
+      options: { entries, nested },
+    });
+    const editor = createBaseEditor({ plugins: [plugin] });
+    const published = getPlateRuntime(editor).plugins.test;
+    const listener = vi.fn();
+    const unsubscribe = getPluginOptionsStore(
+      editor,
+      plugin.key
+    )!.store.subscribe(listener);
+
+    nested.label = 'mutated';
+    entries.push({ label: 'two' });
+
+    expect(published.options.nested).toEqual({ label: 'one' });
+    expect(published.options.nested).not.toBe(nested);
+    expect(Object.isFrozen(published.options.nested)).toBe(true);
+    expect(published.options.entries).toEqual([{ label: 'one' }]);
+    expect(published.options.entries).not.toBe(entries);
+    expect(published.options.entries[0]).toBe(published.options.nested);
+    expect(Object.isFrozen(published.options.entries)).toBe(true);
+    expect(editor.plugin(plugin).getOption('nested')).toEqual({ label: 'one' });
+    expect(listener).not.toHaveBeenCalled();
+
+    editor.plugin(plugin).setOption('nested', { label: 'updated' });
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(editor.plugin(plugin).getOption('nested')).toEqual({
+      label: 'updated',
+    });
+    expect(published.options.nested).toEqual({ label: 'one' });
+    unsubscribe();
+  });
+
+  it('preserves shared and cyclic identity inside snapshotted plain options', () => {
+    const shared = { label: 'shared' };
+    const cycle: { self?: typeof cycle } = {};
+
+    cycle.self = cycle;
+    const plugin = createBasePlugin({
+      key: 'test',
+      options: { cycle, first: shared, second: shared },
+    });
+    const editor = createBaseEditor({ plugins: [plugin] });
+    const options = getPlateRuntime(editor).plugins.test.options;
+
+    expect(options.first).toBe(options.second);
+    expect(options.first).not.toBe(shared);
+    expect(Object.isFrozen(options.first)).toBe(true);
+    expect(options.cycle).not.toBe(cycle);
+    expect(options.cycle.self).toBe(options.cycle);
+    expect(Object.isFrozen(options.cycle)).toBe(true);
+  });
+
+  it('rejects accessor properties in plain option graphs', () => {
+    const nested = {} as { value: number };
+
+    Object.defineProperty(nested, 'value', {
+      get: () => 1,
+      set: () => {},
+    });
+    const plugin = createBasePlugin({
+      key: 'test',
+      options: { nested },
+    });
+
+    expect(() => createBaseEditor({ plugins: [plugin] })).toThrow(
+      'Plate plugin options must be data-only. Accessor properties are not supported; use .extendSelectors() for computed values.'
+    );
+  });
+
+  it('rejects accessor properties in plain plugin descriptor graphs', () => {
+    const topLevel = createBasePlugin({ key: 'topLevelAccessor' });
+    const nested = createBasePlugin({ key: 'nestedAccessor' });
+
+    Object.defineProperty(topLevel, 'priority', {
+      enumerable: true,
+      get: () => 100,
+    });
+    Object.defineProperty(nested.render, 'node', {
+      enumerable: true,
+      get: () => () => null,
+    });
+
+    expect(() => createBaseEditor({ plugins: [topLevel] })).toThrow(
+      'Plate plugin "topLevelAccessor" descriptor path "priority" must be data-only. Accessor properties are not supported.'
+    );
+    expect(() => createBaseEditor({ plugins: [nested] })).toThrow(
+      'Plate plugin "nestedAccessor" descriptor path "render.node" must be data-only. Accessor properties are not supported.'
+    );
+  });
+
+  it('preserves React components as opaque render-slot resources', () => {
+    const DirectNode = React.forwardRef<HTMLDivElement>(() => null);
+    const Node = React.forwardRef<HTMLDivElement>(() => null);
+    const OverrideNode = React.forwardRef<HTMLDivElement>(() => null);
+    const directPlugin = createPlatePlugin({
+      key: 'directForwardRefHost',
+    }).withComponent(DirectNode);
+    const plugin = createPlatePlugin({ key: 'forwardRefHost' }).configure({
+      override: { components: { paragraph: OverrideNode } },
+      render: { node: Node },
+    });
+    const editor = createPlateEditor({ plugins: [directPlugin, plugin] });
+    const published = getPlateRuntime(editor).plugins.forwardRefHost;
+
+    expect(
+      getPlateRuntime(editor).plugins.directForwardRefHost.render.node
+    ).toBe(DirectNode);
+    expect(published.render.node).toBe(Node);
+    expect(published.override.components?.paragraph).toBe(OverrideNode);
+    expect(Object.isFrozen(published.render)).toBe(true);
+    expect(Object.isFrozen(Node)).toBe(false);
+    expect(Object.isFrozen(OverrideNode)).toBe(false);
+  });
+
+  it('snapshots plugin-valued options as frozen nominal references', () => {
+    const Target = createBasePlugin({ key: 'optionTarget' });
+    const cycle: { self?: typeof cycle; target: typeof Target } = {
+      target: Target,
+    };
+
+    cycle.self = cycle;
+    const Owner = createBasePlugin({
+      key: 'optionOwner',
+      options: { cycle, first: Target, second: Target },
+    });
+    const editor = createBaseEditor({ plugins: [Target, Owner] });
+    const publishedOptions =
+      getPlateRuntime(editor).plugins.optionOwner.options;
+    const targetReference = publishedOptions.first;
+
+    expect(targetReference).toEqual({
+      key: 'optionTarget',
+      type: 'optionTarget',
+    });
+    expect(targetReference).toBe(publishedOptions.second);
+    expect(targetReference).toBe(publishedOptions.cycle.target);
+    expect(publishedOptions.cycle.self).toBe(publishedOptions.cycle);
+    expect(targetReference).not.toBe(Target);
+    expect(Object.isFrozen(targetReference)).toBe(true);
+    expect(editor.plugin(Owner).getOption('first')).toBe(targetReference);
+
+    const ContextOwner = createBasePlugin({
+      key: 'contextOptionOwner',
+      options: { target: null as unknown as typeof Target },
+    }).extend(() => ({ options: { target: Target } }));
+    const contextEditor = createBaseEditor({
+      plugins: [Target, ContextOwner],
+    });
+    const contextPublished =
+      getPlateRuntime(contextEditor).plugins.contextOptionOwner.options.target;
+
+    expect(contextPublished).toBe(
+      contextEditor.plugin(ContextOwner).getOption('target')
+    );
+    expect(contextPublished).not.toBe(Target);
+    expect(contextPublished).not.toBe(targetReference);
+    expect(Object.isFrozen(contextPublished)).toBe(true);
+
+    Object.assign(Target, { key: 'mutatedTarget', type: 'mutatedTarget' });
+
+    expect(targetReference).toEqual({
+      key: 'optionTarget',
+      type: 'optionTarget',
+    });
+    expect(getPlateRuntime(editor).plugins.optionTarget).toMatchObject({
+      key: 'optionTarget',
+      type: 'optionTarget',
+    });
   });
 
   it('keeps mutable option state outside the published plugin descriptor', () => {
@@ -907,7 +1185,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     editor.plugin(plugin).setOption('value', 'modified');
 
     expect(editor.plugin(plugin).getOption('value')).toBe('modified');
-    expect(editor.plugins.test.options.value).toBe('original');
+    expect(getPlateRuntime(editor).plugins.test.options.value).toBe('original');
     expect(plugin.options.value).toBe('original');
   });
 
@@ -926,12 +1204,12 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       plugins: [plugin],
     });
 
-    expect(editor.plugins.test.options.value).toBe('modified');
+    expect(getPlateRuntime(editor).plugins.test.options.value).toBe('modified');
 
     editor.plugin(plugin).setOption('value', 'runtime');
 
     expect(editor.plugin(plugin).getOption('value')).toBe('runtime');
-    expect(editor.plugins.test.options.value).toBe('modified');
+    expect(getPlateRuntime(editor).plugins.test.options.value).toBe('modified');
     expect(plugin.options.value).toBe('original');
   });
 });
@@ -946,11 +1224,13 @@ describe('resolvePlugins with keyless plugins', () => {
       plugins: plugins as any,
     });
 
-    expect(editor.runtime.pluginList.map((p) => p.key)).not.toContain('');
-    expect(editor.plugins.keyedPlugin).toBeDefined();
-    expect(editor.runtime.pluginList.some((p) => p.key === 'keyedPlugin')).toBe(
-      true
+    expect(getPlateRuntime(editor).pluginList.map((p) => p.key)).not.toContain(
+      ''
     );
+    expect(getPlateRuntime(editor).plugins.keyedPlugin).toBeDefined();
+    expect(
+      getPlateRuntime(editor).pluginList.some((p) => p.key === 'keyedPlugin')
+    ).toBe(true);
     // Exact count depends on core plugins, but it should contain keyedPlugin and not the keyless one.
   });
 
@@ -982,12 +1262,12 @@ describe('resolvePlugins with keyless plugins', () => {
       plugins: plugins as any,
     });
 
-    expect(editor.plugins['parent-no-key']).toBeUndefined();
-    expect(editor.plugins.childKey1).toBeDefined();
-    expect(editor.plugins.childKey2).toBeDefined();
-    expect(editor.plugins.anotherPlugin).toBeDefined();
+    expect(getPlateRuntime(editor).plugins['parent-no-key']).toBeUndefined();
+    expect(getPlateRuntime(editor).plugins.childKey1).toBeDefined();
+    expect(getPlateRuntime(editor).plugins.childKey2).toBeDefined();
+    expect(getPlateRuntime(editor).plugins.anotherPlugin).toBeDefined();
 
-    const pluginKeys = editor.runtime.pluginList.map((p) => p.key);
+    const pluginKeys = getPlateRuntime(editor).pluginList.map((p) => p.key);
     expect(pluginKeys).toContain('childKey1');
     expect(pluginKeys).toContain('childKey2');
     expect(pluginKeys).toContain('anotherPlugin');

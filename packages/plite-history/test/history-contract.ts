@@ -47,6 +47,11 @@ const paragraph = (
   children: [{ text }],
 });
 
+const container = (...children: Descendant[]): Descendant => ({
+  children,
+  type: 'container',
+});
+
 const historyTestEditor = () => createEditor({ extensions: [history()] });
 
 const getHistory = (editor: EditorType) =>
@@ -1862,21 +1867,11 @@ describe('plite-history contract', () => {
   it('undoes reverse nested block joins cleanly', () => {
     const editor = historyTestEditor();
 
-    replace(
-      editor,
-      [
-        paragraph('Hello'),
-        {
-          type: 'paragraph',
-          children: [paragraph('world!')],
-        } as unknown as Descendant,
-      ],
-      {
-        kind: 'text',
-        anchor: { path: [1, 0, 0], offset: 0 },
-        focus: { path: [1, 0, 0], offset: 0 },
-      }
-    );
+    replace(editor, [paragraph('Hello'), container(paragraph('world!'))], {
+      kind: 'text',
+      anchor: { path: [1, 0, 0], offset: 0 },
+      focus: { path: [1, 0, 0], offset: 0 },
+    });
 
     const before = getVisibleState(editor);
 
@@ -1933,20 +1928,11 @@ describe('plite-history contract', () => {
   it('undoes insertBreak commits cleanly', () => {
     const editor = historyTestEditor();
 
-    replace(
-      editor,
-      [
-        {
-          type: 'paragraph',
-          children: [paragraph('one'), paragraph('two')],
-        } as unknown as Descendant,
-      ],
-      {
-        kind: 'text',
-        anchor: { path: [0, 0, 0], offset: 2 },
-        focus: { path: [0, 0, 0], offset: 2 },
-      }
-    );
+    replace(editor, [container(paragraph('one'), paragraph('two'))], {
+      kind: 'text',
+      anchor: { path: [0, 0, 0], offset: 2 },
+      focus: { path: [0, 0, 0], offset: 2 },
+    });
 
     const before = getVisibleState(editor);
 

@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from '@platejs/core';
+import { traverseHtmlElements } from '@platejs/core/internal';
 
 /**
  * Check if the element contains docx content. True if one element has:

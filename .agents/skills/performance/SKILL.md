@@ -25,6 +25,10 @@ Use this when a Plate plan claims speed, responsiveness, large-document readines
 
 Rule: if the plan only says "use React best practices", "avoid O(n)", or "seems fast locally", it is not done.
 
+Performance pressure does not automatically earn public profiling, config,
+toggle, profile, or diagnostics machinery. Keep measurement internal by
+default; use `best-api` before adding a reusable public instrumentation surface.
+
 ## Required Output
 
 Record this in the active plan or review:

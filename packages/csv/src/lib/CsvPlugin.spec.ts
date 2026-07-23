@@ -1,7 +1,4 @@
-import {
-  createBaseEditor,
-  prepareParserPluginContext,
-} from '@platejs/core';
+import { createBaseEditor, prepareParserPluginContext } from '@platejs/core';
 import { ElementApi } from '@platejs/plite';
 
 import * as csv from '../index';

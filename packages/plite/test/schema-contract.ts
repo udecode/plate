@@ -1190,6 +1190,69 @@ describe('editor schema', () => {
     );
   });
 
+  it('enforces explicit nested content grammar in derived schemas', () => {
+    const valid = [
+      {
+        children: [
+          {
+            children: [{ children: [{ text: 'valid' }], type: 'derived-cell' }],
+            type: 'derived-row',
+          },
+        ],
+        type: 'derived-table',
+      },
+    ];
+    const editor = createEditor({
+      extensions: [
+        defineEditorExtension({
+          name: 'derived-nested-content',
+          schema: {
+            elements: {
+              'derived-cell': {
+                content: schema.content.text({ min: 1 }),
+              },
+              'derived-row': {
+                content: schema.content.type('derived-cell', { min: 1 }),
+              },
+              'derived-table': {
+                content: schema.content.type('derived-row', { min: 1 }),
+              },
+            },
+          },
+        }),
+      ],
+      initialValue: valid,
+    });
+    const invalid = [
+      {
+        children: [
+          {
+            children: [{ children: [{ text: 'invalid' }], type: 'paragraph' }],
+            type: 'derived-row',
+          },
+        ],
+        type: 'derived-table',
+      },
+    ];
+
+    assert.throws(
+      () => editor.read.schema.validateDocument({ children: invalid }),
+      /derived-row.*cannot contain.*paragraph/
+    );
+    assert.throws(
+      () => editor.read.schema.validateFragment(invalid),
+      /derived-row.*cannot contain.*paragraph/
+    );
+    assert.throws(
+      () =>
+        editor.update((tx) => {
+          tx.nodes.set({ type: 'paragraph' }, { at: [0, 0, 0] });
+        }),
+      /derived-row.*cannot contain.*paragraph/
+    );
+    assert.deepEqual(editor.read.children(), valid);
+  });
+
   it('fits closed external content through primary and named root grammar', () => {
     const editor = createEditor({
       extensions: [

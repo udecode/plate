@@ -39,8 +39,9 @@ keep.
 
 - The task is one normal patch: use `task`, `slate-patch`, or the package
   owner.
-- The task is an accepted public API/runtime/product architecture plan:
-  use `major-task`, `plite-plan`, or `plate-plan`.
+- The task is public call-shape design/review: use `best-api`. For an accepted
+  target needing runtime/product adoption, use `major-task`, `plite-plan`, or
+  `plate-plan`.
 - The task is measured Slate optimization state: use `slate-ar`.
 - The task is internal Plate/Slate quality/perf/browser/API supervision:
   use `auto`, which may invoke this skill when architecture cleanup is
@@ -56,7 +57,7 @@ keep.
 2. Root `VISION.md`.
 3. Relevant detail files:
    - `docs/vision/common.md` for shared proof, automation, and routing.
-   - `docs/vision/slate.md` for Slate substrate architecture.
+   - `docs/vision/plite.md` for Plite substrate architecture.
    - `docs/vision/plate.md` for Plate framework architecture.
 4. `.agents/AGENTS.md` for command and skill ownership policy.
 5. Nearby source, tests, docs, package manifests, exports, and prior plan rows
@@ -147,7 +148,8 @@ surface. Every candidate gets four tests:
 3. **Interface-depth test:** prefer the shape where callers learn less while
    real behavior and proof become more local.
 4. **VISION fit test:** if the cleanup does not fit `VISION.md` or reusable
-   taste is missing, route to `vision` / `sync-vision` before patching code.
+   taste is missing, route to `vision` / `sync-vision`; if the unresolved
+   question is public call shape, route it to `best-api`.
 
 Prefer source facts over vibes. A candidate needs concrete friction:
 
@@ -215,9 +217,10 @@ This skill may implement a small cleanup only when all are true:
 Focused proof comes before broad proof. After multiple packets or import churn,
 run the relevant broad gate. Never leave speculative cleanup dirty.
 
-For behavior, public API, runtime boundary, product UX, or large blast radius:
-stop at ranked recommendation and route to `major-task`, `plite-plan`,
-`plate-plan`, `auto`, or the package owner.
+For public call shape, stop at ranked recommendation and route to `best-api`.
+For behavior, runtime boundary, product UX, or large-blast-radius adoption,
+route to `major-task`, `plite-plan`, `plate-plan`, `auto`, or the package
+owner.
 
 ## Deslop Inventory
 
@@ -246,8 +249,10 @@ more files.
   over-split, fake-wrapper, or agent-navigation findings during closure.
 - `major-task`: owns broad decision, rollout, and implementation plan when the
   cleanup has meaningful blast radius.
-- `plite-plan` / `plate-plan`: own public API, behavior law, runtime boundary,
-  or product architecture decisions after this skill identifies the problem.
+- `best-api`: owns public call-shape design/review after this skill identifies
+  the problem.
+- `plite-plan` / `plate-plan`: own behavior law, runtime boundary, adoption,
+  and product architecture after the target API is clear.
 - `maintainer`: may route public issue/PR architecture-cleanup candidates here
   before deciding execution owner.
 

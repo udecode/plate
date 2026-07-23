@@ -3,6 +3,7 @@ import {
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
+import { getPlateRuntime } from '@platejs/core/internal';
 import { DocumentChange, schema } from '@platejs/plite';
 import ReactDOMServer from 'react-dom/server';
 
@@ -114,7 +115,9 @@ describe('BaseListPlugin', () => {
       initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
     });
     const list = editor.plugin(BaseListPlugin);
-    const pluginKeys = editor.runtime.pluginList.map((plugin) => plugin.key);
+    const pluginKeys = getPlateRuntime(editor).pluginList.map(
+      (plugin) => plugin.key
+    );
 
     expect(pluginKeys.indexOf(KEYS.indent)).toBeLessThan(
       pluginKeys.indexOf(KEYS.list)

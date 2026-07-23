@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import type { UserConfig } from 'tsdown';
 import { defineConfig } from 'tsdown';
 
@@ -10,7 +12,7 @@ export const withDirectPackageConfig = (config: UserConfig): UserConfig => {
     throw new Error('Direct package config requires object hooks.');
   }
 
-  const packageRoot = process.cwd();
+  const packageRoot = path.resolve(config.cwd ?? process.cwd());
   const onBuildDone = config.hooks?.['build:done'];
   const suppressWarnings = config.suppressWarnings;
 

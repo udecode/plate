@@ -20,12 +20,12 @@ const ChildPlugin = createBasePlugin<ChildConfig>({
   options: {
     level: 1,
   },
-}).extendEditorApi(({ plugin }) => ({
+}).extendEditorApi(({ plugin, setOption }) => ({
   plugin: {
     getLevel: () => plugin.options.level,
   },
   setLevel: (level) => {
-    plugin.options.level = level;
+    setOption('level', level);
   },
 }));
 

@@ -528,6 +528,7 @@ const internalBridgeRuntimeExportExpectations = {
     'readEditorSchemaIdentity',
     'removeMark',
     'removeNodes',
+    'repairEditorValue',
     'replaceChildren',
     'replace',
     'reset',

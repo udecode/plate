@@ -35,13 +35,15 @@ omits `schema`. Pass `{ id, version }` only for application-named History,
 Yjs, or migration lineage. Editor factories derive identity when called
 without a `schema` option.
 
-Keep plugin-owned values in one `options` bag. Use object-form
-`.configure({ options })` for descriptor values and contextual
-`.configure(context => ...)` for options, handlers, renderers, and shortcuts.
-Contextual layers compose in declaration order. Reserve `.extend(...)` for
-additive, type-widening plugin contracts. Read and update live values through
-the scoped portal's `getOptions`, `setOption`, and `setOptions`; live option
-updates do not rebuild the compiled schema.
+Keep plugin-owned values in one `options` bag. Define package-owned behavior
+with `create*Plugin()`, `.extend(...)`, and the narrower `.extend*()` methods.
+Apply at most one terminal consumer `.configure(...)` call per descriptor:
+object configuration can set descriptor fields, while contextual configuration
+can derive options, handlers, renderers, and shortcuts. Contextual extensions
+read the configured values, and consumer configuration remains the final
+override. Read and update live values through the scoped portal's `getOptions`,
+`setOption`, and `setOptions`; live option updates do not rebuild the compiled
+schema.
 
 Declare cross-plugin schema and host targets with the plugin's top-level
 `targetPluginKeys` field.

@@ -823,12 +823,13 @@ const html = await serializeHtml(editor);
 ```
 
 **After** — MIME host codecs continue to parse/serialize fitted
-`ContentSlice`s for clipboard transport. HTML/Markdown document conversion
-stays feature-owned, and React output is named as rendering.
+`ContentSlice`s for clipboard transport. HTML document conversion stays
+feature-owned, Markdown document conversion uses the sole
+`editor.api.markdown` root API, and React output is named as rendering.
 
 ```ts
 const value = editor.plugin(HtmlPlugin).api.deserialize({ element });
-const markdown = editor.plugin(MarkdownPlugin).api.serialize({ value });
+const markdown = editor.api.markdown.serialize({ value });
 
 const rendered = await renderStaticHtml(editor);
 ```

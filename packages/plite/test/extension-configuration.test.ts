@@ -28,6 +28,7 @@ import {
   getInstalledEditorExtension,
   initializeEditorExtensions,
 } from '@platejs/plite/internal';
+import { applyTransactionSpec } from '../src/core/public-state';
 import { prepareEditorExtensionPublication } from '../src/core/editor-extension';
 
 const paragraph = (text: string) => ({
@@ -193,6 +194,216 @@ describe('transactional extension configuration', () => {
       'retryable-schema-bootstrap'
     );
     assert.equal(editor.read.lastCommit(), null);
+  });
+
+  it('rolls back initializer drafts before publishing bootstrap state', () => {
+    const articleSchema = defineEditorSchema({
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'atomic-initializer-bootstrap',
+      root: { content: schema.content.type('paragraph') },
+      unknown: 'reject',
+      version: 1,
+    });
+    const bootstrapOwner = defineEditorExtension({
+      name: 'bootstrap-atomic-owner',
+    });
+    const initialSelection = {
+      anchor: { offset: 2, path: [0, 0] },
+      focus: { offset: 2, path: [0, 0] },
+      kind: 'text' as const,
+    };
+    const editor = createEditor({
+      initialSelection,
+      initialValue: [paragraph('before')],
+    });
+    const previousIdentity = editor.read.schema.identity();
+    const previousRegistry = getEditorExtensionRegistry(editor);
+    const previousVersion = editor.read.runtime.snapshot().version;
+    let commits = 0;
+
+    editor.subscribeCommit(() => {
+      commits++;
+      throw new Error('bootstrap must not publish a commit');
+    });
+
+    assert.throws(
+      () =>
+        initializeEditorExtensions(editor, [articleSchema, bootstrapOwner], {
+          initialize(tx) {
+            tx.value.replace({
+              children: [paragraph('after')],
+              selection: null,
+            });
+            throw new Error('bootstrap initializer failed after replacement');
+          },
+        }),
+      /bootstrap initializer failed after replacement/u
+    );
+
+    assert.equal(getEditorExtensionRegistry(editor), previousRegistry);
+    assert.equal(editor.read.schema.identity(), previousIdentity);
+    assert.deepEqual(editor.read.children(), [paragraph('before')]);
+    assert.deepEqual(editor.read.selection(), initialSelection);
+    assert.equal(editor.read.lastCommit(), null);
+    assert.equal(editor.read.runtime.snapshot().version, previousVersion);
+    assert.equal(commits, 0);
+    assert.equal(
+      getInstalledEditorExtension(editor, 'bootstrap-atomic-owner'),
+      undefined
+    );
+
+    initializeEditorExtensions(editor, [articleSchema, bootstrapOwner], {
+      initialize(tx) {
+        tx.value.replace({
+          children: [paragraph('after')],
+          selection: null,
+        });
+      },
+    });
+
+    assert.equal(
+      namedIdentity(editor.read.schema.identity()).id,
+      'atomic-initializer-bootstrap'
+    );
+    assert.deepEqual(editor.read.children(), [paragraph('after')]);
+    assert.equal(editor.read.lastCommit(), null);
+    assert.equal(commits, 0);
+  });
+
+  it('invalidates specs minted before one successful schema bootstrap', () => {
+    const articleSchema = defineEditorSchema({
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'bootstrap-spec-success',
+      root: { content: schema.content.type('paragraph') },
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = createEditor({ initialValue: [paragraph('a')] });
+    const spec = editor.read((state) =>
+      state.transaction((tx) => {
+        tx.text.insert('x', { at: { offset: 1, path: [0, 0] } });
+      })
+    );
+    const previousVersion = editor.read.runtime.snapshot().version;
+
+    initializeEditorExtensions(editor, articleSchema);
+
+    assert.equal(editor.read.runtime.snapshot().version, previousVersion);
+    assert.equal(editor.read.lastCommit(), null);
+    assert.throws(
+      () => editor.update(() => applyTransactionSpec(editor, spec)),
+      /stale transaction spec/u
+    );
+    assert.deepEqual(editor.read.children(), [paragraph('a')]);
+  });
+
+  it('preserves specs when schema bootstrap rolls back', () => {
+    const articleSchema = defineEditorSchema({
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'bootstrap-spec-failure',
+      root: { content: schema.content.type('paragraph') },
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = createEditor({ initialValue: [paragraph('a')] });
+    const spec = editor.read((state) =>
+      state.transaction((tx) => {
+        tx.text.insert('x', { at: { offset: 1, path: [0, 0] } });
+      })
+    );
+    const previousVersion = editor.read.runtime.snapshot().version;
+
+    assert.throws(
+      () =>
+        initializeEditorExtensions(editor, articleSchema, {
+          initialize() {
+            throw new Error('bootstrap transaction abort');
+          },
+        }),
+      /bootstrap transaction abort/u
+    );
+
+    assert.equal(editor.read.runtime.snapshot().version, previousVersion);
+    assert.equal(editor.read.lastCommit(), null);
+    editor.update(() => applyTransactionSpec(editor, spec));
+    assert.deepEqual(editor.read.children(), [paragraph('ax')]);
+  });
+
+  it('rejects active anchors before staging schema bootstrap state', () => {
+    const articleSchema = defineEditorSchema({
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'anchor-free-bootstrap',
+      root: { content: schema.content.type('paragraph') },
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = createEditor({ initialValue: [paragraph('before')] });
+    const previousIdentity = editor.read.schema.identity();
+    const previousRegistry = getEditorExtensionRegistry(editor);
+    const previousVersion = editor.read.runtime.snapshot().version;
+    const anchor = editor.anchor([0], { deletion: 'nearest' });
+
+    assert.throws(
+      () => initializeEditorExtensions(editor, articleSchema),
+      /without active anchors/u
+    );
+    assert.equal(getEditorExtensionRegistry(editor), previousRegistry);
+    assert.equal(editor.read.schema.identity(), previousIdentity);
+    assert.deepEqual(editor.read.children(), [paragraph('before')]);
+    assert.equal(editor.read.lastCommit(), null);
+    assert.equal(editor.read.runtime.snapshot().version, previousVersion);
+    assert.deepEqual(anchor.release(), [0]);
+
+    initializeEditorExtensions(editor, articleSchema);
+
+    assert.equal(
+      namedIdentity(editor.read.schema.identity()).id,
+      'anchor-free-bootstrap'
+    );
+  });
+
+  it('rejects bootstrap transaction metadata that has no commit owner', () => {
+    const articleSchema = defineEditorSchema({
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'metadata-free-bootstrap',
+      root: { content: schema.content.type('paragraph') },
+      unknown: 'reject',
+      version: 1,
+    });
+    const effect = defineEffect<string>({ key: 'bootstrap.effect' });
+    const effectOwner = defineEditorExtension({
+      effects: [effect],
+      name: 'bootstrap-effect-owner',
+    });
+    const editor = createEditor({ initialValue: [paragraph('before')] });
+    const previousRegistry = getEditorExtensionRegistry(editor);
+
+    assert.throws(
+      () =>
+        initializeEditorExtensions(editor, [articleSchema, effectOwner], {
+          initialize(tx) {
+            tx.effects.emit(effect, 'unsupported');
+          },
+        }),
+      /cannot publish effects, annotations, or tags/u
+    );
+    assert.equal(getEditorExtensionRegistry(editor), previousRegistry);
+    assert.deepEqual(editor.read.children(), [paragraph('before')]);
+    assert.equal(editor.read.lastCommit(), null);
+    assert.equal(
+      getInstalledEditorExtension(editor, 'bootstrap-effect-owner'),
+      undefined
+    );
   });
 
   it('validates explicit initial documents without rewriting them', () => {

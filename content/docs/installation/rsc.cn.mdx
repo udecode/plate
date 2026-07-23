@@ -1,129 +1,130 @@
 ---
 title: RSC
-description: 安装并配置适用于React Server Components的Plate
+description: 安装并配置适用于 React Server Components 的 Plate。
 ---
 
-本指南演示如何在React Server Components (RSC)中使用Plate进行静态内容生成或服务端数据处理等任务。Plate的核心设计是服务端安全的，允许您在没有浏览器环境的情况下处理编辑器内容。
+在 React Server Components 中使用 Plate 渲染只读编辑器内容，或在服务端生成 HTML。交互式编辑器仍应放在客户端组件中，并从 `platejs/react` 导入。本指南介绍服务端安全的静态编辑器、HTML 序列化，以及它与仅限 Node.js 处理之间的边界。
 
-<Callout type="warning" title="关键RSC限制">
-  在RSC中使用Plate时，**禁止**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`@platejs/basic-nodes`而非`@platejs/basic-nodes/react`）。
+## RSC 配置
 
-  这意味着您不能使用`platejs/react`中的`createPlateEditor`。请改用`platejs`中的`createBaseEditor`。
+<Callout type="warning" title="使用静态导入">
+  不要在 Server Component 中从 `platejs/react` 或 `@platejs/*/react`
+  导入。请使用 `platejs/static`、`platejs` 和基础 `@platejs/*` 入口。
 </Callout>
 
 <Steps>
 
-### 安装Plate
+### 安装 Base Kit
 
-安装核心Plate包及您需要的特定插件包。
+如果需要 Plate UI 静态组件和默认序列化插件，请安装复制到应用中的基础编辑器 kit。
 
 ```bash
-npm install platejs @platejs/basic-nodes
+npx shadcn@latest add @plate/editor-base-kit
 ```
 
-### 创建编辑器实例
+`editor-base-kit` 会安装 `BaseEditorKit`、静态节点组件，以及服务端渲染使用的 `editor-static` UI 组件。
 
-在RSC环境中，您需要使用`platejs`中的`createBaseEditor`来初始化编辑器实例。该函数不依赖React钩子或客户端特定代码。
+### 渲染静态内容
 
-以下示例展示如何设置带有各种插件的编辑器，类似于[服务端示例](/docs/examples/server-side)：
+在 Server Component 中创建静态编辑器，并使用 `<PlateStatic>` 渲染。
 
-```tsx title="app/api/generate-doc/route.ts"
-import { createBaseEditor } from 'platejs';
-import { BaseTextAlignPlugin } from '@platejs/basic-styles';
-import {
-  BaseBoldPlugin,
-  BaseCodePlugin,
-  BaseItalicPlugin,
-  BaseBlockquotePlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-} from '@platejs/basic-nodes';
-import {
-  MarkdownPlugin,
-  remarkMdx,
-} from '@platejs/markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
+```tsx title="app/documents/page.tsx" showLineNumbers
+import type { Value } from 'platejs';
+import { createStaticEditor, PlateStatic } from 'platejs/static';
 
-// 示例初始值
-const initialValue = [
-  { type: 'h1', children: [{ text: '服务端生成文档' }] },
-  { type: 'p', children: [{ text: '此内容在服务端处理完成。' }] },
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+
+const value: Value = [
   {
-    type: 'blockquote',
-    children: [{ type: 'p', children: [{ text: '这是一段引用。' }] }],
+    children: [{ text: '服务端渲染的文档' }],
+    type: 'h1',
   },
-  { type: 'p', children: [{ text: '这是加粗文本。', bold: true }] },
+  {
+    children: [{ text: '这些内容在没有编辑器状态的情况下渲染。' }],
+    type: 'p',
+  },
 ];
 
-// 创建编辑器实例
-const editor = createBaseEditor({
-  plugins: [
-    // 块级插件
-    BaseH1Plugin,
-    BaseH2Plugin,
-    BaseH3Plugin,
-    BaseBlockquotePlugin,
-    BaseTextAlignPlugin,
-    // ... 按需添加更多元素插件
+export default function DocumentsPage() {
+  const editor = createStaticEditor({
+    plugins: BaseEditorKit,
+    initialValue: value,
+  });
 
-    // 标记插件
-    BaseBoldPlugin,
-    BaseItalicPlugin,
-    BaseCodePlugin,
-    // ... 添加更多标记插件
-    MarkdownPlugin.configure({ // 序列化示例
-      options: {
-        remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
-      },
-    }),
-    // ... 添加其他功能插件
-  ],
-  value: initialValue, // 设置初始内容
-});
-
-// 您现在可以使用 editor.children、editor.api、editor.update 等
-// 例如获取文本内容：
-const textContent = editor.api.string([]);
-// console.debug('文本内容:', textContent);
-
-// 或序列化为Markdown：
-const markdown = editor.api.markdown.serialize();
-// console.debug('Markdown输出:', markdown);
-
-// 编辑器实例可用于各种服务端任务
-// 完整的使用示例请参阅/docs/examples/server-side页面
+  return <PlateStatic editor={editor} />;
+}
 ```
 
-<Callout type="info">
-  `createBaseEditor`创建的是原始Plate编辑器实例。它适用于服务端逻辑、数据转换或准备静态渲染内容。查看完整的[服务端示例](/docs/examples/server-side)了解实际应用。
-</Callout>
+### 序列化 HTML
 
-### 内容操作
+如果路由需要静态 Plate 视图的服务端 HTML，而不是 React 树，请使用 `renderStaticHtml`。
 
-Plate在RSC中的主要用例是程序化内容操作：
+```tsx title="app/api/document-html/route.ts" showLineNumbers
+import type { Value } from 'platejs';
+import { createStaticEditor, renderStaticHtml } from 'platejs/static';
 
--   **[`editor.api`](/docs/api/plite/editor-api)**: 访问各种查询编辑器状态的实用函数。例如：
-    -   `editor.api.nodes({ at: [], match })`: 查找特定节点
-    -   `editor.api.string([])`: 提取文本内容
-    -   [HTML序列化](/docs/html)
-    -   [Markdown序列化](/docs/markdown)
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { EditorStatic } from '@/components/ui/editor-static';
 
--   **[`editor.update`](/docs/api/plite/editor-transforms)**: 使用事务修改编辑器内容。例如：
-    -   `tx.nodes.insert(nodes, opts)`: 插入新节点
-    -   `tx.nodes.remove(opts)`: 删除节点
-    -   `tx.nodes.set(props, opts)`: 更新现有节点属性
-    -   `editor.update.value.repair()`: 修复所有文档根
+const value: Value = [
+  {
+    children: [{ text: '导出的文档' }],
+    type: 'h1',
+  },
+  {
+    children: [{ text: '这段 HTML 在服务端生成。' }],
+    type: 'p',
+  },
+];
+
+export async function GET() {
+  const editor = createStaticEditor({
+    plugins: BaseEditorKit,
+    initialValue: value,
+  });
+
+  const html = await renderStaticHtml(editor, {
+    editorComponent: EditorStatic,
+  });
+
+  return new Response(html, {
+    headers: { 'content-type': 'text/html; charset=utf-8' },
+  });
+}
+```
+
+### 不使用 Plate UI 的基础包
+
+如果只需要数据转换或 Markdown 输入/输出，请使用 Node.js 路径，而不是静态 React 渲染。
+
+```bash
+npm install platejs @platejs/basic-nodes @platejs/markdown
+```
+
+该路径使用 `platejs` 的 `createBaseEditor`，不需要复制的 UI 组件。
 
 </Steps>
 
-### 后续步骤
+## 运行时边界
 
-在RSC环境中配置好Plate后，您现在可以：
+| 运行时 | 导入路径 | 用途 |
+| --- | --- | --- |
+| Server Component | `platejs/static` | 使用 `<PlateStatic>` 生成只读 React 输出。 |
+| Route Handler | `platejs/static` | 使用 `renderStaticHtml` 进行静态 React 渲染。 |
+| Node.js 脚本 | `platejs`、`@platejs/*` | 验证、迁移和 Markdown 输入/输出。 |
+| 客户端编辑器 | `platejs/react`、`@platejs/*/react` | 可编辑 UI、hooks 和工具栏交互。 |
 
-*   构建服务端内容生成和转换管道
-*   对现有Plate文档执行批量更新或转换
-*   验证内容结构或从文档中提取特定数据
-*   与其他后端服务集成进行内容处理
-*   如需生成静态内容，可探索[Markdown序列化](/docs/markdown)、[HTML序列化](/docs/html)和[`PlateStatic`](/docs/plate-static)
+<Callout type="info">
+  `createStaticEditor` 会在你的插件之前加入静态 `ViewPlugin`。需要渲染输出时使用它；脚本只读取或转换值时使用 `createBaseEditor`。
+</Callout>
+
+## 后续步骤
+
+| 任务 | 指南 |
+| --- | --- |
+| 了解静态渲染器。 | [静态渲染](/docs/static) |
+| 生成 HTML。 | [HTML](/docs/html) |
+| 读写 Markdown。 | [Markdown](/docs/markdown) |
+| 不使用 React 转换内容。 | [Node.js](/docs/installation/node) |
+
+完成。Server Component 可以渲染 Plate 内容，无需加载交互式编辑器运行时。

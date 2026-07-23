@@ -39,7 +39,8 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
 - The target is not Slate v2 or `Plate repo root`.
 - The repair belongs to every goal-backed workflow. Use `autogoal repair`.
 - The only honest next step is a multi-pass public API RFC with user review.
-  Say that and route to `plite-plan`.
+  Say that and route call shape to `best-api`, then adoption/runtime planning
+  to `plite-plan`.
 
 ## Hard Rules
 
@@ -58,8 +59,9 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
 - Fix the ownership boundary. Package/runtime fixes beat example patches when
   the bug is systemic. Example patches are valid only when the example contract
   is wrong.
-- Breaking changes are allowed when they produce the best long-term
-  architecture/API/DX/perf result. Do not preserve bad compatibility by reflex.
+- When the patch materially changes reusable public API, use `best-api` to
+  choose the target before implementation and review it before closeout.
+  Breaking cost is not a veto, and compatibility is not the default.
 - If the first patch is not the cleanest long-term shape, rework it before
   verification. Do not hand off "works but dirty".
 - When multiple bugs in the same category appear, assume the subsystem is not
@@ -290,8 +292,8 @@ Checklist:
 
 - **Architecture:** Is this the cleanest long-term owner, or did we patch a
   symptom?
-- **API/DX:** Would a raw Slate user or plugin author understand the contract
-  without reading this bug thread?
+- **API/DX:** If public shape changed, did `best-api review` resolve or
+  explicitly reject every P0/P1 finding?
 - **Unopinionated core:** Did we keep Plate/product policy out of Slate core?
 - **Performance:** Are hot paths bounded? Any global scans, broad rerenders,
   stale DOM reads, or repeated layout work?
@@ -310,8 +312,8 @@ Verdict must be one of:
 
 - `keep`: patch is the right long-term shape.
 - `rework`: fix before final verification.
-- `escalate`: stop and route to `plite-plan` because the right fix is a broader
-  public architecture decision.
+- `escalate`: stop and route call shape to `best-api`, then broader substrate
+  adoption/runtime work to `plite-plan`.
 
 ### 6. Verify
 

@@ -4934,6 +4934,31 @@ export const setCurrentSelection = (
   markTransactionChanged(editor);
 };
 
+/** @internal Replace bootstrap selection without creating mutation authority. */
+export const initializeEditorSchemaSelection = (
+  editor: Editor,
+  selection: Selection,
+  root = getCurrentSelectionRoot(editor)
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  assertSelectionSupported(
+    owner,
+    selection,
+    getEditorDocumentValue(owner),
+    root
+  );
+  setSelectionValue(owner, selection, root);
+  clearSnapshotCache(owner);
+};
+
+/** @internal Invalidate detached specs after one successful bootstrap. */
+export const invalidateEditorTransactionSpecs = (editor: Editor) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  MUTATION_VERSION.set(owner, (MUTATION_VERSION.get(owner) ?? 0) + 1);
+};
+
 export const syncImplicitTargetToCurrentSelection = (editor: Editor) => {
   const snapshot = getTransactionSnapshot(editor);
 

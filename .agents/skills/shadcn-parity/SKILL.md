@@ -11,10 +11,11 @@ metadata:
 ## Core Contract
 
 When the user asks for shadcn parity, treat `../shadcn` as the source of
-truth for registry behavior and patterns.
+truth for the external registry/install protocol.
 
-Do not give them "inspired by shadcn". Do not invent a Plate-specific model
-when upstream shadcn already has one.
+Do not give them "inspired by shadcn" for that protocol. For Plate-owned
+component/editor public APIs, upstream is strong evidence rather than a design
+ceiling; use `best-api` when a better local surface is plausible.
 
 The rule is simple:
 

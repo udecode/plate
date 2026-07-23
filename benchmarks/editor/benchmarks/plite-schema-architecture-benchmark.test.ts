@@ -244,14 +244,6 @@ describe('compiled schema architecture benchmark authority', () => {
     );
     assert.match(
       source,
-      /METRIC plite_schema_architecture_plate_non_equivalent_reconfigure_commit_count=/u
-    );
-    assert.match(
-      source,
-      /METRIC plite_schema_architecture_plate_equivalent_reconfigure_compile_count=/u
-    );
-    assert.match(
-      source,
       /METRIC plite_schema_architecture_construction_1000_property_ids=/u
     );
     assert.match(
@@ -293,18 +285,6 @@ describe('compiled schema architecture benchmark authority', () => {
     assert.match(
       targets[0]!.thresholds.promotion,
       /typecheck_1000_instantiations<5000000/u
-    );
-    assert.match(
-      targets[0]!.thresholds.promotion,
-      /plate_non_equivalent_reconfigure_commit_count=5/u
-    );
-    assert.match(
-      targets[0]!.thresholds.promotion,
-      /plate_equivalent_reconfigure_compile_count=0/u
-    );
-    assert.match(
-      targets[0]!.thresholds.promotion,
-      /plate_equivalent_reconfigure_commit_count=0/u
     );
     assert.match(
       targets[0]!.thresholds.promotion,

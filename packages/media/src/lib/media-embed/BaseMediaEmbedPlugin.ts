@@ -1,22 +1,36 @@
-import { type PluginConfig, createBasePlugin } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { type InferConfig, createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
 
-import type { MediaPluginOptions } from '../media/index';
+import {
+  mediaElementProperties,
+  type MediaPluginOptions,
+} from '../media/types';
 
 import { parseIframeUrl } from './parseIframeUrl';
 
-export type MediaEmbedConfig = PluginConfig<'media_embed', MediaPluginOptions>;
+const defaultOptions: MediaPluginOptions = {
+  transformUrl: parseIframeUrl,
+};
 
 /**
  * Enables support for embeddable media such as YouTube or Vimeo videos,
  * Instagram posts and tweets or Google Maps.
  */
-export const BaseMediaEmbedPlugin = createBasePlugin<MediaEmbedConfig>({
+export const BaseMediaEmbedPlugin = createBasePlugin({
   key: KEYS.mediaEmbed,
-  node: { isElement: true, isVoid: true },
-  options: {
-    transformUrl: parseIframeUrl,
+  schema: {
+    element: {
+      properties: {
+        ...mediaElementProperties,
+        provider: property.string(),
+        sourceUrl: property.string(),
+      },
+      void: 'block',
+    },
   },
+  type: NODES.mediaEmbed,
+  options: defaultOptions,
   parsers: {
     html: {
       deserializer: {
@@ -39,3 +53,5 @@ export const BaseMediaEmbedPlugin = createBasePlugin<MediaEmbedConfig>({
     },
   },
 });
+
+export type MediaEmbedConfig = InferConfig<typeof BaseMediaEmbedPlugin>;

@@ -21,7 +21,7 @@ const createEditor = (sendMessage: ReturnType<typeof mock>) => {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
-    value: [
+    initialValue: [
       { children: [{ text: 'one' }], id: 'b1', type: 'p' },
       { children: [{ text: 'two' }], id: 'b2', type: 'p' },
     ],

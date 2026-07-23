@@ -9,6 +9,8 @@ selection assertions, and an explicit `harness.scenario.runImperative` escape
 hatch for non-replayable setup. Versioned replay decoding validates exact
 step, assertion, and kernel-trace contracts, rejects no-op or lossy payloads,
 and fails closed on unknown imported steps.
+Replay decoders, scenario builders, native trace limits, and release artifacts
+reject invalid discrete numeric domains and reversed ranges.
 
 **Migration:** Remove `@platejs/playwright` and its React adapter helpers. Use
 `openExample` or `createPliteBrowserEditorHarness` from

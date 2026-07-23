@@ -1,7 +1,14 @@
 import { createBasePlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
+import { mediaElementProperties } from './media/types';
+
 export const BaseFilePlugin = createBasePlugin({
   key: KEYS.file,
-  node: { isElement: true, isVoid: true },
+  schema: {
+    element: {
+      properties: mediaElementProperties,
+      void: 'block',
+    },
+  },
 });

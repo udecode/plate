@@ -1,4 +1,4 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 
 import { DocxExportPlugin } from './docx-export-plugin';
 
@@ -31,5 +31,22 @@ describe('DocxExportPlugin', () => {
     expect(click).toHaveBeenCalledTimes(1);
     expect(revokeObjectUrl).toHaveBeenCalledWith('blob:docx');
     expect(document.querySelector('a[download="document.docx"]')).toBeNull();
+  });
+
+  it('resolves configured plugin references for the export editor', async () => {
+    const SerializationPlugin = createBasePlugin({ key: 'serialization' });
+    const editor = createBaseEditor({
+      plugins: [
+        SerializationPlugin,
+        DocxExportPlugin.configure({
+          options: { editorPlugins: [SerializationPlugin] },
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'Export me' }], type: 'p' }],
+    });
+
+    await expect(editor.api.docxExport.exportToBlob()).resolves.toBeInstanceOf(
+      Blob
+    );
   });
 });

@@ -17,10 +17,11 @@ open a migrated Plate file/API, ask why every compatibility helper exists, and
 cut or move it until Plate is a clean product layer on top of Plite.
 
 This is a wrapper skill, not a new execution engine. It uses `autogoal` for
-state, `plate-plan` for public API forks, `architecture-cleanup` for source
-shape/deslop, and `auto` for implementation/proof loops. Its distinct job is
-the Plate Next review lens: make Plate Plite-perfect and stop old Slate/Plate
-compatibility from becoming the final API.
+state, `best-api` for public call-shape forks, `plate-plan` for adoption and
+boundary plans, `architecture-cleanup` for source shape/deslop, and `auto` for
+implementation/proof loops. Its distinct job is the Plate Next review lens:
+make Plate Plite-perfect and stop old Slate/Plate compatibility from becoming
+the final API.
 
 ## Use When
 
@@ -110,6 +111,11 @@ Rules:
   If a concrete root-pollution field is in the active package/file scope, do
   not merely score or mention it. Fix it in the owner before closeout, or stop
   with a named Plite/Plate gap and deletion path.
+- Scoped plugin portals already own their noun, so redundant owner repetition
+  and taxonomy-only nesting are API smells. Use `best-api review` to choose the
+  concrete verbs and grouping from real call sites; this migration skill does
+  not freeze one feature's spelling as universal law. Hard-cut rejected names
+  instead of keeping aliases.
 - Do not add local structural type guards around Plite-owned editor APIs. A
   helper like `type DOMResolver` / `hasDOMResolver` for
   `editor.api.dom.resolveDOMNode` is a failed migration: either call the typed
@@ -208,20 +214,33 @@ Rules:
   repair the Core builder signature instead of adding a call-site workaround.
 - When colocation makes a helper obsolete, delete its file and barrel export.
   Do not preserve a helper export, forwarding wrapper, alias, or old filename
-  for compatibility. Route a genuine public API fork through `plate-plan` and
-  add the required release artifact; compatibility is not the default answer.
+  for compatibility. Route a genuine public API fork through `best-api`, then
+  `plate-plan` for adoption/proof when needed; compatibility is not the default
+  answer.
 - Never replace an old helper body with a wrapper like
   `editor.plugin(FooPlugin).editor.update((tx) => tx.foo.bar(...))`. If the
   helper has real reuse or an independent owner, keep the algorithm there and
   pass the active `tx`. If it has one plugin owner, inline the algorithm and
   delete the helper.
-- Tests for plugin-owned behavior should live beside the plugin, either in the
-  plugin's own spec or a colocated `<PluginName>-<method>.spec.tsx` file. Keep
-  separate helper/spec files only when the helper is genuinely shared by
-  multiple production owners, non-plugin product code, a React
-  hook/component/non-plugin utility with a durable owner, or dedicated proof
-  tooling. React tests live beside their component or hook family owner; do not
-  mirror private subcomponents/subhooks into separate test files.
+- Tests follow the same owner law as production and React code. Keep one
+  colocated `<PluginName>.<family>.spec.tsx` for a plugin behavior family, even
+  when that family exercises many API, update, query, transform, normalize, or
+  parser methods. Do not mirror every public method, deleted helper, or old
+  production filename into its own spec.
+- A behavior family may have one `<PluginName>.<family>.slow.tsx` sibling only
+  when `pnpm test:profile` / `pnpm test:slowest` proves the fast file or an
+  inherently blocking case crosses the repository thresholds. `.slow.spec.tsx`
+  is invalid because it still matches the fast lane. Split by measured runtime
+  or a genuinely independent lifecycle/proof boundary, never by line count,
+  method count, readability, or fixture volume.
+- When production helpers are merged into their plugin owner, merge their old
+  specs into the matching behavior-family spec in the same packet. A large
+  coherent family spec is cheaper than method-level test confetti. Keep a
+  separate spec only for an independently owned lifecycle contract, genuinely
+  shared production owner, non-plugin product code, React component/hook
+  family, standalone utility, fixture bank, integration boundary, or dedicated
+  proof tooling. React tests live beside their component or hook family owner;
+  do not mirror private subcomponents/subhooks into separate test files.
 - Prefer direct one-shot Plite methods over callback boilerplate. A single
   operation like `editor.update((tx) => { tx.normalize({ force: true }); })`
   should be `editor.update.normalize({ force: true })`. A single read like
@@ -645,8 +664,8 @@ When the target is broad Core review, use full-manifest mode:
   - `3`: real Plate/Plite boundary risk; fix or defer with owner/proof.
   - `4`: major compatibility sludge, duplicate runtime/API, or migration hack;
     cannot be kept without explicit owner and deletion gate.
-  - `5`: public API/runtime blocker; stop broad execution and route to
-    `plate-plan` or the owning API plan.
+  - `5`: public API/runtime blocker; stop broad execution and route call shape
+    to `best-api`, then runtime/adoption to the owning layer plan.
 - Score caps:
   - forbidden bridge hack: confidence score `0`;
   - direct import/install of forbidden bridge: confidence score `<=25`;
@@ -771,7 +790,7 @@ Rules:
 ## Loop
 
 Use the dedicated Plate Next plan template unless a public API design fork
-requires `plate-plan` first:
+requires `best-api` first:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
@@ -800,8 +819,9 @@ Then loop:
 5. In review mode, prefer `main-parity-cleanup` when the concept and owner remain
    durable. When `origin/main` shows a one-use migration split, prefer
    `merge-existing-owner` or `hard-cut` instead of restoring the old file graph.
-6. If the next choice is a public API fork, route to `plate-plan` and stop
-   implementation until the plan is accepted.
+6. If the next choice is a public API fork, route to `best-api`. Use
+   `plate-plan` afterward only when adoption/runtime/proof needs a plan, and
+   stop implementation until the target and required plan are accepted.
 7. If the smell is source shape, route to `architecture-cleanup`.
 8. If the decision is safe, implement the smallest cleanup packet.
 9. After every correction, run the related scoped sweep required by Correction

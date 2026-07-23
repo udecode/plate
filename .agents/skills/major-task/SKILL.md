@@ -192,11 +192,14 @@ Apply this section only when the task source is a tracker item.
 2. If the prompt is broad architecture cleanup rather than one named API or
    spec, run `architecture-cleanup` first as the ranked cleanup pass. Do not
    jump straight to a refactor.
-3. Find what already exists before proposing new structure.
-4. Prefer changing the ownership boundary over papering around it at each call site.
-5. Call out blast radius explicitly when the recommendation changes public API or package contracts.
-6. If recommending a migration path, include staged rollout, compatibility strategy, and rollback shape.
-7. If a smaller boundary change and a broader architecture reset are both viable, say why one wins now.
+3. When public call shape is unresolved, use `best-api` before locking the
+   architecture target.
+4. Find what already exists before proposing new structure.
+5. Prefer changing the ownership boundary over papering around it at each call site.
+6. Call out blast radius explicitly when the recommendation changes public API or package contracts.
+7. If recommending migration, include adoption and rollback. Add compatibility
+   only when it wins after the ideal target is selected.
+8. If a smaller boundary change and a broader architecture reset are both viable, say why one wins now.
 
 ### Performance And Optimization
 

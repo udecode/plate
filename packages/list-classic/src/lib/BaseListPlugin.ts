@@ -1,6 +1,5 @@
 import {
   type InferConfig,
-  type PluginConfig,
   type PluginReference,
   createBasePlugin,
 } from '@platejs/core';
@@ -177,27 +176,10 @@ export const BaseTaskListPlugin = createBasePlugin({
   toggle: () => toggleTaskList(editor, tx),
 }));
 
-type ListContract = PluginConfig<
-  'listClassic',
-  ListPluginOptions,
-  {},
-  { listClassic: ListPluginTransaction },
-  {},
-  {},
-  readonly [],
-  readonly [
-    typeof BaseBulletedListPlugin,
-    typeof BaseNumberedListPlugin,
-    typeof BaseTaskListPlugin,
-    typeof BaseListItemPlugin,
-    typeof BaseListItemContentPlugin,
-  ]
->;
-
 /** Enables support for bulleted, numbered and to-do lists. */
-export const BaseListPlugin = createBasePlugin<ListContract>({
+export const BaseListPlugin = createBasePlugin({
   key: KEYS.listClassic,
-  options: { validLiChildren: [] },
+  options: { validLiChildren: [] } as ListPluginOptions,
   plugins: [
     BaseBulletedListPlugin,
     BaseNumberedListPlugin,

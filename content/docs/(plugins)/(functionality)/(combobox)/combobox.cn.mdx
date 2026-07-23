@@ -179,14 +179,14 @@ import { TagElement, TagInputElement } from './tag-components';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
-    TagPlugin.configure({
+    TagPlugin.withComponent(TagElement).configure({
       options: {
         triggerQuery: (editor) => {
           // 在代码块中禁用
           return !editor.read.nodes.some({ match: { type: 'code_block' } });
         },
       },
-    }).withComponent(TagElement),
+    }),
     TagInputPlugin.withComponent(TagInputElement),
   ],
 });

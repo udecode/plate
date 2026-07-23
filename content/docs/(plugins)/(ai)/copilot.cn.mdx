@@ -110,7 +110,6 @@ const editor = createPlateEditor({
 import { CopilotPlugin } from '@platejs/ai/react';
 import {
   MarkdownPlugin,
-  serializeMd,
   stripMarkdown,
 } from '@platejs/markdown';
 import { GhostText } from '@/components/ui/ghost-text';
@@ -128,14 +127,14 @@ const plugins = [
         api: '/api/ai/copilot',
         onError: () => {
           // 模拟 API 响应。在实现路由 /api/ai/copilot 后移除
-          api.copilot.setBlockSuggestion({
+          api.setBlockSuggestion({
             text: stripMarkdown('这是一个模拟建议。'),
           });
         },
         onFinish: (_, completion) => {
           if (completion === '0') return;
 
-          api.copilot.setBlockSuggestion({
+          api.setBlockSuggestion({
             text: stripMarkdown(completion),
           });
         },
@@ -260,7 +259,7 @@ CopilotPlugin.extend(({ api }) => ({
 
         if (!contextEntry) return '';
 
-        const prompt = serializeMd(editor, {
+        const prompt = editor.api.markdown.serialize({
           value: [contextEntry[0] as Element],
         });
 
@@ -460,22 +459,22 @@ export async function POST(req: NextRequest) {
 
 ## API
 
-### `api.copilot.reject()`
+### `editor.plugin(CopilotPlugin).api.reject()`
 
 将插件状态重置为初始条件：
 默认快捷键: `Escape`
 
-### `api.copilot.triggerSuggestion()`
+### `editor.plugin(CopilotPlugin).api.triggerSuggestion()`
 
 触发新的建议请求。请求可能会根据插件配置进行防抖。
 
 示例快捷键: `Ctrl + Space`
 
-### `api.copilot.setBlockSuggestion()`
+### `editor.plugin(CopilotPlugin).api.setBlockSuggestion()`
 
 为块设置建议文本。
 
-<API name="setBlockSuggestion">
+<API name="editor.plugin(CopilotPlugin).api.setBlockSuggestion">
 <APIParameters>
   <APIItem name="options" type="SetBlockSuggestionOptions">
     设置块建议的选项。
@@ -493,7 +492,7 @@ export async function POST(req: NextRequest) {
 </APIOptions>
 </API>
 
-### `api.copilot.stop()`
+### `editor.plugin(CopilotPlugin).api.stop()`
 
 停止正在进行的建议请求并清理：
 

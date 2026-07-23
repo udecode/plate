@@ -3,7 +3,7 @@
  */
 
 export * from './TablePlugin';
-export * from './onKeyDownTable';
-export * from './components/index';
-export * from './hooks/index';
-export * from './stores/index';
+export * from './useTableCellElement';
+export * from './useTableElement';
+export * from './useTableMergeState';
+export * from './useTableStore';

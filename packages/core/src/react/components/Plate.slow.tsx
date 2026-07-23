@@ -9,18 +9,20 @@ import {
   type Value,
 } from '@platejs/plite';
 
-import { act, render, renderHook, waitFor } from '@testing-library/react';
+import { render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
 
 import type { PlatePlugins } from '../plugin';
 import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
 
 import { createBasePlugin } from '../../lib';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createPlateEditor, usePlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import {
   PlateController,
-  useEditorRef,
+  useActiveEditor,
+  useEditor,
   useEditorValue,
   usePlateStore,
 } from '../stores';
@@ -28,7 +30,7 @@ import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { PlateContent } from './PlateContent';
 
 describe('Plate', () => {
-  describe('useEditorRef()', () => {
+  describe('useEditor()', () => {
     describe('when editor is defined', () => {
       it('returns the provided editor', async () => {
         const editor = createPlateEditor();
@@ -36,7 +38,7 @@ describe('Plate', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => useEditorRef(), { wrapper });
+        const { result } = renderHook(() => useEditor(), { wrapper });
 
         expect(result.current as any).toBe(editor);
       });
@@ -44,8 +46,12 @@ describe('Plate', () => {
 
     describe('when editor is not defined', () => {
       it('returns the closest editor from context', async () => {
-        const editor1 = createPlateEditor({ id: 'test1' });
-        const editor2 = createPlateEditor({ id: 'test2' });
+        const editor1 = createPlateEditor({
+          id: 'test1',
+        });
+        const editor2 = createPlateEditor({
+          id: 'test2',
+        });
 
         const wrapper = ({ children }: any) => (
           <Plate editor={editor1}>
@@ -53,7 +59,7 @@ describe('Plate', () => {
           </Plate>
         );
 
-        const { result } = renderHook(() => useEditorRef(), { wrapper });
+        const { result } = renderHook(() => useEditor(), { wrapper });
 
         expect(result.current.id).toBe('test2');
       });
@@ -61,8 +67,12 @@ describe('Plate', () => {
 
     describe('when id is defined', () => {
       it('selects the editor by id', async () => {
-        const editor1 = createPlateEditor({ id: 'test1' });
-        const editor2 = createPlateEditor({ id: 'test2' });
+        const editor1 = createPlateEditor({
+          id: 'test1',
+        });
+        const editor2 = createPlateEditor({
+          id: 'test2',
+        });
 
         const wrapper = ({ children }: any) => (
           <Plate editor={editor1}>
@@ -70,12 +80,14 @@ describe('Plate', () => {
           </Plate>
         );
 
-        const { result: result1 } = renderHook(() => useEditorRef('test1'), {
-          wrapper,
-        });
-        const { result: result2 } = renderHook(() => useEditorRef('test2'), {
-          wrapper,
-        });
+        const { result: result1 } = renderHook(
+          () => useEditor({ id: 'test1' }),
+          { wrapper }
+        );
+        const { result: result2 } = renderHook(
+          () => useEditor({ id: 'test2' }),
+          { wrapper }
+        );
 
         expect(result1.current.id).toBe('test1');
         expect(result2.current.id).toBe('test2');
@@ -89,7 +101,9 @@ describe('Plate', () => {
         const initialValue: Value = [
           { children: [{ text: 'test' }], type: 'p' },
         ];
-        const editor = createPlateEditor({ value: initialValue });
+        const editor = createPlateEditor({
+          initialValue,
+        });
 
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
@@ -133,32 +147,37 @@ describe('Plate', () => {
     });
   });
 
-  describe('useEditorRef().plugins', () => {
+  describe('useEditor().plugins', () => {
     it('uses the plugins already attached to the editor', () => {
       const _plugins = [createBasePlugin({ key: 'test' })];
-      const editor = createPlateEditor({ plugins: _plugins });
+      const editor = createPlateEditor({
+        plugins: _plugins,
+      });
 
       const wrapper = ({ children }: any) => (
         <Plate editor={editor}>{children}</Plate>
       );
 
-      const { result } = renderHook(() => useEditorRef().runtime.pluginList, {
-        wrapper,
-      });
+      const { result } = renderHook(
+        () => getPlateRuntime(useEditor()).pluginList,
+        { wrapper }
+      );
 
       expect(result.current.some((p: any) => p.key === 'test')).toBe(true);
     });
   });
 
-  describe('useEditorRef().id', () => {
+  describe('useEditor().id', () => {
     describe('when Plate has an id', () => {
       it('returns the editor id', async () => {
-        const editor = createPlateEditor({ id: 'test' });
+        const editor = createPlateEditor({
+          id: 'test',
+        });
 
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => useEditorRef().id, { wrapper });
+        const { result } = renderHook(() => useEditor().id, { wrapper });
 
         expect(result.current).toBe('test');
       });
@@ -168,10 +187,16 @@ describe('Plate', () => {
       it('returns the closest editor with an id', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={createPlateEditor()}>
-            <Plate editor={createPlateEditor({ id: 'test' })}>{children}</Plate>
+            <Plate
+              editor={createPlateEditor({
+                id: 'test',
+              })}
+            >
+              {children}
+            </Plate>
           </Plate>
         );
-        const { result } = renderHook(() => useEditorRef().id, { wrapper });
+        const { result } = renderHook(() => useEditor().id, { wrapper });
 
         expect(result.current).toBe('test');
       });
@@ -180,11 +205,15 @@ describe('Plate', () => {
     describe('when Plate with id > Plate without id > select id', () => {
       it('returns the requested editor id from context', () => {
         const wrapper = ({ children }: any) => (
-          <Plate editor={createPlateEditor({ id: 'test' })}>
+          <Plate
+            editor={createPlateEditor({
+              id: 'test',
+            })}
+          >
             <Plate editor={createPlateEditor()}>{children}</Plate>
           </Plate>
         );
-        const { result } = renderHook(() => useEditorRef('test').id, {
+        const { result } = renderHook(() => useEditor({ id: 'test' }).id, {
           wrapper,
         });
 
@@ -202,26 +231,29 @@ describe('Plate', () => {
         wrapper,
       }).result.current;
 
-    const getIsFallback = (wrapper: any) =>
-      renderHook(() => useEditorRef().runtime.isFallback, { wrapper }).result
-        .current;
+    const getActiveEditor = (wrapper: any) =>
+      renderHook(() => useActiveEditor(), { wrapper }).result.current;
 
     describe('when Plate exists', () => {
       describe('when editor is defined', () => {
         it('returns the store', async () => {
-          const editor = createPlateEditor({ id: 'test' });
+          const editor = createPlateEditor({
+            id: 'test',
+          });
 
           const wrapper = ({ children }: any) => (
             <Plate editor={editor}>{children}</Plate>
           );
           expect(getStore(wrapper)).toBeDefined();
           expect(getId(wrapper)).toBe('test');
-          expect(getIsFallback(wrapper)).toBe(false);
+          expect(getActiveEditor(wrapper)).toBe(editor);
         });
 
         it('prefers the closest Plate store over PlateController state', () => {
           const EXPECTED_STORE = 'controller store' as any;
-          const editor = createPlateEditor({ id: 'local' });
+          const editor = createPlateEditor({
+            id: 'local',
+          });
 
           const wrapper = ({ children }: any) => (
             <PlateController
@@ -234,7 +266,7 @@ describe('Plate', () => {
 
           expect(getStore(wrapper)).not.toBe(EXPECTED_STORE);
           expect(getId(wrapper)).toBe('local');
-          expect(getIsFallback(wrapper)).toBe(false);
+          expect(getActiveEditor(wrapper)).toBe(editor);
         });
       });
     });
@@ -267,7 +299,10 @@ describe('Plate', () => {
             );
 
             expect(getStore(wrapper)).toBeDefined();
-            expect(getIsFallback(wrapper)).toBe(true);
+            expect(getActiveEditor(wrapper)).toBeNull();
+            expect(() => renderHook(() => useEditor(), { wrapper })).toThrow(
+              'useEditor() requires an active Plate editor.'
+            );
           });
         });
       });
@@ -311,7 +346,7 @@ describe('Plate', () => {
 
       const editor = createPlateEditor({
         plugins,
-        value: [{ children: [{ text: '' }], type: 'p' }],
+        initialValue: [{ children: [{ text: '' }], type: 'p' }],
       });
 
       render(
@@ -340,7 +375,7 @@ describe('Plate', () => {
 
       const editor = createPlateEditor({
         plugins,
-        value: [{ children: [{ text: '' }], type: 'p' }],
+        initialValue: [{ children: [{ text: '' }], type: 'p' }],
       });
 
       expect(() =>
@@ -366,7 +401,12 @@ describe('Plate', () => {
       };
 
       const TestComponent = ({ dep }: { dep: number }) => {
-        const editor = usePlateEditor({ id: 'test' }, [dep]);
+        const editor = usePlateEditor(
+          {
+            id: 'test',
+          },
+          [dep]
+        );
 
         return (
           <Plate editor={editor}>
@@ -406,29 +446,31 @@ describe('Plate', () => {
     const getParagraphPlugin = (dangerouslyAllowAttributes: boolean) =>
       createPlatePlugin({
         key: 'p',
-        node: {
-          component: ParagraphElement,
+        schema: {
+          element: {
+            content: schema.content.open({ default: 'text', min: 1 }),
+            properties: { attributes: property.json() },
+          },
+        },
+        render: { node: ParagraphElement },
+        host: {
           dangerouslyAllowAttributes: dangerouslyAllowAttributes
             ? ['data-my-paragraph-attribute']
             : undefined,
-          element: {
-            groups: ['block'],
-            properties: { attributes: property.json() },
-          },
         },
       });
 
     const getBoldPlugin = (dangerouslyAllowAttributes: boolean) =>
       createPlatePlugin({
         key: 'bold',
-        node: {
-          component: BoldLeaf,
+        render: { node: BoldLeaf },
+        host: {
           dangerouslyAllowAttributes: dangerouslyAllowAttributes
             ? ['data-my-bold-attribute']
             : undefined,
-          mark: true,
         },
         schema: {
+          mark: property.boolean({ default: false, omitDefault: true }),
           properties: [schema.textProperty('attributes', property.json())],
         },
       });
@@ -463,7 +505,7 @@ describe('Plate', () => {
           getParagraphPlugin(dangerouslyAllowAttributes),
           getBoldPlugin(dangerouslyAllowAttributes),
         ],
-        value: initialValue,
+        initialValue,
       });
 
       return (
@@ -529,17 +571,16 @@ describe('Plate', () => {
       const UnknownElementSchemaPlugin = createBasePlugin({
         key: 'unknown-element-schema',
         schema: {
-          elements: {
-            'unknown-element-type': {
-              groups: ['block'],
-            },
+          element: {
+            content: schema.content.open({ default: 'text', min: 1 }),
           },
         },
+        type: 'unknown-element-type',
       });
 
       const editor = createPlateEditor({
         plugins: [UnknownElementSchemaPlugin],
-        value: initialValueWithUnknownType,
+        initialValue: initialValueWithUnknownType,
       });
 
       const { getByText } = render(
@@ -556,60 +597,8 @@ describe('Plate', () => {
     });
   });
 
-  describe('async value', () => {
-    it('publishes an async value and calls onReady', async () => {
-      const asyncValue: Value = [
-        {
-          children: [{ text: 'Async loaded content' }],
-          type: 'p',
-        },
-      ];
-
-      const onReadyMock = mock();
-      let resolveValue!: (value: Value) => void;
-      const valuePromise = new Promise<Value>((resolve) => {
-        resolveValue = resolve;
-      });
-
-      const AsyncEditor = () => {
-        const editor = usePlateEditor({
-          value: () => valuePromise,
-          onReady: onReadyMock,
-        });
-
-        return (
-          <Plate editor={editor}>
-            <PlateContent data-testid="plate-content" />
-          </Plate>
-        );
-      };
-
-      const { getByTestId } = render(<AsyncEditor />);
-
-      (expect(getByTestId('plate-content')) as any).toBeInTheDocument();
-      expect(getByTestId('plate-content')).not.toHaveTextContent(
-        'Async loaded content'
-      );
-      expect(onReadyMock).not.toHaveBeenCalled();
-
-      await act(async () => {
-        resolveValue(asyncValue);
-        await valuePromise;
-      });
-
-      await waitFor(() => {
-        expect(getByTestId('plate-content')).toHaveTextContent(
-          'Async loaded content'
-        );
-      });
-      expect(onReadyMock).toHaveBeenCalledWith({
-        editor: expect.any(Object),
-        isAsync: true,
-        value: asyncValue,
-      });
-    });
-
-    it('treats synchronous value functions as ready immediately', () => {
+  describe('initialValue', () => {
+    it('runs a contextual initializer after plugins are compiled', () => {
       const syncValue: Value = [
         {
           children: [{ text: 'Sync content' }],
@@ -617,12 +606,17 @@ describe('Plate', () => {
         },
       ];
 
-      const onReadyMock = mock();
+      const InitialValuePlugin = createPlatePlugin({
+        key: 'initial-value',
+      }).extendApi(() => ({
+        decode: () => syncValue,
+      }));
 
       const SyncEditor = () => {
         const editor = usePlateEditor({
-          value: () => syncValue,
-          onReady: onReadyMock,
+          plugins: [InitialValuePlugin],
+          initialValue: ({ editor }) =>
+            editor.plugin(InitialValuePlugin).api.decode(),
         });
 
         return (
@@ -634,47 +628,7 @@ describe('Plate', () => {
 
       const { getByTestId } = render(<SyncEditor />);
 
-      // PlateContent should be rendered immediately for sync values
-      (expect(getByTestId('plate-content')) as any).toBeInTheDocument();
-      expect(onReadyMock).toHaveBeenCalledWith({
-        editor: expect.any(Object),
-        isAsync: false,
-        value: syncValue,
-      });
-    });
-
-    it('calls onReady for static values immediately', () => {
-      const staticValue: Value = [
-        {
-          children: [{ text: 'Static content' }],
-          type: 'p',
-        },
-      ];
-
-      const onReadyMock = mock();
-
-      const StaticEditor = () => {
-        const editor = usePlateEditor({
-          value: staticValue,
-          onReady: onReadyMock,
-        });
-
-        return (
-          <Plate editor={editor}>
-            <PlateContent data-testid="plate-content" />
-          </Plate>
-        );
-      };
-
-      const { getByTestId } = render(<StaticEditor />);
-
-      // PlateContent should be rendered immediately for static values
-      (expect(getByTestId('plate-content')) as any).toBeInTheDocument();
-      expect(onReadyMock).toHaveBeenCalledWith({
-        editor: expect.any(Object),
-        isAsync: false,
-        value: staticValue,
-      });
+      expect(getByTestId('plate-content')).toHaveTextContent('Sync content');
     });
   });
 });

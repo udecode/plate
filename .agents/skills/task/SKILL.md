@@ -69,6 +69,8 @@ they earn their keep, and verify before calling the task done.
    - Non-heavyweight: ordinary bugs, one-package features, docs-only edits,
      routine test work, small refactors, or normal issue execution.
 7. If heavyweight, load `major-task` immediately and let it own workflow.
+   If public call shape is the decision, load `best-api` before the major
+   adoption/implementation plan.
 8. If non-heavyweight, classify complexity:
    - Non-trivial: multi-step, research-heavy, phased, or likely more than a few
      tool calls.
@@ -351,6 +353,8 @@ lock.
   architecture-sensitive changes.
 - `agent-native-reviewer`: changes touch `.agents/**`, `.claude/**`,
   AI/tooling surfaces, commands, or user actions an agent should perform.
+- `best-api`: a task materially introduces or changes reusable public call
+  shape; run design before target lock and review before closeout.
 
 ## Review And Risk Gates
 
@@ -378,6 +382,8 @@ the patch is risky.
   command-contract changes, add a compact high-risk note before closeout:
   realistic failure mode, proof plan, and why the chosen boundary is still the
   right one.
+- For material reusable public API changes, resolve or explicitly reject every
+  P0/P1 `best-api review` finding before closeout.
 - Trivial docs, wording, and no-local-patch tasks may mark these gates N/A with
   a reason. Do not run review theater for a typo.
 

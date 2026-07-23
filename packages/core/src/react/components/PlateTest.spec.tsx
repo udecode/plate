@@ -6,23 +6,10 @@ import { createReactEditor } from '@platejs/plite-react';
 import { act, render } from '@testing-library/react';
 import React from 'react';
 
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { PlateTest } from './PlateTest';
 
 const value: Value = [{ children: [{ text: 'one' }], type: 'p' }];
-
-const hasPluginKey = (plugin: unknown, key: string) =>
-  typeof plugin === 'object' &&
-  plugin !== null &&
-  'key' in plugin &&
-  plugin.key === key;
-
-const hasPlatePluginList = (
-  runtime: unknown
-): runtime is { pluginList: unknown[] } =>
-  typeof runtime === 'object' &&
-  runtime !== null &&
-  'pluginList' in runtime &&
-  Array.isArray(runtime.pluginList);
 
 describe('PlateTest', () => {
   it('extends a provided Plite editor before rendering', async () => {
@@ -51,13 +38,10 @@ describe('PlateTest', () => {
     }
 
     const { getByTestId } = rendered;
-    const runtime = 'runtime' in editor ? editor.runtime : null;
 
     expect(getByTestId('plite-content-editable')).toBeInTheDocument();
-    expect(hasPlatePluginList(runtime)).toBe(true);
     expect(
-      hasPlatePluginList(runtime) &&
-        runtime.pluginList.some((plugin) => hasPluginKey(plugin, 'dom'))
+      getPlateRuntime(editor).pluginList.some((plugin) => plugin.key === 'dom')
     ).toBe(true);
   });
 });

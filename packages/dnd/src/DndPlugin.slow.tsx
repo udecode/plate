@@ -1,19 +1,21 @@
 import React from 'react';
 
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import {
   Plate,
   PlateContent,
   createPlateEditor,
   getEditorPlugin,
 } from '@platejs/core/react';
+import { pipeHandler } from '@platejs/core/react/internal';
 
-import { DndScroller } from './components/Scroller';
 import { DndPlugin } from './DndPlugin';
 
 describe('DndPlugin', () => {
   it('updates drag state from the drag handlers', () => {
-    const editor = createPlateEditor({ plugins: [DndPlugin] });
+    const editor = createPlateEditor({
+      plugins: [DndPlugin],
+    });
     const context = getEditorPlugin(editor, DndPlugin);
     const target = document.createElement('div');
     const dataTransfer = {
@@ -24,17 +26,20 @@ describe('DndPlugin', () => {
 
     target.dataset.blockId = 'block-1';
 
-    DndPlugin.handlers.onDragStart?.({ ...context, event });
-    DndPlugin.handlers.onDragEnter?.({ ...context, event });
+    pipeHandler(editor, { handlerKey: 'onDragStart' })?.(event);
+    pipeHandler(editor, { handlerKey: 'onDragEnter' })?.(event);
 
     expect(dataTransfer.effectAllowed).toBe('move');
     expect(dataTransfer.dropEffect).toBe('move');
     expect(context.getOption('draggingId')).toBe('block-1');
     expect(context.getOption('isDragging')).toBe(true);
     expect(context.getOption('_isOver')).toBe(true);
-    expect(DndPlugin.handlers.onDrop?.({ ...context, event })).toBe(true);
+    const dropResult: unknown = pipeHandler(editor, {
+      handlerKey: 'onDrop',
+    })?.(event);
+    expect(dropResult).toBe(true);
 
-    DndPlugin.handlers.onDragEnd?.({ ...context, event });
+    pipeHandler(editor, { handlerKey: 'onDragEnd' })?.(event);
 
     expect(context.getOption('isDragging')).toBe(false);
     expect(context.getOption('dropTarget')).toEqual({ id: null, line: '' });
@@ -61,8 +66,8 @@ describe('DndPlugin', () => {
     const focusEvent = {} as React.FocusEvent;
 
     preview.append(document.createElement('span'));
-    DndPlugin.handlers.onDragStart?.({ ...context, event: dragEvent });
-    DndPlugin.handlers.onFocus?.({ ...context, event: focusEvent });
+    pipeHandler(editor, { handlerKey: 'onDragStart' })?.(dragEvent);
+    pipeHandler(editor, { handlerKey: 'onFocus' })?.(focusEvent);
 
     expect(context.getOption('draggingId')).toBeNull();
     expect(context.getOption('isDragging')).toBe(false);
@@ -72,7 +77,9 @@ describe('DndPlugin', () => {
   });
 
   it('clears drop targets on document drop and on dragleave outside the editor', () => {
-    const editor = createPlateEditor({ plugins: [DndPlugin] });
+    const editor = createPlateEditor({
+      plugins: [DndPlugin],
+    });
     const context = getEditorPlugin(editor, DndPlugin);
     const inside = document.createElement('div');
     const block = document.createElement('div');
@@ -98,35 +105,47 @@ describe('DndPlugin', () => {
       return event;
     };
 
-    context.setOption('dropTarget', { id: 'block-1', line: 'top' });
-    outside.dispatchEvent(new Event('dragleave', { bubbles: true }));
+    act(() => {
+      context.setOption('dropTarget', { id: 'block-1', line: 'top' });
+      outside.dispatchEvent(new Event('dragleave', { bubbles: true }));
+    });
     expect(context.getOption('dropTarget')).toBeUndefined();
 
-    context.setOption('dropTarget', { id: 'block-1', line: 'top' });
-    inside.dispatchEvent(new Event('dragleave', { bubbles: true }));
+    act(() => {
+      context.setOption('dropTarget', { id: 'block-1', line: 'top' });
+      inside.dispatchEvent(new Event('dragleave', { bubbles: true }));
+    });
     expect(context.getOption('dropTarget')).toEqual({
       id: 'block-1',
       line: 'top',
     });
 
-    block.dispatchEvent(dragLeaveEvent(editorNode));
+    act(() => {
+      block.dispatchEvent(dragLeaveEvent(editorNode));
+    });
     expect(context.getOption('dropTarget')).toBeUndefined();
 
-    context.setOption('dropTarget', { id: 'block-1', line: 'top' });
-    blockText.dispatchEvent(dragLeaveEvent(inside));
+    act(() => {
+      context.setOption('dropTarget', { id: 'block-1', line: 'top' });
+      blockText.dispatchEvent(dragLeaveEvent(inside));
+    });
     expect(context.getOption('dropTarget')).toBeUndefined();
 
     const nextBlock = document.createElement('div');
     nextBlock.dataset.blockId = 'block-2';
     editorNode.append(nextBlock);
-    context.setOption('dropTarget', { id: 'block-1', line: 'top' });
-    block.dispatchEvent(dragLeaveEvent(nextBlock));
+    act(() => {
+      context.setOption('dropTarget', { id: 'block-1', line: 'top' });
+      block.dispatchEvent(dragLeaveEvent(nextBlock));
+    });
     expect(context.getOption('dropTarget')).toEqual({
       id: 'block-1',
       line: 'top',
     });
 
-    document.dispatchEvent(new Event('drop'));
+    act(() => {
+      document.dispatchEvent(new Event('drop'));
+    });
     expect(context.getOption('_isOver')).toBe(false);
     expect(context.getOption('dropTarget')).toBeUndefined();
 
@@ -135,24 +154,70 @@ describe('DndPlugin', () => {
     outside.remove();
   });
 
-  it('only exposes the scroller render hook when enabled', () => {
-    const enabledPlugin = createPlateEditor({
+  it('renders the scroller when enabled and responds to live options', async () => {
+    const editor = createPlateEditor({
       plugins: [
         DndPlugin.configure({
           options: {
             enableScroller: true,
-            scrollerProps: { height: 40 },
+            scrollerProps: {
+              height: 40,
+              scrollAreaProps: { className: 'dnd-scroll-area' },
+            },
           },
         }),
       ],
-    }).getPlugin(DndPlugin);
-    const disabledPlugin = createPlateEditor({
-      plugins: [DndPlugin],
-    }).getPlugin(DndPlugin);
-    const scroller = enabledPlugin.render?.afterEditable?.();
+    });
+    const context = getEditorPlugin(editor, DndPlugin);
+    const view = render(
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    );
 
-    expect(scroller?.type).toBe(DndScroller);
-    expect(scroller?.props.height).toBe(40);
-    expect(disabledPlugin.render?.afterEditable).toBeUndefined();
+    try {
+      expect(view.container.querySelectorAll('.dnd-scroll-area')).toHaveLength(
+        0
+      );
+
+      act(() => context.setOption('isDragging', true));
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 110));
+      });
+
+      const areas = view.container.querySelectorAll('.dnd-scroll-area');
+
+      expect(areas).toHaveLength(2);
+      expect(
+        Array.from(areas).map((area) => (area as HTMLElement).style.height)
+      ).toEqual(['40px', '40px']);
+
+      act(() => context.setOption('enableScroller', false));
+      expect(view.container.querySelectorAll('.dnd-scroll-area')).toHaveLength(
+        0
+      );
+
+      act(() => context.setOption('enableScroller', true));
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 110));
+      });
+      expect(view.container.querySelectorAll('.dnd-scroll-area')).toHaveLength(
+        2
+      );
+
+      act(() =>
+        context.setOption('scrollerProps', {
+          height: 60,
+          scrollAreaProps: { className: 'dnd-scroll-area' },
+        })
+      );
+      expect(
+        Array.from(view.container.querySelectorAll('.dnd-scroll-area')).map(
+          (area) => (area as HTMLElement).style.height
+        )
+      ).toEqual(['60px', '60px']);
+    } finally {
+      view.unmount();
+    }
   });
 });

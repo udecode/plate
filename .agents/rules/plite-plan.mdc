@@ -8,18 +8,20 @@ disable-model-invocation: true
 
 Handle $ARGUMENTS.
 
-Use Plite Plan for architecture and public API decisions in the raw editor
-substrate. Use Plate Plan for product plugins, kits, registry, and opinionated
-workflows built on top.
+Use Plite Plan for substrate architecture, adoption, execution, and proof after
+the target public call shape is clear. Use `best-api` first when the unresolved
+question is what the API should look like. Use Plate Plan for product plugins,
+kits, registry, and opinionated workflows built on top.
 
 ## Modes
 
 Choose one mode from the arguments. Default to `--standard`.
 
-- `--quick`: inspect the named source and answer with a source-backed
-  recommendation. Do not create a goal or plan. Do not call the result
-  execution-ready. Promote to standard when the decision spans multiple owners,
-  public breaks, or uncertain browser/runtime behavior.
+- `--quick`: inspect a named substrate boundary/adoption question and answer
+  with a source-backed recommendation. Use `best-api review` instead when call
+  shape is the decision. Do not create a goal or call the result
+  execution-ready. Promote to standard when the decision spans multiple
+  owners, public breaks, or uncertain browser/runtime behavior.
 - `--standard`: create or continue one Plite Plan goal and plan. Run the three
   phases continuously in the current activation unless interrupted or blocked.
 - `--deep`: use the standard workflow and add only the research, benchmarks,
@@ -41,6 +43,11 @@ otherwise keep the missing TARGET as an open gate instead of inventing scope.
 Read root `VISION.md` and `docs/vision/plite.md` for doctrine; do not duplicate
 their full ownership tables in the plan.
 
+`best-api` owns the ideal public call surface. Plite Plan consumes that target
+and owns substrate law, Plate/collaboration adoption, execution slices, and
+proof. If a plan discovers a better call shape, run the `best-api` lens inside
+the same plan and repair the target before continuing.
+
 - Plite owns the editor model, operations, reads, updates, transactions,
   selection primitives, DOM/input/runtime substrate, history, replay,
   collaboration substrate, and browser proof infrastructure.
@@ -55,14 +62,10 @@ their full ownership tables in the plan.
 - Current checkout and Plate repo root commands are authoritative. Source every
   current API, export, docs, test, benchmark, and behavior claim from live
   owners.
-- Choose the highest-value coherent target architecture under Plite's actual
-  requirements. Breaking scope is a cost, never an architectural constraint or
-  veto. Preserve an existing public shape only when replacing it provides no
-  material semantic, compositional, typing, performance, ownership, failure-
-  isolation, or DX value. After selecting the target, minimize incidental
-  breakage and use break size only to choose between otherwise equivalent
-  designs. Never narrow a superior target into a compromised hybrid. No public
-  aliases, runtime shims, dual signatures, or docs for old names.
+- Use `best-api` for target-shape judgment. Treat breaking scope as adoption
+  cost after the target is chosen; never turn compatibility into a permanent
+  compromised hybrid. No public aliases, runtime shims, dual signatures, or
+  docs for old names.
 - A private bridge is exceptional. Name its owner, non-public proof, deletion
   trigger, and removal gate in the decision row.
 - Planning edits only planning, research, vision, issue/provenance,

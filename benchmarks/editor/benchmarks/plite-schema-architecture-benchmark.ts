@@ -429,112 +429,6 @@ const plateStartupPerDescriptorRatio =
   PLATE_DESCRIPTOR_COHORTS[1] /
   (plateDescriptorRows[0].startupMs.p50 / PLATE_DESCRIPTOR_COHORTS[0]);
 
-const ReconfigurationPlugin = createBasePlugin({
-  config: { revision: 0 },
-  key: 'schema-architecture-reconfiguration',
-  schema: ({ config }) => ({
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      properties: {
-        schemaRevision: property.number({
-          default: config.revision,
-          omitDefault: true,
-        }),
-      },
-    },
-  }),
-  type: 'schema-architecture-reconfiguration',
-});
-const plateEquivalentReconfigurationEditor = createBaseEditor({
-  plugins: [ReconfigurationPlugin],
-  schema: { id: 'plate-equivalent-reconfiguration-benchmark', version: 1 },
-});
-const plateEquivalentReconfigurationProfilerEvents: string[] = [];
-const plateEquivalentReconfigurationProfilerOwner =
-  globalThis as typeof globalThis & {
-    __PLITE_REACT_RENDER_PROFILER__?: {
-      record: (event: { id: string }) => void;
-    };
-  };
-const previousPlateEquivalentReconfigurationProfiler =
-  plateEquivalentReconfigurationProfilerOwner.__PLITE_REACT_RENDER_PROFILER__;
-let plateEquivalentCommitCount = 0;
-
-plateEquivalentReconfigurationEditor.subscribeCommit(() => {
-  plateEquivalentCommitCount += 1;
-});
-plateEquivalentReconfigurationProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ = {
-  record: ({ id }) => plateEquivalentReconfigurationProfilerEvents.push(id),
-};
-
-const plateEquivalentReconfigurationMs = (() => {
-  try {
-    return summarize(
-      Array.from({ length: architectureIterations }, () => {
-        const before = performance.now();
-
-        plateEquivalentReconfigurationEditor.configure(ReconfigurationPlugin, {
-          revision: 0,
-        });
-
-        return performance.now() - before;
-      })
-    );
-  } finally {
-    plateEquivalentReconfigurationProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ =
-      previousPlateEquivalentReconfigurationProfiler;
-  }
-})();
-const plateEquivalentCompileCount =
-  plateEquivalentReconfigurationProfilerEvents.filter(
-    (id) => id === 'schema-compile'
-  ).length;
-
-const plateReconfigurationEditor = createBaseEditor({
-  plugins: [ReconfigurationPlugin],
-  schema: { id: 'plate-reconfiguration-benchmark', version: 1 },
-});
-const plateReconfigurationProfilerEvents: string[] = [];
-const plateReconfigurationProfilerOwner = globalThis as typeof globalThis & {
-  __PLITE_REACT_RENDER_PROFILER__?: {
-    record: (event: { id: string }) => void;
-  };
-};
-const previousPlateReconfigurationProfiler =
-  plateReconfigurationProfilerOwner.__PLITE_REACT_RENDER_PROFILER__;
-let plateNonEquivalentCommitCount = 0;
-
-plateReconfigurationEditor.subscribeCommit(() => {
-  plateNonEquivalentCommitCount += 1;
-});
-plateReconfigurationProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ = {
-  record: ({ id }) => plateReconfigurationProfilerEvents.push(id),
-};
-
-const plateNonEquivalentReconfigurationMs = (() => {
-  try {
-    return summarize(
-      Array.from({ length: architectureIterations }, (_value, index) => {
-        const before = performance.now();
-
-        plateReconfigurationEditor.configure(ReconfigurationPlugin, {
-          revision: index + 1,
-        });
-
-        return performance.now() - before;
-      })
-    );
-  } finally {
-    plateReconfigurationProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ =
-      previousPlateReconfigurationProfiler;
-  }
-})();
-
-const plateNonEquivalentCompileCount =
-  plateReconfigurationProfilerEvents.filter(
-    (id) => id === 'schema-compile'
-  ).length;
-
 const CONSTRUCTION_PROPERTY_COHORTS = [100, 1000] as const;
 const constructionIterations = argument('construction-iterations', 5000);
 const measureConstructionPropertyCohort = (
@@ -1039,7 +933,7 @@ const LocalityPolicy = definePropertyPolicy<LocalityTrace>({
   },
   version: 1,
 });
-const localityDescriptor = property.typed(LocalityPolicy);
+const localityDescriptor = property.json({ policy: LocalityPolicy });
 const LocalitySchema = defineEditorSchema({
   elements: {
     paragraph: {
@@ -1794,8 +1688,6 @@ const EXECUTION_BUDGETS = Object.freeze({
   largeDocumentMigration10000P95MsExclusive: 2000,
   largeDocumentMigrationWidthRatioInclusive: 15,
   plateDescriptorResolutionWidthRatioInclusive: 2,
-  plateEquivalentReconfigurationP95MsExclusive: 25,
-  plateNonEquivalentReconfigurationP95MsExclusive: 25,
   plateStartup1000P95MsExclusive: 2500,
   plateStartupPerDescriptorRatioInclusive: 2.5,
   projectedClipboardHostWidthRatioInclusive: 2,
@@ -1891,16 +1783,6 @@ const result = {
       warmupIterationsPerCohort: 1,
     },
     startupPerDescriptorRatio: plateStartupPerDescriptorRatio,
-  },
-  plateEquivalentReconfiguration: {
-    commitCount: plateEquivalentCommitCount,
-    compileCount: plateEquivalentCompileCount,
-    reconfigurationMs: plateEquivalentReconfigurationMs,
-  },
-  plateNonEquivalentReconfiguration: {
-    commitCount: plateNonEquivalentCommitCount,
-    compileCount: plateNonEquivalentCompileCount,
-    reconfigurationMs: plateNonEquivalentReconfigurationMs,
   },
   projectedClipboardLocality: {
     documentWidthRatio: projectedClipboardDocumentWidthRatio,
@@ -2135,20 +2017,6 @@ const validateStrictBenchmark = () => {
       EXECUTION_BUDGETS.plateStartupPerDescriptorRatioInclusive,
     `Plate startup per-descriptor ratio ${plateStartupPerDescriptorRatio} exceeds ${EXECUTION_BUDGETS.plateStartupPerDescriptorRatioInclusive}`
   );
-  assert.equal(plateEquivalentCompileCount, 0);
-  assert.equal(plateEquivalentCommitCount, 0);
-  assert.ok(
-    plateEquivalentReconfigurationMs.p95 <
-      EXECUTION_BUDGETS.plateEquivalentReconfigurationP95MsExclusive,
-    `Plate equivalent reconfiguration p95 ${plateEquivalentReconfigurationMs.p95} ms exceeds ${EXECUTION_BUDGETS.plateEquivalentReconfigurationP95MsExclusive} ms`
-  );
-  assert.equal(plateNonEquivalentCompileCount, architectureIterations);
-  assert.equal(plateNonEquivalentCommitCount, architectureIterations);
-  assert.ok(
-    plateNonEquivalentReconfigurationMs.p95 <
-      EXECUTION_BUDGETS.plateNonEquivalentReconfigurationP95MsExclusive,
-    `Plate non-equivalent reconfiguration p95 ${plateNonEquivalentReconfigurationMs.p95} ms exceeds ${EXECUTION_BUDGETS.plateNonEquivalentReconfigurationP95MsExclusive} ms`
-  );
   for (const row of constructionPropertyRows) {
     assert.equal(row.constructionDefaultPropertyIds, 1);
     assert.equal(row.constructionPropertyIds, 1);
@@ -2338,24 +2206,6 @@ process.stdout.write(
 );
 process.stdout.write(
   `METRIC plite_schema_architecture_plate_startup_per_descriptor_ratio=${plateStartupPerDescriptorRatio}\n`
-);
-process.stdout.write(
-  `METRIC plite_schema_architecture_plate_equivalent_reconfigure_p95_ms=${plateEquivalentReconfigurationMs.p95}\n`
-);
-process.stdout.write(
-  `METRIC plite_schema_architecture_plate_equivalent_reconfigure_compile_count=${plateEquivalentCompileCount}\n`
-);
-process.stdout.write(
-  `METRIC plite_schema_architecture_plate_equivalent_reconfigure_commit_count=${plateEquivalentCommitCount}\n`
-);
-process.stdout.write(
-  `METRIC plite_schema_architecture_plate_non_equivalent_reconfigure_p95_ms=${plateNonEquivalentReconfigurationMs.p95}\n`
-);
-process.stdout.write(
-  `METRIC plite_schema_architecture_plate_non_equivalent_reconfigure_compile_count=${plateNonEquivalentCompileCount}\n`
-);
-process.stdout.write(
-  `METRIC plite_schema_architecture_plate_non_equivalent_reconfigure_commit_count=${plateNonEquivalentCommitCount}\n`
 );
 process.stdout.write(
   `METRIC plite_schema_architecture_construction_property_width_ratio=${constructionPropertyWidthRatio}\n`

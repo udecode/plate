@@ -5,34 +5,34 @@ import { createBasePlugin } from '../../lib/plugin';
 import { defineInputRule } from '../../lib/plugins/input-rules';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { validatePlugin } from './resolvePlugin';
+import { getPlateRuntime } from './compilePlateModel';
 
 describe('resolvePlugin', () => {
-  it('applies object and contextual configuration layers in call order', () => {
+  it('exposes consumer configuration to extensions and keeps it final', () => {
     const seen: string[] = [];
     const plugin = createBasePlugin({
       key: 'orderedConfiguration',
       options: { label: 'base', mode: 'base' },
     })
-      .configure({ options: { label: 'first' } })
-      .configure(({ plugin }) => {
+      .extend(({ plugin }) => {
         seen.push(plugin.options.label);
 
-        return { options: { label: 'second' } };
+        return { options: { label: 'extension' } };
       })
-      .configure({ options: { mode: 'last' } })
-      .configure(({ plugin }) => {
-        seen.push(`${plugin.options.label}:${plugin.options.mode}`);
-
-        return { options: { label: 'final' } };
+      .configure({
+        options: {
+          label: 'consumer',
+          mode: 'consumer',
+        },
       });
     const editor = createBaseEditor({ plugins: [plugin] });
 
-    expect(seen).toEqual(['first', 'second:last']);
+    expect(seen).toEqual(['consumer']);
     expect(editor.getPlugin(plugin).options).toEqual({
-      label: 'final',
-      mode: 'last',
+      label: 'consumer',
+      mode: 'consumer',
     });
-    expect(plugin.__configurationLayers).toHaveLength(4);
+    expect(plugin.__configurationLayers).toHaveLength(1);
   });
 
   it('lets the last child-plugin extension win', () => {
@@ -41,18 +41,18 @@ describe('resolvePlugin', () => {
       options: { value: 'base' },
     });
 
-    expect(
-      createBaseEditor({
-        plugins: [
-          createBasePlugin({
-            key: 'a',
-            plugins: [child],
-          })
-            .extendPlugin(child, { options: { value: 'first' } })
-            .extendPlugin(child, { options: { value: 'last' } }),
-        ],
-      }).plugins.aa.options.value
-    ).toBe('last');
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'a',
+          plugins: [child],
+        })
+          .extendPlugin(child, { options: { value: 'first' } })
+          .extendPlugin(child, { options: { value: 'last' } }),
+      ],
+    });
+
+    expect(editor.getPlugin(child).options.value).toBe('last');
   });
 
   it('does not mutate configured inputRules reused across editors', () => {
@@ -76,11 +76,71 @@ describe('resolvePlugin', () => {
 
     expect(config.inputRules).toEqual([configuredRule]);
     expect(
-      firstEditor.runtime.inputRules.plugins.inputRulesPlugin.rules
+      getPlateRuntime(firstEditor).inputRules.plugins.inputRulesPlugin.rules
     ).toHaveLength(1);
     expect(
-      secondEditor.runtime.inputRules.plugins.inputRulesPlugin.rules
+      getPlateRuntime(secondEditor).inputRules.plugins.inputRulesPlugin.rules
     ).toHaveLength(1);
+  });
+
+  it('keeps terminal inputRules configuration final over extensions', () => {
+    const extensionRule = defineInputRule({
+      apply: () => true,
+      target: 'insertText',
+      trigger: 'extension',
+    });
+    const plugin = createBasePlugin({
+      inputRules: [
+        defineInputRule({
+          apply: () => true,
+          target: 'insertText',
+          trigger: 'base',
+        }),
+      ],
+      key: 'configuredInputRulesFinal',
+    })
+      .extend(() => ({
+        inputRules: [extensionRule],
+      }))
+      .configure({
+        inputRules: [],
+      });
+    const editor = createBaseEditor({ plugins: [plugin] });
+
+    expect(
+      getPlateRuntime(editor).inputRules.plugins.configuredInputRulesFinal.rules
+    ).toEqual([]);
+  });
+
+  it('accepts an inputRules factory in terminal object configuration', () => {
+    const configuredRule = defineInputRule({
+      apply: () => true,
+      target: 'insertText',
+      trigger: 'configured',
+    });
+    const plugin = createBasePlugin({
+      inputRules: [
+        defineInputRule({
+          apply: () => true,
+          target: 'insertText',
+          trigger: 'base',
+        }),
+      ],
+      key: 'configuredInputRulesFactory',
+    }).configure({
+      inputRules: () => [configuredRule],
+    });
+    const editor = createBaseEditor({ plugins: [plugin] });
+    const rules =
+      getPlateRuntime(editor).inputRules.plugins.configuredInputRulesFactory
+        .rules;
+
+    expect(rules).toHaveLength(1);
+    expect(rules[0]?.target).toBe('insertText');
+    if (rules[0]?.target !== 'insertText') {
+      throw new Error('Expected an insertText input rule.');
+    }
+    expect(rules[0].trigger).toBe('configured');
   });
 
   it('reports plugins that do not come from createBasePlugin', () => {
@@ -128,11 +188,11 @@ describe('resolvePlugin', () => {
     const e1 = createBaseEditor({
       plugins: [configured],
     });
-    expect(e1.runtime.inputRules.plugins.p.rules).toHaveLength(1);
+    expect(getPlateRuntime(e1).inputRules.plugins.p.rules).toHaveLength(1);
 
     const e2 = createBaseEditor({
       plugins: [configured],
     });
-    expect(e2.runtime.inputRules.plugins.p.rules).toHaveLength(1);
+    expect(getPlateRuntime(e2).inputRules.plugins.p.rules).toHaveLength(1);
   });
 });

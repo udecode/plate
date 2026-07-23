@@ -39,9 +39,7 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import {
-  MarkdownPlugin,
-} from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
+import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
 import {
   remarkMdx,
   remarkMention,

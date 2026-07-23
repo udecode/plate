@@ -17,6 +17,7 @@ import {
   useEditorPluginOptions,
   usePluginOption,
 } from '../../react';
+import { getPluginOptionsStore } from './pluginOptionsStore';
 
 function TestComponent({
   editor,
@@ -80,8 +81,8 @@ describe('BasePlugin store', () => {
     const p2 = createBasePlugin({ key: 'plugin2', options: { value: 2 } });
     const editor = createStoreEditor([p1, p2]);
 
-    expect(editor.getOptionsStore(p1)).toBeDefined();
-    expect(editor.getOptionsStore(p2)).toBeDefined();
+    expect(getPluginOptionsStore(editor, p1.key)).toBeDefined();
+    expect(getPluginOptionsStore(editor, p2.key)).toBeDefined();
   });
 
   it('initialize the store with plugin options', () => {
@@ -116,6 +117,60 @@ describe('BasePlugin store', () => {
     editor.plugin(p1).setOption('nested', { value: 2 });
 
     expect(editor.plugin(p1).getOptions()).toEqual({ nested: { value: 2 } });
+  });
+
+  it('owns and freezes every plain option write without leaking caller mutation', () => {
+    const p1 = createBasePlugin({
+      key: 'plugin1',
+      options: { nested: { value: 1 } },
+    });
+    const editor = createBaseEditor({ plugins: [p1] });
+    const portal = editor.plugin(p1);
+    const listener = vi.fn();
+    const unsubscribe = getPluginOptionsStore(editor, p1.key)!.store.subscribe(
+      listener
+    );
+    const setOptionInput = { value: 2 };
+
+    portal.setOption('nested', setOptionInput);
+
+    expect(portal.getOption('nested')).toEqual({ value: 2 });
+    expect(portal.getOption('nested')).not.toBe(setOptionInput);
+    expect(Object.isFrozen(portal.getOption('nested'))).toBe(true);
+    expect(Object.isFrozen(portal.getOptions())).toBe(true);
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    setOptionInput.value = 20;
+
+    expect(portal.getOption('nested')).toEqual({ value: 2 });
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    const setOptionsInput = { value: 3 };
+
+    portal.setOptions({ nested: setOptionsInput });
+    setOptionsInput.value = 30;
+
+    expect(portal.getOption('nested')).toEqual({ value: 3 });
+    expect(portal.getOption('nested')).not.toBe(setOptionsInput);
+    expect(listener).toHaveBeenCalledTimes(2);
+
+    const updaterInput = { value: 4 };
+
+    portal.setOptions((draft) => {
+      draft.nested = updaterInput;
+    });
+    updaterInput.value = 40;
+
+    expect(portal.getOption('nested')).toEqual({ value: 4 });
+    expect(portal.getOption('nested')).not.toBe(updaterInput);
+    expect(Object.isFrozen(portal.getOption('nested'))).toBe(true);
+    expect(Object.isFrozen(portal.getOptions())).toBe(true);
+    expect(listener).toHaveBeenCalledTimes(3);
+    expect(() =>
+      Object.assign(portal.getOptions(), { nested: null })
+    ).toThrow();
+    expect(listener).toHaveBeenCalledTimes(3);
+    unsubscribe();
   });
 
   it('maintain separate stores for each plugin', () => {
@@ -160,7 +215,7 @@ describe('BasePlugin store', () => {
     const p1 = createBasePlugin({ key: 'plugin1', options: { value: 1 } });
     const editor = createStoreEditor([p1]);
 
-    const store = editor.getOptionsStore(p1);
+    const store = getPluginOptionsStore(editor, p1.key)!;
     expect(store).toBeDefined();
   });
 

@@ -8,8 +8,10 @@ const useEditorPluginMock = mock();
 const useElementContextMock = mock();
 
 mock.module('@platejs/core/react', async () => ({
-  useElementContext: useElementContextMock,
   useEditorPlugin: useEditorPluginMock,
+}));
+mock.module('@platejs/core/react/internal', async () => ({
+  useElementContext: useElementContextMock,
 }));
 
 const loadModule = async () =>

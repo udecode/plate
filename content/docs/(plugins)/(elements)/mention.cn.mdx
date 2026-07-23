@@ -84,13 +84,13 @@ import { MentionElement, MentionInputElement } from '@/components/ui/mention-nod
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
-    MentionPlugin.configure({
+    MentionPlugin.withComponent(MentionElement).configure({
       options: {
         trigger: '@',
         triggerPreviousCharPattern: /^$|^[\s"']$/,
         insertSpaceAfterMention: false,
       },
-    }).withComponent(MentionElement),
+    }),
     MentionInputPlugin.withComponent(MentionInputElement),
   ],
 });
@@ -135,11 +135,11 @@ const editor = createPlateEditor({
 
 ## API接口
 
-### api.insert.mention
+### editor.update.mention.insert
 
 在当前选区插入提及元素。
 
-<API name="api.insert.mention">
+<API name="editor.update.mention.insert">
 <APIParameters>
   <APIItem name="options" type="object">
     <APISubList>

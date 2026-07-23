@@ -28,39 +28,36 @@ const CUSTOM_H1 = 'heading-one';
 
 const H1Plugin = createBasePlugin({
   key: KEYS.h1,
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
     },
   },
 });
 
 const CustomH1Plugin = H1Plugin.extend({
-  node: { type: CUSTOM_H1 },
+  type: CUSTOM_H1,
 });
 
 const BlockquotePlugin = createBasePlugin({
   key: KEYS.blockquote,
-  node: {
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['block'],
     },
   },
 });
 
 const PagePlugin = createBasePlugin({
   key: 'page',
-  node: {
+  schema: ({ plugins }) => ({
     element: {
-      content: schema.content.group('block', {
-        default: { type: KEYS.p },
+      content: plugins.blockContent({
+        default: { type: plugins.elementType(BaseParagraphPlugin) },
         min: 1,
       }),
-      groups: ['block'],
     },
-  },
+  }),
 });
 
 const VisitedPlugin = createBasePlugin({
@@ -78,14 +75,14 @@ const createEditor = ({
   headingPlugin = H1Plugin,
   normalizeInitial = false,
   pages = false,
-  targetPlugins = [KEYS.p],
+  targetPluginKeys = [KEYS.p],
   value,
 }: {
   value: Value;
   headingPlugin?: any;
   normalizeInitial?: boolean;
   pages?: boolean;
-  targetPlugins?: string[];
+  targetPluginKeys?: readonly string[];
 }) =>
   createBaseEditor({
     plugins: [
@@ -94,20 +91,16 @@ const createEditor = ({
       BlockquotePlugin,
       PagePlugin,
       BaseIndentPlugin.configure({
-        options: {
-          targetPluginKeys: targetPlugins,
-        },
+        targetPluginKeys,
       }),
       pages
         ? listPluginPage
         : BaseListPlugin.configure({
-            options: {
-              targetPluginKeys: targetPlugins,
-            },
+            targetPluginKeys,
           }),
     ],
     shouldNormalizeEditor: normalizeInitial,
-    value,
+    initialValue: value,
   });
 
 const createItem = (
@@ -300,7 +293,7 @@ describe('normalizeListStart', () => {
 
       const editor = createEditor({
         normalizeInitial: true,
-        targetPlugins: [KEYS.h1, KEYS.p],
+        targetPluginKeys: [KEYS.h1, KEYS.p],
         value: input,
       });
 
@@ -322,7 +315,7 @@ describe('normalizeListStart', () => {
 
       const editor = createEditor({
         normalizeInitial: true,
-        targetPlugins: [KEYS.h1, KEYS.p],
+        targetPluginKeys: [KEYS.h1, KEYS.p],
         value: input,
       });
 
@@ -344,7 +337,7 @@ describe('normalizeListStart', () => {
 
       const editor = createEditor({
         normalizeInitial: true,
-        targetPlugins: [KEYS.h1, KEYS.p],
+        targetPluginKeys: [KEYS.h1, KEYS.p],
         value: input,
       });
 
@@ -368,7 +361,7 @@ describe('normalizeListStart', () => {
 
       const editor = createEditor({
         normalizeInitial: true,
-        targetPlugins: [KEYS.h1, KEYS.p],
+        targetPluginKeys: [KEYS.h1, KEYS.p],
         value: input,
       });
 
@@ -391,7 +384,7 @@ describe('normalizeListStart', () => {
       const editor = createEditor({
         headingPlugin: CustomH1Plugin,
         normalizeInitial: true,
-        targetPlugins: [KEYS.h1, KEYS.p],
+        targetPluginKeys: [KEYS.h1, KEYS.p],
         value: input,
       });
 
@@ -413,7 +406,7 @@ describe('normalizeListStart', () => {
 
       const editor = createEditor({
         normalizeInitial: true,
-        targetPlugins: [KEYS.blockquote, KEYS.p],
+        targetPluginKeys: [KEYS.blockquote, KEYS.p],
         value: input,
       });
 
@@ -1188,61 +1181,20 @@ describe('normalizeListStart', () => {
     it.each([
       1000, 10_000,
     ])('renumbers a %i-item suffix with a compact canonical change', (size) => {
-      const startedAt = performance.now();
-      const coreDurations = new Map<
-        string,
-        { count: number; duration: number }
-      >();
-      (globalThis as any).__PLITE_REACT_RENDER_PROFILER__ = {
-        record: ({ duration, id }: { duration: number; id: string }) => {
-          const current = coreDurations.get(id) ?? { count: 0, duration: 0 };
-
-          current.count += 1;
-          current.duration += duration;
-          coreDurations.set(id, current);
-        },
-      };
       const value = Array.from({ length: size }, (_, index) =>
         createItem(String(index + 1), {
           listStart: index === 0 ? undefined : index + 1,
         })
       );
-      console.error(
-        '[DEBUG-listperf] value',
-        size,
-        performance.now() - startedAt
-      );
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, BaseListPlugin, VisitedPlugin],
         shouldNormalizeEditor: false,
-        value,
+        initialValue: value,
       });
-      console.error(
-        '[DEBUG-listperf] editor',
-        size,
-        performance.now() - startedAt
-      );
-      console.error(
-        '[DEBUG-listperf] core',
-        [...coreDurations]
-          .sort((left, right) => right[1].duration - left[1].duration)
-          .slice(0, 20)
-      );
-      delete (globalThis as any).__PLITE_REACT_RENDER_PROFILER__;
 
       editor.update.nodes.set({ visited: true }, { at: [0] });
-      console.error(
-        '[DEBUG-listperf] update',
-        size,
-        performance.now() - startedAt
-      );
 
       const mainChange = editor.read.lastCommit()?.changes.primary;
-      console.error(
-        '[DEBUG-listperf] commit',
-        size,
-        performance.now() - startedAt
-      );
 
       expect(mainChange).toBeDefined();
       expect(mainChange!.data.length).toBeLessThanOrEqual(2);

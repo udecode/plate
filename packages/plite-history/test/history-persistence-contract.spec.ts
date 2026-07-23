@@ -18,6 +18,7 @@ import {
   SelectionApi,
   valueCodecs,
 } from '@platejs/plite';
+import { initializeEditorExtensions } from '@platejs/plite/internal';
 
 import { History, history } from '../src';
 import { encodeHistoryValue } from '../src/history-codec';
@@ -144,6 +145,26 @@ describe('versioned history persistence', () => {
       History.toJSON(declared).schema,
       declared.read.schema.identity()
     );
+  });
+
+  it('adopts a final bootstrap schema before the first user commit', () => {
+    const editor = createEditor({
+      extensions: [history()] as const,
+      initialValue: [paragraph('body')],
+    });
+    const provisionalSchema = editor.read.history().schema;
+
+    initializeEditorExtensions(editor, [history(), editorSchema()]);
+
+    assert.notDeepEqual(editor.read.schema.identity(), provisionalSchema);
+    assert.deepEqual(
+      editor.read.history().schema,
+      editor.read.schema.identity()
+    );
+
+    editor.update((tx) => tx.text.insert('!', { at: range(4).anchor }));
+
+    assert.equal(editor.read.history().undos.length, 1);
   });
 
   it('keeps persisted schema identity exact and free of live fields', () => {
@@ -347,6 +368,35 @@ describe('versioned history persistence', () => {
     undo(editor);
     assert.equal(editor.read.text.string([]), 'body1?');
     assert.equal(editor.read.children()[0]?.type, 'heading');
+  });
+
+  it('does not save a schema commit that reactivates history', () => {
+    const slot = defineExtensionSlot('reactivated-history-schema');
+    const editor = createEditor({
+      extensions: [slot.of([history(), editorSchema()])] as const,
+      initialValue: [paragraph('body')],
+    });
+
+    editor.update((tx) => tx.text.insert('!', { at: range(4).anchor }));
+    assert.equal(editor.read.history().undos.length, 1);
+
+    editor.update((tx) => {
+      tx.extensions.reconfigure(slot, [
+        history({ maxDepth: 101 }),
+        editorSchema({ version: 2 }),
+      ]);
+      tx.text.insert('?', { at: range(5).anchor });
+    });
+
+    assert.deepEqual(
+      editor.read.history().schema,
+      editor.read.schema.identity()
+    );
+    assert.equal(editor.read.history().undos.length, 0);
+
+    editor.update((tx) => tx.text.insert('.', { at: range(6).anchor }));
+
+    assert.equal(editor.read.history().undos.length, 1);
   });
 
   it('does not restore a decoded history after its live schema changes', () => {

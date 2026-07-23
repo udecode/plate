@@ -62,6 +62,8 @@ Primary user-facing entrypoints:
 - `maintainer` for public Plate/Plite issue, PR, and security queue work.
 - `architecture-cleanup` for repo-grounded architecture/code cleanup,
   deslop, simplification, and agent-navigation friction.
+- `best-api` for blank-slate public API design, review, and P0-P3 audits
+  across Plate and Plite before adoption/implementation planning.
 - `sync-vision` for updating reusable taste from changed inputs.
 - `openclaw-sync` for syncing agent setup from OpenClaw.
 - `autoreview` for review. Reviewer persona skills are lenses behind
@@ -85,6 +87,8 @@ Default routing:
   question -> `maintainer` unless the user explicitly names a narrower owner.
 - Internal Plate/Plite quality, behavior, perf, browser proof, API cleanup,
   benchmark repair, docs/API cohesion, or long autonomous loop -> `auto`.
+- "best API", "cleanest API", "best DX/AX", public call-shape design/review,
+  or whether current API machinery should exist -> `best-api`.
 - Plate v2 cleanup review, "why does this migrated Plate helper exist?",
   old Slate compatibility cuts in Plate/Core, or no-arg autopilot for the next
   Plate-to-Plite cleanup packet -> `plate-next`.
@@ -93,8 +97,8 @@ Default routing:
 - Broad architecture cleanup, refactor opportunities, module consolidation,
   deslop, simplicity, testability, or agent-navigation friction ->
   `architecture-cleanup`, then route accepted candidates to `major-task`,
-  `plite-plan`, `plate-plan`, `auto`, or a package owner when the cleanup is too
-  broad to execute inside one safe packet.
+  `best-api` when public shape is unresolved, then `plite-plan`, `plate-plan`,
+  `auto`, or a package owner for adoption/execution.
 - One ordinary local patch with no public queue decision -> `task`.
 - Public security/advisory language -> `maintainer security`.
 
@@ -124,6 +128,7 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
 - `architecture-cleanup` for source-backed architecture/code cleanup: shallow modules, split ownership, duplicate helpers, over-splits, stale oracles, testability gaps, and agent-navigation friction. It ranks delete/merge/inline/simplify/split/keep/defer decisions, implements only safe behavior-neutral cleanup packets, and routes broad decisions to the right owner
 - `vision` to route agents to root `VISION.md` for unified Plate/Plite taste, public API doctrine, Plite-vs-Plate boundaries, proof standards, checkpoint-zero routing, and autonomous maintainer-fit decisions
+- `best-api` for concrete Plate/Plite public API design, review, and ranked audits. It starts from ideal call sites, treats current machinery and compatibility as evidence rather than requirements, and hands accepted targets to the layer plan or implementation owner.
 - `sync-vision` for incremental `VISION.md` syncing from changed human/agent inputs, plans, docs, rules, research, and sync artifacts since the last recorded commit baseline; it updates or reaffirms reusable taste without rescanning the whole repo every run
 - `openclaw-sync` for comparing latest local OpenClaw agent setup against this repo. It may update existing skills/rules or create a new skill only after the source row is read, the reusable invariant is named, no current owner fits, and product-specific OpenClaw plumbing is rejected.
 - `autoclosure` for post-merge/current-tree closure loops: already-applied teammate, external PR, branch, dirty tree, or ready-to-commit work. It loops like `autoreview` until no accepted actionable findings remain, patching safe issues and rerunning proof/review. It is not the public queue brain and not the broad internal quality supervisor.
@@ -149,13 +154,17 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `sync-main-to-next` for the fast direct `main -> next` release-lane sync wrapper without promotion or autoreview ceremony
 - `tdd`
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
-- @.agents/rules/plate-plan.mdc when defining Plate v2 architecture/API/boundary plans, minimal breaking changes, Plite/Plate ownership, or editor-behavior law when that surface is touched
+- @.agents/rules/best-api.mdc when choosing or reviewing reusable public API shape
+- @.agents/rules/plate-plan.mdc when turning an accepted Plate API target into a boundary/adoption/proof plan, or when Plate/Plite ownership and editor-behavior law are the actual decision
 
 Skill ownership:
 
 - Repo-local skills must be repo-specific. Generic shared workflows belong in global skills or the synced dotai owner.
 - Never create a wrapper skill that only renames an existing owner. Patch, merge, or delete overlap instead.
 - New local skill topology needs a recurring local workflow, a named owner gap, and a first validation command that does not depend on cloud-only infrastructure.
+- A reusable API correction must run `best-api repair`: update the source rule,
+  the smallest relevant Vision owner, remove contradictory worker wording, and
+  regenerate skills with `pnpm install`.
 - Do not keep repo-local helper skills whose only job is quick status,
   continuation, or a renamed mode of another owner. Put that behavior into the
   owning supervisor, template, or mode.

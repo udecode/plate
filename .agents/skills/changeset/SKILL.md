@@ -146,15 +146,15 @@ Use code examples only when needed:
 
 ```tsx
 // Before
-editor.api.insertText('hello');
+import { LegacyPlugin } from '@platejs/example';
 
 // After
-editor.update.text.insert('hello');
+import { ExamplePlugin } from '@platejs/example';
 ```
 
 Focus on user impact only. No implementation diary.
-Never invent or document `editor.tf` or `editor.transforms`; Plate mutations use
-`editor.update.*`, an active `tx`, or an existing scoped plugin command.
+Copy API calls from the accepted, shipped source. Changesets report an API
+decision; they never make one. Route unresolved shape to `best-api`.
 
 Prefer this shape:
 
@@ -183,14 +183,14 @@ API change:
 "@platejs/core": patch
 ---
 
-Move one-shot text insertion to `editor.update.text.insert`
+Rename `LegacyPlugin` to `ExamplePlugin`
 
 ```tsx
 // Before
-editor.api.insertText('hello');
+import { LegacyPlugin } from '@platejs/example';
 
 // After
-editor.update.text.insert('hello');
+import { ExamplePlugin } from '@platejs/example';
 ```
 ````
 
@@ -201,14 +201,12 @@ Breaking change:
 '@platejs/basic-nodes': major
 ---
 
-Remove `SkipMarkPlugin`; functionality is built into core
+Remove `LegacyPlugin`; use `ExamplePlugin`
 
-**Migration:** Remove `SkipMarkPlugin` from your plugin list. Configure marks directly:
+**Migration:** Replace `LegacyPlugin` in your plugin list:
 
 ```tsx
-MyMarkPlugin.configure({
-  rules: { selection: { affinity: 'outward' } },
-});
+const plugins = [ExamplePlugin];
 ```
 ````
 

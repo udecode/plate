@@ -1,4 +1,5 @@
 import { createBaseEditor } from '../editor';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import {
   type PluginConfig,
   createBasePlugin,
@@ -66,12 +67,16 @@ describe('extendEditorApi method', () => {
       plugins: [furtherExtendedPlugin],
     });
 
-    expect(editor.plugins.customPlugin.options.baseValue).toBe(5);
+    expect(getPlateRuntime(editor).plugins.customPlugin.options.baseValue).toBe(
+      5
+    );
     expect(editor.api.multiply(3)).toBe(15);
 
     editor.api.increment(2);
     expect(editor.plugin(furtherExtendedPlugin).getOption('baseValue')).toBe(7);
-    expect(editor.plugins.customPlugin.options.baseValue).toBe(5);
+    expect(getPlateRuntime(editor).plugins.customPlugin.options.baseValue).toBe(
+      5
+    );
 
     expect(editor.api.getTotal(3)).toBe(28); // (7 * 3) + 7
   });
@@ -344,7 +349,9 @@ describe('extendEditorApi method', () => {
 
     context.setOption('baseValue', 20);
     expect(editor.api.level1.method1()).toBe(20);
-    expect(editor.plugins.testPlugin.options.baseValue).toBe(10);
+    expect(getPlateRuntime(editor).plugins.testPlugin.options.baseValue).toBe(
+      10
+    );
   });
 });
 

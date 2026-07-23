@@ -9,7 +9,8 @@ description: 探索可用于扩展Plate插件的各种方法。
 
 ### .configure
 
-`.configure`方法允许你覆盖插件的配置。
+`.configure` 用于应用或 registry 安装插件时的一次最终覆盖。包内默认值和可复用行为应通过
+`create*Plugin()`、`.extend()` 或更具体的 `.extend*()` 方法声明。
 
 ```ts
 const ConfiguredPlugin = MyPlugin.configure({
@@ -32,7 +33,8 @@ const ConfiguredPlugin = MyPlugin.configure(({ getOptions }) => ({
 
 - 用于修改插件的现有属性
 - 不会向插件添加新属性
-- 多次调用会按声明顺序组合，后面的重叠字段优先
+- 每个描述符只能调用一次，并且必须是最后一个插件创作方法
+- 运行时扩展可以读取已配置的值，重叠字段最终仍以用户配置为准
 - 不返回扩展类型，保持原始插件类型
 
 ### .configurePlugin
@@ -83,7 +85,7 @@ const ExtendedPlugin = MyPlugin.extend(({ editor, plugin }) => ({
 
 - 用于向插件添加新属性或修改现有属性
 - 返回具有扩展类型的新插件实例
-- 支持链式调用，允许多个扩展顺序应用
+- 支持链式调用，允许多个扩展顺序应用；所有扩展必须位于最终 `.configure()` 之前
 
 ### .extendPlugin
 
@@ -113,11 +115,12 @@ const TablePlugin = createPlatePlugin({
 
 虽然这两种方法都可以用于修改插件配置，但存在一些关键差异：
 
-1. 类型扩展：`.extend`返回具有扩展类型的新插件实例，而`.configure`保持原始类型
-2. 新属性：`.extend`可以向插件配置添加新属性，而`.configure`仅修改现有属性
-3. 解析时机：`.configure` 的静态配置与回调配置进入同一个有序配置管线，`.extend` 的附加层在其后运行
+1. 所有权：包作者使用 `.extend` 定义行为，应用或 registry 使用一次 `.configure`
+2. 类型扩展：`.extend`返回具有扩展类型的新插件实例，而`.configure`保持原始类型
+3. 新属性：`.extend`可以向插件配置添加新属性，而`.configure`仅修改现有属性
+4. 顺序：`.configure` 必须最后调用；扩展解析时可读取配置值，但用户配置是最终覆盖
 
-根据是否需要扩展插件类型和功能（使用`.extend`）或仅修改现有配置（使用`.configure`）来选择适当的方法。
+先用 `.extend*()` 完成插件定义，再用一次 `.configure()` 完成用户配置。
 
 ### .extendSelectors
 

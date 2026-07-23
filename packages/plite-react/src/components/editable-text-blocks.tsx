@@ -667,6 +667,7 @@ export type EditableProps<
   decorateRuntimeScope?: PliteProjectionRuntimeScope;
   disableDefaultStyles?: boolean;
   id?: string;
+  ignoreBlankEditableRootClicks?: boolean;
   /**
    * DOM strategy for large documents. `virtualized` is experimental and
    * must use the object form: `{ type: 'virtualized', ... }`.
@@ -1070,6 +1071,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   disableDefaultStyles = false,
   enableVirtualizedRendering = false,
   id,
+  ignoreBlankEditableRootClicks = false,
   maxLength,
   domStrategy,
   onBeforeInput,
@@ -1826,6 +1828,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
             }
             id={id}
             ignoreBlankEditableRootClicks={
+              ignoreBlankEditableRootClicks ||
               virtualizedDOMStrategyOptions?.layout != null
             }
             onBeforeInput={onBeforeInput}

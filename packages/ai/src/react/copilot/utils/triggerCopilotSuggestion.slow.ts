@@ -17,7 +17,7 @@ const createEditor = () =>
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     },
-    value: [{ children: [{ text: 'one ' }], id: 'b1', type: 'p' }],
+    initialValue: [{ children: [{ text: 'one ' }], id: 'b1', type: 'p' }],
   });
 
 describe('triggerCopilotSuggestion', () => {
@@ -65,5 +65,43 @@ describe('triggerCopilotSuggestion', () => {
       'Completed'
     );
     expect(editor.plugin(CopilotPlugin).getOption('isLoading')).toBe(false);
+  });
+
+  it('materializes frozen header tuples for the completion request', async () => {
+    const editor = createEditor();
+    let requestHeaders: HeadersInit | undefined;
+    const fetchCompletion = mock(
+      async (_input: RequestInfo | URL, init?: RequestInit) => {
+        requestHeaders = init?.headers;
+
+        return new Response(JSON.stringify({ text: 'Completed' }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        });
+      }
+    ) as unknown as typeof fetch;
+
+    editor.plugin(CopilotPlugin).setOptions({
+      completeOptions: {
+        fetch: fetchCompletion,
+        headers: [['X-Test', 'value']],
+      },
+      getPrompt: () => 'Prompt',
+      triggerQuery: () => true,
+    });
+
+    const publishedHeaders = editor
+      .plugin(CopilotPlugin)
+      .getOption('completeOptions')?.headers;
+
+    expect(Object.isFrozen(publishedHeaders)).toBe(true);
+
+    await triggerCopilotSuggestion(editor);
+
+    expect(requestHeaders).toEqual({
+      'Content-Type': 'application/json',
+      'X-Test': 'value',
+    });
+    expect(publishedHeaders).toEqual([['X-Test', 'value']]);
   });
 });

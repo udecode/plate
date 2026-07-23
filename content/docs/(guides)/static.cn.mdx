@@ -46,7 +46,7 @@ import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
 const editor = createBaseEditor({
   plugins: BaseEditorKit,
-  value: [
+  initialValue: [
     { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
     { type: 'p', children: [{ text: 'This content is rendered statically.' }] },
   ],
@@ -84,7 +84,7 @@ const editor = createBaseEditor({
     // Add your list of base plugins here
     // Example: BaseHeadingPlugin, MarkdownPlugin.configure({...})
   ],
-  value: [ // Example initial value
+  initialValue: [ // Example initial value
     {
       type: 'p',
       children: [{ text: 'Hello from a static Plate editor!' }],
@@ -147,7 +147,7 @@ export default async function MyStaticPage() {
   const editor = createBaseEditor({
     plugins: [/* your base plugins */],
     components: staticComponents,
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -185,7 +185,7 @@ export default async function DocumentPage() {
   // Server-side static editor
   const editor = createStaticEditor({
     plugins: BaseEditorKit,
-    value: content,
+    initialValue: content,
   });
 
   return (
@@ -218,7 +218,7 @@ import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 export function InteractiveViewer({ value }) {
   const editor = usePlateViewEditor({
     plugins: BaseEditorKit,
-    value,
+    initialValue: value,
   });
 
   return <PlateView editor={editor} />;
@@ -271,7 +271,7 @@ export default async function Page() {
     // plugins: [BaseHeadingPlugin, /* ...other base plugins */],
     plugins: [], // Add your base plugins
     components: staticComponents,
-    value: serverContent,
+    initialValue: serverContent,
   });
 
   return (

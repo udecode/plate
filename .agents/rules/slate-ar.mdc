@@ -39,7 +39,8 @@ Use this as the single Slate v2 wrapper around
 ## Do Not Use When
 
 - The bug is a direct correctness failure with no oracle. Use `slate-patch`.
-- The output is an architecture/API proposal for user review. Use `plite-plan`.
+- The output is a public call-shape proposal for user review. Use `best-api`;
+  use `plite-plan` afterward for substrate runtime/adoption planning.
 - The output is proactive architecture cleanup, deslop, refactor discovery,
   module consolidation, or testability/agent-navigation improvement. Use
   `architecture-cleanup`, then route broad accepted decisions.
@@ -57,7 +58,8 @@ Use this as the single Slate v2 wrapper around
 - `architecture-cleanup`: source-backed architecture/code cleanup before
   measured AR packets.
 - `slate-patch`: concrete bugs, missing oracles, and direct correctness fixes.
-- `plite-plan`: public API/runtime architecture decisions.
+- `best-api`: public API design/review.
+- `plite-plan`: runtime architecture and adoption after the target is clear.
 
 Do not create more Slate AR shortcut skills. New recurring behavior belongs as
 a mode in this rule or a row in `docs/plans/templates/slate-ar.md`.
@@ -233,7 +235,8 @@ Boundary:
 - `testing`, `tdd`, `editor-test-harvester`, and `slate-patch` own missing
   oracle design;
 - `slate-patch` owns real correctness failures;
-- `plite-plan` owns API/runtime redesign;
+- `best-api` owns public call-shape redesign; `plite-plan` owns runtime and
+  adoption;
 - perf mode owns speed optimization after correctness is stable.
 
 Do not spin a failing gate forever. If a valid gate fails twice with the same
@@ -315,7 +318,7 @@ Routing:
 - performance gap: `slate-ar perf`;
 - architecture/refactor/testability cleanup gap:
   `architecture-cleanup`;
-- public API/runtime architecture gap: `plite-plan`;
+- public API gap: `best-api`; runtime/adoption gap: `plite-plan`;
 - generic measured loop gap: `slate-ar`.
 
 `quality_gap=0` closes the accepted checklist only. It does not mean discovery
@@ -478,7 +481,8 @@ Start with status, then choose owners in this order:
 1. `slate-research` for unknown current-state gaps, external prior art, OSS
    evidence, or source synthesis;
 2. quality mode for accepted quality-gap checklist execution;
-3. `plite-plan` only when the remaining issue needs public API/runtime design;
+3. `best-api` when the remaining issue needs public API design; `plite-plan`
+   when it needs runtime/adoption planning;
 4. `slate-patch` for known bugs or missing behavior oracles;
 5. gate mode for existing editor behavior proof;
 6. perf mode for benchmark-backed perf targets;

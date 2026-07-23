@@ -73,8 +73,10 @@ describe('BaseTablePlugin', () => {
       plugins: [BaseTablePlugin],
     });
 
-    editor.plugin(BaseTablePlugin).setOption('_selectedCellIds', ['c1']);
-    editor.plugin(BaseTablePlugin).setOption('_selectedTableIds', ['t1']);
+    editor.plugin(BaseTablePlugin).setOption('_selectionOverrides', {
+      cellIds: ['c1'],
+      tableIds: ['t1'],
+    });
 
     expect(
       editor.plugin(BaseTablePlugin).getOption('isCellSelected', 'c1')

@@ -381,12 +381,12 @@ const value: MyValue = [{
 
 const editorInferred = createPlateEditor({
   plugins: [TablePlugin, LinkPlugin],
-  value,
+  initialValue: value,
 });
 
 // 或 
 const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>({
   plugins: [TablePlugin, LinkPlugin],
-  value,
+  initialValue: value,
 });
 ```

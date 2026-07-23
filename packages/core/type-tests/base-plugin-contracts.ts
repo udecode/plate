@@ -69,23 +69,23 @@ const CalloutPlugin = createBasePlugin<CalloutConfig>({
     dismissible: false,
     variant: 'info',
   },
-}).extendEditorApi(({ plugin }) => ({
+}).extendEditorApi(({ setOption }) => ({
   setVariant: (variant) => {
-    plugin.options.variant = variant;
+    setOption('variant', variant);
   },
 }));
 
-const ConfiguredCalloutPlugin = CalloutPlugin.configure({
+const ConfiguredCalloutPlugin = CalloutPlugin.extend({
   options: {
-    variant: 'warning',
+    dismissible: true,
   },
 })
-  .extend({
+  .extendExtension(baseArrayExtension)
+  .configure({
     options: {
-      dismissible: true,
+      variant: 'warning',
     },
-  })
-  .extendExtension(baseArrayExtension);
+  });
 
 CalloutPlugin.configure(({ getOptions, plugin }) => {
   const configuredVariant: 'info' | 'warning' = getOptions().variant;
@@ -95,7 +95,7 @@ CalloutPlugin.configure(({ getOptions, plugin }) => {
   void configuredVariant;
 
   return { options: { variant: 'warning' } };
-}).configure({ options: { dismissible: true } });
+});
 
 const ShortcutTargetPlugin = createBasePlugin({
   key: 'shortcutTargetContracts',
@@ -108,6 +108,23 @@ const ShortcutTargetPlugin = createBasePlugin({
     api: () => true,
     both: () => true,
   }));
+
+type DeclaredBaseTx = {
+  run: (value: 'typed', options?: { count?: number }) => number;
+};
+
+const DeclaredBaseTxPlugin = createBasePlugin({
+  key: 'declaredBaseTx',
+}).extendTx<DeclaredBaseTx>(() => () => ({
+  run: (value, options = {}) => {
+    const exactValue: 'typed' = value;
+    const exactCount: number | undefined = options.count;
+
+    return exactValue.length + (exactCount ?? 0);
+  },
+}));
+
+void DeclaredBaseTxPlugin;
 
 ShortcutTargetPlugin.extend({
   shortcuts: {

@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from '@platejs/core';
+import { traverseHtmlElements } from '@platejs/core/internal';
 
 import { isDocxFootnote } from './isDocxFootnote';
 

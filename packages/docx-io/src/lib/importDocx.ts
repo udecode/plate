@@ -1,6 +1,6 @@
 import { cleanDocx } from '@platejs/docx';
 import mammoth from 'mammoth';
-import { deserializeHtml } from '@platejs/core';
+import { type BaseEditor, HtmlPlugin } from '@platejs/core';
 
 import {
   extractComments,
@@ -8,7 +8,7 @@ import {
 } from './preprocessMammothHtml';
 import type { ImportDocxOptions, ImportDocxResult } from './types';
 
-type DocxImportEditor = Parameters<typeof deserializeHtml>[0];
+type DocxImportEditor = BaseEditor;
 
 /**
  * Parse HTML string to DOM element for deserialization.
@@ -33,8 +33,8 @@ function parseHtmlElement(html: string): HTMLElement | undefined {
  * const arrayBuffer = await file.arrayBuffer();
  * const result = await importDocx(editor, arrayBuffer);
  *
- * // Insert nodes into editor
- * editor.update.nodes.insert(result.nodes);
+ * // Fit and replace the current selection with the imported document content
+ * editor.update.fragment.replace(result.nodes);
  *
  * // Handle comments separately
  * for (const comment of result.comments) {
@@ -80,7 +80,7 @@ export async function importDocx(
   }
 
   // Deserialize HTML to Plate nodes
-  const nodes = deserializeHtml(editor, { element });
+  const nodes = editor.plugin(HtmlPlugin).api.deserialize({ element });
 
   // Extract comments
   const comments = extractComments(commentById, commentIds);

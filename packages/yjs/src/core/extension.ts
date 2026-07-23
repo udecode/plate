@@ -10,9 +10,62 @@ import {
 } from '@platejs/plite/internal';
 
 import { YjsController } from './controller';
-import type { YjsExtensionOptions } from './types';
+import type {
+  YjsExtensionOptions,
+  YjsRemoteCursorData,
+  YjsState,
+  YjsTx,
+} from './types';
 
 const activeControllers = new WeakMap<Editor, YjsController>();
+
+const createDeferredYjsState = (getController: () => YjsController) => {
+  const state: YjsState = {
+    awarenessRevision: () => getController().state().awarenessRevision(),
+    clientId: () => getController().state().clientId(),
+    connected: () => getController().state().connected(),
+    doc: () => getController().state().doc(),
+    paused: () => getController().state().paused(),
+    providerRevision: () => getController().state().providerRevision(),
+    providerStatus: () => getController().state().providerStatus(),
+    providerSynced: () => getController().state().providerSynced(),
+    remoteCursor: <
+      TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+    >(
+      clientId: number
+    ) => getController().state().remoteCursor<TCursorData>(clientId),
+    remoteCursors: <
+      TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+    >() => getController().state().remoteCursors<TCursorData>(),
+    root: () => getController().state().root(),
+    subscribeAwareness: (listener) =>
+      getController().state().subscribeAwareness(listener),
+    subscribeProvider: (listener) =>
+      getController().state().subscribeProvider(listener),
+    trace: () => getController().state().trace(),
+  };
+
+  return Object.freeze(state);
+};
+
+const createDeferredYjsTx = (getController: () => YjsController): YjsTx =>
+  Object.freeze({
+    clearSelection: () => getController().tx().clearSelection(),
+    clearTrace: () => getController().tx().clearTrace(),
+    connect: () => getController().tx().connect(),
+    disconnect: () => getController().tx().disconnect(),
+    pause: () => getController().tx().pause(),
+    reconcile: () => getController().tx().reconcile(),
+    reconnect: () => getController().tx().reconnect(),
+    redo: () => getController().tx().redo(),
+    resume: () => getController().tx().resume(),
+    retireSharedEffectPeer: (peerId) =>
+      getController().tx().retireSharedEffectPeer(peerId),
+    sendCursorData: (data) => getController().tx().sendCursorData(data),
+    sendSelection: (range, data) =>
+      getController().tx().sendSelection(range, data),
+    undo: () => getController().tx().undo(),
+  });
 
 const canonicalizeRootContent = (
   editor: Editor<Value>,
@@ -160,12 +213,12 @@ export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
     },
     state: {
       yjs(_state, editor) {
-        return getController(editor).state();
+        return createDeferredYjsState(() => getController(editor));
       },
     },
     tx: {
       yjs(_tx, editor) {
-        return getController(editor).tx();
+        return createDeferredYjsTx(() => getController(editor));
       },
     },
     validateConfiguration({ editor, schema }) {

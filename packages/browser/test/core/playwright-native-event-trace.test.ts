@@ -184,4 +184,43 @@ describe('playwright native event trace', () => {
       []
     );
   });
+
+  test('requires a positive integer native trace entry limit', async () => {
+    const { root } = installEditorDOM();
+    const locator = createRootLocator(root);
+
+    for (const maxEntries of [
+      0,
+      -1,
+      0.5,
+      Number.POSITIVE_INFINITY,
+      Number.NaN,
+    ]) {
+      await expect(
+        startPliteBrowserNativeEventTrace(locator, { maxEntries })
+      ).rejects.toThrow();
+    }
+  });
+
+  test('keeps exactly the requested positive number of trace entries', async () => {
+    const { root } = installEditorDOM();
+    const locator = createRootLocator(root);
+
+    await startPliteBrowserNativeEventTrace(locator, {
+      events: ['beforeinput', 'input'],
+      maxEntries: 1,
+    });
+    dispatchInputEvent(root, 'beforeinput', {
+      data: 'a',
+      inputType: 'insertText',
+    });
+    dispatchInputEvent(root, 'input', {
+      data: 'a',
+      inputType: 'insertText',
+    });
+
+    expect((await takePliteBrowserNativeEventTrace(locator)).entries).toEqual([
+      expect.objectContaining({ type: 'input' }),
+    ]);
+  });
 });

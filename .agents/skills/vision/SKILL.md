@@ -1,5 +1,5 @@
 ---
-description: Route to root VISION.md and relevant docs/vision detail files. Use when a task mentions vision, taste, north star, checkpoint zero, long-term architecture, public API shape, proof standards, Slate/Plate boundaries, or autonomous maintainer fit.
+description: Route to root VISION.md and relevant docs/vision detail files. Use when a task mentions vision, taste, north star, checkpoint zero, long-term architecture, public API doctrine, proof standards, Plite/Plate boundaries, or autonomous maintainer fit.
 name: vision
 metadata:
   skiller:
@@ -25,6 +25,10 @@ and essential summary. Detailed owner doctrine lives in `docs/vision/*.md`.
    stale detail file or root summary during the same workflow.
 5. Read the owner skill/rule for execution details.
 6. Put checkpoint evidence in the active plan, not in this skill.
+
+For a concrete reusable public API shape, read this doctrine and then use
+`best-api design` or `best-api review`. Vision owns durable direction;
+`best-api` owns applying it to call sites.
 
 Do not duplicate doctrine here. When reusable vision changes, edit root
 `VISION.md` for essential always-read doctrine and the relevant

@@ -96,7 +96,7 @@ const initialValue: Value = [
 export default function App() {
   const editor = usePlateEditor({
     plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin], // 添加标记插件
-    value: initialValue,         // 设置初始内容
+    initialValue,         // 设置初始内容
   });
 
   return (
@@ -180,7 +180,7 @@ export default function App() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -280,7 +280,7 @@ export default function App() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: () => {
+    initialValue: () => {
       const savedValue = localStorage.getItem('installation-react-demo');
       return savedValue ? JSON.parse(savedValue) : initialValue;
     },

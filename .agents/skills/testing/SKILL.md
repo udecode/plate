@@ -151,10 +151,12 @@ cross-package dev dependencies to support an overbuilt fake runtime.
   - non-allowlisted `createPlateEditor` seams
 - Use `bun run test:profile` for the fast suite when deciding whether a spec belongs in the slow lane. `pnpm test:slowest` and `pnpm check` enforce those thresholds.
 - For rule-override hotspots, extract one editor helper and table-drive repeated node-type cases instead of cloning the same transform assertions.
-- For plugin-composition hotspots, extract helpers before adding more inline setup.
+- For plugin-composition hotspots, keep one-owner setup inline. Extract only
+  when reuse or an independent contract earns another owner.
 - Adapt upstream invariants when local runtime semantics differ. Keep the invariant, rewrite the fixture around the real public contract.
 - Treat tiny one-branch crumbs as crumbs. Do not let a coverage number talk you into fake work.
-- Penalize giant files with poor test ROI unless they hold a central contract you actually care about during the next rewrite.
+- Penalize scattered ownership and poor test ROI, not file length. A large
+  coherent owner is valid.
 
 ## Package Rules
 
@@ -201,7 +203,9 @@ cross-package dev dependencies to support an overbuilt fake runtime.
 
 ### `selection`
 
-- `moveSelection` and `shiftSelection` stay on Plate. They are genuinely Plate-bound exceptions, not cleanup debt.
+- Test current `moveSelection` and `shiftSelection` behavior at their shipped
+  owner. If ownership or public shape is disputed, route the decision to
+  `best-api` and the relevant layer plan; testing does not decide it.
 
 ### `docx`, `docx-io`, and app integration
 

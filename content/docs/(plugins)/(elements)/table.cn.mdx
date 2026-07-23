@@ -189,9 +189,9 @@ const editor = createPlateEditor({
 
 ## API 参考
 
-### editor.api.create.table
+### editor.plugin(TablePlugin).api.create
 
-<API name="create.table">
+<API name="create">
 <APIParameters>
 <APIItem name="options" type="GetEmptyTableNodeOptions" optional>
 扩展 `GetEmptyRowNodeOptions`
@@ -218,11 +218,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.create.tableCell
+### editor.plugin(TablePlugin).api.createCell
 
 创建表格的空单元格节点
 
-<API name="create.tableCell">
+<API name="createCell">
 <APIOptions>
 <APIItem name="header" type="boolean" optional>
 设为 `true` 表示创建表头单元格
@@ -232,7 +232,7 @@ const editor = createPlateEditor({
 </APIItem>
 <APIItem name="children" type="Descendant[]" optional>
 新单元格节点的子元素
-- **默认值:** `[editor.api.create.block()]`
+- **默认值:** `[{ children: [{ text: '' }], type: editor.getType(KEYS.p) }]`
 </APIItem>
 </APIOptions>
 
@@ -243,11 +243,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.create.tableRow
+### editor.plugin(TablePlugin).api.createRow
 
 创建具有指定列数的空行节点
 
-<API name="create.tableRow">
+<API name="createRow">
 <APIOptions>
 <APIItem name="header" type="boolean" optional>
 设为 `true` 表示创建表头行
@@ -265,7 +265,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getCellBorders
+### editor.plugin(TablePlugin).api.getCellBorders
 
 获取表格单元格的边框样式，处理首行和首列单元格的特殊情况
 
@@ -314,7 +314,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getCellChildren
+### editor.plugin(TablePlugin).api.getCellChildren
 
 获取表格单元格的子元素
 
@@ -332,7 +332,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getCellSize
+### editor.plugin(TablePlugin).api.getCellSize
 
 获取表格单元格的宽度和最小高度，考虑列跨度和列宽设置
 
@@ -356,7 +356,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getColSpan
+### editor.plugin(TablePlugin).api.getColSpan
 
 获取表格单元格的列跨度
 
@@ -375,7 +375,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>  
 
-### editor.api.table.getRowSpan
+### editor.plugin(TablePlugin).api.getRowSpan
 
 获取表格单元格的行跨度
 
@@ -394,11 +394,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### getCellType
+### editor.plugin(TablePlugin).api.getCellTypes
 
 获取插件单元格类型
 
-<API name="getCellType">
+<API name="getCellTypes">
 <APIReturns>
 
 <APIItem type="string[]">
@@ -408,10 +408,10 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### getNextTableCell
+### editor.plugin(TablePlugin).api.getNextCell
 
 获取表格中的下一个单元格
-<API name="getNextTableCell">
+<API name="getNextCell">
 <APIParameters>
   <APIItem name="currentCell" type="NodeEntry">
     当前单元格的 entry
@@ -431,11 +431,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### getPreviousTableCell
+### editor.plugin(TablePlugin).api.getPreviousCell
 
 获取表格中的上一个单元格
 
-<API name="getPreviousTableCell">
+<API name="getPreviousCell">
 <APIParameters>
   <APIItem name="currentCell" type="NodeEntry">
     当前单元格的 entry
@@ -455,11 +455,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### getTableColumnCount
+### editor.plugin(TablePlugin).api.getColumnCount
 
 获取表格列数
 
-<API name="getTableColumnCount">
+<API name="getColumnCount">
 <APIParameters>
   <APIItem name="tableNode" type="Element">
     要获取列数的表格节点
@@ -473,11 +473,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### getTableColumnIndex
+### editor.plugin(TablePlugin).api.getColumnIndex
 
 获取单元格在表格中的列索引
 
-<API name="getTableColumnIndex">
+<API name="getColumnIndex">
 <APIParameters>
   <APIItem name="cellNode" type="Element">
     要获取列索引的单元格节点
@@ -491,11 +491,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### getTableEntries
+### editor.plugin(TablePlugin).api.getEntries
 
 根据当前选区或指定位置获取表格、行和单元格的节点 entry
 
-<API name="getTableEntries">
+<API name="getEntries">
 <APIOptions>
 <APIItem name="at" type="Location | null" optional>
 表格单元格所在位置
@@ -516,11 +516,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### getTableGridAbove
+### editor.plugin(TablePlugin).api.getGridAbove
 
 根据指定格式（表格或单元格）获取锚点和焦点位置上方的子表格
 
-<API name="getTableGridAbove">
+<API name="getGridAbove">
 <APIOptions>
 <APIItem name="format" type="string" optional>
 要获取的子表格格式
@@ -533,11 +533,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### getTableGridByRange
+### editor.plugin(TablePlugin).api.getGridByRange
 
 获取指定范围内两个单元格路径之间的子表格
 
-<API name="getTableGridByRange">
+<API name="getGridByRange">
 <APIOptions>
 <APIItem name="at" type="Range">
 指定起始和结束单元格路径的范围
@@ -553,11 +553,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### getTableRowIndex
+### editor.plugin(TablePlugin).api.getRowIndex
 
 获取单元格在表格中的行索引
 
-<API name="getTableRowIndex">
+<API name="getRowIndex">
 <APIParameters>
   <APIItem name="cellNode" type="Element">
     要获取行索引的单元格节点
@@ -571,11 +571,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### getTopTableCell
+### editor.plugin(TablePlugin).api.getTopCell
 
 获取表格中当前单元格上方的单元格
 
-<API name="getTopTableCell">
+<API name="getTopCell">
 <APIParameters>
   <APIItem name="at" type="Path" optional>
     当前单元格路径。若未提供，函数将在编辑器中搜索当前单元格
@@ -589,11 +589,11 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### isTableBorderHidden
+### editor.plugin(TablePlugin).api.isBorderHidden
 
 检查表格单元格或表格本身的指定方向边框是否隐藏
 
-<API name="isTableBorderHidden">
+<API name="isBorderHidden">
 <APIParameters>
   <APIItem name="border" type="'top' | 'left' | 'bottom' | 'right'">
     要检查的边框方向
@@ -607,13 +607,17 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
+## 编辑行为
+
+`TablePlugin` 负责键盘、剪贴板、删除、粘贴、规范化和选区行为。表格变更使用插件的作用域更新入口；安装插件后，其余行为会自动生效。
+
 ## 转换操作
 
-### `editor.update.insert.table`
+### `editor.plugin(TablePlugin).update.insert`
 
 在当前选区插入表格（若编辑器中无现有表格）。选中插入表格的起始位置。
 
-<API name="insert.table">
+<API name="insert">
 <APIParameters>
 <APIItem name="getEmptyTableNodeOptions" type="GetEmptyTableNodeOptions" optional>
 扩展 `GetEmptyRowNodeOptions`
@@ -638,11 +642,11 @@ const editor = createPlateEditor({
 </APIParameters>
 </API>
 
-### `editor.update.insert.tableColumn`
+### `editor.plugin(TablePlugin).update.insertColumn`
 
 在表格的当前选区或指定单元格路径处插入一列。
 
-<API name="insert.tableColumn">
+<API name="insertColumn">
 <APIOptions>
 <APIItem name="at" type="Path" optional>
 要插入列的单元格的确切路径。这会覆盖 `fromCell` 选项。
@@ -662,11 +666,11 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `editor.update.insert.tableRow`
+### `editor.plugin(TablePlugin).update.insertRow`
 
 在表格的当前选区或指定行路径处插入一行。
 
-<API name="insert.tableRow">
+<API name="insertRow">
 <APIOptions>
 <APIItem name="at" type="Path" optional>
 要插入行的确切路径。传入表格路径可在表格末尾插入。这将覆盖 `fromRow`。
@@ -686,19 +690,19 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `editor.update.remove.tableColumn`
+### `editor.plugin(TablePlugin).update.removeColumn`
 
 删除表格中包含选中单元格的列。
 
-### `editor.update.remove.tableRow`
+### `editor.plugin(TablePlugin).update.removeRow`
 
 删除表格中包含选中单元格的行。
 
-### `editor.update.remove.table`
+### `editor.plugin(TablePlugin).update.remove`
 
 删除整个表格。
 
-### `editor.update.table.merge`
+### `editor.plugin(TablePlugin).update.merge`
 
 将多个选中的单元格合并为一个。
 
@@ -708,7 +712,7 @@ const editor = createPlateEditor({
 - 包含所有合并单元格的组合内容（仅非空单元格）
 - 继承第一个选中单元格的表头状态
 
-### `editor.update.table.split`
+### `editor.plugin(TablePlugin).update.split`
 
 将合并的单元格拆分回单独的单元格。
 
@@ -718,11 +722,11 @@ const editor = createPlateEditor({
 - 将原始单元格的内容放在第一个单元格中
 - 为剩余空间创建空单元格
 
-### `moveSelectionFromCell(editor, options?)`
+### `editor.plugin(TablePlugin).update.moveSelection`
 
 在表格内按单元格单位移动选区。
 
-<API name="moveSelectionFromCell">
+<API name="moveSelection">
 <APIOptions>
 <APIItem name="at" type="Location" optional>
 要从中移动选区的位置。
@@ -739,7 +743,7 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `setBorderSize(editor, size, options?)`
+### `editor.plugin(TablePlugin).update.setBorderSize`
 
 设置表格单元格中指定边框的大小。
 
@@ -766,134 +770,50 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `setTableColSize(editor, options, tableOptions?)`
+### `editor.plugin(TablePlugin).update.setColumnSize`
 
 设置表格中特定列的宽度。
 
-<API name="setTableColSize">
-<APIOptions>
-<APIItem name="colIndex" type="number" optional>
-要设置宽度的列索引。
+<API name="setColumnSize">
+<APIParameters>
+<APIItem name="value" type="{ colIndex: number; width: number }">
+要应用的列索引和宽度。
 </APIItem>
-<APIItem name="width" type="number" optional>
-所需的列宽度。
+<APIItem name="options" type="TableFindOptions" optional>
+定位表格的选项。
 </APIItem>
-<APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
-查找表格节点的其他选项。
-</APIItem>
-</APIOptions>
+</APIParameters>
 </API>
 
-### `setTableMarginLeft(editor, options, tableOptions?)`
+### `editor.plugin(TablePlugin).update.setMarginLeft`
 
 设置表格的左边距。
 
-<API name="setTableMarginLeft">
-<APIOptions>
-<APIItem name="marginLeft" type="number">
-包含所需左边距值的对象。
+<API name="setMarginLeft">
+<APIParameters>
+<APIItem name="value" type="{ marginLeft: number }">
+要应用的左边距。
 </APIItem>
-<APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
-查找表格节点的其他选项。
+<APIItem name="options" type="TableFindOptions" optional>
+定位表格的选项。
 </APIItem>
-</APIOptions>
+</APIParameters>
 </API>
 
-### `setTableRowSize(editor, options, tableOptions?)`
+### `editor.plugin(TablePlugin).update.setRowSize`
 
 设置表格行的大小（高度）。
 
-<API name="setTableRowSize">
-<APIOptions>
-<APIItem name="rowIndex" type="number">
-要设置大小的行索引。
-</APIItem>
-<APIItem name="height" type="number">
-所需的行高度。
-</APIItem>
-<APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
-查找表格节点的其他选项。
-</APIItem>
-</APIOptions>
-</API>
-
-## 插件扩展
-
-### `onKeyDownTable`
-
-处理表格的键盘事件。
-
-<API name="onKeyDownTable">
+<API name="setRowSize">
 <APIParameters>
-  <APIItem name="plugin" type="PlatePlugin">
-    Plate 插件。
-  </APIItem>
+<APIItem name="value" type="{ height: number; rowIndex: number }">
+要应用的行索引和高度。
+</APIItem>
+<APIItem name="options" type="TableFindOptions" optional>
+定位表格的选项。
+</APIItem>
 </APIParameters>
-
-<APIReturns>
-  <APIItem type="KeyboardHandlerReturnType">
-    键盘处理程序返回类型。
-  </APIItem>
-</APIReturns>
 </API>
-
-### `withDeleteTable`
-
-防止删除表格中的单元格。
-
-### `withGetFragmentTable`
-
-如果选区在表格内，它会获取选区上方的子表格作为片段。这在复制和粘贴表格单元格时很有用。
-
-### `withInsertFragmentTable`
-
-如果插入表格：
-
-- 如果选区锚点上方的块是表格，则用插入的表格替换上方的每个单元格，直到超出边界。选中插入的单元格。
-- 如果锚点上方没有表格，检查选区是否在表格内。如果是，找到锚点位置的单元格并用插入的片段替换其子元素。
-
-### `withInsertTextTable`
-
-如果选区已展开：
-
-- 检查选区是否在表格内。如果是，将选区折叠到焦点边缘。
-
-### `withNormalizeTable`
-
-通过执行以下操作规范化表格结构：
-
-- 如果单元格子元素是文本，则将其包装在段落中。
-- 解包不是有效表格元素的节点。
-- 如果指定了初始列大小，则为表格设置初始列大小。
-
-### `withSelectionTable`
-
-通过执行以下操作处理表格选区：
-
-- 当锚点在表格内且焦点在表格前后的块中时，调整选区的焦点。
-- 当焦点在表格内且锚点在表格前后的块中时，调整选区的焦点。
-- 如果前一个和新选区在不同的单元格中，则覆盖从单元格的选区。
-
-### `withSetFragmentDataTable`
-
-通过执行以下操作处理复制或剪切表格数据时设置剪贴板数据：
-
-- 检查是否存在表格条目和选中的单元格条目。
-- 通过复制单元格内容而不是表格结构来处理单单元格复制或剪切操作。
-- 创建包含选中单元格内容的表格结构。
-- 将文本、HTML、CSV、TSV 和 Plite 片段数据设置到剪贴板。
-
-### `withTable`
-
-通过应用以下高阶函数增强编辑器实例的表格相关功能：
-
-- `withNormalizeTable`：规范化表格结构和内容。
-- `withDeleteTable`：防止删除表格中的单元格。
-- `withGetFragmentTable`：处理复制或剪切表格单元格时获取片段数据。
-- `withInsertFragmentTable`：处理插入表格片段。
-- `withInsertTextTable`：处理在表格中插入文本。
-- `withSelectionTable`：处理调整表格内的选区。
-- `withSetFragmentDataTable`：处理复制或剪切表格数据时设置片段数据。
 
 ## Hooks
 

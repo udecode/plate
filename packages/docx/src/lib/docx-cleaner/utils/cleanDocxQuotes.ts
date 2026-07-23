@@ -1,4 +1,4 @@
-import { replaceTagName, traverseHtmlElements } from '@platejs/core';
+import { replaceTagName, traverseHtmlElements } from '@platejs/core/internal';
 
 /** Replace p.MsoQuote elements with blockquote. */
 export const cleanDocxQuotes = (rootNode: Node): void => {

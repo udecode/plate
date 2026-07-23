@@ -100,7 +100,7 @@ const initialValue: Value = [
 export default function MyEditorPage() {
   const editor = usePlateEditor({
     plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin], // Add the mark plugins
-    value: initialValue,         // Set initial content
+    initialValue,         // Set initial content
   });
 
   return (
@@ -186,7 +186,7 @@ export default function MyEditorPage() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -288,7 +288,7 @@ export default function MyEditorPage() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: () => {
+    initialValue: () => {
       const savedValue = localStorage.getItem('installation-next-demo');
       return savedValue ? JSON.parse(savedValue) : initialValue;
     },

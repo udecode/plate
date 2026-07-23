@@ -1838,9 +1838,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
       platejs:
         specifier: workspace:^
         version: link:../plate

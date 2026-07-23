@@ -45,8 +45,8 @@ export const DocxPlugin = createBasePlugin({
     plugins: {
       [KEYS.html]: {
         parser: {
-          transformData: ({ data, dataTransfer }) => {
-            const rtf = dataTransfer.getData('text/rtf');
+          transformData: ({ data, source }) => {
+            const rtf = source.getData('text/rtf');
 
             return cleanDocx(data, rtf);
           },
@@ -72,8 +72,8 @@ export const DocxPlugin = createBasePlugin({
       ),
       img: {
         parser: {
-          query: ({ dataTransfer }) => {
-            const data = dataTransfer.getData('text/html');
+          query: ({ source }) => {
+            const data = source.getData('text/html');
             const { body } = new DOMParser().parseFromString(data, 'text/html');
 
             return !isDocxContent(body);

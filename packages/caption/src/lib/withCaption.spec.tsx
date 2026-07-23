@@ -3,6 +3,7 @@ import {
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
+import { getPlateRuntime } from '@platejs/core/internal';
 import { schema, type Selection, type Value } from '@platejs/plite';
 
 import { BaseCaptionPlugin } from './BaseCaptionPlugin';
@@ -29,7 +30,7 @@ const createCaptionEditor = (value: Value, selection: Selection = null) =>
   });
 
 const runShortcut = (editor: BaseEditor, name: string) =>
-  editor.runtime.shortcuts[`caption.${name}`]?.handler?.({
+  getPlateRuntime(editor).shortcuts[`caption.${name}`]?.handler?.({
     editor,
     event: {
       key: name === 'focusCaptionForward' ? 'ArrowDown' : 'ArrowUp',
