@@ -1,5 +1,14 @@
-import { createBasePlugin, getInjectMatch } from '@platejs/core';
-import type { Element, NodeSetNodesOptions } from '@platejs/plite';
+import {
+  type InferConfig,
+  createBasePlugin,
+  getInjectMatch,
+} from '@platejs/core';
+import {
+  type Element,
+  type NodeSetNodesOptions,
+  property,
+  target,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 export type Alignment =
@@ -10,9 +19,19 @@ export type Alignment =
   | 'right'
   | 'start';
 
+const defaultTargetPluginKeys: readonly string[] = [KEYS.p];
+
 /** Creates a plugin that adds alignment functionality to the editor. */
 export const BaseTextAlignPlugin = createBasePlugin({
   key: KEYS.textAlign,
+  schema: ({ own, plugins, targetPluginKeys }) => ({
+    properties: [
+      own.elementProperty(property.string(), {
+        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        typeChange: 'preserve-if-allowed',
+      }),
+    ],
+  }),
   inject: {
     isBlock: true,
     nodeProps: {
@@ -20,14 +39,13 @@ export const BaseTextAlignPlugin = createBasePlugin({
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
-    targetPlugins: [KEYS.p],
-    targetPluginToInject: ({ editor }) => ({
+    targetPluginToInject: ({ type }) => ({
       parsers: {
         html: {
           deserializer: {
-            parse: ({ element, node }) => {
+            parse: ({ element }) => {
               if (element.style.textAlign) {
-                node[editor.getType(KEYS.textAlign)] = element.style.textAlign;
+                return { [type]: element.style.textAlign };
               }
             },
           },
@@ -35,7 +53,8 @@ export const BaseTextAlignPlugin = createBasePlugin({
       },
     }),
   },
-  node: { type: 'align' },
+  targetPluginKeys: defaultTargetPluginKeys,
+  type: 'align',
 }).extendTx(({ editor, plugin, type }) => (tx) => ({
   set: (value: Alignment, options?: NodeSetNodesOptions<Element>) => {
     const { defaultNodeValue, nodeKey = type } = editor.getInjectProps(plugin);
@@ -58,3 +77,5 @@ export const BaseTextAlignPlugin = createBasePlugin({
     );
   },
 }));
+
+export type TextAlignConfig = InferConfig<typeof BaseTextAlignPlugin>;

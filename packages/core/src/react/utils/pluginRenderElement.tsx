@@ -1,14 +1,16 @@
 import React from 'react';
 
 import { useEditorReadOnly } from '@platejs/plite-react';
+import { useClaimEditableDOMCommit } from '@platejs/plite-react/internal';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { type PlateElementProps, PlateElement } from '../components';
 import { getEditorPlugin } from '../plugin';
-import { useEditorRef } from '../stores';
+import { useEditor } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -29,6 +31,8 @@ function ElementContent({
 }: PlateElementProps & { pluginContext?: Record<string, unknown> }) {
   const readOnly = useEditorReadOnly();
 
+  useClaimEditableDOMCommit();
+
   if (isEditOnly(readOnly, plugin, 'render')) return null;
 
   const { children: _children } = props;
@@ -46,7 +50,7 @@ function ElementContent({
 
   let children = _children;
 
-  editor.runtime.pluginCache.render.belowNodes.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     const wrapperContext = getEditorPlugin(editor, plugin as any) as any;
     const withHOC = plugin.render.belowNodes!;
@@ -69,7 +73,7 @@ function ElementContent({
     </Element>
   );
 
-  editor.runtime.pluginCache.render.aboveNodes.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     const wrapperContext = getEditorPlugin(editor, plugin as any) as any;
     const withHOC = plugin.render.aboveNodes!;
@@ -86,12 +90,12 @@ function ElementContent({
 }
 
 export function BelowRootNodes({ ...props }: any) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
 
   return (
     <>
-      {editor.runtime.pluginCache.render.belowRootNodes.map((key) => {
+      {getPlateRuntime(editor).pluginCache.render.belowRootNodes.map((key) => {
         const plugin = editor.getPlugin({ key });
 
         if (isEditOnly(readOnly, plugin, 'render')) return null;
@@ -106,7 +110,7 @@ export function BelowRootNodes({ ...props }: any) {
 }
 
 /**
- * Get a `Editable.renderElement` handler for `plugin.node.type`. If the type is
+ * Get a `Editable.renderElement` handler for `plugin.type`. If the type is
  * equals to the plite element type, render `plugin.render.node`. Else, return
  * `undefined` so the pipeline can check the next plugin.
  */

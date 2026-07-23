@@ -22,7 +22,7 @@ import { type Value, KEYS, nanoid, NodeApi } from 'platejs';
 import {
   Plate,
   type PlateEditor,
-  useEditorRef,
+  useEditor,
   usePlateEditor,
   usePluginOption,
 } from 'platejs/react';
@@ -93,7 +93,7 @@ export function Comment(props: {
     onEditorClick,
   } = props;
 
-  const editor = useEditorRef();
+  const editor = useEditor();
   const userInfo = usePluginOption(discussionPlugin, 'user', comment.userId);
   const currentUserId = usePluginOption(discussionPlugin, 'currentUserId');
 
@@ -161,7 +161,7 @@ export function Comment(props: {
   const commentEditor = useCommentEditor(
     {
       id: comment.id,
-      value: initialValue,
+      initialValue,
     },
     [initialValue]
   );
@@ -327,7 +327,7 @@ function CommentMoreDropdown(props: {
     onRemoveComment,
   } = props;
 
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   const selectedEditCommentRef = React.useRef<boolean>(false);
 
@@ -414,13 +414,12 @@ function CommentMoreDropdown(props: {
 }
 
 const useCommentEditor = (
-  options: { id?: string; value?: Value } = {},
+  options: { id?: string; initialValue?: Value } = {},
   deps: React.DependencyList = []
 ) => {
   const commentEditor = usePlateEditor(
     {
       id: 'comment',
-      value: [],
       plugins: BasicMarksKit,
       ...options,
     },
@@ -443,7 +442,7 @@ export function CommentCreateForm({
 }) {
   const discussions = usePluginOption(discussionPlugin, 'discussions');
 
-  const editor = useEditorRef();
+  const editor = useEditor();
   const commentId = useCommentId();
   const discussionId = discussionIdProp ?? commentId;
 
@@ -589,7 +588,7 @@ export function CommentCreateForm({
 
       <div className="relative flex grow gap-2">
         <Plate
-          onChange={({ value }) => {
+          onValueChange={({ value }) => {
             setCommentValue(value);
           }}
           editor={commentEditor}

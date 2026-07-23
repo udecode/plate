@@ -2,9 +2,10 @@
 title: Text-substitution autoformat authority
 type: open-question
 status: open
-updated: 2026-04-10
+updated: 2026-07-23
 related:
-  - docs/research/decisions/autoformat-families-are-profile-adjacent-input-assist-surfaces.md
+  - docs/research/decisions/autoformat-families-are-input-assist-surfaces.md
+  - docs/research/concepts/behavior-packaging-candidates.md
   - docs/editor-behavior/markdown-editing-spec.md
   - docs/editor-behavior/editor-protocol-matrix.md
 ---
@@ -65,6 +66,6 @@ The unresolved question is how much of this family should be justified by:
 - local current Plate contract
 - future stronger Typora / Obsidian / Milkdown evidence
 
-until that evidence is compiled, this family should stay explicit as a
-profile-adjacent current contract with thinner external grounding than block or
-mark shorthand
+Until that evidence is compiled, keep this family as an explicit app-kit-owned
+current contract with thinner external grounding than block or mark shorthand.
+Its public packaging still requires the behavior-promotion protocol.

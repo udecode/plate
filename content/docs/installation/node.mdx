@@ -61,7 +61,7 @@ const value: Value = [
 
 const editor = createBaseEditor({
   plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin],
-  value,
+  initialValue: value,
 });
 
 const plainText = editor.api.string([]);
@@ -71,27 +71,22 @@ console.info(plainText);
 
 ### Read and Write Markdown
 
-Add `MarkdownPlugin` when the script needs Markdown helpers. Call
-`deserializeMd` and `serializeMd` directly for one-off conversion scripts.
+Add `MarkdownPlugin` when the script needs Markdown conversion. Use the
+editor's `markdown` API for both directions.
 
 ```ts showLineNumbers title="scripts/markdown-io.ts"
 import {
   BaseBasicBlocksPlugin,
   BaseBasicMarksPlugin,
 } from '@platejs/basic-nodes';
-import {
-  MarkdownPlugin,
-  deserializeMd,
-  serializeMd,
-} from '@platejs/markdown';
+import { MarkdownPlugin } from '@platejs/markdown';
 import { createBaseEditor } from 'platejs';
 
 const editor = createBaseEditor({
   plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
 });
 
-const value = deserializeMd(
-  editor,
+const value = editor.api.markdown.deserialize(
   [
     '# Migration Note',
     '',
@@ -99,7 +94,7 @@ const value = deserializeMd(
   ].join('\n')
 );
 
-const markdown = serializeMd(editor, { value });
+const markdown = editor.api.markdown.serialize({ value });
 
 console.info(markdown);
 ```
@@ -116,13 +111,13 @@ import {
   BaseBasicBlocksPlugin,
   BaseBasicMarksPlugin,
 } from '@platejs/basic-nodes';
-import { MarkdownPlugin, serializeMd } from '@platejs/markdown';
+import { MarkdownPlugin } from '@platejs/markdown';
 import { createBaseEditor } from 'platejs';
 
 export function normalizeHeadings(value: Value) {
   const editor = createBaseEditor({
     plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
-    value,
+    initialValue: value,
   });
 
   const insertAt = editor.read((state) => [state.value.root().length]);
@@ -143,7 +138,7 @@ export function normalizeHeadings(value: Value) {
   });
 
   return {
-    markdown: serializeMd(editor),
+    markdown: editor.api.markdown.serialize(),
     text: editor.read((state) => state.text.string([])),
     value: editor.read((state) => state.value.root()),
   };
@@ -174,8 +169,8 @@ export function normalizeHeadings(value: Value) {
 | `editor.read((state) => state.text.string([]))` | `platejs` | Reads text from the whole document. |
 | `editor.update((tx) => tx.nodes.set(...))` | `platejs` | Updates matching nodes. Use `at: []` for document-wide transforms. |
 | `editor.update((tx) => tx.nodes.insert(...))` | `platejs` | Inserts nodes at a path. |
-| `deserializeMd` | `@platejs/markdown` | Converts Markdown into a Plate value. |
-| `serializeMd` | `@platejs/markdown` | Converts the editor value or an explicit `value` option to Markdown. |
+| `editor.api.markdown.deserialize` | `@platejs/markdown` | Converts Markdown into a Plate value. |
+| `editor.api.markdown.serialize` | `@platejs/markdown` | Converts the editor value or an explicit `value` option to Markdown. |
 
 ## Next Steps
 

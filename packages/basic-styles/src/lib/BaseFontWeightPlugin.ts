@@ -1,8 +1,10 @@
 import { createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 export const BaseFontWeightPlugin = createBasePlugin({
   key: KEYS.fontWeight,
+  schema: { mark: property.string() },
   inject: {
     nodeProps: {
       nodeKey: 'fontWeight',
@@ -11,7 +13,6 @@ export const BaseFontWeightPlugin = createBasePlugin({
   parsers: {
     html: {
       deserializer: {
-        isLeaf: true,
         rules: [
           {
             validStyle: {

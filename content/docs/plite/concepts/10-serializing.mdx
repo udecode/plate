@@ -16,9 +16,9 @@ const documentValue = editor.read.value();
 const children = documentValue.children;
 ```
 
-For single-root editors, `<Plite onChange>` gives the current provider root
-value. Use `editor.read.value()` when you need extra roots or persistent meta
-fields. See [Document Meta](14-document-state).
+For single-root editors, `<Plite onValueChange>` gives the current mounted-root
+value in its callback context. Use `editor.read.value()` when you need extra
+roots or persistent meta fields. See [Document Meta](14-document-state).
 
 ## Plain Text
 
@@ -43,7 +43,7 @@ custom elements map to HTML.
 import escapeHtml from "escape-html";
 import { ElementApi, TextApi, type Descendant } from "@platejs/plite";
 
-const serializeHtml = (node: Descendant): string => {
+const serializeNodeToHtml = (node: Descendant): string => {
   if (TextApi.isText(node)) {
     let text = escapeHtml(node.text);
 
@@ -62,7 +62,7 @@ const serializeHtml = (node: Descendant): string => {
     return "";
   }
 
-  const children = node.children.map(serializeHtml).join("");
+  const children = node.children.map(serializeNodeToHtml).join("");
 
   switch (node.type) {
     case "quote":
@@ -76,7 +76,7 @@ const serializeHtml = (node: Descendant): string => {
   }
 };
 
-const html = editor.read.children().map(serializeHtml).join("");
+const html = editor.read.children().map(serializeNodeToHtml).join("");
 ```
 
 Escape text and attribute values before writing HTML strings. Keep sanitizer,
@@ -144,11 +144,19 @@ const deserializeHtml = (html: string): Descendant[] => {
   const document = new DOMParser().parseFromString(html, "text/html");
   return deserializeElement(document.body);
 };
+
+editor.update.fragment.replace(deserializeHtml(html));
 ```
 
 `@platejs/plite-hyperscript` is useful for tests and fixtures. Production
 deserialization should use explicit parser code so unsupported tags,
 attributes, marks, and unsafe URLs are handled deliberately.
+
+`fragment.replace` fits known-closed decoded nodes through the compiled schema.
+A parser that preserves open structural boundaries returns a validated
+`ContentSlice` and inserts it through `editor.update.slice.replace(slice)`.
+Generic slice validation rejects malformed JSON and impossible open depths;
+fitting rejects schema vocabulary, property, root, and grammar violations.
 
 ## Clipboard And Persistence
 
@@ -160,6 +168,11 @@ tables. A persistence serializer should preserve the full document value:
 const persisted = editor.read.value();
 await saveDocument(JSON.stringify(persisted));
 ```
+
+A declared schema validates `initialValue` when the document is loaded. Persist
+`editor.read.schema.identity()` beside the document when the storage system
+needs a schema-version boundary. See [Schema](19-schema) for compiled identity,
+validation, fitting, and atomic migration.
 
 Keep comment bodies, permissions, audit data, and large external records in app
 or collaboration stores. Store only the ids or state fields that belong to the

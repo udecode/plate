@@ -7,11 +7,7 @@ import {
 } from 'react';
 
 import { Hotkeys, isHotkey } from '@platejs/core';
-import {
-  useEditorRef,
-  useElement,
-  useElementSelected,
-} from '@platejs/core/react';
+import { useEditor, useElement, useElementSelected } from '@platejs/core/react';
 
 import type {
   CancelComboboxInputCause,
@@ -52,7 +48,7 @@ export const useComboboxInput = ({
   ref,
   onCancelInput,
 }: UseComboboxInputOptions): UseComboboxInputResult => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const element = useElement();
   const selected = useElementSelected();
 
@@ -61,10 +57,6 @@ export const useComboboxInput = ({
 
   const removeInput = useCallback(
     (shouldFocusEditor = false) => {
-      const path = editor.read.nodes.path(element);
-
-      if (!path) return;
-
       editor.update.nodes.remove({ at: element });
 
       if (shouldFocusEditor) {

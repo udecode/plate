@@ -118,7 +118,7 @@ const initialValue: Value = [
 export default function App() {
   const editor = usePlateEditor({
     plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin],
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -228,7 +228,7 @@ export default function App() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -336,7 +336,7 @@ export default function App() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: () => {
+    initialValue: () => {
       const savedValue = localStorage.getItem('plate-manual-demo');
       return savedValue ? JSON.parse(savedValue) : initialValue;
     },
@@ -345,7 +345,7 @@ export default function App() {
   return (
     <Plate
       editor={editor}
-      onChange={({ value }) => {
+      onValueChange={({ value }) => {
         localStorage.setItem('plate-manual-demo', JSON.stringify(value));
       }}
     >
@@ -384,10 +384,10 @@ export default function App() {
 
 <Callout type="info" title="Value Management">
   The example above demonstrates a basic pattern for managing editor value:
-  - Initial value is set through the `value` option in `usePlateEditor`
-  - Changes can be handled via the `onChange` prop on `<Plate>`
-- The reset button uses `editor.update(...)` with `tx.value.replace(...)` to
-  restore the initial value
+  - Initial value is set through the `initialValue` option in `usePlateEditor`
+  - Value changes can be handled via the `onValueChange` prop on `<Plate>`
+  - The reset button uses `editor.update(...)` with `tx.value.replace(...)` to
+    restore the initial value
   - To control the value, see [Controlled Value](/docs/controlled)
 </Callout>
 

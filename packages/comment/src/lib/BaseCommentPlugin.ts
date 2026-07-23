@@ -1,10 +1,14 @@
-import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import {
+  type InferConfig,
+  type PluginConfig,
+  createBasePlugin,
+} from '@platejs/core';
 import type {
   EditorNodesOptions,
   NodeEntry,
   NodeSetNodesOptions,
 } from '@platejs/plite';
-import { TextApi } from '@platejs/plite';
+import { property, schema, target, TextApi } from '@platejs/plite';
 import { KEYS, type TCommentText } from '@platejs/utils';
 
 import {
@@ -20,46 +24,71 @@ import {
 } from './utils';
 import { withComment } from './withComments';
 
-export type BaseCommentConfig = PluginConfig<
+type BaseCommentContract = PluginConfig<
   'comment',
   {},
-  {
-    comment: {
-      has: (options: { id: string }) => boolean;
-      node: (
-        options?: EditorNodesOptions<TCommentText> & {
-          id?: string;
-          isDraft?: boolean;
-        }
-      ) => NodeEntry<TCommentText> | undefined;
-      nodeId: (leaf: TCommentText) => string | undefined;
-      nodes: (
-        options?: EditorNodesOptions<TCommentText> & {
-          id?: string;
-          isDraft?: boolean;
-          transient?: boolean;
-        }
-      ) => NodeEntry<TCommentText>[];
-    };
-  },
+  {},
   {
     comment: {
       removeMark: () => void;
       setDraft: (options?: NodeSetNodesOptions<TCommentText>) => void;
       unsetMark: (options: { id?: string; transient?: boolean }) => void;
     };
+  },
+  {},
+  {},
+  readonly [],
+  readonly [],
+  never,
+  {
+    has: (options: { id: string }) => boolean;
+    node: (
+      options?: EditorNodesOptions<TCommentText> & {
+        id?: string;
+        isDraft?: boolean;
+      }
+    ) => NodeEntry<TCommentText> | undefined;
+    nodeId: (leaf: TCommentText) => string | undefined;
+    nodes: (
+      options?: EditorNodesOptions<TCommentText> & {
+        id?: string;
+        isDraft?: boolean;
+        transient?: boolean;
+      }
+    ) => NodeEntry<TCommentText>[];
   }
 >;
 
-export const BaseCommentPlugin = createBasePlugin<BaseCommentConfig>({
+export const BaseCommentPlugin = createBasePlugin({
   key: KEYS.comment,
-  node: {
-    isLeaf: true,
-  },
   rules: { selection: { affinity: 'outward' } },
+  schema: {
+    mark: {
+      property: property.boolean({ default: false, omitDefault: true }),
+      split: 'preserve',
+      target: target.group('element'),
+      typeChange: 'preserve-if-allowed',
+    },
+    properties: [
+      schema.textProperty(
+        schema.key.prefix(`${KEYS.comment}_`),
+        property.boolean(),
+        {
+          split: 'preserve',
+          target: target.group('element'),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
+      schema.textProperty(getTransientCommentKey(), property.boolean(), {
+        split: 'preserve',
+        target: target.group('element'),
+        typeChange: 'preserve-if-allowed',
+      }),
+    ],
+  },
 })
   .extendExtension(withComment)
-  .extendApi<BaseCommentConfig['api']['comment']>(({ editor, type }) => ({
+  .extendApi<BaseCommentContract['pluginApi']>(({ editor, type }) => ({
     has: ({ id }) =>
       editor.read.nodes.some<TCommentText>({
         at: [],
@@ -105,41 +134,47 @@ export const BaseCommentPlugin = createBasePlugin<BaseCommentConfig>({
       });
     },
   }))
-  .extendTx(({ api, type }) => (tx) => ({
-    removeMark: () => {
-      const nodeEntry = api.node();
+  .extendTx(
+    ({ api, type }) =>
+      (tx) =>
+        ({
+          removeMark: () => {
+            const nodeEntry = api.node();
 
-      if (!nodeEntry) return;
+            if (!nodeEntry) return;
 
-      for (const key of getCommentKeys(nodeEntry[0])) {
-        tx.marks.remove(key);
-      }
+            for (const key of getCommentKeys(nodeEntry[0])) {
+              tx.marks.remove(key);
+            }
 
-      tx.marks.remove(KEYS.comment);
-    },
-    setDraft: (options = {}) => {
-      tx.nodes.set(
-        {
-          [getDraftCommentKey()]: true,
-          [type]: true,
-        },
-        { match: TextApi.isText, split: true, ...options }
-      );
-    },
-    unsetMark: ({ id, transient }) => {
-      for (const [node] of api.nodes({ id, at: [], transient })) {
-        const removedId = id ?? api.nodeId(node);
-        const unsetKeys = [
-          getDraftCommentKey(),
-          getTransientCommentKey(),
-          ...(removedId ? [getCommentKey(removedId)] : []),
-        ];
+            tx.marks.remove(KEYS.comment);
+          },
+          setDraft: (options = {}) => {
+            tx.nodes.set(
+              {
+                [getDraftCommentKey()]: true,
+                [type]: true,
+              },
+              { match: TextApi.isText, split: true, ...options }
+            );
+          },
+          unsetMark: ({ id, transient }) => {
+            for (const [node] of api.nodes({ id, at: [], transient })) {
+              const removedId = id ?? api.nodeId(node);
+              const unsetKeys = [
+                getDraftCommentKey(),
+                getTransientCommentKey(),
+                ...(removedId ? [getCommentKey(removedId)] : []),
+              ];
 
-        if (getCommentCount(node) <= 1) {
-          unsetKeys.push(KEYS.comment);
-        }
+              if (getCommentCount(node) <= 1) {
+                unsetKeys.push(KEYS.comment);
+              }
 
-        tx.nodes.unset(unsetKeys, { at: node });
-      }
-    },
-  }));
+              tx.nodes.unset(unsetKeys, { at: node });
+            }
+          },
+        }) satisfies BaseCommentContract['tx']['comment']
+  );
+
+export type BaseCommentConfig = InferConfig<typeof BaseCommentPlugin>;

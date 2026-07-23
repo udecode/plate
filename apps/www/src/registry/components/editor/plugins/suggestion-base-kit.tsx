@@ -1,6 +1,3 @@
-import type { Element } from '@platejs/plite';
-import type { BaseEditor } from 'platejs';
-
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { KEYS, TextApi } from 'platejs';
 
@@ -16,22 +13,6 @@ const INLINE_SUGGESTION_RENDER_TARGETS = [
   KEYS.mention,
 ];
 
-function getInlineSuggestionData(editor: BaseEditor, element: Element) {
-  const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
-  const data = suggestionApi.suggestionData(element);
-
-  if (data) return data;
-  if (typeof suggestionApi.dataList !== 'function') return;
-
-  for (const child of element.children) {
-    if (!TextApi.isText(child)) continue;
-
-    const childData = suggestionApi.dataList(child).at(-1);
-
-    if (childData) return childData;
-  }
-}
-
 export const BaseSuggestionKit = [
   BaseSuggestionPlugin.configure({
     inject: {
@@ -42,7 +23,17 @@ export const BaseSuggestionKit = [
         transformProps: ({ editor, element, props }) => {
           if (!element) return props;
 
-          const suggestionData = getInlineSuggestionData(editor, element);
+          const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
+          let suggestionData = suggestionApi.suggestionData(element);
+
+          if (!suggestionData) {
+            for (const child of element.children) {
+              if (!TextApi.isText(child)) continue;
+
+              suggestionData = suggestionApi.dataList(child).at(-1);
+              if (suggestionData) break;
+            }
+          }
 
           if (!suggestionData) return props;
 

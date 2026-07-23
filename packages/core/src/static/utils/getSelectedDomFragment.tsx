@@ -5,7 +5,7 @@ import {
   NodeApi,
 } from '@platejs/plite';
 
-import type { BaseEditor } from '../../lib';
+import { type BaseEditor, HtmlPlugin } from '../../lib';
 
 export const getSelectedDomFragment = (editor: BaseEditor): Descendant[] => {
   const selection = window.getSelection();
@@ -48,7 +48,9 @@ export const getSelectedDomFragment = (editor: BaseEditor): Descendant[] => {
     ) {
       const html = document.createElement('div');
       html.append(node);
-      const results = editor.api.html.deserialize({ element: html });
+      const results = editor
+        .plugin(HtmlPlugin)
+        .api.deserialize({ element: html });
       const [firstResult] = results;
 
       if (!firstResult) return;

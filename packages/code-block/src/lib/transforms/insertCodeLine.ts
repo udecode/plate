@@ -8,7 +8,7 @@ export const insertCodeLine = (
   tx: EditorUpdateTransaction,
   indentDepth = 0
 ) => {
-  if (editor.read.selection()) {
+  if (tx.selection()) {
     const indent = ' '.repeat(indentDepth);
 
     tx.nodes.insert({

@@ -1,6 +1,6 @@
 import type { TEqualityChecker } from 'zustand-x';
 
-import { useStoreSelect, useStoreValue } from 'zustand-x';
+import { useStoreWithEqualityFn } from 'zustand/traditional';
 
 import type {
   AnyPluginConfig,
@@ -11,7 +11,8 @@ import type {
 import type { PlateEditor } from '../../editor';
 import type { InferConfig, PlatePlugin } from '../../plugin';
 
-import { useEditorRef } from './createPlateStore';
+import { getPluginOptionsStore } from '../../../internal/plugin/pluginOptionsStore';
+import { useEditor } from './createPlateStore';
 
 type PluginOptionInput =
   | PlatePlugin<AnyPluginConfig>
@@ -51,6 +52,7 @@ type PluginOptionArgs<C extends AnyPluginConfig, K> = [
 /**
  * Hook to access plugin options. For usage outside `<Plate>`, use
  * `useEditorPluginOption` instead.
+ * The plugin must be installed in the target editor.
  *
  * @example
  *   const value = usePluginOption(plugin, 'value');
@@ -66,7 +68,7 @@ export function usePluginOption(
   key: string,
   ...args: unknown[]
 ): unknown {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return useEditorPluginOption(editor, plugin, key as any, ...(args as any));
 }
@@ -87,10 +89,11 @@ export function useEditorPluginOption(
   key: string,
   ...args: unknown[]
 ): unknown {
-  const store = editor.getOptionsStore(plugin);
+  const installed = editor.getPlugin(plugin);
+  const store = getPluginOptionsStore(editor, installed.key);
 
   if (!store) {
-    return undefined as any;
+    throw new Error(`Plate plugin "${plugin.key}" options are not installed.`);
   }
 
   if (
@@ -99,26 +102,39 @@ export function useEditorPluginOption(
     !(key in store.selectors)
   ) {
     editor.api.debug.error(
-      `usePluginOption: ${key as any} option is not defined in plugin ${plugin.key}`,
+      `usePluginOption: ${key} option is not defined in plugin ${plugin.key}`,
       'OPTION_UNDEFINED'
     );
-    return undefined as any;
+    return;
   }
+
+  let equalityFn: TEqualityChecker<unknown> | undefined;
+  let selector: (state: InferOptions<AnyPluginConfig>) => unknown;
 
   if (key === 'state') {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useStoreSelect(
-      store,
-      (state) => state,
-      args[0] as TEqualityChecker<unknown> | undefined
-    ) as any;
+    equalityFn = args[0] as TEqualityChecker<unknown> | undefined;
+    selector = (state) => state;
+  } else if (key in store.selectors) {
+    const maybeEqualityFn = args.at(-1);
+
+    equalityFn =
+      typeof maybeEqualityFn === 'function'
+        ? (maybeEqualityFn as TEqualityChecker<unknown>)
+        : undefined;
+    const selectorArgs = equalityFn ? args.slice(0, -1) : args;
+
+    selector = () => (store.get as any)(key, ...selectorArgs);
+  } else {
+    equalityFn = args[0] as TEqualityChecker<unknown> | undefined;
+    selector = (state) => state[key as keyof typeof state];
   }
 
-  return (useStoreValue as any)(store, key, ...args);
+  return useStoreWithEqualityFn(store.store, selector, equalityFn);
 }
 
 /**
- * Use zustand store selector.
+ * Use a Zustand store selector. The plugin must be installed in the target
+ * editor.
  *
  * @example
  *   const name = usePluginOptions(plugin, (state) => state.name, equalityFn);
@@ -140,7 +156,7 @@ export function usePluginOptions<
     equalityFn?: (a: U, b: U) => boolean;
   } = {}
 ): U {
-  const editor = useEditorRef(id);
+  const editor = useEditor({ id });
 
   return useEditorPluginOptions(editor, plugin, selector, {
     equalityFn,
@@ -162,12 +178,12 @@ export function useEditorPluginOptions<
     equalityFn?: (a: U, b: U) => boolean;
   } = {}
 ): U {
-  const store = editor.getOptionsStore(plugin);
+  const installed = editor.getPlugin(plugin);
+  const store = getPluginOptionsStore(editor, installed.key);
 
   if (!store) {
-    return undefined as any;
+    throw new Error(`Plate plugin "${plugin.key}" options are not installed.`);
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useStoreSelect(store, selector, equalityFn);
+  return useStoreWithEqualityFn(store.store, selector, equalityFn);
 }

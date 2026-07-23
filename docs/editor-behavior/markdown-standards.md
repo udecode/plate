@@ -14,7 +14,8 @@ guesswork.
 
 ## Goal
 
-Define the standards process for Plate's markdown-first profile so we can:
+Define the standards process for Plate's markdown-first behavior contract so we
+can:
 
 - audit real reference editors consistently
 - make explicit decisions when references disagree
@@ -208,7 +209,7 @@ rows still choose authority explicitly.
   - often Google Docs when table or document-fidelity expectations are stronger
 - open-source cross-check:
   - Milkdown
-- profile-adjacent options:
+- behavior-policy options:
   - Typora is often the primary reference for markdown shorthand and
     markdown-delimiter autoformat
   - Typora is often a useful reference for strict-mode and more aggressive
@@ -318,7 +319,7 @@ coverage status.
 ## Major Release Bias
 
 During this major, defer minor new-feature work in the markdown lane unless it
-is required to unlock parity, cleanup, or profile architecture.
+is required to unlock parity, cleanup, or capability architecture.
 
 Spend the major budget on:
 
@@ -418,7 +419,7 @@ Every locked rule should map to:
 
 - one or more tests
 - the owning package or integration surface
-- the active behavior profile
+- the owning behavior contract
 
 Test names should reference spec IDs directly when the behavior is important
 enough to survive refactors.
@@ -452,10 +453,10 @@ Good reasons:
 - document model safety
 - better multi-block consistency
 - better streaming stability
-- better profile composability
+- cleaner capability composition
 - stronger mainstream editor precedent
-- exposing a reference behavior as an explicit profile option instead of forcing
-  it as the one global default
+- assigning reference behavior to an explicit owner option or app-kit policy
+  after classification instead of forcing one global default
 
 Bad reasons:
 
@@ -463,6 +464,24 @@ Bad reasons:
 - "changing it is annoying"
 - "we have tests for it already"
 - "it was Plate's old default"
+
+## Law To Packaging Handoff
+
+The editor-behavior stack defines behavior law, scenario evidence, and
+correctness invariants. It does not decide public plugin count.
+
+When law exposes a packaging question:
+
+1. group protocol rows into a coherent user-facing behavior candidate;
+2. use
+   [editor-behavior-architecture.md](../research/systems/editor-behavior-architecture.md)
+   to classify invariant, parameter, substitutable capability, or app policy;
+3. run `best-api design` or `best-api review` before naming a public plugin;
+4. run `best-api repair` when the classification changes reusable doctrine;
+5. hand an accepted public target to `plate-plan` or `plite-plan`.
+
+Do not infer one plugin from one protocol row, handler, extension block, or
+non-universal behavior.
 
 ## Research Methodology
 
@@ -473,7 +492,7 @@ This is the order for the later audit.
 3. Audit current Plate behavior and tests against the same scenarios.
 4. Mark conflicts.
 5. Add failing spec-keyed tests.
-6. Refactor behavior seams.
+6. Refactor behavior ownership.
 7. Upgrade lock levels from `proposed` to `locked`.
 
 ## Required Scenario Shape
@@ -493,10 +512,10 @@ Without that, the audit will drift into vague prose.
 
 ## Relationship To Other Docs
 
-- [editor-behavior-architecture.md](docs/research/systems/editor-behavior-architecture.md)
-  defines the long-term behavior engine direction
+- [editor-behavior-architecture.md](../research/systems/editor-behavior-architecture.md)
+  defines long-term behavior ownership, capability promotion, and composition
 - [markdown-editing-spec.md](./markdown-editing-spec.md)
-  defines editing behavior for the markdown-first profile
+  defines the markdown-first behavior contract
 - [markdown-parity-matrix.md](./markdown-parity-matrix.md)
   defines syntax support and round-trip status
 
@@ -506,8 +525,8 @@ Do not rerun the broad markdown-first reference audit by default.
 
 Use the live command pack and roadmap first:
 
-- [commands/README.md](docs/editor-behavior/commands/README.md)
-- [master-roadmap.md](docs/editor-behavior/master-roadmap.md)
+- [commands/README.md](commands/README.md)
+- [master-roadmap.md](master-roadmap.md)
 
 Rerun research or audit only when:
 

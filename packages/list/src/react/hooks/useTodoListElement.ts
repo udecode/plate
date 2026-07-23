@@ -1,10 +1,10 @@
-import { useEditorRef } from '@platejs/core/react';
+import { useEditor } from '@platejs/core/react';
 import type { Element } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
 import { KEYS } from '@platejs/utils';
 
 export const useTodoListElementState = ({ element }: { element: Element }) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const checked = element[KEYS.listChecked] as boolean | undefined;
   const readOnly = useEditorReadOnly();
 
@@ -27,11 +27,13 @@ export const useTodoListElement = (
       onCheckedChange: (value: boolean) => {
         if (readOnly) return;
 
-        const path = editor.read.nodes.path(element);
+        editor.update((tx) => {
+          const path = tx.nodes.path(element);
 
-        if (!path) return;
+          if (!path) return;
 
-        editor.update.nodes.set({ checked: value }, { at: path });
+          tx.nodes.set({ checked: value }, { at: path });
+        });
       },
       onMouseDown: (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();

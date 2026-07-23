@@ -1,16 +1,24 @@
 import { KEYS } from '@platejs/utils';
+import type { MarkdownEditor } from '@platejs/markdown';
 import type { PlateEditor } from '@platejs/core/react';
 
 import type { CopilotPluginConfig } from '../CopilotPlugin';
 
 import { callCompletionApi } from './callCompletionApi';
 
-export const triggerCopilotSuggestion = async (editor: PlateEditor) => {
-  const { api, getOptions, setOption } = editor.plugin<CopilotPluginConfig>(
-    KEYS.copilot
-  );
+const isHeaderTupleList = (
+  value: unknown
+): value is readonly (readonly [string, string])[] => Array.isArray(value);
+
+export const triggerCopilotSuggestion = async (
+  editor: MarkdownEditor<PlateEditor>
+) => {
+  const { api, getOptions, setOption } = editor.plugin<CopilotPluginConfig>({
+    key: KEYS.copilot,
+  });
 
   const { completeOptions, getPrompt, isLoading, triggerQuery } = getOptions();
+  const headers = completeOptions?.headers;
   const chatStatus = editor.plugin({ key: KEYS.aiChat }).getOptions()
     .chat?.status;
 
@@ -33,6 +41,14 @@ export const triggerCopilotSuggestion = async (editor: PlateEditor) => {
       api.setBlockSuggestion({ text: completion });
     },
     ...completeOptions,
+    headers:
+      headers instanceof Headers
+        ? Object.fromEntries(headers.entries())
+        : isHeaderTupleList(headers)
+          ? Object.fromEntries(headers)
+          : headers
+            ? { ...headers }
+            : undefined,
     setAbortController: (controller) =>
       setOption('abortController', controller),
     setCompletion: (completion) => setOption('completion', completion),

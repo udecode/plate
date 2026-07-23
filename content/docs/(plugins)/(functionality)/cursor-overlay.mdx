@@ -134,29 +134,29 @@ Plugin that manages cursor and selection overlays for visual feedback.
 
 ## API
 
-### `api.cursorOverlay.addCursor`
+### `editor.plugin(CursorOverlayPlugin).api.addCursor(id, cursor)`
 
 Adds a cursor overlay with the specified key and state.
 
-<API name="addCursor">
+<API name="editor.plugin(CursorOverlayPlugin).api.addCursor">
 <APIParameters>
-  <APIItem name="key" type="string">
+  <APIItem name="id" type="string">
     Unique identifier for the cursor (e.g., 'blur', 'drag', 'custom').
   </APIItem>
-  <APIItem name="cursor" type="CursorState<CursorData>">
+  <APIItem name="cursor" type="Omit<CursorState<CursorData>, 'id'>">
     The cursor state including selection and optional styling data.
   </APIItem>
 </APIParameters>
 </API>
 
-### `api.cursorOverlay.removeCursor`
+### `editor.plugin(CursorOverlayPlugin).api.removeCursor(id)`
 
 Removes a cursor overlay by its key.
 
-<API name="removeCursor">
+<API name="editor.plugin(CursorOverlayPlugin).api.removeCursor">
 <APIParameters>
-  <APIItem name="key" type="string">
-    The key of the cursor to remove.
+  <APIItem name="id" type="(string & {}) | 'drag' | 'selection'">
+    The cursor identifier to remove.
   </APIItem>
 </APIParameters>
 </API>

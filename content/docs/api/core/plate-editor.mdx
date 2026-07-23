@@ -3,7 +3,7 @@ title: Plate Editor
 description: API reference for the Plate editor runtime.
 ---
 
-`PlateEditor` is the React editor type returned by `createPlateEditor`, `usePlateEditor`, and `withPlate`. It extends the base Plite editor with plugin registries, typed `api`, typed `editor.update()` transactions, DOM state, metadata, and plugin option helpers.
+`PlateEditor` is the React editor type returned by `createPlateEditor`, `usePlateEditor`, and `withPlate`. It extends the base Plite editor with typed plugin portals, typed `api`, typed `editor.update()` transactions, DOM services, and live plugin options.
 
 ## Ownership
 
@@ -19,7 +19,7 @@ Use `PlateEditor` when a page or component runs inside React. Use `BaseEditor` w
 
 ## Editor Shape
 
-The editor is still a Plite editor. Plate adds typed plugin access, plugin metadata, DOM state, and option stores on top of that shape.
+The editor is still a Plite editor. Plate adds typed plugin access, DOM services, and a small set of Plate runtime flags on top of that shape.
 
 <API name="PlateEditor">
 <APIAttributes>
@@ -41,21 +41,21 @@ The editor is still a Plite editor. Plate adds typed plugin access, plugin metad
   <APIItem name="update" type="PlateEditor['update']">
     Transaction entrypoint for document, selection, history, and plugin commands.
   </APIItem>
-  <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
-    Resolved plugin map keyed by plugin key.
+  <APIItem name="plugin" type="<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>">
+    Return the descriptor-scoped portal for a plugin's API, update commands, type, and live options.
   </APIItem>
   <APIItem name="dom" type="PlateEditor['dom']">
     Runtime DOM state owned by the editor instance.
   </APIItem>
   <APIItem name="runtime" type="PlateEditor['runtime']">
-    Runtime metadata and plugin caches built during plugin resolution.
+    Public Plate runtime identity and lifecycle state. Compiled plugin registries stay private to Plate.
   </APIItem>
 </APIAttributes>
 </API>
 
 ## Runtime State
 
-React and DOM runtime state is read through Plite runtime APIs. Plate keeps plugin metadata on `editor.runtime`.
+React and DOM runtime state is read through Plite runtime APIs. Plate exposes only editor identity and lifecycle fields on `editor.runtime`; compiled plugin registries are private implementation data.
 
 | State | Read path | Set by |
 | --- | --- | --- |
@@ -63,48 +63,42 @@ React and DOM runtime state is read through Plite runtime APIs. Plate keeps plug
 | focus | `editor.api.react.isFocused()` | Plite React focus runtime. |
 | read-only | `editor.read.view.isReadOnly()` or `editor.api.react.isReadOnly()` | `createPlateEditor`, `<Plate>`, and `<PlateContent>`. |
 
-`editor.runtime` carries plugin resolution output. Most application code reads this indirectly through helpers like `getPlugin`, `getOptions`, and render utilities.
-
 | Field | Type | Notes |
 | --- | --- | --- |
-| `key` | `string` | Internal editor key. `withPlite` creates one with `nanoid()` when missing. |
-| `uid` | `string \| undefined` | Stable id used by Plate containers across RSC and client hydration. |
 | `userId` | `string \| null \| undefined` | Collaborative identity passed through editor options. |
-| `components` | `NodeComponents` | Resolved node components keyed by plugin key. |
-| `isFallback` | `boolean` | `false` for normal editors. Fallback editors are created by the controller layer. |
-| `pluginList` | `AnyEditorPlatePlugin[]` | Ordered resolved plugin list. |
-| `inputRules` | `ResolvedInputRulesMeta` | Input-rule metadata built by the input-rules plugin. |
-| `shortcuts` | `Shortcuts` | Resolved shortcut metadata. |
-| `pluginCache` | `object` | Precomputed plugin key lists for render hooks, handlers, rules, nodes, decorators, and injection. |
+| `isNormalizing` | `boolean \| undefined` | `true` while Plate applies initial-value normalization. |
 
 ## Plugin Access
 
-Use editor helpers when you need the resolved plugin instance or live plugin options. Read plugin APIs from `editor.api`; run plugin commands through `editor.update`.
+Pass the plugin descriptor to `editor.plugin(plugin)` for plugin-owned APIs, update commands, type, and live options. This keeps access typed without exposing Plate's compiled registries.
 
-```tsx title="Plugin option access"
-import { ParagraphPlugin, useEditorPlugin } from 'platejs/react';
+```ts title="Plugin option access"
+import { FindReplacePlugin } from '@platejs/find-replace';
 
-export function ParagraphType() {
-  const { editor } = useEditorPlugin(ParagraphPlugin);
+const findReplace = editor.plugin(FindReplacePlugin);
 
-  return <span>{editor.getType(ParagraphPlugin.key)}</span>;
-}
+const search = findReplace.getOption('search');
+findReplace.setOption('search', search.trim());
 ```
 
 | Helper | Type | Use it for |
 | --- | --- | --- |
+| `plugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>` | Open a typed portal to one installed plugin. |
+| `plugin(plugin).api` | `InferOwnApi<C>` | Call plugin-owned queries and services. |
+| `plugin(plugin).update` | `InferOwnTx<C>` | Run one plugin-owned update command. |
+| `plugin(plugin).getOption(key, ...args)` | `(key, ...args) => value` | Read one live option or selector result. |
+| `plugin(plugin).getOptions()` | `() => InferOptions<C>` | Read all live options. |
+| `plugin(plugin).setOption(key, value)` | `(key, value) => void` | Update one live option. |
+| `plugin(plugin).setOptions(options)` | `(partialOrRecipe) => void` | Merge option fields or update them through a draft recipe. |
 | `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | Read the resolved plugin instance after overrides and configuration. |
 | `getType(pluginKey)` | `(pluginKey: string) => string` | Resolve the node type for a plugin key. |
 | `getInjectProps(plugin)` | `(plugin) => InjectNodeProps` | Read injected node props with default `nodeKey` and `styleKey` filled from the plugin type. |
-| `getOptionsStore(plugin)` | `(plugin) => TStateApi` | Read the plugin option store. |
-| `getOptions(plugin)` | `(plugin) => InferOptions<C>` | Read all current options for a plugin. |
-| `getOption(plugin, key, ...args)` | `(plugin, key, ...args) => value` | Read one option or selector result. Missing stored keys report through `editor.api.debug.error`. |
-| `setOption(plugin, key, value)` | `(plugin, key, value) => void` | Update one option in the plugin store. |
-| `setOptions(plugin, options)` | `(plugin, partialOrRecipe) => void` | Merge a partial object or run a mutative recipe against the plugin state. |
+
+In React, subscribe with `usePluginOption(plugin, key)` or `usePluginOptions(plugin)` instead of reading a portal during render.
 
 ## Initialization
 
-`withPlate` wraps `withPlite` with React defaults. It uses `createZustandStore` for plugin option stores and prepends the React core plugins before user plugins.
+`withPlate` wraps `withPlite` with React defaults. It initializes private live option state and prepends the React core plugins before user plugins.
 
 ```tsx title="Create a typed editor"
 import { usePlateEditor } from 'platejs/react';
@@ -113,7 +107,7 @@ import { BoldPlugin } from '@platejs/basic-nodes/react';
 export function useBasicEditor() {
   return usePlateEditor({
     plugins: [BoldPlugin],
-    value: [
+    initialValue: [
       {
         type: 'p',
         children: [{ text: 'Bold text is ready.' }],
@@ -127,14 +121,16 @@ export function useBasicEditor() {
 
 | Step | Behavior |
 | --- | --- |
-| Runtime metadata | Preserves Plite `editor.id` and installs Plate plugin runtime state such as `runtime.isFallback`, `runtime.userId`, and plugin caches. |
-| Helper methods | Installs `getPlugin`, `getType`, option helpers, and injection helpers. |
+| Runtime state | Preserves Plite `editor.id` and initializes `runtime.userId`. |
+| Plugin access | Installs descriptor-scoped `plugin(...)` portals plus `getPlugin`, `getType`, and injection helpers. |
 | Core plugins | Resolves core plugins, replaces core plugins with custom plugins that share the same key, and resolves the root plugin. |
 | Components | Merges `components` into root-plugin component overrides. |
 | Normalization guard | Wraps `normalizeNode` so `editor.api.shouldNormalizeNode(entry)` can skip a normalization pass. |
 | Initial value | Initializes the value and selection through the runtime update path unless `skipInitialization` is `true`. |
 
-`value` accepts a Plate value, an HTML string, or a function that returns the value. `onReady` receives `{ editor, isAsync, value }` after initialization completes.
+`initialValue` accepts a Plate value or a synchronous function that returns one.
+Load remote data before constructing the editor. Use the callback form when a
+decoder needs the compiled plugin model.
 
 ## Core APIs
 
@@ -154,7 +150,7 @@ These APIs exist on every Plate editor because core plugins are always resolved 
   <APIItem name="editor.api.debug.error" type="(message: unknown, type?: DebugErrorType, details?: any) => void">
     Throw a `PlateError` by default in development. Configure `DebugPlugin` to change logging or `throwErrors`.
   </APIItem>
-  <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredKey }) => Descendant[]">
+  <APIItem name="editor.plugin(HtmlPlugin).api.deserialize" type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredKey }) => Descendant[]">
     Deserialize an HTML element into Plate nodes. The HTML parser plugin calls this for `text/html` paste data.
   </APIItem>
   <APIItem name="editor.api.react.refreshDecorations" type="(options?: PliteProjectionStoreRefreshOptions) => void">
@@ -214,8 +210,7 @@ Some core behavior is exposed by routing browser/editor events into the Plite tr
 | `ParserPlugin` | Handles paste data and scans plugin parsers in reverse plugin order. Matching parsers transform data, deserialize a fragment, transform the fragment, and insert it. |
 | Plite change events | Emits committed node and text change contexts so Plate handlers can receive previous and next node or text state. |
 | Plite React runtime | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior. |
-| Editable metadata cleanup | Strips static `_memo` metadata from editable normalized values. |
-| `HtmlPlugin` | Registers the `text/html` parser path and delegates HTML elements to `editor.api.html.deserialize`. |
+| `HtmlPlugin` | Registers the `text/html` parser path and owns HTML element conversion through `editor.plugin(HtmlPlugin).api.deserialize`. |
 | `BaseParagraphPlugin` | Registers the default paragraph element under key `p` and maps HTML `<p>` elements, excluding code-font paragraphs. |
 
 ## Type Helpers

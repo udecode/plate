@@ -1,40 +1,43 @@
+---
+title: Editor behavior architecture for Plate
+type: system
+status: strong
+updated: 2026-07-23
+related:
+  - docs/editor-behavior/README.md
+  - docs/editor-behavior/markdown-editing-spec.md
+  - docs/editor-behavior/editor-protocol-matrix.md
+  - docs/vision/plate.md
+---
+
 # Editor Behavior Architecture for Plate
 
-This is the architectural frame for the major release. It is intentionally
-written before the full Typora and Milkdown audit so the repo does not drift
-into reference-chasing without a model.
-
-The goal is not "make Plate behave like Typora." The goal is stronger:
-
-- make Plate capable of expressing multiple editor behavior profiles cleanly
-- make markdown-first behavior a first-class profile
-- stop baking structural key behavior into scattered plugin overrides
+This document maps editor-behavior law to runtime and plugin ownership.
+[markdown-editing-spec.md](../../editor-behavior/markdown-editing-spec.md)
+decides what the editor should do;
+[editor-protocol-matrix.md](../../editor-behavior/editor-protocol-matrix.md)
+enumerates the scenarios. This document decides what stays inline, what belongs
+in `options`, and what earns independent plugin identity.
 
 ## Bottom Line
 
-Plate should move from a plugin-scattered behavior model to a profile-driven
-behavior engine.
+Keep one document model, one Plite execution model, and ordinary Plate plugin
+composition.
 
-That means:
+- Feature invariants stay inside their owning plugin.
+- Data that tunes one capability stays in inferred `options`.
+- Only proven substitutable capabilities earn ordinary plugin identity.
+- Product-specific choices stay in app kits.
+- Complete feature plugins remain the default path.
 
-- one shared document model
-- one shared transform layer
-- multiple behavior profiles on top
-
-Examples:
-
-- `markdown_typora`
-- `markdown_milkdown`
-- `notion`
-- `bear`
-- `google_docs`
-- `plate_default`
-
-The markdown-first profile is the first lane, not the final personality.
+Plate does not need a second behavior engine, behavior registry, or profiles
+runtime. A named behavior profile is a specification label or an ordinary
+reusable plugin array after real reuse earns that name.
 
 ## Why This Exists
 
-Today behavior ownership is fragmented:
+Behavior ownership can become fragmented even when each local handler is
+correct:
 
 - list owns part of `Enter` and reset behavior
 - indent owns generic `Tab`
@@ -42,51 +45,50 @@ Today behavior ownership is fragmented:
 - code block owns `Enter` and `Tab`
 - blockquote owns almost nothing
 - affinity is configured separately from structural behavior
-- autoformat is rule-shaped, not profile-shaped
+- autoformat and structural input can compete for the same context
 
-That architecture is fine for local fixes and bad for editor emulation.
+The solution is explicit law and ownership, not another public composition
+language. Handlers, commands, queries, corrections, selections, and files are
+implementation contributions. They do not map one-to-one to capabilities.
 
-If Plate wants to clone major editors cleanly, behavior has to become an
-explicit system.
+## Owner Map
+
+| Concern                                                           | Owner                                    |
+| ----------------------------------------------------------------- | ---------------------------------------- |
+| expected editing result and authority                             | editor-behavior spec and protocol matrix |
+| generic transaction, command, selection, DOM, and input mechanics | Plite packages                           |
+| feature correctness and mandatory behavior                        | owning Plate feature plugin              |
+| proven optional or replaceable capability                         | ordinary Plate plugin or Plite extension |
+| product personality and chosen defaults                           | app kit                                  |
+| public promotion decision                                         | `best-api`                               |
+| adoption and proof plan                                           | `plate-plan` or `plite-plan`             |
 
 ## Goals
 
 - Make structural key behavior explicit and composable.
 - Make behavior ownership deterministic.
-- Allow multiple editor profiles without forking the core editor model.
+- Let products replace coherent capabilities without forking the editor model.
 - Let markdown-first behavior stay strict where syntax exists.
-- Support streaming and partial markdown as first-class inputs, not hacks after
-  deserialization.
+- Keep streaming and partial markdown behavior explicit where it applies.
 - Drive tests from spec IDs instead of local plugin assumptions.
+- Preserve one obvious full-preset path for normal users.
 
 ## Non-Goals
 
 - Rebuild the document model around one reference editor.
-- Force every plugin to expose every possible behavior knob immediately.
-- Freeze all behavior from day one of the major. The point is to create a
-  durable decision system first.
-- Spend the major on minor new markdown features while old structural behavior
-  is still wrong.
-
-## Major Scope Bias
-
-This major should prefer breaking cleanup over feature expansion.
-
-That means:
-
-- fix existing behavior seams before adding new syntax lanes
-- prioritize ownership, parity, affinity, autoformat, and streaming cleanup
-- defer minor markdown feature additions unless they unlock those goals
-
-If a proposed addition does not improve an existing broken seam, it is probably
-the wrong use of major-release energy.
+- Expose every handler or extension contribution as a plugin.
+- Turn every boolean into a capability plugin.
+- Make correctness repair, schema validity, or cache invalidation optional.
+- Add profiles, variants, registries, serialization, or runtime switching for
+  hypothetical future use.
+- Split files merely because a colocated owner is large.
 
 ## Core Principles
 
-### One shared model, multiple behaviors
+### One shared model, explicit behavior law
 
-Plate's node model should remain shared. The behavior profile decides how users
-reach and modify that structure.
+Plate's node model stays shared. The behavior spec chooses expected results per
+context; installed plugins provide the implementation.
 
 ### Nearest structure wins
 
@@ -103,23 +105,25 @@ should win first. Example order:
 
 ### One keypress changes one structural depth
 
-Do not collapse multiple container levels in one step unless a profile
-explicitly wants that.
+Do not collapse multiple container levels in one step unless the owning
+behavior contract explicitly requires it.
 
 ### Syntax-driven where syntax exists
 
 If Markdown has a real structural representation, Plate should prefer that over
 visual-only shortcuts or local fake structure.
 
-### Profiles own decisions, plugins provide capabilities
+### Specs own law; plugins own shipped capability
 
-Plugins should provide transforms, queries, and normalization primitives.
-Profiles should decide which primitive wins for a given editing context.
+The spec chooses the winning behavior for each context. A feature plugin owns
+its mandatory implementation. An app kit chooses which optional capability
+plugins it installs.
 
-## Proposed Behavior Domains
+## Behavior Domains
 
-Behavior should be organized into domains instead of spread across unrelated
-plugin overrides.
+Use these as audit categories, not public namespaces. A public plugin must group
+coherent user intent; it does not exist merely because one category has a
+handler.
 
 ### 1. Structural keys
 
@@ -146,7 +150,7 @@ Owns:
 
 - markdown shortcut recognition
 - contextual transforms
-- profile-aware trigger priorities
+- context- and syntax-aware trigger priorities
 - interaction with partial/incomplete syntax during streaming
 
 ### 4. Streaming and incremental parse behavior
@@ -168,7 +172,8 @@ Owns:
 - split container around current block
 - reset nearest structure
 
-These should become reusable transforms, not bespoke one-off plugin tricks.
+Promote these to shared transforms only when multiple independent owners reuse
+them. Otherwise keep the algorithm inline with its feature owner.
 
 ### 6. Navigation feedback
 
@@ -178,88 +183,85 @@ Owns:
 - transient target highlight
 - replacement or clearing of the previous navigation target state
 
-This should be a shared editor-scoped primitive, not one flash hack per
-feature. TOC, footnote, and search jumps should all reuse it.
+Only promote navigation feedback to a shared editor-scoped primitive when TOC,
+footnote, search, or another independent owner actually reuses one contract.
 
-## Proposed Core Abstractions
+## Behavior Promotion Protocol
 
-### Behavior profile
+### 1. Start from scenario law
 
-A profile should declare behavior policy by domain:
+Before discussing packaging, record:
 
-```ts
-type BehaviorProfileId =
-  | 'markdown_typora'
-  | 'markdown_milkdown'
-  | 'notion'
-  | 'bear'
-  | 'google_docs'
-  | 'plate_default';
+- entity and node model
+- context and nearest structural owner
+- selection shape and caret edge
+- input or command
+- expected model and cursor result
+- fallback when the feature does not handle it
+- invariants that may never be disabled
+- authority, spec ID, and proof
 
-interface EditorBehaviorProfile {
-  id: BehaviorProfileId;
-  structuralKeys: StructuralKeyPolicy;
-  selection: SelectionPolicy;
-  autoformat: AutoformatPolicy;
-  streaming: StreamingPolicy;
-}
-```
+The protocol matrix already carries most of this dossier.
 
-### Behavior context snapshot
+### 2. Classify the behavior
 
-Every behavior decision should operate on a normalized context snapshot instead
-of each plugin re-deriving the same state:
+| Class                    | Decision test                                                                        | Shape                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| invariant                | omission makes the feature invalid, unsafe, inaccessible, or semantically incomplete | inline in the owning feature plugin                                         |
+| parameter                | callers want the same capability with different data, thresholds, or policy values   | inferred `options`                                                          |
+| substitutable capability | omission or replacement leaves a complete editor with defined fallback behavior      | ordinary plugin or extension candidate                                      |
+| product policy           | the choice belongs to one app personality rather than Plate's framework default      | inline in the app kit; promote separately only if the capability gates pass |
 
-- current block
-- nearest containers
-- selection shape
-- active profile
-- markdown parse context if relevant
-- whether current content is complete or partial
+“Non-universal” is not enough. A non-universal width or threshold remains an
+option. A broadly required keyboard capability may still need a replaceable
+owner when legitimate products implement it differently.
 
-### Behavior decision
+### 3. Pass every promotion gate
 
-Resolvers should return explicit outcomes:
+A capability becomes a public plugin or extension only when:
 
-- `handled`
-- `fallthrough`
-- `prevent_default`
-- `transform`
-- `select`
-- `reject`
+1. one stable capability name describes the user job;
+2. a real caller needs omission or replacement, or a hard host, dependency,
+   security, or lifecycle boundary requires independent ownership;
+3. omission and replacement have explicit, valid fallback semantics;
+4. dependencies close through public contracts without private sibling access
+   or cycles;
+5. the capability can be tested independently in default, omitted, and replaced
+   configurations;
+6. native keyboard, clipboard, selection, focus, or DOM behavior has browser
+   proof;
+7. the complete preset remains the obvious common path;
+8. advanced composition uses the existing plugin or extension array.
 
-That beats today's mix of silent overrides and implicit fallback.
+If a gate fails, keep the behavior inline or parameterized. Do not add a public
+name in anticipation of future reuse.
 
-## Proposed Event Pipeline
+### 4. Separate identity from files
 
-For structural keys, Plate should use a single behavior pipeline:
+Plugin identity is a composition and ownership boundary. It does not require a
+new file. Keep single-owner capability descriptors colocated with their feature;
+the Base/React boundary remains a valid split when host behavior requires it.
 
-1. build context snapshot
-2. ask the active profile for event ownership order
-3. run resolvers in order
-4. stop on the first handled decision
-5. fall back to generic editor behavior only if no resolver handles the event
+### 5. Export only after the consumer job exists
 
-This is the seam that should replace scattered local ownership.
+An internal contribution may stay anonymous. A coherent capability may be
+named privately when the runtime requires independent installation or proof.
+Public export requires a real external composition job, not internal test
+convenience.
 
-## Affinity Proposal
+## Runtime Arbitration
 
-Affinity should be part of behavior policy, not a separate oddball concern.
+Use the existing Plite command, query, correction, selection, and handler
+ordering. Preserve contribution ownership and explicit handled/fallthrough
+semantics inside that runtime instead of creating a parallel behavior engine.
 
-That means:
+Repeated context derivation may become an internal query or matcher primitive
+after real reuse. Do not publish a generic behavior-context object merely to
+organize local code.
 
-- the profile chooses the default affinity model
-- individual node families can override it
-- the editing spec can state affinity semantics next to the structural behavior
-  they affect
-
-Example:
-
-- markdown-first profile may prefer predictable outward edges for links and
-  formatting boundaries
-- Notion-like profile may prefer a softer, block-oriented cursor model
-
-If affinity remains disconnected from the editing spec, it will keep drifting.
+Affinity belongs beside the node family and scenario law it affects. Shared
+affinity mechanics belong in Plite; feature-specific edge policy stays with the
+feature or app kit.
 
 ## Autoformat Rewrite Proposal
 
@@ -268,10 +270,10 @@ nodes."
 
 It should become behavior-aware:
 
-- aware of the active profile
 - aware of the current structural owner
 - aware of whether the syntax should wrap, reset, lift, split, or retag
 - aware of partial streaming input and incomplete syntax
+- configured through the installed feature and app-kit plugins
 
 Examples:
 
@@ -280,10 +282,10 @@ Examples:
 - list markers should respect current container depth
 - syntax that is incomplete across chunks should remain stable until closed
 
-The rewrite target is not "more rules." It is "the right transform selected by
-profile and context."
+The target is not more rules. It is the right transform selected by context and
+installed ownership.
 
-## Transform Seams Worth Introducing
+## Shared Transform Candidates
 
 These are likely high-leverage additions:
 
@@ -294,22 +296,55 @@ These are likely high-leverage additions:
 - `wrapBlocksInContainer`
 - `unwrapCurrentContainerLevel`
 
-These should work across quote, list, toggle, and future container blocks where
-possible.
+Extract one only after quote, list, toggle, or another independent owner proves
+the shared contract. Until then, keep the transform with its owner.
+
+## Behavior Contracts And Kits
+
+`markdown_typora` and similar names are specification and test labels. They do
+not imply a runtime registry.
+
+When multiple apps genuinely reuse one plugin selection, publish an ordinary
+kit constant containing that plugin array. Runtime switching, serialization,
+fingerprints, and profile receipts require separate real jobs and separate API
+review; they are not part of behavior authoring by default.
+
+## Table Pressure Test
+
+The current Table owner has seven `.extendExtension(...)` contributions plus
+React clipboard and keyboard handlers. Applying the promotion gates to those
+implementation blocks produces no new public capability plugin today:
+
+- schema validity, grid correction, cache invalidation, selection clamping, and
+  destructive-boundary protection are mandatory Table behavior;
+- table-selection mapping, command interception, deletion, fragment, paste, and
+  typing behavior jointly define Table selection semantics and have no complete
+  independent fallback;
+- `Tab`, arrow-boundary movement, selection escalation, copy, and cut stay
+  inline in the React Table owner while they depend on DOM geometry, hotkeys,
+  and native events;
+- headless `BaseTablePlugin` versus React `TablePlugin` is the proven host
+  boundary;
+- clipboard customization is the most plausible future capability candidate,
+  but no real omit or replacement caller currently earns its public export.
+
+The existing contribution count is not evidence for seven plugins. A future
+clipboard owner still needs a real caller, explicit fallthrough semantics,
+public dependency closure, and default/omitted/replaced browser proof.
 
 ## How The Spec Files Fit
 
 This architecture doc is the top-level frame.
 
-- [markdown-standards.md](./markdown-standards.md)
+- [markdown-standards.md](../../editor-behavior/markdown-standards.md)
   defines the authority order and methodology
-- [markdown-editing-spec.md](./markdown-editing-spec.md)
-  defines the markdown-first profile behavior
-- [markdown-parity-matrix.md](./markdown-parity-matrix.md)
+- [markdown-editing-spec.md](../../editor-behavior/markdown-editing-spec.md)
+  defines the markdown-first behavior contract
+- [markdown-parity-matrix.md](../../editor-behavior/markdown-parity-matrix.md)
   defines syntax support and round-trip expectations
 
-Later, other profiles can layer on the same architecture with different
-behavior decisions.
+Other behavior contracts may choose different outcomes. Shipped differences
+compose through feature plugins and app kits.
 
 ## Testing Strategy
 
@@ -319,36 +354,39 @@ Each important rule should have:
 
 - a spec ID
 - one or more focused tests
-- a declared owning profile
+- a declared owning behavior contract
+- an owning invariant, option, capability, or app-policy classification
 
-The same scenario may have different expected outputs across profiles. That is a
-feature, not a bug, as long as the profile owns the difference explicitly.
+For a promoted capability, also prove:
+
+- the complete default preset
+- omission and its fallback
+- replacement through ordinary plugin composition
+- browser behavior when native input or DOM state matters
 
 ## Migration Direction
 
-This major release is the right time to break behavior toward clearer
-standards.
+For each feature family:
 
-Expected candidates:
-
-- move generic `Tab` ownership away from broad indent behavior
-- make quote behavior follow container semantics
-- unify exit / reset / outdent rules around nearest structure
-- rewrite autoformat around profile-aware structural transforms
-- fold affinity into the same behavioral model
+1. map source contributions to spec rows;
+2. classify invariant, parameter, substitutable capability, or app policy;
+3. keep mandatory behavior colocated;
+4. audit real omit/replace callers before naming public capability plugins;
+5. move capability-specific options and proof to the accepted owner;
+6. keep the complete plugin or kit as the normal path;
+7. delete flags or helpers made redundant by accepted composition.
 
 ## Immediate Next Steps
 
-1. Audit Typora and Milkdown against the markdown-first spec.
-2. Audit current Plate plugin ownership for structural keys.
-3. Mark direct conflicts between current Plate behavior and the target profile.
-4. Add failing spec-keyed tests before refactoring core behavior seams.
+1. Audit real repository callers before promoting Table clipboard behavior.
+2. Keep the complete Base and React Table presets as the default path.
+3. Route any concrete replacement proposal through `best-api design`.
+4. Hand an accepted API to `plate-plan` for adoption and proof.
 
 ## Open Questions
 
-- Which behaviors should be truly core versus profile-plugin supplied?
-- How much of the current indent system survives once list and quote outdent
-  become explicit structural transforms?
-- Should autoformat stay plugin-configurable as data, or move partly into
-  executable behavior resolvers?
-- How should profile selection interact with package-level defaults?
+- Does Table clipboard customization have a real external replacement caller?
+- Which keyboard behaviors are mandatory for accessibility even when their
+  policy is replaceable?
+- Does table-aware clipboard need one Base capability plus a React host owner,
+  or one composed Table capability?

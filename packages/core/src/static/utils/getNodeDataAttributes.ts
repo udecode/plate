@@ -6,6 +6,10 @@ import {
   type BaseEditor,
   getEditorPlugin,
 } from '../../lib';
+import {
+  getCompiledPlateModelBinding,
+  getCompiledPlatePlugin,
+} from '../../internal/plugin/compilePlateModel';
 
 export const getNodeDataAttributes = (
   editor: BaseEditor,
@@ -22,17 +26,17 @@ export const getNodeDataAttributes = (
       if (isElement && key === 'children') return acc;
       if ((isLeaf || isText) && key === 'text') return acc;
 
-      const plugin = editor.getPlugin({ key });
+      const plugin = getCompiledPlatePlugin(editor, key);
 
-      if (isLeaf && plugin?.node.isLeaf && plugin?.node.isDecoration !== true) {
+      const binding = plugin
+        ? getCompiledPlateModelBinding(editor, plugin)
+        : undefined;
+
+      if (isLeaf && binding?.kind === 'mark' && !binding.isDecoration) {
         return acc;
       }
 
-      if (
-        isText &&
-        plugin?.node.isLeaf &&
-        plugin?.node.isDecoration !== false
-      ) {
+      if (isText && binding?.kind === 'mark' && binding.isDecoration) {
         return acc;
       }
 
@@ -52,9 +56,10 @@ export const getPluginDataAttributes = (
   plugin: AnyBasePlugin,
   node: Element
 ) => {
-  const isElement = plugin.node.isElement;
-  const isLeaf = plugin.node.isLeaf && plugin.node.isDecoration === true;
-  const isText = plugin.node.isLeaf && plugin.node.isDecoration === false;
+  const binding = getCompiledPlateModelBinding(editor, plugin);
+  const isElement = binding?.kind === 'element';
+  const isLeaf = binding?.kind === 'mark' && binding.isDecoration;
+  const isText = binding?.kind === 'mark' && !binding.isDecoration;
 
   const dataAttributes = getNodeDataAttributes(editor, node, {
     isElement,
@@ -62,7 +67,7 @@ export const getPluginDataAttributes = (
     isText,
   });
   const customAttributes =
-    plugin.node.toDataAttributes?.({
+    plugin.host.toDataAttributes?.({
       ...getEditorPlugin(editor, plugin),
       node,
     }) ?? {};

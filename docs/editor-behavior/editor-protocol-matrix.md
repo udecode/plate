@@ -4,9 +4,9 @@ This is the exhaustive scenario matrix for editor behavior.
 
 It is intentionally different from the other docs in this directory:
 
-- [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
+- [markdown-editing-spec.md](markdown-editing-spec.md)
   is the readable law
-- [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)
+- [markdown-parity-matrix.md](markdown-parity-matrix.md)
   is the family-level release gate
 - this file is the scenario-complete protocol backlog
 
@@ -22,11 +22,11 @@ Use this file to:
 
 - enumerate exhaustive protocol scenarios
 - map each scenario to the authority model from
-  [markdown-standards.md](docs/editor-behavior/markdown-standards.md)
+  [markdown-standards.md](markdown-standards.md)
 - connect scenarios to readable law in
-  [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
+  [markdown-editing-spec.md](markdown-editing-spec.md)
 - connect scenarios to coverage in
-  [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)
+  [markdown-parity-matrix.md](markdown-parity-matrix.md)
 
 Do not use this file as:
 
@@ -36,17 +36,17 @@ Do not use this file as:
 
 ## Relationship To Other Files
 
-| File                                                                        | Job                             |
-| --------------------------------------------------------------------------- | ------------------------------- |
-| [markdown-standards.md](docs/editor-behavior/markdown-standards.md)         | methodology and authority model |
-| [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)   | normative family-level law      |
-| [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md) | release-gate coverage by family |
-| `editor-protocol-matrix.md`                                                 | exhaustive scenario matrix      |
+| File                                                   | Job                             |
+| ------------------------------------------------------ | ------------------------------- |
+| [markdown-standards.md](markdown-standards.md)         | methodology and authority model |
+| [markdown-editing-spec.md](markdown-editing-spec.md)   | normative family-level law      |
+| [markdown-parity-matrix.md](markdown-parity-matrix.md) | release-gate coverage by family |
+| `editor-protocol-matrix.md`                            | exhaustive scenario matrix      |
 
 ## Source Of Authority
 
 This file must follow the authority stack in
-[markdown-standards.md](docs/editor-behavior/markdown-standards.md).
+[markdown-standards.md](markdown-standards.md).
 
 That means each family-level table should only give routing hints.
 
@@ -286,7 +286,7 @@ extended until every in-scope feature family is scenario-complete.
 | markdown-extension | inline math              | inline equation input      | collapsed                     | input left / right edge                            | `ArrowLeft` / `ArrowRight`               | hand control back to the editor at text edges                                                                                                                                                        | Typora / Milkdown                                                                             | `EDIT-MATH-INLINE-ARROW-001`   | `useEquationInput.spec.tsx`                                                                                                                                       | `tested`    |
 | markdown-extension | block math               | root                       | collapsed                     | insertion point                                    | insert equation                          | insert a void block equation at the requested path                                                                                                                                                   | remark-math + Typora / Milkdown                                                               | `EDIT-MATH-BLOCK-INSERT-001`   | `insertEquation.spec.ts`, `BaseEquationPlugin.spec.ts`                                                                                                            | `tested`    |
 | markdown-extension | block math               | next block                 | collapsed                     | block start after equation                         | `⌫`                                      | move selection onto the equation instead of deleting through it                                                                                                                                      | Typora / Milkdown                                                                             | `EDIT-MATH-BLOCK-BS-START-001` | `BaseEquationPlugin.spec.ts`                                                                                                                                      | `tested`    |
-| markdown-extension | autolink literal         | paragraph                  | collapsed                     | end of URL candidate                               | type space / `↵`                         | finalize the URL as a link using the current autolink heuristics and serialize plain URL links back to bare URL markdown                                                                             | GFM / GitHub Docs + Typora / Milkdown                                                         | `EDIT-AFF-LINK-001`            | `LinkRules.spec.tsx`, `gfmSurface.spec.ts`                                                                                                                         | `tested`    |
+| markdown-extension | autolink literal         | paragraph                  | collapsed                     | end of URL candidate                               | type space / `↵`                         | finalize the URL as a link using the current autolink heuristics and serialize plain URL links back to bare URL markdown                                                                             | GFM / GitHub Docs + Typora / Milkdown                                                         | `EDIT-AFF-LINK-001`            | `LinkRules.spec.tsx`, `gfmSurface.spec.ts`                                                                                                                        | `tested`    |
 | markdown-extension | footnote definition      | paragraph / block          | round-trip                    | footnote definition block                          | serialize / deserialize                  | preserve footnote definitions as dedicated `footnoteDefinition` blocks with an identifier and block children                                                                                         | GFM / GitHub Docs                                                                             | `EDIT-FOOTNOTE-DEF-001`        | `gfmSurface.spec.ts`, `packages/footnote/src/lib/BaseFootnoteDefinitionPlugin.ts`, `defaultRules.ts`                                                              | `tested`    |
 | markdown-extension | footnote reference       | paragraph                  | round-trip                    | footnote reference token                           | serialize / deserialize                  | preserve footnote references as dedicated inline `footnoteReference` elements with an identifier                                                                                                     | GFM / GitHub Docs                                                                             | `EDIT-FOOTNOTE-REF-001`        | `gfmSurface.spec.ts`, `packages/footnote/src/lib/BaseFootnoteReferencePlugin.ts`, `defaultRules.ts`                                                               | `tested`    |
 | markdown-extension | footnote package surface | editor                     | collapsed / expanded          | insertion point                                    | insert footnote                          | insert a reference, create a missing definition, seed the definition from the current selection when expanded, and focus the definition body                                                         | Typora-informed package contract + GFM / GitHub Docs                                          | `EDIT-FOOTNOTE-INSERT-001`     | `insertFootnote.spec.ts`, `BaseFootnotePlugins.spec.ts`                                                                                                           | `tested`    |
@@ -300,7 +300,7 @@ extended until every in-scope feature family is scenario-complete.
 | markdown-extension | footnote package surface | editor                     | any                           | identifier status                                  | resolved / duplicate detection           | expose unresolved and duplicate-definition status through package helpers instead of making every render layer rediscover it independently                                                           | local package contract informed by performance-first editor ownership                         | `EDIT-FOOTNOTE-PKG-001`        | `registry.ts`, `footnoteRegistry.spec.ts`, `BaseFootnoteReferencePlugin.ts`                                                                                       | `tested`    |
 | markdown-extension | footnote definition set  | editor                     | duplicate definitions present | same identifier reused across multiple definitions | normalize / repair duplicate definitions | keep the first definition canonical, keep later duplicates explicit invalid definitions, and only renumber on explicit repair action instead of silently merging or renumbering                      | local owner decision after GFM / GitHub Docs silence on duplicate-definition repair semantics | `EDIT-FOOTNOTE-DUP-001`        | `markdown-editing-spec.md`, `content/(plugins)/(elements)/footnote.mdx`, `footnoteRegistry.spec.ts`, `footnote-node.spec.tsx`                                     | `tested`    |
 | markdown-extension | footnote package surface | editor                     | n/a                           | n/a                                                | toolbar / slash                          | app-level toolbar and slash-command entries should call the same footnote insert transform instead of inventing separate creation logic                                                              | local package contract informed by Typora / Notion-style insertion chrome                     | `EDIT-FOOTNOTE-PKG-001`        | `transforms.ts`, `transforms-classic.ts`, `insert-toolbar-button.tsx`, `insert-toolbar-classic-button.tsx`, `slash-node.tsx`                                      | `specified` |
-| markdown-extension | emoji shortcode          | paragraph                  | round-trip                    | shortcode token                                    | serialize / deserialize                  | accept `:shortcode:` input in the default markdown profile, normalize it to unicode text, and serialize the unicode text back out                                                                    | local remark plugin contract informed by Typora / GitHub Docs                                 | `EDIT-EMOJI-001`               | `emojiSurface.spec.tsx`, `packages/markdown/src/lib/__tests__/createTestEditor.tsx`, `apps/www/src/registry/components/editor/plugins/markdown-kit.tsx`           | `tested`    |
+| markdown-extension | emoji shortcode          | paragraph                  | round-trip                    | shortcode token                                    | serialize / deserialize                  | accept `:shortcode:` input in the default markdown kit, normalize it to unicode text, and serialize the unicode text back out                                                                        | local remark plugin contract informed by Typora / GitHub Docs                                 | `EDIT-EMOJI-001`               | `emojiSurface.spec.tsx`, `packages/markdown/src/lib/__tests__/createTestEditor.tsx`, `apps/www/src/registry/components/editor/plugins/markdown-kit.tsx`           | `tested`    |
 | markdown-native    | image                    | paragraph                  | round-trip                    | width / height present on node                     | serialize                                | keep plain markdown limited to alt, src, and optional title; width and height remain HTML/MDX-only                                                                                                   | CommonMark + Typora / Milkdown                                                                | `EDIT-IMG-*`                   | `commonmarkSurface.spec.ts`, `defaultRules.spec.ts`                                                                                                               | `tested`    |
 
 ### Block-Editor-Native Elements
@@ -472,7 +472,7 @@ shows.
 ## Practical Use
 
 - Add exhaustive scenario rows here first.
-- Lock the chosen behavior in [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md).
-- Track family-level sufficiency in [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md).
+- Lock the chosen behavior in [markdown-editing-spec.md](markdown-editing-spec.md).
+- Track family-level sufficiency in [markdown-parity-matrix.md](markdown-parity-matrix.md).
 
 If a row only exists in the parity matrix, it is not protocol-complete yet.

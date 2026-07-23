@@ -14,10 +14,12 @@ Primary template:
 docs/plans/templates/major-task.md
 
 Applied packs:
+
 - docs (docs/plans/templates/packs/docs.md)
 - agent-native (docs/plans/templates/packs/agent-native.md)
 
 Major source:
+
 - type: chat correction plus explicit `autogoal`
 - id / link: current thread, 2026-06-03
 - title: Full docs taste profile through 10 batches of 10 docs files
@@ -30,6 +32,7 @@ Major source:
   verification checks pass
 
 Major lane:
+
 - lane: durable agent taste/profile consolidation
 - output type: checkpointed evidence log plus north-star profile update
 - implementation expected: yes, docs/rule update if evidence changes the
@@ -41,6 +44,7 @@ Major lane:
   run must read 100 concrete docs files and checkpoint after each batch.
 
 Completion threshold:
+
 - Ten iterations complete.
 - Each iteration reads exactly 10 concrete markdown files under `docs/**`.
 - The plan records each checkpoint's file list and extracted taste/profile
@@ -52,6 +56,7 @@ Completion threshold:
 - Verification commands pass.
 
 Verification surface:
+
 - Full-file local extraction for 10 batches of 10 docs files.
 - Plan checkpoint table with 100 file paths.
 - Source audit of north-star profile and `plite-automation` mirror.
@@ -61,12 +66,14 @@ Verification surface:
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-full-docs-taste-profile-ten-checkpoints.md`
 
 Constraints:
+
 - Keep the profile compact; do not dump raw chat or every line read.
 - Source docs stay authoritative; the profile is the entry lens.
 - Edit source rules under `.agents/rules/**`; generated skills are synced.
 - Do not commit, push, branch, or open PR.
 
 Boundaries:
+
 - Source of truth: markdown files under `docs/**`, existing source rules under
   `.agents/rules/**`, and the active goal plan.
 - Allowed edit scope: the profile doc, `plite-automation` source rule if
@@ -79,16 +86,19 @@ Boundaries:
   no raw dump of every line read.
 
 Output budget strategy:
+
 - Read each batch with a full-file extractor that prints only headings and
   decision/proof/taste-relevant lines. Record file lists and deltas in this
   plan instead of streaming full file bodies.
 
 Blocked condition:
+
 - Block only if fewer than 100 docs markdown files are available, file reads
   fail repeatedly, or verification exposes a broader policy conflict that
   cannot be resolved from repo docs.
 
 Major state:
+
 - task_type: major
 - task_complexity: major
 - current_phase: verification
@@ -97,6 +107,7 @@ Major state:
 - goal_status: active
 
 Current verdict:
+
 - verdict: 100-file checkpoint pass complete; profile and rule updated; final
   checker ready
 - confidence: high
@@ -105,6 +116,7 @@ Current verdict:
   source/generated skill mirrors are synced, and docs/lint gates passed.
 
 Completion rule:
+
 - Do not call `update_goal(status: complete)` until every completion threshold
   above is satisfied, final evidence is recorded, and the completion checker
   passes.
@@ -138,6 +150,7 @@ Start Gates:
 | `agent-native-reviewer` loaded or waiver recorded | yes | Loaded reviewer; scoped audit found source rule and generated skill mirror both expose the exact file-batch behavior. |
 
 Work Checklist:
+
 - [x] Objective, threshold, verification surface, constraints, boundaries, and
       blocker are concrete.
 - [x] Major source and lane are concrete.
@@ -211,6 +224,7 @@ Checkpoint details:
 ### Checkpoint 1
 
 Files read:
+
 - `docs/plite/automation-supervisor-north-star.md`
 - `docs/plite/agent-start.md`
 - `docs/plite/overview.md`
@@ -223,6 +237,7 @@ Files read:
 - `docs/plite/selection-navigation-coverage.md`
 
 Profile deltas:
+
 - Start every long loop from the profile, active plan, and narrow owner docs;
   broad architecture docs are reference material, not a live queue.
 - Public claims must stay exact: live `.tmp/plite` source/tests beat old docs,
@@ -235,6 +250,7 @@ Profile deltas:
 ### Checkpoint 2
 
 Files read:
+
 - `docs/plite/slate-react-perf-loop-context.md`
 - `docs/plite/references/deletion-closure-protocol.md`
 - `docs/plite/references/live-shape-register.md`
@@ -247,6 +263,7 @@ Files read:
 - `docs/plite/decoration-roadmap.md`
 
 Profile deltas:
+
 - Closure language must be brutally scoped: deletion closure, package-runtime
   closure, API closure, browser behavior closure, and RC readiness are different
   claims.
@@ -261,6 +278,7 @@ Profile deltas:
 ### Checkpoint 3
 
 Files read:
+
 - `docs/research/decisions/README.md`
 - `docs/research/decisions/plite-state-tx-public-api-and-extension-namespaces.md`
 - `docs/research/decisions/plite-read-update-runtime-architecture.md`
@@ -273,6 +291,7 @@ Files read:
 - `docs/research/decisions/plite-overlay-superiority-vs-legacy-and-field.md`
 
 Profile deltas:
+
 - Public API taste is `state` for reads, `tx` for writes, and extension-owned
   namespaces; flat `editor.*` method growth is the wrong DX.
 - The long-term shape is data-model-first core with React-perfect runtime lanes,
@@ -286,6 +305,7 @@ Profile deltas:
 ### Checkpoint 4
 
 Files read:
+
 - `docs/research/decisions/plite-source-scoped-overlay-invalidation.md`
 - `docs/research/decisions/plite-node-query-api-should-keep-lazy-entries-and-add-first-match-helpers.md`
 - `docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md`
@@ -295,9 +315,10 @@ Files read:
 - `docs/research/decisions/clipboard-and-delete-commands-need-explicit-lanes.md`
 - `docs/research/decisions/current-kit-autoformat-normalization-split.md`
 - `docs/research/decisions/plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md`
-- `docs/research/decisions/strict-mode-and-auto-pair-are-profile-options.md`
+- `docs/research/decisions/strict-mode-and-auto-pair-need-independent-packaging.md`
 
 Profile deltas:
+
 - Source-scoped overlay invalidation is required before any field-best decoration
   performance claim.
 - Query APIs should stay lazy with early-exit helpers and explicit
@@ -310,6 +331,7 @@ Profile deltas:
 ### Checkpoint 5
 
 Files read:
+
 - `docs/research/README.md`
 - `docs/research/index.md`
 - `docs/research/log.md`
@@ -322,6 +344,7 @@ Files read:
 - `docs/research/systems/plite-perfect-plan-steal-reject-defer-map.md`
 
 Profile deltas:
+
 - Research docs are a compiled agent layer between raw evidence and execution,
   not a personal knowledge dump or the default answer surface.
 - Use stable paths, one concept per file, knowledge-type organization, outward
@@ -335,6 +358,7 @@ Profile deltas:
 ### Checkpoint 6
 
 Files read:
+
 - `docs/research/systems/editor-behavior-architecture.md`
 - `docs/research/systems/plite-overlay-architecture.md`
 - `docs/research/systems/milkdown-behavior-map.md`
@@ -347,6 +371,7 @@ Files read:
 - `docs/research/entities/pretext.md`
 
 Profile deltas:
+
 - Behavior should be profile-driven: one shared model, multiple behaviors;
   nearest structure wins; one keypress changes one structural depth; profiles
   own decisions while plugins provide capabilities.
@@ -361,6 +386,7 @@ Profile deltas:
 ### Checkpoint 7
 
 Files read:
+
 - `docs/editor-behavior/README.md`
 - `docs/editor-behavior/master-roadmap.md`
 - `docs/editor-behavior/editor-protocol-matrix.md`
@@ -373,6 +399,7 @@ Files read:
 - `docs/plite-browser/proof-lane-matrix.md`
 
 Profile deltas:
+
 - Behavior artifacts have different authority: standards/specs are law, parity
   matrix is the release gate, protocol matrix is exhaustive backlog, and roadmap
   owns sequence.
@@ -386,6 +413,7 @@ Profile deltas:
 ### Checkpoint 8
 
 Files read:
+
 - `docs/plans/2026-06-03-compile-slate-automation-taste-profile.md`
 - `docs/plans/2026-06-03-create-slate-automation-skill.md`
 - `docs/plans/2026-06-03-enhance-slate-automation-autogoal-checkpoints.md`
@@ -398,6 +426,7 @@ Files read:
 - `docs/plans/2026-06-01-pagination-virtualization-char-burst-perf.md`
 
 Profile deltas:
+
 - The automation supervisor must own repair of missing tests, metrics, and
   skills while working; a wrapper that only delegates is too small.
 - Long work should be split into autogoal checkpoints to avoid compaction-quality
@@ -411,6 +440,7 @@ Profile deltas:
 ### Checkpoint 9
 
 Files read:
+
 - `docs/plans/2026-06-01-core-rich-text-operations-ar-perf.md`
 - `docs/plans/2026-06-01-react-huge-document-legacy-ar-perf.md`
 - `docs/plans/2026-06-01-history-compare-ar-perf.md`
@@ -423,6 +453,7 @@ Files read:
 - `docs/plans/2026-05-30-fix-pagination-virtualized-selection-shift.md`
 
 Profile deltas:
+
 - AR perf loops should be target-backed and stop only when under target,
   correctness-green plateaued, or blocked by concrete correctness/API evidence.
 - Benchmark-native metrics beat wrapped wall-clock timing. The target registry
@@ -436,6 +467,7 @@ Profile deltas:
 ### Checkpoint 10
 
 Files read:
+
 - `docs/plans/2026-05-29-pagination-left-margin-click-architecture.md`
 - `docs/plans/2026-05-29-plite-pagination-architecture-review.md`
 - `docs/plans/2026-05-28-pagination-virtualized-interaction-correctness.md`
@@ -448,6 +480,7 @@ Files read:
 - `docs/plite-issues/roadmap-from-issues.md`
 
 Profile deltas:
+
 - Best shared owner beats example-only hacks. Pagination should stress the
   layout/editor boundary without turning raw Plite into a product pagination API.
 - Public examples must teach the intended API, not runtime substrate. If examples
@@ -461,6 +494,7 @@ Profile deltas:
   cursor plus single invocation is not enough.
 
 Findings:
+
 - Checkpoints 1-10 complete.
 - The north-star profile now records the 100-doc synthesis without becoming a raw
   dump.
@@ -468,6 +502,7 @@ Findings:
   ingestion for profile work.
 
 Decisions and tradeoffs:
+
 - The corrected loop uses concrete file batches, not thematic source families.
 - The extractor reads full file content locally and emits only relevant lines
   to protect the goal budget.
@@ -477,6 +512,7 @@ Decisions and tradeoffs:
   evidence layer.
 
 Implementation notes:
+
 - Updated `docs/plite/automation-supervisor-north-star.md` with:
   100-doc source scan, synthesis rules, source-weighting rule, simple-model plus
   explicit-runtime rule, behavior-profile rule, benchmark target authority
@@ -486,6 +522,7 @@ Implementation notes:
 - Ran `pnpm install` to regenerate `.agents/skills/slate-automation/SKILL.md`.
 
 Review fixes:
+
 - Scoped agent-native review found no additional actionable issue after source
   and generated mirror audit.
 
@@ -495,6 +532,7 @@ Error attempts:
 | Previous run used 10 thematic passes instead of 10 batches of 10 files | 1 | Run a fresh 100-file checkpointed autogoal | Resolved by 10 x 10-file checkpoints and `plite-automation` rule repair. |
 
 Verification evidence:
+
 - `pnpm install` passed and regenerated Skiller output.
 - `rg -n "batch shape|10 iterations|file-batched|100-doc|Behavior should be profile-driven|Cold estimates" docs/plite/automation-supervisor-north-star.md .agents/rules/slate-automation.mdc .agents/skills/slate-automation/SKILL.md` passed.
 - `pnpm docs:plite:audit` passed: Plite docs audit passed.
@@ -502,6 +540,7 @@ Verification evidence:
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-full-docs-taste-profile-ten-checkpoints.md` passed: `[autogoal] complete: docs/plans/2026-06-03-full-docs-taste-profile-ten-checkpoints.md`.
 
 Final handoff contract:
+
 - Recommendation: keep `docs/plite/automation-supervisor-north-star.md` as
   checkpoint zero for overnight Plite automation and use concrete file-batched
   ingestion whenever the profile is being improved.
@@ -518,6 +557,7 @@ Final handoff contract:
   run target-specific loops next.
 
 Timeline:
+
 - 2026-06-03T11:33:14.735Z Major-task goal plan created.
 - 2026-06-03 Corrected goal created after user clarified exact 10x10-file
   checkpoint requirement.
@@ -532,6 +572,7 @@ Reboot status:
 | What have I done? | Read and logged 100 docs, updated profile, repaired `plite-automation`, synced mirror, and ran verification gates |
 
 Open risks:
+
 - 100 files is a high-signal slice, not all 1733 docs markdown files. Mitigation:
   every selected file is explicit and future profile updates must use requested
   concrete file batches.

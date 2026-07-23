@@ -1,21 +1,11 @@
-import type { AnyObject, Nullable } from '@udecode/utils';
-
 import type { BaseEditor } from '../../../editor';
-import type { HtmlDeserializer } from '../../../plugin/BasePlugin';
-
-import { pluginDeserializeHtml } from './pluginDeserializeHtml';
+import { pipeDeserializeHtmlElementWithParserRuntime } from '../../../../internal/plugin/html-parser-runtime';
+import { withPreparedParserRuntime } from '../../../../internal/plugin/prepareParserRegistry';
 
 export const pipeDeserializeHtmlElement = (
   editor: BaseEditor,
   element: HTMLElement
-) => {
-  let result: (Nullable<HtmlDeserializer> & { node: AnyObject }) | undefined;
-
-  [...editor.runtime.pluginList].reverse().some((plugin) => {
-    result = pluginDeserializeHtml(editor, plugin, { element });
-
-    return !!result;
-  });
-
-  return result;
-};
+) =>
+  withPreparedParserRuntime(editor, (runtime) =>
+    pipeDeserializeHtmlElementWithParserRuntime(runtime, element)
+  );

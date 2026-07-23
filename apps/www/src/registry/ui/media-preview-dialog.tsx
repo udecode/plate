@@ -8,7 +8,7 @@ import {
 } from '@platejs/media/react';
 import { cva } from 'class-variance-authority';
 import { ArrowLeft, ArrowRight, Download, Minus, Plus, X } from 'lucide-react';
-import { useEditorRef } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -28,7 +28,7 @@ const SCROLL_SPEED = 4;
 const DEFAULT_DOWNLOAD_FILENAME = 'image';
 
 export function MediaPreviewDialog() {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const isOpen = useImagePreviewValue('isOpen', editor.id);
   const scale = useImagePreviewValue('scale');
   const isEditingScale = useImagePreviewValue('isEditingScale');

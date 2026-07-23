@@ -193,9 +193,11 @@ export const useElementContext = (scope?: string) => {
 
   if (providerContext) return providerContext;
 
+  if (scope) return null;
+
   if (currentElementContext) return currentElementContext;
 
-  return findElementContext(context, scope);
+  return findElementContext(context);
 };
 
 export const useElementStoreContext = (scope?: string) => {

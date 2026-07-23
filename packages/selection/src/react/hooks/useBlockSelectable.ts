@@ -2,11 +2,8 @@ import type React from 'react';
 
 import { type Element, type Path, PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
-import {
-  type PlateEditor,
-  useElementContext,
-  useEditorPlugin,
-} from '@platejs/core/react';
+import { type PlateEditor, useEditorPlugin } from '@platejs/core/react';
+import { useElementContext } from '@platejs/core/react/internal';
 
 import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
 
@@ -27,9 +24,9 @@ export const addOnContextMenu = (
     disabledWhenFocused?: boolean;
   }
 ) => {
-  const blockSelection = editor.plugin<BlockSelectionConfig>(
-    KEYS.blockSelection
-  );
+  const blockSelection = editor.plugin<BlockSelectionConfig>({
+    key: KEYS.blockSelection,
+  });
   const { enableContextMenu, selectedIds } = blockSelection.getOptions();
 
   if (!enableContextMenu) return;

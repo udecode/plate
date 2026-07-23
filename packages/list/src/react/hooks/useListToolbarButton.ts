@@ -1,4 +1,4 @@
-import { useEditorRef, useEditorSelector } from '@platejs/core/react';
+import { useEditor, useEditorSelector } from '@platejs/core/react';
 
 import { ListStyleType } from '../../lib/types';
 import { ListPlugin } from '../ListPlugin';
@@ -8,9 +8,8 @@ export const useListToolbarButtonState = ({
 }: {
   nodeType?: string;
 } = {}) => {
-  const pressed = useEditorSelector(
-    (editor) => editor.plugin(ListPlugin).api.isActive(nodeType),
-    [nodeType]
+  const pressed = useEditorSelector((editor) =>
+    editor.plugin(ListPlugin).api.isActive(nodeType)
   );
 
   return {
@@ -23,7 +22,7 @@ export const useListToolbarButton = ({
   nodeType,
   pressed,
 }: ReturnType<typeof useListToolbarButtonState>) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return {
     props: {

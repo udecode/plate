@@ -134,15 +134,29 @@ export const toPlainText = async (surface: SurfaceTarget, html: string) =>
     return container.textContent ?? '';
   }, html);
 
-export const shouldUseSyntheticHtmlPaste = async (surface: SurfaceTarget) =>
-  surface.evaluate(() => {
-    const userAgent = navigator.userAgent;
+export const requiresSyntheticHtmlPasteTransport = ({
+  maxTouchPoints,
+  userAgent,
+}: {
+  maxTouchPoints: number;
+  userAgent: string;
+}) => {
+  const isMobileEmulation =
+    maxTouchPoints > 0 && userAgent.includes('Mobile');
+  const isWebKit =
+    userAgent.includes('AppleWebKit') &&
+    !['Chrome', 'Chromium', 'Edg/'].some((token) => userAgent.includes(token));
 
-    return (
-      userAgent.includes('AppleWebKit') &&
-      !['Chrome', 'Chromium', 'Edg/'].some((token) => userAgent.includes(token))
-    );
-  });
+  return isMobileEmulation || isWebKit;
+};
+
+export const shouldUseSyntheticHtmlPaste = async (surface: SurfaceTarget) =>
+  requiresSyntheticHtmlPasteTransport(
+    await surface.evaluate(() => ({
+      maxTouchPoints: navigator.maxTouchPoints,
+      userAgent: navigator.userAgent,
+    }))
+  );
 
 export const copyPayloadThroughEvent = async (
   root: Locator

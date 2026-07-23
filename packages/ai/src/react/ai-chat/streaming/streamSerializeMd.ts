@@ -1,6 +1,6 @@
 import type { PlateEditor } from '@platejs/core/react';
 
-import { type SerializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
+import type { MarkdownEditor, SerializeMdOptions } from '@platejs/markdown';
 import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
 import { getPluginKey } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
@@ -99,7 +99,7 @@ const escapeEmbeddedTextLineBreaks = (
 };
 
 export const streamSerializeMd = (
-  editor: PlateEditor,
+  editor: MarkdownEditor<PlateEditor>,
   options: SerializeMdOptions,
   chunk: string
 ) => {
@@ -112,7 +112,7 @@ export const streamSerializeMd = (
 
   let result = '';
 
-  result = editor.plugin(MarkdownPlugin).api.serialize({
+  result = editor.api.markdown.serialize({
     value,
     ...restOptions,
   });

@@ -5,13 +5,18 @@ import {
 } from '@platejs/plite-react';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
-import { useEditorRef, usePlateValue } from '../stores';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { usePlateModelRevision } from '../internal/usePlateModelRevision';
+import { useEditor, usePlateValue } from '../stores';
 
 export const PlateContainer = ({
   children,
   ...props
 }: HTMLAttributes<HTMLDivElement>) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
+
+  usePlateModelRevision(editor);
+
   const plateReadOnly = useOptionalEditorReadOnly();
   const editorReadOnly = useEditorViewState(editor, (view) =>
     view.isReadOnly()
@@ -29,7 +34,7 @@ export const PlateContainer = ({
     </div>
   );
 
-  editor.runtime.pluginCache.render.beforeContainer.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.render.beforeContainer.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     if (isEditOnly(readOnly, plugin, 'render')) return;
 
@@ -43,7 +48,7 @@ export const PlateContainer = ({
     );
   });
 
-  editor.runtime.pluginCache.render.afterContainer.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.render.afterContainer.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     if (isEditOnly(readOnly, plugin, 'render')) return;
 

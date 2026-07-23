@@ -98,7 +98,7 @@ const editor = createPlateEditor({
     H2Plugin.withComponent(H2Element),
     H3Plugin.withComponent(H3Element),
     TocPlugin.configure({
-      node: { component: TocElement },
+      render: { node: TocElement },
       options: {
         topOffset: 80,
         isScroll: true,
@@ -108,7 +108,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `node.component`: Assigns [`TocElement`](/docs/components/toc-node) to render table of contents elements.
+- `render.node`: Assigns [`TocElement`](/docs/components/toc-node) to render table of contents elements.
 - `options.topOffset`: Sets the top offset when scrolling to headings.
 - `options.isScroll`: Enables scrolling behavior to headings.
 
@@ -130,10 +130,10 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 - If you render a custom scroll container, register it with `useEditorScrollElementRef(editor)`.
 
 ```tsx
-import { useEditorRef, useEditorScrollElementRef } from 'platejs/react';
+import { useEditor, useEditorScrollElementRef } from 'platejs/react';
 
 function Layout() {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const scrollRef = useEditorScrollElementRef(editor);
 
   return (

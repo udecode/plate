@@ -1,14 +1,12 @@
 import type { InferPluginConfig } from '@platejs/core';
-import { type PlateEditor, useEditorRef } from '@platejs/core/react';
+import { type PlateEditor, useEditor } from '@platejs/core/react';
 import type { Value } from '@platejs/plite';
 
 import type { BaseIndentPlugin } from '../../lib/BaseIndentPlugin';
 
 export const useOutdentButton = () => {
   const editor =
-    useEditorRef<
-      PlateEditor<Value, InferPluginConfig<typeof BaseIndentPlugin>>
-    >();
+    useEditor<PlateEditor<Value, InferPluginConfig<typeof BaseIndentPlugin>>>();
 
   return {
     props: {

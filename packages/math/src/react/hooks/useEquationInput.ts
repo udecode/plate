@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 import { isHotkey } from '@platejs/core';
-import { useEditorRef, useElement } from '@platejs/core/react';
+import { useEditor, useElement } from '@platejs/core/react';
 import type { TEquationElement } from '@platejs/utils';
 
 export const useEquationInput = ({
@@ -13,7 +13,7 @@ export const useEquationInput = ({
   open?: boolean;
   onClose?: () => void;
 }) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const element = useElement<TEquationElement>();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [expressionInput, setExpressionInput] = React.useState<string>(

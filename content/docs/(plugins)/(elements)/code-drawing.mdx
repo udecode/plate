@@ -120,11 +120,11 @@ Plugin for rendering code drawings (PlantUml, Graphviz, Flowchart, Mermaid) with
 
 ## API
 
-### `editor.update.code_drawing.insert`
+### `editor.update.codeDrawing.insert`
 
 Inserts a code drawing element at the current selection.
 
-<API name="editor.update.code_drawing.insert">
+<API name="editor.update.codeDrawing.insert">
 <APIParameters>
 <APIItem name="props" type="NodeProps<TCodeDrawingElement>" optional>
 Props for the code drawing element.
@@ -207,7 +207,7 @@ The code drawing element type.
 <API name="TCodeDrawingElement">
 <APIAttributes>
 <APIItem name="type" type="string">
-The element type. Always `KEYS.codeDrawing`.
+The serialized element type. Always `NODES.codeDrawing` (`code_drawing`).
 </APIItem>
 <APIItem name="data" type="CodeDrawingData" optional>
 The data for the code drawing element.

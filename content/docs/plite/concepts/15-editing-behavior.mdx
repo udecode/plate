@@ -1,6 +1,6 @@
 ---
 title: "Editing Behavior"
-description: "Understand how browser input, transactions, operations, normalization, commits, rendering, and proof fit together."
+description: "Understand how browser input, transactions, changes, corrections, commits, rendering, and proof fit together."
 ---
 
 Editing behavior is the path from user intent to committed Plite state. Use this page for the runtime pipeline; use [Selection And DOM](16-selection-and-dom) for caret, native selection, and DOM coverage rules.
@@ -13,7 +13,7 @@ Most editing bugs come from putting behavior in the wrong layer.
 | -------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `Editable` event props           | One React editable needs a local browser shortcut or event hook.                                          | `@platejs/plite-react`                          |
 | `editor.update((tx) => ...)`     | A command should change the document, selection, marks, roots, or state.                                  | `@platejs/plite`                                |
-| Extension `transforms`           | A reusable behavior should affect keyboard, native input, programmatic transforms, and tests.             | `@platejs/plite`                                |
+| Extension `commands`             | A reusable semantic action should compose across browser, programmatic, and test callers.                 | `@platejs/plite`                                |
 | Extension `clipboard.insertData` | Paste or drop ingress needs package-owned policy.                                                         | `@platejs/plite` plus host clipboard data       |
 | DOM coverage boundaries          | Model content exists but its DOM is intentionally hidden or virtualized.                                  | `@platejs/plite-dom` and `@platejs/plite-react` |
 | `@platejs/browser`               | A behavior claim needs model, DOM, native selection, focus, trace, screenshot, or follow-up typing proof. | `@platejs/browser`                              |
@@ -29,10 +29,10 @@ Plite edits run through explicit owners.
 | Browser event        | The browser sends key, beforeinput, input, paste, cut, drop, focus, drag, or selection events.                       | Browser                                         |
 | Editable handler     | `Editable` runs app handlers and decides whether Plite should continue.                                              | `@platejs/plite-react`                          |
 | Input import         | Plite imports the relevant DOM/native selection when the browser owns the current edit target.                       | `@platejs/plite-react` and `@platejs/plite-dom` |
-| Transform middleware | Extension transform hooks can handle, wrap, or pass through semantic edit names.                                     | `@platejs/plite`                                |
+| Command dispatch      | Pure extension command handlers consume, delegate, or compose typed semantic actions.                                | `@platejs/plite`                                |
 | Transaction          | `editor.update((tx) => ...)` groups model writes into one runtime change.                                            | `@platejs/plite`                                |
-| Operations           | Plite records low-level operations for document, selection, root, and state changes.                                 | `@platejs/plite`                                |
-| Normalization        | Built-in and extension normalizers repair invalid document shapes.                                                   | `@platejs/plite`                                |
+| Canonical change     | Plite builds one root-aware `DocumentChange` for the complete transaction.                                           | `@platejs/plite`                                |
+| Corrections          | Built-in and extension corrections repair changed ranges to a deterministic fixed point.                            | `@platejs/plite`                                |
 | Commit               | Subscribers, history, React, replay, collaboration adapters, and proof tools observe one committed change.           | `@platejs/plite`                                |
 | Render and repair    | React renders the new state and exports a valid DOM/native selection when needed.                                    | `@platejs/plite-react`                          |
 | Proof                | Browser tests assert the model, DOM, native selection, focus, trace, and follow-up typing that matter for the claim. | `@platejs/browser`                              |
@@ -75,47 +75,63 @@ editor.update((tx) => {
 });
 ```
 
-Keep writes inside one update when they belong to one user action. That gives history, subscribers, React rendering, operation replay, and proof tooling one change to observe.
+Keep writes inside one update when they belong to one user action. That gives history, subscribers, React rendering, change replay, and proof tooling one commit to observe.
 
 Use [Transforms](04-transforms) for the concept guide and [Transforms API](../api/transforms) for the exact transaction groups.
 
-## Transform Middleware
+## Command Handlers
 
-Reusable behavior belongs in extension transform middleware when it should apply outside one React event.
+Reusable semantic behavior belongs in pure extension command handlers when it
+should apply outside one React event.
 
 ```tsx
-import { defineEditorExtension, RangeApi } from "@platejs/plite";
+import {
+  defineEditorExtension,
+  editorCommands,
+  RangeApi,
+} from "@platejs/plite";
 
 const shortcuts = defineEditorExtension({
   name: "shortcuts",
-  transforms: {
-    insertText({ next, text, tx }) {
-      const selection = tx.selection();
+  commands: ({ handle }) => [
+    handle(editorCommands.insertText, ({ input, state }) => {
+      const selection = state.selection();
 
-      if (text === " " && selection && RangeApi.isCollapsed(selection)) {
-        tx.nodes.set({ type: "heading-one" });
-        return true;
+      if (input.text !== " " || !selection || !RangeApi.isCollapsed(selection)) {
+        return false;
       }
 
-      return next();
-    },
-  },
+      return state.transaction((tx) => {
+        tx.nodes.set({ type: "heading-one" });
+        tx.text.insert(input.text, input.options);
+      });
+    }),
+  ],
 });
 ```
 
-Use this for semantic edit names such as `insertText`, `insertBreak`, `deleteBackward`, `deleteForward`, and paste insertion policy. It keeps behavior available to keyboard input, native input, programmatic commands, tests, and browser proof.
+Use built-in definitions such as `editorCommands.insertText`,
+`editorCommands.insertBreak`, `editorCommands.delete`, and
+`editorCommands.replaceSlice`. A handler returns `false` or an immutable
+`TransactionSpec`. Returning `false` delegates to the next handler or the
+built-in implementation. Use `around(descriptor, handler)` from the command
+factory only when a handler must rewrite input or compose with downstream
+behavior.
 
-## Operations And Normalization
+## Changes And Corrections
 
-Operations are the replay boundary. Plite records the low-level changes produced by a transaction, then normalizes the affected tree.
+`DocumentChange` is the replay boundary. Plite corrects the affected regions
+before publishing the final change.
 
 ```tsx
 editor.update({ tags: "remote-import" }, (tx) => {
-  tx.operations.replay(remoteOperations);
+  tx.changes.apply(DocumentChange.fromJSON(remoteChange));
 });
 ```
 
-Use [Operations](05-operations) when you need the replay model. Use [Normalizing](11-normalizing) when a structural edit can leave the document temporarily invalid.
+Use [Document Changes](05-document-changes) for replay and mapping. Use
+[Normalizing](11-normalizing) when a structural edit can leave the document
+temporarily invalid.
 
 ## Commits And React
 
@@ -123,7 +139,7 @@ A finished update publishes one commit. Runtime subscribers can observe it, hist
 
 ```tsx
 const unsubscribe = editor.subscribe((_snapshot, change) => {
-  if (change?.childrenChanged || change?.dirtyStateKeys.length) {
+  if (change?.changed.has("document") || change?.dirtyStateKeys.length) {
     saveDocument(editor.read.value());
   }
 });
@@ -160,9 +176,9 @@ Use [Browser](/docs/browser) when a claim depends on browser events, focus, nati
 | ------------------------------------------------------- | --------------------------------------------------------------------------- |
 | Add one local hotkey                                    | [Plite React Event Handling](../libraries/plite-react/event-handling)       |
 | Write a reusable command                                | [Commands](06-commands) and [Transforms](04-transforms)                     |
-| Change Enter, Backspace, Delete, or typed text behavior | [Extensions](08-extensions#transform-middleware)                            |
+| Change Enter, Backspace, Delete, or typed text behavior | [Commands](06-commands) and [Extensions](08-extensions#commands-and-corrections) |
 | Preserve valid document shape                           | [Normalizing](11-normalizing)                                               |
-| Replay operations from storage or sync                  | [Operation Replay Substrate](../walkthroughs/07-operation-replay-substrate) |
+| Apply document changes from storage or sync             | [Canonical Change Substrate](../walkthroughs/07-canonical-change-substrate) |
 | Debug caret or DOM selection bugs                       | [Selection And DOM](16-selection-and-dom)                                   |
 | Own paste, copy, drop, or fragment import policy        | [Clipboard And Paste](17-clipboard-and-paste)                               |
 | Build comments, highlights, diagnostics, or overlay UI  | [Projection And Overlays](18-projection-and-overlays)                       |

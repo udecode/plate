@@ -9,13 +9,6 @@ import {
 } from '@platejs/selection/react';
 import { resizeLengthClampStatic } from '@platejs/resizable';
 import {
-  getTableColumnCount,
-  setCellBackground,
-  setTableColSize,
-  setTableMarginLeft,
-  setTableRowSize,
-} from '@platejs/table';
-import {
   TablePlugin,
   TableProvider,
   roundCellSizeToStep,
@@ -58,7 +51,7 @@ import {
   PlateElement,
   useComposedRef,
   useEditorPlugin,
-  useEditorRef,
+  useEditor,
   useEditorSelector,
   useElement,
   useFocusedLast,
@@ -145,7 +138,7 @@ const TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS = 150;
 
 const getTablePlugin = (editor: PlateEditor) => editor.plugin(TablePlugin);
 
-const getTableApi = (editor: PlateEditor) => getTablePlugin(editor).api;
+const getTableApi = (editor: PlateEditor) => editor.plugin(TablePlugin).api;
 
 const TableResizeContext = React.createContext<TableResizeContextValue | null>(
   null
@@ -334,7 +327,10 @@ function useTableResizeController({
 
   const commitColSize = React.useCallback(
     (colIndex: number, width: number) => {
-      setTableColSize(editor, { colIndex, width }, { at: tablePath });
+      getTablePlugin(editor).update.setColumnSize(
+        { colIndex, width },
+        { at: tablePath }
+      );
       setTimeout(() => overrideColSize(colIndex, null), 0);
     },
     [editor, overrideColSize, tablePath]
@@ -342,7 +338,10 @@ function useTableResizeController({
 
   const commitRowSize = React.useCallback(
     (rowIndex: number, height: number) => {
-      setTableRowSize(editor, { height, rowIndex }, { at: tablePath });
+      getTablePlugin(editor).update.setRowSize(
+        { height, rowIndex },
+        { at: tablePath }
+      );
       setTimeout(() => overrideRowSize(rowIndex, null), 0);
     },
     [editor, overrideRowSize, tablePath]
@@ -350,8 +349,7 @@ function useTableResizeController({
 
   const commitMarginLeft = React.useCallback(
     (nextMarginLeft: number) => {
-      setTableMarginLeft(
-        editor,
+      getTablePlugin(editor).update.setMarginLeft(
         { marginLeft: nextMarginLeft },
         { at: tablePath }
       );
@@ -612,6 +610,7 @@ export const TableElement = withHOC(
     children,
     ...props
   }: PlateElementProps<TTableElement>) {
+    const { api } = useEditorPlugin(TablePlugin);
     const readOnly = useEditorReadOnly();
     const isSelectionAreaVisible = usePluginOption(
       BlockSelectionPlugin,
@@ -626,7 +625,7 @@ export const TableElement = withHOC(
     const deferColumnResize =
       (colSizes?.length ?? 0) * (props.element.children?.length ?? 0) >
       TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
-    const tablePath = useElementSelector(([, path]) => path, [], {
+    const tablePath = useElementSelector(([, path]) => path, {
       key: KEYS.table,
     });
     const tableRef = React.useRef<HTMLTableElement>(null);
@@ -648,10 +647,10 @@ export const TableElement = withHOC(
       }
 
       return Array.from(
-        { length: getTableColumnCount(props.element) },
+        { length: api.getColumnCount(props.element) },
         () => TABLE_DEFAULT_COLUMN_WIDTH
       );
-    }, [colSizes, props.element]);
+    }, [api, colSizes, props.element]);
     const tableVariableStyle = React.useMemo(() => {
       if (resolvedColSizes.length === 0) {
         return;
@@ -767,13 +766,11 @@ function TableFloatingToolbar({
   ...props
 }: React.ComponentProps<typeof PopoverContent>) {
   const selectedCellCount = useEditorSelector(
-    (editor) => getTableApi(editor).getSelectedCellIds()?.length ?? 0,
-    []
+    (editor) => getTableApi(editor).getSelectedCellIds()?.length ?? 0
   );
   const selected = useElementSelected();
   const collapsedInside = useEditorSelector(
-    (editor) => selected && editor.read.selection.isCollapsed(),
-    [selected]
+    (editor) => selected && editor.read.selection.isCollapsed()
   );
   const isFocusedLast = useFocusedLast();
   const isCollapsedToolbarOpen = isFocusedLast && collapsedInside;
@@ -851,22 +848,22 @@ function CollapsedTableFloatingToolbarContent(
       canSplit={canSplit}
       collapsedInside
       onDeleteColumn={() => {
-        editor.update.remove.tableColumn();
+        getTablePlugin(editor).update.removeColumn();
       }}
       onDeleteRow={() => {
-        editor.update.remove.tableRow();
+        getTablePlugin(editor).update.removeRow();
       }}
       onInsertColumnAfter={() => {
-        editor.update.insert.tableColumn();
+        getTablePlugin(editor).update.insertColumn();
       }}
       onInsertColumnBefore={() => {
-        editor.update.insert.tableColumn({ before: true });
+        getTablePlugin(editor).update.insertColumn({ before: true });
       }}
       onInsertRowAfter={() => {
-        editor.update.insert.tableRow();
+        getTablePlugin(editor).update.insertRow();
       }}
       onInsertRowBefore={() => {
-        editor.update.insert.tableRow({ before: true });
+        getTablePlugin(editor).update.insertRow({ before: true });
       }}
       onSplit={() => {
         getTablePlugin(editor).update.split();
@@ -1018,7 +1015,7 @@ function TableFloatingToolbarContent({
 function TableBordersDropdownMenuContent(
   props: React.ComponentProps<typeof DropdownMenuContent>
 ) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const {
     getOnSelectTableBorder,
     hasBottomBorder,
@@ -1101,12 +1098,12 @@ function ColorDropdownMenu({
 }) {
   const [open, setOpen] = React.useState(false);
 
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   const onUpdateColor = React.useCallback(
     (color: string) => {
       setOpen(false);
-      setCellBackground(editor, {
+      getTablePlugin(editor).update.setCellBackground({
         color,
         selectedCells: getTableApi(editor).getSelectedCells() ?? [],
       });
@@ -1116,7 +1113,7 @@ function ColorDropdownMenu({
 
   const onClearColor = React.useCallback(() => {
     setOpen(false);
-    setCellBackground(editor, {
+    getTablePlugin(editor).update.setCellBackground({
       color: null,
       selectedCells: getTableApi(editor).getSelectedCells() ?? [],
     });
@@ -1153,13 +1150,12 @@ export function TableRowElement({
 }: PlateElementProps<TTableRowElement>) {
   const { element } = props;
   const readOnly = useEditorReadOnly();
-  const editor = useEditorRef();
-  const rowIndex = useElementSelector(([, path]) => path.at(-1) as number, [], {
+  const editor = useEditor();
+  const rowIndex = useElementSelector(([, path]) => path.at(-1) as number, {
     key: KEYS.tr,
   });
   const rowSize = useElementSelector(
     ([node]) => (node as TTableRowElement).size,
-    [],
     {
       key: KEYS.tr,
     }
@@ -1219,7 +1215,8 @@ export function TableRowElement({
 }
 
 function useTableCellPresentation(element: TTableCellElement) {
-  const { api } = useEditorPlugin(TablePlugin);
+  const { editor } = useEditorPlugin(TablePlugin);
+  const api = editor.plugin(TablePlugin).api;
   const borders = useTableCellBorders({ element });
   const { col, row } = useCellIndices();
 
@@ -1245,7 +1242,7 @@ function useTableCellPresentation(element: TTableCellElement) {
 }
 
 function RowDragHandle({ dragRef }: { dragRef: React.Ref<HTMLButtonElement> }) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const element = useElement<TTableRowElement>();
 
   return (
@@ -1295,10 +1292,10 @@ export function TableCellElement({
   const readOnly = useEditorReadOnly();
   const element = props.element;
 
-  const tableId = useElementSelector(([node]) => node.id as string, [], {
+  const tableId = useElementSelector(([node]) => node.id as string, {
     key: KEYS.table,
   });
-  const rowId = useElementSelector(([node]) => node.id as string, [], {
+  const rowId = useElementSelector(([node]) => node.id as string, {
     key: KEYS.tr,
   });
   const isSelectingTable = useBlockSelected(tableId);

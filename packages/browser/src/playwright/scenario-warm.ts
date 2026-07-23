@@ -4,6 +4,14 @@ import type {
   PliteBrowserWarmToolbarArrowGauntletOptions,
 } from './types';
 
+const requirePositiveIterationCount = (value: number) => {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new TypeError('iterations must be a positive integer.');
+  }
+
+  return value;
+};
+
 const createWarmTimingWaitStep = (label: string): PliteBrowserScenarioStep => ({
   kind: 'settle',
   label,
@@ -25,7 +33,7 @@ export const createPliteBrowserWarmLoopSteps = ({
   iterations = 1,
   label = 'warm-loop',
 }: PliteBrowserWarmLoopOptions): PliteBrowserScenarioStep[] => {
-  const count = Math.max(1, iterations);
+  const count = requirePositiveIterationCount(iterations);
 
   return Array.from({ length: count }, (_, index) =>
     createIteration(index + 1).map((step) => ({

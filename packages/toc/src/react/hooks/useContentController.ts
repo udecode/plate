@@ -5,7 +5,7 @@ import React from 'react';
 import {
   type NavigationFeedbackConfig,
   type PlateEditor,
-  useEditorRef,
+  useEditor,
 } from '@platejs/core/react';
 import type { Path, Value } from '@platejs/plite';
 
@@ -20,7 +20,7 @@ export const useContentController = ({
   rootMargin,
   topOffset,
 }: UseContentController) => {
-  const editor = useEditorRef<PlateEditor<Value, NavigationFeedbackConfig>>();
+  const editor = useEditor<PlateEditor<Value, NavigationFeedbackConfig>>();
 
   const isScroll =
     (container?.scrollHeight || 0) > (container?.clientHeight || 0);

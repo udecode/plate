@@ -1,4 +1,4 @@
-import { type BaseEditor, getPluginTypes } from '@platejs/core';
+import type { BaseEditor } from '@platejs/core';
 import {
   ElementApi,
   NodeApi,
@@ -7,15 +7,11 @@ import {
   type Path,
   type Range,
   type Selection,
-  type SetSelectionOperation,
 } from '@platejs/plite';
 import type { TCaptionElement } from '@platejs/utils';
 
-import type { CaptionConfig } from './BaseCaptionPlugin';
-
 const arrowUpSelectionMoves = new WeakSet<BaseEditor>();
 
-type CaptionOptions = CaptionConfig['options'];
 type SetCaptionFocusPath = (path: Path) => void;
 
 /** TODO: tests https://github.com/udecode/editor-protocol/issues/79 */
@@ -37,17 +33,15 @@ export const markCaptionArrowUpSelectionMove = (editor: BaseEditor) => {
 
 export const focusCaptionAfterArrowUpSelectionMove = (
   editor: BaseEditor,
-  options: CaptionOptions,
-  operation: SetSelectionOperation,
+  targetTypes: readonly string[],
+  selection: Selection,
   setFocusPath: SetCaptionFocusPath
 ) => {
   if (!arrowUpSelectionMoves.delete(editor)) return false;
 
-  const selection = getSetSelectionTarget(editor.read.selection(), operation);
-
   if (!selection || !RangeApi.isCollapsed(selection)) return false;
 
-  const entry = findCaptionEntry(editor, options, selection);
+  const entry = findCaptionEntry(editor, targetTypes, selection);
 
   if (!entry || !hasCaptionText(entry[0])) return false;
 
@@ -60,10 +54,10 @@ export const focusCaptionAfterArrowUpSelectionMove = (
 
 export const focusCaptionFromCurrentBlock = (
   editor: BaseEditor,
-  options: CaptionOptions,
+  targetTypes: readonly string[],
   setFocusPath: SetCaptionFocusPath
 ) => {
-  const entry = findCaptionBlock(editor, options);
+  const entry = findCaptionBlock(editor, targetTypes);
 
   if (!entry) return false;
 
@@ -74,32 +68,22 @@ export const focusCaptionFromCurrentBlock = (
 
 const findCaptionEntry = (
   editor: BaseEditor,
-  options: CaptionOptions,
+  targetTypes: readonly string[],
   at: Range
 ) =>
   editor.read.nodes.above<TCaptionElement>({
     at,
-    match: { type: getPluginTypes(editor, options.query.allow) },
+    match: {
+      type: targetTypes,
+    },
   });
 
-const findCaptionBlock = (editor: BaseEditor, options: CaptionOptions) =>
+const findCaptionBlock = (editor: BaseEditor, targetTypes: readonly string[]) =>
   editor.read.nodes.block<TCaptionElement>({
-    match: { type: getPluginTypes(editor, options.query.allow) },
+    match: {
+      type: targetTypes,
+    },
   });
-
-const getSetSelectionTarget = (
-  selection: Selection,
-  operation: SetSelectionOperation
-): Range | null => {
-  if (operation.newProperties == null) return null;
-  if (RangeApi.isRange(operation.newProperties)) return operation.newProperties;
-  if (!selection) return null;
-
-  return {
-    ...selection,
-    ...operation.newProperties,
-  };
-};
 
 const hasCaptionText = (node: unknown) => {
   if (!ElementApi.isElement(node)) return false;

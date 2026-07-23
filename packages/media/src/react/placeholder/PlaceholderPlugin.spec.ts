@@ -72,6 +72,33 @@ describe('PlaceholderPlugin', () => {
     ]);
   });
 
+  it('inserts a pasted file after a non-empty block', () => {
+    const editor = createPlateEditor({
+      plugins: [PlaceholderPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+    const event = {
+      clipboardData: {
+        files: [new File(['image'], 'image.png', { type: 'image/png' })],
+        types: [],
+      },
+      preventDefault: mock(),
+      stopPropagation: mock(),
+    } as unknown as React.ClipboardEvent;
+
+    pipeHandler(editor, { handlerKey: 'onPaste' })?.(event);
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'text' }], type: KEYS.p },
+      { children: [{ text: '' }], type: KEYS.placeholder },
+    ]);
+  });
+
   it('inserts media through the plugin transaction method', () => {
     const editor = createPlateEditor({
       plugins: [PlaceholderPlugin],

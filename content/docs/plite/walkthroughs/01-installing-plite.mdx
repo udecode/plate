@@ -28,7 +28,7 @@ Import the React editor pieces from `@platejs/plite-react`.
 import {
   Editable,
   Plite,
-  type PliteChange,
+  type PliteValueChangeContext,
   usePliteEditor,
 } from "@platejs/plite-react";
 ```
@@ -77,23 +77,21 @@ This is the smallest useful Plite editor. If you render `App`, you should see a 
 
 ## Listening For Changes
 
-Most applications save the document value somewhere. Pass `onChange` to `<Plite>` and save when `change.valueChanged` is true.
+Most applications save the document value somewhere. Use `onValueChange` for
+a single-root document.
 
 ```tsx
 const App = () => {
   const editor = usePliteEditor<CustomValue>({ initialValue });
 
-  const handleChange = (
-    nextValue: CustomValue,
-    change: PliteChange<CustomValue>
-  ) => {
-    if (!change.valueChanged) return;
-
-    localStorage.setItem("content", JSON.stringify(nextValue));
+  const handleValueChange = ({
+    value,
+  }: PliteValueChangeContext<CustomValue>) => {
+    localStorage.setItem("content", JSON.stringify(value));
   };
 
   return (
-    <Plite editor={editor} onChange={handleChange}>
+    <Plite editor={editor} onValueChange={handleValueChange}>
       <Editable />
     </Plite>
   );

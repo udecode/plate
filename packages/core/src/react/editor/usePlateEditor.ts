@@ -31,7 +31,7 @@ type UsePlateEditorResult<
  * ```ts
  * const editor = usePlateEditor({
  *   plugins: [ParagraphPlugin, HeadingPlugin],
- *   value: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
+ *   initialValue: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
  * });
  *
  * // Editor with custom dependencies
@@ -42,6 +42,11 @@ type UsePlateEditorResult<
  *   },
  *   [enabled]
  * ); // Re-create when enabled changes
+ *
+ * // Name the schema only when persisted or collaborative state needs lineage.
+ * const persistedEditor = usePlateEditor({
+ *   schema: { id: 'acme-document', version: 1 },
+ * });
  * ```
  *
  * @param options - Configuration options for creating the Plate editor
@@ -50,12 +55,17 @@ type UsePlateEditorResult<
  * @see {@link createBaseEditor} for a non-React version of editor creation.
  * @see {@link extendPlateEditor} for the underlying React-specific enhancement function.
  */
+export function usePlateEditor<V extends Value = Value>(): UsePlateEditorResult<
+  V,
+  readonly PlateCorePlugin[]
+>;
+
 export function usePlateEditor<
   V extends Value = Value,
   const TPlugins extends readonly unknown[] = readonly PlateCorePlugin[],
   TEnabled extends boolean | undefined = undefined,
 >(
-  options?: CreatePlateEditorOptions<V, TPlugins> & { enabled?: TEnabled },
+  options: CreatePlateEditorOptions<V, TPlugins> & { enabled?: TEnabled },
   deps?: React.DependencyList
 ): UsePlateEditorReturn<TEnabled, UsePlateEditorResult<V, TPlugins>>;
 
@@ -68,31 +78,12 @@ export function usePlateEditor<
   deps: React.DependencyList = []
 ): UsePlateEditorReturn<TEnabled, UsePlateEditorResult<V, TPlugins>> {
   const { enabled, ...editorOptions } = options;
-  const [, forceRender] = React.useState({});
-  const isMountedRef = React.useRef(false);
-
-  React.useEffect(() => {
-    isMountedRef.current = true;
-
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
 
   return React.useMemo(
     () => {
       if (enabled === false) return null;
 
-      return createPlateEditor({
-        ...editorOptions,
-        onReady: (ctx) => {
-          if (ctx.isAsync && isMountedRef.current) {
-            forceRender({});
-          }
-
-          editorOptions.onReady?.(ctx);
-        },
-      });
+      return createPlateEditor(editorOptions);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editorOptions.id, enabled, ...deps]

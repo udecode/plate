@@ -3,6 +3,14 @@ import type {
   PliteBrowserScenarioStep,
 } from './types';
 
+const requirePositiveWordDeleteIterations = (value: number) => {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new TypeError('wordDeleteIterations must be a positive integer.');
+  }
+
+  return value;
+};
+
 /** Create a destructive editing conformance scenario. */
 export const createPliteBrowserDestructiveEditingGauntlet = ({
   deleteAfterPasteKey = 'Backspace',
@@ -138,7 +146,7 @@ export const createPliteBrowserDestructiveEditingGauntlet = ({
     selection: wordDeleteSelection,
   },
   ...Array.from(
-    { length: Math.max(1, wordDeleteIterations) },
+    { length: requirePositiveWordDeleteIterations(wordDeleteIterations) },
     (_, index): PliteBrowserScenarioStep[] => [
       {
         key: wordDeleteKey,

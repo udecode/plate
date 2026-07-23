@@ -117,6 +117,33 @@ const emptyRenderBudget: PliteBrowserScenarioStep = {
   kind: 'assertRenderBudget',
 };
 
+const contradictoryRenderBudget: PliteBrowserScenarioStep = {
+  budget: {
+    // @ts-expect-error exact render counts cannot be combined with a range
+    total: { exact: 1, min: 0 },
+  },
+  kind: 'assertRenderBudget',
+};
+
+const emptyRenderCountRange: PliteBrowserScenarioStep = {
+  budget: {
+    // @ts-expect-error a render-count range needs min or max
+    total: {},
+  },
+  kind: 'assertRenderBudget',
+};
+
+const validRenderBudgets = [
+  { budget: { total: 0 }, kind: 'assertRenderBudget' },
+  { budget: { total: { exact: 0 } }, kind: 'assertRenderBudget' },
+  { budget: { total: { min: 0 } }, kind: 'assertRenderBudget' },
+  { budget: { total: { max: 2 } }, kind: 'assertRenderBudget' },
+  {
+    budget: { total: { max: 2, min: 0 } },
+    kind: 'assertRenderBudget',
+  },
+] satisfies PliteBrowserScenarioStep[];
+
 // @ts-expect-error selection contracts need at least one expectation
 const emptySelectionContract: PliteBrowserSelectionContractExpectation = {};
 
@@ -143,7 +170,10 @@ void [
   emptyIncludedTags,
   emptyKernelTrace,
   emptyRenderBudget,
+  emptyRenderCountRange,
+  contradictoryRenderBudget,
   emptySelectionContract,
   emptyWindowSelection,
   imperativeReleaseProof,
+  validRenderBudgets,
 ];

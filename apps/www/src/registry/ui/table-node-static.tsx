@@ -50,7 +50,7 @@ export function TableCellElementStatic({
   isHeader?: boolean;
 }) {
   const { editor, element } = props;
-  const { api } = editor.plugin(BaseTablePlugin);
+  const api = editor.plugin(BaseTablePlugin).api;
 
   const { minHeight, width } = api.getCellSize({ element });
   const borders = api.getCellBorders({ element });

@@ -125,12 +125,12 @@ Similarly, you can customize the floating toolbar by editing `components/ui/floa
 This example shows a button that inserts custom text into the editor.
 
 ```tsx
-import { useEditorRef } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 import { CustomIcon } from 'lucide-react';
 import { ToolbarButton } from '@/components/ui/toolbar';
 
 export function CustomToolbarButton() {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return (
     <ToolbarButton

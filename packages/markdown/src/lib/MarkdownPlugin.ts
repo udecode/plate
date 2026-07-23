@@ -2,90 +2,74 @@ import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Pluggable } from 'unified';
 import type { Node as UnistNode } from 'unist';
 
-import { type PluginConfig, createBasePlugin } from '@platejs/core';
-import type { Descendant } from '@platejs/plite';
+import {
+  type BaseEditor,
+  type InferConfig,
+  type PluginConfig,
+  createBasePlugin,
+  prepareParserPluginContext,
+} from '@platejs/core';
+import type {
+  Descendant,
+  EditorCoreStateView,
+  EditorExtension,
+} from '@platejs/plite';
+import { defineHostCodec, hostCodecs } from '@platejs/plite-dom';
 import { KEYS } from '@platejs/utils';
-import { type OmitFirst, bindFirst, isUrl } from '@udecode/utils';
+import { bindFirst, isUrl } from '@udecode/utils';
 
 import type { MdRules, PlateType } from './types';
 
 import { deserializeInlineMd, deserializeMd } from './deserializer';
+import { deserializeMdWithRuntime } from './internal/markdownDeserializer';
+import { serializeMdWithRuntime } from './internal/markdownSerializer';
+import { createMarkdownRuntime } from './internal/markdownRuntime';
 import { serializeMd } from './serializer';
 
 export type AllowNodeConfig = {
-  /** Custom filter function for nodes during deserialization */
+  /** Custom filter function for nodes during deserialization. */
   deserialize?: (node: UnistNode & { type: PlateType }) => boolean;
-  /** Custom filter function for nodes during serialization */
+  /** Custom filter function for nodes during serialization. */
   serialize?: (node: Descendant) => boolean;
 };
 
-export type MarkdownConfig = PluginConfig<
-  'markdown',
-  {
-    /**
-     * Configuration for allowed node types. Cannot be combined with
-     * disallowedNodes.
-     */
-    allowedNodes: PlateType[] | null;
-    /**
-     * Configuration for disallowed node types. Cannot be combined with
-     * allowedNodes.
-     *
-     * @default null
-     */
-    disallowedNodes: PlateType[] | null;
-    /**
-     * Array of remark plugins to extend Markdown parsing and serialization
-     * functionality. For example, you can add remark-gfm to support GFM syntax,
-     * remark-math to support mathematical formulas, etc. These plugins will be
-     * used during the parsing and generation of Markdown text.
-     *
-     * @default undefined
-     */
-    remarkPlugins: Pluggable[];
-    /**
-     * Custom options passed to remark-stringify.
-     *
-     * @default null
-     */
-    remarkStringifyOptions: RemarkStringifyOptions | null;
-    /**
-     * Rules that define how to convert Markdown syntax elements to Slate editor
-     * elements. Or rules that how to convert Slate editor elements to Markdown
-     * syntax elements. Includes conversion rules for elements such as
-     * paragraphs, headings, lists, links, images, etc.
-     *
-     * You can pass null disable default node parser.
-     *
-     * NOTE: don't forget pass `mark:true` when you custom inline nodes.
-     *
-     * @default null
-     */
-    rules: MdRules | null;
-    /**
-     * Custom filter function for nodes during deserialization and
-     * serialization.
-     *
-     * @default null
-     */
-    allowNode?: AllowNodeConfig;
-    /**
-     * Marks to treat as plain text without applying markdown formatting.
-     *
-     * @default null
-     */
-    plainMarks?: PlateType[] | null;
-  },
-  {
-    markdown: {
-      deserialize: OmitFirst<typeof deserializeMd>;
-      deserializeInline: OmitFirst<typeof deserializeInlineMd>;
-      serialize: OmitFirst<typeof serializeMd>;
-    };
-  }
->;
+export type MarkdownPluginOptions = {
+  /** Allowed node types. Cannot be combined with `disallowedNodes`. */
+  allowedNodes?: readonly PlateType[] | null;
+  /** Custom node filters for deserialization and serialization. */
+  allowNode?: AllowNodeConfig;
+  /** Disallowed node types. Cannot be combined with `allowedNodes`. */
+  disallowedNodes?: readonly PlateType[] | null;
+  /** Marks serialized as plain text. */
+  plainMarks?: readonly PlateType[] | null;
+  /** Remark plugins used for parsing and serialization. */
+  remarkPlugins?: readonly Pluggable[];
+  /** Options passed to `remark-stringify`. */
+  remarkStringifyOptions?: RemarkStringifyOptions | null;
+  /** Markdown conversion rules. Pass `null` to use only defaults. */
+  rules?: MdRules | null;
+};
 
-export const MarkdownPlugin = createBasePlugin<MarkdownConfig>({
+type MarkdownContract = PluginConfig<'markdown', MarkdownPluginOptions>;
+
+const createMarkdownHostCodecExtension = (
+  createContext: (
+    state: EditorCoreStateView
+  ) => Parameters<typeof createMarkdownRuntime>[0]
+): EditorExtension =>
+  hostCodecs('plate-markdown-host-codec', [
+    defineHostCodec({
+      format: 'text/markdown',
+      key: 'plate:markdown:text/markdown:serialize',
+      schema: [{ kind: 'schema' }],
+      serialize: ({ slice, state }) =>
+        serializeMdWithRuntime(createMarkdownRuntime(createContext(state)), {
+          value: [...slice.content],
+        }),
+    }),
+  ]);
+
+export const MarkdownPlugin = createBasePlugin<MarkdownContract>({
   key: KEYS.markdown,
   options: {
     allowedNodes: null,
@@ -96,30 +80,38 @@ export const MarkdownPlugin = createBasePlugin<MarkdownConfig>({
     rules: null,
   },
 })
-  .extendApi(({ editor }) => ({
-    deserialize: bindFirst(deserializeMd, editor),
-    deserializeInline: bindFirst(deserializeInlineMd, editor),
-    serialize: bindFirst(serializeMd, editor),
+  .extendEditorApi(({ editor }) => ({
+    markdown: {
+      deserialize: bindFirst(deserializeMd, editor),
+      deserializeInline: bindFirst(deserializeInlineMd, editor),
+      serialize: bindFirst(serializeMd, editor),
+    },
   }))
   .extend({
     parser: {
-      format: 'text/plain',
-      deserialize: ({ api, data }) => api.deserialize(data),
-      query: ({ data, dataTransfer }) => {
-        const htmlData = dataTransfer.getData('text/html');
+      format: ['text/plain', 'text/markdown'],
+      deserialize: (context) =>
+        deserializeMdWithRuntime(createMarkdownRuntime(context), context.data),
+      schema: [{ kind: 'schema' }],
+      query: ({ data, source }) => {
+        const htmlData = source.getData('text/html');
 
         if (htmlData) return false;
 
-        const { files } = dataTransfer;
+        const { files } = source;
 
-        if (
-          !files?.length && // if content is simply a URL pass through to not break LinkPlugin
-          isUrl(data)
-        ) {
-          return false;
-        }
+        if (!files?.length && isUrl(data)) return false;
 
         return true;
       },
     },
-  });
+  })
+  .extendExtension('hostCodec', ({ editor, plugin }) =>
+    createMarkdownHostCodecExtension(prepareParserPluginContext(editor, plugin))
+  );
+
+export type MarkdownConfig = InferConfig<typeof MarkdownPlugin>;
+
+export type MarkdownEditor<E extends BaseEditor = BaseEditor> = E & {
+  readonly api: E['api'] & MarkdownConfig['api'];
+};

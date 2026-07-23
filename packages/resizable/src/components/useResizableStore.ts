@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import { createAtomStore } from '@platejs/core/react';
+import { createAtomStore } from '@platejs/core/react/internal';
 
 export const {
   ResizableProvider,

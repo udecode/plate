@@ -1,18 +1,25 @@
-import { type PluginConfig, createBasePlugin } from '@platejs/core';
-import type {
-  Element,
-  NodeSetNodesOptions,
-  NodeUnsetNodesOptions,
+import { type InferConfig, createBasePlugin } from '@platejs/core';
+import {
+  type Element,
+  type NodeSetNodesOptions,
+  type NodeUnsetNodesOptions,
+  property,
+  target,
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-export type TextIndentConfig = PluginConfig<
-  'textIndent',
-  { offset: number; unit: string }
->;
+const defaultTargetPluginKeys: readonly string[] = [KEYS.p];
 
-export const BaseTextIndentPlugin = createBasePlugin<TextIndentConfig>({
+export const BaseTextIndentPlugin = createBasePlugin({
   key: KEYS.textIndent,
+  schema: ({ own, plugins, targetPluginKeys }) => ({
+    properties: [
+      own.elementProperty(property.number(), {
+        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        typeChange: 'preserve-if-allowed',
+      }),
+    ],
+  }),
   inject: {
     isBlock: true,
     nodeProps: {
@@ -24,12 +31,12 @@ export const BaseTextIndentPlugin = createBasePlugin<TextIndentConfig>({
         return Number(nodeValue) * offset + unit;
       },
     },
-    targetPlugins: [KEYS.p],
   },
   options: {
     offset: 24,
     unit: 'px',
   },
+  targetPluginKeys: defaultTargetPluginKeys,
 }).extendTx(({ editor, plugin, type }) => (tx) => ({
   set: (value: number, options?: NodeSetNodesOptions<Element>) => {
     const { nodeKey = type } = editor.getInjectProps(plugin);
@@ -42,3 +49,5 @@ export const BaseTextIndentPlugin = createBasePlugin<TextIndentConfig>({
     tx.nodes.unset(nodeKey, options);
   },
 }));
+
+export type TextIndentConfig = InferConfig<typeof BaseTextIndentPlugin>;

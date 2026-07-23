@@ -3,6 +3,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 import type { RenderTextProps, AnyBasePlugin, BaseEditor } from '..';
+import { getPlateRuntime } from '../internal/plugin/compilePlateModel';
 
 import { PliteText } from './components';
 import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
@@ -19,8 +20,8 @@ export const pluginRenderTextStatic = (
   function render(nodeProps) {
     const { children, text } = nodeProps;
 
-    if (text[plugin.node.type ?? plugin.key]) {
-      const Component = editor.runtime.components?.[plugin.key] as any;
+    if (text[plugin.type]) {
+      const Component = getPlateRuntime(editor).components[plugin.key] as any;
       const Text = Component ?? PliteText;
 
       // const dataAttributes = getPluginDataAttributes(editor, plugin, text);
@@ -54,7 +55,7 @@ export const pipeRenderTextStatic = (
   const renderTexts: PliteRenderText[] = [];
   const textPropsPlugins: AnyBasePlugin[] = [];
 
-  editor.runtime.pluginCache.node.isText.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.node.textMarks.forEach((key) => {
     const plugin = editor.getPlugin({ key });
 
     if (plugin) {
@@ -62,7 +63,7 @@ export const pipeRenderTextStatic = (
     }
   });
 
-  editor.runtime.pluginCache.node.textProps.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.node.textProps.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     if (plugin) {
       textPropsPlugins.push(plugin as any);
@@ -70,43 +71,44 @@ export const pipeRenderTextStatic = (
   });
 
   return function render({ attributes, ...props }) {
-    renderTexts.forEach((render) => {
-      const newChildren = render(props as any);
+    let children = props.children;
+
+    renderTexts.forEach((renderText) => {
+      const newChildren = renderText({ ...props, children } as any);
 
       if (newChildren !== undefined) {
-        props.children = newChildren;
+        children = newChildren;
       }
     });
 
     textPropsPlugins.forEach((plugin) => {
-      if (props.text[plugin.node.type ?? plugin.key]) {
+      if (props.text[plugin.type]) {
         const pluginTextProps =
-          typeof plugin.node.textProps === 'function'
-            ? plugin.node.textProps(props as any)
-            : (plugin.node.textProps ?? {});
-
-        if (pluginTextProps.className) {
-          pluginTextProps.className = clsx(
-            (props as any).className,
-            pluginTextProps.className
-          );
-        }
+          typeof plugin.render.textProps === 'function'
+            ? plugin.render.textProps({ ...props, children } as any)
+            : (plugin.render.textProps ?? {});
 
         attributes = {
           ...attributes,
           ...pluginTextProps,
+          ...(pluginTextProps.className && {
+            className: clsx(
+              (props as any).className,
+              pluginTextProps.className
+            ),
+          }),
         };
       }
     });
 
     if (renderTextProp) {
-      return renderTextProp({ attributes, ...props });
+      return renderTextProp({ attributes, ...props, children });
     }
 
     const ctxProps = getRenderNodeStaticProps({
       editor,
       path: props.path,
-      props: { attributes, ...props } as any,
+      props: { attributes, ...props, children } as any,
     }) as any;
 
     const text = ctxProps.text;

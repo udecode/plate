@@ -4,7 +4,7 @@ description: API reference for @platejs/plite.
 ---
 
 `@platejs/plite` is the framework-free editor runtime. It owns document values,
-roots, operations, schema extensions, state fields, read APIs, transaction
+roots, canonical document changes, schema extensions, state fields, read APIs, transaction
 groups, and pure node/location helper namespaces.
 
 ## Installation
@@ -20,15 +20,15 @@ mount this runtime instead of replacing it.
 ## Quick Use
 
 ```ts title="Create a framework-free editor"
-import { createEditor } from '@platejs/plite';
+import { createEditor } from "@platejs/plite";
 
 const editor = createEditor({
-  initialValue: [{ children: [{ text: 'Hello' }], type: 'p' }],
+  initialValue: [{ children: [{ text: "Hello" }], type: "p" }],
   maxLength: 1000,
 });
 
 editor.update((tx) => {
-  tx.text.insert(' world');
+  tx.text.insert(" world");
 });
 
 const text = editor.read((state) => state.text.string([]));
@@ -36,28 +36,29 @@ const text = editor.read((state) => state.text.string([]));
 
 `createEditor` returns an editor with explicit `read(...)` and `update(...)`
 boundaries. Reads observe committed state. Writes run inside transaction groups.
-`maxLength` caps user-facing insertions without changing imported operation
-replay.
+`maxLength` caps user-facing insertions without changing imported document
+changes.
 
 ## Package Surface
 
 | Surface | Export | Use |
-| --- | --- | --- |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | Editor factory | `createEditor` | Creates a framework-free Plite editor. |
 | Runtime views | `createEditorRuntime`, `createEditorView` | Create one committed runtime and optional root-scoped editor views. |
 | Editor types | `Editor`, `BaseEditor`, `Value`, `InitialValue`, `Selection`, `ValueOf` | Type editor instances, document values, and selection state. |
 | Read API | `EditorStateView`, `EditorStateValueApi`, `EditorStateSelectionApi`, `EditorStateTextApi` | Read committed state inside `editor.read(...)`. |
 | Transaction API | `EditorUpdateTransaction`, `EditorTransactionValueApi`, `EditorTransactionNodesApi`, `EditorTransactionSelectionApi` | Mutate editor state inside `editor.update(...)`. |
-| Interfaces | `ElementApi`, `NodeApi`, `TextApi`, `PathApi`, `PointApi`, `RangeApi`, `OperationApi` | Typed helpers for Plite data structures. |
-| Refs | `PathRef`, `PointRef`, `RangeRef` | Mutable location refs that track editor operations. |
-| Extensions | `defineEditorExtension`, `defineStateField`, `elementProperty` | Register schema facts, state groups, tx groups, normalizers, middleware, and commit hooks. |
+| Interfaces | `ElementApi`, `NodeApi`, `TextApi`, `PathApi`, `PointApi`, `RangeApi` | Typed helpers for Plite data structures. |
+| Anchors | `Anchor`, `editor.anchor`, `tx.anchor` | Keep paths, points, and ranges mapped through document changes. |
+| Extensions | `defineEditorExtension`, `defineEditorSchema`, `defineStateField`, `property`, `schema` | Register schema facts, state groups, tx groups, corrections, commands, query middleware, and commit hooks. |
+| Value codecs | `defineValueCodec`, `valueCodecs`, `encodeEditorEffect`, `decodeEditorEffect` | Version persisted fields and keyed shared effects. |
 
 ## Editor Shape
 
 An `Editor` exposes committed state through explicit read and update entrypoints.
 
 | Field | Type | Use |
-| --- | --- | --- |
+| ----------------- | ---------------------------------------------------------- | ------------------------------------------------------ |
 | `api` | `Readonly<EditorCoreApiGroups & EditorInstalledApiGroups>` | Access installed runtime services. |
 | `id` | `string` | Identify the logical editor instance. |
 | `extend` | `(extension) => () => void` | Install an extension and return its cleanup function. |
@@ -70,7 +71,7 @@ An `Editor` exposes committed state through explicit read and update entrypoints
 ## API Map
 
 | Page | Covers |
-| --- | --- |
+| ------------------------------------------------------ | -------------------------------------------------------------------- |
 | [Editor API](/docs/api/plite/editor-api) | Read methods on `editor.read(...)` state groups. |
 | [Editor Transforms](/docs/api/plite/editor-transforms) | Transaction methods on `editor.update(...)` tx groups. |
 | [Node](/docs/api/plite/node) | Node, descendant, ancestor, and node-entry helpers. |
@@ -80,18 +81,18 @@ An `Editor` exposes committed state through explicit read and update entrypoints
 | [Point](/docs/api/plite/point) | Point comparison, edge checks, and point transforms. |
 | [Range](/docs/api/plite/range) | Range checks, edge helpers, intersection, inclusion, and transforms. |
 | [Location](/docs/api/plite/location) | `Path`, `Point`, `Range`, and `Span` location unions. |
-| [Location Ref](/docs/api/plite/location-ref) | `PathRef`, `PointRef`, and `RangeRef` affinity behavior. |
-| [Operation](/docs/api/plite/operation) | Plite operation types, operation lists, and operation inversion. |
+| [Anchor](/docs/plite/api/locations/anchor) | Root-aware live paths, points, and ranges. |
+| [Document changes](/docs/api/plite/document-change) | Serialize and apply canonical `DocumentChange` values. |
 
 ## History
 
 ```ts title="Batch history"
-editor.update({ history: 'new-batch' }, (tx) => {
-  tx.text.insert('Title');
+editor.update({ history: "new-batch" }, (tx) => {
+  tx.text.insert("Title");
   tx.break.insert();
 });
 
-editor.update({ history: 'skip' }).selection.set([]);
+editor.update({ history: "skip" }).selection.set([]);
 ```
 
 History is a Plite extension. It stores undo and redo batches, exposes history
@@ -101,7 +102,7 @@ transaction groups.
 ## Extension Authoring
 
 Extensions register schema facts, state groups, transaction groups,
-normalizers, operation middleware, commit listeners, and runtime APIs.
+corrections, commands, query middleware, commit listeners, and runtime APIs.
 
 Use `api` for mounted host/runtime services. Use `tx` for feature commands that
 change Plite model state.
@@ -109,16 +110,18 @@ change Plite model state.
 ```ts
 import {
   defineEditorExtension,
+  defineEditorSchema,
   defineStateField,
-  elementProperty,
-} from '@platejs/plite';
+  property,
+  schema,
+} from "@platejs/plite";
 ```
 
 ## Helper Namespaces
 
-Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`,
-`OperationApi`, `PathApi`, `PathRefApi`, `PointApi`, `PointRefApi`, `RangeApi`,
-`RangeRefApi`, `SpanApi`, and `TextApi`.
+Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`, `PathApi`,
+`PointApi`, `RangeApi`, `SelectionApi`, `SpanApi`, and `TextApi`. `ChangeSet`
+and `DocumentChange` own canonical change algebra.
 
 Inside `editor.read(...)` and `editor.update(...)`, prefer grouped `state.*`
 and `tx.*` APIs. Use helper namespaces when library code needs pure operations

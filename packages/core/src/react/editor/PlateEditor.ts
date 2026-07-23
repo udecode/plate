@@ -7,7 +7,7 @@ import type {
   PluginConfig,
   WithRequiredKey,
 } from '../../lib';
-import type { PlatePlugin, Shortcuts } from '../plugin/PlatePlugin';
+import type { PlatePlugin } from '../plugin/PlatePlugin';
 
 type PlateGetPlugin<V extends Value, P extends AnyPluginConfig> = BaseEditor<
   V,
@@ -15,16 +15,13 @@ type PlateGetPlugin<V extends Value, P extends AnyPluginConfig> = BaseEditor<
 >['getPlugin'] &
   (<C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
-  ) => C extends { node: any } ? C : PlatePlugin<C>);
+  ) => C extends { clone: any } ? C : PlatePlugin<C>);
 
 export type PlateEditor<
   V extends Value = any,
   P extends AnyPluginConfig = AnyPluginConfig,
-> = Omit<BaseEditor<V, P>, 'getPlugin' | 'runtime'> & {
+> = Omit<BaseEditor<V, P>, 'getPlugin'> & {
   getPlugin: PlateGetPlugin<V, P>;
-  runtime: BaseEditor<V, P>['runtime'] & {
-    shortcuts: Shortcuts;
-  };
 };
 
 export type KeyofPlugins<T extends AnyPluginConfig> =

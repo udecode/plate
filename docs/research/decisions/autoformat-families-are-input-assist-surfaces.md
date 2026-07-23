@@ -1,18 +1,19 @@
 ---
-title: Autoformat families are profile-adjacent input-assist surfaces
+title: Autoformat families are distinct input-assist surfaces
 type: decision
 status: accepted
-updated: 2026-04-09
+updated: 2026-07-23
 source_refs:
   - docs/research/sources/typora/markdown-shorthand-and-inline-autoformat.md
   - docs/research/sources/milkdown/input-autoformat-lanes.md
-  - docs/research/concepts/profile-adjacent-options.md
+  - docs/research/concepts/behavior-packaging-candidates.md
+  - docs/research/systems/editor-behavior-architecture.md
 related:
   - docs/editor-behavior/markdown-editing-spec.md
   - docs/editor-behavior/editor-protocol-matrix.md
 ---
 
-# Autoformat families are profile-adjacent input-assist surfaces
+# Autoformat families are distinct input-assist surfaces
 
 ## Question
 
@@ -21,7 +22,8 @@ substitution autoformat?
 
 ## Decision
 
-Treat them as profile-adjacent input-assist surfaces, not parser law.
+Treat them as distinct input-assist surfaces, not parser law and not one
+automatic packaging unit.
 
 Split them into at least three families:
 
@@ -43,5 +45,7 @@ Split them into at least three families:
 - editor-behavior law should not flatten them into one generic "autoformat"
   row
 - protocol rows should split block, mark, and text-substitution scenarios
-- parity should track them as profile-adjacent input-assist surfaces instead of
-  pretending they are the core markdown parse contract
+- parity should track them as input-assist surfaces instead of pretending they
+  are the core markdown parse contract
+- each family must independently pass the behavior-promotion protocol before it
+  becomes a public plugin; non-universal behavior alone is not enough

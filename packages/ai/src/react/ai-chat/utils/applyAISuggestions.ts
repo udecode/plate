@@ -1,15 +1,15 @@
-import { deserializeMd } from '@platejs/markdown';
+import type { MarkdownEditor } from '@platejs/markdown';
 import {
   BlockSelectionPlugin,
   CursorOverlayPlugin,
 } from '@platejs/selection/react';
 import {
   diffToSuggestions,
-  getTransientSuggestionKey,
-  SkipSuggestionDeletes,
+  SUGGESTION_TRANSIENT_KEY,
 } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
+import cloneDeep from 'lodash/cloneDeep.js';
+import { type Descendant, ElementApi, PathApi, TextApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { nanoid } from '@platejs/core';
 import type { PlateEditor } from '@platejs/core/react';
@@ -22,7 +22,7 @@ import {
 } from './nestedContainerUtils';
 
 export const applyAISuggestions = (
-  editor: PlateEditor,
+  editor: MarkdownEditor<PlateEditor>,
   content: string,
   { split }: { split?: boolean } = {}
 ) => {
@@ -55,43 +55,72 @@ export const applyAISuggestions = (
         replaceIds.includes(node.id),
     });
     const suggestionApi = editor.plugin(SuggestionPlugin).api;
+    const replacementGroups: {
+      at: number[];
+      children: Descendant[];
+      count: number;
+      index: number;
+    }[] = [];
+
+    replaceNodes.forEach(([node, path], index) => {
+      const diffNode = diffNodes[index];
+      let replacement: Descendant[];
+
+      if (!diffNode) {
+        replacement = [];
+      } else {
+        const candidate =
+          index === replaceNodes.length - 1 &&
+          diffNodes.length > replaceNodes.length
+            ? diffNodes.slice(index)
+            : [diffNode];
+        const isSameString =
+          suggestionApi.skipDeletes(node) ===
+          suggestionApi.skipDeletes(diffNode);
+        const isSameSuggestion =
+          ElementApi.isElement(diffNode) &&
+          suggestionApi.suggestionData(node)?.type ===
+            suggestionApi.suggestionData(diffNode)?.type;
+
+        replacement =
+          candidate.length === 1 &&
+          isSameString &&
+          isSameSuggestion &&
+          node.id === diffNode.id
+            ? [node]
+            : candidate;
+      }
+
+      const at = path.slice(0, -1);
+      const childIndex = path.at(-1)!;
+      const previous = replacementGroups.at(-1);
+
+      if (
+        previous &&
+        PathApi.equals(previous.at, at) &&
+        childIndex === previous.index + previous.count
+      ) {
+        previous.children.push(...replacement);
+        previous.count++;
+      } else {
+        replacementGroups.push({
+          at,
+          children: replacement,
+          count: 1,
+          index: childIndex,
+        });
+      }
+    });
 
     withAIBatch(
       editor,
       (tx) => {
-        replaceNodes.toReversed().forEach(([node, path], reverseIndex) => {
-          const index = replaceNodes.length - reverseIndex - 1;
-          const diffNode = diffNodes[index];
-
-          if (!diffNode) {
-            tx.nodes.remove({ at: path });
-
-            return;
-          }
-
-          const replacement =
-            index === replaceNodes.length - 1 &&
-            diffNodes.length > replaceNodes.length
-              ? diffNodes.slice(index)
-              : [diffNode];
-          const isSameString =
-            SkipSuggestionDeletes(editor, node) ===
-            SkipSuggestionDeletes(editor, diffNode);
-          const isSameSuggestion =
-            ElementApi.isElement(diffNode) &&
-            suggestionApi.suggestionData(node)?.type ===
-              suggestionApi.suggestionData(diffNode)?.type;
-
-          if (
-            replacement.length === 1 &&
-            isSameString &&
-            isSameSuggestion &&
-            node.id === diffNode.id
-          ) {
-            return;
-          }
-
-          tx.nodes.replace(replacement, { at: path });
+        replacementGroups.toReversed().forEach((group) => {
+          tx.nodes.replaceChildren(group.children, {
+            at: group.at,
+            count: group.count,
+            index: group.index,
+          });
         });
       },
       { split }
@@ -111,13 +140,13 @@ export const applyAISuggestions = (
     withAIBatch(
       editor,
       (tx) => {
-        tx.fragment.insert(diffNodes);
+        tx.fragment.replace(diffNodes);
 
         const nodes = tx.nodes.toArray({
           at: [],
           mode: 'lowest',
           match: (node) =>
-            TextApi.isText(node) && !!node[getTransientSuggestionKey()],
+            TextApi.isText(node) && !!node[SUGGESTION_TRANSIENT_KEY],
         });
         const range = tx.ranges.fromEntries(nodes);
 
@@ -151,13 +180,13 @@ export const withTransient = (diffNodes: Descendant[]): Descendant[] =>
     if (TextApi.isText(node)) {
       return {
         ...node,
-        [getTransientSuggestionKey()]: true,
+        [SUGGESTION_TRANSIENT_KEY]: true,
       };
     }
     return {
       ...node,
       children: withTransient(node.children),
-      [getTransientSuggestionKey()]: true,
+      [SUGGESTION_TRANSIENT_KEY]: true,
     };
   });
 
@@ -199,18 +228,26 @@ export const withoutSuggestionAndComments = (
     return node;
   });
 
-const getDiffNodes = (editor: PlateEditor, aiContent: string) => {
+const getDiffNodes = (
+  editor: MarkdownEditor<PlateEditor>,
+  aiContent: string
+) => {
   /** Original document nodes */
   const rawChatNodes = editor.plugin(AIChatPlugin).getOption('chatNodes');
 
-  let chatNodes = withoutSuggestionAndComments(rawChatNodes);
+  let chatNodes = withoutSuggestionAndComments(
+    cloneDeep(rawChatNodes) as unknown as Descendant[]
+  );
 
   /**If selecting one single cell table, we just need to compare it's children to get diff nodes */
   if (isSingleCellTable(chatNodes)) {
     chatNodes = withoutTable(chatNodes[0]);
   }
 
-  const aiNodes = withProps(deserializeMd(editor, aiContent), chatNodes);
+  const aiNodes = withProps(
+    editor.api.markdown.deserialize(aiContent),
+    chatNodes
+  );
 
   const diffNodes = withTransient(
     diffToSuggestions(editor, chatNodes, aiNodes, {

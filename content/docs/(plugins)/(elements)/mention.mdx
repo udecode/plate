@@ -100,11 +100,11 @@ import {
 
 export const editor = createPlateEditor({
   plugins: [
-    MentionPlugin.configure({
+    MentionPlugin.withComponent(MentionElement).configure({
       options: {
         triggerPreviousCharPattern: /^$|^[\s"']$/,
       },
-    }).withComponent(MentionElement),
+    }),
     MentionInputPlugin.withComponent(MentionInputElement),
   ],
 });
@@ -131,7 +131,9 @@ const onSelectItem = getMentionOnSelectItem();
 
 ## Value Shape
 
-`BaseMentionPlugin` uses `KEYS.mention`, which resolves to the `mention` node type. The input plugin uses `KEYS.mentionInput`, which resolves to `mention_input`.
+`BaseMentionPlugin` uses `KEYS.mention`. The transient input plugin uses the
+camelCase identity `KEYS.mentionInput` and stores the
+`NODES.mentionInput` (`mention_input`) node type.
 
 ```tsx
 const value = [
@@ -158,7 +160,8 @@ const value = [
 | `key` | `unknown` | Optional stable id used by selection handlers and Markdown serialization. |
 | `children` | `[{ text: '' }]` | Empty child required for Plite inline void nodes. |
 
-The mention node is `isMarkableVoid`, so marks on its empty child can style the rendered mention.
+The mention element declares `schema.element.void: 'markable-inline'`, so marks
+on its empty child can style the rendered mention.
 
 ## Trigger Flow
 
@@ -175,10 +178,12 @@ The runtime creates a combobox input from trigger metadata only when every gate 
 The default `createComboboxInput` creates:
 
 ```tsx
+import { NODES } from 'platejs';
+
 {
   children: [{ text: '' }],
   trigger: '@',
-  type: KEYS.mentionInput,
+  type: NODES.mentionInput,
 }
 ```
 

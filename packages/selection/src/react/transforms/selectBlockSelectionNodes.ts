@@ -1,18 +1,24 @@
 import type { BaseEditor } from '@platejs/core';
-import type { EditorUpdateTransaction } from '@platejs/plite';
+import type {
+  EditorUpdateContext,
+  EditorUpdateTransaction,
+} from '@platejs/plite';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+import { getBlockSelectionNodes } from '../internal/getBlockSelectionNodes';
 
 export const selectBlockSelectionNodes = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction
+  tx: EditorUpdateTransaction,
+  { afterCommit }: EditorUpdateContext
 ) => {
-  const { api } = editor.plugin(BlockSelectionPlugin);
-  const range = editor.read.ranges.fromEntries(api.getNodes());
+  const { api, getOption } = editor.plugin(BlockSelectionPlugin);
+  const range = tx.ranges.fromEntries(
+    getBlockSelectionNodes(tx, getOption('selectedIds'))
+  );
 
-  if (range) {
-    tx.selection.set(range);
-  }
+  if (!range) return;
 
-  api.clear();
+  tx.selection.set(range);
+  afterCommit(() => api.clear());
 };

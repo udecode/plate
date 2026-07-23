@@ -10,7 +10,8 @@ import type { PlateProps } from '../components';
 
 import type { EditableProps } from '../../lib';
 import { pipeDecorate } from '../../static/utils/pipeDecorate';
-import { useEditorRef, usePlateStore } from '../stores';
+import { usePlateModelRevision } from '../internal/usePlateModelRevision';
+import { useEditor, usePlateStore } from '../stores';
 import { DOM_HANDLERS } from '../utils/dom-attributes';
 import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
@@ -25,37 +26,43 @@ export const useEditableProps = ({
   Pick<PlateProps, 'decorate'> = {}): PliteEditableProps => {
   const { id } = editableProps;
 
-  const editor = useEditorRef(id);
+  const editor = useEditor({ id });
+  const modelRevision = usePlateModelRevision(editor);
   const store = usePlateStore(id);
   const storeDecorate = useAtomStoreValue(store, 'decorate');
   const storeRenderElement = useAtomStoreValue(store, 'renderElement');
   const storeRenderLeaf = useAtomStoreValue(store, 'renderLeaf');
   const storeRenderText = useAtomStoreValue(store, 'renderText');
 
-  const decorateMemo = React.useMemo(
-    () =>
-      pipeDecorate(editor, storeDecorate ?? (editableProps?.decorate as any)),
-    [editableProps?.decorate, editor, storeDecorate]
-  );
+  const decorateMemo = React.useMemo(() => {
+    void modelRevision;
 
-  const renderElement = React.useMemo(
-    () =>
-      pipeRenderElement(
-        editor,
-        storeRenderElement ?? editableProps?.renderElement
-      ),
-    [editableProps?.renderElement, editor, storeRenderElement]
-  );
+    return pipeDecorate(
+      editor,
+      storeDecorate ?? (editableProps?.decorate as any)
+    );
+  }, [editableProps?.decorate, editor, modelRevision, storeDecorate]);
 
-  const renderLeaf = React.useMemo(
-    () => pipeRenderLeaf(editor, storeRenderLeaf ?? editableProps?.renderLeaf),
-    [editableProps?.renderLeaf, editor, storeRenderLeaf]
-  );
+  const renderElement = React.useMemo(() => {
+    void modelRevision;
 
-  const renderText = React.useMemo(
-    () => pipeRenderText(editor, storeRenderText ?? editableProps?.renderText),
-    [editableProps?.renderText, editor, storeRenderText]
-  );
+    return pipeRenderElement(
+      editor,
+      storeRenderElement ?? editableProps?.renderElement
+    );
+  }, [editableProps?.renderElement, editor, modelRevision, storeRenderElement]);
+
+  const renderLeaf = React.useMemo(() => {
+    void modelRevision;
+
+    return pipeRenderLeaf(editor, storeRenderLeaf ?? editableProps?.renderLeaf);
+  }, [editableProps?.renderLeaf, editor, modelRevision, storeRenderLeaf]);
+
+  const renderText = React.useMemo(() => {
+    void modelRevision;
+
+    return pipeRenderText(editor, storeRenderText ?? editableProps?.renderText);
+  }, [editableProps?.renderText, editor, modelRevision, storeRenderText]);
 
   const scrollSelectionIntoView = React.useMemo<
     PliteEditableProps['scrollSelectionIntoView']

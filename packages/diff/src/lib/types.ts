@@ -6,11 +6,11 @@ export type DiffInsertion = {
   type: 'insert';
 };
 
-export type DiffOperation = DiffDeletion | DiffInsertion | DiffUpdate;
+export type DiffIntent = DiffDeletion | DiffInsertion | DiffUpdate;
 
 export type DiffProps = {
   diff: true;
-  diffOperation: DiffOperation;
+  diffIntent: DiffIntent;
 };
 
 export type DiffUpdate = {

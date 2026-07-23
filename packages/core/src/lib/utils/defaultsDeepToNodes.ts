@@ -1,4 +1,4 @@
-import type { Node } from '@platejs/plite';
+import type { Descendant } from '@platejs/plite';
 
 import defaults from 'lodash/defaults.js';
 
@@ -8,7 +8,7 @@ import {
 } from './applyDeepToNodes';
 
 /** Recursively merge a source object to children nodes with a query. */
-export const defaultsDeepToNodes = <N extends Node>(
+export const defaultsDeepToNodes = <N extends Descendant>(
   options: Omit<ApplyDeepToNodesOptions<N>, 'apply'>
 ) => {
   applyDeepToNodes({ ...options, apply: defaults });

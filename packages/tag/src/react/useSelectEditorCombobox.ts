@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorRef } from '@platejs/core/react';
+import { useEditor } from '@platejs/core/react';
 import { TextApi } from '@platejs/plite';
 import type { TTagProps } from '@platejs/utils';
 import { useEditorString } from '@platejs/utils/react';
@@ -20,7 +20,7 @@ export const useSelectEditorCombobox = ({
   selectFirstItem: () => void;
   onValueChange?: (items: TTagProps[]) => void;
 }) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const search = useEditorString();
 
   // Remove text and select end of editor when combobox closes

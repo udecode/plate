@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorRef, useElement, usePath } from '@platejs/core/react';
+import { useEditor, useElement } from '@platejs/core/react';
 import type { TResizableElement } from '@platejs/utils';
 
 import type { ResizeEvent, ResizeLength } from '../types';
@@ -24,9 +24,8 @@ export const useResizableState = ({
   maxWidth = '100%',
   minWidth = 92,
 }: ResizableOptions = {}) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const element = useElement<TResizableElement>();
-  const path = usePath();
 
   const nodeWidth = element?.width ?? '100%';
 
@@ -37,12 +36,16 @@ export const useResizableState = ({
     (w: number) => {
       if (w === nodeWidth) {
         // Focus the node if not resized
+        const path = editor.read.nodes.path(element);
+
+        if (!path) return;
+
         editor.update.selection.set(path);
       } else {
-        editor.update.nodes.set({ width: w }, { at: path });
+        editor.update.nodes.set({ width: w }, { at: element });
       }
     },
-    [editor, nodeWidth, path]
+    [editor, element, nodeWidth]
   );
 
   React.useEffect(() => {

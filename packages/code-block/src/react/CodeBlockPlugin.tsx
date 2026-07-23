@@ -15,18 +15,11 @@ export const CodeLinePlugin = toPlatePlugin(BaseCodeLinePlugin);
 export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
   plugins: [CodeLinePlugin, CodeSyntaxPlugin],
 }).extendExtension('react', ({ editor, getOptions, type }) => ({
-  operations: {
-    apply({ operation, next }) {
-      const shouldRefreshDecorations = Boolean(
-        getOptions().lowlight &&
-          getCodeBlockLanguageChange(editor, operation, type)
-      );
+  onTransactionChange(context) {
+    const shouldRefreshDecorations = Boolean(
+      getOptions().lowlight && getCodeBlockLanguageChange(context, type)
+    );
 
-      next(operation);
-
-      if (shouldRefreshDecorations) {
-        editor.api.react.refreshDecorations();
-      }
-    },
+    if (shouldRefreshDecorations) editor.api.react.refreshDecorations();
   },
 }));

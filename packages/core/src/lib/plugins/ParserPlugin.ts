@@ -1,96 +1,128 @@
-import { pipeInsertFragment } from '../../internal/plugin/pipeInsertFragment';
+import { ContentSlice } from '@platejs/plite';
+import {
+  defineHostCodec,
+  hostCodecs,
+  type HostCodec,
+} from '@platejs/plite-dom';
+
 import { pipeTransformData } from '../../internal/plugin/pipeTransformData';
 import { pipeTransformFragment } from '../../internal/plugin/pipeTransformFragment';
+import {
+  createParserPluginContext,
+  pipePreparedInsertDataQuery,
+  prepareParserRegistry,
+} from '../../internal/plugin/prepareParserRegistry';
+import { getCompiledPlateModel } from '../../internal/plugin/compilePlateModel';
 import { createBasePlugin } from '../plugin';
-import { getEditorPlugin } from '../plugin/getEditorPlugin';
-import { getInjectedPlugins } from '../utils/getInjectedPlugins';
-import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
+
+const getParserFormats = (parser: {
+  format?: null | readonly string[] | string;
+}) =>
+  Array.isArray(parser.format)
+    ? parser.format
+    : parser.format
+      ? [parser.format]
+      : [];
+
+const getParserSchemaTargets = (
+  editor: Parameters<typeof getCompiledPlateModel>[0],
+  plugin: ReturnType<typeof prepareParserRegistry>['plugins'][number]
+) => {
+  const declaredTargets = plugin.parser?.schema as
+    | HostCodec['schema']
+    | undefined;
+
+  if (declaredTargets?.length) {
+    if (declaredTargets.some((target) => target.kind !== 'schema')) {
+      throw new Error(
+        `Plate parser "${plugin.key}" cannot repeat element or property schema targets. Ordinary claims derive from the plugin schema binding.`
+      );
+    }
+
+    return declaredTargets;
+  }
+
+  const model = getCompiledPlateModel(editor);
+  const binding = model.byKey[plugin.key];
+  const targets: NonNullable<HostCodec['schema']>[number][] = [];
+
+  if (binding?.kind === 'element') {
+    targets.push({ kind: 'element', type: binding.type });
+  }
+  for (const id of [
+    ...(binding?.propertyIds ?? []),
+    ...(binding?.textPropertyId ? [binding.textPropertyId] : []),
+  ]) {
+    targets.push({ id, kind: 'property' });
+  }
+  if (targets.length === 0) {
+    throw new Error(
+      `Plate parser "${plugin.key}" must own an element or property schema binding, or explicitly claim the whole schema.`
+    );
+  }
+
+  return Object.freeze(targets);
+};
 
 export const ParserPlugin = createBasePlugin({
   key: 'parser',
-}).extendExtension(({ editor }) => ({
-  clipboard: {
-    insertData(dataTransfer, { next, tx }) {
-      const inserted = [...editor.runtime.pluginList]
-        .reverse()
-        .some((plugin) => {
-          const parser = plugin.parser;
+}).extendExtension(({ editor }) => {
+  const registry = prepareParserRegistry(editor);
+  const codecs = registry.plugins.flatMap((plugin) => {
+    const parser = plugin.parser;
 
-          if (!parser) return false;
+    if (!parser?.deserialize) return [];
 
-          const { deserialize, format, mimeTypes } = parser;
+    const formats = getParserFormats(parser);
 
-          if (!format && !mimeTypes) return false;
+    return formats.map((format) =>
+      defineHostCodec({
+        format,
+        key: `plate:${plugin.key}:${format}:parse`,
+        parse({ data, format, source, state }) {
+          const parserOptions = {
+            data,
+            format,
+            source,
+          };
+          const transformedData = pipeTransformData(
+            state,
+            plugin.pipeline,
+            parserOptions
+          );
+          const fragment = parser.deserialize?.({
+            ...parserOptions,
+            data: transformedData,
+            ...createParserPluginContext(plugin, state),
+          });
 
-          const formats = Array.isArray(format)
-            ? format
-            : format
-              ? [format]
-              : [];
-          const mimeTypeList =
-            mimeTypes ||
-            formats.map((format) =>
-              format.includes('/') ? format : `text/${format}`
-            );
+          if (!fragment?.length) return null;
 
-          const injectedPlugins = getInjectedPlugins(editor, plugin);
-
-          for (const mimeType of mimeTypeList) {
-            let data = dataTransfer.getData(mimeType);
-
-            if (
-              (mimeType !== 'Files' && !data) ||
-              (mimeType === 'Files' && (dataTransfer.files?.length ?? 0) === 0)
-            ) {
-              continue;
-            }
-
-            const parserOptions = { data, dataTransfer, mimeType };
-
-            if (!pipeInsertDataQuery(editor, injectedPlugins, parserOptions)) {
-              continue;
-            }
-
-            data = pipeTransformData(editor, injectedPlugins, parserOptions);
-
-            let fragment = deserialize?.({
-              ...getEditorPlugin(editor, plugin),
+          const transformedFragment = pipeTransformFragment(
+            state,
+            plugin.pipeline,
+            {
               ...parserOptions,
-              data,
-            });
-
-            if (!fragment?.length) continue;
-
-            fragment = pipeTransformFragment(editor, injectedPlugins, {
-              ...parserOptions,
-              data,
+              data: transformedData,
               fragment,
-            });
+            }
+          );
 
-            if (fragment.length === 0) continue;
+          return transformedFragment.length > 0
+            ? ContentSlice.closed(transformedFragment)
+            : null;
+        },
+        query({ data, format, source, state }) {
+          return pipePreparedInsertDataQuery(state, plugin.pipeline, {
+            data,
+            format,
+            source,
+          });
+        },
+        schema: getParserSchemaTargets(editor, plugin),
+      } satisfies HostCodec)
+    );
+  });
 
-            pipeInsertFragment(editor, tx, injectedPlugins, {
-              ...parserOptions,
-              data,
-              fragment,
-            });
-
-            return true;
-          }
-
-          return false;
-        });
-
-      if (inserted) return true;
-      if (next()) return true;
-
-      const text = dataTransfer.getData('text/plain');
-
-      if (!text) return false;
-
-      tx.text.insert(text);
-
-      return true;
-    },
-  },
-}));
+  return hostCodecs('plate-parser-host-codecs', codecs);
+});

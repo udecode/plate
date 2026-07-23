@@ -118,7 +118,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 | Behavior | Source |
 |----------|--------|
 | Mark key | `KEYS.bold` |
-| Leaf behavior | `node.isLeaf: true` |
+| Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.bold.toggle()` calls `tx.marks.toggle(type)`. |
 | Shortcut | `BoldPlugin` registers `mod+b`. |
 | HTML tags | `strong`, `b` |

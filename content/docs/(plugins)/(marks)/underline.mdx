@@ -115,7 +115,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 | Behavior | Source |
 |----------|--------|
 | Mark key | `KEYS.underline` |
-| Leaf behavior | `node.isLeaf: true` |
+| Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.underline.toggle()` calls `tx.marks.toggle(type)`. |
 | Shortcut | `UnderlinePlugin` registers `mod+u`. |
 | HTML tags | `u` |

@@ -1,4 +1,9 @@
-import type { Editor, Element, NodeEntry } from '@platejs/plite';
+import type {
+  Editor,
+  EditorCoreStateView,
+  Element,
+  NodeEntry,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { isDefined } from '@udecode/utils';
 
@@ -10,8 +15,14 @@ export type GetSiblingListOptions<N extends Element = Element> = {
     siblingNode: Element,
     currentNode: Element
   ) => boolean | undefined;
-  getNextEntry?: (entry: NodeEntry<Element>) => NodeEntry<N> | undefined;
-  getPreviousEntry?: (entry: NodeEntry<Element>) => NodeEntry<N> | undefined;
+  getNextEntry?: (
+    entry: NodeEntry<Element>,
+    state?: Pick<EditorCoreStateView, 'nodes'>
+  ) => NodeEntry<N> | undefined;
+  getPreviousEntry?: (
+    entry: NodeEntry<Element>,
+    state?: Pick<EditorCoreStateView, 'nodes'>
+  ) => NodeEntry<N> | undefined;
   /** Query to break lookup. */
   eqIndent?: boolean;
   /** Query to validate lookup. If false, check the next sibling. */
@@ -20,7 +31,7 @@ export type GetSiblingListOptions<N extends Element = Element> = {
 
 /** Get the next sibling indent-list node. */
 export const getSiblingList = <N extends Element = Element>(
-  _editor: Editor,
+  editor: Editor,
   [node, path]: NodeEntry<Element>,
   {
     breakOnEqIndentNeqListStyleType = true,
@@ -31,12 +42,13 @@ export const getSiblingList = <N extends Element = Element>(
     getNextEntry,
     getPreviousEntry,
     query,
-  }: GetSiblingListOptions<N>
+  }: GetSiblingListOptions<N>,
+  state: Pick<EditorCoreStateView, 'nodes'> | undefined = editor.read
 ): NodeEntry<N> | undefined => {
   if (!getPreviousEntry && !getNextEntry) return;
 
   const getSiblingEntry = getNextEntry ?? getPreviousEntry!;
-  let nextEntry = getSiblingEntry([node, path]);
+  let nextEntry = getSiblingEntry([node, path], state);
 
   while (nextEntry) {
     const [nextNode, nextPath] = nextEntry;
@@ -68,6 +80,6 @@ export const getSiblingList = <N extends Element = Element>(
       return [nextNode, nextPath];
     }
 
-    nextEntry = getSiblingEntry(nextEntry);
+    nextEntry = getSiblingEntry(nextEntry, state);
   }
 };

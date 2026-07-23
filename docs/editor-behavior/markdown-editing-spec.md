@@ -1,8 +1,13 @@
 # Markdown Editing Spec for Plate
 
-This is the normative editing spec for Plate's markdown-first profile.
+This is the normative editing spec for Plate's markdown-first behavior
+contract.
 
-Status: current readable law for the markdown-first profile.
+Status: current readable law for the markdown-first behavior contract.
+
+`markdown_typora` is a specification and test label. It does not imply a public
+profile registry or a second behavior runtime. A reusable shipped profile is an
+ordinary plugin kit only after real reuse earns that API.
 
 This file is about editing behavior, not syntax coverage. Syntax coverage lives
 in [markdown-parity-matrix.md](./markdown-parity-matrix.md).
@@ -22,9 +27,9 @@ the scenario-complete matrix. Exhaustive permutations still live in
 For the exhaustive scenario backlog and future protocol-complete matrix, use
 [editor-protocol-matrix.md](./editor-protocol-matrix.md).
 
-## Profile
+## Behavior Contract
 
-- target profile: `markdown_typora`
+- contract id: `markdown_typora`
 - companion reference: `markdown_milkdown`
 
 ## Authority Summary
@@ -118,10 +123,10 @@ $$
 
 ### Status Meanings
 
-- `locked` = current intended rule for the markdown-first profile
+- `locked` = current intended rule for the markdown-first behavior contract
 - `proposed` = intended direction, still open to movement
 - `audit` = waiting on stronger external grounding or more direct coverage
-- `deviation` = intentionally profile-owned, not one global truth
+- `deviation` = intentionally contract- or kit-owned, not one global truth
 
 ## Global Invariants
 
@@ -932,6 +937,7 @@ Plugin surface:
   markdown-native variants remain deferred
 - this family is not generic autoformat and not hidden parser magic
 - this family does not imply one monolithic runtime host:
+
   - rendered source-entry surfaces belong in the owning feature package and
     render/edit-entry layer
   - typed syntax-trigger conversions belong in shared input infrastructure near
@@ -1015,10 +1021,10 @@ expectations
 note: when a markdown-native image surface is directly editable, plain click
 should prefer source editing over passive rendered chrome behavior
 note: Typora also exposes path-rewrite actions such as move and copy image, but
-the current Plate markdown-first profile does not define file-system side
+the current Plate markdown-first behavior contract does not define file-system side
 effects in core image editing law
 note: Typora's `./` prefix and relative-path policies are valid future
-profile-option candidates; they are not required baseline law today
+app-kit policy candidates; they are not required baseline law today
 note: rich media block UI still belongs to the media contract, not this
 markdown-native image subsection
 
@@ -1864,7 +1870,7 @@ note: HTML fallback is intentional only for preservation depth, not because
 > Two]]
 ```
 
-note: replace the selection with the profile-appropriate split result
+note: replace the selection with the owning behavior contract's split result
 
 - `EDIT-SEL-BS-001` `locked` `⌫`
 
@@ -1975,12 +1981,13 @@ Authority:
 
 Ownership:
 
-- emoji shortcode support is a markdown-profile parse and serialize concern
+- emoji shortcode support belongs to the markdown behavior contract's parse and
+  serialize policy
 - it does not define a separate structural owner in the editor
 
 Plugin surface:
 
-- the default markdown profile accepts shortcode input through `remark-emoji`
+- the default markdown kit accepts shortcode input through `remark-emoji`
 - shortcode-preserving serialization is not the current contract
 - the emoji combobox package is a separate feature from markdown shortcode
   parsing
@@ -1993,7 +2000,7 @@ Plugin surface:
 🔥
 ```
 
-note: the default markdown profile accepts emoji shortcodes and normalizes them to unicode text
+note: the default markdown kit accepts emoji shortcodes and normalizes them to unicode text
 
 ## Footnotes
 
@@ -2141,10 +2148,10 @@ note: current footnote law is parse, serialize, insert, preview, and
 navigation
 note: dedicated toggle behavior is still not part of the footnote package law
 
-## Profile-Adjacent Options
+## Behavior-Policy Options
 
-These are explicit profile options that may matter for Typora parity, but they
-are not the one global default law for every Plate surface.
+These are explicit plugin or kit policy candidates that may matter for Typora
+parity, but they are not the one global default law for every Plate surface.
 
 ### Strict Mode
 
@@ -2162,9 +2169,10 @@ Ownership:
 
 Plugin surface:
 
-- no default strict-mode option is required by the current markdown profile
-- if Plate exposes strict mode, it should be an explicit profile option instead
-  of silent baseline behavior
+- no default strict-mode option is required by the current markdown behavior
+  contract
+- if Plate exposes strict mode, it should be an explicit plugin or kit option
+  instead of silent baseline behavior
 
 - `EDIT-PROFILE-STRICT-001` `deviation`
 
@@ -2205,7 +2213,7 @@ Authority:
 
 Ownership:
 
-- autoformat is profile-adjacent input assist, not parse law
+- autoformat is plugin- or kit-owned input assist, not parse law
 - current autoformat only runs on collapsed selection
 - current app kits disable autoformat inside code blocks
 - resulting nodes still follow their existing block / mark contracts after the
@@ -2228,7 +2236,7 @@ Ownership:
 - `EDIT-PROFILE-AUTOFMT-BLOCK-001` `deviation`
 
 ```text
-type # 
+type #
 =>
 heading block
 ```
@@ -2238,7 +2246,7 @@ note: heading shorthand follows markdown block-start syntax
 - `EDIT-PROFILE-AUTOFMT-BLOCK-002` `deviation`
 
 ```text
-type > 
+type >
 =>
 blockquote container
 ```
@@ -2249,7 +2257,7 @@ note: the current app rule allows same-type nesting for repeated quote entry
 - `EDIT-PROFILE-AUTOFMT-BLOCK-003` `deviation`
 
 ```text
-type -  / *  / 1.  / 1) 
+type -  / *  / 1.  / 1)
 =>
 list item
 ```
@@ -2260,7 +2268,7 @@ trigger supplies one
 - `EDIT-PROFILE-AUTOFMT-BLOCK-004` `deviation`
 
 ```text
-type []  / [x] 
+type []  / [x]
 =>
 todo item
 ```
@@ -2287,7 +2295,7 @@ lane instead of expanding generic autoformat further
 - `EDIT-PROFILE-AUTOFMT-BLOCK-006` `deviation`
 
 ```text
-type --- / —- / ___ 
+type --- / —- / ___
 =>
 horizontal rule + trailing paragraph
 ```
@@ -2466,13 +2474,14 @@ Authority:
 Ownership:
 
 - auto pair is input assist, not markdown syntax semantics
-- auto pair should be configurable per profile and per enabled syntax family
+- auto pair should be configurable by the owning plugin or kit and by enabled
+  syntax family
 
 Plugin surface:
 
-- no default auto-pair law is required by the current markdown profile
-- if Plate exposes auto pair, it should be an explicit profile option with
-  feature-gated symbol coverage
+- no default auto-pair law is required by the current markdown behavior contract
+- if Plate exposes auto pair, it should be an explicit plugin or kit option
+  with feature-gated symbol coverage
 
 - `EDIT-PROFILE-AUTOPAIR-001` `deviation`
 
@@ -2516,8 +2525,8 @@ Ownership:
 - selection-wrap, completed inline conversion, and block trigger are separate
   sub-surfaces
 - inline rich-mode completion and block `$$` promotion are separate surfaces
-- this surface belongs to typed syntax-trigger conversion or explicit profile
-  input assist, not to hidden parser magic
+- this surface belongs to typed syntax-trigger conversion or explicit plugin or
+  kit input assist, not to hidden parser magic
 
 Plugin surface:
 
@@ -2542,7 +2551,7 @@ $word$
 note: Obsidian is explicit that `$` belongs in the markdown auto-pair family
 and that a conservative selection-wrap policy is a real product choice
 note: this branch remains deferred for default rich mode and belongs to a
-future markdown-native or explicitly approved profile
+future markdown-native or explicitly approved app kit
 note: for Plate's default rich editor, `$` / `$$` collision pressure is strong
 enough that selection-wrap stays out of the shipped contract
 
@@ -2593,7 +2602,7 @@ These are still the meaningful open areas in the readable law:
 - math block destructive and tab ownership
 - toggle interaction with markdown-native containers
 - thematic break and atomic-block destructive behavior
-- strict mode and auto pair only exist as profile-adjacent option law today
+- strict mode and auto pair only exist as behavior-policy option law today
 - any future rows added to the protocol matrix that prove this file is missing a
   canonical example
 

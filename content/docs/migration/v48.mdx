@@ -1435,7 +1435,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   - `isInline` -> `node.isInline`
   - `isMarkableVoid` -> `node.isMarkableVoid`
   - `isVoid` -> `node.isVoid`
-  - `component` -> `node.component` or `render.node`
+  - `component` -> `render.node`
   - `props` -> `node.props`
   - `overrideByKey` -> `override.plugins`
   - `renderAboveEditable` -> `render.aboveEditable`
@@ -1607,7 +1607,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   - Transaction groups own replayable document mutations.
   - Editor overrides wrap existing editor behavior.
   - NEW `extendOptions` method to extend the plugin options with selectors. Use `editor.useOption(plugin, 'optionKey')` to subscribe to an (extended) option.
-  - NEW `withComponent` to replace `plugin.node.component`
+  - NEW `withComponent` to replace the prior plugin component field
 
   **Plugin Context**
 

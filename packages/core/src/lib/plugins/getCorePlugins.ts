@@ -1,22 +1,26 @@
-import type { AnyPluginConfig, PluginConfig } from '../plugin/PluginConfig';
+import type { PluginConfig } from '../plugin/PluginConfig';
+import type { BasePluginInput } from '../editor/pluginRuntimeTypes';
 import type { BasePlugin, InferConfig } from '../plugin/BasePlugin';
 import type { ReactApi } from '@platejs/plite-react';
 import type { HistoryExtensionTypes } from '@platejs/plite-history';
 
-import { AstPlugin } from './AstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
 import { OverridePlugin } from './override/OverridePlugin';
 import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { type DomConfig, DOMPlugin } from './dom';
 import { type ElementStateConfig, ElementStatePlugin } from './element-state';
-import { type HtmlApi, HtmlPlugin } from './html';
+import { HtmlPlugin } from './html';
 import { InputRulesPlugin } from './input-rules/internal/InputRulesPlugin';
 import { AffinityPlugin } from './affinity';
-import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
+import {
+  type NodeIdConfig,
+  type NodeIdOptions,
+  NodeIdPlugin,
+} from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
 
-export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
+export type CorePlugin = CorePluginConfig;
 
 export type CorePluginConfig =
   | InferConfig<typeof AffinityPlugin>
@@ -25,7 +29,6 @@ export type CorePluginConfig =
   | ElementStateConfig
   | NodeIdConfig
   | InferConfig<typeof BaseParagraphPlugin>
-  | PluginConfig<'ast'>
   | PluginConfig<
       'history',
       {},
@@ -43,21 +46,23 @@ export type GetCorePluginsOptions = {
   /** Enable mark/element affinity. */
   affinity?: boolean;
   /** Configure the node id plugin. */
-  nodeId?: NodeIdConfig['options'] | boolean;
+  nodeId?: NodeIdOptions | boolean;
   /** Override the core plugins using the same key. */
-  plugins?: AnyPluginConfig[];
+  plugins?: BasePluginInput[];
 };
 
 export const getCorePlugins = ({
   affinity,
   nodeId,
   plugins = [],
-}: GetCorePluginsOptions) => {
-  // Disable nodeId by default in test environment for deterministic tests
-  let resolvedNodeId: any = nodeId;
-  if (process.env.NODE_ENV === 'test' && nodeId === undefined) {
-    resolvedNodeId = false;
-  }
+}: GetCorePluginsOptions): BasePluginInput[] => {
+  const resolvedNodeId =
+    process.env.NODE_ENV === 'test' && nodeId === undefined
+      ? ({
+          initialValueIds: false,
+          match: () => false,
+        } satisfies NodeIdOptions)
+      : nodeId;
 
   const corePlugins = [
     DebugPlugin as BasePlugin<DebugConfig>,
@@ -68,11 +73,14 @@ export const getCorePlugins = ({
     OverridePlugin,
     ParserPlugin,
     HtmlPlugin,
-    AstPlugin,
-    NodeIdPlugin.configure({
-      enabled: resolvedNodeId !== false,
-      options: resolvedNodeId === false ? undefined : resolvedNodeId,
-    }),
+    NodeIdPlugin.configure(
+      typeof resolvedNodeId === 'object'
+        ? {
+            enabled: true,
+            options: resolvedNodeId,
+          }
+        : { enabled: resolvedNodeId !== false }
+    ),
     AffinityPlugin.configure({ enabled: affinity }),
     BaseParagraphPlugin,
   ];
@@ -107,12 +115,13 @@ export type CorePluginApi = ElementStateConfig['api'] & {
   react: ReactApi;
 } & DebugConfig['api'] &
   DomConfig['api'] &
-  InferConfig<typeof HistoryPlugin>['api'] &
-  HtmlApi;
+  InferConfig<typeof HistoryPlugin>['api'];
 
 export type CorePluginTx = DomConfig['tx'] &
   InferConfig<typeof HistoryPlugin>['tx'] &
   InferConfig<typeof NodeIdPlugin>['tx'];
+
+export type CorePluginState = HistoryExtensionTypes['state'];
 
 export type DebugConfig = PluginConfig<
   'debug',

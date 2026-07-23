@@ -22,18 +22,18 @@ topic: editor-behavior-command-reinterview-open-authority-gaps
 
 ## Invocation
 
-```sh
-$deep-interview --quick editor-behavior remaining authority gaps after latest batch
+```text
+grill-with-docs stress-test unresolved editor-behavior authority against docs/editor-behavior and docs/research
 ```
 
 ## Inputs
 
-- [docs/editor-behavior/markdown-standards.md](docs/editor-behavior/markdown-standards.md)
-- [docs/editor-behavior/markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
-- [docs/editor-behavior/editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md)
-- [docs/editor-behavior/markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)
-- [docs/editor-behavior/master-roadmap.md](docs/editor-behavior/master-roadmap.md)
-- [docs/editor-behavior/markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md)
+- [docs/editor-behavior/markdown-standards.md](../markdown-standards.md)
+- [docs/editor-behavior/markdown-editing-spec.md](../markdown-editing-spec.md)
+- [docs/editor-behavior/editor-protocol-matrix.md](../editor-protocol-matrix.md)
+- [docs/editor-behavior/markdown-parity-matrix.md](../markdown-parity-matrix.md)
+- [docs/editor-behavior/master-roadmap.md](../master-roadmap.md)
+- [docs/editor-behavior/markdown-editing-reference-audit.md](../markdown-editing-reference-audit.md)
 - latest batch findings and browser proof
 - current implementation/runtime lane blockers when the ambiguity came from a
   real code or product surface
@@ -49,19 +49,18 @@ $deep-interview --quick editor-behavior remaining authority gaps after latest ba
 
 ## Refresh Afterward
 
-- latest editor-behavior interview/spec artifact under `.omx/specs/`
-- [docs/editor-behavior/markdown-standards.md](docs/editor-behavior/markdown-standards.md) if winners changed
-- [docs/editor-behavior/markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
-- [docs/editor-behavior/editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md)
-- [docs/editor-behavior/markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md) if gate language moved
-- [docs/editor-behavior/master-roadmap.md](docs/editor-behavior/master-roadmap.md) if the interview changed implementation priority, lane ordering, or slice triage
+- [docs/editor-behavior/markdown-standards.md](../markdown-standards.md) if winners changed
+- [docs/editor-behavior/markdown-editing-spec.md](../markdown-editing-spec.md)
+- [docs/editor-behavior/editor-protocol-matrix.md](../editor-protocol-matrix.md)
+- [docs/editor-behavior/markdown-parity-matrix.md](../markdown-parity-matrix.md) if gate language moved
+- [docs/editor-behavior/master-roadmap.md](../master-roadmap.md) if the interview changed implementation priority, lane ordering, or slice triage
 
 ## Common Next Step
 
 - If the interview changed authority or law, run
-  [reconsolidate-law-stack.md](docs/editor-behavior/commands/reconsolidate-law-stack.md).
+  [reconsolidate-law-stack.md](reconsolidate-law-stack.md).
 - If the interview mostly changed roadmap order or priority, run
-  [replan-next-batch.md](docs/editor-behavior/commands/replan-next-batch.md).
+  [replan-next-batch.md](replan-next-batch.md).
 - If the interview resolves the blocker down to one concrete approved runtime
   batch, launch it through
-  [launch-next-ralph-batch.md](docs/editor-behavior/commands/launch-next-ralph-batch.md).
+  [execute-next-batch.md](execute-next-batch.md).

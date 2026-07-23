@@ -4,49 +4,60 @@ import {
   type TriggerComboboxPluginOptions,
   withTriggerCombobox,
 } from '@platejs/combobox';
-import { type PluginConfig, createBasePlugin } from '@platejs/core';
-import type { EditorUpdateTransaction } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { type InferConfig, createBasePlugin } from '@platejs/core';
+import { type EditorUpdateTransaction, property } from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { DEFAULT_EMOJI_LIBRARY } from './constants';
 
-export type EmojiInputConfig = PluginConfig<
-  'emoji',
-  {
-    /**
-     * The emoji data.
-     *
-     * @example
-     *   import emojiMartData from '@emoji-mart/data';
-     */
-    data: EmojiMartData;
-    createEmojiNode: (
-      emoji: Emoji
-    ) => Exclude<
-      Parameters<EditorUpdateTransaction['nodes']['insert']>[0],
-      unknown[]
-    >;
-  } & TriggerComboboxPluginOptions
->;
+type EmojiPluginOptions = {
+  /**
+   * The emoji data.
+   *
+   * @example
+   *   import emojiMartData from '@emoji-mart/data';
+   */
+  data: EmojiMartData;
+  createEmojiNode: (
+    emoji: Emoji
+  ) => Exclude<
+    Parameters<EditorUpdateTransaction['nodes']['insert']>[0],
+    unknown[]
+  >;
+} & TriggerComboboxPluginOptions;
 
 export const BaseEmojiInputPlugin = createBasePlugin({
   key: KEYS.emojiInput,
   editOnly: true,
-  node: { isElement: true, isInline: true, isVoid: true },
+  schema: {
+    element: {
+      properties: {
+        trigger: property.string(),
+        userId: property.string(),
+        value: property.string(),
+      },
+      void: 'inline',
+    },
+  },
+  type: NODES.emojiInput,
 });
 
-export const BaseEmojiPlugin = createBasePlugin<EmojiInputConfig>({
+const emojiPluginOptions: EmojiPluginOptions = {
+  data: DEFAULT_EMOJI_LIBRARY,
+  trigger: ':',
+  triggerPreviousCharPattern: /^\s?$/,
+  createComboboxInput: () => ({
+    children: [{ text: '' }],
+    type: NODES.emojiInput,
+  }),
+  createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
+};
+
+export const BaseEmojiPlugin = createBasePlugin({
   key: KEYS.emoji,
   editOnly: true,
-  options: {
-    data: DEFAULT_EMOJI_LIBRARY,
-    trigger: ':',
-    triggerPreviousCharPattern: /^\s?$/,
-    createComboboxInput: () => ({
-      children: [{ text: '' }],
-      type: KEYS.emojiInput,
-    }),
-    createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
-  },
+  options: emojiPluginOptions,
   plugins: [BaseEmojiInputPlugin],
 }).extendExtension(withTriggerCombobox);
+
+export type EmojiInputConfig = InferConfig<typeof BaseEmojiPlugin>;

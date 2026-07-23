@@ -2,9 +2,9 @@
 
 import type React from 'react';
 
-import { serializeMd } from '@platejs/markdown';
+import { type MarkdownEditor, MarkdownPlugin } from '@platejs/markdown';
 import debounce from 'lodash/debounce.js';
-import type { PluginConfig } from '@platejs/core';
+import { NodeIdPlugin, type PluginConfig } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 import { NodeApi } from '@platejs/plite';
 import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
@@ -16,7 +16,23 @@ import { acceptCopilot } from './transforms/acceptCopilot';
 import { acceptCopilotNextWord } from './transforms/acceptCopilotNextWord';
 import { type GetNextWord, getNextWord } from './utils/getNextWord';
 import { triggerCopilotSuggestion } from './utils/triggerCopilotSuggestion';
-import { copilotSuggestionField, withCopilot } from './withCopilot';
+import {
+  copilotSuggestionEffectExtension,
+  copilotSuggestionField,
+  setCopilotSuggestion,
+  withCopilot,
+} from './withCopilot';
+
+type CopilotApi = {
+  triggerSuggestion: () =>
+    | ReturnType<typeof triggerCopilotSuggestion>
+    | undefined;
+  reject: () => false | undefined;
+  setBlockSuggestion: (options: { text: string; id?: string }) => void;
+  stop: () => void;
+};
+
+const dependencies = [NodeIdPlugin, MarkdownPlugin] as const;
 
 export type CopilotPluginConfig = PluginConfig<
   'copilot',
@@ -53,9 +69,9 @@ export type CopilotPluginConfig = PluginConfig<
     /**
      * Get the prompt for AI completion.
      *
-     * @default serializeMd(editor, { value: [editor.read.nodes.block({ mode: 'highest' })[0]] })
+     * @default editor.api.markdown.serialize({ value: [editor.read.nodes.block({ mode: 'highest' })[0]] })
      */
-    getPrompt?: (options: { editor: PlateEditor }) => string;
+    getPrompt?: (options: { editor: MarkdownEditor<PlateEditor> }) => string;
     /**
      * Conditions to trigger copilot. Disabling defaults to:
      *
@@ -65,18 +81,7 @@ export type CopilotPluginConfig = PluginConfig<
     triggerQuery?: (options: { editor: PlateEditor }) => boolean;
     // query?: QueryEditorOptions;
   },
-  {
-    copilot: {
-      triggerSuggestion: () =>
-        | ReturnType<typeof triggerCopilotSuggestion>
-        | undefined;
-      // Function to abort the current API request and reject the completion state.
-      reject: () => false | undefined;
-      setBlockSuggestion: (options: { text: string; id?: string }) => void;
-      // Function to abort the current API request.
-      stop: () => void;
-    };
-  },
+  {},
   {
     copilot: {
       accept: () => false | undefined;
@@ -85,7 +90,12 @@ export type CopilotPluginConfig = PluginConfig<
   },
   {
     isSuggested?: (id: string) => boolean;
-  }
+  },
+  {},
+  typeof dependencies,
+  readonly [],
+  never,
+  CopilotApi
 >;
 
 type CompletionState = {
@@ -99,6 +109,7 @@ type CompletionState = {
 };
 
 export const CopilotPlugin = createPlatePlugin<CopilotPluginConfig>({
+  dependencies,
   key: KEYS.copilot,
   handlers: {
     onBlur: ({ api }) => {
@@ -123,7 +134,7 @@ export const CopilotPlugin = createPlatePlugin<CopilotPluginConfig>({
     autoTriggerQuery: ({ editor }) => {
       if (
         editor
-          .plugin<CopilotPluginConfig>(KEYS.copilot)
+          .plugin<CopilotPluginConfig>({ key: KEYS.copilot })
           .getOption('suggestionText')
       ) {
         return false;
@@ -142,7 +153,7 @@ export const CopilotPlugin = createPlatePlugin<CopilotPluginConfig>({
 
       if (!contextEntry) return '';
 
-      return serializeMd(editor, {
+      return editor.api.markdown.serialize({
         value: [contextEntry[0]],
       });
     },
@@ -154,12 +165,12 @@ export const CopilotPlugin = createPlatePlugin<CopilotPluginConfig>({
     },
   },
 })
-  .extendExtension(copilotSuggestionField)
+  .extendExtension([copilotSuggestionField, copilotSuggestionEffectExtension])
   .extendExtension(withCopilot)
   .extendSelectors<CopilotPluginConfig['selectors']>(({ getOptions }) => ({
     isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
-  .extendApi<Omit<CopilotPluginConfig['api']['copilot'], 'reject'>>(
+  .extendApi<Omit<CopilotPluginConfig['pluginApi'], 'reject'>>(
     ({ editor, getOptions, setOption }) => {
       const debounceDelay = getOptions().debounceDelay;
       const triggerImmediately = () => triggerCopilotSuggestion(editor);
@@ -170,12 +181,17 @@ export const CopilotPlugin = createPlatePlugin<CopilotPluginConfig>({
       return {
         triggerSuggestion: debouncedTrigger ?? triggerImmediately,
         setBlockSuggestion: ({ id = getOptions().suggestionNodeId, text }) => {
-          const blockId = id ?? editor.read.nodes.block()?.[0].id;
+          const block = editor.read.nodes.block();
+          const blockId =
+            id ??
+            (block
+              ? editor.read.schema.getElementProperty(block[0], NodeIdPlugin)
+              : undefined);
 
           if (typeof blockId !== 'string') return;
 
           editor.update({ history: 'skip' }, (tx) => {
-            tx.setField(copilotSuggestionField, { id: blockId, text });
+            setCopilotSuggestion(tx, { id: blockId, text });
           });
         },
         stop: () => {
@@ -198,7 +214,7 @@ export const CopilotPlugin = createPlatePlugin<CopilotPluginConfig>({
       api.stop();
 
       editor.update({ history: 'skip' }, (tx) => {
-        tx.setField(copilotSuggestionField, { id: null, text: null });
+        setCopilotSuggestion(tx, { id: null, text: null });
       });
       setOptions({ completion: null });
     },
@@ -214,6 +230,7 @@ export const CopilotPlugin = createPlatePlugin<CopilotPluginConfig>({
     shortcuts: {
       accept: {
         keys: 'tab',
+        target: 'update',
       },
       reject: {
         keys: 'escape',

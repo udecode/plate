@@ -44,7 +44,7 @@ docs:
 ### Media Features
 - Editable captions
 - Resizable elements
-- Embed URLs are normalized into `url`, `provider`, and `id` props, with an optional `sourceUrl` preserved for reversible editing.
+- Embed URLs are normalized into `url` and `provider`, with an optional `sourceUrl` preserved for reversible editing.
 
 ### Upload
 - **Multiple upload methods**:
@@ -162,7 +162,6 @@ import {
   PlaceholderPlugin,
   VideoPlugin,
 } from '@platejs/media/react';
-import { KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 import { 
   AudioElement, 
@@ -195,7 +194,7 @@ const editor = createPlateEditor({
 - `render.afterEditable`: Renders upload progress toast outside the editor.
 
 <Callout type="info">
-  **Note:** When serialized to Markdown or MDX, embeds persist the canonical `url`, `provider`, and `id`, plus an optional `sourceUrl` so edits remain reversible. Allowlisted provider snippets (e.g. YouTube, Tweet) are reduced to canonical URLs on paste. Raw `<script>` or custom embed chrome is out of scope — add your own rules if you need to preserve it.
+  **Note:** When serialized to Markdown or MDX, embeds persist the canonical `url` and `provider`, plus an optional `sourceUrl` so edits remain reversible. Allowlisted provider snippets (e.g. YouTube, Tweet) are reduced to canonical URLs on paste. Raw `<script>` or custom embed chrome is out of scope — add your own rules if you need to preserve it.
 </Callout>
 
 ### Caption Support
@@ -204,17 +203,26 @@ To enable media captions, add the [Caption Plugin](/docs/caption):
 
 ```tsx
 import { CaptionPlugin } from '@platejs/caption/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  VideoPlugin,
+} from '@platejs/media/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     // ...media plugins,
     CaptionPlugin.configure({
-      options: {
-        query: {
-          allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
-        },
-      },
+      targetPluginKeys: [
+        ImagePlugin.key,
+        VideoPlugin.key,
+        AudioPlugin.key,
+        FilePlugin.key,
+        MediaEmbedPlugin.key,
+      ],
     }),
   ],
 });
@@ -290,7 +298,6 @@ export function useUploadFile({
 
       setUploadedFile(uploadedFile);
       onUploadComplete?.(uploadedFile);
-      
       return uploadedFile;
     } catch (error) {
       onUploadError?.(error);
@@ -323,11 +330,10 @@ export function PlaceholderElement({ className, children, element, ...props }) {
     onUploadComplete: (uploadedFile) => {
       // Replace placeholder with actual media element
       const { url, type } = uploadedFile;
-      
       // Insert the final media node after upload succeeds.
-      editor.update((tx) => {
-        tx.placeholder.insert(getMediaType(type), { select: true });
-      });
+        editor
+          .plugin(PlaceholderPlugin)
+          .update.insert(getMediaType(type), { select: true });
     },
     onUploadError: (error) => {
       console.error('Upload failed:', error);
@@ -497,11 +503,11 @@ Allow multiple files of the same type to be uploaded.
 
 ## API
 
-### `api.placeholder.addUploadingFile`
+### `editor.plugin(PlaceholderPlugin).api.addUploadingFile`
 
 Tracks a file that is currently being uploaded.
 
-<API name="addUploadingFile">
+<API name="editor.plugin(PlaceholderPlugin).api.addUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     Unique identifier for the placeholder element.
@@ -512,11 +518,11 @@ Tracks a file that is currently being uploaded.
 </APIParameters>
 </API>
 
-### `api.placeholder.getUploadingFile`
+### `editor.plugin(PlaceholderPlugin).api.getUploadingFile`
 
 Gets a file that is currently being uploaded.
 
-<API name="getUploadingFile">
+<API name="editor.plugin(PlaceholderPlugin).api.getUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     Unique identifier for the placeholder element.
@@ -530,11 +536,11 @@ Gets a file that is currently being uploaded.
 </APIReturns>
 </API>
 
-### `api.placeholder.removeUploadingFile`
+### `editor.plugin(PlaceholderPlugin).api.removeUploadingFile`
 
 Removes a file from the uploading tracking state after upload completes or fails.
 
-<API name="removeUploadingFile">
+<API name="editor.plugin(PlaceholderPlugin).api.removeUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     Unique identifier for the placeholder element to remove.
@@ -544,13 +550,13 @@ Removes a file from the uploading tracking state after upload completes or fails
 
 ## Transforms
 
-### `tx.placeholder.insert.media`
+### `editor.plugin(PlaceholderPlugin).update.insertMedia`
 
 Inserts media files into the editor with upload placeholders.
 
 <API name="insertMedia">
 <APIParameters>
-  <APIItem name="files" type="FileList">
+  <APIItem name="files" type="File[] | FileList">
     Files to upload. Validates against configured file types and limits.
   </APIItem>
   <APIItem name="options" type="object" optional>
@@ -582,40 +588,40 @@ enum UploadErrorCode {
 }
 ```
 
-### `tx.insert.imagePlaceholder`
+### `editor.plugin(BasePlaceholderPlugin).update.insert`
 
-Inserts a placeholder that converts to an image element when completed.
+Inserts one headless placeholder for an image, video, audio, or file.
 
-### `tx.insert.videoPlaceholder`
+<API name="insert">
+<APIParameters>
+  <APIItem name="mediaType" type="string">
+    The media node type created after upload, such as `KEYS.img`,
+    `KEYS.video`, `KEYS.audio`, or `KEYS.file`.
+  </APIItem>
+  <APIItem name="options" type="NodeInsertNodesOptions<TPlaceholderElement>" optional>
+    Exact-path and selection options.
+  </APIItem>
+</APIParameters>
+</API>
 
-Inserts a placeholder that converts to a video element when completed.
-
-### `tx.insert.audioPlaceholder`
-
-Inserts a placeholder that converts to an audio element when completed.
-
-### `tx.insert.filePlaceholder`
-
-Inserts a placeholder that converts to a file element when completed.
-
-### `insertImage`
+### `editor.plugin(BaseImagePlugin).update.insert`
 
 Inserts an image element into the editor.
 
-<API name="insertImage">
+<API name="insert">
 <APIParameters>
-  <APIItem name="url" type="string | ArrayBuffer">
-    The URL or ArrayBuffer of the image.
+  <APIItem name="url" type="string">
+    The image URL.
   </APIItem>
-  <APIItem name="options" type="object" optional>
-    Additional options for inserting the image element.
+  <APIItem name="options" type="NodeInsertNodesOptions<TImageElement>" optional>
+    Exact-path and selection options.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="InsertImageOptions">
-  <APIItem name="after" type="NodeTarget" optional>
-    Reference block or location. Defaults to the selected block; appends when
-    there is no reference or selection.
+<APIOptions type="NodeInsertNodesOptions<TImageElement>">
+  <APIItem name="at" type="Location" optional>
+    Exact insertion target. When omitted, the image is inserted after the
+    selected block.
   </APIItem>
   <APIItem name="select" type="boolean" optional>
     Select the inserted image.
@@ -623,21 +629,51 @@ Inserts an image element into the editor.
 </APIOptions>
 </API>
 
-### `insertMediaEmbed`
+### `editor.plugin(BaseMediaEmbedPlugin).update.insert`
 
-Inserts a media embed element at the current selection.
+Transforms and normalizes a URL, then inserts a media embed.
 
-<API name="insertMediaEmbed">
-<APIOptions type="InsertMediaEmbedOptions">
-  <APIItem name="url" type="string" optional>
-    The URL of the media embed.
-    - **Default:** `''`
+<API name="insert">
+<APIParameters>
+  <APIItem name="url" type="string">
+    A media URL or embed snippet.
   </APIItem>
-  <APIItem name="after" type="NodeTarget" optional>
-    Reference block or location. Defaults to the selected block.
+  <APIItem name="options" type="NodeInsertNodesOptions<TMediaEmbedElement>" optional>
+    Exact-path and selection options.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="NodeInsertNodesOptions<TMediaEmbedElement>">
+  <APIItem name="at" type="Location" optional>
+    Exact insertion target. When omitted, the current selection is required.
   </APIItem>
   <APIItem name="select" type="boolean" optional>
     Select the inserted embed.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertMediaUrl`
+
+Prompts for an image or embed URL and dispatches to its scoped plugin update.
+Import it from `@platejs/media/react`.
+
+<API name="insertMediaUrl">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor receiving the media element.
+  </APIItem>
+  <APIItem name="options" type="InsertMediaUrlOptions" optional>
+    URL resolution, media type, exact-path, and selection options.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="InsertMediaUrlOptions">
+  <APIItem name="getUrl" type="() => Promise<string>" optional>
+    Resolves a URL without showing the browser prompt.
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    `KEYS.img` or `KEYS.mediaEmbed`. Defaults to `KEYS.img`.
   </APIItem>
 </APIOptions>
 </API>
@@ -694,35 +730,46 @@ A state hook for a media element.
 <APIParameters>
   <APIItem name="options.urlParsers" type="EmbedUrlParser[]" optional>
     Array of URL parsers to parse the media element URL.
-  
     - **`EmbedUrlParser`:** `(url: string) => EmbedUrlData | undefined`
   </APIItem>
 </APIParameters>
 
 <APIReturns type="object">
-  <APIItem name="align" type="string">
+  <APIItem name="id" type="string | undefined">
+    The media element ID.
+  </APIItem>
+  <APIItem name="align" type="string | undefined">
     The alignment of the media element.
   </APIItem>
-  <APIItem name="focus" type="boolean">
-    Whether the media element is currently focused.
-  </APIItem>
-  <APIItem name="selected" type="boolean">
-    Whether the media element is currently selected.
-  </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    Whether the editor is in read-only mode.
-  </APIItem>
-  <APIItem name="embed" type="EmbedUrlData">
+  <APIItem name="embed" type="EmbedUrlData | undefined">
     The parsed embed data of the media element.
+  </APIItem>
+  <APIItem name="focused" type="boolean">
+    Whether the media element is currently focused.
   </APIItem>
   <APIItem name="isTweet" type="boolean">
     Whether the media element is a tweet.
+  </APIItem>
+  <APIItem name="isUpload" type="boolean | undefined">
+    Whether the media element represents an upload.
   </APIItem>
   <APIItem name="isVideo" type="boolean">
     Whether the media element is a video.
   </APIItem>
   <APIItem name="isYoutube" type="boolean">
     Whether the media element is a YouTube video.
+  </APIItem>
+  <APIItem name="name" type="string | undefined">
+    The media file name.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    Whether the editor is in read-only mode.
+  </APIItem>
+  <APIItem name="selected" type="boolean">
+    Whether the media element is currently selected.
+  </APIItem>
+  <APIItem name="unsafeUrl" type="string">
+    The unescaped media URL stored on the element.
   </APIItem>
 </APIReturns>
 </API>
@@ -739,8 +786,8 @@ A behavior hook for a media toolbar button.
 </APIParameters>
 
 <APIReturns type="object">
-  <APIItem name="props.onClick" type="() => void">
-    Callback function that inserts the media node and focuses the editor.
+  <APIItem name="props.onClick" type="() => Promise<void>">
+    Prompts for a URL and inserts the requested media node.
   </APIItem>
 </APIReturns>
 </API>
@@ -790,11 +837,11 @@ A hook for image elements.
   <APIItem name="props.src" type="string">
     The URL of the media element.
   </APIItem>
-  <APIItem name="props.alt" type="string">
-    The caption string for the image.
-  </APIItem>
   <APIItem name="props.draggable" type="boolean">
     Whether the image is draggable.
+  </APIItem>
+  <APIItem name="props.onDoubleClickCapture" type="() => void">
+    Opens the image preview.
   </APIItem>
 </APIReturns>
 </API>
@@ -807,13 +854,17 @@ Parses a media URL for plugin-specific handling.
 
 <API name="parseMediaUrl">
 <APIParameters>
-  <APIItem name="options.pluginKey" type="string">
-    The key of the media plugin.
+  <APIItem name="url" type="string">
+    The media URL to parse.
   </APIItem>
-  <APIItem name="options.url" type="string" optional>
-    The URL of the media to be parsed.
+  <APIItem name="options.urlParsers" type="EmbedUrlParser[]">
+    Ordered parsers used to recognize the URL.
   </APIItem>
 </APIParameters>
+
+<APIReturns type="EmbedUrlData | undefined">
+  The first safe parser result, or `undefined` when no parser matches.
+</APIReturns>
 </API>
 
 ### `parseVideoUrl`
@@ -863,57 +914,20 @@ Parses the URL of an iframe embed.
 </APIParameters>
 </API>
 
-### `isImageUrl`
-
-Checks if a URL is a valid image URL.
-
-<API name="isImageUrl">
-<APIParameters>
-  <APIItem name="url" type="string">
-    The URL to check.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="boolean">
-  Whether the URL is a valid image URL.
-</APIReturns>
-</API>
-
 ### `submitFloatingMedia`
 
 Submits a floating media element.
 
 <API name="submitFloatingMedia">
 <APIParameters>
+  <APIItem name="editor" type="BaseEditor">
+    The editor containing the media element.
+  </APIItem>
   <APIItem name="options.element" type="TMediaElement">
     The floating media element to be submitted.
   </APIItem>
-  <APIItem name="options.pluginKey" type="string" optional>
-    The key of the media plugin.
-  </APIItem>
-</APIParameters>
-</API>
-
-### `withImageUpload`
-
-Enhances the editor instance with image upload functionality.
-
-<API name="withImageUpload">
-<APIParameters>
-  <APIItem name="plugin" type="PlatePlugin">
-    The plate plugin.
-  </APIItem>
-</APIParameters>
-</API>
-
-### `withImageEmbed`
-
-Enhances the editor instance with image-related functionality.
-
-<API name="withImageEmbed">
-<APIParameters>
-  <APIItem name="plugin" type="PlatePlugin">
-    The plate plugin.
+  <APIItem name="options.plugin" type="WithRequiredKey<MediaPluginConfig>">
+    The image or media-embed plugin that owns the URL options.
   </APIItem>
 </APIParameters>
 </API>
@@ -945,9 +959,10 @@ export interface TPlaceholderElement extends Element {
 
 ```tsx
 export interface EmbedUrlData {
-  url?: string;
-  provider?: string;
   id?: string;
-  component?: React.FC<EmbedUrlData>;
+  provider?: string;
+  sourceKind?: 'allowlisted_snippet' | 'iframe' | 'url';
+  sourceUrl?: string;
+  url?: string;
 }
 ```

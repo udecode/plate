@@ -4,15 +4,17 @@ import type { Element } from '@platejs/plite';
 import { BaseCaptionPlugin } from '../../lib';
 
 export const showCaption = (editor: BaseEditor, element: Element) => {
-  const path = editor.read.nodes.path(element);
+  if (typeof element.id !== 'string') return;
 
   const caption = editor.plugin(BaseCaptionPlugin);
 
-  caption.setOption('visibleId', element.id as string);
+  caption.setOption('visibleId', element.id);
 
   setTimeout(() => {
-    if (path) {
-      caption.setOption('focusEndPath', path);
-    }
+    const path = editor.read.nodes.path(element);
+
+    if (!path) return;
+
+    caption.setOption('focusEndPath', path);
   }, 0);
 };

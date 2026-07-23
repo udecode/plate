@@ -51,11 +51,7 @@ import { createBasePlugin } from 'platejs';
 const TagInputPlugin = createBasePlugin({
   key: 'tag_input',
   editOnly: true,
-  node: {
-    isElement: true,
-    isInline: true,
-    isVoid: true,
-  },
+  schema: { element: { void: 'inline' } },
 });
 ```
 
@@ -71,7 +67,7 @@ type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
 
 export const TagPlugin = createBasePlugin<TagConfig>({
   key: 'tag',
-  node: { isElement: true, isInline: true, isVoid: true },
+  schema: { element: { void: 'inline' } },
   options: {
     trigger: '#',
     triggerPreviousCharPattern: /^\s?$/,
@@ -84,9 +80,8 @@ export const TagPlugin = createBasePlugin<TagConfig>({
 });
 ```
 
-- `node.isElement`: Defines this as an element node (not text)
-- `node.isInline`: Makes the tag element inline (not block)
-- `node.isVoid`: Prevents editing inside the tag element
+- `schema.element`: Defines the plugin's element model behavior
+- `schema.element.void: 'inline'`: Makes the tag an inline void and prevents editing inside it
 - `options.trigger`: Character that triggers the combobox (in this case `#`)
 - `options.triggerPreviousCharPattern`: RegExp pattern that must match the character before the trigger. `/^\s?$/` allows the trigger at the start of a line or after whitespace
 - `options.createComboboxInput`: Function that creates the input element node when the trigger is activated
@@ -118,10 +113,8 @@ export function TagInputElement({ element, ...props }) {
     <PlateElement as="span" {...props}>
       <InlineCombobox element={element} trigger="#">
         <InlineComboboxInput />
-        
         <InlineComboboxContent>
           <InlineComboboxEmpty>No tags found</InlineComboboxEmpty>
-          
           {tags.map((tag) => (
             <InlineComboboxItem
               key={tag.id}
@@ -144,7 +137,6 @@ export function TagInputElement({ element, ...props }) {
           ))}
         </InlineComboboxContent>
       </InlineCombobox>
-      
       {props.children}
     </PlateElement>
   );
@@ -186,14 +178,14 @@ import { TagElement, TagInputElement } from './tag-components';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    TagPlugin.configure({
+    TagPlugin.withComponent(TagElement).configure({
       options: {
         triggerQuery: (editor) => {
           // Disable in code blocks
           return !editor.read.nodes.some({ match: { type: 'code_block' } });
         },
       },
-    }).withComponent(TagElement),
+    }),
     TagInputPlugin.withComponent(TagInputElement),
   ],
 });

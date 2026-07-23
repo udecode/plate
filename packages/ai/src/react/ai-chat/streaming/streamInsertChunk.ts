@@ -1,5 +1,6 @@
 import type { PlateEditor } from '@platejs/core/react';
 
+import type { MarkdownEditor } from '@platejs/markdown';
 import { type Element, type Path, NodeApi, PathApi } from '@platejs/plite';
 import { getPluginType } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
@@ -61,14 +62,15 @@ export const getInsertPreviewStart = (editor: PlateEditor) => {
 
 /** @experimental */
 export function streamInsertChunk(
-  editor: PlateEditor,
+  editor: MarkdownEditor<PlateEditor>,
   chunk: string,
   options: SteamInsertChunkOptions = {}
 ) {
   const insertOptions = withPreviewElementProps(editor, options);
   const { _blockChunks, _blockPath } = editor.plugin(AIChatPlugin).getOptions();
+  const blockPath = _blockPath ? [..._blockPath] : null;
 
-  if (_blockPath === null) {
+  if (blockPath === null) {
     const blocks = streamDeserializeMd(editor, chunk);
     const { path, startInEmptyParagraph } = getInsertPreviewStart(editor);
 
@@ -133,18 +135,18 @@ export function streamInsertChunk(
     }
 
     let nextBlockChunks = _blockChunks;
-    let nextBlockPath = _blockPath;
+    let nextBlockPath = blockPath;
 
     editor.update({ history: 'skip' }, (tx) => {
       const updateBlocks = () => {
         if (tempBlocks.length === 1) {
-          const currentBlock = tx.nodes.get<Element>(_blockPath)?.[0];
+          const currentBlock = tx.nodes.get<Element>(blockPath)?.[0];
 
           if (!currentBlock) return;
 
           if (isSameNode(editor, currentBlock, tempBlocks[0])) {
             const chunkNodes = streamDeserializeInlineMd(editor, chunk);
-            const endPoint = tx.points.end(_blockPath);
+            const endPoint = tx.points.end(blockPath);
 
             if (!endPoint) return;
 
@@ -153,7 +155,7 @@ export function streamInsertChunk(
               select: true,
             });
 
-            const updatedBlock = tx.nodes.get<Element>(_blockPath);
+            const updatedBlock = tx.nodes.get<Element>(blockPath);
 
             if (!updatedBlock) return;
 
@@ -172,7 +174,7 @@ export function streamInsertChunk(
             } else {
               tx.nodes.replace(
                 nodesWithProps(editor, [tempBlocks[0]], insertOptions),
-                { at: _blockPath, select: true }
+                { at: blockPath, select: true }
               );
 
               const replacement = streamSerializeMd(
@@ -196,7 +198,7 @@ export function streamInsertChunk(
             );
             tx.nodes.replace(
               nodesWithProps(editor, [tempBlocks[0]], insertOptions),
-              { at: _blockPath, select: true }
+              { at: blockPath, select: true }
             );
           }
 
@@ -204,11 +206,11 @@ export function streamInsertChunk(
         }
 
         tx.nodes.replace(nodesWithProps(editor, tempBlocks, insertOptions), {
-          at: _blockPath,
+          at: blockPath,
           select: true,
         });
 
-        nextBlockPath = getNextPath(_blockPath, tempBlocks.length - 1);
+        nextBlockPath = getNextPath(blockPath, tempBlocks.length - 1);
         const endBlock = tx.nodes.get<Element>(nextBlockPath);
 
         if (!endBlock) return;

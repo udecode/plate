@@ -1,4 +1,4 @@
-import type { DOMCapableEditor } from '@platejs/plite-dom';
+import type { DOMEditor } from '@platejs/plite-dom';
 import {
   type Range,
   type Value,
@@ -9,11 +9,8 @@ import {
 
 import type { SelectionRect } from '../types';
 
-export const getSelectionRects = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: DOMCapableEditor<V, TExtensions>,
+export const getSelectionRects = <V extends Value>(
+  editor: DOMEditor<V>,
   {
     range,
     xOffset,

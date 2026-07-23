@@ -7,10 +7,10 @@ import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import {
   type AnyBasePlugin,
   type GetInjectNodePropsOptions,
-  getEditorPlugin as getBaseEditorPlugin,
   getPluginNodeClass,
 } from '../../lib';
 import { getPluginNodeProps } from '../../lib/utils/getPluginNodeProps';
@@ -47,20 +47,16 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
 }) => {
   const hasInjectNodeProps =
     !disableInjectNodeProps &&
-    editor.runtime.pluginCache.inject.nodeProps.length > 0;
+    getPlateRuntime(editor).pluginCache.inject.nodeProps.length > 0;
   const canSkipPluginNodeProps =
     !hasInjectNodeProps &&
-    !plugin?.node.props &&
-    !plugin?.node.dangerouslyAllowAttributes?.length;
+    !plugin?.render.nodeProps &&
+    !plugin?.host.dangerouslyAllowAttributes?.length;
   const resolvedPluginContext = pluginContext
     ? pluginContext
     : plugin
       ? {
-          // Installed React plugins own React context; base plugins keep the
-          // non-React context used by text/static-compatible render paths.
-          ...('useOptionsStore' in plugin
-            ? getEditorPlugin(editor, plugin)
-            : getBaseEditorPlugin(editor, plugin)),
+          ...getEditorPlugin(editor, plugin),
           api: editor.api,
         }
       : {
@@ -81,7 +77,7 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
         ...props.attributes,
         className:
           clsx(
-            getPluginNodeClass(plugin?.node.type),
+            getPluginNodeClass(plugin?.type),
             props.attributes?.className,
             className
           ) || undefined,
@@ -110,7 +106,7 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
       ...pluginProps.attributes,
       className:
         clsx(
-          getPluginNodeClass(plugin?.node.type),
+          getPluginNodeClass(plugin?.type),
           pluginProps.attributes?.className,
           className
         ) || undefined,

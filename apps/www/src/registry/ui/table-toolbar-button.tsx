@@ -44,12 +44,10 @@ const runTableCommand = (editor: PlateEditor, command: () => void) => {
 };
 
 export function TableToolbarButton(props: DropdownMenuProps) {
-  const tableSelected = useEditorSelector(
-    (editor) =>
-      editor.read.nodes.some({
-        match: { type: KEYS.table },
-      }),
-    []
+  const tableSelected = useEditorSelector((editor) =>
+    editor.read.nodes.some({
+      match: { type: KEYS.table },
+    })
   );
 
   const { editor } = useEditorPlugin(TablePlugin);
@@ -129,7 +127,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   runTableCommand(editor, () => {
-                    editor.update.insert.tableRow({ before: true });
+                    editor.plugin(TablePlugin).update.insertRow({
+                      before: true,
+                    });
                   });
                 }}
               >
@@ -141,7 +141,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   runTableCommand(editor, () => {
-                    editor.update.insert.tableRow();
+                    editor.plugin(TablePlugin).update.insertRow();
                   });
                 }}
               >
@@ -153,7 +153,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   runTableCommand(editor, () => {
-                    editor.update.remove.tableRow();
+                    editor.plugin(TablePlugin).update.removeRow();
                   });
                 }}
               >
@@ -177,7 +177,9 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   runTableCommand(editor, () => {
-                    editor.update.insert.tableColumn({ before: true });
+                    editor.plugin(TablePlugin).update.insertColumn({
+                      before: true,
+                    });
                   });
                 }}
               >
@@ -189,7 +191,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   runTableCommand(editor, () => {
-                    editor.update.insert.tableColumn();
+                    editor.plugin(TablePlugin).update.insertColumn();
                   });
                 }}
               >
@@ -201,7 +203,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   runTableCommand(editor, () => {
-                    editor.update.remove.tableColumn();
+                    editor.plugin(TablePlugin).update.removeColumn();
                   });
                 }}
               >
@@ -216,7 +218,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
             disabled={!tableSelected}
             onSelect={() => {
               runTableCommand(editor, () => {
-                editor.update.remove.table();
+                editor.plugin(TablePlugin).update.remove();
               });
             }}
           >
@@ -258,7 +260,7 @@ function TablePicker() {
       className="flex! m-0 flex-col p-0"
       onClick={() => {
         runTableCommand(editor, () => {
-          editor.update.insert.table(tablePicker.size, {
+          editor.plugin(TablePlugin).update.insert(tablePicker.size, {
             select: true,
           });
         });

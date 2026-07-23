@@ -1,7 +1,5 @@
-/** Convert HTML string into HTML element. */
-export const htmlStringToDOMNode = (rawHtml: string) => {
-  const node = document.createElement('body');
-  node.innerHTML = rawHtml;
+import { parseDOMClipboardHtml } from '@platejs/plite-dom/internal';
 
-  return node;
-};
+/** Convert HTML string into HTML element. */
+export const htmlStringToDOMNode = (rawHtml: string) =>
+  parseDOMClipboardHtml(rawHtml).body;

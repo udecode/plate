@@ -11,6 +11,10 @@ import {
   getPluginByType,
   getPluginNodeClass,
 } from '../../lib';
+import {
+  getCompiledPlateModelBinding,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import {
@@ -18,7 +22,6 @@ import {
   PlateElement,
   useBlockIdAttributeRef,
 } from '../components';
-import { useNodePath } from '../hooks';
 import { ElementProvider } from '../stores';
 import { getEditorPlugin } from '../plugin';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -27,6 +30,16 @@ import { BelowRootNodes, pluginRenderElement } from './pluginRenderElement';
 type RenderElementProps = Parameters<
   NonNullable<EditableProps['renderElement']>
 >[0];
+
+const getRenderedElementPath = (editor: PlateEditor, element: Element) => {
+  const path = editor.read.nodes.path(element);
+
+  if (!path) {
+    throw new Error('Rendered element is not present in the editor snapshot.');
+  }
+
+  return path;
+};
 
 function FastElementWithPath({
   attributes,
@@ -41,7 +54,7 @@ function FastElementWithPath({
   element: Element;
   plugin: AnyBasePlugin;
 }) {
-  const path = useNodePath(element)!;
+  const path = getRenderedElementPath(editor, element);
 
   return (
     <ElementProvider
@@ -76,7 +89,7 @@ function useFastInjectedAttributes({
   path: Path;
   readOnly: boolean;
 }) {
-  if (editor.runtime.pluginCache.inject.nodeProps.length === 0)
+  if (getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0)
     return attributes;
 
   return pipeInjectNodeProps(
@@ -150,7 +163,7 @@ function FastIntrinsicElement({
   renderBelowNodes: boolean;
   tag: keyof HTMLElementTagNameMap;
 }) {
-  const path = useNodePath(element)!;
+  const path = getRenderedElementPath(editor, element);
 
   return (
     <ElementProvider
@@ -223,7 +236,7 @@ function FastIntrinsicElementBody({
       path,
     };
 
-    editor.runtime.pluginCache.render.belowNodes.forEach((key) => {
+    getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((key) => {
       const wrapperContext = getEditorPlugin(editor, { key });
       const hoc = wrapperContext.plugin.render.belowNodes!({
         ...nodeProps,
@@ -272,7 +285,7 @@ function PluginElementWithPath({
   plugin: AnyBasePlugin;
   props: RenderElementProps;
 }) {
-  const path = useNodePath(props.element)!;
+  const path = getRenderedElementPath(editor, props.element);
 
   const pluginContext = getEditorPlugin(editor, { key: plugin.key });
 
@@ -287,13 +300,15 @@ function PluginElementWithPath({
 }
 
 function RenderElementPropWithPath({
+  editor,
   props,
   renderElementProp,
 }: {
+  editor: PlateEditor;
   props: RenderElementProps;
   renderElementProp: NonNullable<EditableProps['renderElement']>;
 }) {
-  const path = useNodePath(props.element)!;
+  const path = getRenderedElementPath(editor, props.element);
 
   return renderElementProp({ ...props, path });
 }
@@ -306,7 +321,7 @@ function DefaultElementWithPath({
   props: RenderElementProps;
 }) {
   const readOnly = useEditorReadOnly();
-  const path = useNodePath(props.element)!;
+  const path = getRenderedElementPath(editor, props.element);
   const ctxProps = getRenderNodeProps({
     // `transformProps` can run hooks, so we need to disable it for default elements.
     disableInjectNodeProps: true,
@@ -339,21 +354,24 @@ export const pipeRenderElement = (
   editor: PlateEditor,
   renderElementProp?: EditableProps['renderElement']
 ): EditableProps['renderElement'] => {
-  const hasAboveNodes = editor.runtime.pluginCache.render.aboveNodes.length > 0;
+  const hasAboveNodes =
+    getPlateRuntime(editor).pluginCache.render.aboveNodes.length > 0;
   const hasBelowRootNodes =
-    editor.runtime.pluginCache.render.belowRootNodes.length > 0;
+    getPlateRuntime(editor).pluginCache.render.belowRootNodes.length > 0;
 
   return function render(props) {
     const plugin = getPluginByType(editor, props.element.type);
+    const binding = plugin
+      ? getCompiledPlateModelBinding(editor, plugin)
+      : undefined;
 
-    // We could deprecate isElement (unneeded check)
-    if (plugin?.node.isElement) {
+    if (plugin && binding?.kind === 'element') {
       if (
         !hasAboveNodes &&
         !hasBelowRootNodes &&
         !plugin.render.node &&
-        !plugin.node.props &&
-        !plugin.node.dangerouslyAllowAttributes?.length
+        !plugin.render.nodeProps &&
+        !plugin.host.dangerouslyAllowAttributes?.length
       ) {
         const readOnly = editor.read.view.isReadOnly();
 
@@ -367,7 +385,7 @@ export const pipeRenderElement = (
         const attributes = {
           ...props.attributes,
           className:
-            [getPluginNodeClass(plugin.node.type), props.attributes.className]
+            [getPluginNodeClass(plugin.type), props.attributes.className]
               .filter(Boolean)
               .join(' ') || undefined,
         };
@@ -376,7 +394,7 @@ export const pipeRenderElement = (
         const Tag = typeof renderAs === 'string' ? renderAs : 'div';
         const isVoidTag = isIntrinsicTag && isHtmlVoidElementTag(Tag);
         const hasBelowNodeWrappers =
-          editor.runtime.pluginCache.render.belowNodes.length > 0;
+          getPlateRuntime(editor).pluginCache.render.belowNodes.length > 0;
         if (!inset && !hasBelowNodeWrappers && isIntrinsicTag) {
           return (
             <FastIntrinsicElement
@@ -441,6 +459,7 @@ export const pipeRenderElement = (
     if (renderElementProp) {
       return (
         <RenderElementPropWithPath
+          editor={editor}
           props={props}
           renderElementProp={renderElementProp}
         />

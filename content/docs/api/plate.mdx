@@ -19,7 +19,7 @@ npm install platejs
 | --- | --- | --- |
 | `platejs` | `@platejs/core`, `@platejs/plite`, `@platejs/utils`, `@udecode/utils` | Headless editor creation, Plite APIs, core types, and shared utilities. |
 | `platejs/react` | `@platejs/core/react`, `@platejs/utils/react`, `@udecode/react-hotkeys`, `@udecode/react-utils` | React editors, components, hooks, stores, plugins, and React utility hooks. |
-| `platejs/static` | `@platejs/core/static` | Static editor creation, static rendering, HTML serialization, and static node renderers. |
+| `platejs/static` | `@platejs/core/static` | Static editor creation, React-based HTML rendering, and static node renderers. |
 
 Use the umbrella imports in application code. Package code can import direct package surfaces such as `@platejs/core/react` when it needs a tighter dependency boundary.
 
@@ -31,7 +31,7 @@ Use `platejs` for non-React editor work and shared types.
 import { createBaseEditor } from 'platejs';
 
 export const editor = createBaseEditor({
-  value: [
+  initialValue: [
     {
       type: 'p',
       children: [{ text: 'Headless editor.' }],
@@ -49,7 +49,7 @@ import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 
 export function BasicEditor() {
   const editor = usePlateEditor({
-    value: [
+    initialValue: [
       {
         type: 'p',
         children: [{ text: 'React editor.' }],
@@ -73,7 +73,7 @@ Use `platejs/static` for rendering or serialization paths that do not mount an e
 import { createStaticEditor } from 'platejs/static';
 
 export const staticEditor = createStaticEditor({
-  value: [
+  initialValue: [
     {
       type: 'p',
       children: [{ text: 'Static editor.' }],

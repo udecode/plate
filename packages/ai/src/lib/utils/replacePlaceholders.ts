@@ -1,4 +1,4 @@
-import type { BaseEditor } from '@platejs/core';
+import type { MarkdownEditor } from '@platejs/markdown';
 
 import { getMarkdown } from './getMarkdown';
 
@@ -12,7 +12,7 @@ export type MarkdownType =
   | 'tableCellWithId';
 
 export const replacePlaceholders = (
-  editor: BaseEditor,
+  editor: MarkdownEditor,
   text: string,
   {
     prompt,

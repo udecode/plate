@@ -1,4 +1,5 @@
 import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { BasePlaceholderPlugin } from '@platejs/media';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { type Selection, type Value, KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
@@ -28,6 +29,7 @@ const createEditor = ({
       ...BaseListKit,
       ...BaseToggleKit,
       CodeBlockPlugin,
+      BasePlaceholderPlugin,
       SuggestionPlugin,
     ],
     selection,
@@ -206,6 +208,35 @@ describe('editor block transforms', () => {
       {
         children: [{ children: [{ text: '' }], type: 'code_line' }],
         type: 'code_block',
+      },
+    ]);
+  });
+
+  it.each([
+    KEYS.audio,
+    KEYS.file,
+    KEYS.video,
+  ])('inserts a %s placeholder through its plugin owner', (mediaType) => {
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'one' }], type: KEYS.p },
+        { children: [{ text: '' }], type: KEYS.p },
+      ],
+    });
+
+    insertBlock(editor, mediaType);
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: KEYS.p },
+      {
+        children: [{ text: '' }],
+        mediaType,
+        type: KEYS.placeholder,
       },
     ]);
   });

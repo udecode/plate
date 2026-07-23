@@ -1,21 +1,14 @@
 import type { Descendant } from '@platejs/plite';
 
-import { jsx } from '@platejs/plite-hyperscript';
-
 import type { BaseEditor } from '../../../editor';
+import { htmlBodyToFragmentWithParserRuntime } from '../../../../internal/plugin/html-parser-runtime';
+import { withPreparedParserRuntime } from '../../../../internal/plugin/prepareParserRegistry';
 
-import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
-
-/** Deserialize HTML body element to Fragment. */
+/** Deserialize an HTML body element into one fragment. */
 export const htmlBodyToFragment = (
   editor: BaseEditor,
   element: HTMLElement
-): Descendant[] | undefined => {
-  if (element.nodeName === 'BODY') {
-    return jsx(
-      'fragment',
-      {},
-      deserializeHtmlNodeChildren(editor, element)
-    ) as Descendant[];
-  }
-};
+): Descendant[] | undefined =>
+  withPreparedParserRuntime(editor, (runtime) =>
+    htmlBodyToFragmentWithParserRuntime(runtime, element)
+  );

@@ -12,12 +12,7 @@ import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
 import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
 import { isHotkey, KEYS, TextApi } from 'platejs';
-import {
-  Plate,
-  useEditorRef,
-  usePlateEditor,
-  usePlateValue,
-} from 'platejs/react';
+import { Plate, useEditor, usePlateEditor, usePlateValue } from 'platejs/react';
 
 import {
   Popover,
@@ -105,7 +100,7 @@ export function SelectEditorContent({
   const editor = usePlateEditor(
     {
       plugins: [MultiSelectPlugin.withComponent(TagElement)],
-      value: createEditorValue(value),
+      initialValue: createEditorValue(value),
     },
     []
   );
@@ -134,7 +129,7 @@ export const SelectEditorInput = ({
 }: React.ComponentPropsWithoutRef<typeof Editor> & {
   ref?: React.RefObject<HTMLDivElement | null>;
 }) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const { setOpen } = useSelectEditorContext();
   const { selectCurrentItem, selectFirstItem } = useCommandActions();
 
@@ -168,7 +163,7 @@ export const SelectEditorInput = ({
 };
 
 export function SelectEditorCombobox() {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const containerRef = usePlateValue('containerRef');
   const { items, open, onValueChange } = useSelectEditorContext();
   const selectableItems = useSelectableItems({

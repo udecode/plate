@@ -23,7 +23,7 @@ export const setListSiblingNodesWithTx = <N extends Element = Element>(
     listStyleType?: string;
   }
 ) => {
-  const siblings = getListSiblings(editor, entry, getSiblingListOptions);
+  const siblings = getListSiblings(editor, entry, getSiblingListOptions, tx);
 
   siblings.forEach(([node, path]) => {
     if (listStyleType === KEYS.listTodo) {

@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { useEditorReadOnly } from '@platejs/plite-react';
 import clsx from 'clsx';
 
 import type { EditableProps } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin';
 
@@ -38,6 +38,39 @@ const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
   return match.focus.offset === 0 || match.focus.offset === text.text.length;
 };
 
+const getDecoratedLeaf = (
+  leaf: Record<string, unknown>,
+  segment?: {
+    slices?: readonly { data?: unknown }[];
+  }
+) => {
+  let decoratedLeaf = leaf;
+
+  for (const slice of segment?.slices ?? []) {
+    if (
+      typeof slice.data !== 'object' ||
+      slice.data === null ||
+      Array.isArray(slice.data)
+    ) {
+      continue;
+    }
+
+    if (decoratedLeaf === leaf) {
+      decoratedLeaf = { ...leaf };
+    }
+
+    const { merge, ...decoration } = slice.data as Record<string, unknown>;
+
+    if (typeof merge === 'function') {
+      merge(decoratedLeaf, decoration);
+    } else {
+      Object.assign(decoratedLeaf, decoration);
+    }
+  }
+
+  return decoratedLeaf;
+};
+
 /** @see {@link RenderLeaf} */
 export const pipeRenderLeaf = (
   editor: PlateEditor,
@@ -58,25 +91,25 @@ export const pipeRenderLeaf = (
   const renderLeafEntryByKey = new Map<string, true>();
   const leafPropsPlugins: AnyEditorPlatePlugin[] = [];
   const hasInjectNodeProps =
-    editor.runtime.pluginCache.inject.nodeProps.length > 0;
+    getPlateRuntime(editor).pluginCache.inject.nodeProps.length > 0;
 
-  editor.runtime.pluginCache.node.isLeaf.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach((key) => {
     const plugin = editor.getPlugin({ key });
 
     if (plugin) {
-      const leafKey = plugin.node.type ?? key;
+      const leafKey = plugin.type;
       const canUseSimpleLeaf =
-        editor.runtime.pluginCache.inject.nodeProps.length === 0 &&
+        getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0 &&
         !plugin.render?.leaf &&
         !plugin.render?.node &&
-        !plugin.node.props &&
-        !plugin.node.dangerouslyAllowAttributes?.length &&
+        !plugin.render.nodeProps &&
+        !plugin.host.dangerouslyAllowAttributes?.length &&
         (!plugin.rules.selection?.affinity ||
           plugin.rules.selection?.affinity === 'hard');
 
       if (canUseSimpleLeaf) {
         const entry = {
-          className: plugin.node.type ? `plite-${plugin.node.type}` : undefined,
+          className: plugin.type ? `plite-${plugin.type}` : undefined,
           editOnly: plugin.editOnly,
           key: leafKey,
           selectionAffinity: plugin.rules.selection?.affinity,
@@ -97,7 +130,7 @@ export const pipeRenderLeaf = (
     }
   });
 
-  editor.runtime.pluginCache.node.leafProps.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.node.leafProps.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     if (plugin) {
       leafPropsPlugins.push(plugin as any);
@@ -123,11 +156,15 @@ export const pipeRenderLeaf = (
     !hasInjectNodeProps && !renderLeafProp && leafPropsPlugins.length === 0;
 
   return function render({ attributes, ...props }) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const readOnly = useEditorReadOnly();
-    const leaf = props.leaf as Record<string, unknown>;
+    const readOnly = editor.read.view.isReadOnly();
+    const leaf = getDecoratedLeaf(
+      props.leaf as Record<string, unknown>,
+      (props as any).segment
+    );
     let hasActiveSimpleRenderLeaf = false;
     let hasActiveComplexRenderLeaf = false;
+
+    props.leaf = leaf as any;
 
     for (const key in leaf) {
       if (!Object.hasOwn(leaf, key)) continue;
@@ -204,22 +241,21 @@ export const pipeRenderLeaf = (
     }
 
     leafPropsPlugins.forEach((plugin) => {
-      if (props.leaf[plugin.node.type]) {
+      if (props.leaf[plugin.type]) {
         const pluginLeafProps =
-          typeof plugin.node.leafProps === 'function'
-            ? plugin.node.leafProps(props as any)
-            : (plugin.node.leafProps ?? {});
-
-        if (pluginLeafProps.className) {
-          pluginLeafProps.className = clsx(
-            (props as any).className,
-            pluginLeafProps.className
-          );
-        }
+          typeof plugin.render.leafProps === 'function'
+            ? plugin.render.leafProps(props as any)
+            : (plugin.render.leafProps ?? {});
 
         attributes = {
           ...attributes,
           ...pluginLeafProps,
+          ...(pluginLeafProps.className && {
+            className: clsx(
+              (props as any).className,
+              pluginLeafProps.className
+            ),
+          }),
         };
       }
     });

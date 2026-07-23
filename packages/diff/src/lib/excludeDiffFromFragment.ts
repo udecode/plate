@@ -9,17 +9,22 @@ import {
 export const excludeDiffFromFragment = (
   fragment: readonly Descendant[]
 ): Descendant[] => {
-  const nextFragment = cloneDeep(fragment) as Descendant[];
+  const removeDiff = (node: Descendant): Descendant => {
+    const nextNode = Object.fromEntries(
+      Object.entries(node).filter(
+        ([key]) => key !== 'diff' && key !== 'diffIntent'
+      )
+    ) as Descendant;
 
-  const removeDiff = (node: Descendant) => {
-    if ('diff' in node) node.diff = undefined;
-    if ('diffOperation' in node) node.diffOperation = undefined;
-    if (ElementApi.isElement(node)) node.children.forEach(removeDiff);
+    return ElementApi.isElement(nextNode)
+      ? {
+          ...nextNode,
+          children: nextNode.children.map(removeDiff),
+        }
+      : nextNode;
   };
 
-  nextFragment.forEach(removeDiff);
-
-  return nextFragment;
+  return (cloneDeep(fragment) as Descendant[]).map(removeDiff);
 };
 
 /** Remove diff metadata from fragments copied out of an editor. */

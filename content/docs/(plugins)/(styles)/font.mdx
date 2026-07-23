@@ -44,8 +44,8 @@ The fastest way to add font styling functionality is with the `FontKit`, which i
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
-import { FontKit } from '@/components/editor/plugins/font-kit';
+import { createPlateEditor } from "platejs/react";
+import { FontKit } from "@/components/editor/plugins/font-kit";
 
 const editor = createPlateEditor({
   plugins: [
@@ -77,8 +77,8 @@ import {
   FontColorPlugin,
   FontFamilyPlugin,
   FontSizePlugin,
-} from '@platejs/basic-styles/react';
-import { createPlateEditor } from 'platejs/react';
+} from "@platejs/basic-styles/react";
+import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
   plugins: [
@@ -91,19 +91,15 @@ const editor = createPlateEditor({
 });
 ```
 
-### Configure Plugins
+### Configure The Color Default
 
-You can configure individual font plugins with custom options and target elements.
+Font plugins register string-valued text marks, so they follow the selected
+text instead of a block target list. Configure render props only when your UI
+needs a different default.
 
 ```tsx
-import {
-  FontColorPlugin,
-  FontBackgroundColorPlugin,
-  FontSizePlugin,
-  FontFamilyPlugin,
-} from '@platejs/basic-styles/react';
-import { KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { FontColorPlugin } from "@platejs/basic-styles/react";
+import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
   plugins: [
@@ -111,32 +107,16 @@ const editor = createPlateEditor({
     FontColorPlugin.configure({
       inject: {
         nodeProps: {
-          defaultNodeValue: 'black',
+          defaultNodeValue: "currentColor",
         },
-        targetPlugins: [KEYS.p],
-      },
-    }),
-    FontSizePlugin.configure({
-      inject: {
-        targetPlugins: [KEYS.p],
-      },
-    }),
-    FontBackgroundColorPlugin.configure({
-      inject: {
-        targetPlugins: [KEYS.p],
-      },
-    }),
-    FontFamilyPlugin.configure({
-      inject: {
-        targetPlugins: [KEYS.p],
       },
     }),
   ],
 });
 ```
 
-- `inject.nodeProps.defaultNodeValue`: Sets the default font color value.
-- `inject.targetPlugins`: Specifies which element types can receive font styling (affects HTML parsing).
+`FontColorPlugin` defaults to `black`. HTML parsers read font styles directly
+onto text properties; block target injection does not constrain text marks.
 
 ### Add Toolbar Button
 
@@ -168,64 +148,64 @@ Plugin for font weight formatting. Applies `font-weight` style to selected text.
 
 ## Transforms
 
-### `tx.backgroundColor.addMark`
+### `editor.update.backgroundColor.set`
 
 Set the font background color mark on the selected text.
 
-<API name="tx.backgroundColor.addMark">
-<APIParameters>
-  <APIItem name="value" type="string">
-    The background color value to set (e.g., `'#ff0000'`, `'red'`).
-  </APIItem>
-</APIParameters>
+<API name="editor.update.backgroundColor.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      The background color value to set (e.g., `'#ff0000'`, `'red'`).
+    </APIItem>
+  </APIParameters>
 </API>
 
-### `tx.color.addMark`
+### `editor.update.color.set`
 
 Set the font color mark on the selected text.
 
-<API name="tx.color.addMark">
-<APIParameters>
-  <APIItem name="value" type="string">
-    The color value to set (e.g., `'#0000ff'`, `'blue'`).
-  </APIItem>
-</APIParameters>
+<API name="editor.update.color.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      The color value to set (e.g., `'#0000ff'`, `'blue'`).
+    </APIItem>
+  </APIParameters>
 </API>
 
-### `tx.fontFamily.addMark`
+### `editor.update.fontFamily.set`
 
 Set the font family mark on the selected text.
 
-<API name="tx.fontFamily.addMark">
-<APIParameters>
-  <APIItem name="value" type="string">
-    The font family value to set (e.g., `'Arial'`, `'Times New Roman'`).
-  </APIItem>
-</APIParameters>
+<API name="editor.update.fontFamily.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      The font family value to set (e.g., `'Arial'`, `'Times New Roman'`).
+    </APIItem>
+  </APIParameters>
 </API>
 
-### `tx.fontSize.addMark`
+### `editor.update.fontSize.set`
 
 Set the font size mark on the selected text.
 
-<API name="tx.fontSize.addMark">
-<APIParameters>
-  <APIItem name="value" type="string">
-    The font size value to set (e.g., `'16px'`, `'1.2em'`).
-  </APIItem>
-</APIParameters>
+<API name="editor.update.fontSize.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      The font size value to set (e.g., `'16px'`, `'1.2em'`).
+    </APIItem>
+  </APIParameters>
 </API>
 
-### `tx.fontWeight.addMark`
+### `editor.update.fontWeight.set`
 
 Set the font weight mark on the selected text.
 
-<API name="tx.fontWeight.addMark">
-<APIParameters>
-  <APIItem name="value" type="string">
-    The font weight value to set (e.g., `'bold'`, `'400'`, `'600'`).
-  </APIItem>
-</APIParameters>
+<API name="editor.update.fontWeight.set">
+  <APIParameters>
+    <APIItem name="value" type="string">
+      The font weight value to set (e.g., `'bold'`, `'400'`, `'600'`).
+    </APIItem>
+  </APIParameters>
 </API>
 
 ## API
@@ -245,4 +225,3 @@ Convert a font size value to a unitless value.
   The font size value without units.
 </APIReturns>
 </API>
-

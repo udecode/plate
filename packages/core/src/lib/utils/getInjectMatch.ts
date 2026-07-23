@@ -3,10 +3,11 @@ import { type Node, type Path, ElementApi } from '@platejs/plite';
 import type { BaseEditor } from '../editor';
 
 import { type BasePlugin, getPluginKey, getPluginKeys } from '../plugin';
+import { getResolvedPluginTargetBinding } from '../../internal/plugin/compilePlateModel';
 
 export const getInjectMatch = <E extends BaseEditor>(
   editor: E,
-  plugin: Pick<BasePlugin, 'inject'>
+  plugin: Pick<BasePlugin, 'inject' | 'key' | 'targetPluginKeys'>
 ) => {
   return (node: Node, path?: Path) => {
     const {
@@ -16,8 +17,8 @@ export const getInjectMatch = <E extends BaseEditor>(
       isElement: _isElement,
       isLeaf,
       maxLevel,
-      targetPlugins,
     } = plugin.inject ?? {};
+    const targetBinding = getResolvedPluginTargetBinding(editor, plugin);
 
     const element = ElementApi.isElement(node) ? node : undefined;
 
@@ -34,7 +35,10 @@ export const getInjectMatch = <E extends BaseEditor>(
         return false;
       }
       // Target plugins
-      if (targetPlugins && (!pluginKey || !targetPlugins.includes(pluginKey))) {
+      if (
+        plugin.targetPluginKeys.length > 0 &&
+        (!pluginKey || !targetBinding.keys.includes(pluginKey))
+      ) {
         return false;
       }
     }

@@ -5,7 +5,8 @@ import { isDefined } from '@udecode/utils';
 
 import type { Shortcut } from '../plugin';
 
-import { useEditorRef } from '../stores';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { useEditor } from '../stores';
 
 export function EditorHotkeysEffect({
   id,
@@ -14,12 +15,15 @@ export function EditorHotkeysEffect({
   editableRef: React.RefObject<HTMLDivElement | null>;
   id?: string;
 }) {
-  const editor = useEditorRef(id);
+  const editor = useEditor({ id });
 
   return (
     <>
       {Object.entries(
-        editor.runtime.shortcuts as Record<string, Shortcut | null | undefined>
+        getPlateRuntime(editor).shortcuts as Record<
+          string,
+          Shortcut | null | undefined
+        >
       )
         .sort(([, a], [, b]) => (b?.priority ?? 0) - (a?.priority ?? 0))
         .map(([hotkeyString, hotkeyConfig]) => {
@@ -53,7 +57,7 @@ function HotkeyEffect({
   hotkeyConfig: Shortcut;
   id?: string;
 }) {
-  const editor = useEditorRef(id);
+  const editor = useEditor({ id });
   const { keys, handler, priority: _priority, ...options } = hotkeyConfig;
 
   const setHotkeyRef = useHotkeys<HTMLDivElement>(

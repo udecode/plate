@@ -23,8 +23,8 @@ Define custom commands for your product domain, such as `formatQuote`,
 Commands usually act on the current selection. Pass an explicit `at` location
 only when the command is intentionally targeting another part of the document.
 
-Plite turns transaction writes into operations during the update. That is the
-boundary used by history, collaboration, and tests.
+Plite composes transaction writes into one canonical `DocumentChange` during
+the update. That is the boundary used by history, collaboration, and tests.
 
 ## Custom Commands
 
@@ -37,6 +37,56 @@ function insertParagraph(editor: Editor) {
   editor.update.nodes.insert({ type: "paragraph", children: [{ text: "" }] });
 }
 ```
+
+Use `defineCommand` when a command must be evaluated headlessly, intercepted by
+extensions, or inspected before publication. Its pure builder returns `false`
+or an immutable transaction spec.
+
+```ts
+import { defineCommand } from "@platejs/plite";
+
+type InsertTextInput = {
+  text: string;
+};
+
+const insertText = defineCommand<InsertTextInput>("text.insert", {
+  build: ({ input, state }) =>
+    state.transaction((tx) => {
+      tx.text.insert(input.text);
+    }),
+});
+
+editor.update.command(insertText, { text: "Hello" });
+```
+
+`state.transaction(...)` builds a frozen `TransactionSpec` without publishing
+a commit. `editor.update.command(...)` runs extension policy, then applies the
+handled spec in one update. `insertText.build(state, input)` evaluates only the
+descriptor default and does not run installed handlers.
+
+Register ordinary fallback policy with the extension command factory. The
+descriptor stays first so its identity and input type remain linked to the
+handler. Return `false` to let the next handler or descriptor default run:
+
+```ts
+import { defineEditorExtension, editorCommands } from "@platejs/plite";
+
+const noEmptyText = defineEditorExtension({
+  name: "no-empty-text",
+  commands: ({ handle }) => [
+    handle(editorCommands.insertText, ({ input, state }) =>
+      input.text.length === 0
+        ? state.transaction(() => {})
+        : false
+    ),
+  ],
+});
+```
+
+Use the factory's `around(descriptor, handler)` only when policy must rewrite
+downstream input or compose a prefix with downstream behavior. Its context adds
+`next`; `next.after(prefix)` runs downstream against the state produced by that
+prefix. Extension configuration determines handler order.
 
 When writing your own commands, compose transaction methods inside one update:
 
@@ -67,5 +117,5 @@ editor.update((tx) => {
 ```
 
 Transaction methods are designed to be composed together. Keep related writes in
-the same `editor.update(...)` so selection, operations, history, and React
+the same `editor.update(...)` so selection, canonical changes, history, and React
 rendering share one commit.

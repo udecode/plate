@@ -102,7 +102,7 @@ export const highlightPlugin = HighlightPlugin.configure({
     HighlightRules.markdown({ variant: '==' }),
     HighlightRules.markdown({ variant: '≡' }),
   ],
-  node: { component: HighlightLeaf },
+  render: { node: HighlightLeaf },
   shortcuts: { toggle: { keys: 'mod+shift+h' } },
 });
 ```
@@ -126,7 +126,7 @@ The package owns the mark. The registry owns highlight color and toolbar placeme
 | Behavior | Source |
 |----------|--------|
 | Mark key | `KEYS.highlight` |
-| Leaf behavior | `node.isLeaf: true` |
+| Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.highlight.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `directional` |
 | HTML tags | `mark` |

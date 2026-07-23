@@ -1,5 +1,10 @@
 import type { BaseEditor } from '@platejs/core';
-import { ElementApi } from '@platejs/plite';
+import { ContentSlice, ElementApi } from '@platejs/plite';
+import {
+  getDOMClipboardFormatKey,
+  writeDOMFragmentData,
+  writeDOMRangeData,
+} from '@platejs/plite-dom';
 
 import copyToClipboard from 'copy-to-clipboard';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
@@ -10,76 +15,66 @@ const writeSelectedBlocksToDataTransfer = (
 ) => {
   if (!data) return false;
 
-  const { selectedIds } = editor.plugin(BlockSelectionPlugin).getOptions();
   const selectedEntries = editor
     .plugin(BlockSelectionPlugin)
     .api.getNodes({ collapseTableRows: true });
-  const selectedFragment = selectedEntries.map(([node]) => node);
 
   if (selectedEntries.length === 0) return false;
 
-  let textPlain = '';
+  const blocks = editor.read((state) =>
+    selectedEntries.flatMap(([node, path]) => {
+      if (!state.nodes.get(path) || !ElementApi.isElement(node)) return [];
+
+      const start = state.points.start(path);
+      const end = state.points.end(path);
+
+      if (!start || !end) return [];
+
+      return [
+        {
+          empty: state.nodes.isEmpty(node),
+          node,
+          range: { anchor: start, focus: end, kind: 'text' as const },
+        },
+      ];
+    })
+  );
+
+  if (blocks.length === 0) return false;
+
+  const textParts: string[] = [];
   const div = document.createElement('div');
 
-  editor.update((tx) => {
-    selectedEntries.forEach(([, path]) => {
-      const entry = editor.read.nodes.get(path);
+  blocks.forEach(({ empty, range }) => {
+    const values = new Map<string, string>();
+    const blockData = {
+      getData: (type: string) => values.get(type) ?? '',
+      setData: (type: string, value: string) => {
+        values.set(type, value);
+      },
+    };
 
-      if (!entry) return;
+    if (!empty) writeDOMRangeData(editor, blockData, range);
 
-      // select block by block
-      tx.selection.set({
-        anchor: editor.read.points.start(path)!,
-        focus: editor.read.points.end(path)!,
-      });
+    textParts.push(empty ? '' : blockData.getData('text/plain'));
 
-      const isEmpty =
-        ElementApi.isElement(entry[0]) && editor.read.nodes.isEmpty(entry[0]);
+    const divChild = document.createElement('div');
 
-      if (isEmpty) {
-        const after = editor.read.points.after(editor.read.selection()!);
-
-        tx.selection.set({
-          anchor: editor.read.points.start(path)!,
-          focus: after!,
-        });
-      }
-
-      if (!isEmpty) {
-        editor.api.clipboard.writeSelection(data);
-      }
-
-      // get plain text
-      if (isEmpty) {
-        textPlain += '\n';
-      } else {
-        textPlain += `${data.getData('text/plain')}\n`;
-      }
-
-      // get html text
-      const divChild = document.createElement('div');
-      if (isEmpty) {
-        // Does not support empty non-paragraph blocks yet
-        divChild.innerHTML = '<p></p>';
-      } else {
-        divChild.innerHTML = data.getData('text/html');
-      }
-
-      div.append(divChild);
+    divChild.innerHTML = empty ? '<p></p>' : blockData.getData('text/html');
+    divChild.querySelectorAll('[data-plite-fragment]').forEach((element) => {
+      element.removeAttribute('data-plite-fragment');
+      element.removeAttribute('data-plite-fragment-format');
     });
-
-    // deselect and select back selectedIds
-    tx.selection.clear();
-    editor.plugin(BlockSelectionPlugin).setOption('selectedIds', selectedIds);
+    div.append(divChild);
   });
 
-  data.setData('text/plain', textPlain);
-  data.setData('text/html', div.innerHTML);
-
-  // set slate fragment
-  const selectedFragmentStr = JSON.stringify(selectedFragment);
-  const encodedFragment = window.btoa(encodeURIComponent(selectedFragmentStr));
-  data.setData('application/x-slate-fragment', encodedFragment);
+  writeDOMFragmentData(data, {
+    clipboardFormatKey: getDOMClipboardFormatKey(editor),
+    html: div.innerHTML,
+    slice: ContentSlice.closed(blocks.map(({ node }) => node)),
+    text: `${textParts.join('\n')}\n`,
+    window: editor.api.dom.getWindow(),
+  });
 
   return true;
 };

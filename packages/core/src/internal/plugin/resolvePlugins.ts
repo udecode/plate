@@ -22,6 +22,7 @@ import type {
 import { getEditorPlugin } from '../../lib/plugin';
 import {
   brandPluginDescriptor,
+  isOpaquePluginRenderKey,
   isNominalPluginDescriptor,
   isNominalSchemaConfigToken,
   mergePlugins,
@@ -39,6 +40,8 @@ import {
 } from './compilePlateModel';
 import {
   clearPluginOptionsStores,
+  createPluginOptionsSnapshot,
+  snapshotPluginOptions,
   type PluginOptionsStore,
   setPluginOptionsStore,
 } from './pluginOptionsStore';
@@ -53,10 +56,46 @@ import type {
 } from '../../lib/plugins/input-rules/types';
 import { createInputRuleBuilder } from '../../lib/plugins/input-rules/internal/createInputRuleBuilder';
 
-const sourcePluginDerivedKeys = new Set<PropertyKey>([
-  '__configuredInputRules',
-  '__resolved',
-]);
+const sourcePluginDerivedKeys = new Set<PropertyKey>(['__resolved']);
+type PluginDescriptorSnapshotContext = Readonly<{
+  path: readonly PropertyKey[];
+  pluginKey: string;
+}>;
+
+const appendPluginDescriptorPath = (
+  context: PluginDescriptorSnapshotContext,
+  key: PropertyKey
+): PluginDescriptorSnapshotContext => ({
+  path: [...context.path, key],
+  pluginKey: context.pluginKey,
+});
+
+const formatPluginDescriptorPath = (path: readonly PropertyKey[]) =>
+  path.reduce<string>((output, key) => {
+    if (typeof key === 'number') return `${output}[${key}]`;
+    if (typeof key === 'symbol') return `${output}[${String(key)}]`;
+
+    return output ? `${output}.${key}` : key;
+  }, '');
+
+const createPluginDescriptorAccessorError = (
+  context: PluginDescriptorSnapshotContext
+) =>
+  new Error(
+    `Plate plugin "${context.pluginKey}" descriptor path "${formatPluginDescriptorPath(context.path)}" must be data-only. Accessor properties are not supported.`
+  );
+
+const isOpaquePluginHostResource = (
+  context: PluginDescriptorSnapshotContext
+) => {
+  const { path } = context;
+  const key = path.at(-1);
+  const parent = path.at(-2);
+
+  if (parent === 'render' && isOpaquePluginRenderKey(key!)) return true;
+
+  return path.at(-3) === 'override' && parent === 'components';
+};
 
 type MutableDeep<T> = T extends (...args: any[]) => unknown
   ? T
@@ -124,60 +163,15 @@ const createMutableResolvedInputRulesMeta =
     plugins: Object.create(null),
   });
 
-const snapshotPluginOptions = (
-  value: unknown,
-  snapshots: WeakMap<object, unknown>
-): unknown => {
-  if (!value || typeof value !== 'object') return value;
-  if (isNominalPluginDescriptor(value) || isNominalSchemaConfigToken(value)) {
-    return value;
-  }
-
-  const existing = snapshots.get(value);
-
-  if (existing !== undefined) return existing;
-  if (Array.isArray(value)) {
-    const snapshot: unknown[] = [];
-
-    snapshots.set(value, snapshot);
-    snapshot.push(
-      ...value.map((item) => snapshotPluginOptions(item, snapshots))
-    );
-
-    return Object.freeze(snapshot);
-  }
-  const prototype = Object.getPrototypeOf(value);
-
-  if (prototype !== Object.prototype && prototype !== null) return value;
-  const snapshot: Record<PropertyKey, unknown> = Object.create(prototype);
-
-  snapshots.set(value, snapshot);
-  for (const key of Reflect.ownKeys(value)) {
-    const descriptor = Object.getOwnPropertyDescriptor(value, key);
-
-    if (!descriptor) continue;
-
-    Object.defineProperty(
-      snapshot,
-      key,
-      Object.hasOwn(descriptor, 'value')
-        ? {
-            enumerable: descriptor.enumerable,
-            value: snapshotPluginOptions(descriptor.value, snapshots),
-          }
-        : descriptor
-    );
-  }
-
-  return Object.freeze(snapshot);
-};
-
 const snapshotPluginDescriptorValue = (
   value: unknown,
   snapshots: WeakMap<object, unknown>,
-  publishedPlugins?: ReadonlyMap<string, AnyBasePlugin>
+  context: PluginDescriptorSnapshotContext,
+  publishedPlugins?: ReadonlyMap<string, AnyBasePlugin>,
+  optionReferences = new WeakMap<object, unknown>()
 ): unknown => {
   if (!value || typeof value !== 'object') return value;
+  if (isOpaquePluginHostResource(context)) return value;
   if (isNominalSchemaConfigToken(value)) return value;
   if (isNominalPluginDescriptor(value)) {
     const published = publishedPlugins?.get(value.key);
@@ -193,8 +187,14 @@ const snapshotPluginDescriptorValue = (
 
     snapshots.set(value, snapshot);
     snapshot.push(
-      ...value.map((item) =>
-        snapshotPluginDescriptorValue(item, snapshots, publishedPlugins)
+      ...value.map((item, index) =>
+        snapshotPluginDescriptorValue(
+          item,
+          snapshots,
+          appendPluginDescriptorPath(context, index),
+          publishedPlugins,
+          optionReferences
+        )
       )
     );
 
@@ -206,7 +206,10 @@ const snapshotPluginDescriptorValue = (
   if (prototype !== Object.prototype && prototype !== null) return value;
 
   const isPluginDescriptor = isNominalPluginDescriptor(value);
-  const snapshot: Record<PropertyKey, unknown> = {};
+  const ownerContext = isPluginDescriptor
+    ? { path: [], pluginKey: value.key }
+    : context;
+  const snapshot: Record<PropertyKey, unknown> = Object.create(prototype);
 
   snapshots.set(value, snapshot);
   for (const key of Reflect.ownKeys(value)) {
@@ -216,19 +219,22 @@ const snapshotPluginDescriptorValue = (
 
     if (!descriptor) continue;
     if (!Object.hasOwn(descriptor, 'value')) {
-      Object.defineProperty(snapshot, key, descriptor);
-      continue;
+      throw createPluginDescriptorAccessorError(
+        appendPluginDescriptorPath(ownerContext, key)
+      );
     }
 
     Object.defineProperty(snapshot, key, {
       enumerable: descriptor.enumerable,
       value:
         isPluginDescriptor && key === 'options'
-          ? snapshotPluginOptions(descriptor.value, snapshots)
+          ? snapshotPluginOptions(descriptor.value)
           : snapshotPluginDescriptorValue(
               descriptor.value,
               snapshots,
-              publishedPlugins
+              appendPluginDescriptorPath(ownerContext, key),
+              publishedPlugins,
+              optionReferences
             ),
     });
   }
@@ -243,10 +249,17 @@ export const snapshotPlatePluginSources = (
   plugins: readonly AnyBasePlugin[]
 ): readonly AnyBasePlugin[] => {
   const snapshots = new WeakMap<object, unknown>();
+  const optionReferences = new WeakMap<object, unknown>();
 
   return Object.freeze(
     plugins.map((plugin) =>
-      snapshotPluginDescriptorValue(plugin, snapshots)
+      snapshotPluginDescriptorValue(
+        plugin,
+        snapshots,
+        { path: [], pluginKey: plugin.key },
+        undefined,
+        optionReferences
+      )
     ) as AnyBasePlugin[]
   );
 };
@@ -261,6 +274,7 @@ const publishPlatePluginDescriptors = (
   });
 
   const snapshots = new WeakMap<object, unknown>();
+  const optionReferences = new WeakMap<object, unknown>();
 
   pluginList.forEach((plugin) => {
     const published = publishedByKey.get(plugin.key)!;
@@ -271,8 +285,10 @@ const publishPlatePluginDescriptors = (
 
       if (!descriptor) continue;
       if (!Object.hasOwn(descriptor, 'value')) {
-        Object.defineProperty(published, key, descriptor);
-        continue;
+        throw createPluginDescriptorAccessorError({
+          path: [key],
+          pluginKey: plugin.key,
+        });
       }
 
       let value: unknown;
@@ -298,12 +314,14 @@ const publishPlatePluginDescriptors = (
           })
         );
       } else if (key === 'options') {
-        value = snapshotPluginOptions(descriptor.value, snapshots);
+        value = snapshotPluginOptions(descriptor.value);
       } else {
         value = snapshotPluginDescriptorValue(
           descriptor.value,
           snapshots,
-          publishedByKey
+          { path: [key], pluginKey: plugin.key },
+          publishedByKey,
+          optionReferences
         );
       }
 
@@ -355,6 +373,11 @@ export const resolvePlugins = (
     shortcuts: Object.create(null),
   });
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
+  const snapshotOptions = createPluginOptionsSnapshot();
+
+  resolvedPlugins.forEach((plugin) => {
+    plugin.options = snapshotOptions(plugin.options);
+  });
 
   applyPluginsToEditor(editor, resolvedPlugins);
 
@@ -543,7 +566,7 @@ export const createPlateModelPublication = (
 
 const resolvePluginStores = (editor: BaseEditor) => {
   getPlateRuntime(editor).pluginList.forEach((plugin) => {
-    const base = createVanillaStore(plugin.options, {
+    const base = createVanillaStore(snapshotPluginOptions(plugin.options), {
       mutative: true,
       name: plugin.key,
     }) as PluginOptionsStore;
@@ -907,12 +930,7 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
             rule: createInputRuleBuilder(),
           })
         : (inputRulesDefinition ?? []);
-    const configuredRules = ((plugin as any).__configuredInputRules ??
-      []) as AnyInputRule[];
-    const ruleDefinitions = [
-      ...(definitionRules as AnyInputRule[]),
-      ...configuredRules,
-    ];
+    const ruleDefinitions = definitionRules as AnyInputRule[];
 
     resolvedMeta.plugins[pluginKey] = {
       rules: [],
@@ -998,6 +1016,10 @@ const flattenAndResolvePlugins = (
       existingPlugin.__apiExtensions,
       resolvedPlugin.__apiExtensions
     );
+    mergedPlugin.__editorExtensions = mergeExtensions(
+      existingPlugin.__editorExtensions,
+      resolvedPlugin.__editorExtensions
+    );
     mergedPlugin.__selectorExtensions = mergeExtensions(
       existingPlugin.__selectorExtensions,
       resolvedPlugin.__selectorExtensions
@@ -1011,6 +1033,7 @@ const flattenAndResolvePlugins = (
   };
 
   const dependencyObjects = new WeakSet<object>();
+  const resolvedPluginBySource = new WeakMap<object, AnyBasePlugin>();
   let collectDependencies: (plugin: AnyBasePlugin) => void;
   const processPlugin = (
     plugin: AnyBasePlugin,
@@ -1018,7 +1041,12 @@ const flattenAndResolvePlugins = (
     dependenciesReady = false
   ) => {
     if (!dependenciesReady) collectDependencies(plugin);
-    const resolvedPlugin = resolvePlugin(editor, plugin);
+    let resolvedPlugin = resolvedPluginBySource.get(plugin);
+
+    if (!resolvedPlugin) {
+      resolvedPlugin = resolvePlugin(editor, plugin);
+      resolvedPluginBySource.set(plugin, resolvedPlugin);
+    }
 
     if (resolvedPlugin.key) {
       if (explicit) explicitKeys.add(resolvedPlugin.key);

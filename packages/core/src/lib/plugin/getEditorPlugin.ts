@@ -1,7 +1,8 @@
+import { create } from 'mutative';
+
 import type { BaseEditor } from '../editor';
 import type {
   AnyPluginConfig,
-  InferApi,
   InferOwnApi,
   InferOptions,
   WithRequiredKey,
@@ -11,13 +12,18 @@ import type {
   BasePlugin,
   BasePluginContext,
   InferConfig,
-  PlatePluginTxGroup,
 } from './BasePlugin';
-
-type PluginUpdateGroup = (...args: Parameters<PlatePluginTxGroup>) => unknown;
-
-const isPluginUpdateGroup = (value: unknown): value is PluginUpdateGroup =>
-  typeof value === 'function';
+import {
+  getCompiledPlatePlugin,
+  getCompiledPlatePluginApi,
+  hasCompiledPlatePluginCandidate,
+  hasCompiledPlatePluginApiCandidate,
+  isResolvingPlatePlugin,
+} from '../../internal/plugin/compilePlateModel';
+import {
+  getPluginOptionsStore,
+  snapshotPluginOptions,
+} from '../../internal/plugin/pluginOptionsStore';
 
 export function getEditorPlugin<C extends AnyPluginConfig>(
   editor: BaseEditor,
@@ -31,135 +37,124 @@ export function getEditorPlugin(
   editor: BaseEditor,
   p: WithRequiredKey<AnyPluginConfig> | AnyBasePlugin
 ): BasePluginContext<any> {
-  const plugin = editor.getPlugin(p) as AnyBasePlugin;
-  const getStore = () => editor.getOptionsStore(plugin);
-  const getApi = () => {
-    const pluginApi = plugin.api ?? {};
-    const keyedApi = pluginApi[plugin.key];
+  const provided = p as AnyBasePlugin;
+  const getCandidate = () => {
+    if (!provided.__resolved) return;
+    if (isResolvingPlatePlugin(editor, provided)) return provided;
+    if (!hasCompiledPlatePluginCandidate(editor)) return;
+    const compiled = getCompiledPlatePlugin(editor, p.key);
 
-    if (keyedApi && typeof keyedApi === 'object') {
-      const { [plugin.key]: _pluginSpecificApi, ...editorLevelApi } = pluginApi;
+    if (provided === compiled) return provided;
+  };
+  const getPlugin = () => {
+    const plugin = getCandidate() ?? getCompiledPlatePlugin(editor, p.key);
 
-      return {
-        ...editorLevelApi,
-        ...keyedApi,
-      } satisfies InferOwnApi<AnyPluginConfig>;
+    if (!plugin) {
+      throw new Error(`Plate plugin "${p.key}" is not installed.`);
     }
 
-    return pluginApi as InferApi<AnyPluginConfig>;
+    return plugin;
   };
-  const getUpdate = () => {
-    let groupFactories: Map<string, PluginUpdateGroup[]> | undefined;
+  const getStore = () => getPluginOptionsStore(editor, getPlugin().key);
+  const replaceStoreState = (
+    store: NonNullable<ReturnType<typeof getStore>>,
+    value: object
+  ) => {
+    store.set('state', snapshotPluginOptions(value) as never);
+  };
+  const getRuntimeApi = () => {
+    const plugin = getPlugin();
 
-    const getGroupFactories = () => {
-      if (groupFactories) return groupFactories;
+    if (
+      isResolvingPlatePlugin(editor, plugin) &&
+      !hasCompiledPlatePluginApiCandidate(editor)
+    ) {
+      return {};
+    }
 
-      groupFactories = new Map();
-      const addFactory = (groupKey: string, factory: PluginUpdateGroup) => {
-        const factories = groupFactories!.get(groupKey) ?? [];
+    return getCompiledPlatePluginApi(editor, plugin.key) ?? {};
+  };
+  const api = new Proxy(Object.create(null) as Record<PropertyKey, unknown>, {
+    get(_target, key) {
+      const pluginApi = getRuntimeApi();
 
-        factories.push(factory);
-        groupFactories!.set(groupKey, factories);
+      return pluginApi[key as string];
+    },
+    getOwnPropertyDescriptor(_target, key) {
+      return {
+        configurable: true,
+        enumerable: true,
+        value: Reflect.get(api, key),
       };
+    },
+    ownKeys() {
+      return Reflect.ownKeys(getRuntimeApi());
+    },
+  }) as InferOwnApi<AnyPluginConfig>;
+  const createUpdateFacade = (path: readonly PropertyKey[]): unknown =>
+    new Proxy(
+      (...args: unknown[]) => {
+        let result: unknown;
 
-      plugin.__txExtensions.forEach((extension) => {
-        Object.entries(extension(getEditorPlugin(editor, plugin))).forEach(
-          ([groupKey, factory]) => {
-            if (factory) addFactory(groupKey, factory);
-          }
-        );
-      });
-      Object.entries(plugin.tx ?? {}).forEach(([groupKey, factory]) => {
-        if (factory) addFactory(groupKey, factory);
-      });
-      plugin.__editorExtensions.forEach((extendEditor) => {
-        const input = extendEditor(getEditorPlugin(editor, plugin));
+        editor.update((tx) => {
+          const transaction = tx as unknown as Record<PropertyKey, unknown>;
+          const ownGroup = transaction[getPlugin().key];
+          const resolve = (source: unknown) => {
+            let owner: unknown = source;
+            let value: unknown = source;
 
-        if (!input) return;
-
-        const extensions = Array.isArray(input) ? input : [input];
-
-        extensions.forEach((extension) => {
-          Object.entries(extension.tx ?? {}).forEach(([groupKey, factory]) => {
-            if (isPluginUpdateGroup(factory)) addFactory(groupKey, factory);
-          });
-        });
-      });
-
-      return groupFactories;
-    };
-
-    const runCommand = (
-      groupKey: string,
-      path: readonly PropertyKey[],
-      args: unknown[]
-    ) => {
-      let result: unknown;
-
-      editor.update((tx, context) => {
-        const group = Object.create(null) as Record<PropertyKey, unknown>;
-
-        getGroupFactories()
-          .get(groupKey)
-          ?.forEach((factory) => {
-            const commands = factory(tx, editor, context);
-
-            if (commands && typeof commands === 'object') {
-              Object.assign(group, commands);
+            for (const key of path) {
+              owner = value;
+              value =
+                value &&
+                (typeof value === 'object' || typeof value === 'function')
+                  ? (value as Record<PropertyKey, unknown>)[key]
+                  : undefined;
             }
-          });
 
-        const command = path.reduce<unknown>(
-          (value, key) =>
-            value && typeof value === 'object'
-              ? (value as Record<PropertyKey, unknown>)[key]
-              : undefined,
-          group
-        );
+            return { owner, value };
+          };
+          const own = resolve(ownGroup);
+          const { owner, value } =
+            typeof own?.value === 'function' ? own : resolve(transaction);
 
-        if (typeof command !== 'function') {
-          throw new TypeError(
-            `Plugin update command "${groupKey}.${path.join('.')}" is not callable.`
-          );
-        }
+          if (typeof value !== 'function') {
+            throw new TypeError(
+              `Plugin update command "${path.map(String).join('.')}" is not callable.`
+            );
+          }
 
-        result = command(...args);
-      });
+          result = Reflect.apply(value, owner, args);
+        });
 
-      return result;
-    };
-
-    const createCommand = (groupKey: string, path: readonly PropertyKey[]) =>
-      new Proxy((...args: unknown[]) => runCommand(groupKey, path, args), {
-        get(_target, key) {
-          return createCommand(groupKey, [...path, key]);
-        },
-      });
-
-    return new Proxy(Object.create(null) as Record<PropertyKey, unknown>, {
-      get(_target, key) {
-        if (
-          typeof key === 'string' &&
-          key !== plugin.key &&
-          getGroupFactories().has(key)
-        ) {
-          return new Proxy(Object.create(null), {
-            get(_groupTarget, methodName) {
-              return createCommand(key, [methodName]);
-            },
-          });
-        }
-
-        return createCommand(plugin.key, [key]);
+        return result;
       },
-    });
-  };
+      {
+        get(_target, key) {
+          if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
+            return;
+          }
 
-  return {
-    api: getApi(),
+          return createUpdateFacade([...path, key]);
+        },
+      }
+    );
+  const update = new Proxy(
+    Object.create(null) as Record<PropertyKey, unknown>,
+    {
+      get(_target, key) {
+        if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
+          return;
+        }
+
+        return createUpdateFacade([key]);
+      },
+    }
+  );
+  const context = {
     editor,
-    plugin: plugin as any,
     setOption: ((key: keyof InferOptions<AnyPluginConfig>, value: unknown) => {
+      const plugin = getPlugin();
       const store = getStore();
 
       if (!store) return;
@@ -168,13 +163,18 @@ export function getEditorPlugin(
 
       if (!(key in state)) {
         editor.api.debug.error(
-          `plugin.setOption: ${String(key)} option is not defined in plugin ${plugin.key}.`,
+          `plugin.setOption: ${String(key)} option is not defined in plugin ${
+            plugin.key
+          }.`,
           'OPTION_UNDEFINED'
         );
         return;
       }
 
-      store.set(key as never, value as never);
+      replaceStoreState(store, {
+        ...(state as Record<PropertyKey, unknown>),
+        [key]: value,
+      });
     }) as any,
     setOptions: ((options: unknown) => {
       const store = getStore();
@@ -182,22 +182,27 @@ export function getEditorPlugin(
       if (!store) return;
 
       if (typeof options === 'function') {
-        store.set('state', options as never);
+        const next = create(store.get('state') as object, options as never);
+
+        replaceStoreState(store, next);
       } else if (typeof options === 'object' && options !== null) {
-        store.set('state', (draft: object) => {
-          Object.assign(draft, options);
+        replaceStoreState(store, {
+          ...(store.get('state') as Record<PropertyKey, unknown>),
+          ...options,
         });
       }
     }) as any,
-    type: plugin.node?.type ?? plugin.key,
     getOption: ((key: PropertyKey, ...args: unknown[]) => {
+      const plugin = getPlugin();
       const store = getStore() as any;
 
       if (!store) return plugin.options[key as never];
 
       if (!(key in store.get('state')) && !(key in store.selectors)) {
         editor.api.debug.error(
-          `plugin.getOption: ${String(key)} option is not defined in plugin ${plugin.key}.`,
+          `plugin.getOption: ${String(key)} option is not defined in plugin ${
+            plugin.key
+          }.`,
           'OPTION_UNDEFINED'
         );
         return;
@@ -206,12 +211,21 @@ export function getEditorPlugin(
       return store.get(key, ...args);
     }) as any,
     getOptions: (() => {
+      const plugin = getPlugin();
       const store = getStore();
 
       if (!store) return plugin.options;
 
       return store.get('state');
     }) as any,
-    update: getUpdate(),
-  };
+  } as Record<PropertyKey, unknown>;
+
+  Object.defineProperties(context, {
+    api: { enumerable: true, value: api },
+    plugin: { enumerable: true, get: getPlugin },
+    type: { enumerable: true, get: () => getPlugin().type },
+    update: { enumerable: true, value: update },
+  });
+
+  return context as BasePluginContext<any>;
 }

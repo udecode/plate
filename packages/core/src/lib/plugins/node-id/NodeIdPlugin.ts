@@ -1,19 +1,30 @@
 import {
   type Descendant,
+  DocumentChange,
+  type EditorDocumentValue,
+  type EditorTransactionTopLevelRange,
   type NodeEntry,
   type NodeMatch,
   type NodeProps,
-  type Operation,
   type Value,
   ElementApi,
   NodeApi,
+  PathApi,
   TextApi,
+  property,
+  schema,
+  target,
 } from '@platejs/plite';
 import cloneDeep from 'lodash/cloneDeep.js';
+import isEqual from 'lodash/isEqual.js';
 import { nanoid } from 'nanoid';
+import {
+  getInternalDocumentChangeEntries,
+  MAIN_ROOT_KEY,
+} from '@platejs/plite/internal';
 
 import type { BaseEditor } from '../../editor/BaseEditor';
-import type { PluginConfig } from '../../plugin/PluginConfig';
+import type { InferConfig } from '../../plugin/BasePlugin';
 
 import { createBasePlugin } from '../../plugin/createBasePlugin';
 
@@ -63,8 +74,8 @@ export type NodeIdOptions = {
     visitedCount: number;
   }) => void;
   /**
-   * Reuse ids on undo/redo and copy/pasting if not existing in the document.
-   * This is disabled by default to avoid duplicate ids across documents.
+   * Reuse ids from clipboard pastes when they do not exist in the target
+   * document. Generic inserts keep explicit unique ids independently.
    *
    * @default false
    */
@@ -135,10 +146,34 @@ const resolveInitialValueIds = (
   options: Pick<NodeIdOptions, 'initialValueIds'>
 ): false | 'always' | 'if-needed' => options.initialValueIds ?? 'if-needed';
 
-const normalizeInsertedNodeIdOperation = (
-  editor: BaseEditor,
-  operation: Extract<Operation, { type: 'insert_node' }>,
-  options: NodeIdOptions
+const visitDocumentNodes = (
+  value: EditorDocumentValue,
+  root: string,
+  visit: (node: Descendant) => boolean | void
+) => {
+  const children =
+    root === MAIN_ROOT_KEY ? value.children : (value.roots?.[root] ?? []);
+
+  const visitNode = (node: Descendant): boolean => {
+    if (visit(node)) return true;
+    if (!ElementApi.isElement(node)) return false;
+
+    return node.children.some((child) => visitNode(child as Descendant));
+  };
+
+  children.some((node) => visitNode(node as Descendant));
+};
+
+const normalizeInsertedNodeIds = (
+  input: {
+    node: Descendant;
+    path: number[];
+    root: string;
+  },
+  options: NodeIdOptions,
+  before: EditorDocumentValue,
+  reservedIds: Set<unknown>,
+  freshIds: boolean
 ) => {
   const {
     disableInsertOverrides,
@@ -147,7 +182,7 @@ const normalizeInsertedNodeIdOperation = (
     idKey = 'id',
     match,
   } = options;
-  const node = cloneDeep(operation.node) as Descendant & {
+  const node = cloneDeep(input.node) as Descendant & {
     _id?: unknown;
   };
   const duplicateCandidateIds = new Set<unknown>();
@@ -159,7 +194,7 @@ const normalizeInsertedNodeIdOperation = (
       (!match || NodeApi.matches(entryNode as Descendant, match, path)) &&
       (!filterText || hasElementType(entryNode));
 
-    if (matches) {
+    if (matches && !freshIds) {
       if (entryRecord[idKey] !== undefined) {
         duplicateCandidateIds.add(entryRecord[idKey]);
       }
@@ -176,25 +211,31 @@ const normalizeInsertedNodeIdOperation = (
     });
   };
 
-  collectCandidateIds([node, operation.path]);
+  collectCandidateIds([node, input.path]);
 
   const existingIds = new Set<unknown>();
   const start = globalThis.performance?.now() ?? Date.now();
   let visitedCount = 0;
 
   if (duplicateCandidateIds.size > 0) {
-    for (const [entryNode] of editor.read.nodes.entries({ at: [] })) {
-      visitedCount += 1;
+    for (const id of reservedIds) {
+      if (duplicateCandidateIds.has(id)) existingIds.add(id);
+    }
 
-      const id = (entryNode as Record<string, unknown>)[idKey];
+    if (existingIds.size < duplicateCandidateIds.size) {
+      visitDocumentNodes(before, input.root, (entryNode) => {
+        visitedCount += 1;
 
-      if (id === undefined || !duplicateCandidateIds.has(id)) continue;
+        const id = (entryNode as Record<string, unknown>)[idKey];
 
-      existingIds.add(id);
+        if (id === undefined || !duplicateCandidateIds.has(id)) return;
 
-      if (existingIds.size === duplicateCandidateIds.size) {
-        break;
-      }
+        existingIds.add(id);
+
+        if (existingIds.size === duplicateCandidateIds.size) {
+          return true;
+        }
+      });
     }
   }
 
@@ -215,7 +256,7 @@ const normalizeInsertedNodeIdOperation = (
     if (matches) {
       if (
         entryRecord[idKey] !== undefined &&
-        existingIds.has(entryRecord[idKey])
+        (freshIds || existingIds.has(entryRecord[idKey]))
       ) {
         delete entryRecord[idKey];
       }
@@ -224,15 +265,20 @@ const normalizeInsertedNodeIdOperation = (
         Object.assign(entryRecord, { [idKey]: idCreator() });
       }
 
-      if (!disableInsertOverrides && entryRecord._id !== undefined) {
+      if (entryRecord._id !== undefined) {
         const id = entryRecord._id;
         // biome-ignore lint/performance/noDelete: _id is an insert-only override marker.
         delete entryRecord._id;
 
-        if (!existingIds.has(id)) {
+        if (!freshIds && !disableInsertOverrides && !existingIds.has(id)) {
           entryRecord[idKey] = id;
         }
       }
+    }
+
+    if (entryRecord[idKey] !== undefined) {
+      existingIds.add(entryRecord[idKey]);
+      reservedIds.add(entryRecord[idKey]);
     }
 
     if (!ElementApi.isElement(entryNode)) return;
@@ -242,18 +288,20 @@ const normalizeInsertedNodeIdOperation = (
     });
   };
 
-  normalizeInsertedNode([node, operation.path]);
+  normalizeInsertedNode([node, input.path]);
 
-  return {
-    ...operation,
-    node,
-  };
+  return node;
 };
 
-const normalizeSplitNodeIdOperation = (
-  editor: BaseEditor,
-  operation: Extract<Operation, { type: 'split_node' }>,
-  options: NodeIdOptions
+const normalizeSplitNodeIds = (
+  input: {
+    node: Descendant;
+    path: number[];
+    root: string;
+  },
+  options: NodeIdOptions,
+  before: EditorDocumentValue,
+  reservedIds: Set<unknown>
 ) => {
   const {
     filterText = true,
@@ -263,39 +311,251 @@ const normalizeSplitNodeIdOperation = (
     reuseId,
   } = options;
   const properties = {
-    ...operation.properties,
+    ...NodeApi.extractProps(input.node),
   } as NodeProps<Descendant> & Record<string, unknown>;
   if (
-    (!match ||
-      NodeApi.matches(properties as Descendant, match, operation.path)) &&
+    (!match || NodeApi.matches(properties as Descendant, match, input.path)) &&
     (!filterText || hasElementType(properties))
   ) {
     const id = properties[idKey];
     const duplicate =
       id !== undefined &&
-      editor.read.nodes.some({
-        at: [],
-        match: (node) => (node as Record<string, unknown>)[idKey] === id,
-      });
+      (reservedIds.has(id) ||
+        (() => {
+          let found = false;
+
+          visitDocumentNodes(before, input.root, (node) => {
+            if ((node as Record<string, unknown>)[idKey] !== id) return;
+
+            found = true;
+            return true;
+          });
+
+          return found;
+        })());
 
     if (!reuseId || id === undefined || duplicate) {
       properties[idKey] = idCreator();
     }
-
-    return {
-      ...operation,
-      properties,
-    };
-  }
-
-  if (properties[idKey] !== undefined) {
+  } else if (properties[idKey] !== undefined) {
     delete properties[idKey];
   }
 
-  return {
-    ...operation,
-    properties,
+  if (properties[idKey] !== undefined) {
+    reservedIds.add(properties[idKey]);
+  }
+
+  return TextApi.isText(input.node)
+    ? ({ ...properties, text: input.node.text } as Descendant)
+    : ({ ...properties, children: input.node.children } as Descendant);
+};
+
+type DocumentNodeEntry = {
+  node: Descendant;
+  path: number[];
+};
+
+const collectDocumentNodeEntries = (
+  children: readonly Descendant[],
+  topLevelIndices?: ReadonlySet<number>
+): DocumentNodeEntry[] => {
+  const entries: DocumentNodeEntry[] = [];
+
+  const visit = (node: Descendant, path: number[]) => {
+    entries.push({ node, path });
+
+    if (ElementApi.isElement(node)) {
+      node.children.forEach((child, index) => {
+        visit(child as Descendant, [...path, index]);
+      });
+    }
   };
+
+  children.forEach((node, index) => {
+    if (topLevelIndices && !topLevelIndices.has(index)) return;
+
+    visit(node, [index]);
+  });
+
+  return entries;
+};
+
+const isSameNodeKind = (left: Descendant, right: Descendant) =>
+  TextApi.isText(left)
+    ? TextApi.isText(right)
+    : ElementApi.isElement(right) && left.type === right.type;
+
+const pathKey = (path: readonly number[]) => path.join('.');
+
+const collectInsertedNodeEntries = (
+  beforeChildren: readonly Descendant[],
+  afterChildren: readonly Descendant[],
+  idKey: string,
+  ranges: readonly EditorTransactionTopLevelRange[]
+) => {
+  const collectIndices = (
+    phase: 'after' | 'before',
+    length: number
+  ): ReadonlySet<number> => {
+    const indices = new Set<number>();
+
+    for (const range of ranges) {
+      const window = range[phase];
+
+      if (!window) continue;
+
+      for (
+        let index = Math.max(0, window[0]);
+        index <= Math.min(length - 1, window[1]);
+        index++
+      ) {
+        indices.add(index);
+      }
+    }
+
+    return indices;
+  };
+  const beforeEntries = collectDocumentNodeEntries(
+    beforeChildren,
+    collectIndices('before', beforeChildren.length)
+  );
+  const afterEntries = collectDocumentNodeEntries(
+    afterChildren,
+    collectIndices('after', afterChildren.length)
+  );
+  const availableBefore = new Set(beforeEntries.map((_, index) => index));
+  const matchedAfter = new Set<number>();
+  const claimMatches = (
+    match: (after: DocumentNodeEntry, before: DocumentNodeEntry) => boolean
+  ) => {
+    afterEntries.forEach((afterEntry, afterIndex) => {
+      if (matchedAfter.has(afterIndex)) return;
+
+      const beforeIndex = [...availableBefore].find((candidateIndex) =>
+        match(afterEntry, beforeEntries[candidateIndex]!)
+      );
+
+      if (beforeIndex === undefined) return;
+
+      availableBefore.delete(beforeIndex);
+      matchedAfter.add(afterIndex);
+    });
+  };
+
+  // Preserve local structural sharing first, then recover identity from exact
+  // values and stable ids for serialized/external canonical changes.
+  claimMatches((after, before) => after.node === before.node);
+  claimMatches((after, before) => isEqual(after.node, before.node));
+  claimMatches((after, before) => {
+    const afterId = (after.node as Record<string, unknown>)[idKey];
+    const beforeId = (before.node as Record<string, unknown>)[idKey];
+
+    return (
+      afterId !== undefined &&
+      afterId === beforeId &&
+      isSameNodeKind(after.node, before.node)
+    );
+  });
+  claimMatches(
+    (after, before) =>
+      pathKey(after.path) === pathKey(before.path) &&
+      isSameNodeKind(after.node, before.node)
+  );
+
+  const inserted = afterEntries.filter((_, index) => !matchedAfter.has(index));
+  const insertedPaths = new Set(inserted.map(({ path }) => pathKey(path)));
+
+  return inserted.filter(({ path }) => {
+    for (let depth = 1; depth < path.length; depth++) {
+      if (insertedPaths.has(pathKey(path.slice(0, depth)))) return false;
+    }
+
+    return true;
+  });
+};
+
+const getNodeAt = (
+  children: readonly Descendant[],
+  path: readonly number[]
+): Descendant | null => {
+  let node: Descendant | undefined;
+  let currentChildren = children;
+
+  for (const index of path) {
+    node = currentChildren[index];
+
+    if (!node) return null;
+    currentChildren = ElementApi.isElement(node) ? node.children : [];
+  }
+
+  return node ?? null;
+};
+
+const replaceNodeAt = (
+  children: readonly Descendant[],
+  path: readonly number[],
+  node: Descendant
+): Descendant[] => {
+  const [index, ...rest] = path;
+
+  if (index === undefined) return [...children];
+
+  const current = children[index];
+
+  if (!current) return [...children];
+
+  const nextChildren = [...children];
+
+  if (rest.length === 0) {
+    nextChildren[index] = node;
+  } else if (ElementApi.isElement(current)) {
+    nextChildren[index] = {
+      ...current,
+      children: replaceNodeAt(
+        current.children as readonly Descendant[],
+        rest,
+        node
+      ),
+    };
+  }
+
+  return nextChildren;
+};
+
+const isSplitNodeEntry = (
+  beforeChildren: readonly Descendant[],
+  afterChildren: readonly Descendant[],
+  entry: DocumentNodeEntry
+) => {
+  if (!PathApi.hasPrevious(entry.path)) return null;
+
+  const sourcePath = PathApi.previous(entry.path);
+  const beforeNode = getNodeAt(beforeChildren, sourcePath);
+  const leftNode = getNodeAt(afterChildren, sourcePath);
+
+  if (!beforeNode || !leftNode) return null;
+
+  if (
+    TextApi.isText(beforeNode) &&
+    TextApi.isText(leftNode) &&
+    TextApi.isText(entry.node) &&
+    leftNode.text + entry.node.text === beforeNode.text
+  ) {
+    return sourcePath;
+  }
+
+  if (
+    ElementApi.isElement(beforeNode) &&
+    ElementApi.isElement(leftNode) &&
+    ElementApi.isElement(entry.node) &&
+    beforeNode.type === leftNode.type &&
+    beforeNode.type === entry.node.type &&
+    isEqual([...leftNode.children, ...entry.node.children], beforeNode.children)
+  ) {
+    return sourcePath;
+  }
+
+  return null;
 };
 
 /**
@@ -431,38 +691,36 @@ export const normalizeNodeIdWithEditor = <V extends Value>(
       ElementApi.isElement(node) && editor.read.schema.isBlock(node),
   });
 
-export type NodeIdConfig = PluginConfig<
-  'nodeId',
-  NodeIdOptions,
-  {},
-  {
-    nodeId: {
-      normalize: () => void;
-    };
-  }
->;
+const defaultNodeIdOptions: NodeIdOptions = {
+  filterInline: true,
+  filterText: true,
+  idKey: 'id',
+  idCreator: () => nanoid(10),
+};
 
-export const NodeIdPlugin = createBasePlugin<NodeIdConfig>({
+export const NodeIdPlugin = createBasePlugin({
   key: 'nodeId',
-  options: {
-    filterInline: true,
-    filterText: true,
-    idKey: 'id',
-    idCreator: () => nanoid(10),
-  },
+  options: defaultNodeIdOptions,
+  schema: ({ options }) => ({
+    properties: [
+      schema.elementProperty(
+        options.idKey ?? 'id',
+        property.json({ significant: false }),
+        {
+          target: target.group('element'),
+        }
+      ),
+    ],
+  }),
 })
-  .extend(({ getOptions }) => ({
-    node: {
-      isMetadataProp: ({ key }) => key === (getOptions().idKey ?? 'id'),
-    },
-  }))
-  .extendTx(({ editor, getOptions }) => (tx) => ({
+  .extendTx(({ getOptions }) => (tx) => ({
     normalize() {
       const options = getOptions();
-      const { idCreator, idKey } = options;
+      const { idCreator } = options;
+      const { idKey = 'id' } = options;
       const updates: { at: number[]; props: Record<string, unknown> }[] = [];
       const isBlock = (node: Descendant) =>
-        ElementApi.isElement(node) && editor.read.schema.isBlock(node);
+        ElementApi.isElement(node) && tx.schema.isBlock(node);
       const applyUpdates = () => {
         if (updates.length === 0) return;
 
@@ -494,7 +752,7 @@ export const NodeIdPlugin = createBasePlugin<NodeIdConfig>({
           });
         };
 
-        editor.read.children().forEach((node: Descendant, index: number) => {
+        tx.nodes.children().forEach((node: Descendant, index: number) => {
           path.push(index);
           visitFast(node);
           path.pop();
@@ -524,46 +782,126 @@ export const NodeIdPlugin = createBasePlugin<NodeIdConfig>({
       };
 
       // Start traversal from top-level nodes.
-      editor.read.children().forEach((node: Descendant, index: number) => {
+      tx.nodes.children().forEach((node: Descendant, index: number) => {
         addNodeId([node, [index]]);
       });
 
       applyUpdates();
     },
   }))
-  .extendExtension(({ editor, getOptions }) => ({
-    operations: {
-      apply({ operation, next }) {
-        if (operation.type === 'insert_node') {
-          next(
-            normalizeInsertedNodeIdOperation(
-              editor,
-              operation,
-              getOptions()
-            ) as Operation
+  .extendExtension(({ editor, getOptions }) => {
+    let isNormalizingInsertedNodes = false;
+
+    return {
+      onTransactionChange({ after, before, change, changed, tx }) {
+        if (isNormalizingInsertedNodes || editor.runtime.isNormalizing) return;
+
+        const options = getOptions();
+        const { idKey = 'id' } = options;
+        const runtimeOptions = { ...options, idKey };
+        const roots = new Set([
+          ...[...getInternalDocumentChangeEntries(change)].map(
+            ([root]) => root
+          ),
+          ...change.createRoots,
+        ]);
+        const updates: {
+          node: Descendant;
+          path: number[];
+          root: string;
+        }[] = [];
+
+        for (const root of roots) {
+          const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
+
+          if (!changed.has('structure', publicRoot)) continue;
+
+          const beforeChildren =
+            root === MAIN_ROOT_KEY
+              ? before.children
+              : (before.roots?.[root] ?? []);
+          const afterChildren =
+            root === MAIN_ROOT_KEY
+              ? after.children
+              : (after.roots?.[root] ?? []);
+          const insertedEntries = collectInsertedNodeEntries(
+            beforeChildren,
+            afterChildren,
+            idKey,
+            changed.topLevelRanges(publicRoot)
           );
-          return;
+          const reservedIds = new Set<unknown>();
+
+          for (const entry of insertedEntries) {
+            const splitPath = isSplitNodeEntry(
+              beforeChildren,
+              afterChildren,
+              entry
+            );
+            const normalized = splitPath
+              ? normalizeSplitNodeIds(
+                  { node: entry.node, path: splitPath, root },
+                  runtimeOptions,
+                  before,
+                  reservedIds
+                )
+              : normalizeInsertedNodeIds(
+                  { ...entry, root },
+                  runtimeOptions,
+                  before,
+                  reservedIds,
+                  tx.tags.has('paste') && options.reuseId !== true
+                );
+
+            if (!isEqual(normalized, entry.node)) {
+              updates.push({ node: normalized, path: entry.path, root });
+            }
+          }
         }
 
-        if (operation.type === 'split_node') {
-          next(
-            normalizeSplitNodeIdOperation(
-              editor,
-              operation,
-              getOptions()
-            ) as Operation
-          );
-          return;
-        }
+        if (updates.length === 0) return;
 
-        next(operation);
+        isNormalizingInsertedNodes = true;
+        try {
+          let corrected = after;
+
+          for (const update of updates) {
+            if (update.root === MAIN_ROOT_KEY) {
+              corrected = {
+                ...corrected,
+                children: replaceNodeAt(
+                  corrected.children,
+                  update.path,
+                  update.node
+                ) as Value,
+              };
+            } else {
+              corrected = {
+                ...corrected,
+                roots: {
+                  ...corrected.roots,
+                  [update.root]: replaceNodeAt(
+                    corrected.roots?.[update.root] ?? [],
+                    update.path,
+                    update.node
+                  ) as Value,
+                },
+              };
+            }
+          }
+
+          tx.changes.apply(DocumentChange.between(after, corrected));
+        } finally {
+          isNormalizingInsertedNodes = false;
+        }
       },
-    },
-  }))
+    };
+  })
   .extend({
     transformInitialValue: ({ editor, getOptions, value }): Value => {
       const options = getOptions();
       const { idKey = 'id' } = options;
+      const runtimeOptions = { ...options, idKey };
       const initialValueIds = resolveInitialValueIds(options);
 
       if (initialValueIds === false) {
@@ -580,6 +918,8 @@ export const NodeIdPlugin = createBasePlugin<NodeIdConfig>({
         }
       }
 
-      return normalizeNodeIdWithEditor(editor, value, options);
+      return normalizeNodeIdWithEditor(editor, value, runtimeOptions);
     },
   });
+
+export type NodeIdConfig = InferConfig<typeof NodeIdPlugin>;

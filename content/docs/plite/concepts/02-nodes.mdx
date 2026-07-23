@@ -136,23 +136,30 @@ Inline elements live in text flow. Links, mentions, and inline equations are
 typical inline elements. Inline elements can be siblings with text nodes and
 other inline elements.
 
-Declare inline behavior with element specs.
+Declare behavior and child grammar in the schema.
 
 ```ts
-const links = defineEditorExtension({
+import { defineEditorExtension, property, schema } from "@platejs/plite";
+
+const Links = defineEditorExtension({
   name: "links",
-  elements: [
-    {
-      type: "link",
-      inline: true,
+  schema: {
+    elements: {
+      link: {
+        content: schema.content.text({ default: "text", min: 1 }),
+        inline: true,
+        properties: {
+          url: property.string(),
+        },
+      },
     },
-  ],
+  },
 });
 ```
 
-Inline nodes cannot be the first or last child of a block and cannot sit next
-to another inline without a text node between them. Plite's normalizer inserts
-empty text nodes where the model needs spacing.
+Non-inline elements automatically belong to the compiler-owned `block` group.
+Inline elements declare `inline: true` and automatically belong to `inline`.
+Use `groups` only for application-specific semantic groupings.
 
 ## Voids
 
@@ -160,17 +167,23 @@ Void elements render visible content without making their own children directly
 editable. Use voids for images, embeds, mentions, horizontal rules, and other
 objects that behave as a single editor unit.
 
-Declare void behavior with element specs.
+Declare void behavior in an extension schema.
 
 ```ts
-const images = defineEditorExtension({
+import { defineEditorExtension, property } from "@platejs/plite";
+
+const Images = defineEditorExtension({
   name: "images",
-  elements: [
-    {
-      type: "image",
-      void: true,
+  schema: {
+    elements: {
+      image: {
+        properties: {
+          url: property.string(),
+        },
+        void: "block",
+      },
     },
-  ],
+  },
 });
 ```
 
@@ -181,7 +194,7 @@ complete rendering example.
 
 ## Node Tree Rules
 
-Plite keeps document trees valid while operations run.
+Plite keeps document trees valid while transaction writes run.
 
 - Roots contain block elements.
 - Elements contain either block children or inline/text children, not both.
@@ -189,5 +202,6 @@ Plite keeps document trees valid while operations run.
 - Text nodes merge with adjacent text nodes that have matching marks.
 - Inline and void elements get empty text spacing where selection needs it.
 
-See [Normalizing](11-normalizing) for the full set of built-in constraints
-and custom normalization hooks.
+See [Schema](19-schema) for declarations, compiled validation, and fitting.
+See [Normalizing](11-normalizing) for semantic corrections that run after
+schema-valid writes.

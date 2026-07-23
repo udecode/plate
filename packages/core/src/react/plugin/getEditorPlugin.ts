@@ -7,16 +7,15 @@ import type {
 
 import {
   type AnyPluginConfig,
+  type BasePluginInput,
   type WithRequiredKey,
   getEditorPlugin as getBaseEditorPlugin,
 } from '../../lib';
 
-export function getEditorPlugin<
-  P extends AnyPluginConfig | PlatePlugin<AnyPluginConfig>,
->(
+export function getEditorPlugin<P extends BasePluginInput>(
   editor: PlateEditor,
   plugin: WithRequiredKey<P>
-): PlatePluginContext<InferConfig<P> extends never ? P : InferConfig<P>>;
+): PlatePluginContext<InferConfig<P>>;
 export function getEditorPlugin(
   editor: PlateEditor,
   plugin: WithRequiredKey<AnyPluginConfig> | PlatePlugin<AnyPluginConfig>

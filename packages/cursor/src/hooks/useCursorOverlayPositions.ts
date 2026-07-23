@@ -4,7 +4,7 @@ import type { Range } from '@platejs/plite';
 import { useIsomorphicLayoutEffect } from '@udecode/react-utils';
 import type { UnknownObject } from '@udecode/utils';
 
-import { useEditorRef } from '@platejs/core/react';
+import { useEditor } from '@platejs/core/react';
 
 import type { CursorOverlayProps } from '../components/CursorOverlay';
 import {
@@ -29,7 +29,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
   cursors: cursorStates,
   refreshOnResize = true,
 }: UseCursorOverlayPositionsOptions<TCursorData> = {}) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   const selectionRectCache = React.useRef<
     WeakMap<Range, readonly SelectionRect[]>

@@ -3,7 +3,7 @@ import { ElementApi } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
 import { parseMediaUrl, parseVideoUrl } from '../media/parseMediaUrl';
-import { BaseMediaEmbedPlugin, insertMediaEmbed } from './BaseMediaEmbedPlugin';
+import { BaseMediaEmbedPlugin } from './BaseMediaEmbedPlugin';
 
 describe('BaseMediaEmbedPlugin', () => {
   it('configures media embeds as void elements with iframe parsing', () => {
@@ -61,9 +61,9 @@ describe('BaseMediaEmbedPlugin', () => {
       initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
-    insertMediaEmbed(editor, {
-      url: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-    });
+    editor
+      .plugin(BaseMediaEmbedPlugin)
+      .update.insert('https://www.youtube.com/watch?v=M7lc1UVf-VE');
 
     const media = editor.read.children()[1];
 
@@ -87,29 +87,59 @@ describe('BaseMediaEmbedPlugin', () => {
     );
   });
 
+  it('applies the configured URL transform before normalization', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMediaEmbedPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor
+      .plugin(BaseMediaEmbedPlugin)
+      .update.insert(
+        '<iframe src="https://www.youtube.com/watch?v=M7lc1UVf-VE"></iframe>'
+      );
+
+    expect(editor.read.children()[1]).toMatchObject({
+      provider: 'youtube',
+      sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+      type: NODES.mediaEmbed,
+      url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
+    });
+  });
+
   it('does nothing without a selection or explicit target', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
       initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
-    insertMediaEmbed(editor, { url: 'https://platejs.org/embed' });
+    editor
+      .plugin(BaseMediaEmbedPlugin)
+      .update.insert('https://platejs.org/embed');
 
     expect(editor.read.children()).toHaveLength(1);
   });
 
-  it('inserts after an explicit block target without a selection', () => {
+  it('inserts at an exact explicit target without a selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
       initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
-    insertMediaEmbed(editor, { url: 'https://platejs.org/embed' }, { at: [0] });
+    editor
+      .plugin(BaseMediaEmbedPlugin)
+      .update.insert('https://platejs.org/embed', { at: [0] });
 
-    expect(editor.read.children()[1]).toMatchObject({
+    expect(editor.read.children()[0]).toMatchObject({
       type: NODES.mediaEmbed,
       url: 'https://platejs.org/embed',
     });
+    expect(editor.read.children()[1]).toMatchObject({ type: KEYS.p });
   });
 
   it('coexists with the global node-id schema without claiming provider IDs', () => {

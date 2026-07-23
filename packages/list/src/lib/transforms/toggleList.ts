@@ -12,7 +12,6 @@ import type { ToggleListOptions } from '../types';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
-import { getListAbove } from '../queries/getListAbove';
 import { getPreviousList } from '../queries/getPreviousList';
 import { getListSequenceSiblingOptions } from '../internal/isSameListSequence';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
@@ -21,12 +20,12 @@ import { setListSiblingNodesWithTx } from './setListSiblingNodes';
 
 export const toggleListWithTx = <N extends Element = Element>(
   editor: BaseEditor,
-  tx: EditorUpdateTransaction,
+  tx: Pick<EditorUpdateTransaction, 'nodes' | 'schema' | 'selection'>,
   options: ToggleListOptions,
   getSiblingListOptions?: GetSiblingListOptions<N>
 ) => {
   const {
-    at = editor.read.selection(),
+    at = tx.selection(),
     listRestart,
     listRestartPolite,
     listStyleType,
@@ -41,11 +40,11 @@ export const toggleListWithTx = <N extends Element = Element>(
     ...getSiblingListOptions,
   } as GetSiblingListOptions<Element>;
   const match = getInjectMatch(editor, editor.getPlugin({ key: KEYS.list }));
-  const entries = editor.read.nodes.toArray<Element>({
+  const entries = tx.nodes.toArray<Element>({
     at,
     match: (node, path) =>
       ElementApi.isElement(node) &&
-      editor.read.nodes.isBlock(node) &&
+      tx.schema.isBlock(node) &&
       match(node, path),
     mode: 'lowest',
   });
@@ -147,7 +146,12 @@ export const toggleListWithTx = <N extends Element = Element>(
 
   if (setList && restartValue) {
     const [targetNode, targetPath] = entries[0];
-    const entry = getListAbove(editor, { at: targetPath }) ?? [
+    const entry = tx.nodes.above<Element>({
+      at: targetPath,
+      match: (candidate) =>
+        ElementApi.isElement(candidate) &&
+        candidate[KEYS.listType] !== undefined,
+    }) ?? [
       {
         ...targetNode,
         [KEYS.indent]:
@@ -164,7 +168,8 @@ export const toggleListWithTx = <N extends Element = Element>(
       getListSequenceSiblingOptions(editor, {
         breakOnEqIndentNeqListStyleType: false,
         ...mergedGetSiblingListOptions,
-      })
+      }),
+      tx
     );
 
     /**

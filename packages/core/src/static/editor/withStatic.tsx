@@ -5,6 +5,7 @@ import {
   type BaseEditor,
   type BasePluginInput,
   type CreateBaseEditorOptions,
+  type ExtendBaseEditorOptions,
   type InferPlugins,
   extendBaseEditor,
 } from '../../lib/editor';
@@ -28,14 +29,14 @@ const extendStaticEditor = <
   const P extends readonly BasePluginInput[] = readonly [],
 >(
   editor: Editor,
-  options: CreateStaticEditorOptions<V, P> = {}
+  options: CreateStaticEditorOptions<V, P>
 ) => {
   const { id: _id, plugins = [], ...extendOptions } = options;
 
   return extendBaseEditor<V, StaticPluginInput<P>>(editor, {
     ...extendOptions,
     plugins: [...getStaticPlugins(), ...plugins],
-  });
+  } as unknown as ExtendBaseEditorOptions<V, StaticPluginInput<P>>);
 };
 
 export const createStaticEditor = <

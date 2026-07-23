@@ -1,26 +1,55 @@
-import type { Element } from '@platejs/plite';
+import type {
+  EditorSchemaSource,
+  Element,
+  SchemaElementFor,
+  SchemaElementTypes,
+} from '@platejs/plite';
 
-import { useEditorRef } from '../plate';
-import { SCOPE_ELEMENT, useElementContext } from './useElementStore';
+import { useElementContext } from './useElementStore';
 
-/**
- * Get the element by plugin key. If no element is found in the context, it will
- * return an empty object.
- */
-export const useElement = <T extends Element = Element>(
-  pluginKey = SCOPE_ELEMENT
-): T => {
-  const editor = useEditorRef();
-  const value = useElementContext(pluginKey)?.element;
+export type PlateElementDescriptor = EditorSchemaSource &
+  Readonly<{
+    key: string;
+    type: string;
+  }>;
+
+export type PlateElementForDescriptor<TPlugin extends PlateElementDescriptor> =
+  SchemaElementFor<
+    TPlugin,
+    Extract<TPlugin['type'], SchemaElementTypes<TPlugin>>
+  >;
+
+const getElementScope = (plugin?: PlateElementDescriptor) => plugin?.key;
+
+export function useElement<TElement extends Element = Element>(): TElement;
+export function useElement<const TPlugin extends PlateElementDescriptor>(
+  plugin: TPlugin
+): PlateElementForDescriptor<TPlugin>;
+/** Get the current element and fail when the requested provider is absent. */
+export function useElement(plugin?: PlateElementDescriptor): Element {
+  const scope = getElementScope(plugin);
+  const value = useElementContext(scope)?.element;
 
   if (!value) {
-    editor.api.debug.warn(
-      `useElement(${pluginKey}) hook must be used inside the node component's context`,
-      'USE_ELEMENT_CONTEXT'
+    throw new Error(
+      `useElement(${
+        scope ?? 'nearest'
+      }) must be used inside the matching element provider.`
     );
-
-    return {} as T;
   }
 
-  return value as T;
-};
+  return value;
+}
+
+export function useOptionalElement<
+  TElement extends Element = Element,
+>(): TElement | null;
+export function useOptionalElement<
+  const TPlugin extends PlateElementDescriptor,
+>(plugin: TPlugin): PlateElementForDescriptor<TPlugin> | null;
+/** Get the current element, or `null` when its provider is absent. */
+export function useOptionalElement(
+  plugin?: PlateElementDescriptor
+): Element | null {
+  return useElementContext(getElementScope(plugin))?.element ?? null;
+}

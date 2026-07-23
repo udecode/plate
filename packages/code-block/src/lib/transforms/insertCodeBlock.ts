@@ -15,20 +15,20 @@ export const insertCodeBlock = (
   tx: EditorUpdateTransaction,
   insertNodesOptions: Omit<NodeInsertNodesOptions<Element>, 'match'> = {}
 ) => {
-  const selection = editor.read.selection();
+  const selection = tx.selection();
 
-  if (!selection || editor.read.selection.isExpanded()) return;
+  if (!selection || tx.selection.isExpanded()) return;
 
   const codeBlockType = editor.getType(KEYS.codeBlock);
   const codeLineType = editor.getType(KEYS.codeLine);
   if (
-    editor.read.nodes.some({
+    tx.nodes.some({
       match: { type: [codeBlockType, codeLineType] },
     })
   ) {
     return;
   }
-  if (!editor.read.selection.isAtBlockStart()) {
+  if (!tx.selection.isAtBlockStart()) {
     tx.break.insert();
   }
 

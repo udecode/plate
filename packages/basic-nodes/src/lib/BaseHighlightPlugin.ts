@@ -1,4 +1,5 @@
 import { createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 /**
@@ -7,7 +8,9 @@ import { KEYS } from '@platejs/utils';
  */
 export const BaseHighlightPlugin = createBasePlugin({
   key: KEYS.highlight,
-  node: { isLeaf: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
   parsers: {
     html: {
       deserializer: {

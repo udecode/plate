@@ -17,7 +17,7 @@ export const unwrapCodeBlock = (
   const codeBlockType = editor.getType(KEYS.codeBlock);
   const defaultType = editor.getType(KEYS.p);
 
-  const codeBlockEntries = editor.read.nodes.entries<Element>({
+  const codeBlockEntries = tx.nodes.entries<Element>({
     at,
     match: { type: codeBlockType },
   });

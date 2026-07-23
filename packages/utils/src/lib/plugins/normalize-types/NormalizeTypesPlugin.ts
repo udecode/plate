@@ -41,7 +41,8 @@ export const NormalizeTypesPlugin = createBasePlugin<NormalizeTypesConfig>({
         const { onError, rules = [] } = getOptions();
 
         rules.forEach(({ path, strictType, type }) => {
-          const entry = tx.nodes.get(path);
+          const at = [...path];
+          const entry = tx.nodes.get(at);
           const node = entry?.[0];
 
           if (node) {
@@ -50,7 +51,7 @@ export const NormalizeTypesPlugin = createBasePlugin<NormalizeTypesConfig>({
               ElementApi.isElement(node) &&
               node.type !== strictType
             ) {
-              tx.nodes.set({ type: strictType }, { at: path });
+              tx.nodes.set({ type: strictType }, { at });
             }
 
             return;
@@ -63,7 +64,7 @@ export const NormalizeTypesPlugin = createBasePlugin<NormalizeTypesConfig>({
           try {
             tx.nodes.insert(
               { children: [{ text: '' }], type: nextType },
-              { at: path }
+              { at }
             );
           } catch (error) {
             onError?.(error);

@@ -79,10 +79,6 @@ export const BaseIndentPlugin = createBasePlugin({
       }),
     ],
   }),
-  shortcuts: {
-    tab: { keys: 'tab' },
-    untab: { keys: 'shift+tab' },
-  },
   targetPluginKeys: defaultTargetPluginKeys,
 })
   .extendTx(({ editor, plugin }) => (tx) => {
@@ -162,6 +158,12 @@ export const BaseIndentPlugin = createBasePlugin({
         return true;
       },
     };
+  })
+  .extend({
+    shortcuts: {
+      tab: { keys: 'tab' },
+      untab: { keys: 'shift+tab' },
+    },
   })
   .extendExtension(({ editor, getOptions, plugin }) => ({
     corrections: [

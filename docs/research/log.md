@@ -146,7 +146,7 @@
 - compiled a new Milkdown source summary for executable autoformat input lanes:
   [input-autoformat-lanes.md](docs/research/sources/milkdown/input-autoformat-lanes.md)
 - accepted one decision for family modeling:
-  [autoformat-families-are-profile-adjacent-input-assist-surfaces.md](docs/research/decisions/autoformat-families-are-profile-adjacent-input-assist-surfaces.md)
+  [autoformat-families-are-input-assist-surfaces.md](decisions/autoformat-families-are-input-assist-surfaces.md)
 - opened one explicit unresolved question for thinner symbol-substitution
   authority:
   [text-substitution-autoformat-authority.md](docs/research/open-questions/text-substitution-autoformat-authority.md)

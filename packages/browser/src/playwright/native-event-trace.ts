@@ -22,6 +22,12 @@ export const startPliteBrowserNativeEventTrace = async (
   root: Locator,
   options: PliteBrowserNativeEventTraceOptions = {}
 ) => {
+  const maxEntries = options.maxEntries ?? 100;
+
+  if (!Number.isInteger(maxEntries) || maxEntries <= 0) {
+    throw new TypeError('maxEntries must be a positive integer.');
+  }
+
   await root.evaluate(
     (
       element: HTMLElement,
@@ -36,7 +42,7 @@ export const startPliteBrowserNativeEventTrace = async (
 
       previous?.stop?.();
 
-      const maxEntries = Math.max(1, options.maxEntries ?? 100);
+      const maxEntries = options.maxEntries ?? 100;
       const enabledEvents = new Set<PliteBrowserNativeEventTraceType>(
         options.events ?? [
           'selectionchange',
@@ -454,7 +460,10 @@ export const startPliteBrowserNativeEventTrace = async (
         },
       };
     },
-    { key: NATIVE_EVENT_TRACE_KEY, options }
+    {
+      key: NATIVE_EVENT_TRACE_KEY,
+      options: { ...options, maxEntries },
+    }
   );
 };
 

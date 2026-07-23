@@ -115,37 +115,37 @@ export const editor = createPlateEditor({
   plugins: [
     H1Plugin.configure({
       inputRules: [HeadingRules.markdown()],
-      node: { component: H1Element },
+      render: { node: H1Element },
       rules: { break: { empty: 'reset' } },
       shortcuts: { toggle: { keys: 'mod+alt+1' } },
     }),
     H2Plugin.configure({
       inputRules: [HeadingRules.markdown()],
-      node: { component: H2Element },
+      render: { node: H2Element },
       rules: { break: { empty: 'reset' } },
       shortcuts: { toggle: { keys: 'mod+alt+2' } },
     }),
     H3Plugin.configure({
       inputRules: [HeadingRules.markdown()],
-      node: { component: H3Element },
+      render: { node: H3Element },
       rules: { break: { empty: 'reset' } },
       shortcuts: { toggle: { keys: 'mod+alt+3' } },
     }),
     H4Plugin.configure({
       inputRules: [HeadingRules.markdown()],
-      node: { component: H4Element },
+      render: { node: H4Element },
       rules: { break: { empty: 'reset' } },
       shortcuts: { toggle: { keys: 'mod+alt+4' } },
     }),
     H5Plugin.configure({
       inputRules: [HeadingRules.markdown()],
-      node: { component: H5Element },
+      render: { node: H5Element },
       rules: { break: { empty: 'reset' } },
       shortcuts: { toggle: { keys: 'mod+alt+5' } },
     }),
     H6Plugin.configure({
       inputRules: [HeadingRules.markdown()],
-      node: { component: H6Element },
+      render: { node: H6Element },
       rules: { break: { empty: 'reset' } },
       shortcuts: { toggle: { keys: 'mod+alt+6' } },
     }),

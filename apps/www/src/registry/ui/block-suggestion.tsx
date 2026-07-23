@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { acceptSuggestion, rejectSuggestion } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 import { useEditorPlugin, usePluginOption } from 'platejs/react';
@@ -34,11 +33,11 @@ export function BlockSuggestionCard({
   const userInfo = usePluginOption(discussionPlugin, 'user', suggestion.userId);
 
   const accept = (suggestion: ResolvedSuggestion) => {
-    acceptSuggestion(editor, suggestion);
+    editor.update.suggestion.accept(suggestion);
   };
 
   const reject = (suggestion: ResolvedSuggestion) => {
-    rejectSuggestion(editor, suggestion);
+    editor.update.suggestion.reject(suggestion);
   };
 
   const [hovering, setHovering] = React.useState(false);

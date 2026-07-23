@@ -5,13 +5,14 @@ description: A minimal, memoized, read-only version of Plate with RSC/SSR suppor
 
 `<PlateStatic>` is a **fast, read-only** React component for rendering Plate content, optimized for **server-side** or **React Server Component** (RSC) environments. It avoids client-side editing logic and memoizes node renders for better performance compared to using [`<Plate>`](/docs/api/core/plate-components) in read-only mode.
 
-It's a core part of [`serializeHtml`](/docs/api/core/plate-plugin#serializehtml) for HTML export and is ideal for any server or RSC context needing a non-interactive, presentational view of Plate content.
+It is the rendering path behind `renderStaticHtml` and fits server or RSC
+surfaces that need a non-interactive Plate view.
 
 ## Key Advantages
 
 -   **Server-Safe:** No browser API dependencies; works in SSR/RSC.
 -   **No Plate Editor Overhead:** Excludes interactive features like selections or event handlers.
--   **Memoized Rendering:** Uses element `_memo` and structural checks to re-render only changed nodes.
+-   **Memoized Rendering:** Uses structural identity to re-render only changed nodes.
 -   **Partial Re-Renders:** Changes in one part of the document don't force a full re-render.
 -   **Lightweight:** Smaller bundle size as it omits interactive editor code.
 
@@ -46,7 +47,7 @@ import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
 const editor = createBaseEditor({
   plugins: BaseEditorKit,
-  value: [
+  initialValue: [
     { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
     { type: 'p', children: [{ text: 'This content is rendered statically.' }] },
   ],
@@ -84,7 +85,7 @@ const editor = createBaseEditor({
     // Add your list of base plugins here
     // Example: BaseHeadingPlugin, MarkdownPlugin.configure({...})
   ],
-  value: [ // Example initial value
+  initialValue: [
     {
       type: 'p',
       children: [{ text: 'Hello from a static Plate editor!' }],
@@ -147,7 +148,7 @@ export default async function MyStaticPage() {
   const editor = createBaseEditor({
     plugins: [/* your base plugins */],
     components: staticComponents,
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -165,7 +166,6 @@ export default async function MyStaticPage() {
 `<PlateStatic>` enhances performance through memoization:
 -   Each `<ElementStatic>` and `<LeafStatic>` is wrapped in `React.memo`.
 -   **Reference Equality:** Unchanged node references prevent re-renders.
--   **`_memo` Field:** Setting `element._memo = true` (or any stable value) on an element can force Plate to skip re-rendering that specific element, even if its content changes. This is useful for fine-grained control over updates.
 
 </Steps>
 
@@ -182,11 +182,10 @@ import { InteractiveViewer } from './interactive-viewer';
 
 export default async function DocumentPage() {
   const content = await fetchDocument(); // Your document data
-  
   // Server-side static editor
   const editor = createStaticEditor({
     plugins: BaseEditorKit,
-    value: content,
+    initialValue: content,
   });
 
   return (
@@ -219,7 +218,7 @@ import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 export function InteractiveViewer({ value }) {
   const editor = usePlateViewEditor({
     plugins: BaseEditorKit,
-    value,
+    initialValue: value,
   });
 
   return <PlateView editor={editor} />;
@@ -272,7 +271,7 @@ export default async function Page() {
     // plugins: [BaseHeadingPlugin, /* ...other base plugins */],
     plugins: [], // Add your base plugins
     components: staticComponents,
-    value: serverContent,
+    initialValue: serverContent,
   });
 
   return (
@@ -285,13 +284,15 @@ export default async function Page() {
 ```
 This renders the content to HTML on the server without needing a client-side JavaScript bundle for `PlateStatic` itself.
 
-## Pairing with `serializeHtml`
+## Pairing with `renderStaticHtml`
 
-For generating a complete HTML string (e.g., for emails, PDFs, or external systems), use `serializeHtml`. It utilizes `<PlateStatic>` internally.
+For server-rendering the static Plate tree to an HTML string, use
+`renderStaticHtml`. It renders `<PlateStatic>` through React DOM Server; it is
+not a semantic HTML codec.
 
 ```ts title="lib/html-serializer.ts"
 import { createBaseEditor } from 'platejs';
-import { serializeHtml } from 'platejs/static';
+import { renderStaticHtml } from 'platejs/static';
 import { staticComponents } from '@/components/static-components';
 // import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes';
 
@@ -299,10 +300,10 @@ async function getDocumentAsHtml(value: any[]) {
   const editor = createBaseEditor({
     plugins: [/* ...your base plugins... */],
     components: staticComponents,
-    value,
+    initialValue: value,
   });
 
-  const html = await serializeHtml(editor, {
+  const html = await renderStaticHtml(editor, {
     // editorComponent: PlateStatic, // Optional: Defaults to PlateStatic
     props: { className: 'prose max-w-none' }, // Example: Pass props to the root div
   });

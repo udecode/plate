@@ -40,9 +40,7 @@ import { SearchHighlightLeaf } from '@/components/ui/search-highlight-node';
 
 export const editor = createPlateEditor({
   plugins: [
-    FindReplacePlugin.configure({
-      render: { node: SearchHighlightLeaf },
-    }),
+    FindReplacePlugin.withComponent(SearchHighlightLeaf),
   ],
 });
 ```
@@ -84,8 +82,7 @@ The demo combines `FindReplacePlugin`, `FixedToolbar`, `Input`, and `SearchHighl
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `FindReplacePlugin` | `@platejs/find-replace` | Stores `options.search`, registers a leaf node, and wires `decorateFindReplace`. |
-| `decorateFindReplace` | `@platejs/find-replace` | Finds matches in one element's text children and returns Plite ranges. |
+| `FindReplacePlugin` | `@platejs/find-replace` | Stores `options.search`, registers a leaf node, and decorates matching text ranges. |
 | `SearchHighlightLeaf` | Registry UI | Renders decorated ranges with a yellow background. |
 | `FindToolbar` | App or registry example | Updates `options.search` and calls `editor.api.redecorate()`. |
 | Replace actions | App code | Perform text replacement with editor transforms. The package does not replace content for you. |
@@ -98,12 +95,12 @@ The package is headless. The registry gives you a visible highlight leaf and a d
 |----------|--------|
 | Empty `search` | Returns no ranges. |
 | Case handling | Text and query are lowercased before matching. |
-| Match scope | Only element nodes whose direct children are all text nodes are decorated. |
+| Match scope | Block text and text inside direct inline children contribute to the same search string. |
 | Multiple matches | Each match becomes one or more ranges. |
 | Split text leaves | A match crossing adjacent leaves is split into per-leaf ranges. |
 | Range payload | Each range includes `[FindReplacePlugin.key]: true` and the matched `search` slice. |
 
-`decorateFindReplace` searches the concatenated text for one element, then maps each match back to the original child text paths.
+`FindReplacePlugin` searches the concatenated text for one element, then maps each match back to the original child text paths.
 
 ## Search Highlight Leaf
 
@@ -131,6 +128,3 @@ Change the class name when your design system needs a different search color.
 |-----|---------|-----|
 | `FindReplacePlugin` | `@platejs/find-replace` | Main plugin for search highlighting. |
 | `options.search` | `string` | Query text to highlight. Defaults to `''`. |
-| `decorateFindReplace` | `@platejs/find-replace` | Decoration function used by the plugin. |
-| `SearchRange.search` | `string` | The query slice represented by that range. |
-

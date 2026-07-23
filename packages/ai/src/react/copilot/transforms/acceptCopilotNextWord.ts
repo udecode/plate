@@ -1,18 +1,20 @@
-import { deserializeInlineMd } from '@platejs/markdown';
+import type { MarkdownEditor } from '@platejs/markdown';
 import type { EditorUpdateTransaction } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import type { PlateEditor } from '@platejs/core/react';
 
 import type { CopilotPluginConfig } from '../CopilotPlugin';
-import { copilotSuggestionField } from '../withCopilot';
+import { setCopilotSuggestion } from '../withCopilot';
 
 import { withoutAbort } from '../utils';
 
 export const acceptCopilotNextWord = (
-  editor: PlateEditor,
+  editor: MarkdownEditor<PlateEditor>,
   tx: EditorUpdateTransaction
 ) => {
-  const { getOptions } = editor.plugin<CopilotPluginConfig>(KEYS.copilot);
+  const { getOptions } = editor.plugin<CopilotPluginConfig>({
+    key: KEYS.copilot,
+  });
 
   const { getNextWord, suggestionNodeId, suggestionText } = getOptions();
 
@@ -22,11 +24,11 @@ export const acceptCopilotNextWord = (
 
   const { firstWord, remainingText } = getNextWord({ text: suggestionText });
 
-  withoutAbort(editor, () => {
-    tx.setField(copilotSuggestionField, {
+  withoutAbort(tx, () => {
+    setCopilotSuggestion(tx, {
       id: suggestionNodeId ?? null,
       text: remainingText,
     });
-    tx.fragment.insert(deserializeInlineMd(editor, firstWord));
+    tx.fragment.replace(editor.api.markdown.deserializeInline(firstWord));
   });
 };

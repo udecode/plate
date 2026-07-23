@@ -11,11 +11,12 @@ its path is `[]`. The public editor object is intentionally small.
 ```typescript
 interface BaseEditor<
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TExtensions extends readonly unknown[] = readonly []
 > {
   readonly api: Readonly<
     EditorCoreApiGroups & EditorInstalledApiGroups<TExtensions>
   >;
+  readonly anchor: EditorAnchorApi;
   readonly id: string;
   extend(extension: EditorExtensionInput<any>): () => void;
   getApi(extension: EditorExtension): unknown;
@@ -25,8 +26,10 @@ interface BaseEditor<
   update: EditorUpdate<V, TExtensions>;
 }
 
-type Editor<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> =
-  BaseEditor<V, TExtensions>;
+type Editor<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly []
+> = BaseEditor<V, TExtensions>;
 ```
 
 ## On This Page
@@ -40,7 +43,7 @@ type Editor<V extends Value = Value, TExtensions extends readonly unknown[] = re
 - [Schema behavior](editor#schema-behavior)
 - [Runtime APIs](editor#runtime-apis)
 - [Subscribing to commits](editor#subscribing-to-commits)
-- [Extending the editor](editor#extending-the-editor)
+- [Installing and reconfiguring extensions](editor#installing-and-reconfiguring-extensions)
 - [Pure node and location helpers](editor#pure-node-and-location-helpers)
 
 ## Creating an editor
@@ -56,11 +59,11 @@ const editor = createEditor({
 });
 ```
 
-Extensions define schema, normalizers, commit listeners, operation middleware,
-feature namespaces, and optional runtime registration.
+Extensions define schema, corrections, commit listeners, typed state and
+transaction groups, and optional runtime APIs.
 
-`maxLength` limits user-facing text, fragment, and node insertions. Operation
-replay remains raw so imported operation logs keep their original contents.
+`maxLength` limits user-facing text, fragment, and node insertions. Adapter-owned
+canonical change application remains outside user insertion policy.
 
 ## Reading state
 
@@ -174,7 +177,7 @@ Configure one direct write.
 
 ```javascript
 editor.update({ history: "skip" }).text.insert("Imported");
-editor.update({ tags: ["paste", "html"] }).fragment.insert(fragment);
+editor.update({ tags: ["paste", "html"] }).slice.replace(importedSlice);
 ```
 
 The configured facade exposes core and installed extension update methods. A
@@ -201,7 +204,7 @@ Run one atomic update with a semantic policy.
 
 ```javascript
 editor.update({ history: "new-batch", tags: "paste" }, (tx) => {
-  tx.fragment.insert(fragment);
+  tx.slice.replace(importedSlice);
   tx.selection.collapse({ edge: "end" });
 });
 ```
@@ -216,7 +219,7 @@ type EditorUpdatePolicy = Readonly<{
 `EditorUpdatePolicyFor<E>` narrows the policy to an editor's installed
 capabilities. `history` is a type error when `E` has no History transaction
 group, and an untyped runtime call fails before mutation. Tags are applied in
-input order before `history`; only the last history intent remains.
+input order before `history`; only the last history mode remains.
 
 Inside the callback, `tx.tags.add(tag)` updates the final tag set and
 `tx.tags.has(tag)` inspects it. History adds `tx.history.skip()`,
@@ -312,17 +315,17 @@ editor.update((tx) => {
 });
 ```
 
-State-field writes appear in `commit.statePatches` and
-`commit.dirtyStateKeys`. Collaboration adapters should export only shared
-state-patch keys. Replay remote state patches with `tx.statePatches.replay(...)`.
-Adapter packages own their import policy; `@platejs/yjs` exports
-`YjsUpdatePolicy.remote`.
+State-field writes emit the field's typed effect. The commit lists the changed
+field key in `commit.dirtyStateKeys` and carries the effect in `commit.effects`.
+History inverts effects whose field policy is `"add"`; collaboration adapters
+export effects whose field policy is `"shared"`.
 
 ```javascript
-import { YjsUpdatePolicy } from "@platejs/yjs";
-
-editor.update(YjsUpdatePolicy.remote, (tx) => {
-  tx.statePatches.replay(remoteStatePatches);
+editor.update((tx) => {
+  tx.effects.emit(documentTitle.effect, {
+    previousValue: tx.getField(documentTitle),
+    value: remoteTitle,
+  });
 });
 ```
 
@@ -334,42 +337,72 @@ patterns and comments ownership.
 Schema setup belongs to extensions. Read schema policy through `state.schema`
 or `tx.schema`.
 
-```javascript
-import { defineEditorExtension, elementProperty } from "@platejs/plite";
+```ts
+import {
+  createEditor,
+  defineEditorSchema,
+  type Element,
+  property,
+  schema,
+} from "@platejs/plite";
 
-const tables = defineEditorExtension({
-  name: "tables",
-  elements: [
-    {
-      type: "table-cell",
+const TableSchema = defineEditorSchema({
+  elements: {
+    tableCell: {
+      content: schema.content.text({ default: "text", min: 1 }),
       isolating: true,
       keyboardSelectable: true,
       properties: {
-        colSpan: elementProperty.number({ default: 1 }),
-        rowSpan: elementProperty.number({ default: 1 }),
+        colSpan: property.number({ default: 1, omitDefault: true }),
+        rowSpan: property.number({ default: 1, omitDefault: true }),
       },
     },
-  ],
+  },
+  id: "table-document",
+  root: {
+    content: schema.content.type("tableCell", {
+      default: { type: "tableCell" },
+      min: 1,
+    }),
+  },
+  unknown: "reject",
+  version: 1,
 });
+const tableCell = schema.handle.element(TableSchema, "tableCell");
+const colSpan = schema.handle.property(tableCell, "colSpan");
 
-editor.extend(tables);
-
-editor.read((state) => state.schema.isVoid(element));
-
-editor.update((tx) => {
-  if (tx.schema.isInline(element)) {
-    tx.selection.move({ unit: "character" });
-  }
+const editor = createEditor({
+  extensions: [TableSchema] as const,
+  initialValue: [{ type: "tableCell", children: [{ text: "" }] }],
 });
+const cell = editor.read.children()[0] as Element;
+
+const behavior = editor.read((state) => ({
+  allowsUnknownChildren:
+    state.schema.element("tableCell")?.content?.allowsUnknownElements,
+  colSpan: state.schema.getElementProperty(cell, colSpan),
+  isolating: state.schema.isIsolating(cell),
+  keyboardSelectable: state.schema.isKeyboardSelectable(cell),
+}));
 ```
 
 Common schema checks include:
 
+- `state.schema.allowsElementType(parentType, childType)`
+- `state.schema.createAndFill(type, properties?)`
+- `state.schema.createDefaultRootChild(root?)`
+- `state.schema.delta()`
+- `state.schema.element(type)`
+- `state.schema.findWrapping(parent, child)`
 - `state.schema.getElementBehavior(element)`
+- `state.schema.getElementContentRoots(element)`
 - `state.schema.getElementProperty(element, property)`
-- `state.schema.getElementPropertyDescriptor(type, property)`
+- `state.schema.getElementSlicePolicy(element)`
+- `state.schema.getVocabulary()`
+- `state.schema.identity()`
 - `state.schema.isAtom(element)`
 - `state.schema.isEditableIsland(element)`
+- `state.schema.isElementTypeInGroup(type, group)`
 - `state.schema.isInline(element)`
 - `state.schema.isIsolating(element)`
 - `state.schema.isKeyboardSelectable(element)`
@@ -377,12 +410,20 @@ Common schema checks include:
 - `state.schema.isVoid(element)`
 - `state.schema.markableVoid(element)`
 - `state.schema.isSelectable(element)`
-- `state.schema.isElementPropertyEqual(type, property, left, right)`
+- `state.schema.property({ key, placement, type? })`
+- `state.schema.validateDocument(document)`
+- `state.schema.validateFragment(children)`
 
-Element property descriptors provide defaults and equality for extension-owned
-element fields. Reading a default does not write that property into the
-document. The Plite value remains plain JSON until your transaction writes a
-field.
+Resolved properties expose their value descriptor, target, placement, and
+lifecycle. Value descriptors provide canonical defaults and structural JSON
+equality. Resolved element content exposes `allowedElementTypes`, `allowsText`,
+`allowsUnknownElements`, cardinality, and its canonical default.
+Use `schema.handle.element(...)` and `schema.handle.property(...)` when the
+schema is known. The raw property query is for property keys discovered at
+runtime.
+Reading a default does not write that property into the document. The Plite
+value remains plain JSON until a transaction writes a field. See
+[Schema](../../concepts/19-schema) for declaration, validation, and fitting.
 
 ## Runtime APIs
 
@@ -410,8 +451,8 @@ Subscribe to editor snapshots. The listener receives the current snapshot and an
 optional change summary.
 
 ```javascript
-const unsubscribe = editor.subscribe((_snapshot, change) => {
-  if (change?.childrenChanged || change?.dirtyStateKeys.length) {
+const unsubscribe = editor.subscribe((_snapshot, commit) => {
+  if (commit?.changed.has("document") || commit?.dirtyStateKeys.length) {
     const documentValue = editor.read.value();
 
     save(documentValue);
@@ -425,23 +466,58 @@ Subscribe only to committed changes. The listener receives the change summary
 for each commit.
 
 ```javascript
-const unsubscribe = editor.subscribeCommit((change) => {
-  if (change.selectionChanged) {
-    syncSelection(change.selection);
+const unsubscribe = editor.subscribeCommit((commit) => {
+  if (commit.selectionChanged) {
+    syncSelection(commit.selectionAfter);
   }
 });
 ```
 
 Call the returned function to unsubscribe.
 
-## Extending the editor
+## Installing and reconfiguring extensions
 
-#### `editor.extend(extension) => () => void`
+Install statically known extensions when the editor is created. This preserves
+their inferred `state`, `tx`, and `api` groups.
 
-Install an extension and return a cleanup function.
+```javascript
+const editor = createEditor({ extensions: [myExtension] as const });
+```
+
+#### `editor.extend(extension, options?) => () => void`
+
+Install a host-selected extension after creation. Plite compiles and validates
+a detached configuration candidate, publishes and activates it atomically, then
+emits one commit. The commit includes the migrated document when `options`
+provides one. Calling the returned cleanup function publishes the corresponding
+removal through the same lifecycle.
 
 ```javascript
 const removeExtension = editor.extend(myExtension);
+
+removeExtension();
+```
+
+When the extension introduces a schema that rejects the current document, pass
+`options.migrate`. It receives the immutable current document and candidate
+schema, and returns the complete document to publish with the configuration.
+Validation finishes before publication; failure publishes nothing.
+
+Use creation-time installation when TypeScript should infer the extension's
+groups. Dynamic installation does not rewrite the editor's static type.
+
+Use a named slot for runtime configuration. Reconfiguration is part of one
+atomic editor transaction rather than an immediate registry mutation.
+
+```javascript
+const feature = defineExtensionSlot("feature");
+const editor = createEditor({
+  extensions: [feature.of(readMode)] as const,
+});
+
+editor.update((tx) => {
+  tx.extensions.reconfigure(feature, writeMode);
+});
 ```
 
 Extensions add typed `state` and `tx` namespaces. Direct-safe transaction
@@ -458,10 +534,11 @@ editor.update((tx) => {
 Wrap a transaction-only extension method with `txOnly(...)`. TypeScript omits
 it from direct update groups, and dynamic direct dispatch rejects it at runtime.
 
-## Pure node and location helpers
+## Immutable node and location utilities
 
-Pure helpers stay on their own namespaces because they do not read editor
-runtime state.
+Read-only utilities stay on their own frozen namespaces because they never
+mutate the editor. They operate on the immutable node, editor, and location
+values passed to them.
 
 ```javascript
 NodeApi.string(node);
@@ -470,8 +547,8 @@ TextApi.isText(value);
 PathApi.next(path);
 PointApi.equals(point, other);
 RangeApi.isCollapsed(range);
-OperationApi.isOperation(value);
+DocumentChange.fromJSON(value);
 ```
 
-Use `editor.read(...)` or `editor.update(...)` when a helper needs editor
-state.
+Use `editor.read(...)` when several state-dependent reads must share one
+snapshot, and `editor.update(...)` for document changes.

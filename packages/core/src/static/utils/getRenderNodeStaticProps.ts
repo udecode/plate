@@ -70,7 +70,7 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
       ...pluginProps.attributes,
       className:
         clsx(
-          getPluginNodeClass(plugin?.node.type),
+          getPluginNodeClass(plugin?.type),
           pluginProps.attributes.className,
           className
         ) || undefined,

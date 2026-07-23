@@ -1,7 +1,16 @@
-import { type PluginConfig, createBasePlugin } from '@platejs/core';
-import type { NodeEntry } from '@platejs/plite';
+import {
+  BaseParagraphPlugin,
+  type PluginConfig,
+  createBasePlugin,
+} from '@platejs/core';
+import {
+  definePropertyPolicy,
+  property,
+  schema,
+  type NodeEntry,
+} from '@platejs/plite';
 import type { TColumnGroupElement } from '@platejs/utils';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 import {
   type InsertColumnGroupOptions,
@@ -28,7 +37,7 @@ export type ColumnConfig = PluginConfig<
       moveMiddle: (
         entry: NodeEntry<TColumnGroupElement>,
         options?: MoveMiddleColumnOptions
-      ) => false | void;
+      ) => false | undefined;
       selectAll: () => boolean;
       set: (options: SetColumnsOptions) => void;
       toggle: (options?: ToggleColumnGroupOptions) => void;
@@ -36,25 +45,53 @@ export type ColumnConfig = PluginConfig<
   }
 >;
 
-export const BaseColumnItemPlugin = createBasePlugin<ColumnConfig>({
+const columnLayoutPolicy = definePropertyPolicy<readonly number[]>({
+  id: 'plate.layout.column-layout',
+  validate: (value): value is readonly number[] =>
+    Array.isArray(value) &&
+    value.every((width) => typeof width === 'number' && Number.isFinite(width)),
+  version: 1,
+});
+
+export const BaseColumnItemPlugin = createBasePlugin({
   key: KEYS.column,
-  node: { isContainer: true, isElement: true, isStrictSiblings: true },
-  shortcuts: {
-    selectAll: { keys: 'mod+a' },
-  },
+  schema: ({ plugins }) => ({
+    element: {
+      content: plugins.blockContent({
+        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        min: 1,
+      }),
+      properties: { width: property.string() },
+      topLevel: false,
+    },
+  }),
 })
-  .extendExtension(withColumn)
   .extendTx(({ editor, type }) => (tx) => ({
-    insert: (options) => insertColumn(editor, tx, options),
-    insertGroup: (options) => insertColumnGroup(editor, tx, options),
-    moveMiddle: (entry, options) => moveMiddleColumn(tx, entry, options),
+    insert: insertColumn.bind(null, editor, tx),
+    insertGroup: insertColumnGroup.bind(null, editor, tx),
+    moveMiddle: moveMiddleColumn.bind(null, tx),
     selectAll: () => selectColumnAll(tx, type),
-    set: (options) => setColumns(editor, tx, options),
-    toggle: (options) => toggleColumnGroup(editor, tx, options),
-  }));
+    set: setColumns.bind(null, editor, tx),
+    toggle: toggleColumnGroup.bind(null, editor, tx),
+  }))
+  .extend({ shortcuts: { selectAll: { keys: 'mod+a' } } })
+  .extendExtension(withColumn);
 
 export const BaseColumnPlugin = createBasePlugin({
   key: KEYS.columnGroup,
-  node: { isContainer: true, isElement: true },
+  schema: ({ plugins }) => {
+    const columnType = plugins.elementType(BaseColumnItemPlugin);
+
+    return {
+      element: {
+        content: schema.content.type(columnType, {
+          default: { type: columnType },
+          min: 2,
+        }),
+        properties: { layout: property.json({ policy: columnLayoutPolicy }) },
+      },
+    };
+  },
+  type: NODES.columnGroup,
   plugins: [BaseColumnItemPlugin],
 });

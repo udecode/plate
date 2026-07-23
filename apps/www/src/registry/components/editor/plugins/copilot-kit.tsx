@@ -4,7 +4,7 @@ import type { Element } from '@platejs/plite';
 
 import { faker } from '@faker-js/faker';
 import { CopilotPlugin } from '@platejs/ai/react';
-import { serializeMd, stripMarkdown } from '@platejs/markdown';
+import { stripMarkdown } from '@platejs/markdown';
 
 import { GhostText } from '@/registry/ui/ghost-text';
 
@@ -50,7 +50,7 @@ export const CopilotKit = [
 
         if (!contextEntry) return '';
 
-        const prompt = serializeMd(editor, {
+        const prompt = editor.api.markdown.serialize({
           value: [contextEntry[0] as Element],
         });
 

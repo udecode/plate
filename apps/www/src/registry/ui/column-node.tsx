@@ -15,7 +15,7 @@ import { GripHorizontal } from 'lucide-react';
 import { PathApi } from 'platejs';
 import {
   PlateElement,
-  useEditorRef,
+  useEditor,
   useEditorSelector,
   useElement,
   useFocusedLast,
@@ -153,14 +153,13 @@ export function ColumnGroupElement(
 }
 
 function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const element = useElement<TColumnGroupElement>();
   const { props: buttonProps } = useRemoveNodeButton({ element });
   const selected = useElementSelected();
-  const isCollapsed = useEditorSelector(
-    (editor) => editor.read.selection.isCollapsed(),
-    []
+  const isCollapsed = useEditorSelector((editor) =>
+    editor.read.selection.isCollapsed()
   );
   const isFocusedLast = useFocusedLast();
 

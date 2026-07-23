@@ -1,6 +1,13 @@
 # Plate plugin extension composition and observability
 
-Status: ready for acceptance
+Status: superseded
+
+Superseded by the behavior-promotion doctrine in
+`docs/research/systems/editor-behavior-architecture.md` and
+`.agents/rules/best-api.mdc`. Do not execute this plan: its `withBehaviors`,
+profile runtime, serialization, fingerprint, receipt, and live-switching target
+was rejected in favor of ordinary plugin composition for proven substitutable
+capabilities.
 
 Objective:
 Close the Plate per-behavior composition and observability decision. The plan
@@ -22,13 +29,16 @@ Primary template:
 docs/plans/templates/plate-plan.md
 
 Applied packs:
+
 - none
 
 Mode:
+
 - `standard`, with a TARGET-specific exhaustive Wordgard comparison because
   the user named that checkout as architecture evidence.
 
 Completion threshold:
+
 - Binary readiness: live claims are sourced, each responsibility has one
   owner, every decision is resolved, every public break has adoption and proof,
   execution slices are concrete, conditional gates are resolved, and
@@ -63,6 +73,7 @@ Completion threshold:
   `omit`/`replace`/`enable`/`profile` entrypoints.
 
 Verification surface:
+
 - Live Table plugin contract, seven editor-extension fragments, React handlers,
   callers, tests, docs, and public barrels.
 - Plate Core plugin builders, resolution, publication, plugin portal,
@@ -80,6 +91,7 @@ Verification surface:
   ```
 
 Constraints:
+
 - Planning only until the user explicitly accepts this exact plan and invokes
   `plate-plan` against it.
 - No public compatibility aliases, runtime shims, or restored `withTable*`
@@ -110,6 +122,7 @@ Constraints:
   behaviors.
 
 Boundaries:
+
 - TARGET: declarative behavior identity, profiles, static selection/replacement,
   ordering, inspection, logging, performance timing, diagnostics, and
   impact-bounded local runtime activation of independently meaningful behavior
@@ -132,6 +145,7 @@ Boundaries:
   tree.
 
 Output budget strategy:
+
 - Read named owners first and expand only by evidence.
 - Exclude generated registry JSON, `dist`, `node_modules`, build output, and
   unrelated Wordgard subsystems.
@@ -139,10 +153,12 @@ Output budget strategy:
   large files.
 
 Blocked condition:
+
 - None. All decision-owning local sources and the Wordgard checkout were
   available.
 
 Plate Plan state:
+
 - status: ready
 - phase: prove and hand off
 - next: user accepts, rejects, or narrows the final tiered façade
@@ -150,14 +166,15 @@ Plate Plan state:
 
 Start Gates:
 
-| Gate | Applies | Evidence |
-| --- | --- | --- |
-| Prompt requirements captured | yes | Table omission, old `withTable*` composability, debugging/logging/perf, runtime disablement, Wordgard, and candidate-doc comparison are explicit above |
-| Active goal and plan verified | yes | Active goal points to this exact artifact |
-| Current owners read | yes | Table, Core builder/resolution, Plite extension runtime/profiler, DebugPlugin, docs, Wordgard, VISION, and referenced plans were read |
-| Mode and execution boundary resolved | yes | Standard planning; implementation requires explicit acceptance |
+| Gate                                 | Applies | Evidence                                                                                                                                               |
+| ------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Prompt requirements captured         | yes     | Table omission, old `withTable*` composability, debugging/logging/perf, runtime disablement, Wordgard, and candidate-doc comparison are explicit above |
+| Active goal and plan verified        | yes     | Active goal points to this exact artifact                                                                                                              |
+| Current owners read                  | yes     | Table, Core builder/resolution, Plite extension runtime/profiler, DebugPlugin, docs, Wordgard, VISION, and referenced plans were read                  |
+| Mode and execution boundary resolved | yes     | Standard planning; implementation requires explicit acceptance                                                                                         |
 
 Work Checklist:
+
 - [x] Outcome, scope, non-goals, constraints, and owners are concrete.
 - [x] Current Table selective composition was audited.
 - [x] Current plugin/extension/resource identity, order, diagnostics, timing,
@@ -194,25 +211,26 @@ Work Checklist:
 
 Completion Gates:
 
-| Gate | Applies | Required action | Evidence |
-| --- | --- | --- | --- |
-| Binary readiness | yes | Resolve every readiness condition | Decision brief, ledger, slices, and proof matrix below |
-| Fresh source evidence | yes | Recheck decision-changing current claims | Table/Core/Plite/Wordgard source refreshed on 2026-07-23 |
-| Conditional risk and adoption | yes | Resolve runtime safety, collaboration, docs, browser, release, and perf | High-risk and adoption sections below |
-| Verification recorded | yes | Record planning proof and exact execution gates | Verification evidence below |
-| Handoff prepared | yes | Name ownership, changes, proof, risks, and execution order | Final handoff section below |
-| Autoreview | no for planning | Run after implementation stabilizes | Execution slice 10 requires `autoreview`; no product source changed in this planning turn |
-| Goal plan complete | yes | Run `check-complete` against this plan | Recorded in Verification evidence |
+| Gate                          | Applies         | Required action                                                         | Evidence                                                                                  |
+| ----------------------------- | --------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Binary readiness              | yes             | Resolve every readiness condition                                       | Decision brief, ledger, slices, and proof matrix below                                    |
+| Fresh source evidence         | yes             | Recheck decision-changing current claims                                | Table/Core/Plite/Wordgard source refreshed on 2026-07-23                                  |
+| Conditional risk and adoption | yes             | Resolve runtime safety, collaboration, docs, browser, release, and perf | High-risk and adoption sections below                                                     |
+| Verification recorded         | yes             | Record planning proof and exact execution gates                         | Verification evidence below                                                               |
+| Handoff prepared              | yes             | Name ownership, changes, proof, risks, and execution order              | Final handoff section below                                                               |
+| Autoreview                    | no for planning | Run after implementation stabilizes                                     | Execution slice 10 requires `autoreview`; no product source changed in this planning turn |
+| Goal plan complete            | yes             | Run `check-complete` against this plan                                  | Recorded in Verification evidence                                                         |
 
 Phase / pass table:
 
-| Phase | Status | Evidence | Next |
-| --- | --- | --- | --- |
-| Ground | complete | Live owners, doctrine, historical composition, and Wordgard reconciled | Decide |
-| Decide | complete | Five red-teams selected the behavior/profile model; the final Slate/Plate façade checkpoint kept plugin/kit composition primary and made profiles an earned advanced surface | Prove |
-| Prove and hand off | complete | Revised API, owners, adoption, risks, proof, and execution slices are explicit | User review |
+| Phase              | Status   | Evidence                                                                                                                                                                     | Next        |
+| ------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Ground             | complete | Live owners, doctrine, historical composition, and Wordgard reconciled                                                                                                       | Decide      |
+| Decide             | complete | Five red-teams selected the behavior/profile model; the final Slate/Plate façade checkpoint kept plugin/kit composition primary and made profiles an earned advanced surface | Prove       |
+| Prove and hand off | complete | Revised API, owners, adoption, risks, proof, and execution slices are explicit                                                                                               | User review |
 
 Decision brief:
+
 - outcome: Replace the earlier extension-surgery API. Colocation was correct;
   erasing independently meaningful identities was not, but exposing raw Plite
   extensions as Plate's product contract is also too narrow.
@@ -240,14 +258,14 @@ Decision brief:
 
   ```ts
   export const BaseTablePlugin = createBasePlugin({
-    key: 'table',
+    key: "table",
     // schema, options, API, and tx stay with the plugin owner
   }).extendBehaviors({
     paste: {
-      activation: 'local',
-      exposure: 'public',
-      presence: 'optional',
-      replacement: 'compatible',
+      activation: "local",
+      exposure: "public",
+      presence: "optional",
+      replacement: "compatible",
       extension: ({ editor }) => ({
         commands: ({ handle }) => [
           // inferred editor, command input, state, and transaction types
@@ -255,10 +273,10 @@ Decision brief:
       }),
     },
     normalize: {
-      activation: 'static',
-      exposure: 'internal',
-      presence: 'required',
-      replacement: 'closed',
+      activation: "static",
+      exposure: "internal",
+      presence: "required",
+      replacement: "closed",
       extension: ({ editor }) => ({
         corrections: [
           // document law: inspectable, but not casually selectable
@@ -274,10 +292,10 @@ Decision brief:
   ```ts
   export const TablePlugin = toPlatePlugin(BaseTablePlugin).extendBehaviors({
     navigation: {
-      activation: 'local',
-      exposure: 'public',
-      presence: 'optional',
-      replacement: 'closed',
+      activation: "local",
+      exposure: "public",
+      presence: "optional",
+      replacement: "closed",
       handlers: ({ editor }) => ({
         onKeyDown: ({ event }) => {
           // thin DOM transport and colocated navigation policy
@@ -319,7 +337,7 @@ Decision brief:
 
   ```ts
   const AppDeleteBehavior = TablePlugin.behaviors.delete.variant({
-    id: 'app/table-delete',
+    id: "app/table-delete",
     extension: ({ editor }) => ({
       commands: ({ handle }) => [
         // complete, contract-preserving replacement
@@ -333,7 +351,7 @@ Decision brief:
       TablePlugin.behaviors.navigation,
       LinkPlugin.behaviors.autoLink,
     ],
-    id: 'app/lean-editing',
+    id: "app/lean-editing",
     use: [AppDeleteBehavior],
   });
 
@@ -361,7 +379,7 @@ Decision brief:
 
   const profile = editor.api.debug.profile({
     include: [TablePlugin, TablePlugin.behaviors.paste],
-    resources: ['command', 'query', 'correction', 'handler'],
+    resources: ["command", "query", "correction", "handler"],
     traces: { maxTraces: 100, sampleRate: 0.01, slowMs: 8 },
   });
 
@@ -373,6 +391,7 @@ Decision brief:
   ```
 
 - API semantics:
+
   - `extendBehaviors(record)` is the batch authoring API. Literal keys are
     retained in a manifest generic; metadata is static and factories for
     omitted behaviors are never evaluated. Singular `extendBehavior` is
@@ -395,7 +414,7 @@ Decision brief:
 
     ```ts
     type BehaviorPolicyDecision = {
-      activation?: 'enabled' | 'disabled';
+      activation?: "enabled" | "disabled";
       behavior: { behaviorKey: string; pluginKey: string };
       implementation?: null | {
         fingerprint: string;
@@ -411,7 +430,7 @@ Decision brief:
       }[];
       decisions: BehaviorPolicyDecision[];
       exact?: {
-        axis: 'activation' | 'implementation';
+        axis: "activation" | "implementation";
         behaviorKeys: string[];
         pluginKey: string;
       }[];
@@ -434,6 +453,7 @@ Decision brief:
     version/fingerprint metadata and receive an editor-local revision; export
     rejects until every referenced profile and variant has exact portable
     metadata.
+
   - `withBehaviors(record)` is typed plugin-local sugar over the same IR:
     absent keys inherit, `false` emits `implementation: null`, `true` restores
     the declared implementation after an earlier layer, an inline definition
@@ -507,7 +527,7 @@ Decision brief:
     Within one `extendBehaviors` record, dependency metadata receives the
     record's fully inferred handle map, so forward references are cycle-free to
     author: `requires: ({ behaviors }) => [behaviors.fragment,
-    OtherPlugin.behaviors.x]`. Typos and cycles fail before factories run.
+OtherPlugin.behaviors.x]`. Typos and cycles fail before factories run.
   - `activation: 'static' | 'local'` describes allowed transition scope; it
     does not claim semantic safety. `local` uses a positive resource whitelist:
     interactive command/clipboard/query registrations and dispatch-gated host
@@ -574,6 +594,7 @@ Decision brief:
   - Every JSON-safe policy, graph snapshot, receipt, diagnostic export, and
     profiling export carries its own `formatVersion`, independent of profile,
     catalog, implementation, and graph revisions.
+
 - strongest rejected alternative: Canonical
   `.omitExtension`/`.replaceExtension`/`setEnabled` methods. They fix one
   plugin but do not represent profiles, batch atomicity, React ownership,
@@ -592,65 +613,65 @@ Decision brief:
 
 Decision ledger:
 
-| Surface | Current | Target | Owner | Adoption | Proof | Risk | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| File topology | `BaseTablePlugin.ts` owns the coherent implementation | Keep one owner file; inline one-use logic | Table | No source split | package lint/typecheck | Large file navigation | keep |
-| Whole-plugin composition | `enabled`, `override.enabled`, dependencies, priority at `PluginConfig.ts:204-258,346-351` | Keep for whole features | Plate Core | None | existing resolve tests | None | keep |
-| Child plugins | Row/cell/header are flattened full plugin owners at `resolvePlugins.ts:1003-1098` | Keep only for independent schema/product owners | Plate Core/Table | None | existing plugin graph tests | Microplugin abuse | keep narrowly |
-| Table behavior identity | Seven anonymous Plite calls and three React handlers have no shared public identity | Name coherent Plate behaviors in the same owner file; lower them to outer Plite slots and tag React resources | Table + Plate Core | Behavior manifest and focused tests | catalog/runtime snapshots and behavior tests | Naming implementation atoms instead of product behaviors | adopt |
-| Authoring API | Repeated keyed `.extendExtension` accepts a literal but discards it from the returned type and copies the accumulated array | One `.extendBehaviors(record)` retains every key, contract, dependency, and policy before evaluating factories | Plate Core | New manifest generic/compiler; keep singular form only as justified sugar | compile-only inference/scale fixtures | Type-instantiation growth | adopt batch record |
-| Static selection | `.configure()` cannot remove one fragment | One sparse `.withBehaviors({ paste: false })` authoring map before terminal consumer configuration | Plate Core | Builder/compiler/docs/Table example | valid/unknown/required/internal key and post-config terminal tests | Policy layering ambiguity | adopt with explicit layer provenance |
-| Static replacement | Raw same-name Plite replacement conflates logical slot and implementation | `withBehaviors` accepts one-use inferred inline definitions; `handle.variant(...)` names only reused or portable replacements | Plate Core | Behavior contract type, editor-local catalog, outer slot | inline inference plus replacement/provenance/round-trip/type tests | Anonymous code is not reproducible | inline local by default; name on reuse |
-| Behavior handle | No typed plugin-facing semantic handle | `plugin.behaviors[key]` identifies `(pluginKey, localKey)` and compatible public handles expose one pure `.variant(...)` constructor | Plate Core | Manifest generics, frozen typed handle, barrels | literal-key, permission-sensitive method, and rename fixtures | Leaking executable descriptors or method soup | adopt one constructor only |
-| Identity/provenance | Extension name currently conflates semantic address and concrete code | Separate behavior/slot identity, implementation identity, installed revision, and resource identity; version/build/layer are provenance | Plate Core + Plite | Catalog and compiled record metadata | replacement metrics never aggregate across implementations | Version used as identity | adopt four-level model |
-| Composition permission | Named fragments are implicitly addressable but not classified | Independent exposure, presence, activation, and replacement axes; tracing grants no operation | Feature owner + Core | Manifest metadata and public-handle filtering | forbidden selection/activation/replacement tests | Permanent exposure of internals | adopt |
-| Profile | No cross-plugin behavior policy | `defineBehaviorProfile({ enable, disable, use, ...advanced })` lowers typed handles to the normalized JSON-safe decision IR | Plate Core | Profile/compiler/serialization/fingerprint | ergonomic-input/layering/exact/round-trip/init/live tests | Executable closures in JSON | named variants only at portability boundary |
-| Presets/kits | App/plugin kits are arrays of configured descriptors | Ordinary static policy uses `Plugin.withBehaviors(...)` before an optional final `configure(...)` inside those arrays; named profiles are only for reuse, serialization, initialization modes, or live switching | Plate/apps | No second preset runtime | kit/layer/conflict/provenance and terminal-config tests | Wrapper abstraction with no owner | keep existing kit shape |
-| Catalog state | Tombstones disappear from Plite's resolved registry | Join available, selected, installed, active, omitted, replaced, blocked, and degraded states | Plate Core + Plite | Persistent catalog plus runtime snapshot | explain snapshots across transitions | Re-evaluating factories on enable | restore selected materialization |
-| Runtime change | Plite can stage slot replacements; Plate has no behavior catalog or batch policy | Revision-checked `editor.update.behaviors.apply(policy)` returning a receipt | Plate Core + Plite | Catalog-backed activation records and batch compiler | atomic activation batch, stale revision, restore/receipt tests | Schema/state/collab divergence | selected local behaviors only |
-| Plugin options | Ad hoc flags such as `disableMerge`; `setOptions` only mutates the option store | Keep options for values/policies, never graph membership | Feature owners | Remove no existing legitimate option | option mutation tests | Option soup | reject as composition |
-| Explicit API/update methods | Table has 43 API members and 17 update methods | Keep stable; profiles select ambient behavior, not capability/type shape | Table/Core | None | typecheck/current behavior tests | Disabled automatic policy can still be invoked explicitly | accepted and documented |
-| Logical slot and implementation | Current keyed normalization lets an explicit child name override `plugin:key`; slot owner is not an ordering contract | Authoritative outer slot owns the selected implementation subtree; logical ID survives replacement | Plate Core + Plite | Slot expansion/order/compiler changes | dependency/replacement/order tests | Child name bypasses handle | adopt |
-| Dependencies and capabilities | Plite uses exact string names; slot-parent ownership is not ordered | Typed behavior handles for hard deps/conflicts/order; typed capabilities for substitution | Plate Core + Plite | Manifest resolution and Plite group ordering | closure/cycle/ambiguity/explicit-omit tests | Hidden auto-install/cascade | fail with full chain |
-| Ordering | Registry exposes declaration `order`; execution resolves dependency/priority order separately | Publish declaration and effective order for logical slots, implementations, and resources | Plite | Fix registry reporting | execution order equals inspection | Diagnostics can lie | adopt/fix |
-| Command attribution | Entries keep descriptor/kind/run only at `command-registry.ts:38-95`; timings use command id/phase | Retain behavior, logical slot, implementation ID, keyed resource, epoch, and nesting | Plite | Registry/compiler/profiler | duplicate registrations and replacements stay distinguishable | Hot-path overhead | adopt |
-| Query attribution | Raw functions at `query-middleware.ts:141-205` | Owner/resource/phase/outcome timing | Plite | Registry/compiler/query runtime | ordered query trace tests | Middleware allocation | adopt |
-| Correction attribution | Index-derived correction id and aggregate timing | Require stable declared resource IDs and law fingerprint metadata | Plite | Compiler/correction loop | correction trace and loop diagnostic tests | High event volume | bounded aggregation |
-| Listener/tx/lifecycle attribution | Raw sets or aggregate timings | Attribute every executable resource and lifecycle/configuration phase | Plite | Registry/public-state/lifecycle | listener/tx/lifecycle/config trace tests | Profiler affects execution | buffered and isolated |
-| `plate:runtime` | All Plate API/tx contributions collapse to one extension at `resolvePlugins.ts:756-787` | Preserve plugin/behavior provenance without splitting stable capabilities merely for timing | Plate Core | Runtime publication bridge | plugin/behavior attribution tests | Public API churn | internal metadata only |
-| Core discovery | Public registry omits priority, revision, provenance, health, resources, disabled entries, and effective order | Immutable JSON-safe catalog/live-graph snapshot with explain/preflight | Plite + Plate Core | Join Plate catalog with Plite registry | omitted/replaced/degraded/explain snapshots | Debug-only truth | core API, not DebugPlugin |
-| Profiling | Global synchronous sink and unbounded React collector | Per-editor bounded aggregate-first session; optional sampled causal traces | Plite + Plate Core | Diagnostics hub and typed Plate bridge | limits, drop counts, batching, error isolation | Cardinality/data leakage | opt-in metadata-only |
-| React Table handlers | Copy/cut/onKeyDown share one config at `TablePlugin.tsx:19-230`; onKeyDown bundles navigation | Behavior ownership spans Plite and React; keep DOM transport thin | Table + Plate React | Tag/refactor inline handlers without helper files | React tests + Browser | DOM timing noise | adopt bounded split |
-| Cross-runtime activation | `pipeHandler` snapshots plugin handlers and invokes them without extension state | One Plite-published behavior activation record gates Plite and host resources at a captured root-dispatch revision | Plite + Plate Core React | Activation lookup/token and host dispatcher bridge | atomic enable/disable and effective-order parity across Plite/React | Split publication truth | adopt hard law |
-| Resource taxonomy | Plate ambient resources span handlers, shortcuts, input rules, decorate/render/hooks, injectors, parsers, and more | Extensible resource-kind registry; every new kind is static until its ownership/gating/ordering law is classified | Plate Core/React + Plite bridge | Table implements only proven kinds; others remain explicit capability/static | taxonomy exhaustiveness and forbidden-local tests | Table-only wrapper | adopt framework law |
-| Runtime eligibility | Plite accepts arbitrary slot replacement and author `safe` cannot prove semantics | `static` default; positive local-resource whitelist; shared/document law rejected until coordinated protocol exists | Plate Core + Plite | Compiler-derived impact plus author intent | negative footprint/collab/forged-handle tests | False safety claims | adopt exact classes |
-| Lifecycle failure | Plite publishes before activation and isolates lifecycle errors | Activation/ready degrade the installed revision; cleanup degrades the transition/old tombstone; pre-publication failures rollback | Plite | Health registry, transition records, structured diagnostics | current contract plus attribution assertions | False rollback or blame | preserve actual law |
-| Collaboration law | Yjs guards schema identity but peers with different corrections can apply different law | Fingerprint schema/corrections/versioned shared protocols; local behavior excluded | Plite + Yjs | Compatibility adapter only when law becomes configurable | mismatch and synchronized-transition tests | Function hashing is dishonest | declared semantic ID/version |
-| Lazy loading | Extension factories and lifecycle are synchronous | Keep handles/catalog metadata eager; host imports a prepared named variant before preflight and synchronous atomic publication | Plate/host | No v1 async dispatch/lifecycle | omitted factory is not evaluated/materialized/registered; prepared module install later | Hot-path suspension | future-compatible, defer loader API |
-| Wordgard recursive arrays | Anonymous arrays/object identity and five precedence bands at `state.ts:700-770` | Named graph with dependency order | none | None | comparison only | Opaque identity | surpassed/reject |
-| Wordgard compartments | Explicit wrapped subtree replacement at `state.ts:773-802` | Named atomic Plite slots | none | None | existing Plite reconfigure tests | User must pre-wrap | surpassed |
-| Wordgard feature bundles | Full bundle plus smaller public pieces across Table/schema packages | Full default plugin plus constrained typed behavior catalog | Table/feature packages | Table first; later package migration only by evidence | default and partial-preset tests | Treating every callback as public | adopt principle |
-| Wordgard Table | `tables()` always installs theme/selection/correction/paste/drop/menu and exposes only some pieces at `src/table/table.ts:45-96` | Faithfully composable default without implementation exports | Table | Named manifest | parity of default + omission tests | Partial preset silently invalid | surpass |
-| Wordgard observability | Compile-time log flags, exception sink, timestamps; no profiler/registry | Native graph snapshot, health, bounded profiler | Plite/Plate | No donor code | local proof | Reinventing devtools | local design required |
-| Tiptap candidate | Product/extension ergonomics benchmark at `editor-architecture-candidates.md:106-118` | Match discoverable packaging, not engine model | Plate | Docs/examples | API review | Product surface bloat | adopt product pressure |
-| Portable Text candidate | Event/guard/action vocabulary and browser specs at `:138-151` | Keep command vocabulary; adopt scenario proof, not XState/value model | Plite/Plate | Browser cases | focused Browser tests | Parallel behavior runtime | reject runtime copy |
-| urql candidate | Optional composable pipeline inspiration at `:227-238` | Keep as future Plate systems pressure; no exchange engine in Plite | none here | None | comparison only | Mega middleware bucket | defer |
-| VS Code/LSP candidate | Separates manifest/dependency/capability/registration/status identity | Adopt identity and structured diagnostic distinctions, not process/plugin-host complexity | Plate/Plite | Local manifest/registry only | architecture and snapshot review | Overbuilding host infrastructure | adopt distinction |
-| Long-horizon behavior profiles | Doctrine says capabilities expose and profiles decide | Establish the minimal serializable profile algebra over Plate behaviors now | Plate Core | Table proving profile; no global event engine | profile composition and fingerprint tests | Premature mega-framework | adopt narrow catalog/profile layer |
+| Surface                           | Current                                                                                                                          | Target                                                                                                                                                                                                           | Owner                           | Adoption                                                                     | Proof                                                                                   | Risk                                                      | Verdict                                     |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------- |
+| File topology                     | `BaseTablePlugin.ts` owns the coherent implementation                                                                            | Keep one owner file; inline one-use logic                                                                                                                                                                        | Table                           | No source split                                                              | package lint/typecheck                                                                  | Large file navigation                                     | keep                                        |
+| Whole-plugin composition          | `enabled`, `override.enabled`, dependencies, priority at `PluginConfig.ts:204-258,346-351`                                       | Keep for whole features                                                                                                                                                                                          | Plate Core                      | None                                                                         | existing resolve tests                                                                  | None                                                      | keep                                        |
+| Child plugins                     | Row/cell/header are flattened full plugin owners at `resolvePlugins.ts:1003-1098`                                                | Keep only for independent schema/product owners                                                                                                                                                                  | Plate Core/Table                | None                                                                         | existing plugin graph tests                                                             | Microplugin abuse                                         | keep narrowly                               |
+| Table behavior identity           | Seven anonymous Plite calls and three React handlers have no shared public identity                                              | Name coherent Plate behaviors in the same owner file; lower them to outer Plite slots and tag React resources                                                                                                    | Table + Plate Core              | Behavior manifest and focused tests                                          | catalog/runtime snapshots and behavior tests                                            | Naming implementation atoms instead of product behaviors  | adopt                                       |
+| Authoring API                     | Repeated keyed `.extendExtension` accepts a literal but discards it from the returned type and copies the accumulated array      | One `.extendBehaviors(record)` retains every key, contract, dependency, and policy before evaluating factories                                                                                                   | Plate Core                      | New manifest generic/compiler; keep singular form only as justified sugar    | compile-only inference/scale fixtures                                                   | Type-instantiation growth                                 | adopt batch record                          |
+| Static selection                  | `.configure()` cannot remove one fragment                                                                                        | One sparse `.withBehaviors({ paste: false })` authoring map before terminal consumer configuration                                                                                                               | Plate Core                      | Builder/compiler/docs/Table example                                          | valid/unknown/required/internal key and post-config terminal tests                      | Policy layering ambiguity                                 | adopt with explicit layer provenance        |
+| Static replacement                | Raw same-name Plite replacement conflates logical slot and implementation                                                        | `withBehaviors` accepts one-use inferred inline definitions; `handle.variant(...)` names only reused or portable replacements                                                                                    | Plate Core                      | Behavior contract type, editor-local catalog, outer slot                     | inline inference plus replacement/provenance/round-trip/type tests                      | Anonymous code is not reproducible                        | inline local by default; name on reuse      |
+| Behavior handle                   | No typed plugin-facing semantic handle                                                                                           | `plugin.behaviors[key]` identifies `(pluginKey, localKey)` and compatible public handles expose one pure `.variant(...)` constructor                                                                             | Plate Core                      | Manifest generics, frozen typed handle, barrels                              | literal-key, permission-sensitive method, and rename fixtures                           | Leaking executable descriptors or method soup             | adopt one constructor only                  |
+| Identity/provenance               | Extension name currently conflates semantic address and concrete code                                                            | Separate behavior/slot identity, implementation identity, installed revision, and resource identity; version/build/layer are provenance                                                                          | Plate Core + Plite              | Catalog and compiled record metadata                                         | replacement metrics never aggregate across implementations                              | Version used as identity                                  | adopt four-level model                      |
+| Composition permission            | Named fragments are implicitly addressable but not classified                                                                    | Independent exposure, presence, activation, and replacement axes; tracing grants no operation                                                                                                                    | Feature owner + Core            | Manifest metadata and public-handle filtering                                | forbidden selection/activation/replacement tests                                        | Permanent exposure of internals                           | adopt                                       |
+| Profile                           | No cross-plugin behavior policy                                                                                                  | `defineBehaviorProfile({ enable, disable, use, ...advanced })` lowers typed handles to the normalized JSON-safe decision IR                                                                                      | Plate Core                      | Profile/compiler/serialization/fingerprint                                   | ergonomic-input/layering/exact/round-trip/init/live tests                               | Executable closures in JSON                               | named variants only at portability boundary |
+| Presets/kits                      | App/plugin kits are arrays of configured descriptors                                                                             | Ordinary static policy uses `Plugin.withBehaviors(...)` before an optional final `configure(...)` inside those arrays; named profiles are only for reuse, serialization, initialization modes, or live switching | Plate/apps                      | No second preset runtime                                                     | kit/layer/conflict/provenance and terminal-config tests                                 | Wrapper abstraction with no owner                         | keep existing kit shape                     |
+| Catalog state                     | Tombstones disappear from Plite's resolved registry                                                                              | Join available, selected, installed, active, omitted, replaced, blocked, and degraded states                                                                                                                     | Plate Core + Plite              | Persistent catalog plus runtime snapshot                                     | explain snapshots across transitions                                                    | Re-evaluating factories on enable                         | restore selected materialization            |
+| Runtime change                    | Plite can stage slot replacements; Plate has no behavior catalog or batch policy                                                 | Revision-checked `editor.update.behaviors.apply(policy)` returning a receipt                                                                                                                                     | Plate Core + Plite              | Catalog-backed activation records and batch compiler                         | atomic activation batch, stale revision, restore/receipt tests                          | Schema/state/collab divergence                            | selected local behaviors only               |
+| Plugin options                    | Ad hoc flags such as `disableMerge`; `setOptions` only mutates the option store                                                  | Keep options for values/policies, never graph membership                                                                                                                                                         | Feature owners                  | Remove no existing legitimate option                                         | option mutation tests                                                                   | Option soup                                               | reject as composition                       |
+| Explicit API/update methods       | Table has 43 API members and 17 update methods                                                                                   | Keep stable; profiles select ambient behavior, not capability/type shape                                                                                                                                         | Table/Core                      | None                                                                         | typecheck/current behavior tests                                                        | Disabled automatic policy can still be invoked explicitly | accepted and documented                     |
+| Logical slot and implementation   | Current keyed normalization lets an explicit child name override `plugin:key`; slot owner is not an ordering contract            | Authoritative outer slot owns the selected implementation subtree; logical ID survives replacement                                                                                                               | Plate Core + Plite              | Slot expansion/order/compiler changes                                        | dependency/replacement/order tests                                                      | Child name bypasses handle                                | adopt                                       |
+| Dependencies and capabilities     | Plite uses exact string names; slot-parent ownership is not ordered                                                              | Typed behavior handles for hard deps/conflicts/order; typed capabilities for substitution                                                                                                                        | Plate Core + Plite              | Manifest resolution and Plite group ordering                                 | closure/cycle/ambiguity/explicit-omit tests                                             | Hidden auto-install/cascade                               | fail with full chain                        |
+| Ordering                          | Registry exposes declaration `order`; execution resolves dependency/priority order separately                                    | Publish declaration and effective order for logical slots, implementations, and resources                                                                                                                        | Plite                           | Fix registry reporting                                                       | execution order equals inspection                                                       | Diagnostics can lie                                       | adopt/fix                                   |
+| Command attribution               | Entries keep descriptor/kind/run only at `command-registry.ts:38-95`; timings use command id/phase                               | Retain behavior, logical slot, implementation ID, keyed resource, epoch, and nesting                                                                                                                             | Plite                           | Registry/compiler/profiler                                                   | duplicate registrations and replacements stay distinguishable                           | Hot-path overhead                                         | adopt                                       |
+| Query attribution                 | Raw functions at `query-middleware.ts:141-205`                                                                                   | Owner/resource/phase/outcome timing                                                                                                                                                                              | Plite                           | Registry/compiler/query runtime                                              | ordered query trace tests                                                               | Middleware allocation                                     | adopt                                       |
+| Correction attribution            | Index-derived correction id and aggregate timing                                                                                 | Require stable declared resource IDs and law fingerprint metadata                                                                                                                                                | Plite                           | Compiler/correction loop                                                     | correction trace and loop diagnostic tests                                              | High event volume                                         | bounded aggregation                         |
+| Listener/tx/lifecycle attribution | Raw sets or aggregate timings                                                                                                    | Attribute every executable resource and lifecycle/configuration phase                                                                                                                                            | Plite                           | Registry/public-state/lifecycle                                              | listener/tx/lifecycle/config trace tests                                                | Profiler affects execution                                | buffered and isolated                       |
+| `plate:runtime`                   | All Plate API/tx contributions collapse to one extension at `resolvePlugins.ts:756-787`                                          | Preserve plugin/behavior provenance without splitting stable capabilities merely for timing                                                                                                                      | Plate Core                      | Runtime publication bridge                                                   | plugin/behavior attribution tests                                                       | Public API churn                                          | internal metadata only                      |
+| Core discovery                    | Public registry omits priority, revision, provenance, health, resources, disabled entries, and effective order                   | Immutable JSON-safe catalog/live-graph snapshot with explain/preflight                                                                                                                                           | Plite + Plate Core              | Join Plate catalog with Plite registry                                       | omitted/replaced/degraded/explain snapshots                                             | Debug-only truth                                          | core API, not DebugPlugin                   |
+| Profiling                         | Global synchronous sink and unbounded React collector                                                                            | Per-editor bounded aggregate-first session; optional sampled causal traces                                                                                                                                       | Plite + Plate Core              | Diagnostics hub and typed Plate bridge                                       | limits, drop counts, batching, error isolation                                          | Cardinality/data leakage                                  | opt-in metadata-only                        |
+| React Table handlers              | Copy/cut/onKeyDown share one config at `TablePlugin.tsx:19-230`; onKeyDown bundles navigation                                    | Behavior ownership spans Plite and React; keep DOM transport thin                                                                                                                                                | Table + Plate React             | Tag/refactor inline handlers without helper files                            | React tests + Browser                                                                   | DOM timing noise                                          | adopt bounded split                         |
+| Cross-runtime activation          | `pipeHandler` snapshots plugin handlers and invokes them without extension state                                                 | One Plite-published behavior activation record gates Plite and host resources at a captured root-dispatch revision                                                                                               | Plite + Plate Core React        | Activation lookup/token and host dispatcher bridge                           | atomic enable/disable and effective-order parity across Plite/React                     | Split publication truth                                   | adopt hard law                              |
+| Resource taxonomy                 | Plate ambient resources span handlers, shortcuts, input rules, decorate/render/hooks, injectors, parsers, and more               | Extensible resource-kind registry; every new kind is static until its ownership/gating/ordering law is classified                                                                                                | Plate Core/React + Plite bridge | Table implements only proven kinds; others remain explicit capability/static | taxonomy exhaustiveness and forbidden-local tests                                       | Table-only wrapper                                        | adopt framework law                         |
+| Runtime eligibility               | Plite accepts arbitrary slot replacement and author `safe` cannot prove semantics                                                | `static` default; positive local-resource whitelist; shared/document law rejected until coordinated protocol exists                                                                                              | Plate Core + Plite              | Compiler-derived impact plus author intent                                   | negative footprint/collab/forged-handle tests                                           | False safety claims                                       | adopt exact classes                         |
+| Lifecycle failure                 | Plite publishes before activation and isolates lifecycle errors                                                                  | Activation/ready degrade the installed revision; cleanup degrades the transition/old tombstone; pre-publication failures rollback                                                                                | Plite                           | Health registry, transition records, structured diagnostics                  | current contract plus attribution assertions                                            | False rollback or blame                                   | preserve actual law                         |
+| Collaboration law                 | Yjs guards schema identity but peers with different corrections can apply different law                                          | Fingerprint schema/corrections/versioned shared protocols; local behavior excluded                                                                                                                               | Plite + Yjs                     | Compatibility adapter only when law becomes configurable                     | mismatch and synchronized-transition tests                                              | Function hashing is dishonest                             | declared semantic ID/version                |
+| Lazy loading                      | Extension factories and lifecycle are synchronous                                                                                | Keep handles/catalog metadata eager; host imports a prepared named variant before preflight and synchronous atomic publication                                                                                   | Plate/host                      | No v1 async dispatch/lifecycle                                               | omitted factory is not evaluated/materialized/registered; prepared module install later | Hot-path suspension                                       | future-compatible, defer loader API         |
+| Wordgard recursive arrays         | Anonymous arrays/object identity and five precedence bands at `state.ts:700-770`                                                 | Named graph with dependency order                                                                                                                                                                                | none                            | None                                                                         | comparison only                                                                         | Opaque identity                                           | surpassed/reject                            |
+| Wordgard compartments             | Explicit wrapped subtree replacement at `state.ts:773-802`                                                                       | Named atomic Plite slots                                                                                                                                                                                         | none                            | None                                                                         | existing Plite reconfigure tests                                                        | User must pre-wrap                                        | surpassed                                   |
+| Wordgard feature bundles          | Full bundle plus smaller public pieces across Table/schema packages                                                              | Full default plugin plus constrained typed behavior catalog                                                                                                                                                      | Table/feature packages          | Table first; later package migration only by evidence                        | default and partial-preset tests                                                        | Treating every callback as public                         | adopt principle                             |
+| Wordgard Table                    | `tables()` always installs theme/selection/correction/paste/drop/menu and exposes only some pieces at `src/table/table.ts:45-96` | Faithfully composable default without implementation exports                                                                                                                                                     | Table                           | Named manifest                                                               | parity of default + omission tests                                                      | Partial preset silently invalid                           | surpass                                     |
+| Wordgard observability            | Compile-time log flags, exception sink, timestamps; no profiler/registry                                                         | Native graph snapshot, health, bounded profiler                                                                                                                                                                  | Plite/Plate                     | No donor code                                                                | local proof                                                                             | Reinventing devtools                                      | local design required                       |
+| Tiptap candidate                  | Product/extension ergonomics benchmark at `editor-architecture-candidates.md:106-118`                                            | Match discoverable packaging, not engine model                                                                                                                                                                   | Plate                           | Docs/examples                                                                | API review                                                                              | Product surface bloat                                     | adopt product pressure                      |
+| Portable Text candidate           | Event/guard/action vocabulary and browser specs at `:138-151`                                                                    | Keep command vocabulary; adopt scenario proof, not XState/value model                                                                                                                                            | Plite/Plate                     | Browser cases                                                                | focused Browser tests                                                                   | Parallel behavior runtime                                 | reject runtime copy                         |
+| urql candidate                    | Optional composable pipeline inspiration at `:227-238`                                                                           | Keep as future Plate systems pressure; no exchange engine in Plite                                                                                                                                               | none here                       | None                                                                         | comparison only                                                                         | Mega middleware bucket                                    | defer                                       |
+| VS Code/LSP candidate             | Separates manifest/dependency/capability/registration/status identity                                                            | Adopt identity and structured diagnostic distinctions, not process/plugin-host complexity                                                                                                                        | Plate/Plite                     | Local manifest/registry only                                                 | architecture and snapshot review                                                        | Overbuilding host infrastructure                          | adopt distinction                           |
+| Long-horizon behavior profiles    | Doctrine says capabilities expose and profiles decide                                                                            | Establish the minimal serializable profile algebra over Plate behaviors now                                                                                                                                      | Plate Core                      | Table proving profile; no global event engine                                | profile composition and fingerprint tests                                               | Premature mega-framework                                  | adopt narrow catalog/profile layer          |
 
 Table behavior manifest:
 
-| Key | Current source | Target role | Exposure | Presence | Activation | Replacement |
-| --- | --- | --- | --- | --- | --- | --- |
-| `selection` | `BaseTablePlugin.ts:4492-4548` | selection clamping plus cell-index cache invalidation | internal | required | static | closed until cache lifecycle is split |
-| `delete` | `:4549-4606` | deletion interception | public | optional | local candidate | compatible |
-| `fragment` | `:4607-4643` | fragment query adaptation | public | optional, pending paste dependency audit | local candidate | compatible |
-| `paste` | `:4644-4888` | replace-slice/table paste policy | public | optional | local candidate | compatible |
-| `insertText` | `:4889-4927` | expanded multi-cell typing policy | public | optional | local candidate | compatible |
-| `normalize` | `:4928-5011` | grid/sizing/index correction law | internal | required | static and collaboration-fingerprinted | closed |
-| `cellSelection` | `:5012-5177` | selection codec, commands, mark/setNodes interception, marks query | public | optional only with a supported transition | static in first packet | compatible |
-| `clipboard` | `TablePlugin.tsx:19-44` | browser copy/cut transport | public | optional | local after thin-transport proof | closed in first packet |
-| `navigation` | `TablePlugin.tsx:45-230` | keyboard navigation/select-all/tab policy | public | optional after coherent extraction | local after Browser proof | closed in first packet |
+| Key             | Current source                 | Target role                                                        | Exposure | Presence                                  | Activation                             | Replacement                           |
+| --------------- | ------------------------------ | ------------------------------------------------------------------ | -------- | ----------------------------------------- | -------------------------------------- | ------------------------------------- |
+| `selection`     | `BaseTablePlugin.ts:4492-4548` | selection clamping plus cell-index cache invalidation              | internal | required                                  | static                                 | closed until cache lifecycle is split |
+| `delete`        | `:4549-4606`                   | deletion interception                                              | public   | optional                                  | local candidate                        | compatible                            |
+| `fragment`      | `:4607-4643`                   | fragment query adaptation                                          | public   | optional, pending paste dependency audit  | local candidate                        | compatible                            |
+| `paste`         | `:4644-4888`                   | replace-slice/table paste policy                                   | public   | optional                                  | local candidate                        | compatible                            |
+| `insertText`    | `:4889-4927`                   | expanded multi-cell typing policy                                  | public   | optional                                  | local candidate                        | compatible                            |
+| `normalize`     | `:4928-5011`                   | grid/sizing/index correction law                                   | internal | required                                  | static and collaboration-fingerprinted | closed                                |
+| `cellSelection` | `:5012-5177`                   | selection codec, commands, mark/setNodes interception, marks query | public   | optional only with a supported transition | static in first packet                 | compatible                            |
+| `clipboard`     | `TablePlugin.tsx:19-44`        | browser copy/cut transport                                         | public   | optional                                  | local after thin-transport proof       | closed in first packet                |
+| `navigation`    | `TablePlugin.tsx:45-230`       | keyboard navigation/select-all/tab policy                          | public   | optional after coherent extraction        | local after Browser proof              | closed in first packet                |
 
 Naming these rows does not promise the power set. Table owns constraints and
 package-supported profiles. Exact dependency/contract audit may merge or hide
@@ -659,46 +680,47 @@ inspectable without becoming publicly selectable.
 
 Execution slices:
 
-| Slice | Owner | Scope | Entry | Exit | Proof |
-| --- | --- | --- | --- | --- | --- |
-| 1. Plite graph truth | Plite | Make outer logical slots authoritative for subtree order/deps; publish behavior activation tokens, declaration/effective order, parent ownership, revision, transition-aware health, implementation provenance, and stable resource IDs | Current slot expansion and extension registry | One immutable composition/publication graph that hosts can consult without guessing | focused registry/slot/order/reconfigure/lifecycle/receipt tests and typecheck |
-| 2. Host-agnostic diagnostics hub | Plite + plite-react | Preserve owner/resource identity across Plite execution/config phases; replace the global sink with a per-editor aggregate-first bounded hub; expose a generic external-span bridge; let plite-react emit only its own render spans | Current `profileCoreDuration` and render profiler | Disabled fast path is inert; core sessions accept bounded internal/external spans without Plate/React concepts | clock/allocation assertions, generator-resume timing, nested self/inclusive timing, batching/limits/drop/error tests |
-| 3. Plate behavior type/catalog model | Plate Core | Add a manifest generic separate from aggregate API/tx/state; batch `extendBehaviors`; independent exposure/presence/activation/replacement axes; frozen typed handles with one permission-sensitive variant constructor; forward-reference handle context; resource-kind taxonomy; pure named variants | Existing keyed `.extendExtension` literal is discarded | Literal catalog is inferred without type subtraction, global registries, or chained intersection growth | valid/invalid/forward-ref/typo/cycle/contract/repeated-compatible-plugin and 1,000-key compile fixtures |
-| 4. Plate policy compiler | Plate Core | Define one normalized decision IR; plugin-local `withBehaviors` as the ordinary static façade; ergonomic flattened serializable profiles; scoped exactness; editor-local variant catalog; nominal capability/bindings; advanced initialization input; preflight classification/diff; fingerprints; receipt-returning runtime apply | Immutable plugin descriptors plus Plite batch reconfiguration | Both plugin-local and named-profile inputs compile before factories/model; live policy applies only selected local activations in one publication | inline inference/kit/layer/exact/closure/capability/round-trip/init/recreation/stale-revision/receipt/restore/rollback tests |
-| 5. Plate host activation and ordering | Plate Core React | Tag selected handlers/shortcuts/input rules with behavior tokens; capture one activation revision per root event; gate before invoke; dispatch behavior resources in published effective order; assign legacy handlers deterministic synthetic owners; enforce idle-boundary live apply | Current `pipeHandler` snapshots plugin-list handlers | Plite and DOM paths observe one atomic behavior revision/order with no retained old graph or mutable React mirror | reentrant rejection/queued-next-boundary, legacy interleaving, effective-order parity, Browser |
-| 6. Plate discovery/debug AX | Plate Core + React | Join authored catalog and live Plite graph; expose inspect/explain/preflight separately from bounded profiling; emit behavior-tagged host spans through the generic bridge; add CAS debug-layer leases | Plite graph/hub plus host activation | One truthful answer for what/why/health/slow and temporary debug control across all Plate resources | JSON-safe snapshots, omitted/replaced/degraded/transition history, leases, filters, redaction, subscriber isolation |
-| 7. Table adoption | Table | Declare only coherent public behaviors inline, keep required law/capabilities stable, preserve default full bundle, refactor React transport inline, and publish supported profiles/constraints | Seven anonymous extensions and three React handlers | Default parity plus supported partial composition without helper-file sprawl | full Table suite, policy/variant tests, React navigation/clipboard tests, Browser, typecheck |
-| 8. Collaboration-law gate | Plite + Yjs + Table | Keep local policy out of shared fingerprint; cover configurable schema/corrections/versioned shared protocols before any document-law profile is allowed | Schema-only Yjs identity guard | Peers cannot silently run divergent configurable document law | mismatch/compatibility tests; otherwise normalize remains required/static |
-| 9. Docs, examples, release | Core/Plite/Table docs owners | Current-state behavior/profile/discovery/profiling/Table docs, initialization/live examples, one partial Table example, exports/barrels, changesets | Stable implementation | Composition and performance AX are discoverable without migration prose in reference docs | docs links/type snippets, `pnpm brl`, changeset checks, www typecheck |
-| 10. Aggregate proof and review | Parent implementation owner | Lint, package checks, scale/perf, Browser, full affected checks, autoreview | All slices integrated | No accepted finding and all gates green | commands below and final diff/source sweeps |
+| Slice                                 | Owner                        | Scope                                                                                                                                                                                                                                                                                                                              | Entry                                                         | Exit                                                                                                                                              | Proof                                                                                                                        |
+| ------------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1. Plite graph truth                  | Plite                        | Make outer logical slots authoritative for subtree order/deps; publish behavior activation tokens, declaration/effective order, parent ownership, revision, transition-aware health, implementation provenance, and stable resource IDs                                                                                            | Current slot expansion and extension registry                 | One immutable composition/publication graph that hosts can consult without guessing                                                               | focused registry/slot/order/reconfigure/lifecycle/receipt tests and typecheck                                                |
+| 2. Host-agnostic diagnostics hub      | Plite + plite-react          | Preserve owner/resource identity across Plite execution/config phases; replace the global sink with a per-editor aggregate-first bounded hub; expose a generic external-span bridge; let plite-react emit only its own render spans                                                                                                | Current `profileCoreDuration` and render profiler             | Disabled fast path is inert; core sessions accept bounded internal/external spans without Plate/React concepts                                    | clock/allocation assertions, generator-resume timing, nested self/inclusive timing, batching/limits/drop/error tests         |
+| 3. Plate behavior type/catalog model  | Plate Core                   | Add a manifest generic separate from aggregate API/tx/state; batch `extendBehaviors`; independent exposure/presence/activation/replacement axes; frozen typed handles with one permission-sensitive variant constructor; forward-reference handle context; resource-kind taxonomy; pure named variants                             | Existing keyed `.extendExtension` literal is discarded        | Literal catalog is inferred without type subtraction, global registries, or chained intersection growth                                           | valid/invalid/forward-ref/typo/cycle/contract/repeated-compatible-plugin and 1,000-key compile fixtures                      |
+| 4. Plate policy compiler              | Plate Core                   | Define one normalized decision IR; plugin-local `withBehaviors` as the ordinary static façade; ergonomic flattened serializable profiles; scoped exactness; editor-local variant catalog; nominal capability/bindings; advanced initialization input; preflight classification/diff; fingerprints; receipt-returning runtime apply | Immutable plugin descriptors plus Plite batch reconfiguration | Both plugin-local and named-profile inputs compile before factories/model; live policy applies only selected local activations in one publication | inline inference/kit/layer/exact/closure/capability/round-trip/init/recreation/stale-revision/receipt/restore/rollback tests |
+| 5. Plate host activation and ordering | Plate Core React             | Tag selected handlers/shortcuts/input rules with behavior tokens; capture one activation revision per root event; gate before invoke; dispatch behavior resources in published effective order; assign legacy handlers deterministic synthetic owners; enforce idle-boundary live apply                                            | Current `pipeHandler` snapshots plugin-list handlers          | Plite and DOM paths observe one atomic behavior revision/order with no retained old graph or mutable React mirror                                 | reentrant rejection/queued-next-boundary, legacy interleaving, effective-order parity, Browser                               |
+| 6. Plate discovery/debug AX           | Plate Core + React           | Join authored catalog and live Plite graph; expose inspect/explain/preflight separately from bounded profiling; emit behavior-tagged host spans through the generic bridge; add CAS debug-layer leases                                                                                                                             | Plite graph/hub plus host activation                          | One truthful answer for what/why/health/slow and temporary debug control across all Plate resources                                               | JSON-safe snapshots, omitted/replaced/degraded/transition history, leases, filters, redaction, subscriber isolation          |
+| 7. Table adoption                     | Table                        | Declare only coherent public behaviors inline, keep required law/capabilities stable, preserve default full bundle, refactor React transport inline, and publish supported profiles/constraints                                                                                                                                    | Seven anonymous extensions and three React handlers           | Default parity plus supported partial composition without helper-file sprawl                                                                      | full Table suite, policy/variant tests, React navigation/clipboard tests, Browser, typecheck                                 |
+| 8. Collaboration-law gate             | Plite + Yjs + Table          | Keep local policy out of shared fingerprint; cover configurable schema/corrections/versioned shared protocols before any document-law profile is allowed                                                                                                                                                                           | Schema-only Yjs identity guard                                | Peers cannot silently run divergent configurable document law                                                                                     | mismatch/compatibility tests; otherwise normalize remains required/static                                                    |
+| 9. Docs, examples, release            | Core/Plite/Table docs owners | Current-state behavior/profile/discovery/profiling/Table docs, initialization/live examples, one partial Table example, exports/barrels, changesets                                                                                                                                                                                | Stable implementation                                         | Composition and performance AX are discoverable without migration prose in reference docs                                                         | docs links/type snippets, `pnpm brl`, changeset checks, www typecheck                                                        |
+| 10. Aggregate proof and review        | Parent implementation owner  | Lint, package checks, scale/perf, Browser, full affected checks, autoreview                                                                                                                                                                                                                                                        | All slices integrated                                         | No accepted finding and all gates green                                                                                                           | commands below and final diff/source sweeps                                                                                  |
 
 Proof matrix:
 
-| Claim | Planning evidence | Execution proof | Status |
-| --- | --- | --- | --- |
-| Current Table cannot omit one behavior | Seven unnamed extension fragments merge by name in `withPlite.ts:203-278`; no behavior policy exists | Regression fixture fails on old source and passes with `.withBehaviors({ paste: false })` | specified |
-| Default behavior is unchanged | Full plugin remains default preset | Existing full Table suite plus before/after default registry snapshot | specified |
-| Literal keys infer without flattening | Keyed overload currently accepts literal key but discards it from plugin type | valid-key, forward-reference, typo, cycle, contract replacement, and no API subtraction compile tests | specified |
-| Public behavior spans executors atomically | Table navigation/clipboard live in React while other policy lives in Plite; `pipeHandler` currently snapshots handlers | one published activation revision gates Plite/React resources; reentrant apply rejects/queues and next idle root event sees the commit | specified |
-| Cross-runtime order is truthful | Plate handlers use plugin-list order while Plite computes dependency/priority order | behavior-owned host handlers and Plite resources match published effective order; legacy synthetic order is deterministic | specified |
-| Runtime patch and receipt are atomic | Plite stages multiple reconfigurations in one update; public update callbacks return void | receipt-returning top-level activation batch, stale-revision/pre-publication rejection receipt, committed-degraded lifecycle receipt | specified |
-| Runtime impact is honest and transitive | Selection/schema/state/correction/listener/lifecycle can invalidate runtime truth | positive-whitelist negatives plus correction→query provider propagation and forged-handle tests | specified |
-| Activation failure law is truthful | Plite publishes then isolates activation failure at `editor-extension.ts:2027-2060`; tests retain new config | new graph remains installed with `activation-failed`; cleanup failure attaches to old transition/tombstone | specified |
-| Effective order is truthful | Current registry omits priority/effective position | dependency/priority/declaration-order execution equals inspection output | specified |
-| Profiles reproduce policy | Wordgard `fromJSON` requires extensions again and closures are not serializable | code profiles carry referenced pure variants; flattened JSON IR stores exact refs; explicit app catalog resolves JSON; exact build fingerprint, missing-parent/variant, and nonportable-inline diagnostics | specified |
-| Initialization and live policy share one IR | Static behavior changes are illegal after publication | ordinary `.withBehaviors` and advanced `createPlateEditor({ behaviorProfiles })` resolve before factories/model; live preflight reports applicable/recreate/invalid | specified |
-| Capabilities are nominal and bound | Current Plite capability bucket is string API-key discovery | type/cardinality/provider/binding/ambiguity tests without a global registry | specified |
-| Per-behavior timing is attributable | Current command buckets include command id only | logical behavior, named implementation ID, keyed resource, epoch, and phase stay distinct across replacement | specified |
-| Resource IDs never use indexes | Commands can have duplicate same-phase registrations and corrections are index-derived | duplicate command registration requires literal key; every array resource has a stable declared key | specified |
-| Profiler-off overhead is negligible | Current profiler has a global sink check but incomplete resource coverage | zero clock/allocation/string/filter/user-callback assertion plus strict command benchmark | specified |
-| Query/correction/listener work is visible | Current resources lose owner or aggregate timing; query middleware may yield | focused traces for each resource kind; generator measures active resume segments only | specified |
-| Profiling is bounded | Current React collector appends indefinitely | max series/traces/spans/pending work and drop counters remain exact under load | specified |
-| Export formats can evolve | Current profiler events have no versioned graph/policy receipt contract | graph/policy/receipt/diagnostic/profile exports each carry tested `formatVersion` | specified |
-| React behavior remains correct | Table `onKeyDown` owns DOM-sensitive navigation | `/blocks/table-demo` keyboard/copy/cut/selection Browser rows and React tests | specified |
-| Partial preset is constrained | Old split files did not prove every subset valid | supported profile omits paste/navigation; invalid required/dependency combination explains the full chain | specified |
-| Collaboration law cannot drift | Yjs currently guards schema but corrections still run on remote updates | configurable law fingerprint mismatch rejects connection/transition, or document-law behavior remains required/static | specified |
+| Claim                                       | Planning evidence                                                                                                      | Execution proof                                                                                                                                                                                            | Status    |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| Current Table cannot omit one behavior      | Seven unnamed extension fragments merge by name in `withPlite.ts:203-278`; no behavior policy exists                   | Regression fixture fails on old source and passes with `.withBehaviors({ paste: false })`                                                                                                                  | specified |
+| Default behavior is unchanged               | Full plugin remains default preset                                                                                     | Existing full Table suite plus before/after default registry snapshot                                                                                                                                      | specified |
+| Literal keys infer without flattening       | Keyed overload currently accepts literal key but discards it from plugin type                                          | valid-key, forward-reference, typo, cycle, contract replacement, and no API subtraction compile tests                                                                                                      | specified |
+| Public behavior spans executors atomically  | Table navigation/clipboard live in React while other policy lives in Plite; `pipeHandler` currently snapshots handlers | one published activation revision gates Plite/React resources; reentrant apply rejects/queues and next idle root event sees the commit                                                                     | specified |
+| Cross-runtime order is truthful             | Plate handlers use plugin-list order while Plite computes dependency/priority order                                    | behavior-owned host handlers and Plite resources match published effective order; legacy synthetic order is deterministic                                                                                  | specified |
+| Runtime patch and receipt are atomic        | Plite stages multiple reconfigurations in one update; public update callbacks return void                              | receipt-returning top-level activation batch, stale-revision/pre-publication rejection receipt, committed-degraded lifecycle receipt                                                                       | specified |
+| Runtime impact is honest and transitive     | Selection/schema/state/correction/listener/lifecycle can invalidate runtime truth                                      | positive-whitelist negatives plus correction→query provider propagation and forged-handle tests                                                                                                            | specified |
+| Activation failure law is truthful          | Plite publishes then isolates activation failure at `editor-extension.ts:2027-2060`; tests retain new config           | new graph remains installed with `activation-failed`; cleanup failure attaches to old transition/tombstone                                                                                                 | specified |
+| Effective order is truthful                 | Current registry omits priority/effective position                                                                     | dependency/priority/declaration-order execution equals inspection output                                                                                                                                   | specified |
+| Profiles reproduce policy                   | Wordgard `fromJSON` requires extensions again and closures are not serializable                                        | code profiles carry referenced pure variants; flattened JSON IR stores exact refs; explicit app catalog resolves JSON; exact build fingerprint, missing-parent/variant, and nonportable-inline diagnostics | specified |
+| Initialization and live policy share one IR | Static behavior changes are illegal after publication                                                                  | ordinary `.withBehaviors` and advanced `createPlateEditor({ behaviorProfiles })` resolve before factories/model; live preflight reports applicable/recreate/invalid                                        | specified |
+| Capabilities are nominal and bound          | Current Plite capability bucket is string API-key discovery                                                            | type/cardinality/provider/binding/ambiguity tests without a global registry                                                                                                                                | specified |
+| Per-behavior timing is attributable         | Current command buckets include command id only                                                                        | logical behavior, named implementation ID, keyed resource, epoch, and phase stay distinct across replacement                                                                                               | specified |
+| Resource IDs never use indexes              | Commands can have duplicate same-phase registrations and corrections are index-derived                                 | duplicate command registration requires literal key; every array resource has a stable declared key                                                                                                        | specified |
+| Profiler-off overhead is negligible         | Current profiler has a global sink check but incomplete resource coverage                                              | zero clock/allocation/string/filter/user-callback assertion plus strict command benchmark                                                                                                                  | specified |
+| Query/correction/listener work is visible   | Current resources lose owner or aggregate timing; query middleware may yield                                           | focused traces for each resource kind; generator measures active resume segments only                                                                                                                      | specified |
+| Profiling is bounded                        | Current React collector appends indefinitely                                                                           | max series/traces/spans/pending work and drop counters remain exact under load                                                                                                                             | specified |
+| Export formats can evolve                   | Current profiler events have no versioned graph/policy receipt contract                                                | graph/policy/receipt/diagnostic/profile exports each carry tested `formatVersion`                                                                                                                          | specified |
+| React behavior remains correct              | Table `onKeyDown` owns DOM-sensitive navigation                                                                        | `/blocks/table-demo` keyboard/copy/cut/selection Browser rows and React tests                                                                                                                              | specified |
+| Partial preset is constrained               | Old split files did not prove every subset valid                                                                       | supported profile omits paste/navigation; invalid required/dependency combination explains the full chain                                                                                                  | specified |
+| Collaboration law cannot drift              | Yjs currently guards schema but corrections still run on remote updates                                                | configurable law fingerprint mismatch rejects connection/transition, or document-law behavior remains required/static                                                                                      | specified |
 
 Conditional evidence:
+
 - High-risk scenarios:
   1. Omit/select one optional named variant without changing the default Table
      plugin, public capability types, or required document law; anonymous
@@ -729,7 +751,7 @@ Conditional evidence:
       DOM event; reentrant apply rejects or queues to the next idle boundary,
       and legacy handlers have deterministic interleaving.
   11. Ensure profiling subscribers cannot affect command result, transaction
-     rollback, lifecycle, or editor publication and never run inline.
+      rollback, lifecycle, or editor publication and never run inline.
   12. Ensure nested/around command timing attributes each visited registration
       with inclusive and self time; generator query suspension is not timed.
   13. Ensure effective order in diagnostics exactly matches execution after
@@ -784,6 +806,7 @@ Conditional evidence:
   - Barrels: run `pnpm brl` after exported handles/types change.
 
 Findings:
+
 - The current answer is not “we already have it.” Plate users can disable a
   whole plugin and authors can key a raw Plite extension, but Table does not
   expose a supported partial preset.
@@ -837,6 +860,7 @@ Findings:
   colocation decision.
 
 Decisions and tradeoffs:
+
 - File, plugin, capability, behavior, Plite extension, implementation,
   installed revision, and resource identities are distinct. One owner file can
   declare many behaviors and extensions.
@@ -885,6 +909,7 @@ Decisions and tradeoffs:
   path.
 
 Review fixes:
+
 - Rejected the initial `.omitExtension`/`.replaceExtension` API after
   large-profile, type, runtime, collaboration, and observability red-teams.
 - Reversed the earlier rejection of a Plate behavior catalog. It is required as
@@ -919,12 +944,13 @@ Review fixes:
 
 Error attempts:
 
-| Error / failed attempt | Count | Next different move | Resolution |
-| --- | ---: | --- | --- |
-| Broad docs/options search produced truncated historical output | 1 | Restrict reads to named current owners and exact symbols | Current claims now use bounded source ranges |
-| Refresh queries used shell-sensitive backtick patterns | 2 | Use single-quoted patterns and keep syntax terms out of double-quoted shell strings | Follow-up audits used safe single-quoted patterns; no source or plan content was changed by either query |
+| Error / failed attempt                                         | Count | Next different move                                                                 | Resolution                                                                                               |
+| -------------------------------------------------------------- | ----: | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Broad docs/options search produced truncated historical output |     1 | Restrict reads to named current owners and exact symbols                            | Current claims now use bounded source ranges                                                             |
+| Refresh queries used shell-sensitive backtick patterns         |     2 | Use single-quoted patterns and keep syntax terms out of double-quoted shell strings | Follow-up audits used safe single-quoted patterns; no source or plan content was changed by either query |
 
 Verification evidence:
+
 - Read current Table extension blocks, options/API/update contract, React
   handlers, exports, tests, and configured callers.
 - Read current Plate plugin config/builders, keyed extension normalization,
@@ -974,6 +1000,7 @@ Verification evidence:
   ```
 
   Result: `[autogoal] complete`.
+
 - Final refresh reconfirmed seven unnamed Table `.extendExtension` calls,
   `plate:runtime`, and command-id/phase-only timing labels.
 - `git diff --check` passed for this plan, and the unresolved-marker scan
@@ -1009,6 +1036,7 @@ At aggregate closure, run the relevant www typecheck, Browser proof, strict
 `autoreview`.
 
 Final handoff prepared:
+
 - Ownership and target API: Plate Core owns behavior manifests, handles,
   profiles/variants, policy compilation, host activation/order, provenance, and
   discovery/debug AX; Plite owns the host-agnostic composition/publication
@@ -1042,6 +1070,7 @@ Final handoff prepared:
   `.omitExtension`/`.replaceExtension` is rejected.
 
 Timeline:
+
 - 2026-07-23T08:34:13.788Z: plan created and TARGET declared.
 - 2026-07-23: current Plate/Table/Plite owners and doctrine reconciled.
 - 2026-07-23: Wordgard exhaustive TARGET audit completed.
@@ -1075,15 +1104,16 @@ Timeline:
 
 Reboot status:
 
-| Question | Answer |
-| --- | --- |
-| Where am I? | Final Slate/Plate façade is source-reviewed and ready |
-| Where am I going? | Wait for user acceptance before implementation |
-| What is the goal? | A canonical scalable composition and observability model, not merely local Table helpers |
+| Question             | Answer                                                                                                                                                                  |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Where am I?          | Final Slate/Plate façade is source-reviewed and ready                                                                                                                   |
+| Where am I going?    | Wait for user acceptance before implementation                                                                                                                          |
+| What is the goal?    | A canonical scalable composition and observability model, not merely local Table helpers                                                                                |
 | What have I learned? | Behaviors are Plate's product unit; extensions remain Plite's runtime unit; profiles select behavior internally, but static users should still compose plugins and kits |
-| What have I done? | Preserved the behavior architecture while removing profile/variant/wire ceremony from the ordinary public path |
+| What have I done?    | Preserved the behavior architecture while removing profile/variant/wire ceremony from the ordinary public path                                                          |
 
 Open risks:
+
 - The exact `local` footprint must be enforced by compiler and runtime
   validation and transitive dependency closure; author intent alone is
   insufficient.

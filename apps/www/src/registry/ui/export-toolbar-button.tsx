@@ -5,11 +5,10 @@ import * as React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { exportToDocx } from '@platejs/docx-io';
-import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { createBaseEditor } from 'platejs';
-import { useEditorRef } from 'platejs/react';
-import { serializeHtml } from 'platejs/static';
+import { useEditor } from 'platejs/react';
+import { renderStaticHtml } from 'platejs/static';
 
 import {
   DropdownMenu,
@@ -19,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import type { MyEditor } from '@/registry/components/editor/editor-kit';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
@@ -27,9 +27,9 @@ import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-
 const siteUrl = 'https://platejs.org';
 
 export function ExportToolbarButton(props: DropdownMenuProps) {
-  const editor = useEditorRef();
+  const editor = useEditor<MyEditor>();
   const [open, setOpen] = React.useState(false);
-  const markdownApi = editor.plugin(MarkdownPlugin).api;
+  const markdownApi = editor.api.markdown;
 
   const getCanvas = async () => {
     const { default: html2canvas } = await import('html2canvas-pro');
@@ -108,10 +108,10 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   const exportToHtml = async () => {
     const editorStatic = createBaseEditor({
       plugins: BaseEditorKit,
-      value: editor.read.children(),
+      initialValue: editor.read.children(),
     });
 
-    const editorHtml = await serializeHtml(editorStatic, {
+    const editorHtml = await renderStaticHtml(editorStatic, {
       editorComponent: EditorStatic,
       props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
     });

@@ -3,14 +3,14 @@
 import * as React from 'react';
 
 import { MessageSquareTextIcon } from 'lucide-react';
-import { useEditorRef } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 
 import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';
 
 import { ToolbarButton } from './toolbar';
 
 export function CommentToolbarButton() {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return (
     <ToolbarButton

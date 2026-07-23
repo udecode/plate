@@ -4,26 +4,24 @@ import { NodeApi } from '@platejs/plite';
 import type { BaseEditor } from '../../editor';
 import type { PluginConfig } from '../../plugin';
 
-import { createBasePlugin, getEditorPlugin } from '../../plugin';
+import { createBasePlugin } from '../../plugin';
 
-const isElementMetadataProp = (
+const isElementStateIgnoredProp = (
   editor: BaseEditor,
   element: Element,
-  key: string,
-  value: unknown
+  key: string
 ) => {
   if (key === 'type') return true;
 
-  return editor.runtime.pluginCache.node.isMetadataProp.some((pluginKey) => {
-    const plugin = editor.plugins[pluginKey];
+  if (typeof element.type !== 'string') return false;
 
-    return plugin.node.isMetadataProp?.({
-      ...getEditorPlugin(editor, plugin),
+  return (
+    editor.read.schema.property({
       key,
-      node: element,
-      value,
-    });
-  });
+      placement: 'element',
+      type: element.type,
+    })?.value.significant === false
+  );
 };
 
 export const isElementStateEmpty = (
@@ -31,7 +29,7 @@ export const isElementStateEmpty = (
   element: Element
 ): boolean =>
   !NodeApi.hasProps(element, {
-    ignore: (key, value) => isElementMetadataProp(editor, element, key, value),
+    ignore: (key) => isElementStateIgnoredProp(editor, element, key),
   });
 
 export type ElementStateConfig = PluginConfig<

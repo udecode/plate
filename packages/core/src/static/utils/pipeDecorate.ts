@@ -5,6 +5,7 @@ import {
   type EditableProps,
   getEditorPlugin,
 } from '../../lib';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 
 /**
  * @see {@link Decorate} .
@@ -16,7 +17,11 @@ export const pipeDecorate = (
     | ((ctx: { editor: BaseEditor; entry: NodeEntry }) => Range[] | undefined)
     | null
 ): EditableProps['decorate'] => {
-  if (editor.runtime.pluginCache.decorate.length === 0 && !decorateProp) return;
+  if (
+    getPlateRuntime(editor).pluginCache.decorate.length === 0 &&
+    !decorateProp
+  )
+    return;
 
   return (entry: NodeEntry) => {
     let ranges: Range[] = [];
@@ -25,7 +30,7 @@ export const pipeDecorate = (
       if (newRanges?.length) ranges = [...ranges, ...newRanges];
     };
 
-    editor.runtime.pluginCache.decorate.forEach((key) => {
+    getPlateRuntime(editor).pluginCache.decorate.forEach((key) => {
       const plugin = editor.getPlugin({ key });
       addRanges(
         plugin.decorate!({

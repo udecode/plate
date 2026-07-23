@@ -21,10 +21,10 @@ instead of rebuilding every component by hand.
 
 | Plite surface | Plate surface |
 | --- | --- |
-| `createEditor()` plus `withReact()` | `usePlateEditor()` in React components, or `createPlateEditor()` in factories and tests. |
+| `createEditor()` plus `withReact()` | `usePlateEditor({ ... })` in React components, or `createPlateEditor({ ... })` in factories and tests. |
 | `<Plite>` plus `<Editable>` | `<Plate>` plus `<PlateContent>`. |
-| `renderElement` / `renderLeaf` switch statements | Plugin components through `.withComponent()` or `node.component`. |
-| `withX(editor)` plugin functions | `.extendApi()` for read/services, `.extendTx()` for plugin commands, `.extendTxGroup()` for shared command groups, or `.overrideEditor()` only when wrapping an existing `editor.api` method. |
+| `renderElement` / `renderLeaf` switch statements | Plugin components through `.withComponent()` or `render.node`. |
+| `withX(editor)` plugin functions | `.extendApi()` for reads and services, `.extendTx()` for plugin commands, `.extendTxGroup()` for shared command groups, or `.extendExtension()` for Plite command handlers, corrections, and query middleware. |
 | Top-level event handlers on `Editable` | Plugin `handlers` or `shortcuts`. |
 | `Transforms.*` imports | `editor.update((tx) => tx.*)`. |
 | `Editor.*` imports | `editor.read((state) => state.*)`, or a plugin-owned `editor.api.*` service. |
@@ -47,7 +47,7 @@ const initialValue = [
 
 export function Editor() {
   const editor = usePlateEditor({
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -58,13 +58,13 @@ export function Editor() {
 }
 ```
 
-Use `createPlateEditor()` when the editor is created outside React memoization.
+Use `createPlateEditor({ ... })` when the editor is created outside React memoization.
 
 ```ts title="lib/create-editor.ts"
 import { createPlateEditor } from 'platejs/react';
 
 export const editor = createPlateEditor({
-  value: [
+  initialValue: [
     {
       children: [{ text: 'Draft' }],
       type: 'p',
@@ -103,9 +103,11 @@ export const AppParagraphPlugin = ParagraphPlugin.withComponent(
 If your Plite document stores a custom type like `paragraph`, keep that type on the plugin.
 
 ```tsx title="components/editor/paragraph-plugin.tsx" showLineNumbers
-export const AppParagraphPlugin = ParagraphPlugin.configure({
-  node: { type: 'paragraph' },
-}).withComponent(ParagraphElement);
+export const AppParagraphPlugin = ParagraphPlugin.withComponent(
+  ParagraphElement
+).configure({
+  type: 'paragraph',
+});
 ```
 
 ## Custom Behavior
@@ -157,9 +159,10 @@ editor.update((tx) => {
 });
 ```
 
-Use `.extendApi()` for editor-scoped read or service methods. Use
-`.overrideEditor()` only when you need to wrap an existing `editor.api` method
-and keep access to the original implementation.
+Use `.extendApi()` for plugin-scoped reads or services. Use
+`.extendEditorApi()` when the method belongs on the root `editor.api`. Install
+behavior that participates in Plite's command, correction, or query pipeline
+with `.extendExtension()`.
 
 ## Handlers And Shortcuts
 
@@ -228,7 +231,7 @@ Use `createBaseEditor` from `platejs` for non-React importers, serializers, tran
 import { createBaseEditor } from 'platejs';
 
 export const editor = createBaseEditor({
-  value: [
+  initialValue: [
     {
       children: [{ text: 'Headless document.' }],
       type: 'p',
@@ -241,5 +244,5 @@ export const editor = createBaseEditor({
 
 - [Editor](/docs/editor) for editor creation options.
 - [Plugin Components](/docs/plugin-components) for replacing `renderElement` and `renderLeaf`.
-- [Plugin Methods](/docs/plugin-methods) for `.configure()`, `.extend*()`, and `.overrideEditor()`.
+- [Plugin Methods](/docs/plugin-methods) for `.configure()` and the typed `.extend*()` methods.
 - [Plugin Shortcuts](/docs/plugin-shortcuts) for keyboard command wiring.

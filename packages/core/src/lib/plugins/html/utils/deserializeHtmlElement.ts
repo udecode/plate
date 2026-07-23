@@ -1,10 +1,13 @@
 import type { BaseEditor } from '../../../editor';
+import { deserializeHtmlElementWithParserRuntime } from '../../../../internal/plugin/html-parser-runtime';
+import { withPreparedParserRuntime } from '../../../../internal/plugin/prepareParserRegistry';
 import type { DeserializeHtmlNodeReturnType } from '../types';
 
-import { deserializeHtmlNode } from './deserializeHtmlNode';
-
-/** Deserialize HTML element to fragment. */
+/** Deserialize an HTML element into one document fragment. */
 export const deserializeHtmlElement = (
   editor: BaseEditor,
   element: HTMLElement
-): DeserializeHtmlNodeReturnType => deserializeHtmlNode(editor)(element);
+): DeserializeHtmlNodeReturnType =>
+  withPreparedParserRuntime(editor, (runtime) =>
+    deserializeHtmlElementWithParserRuntime(runtime, element)
+  );

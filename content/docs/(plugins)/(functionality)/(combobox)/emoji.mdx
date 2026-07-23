@@ -133,7 +133,7 @@ The inline path is a combobox flow.
 |------|--------|
 | Type `:` | `BaseEmojiPlugin` trigger. |
 | Previous character must match `/^\s?$/` | Start of block or whitespace by default. |
-| Insert transient input | `createComboboxInput` creates `{ type: KEYS.emojiInput, children: [{ text: '' }] }`. |
+| Insert transient input | `createComboboxInput` creates `{ type: NODES.emojiInput, children: [{ text: '' }] }`. |
 | Search emoji data | `EmojiInputElement` calls `EmojiInlineIndexSearch.getInstance(data).search(query).get()`. |
 | Select a result | `InlineComboboxItem` removes the input and calls `insertEmoji(editor, emoji)`. |
 | Insert final content | `insertEmoji` calls `createEmojiNode(emoji)` and inserts that node. |

@@ -2,7 +2,7 @@ import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { UIMessage } from 'ai';
 
 import { getMarkdown } from '@platejs/ai';
-import { serializeMd } from '@platejs/markdown';
+import type { MarkdownEditor } from '@platejs/markdown';
 import dedent from 'dedent';
 import { ElementApi, type BaseEditor, KEYS, RangeApi } from 'platejs';
 
@@ -225,7 +225,7 @@ export const addSelection = (editor: BaseEditor) => {
   });
 };
 
-const removeEscapeSelection = (editor: BaseEditor, text: string) => {
+const removeEscapeSelection = (editor: MarkdownEditor, text: string) => {
   let newText = text
     .replace(`\\${SELECTION_START}`, SELECTION_START)
     .replace(`\\${SELECTION_END}`, SELECTION_END);
@@ -244,7 +244,7 @@ const removeEscapeSelection = (editor: BaseEditor, text: string) => {
 
     if (!node) return newText;
     if (editor.read.schema.isVoid(node[0])) {
-      const voidString = serializeMd(editor, { value: [node[0]] });
+      const voidString = editor.api.markdown.serialize({ value: [node[0]] });
 
       const idx = newText.lastIndexOf(voidString);
 
@@ -279,7 +279,7 @@ export const isMultiBlocks = (editor: BaseEditor) =>
   });
 
 /** Get markdown with selection markers */
-export const getMarkdownWithSelection = (editor: BaseEditor) =>
+export const getMarkdownWithSelection = (editor: MarkdownEditor) =>
   removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
 
 /** Check if the current selection is inside a table cell */

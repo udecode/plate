@@ -1,4 +1,9 @@
-import type { Editor, Element, NodeEntry } from '@platejs/plite';
+import type {
+  Editor,
+  EditorCoreStateView,
+  Element,
+  NodeEntry,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { GetSiblingListOptions } from './getSiblingList';
@@ -21,7 +26,8 @@ export const getListSiblings = <N extends Element = Element>(
     next = true,
     previous = true,
     ...options
-  }: GetListSiblingsOptions<N> = {}
+  }: GetListSiblingsOptions<N> = {},
+  state: Pick<EditorCoreStateView, 'nodes'> = editor.read
 ) => {
   const siblings: NodeEntry<Element>[] = [];
   const node = entry[0];
@@ -34,7 +40,7 @@ export const getListSiblings = <N extends Element = Element>(
 
   if (previous) {
     while (true) {
-      const prevEntry = getPreviousList<N>(editor, iterEntry, options);
+      const prevEntry = getPreviousList<N>(editor, iterEntry, options, state);
 
       if (!prevEntry) break;
 
@@ -47,7 +53,7 @@ export const getListSiblings = <N extends Element = Element>(
     iterEntry = entry;
 
     while (true) {
-      const nextEntry = getNextList<N>(editor, iterEntry, options);
+      const nextEntry = getNextList<N>(editor, iterEntry, options, state);
 
       if (!nextEntry) break;
 

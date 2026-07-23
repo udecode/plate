@@ -9,10 +9,10 @@ import {
   flip,
   offset,
 } from '@platejs/floating';
-import { getLinkAttributes } from '@platejs/link';
 import {
   type LinkFloatingToolbarState,
   FloatingLinkUrlInput,
+  LinkPlugin,
   useFloatingLinkEdit,
   useFloatingLinkEditState,
   useFloatingLinkInsert,
@@ -22,7 +22,7 @@ import { cva } from 'class-variance-authority';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
 import { KEYS } from 'platejs';
 import {
-  useEditorRef,
+  useEditor,
   useEditorSelection,
   useFormInputProps,
   usePluginOption,
@@ -170,7 +170,7 @@ export function LinkFloatingToolbar({
 }
 
 function LinkOpenButton() {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const selection = useEditorSelection();
 
   const attributes = React.useMemo(
@@ -182,7 +182,7 @@ function LinkOpenButton() {
         return {};
       }
       const [element] = entry;
-      return getLinkAttributes(editor, element);
+      return editor.plugin(LinkPlugin).api.getAttributes(element);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor, selection]

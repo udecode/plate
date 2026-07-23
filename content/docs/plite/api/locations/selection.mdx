@@ -1,0 +1,41 @@
+---
+title: "Selection API"
+description: "Serializable text and node selection helpers."
+---
+
+A Plite selection is `null` or a serializable text or node selection. Text
+selections carry a range and optional insertion marks. Node selections carry a
+range and the selected node path.
+
+```typescript
+type Selection = TextSelection | NodeSelection | null;
+```
+
+`SelectionApi` is frozen. Compose a custom helper around it instead of
+mutating the namespace.
+
+## Static Methods
+
+#### `SelectionApi.equals(left: Selection, right: Selection) => boolean`
+
+Compare complete selection values, including kind-specific fields.
+
+#### `SelectionApi.isSelection(value: unknown) => value is EditorSelection`
+
+Check whether a value is a non-null editor selection.
+
+#### `SelectionApi.isText(value: unknown) => value is TextSelection`
+
+Check whether a value is a text selection.
+
+#### `SelectionApi.isNode(value: unknown) => value is NodeSelection`
+
+Check whether a value is a node selection with a valid node path.
+
+#### `SelectionApi.text(range: Range, options?) => TextSelection`
+
+Create a text selection from a range and optional affinity or insertion marks.
+
+#### `SelectionApi.node(path: Path, range: Range) => NodeSelection`
+
+Create a node selection from a node path and range.

@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-23-scoped-media-inserts",
+      "href": "/registry/changelog/2026-07-23-scoped-media-inserts.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use scoped media insert APIs",
+      "change": {
+        "type": "source",
+        "date": "2026-07-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["transforms", "transforms-classic"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-23-terminal-plugin-configure",
       "href": "/registry/changelog/2026-07-23-terminal-plugin-configure.json",
       "status": "draft",

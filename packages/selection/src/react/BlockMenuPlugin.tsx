@@ -14,15 +14,20 @@ export type BlockMenuConfig = PluginConfig<
       y: number;
     };
   },
+  {},
+  {},
+  {},
+  {},
+  readonly [],
+  readonly [],
+  never,
   {
-    blockMenu: {
-      hide: () => void;
-      show: (id: OpenId, position?: { x: number; y: number }) => void;
-      showContextMenu: (
-        blockId: string,
-        position: { x: number; y: number }
-      ) => void;
-    };
+    hide: () => void;
+    show: (id: OpenId, position?: { x: number; y: number }) => void;
+    showContextMenu: (
+      blockId: string,
+      position: { x: number; y: number }
+    ) => void;
   }
 >;
 
@@ -39,7 +44,7 @@ export const BlockMenuPlugin = createPlatePlugin<BlockMenuConfig>({
     },
   },
 })
-  .extendApi<Partial<BlockMenuConfig['api']['blockMenu']>>(
+  .extendApi<Pick<BlockMenuConfig['pluginApi'], 'hide' | 'show'>>(
     ({ setOption, setOptions }) => ({
       hide: () => {
         setOptions({
@@ -62,7 +67,7 @@ export const BlockMenuPlugin = createPlatePlugin<BlockMenuConfig>({
       },
     })
   )
-  .extendApi<Partial<BlockMenuConfig['api']['blockMenu']>>(
+  .extendApi<Pick<BlockMenuConfig['pluginApi'], 'showContextMenu'>>(
     ({ api, editor }) => ({
       showContextMenu: (blockId, position) => {
         editor

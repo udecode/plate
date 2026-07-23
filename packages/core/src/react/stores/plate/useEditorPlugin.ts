@@ -1,25 +1,22 @@
 import React from 'react';
 
-import type { AnyPluginConfig, WithRequiredKey } from '../../../lib';
+import type { BasePluginInput, WithRequiredKey } from '../../../lib';
 
 import {
   type InferConfig,
-  type PlatePlugin,
   type PlatePluginContext,
   getEditorPlugin,
 } from '../../plugin';
-import { type PlateStore, useEditorRef } from './createPlateStore';
+import { type PlateStore, useEditor } from './createPlateStore';
 
 /** Get editor and plugin context. */
-export function useEditorPlugin<
-  P extends AnyPluginConfig | PlatePlugin<AnyPluginConfig>,
->(
+export function useEditorPlugin<P extends BasePluginInput>(
   p: WithRequiredKey<P>,
   id?: string
-): PlatePluginContext<InferConfig<P> extends never ? P : InferConfig<P>> & {
+): PlatePluginContext<InferConfig<P>> & {
   store: PlateStore;
 } {
-  const editor = useEditorRef(id);
+  const editor = useEditor({ id });
 
   return React.useMemo(
     () =>

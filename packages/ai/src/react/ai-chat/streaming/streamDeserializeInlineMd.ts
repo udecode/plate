@@ -1,13 +1,13 @@
 import type { PlateEditor } from '@platejs/core/react';
 
-import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
+import type { DeserializeMdOptions, MarkdownEditor } from '@platejs/markdown';
 
 export const streamDeserializeInlineMd = (
-  editor: PlateEditor,
+  editor: MarkdownEditor<PlateEditor>,
   text: string,
   options?: DeserializeMdOptions
 ) => {
-  const deserializeInline = editor.plugin(MarkdownPlugin).api.deserializeInline;
+  const { deserializeInline } = editor.api.markdown;
 
   try {
     return deserializeInline(text, options);

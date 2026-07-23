@@ -15,14 +15,10 @@ import { BaseColumnItemPlugin, insertColumnGroup } from '@platejs/layout';
 import { LinkPlugin } from '@platejs/link/react';
 import { BaseListPlugin } from '@platejs/list-classic';
 import { BaseInlineEquationPlugin, insertEquation } from '@platejs/math';
-import {
-  insertAudioPlaceholder,
-  insertFilePlaceholder,
-  insertMedia,
-  insertVideoPlaceholder,
-} from '@platejs/media';
+import { BasePlaceholderPlugin } from '@platejs/media';
+import { insertMediaUrl } from '@platejs/media/react';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { insertTable } from '@platejs/table';
+import { BaseTablePlugin } from '@platejs/table';
 import { insertToc } from '@platejs/toc';
 import { ElementApi, KEYS, PathApi } from 'platejs';
 
@@ -48,46 +44,28 @@ const insertBlockMap: Record<
 > = {
   [ACTION_THREE_COLUMNS]: (editor, tx) =>
     insertColumnGroup(editor, tx, { columns: 3, select: true }),
-  [KEYS.audio]: (editor, tx) =>
-    insertAudioPlaceholder(tx, editor.getType(KEYS.placeholder), {
-      select: true,
-    }),
   [KEYS.callout]: (editor, tx) =>
     insertCallout(tx, editor.getType(KEYS.callout), { select: true }),
   [KEYS.codeBlock]: (editor, tx) =>
     insertCodeBlock(editor, tx, { select: true }),
   [KEYS.equation]: (editor, tx) =>
     insertEquation(tx, editor.getType(KEYS.equation), { select: true }),
-  [KEYS.file]: (editor, tx) =>
-    insertFilePlaceholder(tx, editor.getType(KEYS.placeholder), {
-      select: true,
-    }),
-  [KEYS.table]: (editor, tx) => insertTable(editor, tx, {}, { select: true }),
   [KEYS.toc]: (editor, tx) => insertToc(editor, tx, { select: true }),
-  [KEYS.video]: (editor, tx) =>
-    insertVideoPlaceholder(tx, editor.getType(KEYS.placeholder), {
-      select: true,
-    }),
 };
 
-const insertAsyncMedia = (editor: PlateEditor, type: string) =>
-  insertMedia(editor, { select: true, type });
-
-const insertAsyncMediaAndRemoveEmptySource = async (
+const removeEmptySourceAfterInsert = (
   editor: PlateEditor,
-  type: string,
+  insertedType: string,
   path: Path,
   currentBlockType: string
 ) => {
-  await insertAsyncMedia(editor, type);
-
   const inserted = editor.read.nodes.get(PathApi.next(path));
   const source = editor.read.nodes.get(path);
 
   if (
     !inserted ||
     !ElementApi.isElement(inserted[0]) ||
-    inserted[0].type !== editor.getType(type) ||
+    inserted[0].type !== editor.getType(insertedType) ||
     !source ||
     !ElementApi.isElement(source[0]) ||
     getBlockType(source[0]) !== currentBlockType ||
@@ -125,12 +103,37 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
   const nodeType = editor.getType(type);
 
   if (type === KEYS.img || type === KEYS.mediaEmbed) {
-    void insertAsyncMediaAndRemoveEmptySource(
-      editor,
+    void insertMediaUrl(editor, {
+      at: PathApi.next(path),
+      select: true,
       type,
+    }).then(() => {
+      removeEmptySourceAfterInsert(editor, type, path, currentBlockType);
+    });
+
+    return;
+  }
+  if (type === KEYS.audio || type === KEYS.file || type === KEYS.video) {
+    editor
+      .plugin(BasePlaceholderPlugin)
+      .update.insert(type, { at: PathApi.next(path), select: true });
+    removeEmptySourceAfterInsert(
+      editor,
+      KEYS.placeholder,
       path,
       currentBlockType
     );
+    return;
+  }
+  if (type === KEYS.table) {
+    editor.plugin(BaseTablePlugin).update.insert({}, { select: true });
+
+    if (currentBlockType !== nodeType && isCurrentBlockEmpty) {
+      editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
+        editor.update({ history: 'merge' }).nodes.remove({ at: path });
+      });
+    }
+
     return;
   }
 

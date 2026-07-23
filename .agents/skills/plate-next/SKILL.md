@@ -83,7 +83,7 @@ Use `origin/main` as evidence, not as the final API target:
 Rules:
 
 - For one-by-one review, give the best migration call first: `cut`, `move to
-  Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
+Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
 - No legacy backwards compatibility by default. If the clean path requires
   breaking old Plate API, say so and recommend the break.
 - No hacks. Do not route displaced product/plugin behavior into bridge files,
@@ -104,13 +104,13 @@ Rules:
   - private ephemeral implementation detail in a module-local `WeakMap`
     keyed by editor when it must be associated with the editor across calls,
     not on the public editor object.
-  Extending the root editor object is allowed only for core-owned contract
-  fields that are already part of the typed `BaseEditor` / `PlateEditor`
-  surface. Anything else caps the file below `100` until moved to the right
-  owner or explicitly routed as a Plite/Plate API plan.
-  If a concrete root-pollution field is in the active package/file scope, do
-  not merely score or mention it. Fix it in the owner before closeout, or stop
-  with a named Plite/Plate gap and deletion path.
+    Extending the root editor object is allowed only for core-owned contract
+    fields that are already part of the typed `BaseEditor` / `PlateEditor`
+    surface. Anything else caps the file below `100` until moved to the right
+    owner or explicitly routed as a Plite/Plate API plan.
+    If a concrete root-pollution field is in the active package/file scope, do
+    not merely score or mention it. Fix it in the owner before closeout, or stop
+    with a named Plite/Plate gap and deletion path.
 - Scoped plugin portals already own their noun, so redundant owner repetition
   and taxonomy-only nesting are API smells. Use `best-api review` to choose the
   concrete verbs and grouping from real call sites; this migration skill does
@@ -127,7 +127,7 @@ Rules:
   API/source typing so the call site stays inferred.
 - Never annotate local variables whose initializer should infer the type. A
   line like `const selectedEntries: NodeEntry<TIdElement>[] =
-  editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
+editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   hides whether the owner API infers correctly. Remove the annotation and fix
   the source API if inference is weak. Keep annotations only for genuinely
   uninferrable locals such as empty arrays, deliberate narrowing/widening,
@@ -174,12 +174,17 @@ Rules:
   includes one-use `with*`, `decorate*`, normalize, parser, command,
   correction, option, API, and tx callbacks. Tests, barrels, and old public
   exports do not count as additional owners.
+- Colocation decides source and file ownership, not public composition identity.
+  When behavior may be independently substitutable, route the promotion decision
+  to `best-api`; an accepted capability descriptor may remain colocated in the
+  same plugin owner file. Do not force another file, and do not keep a real
+  capability anonymous merely because it has one source owner.
 - There is no line-count ceiling. Do not split a coherent owner because the
   file is large, crosses a readability threshold, or looks tidier as a folder.
   One large owner is cheaper for humans and agents than a graph of one-use
-  files. Extract only for multiple production consumers, a real cross-layer or
-  standalone public owner, a React hook/component boundary, or dedicated proof
-  tooling.
+  files. Extract only for multiple production consumers that cannot reuse the
+  owning public API, a real cross-layer or standalone public owner, a React
+  hook/component boundary, or dedicated proof tooling.
 - React colocation uses the component or hook family as the file owner, not
   each exported symbol. A component family belongs in one `<Family>.tsx` file
   and may export its composable primitives while keeping family-only
@@ -219,9 +224,11 @@ Rules:
   answer.
 - Never replace an old helper body with a wrapper like
   `editor.plugin(FooPlugin).editor.update((tx) => tx.foo.bar(...))`. If the
-  helper has real reuse or an independent owner, keep the algorithm there and
-  pass the active `tx`. If it has one plugin owner, inline the algorithm and
-  delete the helper.
+  helper owns a real cross-plugin or transaction-composition algorithm, keep it
+  there and pass the active `tx`. Repeated callers of one plugin operation must
+  call that plugin's scoped API or tx group; they do not justify a parallel raw
+  helper. If it has one plugin owner, inline the algorithm and delete the
+  helper.
 - Tests follow the same owner law as production and React code. Keep one
   colocated `<PluginName>.<family>.spec.tsx` for a plugin behavior family, even
   when that family exercises many API, update, query, transform, normalize, or
@@ -324,10 +331,13 @@ Rules:
   body inside the owning plugin tx group, command, correction, or middleware
   callback and capture `tx`, `api`, options, editor, and type from that builder
   context.
-- A separate transaction-accepting function is allowed only for multiple
-  production consumers or a real independent algorithm boundary. Record the
-  consumer graph. The surviving parameter is required, never optional, and the
-  helper must not open a nested `editor.update`. Tests, barrels, and historical
+- A separate transaction-accepting function is allowed only for a real
+  cross-plugin or transaction-composition algorithm that the owning scoped tx
+  group cannot express. Multiple call sites alone are not reuse evidence: the
+  scoped plugin method is the reusable interface. Record the consumer and owner
+  graph. The surviving parameter is required, never optional, and the helper
+  must not open a nested `editor.update`. A helper accepting both `tx` and the
+  plugin's resolved `type` is a failed boundary. Tests, barrels, and historical
   public exports do not establish reuse.
 - `editor.update` callbacks must never call `editor.update.*` again. If a
   callback is already inside `editor.update(...)`,
@@ -335,7 +345,7 @@ Rules:
   active transaction lane, all editor mutations in that callback must use the
   active `tx`. `withoutNormalizing` callbacks should receive `({ tx })`, and
   nested calls like `editor.update.withoutNormalizing(() => {
-  editor.update.selection.set(...) })` are bugs, not style issues.
+editor.update.selection.set(...) })` are bugs, not style issues.
 - Consecutive `editor.update.*` calls in one synchronous code path are a
   transaction smell. If multiple mutations are one logical action, use the
   existing `tx` from context. If no `tx` exists, prefer a single
@@ -590,7 +600,7 @@ Default suspicion list:
   `extendExtension` callback. The plugin builder owns default names and raw
   option normalization.
 - one-line `editor.read((state) => state.*())` or `editor.update((tx) => {
-  tx.*(); })` wrappers when the direct one-shot method exists. These cap the
+tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   file below `100` until replaced or justified as grouped transaction/snapshot
   logic.
 - bare or `{ force: true }` explicit normalization in feature-package
@@ -610,7 +620,7 @@ Default suspicion list:
   They must be one transaction group at minimum, and `tx` from context is the
   preferred shape when the caller is already inside a transform lane.
 - local JSX/editor fixture aliases in tests, especially `{ children; selection
-  }` shapes that should come from `@platejs/test-utils`.
+}` shapes that should come from `@platejs/test-utils`.
 - duplicate Plate helpers around Plite APIs.
 - arbitrary root editor object fields such as `editor.propsChanges`,
   `editor.someCache`, direct property assignment bags, or interface extensions
@@ -736,12 +746,12 @@ Rules:
   `next`.
 - A file row may be checked `[x]` only at score `100`.
 - Helper rows may score `100` only when topology matches durable ownership:
-  single-consumer plugin behavior is colocated in the plugin owner; a separate
-  helper names multiple production consumers or a real non-plugin,
-  cross-layer, standalone public, or proof-tooling owner. React rows use the
-  component/hook family as the owner: sibling exports or sibling consumers
-  inside one family do not justify separate files. Line count and readability
-  thresholds never justify extraction.
+  plugin behavior is colocated in the plugin owner and repeated callers use its
+  scoped API; a separate helper needs a real non-plugin, cross-plugin,
+  cross-layer, transaction-composition, standalone public, or proof-tooling
+  owner. React rows use the component/hook family as the owner: sibling exports
+  or sibling consumers inside one family do not justify separate files. Line
+  count and readability thresholds never justify extraction.
 - Score `100` means all of these are true:
   - no behavior regression versus `origin/main`;
   - no type regression;
@@ -829,10 +839,12 @@ Then loop:
    matches. In package review mode, broader matches become deferred rows, not
    edits.
 10. Run focused proof: package typecheck/test/build when needed, plus `pnpm brl`
-   if exports/barrels changed.
-   - For Core-only targets, prefer `pnpm check:core` and Core-focused tests.
-     Non-Core package failures are not blockers unless that package is named,
-     touched, or the failure proves the Core API broke it.
+    if exports/barrels changed.
+
+- For Core-only targets, prefer `pnpm check:core` and Core-focused tests.
+  Non-Core package failures are not blockers unless that package is named,
+  touched, or the failure proves the Core API broke it.
+
 11. Run source audits for removed legacy names. In package review mode, audit
     broadly only to discover risk; patch only the named package and required
     owner.

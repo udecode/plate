@@ -8,14 +8,14 @@ export const toggleCodeBlock = (
   editor: BaseEditor,
   tx: EditorUpdateTransaction
 ) => {
-  const selection = editor.read.selection();
+  const selection = tx.selection();
 
   if (!selection) return;
 
   const codeBlockType = editor.getType(KEYS.codeBlock);
   const codeLineType = editor.getType(KEYS.codeLine);
 
-  const isActive = editor.read.nodes.some({
+  const isActive = tx.nodes.some({
     at: selection,
     match: { type: codeBlockType },
   });

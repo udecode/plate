@@ -13,7 +13,7 @@ import {
 import { cva } from 'class-variance-authority';
 import { Link, Trash2Icon } from 'lucide-react';
 import {
-  useEditorRef,
+  useEditor,
   useEditorSelector,
   useElement,
   useFocusedLast,
@@ -43,13 +43,12 @@ export function MediaToolbar({
   children: React.ReactNode;
   plugin: WithRequiredKey;
 }) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected();
   const isFocusedLast = useFocusedLast();
-  const selectionCollapsed = useEditorSelector(
-    (editor) => editor.read.selection.isCollapsed(),
-    []
+  const selectionCollapsed = useEditorSelector((editor) =>
+    editor.read.selection.isCollapsed()
   );
   const isImagePreviewOpen = useImagePreviewValue('isOpen', editor.id);
   const open =

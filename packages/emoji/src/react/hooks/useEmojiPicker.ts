@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { Emoji } from '@emoji-mart/data';
 
-import { useEditorRef } from '@platejs/core/react';
+import { useEditor } from '@platejs/core/react';
 
 import {
   type AIndexSearch,
@@ -63,7 +63,7 @@ export const useEmojiPicker = ({
   emojiLibrary,
   indexSearch,
 }: UseEmojiPickerProps): Omit<UseEmojiPickerType, 'icons' | 'settings'> => {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   const [state, dispatch] = useEmojiPickerState();
   const refs = React.useRef({

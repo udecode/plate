@@ -1,9 +1,12 @@
 ---
 title: Controlled Editor Value
-description: Control initial values, persistence, replacement, and async initialization.
+description: Control initial values, persistence, replacement, and external loading.
 ---
 
-Plate is not a normal controlled text input. The editor owns content, selection, history, plugin state, and normalization. This guide shows the safe control points: initial values, change persistence, explicit replacement, reset, and delayed initialization.
+Plate is not a normal controlled text input. The editor owns content, selection,
+history, plugin state, and normalization. This guide shows the safe control
+points: synchronous initial values, change persistence, explicit replacement,
+reset, and externally owned loading.
 
 ## Value Ownership
 
@@ -15,8 +18,8 @@ Plate is not a normal controlled text input. The editor owns content, selection,
 
 | Goal | API |
 | --- | --- |
-| Set initial content. | `value` in `usePlateEditor` or `createPlateEditor`. |
-| Persist edits. | `<Plate onValueChange>` or `<Plate onChange>`. |
+| Set initial content. | `initialValue` in `usePlateEditor` or `createPlateEditor`. |
+| Persist edits. | `<Plate onValueChange>` or `<Plate onCommit>`. |
 | Replace content from outside the editor. | `editor.update((tx) => tx.value.replace({ children: value }))`. |
 | Restore initial content. | `editor.update((tx) => tx.value.replace({ children: initialValue }))`. |
 | Delay initialization. | `skipInitialization: true` plus an explicit `editor.update(...)`. |
@@ -25,7 +28,9 @@ Plate is not a normal controlled text input. The editor owns content, selection,
 
 ### Set the Initial Value
 
-Pass a `Value`, an HTML string, a function, or an async function to `value`.
+Pass a `Value` or a synchronous initializer to `initialValue`. A synchronous
+initializer can read the compiled editor when decoding HTML or another
+model-aware format.
 
 ```tsx title="components/editor.tsx" showLineNumbers
 import type { Value } from 'platejs';
@@ -42,7 +47,7 @@ const initialValue: Value = [
 
 export function MyEditor() {
   const editor = usePlateEditor({
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -80,7 +85,7 @@ function saveValue(value: Value) {
 
 export function MyEditor() {
   const editor = usePlateEditor({
-    value: () => {
+    initialValue: () => {
       const saved = localStorage.getItem(STORAGE_KEY);
 
       return saved ? JSON.parse(saved) : initialValue;
@@ -97,12 +102,13 @@ export function MyEditor() {
 }
 ```
 
-Use `onChange` when the callback needs the editor instance too.
+`onValueChange` receives the canonical commit context plus `value`, including
+the editor instance.
 
 ```tsx title="components/editor.tsx"
 <Plate
   editor={editor}
-  onChange={({ editor, value }) => {
+  onValueChange={({ editor, value }) => {
     console.info(editor.id, value);
   }}
 />
@@ -115,7 +121,7 @@ the document with an explicit value.
 
 ```tsx title="components/replace-controls.tsx" showLineNumbers
 import type { Value } from 'platejs';
-import { useEditorRef } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 
@@ -134,7 +140,7 @@ const replacementValue: Value = [
 ];
 
 export function ReplaceControls() {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return (
     <div className="flex gap-2">
@@ -168,28 +174,22 @@ export function ReplaceControls() {
 
 <ComponentPreview name="controlled-demo" padding="md" />
 
-### Load Async Initial Content
+### Load Initial Content
 
-Use an async `value` function when the editor can initialize as soon as the data
-resolves.
+Load remote content before constructing the editor. The loader owns aborts,
+stale responses, retries, and errors; the editor receives one synchronous
+initial document.
 
 ```tsx title="components/async-editor.tsx" showLineNumbers
+import * as React from 'react';
+import type { Value } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/ui/editor';
 
-export function AsyncEditor() {
+function LoadedEditor({ initialValue }: { initialValue: Value }) {
   const editor = usePlateEditor({
-    autoSelect: 'end',
-    value: async () => {
-      const response = await fetch('/api/document');
-      const data = await response.json();
-
-      return data.content;
-    },
-    onReady: ({ isAsync, value }) => {
-      if (isAsync) console.info('Loaded value:', value);
-    },
+    initialValue,
   });
 
   return (
@@ -199,6 +199,27 @@ export function AsyncEditor() {
       </EditorContainer>
     </Plate>
   );
+}
+
+export function AsyncEditor() {
+  const [initialValue, setInitialValue] = React.useState<Value | null>(null);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+
+    void fetch('/api/document', { signal: controller.signal })
+      .then((response) => response.json())
+      .then((data) => setInitialValue(data.content))
+      .catch((error) => {
+        if (error.name !== 'AbortError') throw error;
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  if (!initialValue) return <p>Loading editor…</p>;
+
+  return <LoadedEditor initialValue={initialValue} />;
 }
 ```
 

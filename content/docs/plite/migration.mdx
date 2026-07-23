@@ -78,7 +78,7 @@ into archaeology.
 | `ReactEditor.*` DOM bridge calls                                     | `editor.api.dom.*`, `editor.api.react.*`, or renderer hooks such as `useElementPath()`                    |
 | `usePlite`, `usePliteStatic`                                         | `useEditor()` and `useEditorState(...)`                                                                   |
 | `useSelected`, `useFocused`, `useReadOnly`                           | `useElementSelected(...)`, `useEditorFocused()`, and `useEditorReadOnly()`                                |
-| `onChange(value)` as the primary persistence hook                    | `onChange(value, change)` and `change.valueChanged`, or `editor.read.value()` for the full document         |
+| `onChange(value)` as the primary persistence hook                    | `onValueChange({ value })`, or `editor.read.value()` for the full document                                 |
 | editor-only `children` persistence                                   | primary `children`, optional extra `roots`, and optional document `state`                                 |
 | `decorate` for simple local ranges                                   | `<Editable decorate={...} />`                                                                             |
 | `decorate` for shared, external, frequent, or source-scoped overlays | `usePliteDecorationSource`, `usePliteRangeDecorationSource`, or `usePliteAnnotationStore`                 |
@@ -491,18 +491,16 @@ const App = () => {
 
 ## Step 10: Persist The Right Value
 
-For a single-root editor, save the `value` passed to `<Plite onChange>`.
+For a single-root editor, save the `value` passed to `<Plite onValueChange>`.
 
 ```tsx
-import { type PliteChange } from "@platejs/plite-react";
+import { type PliteValueChangeContext } from "@platejs/plite-react";
 
-const handleChange = (value, change: PliteChange) => {
-  if (!change.valueChanged) return;
-
+const handleChange = ({ value }: PliteValueChangeContext) => {
   saveDocument(value);
 };
 
-<Plite editor={editor} onChange={handleChange}>
+<Plite editor={editor} onValueChange={handleChange}>
   <Editable />
 </Plite>;
 ```
@@ -565,7 +563,7 @@ document, such as title, layout settings, review mode, spellcheck metadata, or
 collaboration-owned state.
 
 ```tsx
-import { defineStateField } from "@platejs/plite";
+import { defineStateField, valueCodecs } from "@platejs/plite";
 import {
   Editable,
   Plite,
@@ -577,7 +575,7 @@ import {
 const documentTitle = defineStateField<string>({
   key: "document.title",
   initial: () => "Untitled",
-  persist: true,
+  persist: valueCodecs.string,
 });
 
 const TitleInput = () => {

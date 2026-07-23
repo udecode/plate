@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
+import type { MarkdownEditor } from '@platejs/markdown';
 import {
   type PlateEditor,
   useEditorPlugin,
@@ -10,29 +10,21 @@ import {
 import { AIChatPlugin } from '../AIChatPlugin';
 
 /**
- * Register an editor in the AI chat plugin, and deserializes the content into
- * the editor with block-level memoization.
+ * Register an editor in the AI chat plugin and deserialize content into it.
  *
  * @returns The live editor children after each committed content update.
  */
 export const useAIChatEditor = (
-  editor: PlateEditor,
-  content: string,
-  { parser }: DeserializeMdOptions = {}
+  editor: MarkdownEditor<PlateEditor>,
+  content: string
 ) => {
   const { setOption } = useEditorPlugin(AIChatPlugin);
 
   const children = useMemo(
-    () =>
-      editor.plugin(MarkdownPlugin).api.deserialize(content, {
-        memoize: true,
-        parser,
-      }),
-    [content, editor, parser]
+    () => editor.api.markdown.deserialize(content),
+    [content, editor]
   );
-  const value = useEditorRuntimeState(editor, (state) => state.children(), {
-    deps: [],
-  });
+  const value = useEditorRuntimeState(editor, (state) => state.children());
 
   useEffect(() => {
     editor.update({ history: 'skip' }).value.replace({ children });

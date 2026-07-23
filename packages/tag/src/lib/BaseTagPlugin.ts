@@ -1,14 +1,19 @@
 import { createBasePlugin } from '@platejs/core';
-import type { NodeInsertNodesOptions, Text } from '@platejs/plite';
+import {
+  type NodeInsertNodesOptions,
+  type Text,
+  property,
+} from '@platejs/plite';
 import type { TTagElement, TTagProps } from '@platejs/utils';
 import { KEYS } from '@platejs/utils';
 
 export const BaseTagPlugin = createBasePlugin({
   key: KEYS.tag,
-  node: {
-    isElement: true,
-    isInline: true,
-    isVoid: true,
+  schema: {
+    element: {
+      properties: { value: property.string() },
+      void: 'inline',
+    },
   },
 }).extendTx(({ type }) => (tx) => ({
   insert: (

@@ -1,25 +1,11 @@
-import type { AnyObject } from '@udecode/utils';
-
 import type { BaseEditor } from '../../../editor';
-
-import { pluginDeserializeHtml } from './pluginDeserializeHtml';
+import { pipeDeserializeHtmlLeafWithParserRuntime } from '../../../../internal/plugin/html-parser-runtime';
+import { withPreparedParserRuntime } from '../../../../internal/plugin/prepareParserRegistry';
 
 export const pipeDeserializeHtmlLeaf = (
   editor: BaseEditor,
   element: HTMLElement
-) => {
-  let node: AnyObject = {};
-
-  [...editor.runtime.pluginList].reverse().forEach((plugin) => {
-    const deserialized = pluginDeserializeHtml(editor, plugin, {
-      deserializeLeaf: true,
-      element,
-    });
-
-    if (!deserialized) return;
-
-    node = { ...node, ...deserialized.node };
-  });
-
-  return node;
-};
+) =>
+  withPreparedParserRuntime(editor, (runtime) =>
+    pipeDeserializeHtmlLeafWithParserRuntime(runtime, element)
+  );

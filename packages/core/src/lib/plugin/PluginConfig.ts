@@ -1,8 +1,27 @@
 /** Shared type contracts for Plate plugin configuration. */
-import type { Element, Path, Text } from '@platejs/plite';
+import type {
+  EditorCoreStateView,
+  EditorSchemaContribution,
+  EditorSchemaSourceProvider,
+  Element,
+  Path,
+  PropertyValueDescriptor,
+  SchemaContent,
+  SchemaContentOptions,
+  SchemaElementProperty,
+  SchemaElementPropertyOptions,
+  SchemaElement,
+  SchemaProperty,
+  SchemaTextProperty,
+  SchemaTextPropertyOptions,
+  SchemaTarget,
+  Text,
+} from '@platejs/plite';
+import type { HostDataSource } from '@platejs/plite-dom';
 import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
-import type { TStateApi } from 'zustand-x';
+
+declare const pluginReferenceDescriptor: unique symbol;
 
 export type AnyPluginTx = Record<string, unknown>;
 
@@ -10,50 +29,151 @@ export type AnyPluginConfig = {
   key: any;
   options: any;
   api: any;
+  pluginApi?: any;
   dependencies?: any;
+  plugins?: any;
   state?: any;
   tx: any;
   selectors: any;
+  schemaModel?: any;
 };
 
-export type BaseDeserializer = AnyObject & {
-  /**
-   * Deserialize an element. Overrides plugin.isElement.
-   *
-   * @default plugin.isElement
-   */
-  isElement?: boolean;
-  /**
-   * Deserialize a leaf. Overrides plugin.isLeaf.
-   *
-   * @default plugin.isLeaf
-   */
-  isLeaf?: boolean;
-};
+/** Optional plugin-key allowlist shared by schema and host targeting. */
+export interface PluginSchemaModel<TType extends string, TSchema> {
+  readonly schema: TSchema;
+  readonly type: TType;
+}
+
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+export type InferPluginSchemaModel<C extends AnyPluginConfig> =
+  IsAny<C> extends true
+    ? never
+    : C extends unknown
+      ? Exclude<C['schemaModel'], undefined> extends infer TModel
+        ? IsAny<TModel> extends true
+          ? never
+          : [TModel] extends [never]
+            ? never
+            : TModel extends PluginSchemaModel<infer TType, infer TSchema>
+              ? Readonly<{ schema: TSchema; type: TType }>
+              : never
+        : never
+      : never;
+
+export type InferPluginDocumentType<C extends AnyPluginConfig> = [
+  InferPluginSchemaModel<C>,
+] extends [never]
+  ? string
+  : InferPluginSchemaModel<C>['type'];
+
+export type InferPluginSchema<C extends AnyPluginConfig> = [
+  InferPluginSchemaModel<C>,
+] extends [never]
+  ? PluginSchema<C> | null
+  : InferPluginSchemaModel<C>['schema'] & (PluginSchema<C> | null);
+
+type ResolvePluginSchemaDeclaration<TSchema> = TSchema extends (
+  ...args: any[]
+) => infer TDeclaration
+  ? Extract<TDeclaration, PluginSchemaDeclaration>
+  : Extract<TSchema, PluginSchemaDeclaration>;
+
+type PluginDeclarationProperties<TDeclaration> =
+  TDeclaration extends Readonly<{
+    properties: infer TProperties extends readonly SchemaProperty[];
+  }>
+    ? readonly Extract<TProperties[number], SchemaProperty>[]
+    : readonly [];
+
+type PluginMarkDescriptor<TMark> = TMark extends PropertyValueDescriptor
+  ? TMark
+  : TMark extends Readonly<{
+        property: infer TDescriptor extends PropertyValueDescriptor;
+      }>
+    ? TDescriptor
+    : never;
+
+type PluginMarkTarget<TMark> =
+  TMark extends Readonly<{
+    target: infer TTarget extends SchemaTarget;
+  }>
+    ? TTarget
+    : undefined;
+
+type PluginMarkProperties<TDeclaration, TType extends string> =
+  TDeclaration extends Readonly<{ mark: infer TMark }>
+    ? readonly [
+        SchemaTextProperty<
+          TType,
+          PluginMarkDescriptor<TMark>,
+          PluginMarkTarget<TMark>
+        >,
+      ]
+    : readonly [];
+
+type LowerPluginSchemaDeclaration<
+  TDeclaration,
+  TType extends string,
+> = Readonly<{
+  elements: TDeclaration extends Readonly<{
+    element: infer TElement extends SchemaElement;
+  }>
+    ? Readonly<{ [TKey in TType]: TElement }>
+    : Readonly<Record<never, never>>;
+  properties: readonly [
+    ...PluginDeclarationProperties<TDeclaration>,
+    ...PluginMarkProperties<TDeclaration, TType>,
+  ];
+}>;
+
+export type InferExactPluginSchemaContribution<C extends AnyPluginConfig> = [
+  InferPluginSchemaModel<C>,
+] extends [never]
+  ? never
+  : InferPluginSchemaModel<C> extends infer TModel extends Readonly<{
+        schema: unknown;
+        type: string;
+      }>
+    ? LowerPluginSchemaDeclaration<
+        ResolvePluginSchemaDeclaration<TModel['schema']>,
+        TModel['type']
+      >
+    : never;
+
+export type InferPluginSchemaContribution<C extends AnyPluginConfig> = [
+  InferExactPluginSchemaContribution<C>,
+] extends [never]
+  ? EditorSchemaContribution
+  : InferExactPluginSchemaContribution<C>;
+
+export type BaseDeserializer = object;
 
 export type BaseHtmlDeserializer = BaseDeserializer & {
   /** List of HTML attribute names to store their values in `node.attributes`. */
-  attributeNames?: string[];
-  rules?: {
+  attributeNames?: readonly string[];
+  rules?: readonly Readonly<{
     /**
      * Deserialize an element:
      *
      * - If this option (string) is in the element attribute names.
      * - If this option (object) values match the element attributes.
      */
-    validAttribute?: Record<string, string[] | string> | string;
+    validAttribute?:
+      | Readonly<Record<string, readonly string[] | string>>
+      | string;
     /** Valid element `className`. */
     validClassName?: string;
     /** Valid element `nodeName`. Set '*' to allow any node name. */
-    validNodeName?: string[] | string;
+    validNodeName?: readonly string[] | string;
     /**
      * Valid element style values. Can be a list of string (only one match is
      * needed).
      */
     validStyle?: Partial<
-      Record<keyof CSSStyleDeclaration, string[] | string | undefined>
+      Record<keyof CSSStyleDeclaration, readonly string[] | string | undefined>
     >;
-  }[];
+  }>[];
   /** Whether or not to include deserialized children on this node */
   withoutChildren?: boolean;
 };
@@ -81,153 +201,261 @@ export type BaseInjectProps = {
   validNodeValues?: any[];
 };
 
-export type PluginBase<C extends AnyPluginConfig = PluginConfig> = {
-  /** Type-only config anchor used by public helper inference. */
-  readonly __config: C;
-  /** Unique identifier for this plugin. */
+export type PluginBase<C extends AnyPluginConfig = PluginConfig> =
+  EditorSchemaSourceProvider<InferPluginSchemaContribution<C>> & {
+    /** Type-only config anchor used by public helper inference. */
+    readonly __config: C;
+    /** Type-only witness for a Plate-owned plugin descriptor. */
+    readonly __pluginReference: typeof pluginReferenceDescriptor;
+    /** Unique identifier for this plugin. */
+    key: C['key'];
+    /** Plugins that must be installed before this plugin. */
+    dependencies: NonNullable<C['dependencies']>;
+    inject: Nullable<{
+      /** Plugin keys of elements to exclude the children from */
+      excludeBelowPlugins?: string[];
+      /** Plugin keys of elements to exclude */
+      excludePlugins?: string[];
+      /** Whether to filter blocks */
+      isBlock?: boolean;
+      /** Whether to filter elements */
+      isElement?: boolean;
+      /** Whether to filter leaves */
+      isLeaf?: boolean;
+      /** Filter nodes with path above this level. */
+      maxLevel?: number;
+    }>;
+    /** DOM/static host policies. Semantic model declarations belong to `schema`. */
+    host: Nullable<{
+      /** Explicit allowlist of model attributes forwarded to the DOM. */
+      dangerouslyAllowAttributes?: readonly string[];
+      /** Maps an element to host data attributes. */
+      toDataAttributes?: (
+        options: PluginBaseContext<C> & { node: Element }
+      ) => AnyObject | undefined;
+    }>;
+    /** Mutable runtime state exposed through the plugin store. */
+    options: InferOptions<C>;
+    override: {
+      /** Enable or disable plugins */
+      enabled?: Partial<Record<string, boolean>>;
+    };
+    /**
+     * Defines the order in which plugins are registered and executed.
+     *
+     * Plugins with higher priority values are registered and executed before
+     * those with lower values. This affects two main aspects:
+     *
+     * 1. Plugin Order: Plugins with higher priority will be added to the editor
+     *    earlier.
+     * 2. Execution Order: For operations that involve multiple plugins (e.g., editor
+     *    methods), plugins with higher priority will be processed first.
+     *
+     * @default 100
+     */
+    priority: number;
+    /** Plugin keys targeted by this plugin's schema and host behavior. */
+    readonly targetPluginKeys: readonly string[];
+    render: Nullable<{
+      /**
+       * Renders a component above the `Editable` component but within the `Plite`
+       * wrapper. Useful for adding UI elements that should appear above the
+       * editable area.
+       */
+      aboveEditable?: React.FC<{ children: React.ReactNode }>;
+      /**
+       * Renders a component above the `Plite` wrapper. This is the outermost
+       * render position in the editor structure.
+       */
+      abovePlite?: React.FC<{ children: React.ReactNode }>;
+      /**
+       * Specifies the HTML tag name to use when rendering the node component.
+       * Only used when no custom `render.node` is provided for the plugin.
+       *
+       * @default 'div' for elements, 'span' for leaves
+       */
+      as?: keyof HTMLElementTagNameMap;
+      /**
+       * Renders a component below marked leaves when `schema.mark` is declared and
+       * `isDecoration: false`. Use `render.node` instead when `isDecoration:
+       * true`.
+       */
+      leaf?: NodeComponent;
+      /**
+       * Renders a component for:
+       *
+       * - Element nodes when `schema.element` is declared
+       * - Below text nodes when `schema.mark` and `isDecoration: false`
+       * - Below leaves when `schema.mark` and `isDecoration: true`
+       */
+      node?: NodeComponent;
+      /** Render marked values as leaves by default, or once per text node. */
+      isDecoration?: boolean;
+    }>;
+    rules: {
+      /**
+       * Defines actions on insert break based on block state.
+       *
+       * - `'default'`: Default behavior
+       * - `'exit'`: Exit the current block
+       * - `'lift'`: Lift the current block out of the nearest matching ancestor
+       * - `'reset'`: Reset block to default paragraph type
+       * - `'lineBreak'`: Insert newline character
+       * - `'deleteExit'`: Delete backward then exit
+       */
+      break?: BreakRules;
+      /**
+       * Defines actions on delete based on block state.
+       *
+       * - `'default'`: Default behavior
+       * - `'lift'`: Lift the current block out of the nearest matching ancestor
+       * - `'reset'`: Reset block to default paragraph type
+       */
+      delete?: DeleteRules;
+      /** Defines the behavior of merging nodes. */
+      merge?: MergeRules;
+      /** Defines the behavior of normalizing nodes. */
+      normalize?: NormalizeRules;
+      /** Defines the behavior of selection. */
+      selection?: SelectionRules;
+    };
+    /** Pure declarative contribution to the editor schema. */
+    schema: InferPluginSchema<C>;
+    /** Document type/property key owned by this plugin. Defaults to `key`. */
+    type: InferPluginDocumentType<C>;
+    /** Selectors for the plugin. */
+    selectors: InferSelectors<C>;
+    /**
+     * Configures edit-only behavior for various plugin functionalities.
+     *
+     * - If `true` (boolean):
+     *
+     *   - `render`, `handlers`, and `inject.nodeProps` are active only when the
+     *       editor is NOT read-only.
+     * - If an object ({@link EditOnlyConfig}): Allows fine-grained control:
+     *
+     *   - `render`: Edit-only by default (true if not specified). Set to `false` to
+     *       always be active.
+     *   - `handlers`: Edit-only by default (true if not specified). Set to `false` to
+     *       always be active.
+     *   - `inject` (for `inject.nodeProps`): Edit-only by default (true if not
+     *       specified). Set to `false` to always be active.
+     *   - `transformInitialValue`: NOT edit-only by default (false if not specified).
+     *       Set to `true` to make it edit-only.
+     */
+    editOnly?: EditOnlyConfig | boolean;
+    /**
+     * Enables or disables the plugin. Used by Plate to determine if the plugin
+     * should be used.
+     */
+    enabled?: boolean;
+  };
+
+export interface PluginReference<
+  TKey extends string = string,
+  TDocumentType extends string = string,
+> {
+  /** Type-only witness for a Plate-owned plugin descriptor. */
+  readonly __pluginReference: typeof pluginReferenceDescriptor;
+  readonly key: TKey;
+  readonly type: TDocumentType;
+}
+
+export type PluginReferenceDocumentType<
+  TPlugin extends PluginReference = PluginReference,
+> = TPlugin['type'];
+
+export type PluginSchemaOwn<TType extends string = string> = Readonly<{
+  elementProperty: <
+    TDescriptor extends PropertyValueDescriptor,
+    const TOptions extends SchemaElementPropertyOptions,
+  >(
+    value: TDescriptor,
+    options: TOptions
+  ) => SchemaElementProperty<TType, TDescriptor, TOptions['target']>;
+  textProperty: <
+    TDescriptor extends PropertyValueDescriptor,
+    const TOptions extends
+      SchemaTextPropertyOptions = SchemaTextPropertyOptions,
+  >(
+    value: TDescriptor,
+    options?: TOptions
+  ) => SchemaTextProperty<TType, TDescriptor, TOptions['target']>;
+}>;
+
+export type PluginSchemaReferences = Readonly<{
+  /** Plate normal-flow block content, excluding nested structural elements. */
+  blockContent: (options?: SchemaContentOptions) => SchemaContent;
+  elementType: <const TPlugin extends PluginReference>(
+    plugin: TPlugin
+  ) => PluginReferenceDocumentType<TPlugin>;
+  elementTypes: <const TPlugins extends readonly PluginReference[]>(
+    plugins: TPlugins
+  ) => {
+    readonly [TIndex in keyof TPlugins]: PluginReferenceDocumentType<
+      TPlugins[TIndex]
+    >;
+  };
+  /** Resolve an optional plugin-key allowlist to installed element types. */
+  elementTypesByKey: (pluginKeys: readonly string[]) => readonly string[];
+}>;
+
+export type PluginSchemaContext<
+  C extends AnyPluginConfig = PluginConfig,
+  TType extends string = InferPluginDocumentType<C>,
+> = Readonly<{
   key: C['key'];
-  /** API methods provided by this plugin. */
-  api: InferApi<C>;
-  /** Plugins that must be installed before this plugin. */
-  dependencies: NonNullable<C['dependencies']>;
-  inject: Nullable<{
-    /** Plugin keys of elements to exclude the children from */
-    excludeBelowPlugins?: string[];
-    /** Plugin keys of elements to exclude */
-    excludePlugins?: string[];
-    /** Whether to filter blocks */
-    isBlock?: boolean;
-    /** Whether to filter elements */
-    isElement?: boolean;
-    /** Whether to filter leaves */
-    isLeaf?: boolean;
-    /** Filter nodes with path above this level. */
-    maxLevel?: number;
-    /**
-     * Plugin keys used by {@link InjectNodeProps} and the targetPluginToInject
-     * function. For plugin injection by key, use the inject.plugins property.
-     *
-     * @default [ParagraphPlugin.key]
-     */
-    targetPlugins?: string[];
+  options: Readonly<InferOptions<C>>;
+  own: PluginSchemaOwn<TType>;
+  plugins: PluginSchemaReferences;
+  targetPluginKeys: readonly string[];
+  type: TType;
+}>;
+
+export type PluginSchemaMark =
+  | PropertyValueDescriptor
+  | Readonly<
+      SchemaTextPropertyOptions & {
+        property: PropertyValueDescriptor;
+      }
+    >;
+
+export type PlateSchemaElement = SchemaElement &
+  Readonly<{
+    /** Whether this element is legal in Plate normal block content. */
+    topLevel?: boolean;
   }>;
-  /** Node-specific configuration for this plugin. */
-  node: PluginBaseNode<C>;
-  /** Extended properties used by any plugin as options. */
-  options: InferOptions<C>;
-  /** Store for managing plugin options. */
-  optionsStore: TStateApi<
-    C['options'],
-    [['zustand/mutative-x', never]],
-    {},
-    C['selectors']
-  >;
-  override: {
-    /** Enable or disable plugins */
-    enabled?: Partial<Record<string, boolean>>;
-  };
-  /**
-   * Defines the order in which plugins are registered and executed.
-   *
-   * Plugins with higher priority values are registered and executed before
-   * those with lower values. This affects two main aspects:
-   *
-   * 1. Plugin Order: Plugins with higher priority will be added to the editor
-   *    earlier.
-   * 2. Execution Order: For operations that involve multiple plugins (e.g., editor
-   *    methods), plugins with higher priority will be processed first.
-   *
-   * @default 100
-   */
-  priority: number;
-  render: Nullable<{
-    /**
-     * Renders a component above the `Editable` component but within the `Plite`
-     * wrapper. Useful for adding UI elements that should appear above the
-     * editable area.
-     */
-    aboveEditable?: React.FC<{ children: React.ReactNode }>;
-    /**
-     * Renders a component above the `Plite` wrapper. This is the outermost
-     * render position in the editor structure.
-     */
-    abovePlite?: React.FC<{ children: React.ReactNode }>;
-    /**
-     * Specifies the HTML tag name to use when rendering the node component.
-     * Only used when no custom `component` is provided for the plugin.
-     *
-     * @default 'div' for elements, 'span' for leaves
-     */
-    as?: keyof HTMLElementTagNameMap;
-    /**
-     * Renders a component below leaf nodes when `isLeaf: true` and
-     * `isDecoration: false`. Use `render.node` instead when `isDecoration:
-     * true`.
-     */
-    leaf?: NodeComponent;
-    /**
-     * Renders a component for:
-     *
-     * - Elements nodes if `isElement: true`
-     * - Below text nodes if `isLeaf: true` and `isDecoration: false`
-     * - Below leaf if `isLeaf: true` and `isDecoration: true`
-     */
-    node?: NodeComponent;
-  }>;
-  rules: {
-    /**
-     * Defines actions on insert break based on block state.
-     *
-     * - `'default'`: Default behavior
-     * - `'exit'`: Exit the current block
-     * - `'lift'`: Lift the current block out of the nearest matching ancestor
-     * - `'reset'`: Reset block to default paragraph type
-     * - `'lineBreak'`: Insert newline character
-     * - `'deleteExit'`: Delete backward then exit
-     */
-    break?: BreakRules;
-    /**
-     * Defines actions on delete based on block state.
-     *
-     * - `'default'`: Default behavior
-     * - `'lift'`: Lift the current block out of the nearest matching ancestor
-     * - `'reset'`: Reset block to default paragraph type
-     */
-    delete?: DeleteRules;
-    /** Defines the behavior of merging nodes. */
-    merge?: MergeRules;
-    /** Defines the behavior of normalizing nodes. */
-    normalize?: NormalizeRules;
-    /** Defines the behavior of selection. */
-    selection?: SelectionRules;
-  };
-  /** Selectors for the plugin. */
-  selectors: InferSelectors<C>;
-  /**
-   * Configures edit-only behavior for various plugin functionalities.
-   *
-   * - If `true` (boolean):
-   *
-   *   - `render`, `handlers`, and `inject.nodeProps` are active only when the
-   *       editor is NOT read-only.
-   * - If an object ({@link EditOnlyConfig}): Allows fine-grained control:
-   *
-   *   - `render`: Edit-only by default (true if not specified). Set to `false` to
-   *       always be active.
-   *   - `handlers`: Edit-only by default (true if not specified). Set to `false` to
-   *       always be active.
-   *   - `inject` (for `inject.nodeProps`): Edit-only by default (true if not
-   *       specified). Set to `false` to always be active.
-   *   - `transformInitialValue`: NOT edit-only by default (false if not specified).
-   *       Set to `true` to make it edit-only.
-   */
-  editOnly?: EditOnlyConfig | boolean;
-  /**
-   * Enables or disables the plugin. Used by Plate to determine if the plugin
-   * should be used.
-   */
-  enabled?: boolean;
-};
+
+type PluginSchemaElement = Readonly<{
+  element: PlateSchemaElement;
+  mark?: never;
+  properties?: readonly SchemaProperty[];
+}>;
+
+type PluginSchemaText = Readonly<{
+  element?: never;
+  mark: PluginSchemaMark;
+  properties?: readonly SchemaProperty[];
+}>;
+
+type PluginSchemaProperties = Readonly<{
+  element?: never;
+  mark?: never;
+  properties: readonly SchemaProperty[];
+}>;
+
+export type PluginSchemaDeclaration =
+  | PluginSchemaElement
+  | PluginSchemaProperties
+  | PluginSchemaText;
+
+/** A frozen schema contribution or a pure configured contribution factory. */
+export type PluginSchema<
+  C extends AnyPluginConfig = PluginConfig,
+  TType extends string = InferPluginDocumentType<C>,
+> =
+  | ((context: PluginSchemaContext<C, TType>) => PluginSchemaDeclaration)
+  | PluginSchemaDeclaration;
 
 export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
   /** API owned by the current plugin, without the plugin-key namespace wrapper. */
@@ -254,139 +482,11 @@ export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
       : K extends keyof InferOptions<C>
         ? InferOptions<C>[K]
         : never;
-  getOptions: () => InferOptions<C>;
+  getOptions: () => Readonly<InferOptions<C>>;
   setOption: <K extends keyof InferOptions<C>>(
     optionKey: K,
     value: InferOptions<C>[K]
   ) => void;
-};
-
-export type PluginBaseNode<C extends AnyPluginConfig = PluginConfig> = {
-  /**
-   * Specifies the type identifier for this plugin's nodes.
-   *
-   * For elements (when {@link isElement} is `true`):
-   *
-   * - The {@link NodeComponent} will be used for any node where `node.type ===
-   *   type`.
-   *
-   * For leaves/marks (when {@link isLeaf} is `true`):
-   *
-   * - The {@link NodeComponent} will be used for any leaf where `node[type] ===
-   *   true`.
-   *
-   * This property is crucial for Plate to correctly match nodes to their
-   * respective plugins.
-   *
-   * @default plugin.key
-   */
-  type: string;
-  component?: NodeComponent | null;
-  /**
-   * Controls which (if any) attribute names in the `attributes` property of an
-   * element will be passed as `nodeProps` to the {@link NodeComponent}, and
-   * subsequently rendered as DOM attributes.
-   *
-   * WARNING: If used improperly, this property WILL make your application
-   * vulnerable to cross-site scripting (XSS) or information exposure attacks.
-   *
-   * For example, if the `href` attribute is allowed and the component passes
-   * `nodeProps` to an `<a>` element, then attackers can direct users to open a
-   * document containing a malicious link element:
-   *
-   * { type: 'link', url: 'https://safesite.com/', attributes: { href:
-   * 'javascript:alert("xss")' }, children: [{ text: 'Click me' }], }
-   *
-   * The same is true of the `src` attribute when passed to certain HTML
-   * elements, such as `<iframe>`.
-   *
-   * If the `style` attribute (or another attribute that can load URLs, such as
-   * `background`) is allowed, then attackers can direct users to open a
-   * document that will send a HTTP request to an arbitrary URL. This can leak
-   * the victim's IP address or confirm to the attacker that the victim opened
-   * the document.
-   *
-   * Before allowing any attribute name, ensure that you thoroughly research and
-   * assess any potential risks associated with it.
-   *
-   * @default [ ]
-   */
-  dangerouslyAllowAttributes?: string[];
-  /**
-   * Indicates if this plugin's elements are primarily containers for other
-   * content. Container elements are typically unwrapped when querying
-   * fragments.
-   *
-   * Examples: table, tr, td, column, column_group
-   *
-   * @default false
-   */
-  isContainer?: boolean;
-  /**
-   * Indicates if this plugin's nodes can be rendered as decorated leaf. Set to
-   * false to render node component only once per text node.
-   *
-   * @default true
-   */
-  isDecoration?: boolean;
-  /**
-   * Indicates if this plugin's nodes should be rendered as elements. Used by
-   * Plate for {@link NodeComponent} rendering as elements.
-   */
-  isElement?: boolean;
-  /**
-   * Indicates if this plugin's elements should be treated as inline. Used by
-   * the inlineVoid core plugin.
-   */
-  isInline?: boolean;
-  /**
-   * Indicates if this plugin's nodes should be rendered as leaves. Used by
-   * Plate for {@link NodeComponent} rendering as leaves.
-   */
-  isLeaf?: boolean;
-  /**
-   * Indicates if this plugin's void elements should be markable. Used by the
-   * inlineVoid core plugin.
-   */
-  isMarkableVoid?: boolean;
-  /**
-   * Returns whether an element prop is inert metadata for empty-state checks.
-   *
-   * Props not claimed by a plugin are treated as meaningful state.
-   */
-  isMetadataProp?: (
-    options: PluginBaseContext<C> & {
-      key: string;
-      node: Element;
-      value: unknown;
-    }
-  ) => boolean;
-  /**
-   * Whether the node is selectable.
-   *
-   * @default true
-   */
-  isSelectable?: boolean;
-  /**
-   * Indicates whether this element enforces strict sibling type constraints.
-   * Set to true `true` when the element only allows specific siblings (e.g.,
-   * `td` can only have `td` siblings, `column` can only have `column` siblings)
-   * and prevents standard text blocks like paragraphs from being inserted as
-   * siblings.
-   */
-  isStrictSiblings?: boolean;
-  /**
-   * Property used by `inlineVoid` core plugin to set elements of this `type` as
-   * void.
-   */
-  isVoid?: boolean;
-  /**
-   * Function that returns an object of data attributes to be added to the
-   * element.
-   */
-  toDataAttributes?: (
-    options: PluginBaseContext<C> & { node: Element }
-  ) => AnyObject | undefined;
 };
 
 export type BaseSerializer = AnyObject;
@@ -509,16 +609,20 @@ export type EditOnlyConfig = {
 };
 
 export type ExtendConfig<
-  C extends PluginConfig,
+  C extends AnyPluginConfig,
   EO = {},
   EA = {},
   ETx extends AnyPluginTx = {},
   ES = {},
   EState = {},
+  EPluginApi = {},
 > = {
   key: C['key'];
   api: C['api'] & EA;
+  dependencies?: C['dependencies'];
   options: C['options'] & EO;
+  pluginApi: NonNullable<C['pluginApi']> & EPluginApi;
+  schemaModel?: C['schemaModel'];
   selectors: C['selectors'] & ES;
   state: C['state'] & EState;
   tx: C['tx'] & ETx;
@@ -550,10 +654,26 @@ export type InferKey<P> = P extends { key: infer K } ? K : never;
 
 export type InferApi<P> = P extends { api: infer A } ? A : never;
 
+export type InferPluginApi<P extends AnyPluginConfig> = P extends {
+  pluginApi?: infer A;
+}
+  ? NonNullable<A>
+  : {};
+
 export type InferDependencies<P> = P extends {
   dependencies?: infer D extends readonly unknown[];
 }
   ? D
+  : readonly [];
+
+export type InferNestedPlugins<P> = P extends {
+  plugins?: infer TPlugins;
+}
+  ? IsAny<TPlugins> extends true
+    ? readonly []
+    : TPlugins extends readonly unknown[]
+      ? TPlugins
+      : readonly []
   : readonly [];
 
 type InferDependencyConfig<P> = P extends {
@@ -564,6 +684,10 @@ type InferDependencyConfig<P> = P extends {
     ? P
     : never;
 
+type NextSeenPluginKey<C extends AnyPluginConfig, Seen extends PropertyKey> =
+  | Seen
+  | (IsAny<C['key']> extends true ? never : C['key']);
+
 export type InferDependencyConfigs<
   C extends AnyPluginConfig,
   Seen extends PropertyKey = never,
@@ -572,25 +696,78 @@ export type InferDependencyConfigs<
     ? never
     : InferDependencyConfig<InferDependencies<C>[number]> extends infer D
       ? D extends AnyPluginConfig
-        ? D | InferDependencyConfigs<D, Seen | C['key']>
+        ? D | InferDependencyConfigs<D, NextSeenPluginKey<C, Seen>>
         : never
       : never
   : never;
 
-export type InferPluginConfigTree<C extends AnyPluginConfig> =
-  | C
-  | InferDependencyConfigs<C>;
+type InferChildPluginConfig<P> = P extends {
+  readonly __config: infer C extends AnyPluginConfig;
+}
+  ? C
+  : P extends AnyPluginConfig
+    ? P
+    : never;
 
-export type InferPluginApi<P extends AnyPluginConfig> =
-  InferApi<P> extends Record<P['key'], infer TApi> ? TApi : {};
+type InferChildPluginConfigs<C extends AnyPluginConfig> =
+  InferChildPluginConfig<
+    | (IsAny<InferDependencies<C>> extends true
+        ? never
+        : InferDependencies<C>[number])
+    | InferNestedPlugins<C>[number]
+  >;
 
-export type InferOwnApi<P extends AnyPluginConfig> = Omit<
-  InferApi<P>,
-  P['key']
-> &
-  InferPluginApi<P>;
+export type InferPluginConfigTree<
+  C extends AnyPluginConfig,
+  Seen extends PropertyKey = never,
+> = C extends unknown
+  ? C['key'] extends Seen
+    ? never
+    :
+        | C
+        | (InferChildPluginConfigs<C> extends infer TChild
+            ? TChild extends AnyPluginConfig
+              ? InferPluginConfigTree<TChild, NextSeenPluginKey<C, Seen>>
+              : never
+            : never)
+  : never;
 
-export type InferOptions<P> = P extends { options: infer O } ? O : never;
+export type InferOwnApi<P extends AnyPluginConfig> = InferPluginApi<P>;
+
+/** Runtime option shape after plugin descriptors become nominal references. */
+export type NormalizePluginOption<T> =
+  IsAny<T> extends true
+    ? T
+    : T extends PluginReference<infer TKey, infer TDocumentType>
+      ? PluginReference<TKey, TDocumentType>
+      : T extends (...args: any[]) => any
+        ? T
+        : T extends readonly unknown[]
+          ? { readonly [TIndex in keyof T]: NormalizePluginOption<T[TIndex]> }
+          : T extends Readonly<Record<string, unknown>>
+            ? { readonly [TKey in keyof T]: NormalizePluginOption<T[TKey]> }
+            : T;
+
+export type InferOptions<P> = P extends { options: infer O }
+  ? NormalizePluginOption<O>
+  : never;
+
+/** Plugin capabilities visible to behavior extensions, without schema metadata. */
+export type InferPluginBehaviorConfig<C extends AnyPluginConfig> =
+  IsAny<InferOptions<C>> extends true
+    ? C
+    : PluginConfig<
+        C['key'],
+        InferOptions<C>,
+        InferApi<C>,
+        InferTx<C>,
+        InferSelectors<C>,
+        InferState<C>,
+        InferDependencies<C>,
+        readonly PluginReference[],
+        never,
+        InferPluginApi<C>
+      >;
 
 export type InferSelectors<P> = P extends { selectors: infer S } ? S : never;
 
@@ -601,12 +778,14 @@ export type InferTx<P> = P extends { tx: infer Tx } ? Tx : never;
 export type InferPluginTx<P extends AnyPluginConfig> =
   InferTx<P> extends Record<P['key'], infer TTx> ? TTx : {};
 
-export type InferOwnTx<P extends AnyPluginConfig> = Omit<InferTx<P>, P['key']> &
-  InferPluginTx<P>;
+export type InferOwnTx<P extends AnyPluginConfig> =
+  IsAny<InferTx<P>> extends true
+    ? any
+    : Omit<InferTx<P>, P['key']> & InferPluginTx<P>;
 
 /**
- * Renders a component for Plite Nodes (elements if `isElement: true` or leaves
- * if `isLeaf: true`) that match this plugin's type. This is the primary render
+ * Renders a component for Plite nodes declared by `schema.element` or
+ * `schema.mark` that match this plugin's type. This is the primary render
  * method for plugin-specific node content.
  *
  * @default DefaultElement for elements, DefaultLeaf for leaves
@@ -615,11 +794,27 @@ export type NodeComponent<T = any> = React.FC<T>;
 
 export type NodeComponents = Record<string, NodeComponent>;
 
-export type ParserOptions = {
+export type ParserOptions = Readonly<{
   data: string;
-  dataTransfer: DataTransfer;
-  mimeType: string;
-};
+  format: string;
+  source: HostDataSource;
+}>;
+
+/** Immutable plugin-key/type mapping available during host parsing. */
+export type ParserPluginRegistry = Readonly<{
+  getKey: (type: string) => string | undefined;
+  getType: (key: string) => string;
+  has: (key: string) => boolean;
+}>;
+
+/** Pure context supplied to parser and host deserializer callbacks. */
+export type ParserPluginContext<C extends AnyPluginConfig = PluginConfig> =
+  Readonly<{
+    options: Readonly<InferOptions<C>>;
+    registry: ParserPluginRegistry;
+    state: EditorCoreStateView;
+    type: string;
+  }>;
 
 export type PluginConfig<
   K extends string = any,
@@ -629,25 +824,38 @@ export type PluginConfig<
   S = {},
   State = {},
   D extends readonly unknown[] = readonly [],
+  P extends readonly unknown[] = readonly PluginReference[],
+  SchemaModel = never,
+  PluginApi = {},
 > = {
   key: K;
   api: A;
+  pluginApi: PluginApi;
   dependencies?: D;
+  plugins?: P;
   options: O;
+  /** Exact schema type carried only by the plugin's `__config` type anchor. */
+  schemaModel?: SchemaModel;
   selectors: S;
   state?: State;
   tx: Tx;
 };
 
-export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
-  any,
-  InferOptions<C>,
-  InferApi<C>,
-  InferTx<C>,
-  InferSelectors<C>,
-  InferState<C>,
-  InferDependencies<C>
->;
+export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> =
+  IsAny<C['key']> extends true
+    ? C
+    : PluginConfig<
+        any,
+        InferOptions<C>,
+        InferApi<C>,
+        InferTx<C>,
+        InferSelectors<C>,
+        InferState<C>,
+        InferDependencies<C>,
+        InferNestedPlugins<C>,
+        InferPluginSchemaModel<C>,
+        InferPluginApi<C>
+      >;
 
 export type WithRequiredKey<P = {}> =
   | (P extends { key: string } ? P : never)

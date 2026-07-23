@@ -82,19 +82,21 @@ const editor = createPlateEditor({
 Configure the `IndentPlugin` and `TogglePlugin` with proper targeting and component assignment.
 
 ```tsx
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { IndentPlugin } from '@platejs/indent/react';
 import { TogglePlugin } from '@platejs/toggle/react';
-import { createPlateEditor } from 'platejs/react';
+import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
 import { ToggleElement } from '@/components/ui/toggle-node';
-import { KEYS } from 'platejs';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin.configure({
-      inject: {
-        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.toggle],
-      },
+      targetPluginKeys: [
+        ...HeadingPlugin.plugins.map((plugin) => plugin.key),
+        ParagraphPlugin.key,
+        TogglePlugin.key,
+      ],
     }),
     TogglePlugin.withComponent(ToggleElement),
   ],
@@ -102,7 +104,7 @@ const editor = createPlateEditor({
 ```
 
 - `withComponent`: Assigns [`ToggleElement`](/docs/components/toggle-node) to render toggle elements.
-- `IndentPlugin.inject.targetPlugins`: Configures which element types support indentation, including toggles.
+- `IndentPlugin.targetPluginKeys`: Configures which element plugin types support indentation, including toggles.
 
 ### Add Toolbar Button
 
@@ -159,11 +161,11 @@ Plugin for managing toggle functionality.
 
 ## API
 
-### `api.toggle.toggleIds`
+### `editor.plugin(TogglePlugin).api.toggleIds`
 
 Toggles the open state of specified toggles.
 
-<API name="editor.api.toggle.toggleIds">
+<API name="editor.plugin(TogglePlugin).api.toggleIds">
 Toggle open state of toggles.
 
 <APIParameters>

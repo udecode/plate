@@ -8,9 +8,7 @@ export const insertEmoji = <TEmoji extends Emoji = Emoji>(
   emoji: TEmoji
 ) => {
   const { createEmojiNode } = editor.plugin(BaseEmojiPlugin).getOptions();
+  const emojiNode = createEmojiNode(emoji);
 
-  editor.update((tx) => {
-    const emojiNode = createEmojiNode(emoji);
-    tx.nodes.insert(emojiNode);
-  });
+  editor.update.nodes.insert(emojiNode);
 };

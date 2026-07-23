@@ -3,28 +3,40 @@ title: Plugin Shortcuts
 description: Configure keyboard shortcuts on Plate plugins.
 ---
 
-Plugin shortcuts map key combinations to plugin methods or explicit handlers. Plate resolves shortcuts during plugin setup, stores them on `editor.runtime.shortcuts`, and renders them through `EditorHotkeysEffect` inside the editable. This guide covers linked methods, custom handlers, overrides, priorities, and default shortcut ownership.
+Plugin shortcuts map key combinations to plugin methods or explicit handlers.
+Plate compiles them during plugin setup and renders them through
+`EditorHotkeysEffect` inside the editable. This guide covers linked methods,
+custom handlers, overrides, priorities, and default shortcut ownership.
 
 ## How Shortcuts Resolve
 
 Each plugin owns a `shortcuts` object. At resolution time Plate namespaces every shortcut as `${plugin.key}.${shortcutName}`.
 
-When a shortcut has no `handler`, Plate looks for a matching plugin-specific method in this order:
+When a shortcut has no `handler`, Plate looks for a same-named plugin method:
 
-1. `tx[plugin.key][shortcutName]` inside `editor.update(...)`
-2. `editor.api[plugin.key][shortcutName]`
+1. One update method exists: Plate infers `update`.
+2. One API method exists: Plate infers `api`.
+3. Both exist: set `target: 'update' | 'api'` to disambiguate.
+4. Neither exists: plugin compilation reports the invalid shortcut.
 
-If neither method exists and no `handler` is provided, the shortcut is ignored by `EditorHotkeysEffect`.
+An explicit target must name an existing route. A custom `handler` owns dispatch
+itself, so it cannot also set `target`.
+
+Declare handlerless shortcuts after the method they link to. TypeScript validates
+the capabilities already carried by that plugin descriptor, so an `.extendTx()`
+or `.extendApi()` call comes before the `.extend({ shortcuts })` call. Custom
+handlers do not need a linked method.
 
 | Field | Meaning |
 | --- | --- |
 | `keys` | Key combination passed to `useHotkeys`. Use a string like `'mod+b'` or arrays like `[[Key.Mod, 'b']]`. |
 | `handler` | Explicit callback receiving `{ editor, event, eventDetails }`. |
+| `target` | Optional `'update' | 'api'` disambiguation when both same-named routes exist. |
 | `priority` | Shortcut priority. Defaults to the parent plugin priority. |
 | `preventDefault` | Passed through to `useHotkeys`. When omitted, Plate calls `event.preventDefault()` and `event.stopPropagation()` after handled shortcuts. |
 | `null` | Removes that named shortcut from the plugin. |
 
-## Linked Transaction Shortcuts
+## Linked Update Shortcuts
 
 Use a linked transaction command when the shortcut name and plugin tx command name are the same.
 
@@ -52,7 +64,7 @@ Pressing `Mod+Shift+S` runs `editor.update((tx) => tx.signature.insertSignature(
 
 ## Linked API Shortcuts
 
-If there is no matching transform, Plate falls back to the plugin-specific API method.
+When only the matching API method exists, Plate infers the API route.
 
 ```tsx title="plugins/inspect-plugin.tsx" showLineNumbers
 import { Key, createPlatePlugin } from 'platejs/react';
@@ -74,16 +86,22 @@ export const InspectPlugin = createPlatePlugin({
   });
 ```
 
-Pressing `Mod+Alt+L` calls `editor.api.inspect.logText()`.
+Pressing `Mod+Alt+L` calls
+`editor.plugin(InspectPlugin).api.logText()`.
 
-<Callout type="info" title="Transforms win">
-  If a transform and an API method share the same shortcut name, Plate uses the
-  transform. Pick distinct names when you need both actions.
+<Callout type="info" title="Disambiguate collisions">
+  If an update method and API method share a name, set `target: 'update'` or
+  `target: 'api'`. Plate never changes route silently when a second method is
+  added. A plugin-scoped API and root editor API contributed by the same
+  descriptor are both `api`; if they share the shortcut name, rename one or use
+  a custom handler.
 </Callout>
 
 ## Custom Handlers
 
-Use a `handler` when the shortcut needs the keyboard event, custom branching, or work that should not live as a plugin API/transform method.
+Use a `handler` when the shortcut needs the keyboard event, custom branching,
+or work that should not live as a plugin API or update method. Do not set
+`target` on a handler shortcut.
 
 ```tsx title="plugins/draft-plugin.tsx" showLineNumbers
 import { Key, createPlatePlugin } from 'platejs/react';
@@ -151,7 +169,7 @@ export const AppItalicPlugin = ItalicPlugin.configure({
 });
 ```
 
-The `null` value removes `italic.toggle` from `editor.runtime.shortcuts`.
+The `null` value removes `italic.toggle` from the compiled shortcut set.
 
 ## Multiple Shortcuts
 
@@ -179,7 +197,7 @@ export const ReviewPlugin = createPlatePlugin({
   });
 ```
 
-This creates `review.accept` and `review.reject` in `editor.runtime.shortcuts`.
+This creates the compiled shortcut IDs `review.accept` and `review.reject`.
 
 ## Priority
 
@@ -252,6 +270,7 @@ Other plugins often expose `toggle`, `insert`, or feature-specific transforms wi
 type Shortcut = HotkeysOptions & {
   keys?: Keys | null;
   priority?: number;
+  target?: "api" | "update";
   handler?: (ctx: {
     editor: PlateEditor;
     event: KeyboardEvent;
@@ -259,5 +278,7 @@ type Shortcut = HotkeysOptions & {
   }) => boolean | void;
 };
 ```
+
+`target` and `handler` are mutually exclusive.
 
 Done. Name shortcuts after plugin-specific transforms or API methods by default, and use handlers only when the keyboard event is part of the behavior.

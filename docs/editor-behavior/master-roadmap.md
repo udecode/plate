@@ -26,16 +26,16 @@ It does **not** own:
 
 Use it with:
 
-- [README.md](docs/editor-behavior/README.md)
-- [markdown-standards.md](docs/editor-behavior/markdown-standards.md)
-- [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
-- [editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md)
-- [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)
-- [markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md)
-- [editor-behavior-architecture.md](docs/research/systems/editor-behavior-architecture.md)
-- [2026-04-02-editor-behavior-major-execution.md](docs/plans/2026-04-02-editor-behavior-major-execution.md)
-- [2026-04-10-autoformat-runtime-alignment-and-extension-plan.md](docs/plans/2026-04-10-autoformat-runtime-alignment-and-extension-plan.md)
-- [2026-04-09-date-media-expansion-consensus-plan.md](docs/plans/2026-04-09-date-media-expansion-consensus-plan.md)
+- [README.md](README.md)
+- [markdown-standards.md](markdown-standards.md)
+- [markdown-editing-spec.md](markdown-editing-spec.md)
+- [editor-protocol-matrix.md](editor-protocol-matrix.md)
+- [markdown-parity-matrix.md](markdown-parity-matrix.md)
+- [markdown-editing-reference-audit.md](markdown-editing-reference-audit.md)
+- [editor-behavior-architecture.md](../research/systems/editor-behavior-architecture.md)
+- [2026-04-02-editor-behavior-major-execution.md](../plans/2026-04-02-editor-behavior-major-execution.md)
+- [2026-04-10-autoformat-runtime-alignment-and-extension-plan.md](../plans/2026-04-10-autoformat-runtime-alignment-and-extension-plan.md)
+- [2026-04-09-date-media-expansion-consensus-plan.md](../plans/2026-04-09-date-media-expansion-consensus-plan.md)
 
 ## Vocabulary
 
@@ -57,14 +57,14 @@ Rule:
 
 ## Truth Ownership
 
-| Class                    | Owner                                                                                                                                                                                                                       |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| law                      | [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md), [editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md), [markdown-standards.md](docs/editor-behavior/markdown-standards.md) |
-| gate                     | [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)                                                                                                                                                 |
-| evidence                 | [markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md) and [docs/research](docs/research)                                                                                          |
-| sequence                 | this file and [docs/editor-behavior/commands](docs/editor-behavior/commands/README.md)                                                                                                                                      |
-| historical execution     | [2026-04-02-editor-behavior-major-execution.md](docs/plans/2026-04-02-editor-behavior-major-execution.md)                                                                                                                   |
-| supporting feature plans | the relevant docs under [docs/plans](docs/plans)                                                                                                                                                                            |
+| Class                    | Owner                                                                                                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| law                      | [markdown-editing-spec.md](markdown-editing-spec.md), [editor-protocol-matrix.md](editor-protocol-matrix.md), [markdown-standards.md](markdown-standards.md) |
+| gate                     | [markdown-parity-matrix.md](markdown-parity-matrix.md)                                                                                                       |
+| evidence                 | [markdown-editing-reference-audit.md](markdown-editing-reference-audit.md) and [docs/research](../research)                                                  |
+| sequence                 | this file and [docs/editor-behavior/commands](commands/README.md)                                                                                            |
+| historical execution     | [2026-04-02-editor-behavior-major-execution.md](../plans/2026-04-02-editor-behavior-major-execution.md)                                                      |
+| supporting feature plans | the relevant docs under [docs/plans](../plans)                                                                                                               |
 
 ## Current Read
 
@@ -103,7 +103,7 @@ This stays closed:
 
 What this means:
 
-- [2026-04-02-editor-behavior-major-execution.md](docs/plans/2026-04-02-editor-behavior-major-execution.md)
+- [2026-04-02-editor-behavior-major-execution.md](../plans/2026-04-02-editor-behavior-major-execution.md)
   is historical execution context, not the live queue
 - later work must justify itself as a new lane or follow-up slice, not as
   reopening the old major by inertia
@@ -131,8 +131,8 @@ What closed:
 
 Supporting plan:
 
-- [2026-04-10-autoformat-runtime-alignment-and-extension-plan.md](docs/plans/2026-04-10-autoformat-runtime-alignment-and-extension-plan.md)
-- [2026-04-10-autoformat-runtime-alignment-execution.md](docs/plans/2026-04-10-autoformat-runtime-alignment-execution.md)
+- [2026-04-10-autoformat-runtime-alignment-and-extension-plan.md](../plans/2026-04-10-autoformat-runtime-alignment-and-extension-plan.md)
+- [2026-04-10-autoformat-runtime-alignment-execution.md](../plans/2026-04-10-autoformat-runtime-alignment-execution.md)
 
 ### [x] Math Delimiter Trigger Lane
 
@@ -148,12 +148,12 @@ What closed:
     contract
   - selection-wrap stays deferred / non-default because `$` / `$$` collisions
     make it a poor rich-editor default and the Obsidian-style branch fits
-    better in a markdown/source-first profile
+    better in a markdown/source-first app kit
 
 Supporting plan:
 
-- [2026-04-10-math-delimiter-trigger-implementation-plan.md](docs/plans/2026-04-10-math-delimiter-trigger-implementation-plan.md)
-- [2026-04-10-math-delimiter-trigger-roadmap-slice.md](docs/plans/2026-04-10-math-delimiter-trigger-roadmap-slice.md)
+- [2026-04-10-math-delimiter-trigger-implementation-plan.md](../plans/2026-04-10-math-delimiter-trigger-implementation-plan.md)
+- [2026-04-10-math-delimiter-trigger-roadmap-slice.md](../plans/2026-04-10-math-delimiter-trigger-roadmap-slice.md)
 
 ### [x] Date Contract Expansion
 
@@ -170,8 +170,8 @@ What closed:
 
 Supporting plans:
 
-- [2026-04-09-date-media-expansion-consensus-plan.md](docs/plans/2026-04-09-date-media-expansion-consensus-plan.md)
-- [2026-04-10-date-contract-expansion-lane-closeout-plan.md](docs/plans/2026-04-10-date-contract-expansion-lane-closeout-plan.md)
+- [2026-04-09-date-media-expansion-consensus-plan.md](../plans/2026-04-09-date-media-expansion-consensus-plan.md)
+- [2026-04-10-date-contract-expansion-lane-closeout-plan.md](../plans/2026-04-10-date-contract-expansion-lane-closeout-plan.md)
 
 ### [x] Media / Embed Expansion
 
@@ -204,7 +204,7 @@ What closed:
 
 Supporting plan:
 
-- [2026-04-11-link-automd-autoformat-plan.md](docs/plans/2026-04-11-link-automd-autoformat-plan.md)
+- [2026-04-11-link-automd-autoformat-plan.md](../plans/2026-04-11-link-automd-autoformat-plan.md)
 
 ## Todos
 
@@ -293,32 +293,32 @@ Exit:
 
 Supporting plan:
 
-- [2026-04-11-link-input-autolink-policy-rewrite-plan.md](docs/plans/2026-04-11-link-input-autolink-policy-rewrite-plan.md)
+- [2026-04-11-link-input-autolink-policy-rewrite-plan.md](../plans/2026-04-11-link-input-autolink-policy-rewrite-plan.md)
 
 ## Batch Exit Rule
 
 After any lane changes implementation truth:
 
-1. refresh [master-roadmap.md](docs/editor-behavior/master-roadmap.md)
-2. refresh [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md) if backlog or gate wording changed
-3. refresh [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md) if law changed
-4. refresh [editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md) if row coverage changed
-5. refresh [markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md) if evidence routing changed
+1. refresh [master-roadmap.md](master-roadmap.md)
+2. refresh [markdown-parity-matrix.md](markdown-parity-matrix.md) if backlog or gate wording changed
+3. refresh [markdown-editing-spec.md](markdown-editing-spec.md) if law changed
+4. refresh [editor-protocol-matrix.md](editor-protocol-matrix.md) if row coverage changed
+5. refresh [markdown-editing-reference-audit.md](markdown-editing-reference-audit.md) if evidence routing changed
 6. refresh any touched supporting plan docs
 7. refresh the historical execution note only when the lane materially changed what remains
 
 ## Command Pack
 
-- [reconsolidate-law-stack.md](docs/editor-behavior/commands/reconsolidate-law-stack.md)
-- [refresh-evidence-ledger.md](docs/editor-behavior/commands/refresh-evidence-ledger.md)
-- [reinterview-open-authority-gaps.md](docs/editor-behavior/commands/reinterview-open-authority-gaps.md)
-- [replan-next-batch.md](docs/editor-behavior/commands/replan-next-batch.md)
-- [launch-next-ralph-batch.md](docs/editor-behavior/commands/launch-next-ralph-batch.md)
+- [reconsolidate-law-stack.md](commands/reconsolidate-law-stack.md)
+- [refresh-evidence-ledger.md](commands/refresh-evidence-ledger.md)
+- [reinterview-open-authority-gaps.md](commands/reinterview-open-authority-gaps.md)
+- [replan-next-batch.md](commands/replan-next-batch.md)
+- [execute-next-batch.md](commands/execute-next-batch.md)
 
-## Triage Rule For `editor-spec`
+## Triage Rule For Law Changes
 
-When `editor-spec` formalizes or revises a surface and that change creates real
-remaining implementation work, it must triage the item into this roadmap.
+When law reconsolidation formalizes or revises a surface and creates real
+remaining implementation work, triage the item into this roadmap.
 
 That means:
 
@@ -339,4 +339,4 @@ Current next move:
 
 The current highest-quality concrete supporting plan is still:
 
-- [2026-04-10-autoformat-runtime-alignment-and-extension-plan.md](docs/plans/2026-04-10-autoformat-runtime-alignment-and-extension-plan.md)
+- [2026-04-10-autoformat-runtime-alignment-and-extension-plan.md](../plans/2026-04-10-autoformat-runtime-alignment-and-extension-plan.md)

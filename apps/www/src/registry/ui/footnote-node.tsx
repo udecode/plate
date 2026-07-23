@@ -102,10 +102,8 @@ export function FootnoteReferenceElement(
   props: PlateElementProps<TFootnoteElement>
 ) {
   const { element, path } = props;
-  const {
-    api: { footnote: footnoteApi },
-    editor,
-  } = useEditorPlugin(BaseFootnoteReferencePlugin);
+  const { editor } = useEditorPlugin(BaseFootnoteReferencePlugin);
+  const footnoteApi = editor.api.footnote;
   const identifier = element.identifier ?? '';
   const [hoverOpen, setHoverOpen] = React.useState(false);
   const focused = useEditorFocused();
@@ -123,24 +121,21 @@ export function FootnoteReferenceElement(
       isResolved: footnoteApi.isResolved({ identifier }),
       previewText: footnoteApi.definitionText({ identifier }),
     };
-  }, [hoverOpen, identifier]);
+  });
   const isResolved = livePreview?.isResolved ?? fallbackResolved;
   const previewText = livePreview?.previewText ?? fallbackPreviewText;
   const selected = useElementSelected();
-  const isSelectionInsideAtom = useEditorSelector(
-    (currentEditor) => {
-      const selection = currentEditor.read.selection();
+  const isSelectionInsideAtom = useEditorSelector((currentEditor) => {
+    const selection = currentEditor.read.selection();
 
-      if (!path || !selection) return false;
+    if (!path || !selection) return false;
 
-      return (
-        PathApi.equals(selection.anchor.path, path.concat([0])) &&
-        PathApi.equals(selection.focus.path, path.concat([0])) &&
-        selection.anchor.offset === selection.focus.offset
-      );
-    },
-    [path]
-  );
+    return (
+      PathApi.equals(selection.anchor.path, path.concat([0])) &&
+      PathApi.equals(selection.focus.path, path.concat([0])) &&
+      selection.anchor.offset === selection.focus.offset
+    );
+  });
 
   return (
     <PlateElement
@@ -228,10 +223,8 @@ export function FootnoteDefinitionElement(
   props: PlateElementProps<TFootnoteElement>
 ) {
   const { element, path } = props;
-  const {
-    api: { footnote: footnoteApi },
-    editor,
-  } = useEditorPlugin(BaseFootnoteReferencePlugin);
+  const { editor } = useEditorPlugin(BaseFootnoteReferencePlugin);
+  const footnoteApi = editor.api.footnote;
   const identifier = element.identifier ?? '';
   const definitionState = useEditorSelector(() => {
     const isDuplicateDefinition =
@@ -252,7 +245,7 @@ export function FootnoteDefinitionElement(
       path,
       referenceItems,
     };
-  }, [identifier, path]);
+  });
   const navigationHighlight = useNavigationHighlight(definitionState?.path);
   const isDuplicateDefinition = !!definitionState?.isDuplicateDefinition;
   const duplicateReplacementIdentifier =
@@ -392,10 +385,8 @@ export function FootnoteDefinitionElement(
 
 export function FootnoteInputElement(props: PlateElementProps) {
   const { element } = props;
-  const {
-    api: { footnote: footnoteApi },
-    editor,
-  } = useEditorPlugin(BaseFootnoteReferencePlugin);
+  const { editor } = useEditorPlugin(BaseFootnoteReferencePlugin);
+  const footnoteApi = editor.api.footnote;
   const [search, setSearch] = React.useState('');
 
   const identifiers = footnoteApi.identifiers?.() ?? [];

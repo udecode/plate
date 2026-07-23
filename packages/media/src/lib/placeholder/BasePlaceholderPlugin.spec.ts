@@ -1,12 +1,7 @@
 import { createBaseEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
-import {
-  BasePlaceholderPlugin,
-  insertAudioPlaceholder,
-  insertFilePlaceholder,
-  insertVideoPlaceholder,
-} from './BasePlaceholderPlugin';
+import { BasePlaceholderPlugin } from './BasePlaceholderPlugin';
 
 describe('BasePlaceholderPlugin', () => {
   it('configures block void placeholders', () => {
@@ -59,23 +54,5 @@ describe('BasePlaceholderPlugin', () => {
       mediaType: KEYS.img,
       type: KEYS.placeholder,
     });
-  });
-
-  it('keeps transaction helpers used by registry transforms', () => {
-    const editor = createBaseEditor({
-      plugins: [BasePlaceholderPlugin],
-    });
-
-    editor.update((tx) => {
-      insertAudioPlaceholder(tx, KEYS.placeholder, { at: [0] });
-      insertFilePlaceholder(tx, KEYS.placeholder, { at: [1] });
-      insertVideoPlaceholder(tx, KEYS.placeholder, { at: [2] });
-    });
-
-    expect(
-      editor.read
-        .children()
-        .map((node) => ('mediaType' in node ? node.mediaType : undefined))
-    ).toEqual([KEYS.audio, KEYS.file, KEYS.video]);
   });
 });

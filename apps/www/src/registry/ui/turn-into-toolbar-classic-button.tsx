@@ -8,7 +8,7 @@ import type { Element } from '@platejs/plite';
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, ListIcon, ListOrderedIcon, SquareIcon } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { useEditorRef, useSelectionFragmentProp } from 'platejs/react';
+import { useEditor, useSelectionFragmentProp } from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -51,7 +51,7 @@ const turnIntoItems = baseTurnIntoItems.map((item) =>
 );
 
 export function TurnIntoToolbarButton(props: DropdownMenuProps) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
   const value = useSelectionFragmentProp({

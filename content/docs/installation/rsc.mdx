@@ -51,7 +51,7 @@ const value: Value = [
 export default function DocumentsPage() {
   const editor = createStaticEditor({
     plugins: BaseEditorKit,
-    value,
+    initialValue: value,
   });
 
   return <PlateStatic editor={editor} />;
@@ -60,11 +60,12 @@ export default function DocumentsPage() {
 
 ### Serialize HTML
 
-Use `serializeHtml` when a route needs an HTML string instead of React output.
+Use `renderStaticHtml` when a route needs the server-rendered HTML for a static
+Plate view instead of a React tree.
 
 ```tsx title="app/api/document-html/route.ts" showLineNumbers
 import type { Value } from 'platejs';
-import { createStaticEditor, serializeHtml } from 'platejs/static';
+import { createStaticEditor, renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 import { EditorStatic } from '@/components/ui/editor-static';
@@ -83,10 +84,10 @@ const value: Value = [
 export async function GET() {
   const editor = createStaticEditor({
     plugins: BaseEditorKit,
-    value,
+    initialValue: value,
   });
 
-  const html = await serializeHtml(editor, {
+  const html = await renderStaticHtml(editor, {
     editorComponent: EditorStatic,
   });
 
@@ -115,7 +116,7 @@ components.
 | Runtime | Import from | Use for |
 | --- | --- | --- |
 | Server Component | `platejs/static` | Read-only React output with `<PlateStatic>`. |
-| Route handler | `platejs/static` | HTML export with `serializeHtml`. |
+| Route handler | `platejs/static` | Static React rendering with `renderStaticHtml`. |
 | Node script | `platejs`, `@platejs/*` | Validation, migration, Markdown IO. |
 | Client editor | `platejs/react`, `@platejs/*/react` | Editable UI, hooks, toolbar interactions. |
 

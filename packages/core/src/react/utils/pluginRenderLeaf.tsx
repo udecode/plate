@@ -7,6 +7,7 @@ import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
 import { getPluginNodeClass } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { type PlateLeafProps, PlateLeaf } from '../components/plate-nodes';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -51,7 +52,7 @@ const getSimpleLeafAttributes = (props: PlateLeafProps, className?: string) => {
 };
 
 /**
- * Get a `Editable.renderLeaf` handler for `plugin.node.type`. If the type is
+ * Get a `Editable.renderLeaf` handler for `plugin.type`. If the type is
  * equals to the plite leaf type, render `plugin.render.node`. Else, return
  * `children`.
  */
@@ -70,19 +71,19 @@ export const pluginRenderLeaf = (
 
     if (isEditOnly(readOnly, plugin, 'render')) return children;
 
-    if (leaf[plugin.node.type]) {
+    if (leaf[plugin.type]) {
       const canUseSimpleLeaf =
         !Component &&
-        editor.runtime.pluginCache.inject.nodeProps.length === 0 &&
-        !plugin.node.props &&
-        !plugin.node.dangerouslyAllowAttributes?.length;
+        getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0 &&
+        !plugin.render.nodeProps &&
+        !plugin.host.dangerouslyAllowAttributes?.length;
 
       if (canUseSimpleLeaf && !plugin.rules.selection?.affinity) {
         const Tag = (plugin.render?.as ??
           'span') as keyof HTMLElementTagNameMap;
         const attributes = getSimpleLeafAttributes(
           props,
-          getPluginNodeClass(plugin.node.type) || undefined
+          getPluginNodeClass(plugin.type) || undefined
         );
 
         return <Tag {...attributes}>{children}</Tag>;
@@ -93,7 +94,7 @@ export const pluginRenderLeaf = (
           'span') as keyof HTMLElementTagNameMap;
         const attributes = getSimpleLeafAttributes(
           props,
-          getPluginNodeClass(plugin.node.type) || undefined
+          getPluginNodeClass(plugin.type) || undefined
         );
         const showBoundarySpacers = isActiveHardAffinityBoundary(editor, text);
 

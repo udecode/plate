@@ -1,5 +1,4 @@
 import type { BaseEditor } from '../../../../lib/editor';
-import type { EditorUpdateTransaction } from '@platejs/plite';
 import type {
   NavigationFeedbackActiveTarget,
   NavigationFlashTargetOptions,
@@ -14,20 +13,20 @@ const NAVIGATION_FEEDBACK_TIMEOUT = new WeakMap<
 >();
 const NAVIGATION_FEEDBACK_PULSE = new WeakMap<BaseEditor, number>();
 
-const clearNavigationPathRef = (
+const clearNavigationPathAnchor = (
   target?: NavigationFeedbackStoredTarget | null
 ) => {
-  target?.pathRef.unref();
+  target?.pathAnchor.release();
 };
 
 export const resolveNavigationFeedbackTarget = (
   target?: NavigationFeedbackStoredTarget | null
 ): NavigationFeedbackActiveTarget | null => {
-  const path = target?.pathRef.current;
+  const path = target?.pathAnchor.resolve();
 
   if (!target || !path) return null;
 
-  const { pathRef: _pathRef, ...rest } = target;
+  const { pathAnchor: _pathAnchor, ...rest } = target;
 
   return {
     ...rest,
@@ -65,7 +64,7 @@ export const clearNavigationFeedbackTarget = (
   if (pulse !== undefined && storedTarget.pulse !== pulse) return false;
 
   clearNavigationTimeout(editor);
-  clearNavigationPathRef(storedTarget);
+  clearNavigationPathAnchor(storedTarget);
   editor.plugin(NavigationFeedbackPluginKey).setOption('activeTarget', null);
   refreshDecorations();
 
@@ -75,8 +74,7 @@ export const clearNavigationFeedbackTarget = (
 export const flashTarget = (
   editor: BaseEditor,
   { duration, target, variant = 'navigated' }: NavigationFlashTargetOptions,
-  refreshDecorations: () => void,
-  tx?: Pick<EditorUpdateTransaction, 'refs'>
+  refreshDecorations: () => void
 ) => {
   if (!editor.read.nodes.get(target.path)) return false;
 
@@ -90,14 +88,15 @@ export const flashTarget = (
     .getOption('activeTarget');
 
   clearNavigationTimeout(editor);
-  clearNavigationPathRef(previousTarget);
+  clearNavigationPathAnchor(previousTarget);
 
   const activeTarget = {
     cycle: (pulse % 2) as 0 | 1,
     duration: timeoutMs,
-    pathRef: tx
-      ? tx.refs.path(target.path)
-      : editor.update.refs.path(target.path),
+    pathAnchor: editor.anchor(target.path, {
+      association: 'forward',
+      deletion: 'drop',
+    }),
     pulse,
     type: target.type,
     variant,

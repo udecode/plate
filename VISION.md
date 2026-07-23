@@ -155,9 +155,9 @@ selection, history, browser proof, package API, and benchmarks.
   addressed by omission; explicit roots are for additional roots only.
 - Slate stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.
-- Behavior should be composable and inspectable without making every caller
-  learn composition machinery. Add named profiles or runtime switching only
-  when real reuse or control requirements earn that public surface.
+- Behavior specs define law; ordinary plugin and extension arrays compose
+  accepted capabilities. Name a reusable kit only after real reuse, and treat
+  runtime control as a separate proven job. Do not add a behavior-profile DSL.
 - Page layout is not core editor truth. Active caret, selection, and
   composition stay on the native/browser editing path.
 - Browser editing claims require model, DOM, selection/caret where observable,
@@ -187,8 +187,9 @@ on top of Slate-first primitives.
 - Plugin authoring keeps one-owner behavior colocated and inferred. Every
   public builder or configuration method must represent a distinct user job;
   current assembly machinery is never doctrine.
-- Optional capability should usually ship as packages, plugins, registry code,
-  or app-owned components, not core.
+- Classify behavior before packaging it: invariants stay with their owner,
+  parameters stay in `options`, proven substitutable capabilities may become
+  plugins, and product policy stays app- or kit-owned.
 - Plate can re-export Slate surface where it improves DX, but bugs that
   reproduce in plain Slate belong to Slate.
 - If a Plate public API collides with Slate v2 runtime names such as `api`,

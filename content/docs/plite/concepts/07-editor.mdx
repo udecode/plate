@@ -1,15 +1,16 @@
 ---
 title: "Editor"
-description: "Use the Editor runtime for document meta, selection, operations, schema, extensions, and subscriptions."
+description: "Use the Editor runtime for document meta, selection, canonical changes, schema, extensions, and subscriptions."
 ---
 
-The `Editor` object is the runtime for one Plite document. It owns the document value, selection, operations, schema behavior, extensions, and subscriptions.
+The `Editor` object is the runtime for one Plite document. It owns the document value, selection, canonical changes, schema behavior, extensions, and subscriptions.
 
 Most application code touches the editor in three ways:
 
 - read committed state with `editor.read(...)` or `editor.read.<group>.<method>()`
 - write through `editor.update(...)` or `editor.update.<group>.<method>()`
-- install reusable behavior with `editor.extend(...)`
+- install reusable behavior through `createEditor({ extensions })`
+- publish host-selected runtime behavior through `editor.extend(...)`
 
 ## Reading State
 
@@ -61,13 +62,14 @@ editor.update((tx) => {
 });
 ```
 
-All writes in the callback become one commit. That gives history, operation replay, sync adapters, and React rendering one consistent change to observe.
+All writes in the callback become one commit. That gives history, change
+replay, sync adapters, and React rendering one consistent change to observe.
 
 Pass a policy first when the whole update needs history or lifecycle tags:
 
 ```javascript
 editor.update({ history: "new-batch", tags: "paste" }, (tx) => {
-  tx.fragment.insert(fragment);
+  tx.slice.replace(importedSlice);
   tx.selection.collapse({ edge: "end" });
 });
 ```
@@ -84,7 +86,7 @@ extension-owned state.
 
 ```javascript
 const unsubscribe = editor.subscribe((_snapshot, change) => {
-  if (change?.childrenChanged || change?.dirtyStateKeys.length) {
+  if (change?.changed.has("document") || change?.dirtyStateKeys.length) {
     const documentValue = editor.read.value();
 
     saveDocument(documentValue);
@@ -94,9 +96,10 @@ const unsubscribe = editor.subscribe((_snapshot, change) => {
 
 Use subscriptions for app services that need to observe commits. Use React hooks from `@platejs/plite-react` for UI that renders editor state.
 
-Full snapshots are runtime observer data. Use them for debug, replay, and test
-tooling that intentionally needs the whole document, selection, marks,
-operation index, and runtime id index.
+Full snapshots are runtime observer data. Use them for debug and test tooling
+that intentionally needs the whole document, selection, compiled path index,
+and runtime id index. Pending insertion marks belong to collapsed text
+selections, not to a parallel snapshot field.
 
 ```javascript
 const snapshot = editor.read((state) => state.runtime.snapshot());
@@ -116,8 +119,8 @@ editor.update({ tags: ["paste", "import"] }, (tx) => {
 ```
 
 Policy tags are applied in order, then the semantic history mode is applied.
-Only the last history intent survives. Inside an atomic update,
-`tx.tags.add(tag)` can replace that intent or add another label, and
+Only the last history mode survives. Inside an atomic update,
+`tx.tags.add(tag)` can replace that mode or add another label, and
 `tx.tags.has(tag)` inspects the current final set.
 
 Framework and feature packages own presets for their behavior. For example,
@@ -125,28 +128,28 @@ Framework and feature packages own presets for their behavior. For example,
 `SuggestionUpdatePolicy.skip` add the exact tags their runtimes consume. Plite
 core does not know those product policies.
 
-Use `persist: false` state fields for local provenance UI that should follow the
-runtime but stay out of saved document JSON. Runtime ids are useful for local
+Use state fields without a `persist` codec for local provenance UI that should
+follow the runtime but stay out of saved document JSON. Runtime ids are useful for local
 projection and debug links; semantic product ids belong in your own model when
 they need to persist.
 
 ## Preserving Ranges
 
-Use bookmarks when you need a local range to survive document edits.
+Use anchors when you need a local range to survive document edits.
 
 ```javascript
-const bookmark = editor.read((state) => {
-  const selection = state.selection();
-
-  return selection
-    ? state.ranges.bookmark(selection, { affinity: "inward" })
-    : null;
-});
+const selection = editor.read.selection();
+const anchor = selection
+  ? editor.anchor(selection, {
+      association: "inward",
+      deletion: "drop",
+    })
+  : null;
 
 editor.update((tx) => {
   tx.nodes.unwrap();
 
-  const selection = bookmark?.unref();
+  const selection = anchor?.release();
 
   if (selection) {
     tx.selection.set(selection);
@@ -154,8 +157,8 @@ editor.update((tx) => {
 });
 ```
 
-Bookmarks are local runtime anchors. Store shared document meta as document
-values, operations, and commits.
+Anchors are local runtime values. Store shared document meta as document values,
+canonical changes, effects, and commits.
 Use [Document Meta](14-document-state) for values that need to persist with
 the document.
 
@@ -163,8 +166,8 @@ the document.
 
 Extensions package reusable behavior without mutating random fields onto the
 editor object. They can register read namespaces with `state`, write namespaces
-with `tx`, schema specs, commit listeners, operation middleware, normalizer
-entries, and optional runtime registration.
+with `tx`, schema contributions, commit listeners, changed-range corrections, effects,
+and optional runtime registration.
 
 Here's a small extension that adds a table namespace:
 
@@ -199,8 +202,7 @@ const tables = defineEditorExtension({
   },
 });
 
-const editor = createEditor();
-editor.extend(tables);
+const editor = createEditor({ extensions: [tables] as const });
 ```
 
 The extension adds helpers to grouped reads, atomic updates, and direct update

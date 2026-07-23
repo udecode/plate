@@ -4,14 +4,14 @@ import * as React from 'react';
 
 import { BaseInlineEquationPlugin } from '@platejs/math';
 import { RadicalIcon } from 'lucide-react';
-import { useEditorRef } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 
 import { ToolbarButton } from './toolbar';
 
 export function InlineEquationToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return (
     <ToolbarButton

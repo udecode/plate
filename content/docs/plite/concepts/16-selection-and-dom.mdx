@@ -69,7 +69,7 @@ const atWordEnd = editor.read.points.isWordEnd(point);
 `at` and `match` options. Omit `at` to inspect the current selection. These
 queries return `false` when the target or current selection does not resolve.
 
-Use [Locations](03-locations) for `Path`, `Point`, `Range`, and refs. Use [Transforms](04-transforms#selection) for transaction selection helpers.
+Use [Locations](03-locations) for `Path`, `Point`, `Range`, and anchors. Use [Transforms](04-transforms#selection) for transaction selection helpers.
 
 ## Native Selection
 
@@ -78,6 +78,23 @@ The browser can move native selection through mouse, keyboard, touch, compositio
 Application code should not patch the browser `Selection` directly for normal editor behavior. Use model transactions, `Editable` handlers, or DOM-aware React APIs that preserve Plite's repair path.
 
 Use [React Editor](../libraries/plite-react/react-editor) for DOM translation helpers and [Plite React Event Handling](../libraries/plite-react/event-handling) for browser event hooks.
+
+## DOM Phase Order
+
+Each mounted `Editable` owns one bounded scheduler for post-model browser work.
+It runs queued tasks in this order:
+
+1. model work
+2. DOM reads
+3. DOM or React writes
+4. selection export and repair
+
+Selection export, scroll restoration, native-input repair, drag auto-scroll,
+projected caret cleanup, focus restoration, and DOM repair share that owner.
+Semantic browser clocks such as composition guard lifetimes can wait on a
+timer, but their DOM or selection side effects re-enter the phase scheduler.
+Recursive scheduling is bounded and recorded as a loop diagnostic instead of
+spinning indefinitely.
 
 ## DOM Coverage
 
@@ -100,18 +117,22 @@ Use [DOM Coverage Boundaries](../libraries/plite-react/dom-coverage-boundaries) 
 Void elements still need a model text anchor so Plite can place selection around them. Editable islands keep an element void for outer rendering policy while allowing cursor projection into its text children.
 
 ```tsx
-import { defineEditorExtension } from "@platejs/plite";
+import { defineEditorExtension, schema } from "@platejs/plite";
 
 const media = defineEditorExtension({
   name: "media",
-  elements: [
-    {
-      type: "captioned-image",
-      void: "editable-island",
+  schema: {
+    elements: {
+      "captioned-image": {
+        content: schema.content.text({ default: "text", min: 1 }),
+        void: "editable-island",
+      },
     },
-  ],
+  },
 });
 ```
+
+Install this feature contribution beside the editor's complete schema.
 
 Keep visible void UI inside the void renderer. Let Plite render the shell and text anchor. Use [Editable Component](../libraries/plite-react/editable#rendervoid) for void rendering rules.
 

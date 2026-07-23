@@ -14,7 +14,8 @@ type AtLeastOne<T extends object> = {
 /** Exact or bounded numeric assertion used by browser proof steps. */
 export type PliteBrowserNumberBudget =
   | number
-  | AtLeastOne<{ exact: number; max: number; min: number }>;
+  | { exact: number; max?: never; min?: never }
+  | (AtLeastOne<{ max: number; min: number }> & { exact?: never });
 
 /** Model selection snapshot captured from the editor runtime. */
 export type SelectionSnapshot = {

@@ -111,7 +111,7 @@ The package owns subscript semantics. The registry owns shortcut configuration a
 | Behavior | Source |
 |----------|--------|
 | Mark key | `KEYS.sub` (`subscript`) |
-| Leaf behavior | `node.isLeaf: true` |
+| Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.subscript.toggle()` removes superscript and toggles subscript. |
 | Selection affinity | `directional` |
 | HTML tags | `sub` |

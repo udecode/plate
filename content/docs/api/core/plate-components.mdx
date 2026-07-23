@@ -14,7 +14,7 @@ import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 
 export function Editor() {
   const editor = usePlateEditor({
-    value: [
+    initialValue: [
       {
         children: [{ text: 'Start writing.' }],
         type: 'p',
@@ -31,9 +31,9 @@ export function Editor() {
 ```
 
 <Callout type="warning" title="Provider required">
-  `PlateContent` must render below `Plate`. Hooks such as `useEditorRef`,
-  `useEditorReadOnly`, and `usePlateStore` throw when there is no `Plate` or
-  `PlateController` above them.
+  `PlateContent` must render below `Plate`. `useEditor()` requires an active
+  editor and throws otherwise. Use `useActiveEditor()` only in controller UI
+  that intentionally handles `null` while no editor is active.
 </Callout>
 
 ## Read-Only View
@@ -51,7 +51,7 @@ const value = [
 ];
 
 export function ReadOnlyEditor() {
-  const editor = usePlateViewEditor({ value });
+  const editor = usePlateViewEditor({ initialValue: value });
 
   if (!editor) return null;
 
@@ -99,6 +99,31 @@ export function ParagraphElement(props: PlateElementProps) {
 }
 ```
 
+Pass a plugin descriptor when the component belongs to one plugin. The props
+infer that plugin's configured element type.
+
+```tsx title="components/quote-element.tsx"
+import { QuotePlugin } from '@/components/editor/plugins/quote-plugin';
+import { PlateElement, type PlateElementProps } from 'platejs/react';
+
+export function QuoteElement(props: PlateElementProps<typeof QuotePlugin>) {
+  return <PlateElement as="blockquote" {...props} />;
+}
+```
+
+Reusable component libraries can pass the element type directly instead:
+
+```tsx
+import type { Element } from 'platejs';
+import { PlateElement, type PlateElementProps } from 'platejs/react';
+
+export function TypedElement<TElement extends Element>(
+  props: PlateElementProps<TElement>
+) {
+  return <PlateElement {...props} />;
+}
+```
+
 | Primitive | Behavior |
 |-----------|----------|
 | `PlateElement` | Adds `data-plite-node="element"`, preserves inline metadata, sets `data-block-id` for mounted block elements with an `id`, and adds directional-affinity spacers when needed. |
@@ -135,20 +160,20 @@ Root provider for one editor instance.
   <APIItem name="renderLeaf" type="EditableProps['renderLeaf']" optional>
     Fallback leaf renderer stored on the Plate store.
   </APIItem>
-  <APIItem name="onChange" type="({ editor, value }) => void" optional>
-    Runs after Plite change handling when plugin `onChange` handlers do not handle the event.
+  <APIItem name="onCommit" type="({ commit, editor, snapshot }) => void" optional>
+    Observes every published editor commit for the lifetime of the `Plate` provider.
   </APIItem>
-  <APIItem name="onValueChange" type="({ editor, value }) => void" optional>
-    Runs when Plite reports a value change.
+  <APIItem name="onValueChange" type="({ commit, editor, snapshot, value }) => void" optional>
+    Observes commits that change the primary-root value.
   </APIItem>
-  <APIItem name="onSelectionChange" type="({ editor, selection }) => void" optional>
-    Runs when Plite reports a selection change.
+  <APIItem name="onSelectionChange" type="({ commit, editor, selection, snapshot }) => void" optional>
+    Observes commits that change the primary-root selection.
   </APIItem>
   <APIItem name="onNodeChange" type="({ editor, node, operation, prevNode }) => void" optional>
-    Called from Plite committed node change events after `PlateContent` connects the editor store.
+    Observes canonical node changes for the lifetime of the `Plate` provider.
   </APIItem>
   <APIItem name="onTextChange" type="({ editor, node, operation, prevText, text }) => void" optional>
-    Called from Plite committed text change events after `PlateContent` connects the editor store.
+    Observes canonical text changes for the lifetime of the `Plate` provider.
   </APIItem>
   <APIItem name="suppressInstanceWarning" type="boolean" optional>
     Suppresses the multiple-instance warning from `usePlateInstancesWarn`.
@@ -163,7 +188,7 @@ Editable surface for a `Plate` editor.
 <API name="PlateContent">
 <APIProps>
   <APIItem name="id" type="string" optional>
-    Editor scope used by `useEditorRef(id)` and `usePlateStore(id)`.
+    Editor scope used by `useEditor({ id })` and `usePlateStore(id)`.
   </APIItem>
   <APIItem name="autoFocusOnEditable" type="boolean" optional>
     Focuses the editor at the end when `readOnly` changes from `true` to `false`.

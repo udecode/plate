@@ -6,14 +6,14 @@ import type { NavigationFeedbackActiveTarget } from './types';
 import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
 import {
   useEditorPluginOption,
-  useEditorRef,
+  useEditor,
   useElementContext,
 } from '../../stores';
 
 type NavigationHighlightTarget = Path | Element | Text | null | undefined;
 
 export const useNavigationHighlight = (target?: NavigationHighlightTarget) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const currentElementPath = useElementContext()?.path ?? null;
   const storedTarget = useEditorPluginOption(
     editor,
@@ -22,7 +22,7 @@ export const useNavigationHighlight = (target?: NavigationHighlightTarget) => {
   );
 
   return React.useMemo<NavigationFeedbackActiveTarget | null>(() => {
-    const path = storedTarget?.pathRef.current;
+    const path = storedTarget?.pathAnchor.resolve();
 
     if (!storedTarget || !path) return null;
 
@@ -37,8 +37,8 @@ export const useNavigationHighlight = (target?: NavigationHighlightTarget) => {
     if (!resolvedPath) return null;
     if (!PathApi.equals(path, resolvedPath)) return null;
 
-    const { pathRef: _pathRef, ...activeTarget } = storedTarget;
+    const { pathAnchor: _pathAnchor, ...activeTarget } = storedTarget;
 
     return { ...activeTarget, path };
-  }, [currentElementPath, editor, storedTarget, target]);
+  }, [currentElementPath, storedTarget, target]);
 };

@@ -1,5 +1,6 @@
 import {
   type Element,
+  type EditorStateView,
   ElementApi,
   type NodeEntry,
   type Text,
@@ -17,28 +18,36 @@ import { getPluginByType } from '../../../plugin';
  * the node before the text is returned. If the cursor is at the end of the
  * text, then the node after the text is returned. Otherwise, null is returned.
  */
-export const getEdgeNodes = (editor: BaseEditor): EdgeNodes | null => {
-  if (!editor.read.selection.isCollapsed()) return null;
+type EdgeNodeState = Pick<
+  EditorStateView,
+  'nodes' | 'points' | 'ranges' | 'selection'
+>;
 
-  const selection = editor.read.selection();
+export const getEdgeNodes = (
+  editor: BaseEditor,
+  state: EdgeNodeState = editor.read
+): EdgeNodes | null => {
+  if (!state.selection.isCollapsed()) return null;
+
+  const selection = state.selection();
   if (!selection) return null;
 
   const cursor = selection.anchor;
 
-  const textRange = editor.read.ranges.get(cursor.path);
+  const textRange = state.ranges.get(cursor.path);
 
   if (!textRange) return null;
 
-  const edge = editor.read.points.isStart(cursor, textRange)
+  const edge = state.points.isStart(cursor, textRange)
     ? 'start'
-    : editor.read.points.isEnd(cursor, textRange)
+    : state.points.isEnd(cursor, textRange)
       ? 'end'
       : null;
 
   if (!edge) return null;
 
   const parent: Element | null =
-    (editor.read.nodes.parent(cursor.path)?.[0] as Element | undefined) ?? null;
+    (state.nodes.parent(cursor.path)?.[0] as Element | undefined) ?? null;
 
   /** Inline elements */
 
@@ -53,7 +62,7 @@ export const getEdgeNodes = (editor: BaseEditor): EdgeNodes | null => {
 
   const nodeEntry: NodeEntry<Element | Text> = isAffinityInlineElement
     ? [parent!, PathApi.parent(cursor.path)]
-    : [editor.read.nodes.get<Element | Text>(cursor.path)![0], cursor.path];
+    : [state.nodes.get<Element | Text>(cursor.path)![0], cursor.path];
 
   if (
     edge === 'start' &&
@@ -67,7 +76,7 @@ export const getEdgeNodes = (editor: BaseEditor): EdgeNodes | null => {
     edge === 'end'
       ? PathApi.next(nodeEntry[1])
       : PathApi.previous(nodeEntry[1]);
-  const siblingNode = editor.read.nodes.get<Text>(siblingPath)?.[0];
+  const siblingNode = state.nodes.get<Text>(siblingPath)?.[0];
 
   const siblingEntry: NodeEntry<Text> | null = siblingNode
     ? [siblingNode, siblingPath]

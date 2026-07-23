@@ -1,6 +1,10 @@
 import React from 'react';
 
 import { type BaseEditor, getPluginByType } from '../lib';
+import {
+  getCompiledPlateModelBinding,
+  getPlateRuntime,
+} from '../internal/plugin/compilePlateModel';
 import { PliteElement } from './components/plite-nodes';
 import {
   type PliteRenderElement,
@@ -18,8 +22,11 @@ export const pipeRenderElementStatic = (
 ): PliteRenderElement =>
   function render(props) {
     const plugin = getPluginByType(editor, props.element.type);
+    const binding = plugin
+      ? getCompiledPlateModelBinding(editor, plugin)
+      : undefined;
 
-    if (plugin?.node.isElement) {
+    if (plugin && binding?.kind === 'element') {
       return pluginRenderElementStatic(editor, plugin)(props as any);
     }
 
@@ -37,12 +44,14 @@ export const pipeRenderElementStatic = (
       <PliteElement {...ctxProps}>
         {props.children}
 
-        {editor.runtime.pluginCache.render.belowRootNodes.map((key) => {
-          const plugin = editor.getPlugin({ key }) as any;
-          const Component = plugin.render.belowRootNodes;
+        {getPlateRuntime(editor).pluginCache.render.belowRootNodes.map(
+          (key) => {
+            const plugin = editor.getPlugin({ key }) as any;
+            const Component = plugin.render.belowRootNodes;
 
-          return <Component key={key} {...ctxProps} />;
-        })}
+            return <Component key={key} {...ctxProps} />;
+          }
+        )}
       </PliteElement>
     );
   };

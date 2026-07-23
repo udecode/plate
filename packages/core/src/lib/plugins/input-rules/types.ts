@@ -1,6 +1,6 @@
 import type {
   Element,
-  EditorUpdateTransaction,
+  EditorTransactionSpecBuilder,
   NodeEntry,
   Path,
   Point,
@@ -32,7 +32,7 @@ export type SelectionInputRuleContext<TEditor extends BaseEditor = BaseEditor> =
 
 export type TransformInputRuleContext<TEditor extends BaseEditor = BaseEditor> =
   {
-    tx: EditorUpdateTransaction<ValueOf<TEditor>>;
+    tx: EditorTransactionSpecBuilder<ValueOf<TEditor>>;
   };
 
 export type InsertBreakInputRuleContext<
@@ -300,20 +300,43 @@ export type ResolvedInputRule = StoredInputRule & {
   pluginIndex: number;
 };
 
-export type ResolvedInputRulesMeta = {
-  insertBreak: Extract<ResolvedInputRule, { target: 'insertBreak' }>[];
-  insertData: Extract<ResolvedInputRule, { target: 'insertData' }>[];
-  insertText: {
-    all: Extract<ResolvedInputRule, { target: 'insertText' }>[];
-    byTrigger: Record<
-      string,
-      Extract<ResolvedInputRule, { target: 'insertText' }>[]
+type DeepReadonly<T> = T extends (...args: any[]) => unknown
+  ? T
+  : T extends readonly (infer TItem)[]
+    ? readonly DeepReadonly<TItem>[]
+    : T extends object
+      ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+      : T;
+
+type ReadonlyResolvedInputRule = DeepReadonly<ResolvedInputRule>;
+
+export type ResolvedInputRulesMeta = Readonly<{
+  insertBreak: readonly Extract<
+    ReadonlyResolvedInputRule,
+    { target: 'insertBreak' }
+  >[];
+  insertData: readonly Extract<
+    ReadonlyResolvedInputRule,
+    { target: 'insertData' }
+  >[];
+  insertText: Readonly<{
+    all: readonly Extract<
+      ReadonlyResolvedInputRule,
+      { target: 'insertText' }
+    >[];
+    byTrigger: Readonly<
+      Record<
+        string,
+        readonly Extract<ReadonlyResolvedInputRule, { target: 'insertText' }>[]
+      >
     >;
-  };
-  plugins: Record<
-    string,
-    {
-      rules: ResolvedInputRule[];
-    }
+  }>;
+  plugins: Readonly<
+    Record<
+      string,
+      Readonly<{
+        rules: readonly ReadonlyResolvedInputRule[];
+      }>
+    >
   >;
-};
+}>;

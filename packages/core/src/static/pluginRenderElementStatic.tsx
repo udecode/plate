@@ -6,6 +6,7 @@ import {
   type RenderElementProps,
   getEditorPlugin,
 } from '../lib';
+import { getPlateRuntime } from '../internal/plugin/compilePlateModel';
 
 import { PliteElement } from './components/plite-nodes';
 import { getPluginDataAttributes } from './utils';
@@ -22,7 +23,7 @@ export const pluginRenderElementStatic = (
   function render(nodeProps) {
     const element = nodeProps.element;
 
-    const Component = editor.runtime.components?.[plugin.key] as any;
+    const Component = getPlateRuntime(editor).components[plugin.key] as any;
     const Element = Component ?? PliteElement;
 
     let { children } = nodeProps;
@@ -42,7 +43,7 @@ export const pluginRenderElementStatic = (
       props: nodeProps as any,
     }) as any;
 
-    editor.runtime.pluginCache.render.belowNodes.forEach((key) => {
+    getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((key) => {
       const wrapperPlugin = editor.getPlugin({ key });
       const wrapperContext = getEditorPlugin(editor, wrapperPlugin);
       const hoc = wrapperPlugin.render.belowNodes!({
@@ -62,24 +63,26 @@ export const pluginRenderElementStatic = (
       <Element {...defaultProps} {...nodeProps}>
         {children}
 
-        {editor.runtime.pluginCache.render.belowRootNodes.map((key) => {
-          const plugin = editor.getPlugin({ key }) as any;
-          const Component = plugin.render.belowRootNodes;
-          const pluginContext = getEditorPlugin(editor, plugin);
+        {getPlateRuntime(editor).pluginCache.render.belowRootNodes.map(
+          (key) => {
+            const plugin = editor.getPlugin({ key }) as any;
+            const Component = plugin.render.belowRootNodes;
+            const pluginContext = getEditorPlugin(editor, plugin);
 
-          return (
-            <Component
-              key={key}
-              {...defaultProps}
-              {...nodeProps}
-              {...pluginContext}
-            />
-          );
-        })}
+            return (
+              <Component
+                key={key}
+                {...defaultProps}
+                {...nodeProps}
+                {...pluginContext}
+              />
+            );
+          }
+        )}
       </Element>
     );
 
-    editor.runtime.pluginCache.render.aboveNodes.forEach((key) => {
+    getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach((key) => {
       const wrapperPlugin = editor.getPlugin({ key });
       const wrapperContext = getEditorPlugin(editor, wrapperPlugin);
       const hoc = wrapperPlugin.render.aboveNodes!({

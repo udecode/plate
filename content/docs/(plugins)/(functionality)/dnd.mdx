@@ -106,9 +106,9 @@ DndPlugin.configure({
   options: {
     enableScroller: true,
     onDropFiles: ({ dragItem, editor, target }) => {
-      editor.update((tx) =>
-        tx.placeholder.insert.media(dragItem.files, { at: target })
-      );
+      editor
+        .plugin(PlaceholderPlugin)
+        .update.insertMedia(dragItem.files, { at: target });
     },
   },
   render: {

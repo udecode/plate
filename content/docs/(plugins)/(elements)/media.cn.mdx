@@ -328,9 +328,9 @@ export function PlaceholderElement({ className, children, element, ...props }) {
       // 将占位符替换为实际媒体元素
       const { url, type } = uploadedFile;
       // 上传成功后插入最终媒体节点
-      editor.update((tx) => {
-        tx.placeholder.insert(getMediaType(type), { select: true });
-      });
+        editor
+          .plugin(PlaceholderPlugin)
+          .update.insert(getMediaType(type), { select: true });
     },
     onUploadError: (error) => {
       console.error('上传失败:', error);
@@ -547,13 +547,13 @@ export function PlaceholderElement({ className, children, element, ...props }) {
 
 ## 转换方法
 
-### `tx.placeholder.insert.media`
+### `editor.plugin(PlaceholderPlugin).update.insertMedia`
 
 使用上传占位符将媒体文件插入编辑器。
 
 <API name="insertMedia">
 <APIParameters>
-  <APIItem name="files" type="FileList">
+  <APIItem name="files" type="File[] | FileList">
     要上传的文件。根据配置的文件类型和限制进行验证。
   </APIItem>
   <APIItem name="options" type="object" optional>
@@ -584,39 +584,39 @@ enum UploadErrorCode {
 }
 ```
 
-### `editor.update.placeholder.imagePlaceholder`
+### `editor.plugin(BasePlaceholderPlugin).update.insert`
 
-插入一个在上传完成后转换为图片元素的占位符。
+插入一个用于图片、视频、音频或文件的无 UI 占位符。
 
-### `editor.update.placeholder.videoPlaceholder`
+<API name="insert">
+<APIParameters>
+  <APIItem name="mediaType" type="string">
+    上传完成后创建的媒体节点类型，例如 `KEYS.img`、`KEYS.video`、
+    `KEYS.audio` 或 `KEYS.file`。
+  </APIItem>
+  <APIItem name="options" type="NodeInsertNodesOptions<TPlaceholderElement>" optional>
+    精确路径和选区选项。
+  </APIItem>
+</APIParameters>
+</API>
 
-插入一个在上传完成后转换为视频元素的占位符。
-
-### `editor.update.placeholder.audioPlaceholder`
-
-插入一个在上传完成后转换为音频元素的占位符。
-
-### `editor.update.placeholder.filePlaceholder`
-
-插入一个在上传完成后转换为文件元素的占位符。
-
-### `insertImage`
+### `editor.plugin(BaseImagePlugin).update.insert`
 
 在编辑器中插入图片元素。
 
-<API name="insertImage">
+<API name="insert">
 <APIParameters>
-  <APIItem name="url" type="string | ArrayBuffer">
-    图片的 URL 或 ArrayBuffer。
+  <APIItem name="url" type="string">
+    图片 URL。
   </APIItem>
-  <APIItem name="options" type="object" optional>
-    插入图片元素的额外选项。
+  <APIItem name="options" type="NodeInsertNodesOptions<TImageElement>" optional>
+    精确路径和选区选项。
   </APIItem>
 </APIParameters>
 
-<APIOptions type="InsertImageOptions">
-  <APIItem name="after" type="NodeTarget" optional>
-    引用块或位置。默认使用选中的块；没有引用或选区时追加到末尾。
+<APIOptions type="NodeInsertNodesOptions<TImageElement>">
+  <APIItem name="at" type="Location" optional>
+    精确插入目标。省略时插入到选中的块之后。
   </APIItem>
   <APIItem name="select" type="boolean" optional>
     选择插入的图片。
@@ -624,21 +624,51 @@ enum UploadErrorCode {
 </APIOptions>
 </API>
 
-### `insertMediaEmbed`
+### `editor.plugin(BaseMediaEmbedPlugin).update.insert`
 
-在当前选区插入媒体嵌入元素。
+转换并规范化 URL，然后插入媒体嵌入元素。
 
-<API name="insertMediaEmbed">
-<APIOptions type="InsertMediaEmbedOptions">
-  <APIItem name="url" type="string" optional>
-    媒体嵌入的 URL。
-    - **默认值:** `''`
+<API name="insert">
+<APIParameters>
+  <APIItem name="url" type="string">
+    媒体 URL 或嵌入代码。
   </APIItem>
-  <APIItem name="after" type="NodeTarget" optional>
-    引用块或位置。默认使用选中的块。
+  <APIItem name="options" type="NodeInsertNodesOptions<TMediaEmbedElement>" optional>
+    精确路径和选区选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="NodeInsertNodesOptions<TMediaEmbedElement>">
+  <APIItem name="at" type="Location" optional>
+    精确插入目标。省略时必须存在当前选区。
   </APIItem>
   <APIItem name="select" type="boolean" optional>
     选择插入的媒体嵌入。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertMediaUrl`
+
+提示输入图片或嵌入 URL，并调用对应插件的作用域更新。请从
+`@platejs/media/react` 导入。
+
+<API name="insertMediaUrl">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    接收媒体元素的编辑器。
+  </APIItem>
+  <APIItem name="options" type="InsertMediaUrlOptions" optional>
+    URL 解析、媒体类型、精确路径和选区选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="InsertMediaUrlOptions">
+  <APIItem name="getUrl" type="() => Promise<string>" optional>
+    不显示浏览器提示框，直接解析 URL。
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    `KEYS.img` 或 `KEYS.mediaEmbed`。默认值为 `KEYS.img`。
   </APIItem>
 </APIOptions>
 </API>
@@ -700,29 +730,41 @@ enum UploadErrorCode {
 </APIParameters>
 
 <APIReturns type="object">
-  <APIItem name="align" type="string">
+  <APIItem name="id" type="string | undefined">
+    媒体元素 ID。
+  </APIItem>
+  <APIItem name="align" type="string | undefined">
     媒体元素的对齐方式。
   </APIItem>
-  <APIItem name="focus" type="boolean">
-    媒体元素是否当前获得焦点。
-  </APIItem>
-  <APIItem name="selected" type="boolean">
-    媒体元素是否当前被选中。
-  </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    编辑器是否处于只读模式。
-  </APIItem>
-  <APIItem name="embed" type="EmbedUrlData">
+  <APIItem name="embed" type="EmbedUrlData | undefined">
     媒体元素的解析嵌入数据。
+  </APIItem>
+  <APIItem name="focused" type="boolean">
+    媒体元素是否当前获得焦点。
   </APIItem>
   <APIItem name="isTweet" type="boolean">
     媒体元素是否为推文。
+  </APIItem>
+  <APIItem name="isUpload" type="boolean | undefined">
+    媒体元素是否表示上传。
   </APIItem>
   <APIItem name="isVideo" type="boolean">
     媒体元素是否为视频。
   </APIItem>
   <APIItem name="isYoutube" type="boolean">
     媒体元素是否为 YouTube 视频。
+  </APIItem>
+  <APIItem name="name" type="string | undefined">
+    媒体文件名。
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    编辑器是否处于只读模式。
+  </APIItem>
+  <APIItem name="selected" type="boolean">
+    媒体元素是否当前被选中。
+  </APIItem>
+  <APIItem name="unsafeUrl" type="string">
+    元素中存储的未转义媒体 URL。
   </APIItem>
 </APIReturns>
 </API>
@@ -739,8 +781,8 @@ enum UploadErrorCode {
 </APIParameters>
 
 <APIReturns type="object">
-  <APIItem name="props.onClick" type="() => void">
-    插入媒体节点并使编辑器获得焦点的回调函数。
+  <APIItem name="props.onClick" type="() => Promise<void>">
+    提示输入 URL 并插入所需媒体节点。
   </APIItem>
 </APIReturns>
 </API>
@@ -790,11 +832,11 @@ enum UploadErrorCode {
   <APIItem name="props.src" type="string">
     媒体元素的 URL。
   </APIItem>
-  <APIItem name="props.alt" type="string">
-    图片的说明文字。
-  </APIItem>
   <APIItem name="props.draggable" type="boolean">
     图片是否可拖动。
+  </APIItem>
+  <APIItem name="props.onDoubleClickCapture" type="() => void">
+    打开图片预览。
   </APIItem>
 </APIReturns>
 </API>
@@ -807,13 +849,17 @@ enum UploadErrorCode {
 
 <API name="parseMediaUrl">
 <APIParameters>
-  <APIItem name="options.pluginKey" type="string">
-    媒体插件的键。
-  </APIItem>
-  <APIItem name="options.url" type="string" optional>
+  <APIItem name="url" type="string">
     要解析的媒体 URL。
   </APIItem>
+  <APIItem name="options.urlParsers" type="EmbedUrlParser[]">
+    用于识别 URL 的有序解析器。
+  </APIItem>
 </APIParameters>
+
+<APIReturns type="EmbedUrlData | undefined">
+  第一个安全的解析结果；没有解析器匹配时返回 `undefined`。
+</APIReturns>
 </API>
 
 ### `parseVideoUrl`
@@ -863,57 +909,20 @@ enum UploadErrorCode {
 </APIParameters>
 </API>
 
-### `isImageUrl`
-
-检查 URL 是否为有效的图片 URL。
-
-<API name="isImageUrl">
-<APIParameters>
-  <APIItem name="url" type="string">
-    要检查的 URL。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="boolean">
-  URL 是否为有效的图片 URL。
-</APIReturns>
-</API>
-
 ### `submitFloatingMedia`
 
 提交浮动媒体元素。
 
 <API name="submitFloatingMedia">
 <APIParameters>
+  <APIItem name="editor" type="BaseEditor">
+    包含媒体元素的编辑器。
+  </APIItem>
   <APIItem name="options.element" type="TMediaElement">
     要提交的浮动媒体元素。
   </APIItem>
-  <APIItem name="options.pluginKey" type="string" optional>
-    媒体插件的键。
-  </APIItem>
-</APIParameters>
-</API>
-
-### `withImageUpload`
-
-为编辑器实例添加图片上传功能。
-
-<API name="withImageUpload">
-<APIParameters>
-  <APIItem name="plugin" type="PlatePlugin">
-    Plate 插件。
-  </APIItem>
-</APIParameters>
-</API>
-
-### `withImageEmbed`
-
-为编辑器实例添加图片相关功能。
-
-<API name="withImageEmbed">
-<APIParameters>
-  <APIItem name="plugin" type="PlatePlugin">
-    Plate 插件。
+  <APIItem name="options.plugin" type="WithRequiredKey<MediaPluginConfig>">
+    拥有 URL 选项的图片或媒体嵌入插件。
   </APIItem>
 </APIParameters>
 </API>
@@ -945,9 +954,10 @@ export interface TPlaceholderElement extends Element {
 
 ```tsx
 export interface EmbedUrlData {
-  url?: string;
-  provider?: string;
   id?: string;
-  component?: React.FC<EmbedUrlData>;
+  provider?: string;
+  sourceKind?: 'allowlisted_snippet' | 'iframe' | 'url';
+  sourceUrl?: string;
+  url?: string;
 }
 ```

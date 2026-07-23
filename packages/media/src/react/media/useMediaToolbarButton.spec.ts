@@ -1,11 +1,11 @@
 import { createBaseEditor } from '@platejs/core';
 import { KEYS, NODES } from '@platejs/utils';
 
-import { BaseImagePlugin } from '../image/BaseImagePlugin';
-import { BaseMediaEmbedPlugin } from '../media-embed/BaseMediaEmbedPlugin';
-import { insertMedia } from './insertMedia';
+import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
+import { BaseMediaEmbedPlugin } from '../../lib/media-embed/BaseMediaEmbedPlugin';
+import { insertMediaUrl } from './useMediaToolbarButton';
 
-describe('insertMedia', () => {
+describe('insertMediaUrl', () => {
   let restorePrompt: (() => void) | undefined;
 
   afterEach(() => {
@@ -27,8 +27,7 @@ describe('insertMedia', () => {
   it('inserts an image from the resolved URL', async () => {
     const editor = createEditor();
 
-    await insertMedia(editor, {
-      at: [0],
+    await insertMediaUrl(editor, {
       getUrl: async () => 'https://platejs.org/image.png',
     });
 
@@ -42,7 +41,7 @@ describe('insertMedia', () => {
   it('inserts and normalizes an embed', async () => {
     const editor = createEditor();
 
-    await insertMedia(editor, {
+    await insertMediaUrl(editor, {
       getUrl: async () => 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
       type: NODES.mediaEmbed,
     });
@@ -55,13 +54,57 @@ describe('insertMedia', () => {
     });
   });
 
+  it('keeps the selected block target while an asynchronous URL resolves', async () => {
+    const editor = createEditor();
+    let resolveUrl = (_url: string) => {};
+    const insertion = insertMediaUrl(editor, {
+      getUrl: () =>
+        new Promise<string>((resolve) => {
+          resolveUrl = resolve;
+        }),
+    });
+
+    editor.update.selection.set(null);
+    resolveUrl('https://platejs.org/image.png');
+    await insertion;
+
+    expect(editor.read.children().at(1)).toMatchObject({
+      type: KEYS.img,
+      url: 'https://platejs.org/image.png',
+    });
+  });
+
+  it('keeps an explicit target while the document changes', async () => {
+    const editor = createEditor();
+    let resolveUrl = (_url: string) => {};
+    const insertion = insertMediaUrl(editor, {
+      at: [1],
+      getUrl: () =>
+        new Promise<string>((resolve) => {
+          resolveUrl = resolve;
+        }),
+    });
+
+    editor.update.nodes.insert(
+      { children: [{ text: 'before' }], type: KEYS.p },
+      { at: [0] }
+    );
+    resolveUrl('https://platejs.org/image.png');
+    await insertion;
+
+    expect(editor.read.children().at(2)).toMatchObject({
+      type: KEYS.img,
+      url: 'https://platejs.org/image.png',
+    });
+  });
+
   it('stops when the URL prompt is cancelled', async () => {
     const editor = createEditor();
     const promptSpy = spyOn(window, 'prompt').mockReturnValue('');
 
     restorePrompt = () => promptSpy.mockRestore();
 
-    await insertMedia(editor);
+    await insertMediaUrl(editor);
 
     expect(promptSpy).toHaveBeenCalledWith('Enter the URL of the img');
     expect(editor.read.children()).toHaveLength(1);

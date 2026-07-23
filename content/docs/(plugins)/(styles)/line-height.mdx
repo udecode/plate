@@ -20,7 +20,7 @@ docs:
 - HTML `line-height` style deserialization.
 - Default-value cleanup.
 - Configurable target block types.
-- Shared `setLineHeight` transform.
+- Bound `editor.update.lineHeight.set` method.
 - Registry dropdown toolbar driven by valid node values.
 
 </PackageInfo>
@@ -36,9 +36,9 @@ Use `LineHeightKit` for the Plate UI setup. It targets paragraphs and all headin
 <ComponentSource name="line-height-kit" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createPlateEditor } from "platejs/react";
 
-import { LineHeightKit } from '@/components/editor/plugins/line-height-kit';
+import { LineHeightKit } from "@/components/editor/plugins/line-height-kit";
 
 export const editor = createPlateEditor({
   plugins: [...LineHeightKit],
@@ -50,7 +50,7 @@ export const editor = createPlateEditor({
 `LineHeightToolbarButton` reads `defaultNodeValue` and `validNodeValues` from the plugin inject props.
 
 ```tsx
-import { LineHeightToolbarButton } from '@/components/ui/line-height-toolbar-button';
+import { LineHeightToolbarButton } from "@/components/ui/line-height-toolbar-button";
 
 export function LineHeightControls() {
   return <LineHeightToolbarButton />;
@@ -74,19 +74,22 @@ npm install @platejs/basic-styles
 Configure target block types and the values your UI should expose.
 
 ```tsx
-import { LineHeightPlugin } from '@platejs/basic-styles/react';
-import { KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { HeadingPlugin } from "@platejs/basic-nodes/react";
+import { LineHeightPlugin } from "@platejs/basic-styles/react";
+import { createPlateEditor, ParagraphPlugin } from "platejs/react";
 
 export const editor = createPlateEditor({
   plugins: [
     LineHeightPlugin.configure({
+      targetPluginKeys: [
+        ...HeadingPlugin.plugins.map((plugin) => plugin.key),
+        ParagraphPlugin.key,
+      ],
       inject: {
         nodeProps: {
           defaultNodeValue: 1.5,
           validNodeValues: [1, 1.2, 1.5, 2, 3],
         },
-        targetPlugins: [...KEYS.heading, KEYS.p],
       },
     }),
   ],
@@ -95,52 +98,49 @@ export const editor = createPlateEditor({
 
 ### Set Line Height
 
-Use the bound transform or the headless utility.
+Use the bound update method.
 
 ```tsx
-import { setLineHeight } from '@platejs/basic-styles';
-
-editor.update((tx) => {
-  tx.lineHeight.setNodes(2);
-});
-
-setLineHeight(editor, 1.5, { at: [] });
+editor.update.lineHeight.set(2);
+editor.update.lineHeight.set(1.5, { at: [] });
 ```
 
 </Steps>
 
 ## Ownership
 
-| Surface | Owner | What It Does |
-|---------|-------|--------------|
-| `BaseLineHeightPlugin` | `@platejs/basic-styles` | Headless plugin that stores `lineHeight`, injects block props, and parses HTML line-height styles. |
-| `LineHeightPlugin` | `@platejs/basic-styles/react` | React wrapper around `BaseLineHeightPlugin`. |
-| `setLineHeight` | `@platejs/basic-styles` | Sets or clears `lineHeight` on matching blocks. |
-| `tx.lineHeight.setNodes` | `@platejs/basic-styles` | Bound transform exposed by the plugin. |
-| `BaseLineHeightKit` | Registry kit | Static/headless setup for paragraphs and headings. |
-| `LineHeightKit` | Registry kit | React setup plus toolbar dependency. |
-| `LineHeightToolbarButton` | Registry UI | Dropdown that writes values through `lineHeight.setNodes`. |
+| Surface                        | Owner                         | What It Does                                                                                       |
+| ------------------------------ | ----------------------------- | -------------------------------------------------------------------------------------------------- |
+| `BaseLineHeightPlugin`         | `@platejs/basic-styles`       | Headless plugin that stores `lineHeight`, injects block props, and parses HTML line-height styles. |
+| `LineHeightPlugin`             | `@platejs/basic-styles/react` | React wrapper around `BaseLineHeightPlugin`.                                                       |
+| `editor.update.lineHeight.set` | `@platejs/basic-styles`       | Bound update method exposed by the plugin.                                                         |
+| `BaseLineHeightKit`            | Registry kit                  | Static/headless setup for paragraphs and headings.                                                 |
+| `LineHeightKit`                | Registry kit                  | React setup plus toolbar dependency.                                                               |
+| `LineHeightToolbarButton`      | Registry UI                   | Dropdown that writes values through `lineHeight.set`.                                              |
 
 The package owns line-height storage and parsing. The registry owns the dropdown UI and allowed value list.
 
 ## Behavior
 
-| Behavior | Source |
-|----------|--------|
-| Plugin key | `KEYS.lineHeight` |
-| Stored property | `lineHeight` |
-| Default target plugins | `[KEYS.p]` |
-| Registry target plugins | `[...KEYS.heading, KEYS.p]` |
-| Default node value | `1.5` |
-| Registry valid values | `[1, 1.2, 1.5, 2, 3]` |
-| HTML parser | Reads `element.style.lineHeight`. |
-| Setting a custom value | Sets `{ lineHeight: value }` on matching blocks. |
-| Setting the default value | Unsets `lineHeight` on matching blocks. |
-| Non-target blocks | Are ignored by `setLineHeight`. |
+| Behavior                  | Source                                           |
+| ------------------------- | ------------------------------------------------ |
+| Plugin key                | `KEYS.lineHeight`                                |
+| Stored property           | `lineHeight`                                     |
+| Default target plugins    | `[BaseParagraphPlugin]`                          |
+| Registry target plugins   | `[...HeadingPlugin.plugins, ParagraphPlugin]`    |
+| Default node value        | `1.5`                                            |
+| Registry valid values     | `[1, 1.2, 1.5, 2, 3]`                            |
+| HTML parser               | Reads `element.style.lineHeight`.                |
+| Setting a custom value    | Sets `{ lineHeight: value }` on matching blocks. |
+| Setting the default value | Unsets `lineHeight` on matching blocks.          |
+| Non-target blocks         | Are ignored by `lineHeight.set`.                 |
 
 ## HTML
 
-The plugin injects an HTML deserializer into each target plugin. When pasted HTML contains an inline `line-height` style on a target block, Plate stores the value on that block.
+`targetPluginKeys` is the schema placement truth. The plugin derives
+its render and HTML-parser injection targets from the same list. When pasted
+HTML contains an inline `line-height` style on a target block, Plate stores the
+value on that block.
 
 ```html
 <p style="line-height: 2">Readable spacing</p>
@@ -148,19 +148,19 @@ The plugin injects an HTML deserializer into each target plugin. When pasted HTM
 
 ## API Reference
 
-| API | Package | Use |
-|-----|---------|-----|
-| `LineHeightPlugin` | `@platejs/basic-styles/react` | React line-height plugin. |
-| `BaseLineHeightPlugin` | `@platejs/basic-styles` | Headless line-height plugin. |
-| `tx.lineHeight.setNodes(value, options?)` | `@platejs/basic-styles` | Sets or clears line height on matching blocks. |
-| `setLineHeight(editor, value, options?)` | `@platejs/basic-styles` | Headless transform behind the bound API. |
+| API                                             | Package                       | Use                                            |
+| ----------------------------------------------- | ----------------------------- | ---------------------------------------------- |
+| `LineHeightPlugin`                              | `@platejs/basic-styles/react` | React line-height plugin.                      |
+| `BaseLineHeightPlugin`                          | `@platejs/basic-styles`       | Headless line-height plugin.                   |
+| `editor.update.lineHeight.set(value, options?)` | `@platejs/basic-styles`       | Sets or clears line height on matching blocks. |
+| `tx.lineHeight.set(value, options?)`            | `@platejs/basic-styles`       | Transaction form for a larger atomic update.   |
 
 ## Options
 
-| Option | Surface | Use |
-|--------|---------|-----|
-| `inject.targetPlugins` | `LineHeightPlugin` | Block types that can keep `lineHeight`. |
-| `inject.nodeProps.nodeKey` | `BaseLineHeightPlugin` | Stored block property; defaults to `lineHeight`. |
-| `inject.nodeProps.defaultNodeValue` | `BaseLineHeightPlugin` | Value that clears the stored property when selected. |
-| `inject.nodeProps.validNodeValues` | Registry toolbar | Dropdown values used by `LineHeightToolbarButton`. |
-| `object` | `setLineHeight` | Plite node update options passed to `setNodes` or `unsetNodes`. |
+| Option                              | Surface                        | Use                                                                                                  |
+| ----------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `targetPluginKeys`                  | `LineHeightPlugin`             | Element plugin keys whose types can keep `lineHeight`; injection is derived from this list.         |
+| `inject.nodeProps.nodeKey`          | `BaseLineHeightPlugin`         | Stored block property; defaults to `lineHeight`.                                                     |
+| `inject.nodeProps.defaultNodeValue` | `BaseLineHeightPlugin`         | Value that clears the stored property when selected.                                                 |
+| `inject.nodeProps.validNodeValues`  | Registry toolbar               | Dropdown values used by `LineHeightToolbarButton`.                                                   |
+| `options`                           | `editor.update.lineHeight.set` | Plite node update options for the target range and matcher.                                          |

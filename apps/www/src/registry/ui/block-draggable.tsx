@@ -14,10 +14,10 @@ import {
   type PlateElementProps,
   type RenderNodeWrapper,
   MemoizedChildren,
-  useEditorRef,
+  useEditor,
   useEditorPlugin,
   useElement,
-  useNodePath,
+  usePath,
   usePluginOption,
 } from 'platejs/react';
 import { useElementSelected } from 'platejs/react';
@@ -192,7 +192,7 @@ function Gutter({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const element = useElement();
   const isSelectionAreaVisible = usePluginOption(
     BlockSelectionPlugin,
@@ -231,10 +231,10 @@ const DragHandle = React.memo(function DragHandle({
   resetPreview: () => void;
   setPreviewTop: (top: number) => void;
 }) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const { api } = useEditorPlugin(BlockSelectionPlugin);
   const element = useElement();
-  const path = useNodePath(element);
+  const path = usePath();
 
   return (
     <Tooltip>

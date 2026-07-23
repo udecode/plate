@@ -129,7 +129,9 @@ The plugin shows a placeholder only when every gate passes.
 | Placeholder map | The block type matches one entry in `placeholders`. |
 | Query | `query({ editor, node, path, ...ctx })` returns `true`. |
 
-The default `query` returns `true` for root blocks only. The whole-editor guard uses `editor.api.isElementStateEmpty`, so only `type` and props claimed by plugins through `node.isMetadataProp` are treated as pristine metadata.
+The default `query` returns `true` for root blocks only. The whole-editor guard
+uses `editor.api.isElementStateEmpty`, so only `type` and compiled element
+properties declared with `significant: false` are treated as pristine metadata.
 
 ```tsx
 query: ({ path }) => path.length === 1

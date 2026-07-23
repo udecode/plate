@@ -12,10 +12,10 @@ import {
 } from '@platejs/utils';
 import { useEditor, useElement } from '@platejs/core/react';
 
-import { VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {
   type EmbedUrlParser,
   parseMediaUrl,
+  VIDEO_PROVIDERS,
 } from '../../lib/media/parseMediaUrl';
 
 export const useMediaState = ({
@@ -40,8 +40,7 @@ export const useMediaState = ({
       return;
 
     return parseMediaUrl(url, { urlParsers });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlParsers, url]);
+  }, [editor, type, url, urlParsers]);
 
   const isTweet = embed?.provider === 'twitter';
   const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);

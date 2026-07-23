@@ -23,8 +23,9 @@ This is the entrypoint for the compiled agent research layer.
   Shared vocabulary and abstractions.
 - [systems/README.md](docs/research/systems/README.md)
   Architecture and authority maps.
-- [editor-behavior-architecture.md](docs/research/systems/editor-behavior-architecture.md)
-  Long-horizon architecture for profile-driven editor behavior.
+- [editor-behavior-architecture.md](systems/editor-behavior-architecture.md)
+  Long-horizon architecture for behavior ownership, capability promotion, and
+  plugin composition.
 - [systems/editor-architecture-landscape.md](docs/research/systems/editor-architecture-landscape.md)
   Compiled comparison map for the editor architecture candidate lane behind the
   Slate v2 overlay rewrite.
@@ -141,7 +142,7 @@ This is the entrypoint for the compiled agent research layer.
   - [latex-trigger-surface.md](docs/research/sources/milkdown/latex-trigger-surface.md)
   - [input-autoformat-lanes.md](docs/research/sources/milkdown/input-autoformat-lanes.md)
 - autoformat follow-up now also includes:
-  - [autoformat-families-are-profile-adjacent-input-assist-surfaces.md](docs/research/decisions/autoformat-families-are-profile-adjacent-input-assist-surfaces.md)
+  - [autoformat-families-are-input-assist-surfaces.md](decisions/autoformat-families-are-input-assist-surfaces.md)
   - [link-automd-belongs-to-the-link-interaction-lane.md](docs/research/decisions/link-automd-belongs-to-the-link-interaction-lane.md)
   - [current-kit-autoformat-normalization-split.md](docs/research/decisions/current-kit-autoformat-normalization-split.md)
   - [text-substitution-autoformat-authority.md](docs/research/open-questions/text-substitution-autoformat-authority.md)

@@ -29,7 +29,7 @@ export const getMergedOptionsDeserialize = (
   options?: DeserializeMdOptions
 ): DeserializeMdContext => {
   const { allowedNodes, allowNode, disallowedNodes, remarkPlugins, rules } =
-    runtime.config;
+    runtime.options;
 
   return {
     allowedNodes:
@@ -63,7 +63,7 @@ export const getMergedOptionsSerialize = (
     remarkPlugins,
     remarkStringifyOptions,
     rules,
-  } = runtime.config;
+  } = runtime.options;
 
   return {
     allowedNodes:

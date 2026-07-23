@@ -7,6 +7,7 @@ import type { PlateEditor } from '../editor/PlateEditor';
 
 import { getPluginNodeClass } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { type PlateTextProps, PlateText } from '../components/plate-nodes';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -23,7 +24,7 @@ const getSimpleTextAttributes = (props: PlateTextProps, className?: string) => {
 };
 
 /**
- * Get a `Editable.renderText` handler for `plugin.node.type`. If the type is
+ * Get a `Editable.renderText` handler for `plugin.type`. If the type is
  * equals to the plite text type and isDecoration is false, render
  * `plugin.render.node`. Else, return the default text rendering.
  */
@@ -38,23 +39,23 @@ export const pluginRenderText = (
       render: { node },
     } = plugin;
     const { children, text } = nodeProps;
-    const textKey = plugin.node.type ?? plugin.key;
+    const textKey = plugin.type;
 
     if (isEditOnly(readOnly, plugin, 'render')) return children;
 
     if (text[textKey]) {
       const canUsePlainText =
         !node &&
-        editor.runtime.pluginCache.inject.nodeProps.length === 0 &&
-        !plugin.node.props &&
-        !plugin.node.dangerouslyAllowAttributes?.length;
+        getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0 &&
+        !plugin.render.nodeProps &&
+        !plugin.host.dangerouslyAllowAttributes?.length;
 
       if (canUsePlainText) {
         const Tag = (plugin.render?.as ??
           'span') as keyof HTMLElementTagNameMap;
         const attributes = getSimpleTextAttributes(
           nodeProps,
-          getPluginNodeClass(plugin.node.type) || undefined
+          getPluginNodeClass(plugin.type) || undefined
         );
 
         return <Tag {...attributes}>{children}</Tag>;

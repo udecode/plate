@@ -11,7 +11,7 @@ import {
   PlateElement,
   PlateLeaf,
 } from 'platejs/react';
-import { useEditorRef, useElement, useEditorReadOnly } from 'platejs/react';
+import { useEditor, useElement, useEditorReadOnly } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -189,7 +189,7 @@ function CodeBlockCombobox({
 }) {
   const [open, setOpen] = React.useState(false);
   const readOnly = useEditorReadOnly();
-  const editor = useEditorRef();
+  const editor = useEditor();
   const element = useElement<TCodeBlockElement>();
   const value = element.lang || 'plaintext';
   const [searchValue, setSearchValue] = React.useState('');

@@ -83,6 +83,7 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 
    Add touched-surface packs as needed: `--with docs`, `--with browser`,
    `--with package-api`, or `--with agent-native`.
+
 8. When the work needs a real implementation plan, phased rollout, or plan
    artifact, make the active `major-task` goal plan the durable planning
    surface.
@@ -184,6 +185,7 @@ Apply this section only when the task source is a tracker item.
   Use when browser automation is blocked by a likely reusable tool-side issue that deserves a separate GitHub follow-up.
 - `changeset`
   Use when verified work changes a published package under `packages/` and the repo expects release notes before completion.
+
 ## Execution Paths
 
 ### Architecture Or Public API
@@ -231,7 +233,9 @@ Apply this section only when the task source is a tracker item.
    - use `ProseMirror` and `Lexical` when questioning deeper runtime or architecture direction
    - use `Tiptap` more for product-layer or packaging cost than raw engine performance
    - use `Pretext` or `Premirror` when the question is pagination, composition, or layout-aware editing
-   - use `Portable Text` when the question is schema/profile design, behavior authoring, portability, or behavior-test standards
+   - use `Portable Text` when the question is schema applicability, behavior
+     law, portability, or behavior-test standards; route public behavior
+     packaging to `best-api`
 9. If no measurement exists yet, say so plainly and provide the smallest honest measurement plan.
 
 ### Framework Comparison Or Migration
@@ -337,6 +341,7 @@ Apply this section only when the task came from a tracker item and reached a mea
 
   ```md
   <!-- auto-release:start -->
+
   - [x] Auto release
   <!-- auto-release:end -->
   ```
@@ -345,6 +350,7 @@ Apply this section only when the task came from a tracker item and reached a mea
 
   ```md
   <!-- auto-release:start -->
+
   - [ ] Auto release
   <!-- auto-release:end -->
   ```

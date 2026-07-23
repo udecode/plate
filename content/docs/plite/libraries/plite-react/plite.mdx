@@ -9,7 +9,7 @@ toolbars, sidebars, and any component that needs editor state.
 ## Minimal Usage
 
 ```tsx
-<Plite editor={editor} onChange={handleChange}>
+<Plite editor={editor} onCommit={handleCommit}>
   <Toolbar />
   <Editable />
 </Plite>
@@ -22,9 +22,9 @@ type PliteBaseProps = {
   annotationStore?: PliteAnnotationStore | null;
   children: React.ReactNode;
   decorationSources?: readonly PliteDecorationSource[] | null;
-  onChange?: (value: Descendant[], change: PliteChange) => void;
-  onSelectionChange?: (selection: Range | null, change: PliteChange) => void;
-  onValueChange?: (value: Descendant[], change: PliteChange) => void;
+  onCommit?: (context: PliteCommitContext) => void;
+  onSelectionChange?: (context: PliteSelectionChangeContext) => void;
+  onValueChange?: (context: PliteValueChangeContext) => void;
   readOnly?: boolean;
 };
 
@@ -32,22 +32,24 @@ type PliteProps =
   | (PliteBaseProps & { editor: ReactEditor; root?: never })
   | (PliteBaseProps & { editor?: never; root: string });
 
-type PliteChange = {
+type PliteCommitContext = {
   commit: EditorCommit;
-  marksChanged: boolean;
-  operations: readonly Operation[];
-  selection: Range | null;
-  selectionChanged: boolean;
+  editor: ReactEditor;
   snapshot: EditorSnapshot;
-  tags: readonly string[];
+};
+
+type PliteSelectionChangeContext = PliteCommitContext & {
+  selection: Selection;
+};
+
+type PliteValueChangeContext = PliteCommitContext & {
   value: Descendant[];
-  valueChanged: boolean;
 };
 ```
 
-`PliteChange` is the React callback detail for the provider root. Use it when
-React UI needs the root value plus commit flags. Use `editor.subscribeCommit`
-when infrastructure needs every raw commit.
+All three callbacks receive the same canonical commit context. `onValueChange`
+and `onSelectionChange` add the current provider-root value or selection only
+for commits that changed that fact.
 
 Pass `editor` for the top-level provider. Use the `root`-only form only inside
 an existing Plite runtime, when a nested provider should bind its callbacks and
@@ -85,33 +87,32 @@ Render `Editable` and any editor UI inside the provider.
 </Plite>
 ```
 
-### `onChange`
+### `onCommit`
 
-Use `onChange` when React UI needs current-root value, selection, marks, or the
-full `PliteChange` object. Use `editor.subscribe(...)` for persistence services
-that need a committed snapshot plus a change summary, including state-field
-changes.
+Use `onCommit` when React UI needs every published commit. The provider owns
+the subscription for its full lifetime, so the callback works even when no
+`Editable` is mounted beneath it.
 
 ```tsx
 <Plite
   editor={editor}
-  onChange={(value, change) => {
-    if (change.selectionChanged) {
-      updateToolbar(change.selection);
+  onCommit={({ commit, editor, snapshot }) => {
+    if (
+      commit.changed.has("document") ||
+      commit.dirtyStateKeys.length > 0
+    ) {
+      saveDocument(editor.read.value());
     }
 
-    if (change.valueChanged) {
-      updateCurrentRootPreview(value);
-    }
+    reportCommit(commit, snapshot.version);
   }}
 >
   <Editable />
 </Plite>
 ```
 
-Use `editor.subscribeCommit(...)` for low-level commit subscribers that do not
-belong in React render props, such as sync adapters, operation replay, and
-instrumentation.
+Use `editor.subscribeCommit(...)` for infrastructure outside React provider
+ownership, such as sync adapters, canonical change export, and instrumentation.
 
 Use `onValueChange` when a React component only cares about provider-root value
 changes.
@@ -119,24 +120,22 @@ changes.
 ```tsx
 <Plite
   editor={editor}
-  onValueChange={(value) => updateCurrentRootPreview(value)}
+  onValueChange={({ value }) => updateCurrentRootPreview(value)}
 >
   <Editable />
 </Plite>
 ```
 
-### Saving Provider Root Changes
+### Saving Mounted Root Changes
 
-Use `onChange` and `change.valueChanged` when you only need committed changes
-for the provider root's block array. This is the single-root shortcut, not the
-full document persistence path.
+Use `onValueChange` when you only need committed changes for the mounted root's
+block array. This is the single-root shortcut, not the full document
+persistence path.
 
 ```tsx
 <Plite
   editor={editor}
-  onChange={(value, change) => {
-    if (!change.valueChanged) return;
-
+  onValueChange={({ value }) => {
     localStorage.setItem("plite.children", JSON.stringify(value));
   }}
 >
@@ -153,7 +152,7 @@ useEffect(() => {
   return editor.subscribe((_snapshot, change) => {
     if (!change) return;
 
-    if (!change.childrenChanged && change.dirtyStateKeys.length === 0) {
+    if (!change.changed.has("document") && change.dirtyStateKeys.length === 0) {
       return;
     }
 
@@ -174,7 +173,7 @@ Use `onSelectionChange` when React UI only cares about model selection changes.
 ```tsx
 <Plite
   editor={editor}
-  onSelectionChange={(selection) => updateToolbar(selection)}
+  onSelectionChange={({ selection }) => updateToolbar(selection)}
 >
   <Editable />
 </Plite>

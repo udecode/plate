@@ -1,6 +1,6 @@
 import {
   type BaseEditor,
-  type PluginConfig,
+  type InferConfig,
   createBasePlugin,
 } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
@@ -9,23 +9,28 @@ import type { Heading } from './types';
 
 import { insertToc } from './transforms/insertToc';
 
-export type TocConfig = PluginConfig<
-  'toc',
-  {
-    isScroll: boolean;
-    topOffset: number;
-    queryHeading?: (editor: BaseEditor) => Heading[];
-  }
->;
+export type TocPluginOptions = {
+  isScroll: boolean;
+  topOffset: number;
+  queryHeading?: (editor: BaseEditor) => Heading[];
+};
 
-export const BaseTocPlugin = createBasePlugin<TocConfig>({
+const defaultOptions: TocPluginOptions = {
+  isScroll: true,
+  topOffset: 80,
+};
+
+export const BaseTocPlugin = createBasePlugin({
   key: KEYS.toc,
-  node: { isElement: true, isVoid: true },
-  options: {
-    isScroll: true,
-    topOffset: 80,
+  schema: {
+    element: {
+      void: 'block',
+    },
   },
+  options: defaultOptions,
 }).extendTx(({ editor }) => (tx) => ({
   insert: (options?: Parameters<typeof insertToc>[2]) =>
     insertToc(editor, tx, options),
 }));
+
+export type TocConfig = InferConfig<typeof BaseTocPlugin>;

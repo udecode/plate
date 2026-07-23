@@ -27,6 +27,7 @@ import {
 } from '@platejs/basic-nodes/react';
 import type { Editor, Element as PliteElement } from '@platejs/plite';
 import { createReactEditor, Plite as PliteRuntime } from '@platejs/plite-react';
+import { getPlateRuntime } from '@platejs/core/internal';
 import {
   normalizeNodeId,
   type Descendant,
@@ -5464,7 +5465,7 @@ export default function EditorPerfPage() {
           });
           const constructDuration = performance.now() - constructStart;
 
-          pluginCount = constructEditor.runtime.pluginList.length;
+          pluginCount = getPlateRuntime(constructEditor).pluginList.length;
 
           if (!isWarmup) {
             constructOnlySamples.push(constructDuration);
@@ -5499,7 +5500,7 @@ export default function EditorPerfPage() {
           });
           const createDuration = performance.now() - createStart;
 
-          pluginCount = createEditor.runtime.pluginList.length;
+          pluginCount = getPlateRuntime(createEditor).pluginList.length;
 
           if (!isWarmup) {
             createWithValueSamples.push(createDuration);

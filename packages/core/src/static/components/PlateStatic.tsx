@@ -18,6 +18,7 @@ import {
 import clsx from 'clsx';
 
 import type { EditableProps, BaseEditor } from '../../lib';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import type { PliteRenderElementProps } from '../types';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
@@ -213,7 +214,7 @@ export function PlateStatic(props: PlateStaticProps) {
   let afterEditable: React.ReactNode = null;
   let beforeEditable: React.ReactNode = null;
 
-  editor.runtime.pluginCache.render.beforeEditable.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     const BeforeEditable = plugin.render.beforeEditable;
 
@@ -227,7 +228,7 @@ export function PlateStatic(props: PlateStaticProps) {
     }
   });
 
-  editor.runtime.pluginCache.render.afterEditable.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.render.afterEditable.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     const AfterEditable = plugin.render.afterEditable;
 
@@ -266,7 +267,7 @@ export function PlateStatic(props: PlateStaticProps) {
   );
 
   // Use pre-computed arrays for aboveEditable components
-  editor.runtime.pluginCache.render.aboveEditable.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     const AboveEditable = plugin.render.aboveEditable;
 

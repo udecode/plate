@@ -9,7 +9,7 @@ import {
   useTodoListToolbarButtonState,
 } from '@platejs/list/react';
 import { List, ListOrdered, ListTodoIcon } from 'lucide-react';
-import { useEditorRef, useEditorSelector } from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -27,19 +27,17 @@ import {
 } from './toolbar';
 
 export function BulletedListToolbarButton() {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
-  const pressed = useEditorSelector(
-    (editor) =>
-      editor
-        .plugin(ListPlugin)
-        .api.isActive([
-          ListStyleType.Disc,
-          ListStyleType.Circle,
-          ListStyleType.Square,
-        ]),
-    []
+  const pressed = useEditorSelector((editor) =>
+    editor
+      .plugin(ListPlugin)
+      .api.isActive([
+        ListStyleType.Disc,
+        ListStyleType.Circle,
+        ListStyleType.Square,
+      ])
   );
 
   return (
@@ -109,21 +107,19 @@ export function BulletedListToolbarButton() {
 }
 
 export function NumberedListToolbarButton() {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
-  const pressed = useEditorSelector(
-    (editor) =>
-      editor
-        .plugin(ListPlugin)
-        .api.isActive([
-          ListStyleType.Decimal,
-          ListStyleType.LowerAlpha,
-          ListStyleType.UpperAlpha,
-          ListStyleType.LowerRoman,
-          ListStyleType.UpperRoman,
-        ]),
-    []
+  const pressed = useEditorSelector((editor) =>
+    editor
+      .plugin(ListPlugin)
+      .api.isActive([
+        ListStyleType.Decimal,
+        ListStyleType.LowerAlpha,
+        ListStyleType.UpperAlpha,
+        ListStyleType.LowerRoman,
+        ListStyleType.UpperRoman,
+      ])
   );
 
   return (

@@ -75,7 +75,6 @@ const editor = createPlateEditor({
 Configure which media plugins should support captions:
 
 ```tsx
-import { KEYS } from 'platejs';
 import { CaptionPlugin } from '@platejs/caption/react';
 import {
   AudioPlugin,
@@ -94,17 +93,19 @@ const editor = createPlateEditor({
     FilePlugin,
     MediaEmbedPlugin,
     CaptionPlugin.configure({
-      options: {
-        query: {
-          allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
-        },
-      },
+      targetPluginKeys: [
+        ImagePlugin.key,
+        VideoPlugin.key,
+        AudioPlugin.key,
+        FilePlugin.key,
+        MediaEmbedPlugin.key,
+      ],
     }),
   ],
 });
 ```
 
-- `query.allow`: Array of plugin keys that support captions.
+- `targetPluginKeys`: Element plugin keys whose types support captions.
 
 </Steps>
 
@@ -115,15 +116,15 @@ const editor = createPlateEditor({
 Plugin for adding caption functionality to media elements.
 
 <API name="CaptionPlugin">
+
+Schema targets:
+
+- `targetPluginKeys?: string[]` — element plugin keys whose nodes can store
+  caption content.
+
+Options:
+
 <APIOptions>
-  <APIItem name="query" type="{ allow: string[] }" required>
-    Configuration for which plugins support captions.
-    <APISubList>
-      <APISubListItem parent="query" name="allow" type="string[]">
-        Plugin keys of the blocks that can have captions.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
   <APIItem name="focusEndPath" type="Path" optional>
     Path to focus at the end of the caption.
     - **Default:** `null`
@@ -176,7 +177,6 @@ Extends `Element`.
       </APISubListItem>
     </APISubList>
   </APIItem>
-  
   <APIOptions type="object">
   <APIItem name="readOnly" type="boolean" optional>
     Whether the caption component is in read-only mode.

@@ -1,14 +1,24 @@
 import React from 'react';
 
-import { type EditorCommit, RangeApi, type Selection } from '@platejs/plite';
-import { useEditorRuntimeState } from '@platejs/plite-react';
+import {
+  type EditorCommit,
+  type EditorStateView,
+  type ExtensionsOf,
+  RangeApi,
+  type Selection,
+  type ValueOf,
+} from '@platejs/plite';
+import {
+  type EditorRuntimeStateSelectorOptions,
+  useEditorRuntimeState,
+} from '@platejs/plite-react';
 
 import { useAtomStoreSet, useAtomStoreState, useAtomStoreValue } from 'jotai-x';
 
 import type { PlateStoreEditor, PlateStoreState } from './PlateStore';
 
 import { createAtomStore } from '../../libs';
-import { createPlateFallbackEditor } from '../../utils';
+import { createPlateEditor } from '../../editor';
 import {
   usePlateControllerExists,
   usePlateControllerStore,
@@ -42,11 +52,6 @@ export const createPlateStore = <
   renderElement = null,
   renderLeaf = null,
   renderText = null,
-  onChange = null,
-  onNodeChange = null,
-  onSelectionChange = null,
-  onTextChange = null,
-  onValueChange = null,
   ...state
 }: Partial<PlateStoreState<E>> = {}) =>
   createAtomStore(
@@ -59,11 +64,6 @@ export const createPlateStore = <
       renderElement,
       renderLeaf,
       renderText,
-      onChange,
-      onNodeChange,
-      onSelectionChange,
-      onTextChange,
-      onValueChange,
       ...state,
     } as PlateStoreState<E>,
     {
@@ -80,6 +80,18 @@ const {
   usePlateStore: usePlateLocalStore,
   usePlateValue: usePlateLocalValue,
 } = createPlateStore();
+
+let fallbackEditor: PlateStoreEditor | null = null;
+const fallbackEditors = new WeakSet<PlateStoreEditor>();
+
+const getFallbackEditor = (): PlateStoreEditor => {
+  if (!fallbackEditor) {
+    fallbackEditor = createPlateEditor();
+    fallbackEditors.add(fallbackEditor);
+  }
+
+  return fallbackEditor;
+};
 
 const { usePlateStore: useFallbackPlateStore } = createPlateStore();
 
@@ -169,24 +181,22 @@ export const usePlateState = ((key, options) => {
 // ─── Selectors ───────────────────────────────────────────────────────────────
 
 /** Get the closest `Plate` id. */
-export const useEditorId = (): string =>
-  useAtomStoreValue(usePlateStore(), 'editor').id;
+export const useEditorId = (): string => useEditor().id;
 
 export const useEditorMounted = (id?: string): boolean =>
   !!useAtomStoreValue(usePlateStore(id), 'isMounted');
 
-/**
- * Get a reference to the editor instance that remains stable across re-renders.
- * The editor object is enhanced with a `store` property that provides access to
- * the Plate store.
- */
-export const useEditorRef = <E extends PlateStoreEditor = PlateStoreEditor>(
+export type UseEditorOptions = {
+  id?: string;
+};
+
+const useInternalEditor = <E extends PlateStoreEditor = PlateStoreEditor>(
   id?: string
 ): E & { store: PlateStore } => {
   const store = usePlateStore(id);
   const editor = ((useAtomStoreValue(store, 'editor') as unknown as
     | E
-    | undefined) ?? (createPlateFallbackEditor() as unknown as E)) as E & {
+    | undefined) ?? (getFallbackEditor() as unknown as E)) as E & {
     store: PlateStore;
   };
 
@@ -195,36 +205,57 @@ export const useEditorRef = <E extends PlateStoreEditor = PlateStoreEditor>(
   return editor;
 };
 
+/** Get the mounted editor, throwing while no matching editor is active. */
+export const useEditor = <E extends PlateStoreEditor = PlateStoreEditor>({
+  id,
+}: UseEditorOptions = {}): E & { store: PlateStore } => {
+  const editor = useInternalEditor<E>(id);
+
+  if (fallbackEditors.has(editor)) {
+    throw new Error('useEditor() requires an active Plate editor.');
+  }
+
+  return editor;
+};
+
+/** Get the active editor, or `null` while its controller has no editor. */
+export const useActiveEditor = <E extends PlateStoreEditor = PlateStoreEditor>({
+  id,
+}: UseEditorOptions = {}): (E & { store: PlateStore }) | null => {
+  const editor = useInternalEditor<E>(id);
+
+  return fallbackEditors.has(editor) ? null : editor;
+};
+
 /** Get the editor selection (deeply memoized). */
 export const useEditorSelection = (id?: string) => {
-  const editor = useEditorRef(id);
+  const editor = useInternalEditor(id);
 
   return useEditorRuntimeState(editor, (state) => state.selection(), {
-    deps: [],
     equalityFn: selectionEqual,
     shouldUpdate: selectionChanged,
   });
 };
 
-/** Get editor state which is updated on editor change. */
-export const useEditorState = <E extends PlateStoreEditor = PlateStoreEditor>(
-  id?: string
-): E => {
-  const editor = useEditorRef<E>(id);
+export type UseEditorStateOptions<
+  T,
+  E extends PlateStoreEditor = PlateStoreEditor,
+> = EditorRuntimeStateSelectorOptions<T, E> & UseEditorOptions;
 
-  useEditorRuntimeState(editor, (state) => state.runtime.snapshot().version, {
-    deps: [],
-  });
-
-  return editor;
-};
+/** Subscribe to a value derived from the immutable editor state. */
+export const useEditorState = <
+  T,
+  E extends PlateStoreEditor = PlateStoreEditor,
+>(
+  selector: (state: EditorStateView<ValueOf<E>, ExtensionsOf<E>>) => T,
+  { id, ...options }: UseEditorStateOptions<T, E> = {}
+): T => useEditorRuntimeState(useInternalEditor<E>(id), selector, options);
 
 /** Get the editor value (deeply memoized). */
 export const useEditorValue = (id?: string) => {
-  const editor = useEditorRef(id);
+  const editor = useInternalEditor(id);
 
   return useEditorRuntimeState(editor, (state) => state.children(), {
-    deps: [],
     shouldUpdate: childrenChanged,
   });
 };

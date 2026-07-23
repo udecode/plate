@@ -1,5 +1,5 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
-import type { BaseEditor } from 'platejs';
+import type { MarkdownEditor } from '@platejs/markdown';
 
 import { getMarkdown } from '@platejs/ai';
 import dedent from 'dedent';
@@ -11,7 +11,7 @@ import {
 } from '../utils';
 
 export function getCommentPrompt(
-  editor: BaseEditor,
+  editor: MarkdownEditor,
   {
     messages,
   }: {

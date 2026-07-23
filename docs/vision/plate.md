@@ -49,6 +49,20 @@ Current priorities:
 - Plugin authoring keeps one-owner behavior colocated and inferred. Public
   builders, configuration paths, and contribution namespaces each need a
   distinct user job; current assembly machinery is evidence, not doctrine.
+- Classify behavior before exposing composition: invariants stay in their
+  owner, parameters stay in `options`, substitutable capabilities may become
+  ordinary plugins, and product policy stays app- or kit-owned.
+- A public capability plugin needs a real omission/replacement job or a hard
+  ownership boundary, valid fallback semantics, closed dependencies, and
+  independent proof. Protocol rows, handlers, and extension blocks do not map
+  one-to-one to plugins.
+- Plugin identity does not force another file. Keep one-owner descriptors
+  colocated, preserve the complete preset as the common path, and name reusable
+  plugin-array kits only after real reuse.
+- Multiple callers of one plugin operation reuse its scoped API; they do not
+  justify a parallel raw helper. Keep the algorithm in the plugin. Standalone
+  functions need a real cross-plugin, cross-layer, or transaction-composition
+  job that one plugin cannot own honestly.
 - React files follow durable families rather than individual symbols. Keep a
   component family in one `<Family>.tsx` file and a hook family in one
   `use<Family>.ts` file; related public primitives and hooks may remain separate
@@ -86,24 +100,24 @@ Current priorities:
 
 Owner map:
 
-| Concern | Owner |
-| --- | --- |
-| public GitHub issue/PR/security queue control plane | `maintainer` |
-| internal Plate/Plite long quality loops | `auto` |
-| post-merge/current-tree until-clean closure | `autoclosure` |
-| reusable architecture doctrine | root `VISION.md` and `docs/vision/*.md` |
-| durable public API doctrine | root `VISION.md` and `docs/vision/*.md` |
-| concrete public API design, review, and debt ranking | `best-api` |
-| Plate API adoption, rollout, and proof plan | `plate-plan` |
-| runtime/service-boundary patterns | root `VISION.md` and `docs/vision/*.md` |
-| layering / ownership law | root `VISION.md` and `docs/vision/*.md` |
-| performance/scalability law | root `VISION.md` and `docs/vision/*.md` |
-| anti-pattern catalog | root `VISION.md` and `docs/vision/*.md` |
-| plugin file placement / wrappers / typing mechanics | `plate-plugin-creator` |
-| plugin authoring execution flow | `plate-plugin-creator` |
-| app-local sugar | local app/kits |
-| public docs shape | `docs-creator` |
-| UI/component registry shape | `plate-ui` |
+| Concern                                              | Owner                                   |
+| ---------------------------------------------------- | --------------------------------------- |
+| public GitHub issue/PR/security queue control plane  | `maintainer`                            |
+| internal Plate/Plite long quality loops              | `auto`                                  |
+| post-merge/current-tree until-clean closure          | `autoclosure`                           |
+| reusable architecture doctrine                       | root `VISION.md` and `docs/vision/*.md` |
+| durable public API doctrine                          | root `VISION.md` and `docs/vision/*.md` |
+| concrete public API design, review, and debt ranking | `best-api`                              |
+| Plate API adoption, rollout, and proof plan          | `plate-plan`                            |
+| runtime/service-boundary patterns                    | root `VISION.md` and `docs/vision/*.md` |
+| layering / ownership law                             | root `VISION.md` and `docs/vision/*.md` |
+| performance/scalability law                          | root `VISION.md` and `docs/vision/*.md` |
+| anti-pattern catalog                                 | root `VISION.md` and `docs/vision/*.md` |
+| plugin file placement / wrappers / typing mechanics  | `plate-plugin-creator`                  |
+| plugin authoring execution flow                      | `plate-plugin-creator`                  |
+| app-local sugar                                      | local app/kits                          |
+| public docs shape                                    | `docs-creator`                          |
+| UI/component registry shape                          | `plate-ui`                              |
 
 ## Matcher Extraction Heuristic
 

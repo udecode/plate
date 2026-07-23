@@ -7,7 +7,7 @@ import { NodeApi, PathApi } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
 import type { TCaptionElement } from '@platejs/utils';
 import { createPrimitiveComponent } from '@udecode/react-utils';
-import { useEditorRef, useElement, usePluginOption } from '@platejs/core/react';
+import { useEditor, useElement, usePluginOption } from '@platejs/core/react';
 
 import { BaseCaptionPlugin } from '../../lib';
 import { TextareaAutosize } from './TextareaAutosize';
@@ -18,26 +18,26 @@ const emptyCaption = { text: '' };
 export const useCaptionTextareaFocus = (
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
 ) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const element = useElement<TCaptionElement>();
 
   const focusCaptionPath = usePluginOption(BaseCaptionPlugin, 'focusEndPath');
 
   React.useEffect(() => {
-    if (focusCaptionPath && textareaRef.current) {
-      const path = editor.read.nodes.path(element);
+    if (!focusCaptionPath || !textareaRef.current) return;
 
-      if (path && PathApi.equals(path, focusCaptionPath)) {
-        textareaRef.current.focus();
-        editor.plugin(BaseCaptionPlugin).setOption('focusEndPath', null);
-      }
+    const path = editor.read.nodes.path(element);
+
+    if (path && PathApi.equals(path, focusCaptionPath)) {
+      textareaRef.current.focus();
+      editor.plugin(BaseCaptionPlugin).setOption('focusEndPath', null);
     }
   }, [editor, element, focusCaptionPath, textareaRef]);
 };
 
 export const useCaptionTextareaState = () => {
   const element = useElement<TCaptionElement>();
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   const [isComposing, setIsComposing] = useState(false);
 
@@ -111,7 +111,7 @@ export const useCaptionTextarea = ({
   handleCompositionEnd,
   handleCompositionStart,
 }: ReturnType<typeof useCaptionTextareaState>) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   const onKeyDown: TextareaAutosizeProps['onKeyDown'] = (e) => {
     // select image

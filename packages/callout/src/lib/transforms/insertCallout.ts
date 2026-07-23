@@ -21,7 +21,7 @@ export const insertCallout = (
       children: [{ text: '' }],
       icon: icon ?? localStorage.getItem(CALLOUT_STORAGE_KEY) ?? '💡',
       type,
-      variant,
+      ...(variant === undefined ? {} : { variant }),
     },
     options
   );

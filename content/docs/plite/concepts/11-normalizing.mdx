@@ -3,67 +3,35 @@ title: "Normalizing"
 description: "Keep complex Plite documents valid with built-in constraints and focused repairs."
 ---
 
-Normalizing keeps complex nested data in a shape the rest of the editor can
-reason about. Validation only says a document is invalid; normalizing repairs
-it.
+Plite constructs canonical document shapes before publication. Extensions add
+focused corrections for app-specific invariants; there is no public
+operation-by-operation normalizer loop.
 
-## Built-in Constraints
+## Canonical Constraints
 
-Plite has a few built-in constraints. They make browser selection, operations, history, and collaboration predictable.
+Plite enforces a small structural contract. It keeps browser selection,
+canonical changes, history, and collaboration deterministic.
 
 1. **Every `Element` has a text descendant.** Even void elements keep an empty text child so selections can always point into text.
-2. **Adjacent text nodes with the same properties merge.** Formatting can split text nodes; normalization merges equal neighbors back together.
+2. **Adjacent text nodes with the same properties merge.** Construction emits one canonical leaf instead of retaining equivalent neighbors.
 3. **Blocks contain either blocks, or inline/text content.** A block cannot mix block children with inline/text children.
 4. **Inline nodes have text on both sides.** Empty text nodes are inserted before, after, or between inline nodes when needed.
 5. **The editor root contains block nodes.** Top-level inline or text nodes are removed.
-6. **Nodes must be JSON-serializable.** Operations and snapshots need to move cleanly through storage and collaboration layers.
-7. **Node property values should not be `null`.** Use optional properties instead. Plite operations use `null` to describe removed properties.
+6. **Nodes must be JSON-serializable.** Documents and changes need to move cleanly through storage and collaboration layers.
+7. **Node property values should not be `null`.** Use optional properties instead so the document has one unambiguous property shape.
 
-These constraints are not app preferences. They are the base document contract Plite relies on.
+These constraints are the base document contract, not app preferences.
+Construction and contextual slice fitting produce this shape directly.
+Imported `DocumentChange` values are validated against the compiled schema
+instead of being accepted and repaired later.
 
-## Fix One Problem At A Time
+## Write Canonical Shapes
 
-Normalizing is multi-pass. A normalizer should fix one invalid structure and return. If that repair changes an ancestor, Plite will visit the affected nodes again.
+Commands should create the shape they intend to read later in the same
+transaction. Corrections run during transaction closeout, so command logic must
+not depend on correction timing.
 
-Imagine this invalid document:
-
-```tsx
-<editor>
-  <paragraph a>
-    <paragraph b>
-      <paragraph c>word</paragraph>
-    </paragraph>
-  </paragraph>
-</editor>
-```
-
-The innermost paragraph is valid. The next paragraph is not, because it contains another block. A normalizer can unwrap that child and stop:
-
-```javascript
-editor.update((tx) => {
-  tx.nodes.unwrap({ at: [0, 0] });
-});
-```
-
-That repair changes the parent, so Plite can normalize the parent on the next pass. The document eventually becomes:
-
-```tsx
-<editor>
-  <paragraph a>word</paragraph>
-</editor>
-```
-
-This is the important habit: repair one concrete problem, then let the runtime schedule the next pass.
-
-## Empty Children Run Early
-
-The empty-child constraint runs before other normalizing work. If an element has no children, Plite inserts an empty text descendant first.
-
-That matters for custom structures. If a table with no rows should be removed, do not wait for a "no children" shape that never appears. Check for the structure your editor actually stores after Plite adds the empty text descendant.
-
-## Incorrect Fixes
-
-Avoid repairs that still leave the node invalid.
+Avoid writes that leave invalid property values:
 
 ```javascript
 editor.update((tx) => {
@@ -71,7 +39,8 @@ editor.update((tx) => {
 });
 ```
 
-That looks like it clears an invalid URL, but `null` is not a valid node property value in Plite documents. The node is still invalid, so the normalizer can loop forever.
+`null` is not a valid node property value. The write fails validation instead
+of becoming an ambiguous document state.
 
 Prefer a repair that produces a valid shape:
 
@@ -81,7 +50,7 @@ editor.update((tx) => {
 });
 ```
 
-Or remove the invalid wrapper entirely:
+Or remove the invalid wrapper:
 
 ```javascript
 editor.update((tx) => {
@@ -89,11 +58,10 @@ editor.update((tx) => {
 });
 ```
 
-## Grouped Repairs
+## Group Related Writes
 
-Sometimes a command needs several structural edits before the tree is valid
-again. Put every related write in one `editor.update(...)`; Plite runs the final
-normalization pass before publishing the commit.
+Put related structural writes in one `editor.update(...)`. The callback reads
+one isolated draft, and Plite publishes one canonical `DocumentChange`.
 
 ```ts
 import { ElementApi, type Editor } from "@platejs/plite";
@@ -122,15 +90,46 @@ function changeBlockType(editor: Editor, type: string) {
 }
 ```
 
-The callback reads the live draft. Plite repairs dirty paths after the callback
-returns, then publishes one canonical commit. A command that needs a concrete
-node later in the same callback should create that node directly instead of
-depending on normalization timing.
+The callback reads the live draft. Plite runs deterministic corrections over
+the changed ranges, then publishes one immutable commit.
+
+## Extension Corrections
+
+Reusable app-specific repairs belong in editor extensions. Each correction
+declares the node event that can make its invariant stale: `children`,
+`content`, or `properties`.
+
+```ts
+import { ElementApi, defineEditorExtension } from "@platejs/plite";
+
+const ValidLinkExtension = defineEditorExtension({
+  name: "valid-link",
+  corrections: [
+    {
+      event: "properties",
+      correct({ entry: [node, path], tx }) {
+        if (
+          ElementApi.isElement(node) &&
+          node.type === "link" &&
+          node.url === null
+        ) {
+          tx.nodes.unset("url", { at: path });
+        }
+      },
+    },
+  ],
+});
+```
+
+Corrections are event-indexed and start from the transaction's changed ranges.
+When a correction changes another relevant entry, the bounded worklist queues
+that entry. This is targeted maintenance, not a whole-document pass after every
+operation.
 
 ## Repairing A Whole Document
 
 Use `editor.update.value.repair()` when raw initial data or a newly installed
-normalizer may need an all-root maintenance pass.
+correction may need an all-root maintenance pass.
 
 ```ts
 editor.update.value.repair();
@@ -139,12 +138,7 @@ editor.update.value.repair();
 Repair starts its own history-skipped update, scans the primary document and
 every named root, and publishes nothing when the value is already canonical.
 It cannot run inside another `editor.update(...)`. Feature commands should rely
-on normal dirty-path closeout instead.
+on normal changed-range closeout instead.
 
-## Extension Normalizers
-
-Reusable schema rules belong in editor extensions. Extensions can register named
-normalizer entries alongside element specs, state groups, tx groups, commit
-listeners, operation middleware, and setup output.
-
-Use the same rule inside those entries: make repairs with transaction methods, fix one invalid structure at a time, and avoid direct mutable editor fields.
+Use transaction methods inside corrections and fix one concrete violation per
+entry. Avoid direct mutable editor fields.

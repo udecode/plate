@@ -9,7 +9,14 @@ import type {
 
 import { TextApi } from '@platejs/plite';
 
+import { getBlockSelectionNodes } from '../internal/getBlockSelectionNodes';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+
+const getSelectedBlocks = (editor: BaseEditor, tx: EditorUpdateTransaction) =>
+  getBlockSelectionNodes(
+    tx,
+    editor.plugin(BlockSelectionPlugin).getOption('selectedIds')
+  );
 
 export const setBlockSelectionNodes = (
   editor: BaseEditor,
@@ -17,8 +24,7 @@ export const setBlockSelectionNodes = (
   props: Partial<NodeProps<Element>>,
   options?: NodeSetNodesOptions
 ) => {
-  const { api } = editor.plugin(BlockSelectionPlugin);
-  const blocks = api.getNodes();
+  const blocks = getSelectedBlocks(editor, tx);
 
   blocks.forEach(([, path]) => {
     tx.nodes.set(props, {
@@ -34,8 +40,7 @@ export const setBlockSelectionIndent = (
   indent: number,
   options?: NodeSetNodesOptions
 ) => {
-  const { api } = editor.plugin(BlockSelectionPlugin);
-  const blocks = api.getNodes();
+  const blocks = getSelectedBlocks(editor, tx);
 
   blocks.forEach(([node, path]) => {
     const prevIndent = (node as { indent?: number }).indent ?? 0;
@@ -57,8 +62,7 @@ export const setBlockSelectionTexts = (
   props: Partial<NodeProps<Text>>,
   options?: Omit<NodeSetNodesOptions, 'at'>
 ) => {
-  const { api } = editor.plugin(BlockSelectionPlugin);
-  const blocks = api.getNodes();
+  const blocks = getSelectedBlocks(editor, tx);
 
   blocks.forEach(([, path]) => {
     tx.nodes.set(props, {

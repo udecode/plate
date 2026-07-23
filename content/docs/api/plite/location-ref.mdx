@@ -1,10 +1,10 @@
 ---
-title: Location Ref
-description: Path, point, range, and bookmark references in Plite.
+title: Anchor
+description: Root-aware live paths, points, and ranges in Plite.
 ---
 
-Create mutable location references inside `editor.update` through
-`tx.refs.path`, `tx.refs.point`, and `tx.refs.range`. Persistent anchors use
-bookmarks.
+Create an anchor through `editor.anchor(value, options)`. The anchor maps
+its path, point, or range through each committed `DocumentChange` until
+`release()` detaches it.
 
-See the canonical [Locations reference](/docs/plite/api/locations).
+See the canonical [Anchor API](/docs/plite/api/locations/anchor).

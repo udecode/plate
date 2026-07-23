@@ -3,7 +3,7 @@ import React from 'react';
 import type { CorePluginConfig } from '@platejs/core';
 import {
   type PlateEditor,
-  useEditorRef,
+  useEditor,
   useEditorSelector,
 } from '@platejs/core/react';
 import type { Value } from '@platejs/plite';
@@ -33,15 +33,15 @@ export const useFloatingToolbarState = ({
   editorId: string;
   focusedEditorId: string | null;
 } & FloatingToolbarState) => {
-  const editor = useEditorRef<PlateEditor<Value, CorePluginConfig>>(editorId);
+  const editor = useEditor<PlateEditor<Value, CorePluginConfig>>({
+    id: editorId,
+  });
   const selectionExpanded = useEditorSelector(
     (editor) => editor.read.selection.isExpanded(),
-    [],
     { id: editorId }
   );
   const selectionText = useEditorSelector(
     (editor) => editor.read.text.string(),
-    [],
     { id: editorId }
   );
   const readOnly = useEditorReadOnly();
@@ -166,7 +166,6 @@ export const useFloatingToolbar = ({
 
   const editorVersion = useEditorSelector(
     (editor) => editor.read.lastCommit()?.version ?? 0,
-    [],
     { id: editorId }
   );
 

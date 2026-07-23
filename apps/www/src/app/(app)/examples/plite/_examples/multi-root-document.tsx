@@ -1,5 +1,10 @@
 import type { ChangeEvent } from 'react';
-import { defineStateField, type EditorCommit, type Node } from '@platejs/plite';
+import {
+  defineStateField,
+  type EditorCommit,
+  type Node,
+  valueCodecs,
+} from '@platejs/plite';
 import {
   Editable,
   Plite,
@@ -21,7 +26,7 @@ const documentTitle = defineStateField({
   collab: 'shared',
   history: 'push',
   initial: () => 'Untitled',
-  persist: true,
+  persist: valueCodecs.string,
 });
 
 const rootText = (state: { nodes: { children: () => readonly Node[] } }) =>
@@ -44,22 +49,39 @@ const rootText = (state: { nodes: { children: () => readonly Node[] } }) =>
 const formatList = (items: readonly string[]) =>
   items.length === 0 ? 'none' : items.join(',');
 
-const formatExampleRoot = (root: string | undefined) =>
-  root === undefined ? 'body' : root;
+const changedKinds = [
+  'document',
+  'text',
+  'structure',
+  'properties',
+  'replace',
+  'root-order',
+  'selection',
+  'marks',
+  'state',
+] as const;
+
+const formatExampleRoot = (root: string | null) =>
+  root === null ? 'body' : root;
 
 const formatCommit = (commit: EditorCommit | null) => {
   if (!commit) {
-    return 'commit:none;ops:none;state:none;tags:none';
+    return 'commit:none;changed:none;roots:none;state:none;tags:none';
   }
+
+  const roots = new Set<string | null>([
+    ...(commit.changes.primary ? [null] : []),
+    ...commit.changes.roots.keys(),
+    ...commit.changes.createRoots,
+    ...commit.changes.deleteRoots,
+  ]);
 
   return [
     `commit:${commit.version}`,
-    `ops:${formatList(commit.operations.map((operation) => operation.type))}`,
-    `roots:${formatList(
-      commit.operations.map((operation) =>
-        formatExampleRoot((operation as { root?: string }).root)
-      )
+    `changed:${formatList(
+      changedKinds.filter((kind) => commit.changed.hasAny(kind))
     )}`,
+    `roots:${formatList([...roots].map(formatExampleRoot))}`,
     `state:${formatList(commit.dirtyStateKeys)}`,
     `tags:${formatList(commit.tags)}`,
   ].join(';');
@@ -248,7 +270,7 @@ const MultiRootDocumentExample = () => {
         ],
       },
       meta: {
-        [documentTitle.key]: 'Q2 Operating Plan',
+        [documentTitle.key]: documentTitle.serialize('Q2 Operating Plan'),
       },
     },
   });

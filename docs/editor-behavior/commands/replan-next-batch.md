@@ -20,25 +20,28 @@ topic: editor-behavior-command-replan-next-batch
 
 ## Invocation
 
-Default:
+Choose the runtime owner:
 
-```sh
-$ralplan --consensus --direct docs/editor-behavior/master-roadmap.md
+```text
+plate-plan plan the next accepted Plate editor-behavior batch from docs/editor-behavior/master-roadmap.md
+plite-plan plan the next accepted Plite editor-behavior batch from docs/editor-behavior/master-roadmap.md
 ```
 
 When one lane already has a written supporting plan:
 
-```sh
-$ralplan --consensus --direct docs/plans/<active-lane-plan>.md
+```text
+plate-plan plan the next accepted Plate batch from docs/plans/<active-lane-plan>.md
+plite-plan plan the next accepted Plite batch from docs/plans/<active-lane-plan>.md
 ```
 
 ## Inputs
 
-- [docs/editor-behavior/markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)
-- [docs/editor-behavior/master-roadmap.md](docs/editor-behavior/master-roadmap.md)
-- [docs/plans/2026-04-02-editor-behavior-major-execution.md](docs/plans/2026-04-02-editor-behavior-major-execution.md)
+- [docs/editor-behavior/markdown-parity-matrix.md](../markdown-parity-matrix.md)
+- [docs/editor-behavior/master-roadmap.md](../master-roadmap.md)
+- [docs/plans/2026-04-02-editor-behavior-major-execution.md](../../plans/2026-04-02-editor-behavior-major-execution.md)
 - any active supporting lane plan under `docs/plans/`
-- any active lane-specific planning artifact under `.omx/plans/`
+- the accepted `best-api` decision when the batch adds, removes, or promotes a
+  public plugin or extension
 
 ## Expected Outputs
 
@@ -48,22 +51,25 @@ $ralplan --consensus --direct docs/plans/<active-lane-plan>.md
 - refreshed execution note if reality changed
 - explicit handoff into one next implementation/runtime lane
 - explicit note whether a paired doc-governance pass must happen before launch
+- no public behavior promotion without an accepted `best-api` target
 
 ## Refresh Afterward
 
-- [docs/editor-behavior/master-roadmap.md](docs/editor-behavior/master-roadmap.md)
-- [docs/plans/2026-04-02-editor-behavior-major-execution.md](docs/plans/2026-04-02-editor-behavior-major-execution.md)
-- [docs/editor-behavior/markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md) if the active gate wording changed
+- [docs/editor-behavior/master-roadmap.md](../master-roadmap.md)
+- [docs/plans/2026-04-02-editor-behavior-major-execution.md](../../plans/2026-04-02-editor-behavior-major-execution.md)
+- [docs/editor-behavior/markdown-parity-matrix.md](../markdown-parity-matrix.md) if the active gate wording changed
 - relevant supporting plan docs under `docs/plans/`
-- relevant lane-specific OMX planning artifacts under `.omx/plans/`
 
 ## Common Next Step
 
 - When the next batch is approved and concrete, run
-  [launch-next-ralph-batch.md](docs/editor-behavior/commands/launch-next-ralph-batch.md).
+  [execute-next-batch.md](execute-next-batch.md).
+- If public behavior packaging is still unresolved, stop and run
+  `best-api design` or `best-api review`; do not encode the decision in the
+  implementation plan.
 - If replanning shows that truth is still unstable rather than implementation
   ready, return to
-  [reconsolidate-law-stack.md](docs/editor-behavior/commands/reconsolidate-law-stack.md),
-  [refresh-evidence-ledger.md](docs/editor-behavior/commands/refresh-evidence-ledger.md),
+  [reconsolidate-law-stack.md](reconsolidate-law-stack.md),
+  [refresh-evidence-ledger.md](refresh-evidence-ledger.md),
   or
-  [reinterview-open-authority-gaps.md](docs/editor-behavior/commands/reinterview-open-authority-gaps.md).
+  [reinterview-open-authority-gaps.md](reinterview-open-authority-gaps.md).

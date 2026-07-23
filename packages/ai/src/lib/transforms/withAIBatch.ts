@@ -1,5 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import type { EditorUpdateTransaction } from '@platejs/plite';
+import type { EditorUpdateTransaction, Value } from '@platejs/plite';
 import {
   defineEditorExtension,
   defineEffect,
@@ -25,9 +25,9 @@ export const aiBatchEffectExtension = defineEditorExtension({
   name: 'ai-batch-effect',
 });
 
-export const withAIBatch = (
-  editor: BaseEditor,
-  fn: (tx: EditorUpdateTransaction) => void,
+export const withAIBatch = <V extends Value>(
+  editor: BaseEditor<V, any>,
+  fn: (tx: EditorUpdateTransaction<V>) => void,
   {
     split,
   }: {

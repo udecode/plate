@@ -128,7 +128,7 @@ export const createMarkInputRule = (
         ? [...config.marks]
         : [config.mark ?? pluginKey];
 
-      const selection = editor.read.selection();
+      const selection = tx.selection();
 
       if (selection && match.beforeEndMatchPoint !== selection.anchor) {
         tx.text.delete({
@@ -272,8 +272,7 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
         { type: node },
         {
           match: (entryNode) =>
-            ElementApi.isElement(entryNode) &&
-            editor.read.schema.isBlock(entryNode),
+            ElementApi.isElement(entryNode) && tx.schema.isBlock(entryNode),
         }
       );
 
@@ -567,11 +566,10 @@ const resolveTextSubstitution = ({
 };
 
 const applyTextSubstitution = (
-  editor: BaseEditor,
   tx: InsertTextInputRuleContext['tx'],
   match: TextSubstitutionMatch | undefined
 ) => {
-  const selection = editor.read.selection();
+  const selection = tx.selection();
 
   if (!selection || !match) return false;
 
@@ -633,7 +631,7 @@ export const createTextSubstitutionInputRule = ({
 
       return resolveTextSubstitution({ candidates, editor });
     },
-    apply: ({ editor, tx }, match: TextSubstitutionMatch) =>
-      applyTextSubstitution(editor, tx, match),
+    apply: ({ tx }, match: TextSubstitutionMatch) =>
+      applyTextSubstitution(tx, match),
   });
 };

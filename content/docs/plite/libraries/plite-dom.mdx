@@ -82,6 +82,94 @@ and `IS_WECHATBROWSER`.
 Decoration helpers include `isElementDecorationsEqual`,
 `isTextDecorationsEqual`, and `splitDecorationsByChild`.
 
+## Host Codecs
+
+Use `defineHostCodec` for schema-aware clipboard formats and install codecs as
+one named extension with `hostCodecs`. Each callback receives an immutable
+`EditorCoreStateView`; parse callbacks also receive a snapshot of the incoming
+host formats and files.
+
+```ts
+import {
+  ContentSlice,
+  defineEditorExtension,
+  property,
+  schema,
+  target,
+} from "@platejs/plite";
+import { defineHostCodec, hostCodecs } from "@platejs/plite-dom";
+import { decodeHtmlSlice, encodeHtmlSlice } from "./html-codec";
+
+const Bold = schema.textProperty("bold", property.boolean(), {
+  target: target.type("paragraph"),
+});
+const DataAttribute = schema.elementProperty(
+  schema.key.prefix("data_"),
+  property.string(),
+  { target: target.group("block") }
+);
+
+const appSchema = defineEditorExtension({
+  name: "app-schema",
+  schema: { properties: [Bold, DataAttribute] },
+});
+
+const html = defineHostCodec({
+  format: "text/html",
+  key: "app-html",
+  parse: ({ data, state }) => decodeHtmlSlice(data, state.schema),
+  schema: [
+    { kind: "element", type: "paragraph" },
+    { kind: "property", declaration: Bold },
+    { kind: "property", declaration: DataAttribute },
+  ],
+  serialize: ({ slice, state }) => encodeHtmlSlice(slice, state.schema),
+});
+
+const editor = usePliteEditor({
+  extensions: [appSchema, hostCodecs("app-host-codecs", [html])],
+  initialValue,
+});
+```
+
+Parsing returns an intact `ContentSlice`, including its open edge depths. Use
+`ContentSlice.closed(content)` for a closed fragment or
+`ContentSlice.fromJSON(payload)` for a validated open slice. The replace-slice
+command fits the result against the actual paste range. Returning `null` or a
+slice that cannot fit delegates to the next codec without publishing a partial
+write. Codecs run in reverse configuration order, so the last configured codec
+gets the first chance to handle a format.
+
+Parse and query callbacks receive `{ data, format, source, state }`.
+Serialization receives `{ format, slice, state }`. Codecs do not receive the
+editor, a live `DataTransfer`, a fitter, or a write transaction. `query` is a
+read-only applicability check; parsing only decodes the payload, and the host
+dispatcher owns fitting and insertion.
+
+Schema claims compile against the candidate editor schema before an extension
+revision publishes. `{ kind: "schema" }` owns the complete schema. Element
+claims use stable element types. Property claims reuse the exact frozen
+`schema.elementProperty(...)` or `schema.textProperty(...)` declaration that
+the schema contribution installs. The compiler derives one stable identity
+from the declaration's placement, key, and target, so equal keys with disjoint
+targets remain independently claimable. Key-only claims and raw compiled IDs
+are not accepted. Duplicate codec keys, unknown declarations, and overlapping
+claims in the same MIME format and direction reject the complete configuration
+revision. Parse and serialize ownership are independent.
+
+Codec parsing is a pure decode boundary. Return `false` from `query` or `null`
+from `parse` when a payload does not apply; insertion belongs exclusively to
+the fitted replace-slice command. Query, parse, and serialize exceptions go to
+the editor's `lifecycleErrorSink` with `source: "host-codec"`, the codec key,
+format, phase, extension owner, and original cause. The registry then tries the
+next eligible codec.
+
+Framework clipboard writers call
+`writeHostFragmentData(editor, data, slice)` to run registered serializers into
+a `setData`-compatible host sink. Applications normally use
+`editor.api.clipboard.writeSelection(dataTransfer)`, which writes the native
+Plite payload and registered host formats together.
+
 ## Public Type Groups
 
 DOM bridge types include `DOMApi`, `DOMClipboardApi`,
@@ -95,6 +183,9 @@ hidden, staged, or virtualized same-root content.
 
 DOM primitive type names include `DOMNode`, `DOMElement`, `DOMText`, `DOMPoint`,
 `DOMRange`, `DOMStaticRange`, and `DOMSelection`.
+
+Host codec types include `HostCodec`, `HostCodecParseContext`, `HostCodecPhase`,
+`HostCodecSerializeContext`, `HostDataSource`, and `HostCodecSchemaTarget`.
 
 Hotkey and diff helper types include `HotkeySpec`, `HotkeyPlatform`,
 `HotkeyMatchOptions`, `KeyboardEventLike`, `StringDiff`, and `TextDiff`.

@@ -3,4 +3,3 @@
  */
 
 export * from './BasePlaceholderPlugin';
-export * from './transforms/index';

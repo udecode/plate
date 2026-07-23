@@ -48,4 +48,4 @@ export const useIsVisible = (elementId: string) => {
 };
 
 export const useToggleIndex = () =>
-  useEditorSelector((editor) => buildToggleIndex(editor.read.children()), []);
+  useEditorSelector((editor) => buildToggleIndex(editor.read.children()));

@@ -48,7 +48,7 @@ infrastructure instead of piling more folklore into the app kits.
 - Current research now has the needed authority split in:
   - [markdown-shorthand-and-inline-autoformat.md](docs/research/sources/typora/markdown-shorthand-and-inline-autoformat.md)
   - [input-autoformat-lanes.md](docs/research/sources/milkdown/input-autoformat-lanes.md)
-  - [autoformat-families-are-profile-adjacent-input-assist-surfaces.md](docs/research/decisions/autoformat-families-are-profile-adjacent-input-assist-surfaces.md)
+  - [autoformat-families-are-input-assist-surfaces.md](docs/research/decisions/autoformat-families-are-input-assist-surfaces.md)
   - [text-substitution-autoformat-authority.md](docs/research/open-questions/text-substitution-autoformat-authority.md)
 - Current runtime still centers rule dispatch in
   [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts),

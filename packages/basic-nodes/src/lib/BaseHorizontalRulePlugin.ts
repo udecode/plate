@@ -3,7 +3,11 @@ import { KEYS } from '@platejs/utils';
 
 export const BaseHorizontalRulePlugin = createBasePlugin({
   key: KEYS.hr,
-  node: { isElement: true, isVoid: true },
+  schema: {
+    element: {
+      void: 'block',
+    },
+  },
   parsers: {
     html: {
       deserializer: {

@@ -24,7 +24,7 @@ import {
   useHTMLInputCursorState,
 } from '@platejs/combobox/react';
 import { cva } from 'class-variance-authority';
-import { useComposedRef, useEditorRef, useNodePath } from 'platejs/react';
+import { useComposedRef, useEditor, usePath } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -92,8 +92,8 @@ const InlineCombobox = ({
   trigger,
   value: valueProp,
 }: InlineComboboxProps) => {
-  const editor = useEditorRef();
-  const path = useNodePath(element);
+  const editor = useEditor();
+  const path = usePath();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const cursorState = useHTMLInputCursorState(inputRef);
 

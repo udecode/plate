@@ -1,5 +1,5 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
-import type { BaseEditor } from 'platejs';
+import type { MarkdownEditor } from '@platejs/markdown';
 
 import dedent from 'dedent';
 
@@ -58,7 +58,7 @@ function buildGenerateFreeformPrompt(messages: ChatMessage[]) {
 }
 
 function buildGenerateContextPrompt(
-  editor: BaseEditor,
+  editor: MarkdownEditor,
   messages: ChatMessage[]
 ) {
   if (!isMultiBlocks(editor)) {
@@ -147,7 +147,7 @@ function buildGenerateContextPrompt(
 }
 
 export function getGeneratePrompt(
-  editor: BaseEditor,
+  editor: MarkdownEditor,
   { isSelecting, messages }: { isSelecting: boolean; messages: ChatMessage[] }
 ) {
   // Freeform generation: open-ended creation without context

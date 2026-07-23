@@ -1,0 +1,144 @@
+---
+title: "Document Changes"
+description: "Use root-aware document changes as Plite's canonical mutation, mapping, and replay law."
+---
+
+Every document-changing update publishes one `DocumentChange`. It maps an
+immutable before value to an immutable after value across the primary document
+and any named roots.
+
+```javascript
+const commit = editor.read.lastCommit();
+const nextValue = commit.changes.apply(previousValue);
+```
+
+## Algebra
+
+`DocumentChange` owns the algebra required by history, collaboration,
+anchors, corrections, and view invalidation:
+
+- `apply(value)`
+- `compose(other)`
+- `invert(value)`
+- `mapPosition(position, { root, association, track })`
+- `iterChangedRanges(visit)`
+- `toJSON()` and `DocumentChange.fromJSON(json)`
+
+`ChangeSet` is the single-root algebra used inside `DocumentChange`.
+
+The primary document has its own `primary` change and
+`primaryClassification`. Named roots live in the `roots` and
+`rootClassifications` maps. Omit `root` when mapping a primary-document
+position. Explicit root strings always address named secondary roots.
+
+```typescript
+const mapped = change.mapPosition(position, {
+  association: "forward",
+});
+
+const mappedHeader = change.mapPosition(position, {
+  association: "backward",
+  root: "header",
+});
+```
+
+`toJSON()` writes version 3 with optional `primary` and `roots` fields. An
+omitted `roots` object and an empty `roots` object describe the same document
+change.
+
+`iterChangedRanges` reports `root: null` for the primary document and a string
+for a named root.
+
+`DocumentChange.transform(a, b, value)` rebases two changes from the same value
+for pairwise convergence, including history rebasing. Multi-peer ordering belongs
+to a collaboration adapter such as Yjs.
+
+## Apply a stored or remote change
+
+```javascript
+editor.update({ tags: "remote-import" }, (tx) => {
+  tx.changes.apply(DocumentChange.fromJSON(message.change));
+});
+```
+
+Use semantic transaction groups for ordinary editing. `tx.changes.apply` is the
+adapter, history, and durable replay boundary.
+
+## Commit invalidation
+
+Consumers inspect the canonical change through lazy `commit.changed` queries.
+They do not reconstruct impact from a parallel operation list.
+
+```javascript
+const unsubscribe = editor.subscribeCommit((commit) => {
+  if (!commit.changed.has("document")) return;
+
+  const changedBlocks = commit.changed.topLevelRanges();
+  const changedRuntimeIds = commit.changed.runtimeIds("node");
+
+  refreshDocumentConsumers(changedBlocks, changedRuntimeIds);
+});
+```
+
+`commit.changed.has(kind)` and `runtimeIds(kind)` query the primary document.
+Pass a named `root` for one secondary document. Use `hasAny(kind)` and
+`runtimeIdsAll(kind)` only when a consumer intentionally spans every root. The
+queries derive their answers from `DocumentChange` plus the retained before and
+after snapshot indexes.
+
+## Fit external content
+
+Parsing, paste, and import boundaries carry open content as an
+immutable `ContentSlice`. Replace through `tx.slice` so the compiled schema
+fits the slice before one canonical change is published.
+
+```typescript
+import { ContentSlice } from "@platejs/plite";
+
+const slice = ContentSlice.fromJSON({
+  content: parsedContent,
+  openEnd: 1,
+  openStart: 1,
+});
+
+editor.update.slice.replace(slice);
+```
+
+Use `ContentSlice.closed(content)` when a transport explicitly needs a closed
+slice, `ContentSlice.empty` for the frozen empty slice, and
+`ContentSlice.withContent(slice, content, { open })` when a codec or extension
+rewrites content while either preserving or closing its boundaries.
+
+For ordinary closed application content, skip the transport wrapper.
+
+```ts
+editor.update.fragment.replace([
+  { type: "paragraph", children: [{ text: "Closed content" }] },
+]);
+```
+
+Pure commands preview the same atomic replacement with
+`state.slice.fit(slice, options?)`. Editor-level code can call
+`editor.read.slice.fit(...)`; it returns `false` or a frozen `TransactionSpec`
+without publishing.
+
+Detached structures use the same compiled grammar without pretending to be in
+the live document.
+
+```ts
+const tableCell = {
+  type: "tableCell",
+  children: [{ type: "paragraph", children: [{ text: "" }] }],
+};
+const fittedChildren = editor.read.slice.fitContent(slice, {
+  parent: tableCell,
+});
+
+if (fittedChildren === null) {
+  throw new Error("The slice does not fit this table cell.");
+}
+```
+
+`fitContent` returns immutable children or `null`. It does not mutate the
+parent, selection, document, or commit stream. Omit `root` for the primary root;
+root-scoped editor views inherit their root automatically.

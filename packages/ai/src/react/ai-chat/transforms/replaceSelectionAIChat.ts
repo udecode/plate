@@ -14,9 +14,11 @@ import {
   NodeApi,
   TextApi,
 } from '@platejs/plite';
+import { NODES } from '@platejs/utils';
+import { getEditorPlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
-import { AIChatPlugin } from '../AIChatPlugin';
+import type { AIChatPluginConfig } from '../AIChatPlugin';
 
 export const createFormattedBlocks = ({
   blocks,
@@ -82,7 +84,9 @@ export const replaceSelectionAIChat = (
     .plugin(BlockSelectionPlugin)
     .getOption('isSelectingSome');
 
-  editor.plugin(AIChatPlugin).api.hide();
+  getEditorPlugin<AIChatPluginConfig>(editor, {
+    key: KEYS.aiChat,
+  }).api.hide();
 
   // If no blocks selected, treat it like a normal selection replacement
   if (!isBlockSelecting) {
@@ -103,13 +107,13 @@ export const replaceSelectionAIChat = (
 
       /** When user selection is cover the whole code block */
       if (
-        firstBlock[0].type === KEYS.codeLine &&
-        sourceChildren[0].type === KEYS.codeBlock &&
+        firstBlock[0].type === NODES.codeLine &&
+        sourceChildren[0].type === NODES.codeBlock &&
         sourceChildren.length === 1
       ) {
-        editor.update.fragment.insert(formattedBlocks[0].children);
+        editor.update.fragment.replace(formattedBlocks[0].children);
       } else {
-        editor.update.fragment.insert(formattedBlocks);
+        editor.update.fragment.replace(formattedBlocks);
       }
 
       editor.api.dom.focus();
@@ -117,7 +121,7 @@ export const replaceSelectionAIChat = (
       return;
     }
 
-    editor.update.fragment.insert(sourceChildren);
+    editor.update.fragment.replace(sourceChildren);
     editor.api.dom.focus();
 
     return;
@@ -130,9 +134,9 @@ export const replaceSelectionAIChat = (
   // If format is 'none' or multiple blocks with 'single',
   // just insert the content as is
   if (format === 'none' || (format === 'single' && selectedBlocks.length > 1)) {
-    editor.update({ history: 'new-batch' }, (tx) => {
+    editor.update({ history: 'new-batch' }, (tx, context) => {
       removeBlockSelectionNodes(editor, tx);
-      insertBlocksAndSelect(editor, tx, cloneDeep(sourceChildren), {
+      insertBlocksAndSelect(editor, tx, context, cloneDeep(sourceChildren), {
         at: selectedBlocks[0][1],
       });
     });
@@ -154,9 +158,9 @@ export const replaceSelectionAIChat = (
 
   if (!formattedBlocks) return;
 
-  editor.update({ history: 'new-batch' }, (tx) => {
+  editor.update({ history: 'new-batch' }, (tx, context) => {
     removeBlockSelectionNodes(editor, tx);
-    insertBlocksAndSelect(editor, tx, formattedBlocks, {
+    insertBlocksAndSelect(editor, tx, context, formattedBlocks, {
       at: firstBlockPath,
     });
   });

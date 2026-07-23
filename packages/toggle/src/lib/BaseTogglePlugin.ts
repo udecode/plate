@@ -1,31 +1,43 @@
-import { type PluginConfig, createBasePlugin } from '@platejs/core';
+import {
+  type InferConfig,
+  type PluginConfig,
+  createBasePlugin,
+} from '@platejs/core';
+import { schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-export type BaseToggleConfig = PluginConfig<
+type BaseToggleContract = PluginConfig<
   'toggle',
   {
     openIds: Set<string>;
   },
-  {
-    toggle: {
-      toggleIds: (ids: string[], force?: boolean | null) => void;
-    };
-  },
+  {},
   {},
   {
     isOpen?: (toggleId: string) => boolean;
     someClosed?: (toggleIds: string[]) => boolean;
+  },
+  {},
+  readonly [],
+  readonly [],
+  never,
+  {
+    toggleIds: (ids: string[], force?: boolean | null) => void;
   }
 >;
 
-export const BaseTogglePlugin = createBasePlugin<BaseToggleConfig>({
+export const BaseTogglePlugin = createBasePlugin({
   key: KEYS.toggle,
-  node: { isElement: true },
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
   options: {
-    openIds: new Set(),
+    openIds: new Set<string>(),
   },
 })
-  .extendSelectors<BaseToggleConfig['selectors']>(({ getOptions }) => ({
+  .extendSelectors<BaseToggleContract['selectors']>(({ getOptions }) => ({
     isOpen: (toggleId) => getOptions().openIds.has(toggleId),
     someClosed: (toggleIds) => {
       const { openIds } = getOptions();
@@ -33,7 +45,7 @@ export const BaseTogglePlugin = createBasePlugin<BaseToggleConfig>({
       return toggleIds.some((id) => !openIds.has(id));
     },
   }))
-  .extendApi<BaseToggleConfig['api']['toggle']>(({ setOptions }) => ({
+  .extendApi<BaseToggleContract['pluginApi']>(({ setOptions }) => ({
     toggleIds: (ids, force = null) => {
       setOptions((draft) => {
         if (!draft.openIds) draft.openIds = new Set();
@@ -53,3 +65,5 @@ export const BaseTogglePlugin = createBasePlugin<BaseToggleConfig>({
       });
     },
   }));
+
+export type BaseToggleConfig = InferConfig<typeof BaseTogglePlugin>;

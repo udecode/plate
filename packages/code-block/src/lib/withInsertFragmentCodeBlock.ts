@@ -1,5 +1,11 @@
 import type { ExtendPlateEditorExtension } from '@platejs/core';
-import { ElementApi, type Element, NodeApi } from '@platejs/plite';
+import {
+  ContentSlice,
+  editorCommands,
+  ElementApi,
+  type Element,
+  NodeApi,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
@@ -12,12 +18,25 @@ const extractCodeLinesFromCodeBlock = (node: Element) =>
 export const withInsertFragmentCodeBlock: ExtendPlateEditorExtension<
   CodeBlockConfig
 > = ({ editor, type: codeBlockType }) => ({
-  transforms: {
-    insertFragment({ fragment, next, options, tx }) {
-      const at = options?.at ?? tx.selection() ?? undefined;
+  commands: ({ around }) => [
+    around(editorCommands.replaceSlice, ({ input, state, next }) => {
+      const { options, slice } = input;
+      const fragment = [...slice.content];
+      const target = options?.at;
+      const at =
+        target === undefined
+          ? (state.selection() ?? undefined)
+          : NodeApi.isNode(target)
+            ? state.nodes.path(target)
+            : target;
       const codeLineType = editor.getType(KEYS.codeLine);
+
+      if (target !== undefined && at === undefined) {
+        return next();
+      }
+
       const isInCodeBlock = Boolean(
-        editor.read.nodes.block({
+        state.nodes.block({
           at,
           match: { type: [codeBlockType, codeLineType] },
         })
@@ -40,40 +59,10 @@ export const withInsertFragmentCodeBlock: ExtendPlateEditorExtension<
         ];
       });
 
-      const [firstLine, ...restLines] = codeLines;
-      const firstLineText = firstLine ? NodeApi.string(firstLine) : '';
-
-      if (options?.at === undefined) {
-        if (firstLineText) {
-          tx.text.insert(firstLineText);
-        }
-
-        if (restLines.length > 0) {
-          tx.nodes.insert(restLines);
-        }
-
-        return true;
-      }
-
-      const insertionPoint = editor.read.points.start(options.at);
-
-      if (!insertionPoint) return true;
-
-      const insertionRef = tx.refs.point(insertionPoint, {
-        affinity: 'forward',
+      return next({
+        ...input,
+        slice: ContentSlice.withContent(slice, codeLines, { open: 'closed' }),
       });
-
-      if (firstLineText) {
-        tx.text.insert(firstLineText, options);
-      }
-
-      const restAt = insertionRef.unref();
-
-      if (restAt && restLines.length > 0) {
-        tx.nodes.insert(restLines, { ...options, at: restAt });
-      }
-
-      return true;
-    },
-  },
+    }),
+  ],
 });

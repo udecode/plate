@@ -109,11 +109,11 @@ Verification surface:
   tx parameters, nested update calls, normalization, option access, type casts,
   and stale API names
 - related scoped sweep query / active scope / match count / patched count / deferred count:
-  Media source topology and removed API sweep / `packages/media/src` / 0
-  surviving stale matches / 0 package matches to patch / 16 documentation
-  matches deferred across 4 out-of-scope files
+  Media source topology plus exact registry consumers / `packages/media/src`
+  and the two registry transform owners / 0 surviving raw-helper matches / all
+  four source consumers plus current Media/DnD EN/CN docs patched / 0 deferred
 - package file manifest / row count / checked count / deferred count: baseline
-  102 / 102 / 0; final manifest 47 / 47 / 0; 9 added final paths inventoried
+  102 / 102 / 0; final manifest 44 / 44 / 0; 8 added final paths inventoried
 - Plite/Plate gap ledger: required; record N/A if no blocker survives
 - broad Core drift ledger gate: N/A: named package mode, not broad Core
 - final plan check: `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-23-plate-next-media-full-colocation.md`
@@ -132,10 +132,10 @@ Constraints:
   scope. Package review mode is scoped to the named package plus the smallest
   Plite/Core owner needed to unblock that package. Broader matches become
   deferred rows or next-package candidates, not edits.
-- In package review mode, do not update docs, examples, package callers outside
-  the named package, unrelated packages, generated registries, or broad repo
-  surfaces unless the user explicitly broadens scope with `all packages`,
-  `current tree`, `full-loop`, `sweep`, or the broader owner name.
+- In package review mode, do not update docs, examples, unrelated packages,
+  generated registries, or broad repo surfaces. Exact source consumers may be
+  migrated when a user-requested hard cut cannot be completed truthfully
+  without them; record every such consumer and keep the adoption bounded.
 - Implementation topology is not frozen. Rename, merge, or delete internal
   helper files, exports, and proof filenames when the active packet restores a
   durable owner. Reject cosmetic synonym churn, but do not preserve one-use
@@ -278,14 +278,16 @@ Constraints:
 
 Boundaries:
 - allowed edit scope: `packages/media`, its package-local proof, generated
-  barrels affected by Media exports, one Media changeset, this plan, and only
-  the smallest blocking Core/Plite owner if proven necessary
+  barrels affected by Media exports, one Media changeset, this plan, source
+  rules generated through `pnpm install`, and the exact registry consumers and
+  changelog entry required by the user-requested raw-helper hard cut
 - package/API surfaces: headless Media/Image/Embed/Placeholder plugins and
   Media React component/hook/store families
-- docs/browser surfaces: out of scope; package mode must not start `apps/www`
-  or edit content/registry callers
-- non-goals: no next package, no unrelated package migration, no broad docs or
-  caller rewrite, no compatibility preservation, no line ceiling, no messages
+- docs/browser surfaces: exact Media/DnD EN/CN docs and registry consumers are
+  in scope for the hard cut and require `apps/www` typecheck, focused proof,
+  and Browser verification
+- non-goals: no next package, no unrelated package migration, no broad caller
+  rewrite, no compatibility preservation, no line ceiling, no messages
   to the other Codex task
 - out-of-scope package errors: classify and record; do not repair unless the
   current Media/Core change caused them
@@ -305,13 +307,12 @@ Blocked condition:
   the goal blocked.
 
 Current verdict:
-- verdict: `merge-existing-owner` / `hard-cut`, complete
-- confidence: high after source graph, 62 tests, package/Core/build proof, and
-  clean structured autoreview
-- next owner: the next Plate Next package; Media is closed
-- keep / revert / quarantine call: keep all four proven packets; no quarantined
-  packet
-- reason: 99 source files collapsed to 43 coherent source owners without helper
+- verdict: `merge-existing-owner` / `hard-cut`, reopened after user correction
+- confidence: high; package/app/browser/Core proof and final review are clean
+- next owner: next Plate Next package
+- keep / revert / quarantine call: keep the coherent colocation packets;
+  replace the rejected standalone insertion-helper packet
+- reason: 99 source files collapsed to 41 coherent source owners without helper
   taxonomy folders, while independently reused algorithms, stores, providers,
   and data owners remain separate
 
@@ -427,31 +428,31 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Run the proof commands named in this plan | Media typecheck, 62/62 tests, build/artifact checks, `check:core`, lint, and clean review pass |
+| Named verification threshold | yes | Run the proof commands named in this plan | Media/app/browser/Core proof and final review pass |
 | Broad Core drift ledger coverage | N/A | Record manifest counts only when broad Core sweep applies | Package review mode; no Core source file was edited |
-| Score gate | yes | Prove all scores are valid and high drift is owned/fixed/deferred | 102/102 baseline rows and 9/9 added rows are checked at 100 |
+| Score gate | yes | Prove all scores are valid and high drift is owned/fixed/deferred | 102/102 baseline rows and 8/8 added rows are checked at 100 |
 | Best Plate v2 recommendation | yes | Record current shape and rejected legacy alternatives | Flat scoped verbs and owner-family topology recorded below |
 | Plite/Plate gap ledger | yes | Record blockers or N/A | N/A; no substrate gap survived |
 | Related scoped sweep after correction | yes | Record same-class search results | Four correction rows plus final zero-match Media source audit recorded below |
-| Package file checklist | yes | Record baseline/final manifests and proof | Baseline 102, final 47, nine added paths, zero missing/extra/deferred |
-| Helper topology / lexical tx ownership | yes | Audit helper folders and tx parameters | Zero helper-taxonomy files survive; four tx functions share one primitive with proven production reuse |
-| Package/API proof | yes | Run focused typecheck/test/build | Direct typecheck, 62 tests, package build, artifact audit all pass |
+| Package file checklist | yes | Record baseline/final manifests and proof | Baseline 102, final 44, eight added paths, zero missing/extra/deferred |
+| Helper topology / lexical tx ownership | yes | Audit helper folders and tx parameters | Zero helper-taxonomy or raw insertion helpers survive; repeated callers use scoped plugin updates |
+| Package/API proof | yes | Run focused typecheck/test/build | Media 65/65, package/turbo typecheck, build/artifacts, registry 11/11, docs/www pass |
 | Shared Core gate coverage | yes | Include reviewed package in Core gate | `media` already exists in `reviewedPackageSlugs`; `pnpm check:core` passes |
 | Non-Core package error triage | N/A | Classify proof failures | No unresolved package failure |
 | Source audit | yes | Audit removed compatibility names | Zero stale names in `packages/media/src` and emitted non-map artifacts |
 | Rename ledger | N/A | Record postponed cosmetic renames | Every owner-driven move landed; no postponed rename |
-| Extracted-file inventory | yes | Inventory every added path | Nine paths classified below; all score 100 |
-| Autoreview / review | yes | Run structured review to clean | Final local Codex autoreview: zero findings, patch correct |
-| Final lint/check | yes | Run scoped lint/check | Media lint clean; exact tooling Biome clean; Core gate clean |
-| Changed list / top drift / needs attention | yes | Fill handoff ledgers | Ledgers below are complete; docs adoption is the sole deferred owner |
-| Goal plan complete | yes | Run the mechanical goal checker | Final checker is the next and last command after this evidence is saved |
+| Extracted-file inventory | yes | Inventory every added path | Eight paths classified below; all score 100 |
+| Autoreview / review | yes | Run structured review to clean | Final delta review reports zero accepted/actionable findings |
+| Final lint/check | yes | Run scoped lint/check | Media lint and full 45-package Core gate pass |
+| Changed list / top drift / needs attention | yes | Fill handoff ledgers | Ledgers below are complete; no deferred owner remains |
+| Goal plan complete | yes | Run the mechanical goal checker | `check-complete.mjs` passes |
 
 Review matrix:
 | Path / API | Drift score | Verdict | Owner | Evidence | Next |
 |------------|-------------|---------|-------|----------|------|
-| Image clipboard/file insertion graph | 4 | merge-existing-owner | `BaseImagePlugin` | `withImageEmbed`, `withImageUpload`, and `insertImageFromFiles` have one plugin owner; `insertImage` and `isImageUrl` are public/independent survivors | inline extension and file-reader behavior; merge specs |
+| Image clipboard/file insertion graph | 4 | merge-existing-owner / hard-cut | `BaseImagePlugin` | `withImageEmbed`, `withImageUpload`, `insertImageFromFiles`, raw `insertImage`, and the one-owner URL classifier all serve one plugin mutation | inline extension, classifier, file-reader, and insert behavior; merge specs |
 | Media URL parser graph | 3 | merge-existing-owner | `parseMediaUrl` family | four public parsers form one coherent algorithm family; registry has real `parseTwitterUrl`/`parseVideoUrl` consumers | merge implementation/spec files while preserving exports |
-| Base placeholder transforms | 4 | merge-existing-owner / hard-cut | `BasePlaceholderPlugin` | plugin repeats its noun and four variants; three raw tx helpers have two real registry consumers; `setMediaNode` is test-only | flat scoped `insert(mediaType)`; colocate surviving shared tx helpers; delete dead helpers |
+| Base placeholder transforms | 4 | merge-existing-owner / hard-cut | `BasePlaceholderPlugin` | plugin repeats its noun and four variants; registry repetition is scoped-API reuse, not evidence for raw `tx + resolved type` helpers; `setMediaNode` is test-only | flat scoped `insert(mediaType)`; delete every raw helper and migrate exact consumers |
 | React placeholder upload graph | 5 | merge-existing-owner | `PlaceholderPlugin` | one plugin owns `transforms/`, seven validation utils, public upload types, and all runtime calls; standalone tx helper exists only to ferry context | inline algorithm in `.extendTx`; merge proof; retain one MIME data owner |
 | MIME database taxonomy | 4 | merge-existing-owner | `mimeTypes` data module | six category files plus `mimes` and `utils` are consumed only as one lookup database; 3,700+ data lines justify depth, not taxonomy files | merge mechanically into one data/lookup owner |
 | Floating Media React family | 4 | merge-existing-owner | `FloatingMedia.tsx` + `useFloatingMedia.ts` | namespace component, two subcomponents, three subhooks, submit behavior, and spec are split across six files; store has a real external consumer | merge component and hook families; keep independent store |
@@ -464,7 +465,9 @@ Best Plate v2 recommendation:
 |--------|-------------------|-----------------------------------|--------|------------------|
 | Headless placeholder insertion | `editor.plugin(BasePlaceholderPlugin).update.insert(mediaType, options)` and grouped `tx.placeholder.insert(mediaType, options)` | nested `placeholder.audioPlaceholder`, four noun-first verbs, root transform aliases | scoped owner already says placeholder; one typed insert is the user intent and scales without verb growth | none: follows the accepted flat scoped-verb doctrine |
 | React placeholder upload | `editor.plugin(PlaceholderPlugin).update.insertMedia(files, options)` with the algorithm lexical inside `.extendTx` | exported `insertMediaWithTx(editor, tx, context, ...)`, nested updates, helper ferry types | one plugin owns validation, options, after-commit publication, and placeholder insertion | none |
-| Image insertion | keep public `insertImage` for current independent callers; colocate clipboard/file ingestion in `BaseImagePlugin` | exported `withImage*` extensions and `insertImageFromFiles` | only the plugin owns ingestion policy; direct image insertion remains a real public algorithm | none |
+| Image insertion | `editor.plugin(BaseImagePlugin).update.insert(url, options)` | exported `insertImage`, exported `withImage*` extensions, and `insertImageFromFiles` | repeated callers should reuse the plugin capability; raw insertion has no independent owner | none |
+| Media Embed insertion | `editor.plugin(BaseMediaEmbedPlugin).update.insert(url, options)` | exported `insertMediaEmbed(editor, options)` and transform taxonomy | normalization and resolved plugin type belong to the plugin tx owner | none |
+| Client URL prompt | `insertMediaUrl(editor, options)` beside `useMediaToolbarButton` in the React entrypoint | headless `lib/media/insertMedia.ts` | browser prompting and cross-plugin dispatch are one reusable client interaction, not a headless Media algorithm | none |
 
 Plite / Plate gap ledger:
 | Gap type | Missing capability | Why local workaround is a hack | Smallest owner | Proof needed | Decision |
@@ -479,7 +482,11 @@ Related scoped sweep ledger:
 | Floating embed metadata review finding | Floating Media family | inspect `provider` / `sourceUrl` set/unset behavior and add regression | 1 bug | 1 | 0 | 4/4 focused regression proof |
 | Image file API review finding | repo source callers + Media changeset | `rg` for `imageFromFiles` / `insertImageFromFiles` | 0 live consumers; 1 release-accounting gap | 1 changeset | 0 | app-boundary upload replacement documented |
 | Shared build-root review finding | build config + Core/Media builds | real `cwd` / `INIT_CWD` reproduction, resolver tests, filtered builds | 1 P1 bug | 1 owner + 1 test | 0 | Core and Media artifact builds pass |
-| Final stale API sweep | `packages/media/src` | removed names, nested updates, root options, casts, required reads, normalization | 0 | 0 | 16 docs matches in 4 files | docs adoption remains out of package scope |
+| User rejected raw insertion helpers | `packages/media/src` plus exact registry/docs consumers | `rg` for raw Image/Embed/Placeholder insert helpers and plugin-scoped adoption | 3 raw owner families plus exact registry/docs sites | all package helpers and current consumers | 0 | repeated callers use flat scoped plugin updates; client prompt lives with its React hook family |
+| `BaseMediaEmbedPlugin: any` report | Media source, compile contract, emitted declaration | `IsAny<typeof BaseMediaEmbedPlugin>` compile guard plus built `.d.ts` inspection | 0 compiler `any`; 1 IDE report | permanent guards for Image/Embed/Placeholder | 0 | owning builder inference remains observable in package typecheck and declarations |
+| Async insertion review | Media toolbar and Image clipboard owners | move selection/document while URL/upload promise is unresolved | 2 target-drift bugs | 2 owner fixes + regressions | 0 | live block/path anchors preserve invocation targets |
+| Custom upload docs review | Media EN/CN docs plus registry Placeholder owner | compare the documented success path/imports with `media-placeholder-node.tsx` and current React exports | 2 broken sample details mirrored in EN/CN | 2 docs snippets | 0 | `useEditor` owns access; uploaded URL/name replace the live placeholder atomically |
+| Final stale API sweep | Media source, exact registry, and current plugin docs | removed names, nested updates, root options, casts, required reads, normalization | 0 | 0 | 0 | none |
 
 Core drift ledger:
 - Applies: no: package mode
@@ -509,18 +516,18 @@ Package file checklist:
   test-utils, type-tests, fixtures, examples, and docs only when touched.
 - Expected row count: 102
 - Actual row count: 102
-- Checked score-100 count: 102 baseline rows plus 9 added final rows
+- Checked score-100 count: 102 baseline rows plus 8 added final rows
 - Unchecked/deferred count: 0 / 0
 - Missing row count: 0
 - Extra row count: 0
-- Final manifest expected/actual/missing/extra: 47 / 47 / 0 / 0
+- Final manifest expected/actual/missing/extra: 44 / 44 / 0 / 0
 - Score gate: `[x]` only when score is `100`.
 - Next package blocked until: every baseline and final Media row is score 100,
   focused/shared proof passes, and final review has zero accepted findings
 
 Package file rows:
 Evidence key `M1`: exact topology/API audits, Media lint and direct typecheck,
-62/62 package tests, package build plus artifact audit, `pnpm check:core`, and
+65/65 package tests, package build plus artifact audit, `pnpm check:core`, and
 the final structured autoreview with zero findings.
 
 - [x] `packages/media/package.json` — score: 100 — verdict: keep-in-plate — owner: Media package metadata — evidence: M1; final owner retained and audited — next: closed
@@ -555,8 +562,8 @@ the final structured autoreview with zero findings.
 - [x] `packages/media/src/lib/media-embed/transforms/insertMediaEmbed.spec.ts` — score: 100 — verdict: merge-existing-owner / hard-cut — owner: Media Embed plugin family — evidence: M1; baseline path removed after owner merge or dead API cut — next: closed
 - [x] `packages/media/src/lib/media-embed/transforms/insertMediaEmbed.ts` — score: 100 — verdict: merge-existing-owner / hard-cut — owner: Media Embed plugin family — evidence: M1; baseline path removed after owner merge or dead API cut — next: closed
 - [x] `packages/media/src/lib/media/index.ts` — score: 100 — verdict: keep-in-plate — owner: Media parser/insertion family — evidence: M1; final owner retained and audited — next: closed
-- [x] `packages/media/src/lib/media/insertMedia.spec.ts` — score: 100 — verdict: keep-in-plate — owner: Media parser/insertion family — evidence: M1; final owner retained and audited — next: closed
-- [x] `packages/media/src/lib/media/insertMedia.ts` — score: 100 — verdict: keep-in-plate — owner: Media parser/insertion family — evidence: M1; final owner retained and audited — next: closed
+- [x] `packages/media/src/lib/media/insertMedia.spec.ts` — score: 100 — verdict: merge-existing-owner / hard-cut — owner: React toolbar/client URL interaction — evidence: M1; proof moved beside the surviving client interaction — next: closed
+- [x] `packages/media/src/lib/media/insertMedia.ts` — score: 100 — verdict: merge-existing-owner / hard-cut — owner: React toolbar/client URL interaction — evidence: M1; headless helper deleted and scoped plugin dispatch colocated with the hook family — next: closed
 - [x] `packages/media/src/lib/media/parseMediaUrl.spec.ts` — score: 100 — verdict: keep-in-plate — owner: Media parser/insertion family — evidence: M1; final owner retained and audited — next: closed
 - [x] `packages/media/src/lib/media/parseMediaUrl.ts` — score: 100 — verdict: keep-in-plate — owner: Media parser/insertion family — evidence: M1; final owner retained and audited — next: closed
 - [x] `packages/media/src/lib/media/types.ts` — score: 100 — verdict: keep-in-plate — owner: Media parser/insertion family — evidence: M1; final owner retained and audited — next: closed
@@ -629,12 +636,11 @@ the final structured autoreview with zero findings.
 Added final file rows:
 
 - [x] `packages/media/src/lib/image/BaseImagePlugin.spec.tsx` — score: 100 — verdict: merge-existing-owner — owner: Image plugin proof — evidence: M1; URL, upload, fallback, and option behavior are owner-tested — next: closed
-- [x] `packages/media/src/lib/image/isImageUrl.spec.tsx` — score: 100 — verdict: merge-existing-owner — owner: image URL algorithm proof — evidence: M1; moved beside its algorithm with uppercase-extension coverage — next: closed
-- [x] `packages/media/src/lib/image/isImageUrl.ts` — score: 100 — verdict: merge-existing-owner — owner: independent public image URL algorithm — evidence: M1; flattened and case-insensitive — next: closed
 - [x] `packages/media/src/react/image/Image.tsx` — score: 100 — verdict: merge-existing-owner — owner: Image component family — evidence: M1; flattened and preview opening colocated — next: closed
 - [x] `packages/media/src/react/image/PreviewImage.tsx` — score: 100 — verdict: merge-existing-owner — owner: Preview Image component family — evidence: M1; flattened without a taxonomy folder — next: closed
 - [x] `packages/media/src/react/media/FloatingMedia/useFloatingMedia.spec.ts` — score: 100 — verdict: merge-existing-owner — owner: Floating Media hook proof — evidence: M1; four focused behavior cases pass — next: closed
 - [x] `packages/media/src/react/media/FloatingMedia/useFloatingMedia.ts` — score: 100 — verdict: merge-existing-owner — owner: Floating Media hook family — evidence: M1; submit/edit/input/escape behavior colocated — next: closed
+- [x] `packages/media/src/react/media/useMediaToolbarButton.spec.ts` — score: 100 — verdict: merge-existing-owner — owner: Media toolbar/client URL interaction proof — evidence: M1; moved from the deleted headless helper and exercises scoped Image/Embed dispatch — next: closed
 - [x] `packages/media/src/react/placeholder/PlaceholderProvider.tsx` — score: 100 — verdict: recover-main-owner — owner: independent provider component — evidence: M1; dead store surface removed while the live provider remains — next: closed
 - [x] `packages/media/src/react/placeholder/internal/mimeTypes.ts` — score: 100 — verdict: merge-existing-owner — owner: independent MIME data/lookup boundary — evidence: M1; category shards collapsed into one lazy lookup owner — next: closed
 
@@ -643,21 +649,21 @@ Packet ledger:
 |--------|-------|--------------------|------------------|----------|------|
 | 1 | Headless Media | one-owner extensions/transforms and parser test confetti | `src/lib/image`, `src/lib/media-embed`, `src/lib/placeholder` | keep: owner tests and full Media proof pass | closed |
 | 2 | React Media | component/hook family splits and dead exports | `src/react/image`, `src/react/media` | keep: component/hook families flattened and proof passes | closed |
-| 3 | React Placeholder | tx ferry, validation utilities, MIME taxonomy, dead hooks | `src/react/placeholder` | keep: flat scoped update, lexical validation, one data owner, 62-test suite | closed |
+| 3 | React Placeholder | tx ferry, validation utilities, MIME taxonomy, dead hooks | `src/react/placeholder` | keep: flat scoped update, lexical validation, one data owner, 65-test suite | closed |
 | 4 | Package closure | barrels, changeset, manifest rescore, package/Core/review gates | package root, tooling build owner, plan | keep: all named gates and clean review pass | closed |
+| 5 | Insertion owner/API correction | raw helpers survived because repeated callers were mistaken for an independent owner | Image, Media Embed, Placeholder, toolbar hook, exact registry/docs consumers, rules/vision | replace: flat scoped plugin updates; keep only the client URL interaction beside its hook family; stabilize async targets; repair doctrine | closed |
 
 Extracted file ledger:
 | Path | Bucket | Origin/main owner check | Decision | Proof |
 |------|--------|-------------------------|----------|-------|
-| `src/lib/image/BaseImagePlugin.spec.tsx` | merge-existing-owner | replaces two helper-named specs | keep owner-family proof | 62/62 |
-| `src/lib/image/isImageUrl.spec.tsx` | merge-existing-owner | same public algorithm proof, flattened | keep | 62/62 |
-| `src/lib/image/isImageUrl.ts` | merge-existing-owner | same public algorithm, flattened | keep | typecheck/build |
+| `src/lib/image/BaseImagePlugin.spec.tsx` | merge-existing-owner | replaces helper-named specs and proves the inline URL classifier/upload owner | keep owner-family proof | 65/65 |
 | `src/react/image/Image.tsx` | merge-existing-owner | moved from `components/` | keep main component owner | typecheck/build |
 | `src/react/image/PreviewImage.tsx` | merge-existing-owner | moved from `components/` | keep main component owner | typecheck/build |
-| `src/react/media/FloatingMedia/useFloatingMedia.spec.ts` | merge-existing-owner | replaces submit-only spec | keep hook-family proof | 4/4 focused; 62/62 full |
+| `src/react/media/FloatingMedia/useFloatingMedia.spec.ts` | merge-existing-owner | replaces submit-only spec | keep hook-family proof | 4/4 focused; 65/65 full |
 | `src/react/media/FloatingMedia/useFloatingMedia.ts` | merge-existing-owner | merges three hooks and submit behavior | keep hook family | typecheck/build/review |
+| `src/react/media/useMediaToolbarButton.spec.ts` | merge-existing-owner | moves proof from deleted headless `insertMedia` helper | keep beside the hook/client-interaction owner | focused and full Media proof |
 | `src/react/placeholder/PlaceholderProvider.tsx` | recover-main-owner | live provider extracted from dead store surface | keep provider only | app caller audit; typecheck/build |
-| `src/react/placeholder/internal/mimeTypes.ts` | merge-existing-owner | merges eight MIME category/assembly files | keep independent data owner | 62/62; typecheck/build |
+| `src/react/placeholder/internal/mimeTypes.ts` | merge-existing-owner | merges eight MIME category/assembly files | keep independent data owner | 65/65; typecheck/build |
 
 Out-of-scope package drift:
 | Package / command | Error summary | Why not blocking this run | Owner / next |
@@ -667,36 +673,41 @@ Out-of-scope package drift:
 Out-of-scope matches discovered:
 | Pattern / API | Outside-scope owners | Why not patched now | Next package / owner |
 |---------------|----------------------|---------------------|----------------------|
-| `withImageUpload`, `withImageEmbed`, old nested Placeholder updates | Media EN/CN docs and DnD EN/CN docs: 16 matches in 4 files | Package review explicitly excludes `content/**` adoption | Media documentation adoption packet |
+| CI-generated playground template snapshot | `templates/plate-playground-template/**` | Repository policy forbids manual template edits; source registry owner is migrated and CI regenerates templates | CI regeneration |
 
 Changed list:
 | Group | Current-run changes |
 |-------|---------------------|
-| code/runtime/API | Headless Image/Embed/Placeholder owners; React Image/FloatingMedia/Placeholder families; one MIME data owner; package dependency cleanup; shared tsdown package-root fix |
-| tests/proof | Ten final Media spec files, 62 tests; build-root contract test; emitted-artifact audits |
-| docs/templates/skills | Existing Media major changeset and this goal plan only; no content/apps/templates edit |
+| code/runtime/API | Headless Image/Embed/Placeholder owners with flat scoped inserts; React Image/FloatingMedia/Placeholder families; client URL interaction beside toolbar hook; exact registry transforms migrated; one MIME data owner; package dependency cleanup; shared tsdown package-root fix |
+| tests/proof | Eight final Media proof/owner files, including async toolbar/upload target regressions; permanent non-`any` plugin guards; registry transform regressions; build-root contract test; emitted-artifact audits |
+| docs/templates/skills | Media/DnD EN/CN docs; Media major changeset; registry changelog source/generated entry; this goal plan; `best-api`/`plate-next` source rules and Plate Vision repaired, generated skills refreshed with `pnpm install`; CI-owned templates untouched |
 | reverted/quarantined packets | none |
 
 Needs your attention:
 | Rank | Item | Why | Anchor | Recommendation |
 |------|------|-----|--------|----------------|
-| 1 | Four stale Media/DnD docs pages | They still teach deleted helpers and nested update shapes | out-of-scope match ledger | update in the docs owner before release |
+| N/A | None | Media source, exact registry callers, and current EN/CN docs are aligned | verification evidence | proceed to the next package after closure |
 
 Findings:
 - Baseline manifest is 102 rows: 99 source files plus package metadata and two
-  tsconfigs; all 102 score 100. Final manifest is 47 rows: 43 source files plus
+  tsconfigs; all 102 score 100. Final manifest is 44 rows: 41 source files plus
   package metadata and two tsconfigs; missing/extra are zero.
 - `media` is already covered by `reviewedPackageSlugs` in
   `tooling/scripts/check-core.mjs`.
 - Origin/main confirms the migration preserved old `with*`, transform-folder,
   and nested transform topology; it is behavior evidence, not the final owner
   shape.
-- Three raw placeholder tx helpers have two real registry consumers each, so
-  their tx parameter is justified reuse; `insertImagePlaceholder`,
-  `setMediaNode`, `insertMediaWithTx`, validation utils, and other helper files
-  do not.
-- Current docs and registry contain outside-scope stale/current API matches;
-  package mode records these but does not patch them.
+- Repeated registry consumers did not justify raw Placeholder helpers. They
+  justify a reusable scoped plugin capability. Every raw Image, Embed, and
+  Placeholder insertion helper is hard-cut; exact registry callers use scoped
+  plugin updates.
+- `BaseMediaEmbedPlugin` does not infer as `any` under the package compiler or
+  emitted declarations. Permanent `IsAny` compile guards cover Image, Embed,
+  and Placeholder so builder inference cannot silently regress.
+- Current Media/DnD EN/CN docs and exact registry source consumers use the
+  scoped APIs; the hard cut has no current-source compatibility lie.
+- Async URL and pasted-file insertion retain the live invocation target across
+  awaited URL/upload work instead of reading a later selection.
 - Two structured-review runtime findings were fixed: dead Placeholder store
   exports and stale Floating Media provider metadata.
 - The build investigation found and repaired a real shared tsdown root bug:
@@ -704,8 +715,12 @@ Findings:
   builds fall back to a validated `INIT_CWD`.
 
 Decisions and tradeoffs:
-- Keep public standalone algorithms with real callers (`insertImage`,
-  `insertMedia`, media URL parsers) while eliminating their taxonomy folders.
+- Plugin mutations survive as flat scoped updates, not public raw helpers.
+  Multiple call sites reuse `editor.plugin(Base*Plugin).update.insert(...)`.
+- Keep `insertMediaUrl` only because prompting plus Image/Embed dispatch is a
+  reusable client interaction; colocate it with `useMediaToolbarButton` and
+  export it from the React entrypoint.
+- Keep media URL parsers as independent algorithms with multiple consumers.
 - Keep independent public stores with external consumers; delete unused stores
   and hooks rather than preserving exports as hypothetical API.
 - One large MIME data module is cheaper than nine category/assembly files.
@@ -717,19 +732,25 @@ Error attempts:
 |------------------------|-------|---------------------|------------|
 | Unescaped backticks in a shell `rg` pattern triggered command substitution and broad docs output | 1 | Use single-quoted literal patterns or plain symbol alternatives with capped paths | No files changed; stopped the broad output and resumed with exact bounded searches |
 | Initial shared tsdown fix preferred `INIT_CWD` blindly | 1 | Reproduce lifecycle environment, validate both candidates, prefer package `cwd` | Filtered Core and Media builds plus 5/5 build contracts pass |
-| Structured review returned actionable findings | 4 cycles | Verify each against source, patch only same-owner blockers, rerun focused proof | Final fifth run exits clean with zero findings |
+| Structured review returned actionable findings | 5 correction rounds | Verify each against source, patch only same-owner blockers, rerun focused proof | Owner/API, async target, and custom-upload docs findings fixed; final delta review is clean |
 
 Verification evidence:
 - `pnpm --filter @platejs/media typecheck` — pass.
 - `pnpm turbo typecheck --filter=./packages/media` — 13/13 graph tasks pass.
-- `bun test packages/media/src` — 62 pass, 0 fail, 135 assertions.
+- `bun test packages/media/src` — 65 pass, 0 fail, 140 assertions.
+- Compile-only `IsAny` contracts prove the three scoped insertion plugins do
+  not collapse to `any`; built declarations expose their exact `PluginTx`.
+- `bun test apps/www/src/registry/components/editor/transforms.spec.ts` —
+  11 pass, 0 fail, including all three Placeholder media types.
+- `pnpm --filter www typecheck` — pass after scoped API adoption.
 - `bun test packages/media/src/react/media/FloatingMedia/useFloatingMedia.spec.ts`
   — 4 pass, 0 fail.
-- `pnpm --filter @platejs/media lint:fix` — 47 files clean.
+- `pnpm --filter @platejs/media lint` — 44 files clean.
 - Exact Biome check on the three tooling build-owner files — clean.
 - `pnpm --filter @platejs/media brl` — pass.
 - Media clean/build plus artifact checker — pass; removed exports absent from
-  non-map emitted runtime/declarations.
+  non-map emitted runtime/declarations; built Embed/Placeholder/Image plugin
+  declarations retain exact scoped insertion types.
 - `node --test tooling/scripts/check-package-build-artifacts.test.mjs` — 5/5.
 - `pnpm --filter @platejs/core build` from repo root — pass.
 - Core artifact checker — pass.
@@ -738,17 +759,24 @@ Verification evidence:
 - Structured autoreview command: `.agents/skills/autoreview/scripts/autoreview
   --mode local --thinking high --stream-engine-output --prompt <Media scope>`;
   final result: zero findings, patch correct.
-- Browser proof: N/A by package-review boundary; no `apps/www` or `content`
-  source was changed.
+- `node tooling/scripts/generate-ui-changelog-entries.mjs --check` — 27
+  changelog events valid.
+- `pnpm install` — pass; regenerated `best-api` and `plate-next` skills from
+  repaired source rules.
+- `node .agents/skills/autogoal/scripts/check-complete.mjs
+  docs/plans/2026-07-23-plate-next-media-full-colocation.md` — pass.
+- Browser proof: fresh `/docs/media` and `/docs/dnd` render the scoped API
+  examples, `/docs/media` mounts one editor, deleted names are absent, and both
+  routes have zero warning/error logs.
 
 Phase / pass table:
 | Phase | Status | Evidence |
 |-------|--------|----------|
-| Headless owner colocation | done | Image, Embed, parser, and Placeholder families merged; tests pass |
+| Headless owner colocation | done | Image, Embed, and Placeholder insertions are inline scoped plugin tx capabilities; parsers remain independent |
 | React owner colocation | done | component/hook/provider families flattened; tests and typecheck pass |
 | Package and build closure | done | lint, barrels, builds, artifacts, Core gate pass |
-| Structured review | done | final helper run reports zero findings |
-| Manifest and handoff | done | 102 baseline plus 9 added rows score 100 |
+| Structured review | done | zero accepted/actionable findings after the custom-upload docs correction |
+| Manifest and handoff | done | 102 baseline plus 8 added rows score 100; final manifest is 44/44 |
 
 Final handoff contract:
 - target surface and mode: `@platejs/media`, package review with implementation
@@ -756,32 +784,34 @@ Final handoff contract:
   Embed, headless Placeholder, React Placeholder, Floating Media, and Image
   Preview surfaces
 - broad Core drift score coverage: N/A; named package mode, no Core source edit
-- package file checklist coverage: 102/102 baseline and 9/9 added rows at 100;
+- package file checklist coverage: 102/102 baseline and 8/8 added rows at 100;
   zero unchecked/deferred
 - best Plate v2 recommendation: owner-first colocation, flat scoped mutation
   verbs, no async fake tx wrapper, independent data/store/provider owners only
 - verdict matrix summary: nine owner families merged/hard-cut; no bridge or
   compatibility alias
 - Plite/Plate gaps or blockers: none
-- related scoped sweep query/active scope/matches/patched/deferred: zero stale
-  Media source matches; four review findings patched; 16 docs matches deferred
-- out-of-scope matches discovered: Media/DnD EN/CN docs only
-- changes made: 99 source files reduced to 43; build-root owner repaired;
-  changeset and generated barrels aligned
+- related scoped sweep query/active scope/matches/patched/deferred: zero raw
+  helper matches in Media/registry/docs source; exact registry and EN/CN docs
+  patched; zero deferred
+- out-of-scope matches discovered: CI-generated template snapshot only
+- changes made: 99 source files reduced to 41; raw insertion helpers hard-cut;
+  exact registry consumers and changelog aligned; skill rule ambiguity repaired;
+  build-root owner repaired; changeset and generated barrels aligned
 - tests/proof commands: exact list in Verification evidence
 - old compatibility names audited: absent from Media source and emitted
   non-map artifacts
-- needs attention: docs adoption before release
+- needs attention: none
 - next best Plate Next packet: select a new package only after this goal closes
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Final closure |
-| Where am I going? | Mechanical plan check, then goal completion |
+| Where am I? | Corrected closure after user caught raw helper ownership mistakes |
+| Where am I going? | Handoff, then the next Plate Next package |
 | What is the goal? | Fully colocate `@platejs/media` with every row at 100 and all gates clean |
-| What have I learned? | Large coherent owners beat taxonomy shards; package-root build context must be validated |
-| What have I done? | Closed four packets, fixed four review findings, and proved the final package |
+| What have I learned? | Multiple callers reuse scoped plugin capability; they do not justify a second raw helper owner |
+| What have I done? | Closed the original four packets, replaced the rejected insertion packet, migrated exact consumers, and repaired the owning rules |
 
 Timeline:
 - 2026-07-23T10:59:47.536Z Goal plan created.
@@ -792,7 +822,16 @@ Timeline:
 - 2026-07-23 Four accepted review findings repaired; final structured review
   clean.
 - 2026-07-23 Baseline and added manifests scored 100 with zero deferred rows.
+- 2026-07-23 User reopened Media after raw insertion helpers and a reported
+  `BaseMediaEmbedPlugin: any`; raw helpers were hard-cut, exact scoped consumers
+  migrated, inference guards added, and the ambiguous reuse rule repaired.
+- 2026-07-23 Media/DnD EN/CN docs were adopted; async URL/upload targets were
+  made live across awaits; Media 65/65 and the full Core gate pass.
+- 2026-07-23 Custom-upload EN/CN examples were corrected to replace the live
+  placeholder with the uploaded URL/name through current `useEditor`; docs
+  check and Browser route pass.
+- 2026-07-23 Final scoped autoreview reports zero actionable findings.
+- 2026-07-23 Mechanical goal-plan checker passes.
 
 Open risks:
-- No source blocker. Sixteen stale examples/headings across four EN/CN Media
-  and DnD docs files remain for the separate docs adoption owner.
+- None.

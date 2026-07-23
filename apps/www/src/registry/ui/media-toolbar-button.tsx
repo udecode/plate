@@ -13,7 +13,7 @@ import {
   LinkIcon,
 } from 'lucide-react';
 import { isUrl, KEYS } from 'platejs';
-import { useEditorRef } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 
@@ -83,7 +83,7 @@ export function MediaToolbarButton({
 }: DropdownMenuProps & { nodeType: string }) {
   const currentConfig = MEDIA_CONFIG[nodeType];
 
-  const editor = useEditorRef();
+  const editor = useEditor();
   const [open, setOpen] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
@@ -169,7 +169,7 @@ function MediaUrlDialogContent({
   nodeType: string;
   setOpen: (value: boolean) => void;
 }) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const [url, setUrl] = React.useState('');
 
   const embedMedia = React.useCallback(() => {

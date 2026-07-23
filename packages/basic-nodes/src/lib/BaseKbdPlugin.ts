@@ -1,10 +1,13 @@
 import { createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 /** Enables support for code formatting */
 export const BaseKbdPlugin = createBasePlugin({
   key: KEYS.kbd,
-  node: { isLeaf: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
   parsers: {
     html: {
       deserializer: {

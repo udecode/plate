@@ -14,7 +14,6 @@ export const getSelectedItems = (editor: BaseEditor) =>
 export const useSelectedItems = () => {
   const selectedItems = useEditorSelector(
     (editor) => getSelectedItems(editor),
-    [],
     {
       equalityFn: (prev, next) => {
         if (!prev || prev.length !== next.length) return false;

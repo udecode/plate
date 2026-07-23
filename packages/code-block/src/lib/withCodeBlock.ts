@@ -1,43 +1,70 @@
 import type { BaseEditor, ExtendPlateEditorExtension } from '@platejs/core';
 import {
+  editorCommands,
   type EditorUpdateTransaction,
+  type EditorTransactionChangeContext,
   ElementApi,
   type Element,
   type Location,
   NodeApi,
-  type Operation,
   RangeApi,
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
-
-import { getCodeLineEntry, getIndentDepth } from './queries';
 import { resetCodeBlockDecorations } from './setCodeBlockToDecorations';
 import { indentCodeLine, outdentCodeLine, unwrapCodeBlock } from './transforms';
 
+const NON_WHITESPACE = /\S/;
+const NON_WHITESPACE_OR_END = /\S|$/;
+
 export const getCodeBlockLanguageChange = (
-  editor: BaseEditor,
-  operation: Operation,
+  context: Pick<
+    EditorTransactionChangeContext<BaseEditor>,
+    'after' | 'before' | 'change' | 'changed'
+  >,
   type: string
 ) => {
-  if (operation.type !== 'set_node') return;
+  const roots: readonly (string | undefined)[] = [
+    ...(context.change.primary ? [undefined] : []),
+    ...context.change.roots.keys(),
+  ];
 
-  const entry = editor.read.nodes.get(operation.path);
-  const touchesLang =
-    'lang' in (operation.properties ?? {}) ||
-    'lang' in (operation.newProperties ?? {});
-  const langChanged =
-    operation.properties?.lang !== operation.newProperties?.lang;
+  for (const root of roots) {
+    if (!context.changed.has('properties', root)) continue;
 
-  if (
-    entry &&
-    ElementApi.isElement(entry[0]) &&
-    entry[0].type === type &&
-    touchesLang &&
-    langChanged
-  ) {
-    return entry[0];
+    const beforeChildren =
+      root === undefined
+        ? context.before.children
+        : (context.before.roots?.[root] ?? []);
+    const afterChildren =
+      root === undefined
+        ? context.after.children
+        : (context.after.roots?.[root] ?? []);
+
+    for (const path of context.changed.paths(root)) {
+      const before = NodeApi.getIf(
+        { children: beforeChildren } as Element,
+        path
+      );
+      const after = NodeApi.getIf({ children: afterChildren } as Element, path);
+
+      const beforeLanguage =
+        ElementApi.isElement(before) && before.type === type
+          ? before.lang
+          : undefined;
+      const afterLanguage =
+        ElementApi.isElement(after) && after.type === type
+          ? after.lang
+          : undefined;
+
+      if (
+        (beforeLanguage !== undefined || afterLanguage !== undefined) &&
+        beforeLanguage !== afterLanguage
+      ) {
+        return { after, before };
+      }
+    }
   }
 };
 
@@ -49,7 +76,7 @@ export const resetCodeBlock = (
   const codeBlockType = editor.getType(KEYS.codeBlock);
 
   if (
-    !editor.read.nodes.block({
+    !tx.nodes.block({
       at: options.at,
       match: { type: codeBlockType },
     })
@@ -66,14 +93,14 @@ export const selectCodeBlock = (
   tx: EditorUpdateTransaction
 ) => {
   const codeBlockType = editor.getType(KEYS.codeBlock);
-  const codeBlock = editor.read.nodes.above<Element>({
+  const codeBlock = tx.nodes.above<Element>({
     match: { type: codeBlockType },
   });
 
   if (!codeBlock) return false;
 
   const selection = tx.selection();
-  const blockRange = editor.read.ranges.get(codeBlock[1]);
+  const blockRange = tx.ranges.get(codeBlock[1]);
 
   if (selection && blockRange && RangeApi.equals(selection, blockRange)) {
     return false;
@@ -89,22 +116,37 @@ export const tabCodeBlock = (
   options: { reverse?: boolean } = {}
 ) => {
   const codeLineType = editor.getType(KEYS.codeLine);
-  const codeLines = editor.read.nodes.toArray<Element>({
+  const codeLines = tx.nodes.toArray<Element>({
     at: tx.selection() ?? undefined,
     match: { type: codeLineType },
   });
 
   if (codeLines.length === 0) return false;
 
-  const codeBlock = editor.read.nodes.parent<Element>(codeLines[0][1]);
+  const codeBlock = tx.nodes.parent<Element>(codeLines[0][1]);
 
   if (!codeBlock) return false;
 
-  for (const codeLine of codeLines) {
+  const codeLineAnchors = codeLines.map(([, path]) =>
+    tx.anchor(path, {
+      association: 'forward',
+      deletion: 'drop',
+    })
+  );
+
+  for (const codeLineAnchor of codeLineAnchors) {
+    const path = codeLineAnchor.release();
+    const codeLine = path ? tx.nodes.get<Element>(path) : undefined;
+    const currentCodeBlock = codeLine
+      ? tx.nodes.parent<Element>(codeLine[1])
+      : undefined;
+
+    if (!codeLine || !currentCodeBlock) continue;
+
     if (options.reverse) {
-      outdentCodeLine(editor, tx, { codeBlock, codeLine });
+      outdentCodeLine(tx, { codeBlock: currentCodeBlock, codeLine });
     } else {
-      indentCodeLine(editor, tx, { codeBlock, codeLine });
+      indentCodeLine(tx, { codeBlock: currentCodeBlock, codeLine });
     }
   }
 
@@ -116,86 +158,140 @@ export const withCodeBlock: ExtendPlateEditorExtension<CodeBlockConfig> = ({
   getOptions,
   type,
 }) => ({
-  priority: 10,
-  operations: {
-    apply({ operation, next }) {
-      const codeBlock =
-        getOptions().lowlight &&
-        getCodeBlockLanguageChange(editor, operation, type);
+  commands: ({ around, handle }) => [
+    handle(editorCommands.delete, ({ input, state }) => {
+      if (input.direction !== 'backward') return false;
 
-      if (codeBlock) {
-        resetCodeBlockDecorations(codeBlock);
-      }
+      const selection = state.selection();
 
-      next(operation);
-    },
-  },
-  transforms: {
-    deleteBackward({ next, tx }) {
-      const selection = editor.read.selection();
+      if (!selection || state.selection.isExpanded()) return false;
 
-      if (!selection || editor.read.selection.isExpanded()) return next();
-
-      const res = getCodeLineEntry(editor);
-
-      if (!res) return next();
-
-      const { codeLine } = res;
-      const [, codeLinePath] = codeLine;
+      const codeLine = state.nodes.above<Element>({
+        match: { type: editor.getType(KEYS.codeLine) },
+      });
+      const codeBlock = codeLine
+        ? state.nodes.parent<Element>(codeLine[1])
+        : undefined;
 
       if (
-        !editor.read.selection.isAtBlockStart({
+        !codeLine ||
+        !codeBlock ||
+        codeBlock[0].type !== editor.getType(KEYS.codeBlock) ||
+        !state.selection.isAtBlockStart({
           match: { type: editor.getType(KEYS.codeLine) },
         })
       ) {
-        return next();
+        return false;
       }
 
-      const previousCodeLine = editor.read.nodes.previous<Element>({
-        at: codeLinePath,
+      const previousCodeLine = state.nodes.previous<Element>({
+        at: codeLine[1],
         match: { type: editor.getType(KEYS.codeLine) },
       });
       const codeLineText = NodeApi.string(codeLine[0]);
 
       if (!previousCodeLine) {
-        if (codeLineText.length > 0) return true;
+        if (codeLineText.length > 0) return state.transaction(() => {});
 
-        resetCodeBlock(editor, tx);
-        return true;
+        return state.transaction((tx) => {
+          codeBlock[0].children.forEach((child, index) => {
+            if (!ElementApi.isElement(child)) return;
+
+            tx.nodes.set(
+              { type: editor.getType(KEYS.p) },
+              { at: codeBlock[1].concat(index) }
+            );
+          });
+          tx.nodes.unwrap({
+            at: codeBlock[1],
+            match: { type: editor.getType(KEYS.codeBlock) },
+          });
+        });
       }
 
-      if (codeLineText.length > 0) return next();
+      if (codeLineText.length > 0) return false;
 
-      const previousLineEnd = editor.read.points.end(previousCodeLine[1]);
+      const previousLineEnd = state.points.end(previousCodeLine[1]);
 
-      tx.nodes.remove({ at: codeLinePath });
+      return state.transaction((tx) => {
+        tx.nodes.remove({ at: codeLine[1] });
 
-      if (previousLineEnd) {
-        tx.selection.set(previousLineEnd);
-      }
-
-      return true;
-    },
-    insertBreak({ next, tx }) {
-      const selection = editor.read.selection();
-
-      if (!selection) return next();
-
-      const res = getCodeLineEntry(editor);
-
-      if (!res) return next();
-
-      const { codeBlock, codeLine } = res;
-      const indentDepth = getIndentDepth(editor, {
-        codeBlock,
-        codeLine,
+        if (previousLineEnd) {
+          tx.selection.set(previousLineEnd);
+        }
       });
+    }),
+    around(editorCommands.insertBreak, ({ state, next }) => {
+      const selection = state.selection();
+      const codeLine = selection
+        ? state.nodes.above<Element>({
+            at: selection,
+            match: { type: editor.getType(KEYS.codeLine) },
+          })
+        : undefined;
+      const codeBlock = codeLine
+        ? state.nodes.parent<Element>(codeLine[1])
+        : undefined;
 
-      next();
+      if (
+        !selection ||
+        !codeLine ||
+        !codeBlock ||
+        codeBlock[0].type !== editor.getType(KEYS.codeBlock)
+      ) {
+        return false;
+      }
 
-      indentCodeLine(editor, tx, { codeBlock, codeLine, indentDepth });
+      const indentDepth = state.text
+        .string(codeLine[1])
+        .search(NON_WHITESPACE_OR_END);
+      const result = next();
 
-      return true;
-    },
+      if (result === false) return false;
+
+      return state.transaction.extend(result, (tx) => {
+        const insertedCodeLine = tx.nodes.above<Element>({
+          match: { type: editor.getType(KEYS.codeLine) },
+        });
+
+        if (!insertedCodeLine) return;
+
+        const start = tx.points.start(insertedCodeLine[1]);
+
+        if (!start) return;
+
+        const currentIndentDepth = tx.text
+          .string(insertedCodeLine[1])
+          .search(NON_WHITESPACE_OR_END);
+        const indent = ' '.repeat(
+          Math.max(0, indentDepth - currentIndentDepth)
+        );
+
+        if (!tx.selection.isExpanded()) {
+          const nextSelection = tx.selection();
+          const cursor = nextSelection?.anchor;
+          const range = cursor && tx.ranges.get(start, cursor);
+          const text = range ? tx.text.string(range) : '';
+
+          if (NON_WHITESPACE.test(text)) {
+            if (nextSelection) {
+              tx.text.insert(indent, { at: nextSelection });
+            }
+
+            return;
+          }
+        }
+
+        tx.text.insert(indent, { at: start });
+      });
+    }),
+  ],
+  priority: 10,
+  onTransactionChange(context) {
+    const codeBlock =
+      getOptions().lowlight &&
+      getCodeBlockLanguageChange(context, type)?.before;
+
+    if (ElementApi.isElement(codeBlock)) resetCodeBlockDecorations(codeBlock);
   },
 });

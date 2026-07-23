@@ -79,6 +79,9 @@ export const PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS = [
   'rendered-dom-shape-contract',
 ] as const;
 
+const isPositiveInteger = (value: number) =>
+  Number.isInteger(value) && value > 0;
+
 /** Create a raw-device mobile browser proof artifact. */
 export const createBrowserMobileReleaseProofArtifact = ({
   passed,
@@ -114,15 +117,21 @@ export const createPersistentBrowserSoakProofArtifact = ({
 }: Omit<
   PliteBrowserPersistentSoakProofArtifact,
   'kind'
->): PliteBrowserPersistentSoakProofArtifact => ({
-  browserName,
-  iterations,
-  kind: 'persistent-browser-soak',
-  passed,
-  profilePersistence,
-  replayable,
-  scenario,
-});
+>): PliteBrowserPersistentSoakProofArtifact => {
+  if (!isPositiveInteger(iterations)) {
+    throw new TypeError('iterations must be a positive integer.');
+  }
+
+  return {
+    browserName,
+    iterations,
+    kind: 'persistent-browser-soak',
+    passed,
+    profilePersistence,
+    replayable,
+    scenario,
+  };
+};
 
 /** Create a release-discipline proof artifact. */
 export const createReleaseDisciplineProofArtifact = ({
@@ -183,12 +192,18 @@ const validatePersistentSoak = (
   artifacts: readonly PliteBrowserReleaseProofArtifact[],
   requiredSoakIterations: number
 ) => {
+  if (!isPositiveInteger(requiredSoakIterations)) {
+    issues.push('requiredSoakIterations must be a positive integer');
+    return;
+  }
+
   const artifact = artifacts.find(
     (candidate) =>
       candidate.kind === 'persistent-browser-soak' &&
       candidate.passed &&
       candidate.profilePersistence === 'persistent' &&
       candidate.replayable &&
+      isPositiveInteger(candidate.iterations) &&
       candidate.iterations >= requiredSoakIterations
   );
 

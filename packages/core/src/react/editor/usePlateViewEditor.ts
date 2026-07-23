@@ -32,29 +32,10 @@ export function usePlateViewEditor<
   : TEnabled extends true | undefined
     ? ReturnType<typeof createStaticEditor<V, P>>
     : ReturnType<typeof createStaticEditor<V, P>> | null {
-  const isMountedRef = React.useRef(false);
-  const [, forceRender] = React.useState({});
-
-  React.useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
   return React.useMemo(
     (): any => {
       if (options.enabled === false) return null;
-      // No onReady/async logic for static editor
-      return createStaticEditor({
-        ...options,
-        onReady: (ctx) => {
-          if (ctx.isAsync && isMountedRef.current) {
-            forceRender({});
-          }
-          options.onReady?.(ctx);
-        },
-      });
+      return createStaticEditor(options);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [options?.id, options?.enabled, ...deps]

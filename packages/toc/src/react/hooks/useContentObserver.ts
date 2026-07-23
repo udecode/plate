@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorRef, useEditorSelector } from '@platejs/core/react';
+import { useEditor, useEditorSelector } from '@platejs/core/react';
 
 import { getHeadingList } from '../../internal/getHeadingList';
 
@@ -23,8 +23,8 @@ export const useContentObserver = ({
     Record<string, IntersectionObserverEntry>
   >({});
 
-  const editor = useEditorRef();
-  const headingList = useEditorSelector(getHeadingList, []);
+  const editor = useEditor();
+  const headingList = useEditorSelector(getHeadingList);
 
   const [activeId, setActiveId] = React.useState('');
 

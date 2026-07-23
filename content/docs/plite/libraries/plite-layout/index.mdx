@@ -18,12 +18,19 @@ page settings.
 ```tsx
 import { createPliteLayout } from "@platejs/plite-layout";
 
-const layout = createPliteLayout(editor, () => ({
+const layout = createPliteLayout(editor, {
   page: {
     margins: 72,
     preset: "letter",
   },
-}));
+});
+
+layout.reconfigure({
+  page: {
+    margins: 48,
+    preset: "a4",
+  },
+});
 ```
 
 The layout output is derived state. Store document content in Plite roots and
@@ -59,6 +66,10 @@ const DocumentEditor = () => {
 `renderElement`, `renderLeaf`, `decorate`, `domStrategy`, and keyboard handlers
 stay on the editor surface.
 
+`usePliteLayout` publishes option changes after React commits. Outside React,
+call `layout.reconfigure(nextOptions)` to replace the complete configuration in
+one atomic refresh.
+
 Use `createPlitePageLayout` or `usePlitePageLayout` only when you provide an
 explicit `engine`, such as a custom measurement engine or
 `pretextPageLayoutEngine()`.
@@ -71,12 +82,12 @@ tests, and export planning. Treat static output as derived geometry, not as an
 authoritative PDF, print, or collaboration layout source unless your product
 provides the measurement engine and proof for that target.
 
-## Provider-Owned Boxes
+## Layout-Owned Boxes
 
 Tables, images, embeds, and other block formatting context style nodes should
-own their layout units through provider code. The layout engine should not split
-the Plite table node just to paginate a table. It can paginate provider-owned
-row units while the document tree stays stable.
+own their layout units through the selected layout engine. The engine should
+not split the Plite table node just to paginate a table. It can paginate
+engine-owned row units while the document tree stays stable.
 
 ## Page Virtualization
 

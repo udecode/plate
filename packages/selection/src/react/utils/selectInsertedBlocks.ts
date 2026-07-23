@@ -2,21 +2,24 @@ import type { BaseEditor } from '@platejs/core';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
-/** Select inserted blocks from the last operations. */
+/** Select inserted blocks from the last commit. */
 export const selectInsertedBlocks = (editor: BaseEditor) => {
   const { setOption } = editor.plugin(BlockSelectionPlugin);
-
   const ids = new Set<string>();
+  const commit = editor.read.lastCommit();
 
-  editor.read.operations().forEach((op) => {
-    if (
-      op.type === 'insert_node' &&
-      op.node.id &&
-      editor.read.schema.isBlock(op.node)
-    ) {
-      ids.add(op.node.id as string);
+  if (commit) {
+    for (const runtimeId of commit.changed.runtimeIds('node')) {
+      if (commit.before.index.pathOf(runtimeId)) continue;
+
+      const path = commit.after.index.pathOf(runtimeId);
+      const node = path ? editor.read.nodes.get(path)?.[0] : undefined;
+
+      if (node?.id && editor.read.schema.isBlock(node)) {
+        ids.add(node.id as string);
+      }
     }
-  });
+  }
 
   setOption('selectedIds', ids);
 };

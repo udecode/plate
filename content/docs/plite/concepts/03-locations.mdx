@@ -1,6 +1,6 @@
 ---
 title: "Locations"
-description: "Use paths, points, ranges, spans, and refs to address content in a Plite root."
+description: "Use paths, points, ranges, selections, and anchors in a Plite root."
 ---
 
 Locations tell Plite where to read or write inside an editor root. The core
@@ -152,8 +152,9 @@ const headerRange = {
 
 ## Selection
 
-The editor selection is a `Range | null`. Read it from the editor state and
-write it inside `editor.update(...)`.
+The editor selection is a discriminated `EditorSelection | null`. Built-in text
+and node selections use ranges; extensions can register serializable selection
+kinds with their own mapping and DOM behavior.
 
 ```ts
 const selection = editor.read((state) => state.selection());
@@ -191,20 +192,20 @@ const unhung = editor.read((state) => {
 Use [Path API](../api/locations/path), [Point API](../api/locations/point),
 and [Range API](../api/locations/range) for the full helper list.
 
-## Bookmarks
+## Anchors
 
-Use bookmarks for local annotation-like anchors that rebase as operations
-apply. A bookmark hides its backing range ref from the public ref set and
-exposes `resolve()` plus `unref()`.
+Use anchors for runtime locations that map through canonical document changes.
+Choose association and deletion policy explicitly.
 
 ```ts
-const bookmark = editor.read((state) =>
-  state.ranges.bookmark({
+const anchor = editor.anchor(
+  {
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [0, 0], offset: 8 },
-  })
+  },
+  { association: "inward", deletion: "drop" }
 );
 
-const range = bookmark.resolve();
-bookmark.unref();
+const range = anchor.resolve();
+anchor.release();
 ```

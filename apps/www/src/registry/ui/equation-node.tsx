@@ -14,7 +14,7 @@ import { CornerDownLeftIcon, RadicalIcon } from 'lucide-react';
 import {
   createPrimitiveComponent,
   PlateElement,
-  useEditorRef,
+  useEditor,
   useEditorSelector,
   useElement,
   useEditorReadOnly,
@@ -112,9 +112,8 @@ export function InlineEquationElement(
   const { element } = props;
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const selected = useElementSelected();
-  const isCollapsed = useEditorSelector(
-    (editor) => editor.read.selection.isCollapsed(),
-    []
+  const isCollapsed = useEditorSelector((editor) =>
+    editor.read.selection.isCollapsed()
   );
   const [open, setOpen] = React.useState(selected && isCollapsed);
 
@@ -218,7 +217,7 @@ const EquationPopoverContent = ({
   open: boolean;
   setOpen: (open: boolean) => void;
 } & TextareaAutosizeProps) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const element = useElement<TEquationElement>();
 

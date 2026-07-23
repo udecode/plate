@@ -2,15 +2,15 @@ import React, { useRef } from 'react';
 
 import { Editable, useOptionalEditorReadOnly } from '@platejs/plite-react';
 import { useComposedRef } from '@udecode/react-utils';
-import { useAtomStoreValue } from 'jotai-x';
 
 import type { EditableProps } from '../../lib/types/EditableProps';
 
-import { setPlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { useEditableProps } from '../hooks';
 import type { PlateEditor } from '../editor/PlateEditor';
-import { type PlateStoreState, useEditorRef, usePlateStore } from '../stores';
+import { usePlateModelRevision } from '../internal/usePlateModelRevision';
+import { type PlateStoreState, useEditor } from '../stores';
 import { EditorHotkeysEffect } from './EditorHotkeysEffect';
 import { EditorRefEffect } from './EditorRefEffect';
 import { PlateControllerEffect } from './PlateControllerEffect';
@@ -59,7 +59,7 @@ const PlateContent = React.forwardRef<HTMLDivElement, PlateContentProps>(
   ) => {
     const { id } = props;
 
-    const editor = useEditorRef(id);
+    const editor = useEditor({ id });
     const plateReadOnly = useOptionalEditorReadOnly();
 
     const readOnly = getPlateContentReadOnly({
@@ -102,6 +102,8 @@ const PlateContentBranch = React.forwardRef<
   ) => {
     const { id } = props;
 
+    usePlateModelRevision(editor);
+
     const editableProps = useEditableProps({
       ...props,
       readOnly: plateReadOnly,
@@ -122,7 +124,7 @@ const PlateContentBranch = React.forwardRef<
     let afterEditable: React.ReactNode = null;
     let beforeEditable: React.ReactNode = null;
 
-    editor.runtime.pluginCache.render.beforeEditable.forEach((key) => {
+    getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach((key) => {
       const plugin = editor.getPlugin({ key });
       if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
@@ -136,7 +138,7 @@ const PlateContentBranch = React.forwardRef<
       );
     });
 
-    editor.runtime.pluginCache.render.afterEditable.forEach((key) => {
+    getPlateRuntime(editor).pluginCache.render.afterEditable.forEach((key) => {
       const plugin = editor.getPlugin({ key });
       if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
@@ -160,7 +162,7 @@ const PlateContentBranch = React.forwardRef<
       </>
     );
 
-    editor.runtime.pluginCache.render.aboveEditable.forEach((key) => {
+    getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((key) => {
       const plugin = editor.getPlugin({ key });
       if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
@@ -172,7 +174,6 @@ const PlateContentBranch = React.forwardRef<
     return (
       <PlateRoot id={id}>
         <PlateContentStateEffect
-          id={id}
           autoFocusOnEditable={autoFocusOnEditable}
           editor={editor}
           readOnly={plateReadOnly}
@@ -188,36 +189,14 @@ const PlateContentBranch = React.forwardRef<
 PlateContentBranch.displayName = 'PlateContentBranch';
 
 function PlateContentStateEffect({
-  id,
   autoFocusOnEditable,
   editor,
   readOnly,
 }: {
   editor: PlateEditor;
-  id?: string;
   autoFocusOnEditable?: boolean;
   readOnly?: boolean;
 }) {
-  const store = usePlateStore(id);
-
-  const onNodeChange = useAtomStoreValue(store, 'onNodeChange') as NonNullable<
-    PlateStoreState['onNodeChange']
-  > | null;
-  const onTextChange = useAtomStoreValue(store, 'onTextChange') as NonNullable<
-    PlateStoreState['onTextChange']
-  > | null;
-
-  React.useLayoutEffect(() => {
-    setPlateChangeCallbacks(editor, {
-      onNodeChange,
-      onTextChange,
-    });
-
-    return () => {
-      setPlateChangeCallbacks(editor, {});
-    };
-  }, [editor, onNodeChange, onTextChange]);
-
   const prevReadOnly = React.useRef(readOnly);
 
   React.useEffect(() => {

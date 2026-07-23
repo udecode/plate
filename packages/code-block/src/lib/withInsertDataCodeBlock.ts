@@ -1,4 +1,5 @@
 import type { ExtendPlateEditorExtension } from '@platejs/core';
+import { PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
@@ -16,11 +17,9 @@ export const withInsertDataCodeBlock: ExtendPlateEditorExtension<
       const text = data.getData('text/plain');
       const vscodeDataString = data.getData('vscode-editor-data');
       const codeLineType = editor.getType(KEYS.codeLine);
-      const isInCodeBlock = Boolean(
-        editor.read.nodes.block({
-          match: { type: [codeBlockType, codeLineType] },
-        })
-      );
+      const block = tx.nodes.block();
+      const isInCodeBlock =
+        !!block && [codeBlockType, codeLineType].includes(block[0].type);
 
       if (vscodeDataString) {
         try {
@@ -35,26 +34,28 @@ export const withInsertDataCodeBlock: ExtendPlateEditorExtension<
           const lines = text.split('\n');
 
           if (isInCodeBlock) {
-            if (lines[0]) {
-              tx.text.insert(lines[0]);
-            }
-
-            if (lines.length > 1) {
-              tx.nodes.insert(
-                lines.slice(1).map((line) => createCodeLine(codeLineType, line))
-              );
-            }
+            tx.fragment.replace(
+              lines.map((line) => createCodeLine(codeLineType, line))
+            );
 
             return true;
           }
 
-          tx.nodes.insert(
+          if (!block) return next(data);
+
+          tx.fragment.replace(
+            [
+              {
+                children: lines.map((line) =>
+                  createCodeLine(codeLineType, line)
+                ),
+                lang: language,
+                type: codeBlockType,
+              },
+            ],
             {
-              children: lines.map((line) => createCodeLine(codeLineType, line)),
-              lang: language,
-              type: codeBlockType,
-            },
-            { select: true }
+              at: PathApi.next(block[1]),
+            }
           );
 
           return true;
@@ -64,15 +65,9 @@ export const withInsertDataCodeBlock: ExtendPlateEditorExtension<
       if (isInCodeBlock && text?.includes('\n')) {
         const lines = text.split('\n');
 
-        if (lines[0]) {
-          tx.text.insert(lines[0]);
-        }
-
-        if (lines.length > 1) {
-          tx.nodes.insert(
-            lines.slice(1).map((line) => createCodeLine(codeLineType, line))
-          );
-        }
+        tx.fragment.replace(
+          lines.map((line) => createCodeLine(codeLineType, line))
+        );
 
         return true;
       }

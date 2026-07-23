@@ -81,19 +81,23 @@ const editor = createPlateEditor({
 You can configure the `IndentPlugin` to target specific elements and customize indentation behavior.
 
 ```tsx
+import { BlockquotePlugin, HeadingPlugin } from '@platejs/basic-nodes/react';
 import { IndentPlugin } from '@platejs/indent/react';
-import { KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin.configure({
+      targetPluginKeys: [
+        ...HeadingPlugin.plugins.map((plugin) => plugin.key),
+        ParagraphPlugin.key,
+        BlockquotePlugin.key,
+      ],
       inject: {
         nodeProps: {
           styleKey: 'marginLeft',
         },
-        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote],
       },
       options: {
         offset: 24,
@@ -106,7 +110,7 @@ const editor = createPlateEditor({
 ```
 
 - `inject.nodeProps.styleKey`: Maps the injected prop to the CSS `marginLeft` property.
-- `inject.targetPlugins`: An array of plugin keys indicating which element types can be indented.
+- `targetPluginKeys`: Element plugin keys whose types can store indentation.
 - `options.offset`: Indentation offset in pixels (default: `24`).
 - `options.unit`: Unit for indentation values (default: `'px'`).
 - `options.indentMax`: Maximum number of indentations allowed.
@@ -121,7 +125,7 @@ You can add [`IndentToolbarButton`](/docs/components/indent-toolbar-button) to y
 
 ### `IndentPlugin`
 
-Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `inject.targetPlugins` and applies `marginLeft` styling.
+Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `targetPluginKeys` and applies `marginLeft` styling.
 
 <API name="IndentPlugin">
 <APIOptions type="object">
@@ -133,9 +137,9 @@ Plugin for indenting block elements. It injects an `indent` prop into the elemen
     CSS property name for styling.
     - **Default:** `'marginLeft'`
   </APIItem>
-  <APIItem name="inject.targetPlugins" type="string[]" optional>
-    Array of plugin keys to target for indent injection.
-    - **Default:** `['p']`
+  <APIItem name="targetPluginKeys" type="string[]" optional>
+    Element plugin keys targeted for indent storage and injection.
+    - **Default:** `[BaseParagraphPlugin.key]`
   </APIItem>
   <APIItem name="options.offset" type="number" optional>
     Indentation offset used in `(offset * element.indent) + unit`.

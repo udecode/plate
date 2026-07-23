@@ -1,6 +1,13 @@
 import React from 'react';
 
-import type { Element, Path, Text } from '@platejs/plite';
+import type {
+  EditorSchemaSource,
+  Element,
+  Path,
+  SchemaElementFor,
+  SchemaElementTypes,
+  Text,
+} from '@platejs/plite';
 import type { UnknownObject } from '@udecode/utils';
 
 import { useComposedRef } from '@udecode/react-utils';
@@ -62,11 +69,32 @@ export const useBlockIdAttributeRef = <T extends HTMLElement>(
   return useComposedRef(blockIdRef, ref);
 };
 
+type PlateElementPropsDescriptor = EditorSchemaSource &
+  Readonly<{
+    __config: AnyPluginConfig;
+    type: string;
+  }>;
+
+type PlateElementPropsNode<
+  TElementOrPlugin extends Element | PlateElementPropsDescriptor,
+> = TElementOrPlugin extends PlateElementPropsDescriptor
+  ? SchemaElementFor<
+      TElementOrPlugin,
+      Extract<TElementOrPlugin['type'], SchemaElementTypes<TElementOrPlugin>>
+    >
+  : Extract<TElementOrPlugin, Element>;
+
+type PlateElementPropsConfig<
+  TElementOrPlugin extends Element | PlateElementPropsDescriptor,
+> = TElementOrPlugin extends PlateElementPropsDescriptor
+  ? TElementOrPlugin['__config']
+  : AnyPluginConfig;
+
 export type PlateElementProps<
-  N extends Element = Element,
-  C extends AnyPluginConfig = AnyPluginConfig,
+  TElementOrPlugin extends Element | PlateElementPropsDescriptor = Element,
+  C extends AnyPluginConfig = PlateElementPropsConfig<TElementOrPlugin>,
 > = PlateNodeProps<C> &
-  RenderElementProps<N> & {
+  RenderElementProps<PlateElementPropsNode<TElementOrPlugin>> & {
     attributes: UnknownObject;
     path: Path;
   };
@@ -103,8 +131,8 @@ export type PlateHTMLProps<
 };
 
 export type StyledPlateElementProps<
-  N extends Element = Element,
-  C extends AnyPluginConfig = PluginConfig,
+  N extends Element | PlateElementPropsDescriptor = Element,
+  C extends AnyPluginConfig = PlateElementPropsConfig<N>,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = PlateElementProps<N, C> &
   PlateHTMLProps<C, T> & {
@@ -138,8 +166,8 @@ export const PlateElement = React.forwardRef(function PlateElement(
     </PlateElementBody>
   );
 }) as <
-  N extends Element = Element,
-  C extends AnyPluginConfig = PluginConfig,
+  N extends Element | PlateElementPropsDescriptor = Element,
+  C extends AnyPluginConfig = PlateElementPropsConfig<N>,
   T extends keyof HTMLElementTagNameMap = 'div',
 >(
   props: StyledPlateElementProps<N, C, T>

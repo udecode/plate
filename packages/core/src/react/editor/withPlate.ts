@@ -13,20 +13,17 @@ import {
   type CorePlugin,
   type ExtendBaseEditorOptions,
   type EditorValueInput,
+  type InferConfig,
   type PluginConfig,
   extendBaseEditor,
 } from '../../lib';
-import { createZustandStore } from '../libs/zustand';
 import { getPlateCorePlugins } from './getPlateCorePlugins';
 
 export type PlateCorePlugin =
   | CorePlugin
-  | ReturnType<typeof getPlateCorePlugins>[number];
+  | InferConfig<ReturnType<typeof getPlateCorePlugins>[number]>;
 
-type PlatePluginInput<C extends AnyPluginConfig = AnyPluginConfig> =
-  | AnyPluginConfig
-  | BasePlugin<C>
-  | PlatePlugin<C>;
+type PlatePluginInput = BasePluginInput;
 
 type InferPlateEditorPluginConfig<P> = P extends {
   readonly __config: infer C extends AnyPluginConfig;
@@ -47,10 +44,10 @@ type InferPlateEditorPlugins<TPlugins extends readonly unknown[]> = [
   : PlateCorePlugin | InferPlateEditorPluginConfig<TPlugins[number]>;
 
 type InferExistingPlateEditorPlugins<E> =
-  E extends PlateEditor<infer _V, infer P> ? P : never;
+  E extends PlateEditor<infer _V, infer P extends AnyPluginConfig> ? P : never;
 
 type InferPlateEditorValue<E> =
-  E extends PlateEditor<infer V, infer _P>
+  E extends PlateEditor<infer V, infer _P extends AnyPluginConfig>
     ? V
     : E extends Editor<infer V, infer _TExtensions>
       ? V
@@ -64,20 +61,23 @@ export type ExtendPlateEditorOptions<
   V extends Value = Value,
   TPlugins extends readonly unknown[] = readonly PlatePluginInput[],
 > = Omit<BaseExtendBaseEditorOptions, 'id' | 'plugins'> &
-  Pick<
-    Partial<AnyPlatePlugin>,
-    | 'api'
-    | 'decorate'
-    | 'handlers'
-    | 'inject'
-    | 'transformInitialValue'
-    | 'options'
-    | 'override'
-    | 'priority'
-    | 'render'
-    | 'shortcuts'
-    | 'useHooks'
+  Partial<
+    Pick<
+      AnyPlatePlugin,
+      | 'decorate'
+      | 'handlers'
+      | 'inject'
+      | 'transformInitialValue'
+      | 'options'
+      | 'override'
+      | 'priority'
+      | 'render'
+      | 'shortcuts'
+      | 'useHooks'
+    >
   > & {
+    /** Root editor API declarations for the synthetic root plugin. */
+    api?: AnyPluginConfig['api'];
     /**
      * Configuration for the built-in navigation feedback plugin.
      *
@@ -97,19 +97,13 @@ export type ExtendPlateEditorOptions<
     //     >
     //   >;
     // };
-    value?:
-      | ((
-          editor: PlateEditor
-        ) => EditorValueInput<V> | Promise<EditorValueInput<V>>)
-      | EditorValueInput<V>
-      | string;
+    initialValue?:
+      | ((context: {
+          editor: PlateEditor<V, InferPlateEditorPlugins<TPlugins>>;
+        }) => EditorValueInput<V>)
+      | EditorValueInput<V>;
     plugins?: TPlugins;
     rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
-    onReady?: (ctx: {
-      editor: PlateEditor;
-      isAsync: boolean;
-      value: NoInfer<V>;
-    }) => void;
   };
 
 /**
@@ -128,21 +122,14 @@ export const extendPlateEditor = <
   V extends Value = InferPlateEditorValue<E>,
 >(
   e: E,
-  options: ExtendPlateEditorOptions<V, TPlugins> = {}
+  options: ExtendPlateEditorOptions<V, TPlugins>
 ): PlateEditor<V, InferExtendedPlateEditorPlugins<E, TPlugins>> => {
-  const {
-    navigationFeedback,
-    optionsStoreFactory,
-    plugins = [],
-    readOnly,
-    ...rest
-  } = options;
+  const { navigationFeedback, plugins = [], readOnly, ...rest } = options;
 
   const editor = (extendBaseEditor as any)(e, {
     navigationFeedback,
     readOnly,
     ...rest,
-    optionsStoreFactory: optionsStoreFactory ?? createZustandStore,
     plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
   } as unknown as ExtendBaseEditorOptions<V, BasePluginInput>) as PlateEditor<
     V,
@@ -155,7 +142,7 @@ export const extendPlateEditor = <
 export type CreatePlateEditorOptions<
   V extends Value,
   TPlugins extends readonly unknown[],
-> = Omit<ExtendPlateEditorOptions<V, TPlugins>, 'plugins'> & {
+> = Partial<Omit<ExtendPlateEditorOptions<V, TPlugins>, 'plugins'>> & {
   /** Stable logical identity for the created editor. */
   id?: string;
   /**
@@ -180,7 +167,7 @@ export type CreatePlateEditorOptions<
  * ```ts
  * const editor = createPlateEditor({
  *   plugins: [ParagraphPlugin, HeadingPlugin],
- *   value: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
+ *   initialValue: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
  * });
  *
  * // Editor with custom components
@@ -194,6 +181,11 @@ export type CreatePlateEditorOptions<
  *   plugins: [ParagraphPlugin],
  *   handlers: { onKeyDown: customKeyHandler },
  * });
+ *
+ * // Name the schema only when persisted or collaborative state needs lineage.
+ * const persistedEditor = createPlateEditor({
+ *   schema: { id: 'acme-document', version: 1 },
+ * });
  * ```
  *
  * @see {@link createBaseEditor} for a non-React version of editor creation.
@@ -204,8 +196,12 @@ export function createPlateEditor<
   V extends Value = Value,
   const TPlugins extends readonly unknown[] = readonly PlateCorePlugin[],
 >(
-  options?: CreatePlateEditorOptions<V, TPlugins>
+  options: CreatePlateEditorOptions<V, TPlugins>
 ): PlateEditor<V, InferPlateEditorPlugins<TPlugins>>;
+
+export function createPlateEditor<V extends Value = Value>(
+  options?: CreatePlateEditorOptions<V, readonly PlatePluginInput[]>
+): PlateEditor<V, PlateCorePlugin>;
 
 export function createPlateEditor<
   V extends Value = Value,

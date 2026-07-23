@@ -1,7 +1,5 @@
-import type { ExtendPlateEditorExtension } from '@platejs/core';
+import type { ExtendPlateEditorExtension, PluginConfig } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
-
-import type { BaseCommentConfig } from './BaseCommentPlugin';
 
 import {
   getCommentCount,
@@ -11,22 +9,23 @@ import {
 } from './utils';
 
 export const withComment: ExtendPlateEditorExtension<
-  BaseCommentConfig
+  PluginConfig<'comment'>
 > = () => ({
-  normalizers: {
-    node({ entry: [node, path], next, tx }) {
-      if (
-        isCommentText(node) &&
-        !node[getDraftCommentKey()] &&
-        !node[getTransientCommentKey()] &&
-        getCommentCount(node) < 1
-      ) {
-        tx.nodes.unset(KEYS.comment, { at: path });
+  corrections: [
+    {
+      event: 'properties',
+      correct({ entry: [node, path], tx }) {
+        if (
+          isCommentText(node) &&
+          !node[getDraftCommentKey()] &&
+          !node[getTransientCommentKey()] &&
+          getCommentCount(node) < 1
+        ) {
+          tx.nodes.unset(KEYS.comment, { at: path });
 
-        return;
-      }
-
-      next();
+          return;
+        }
+      },
     },
-  },
+  ],
 });

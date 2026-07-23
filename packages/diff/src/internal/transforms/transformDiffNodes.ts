@@ -10,7 +10,7 @@ import { isEqual } from '../utils/is-equal';
 
 /**
  * We try each of the Handler functions listed below until one of them matches.
- * When one does, that is used to compute the operations. At least one will,
+ * When one does, that is used to compute the intents. At least one will,
  * since the last one is a fallback that works for any input.
  */
 
@@ -61,18 +61,24 @@ const propsOnlyStrategy: Handler = (node, nextNode, { getUpdateProps }) => {
       // 'children' and 'text' cannot be updated with set_node
       if (key === 'children' || key === 'text') return false;
 
-      properties[key] = node[key];
-      newProperties[key] = nextNode[key];
+      if (node[key] !== undefined) {
+        properties[key] = node[key];
+      }
+      if (Object.hasOwn(nextNode, key) && nextNode[key] !== undefined) {
+        newProperties[key] = nextNode[key];
+      }
     }
   }
 
   // Find new properties not present in the original node
   for (const key in nextNode) {
-    if (node[key] === undefined) {
+    if (!Object.hasOwn(node, key)) {
       // 'children' and 'text' cannot be updated with set_node
       if (key === 'children' || key === 'text') return false;
 
-      newProperties[key] = nextNode[key];
+      if (nextNode[key] !== undefined) {
+        newProperties[key] = nextNode[key];
+      }
     }
   }
 
@@ -94,7 +100,7 @@ export function transformDiffNodes(
 ): Descendant[] | false {
   // Try each strategy in turn
   for (const strategy of strategies) {
-    // Attempt to generate operations with the current strategy and return the operations if the strategy succeeds
+    // Attempt to generate intents with the current strategy and return the intents if the strategy succeeds
     const ops = strategy(node, nextNode, options);
 
     if (ops) {

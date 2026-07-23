@@ -16,7 +16,7 @@ The most basic plugin configuration requires only a `key`:
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'minimal',
+  key: "minimal",
 });
 ```
 
@@ -29,26 +29,28 @@ The `.configure` method allows you to configure an existing plugin:
 ```ts
 const ConfiguredPlugin = MyPlugin.configure({
   options: {
-    myOption: 'new value',
+    myOption: "new value",
   },
 });
 ```
 
-## Node Plugins
+## Schema Plugins
 
-Node plugins are used to define new types of nodes in your editor using the `node` property. These can be elements (either block or inline) or leaf nodes (for text-level formatting).
-
+Schema plugins declare document types at the top level and model behavior under
+`schema`. React rendering stays under `render`.
 
 ### Elements
 
-To create a new type of element, use the `node.isElement` option:
+Declare a new element with `schema.element`:
 
 ```ts
+import { schema } from "platejs";
+
 const ParagraphPlugin = createPlatePlugin({
-  key: 'p',
-  node: {
-    isElement: true,
-    type: 'p',
+  key: "p",
+  type: "p",
+  schema: {
+    element: { content: schema.content.text({ default: "text", min: 1 }) },
   },
 });
 ```
@@ -56,50 +58,54 @@ const ParagraphPlugin = createPlatePlugin({
 You can associate a component with your element. See [Plugin Components](/docs/plugin-components) for more information.
 
 ```ts
+import { schema } from "platejs";
+
 const ParagraphPlugin = createPlatePlugin({
-  key: 'p',
-  node: {
-    isElement: true,
-    type: 'p',
-    component: ParagraphElement,
+  key: "p",
+  type: "p",
+  schema: {
+    element: { content: schema.content.text({ default: "text", min: 1 }) },
   },
+  render: { node: ParagraphElement },
 });
 ```
 
-### Inline, Void, and Leaf Nodes
+### Inline, Void, and Text Properties
 
-For inline elements, void elements, or leaf nodes, use the appropriate node options:
+Element behavior lives inside `schema.element`. Declare a boolean text property
+with a property descriptor under `schema.mark`:
 
 ```ts
+import { property, schema } from "platejs";
+
 const LinkPlugin = createPlatePlugin({
-  key: 'link',
-  node: {
-    isElement: true,
-    isInline: true,
-    type: 'a',
+  key: "link",
+  type: "a",
+  schema: {
+    element: {
+      content: schema.content.text({ default: "text", min: 1 }),
+      inline: true,
+    },
   },
 });
 
 const ImagePlugin = createPlatePlugin({
-  key: 'image',
-  node: {
-    isElement: true,
-    isVoid: true,
-    type: 'img',
-  },
+  key: "image",
+  type: "img",
+  schema: { element: { void: "block" } },
 });
 
 const BoldPlugin = createPlatePlugin({
-  key: 'bold',
-  node: {
-    isLeaf: true,
+  key: "bold",
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
 ```
 
 ## Behavioral Plugins
 
-Rather than render an element or a mark, you may want to customize the behavior of your editor. Various plugin options are available to modify the behavior of Plate.
+Rather than declare an element or text property, you may want to customize the behavior of your editor. Various plugin options are available to modify the behavior of Plate.
 
 ### Plugin Rules
 
@@ -108,11 +114,11 @@ The `rules` property allows you to configure common editing behaviors like break
 For example, you can define what happens when a user presses `Enter` in an empty heading, or `Backspace` at the start of a blockquote.
 
 ```ts
-import { H1Plugin } from '@platejs/heading/react';
+import { H1Plugin } from "@platejs/heading/react";
 
 H1Plugin.configure({
   rules: {
-    break: { empty: 'reset' },
+    break: { empty: "reset" },
   },
 });
 ```
@@ -127,7 +133,7 @@ The `onChange` handler, which is called when the editor value changes, is an exc
 
 ```ts showLineNumbers
 const ExamplePlugin = createPlatePlugin({
-  key: 'example',
+  key: "example",
   handlers: {
     onChange: ({ editor, value })  => {
       console.info(editor, value);
@@ -144,26 +150,26 @@ const ExamplePlugin = createPlatePlugin({
 You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with an `align` property.
 
 ```ts showLineNumbers
-import { KEYS } from 'platejs';
+import { KEYS } from "platejs";
 
 const TextAlignPlugin = createPlatePlugin({
-  key: 'align',
+  key: "align",
+  targetPluginKeys: [KEYS.p],
   inject: {
     nodeProps: {
-      defaultNodeValue: 'start',
-      nodeKey: 'align',
-      styleKey: 'textAlign',
-      validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+      defaultNodeValue: "start",
+      nodeKey: "align",
+      styleKey: "textAlign",
+      validNodeValues: ["start", "left", "center", "right", "end", "justify"],
     },
-    targetPlugins: [KEYS.p],
-    // This is injected into all `targetPlugins`. In this example, ParagraphPlugin will be able to deserialize `textAlign` style.
+    // This is injected into each installed, enabled target. In this example, ParagraphPlugin can deserialize the `textAlign` style.
     targetPluginToInject: ({ editor, plugin }) => ({
       parsers: {
         html: {
           deserializer: {
             parse: ({ element, node }) => {
               if (element.style.textAlign) {
-                node[editor.getType('align')] = element.style.textAlign;
+                node[editor.getType("align")] = element.style.textAlign;
               }
             },
           },
@@ -184,82 +190,44 @@ A paragraph node affected by the above plugin would look like this:
 }
 ```
 
-### Override Editor Methods
+### Add APIs and Transaction Commands
 
-The `overrideEditor` method provides a way to override existing editor methods while maintaining access to the original implementations. This is particularly useful when you want to modify the behavior of core editor functionality.
-
-```ts
-const CustomPlugin = createPlatePlugin({
-  key: 'custom',
-}).overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
-  // Override existing editor transform methods
-  tf: {
-    deleteForward(options) {
-      // Custom logic before deletion
-      console.info('Deleting forward...');
-      
-      // Call original transform
-      deleteForward(options);
-      
-      // Custom logic after deletion
-      console.info('Deleted forward');
-    },
-  },
-  // Override API methods
-  api: {
-    isInline(element) {
-      // Custom inline element check
-      if (element.type === 'custom-inline') {
-        return true;
-      }
-      
-      // Fall back to original behavior
-      return isInline(element);
-    },
-  },
-}));
-```
-
-- Access to original methods via destructured `tf` and `api` parameters
-- Type-safe overrides of existing methods
-- Clean separation between `tf` overrides and API methods
-- Plugin context and options access
-
-Example with typed options:
+Use `.extendApi()` or `.extendEditorApi()` for reads and services. Put document mutations in `.extendTx()` or `.extendTxGroup()` so callers run them through `editor.update`.
 
 ```ts
-type CustomConfig = PluginConfig<
-  'custom',
-  { allowDelete: boolean }
->;
+type CustomConfig = PluginConfig<"custom", { prefix: string }>;
 
 const CustomPlugin = createPlatePlugin<CustomConfig>({
-  key: 'custom',
-  options: { allowDelete: true },
-}).overrideEditor(({ editor, tf: { deleteForward }, getOptions }) => ({
-  tf: {
-    deleteForward(options) {
-      // Use typed options to control behavior
-      if (!getOptions().allowDelete) {
-        return;
-      }
-      
-      deleteForward(options);
+  key: "custom",
+  options: { prefix: "Note: " },
+})
+  .extendApi(({ getOptions }) => ({
+    getPrefix: () => getOptions().prefix,
+  }))
+  .extendTx(({ getOptions }) => (tx) => ({
+    insertPrefix: () => {
+      tx.text.insert(getOptions().prefix);
     },
-  },
-}));
+  }));
+```
+
+After the plugin resolves, reads stay on its plugin portal and one-shot writes use the keyed update helper:
+
+```ts
+editor.plugin(CustomPlugin).api.getPrefix();
+editor.update.custom.insertPrefix();
 ```
 
 ### Install Plite Extensions (Advanced)
 
-Use `extensions` when a Plate plugin needs to install Plite substrate behavior: schema facts, state groups, tx groups, operation middleware, or runtime services.
+Use `.extendExtension()` when a Plate plugin needs to install Plite substrate behavior: schema facts, state groups, tx groups, corrections, commands, query middleware, or runtime services.
 
 ```ts showLineNumbers
-import { defineEditorExtension } from '@platejs/plite';
-import { createPlatePlugin } from 'platejs/react';
+import { defineEditorExtension } from "platejs";
+import { createPlatePlugin } from "platejs/react";
 
 const customState = defineEditorExtension({
-  name: 'custom-state',
+  name: "custom-state",
   state: {
     customState() {
       return {
@@ -270,15 +238,14 @@ const customState = defineEditorExtension({
 });
 
 const CustomStatePlugin = createPlatePlugin({
-  key: 'customState',
-  extensions: [customState],
-});
+  key: "customState",
+}).extendExtension(customState);
 ```
 
-<Callout type="info" title="Extensions, overrides, and commands">
-- Use `extensions` for Plite substrate behavior.
-- Use `overrideEditor` only when wrapping existing editor behavior.
-- Use `editor.api` for reads/services and `editor.update` or `tx` groups for mutations.
+<Callout type="info" title="Extensions, APIs, and commands">
+  Use `.extendExtension()` for Plite substrate behavior, `.extendApi()` or
+  `.extendEditorApi()` for reads and services, and `.extendTx()` or
+  `.extendTxGroup()` for mutations.
 </Callout>
 
 ## Advanced Plugin Configuration
@@ -289,14 +256,14 @@ Each plugin has its own store, which can be used to manage plugin-specific state
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
+  key: "myPlugin",
   options: {
     count: 0,
   },
 }).extend(({ editor, plugin, setOption }) => ({
   handlers: {
     onClick: () => {
-      setOption('count', 1);
+      setOption("count", 1);
     },
   },
 }));
@@ -306,26 +273,25 @@ You can access and update the store using the following methods:
 
 ```ts
 // Get the current value
-const count = editor.plugin(MyPlugin).getOption('count');
+const count = editor.plugin(MyPlugin).getOption("count");
 
 // Set a new value
-editor.plugin(MyPlugin).setOption('count', 5);
+editor.plugin(MyPlugin).setOption("count", 5);
 
 // Update the value based on the previous state
-editor.plugin(MyPlugin).setOption('count', (prev) => prev + 1);
+editor.plugin(MyPlugin).setOption("count", (prev) => prev + 1);
 ```
 
 In React components, you can use the `usePluginOption` or `usePluginOptions` hook to subscribe to store changes:
 
 ```tsx
 const MyComponent = () => {
-  const count = usePluginOption(MyPlugin, 'count');
+  const count = usePluginOption(MyPlugin, "count");
   return <div>Count: {count}</div>;
 };
 ```
 
 See more in [Plugin Context](/docs/plugin-context) and [Editor Methods](/docs/editor-methods) guides.
-
 
 ### Dependencies
 
@@ -333,7 +299,7 @@ Declare required plugins with their plugin objects. Plate installs the dependenc
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
+  key: "myPlugin",
   dependencies: [ParagraphPlugin, ListPlugin],
 });
 ```
@@ -344,7 +310,7 @@ The `enabled` property allows you to conditionally enable or disable a plugin:
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
+  key: "myPlugin",
   enabled: true, // or false to disable
 });
 ```
@@ -355,10 +321,10 @@ Plate supports nested plugins, allowing you to create plugin hierarchies. Use th
 
 ```ts
 const ParentPlugin = createPlatePlugin({
-  key: 'parent',
+  key: "parent",
   plugins: [
-    createPlatePlugin({ key: 'child1' }),
-    createPlatePlugin({ key: 'child2' }),
+    createPlatePlugin({ key: "child1" }),
+    createPlatePlugin({ key: "child2" }),
   ],
 });
 ```
@@ -369,12 +335,12 @@ The `priority` property determines the order in which plugins are registered and
 
 ```ts
 const HighPriorityPlugin = createPlatePlugin({
-  key: 'highPriority',
+  key: "highPriority",
   priority: 100,
 });
 
 const LowPriorityPlugin = createPlatePlugin({
-  key: 'lowPriority',
+  key: "lowPriority",
   priority: 50,
 });
 ```
@@ -416,15 +382,15 @@ The `createPlatePlugin` function allows you to create a typed plugin:
 ```ts
 type CodeBlockConfig = PluginConfig<
   // key
-  'code_block',
+  "codeBlock",
   // options
-  { syntax: boolean; syntaxPopularFirst: boolean },
+  { language: string; syntax: boolean; syntaxPopularFirst: boolean },
   // api
   {
-    plugin: {
+    codeBlock: {
+      getLanguage: () => string;
       getSyntaxState: () => boolean;
     };
-    toggleSyntax: () => void;
   },
   // tx
   {
@@ -437,13 +403,18 @@ type CodeBlockConfig = PluginConfig<
 >;
 
 const CodeBlockPlugin = createPlatePlugin<CodeBlockConfig>({
-  key: 'code_block',
-  options: { syntax: true, syntaxPopularFirst: false },
-}).extendEditorApi<CodeBlockConfig['api']>(() => ({
-  plugin: {
-    getSyntaxState: () => true,
+  key: 'codeBlock',
+  type: 'code_block',
+  options: {
+    language: 'typescript',
+    syntax: true,
+    syntaxPopularFirst: false,
   },
-  toggleSyntax: () => {},
+}).extendEditorApi<CodeBlockConfig['api']>(({ getOptions }) => ({
+  codeBlock: {
+    getLanguage: () => getOptions().language,
+    getSyntaxState: () => getOptions().syntax,
+  },
 })).extendTxGroup('insert', ({ getOptions }) => (tx) => ({
   codeBlock: () => {
     tx.nodes.insert({
@@ -461,20 +432,18 @@ When using typed plugins, you get full type checking and autocompletion ✨
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ExtendedCodeBlockPlugin],
+  plugins: [CodeBlockPlugin],
 });
 
 // Type-safe access to options
-const options = editor.plugin(ExtendedCodeBlockPlugin).getOptions();
+const options = editor.plugin(CodeBlockPlugin).getOptions();
+options.language;
 options.syntax;
 options.syntaxPopularFirst;
-options.hotkey;
 
 // Type-safe API
-editor.api.toggleSyntax();
-editor.api.plugin.getSyntaxState();
-editor.api.plugin2.setLanguage('python');
-editor.api.plugin.getLanguage();
+editor.api.codeBlock.getSyntaxState();
+editor.api.codeBlock.getLanguage();
 
 // Type-safe transactions
 editor.update((tx) => tx.insert.codeBlock());

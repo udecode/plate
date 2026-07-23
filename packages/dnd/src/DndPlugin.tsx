@@ -5,7 +5,7 @@ import type { PlateEditor } from '@platejs/core/react';
 import type { Path } from '@platejs/plite';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { createPlatePlugin } from '@platejs/core/react';
+import { createPlatePlugin, usePluginOption } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
 import type {
@@ -42,7 +42,7 @@ export type DndConfig = PluginConfig<
   }
 >;
 
-export const DndPlugin = createPlatePlugin<DndConfig>({
+const BaseDndPlugin = createPlatePlugin<DndConfig>({
   key: KEYS.dnd,
   editOnly: true,
   handlers: {
@@ -88,8 +88,10 @@ export const DndPlugin = createPlatePlugin<DndConfig>({
     _isOver: false,
     draggingId: null,
     dropTarget: { id: null, line: '' },
+    enableScroller: false,
     isDragging: false,
     multiplePreviewRef: null,
+    scrollerProps: {},
   },
   useHooks: ({ editor, setOption }) => {
     useEffect(() => {
@@ -149,10 +151,19 @@ export const DndPlugin = createPlatePlugin<DndConfig>({
       };
     }, [editor, setOption]);
   },
-}).extend(({ getOptions }) => ({
+});
+
+const DndScrollerAfterEditable = () => {
+  const enableScroller = usePluginOption(BaseDndPlugin, 'enableScroller');
+  const scrollerProps = usePluginOption(BaseDndPlugin, 'scrollerProps');
+
+  if (!enableScroller) return null;
+
+  return <DndScroller {...scrollerProps} />;
+};
+
+export const DndPlugin = BaseDndPlugin.extend({
   render: {
-    afterEditable: getOptions().enableScroller
-      ? () => <DndScroller {...getOptions()?.scrollerProps} />
-      : undefined,
+    afterEditable: DndScrollerAfterEditable,
   },
-}));
+});

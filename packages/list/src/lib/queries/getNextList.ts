@@ -1,5 +1,6 @@
 import {
   type Editor,
+  type EditorCoreStateView,
   type Element,
   type NodeEntry,
   PathApi,
@@ -11,17 +12,23 @@ import { type GetSiblingListOptions, getSiblingList } from './getSiblingList';
 export const getNextList = <N extends Element = Element>(
   editor: Editor,
   entry: NodeEntry<Element>,
-  options?: Partial<GetSiblingListOptions<N>>
+  options?: Partial<GetSiblingListOptions<N>>,
+  state: Pick<EditorCoreStateView, 'nodes'> = editor.read
 ): NodeEntry<N> | undefined =>
-  getSiblingList(editor, entry, {
-    getNextEntry: ([, currPath]) => {
-      const nextPath = PathApi.next(currPath);
-      const nextNode = editor.read.nodes.get<N>(nextPath)?.[0];
+  getSiblingList(
+    editor,
+    entry,
+    {
+      getNextEntry: ([, currPath]) => {
+        const nextPath = PathApi.next(currPath);
+        const nextNode = state.nodes.get<N>(nextPath)?.[0];
 
-      if (!nextNode) return;
+        if (!nextNode) return;
 
-      return [nextNode, nextPath];
+        return [nextNode, nextPath];
+      },
+      ...options,
+      getPreviousEntry: undefined,
     },
-    ...options,
-    getPreviousEntry: undefined,
-  });
+    state
+  );

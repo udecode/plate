@@ -5,23 +5,17 @@ import * as React from 'react';
 import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 
 import { getDraftCommentKey } from '@platejs/comment';
-import { getTransientSuggestionKey } from '@platejs/suggestion';
+import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import {
   MessageSquareTextIcon,
   MessagesSquareIcon,
   PencilLineIcon,
 } from 'lucide-react';
-import {
-  type AnyPluginConfig,
-  type Element,
-  type NodeEntry,
-  type Text,
-  PathApi,
-} from 'platejs';
+import { type Element, type NodeEntry, type Text, PathApi } from 'platejs';
 import {
   useEditorPlugin,
-  useEditorRef,
-  useNodePath,
+  useEditor,
+  usePath,
   usePluginOption,
 } from 'platejs/react';
 
@@ -40,14 +34,15 @@ import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestio
 import { BlockSuggestionCard, isResolvedSuggestion } from './block-suggestion';
 import { Comment, CommentCreateForm } from './comment';
 
-export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> =
-  (_props) => (props) => <BlockCommentContent {...props} />;
+export const BlockDiscussion: RenderNodeWrapper = (_props) => (props) => (
+  <BlockCommentContent {...props} />
+);
 
-const BlockCommentContent = ({ children, element }: PlateElementProps) => {
-  const editor = useEditorRef();
+const BlockCommentContent = ({ children }: PlateElementProps) => {
+  const editor = useEditor();
   const { api: commentsApi } = useEditorPlugin(commentPlugin);
   const { api: suggestionApi } = useEditorPlugin(suggestionPlugin);
-  const blockPath = useNodePath(element) ?? [];
+  const blockPath = usePath();
   const isTopLevelBlock = blockPath.length === 1;
   const draftCommentNode = isTopLevelBlock
     ? commentsApi.node({ at: blockPath, isDraft: true })
@@ -57,7 +52,7 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
     : [];
   const suggestionNodes = isTopLevelBlock
     ? [...suggestionApi.nodes({ at: blockPath })].filter(
-        ([node]) => !node[getTransientSuggestionKey()]
+        ([node]) => !node[SUGGESTION_TRANSIENT_KEY]
       )
     : [];
   const { resolvedDiscussions, resolvedSuggestions } =

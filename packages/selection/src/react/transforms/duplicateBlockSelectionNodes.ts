@@ -1,16 +1,21 @@
 import type { BaseEditor } from '@platejs/core';
-import type { EditorUpdateTransaction } from '@platejs/plite';
+import type {
+  EditorUpdateContext,
+  EditorUpdateTransaction,
+} from '@platejs/plite';
 
 import { PathApi } from '@platejs/plite';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+import { getBlockSelectionNodes } from '../internal/getBlockSelectionNodes';
 
 export const duplicateBlockSelectionNodes = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction
+  tx: EditorUpdateTransaction,
+  { afterCommit }: EditorUpdateContext
 ) => {
-  const { api, setOption } = editor.plugin(BlockSelectionPlugin);
-  const blocks = api.getNodes();
+  const { getOption, setOption } = editor.plugin(BlockSelectionPlugin);
+  const blocks = getBlockSelectionNodes(tx, getOption('selectedIds'));
   const lastBlock = blocks.at(-1);
 
   if (!lastBlock) return;
@@ -21,13 +26,13 @@ export const duplicateBlockSelectionNodes = (
   const ids = blocks
     .map((_, index) => {
       const targetPath = [path[0] + index];
-      const targetNode = editor.read.nodes.get(targetPath);
+      const targetNode = tx.nodes.get(targetPath);
 
       return targetNode?.[0].id as string;
     })
     .filter(Boolean);
 
-  setTimeout(() => {
+  afterCommit(() => {
     setOption('selectedIds', new Set(ids));
-  }, 0);
+  });
 };

@@ -1,14 +1,23 @@
 import React from 'react';
 
 import {
+  type InferConfig,
   type PluginConfig,
   createBasePlugin,
+} from '@platejs/core';
+import {
   isHtmlBlockElement,
   postCleanHtml,
   traverseHtmlElements,
-} from '@platejs/core';
+} from '@platejs/core/internal';
 import { BaseIndentPlugin } from '@platejs/indent';
-import { ElementApi, type Element } from '@platejs/plite';
+import {
+  ElementApi,
+  property,
+  schema,
+  target,
+  type Element,
+} from '@platejs/plite';
 import { KEYS, type TListElement } from '@platejs/utils';
 import { isDefined } from '@udecode/utils';
 import type { PliteRenderElementProps } from '@platejs/core/static';
@@ -42,18 +51,18 @@ import { withInsertBreakList } from './normalizers/withInsertBreakList';
  * ignored, although it is not removed and may take effect in the future.
  */
 
-export type BaseListConfig = PluginConfig<
+export type BaseListPluginOptions = {
+  getSiblingListOptions?: GetSiblingListOptions<Element>;
+};
+
+type BaseListApi = {
+  isActive: (style: ListStyleType | string | readonly string[]) => boolean;
+};
+
+type BaseListContract = PluginConfig<
   'list',
-  {
-    getSiblingListOptions?: GetSiblingListOptions<Element>;
-    /** Map html element to list style type. */
-    getListStyleType?: (element: HTMLElement) => ListStyleType;
-  },
-  {
-    list: {
-      isActive: (style: ListStyleType | string | readonly string[]) => boolean;
-    };
-  },
+  BaseListPluginOptions,
+  {},
   {
     list: {
       indent: (options?: IndentListOptions) => void;
@@ -63,12 +72,44 @@ export type BaseListConfig = PluginConfig<
   },
   {},
   {},
-  readonly [typeof BaseIndentPlugin]
+  readonly [typeof BaseIndentPlugin],
+  readonly [],
+  never,
+  BaseListApi
 >;
 
-export const BaseListPlugin = createBasePlugin<BaseListConfig>({
-  dependencies: [BaseIndentPlugin],
+const defaultOptions: BaseListPluginOptions = {};
+const defaultTargetPluginKeys: readonly string[] = [KEYS.p];
+const dependencies: readonly [typeof BaseIndentPlugin] = [BaseIndentPlugin];
+
+export const BaseListPlugin = createBasePlugin({
+  dependencies,
   key: KEYS.list,
+  options: defaultOptions,
+  schema: ({ plugins, targetPluginKeys }) => ({
+    properties: [
+      schema.elementProperty(KEYS.listChecked, property.boolean(), {
+        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        typeChange: 'preserve-if-allowed',
+      }),
+      schema.elementProperty(KEYS.listRestart, property.number(), {
+        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        typeChange: 'preserve-if-allowed',
+      }),
+      schema.elementProperty(KEYS.listRestartPolite, property.number(), {
+        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        typeChange: 'preserve-if-allowed',
+      }),
+      schema.elementProperty(KEYS.listStart, property.number(), {
+        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        typeChange: 'preserve-if-allowed',
+      }),
+      schema.elementProperty(KEYS.listType, property.string(), {
+        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        typeChange: 'preserve-if-allowed',
+      }),
+    ],
+  }),
   inject: {
     plugins: {
       [KEYS.html]: {
@@ -190,21 +231,16 @@ export const BaseListPlugin = createBasePlugin<BaseListConfig>({
         },
       },
     },
-    targetPlugins: [KEYS.p],
-  },
-  options: {
-    getListStyleType: (element) => element.style.listStyleType as ListStyleType,
   },
   parsers: {
     html: {
       deserializer: {
-        isElement: true,
         rules: [
           {
             validNodeName: 'LI',
           },
         ],
-        parse: ({ editor, element, getOptions }) => {
+        parse: ({ element, registry }) => {
           // Get indent from data-indent or aria-level (gdoc)
           const dataIndent = element.dataset.indent;
           const ariaLevel = element.getAttribute('aria-level');
@@ -213,12 +249,12 @@ export const BaseListPlugin = createBasePlugin<BaseListConfig>({
           // Get list style type from data attribute or use default
           const dataListStyleType = element.dataset.listStyleType;
           const listStyleType =
-            dataListStyleType || getOptions().getListStyleType?.(element);
+            dataListStyleType || element.style.listStyleType;
 
           return {
             indent: indent || undefined,
             listStyleType: listStyleType || undefined,
-            type: editor.getType(KEYS.p),
+            type: registry.getType(KEYS.p),
           };
         },
       },
@@ -244,8 +280,9 @@ export const BaseListPlugin = createBasePlugin<BaseListConfig>({
     },
     match: ({ node }) => isDefined(node[KEYS.listType]),
   },
+  targetPluginKeys: defaultTargetPluginKeys,
 })
-  .extendApi(({ editor }) => ({
+  .extendApi<BaseListContract['pluginApi']>(({ editor }) => ({
     isActive: (style: ListStyleType | string | readonly string[]) => {
       const selection = editor.read.selection();
 
@@ -276,6 +313,8 @@ export const BaseListPlugin = createBasePlugin<BaseListConfig>({
   .extendExtension('behavior', withList)
   .extendExtension(withNormalizeList)
   .extendExtension(withInsertBreakList);
+
+export type BaseListConfig = InferConfig<typeof BaseListPlugin>;
 
 function List(props: PliteRenderElementProps) {
   const { listStart, listStyleType } = props.element as TListElement;

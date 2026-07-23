@@ -78,7 +78,9 @@ const editor = createPlateEditor({
         query: (event) => {
           // Disable when in lists or code blocks
           const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
-          const inCodeBlock = editor.read.nodes.some({ match: { type: KEYS.codeBlock } });
+          const inCodeBlock = editor.read.nodes.some({
+            match: { type: editor.getType(KEYS.codeBlock) },
+          });
           return !inList && !inCodeBlock;
         },
         globalEventListener: true,
@@ -111,7 +113,9 @@ Use the `query` option to disable the Tabbable plugin when the `Tab` key should 
 ```tsx
 query: (event) => {
   const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
-  const inCodeBlock = editor.read.nodes.some({ match: { type: KEYS.codeBlock } });
+  const inCodeBlock = editor.read.nodes.some({
+    match: { type: editor.getType(KEYS.codeBlock) },
+  });
   return !inList && !inCodeBlock;
 },
 ```

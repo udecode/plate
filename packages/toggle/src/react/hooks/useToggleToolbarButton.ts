@@ -1,6 +1,6 @@
 import {
   type PlateEditor,
-  useEditorRef,
+  useEditor,
   useEditorSelector,
 } from '@platejs/core/react';
 import type { Value } from '@platejs/plite';
@@ -11,7 +11,7 @@ import type { ToggleConfig } from '../TogglePlugin';
 import { openNextToggles } from '../transforms';
 
 export const useToggleToolbarButtonState = () => {
-  const pressed = useEditorSelector((editor) => someToggle(editor), []);
+  const pressed = useEditorSelector((editor) => someToggle(editor));
 
   return {
     pressed,
@@ -21,7 +21,7 @@ export const useToggleToolbarButtonState = () => {
 export const useToggleToolbarButton = ({
   pressed,
 }: ReturnType<typeof useToggleToolbarButtonState>) => {
-  const editor = useEditorRef<PlateEditor<Value, ToggleConfig>>();
+  const editor = useEditor<PlateEditor<Value, ToggleConfig>>();
 
   return {
     props: {

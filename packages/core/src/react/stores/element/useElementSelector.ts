@@ -1,4 +1,4 @@
-import React, { type DependencyList } from 'react';
+import React from 'react';
 import type { Element, NodeEntry } from '@platejs/plite';
 
 import { useElementStoreContext } from './useElementStore';
@@ -10,18 +10,12 @@ type UseElementSelectorOptions<T> = {
 
 export const useElementSelector = <T>(
   selector: <N extends Element>(state: NodeEntry<N>, prev?: T) => T,
-  deps: DependencyList,
   {
     key,
     equalityFn = (a: T, b: T) => a === b,
   }: UseElementSelectorOptions<T> = {}
 ): T => {
   const context = useElementStoreContext(key);
-  const [memoizedSelector, memoizedEqualityFn] = React.useMemo(
-    () => [selector, equalityFn],
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Caller-provided deps intentionally control selector/equality memoization here.
-    deps
-  );
   const cacheRef = React.useRef<{
     entry: NodeEntry<any> | null;
     hasValue: boolean;
@@ -46,11 +40,11 @@ export const useElementSelector = <T>(
     const runtime = context?.runtime ?? null;
     const cache = cacheRef.current;
 
-    if (cache.runtime !== runtime || cache.selector !== memoizedSelector) {
+    if (cache.runtime !== runtime || cache.selector !== selector) {
       cache.entry = null;
       cache.hasValue = false;
       cache.runtime = runtime;
-      cache.selector = memoizedSelector;
+      cache.selector = selector;
       cache.value = undefined;
     }
 
@@ -68,12 +62,9 @@ export const useElementSelector = <T>(
       return undefined as T;
     }
 
-    const nextValue = memoizedSelector(
-      entry,
-      cache.hasValue ? cache.value : undefined
-    );
+    const nextValue = selector(entry, cache.hasValue ? cache.value : undefined);
 
-    if (cache.hasValue && memoizedEqualityFn(cache.value as T, nextValue)) {
+    if (cache.hasValue && equalityFn(cache.value as T, nextValue)) {
       cache.entry = entry;
 
       return cache.value as T;
@@ -84,7 +75,7 @@ export const useElementSelector = <T>(
     cache.value = nextValue;
 
     return nextValue;
-  }, [context, memoizedEqualityFn, memoizedSelector]);
+  }, [context, equalityFn, selector]);
 
   return React.useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 };

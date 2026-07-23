@@ -1,21 +1,24 @@
 import type { Path } from '@platejs/plite';
 
-import { useEditorRef } from '../plate';
+import type { PlateElementDescriptor } from './useElement';
 import { useElementContext } from './useElementStore';
 
-/** Get the memoized path of the closest element. */
-export const usePath = (pluginKey?: string): Path => {
-  const editor = useEditorRef();
-  const value = useElementContext(pluginKey)?.path;
+/** Get the current element path and fail when the requested provider is absent. */
+export const usePath = (plugin?: PlateElementDescriptor): Path => {
+  const scope = plugin?.key;
+  const value = useElementContext(scope)?.path;
 
   if (!value) {
-    editor.api.debug.warn(
-      `usePath(${pluginKey}) hook must be used inside the node component's context`,
-      'USE_ELEMENT_CONTEXT'
+    throw new Error(
+      `usePath(${
+        scope ?? 'nearest'
+      }) must be used inside the matching element provider.`
     );
-
-    return undefined as any;
   }
 
   return value;
 };
+
+/** Get the memoized element path, or `null` when its provider is absent. */
+export const useOptionalPath = (plugin?: PlateElementDescriptor): Path | null =>
+  useElementContext(plugin?.key)?.path ?? null;

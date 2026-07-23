@@ -19,7 +19,7 @@ but the editor type is `BaseEditor`.
 | --- | --- |
 | `editor` | The resolved editor instance. |
 | `plugin` | The resolved plugin configuration for the current plugin. |
-| `type` | The plugin node type, usually `plugin.node.type`. |
+| `type` | The plugin document type, available as `plugin.type`. |
 | `api` | Editor API plus plugin-specific API methods. |
 | `getOption(key, ...args)` | Read an option, selector, or `'state'` from the current plugin. |
 | `getOptions()` | Read the full option state for the current plugin. |
@@ -155,7 +155,7 @@ Plugin options are stored per editor. Updating one editor's plugin options does
 not update another editor.
 
 ```ts title="counter-plugin.ts" showLineNumbers
-export const CounterPluginWithInitialCount = CounterPlugin.configure(
+export const CounterPluginWithInitialCount = CounterPlugin.extend(
   ({ getOptions }) => ({
     options: {
       count: getOptions().count + 1,

@@ -1,18 +1,13 @@
 import {
+  editorCommands,
   ElementApi,
-  OperationApi,
   PathApi,
   PointApi,
-  type EditorElementSpec,
-  type EditorUpdateTransaction,
+  type EditorStateView,
+  type EditorTransactionSpecBuilder,
   type Element,
-  type Operation,
 } from '@platejs/plite';
-import {
-  getEditorDefaultBlockType,
-  getOperationRoot,
-  MAIN_ROOT_KEY,
-} from '@platejs/plite/internal';
+import { getEditorDefaultBlockType } from '@platejs/plite/internal';
 
 import type { BaseEditor } from '../../editor/BaseEditor';
 import type { AnyBasePlugin } from '../../plugin/BasePlugin';
@@ -21,10 +16,11 @@ import type { MatchRules } from '../../plugin/PluginConfig';
 import { createBasePlugin } from '../../plugin/createBasePlugin';
 import { getPluginByType } from '../../plugin/getBasePlugin';
 import { getEditorPlugin } from '../../plugin/getEditorPlugin';
+import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 
 const resetBlock = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction,
+  tx: Pick<EditorTransactionSpecBuilder, 'blocks'>,
   at: number[]
 ) => {
   tx.blocks.reset(
@@ -42,7 +38,7 @@ const getRuleOverridePlugin = (
   path: number[],
   hasRules: (plugin: AnyBasePlugin) => boolean
 ) => {
-  for (const key of editor.runtime.pluginCache.rules.match) {
+  for (const key of getPlateRuntime(editor).pluginCache.rules.match) {
     const plugin = editor.getPlugin({ key });
     const match = plugin?.rules?.match;
 
@@ -64,24 +60,30 @@ const getRuleOverridePlugin = (
   return null;
 };
 
-const insertExitBreak = (editor: BaseEditor, tx: EditorUpdateTransaction) => {
-  const selection = editor.read.selection();
+const insertExitBreak = (
+  editor: BaseEditor,
+  tx: EditorTransactionSpecBuilder
+) => {
+  const selection = tx.selection();
 
   if (!selection) return false;
-  if (!editor.read.selection.isCollapsed()) return false;
+  if (!tx.selection.isCollapsed()) return false;
 
-  const block = editor.read.nodes.block({ at: selection.focus });
+  const block = tx.nodes.block({ at: selection.focus });
 
   if (!block) return false;
 
-  const target = editor.read.nodes.above({
+  const defaultBlock = tx.schema.createAndFill(
+    getEditorDefaultBlockType(editor)
+  );
+  const target = tx.nodes.above({
     at: block[1],
     match: (node, path) =>
       path.length === 1 ||
       (path.length > 1 &&
         ElementApi.isElement(node) &&
         typeof node.type === 'string' &&
-        !getPluginByType(editor, node.type)?.node.isStrictSiblings),
+        tx.schema.findWrapping(node, defaultBlock)?.length === 0),
   });
   const ancestorPath = target?.[1] ?? block[1];
   const targetPath = PathApi.next(ancestorPath);
@@ -102,7 +104,7 @@ const insertExitBreak = (editor: BaseEditor, tx: EditorUpdateTransaction) => {
 
 const executeBreakRuleAction = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction,
+  tx: EditorTransactionSpecBuilder,
   action: string | undefined,
   blockPath: number[]
 ) => {
@@ -133,7 +135,7 @@ const executeBreakRuleAction = (
 
 const executeDeleteRuleAction = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction,
+  tx: EditorTransactionSpecBuilder,
   action: string | undefined,
   blockPath: number[]
 ) => {
@@ -150,26 +152,25 @@ const executeDeleteRuleAction = (
 };
 
 const selectAdjacentBlockVoid = (
-  editor: BaseEditor,
-  tx: EditorUpdateTransaction,
+  tx: EditorTransactionSpecBuilder,
   adjacent: readonly [unknown, number[]] | undefined,
   current: readonly [Element, number[]]
 ) => {
   if (
     !adjacent ||
     !ElementApi.isElement(adjacent[0]) ||
-    !editor.read.schema.isVoid(adjacent[0])
+    !tx.schema.isVoid(adjacent[0])
   ) {
     return false;
   }
 
-  const start = editor.read.points.start(adjacent[1]);
+  const start = tx.points.start(adjacent[1]);
 
   if (!start) return false;
 
   tx.selection.set(start);
 
-  if (editor.read.nodes.isEmpty(current[0])) {
+  if (tx.nodes.isEmpty(current[0])) {
     tx.nodes.remove({ at: current[1] });
   }
 
@@ -212,17 +213,19 @@ const getEffectiveDeleteRules = (
   return overridePlugin?.rules.delete ?? plugin?.rules?.delete;
 };
 
-const getPreviousCharacter = (editor: BaseEditor) => {
-  const selection = editor.read.selection();
+const getPreviousCharacter = (
+  state: Pick<EditorStateView, 'points' | 'ranges' | 'selection' | 'text'>
+) => {
+  const selection = state.selection();
   const before = selection
-    ? editor.read.points.before(selection, { unit: 'character' })
+    ? state.points.before(selection, { unit: 'character' })
     : undefined;
 
   if (!selection || !before) return '';
 
-  const range = editor.read.ranges.get(before, selection);
+  const range = state.ranges.get(before, selection);
 
-  return range ? editor.read.text.string(range) : '';
+  return range ? state.text.string(range) : '';
 };
 
 const getRuntimeChildren = (node: unknown) => {
@@ -252,40 +255,13 @@ const getRuntimeNodeText = (node: unknown): string => {
   return children.map(getRuntimeNodeText).join('');
 };
 
-const getRuntimeDescendant = (
-  editor: BaseEditor,
-  path: number[],
-  root?: string
-) => {
-  try {
-    const rootValue = editor.read((state) =>
-      root === undefined || root === MAIN_ROOT_KEY
-        ? state.children()
-        : state.root(root)
-    );
-    let node: unknown = rootValue;
-
-    for (const index of path) {
-      const children = getRuntimeChildren(node);
-
-      if (!children?.[index]) return;
-
-      node = children[index];
-    }
-
-    return node;
-  } catch {
-    return;
-  }
-};
-
 const getMergeOverrideRules = (
   editor: BaseEditor,
   rule: MatchRules,
   node: Element,
   path: number[]
 ) => {
-  for (const key of editor.runtime.pluginCache.rules.match) {
+  for (const key of getPlateRuntime(editor).pluginCache.rules.match) {
     const plugin = editor.getPlugin({ key });
     const match = plugin?.rules?.match;
 
@@ -328,96 +304,52 @@ const shouldRemoveEmptyMergeTarget = (
   return overrideRules?.removeEmpty !== false;
 };
 
-const getMergeNodeProperties = (node: { children: unknown[] }) => {
-  const { children: _children, ...properties } = node;
-
-  return properties;
-};
-
 /** Override the editor based on resolved Plate plugin node behavior. */
 export const OverridePlugin = createBasePlugin({
   key: 'override',
 })
   .extendExtension(({ editor }) => {
-    const elements = editor.runtime.pluginList.flatMap((plugin) => {
-      const { node } = plugin;
-      const type = node?.type;
-
-      if (!type) return [];
-
-      const hasSchemaBehavior =
-        node.isInline !== undefined ||
-        node.isMarkableVoid !== undefined ||
-        node.isSelectable !== undefined ||
-        node.isVoid !== undefined;
-
-      if (!hasSchemaBehavior) return [];
-
-      const spec: EditorElementSpec = { type };
-
-      if (node.isInline === true) {
-        spec.inline = true;
-      }
-      if (node.isSelectable === false) {
-        spec.selectable = false;
-      }
-      if (node.isMarkableVoid === true) {
-        spec.markableVoid = true;
-      }
-      if (node.isVoid === true) {
-        spec.void =
-          node.isInline === true
-            ? node.isMarkableVoid === true
-              ? 'markable-inline'
-              : 'inline'
-            : 'block';
-      }
-
-      return [spec];
-    });
-
-    if (elements.length === 0) return;
-
-    return { elements };
-  })
-  .extendExtension(({ editor }) => {
-    const hasBreakRules = editor.runtime.pluginList.some(
+    const hasBreakRules = getPlateRuntime(editor).pluginList.some(
       (plugin) => plugin.rules?.break || plugin.rules?.match
     );
 
     if (!hasBreakRules) return;
 
     return {
-      transforms: {
-        insertBreak({ next, tx }) {
-          const selection = editor.read.selection();
-          const block = editor.read.nodes.block();
+      commands: ({ around }) => [
+        around(editorCommands.insertBreak, ({ next, state }) => {
+          const selection = state.selection();
+          const block = state.nodes.block();
 
-          if (!selection || !block) return next();
+          if (!selection || !block) return false;
 
           const [blockNode, blockPath] = block;
+          const runAction = (action: string | undefined) => {
+            let handled = false;
+            const transaction = state.transaction((tx) => {
+              handled = executeBreakRuleAction(editor, tx, action, blockPath);
+            });
 
-          if (
-            editor.read.selection.isCollapsed() &&
-            editor.read.nodes.isEmpty(blockNode)
-          ) {
+            return handled ? transaction : null;
+          };
+
+          if (state.selection.isCollapsed() && state.nodes.isEmpty(blockNode)) {
             const rules = getEffectiveBreakRules(
               editor,
               'break.empty',
               blockNode,
               blockPath
             );
+            const action = runAction(rules?.empty);
 
-            if (executeBreakRuleAction(editor, tx, rules?.empty, blockPath)) {
-              return true;
-            }
+            if (action) return action;
           }
 
           if (
-            editor.read.selection.isCollapsed() &&
-            !editor.read.nodes.isEmpty(blockNode) &&
-            editor.read.points.isEnd(selection.anchor, blockPath) &&
-            getPreviousCharacter(editor) === '\n'
+            state.selection.isCollapsed() &&
+            !state.nodes.isEmpty(blockNode) &&
+            state.points.isEnd(selection.anchor, blockPath) &&
+            getPreviousCharacter(state) === '\n'
           ) {
             const rules = getEffectiveBreakRules(
               editor,
@@ -425,12 +357,9 @@ export const OverridePlugin = createBasePlugin({
               blockNode,
               blockPath
             );
+            const action = runAction(rules?.emptyLineEnd);
 
-            if (
-              executeBreakRuleAction(editor, tx, rules?.emptyLineEnd, blockPath)
-            ) {
-              return true;
-            }
+            if (action) return action;
           }
 
           const defaultRules = getEffectiveBreakRules(
@@ -439,12 +368,9 @@ export const OverridePlugin = createBasePlugin({
             blockNode,
             blockPath
           );
+          const defaultAction = runAction(defaultRules?.default);
 
-          if (
-            executeBreakRuleAction(editor, tx, defaultRules?.default, blockPath)
-          ) {
-            return true;
-          }
+          if (defaultAction) return defaultAction;
 
           const splitResetRules = getEffectiveBreakRules(
             editor,
@@ -453,194 +379,148 @@ export const OverridePlugin = createBasePlugin({
             blockPath
           );
 
-          if (splitResetRules?.splitReset && !tx.selection.isAcrossBlocks()) {
-            const isAtStart = tx.selection.isAtBlockStart();
+          if (
+            splitResetRules?.splitReset &&
+            !state.selection.isAcrossBlocks()
+          ) {
+            const isAtStart = state.selection.isAtBlockStart();
+            const result = next();
 
-            next();
-            resetBlock(
-              editor,
-              tx,
-              isAtStart ? blockPath : PathApi.next(blockPath)
-            );
-            return true;
+            if (result === false) return false;
+
+            return state.transaction.extend(result, (tx) => {
+              resetBlock(
+                editor,
+                tx,
+                isAtStart ? blockPath : PathApi.next(blockPath)
+              );
+            });
           }
 
-          return next();
-        },
-      },
+          return false;
+        }),
+      ],
     };
   })
-  .extendExtension(({ editor }) => {
-    const hasDeleteBehavior = editor.runtime.pluginList.some(
-      (plugin) =>
-        plugin.node.isVoid || plugin.rules?.delete || plugin.rules?.match
-    );
+  .extendExtension(({ editor }) => ({
+    commands: ({ handle }) => [
+      handle(editorCommands.delete, ({ input, state }) => {
+        const selection = state.selection();
 
-    if (!hasDeleteBehavior) return;
+        if (!selection || !state.selection.isCollapsed()) return false;
 
-    return {
-      priority: -100,
-      transforms: {
-        deleteBackward({ next, tx, unit }) {
-          const selection = editor.read.selection();
+        const block = state.nodes.block();
 
-          if (!selection || !editor.read.selection.isCollapsed()) {
-            return next({ unit });
+        if (input.direction === 'forward') {
+          if (block && state.points.isEnd(selection.anchor, block[1])) {
+            let handled = false;
+            const transaction = state.transaction((tx) => {
+              handled = selectAdjacentBlockVoid(
+                tx,
+                state.nodes.next({ at: block[1] }),
+                block
+              );
+            });
+
+            if (handled) return transaction;
           }
 
-          const block = editor.read.nodes.block();
+          return false;
+        }
 
-          if (block) {
-            const [blockNode, blockPath] = block;
+        if (block) {
+          const [blockNode, blockPath] = block;
 
-            if (editor.read.points.isStart(selection.anchor, blockPath)) {
-              const previous = editor.read.nodes.previous({ at: blockPath });
-
-              if (
-                selectAdjacentBlockVoid(editor, tx, previous, [
-                  blockNode,
-                  blockPath,
-                ])
-              ) {
-                return true;
-              }
-
-              const rules = getEffectiveDeleteRules(
-                editor,
-                'delete.start',
-                blockNode,
-                blockPath
-              );
-
-              if (
-                executeDeleteRuleAction(editor, tx, rules?.start, blockPath)
-              ) {
-                return true;
-              }
-            }
+          if (state.points.isStart(selection.anchor, blockPath)) {
+            const previous = state.nodes.previous({ at: blockPath });
 
             if (
-              ElementApi.isElement(blockNode) &&
-              editor.read.nodes.isEmpty(blockNode)
+              previous &&
+              ElementApi.isElement(previous[0]) &&
+              !state.schema.isVoid(previous[0]) &&
+              previous[0].children.length > 0 &&
+              getRuntimeNodeText(previous[0]).length === 0 &&
+              !shouldRemoveEmptyMergeTarget(editor, previous[0], previous[1])
             ) {
-              const rules = getEffectiveDeleteRules(
-                editor,
-                'delete.empty',
+              return state.transaction((tx) => {
+                tx.nodes.merge({ at: blockPath });
+              });
+            }
+
+            let selectedAdjacent = false;
+            const selectAdjacent = state.transaction((tx) => {
+              selectedAdjacent = selectAdjacentBlockVoid(tx, previous, [
                 blockNode,
+                blockPath,
+              ]);
+            });
+
+            if (selectedAdjacent) return selectAdjacent;
+
+            const rules = getEffectiveDeleteRules(
+              editor,
+              'delete.start',
+              blockNode,
+              blockPath
+            );
+            let handledRule = false;
+            const ruleTransaction = state.transaction((tx) => {
+              handledRule = executeDeleteRuleAction(
+                editor,
+                tx,
+                rules?.start,
                 blockPath
               );
+            });
 
-              if (
-                executeDeleteRuleAction(editor, tx, rules?.empty, blockPath)
-              ) {
-                return true;
-              }
-            }
+            if (handledRule) return ruleTransaction;
           }
 
-          const documentStart = editor.read.points.start([]);
-
           if (
-            documentStart &&
-            PointApi.equals(selection.anchor, documentStart)
+            ElementApi.isElement(blockNode) &&
+            state.nodes.isEmpty(blockNode)
           ) {
-            resetBlock(editor, tx, [0]);
-            return true;
-          }
-
-          return next({ unit });
-        },
-        deleteForward({ next, tx, unit }) {
-          const selection = editor.read.selection();
-
-          if (!selection || !editor.read.selection.isCollapsed()) {
-            return next({ unit });
-          }
-
-          const block = editor.read.nodes.block();
-
-          if (
-            block &&
-            editor.read.points.isEnd(selection.anchor, block[1]) &&
-            selectAdjacentBlockVoid(
+            const rules = getEffectiveDeleteRules(
               editor,
-              tx,
-              editor.read.nodes.next({ at: block[1] }),
-              block
-            )
-          ) {
-            return true;
-          }
+              'delete.empty',
+              blockNode,
+              blockPath
+            );
+            let handledRule = false;
+            const ruleTransaction = state.transaction((tx) => {
+              handledRule = executeDeleteRuleAction(
+                editor,
+                tx,
+                rules?.empty,
+                blockPath
+              );
+            });
 
-          return next({ unit });
-        },
-      },
-    };
-  })
+            if (handledRule) return ruleTransaction;
+          }
+        }
+
+        const documentStart = state.points.start([]);
+
+        if (documentStart && PointApi.equals(selection.anchor, documentStart)) {
+          return state.transaction((tx) => {
+            resetBlock(editor, tx, [0]);
+          });
+        }
+
+        return false;
+      }),
+    ],
+    priority: -100,
+  }))
   .extendExtension(({ editor }) => {
-    const hasMergeRules = editor.runtime.pluginList.some(
+    const hasMergeRules = getPlateRuntime(editor).pluginList.some(
       (plugin) => plugin.rules?.merge || plugin.rules?.match
     );
 
     if (!hasMergeRules) return;
 
     return {
-      operations: {
-        apply({ operation, next }) {
-          if (
-            OperationApi.isRemoveNodeOperation(operation) &&
-            ElementApi.isElement(operation.node) &&
-            !editor.read.schema.isVoid(operation.node) &&
-            operation.node.children.length > 0 &&
-            operation.path.length > 0 &&
-            getRuntimeNodeText(operation.node).length === 0 &&
-            !shouldRemoveEmptyMergeTarget(
-              editor,
-              operation.node,
-              operation.path
-            )
-          ) {
-            const operationExplicitRoot =
-              'root' in operation ? operation.root : undefined;
-            const nextPath = PathApi.next(operation.path);
-            const nextNode = getRuntimeDescendant(
-              editor,
-              nextPath,
-              getOperationRoot(operation)
-            );
-
-            if (ElementApi.isElement(nextNode)) {
-              for (
-                let index = operation.node.children.length - 1;
-                index >= 0;
-                index--
-              ) {
-                const removeChildOperation = {
-                  node: operation.node.children[index],
-                  path: [...operation.path, index],
-                  root: operationExplicitRoot,
-                  type: 'remove_node',
-                } satisfies Operation;
-
-                next(removeChildOperation);
-              }
-
-              const mergeNextOperation = {
-                path: nextPath,
-                position: 0,
-                properties: getMergeNodeProperties(nextNode),
-                root: operationExplicitRoot,
-                type: 'merge_node',
-              } satisfies Operation;
-
-              next(mergeNextOperation);
-              return;
-            }
-          }
-
-          next(operation);
-        },
-      },
       queries: {
         nodes: {
           shouldMergeNodesRemovePrevNode({ current, next, previous }) {
@@ -674,42 +554,42 @@ export const OverridePlugin = createBasePlugin({
     };
   })
   .extendExtension(({ editor }) => {
-    const hasNormalizeRules = editor.runtime.pluginList.some(
+    const hasNormalizeRules = getPlateRuntime(editor).pluginList.some(
       (plugin) => plugin.rules?.normalize || plugin.rules?.match
     );
 
     if (!hasNormalizeRules) return;
 
     return {
-      normalizers: {
-        node({ entry, next, tx }) {
-          const [node, path] = entry;
+      corrections: [
+        {
+          event: 'content',
+          correct({ entry, tx }) {
+            const [node, path] = entry;
 
-          if (!ElementApi.isElement(node) || typeof node.type !== 'string') {
-            next();
-            return;
-          }
+            if (!ElementApi.isElement(node) || typeof node.type !== 'string') {
+              return;
+            }
 
-          const plugin = getPluginByType(editor, node.type);
-          const normalizeRules = plugin?.rules.normalize;
-          const overridePlugin = getRuleOverridePlugin(
-            editor,
-            'normalize.removeEmpty',
-            node,
-            path,
-            (candidate) => !!candidate.rules?.normalize
-          );
-          const effectiveNormalizeRules =
-            overridePlugin?.rules.normalize ?? normalizeRules;
-          const text = editor.read.text.string(path);
+            const plugin = getPluginByType(editor, node.type);
+            const normalizeRules = plugin?.rules.normalize;
+            const overridePlugin = getRuleOverridePlugin(
+              editor,
+              'normalize.removeEmpty',
+              node,
+              path,
+              (candidate) => !!candidate.rules?.normalize
+            );
+            const effectiveNormalizeRules =
+              overridePlugin?.rules.normalize ?? normalizeRules;
+            const text = tx.text.string(path);
 
-          if (effectiveNormalizeRules?.removeEmpty && text.length === 0) {
-            tx.nodes.remove({ at: path });
-            return;
-          }
-
-          next();
+            if (effectiveNormalizeRules?.removeEmpty && text.length === 0) {
+              tx.nodes.remove({ at: path });
+              return;
+            }
+          },
         },
-      },
+      ],
     };
   });

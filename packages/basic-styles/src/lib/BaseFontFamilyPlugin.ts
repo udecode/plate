@@ -1,8 +1,10 @@
 import { createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 export const BaseFontFamilyPlugin = createBasePlugin({
   key: KEYS.fontFamily,
+  schema: { mark: property.string() },
   inject: {
     nodeProps: {
       nodeKey: 'fontFamily',
@@ -11,7 +13,6 @@ export const BaseFontFamilyPlugin = createBasePlugin({
   parsers: {
     html: {
       deserializer: {
-        isLeaf: true,
         rules: [
           {
             validStyle: {

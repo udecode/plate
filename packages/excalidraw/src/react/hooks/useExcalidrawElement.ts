@@ -3,7 +3,7 @@ import React from 'react';
 import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import type { AppState, LibraryItems } from '@excalidraw/excalidraw/types';
 
-import { type PlateEditor, useEditorRef } from '@platejs/core/react';
+import { type PlateEditor, useEditor } from '@platejs/core/react';
 import { useEditorReadOnly } from '@platejs/plite-react';
 import { cloneDeep, isEqual } from 'lodash';
 
@@ -24,7 +24,7 @@ export const useExcalidrawElement = ({
 }) => {
   const [Excalidraw, setExcalidraw] =
     React.useState<ExcalidrawComponent | null>(null);
-  const editor = useEditorRef<PlateEditor<TExcalidrawElement[]>>();
+  const editor = useEditor<PlateEditor<TExcalidrawElement[]>>();
   const readOnly = useEditorReadOnly();
 
   const lastSavedDataRef = React.useRef<TExcalidrawElement['data']>(null);

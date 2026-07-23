@@ -9,11 +9,7 @@ import {
   DropdownMenuItemIndicator,
 } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
-import {
-  useEditorRef,
-  useEditorViewState,
-  usePluginOption,
-} from 'platejs/react';
+import { useEditor, useEditorViewState, usePluginOption } from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -26,7 +22,7 @@ import {
 import { ToolbarButton } from './toolbar';
 
 export function ModeToolbarButton(props: DropdownMenuProps) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const [open, setOpen] = React.useState(false);
 

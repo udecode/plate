@@ -13,6 +13,13 @@ export const AlignKit = [
         validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
       },
     },
-    targetPluginKeys: [...KEYS.heading, KEYS.p, KEYS.img, KEYS.mediaEmbed],
+    targetPluginKeys: [
+      ...KEYS.heading,
+      KEYS.p,
+      KEYS.img,
+      KEYS.mediaEmbed,
+      KEYS.audio,
+      KEYS.video,
+    ],
   }),
 ];

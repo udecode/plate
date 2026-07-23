@@ -1,10 +1,13 @@
 import { createBasePlugin, someHtmlElement } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 /** Enables support for strikethrough formatting. */
 export const BaseStrikethroughPlugin = createBasePlugin({
   key: KEYS.strikethrough,
-  node: { isLeaf: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
   parsers: {
     html: {
       deserializer: {

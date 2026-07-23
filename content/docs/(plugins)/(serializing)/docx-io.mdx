@@ -39,10 +39,8 @@ const handleFileUpload = async (file: File) => {
   const arrayBuffer = await file.arrayBuffer();
   const result = await importDocx(editor, arrayBuffer);
 
-  // Insert nodes into editor
-  editor.update((tx) => {
-    tx.nodes.insert(result.nodes);
-  });
+  // Replace the current fragment with the imported nodes
+  editor.update.fragment.replace(result.nodes);
 
   // Handle comments if needed
   for (const comment of result.comments) {

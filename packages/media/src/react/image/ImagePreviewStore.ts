@@ -7,7 +7,7 @@ export type PreviewItem = {
 
 export const ImagePreviewStore = createZustandStore(
   {
-    boundingClientRect: {} as DOMRect,
+    boundingClientRect: null as DOMRect | null,
     currentPreview: null as PreviewItem | null,
     isEditingScale: false,
     openEditorId: null as string | null,
@@ -23,6 +23,7 @@ export const ImagePreviewStore = createZustandStore(
   .extendActions(({ set }) => ({
     close: () => {
       set('currentPreview', null);
+      set('boundingClientRect', null);
       set('previewList', []);
       set('openEditorId', null);
       set('scale', 1);
@@ -34,4 +35,4 @@ export const ImagePreviewStore = createZustandStore(
     isOpen: (editorId: string) => get('openEditorId') === editorId,
   }));
 
-export const { useValue: useImagePreviewValue } = ImagePreviewStore as any;
+export const { useValue: useImagePreviewValue } = ImagePreviewStore;

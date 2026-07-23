@@ -107,7 +107,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     TablePlugin.configure({
-      node: { component: TableElement },
+      render: { node: TableElement },
       options: {
         initialTableWidth: 600,
         disableMerge: false,
@@ -121,7 +121,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `node.component`: Assigns [`TableElement`](/docs/components/table-node) to render table containers.
+- `render.node`: Assigns [`TableElement`](/docs/components/table-node) to render table containers.
 - `withComponent`: Assigns components for table rows, cells, and header cells.
 - `options.initialTableWidth`: Sets the initial width for new tables.
 - `options.disableMerge`: Disables cell merging functionality.
@@ -191,9 +191,9 @@ Plugin for table header cells.
 
 ## API
 
-### editor.api.create.table
+### editor.plugin(TablePlugin).api.create
 
-<API name="create.table">
+<API name="create">
 <APIParameters>
 <APIItem name="options" type="GetEmptyTableNodeOptions" optional>
 Extends `GetEmptyRowNodeOptions`.
@@ -224,11 +224,11 @@ The table node.
 </APIReturns>
 </API>
 
-### editor.api.create.tableCell
+### editor.plugin(TablePlugin).api.createCell
 
 Creates an empty cell node for a table.
 
-<API name="create.tableCell">
+<API name="createCell">
 <APIOptions>
 <APIItem name="header" type="boolean" optional>
 Specify `true` if the cell is a header cell.
@@ -239,7 +239,7 @@ The row element. If `header` is not specified, it will determine if the cell is 
 <APIItem name="children" type="Descendant[]" optional>
 The children of the new cell node.
 
-- **Default:** `[editor.api.create.block()]`
+- **Default:** `[{ children: [{ text: '' }], type: editor.getType(KEYS.p) }]`
 
 </APIItem>
 </APIOptions>
@@ -253,11 +253,11 @@ The cell node.
 </APIReturns>
 </API>
 
-### editor.api.create.tableRow
+### editor.plugin(TablePlugin).api.createRow
 
 Creates an empty row node with the specified number of columns.
 
-<API name="create.tableRow">
+<API name="createRow">
 <APIOptions>
 <APIItem name="header" type="boolean" optional>
 Specify `true` if the row is a header row.
@@ -279,7 +279,7 @@ The row node.
 </APIReturns>
 </API>
 
-### editor.api.table.getCellBorders
+### editor.plugin(TablePlugin).api.getCellBorders
 
 Gets the border styles for a table cell, handling special cases for first row and first column cells.
 
@@ -328,7 +328,7 @@ The default border style to use when cell borders are not defined.
 </APIReturns>
 </API>
 
-### editor.api.table.getCellChildren
+### editor.plugin(TablePlugin).api.getCellChildren
 
 Gets the children of a table cell.
 
@@ -348,7 +348,7 @@ The children of the table cell.
 </APIReturns>
 </API>
 
-### editor.api.table.getCellSize
+### editor.plugin(TablePlugin).api.getCellSize
 
 Gets the width and minimum height of a table cell, taking into account column spans and column sizes.
 
@@ -372,7 +372,7 @@ The minimum height of the cell, derived from the row's size property.
 </APIReturns>
 </API>
 
-### editor.api.table.getColSpan
+### editor.plugin(TablePlugin).api.getColSpan
 
 Gets the column span of a table cell.
 
@@ -391,7 +391,7 @@ The table cell element to get the column span for.
 </APIReturns>
 </API>  
 
-### editor.api.table.getRowSpan
+### editor.plugin(TablePlugin).api.getRowSpan
 
 Gets the row span of a table cell.
 
@@ -410,11 +410,11 @@ Gets the row span of a table cell.
 </APIReturns>
 </API>
 
-### getCellType
+### editor.plugin(TablePlugin).api.getCellTypes
 
 Get the plugin cell types.
 
-<API name="getCellType">
+<API name="getCellTypes">
 <APIReturns>
 
 <APIItem type="string[]">
@@ -424,11 +424,10 @@ Get the plugin cell types.
 </APIReturns>
 </API>
 
-### getNextTableCell
+### editor.plugin(TablePlugin).api.getNextCell
 
 Gets the next cell in the table.
-  
-<API name="getNextTableCell">
+<API name="getNextCell">
 <APIParameters>
   <APIItem name="currentCell" type="NodeEntry">
     The entry of the current cell.
@@ -449,11 +448,11 @@ Gets the next cell in the table.
 </APIReturns>
 </API>
 
-### getPreviousTableCell
+### editor.plugin(TablePlugin).api.getPreviousCell
 
 Gets the previous cell in the table.
 
-<API name="getPreviousTableCell">
+<API name="getPreviousCell">
 <APIParameters>
   <APIItem name="currentCell" type="NodeEntry">
     The entry of the current cell.
@@ -474,11 +473,11 @@ Gets the previous cell in the table.
 </APIReturns>
 </API>
 
-### getTableColumnCount
+### editor.plugin(TablePlugin).api.getColumnCount
 
 Gets the number of columns in a table.
 
-<API name="getTableColumnCount">
+<API name="getColumnCount">
 <APIParameters>
   <APIItem name="tableNode" type="Element">
     The table node for which to retrieve the column count.
@@ -493,11 +492,11 @@ The number of columns in the table.
 </APIItem>
 </APIReturns>
 </API>
-### getTableColumnIndex
+### editor.plugin(TablePlugin).api.getColumnIndex
 
 Gets the column index of a cell node within a table.
 
-<API name="getTableColumnIndex">
+<API name="getColumnIndex">
 <APIParameters>
   <APIItem name="cellNode" type="Element">
     The cell node for which to retrieve the column index.
@@ -513,11 +512,11 @@ The column index of the cell node.
 </APIReturns>
 </API>
 
-### getTableEntries
+### editor.plugin(TablePlugin).api.getEntries
 
 Gets the table, row, and cell node entries based on the current selection or a specified location.
 
-<API name="getTableEntries">
+<API name="getEntries">
 <APIOptions>
 <APIItem name="at" type="Location | null" optional>
 The location where the table cell is located.
@@ -540,11 +539,11 @@ The location where the table cell is located.
 </API>
 
 
-### getTableGridAbove
+### editor.plugin(TablePlugin).api.getGridAbove
 
 Gets the sub table above the anchor and focus positions based on the specified format (tables or cells).
 
-<API name="getTableGridAbove">
+<API name="getGridAbove">
 <APIOptions>
 <APIItem name="format" type="string" optional>
 The format of the sub table to retrieve.
@@ -558,11 +557,11 @@ The format of the sub table to retrieve.
   <APIItem type="ElementEntry[]">The sub table entries.</APIItem>
 </APIReturns>
 </API>
-### getTableGridByRange
+### editor.plugin(TablePlugin).api.getGridByRange
 
 Gets the sub table between two cell paths within a given range.
 
-<API name="getTableGridByRange">
+<API name="getGridByRange">
 <APIOptions>
 <APIItem name="at" type="Range">
 The range specifying the start and end cell paths.
@@ -580,11 +579,11 @@ The format of the output.
 </APIReturns>
 </API>
 
-### getTableRowIndex
+### editor.plugin(TablePlugin).api.getRowIndex
 
 Gets the row index of a cell node within a table.
 
-<API name="getTableRowIndex">
+<API name="getRowIndex">
 <APIParameters>
   <APIItem name="cellNode" type="Element">
     The cell node for which to retrieve the row index.
@@ -600,11 +599,11 @@ The row index of the cell node.
 </APIReturns>
 </API>
 
-### getTopTableCell
+### editor.plugin(TablePlugin).api.getTopCell
 
 Gets the cell above the current cell in the table.
 
-<API name="getTopTableCell">
+<API name="getTopCell">
 <APIParameters>
   <APIItem name="at" type="Path" optional>
     The path to the current cell. If not provided, the function will search for
@@ -620,11 +619,11 @@ The cell node entry.
 </APIItem>
 </APIReturns>
 </API>
-### isTableBorderHidden
+### editor.plugin(TablePlugin).api.isBorderHidden
 
 Checks if the border of a table cell or the table itself is hidden based on the specified border direction.
 
-<API name="isTableBorderHidden">
+<API name="isBorderHidden">
 <APIParameters>
   <APIItem name="border" type="'top' | 'left' | 'bottom' | 'right'">
     The border direction to check.
@@ -642,15 +641,15 @@ Checks if the border of a table cell or the table itself is hidden based on the 
 
 ## Editing Behavior
 
-Table editing behavior is split across table transforms and plugin extensions. Use `tx.table.merge` and `tx.table.split` for merge controls, `tx.moveSelectionFromCell` for keyboard navigation out of cells, and the table extension hooks below for deletion, paste, normalization, and fragment handling.
+`TablePlugin` owns keyboard, clipboard, deletion, paste, normalization, and selection behavior. Use its scoped update portal for table mutations; installing the plugin activates the rest.
 
 ## Transforms
 
-### `tx.insert.table`
+### `editor.plugin(TablePlugin).update.insert`
 
 Inserts a table at the current selection if there is no existing table in the editor. Selects the start of the inserted table.
 
-<API name="insert.table">
+<API name="insert">
 <APIParameters>
 <APIItem name="getEmptyTableNodeOptions" type="GetEmptyTableNodeOptions" optional>
 Extends `GetEmptyRowNodeOptions`.
@@ -680,11 +679,11 @@ The options for inserting the table nodes.
 </APIParameters>
 </API>
 
-### `tx.insert.tableColumn`
+### `editor.plugin(TablePlugin).update.insertColumn`
 
 Inserts a column into the table at the current selection or a specified cell path.
 
-<API name="insert.tableColumn">
+<API name="insertColumn">
 <APIOptions>
 <APIItem name="at" type="Path" optional>
 The exact path of the cell to insert the column at. This overrules the
@@ -705,11 +704,11 @@ If true, the inserted column will be selected after insertion.
 </APIOptions>
 </API>
 
-### `tx.insert.tableRow`
+### `editor.plugin(TablePlugin).update.insertRow`
 
 Inserts a row into the table at the current selection or a specified row path.
 
-<API name="insert.tableRow">
+<API name="insertRow">
 <APIOptions>
 <APIItem name="at" type="Path" optional>
 Exact path of the row to insert the column at. Pass the table path to
@@ -730,19 +729,19 @@ If true, the inserted row will be selected after insertion.
 </APIOptions>
 </API>
 
-### `tx.remove.tableColumn`
+### `editor.plugin(TablePlugin).update.removeColumn`
 
 Deletes the column containing the selected cell in a table.
 
-### `tx.remove.tableRow`
+### `editor.plugin(TablePlugin).update.removeRow`
 
 Deletes the row containing the selected cell in a table.
 
-### `tx.remove.table`
+### `editor.plugin(TablePlugin).update.remove`
 
 Deletes the entire table.
 
-### `tx.table.merge`
+### `editor.plugin(TablePlugin).update.merge`
 
 Merges multiple selected cells into one.
 
@@ -752,7 +751,7 @@ The merged cell will:
 - Contain the combined content of all merged cells (non-empty cells only)
 - Inherit the header status from the first selected cell
 
-### `tx.table.split`
+### `editor.plugin(TablePlugin).update.split`
 
 Splits a merged cell back into individual cells.
 
@@ -762,11 +761,11 @@ The split operation will:
 - Place the original cell's content in the first cell
 - Create empty cells for the remaining spaces
 
-### `tx.moveSelectionFromCell`
+### `editor.plugin(TablePlugin).update.moveSelection`
 
 Moves the selection by cell unit within a table.
 
-<API name="moveSelectionFromCell">
+<API name="moveSelection">
 <APIOptions>
 <APIItem name="at" type="Location" optional>
 The location to move the selection from.
@@ -784,7 +783,7 @@ Set to `true` to move the selection from only one selected cell.
 </APIOptions>
 </API>
 
-### `tx.setBorderSize`
+### `editor.plugin(TablePlugin).update.setBorderSize`
 
 Sets the size of the specified border in a table cell.
 
@@ -811,134 +810,50 @@ The border direction to set the size.
 </APIOptions>
 </API>
 
-### `tx.setTableColSize`
+### `editor.plugin(TablePlugin).update.setColumnSize`
 
 Sets the width of a specific column in a table.
 
-<API name="setTableColSize">
-<APIOptions>
-<APIItem name="colIndex" type="number" optional>
-The index of the column to set the width.
+<API name="setColumnSize">
+<APIParameters>
+<APIItem name="value" type="{ colIndex: number; width: number }">
+The column index and width to apply.
 </APIItem>
-<APIItem name="width" type="number" optional>
-The desired width of the column.
+<APIItem name="options" type="TableFindOptions" optional>
+Options for locating the table.
 </APIItem>
-<APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
-Additional options for finding the table node.
-</APIItem>
-</APIOptions>
+</APIParameters>
 </API>
 
-### `tx.setTableMarginLeft`
+### `editor.plugin(TablePlugin).update.setMarginLeft`
 
 Sets the margin left of a table.
 
-<API name="setTableMarginLeft">
-<APIOptions>
-<APIItem name="marginLeft" type="number">
-An object containing the desired margin left value.
+<API name="setMarginLeft">
+<APIParameters>
+<APIItem name="value" type="{ marginLeft: number }">
+The left margin to apply.
 </APIItem>
-<APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
-Additional options for finding the table node.
+<APIItem name="options" type="TableFindOptions" optional>
+Options for locating the table.
 </APIItem>
-</APIOptions>
+</APIParameters>
 </API>
 
-### `tx.setTableRowSize`
+### `editor.plugin(TablePlugin).update.setRowSize`
 
 Sets the size (height) of a table row.
 
-<API name="setTableRowSize">
-<APIOptions>
-<APIItem name="rowIndex" type="number">
-The index of the row to set the size.
-</APIItem>
-<APIItem name="height" type="number">
-The desired height of the row.
-</APIItem>
-<APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
-Additional options for finding the table node.
-</APIItem>
-</APIOptions>
-</API>
-
-## Plugin Extensions
-
-### `onKeyDownTable`
-
-Handles the keyboard events for tables.
-
-<API name="onKeyDownTable">
+<API name="setRowSize">
 <APIParameters>
-  <APIItem name="plugin" type="PlatePlugin">
-    The plate plugin.
-  </APIItem>
+<APIItem name="value" type="{ height: number; rowIndex: number }">
+The row index and height to apply.
+</APIItem>
+<APIItem name="options" type="TableFindOptions" optional>
+Options for locating the table.
+</APIItem>
 </APIParameters>
-
-<APIReturns>
-  <APIItem type="KeyboardHandlerReturnType">
-    The keyboard handler return type.
-  </APIItem>
-</APIReturns>
 </API>
-
-### `withDeleteTable`
-
-Prevents the deletion of cells in tables.
-
-### `withGetFragmentTable`
-
-If the selection is inside a table, it retrieves the subtable above the selection as the fragment. This is useful when copying and pasting table cells.
-
-### `withInsertFragmentTable`
-
-If inserting a table:
-
-- If the block above the anchor of the selection is a table, replace each cell above with the inserted table until out of bounds. Select the inserted cells.
-- If there is no table above the anchor, check if the selection is inside a table. If it is, find the cell at the anchor position and replace its children with the inserted fragment.
-
-### `withInsertTextTable`
-
-If the selection is expanded:
-
-- Check if the selection is inside a table. If it is, collapse the selection to the focus edge.
-
-### `withNormalizeTable`
-
-Normalize table structure by performing the following actions:
-
-- Wrap cell children in a paragraph if they are texts.
-- Unwrap nodes that are not valid table elements.
-- Set initial column sizes for tables if specified.
-
-### `withSelectionTable`
-
-Handle table selections by performing the following actions:
-
-- Adjust the focus of the selection when the anchor is inside a table and the focus is in a block before or after the table.
-- Adjust the focus of the selection when the focus is inside a table and the anchor is in a block before or after the table.
-- Override the selection from a cell if the previous and new selections are in different cells.
-
-### `withSetFragmentDataTable`
-
-Handle setting data to the clipboard when copying or cutting table data by performing the following actions:
-
-- Check if a table entry and selected cell entries exist.
-- Handle single-cell copy or cut operations by copying the cell content instead of the table structure.
-- Create a table structure with the selected cells' content.
-- Set the text, HTML, CSV, TSV, and Plite fragment data to the clipboard.
-
-### `withTable`
-
-Enhance the editor instance with table-related functionality by applying the following higher-order functions:
-
-- `withNormalizeTable`: Normalize table structure and content.
-- `withDeleteTable`: Prevent cell deletion within a table.
-- `withGetFragmentTable`: Handle getting the fragment data when copying or cutting table cells.
-- `withInsertFragmentTable`: Handle inserting table fragments.
-- `withInsertTextTable`: Handle inserting text within a table.
-- `withSelectionTable`: Handle adjusting the selection within a table.
-- `withSetFragmentDataTable`: Handle setting the fragment data when copying or cutting table data.
 
 ## Hooks
 
@@ -986,7 +901,6 @@ Step size for vertical resizing.
   </APIItem>
 </APIReturns>
 </API>
-  
 
 ### `useTableStore`
 
@@ -1110,7 +1024,6 @@ A hook for a table element that handles cell selection and margin left calculati
   </APIItem>
 </APIReturns>
 </API>
-  
 ### `useTableCellElement`
 
 A hook for a table cell element that provides state and functionality for table cells.

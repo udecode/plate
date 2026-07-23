@@ -1,59 +1,10 @@
-import { type BaseEditor, createBasePlugin } from '@platejs/core';
 import {
-  type Descendant,
-  type Element,
-  type Path,
-  ElementApi,
-  PathApi,
-} from '@platejs/plite';
+  type BaseEditor,
+  BaseParagraphPlugin,
+  createBasePlugin,
+} from '@platejs/core';
+import { type Element, type Path, ElementApi, PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
-
-const normalizeBlockquoteChildren = (
-  editor: BaseEditor,
-  children: Descendant[] = []
-) => {
-  const paragraphType = editor.getType(KEYS.p);
-  const elements: Descendant[] = [];
-  let inlineNodes: Descendant[] = [];
-
-  const flushInlineNodes = () => {
-    if (inlineNodes.length === 0) return;
-
-    elements.push({
-      children: inlineNodes,
-      type: paragraphType,
-    } as Descendant);
-    inlineNodes = [];
-  };
-
-  children.forEach((child) => {
-    const isBlock =
-      ElementApi.isElement(child) &&
-      !editor.read.schema.isInline(child) &&
-      editor.read.schema.isBlock(child);
-
-    if (isBlock) {
-      flushInlineNodes();
-      elements.push(child);
-      return;
-    }
-
-    inlineNodes.push(child);
-  });
-
-  flushInlineNodes();
-
-  if (elements.length > 0) {
-    return elements;
-  }
-
-  return [
-    {
-      children: [{ text: '' }],
-      type: paragraphType,
-    },
-  ];
-};
 
 const isLiftableBlockquoteChild = (
   editor: BaseEditor,
@@ -67,10 +18,7 @@ const isLiftableBlockquoteChild = (
 
   return !!editor.read.nodes.above({
     at: path,
-    match: (entryNode, entryPath) =>
-      ElementApi.isElement(entryNode) &&
-      entryPath.length < path.length &&
-      entryNode.type === blockquoteType,
+    match: { type: blockquoteType },
   });
 };
 
@@ -105,9 +53,14 @@ const shouldLiftOnDeleteStart = (
 /** Enables support for block quotes, useful for quotations and passages. */
 export const BaseBlockquotePlugin = createBasePlugin({
   key: KEYS.blockquote,
-  node: {
-    isElement: true,
-  },
+  schema: ({ plugins }) => ({
+    element: {
+      content: plugins.blockContent({
+        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        min: 1,
+      }),
+    },
+  }),
   parsers: {
     html: {
       deserializer: {
@@ -141,9 +94,6 @@ export const BaseBlockquotePlugin = createBasePlugin({
       return isLiftableBlockquoteChild(editor, node, path, blockquoteType);
     },
   },
-  shortcuts: {
-    untab: { keys: 'shift+tab' },
-  },
 })
   .extendTx(({ editor, type }) => (tx) => ({
     toggle: () => {
@@ -155,7 +105,7 @@ export const BaseBlockquotePlugin = createBasePlugin({
           at: tx.selection() ?? undefined,
           match: (node, path) =>
             ElementApi.isElement(node) &&
-            !(node as { indent?: unknown }).indent &&
+            !node.indent &&
             isLiftableBlockquoteChild(editor, node, path, type),
           mode: 'lowest',
         })
@@ -176,32 +126,8 @@ export const BaseBlockquotePlugin = createBasePlugin({
       return true;
     },
   }))
-  .extendExtension(({ editor, type }) => ({
-    normalizers: {
-      node({ entry, next, tx }) {
-        const [node, path] = entry;
-
-        if (!ElementApi.isElement(node) || node.type !== type) {
-          next();
-          return;
-        }
-
-        const nextChildren = normalizeBlockquoteChildren(
-          editor,
-          node.children as Descendant[]
-        );
-        const shouldNormalizeChildren =
-          nextChildren.length !== node.children.length ||
-          nextChildren.some((child, index) => child !== node.children[index]);
-
-        if (!shouldNormalizeChildren) {
-          next();
-          return;
-        }
-
-        tx.nodes.replaceChildren(nextChildren, {
-          at: path,
-        });
-      },
+  .extend({
+    shortcuts: {
+      untab: { keys: 'shift+tab' },
     },
-  }));
+  });

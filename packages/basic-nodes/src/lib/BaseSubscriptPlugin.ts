@@ -1,10 +1,13 @@
 import { createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 /** Enables support for subscript formatting. */
 export const BaseSubscriptPlugin = createBasePlugin({
   key: KEYS.sub,
-  node: { isLeaf: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
   parsers: {
     html: {
       deserializer: {

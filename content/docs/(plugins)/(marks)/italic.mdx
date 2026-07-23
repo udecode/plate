@@ -118,7 +118,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 | Behavior | Source |
 |----------|--------|
 | Mark key | `KEYS.italic` |
-| Leaf behavior | `node.isLeaf: true` |
+| Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.italic.toggle()` calls `tx.marks.toggle(type)`. |
 | Shortcut | `ItalicPlugin` registers `mod+i`. |
 | HTML tags | `em`, `i` |

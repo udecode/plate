@@ -1,9 +1,9 @@
 import type { PlateEditor } from '@platejs/core/react';
 
-import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
+import type { DeserializeMdOptions, MarkdownEditor } from '@platejs/markdown';
 import { getPluginType } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
-import { type Value, TextApi } from '@platejs/plite';
+import { TextApi, type Value } from '@platejs/plite';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 import { getChunkTrimmed } from './utils';
@@ -12,7 +12,7 @@ import { escapeInput } from './utils/escapeInput';
 const statMdxTagRegex = /<([A-Za-z][A-Za-z0-9._:-]*)(?:\s[^>]*?)?(?<!\/)>/;
 
 export const streamDeserializeMd = (
-  editor: PlateEditor,
+  editor: MarkdownEditor<PlateEditor>,
   data: string,
   options?: DeserializeMdOptions
 ) => {
@@ -29,11 +29,9 @@ export const streamDeserializeMd = (
   let blocks: Value;
 
   try {
-    blocks = editor
-      .plugin(MarkdownPlugin)
-      .api.deserialize(input, deserializeOptions);
+    blocks = editor.api.markdown.deserialize(input, deserializeOptions);
   } catch {
-    blocks = editor.plugin(MarkdownPlugin).api.deserialize(input, {
+    blocks = editor.api.markdown.deserialize(input, {
       ...deserializeOptions,
       withoutMdx: true,
     });

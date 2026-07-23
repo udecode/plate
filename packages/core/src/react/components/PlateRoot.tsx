@@ -2,8 +2,10 @@ import React from 'react';
 
 import { Plite } from '@platejs/plite-react';
 
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { usePlateRootProps } from '../hooks';
-import { useEditorRef } from '../stores/plate';
+import { usePlateModelRevision } from '../internal/usePlateModelRevision';
+import { useEditor } from '../stores/plate';
 
 /**
  * Plite runtime with Plate plugins.
@@ -20,21 +22,17 @@ export function PlateRoot({
 }) {
   const rootProps = usePlateRootProps({ id });
 
-  const editor = useEditorRef(id);
+  const editor = useEditor({ id });
+
+  usePlateModelRevision(editor);
 
   let abovePlite = (
-    <Plite
-      key={rootProps.key}
-      editor={rootProps.editor}
-      onChange={rootProps.onChange}
-      onSelectionChange={rootProps.onSelectionChange}
-      onValueChange={rootProps.onValueChange}
-    >
+    <Plite key={rootProps.key} editor={rootProps.editor}>
       {children}
     </Plite>
   );
 
-  editor.runtime.pluginCache.render.abovePlite.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.render.abovePlite.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     const AbovePlite = plugin.render.abovePlite!;
 

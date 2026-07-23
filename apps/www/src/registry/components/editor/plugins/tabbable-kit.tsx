@@ -3,7 +3,7 @@
 import { TabbablePlugin } from '@platejs/tabbable/react';
 import { ElementApi, getPluginTypes, KEYS } from 'platejs';
 
-export const TabbableKit = TabbablePlugin.configure({
+export const TabbableKit = TabbablePlugin.extend({
   override: {
     enabled: {
       indent: false,

@@ -8,14 +8,14 @@ import {
   type NodeEntry,
   NodeApi,
 } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { NODES } from '@platejs/utils';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import { ensureStablePythonGrammar } from './ensureStablePythonGrammar';
 
 type CodeBlockDecoration = DecoratedRange & {
   className: string;
-  [KEYS.codeSyntax]: true;
+  [NODES.codeSyntax]: true;
 };
 
 type HighlightResult = ReturnType<
@@ -166,7 +166,7 @@ export function codeBlockToDecorations(
           offset: end,
           path: [...blockPath, index, 0],
         },
-        [KEYS.codeSyntax]: true,
+        [NODES.codeSyntax]: true,
       };
 
       lineDecorations.push(decoration);

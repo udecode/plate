@@ -1,4 +1,3 @@
-import type { BaseEditor } from '@platejs/core';
 import type { EditorUpdateTransaction, ElementEntry } from '@platejs/plite';
 
 const nonWhitespaceRegex = /\S/;
@@ -17,21 +16,20 @@ export type IndentCodeLineOptions = {
  *   spaces.
  */
 export const indentCodeLine = (
-  editor: BaseEditor,
   tx: EditorUpdateTransaction,
   { codeLine, indentDepth = 2 }: IndentCodeLineOptions
 ) => {
-  const codeLineStart = editor.read.points.start(codeLine[0]);
+  const codeLineStart = tx.points.start(codeLine[0]);
 
   if (!codeLineStart) return;
 
   const indent = ' '.repeat(indentDepth);
 
-  if (!editor.read.selection.isExpanded()) {
-    const selection = editor.read.selection();
+  if (!tx.selection.isExpanded()) {
+    const selection = tx.selection();
     const cursor = selection?.anchor;
-    const range = cursor && editor.read.ranges.get(codeLineStart, cursor);
-    const text = range ? editor.read.text.string(range) : '';
+    const range = cursor && tx.ranges.get(codeLineStart, cursor);
+    const text = range ? tx.text.string(range) : '';
 
     if (nonWhitespaceRegex.test(text)) {
       if (selection) {

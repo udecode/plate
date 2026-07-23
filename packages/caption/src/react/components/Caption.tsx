@@ -23,7 +23,7 @@ export const useCaptionState = (options: CaptionOptions = {}) => {
   const showCaption = usePluginOption(
     BaseCaptionPlugin,
     'isVisible',
-    element.id as string
+    typeof element.id === 'string' ? element.id : undefined
   );
 
   const selected = useElementSelected();

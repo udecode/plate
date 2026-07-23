@@ -1,11 +1,79 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { isHotkey } from '@platejs/core';
 import { useEditor } from '@platejs/core/react';
 
 import type { PreviewItem } from './ImagePreviewStore';
 import { ImagePreviewStore, useImagePreviewValue } from './ImagePreviewStore';
-import { useZoom } from './useZoom';
+
+const zoomLevels = [0, 0.5, 1, 1.5, 2];
+
+export const useZoom = () => {
+  const scale = useImagePreviewValue('scale');
+
+  const zoomIn = useCallback(() => {
+    if (scale >= 2) return;
+
+    const nextScale = zoomLevels.find((target) => scale < target);
+
+    if (nextScale) ImagePreviewStore.set('scale', nextScale);
+  }, [scale]);
+
+  const zoomOut = useCallback(() => {
+    if (scale <= 0) return;
+
+    const previousScale = [...zoomLevels]
+      .reverse()
+      .find((target) => scale > target);
+
+    if (previousScale === 1) {
+      ImagePreviewStore.set('translate', { x: 0, y: 0 });
+    }
+    if (previousScale !== undefined) {
+      ImagePreviewStore.set('scale', previousScale);
+    }
+  }, [scale]);
+
+  return { zoomIn, zoomOut };
+};
+
+export const useScaleInput = () => {
+  const scale = useImagePreviewValue('scale');
+  const isEditingScale = useImagePreviewValue('isEditingScale');
+  const [value, setValue] = useState(`${scale * 100}`);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isEditingScale) return;
+
+    setValue(`${scale * 100}`);
+
+    const timeout = window.setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, [isEditingScale, scale]);
+
+  return {
+    props: {
+      value,
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+        setValue(event.target.value);
+      },
+      onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!isHotkey('enter')(event)) return;
+
+        const nextScale = Math.min(200, Math.max(50, Number(value))) / 100;
+
+        ImagePreviewStore.set('scale', Number(nextScale.toFixed(2)));
+        ImagePreviewStore.set('isEditingScale', false);
+      },
+    },
+    ref: inputRef,
+  };
+};
 
 export const useImagePreview = ({ scrollSpeed }: { scrollSpeed: number }) => {
   const editor = useEditor();
@@ -18,10 +86,10 @@ export const useImagePreview = ({ scrollSpeed }: { scrollSpeed: number }) => {
 
   // zoom in/out and move image
   useEffect(() => {
-    const wheel = (e: WheelEvent) => {
-      if (scale <= 1) return;
+    const wheel = (event: WheelEvent) => {
+      if (scale <= 1 || !boundingClientRect) return;
 
-      const { deltaX, deltaY } = e;
+      const { deltaX, deltaY } = event;
       const { x, y } = translate;
 
       const { bottom, left, right, top } = boundingClientRect;
@@ -53,64 +121,50 @@ export const useImagePreview = ({ scrollSpeed }: { scrollSpeed: number }) => {
       });
     };
 
-    if (!isOpen) return document.removeEventListener('wheel', wheel);
+    if (!isOpen) return;
 
     document.addEventListener('wheel', wheel);
 
     return () => {
       document.removeEventListener('wheel', wheel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, translate, scale]);
+  }, [boundingClientRect, isOpen, scale, scrollSpeed, translate]);
 
   const { zoomIn, zoomOut } = useZoom();
 
-  const currentPreviewIndex = useMemo(() => {
-    if (!currentPreview) return null;
-
-    return previewList.findIndex(
-      (item: PreviewItem) =>
-        item.url === currentPreview.url && item.id === currentPreview.id
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPreview]);
+  const currentPreviewIndex = currentPreview
+    ? previewList.findIndex(
+        (item: PreviewItem) =>
+          item.url === currentPreview.url && item.id === currentPreview.id
+      )
+    : null;
 
   const onClose = useCallback(() => {
     ImagePreviewStore.actions.close();
     // document.documentElement.style.overflowY = 'scroll';
   }, []);
 
-  const [prevDisabled, nextDisabled] = useMemo(
-    () => [
-      currentPreviewIndex === 0,
-      currentPreviewIndex === previewList.length - 1,
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentPreviewIndex]
-  );
-
-  const [zoomOutDisabled, zoomInDisabled] = useMemo(
-    () => [scale <= 0.5, scale >= 2],
-    [scale]
-  );
+  const prevDisabled = currentPreviewIndex === 0;
+  const nextDisabled = currentPreviewIndex === previewList.length - 1;
+  const zoomOutDisabled = scale <= 0.5;
+  const zoomInDisabled = scale >= 2;
 
   useEffect(() => {
-    const keydown = (e: KeyboardEvent) => {
-      if (isHotkey('escape')(e)) {
-        e.stopPropagation();
+    const keydown = (event: KeyboardEvent) => {
+      if (isHotkey('escape')(event)) {
+        event.stopPropagation();
         onClose();
       }
     };
 
-    if (!isOpen) return document.removeEventListener('keydown', keydown);
+    if (!isOpen) return;
 
     document.addEventListener('keydown', keydown);
 
     return () => {
       document.removeEventListener('keydown', keydown);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   return {
     closeProps: {

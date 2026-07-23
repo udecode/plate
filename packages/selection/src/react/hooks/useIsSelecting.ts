@@ -15,9 +15,8 @@ export const useIsSelecting = () => {
     BlockSelectionPlugin,
     'isSelectingSome'
   );
-  const selectionExpanded = useEditorSelector(
-    (editor) => editor.read.selection.isExpanded(),
-    []
+  const selectionExpanded = useEditorSelector((editor) =>
+    editor.read.selection.isExpanded()
   );
 
   return selectionExpanded || isSelectingSome;

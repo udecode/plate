@@ -29,7 +29,7 @@ import { Plate, usePlateEditor } from 'platejs/react';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 
 export default function MyEditorPage() {
-  const editor = usePlateEditor(); // Initializes the editor instance
+  const editor = usePlateEditor();
 
   return (
     <Plate editor={editor}>      {/* Provides editor context */}
@@ -100,7 +100,7 @@ const initialValue: Value = [
 export default function MyEditorPage() {
   const editor = usePlateEditor({
     plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin], // Add the mark plugins
-    value: initialValue,         // Set initial content
+    initialValue,
   });
 
   return (
@@ -186,7 +186,7 @@ export default function MyEditorPage() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -288,7 +288,7 @@ export default function MyEditorPage() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: () => {
+    initialValue: () => {
       const savedValue = localStorage.getItem('installation-next-demo');
       return savedValue ? JSON.parse(savedValue) : initialValue;
     },
@@ -297,7 +297,7 @@ export default function MyEditorPage() {
   return (
     <Plate
       editor={editor}
-      onChange={({ value }) => {
+      onValueChange={({ value }) => {
         localStorage.setItem('installation-next-demo', JSON.stringify(value));
       }}
     >

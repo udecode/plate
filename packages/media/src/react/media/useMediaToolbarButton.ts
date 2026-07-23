@@ -1,6 +1,65 @@
-import { useEditor } from '@platejs/core/react';
+import { type PlateEditor, useEditor } from '@platejs/core/react';
+import { type NodeInsertNodesOptions, PathApi } from '@platejs/plite';
+import type { TImageElement, TMediaEmbedElement } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
-import { insertMedia } from '../../lib/media/insertMedia';
+import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
+import { BaseMediaEmbedPlugin } from '../../lib/media-embed/BaseMediaEmbedPlugin';
+
+export interface InsertMediaUrlOptions
+  extends NodeInsertNodesOptions<TImageElement | TMediaEmbedElement> {
+  /** Resolve a URL without showing the default browser prompt. */
+  getUrl?: () => Promise<string>;
+  type?: string;
+}
+
+export const insertMediaUrl = async (
+  editor: PlateEditor,
+  {
+    at,
+    getUrl,
+    type = editor.getType(KEYS.img),
+    ...options
+  }: InsertMediaUrlOptions = {}
+) => {
+  const atAnchor =
+    at === undefined
+      ? undefined
+      : editor.anchor(at, {
+          association: 'forward',
+          deletion: 'nearest',
+        });
+  const block = at === undefined ? editor.read.nodes.block()?.[0] : undefined;
+
+  try {
+    const url = getUrl
+      ? await getUrl()
+      : // biome-ignore lint/suspicious/noAlert: intentional user input for media URL
+        window.prompt(
+          `Enter the URL of the ${type === KEYS.img ? KEYS.img : NODES.mediaEmbed}`
+        );
+
+    if (!url) return;
+
+    const resolvedAt = atAnchor?.resolve();
+    const blockPath = block ? editor.read.nodes.path(block) : undefined;
+
+    if ((atAnchor && !resolvedAt) || (block && !blockPath)) return;
+
+    const insertOptions = {
+      ...options,
+      at: resolvedAt ?? (blockPath ? PathApi.next(blockPath) : undefined),
+    };
+
+    if (type === editor.getType(KEYS.img)) {
+      editor.plugin(BaseImagePlugin).update.insert(url, insertOptions);
+    } else {
+      editor.plugin(BaseMediaEmbedPlugin).update.insert(url, insertOptions);
+    }
+  } finally {
+    atAnchor?.release();
+  }
+};
 
 export const useMediaToolbarButton = ({
   nodeType,
@@ -12,7 +71,7 @@ export const useMediaToolbarButton = ({
   return {
     props: {
       onClick: async () => {
-        await insertMedia(editor, { type: nodeType });
+        await insertMediaUrl(editor, { type: nodeType });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

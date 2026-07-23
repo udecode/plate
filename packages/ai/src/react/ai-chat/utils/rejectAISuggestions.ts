@@ -1,14 +1,14 @@
 import type { PlateEditor } from '@platejs/core/react';
 
 import {
-  getSuggestionKey,
-  getTransientSuggestionKey,
-  rejectSuggestion,
+  type BaseSuggestionConfig,
+  SUGGESTION_TRANSIENT_KEY,
 } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 
 export const rejectAISuggestions = (editor: PlateEditor) => {
-  const suggestionApi = editor.plugin(SuggestionPlugin).api;
+  const suggestionEditor = editor as PlateEditor<any, BaseSuggestionConfig>;
+  const suggestionApi = suggestionEditor.plugin(SuggestionPlugin).api;
   const suggestions = suggestionApi.nodes({
     transient: true,
   });
@@ -20,18 +20,18 @@ export const rejectAISuggestions = (editor: PlateEditor) => {
 
     const description = {
       createdAt: new Date(suggestionData.createdAt),
-      keyId: getSuggestionKey(suggestionData.id),
+      keyId: suggestionApi.key(suggestionData.id),
       suggestionId: suggestionData.id,
       type: suggestionData.type,
       userId: suggestionData.userId,
     };
 
-    rejectSuggestion(editor, description);
+    suggestionEditor.update.suggestion.reject(description);
   });
 
-  editor.update.nodes.unset([getTransientSuggestionKey()], {
+  editor.update.nodes.unset([SUGGESTION_TRANSIENT_KEY], {
     at: [],
     mode: 'all',
-    match: (node) => Boolean(Reflect.get(node, getTransientSuggestionKey())),
+    match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
   });
 };

@@ -1,6 +1,6 @@
 import type { BaseEditor } from '@platejs/core';
 import {
-  type EditorUpdateTransaction,
+  type EditorTransactionSpecBuilder,
   ElementApi,
   PathApi,
 } from '@platejs/plite';
@@ -10,7 +10,7 @@ import { isInClosedToggle } from '../queries';
 // Return false only if all next blocks are not selectable
 export const moveNextSelectableAfterCurrentBlock = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction
+  tx: EditorTransactionSpecBuilder
 ) => {
   const selection = tx.selection();
 

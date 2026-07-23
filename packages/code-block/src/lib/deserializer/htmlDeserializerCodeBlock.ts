@@ -1,6 +1,6 @@
 import type { HtmlDeserializer } from '@platejs/core';
 
-import { KEYS } from '@platejs/utils';
+import { NODES } from '@platejs/utils';
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
   rules: [
@@ -31,12 +31,12 @@ export const htmlDeserializerCodeBlock: HtmlDeserializer = {
 
     const codeLines = lines.map((line) => ({
       children: [{ text: line }],
-      type: KEYS.codeLine,
+      type: NODES.codeLine,
     }));
 
     return {
       children: codeLines,
-      type: KEYS.codeBlock,
+      type: NODES.codeBlock,
     };
   },
 };

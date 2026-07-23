@@ -1,11 +1,19 @@
-import type { ExtendPlateEditorExtension, PluginConfig } from '@platejs/core';
-import type { Element } from '@platejs/plite';
+import type {
+  BasePluginContext,
+  PlateEditorExtensionInput,
+  PluginConfig,
+} from '@platejs/core';
+import { editorCommands, type Element } from '@platejs/plite';
 
 import type { TriggerComboboxPluginOptions } from './types';
 
-export const withTriggerCombobox: ExtendPlateEditorExtension<
-  PluginConfig<string, TriggerComboboxPluginOptions>
-> = ({ editor, getOptions, type }) => {
+export const withTriggerCombobox = <
+  C extends PluginConfig<string, TriggerComboboxPluginOptions>,
+>({
+  editor,
+  getOptions,
+  type,
+}: BasePluginContext<C>): PlateEditorExtensionInput => {
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
 
@@ -20,8 +28,8 @@ export const withTriggerCombobox: ExtendPlateEditorExtension<
   };
 
   return {
-    transforms: {
-      insertText({ next, options, text, tx }) {
+    commands: ({ handle }) => [
+      handle(editorCommands.insertText, ({ input, state }) => {
         const {
           createComboboxInput,
           triggerPreviousCharPattern,
@@ -29,20 +37,20 @@ export const withTriggerCombobox: ExtendPlateEditorExtension<
         } = getOptions();
 
         if (
-          options?.at ||
-          !editor.read.selection() ||
-          !matchesTrigger(text) ||
+          input.options?.at ||
+          !state.selection() ||
+          !matchesTrigger(input.text) ||
           (triggerQuery && !triggerQuery(editor))
         ) {
-          return next({ options, text });
+          return false;
         }
 
         // Make sure an input is created at the beginning of line or after a whitespace
-        const selection = editor.read.selection();
-        const before = selection && editor.read.points.before(selection);
+        const selection = state.selection();
+        const before = selection && state.points.before(selection);
         const previousChar =
           selection && before
-            ? editor.read.text.string({
+            ? state.text.string({
                 anchor: before,
                 focus: selection.anchor,
               })
@@ -53,7 +61,7 @@ export const withTriggerCombobox: ExtendPlateEditorExtension<
 
         if (matchesPreviousCharPattern) {
           const inputNode: Element = createComboboxInput
-            ? createComboboxInput(text)
+            ? createComboboxInput(input.text)
             : { children: [{ text: '' }], type };
 
           // Only the creator sees the transient input in collaborative editors.
@@ -61,13 +69,13 @@ export const withTriggerCombobox: ExtendPlateEditorExtension<
             ? { ...inputNode, userId: editor.runtime.userId }
             : inputNode;
 
-          tx.nodes.insert(node, options);
-
-          return true;
+          return state.transaction((tx) => {
+            tx.nodes.insert(node, input.options);
+          });
         }
 
-        return next({ options, text });
-      },
-    },
+        return false;
+      }),
+    ],
   };
 };

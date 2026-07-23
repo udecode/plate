@@ -1,5 +1,3 @@
-import type { BasePluginConfig } from 'platejs';
-
 import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
@@ -9,8 +7,8 @@ import {
 import { KEYS } from 'platejs';
 
 const options = {
-  inject: { targetPlugins: [KEYS.p] },
-} satisfies BasePluginConfig;
+  targetPluginKeys: [KEYS.p],
+};
 
 export const BaseFontKit = [
   BaseFontColorPlugin.configure(options),

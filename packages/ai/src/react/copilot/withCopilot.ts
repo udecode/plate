@@ -1,22 +1,58 @@
 import type { ExtendPlateEditorExtension } from '@platejs/core/react';
 
-import { type Range, defineStateField, RangeApi } from '@platejs/plite';
+import {
+  defineEditorExtension,
+  defineEffect,
+  defineStateField,
+  editorCommands,
+  type EditorUpdateTransaction,
+  type Range,
+  RangeApi,
+} from '@platejs/plite';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 
-import { withoutAbort } from './utils/withoutAbort';
+import { COPILOT_SKIP_ABORT_TAG, withoutAbort } from './utils/withoutAbort';
 
 export type CopilotSuggestionState = {
   id: string | null;
   text: string | null;
 };
 
+type CopilotSuggestionTransition = {
+  next: CopilotSuggestionState;
+  previous: CopilotSuggestionState;
+};
+
+export const copilotSuggestionEffect =
+  defineEffect<CopilotSuggestionTransition>({
+    invert: ({ next, previous }) => ({ next: previous, previous: next }),
+    key: 'copilot.suggestion',
+  });
+
 export const copilotSuggestionField = defineStateField<CopilotSuggestionState>({
   key: 'copilot.suggestion',
   collab: 'local',
   history: 'push',
   initial: () => ({ id: null, text: null }),
+  reduce: (value, effect) =>
+    effect.type === copilotSuggestionEffect ? effect.value.next : value,
 });
+
+export const copilotSuggestionEffectExtension = defineEditorExtension({
+  effects: [copilotSuggestionEffect],
+  name: 'copilot-suggestion-effect',
+});
+
+export const setCopilotSuggestion = (
+  tx: Pick<EditorUpdateTransaction, 'effects' | 'getField'>,
+  next: CopilotSuggestionState
+) => {
+  tx.effects.emit(copilotSuggestionEffect, {
+    next,
+    previous: tx.getField(copilotSuggestionField),
+  });
+};
 
 const isCopilotSuggestionState = (
   value: unknown
@@ -49,18 +85,26 @@ export const withCopilot: ExtendPlateEditorExtension<CopilotPluginConfig> = ({
 
   return {
     onCommit({ commit }) {
-      const patch = commit.statePatches.find(
-        (statePatch) => statePatch.key === copilotSuggestionField.key
+      if (
+        (!commit.changes.empty || commit.selectionChanged) &&
+        getOptions().shouldAbort &&
+        !commit.tags.includes(COPILOT_SKIP_ABORT_TAG)
+      ) {
+        rejectSuggestionMirror();
+      }
+
+      const effect = commit.effects.findLast(
+        (candidate) => candidate.type === copilotSuggestionEffect
       );
 
-      if (patch && 'value' in patch && isCopilotSuggestionState(patch.value)) {
+      if (effect && isCopilotSuggestionState(effect.value.next)) {
         setOptions({
-          suggestionNodeId: patch.value.id,
-          suggestionText: patch.value.text,
+          suggestionNodeId: effect.value.next.id,
+          suggestionText: effect.value.next.text,
         });
       }
 
-      if (!commit.operations.some(({ type }) => type === 'set_selection')) {
+      if (!commit.selectionChanged) {
         return;
       }
 
@@ -78,35 +122,29 @@ export const withCopilot: ExtendPlateEditorExtension<CopilotPluginConfig> = ({
 
       prevSelection = selection;
     },
-    operations: {
-      apply({ next, operation }) {
-        if (getOptions().shouldAbort) {
-          rejectSuggestionMirror();
-        }
-
-        next(operation);
-      },
-    },
-    transforms: {
-      insertText({ next, options, text, tx }) {
+    commands: ({ around }) => [
+      around(editorCommands.insertText, ({ input, state, next }) => {
         const suggestionText = getOptions().suggestionText;
 
         // When using IME input, it's possible to enter two characters at once.
-        if (suggestionText?.startsWith(text)) {
-          return withoutAbort(editor, () => {
-            const newText = suggestionText.slice(text.length);
+        if (suggestionText?.startsWith(input.text)) {
+          const prefix = state.transaction((tx) => {
+            const newText = suggestionText.slice(input.text.length);
             const suggestionNodeId = getOptions().suggestionNodeId;
 
-            tx.setField(copilotSuggestionField, {
-              id: suggestionNodeId ?? null,
-              text: newText,
+            withoutAbort(tx, () => {
+              setCopilotSuggestion(tx, {
+                id: suggestionNodeId ?? null,
+                text: newText,
+              });
             });
-            return next({ options, text });
           });
+
+          return next.after(prefix);
         }
 
-        return next({ options, text });
-      },
-    },
+        return next();
+      }),
+    ],
   };
 };

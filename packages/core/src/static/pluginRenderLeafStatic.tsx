@@ -3,6 +3,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 import type { RenderLeafProps, AnyBasePlugin, BaseEditor } from '../lib';
+import { getPlateRuntime } from '../internal/plugin/compilePlateModel';
 
 import { PliteLeaf } from './components';
 import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
@@ -19,9 +20,9 @@ export const pluginRenderLeafStatic = (
   function render(props) {
     const { children, leaf } = props;
 
-    if (leaf[plugin.node.type]) {
+    if (leaf[plugin.type]) {
       const Component = (plugin.render.leaf ??
-        editor.runtime.components?.[plugin.key]) as any;
+        getPlateRuntime(editor).components[plugin.key]) as any;
       const Leaf = Component ?? PliteLeaf;
 
       const ctxProps = getRenderNodeStaticProps({
@@ -53,7 +54,7 @@ export const pipeRenderLeafStatic = (
   const renderLeafs: PliteRenderLeaf[] = [];
   const leafPropsPlugins: AnyBasePlugin[] = [];
 
-  editor.runtime.pluginCache.node.isLeaf.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach((key) => {
     const plugin = editor.getPlugin({ key });
 
     if (plugin) {
@@ -61,7 +62,7 @@ export const pipeRenderLeafStatic = (
     }
   });
 
-  editor.runtime.pluginCache.node.leafProps.forEach((key) => {
+  getPlateRuntime(editor).pluginCache.node.leafProps.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     if (plugin) {
       leafPropsPlugins.push(plugin as any);
@@ -69,43 +70,44 @@ export const pipeRenderLeafStatic = (
   });
 
   return function render({ attributes, ...props }) {
-    renderLeafs.forEach((render) => {
-      const newChildren = render(props as any);
+    let children = props.children;
+
+    renderLeafs.forEach((renderLeaf) => {
+      const newChildren = renderLeaf({ ...props, children } as any);
 
       if (newChildren !== undefined) {
-        props.children = newChildren;
+        children = newChildren;
       }
     });
 
     leafPropsPlugins.forEach((plugin) => {
-      if (props.leaf[plugin.node.type]) {
+      if (props.leaf[plugin.type]) {
         const pluginLeafProps =
-          typeof plugin.node.leafProps === 'function'
-            ? plugin.node.leafProps(props as any)
-            : (plugin.node.leafProps ?? {});
-
-        if (pluginLeafProps.className) {
-          pluginLeafProps.className = clsx(
-            (props as any).className,
-            pluginLeafProps.className
-          );
-        }
+          typeof plugin.render.leafProps === 'function'
+            ? plugin.render.leafProps({ ...props, children } as any)
+            : (plugin.render.leafProps ?? {});
 
         attributes = {
           ...attributes,
           ...pluginLeafProps,
+          ...(pluginLeafProps.className && {
+            className: clsx(
+              (props as any).className,
+              pluginLeafProps.className
+            ),
+          }),
         };
       }
     });
 
     if (renderLeafProp) {
-      return renderLeafProp({ attributes, ...props });
+      return renderLeafProp({ attributes, ...props, children });
     }
 
     const ctxProps = getRenderNodeStaticProps({
       editor,
       path: props.path,
-      props: { attributes, ...props } as any,
+      props: { attributes, ...props, children } as any,
     }) as any;
 
     const leaf = ctxProps.leaf;

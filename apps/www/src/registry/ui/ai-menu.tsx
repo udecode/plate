@@ -11,7 +11,7 @@ import {
 import { getTransientCommentKey } from '@platejs/comment';
 import { CommentPlugin } from '@platejs/comment/react';
 import { BlockSelectionPlugin, useIsSelecting } from '@platejs/selection/react';
-import { getTransientSuggestionKey } from '@platejs/suggestion';
+import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
   Album,
@@ -48,7 +48,7 @@ import {
   useHotkeys,
   usePluginOption,
 } from 'platejs/react';
-import { type PlateEditor, useEditorRef } from 'platejs/react';
+import { type PlateEditor, useEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -205,7 +205,7 @@ export function AIMenu() {
       match: (n) =>
         (ElementApi.isElement(n) || TextApi.isText(n)) &&
         !!n[KEYS.suggestion] &&
-        !!n[getTransientSuggestionKey()],
+        !!n[SUGGESTION_TRANSIENT_KEY],
     });
 
     if (!anchorNode) {
@@ -633,7 +633,7 @@ export const AIMenuItems = ({
   setInput: (value: string) => void;
   setValue: (value: string) => void;
 }) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const messages = usePluginOption(AIChatPlugin, 'chat')?.messages;
   const aiEditor = usePluginOption(AIChatPlugin, 'aiEditor')!;
   const isSelecting = useIsSelecting();
@@ -685,7 +685,7 @@ export const AIMenuItems = ({
 };
 
 export function AILoadingBar() {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   const toolName = usePluginOption(AIChatPlugin, 'toolName');
   const chat = usePluginOption(AIChatPlugin, 'chat');

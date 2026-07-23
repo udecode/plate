@@ -84,13 +84,14 @@ const App = () => {
 };
 ```
 
-Use extension `transforms` for behavior that maps to Plite transform names.
-That keeps model behavior available to keyboard input, native input, toolbar
-logic, programmatic calls, and tests.
+Use extension `commands` for reusable semantic behavior. This keeps the same
+model rule available to keyboard input, native input, toolbar logic,
+programmatic calls, and tests.
 
 ```tsx
 import {
   defineEditorExtension,
+  editorCommands,
   ElementApi,
   PointApi,
   RangeApi,
@@ -98,33 +99,32 @@ import {
 
 const markdownBlocks = defineEditorExtension({
   name: "markdown-blocks",
-  transforms: {
-    deleteBackward({ editor, next, unit }) {
-      const selection = editor.read((state) => state.selection());
+  commands: ({ around, handle }) => [
+    handle(editorCommands.delete, ({ input, state }) => {
+      const selection = state.selection();
 
       if (
-        unit === "character" &&
+        input.direction === "backward" &&
+        input.unit === "character" &&
         selection &&
         RangeApi.isCollapsed(selection)
       ) {
-        const blockEntry = editor.read((state) =>
-          state.nodes.above({
-            at: selection,
-            match: (node) =>
-              ElementApi.isElement(node) && state.nodes.isBlock(node),
-          })
-        );
+        const blockEntry = state.nodes.above({
+          at: selection,
+          match: (node) =>
+            ElementApi.isElement(node) && state.nodes.isBlock(node),
+        });
 
         if (blockEntry) {
           const [block, blockPath] = blockEntry;
-          const start = editor.read((state) => state.points.start(blockPath));
+          const start = state.points.start(blockPath);
 
           if (
             ElementApi.isElement(block) &&
             block.type !== "paragraph" &&
             PointApi.equals(selection.anchor, start)
           ) {
-            editor.update((tx) => {
+            return state.transaction((tx) => {
               tx.nodes.set(
                 { type: "paragraph" },
                 {
@@ -134,54 +134,49 @@ const markdownBlocks = defineEditorExtension({
                 }
               );
             });
-            return true;
           }
         }
       }
 
-      return next({ unit });
-    },
-    insertBreak({ editor, next }) {
-      const selection = editor.read((state) => state.selection());
+      return false;
+    }),
+    around(editorCommands.insertBreak, ({ next, state }) => {
+      const selection = state.selection();
 
       if (selection && RangeApi.isCollapsed(selection)) {
-        const blockEntry = editor.read((state) =>
-          state.nodes.above({
-            at: selection,
-            match: (node) =>
-              ElementApi.isElement(node) && state.nodes.isBlock(node),
-          })
-        );
+        const blockEntry = state.nodes.above({
+          at: selection,
+          match: (node) =>
+            ElementApi.isElement(node) && state.nodes.isBlock(node),
+        });
 
         if (blockEntry) {
           const [block, blockPath] = blockEntry;
 
           if (ElementApi.isElement(block) && block.type === "heading-one") {
-            const start = editor.read((state) => state.points.start(blockPath));
+            const start = state.points.start(blockPath);
 
             if (PointApi.equals(selection.anchor, start)) {
-              const result = next();
-
-              editor.update((tx) => {
-                tx.nodes.set(
-                  { type: "paragraph" },
-                  {
-                    at: blockPath,
-                    match: (node) =>
-                      ElementApi.isElement(node) && tx.nodes.isBlock(node),
-                  }
-                );
-              });
-
-              return result;
+              return next.after(
+                state.transaction((tx) => {
+                  tx.nodes.set(
+                    { type: "paragraph" },
+                    {
+                      at: blockPath,
+                      match: (node) =>
+                        ElementApi.isElement(node) && tx.nodes.isBlock(node),
+                    }
+                  );
+                })
+              );
             }
           }
         }
       }
 
       return next();
-    },
-  },
+    }),
+  ],
 });
 
 const App = () => {

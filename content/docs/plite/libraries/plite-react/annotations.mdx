@@ -23,7 +23,7 @@ that hangs off a node, selection, or annotation.
 ```ts
 type PliteAnnotationAnchor = {
   resolve(): Range | null;
-  unref?(): Range | null;
+  release?(): Range | null;
 };
 
 type PliteAnnotation<TData, TProjection> = {
@@ -34,7 +34,7 @@ type PliteAnnotation<TData, TProjection> = {
 };
 ```
 
-`anchor` resolves the current range. A local `Bookmark` satisfies this contract.
+`anchor` resolves the current range. A local `Anchor<Range>` satisfies this contract.
 Adapters can use the same contract for service-owned anchors, remote positions,
 or document-embedded ids.
 
@@ -56,16 +56,17 @@ const annotations = comments.map((comment) => ({
 }));
 ```
 
-## Local Bookmarks
+## Local Anchors
 
-Use a bookmark when the anchor belongs to the local editor runtime.
+Use `editor.anchor` when the anchor belongs to the local editor runtime.
 
 ```tsx
-const anchor = editor.read((state) =>
-  state.ranges.bookmark({
+const anchor = editor.anchor(
+  {
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 18 },
-  })
+  },
+  { association: "inward", deletion: "drop" }
 );
 
 const annotationStore = usePliteAnnotationStore(editor, [
@@ -78,20 +79,18 @@ const annotationStore = usePliteAnnotationStore(editor, [
 ]);
 ```
 
-When annotations come from React state, use the projector form so the store
-refreshes from explicit dependencies.
+When annotations come from React state, pass the current array. A new array
+identity refreshes the store automatically.
 
 ```tsx
-const annotationStore = usePliteAnnotationStore(editor, {
-  deps: [comments],
-  project: () =>
-    comments.map((comment) => ({
-      anchor: comment.anchor,
-      data: comment,
-      id: comment.id,
-      projection: { tone: comment.tone },
-    })),
-});
+const annotations = comments.map((comment) => ({
+  anchor: comment.anchor,
+  data: comment,
+  id: comment.id,
+  projection: { tone: comment.tone },
+}));
+
+const annotationStore = usePliteAnnotationStore(editor, annotations);
 ```
 
 Pass the store to `Plite` when editor-local annotation UI lives under that
@@ -115,10 +114,10 @@ function CommentsSidebar() {
 }
 ```
 
-Dispose bookmarks when the app removes the annotation.
+Release anchors when the app removes the annotation.
 
 ```tsx
-anchor.unref();
+anchor.release();
 ```
 
 ## External Comment Stores
@@ -214,18 +213,17 @@ type PliteWidget<TData> = {
 };
 ```
 
-Create widget stores with the same explicit-dependency projector shape.
+Create widget stores from the current widget array.
 
 ```tsx
-const widgetStore = usePliteWidgetStore(editor, {
+const widgets = comments.map((comment) => ({
+  anchor: { annotationId: comment.id, type: "annotation" },
+  data: { label: comment.label },
+  id: `comment-widget:${comment.id}`,
+}));
+
+const widgetStore = usePliteWidgetStore(editor, widgets, {
   annotationStore,
-  deps: [comments],
-  project: () =>
-    comments.map((comment) => ({
-      anchor: { annotationId: comment.id, type: "annotation" },
-      data: { label: comment.label },
-      id: `comment-widget:${comment.id}`,
-    })),
 });
 ```
 

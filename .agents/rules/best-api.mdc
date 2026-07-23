@@ -128,6 +128,58 @@ Reject:
 Internal complexity may be justified when it keeps the public surface smaller
 and preserves real runtime, safety, or performance laws.
 
+## Behavior Promotion
+
+Do not infer public composition boundaries from callbacks, handlers, extension
+blocks, or files. First classify the behavior:
+
+| Class                    | Test                                                                     | Default shape                                        |
+| ------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------- |
+| invariant                | omission makes the owner invalid, unsafe, or semantically incomplete     | keep inline in the owning plugin or runtime          |
+| parameter                | callers want the same capability with different data or thresholds       | use inferred `options` on that owner                 |
+| substitutable capability | omission or replacement leaves a complete editor with a defined fallback | promote to an ordinary plugin or extension candidate |
+| product policy           | the choice belongs to one app or kit rather than the framework default   | keep it app-owned and inline unless reused           |
+
+Non-universal behavior is not automatically a plugin. Universal behavior may
+still deserve a replaceable owner when legitimate products implement it
+differently. The deciding property is independent substitution, not how common
+the behavior is.
+
+Promote a capability to a public plugin or extension only when all applicable
+gates pass:
+
+1. one stable user-facing capability name covers the behavior;
+2. a real caller needs omission or replacement, or a hard host, dependency,
+   security, or lifecycle boundary requires independent ownership;
+3. absence and replacement have explicit, valid fallback semantics;
+4. dependencies close through public contracts without sibling-private access
+   or cycles;
+5. the capability has independent default, omitted, and replaced proof, with
+   browser proof for native input, clipboard, selection, focus, or DOM behavior;
+6. the full preset remains the obvious common path;
+7. the public composition model reuses ordinary plugin or extension arrays.
+
+Behavior specs and scenario matrices provide promotion evidence; they do not map
+one-to-one to plugins. Group rows by user-visible capability, not compiler
+destination. Plugin identity also does not require a file split: keep
+single-owner descriptors colocated until another durable file owner exists.
+
+Repeated callers of plugin behavior reuse the scoped plugin API; they do not
+create a second helper owner. Keep the algorithm inside the plugin and expose
+one inferred API or update method. A standalone function survives only when it
+owns a real cross-plugin, cross-layer, or transaction-composition job that the
+scoped plugin surface cannot express honestly. A raw helper that accepts both
+`tx` and the plugin's resolved `type` is evidence that the plugin boundary is
+missing.
+
+Reject promotion when it only creates a name for one implementation fragment,
+turns a boolean into a plugin without a complete absence story, exposes
+correctness repair as optional, or anticipates hypothetical profiling,
+serialization, runtime switching, or reuse. Named profiles are ordinary reusable
+plugin arrays only after real reuse earns the name; they are not a second
+behavior runtime. Reject behavior DSLs, capability registries, and
+one-plugin-per-handler or one-plugin-per-extension-block mappings.
+
 ## Review Questions
 
 Ask:
@@ -138,6 +190,10 @@ Ask:
 - Can inference remove a type, cast, helper, or duplicated contract?
 - Is a customization path paying for an advanced case on every basic call?
 - Is composition about user-visible capability or merely internal fragments?
+- For behavior composition, did invariant, parameter, substitutable capability,
+  and app policy get classified before a plugin was proposed?
+- Does omission or replacement leave a complete owner with an explicit
+  fallback, and is there a real caller or hard boundary?
 - Could colocation or inlining remove navigation without hiding reuse?
 - Does the API remain coherent after three plausible future additions?
 - Can an agent find the canonical path from types, JSDoc, and one example?
@@ -165,7 +221,7 @@ For `design` and `review`, return:
 For `audit`, use:
 
 | Priority | Surface | Current friction | Best direction | Delete / hide | Owner | Proof |
-| --- | --- | --- | --- | --- | --- | --- |
+| -------- | ------- | ---------------- | -------------- | ------------- | ----- | ----- |
 
 - `P0`: wrong public ontology, unsafe contract, or foundational shape that
   would spread costly damage if more code adopts it.

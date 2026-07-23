@@ -99,7 +99,7 @@ import { CodeLeaf } from '@/components/ui/code-node';
 
 export const codePlugin = CodePlugin.configure({
   inputRules: [CodeRules.markdown()],
-  node: { component: CodeLeaf },
+  render: { node: CodeLeaf },
   shortcuts: { toggle: { keys: 'mod+e' } },
 });
 ```
@@ -123,7 +123,7 @@ The package owns inline code semantics. The registry owns visual styling and too
 | Behavior | Source |
 |----------|--------|
 | Mark key | `KEYS.code` |
-| Leaf behavior | `node.isLeaf: true` |
+| Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.code.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `hard` |
 | HTML tags | `code` |

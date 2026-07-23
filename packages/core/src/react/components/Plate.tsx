@@ -1,30 +1,52 @@
 import React from 'react';
 
+import type {
+  EditorCommitContext,
+  EditorNodeChangeContext,
+  EditorTextChangeContext,
+  Selection,
+  ValueOf,
+} from '@platejs/plite';
 import { EditorReadOnlyProvider } from '@platejs/plite-react';
 
 import type { EditableProps } from '../../lib/types/EditableProps';
 import type { PlateEditor } from '../editor/PlateEditor';
 
 import { usePlateInstancesWarn } from '../../internal/hooks/usePlateInstancesWarn';
+import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import { type PlateStoreState, PlateStoreProvider } from '../stores';
 
+export type PlateSelectionChangeContext<E extends PlateEditor = PlateEditor> =
+  EditorCommitContext<E> & {
+    selection: Selection;
+  };
+
+export type PlateValueChangeContext<E extends PlateEditor = PlateEditor> =
+  EditorCommitContext<E> & {
+    value: ValueOf<E>;
+  };
+
 export interface PlateProps<E extends PlateEditor = PlateEditor>
-  extends Partial<
-    Pick<
-      PlateStoreState<E>,
-      | 'decorate'
-      | 'onChange'
-      | 'onNodeChange'
-      | 'onSelectionChange'
-      | 'onTextChange'
-      | 'onValueChange'
-      | 'primary'
-    >
-  > {
+  extends Partial<Pick<PlateStoreState<E>, 'decorate' | 'primary'>> {
   children: React.ReactNode;
 
   editor: E | null;
+
+  /** Observe every published editor commit. */
+  onCommit?: (context: EditorCommitContext<E>) => void;
+
+  /** Observe canonical node changes for this editor. */
+  onNodeChange?: (context: EditorNodeChangeContext<E>) => void;
+
+  /** Observe commits that change the primary-root selection. */
+  onSelectionChange?: (context: PlateSelectionChangeContext<E>) => void;
+
+  /** Observe canonical text changes for this editor. */
+  onTextChange?: (context: EditorTextChangeContext<E>) => void;
+
+  /** Observe commits that change the primary-root value. */
+  onValueChange?: (context: PlateValueChangeContext<E>) => void;
 
   readOnly?: boolean;
 
@@ -44,7 +66,7 @@ function PlateInner<E extends PlateEditor = PlateEditor>({
   readOnly,
   renderElement,
   renderLeaf,
-  onChange,
+  onCommit,
   onNodeChange,
   onSelectionChange,
   onTextChange,
@@ -53,15 +75,91 @@ function PlateInner<E extends PlateEditor = PlateEditor>({
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const plateReadOnly = readOnly ?? editor?.read.view.isReadOnly();
+  const observerBaselineVersion = React.useMemo(
+    () => editor?.read.lastCommit()?.version ?? 0,
+    [editor]
+  );
+  const lastObservedCommitVersion = React.useRef(observerBaselineVersion);
+  const observersRef = React.useRef({
+    onCommit,
+    onSelectionChange,
+    onValueChange,
+  });
+
+  React.useInsertionEffect(() => {
+    observersRef.current = {
+      onCommit,
+      onSelectionChange,
+      onValueChange,
+    };
+  }, [onCommit, onSelectionChange, onValueChange]);
+
+  React.useLayoutEffect(
+    () =>
+      subscribePlateChangeCallbacks(editor!, {
+        onNodeChange,
+        onTextChange,
+      }),
+    [editor, onNodeChange, onTextChange]
+  );
+
+  React.useLayoutEffect(() => {
+    const currentEditor = editor!;
+    lastObservedCommitVersion.current = observerBaselineVersion;
+
+    const observeCommit: Parameters<typeof currentEditor.subscribeCommit>[0] = (
+      commit,
+      snapshot
+    ) => {
+      lastObservedCommitVersion.current = commit.version;
+
+      const { onCommit, onSelectionChange, onValueChange } =
+        observersRef.current;
+
+      if (!onCommit && !onSelectionChange && !onValueChange) return;
+
+      const context = { commit, editor: currentEditor, snapshot };
+
+      onCommit?.(context);
+
+      if (commit.changed.has('document')) {
+        onValueChange?.({
+          ...context,
+          value: snapshot.children,
+        });
+      }
+
+      if (
+        commit.selectionChanged &&
+        (commit.selectionBeforeRoot === undefined ||
+          commit.selectionAfterRoot === undefined)
+      ) {
+        onSelectionChange?.({
+          ...context,
+          selection: snapshot.selection,
+        });
+      }
+    };
+
+    const unsubscribe = currentEditor.subscribeCommit(observeCommit);
+    const latestCommit = currentEditor.read.lastCommit();
+
+    if (
+      latestCommit &&
+      latestCommit.version > lastObservedCommitVersion.current
+    ) {
+      observeCommit(
+        latestCommit,
+        currentEditor.read((state) => state.runtime.snapshot())
+      );
+    }
+
+    return unsubscribe;
+  }, [editor, observerBaselineVersion]);
 
   return (
     <EditorReadOnlyProvider readOnly={plateReadOnly}>
       <PlateStoreProvider
-        onChange={onChange}
-        onNodeChange={onNodeChange}
-        onSelectionChange={onSelectionChange}
-        onTextChange={onTextChange}
-        onValueChange={onValueChange}
         containerRef={containerRef}
         decorate={decorate}
         editor={editor!}

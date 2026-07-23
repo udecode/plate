@@ -22,7 +22,6 @@ export type EditableProps = {
   style?: React.CSSProperties;
   decorate?: (entry: NodeEntry) => Range[];
   domStrategy?: PliteEditableProps['domStrategy'];
-  domStrategyLayout?: PliteEditableProps['domStrategyLayout'];
   onDOMStrategyMetrics?: PliteEditableProps['onDOMStrategyMetrics'];
   renderPlaceholder?: (props: {
     attributes: {

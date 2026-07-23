@@ -28,7 +28,7 @@ import {
   TableOfContentsIcon,
 } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { type PlateEditor, useEditorRef } from 'platejs/react';
+import { type PlateEditor, useEditor } from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -219,7 +219,7 @@ const groups: Group[] = [
 ];
 
 export function InsertToolbarButton(props: DropdownMenuProps) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
   return (

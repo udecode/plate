@@ -69,5 +69,5 @@ export const useEditorChat = ({
     if (onOpenSelection && editor.read.selection.isExpanded()) {
       onOpenSelection();
     }
-  }, [open]);
+  }, [editor, open]);
 };

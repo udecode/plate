@@ -81,7 +81,7 @@ export type StyledPliteElementProps<
 
 export const PliteElement = React.forwardRef<
   HTMLDivElement,
-  StyledPliteElementProps
+  StyledPliteElementProps<Element, any>
 >(function PliteElement({ as: Tag = 'div', children, ...props }, ref) {
   const attributes = useNodeAttributes(props, ref);
 
@@ -132,7 +132,7 @@ export type StyledPliteTextProps<
 
 export const PliteText = React.forwardRef<
   HTMLSpanElement,
-  StyledPliteTextProps
+  StyledPliteTextProps<Text, any>
 >(({ as: Tag = 'span', children, ...props }, ref) => {
   const attributes = useNodeAttributes(props, ref);
 
@@ -168,7 +168,7 @@ const NonBreakingSpace = () => (
 
 export const PliteLeaf = React.forwardRef<
   HTMLSpanElement,
-  StyledPliteLeafProps
+  StyledPliteLeafProps<Text, any>
 >(({ as: Tag = 'span', children, inset, ...props }, ref) => {
   const attributes = useNodeAttributes(props, ref);
 

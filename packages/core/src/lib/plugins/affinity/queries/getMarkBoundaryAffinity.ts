@@ -1,4 +1,4 @@
-import type { Element, Text } from '@platejs/plite';
+import type { EditorStateView, Element, Text } from '@platejs/plite';
 
 import { NodeApi } from '@platejs/plite';
 import { IS_FIREFOX } from '@platejs/plite-dom';
@@ -9,12 +9,13 @@ import type { EdgeNodes } from '../types';
 
 export const getMarkBoundaryAffinity = (
   editor: BaseEditor,
-  markBoundary: EdgeNodes
+  markBoundary: EdgeNodes,
+  state: Pick<EditorStateView, 'marks' | 'selection'> = editor.read
 ): 'backward' | 'forward' | undefined => {
-  const selection = editor.read.selection();
+  const selection = state.selection();
   if (!selection) return;
 
-  const currentMarks = editor.read.marks();
+  const currentMarks = state.marks();
   const boundaryMarks =
     currentMarks && Object.keys(currentMarks).length > 1 ? currentMarks : null;
 

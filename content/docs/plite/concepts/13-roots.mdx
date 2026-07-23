@@ -34,12 +34,12 @@ const editor = createEditor({
 });
 ```
 
-Each root is a normal Plite block array. Rootless operations, points, and
+Each root is a normal Plite block array. Rootless transforms, points, and
 selections resolve against the current editor or view root. A root-bound view
 resolves rootless locations against its own root.
 
 Persist roots through the full [Document Meta](14-document-state) value
-instead of saving only the provider root.
+instead of saving only one mounted root.
 
 ## Reading And Writing Roots
 
@@ -100,16 +100,27 @@ stores the root key, and the editable content lives in
 `editor.read.root(rootKey)`.
 
 ```tsx
+import { defineEditorExtension, schema } from "@platejs/plite";
+
 const syncedBlocks = defineEditorExtension({
   name: "synced-blocks",
-  elements: [
-    {
-      type: "synced-block",
-      contentRoot: { slot: "body" },
+  schema: {
+    elements: {
+      "synced-block": {
+        content: schema.content.text({ default: "text", min: 1 }),
+        contentRoots: {
+          body: schema.content.group("block", {
+            default: { type: "paragraph" },
+            min: 1,
+          }),
+        },
+      },
     },
-  ],
+  },
 });
 ```
+
+Install this feature contribution beside the editor's complete schema.
 
 Create a persistent content root by storing the root key on the owning element
 and creating the named root in the same transaction.
@@ -129,10 +140,11 @@ editor.update((tx) => {
 });
 ```
 
-`contentRoot` declares the schema slot. `childRoots[slot]` is the persisted
-ownership link that survives save/load and collaboration. Copy/paste adapters
-must decide whether to reuse an existing child root, clone it into a new root,
-or serialize and create the child root in the paste target.
+Each `contentRoots` entry declares a slot and its child-root grammar.
+`childRoots[slot]` is the persisted ownership link that survives save/load and
+collaboration. Copy/paste adapters must decide whether to reuse an existing
+child root, clone it into a new root, or serialize and create the child root in
+the paste target.
 
 Render the child root from `renderElement` with `slots.contentRoot(slot)`.
 

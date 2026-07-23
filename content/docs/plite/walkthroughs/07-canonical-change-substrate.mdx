@@ -1,0 +1,133 @@
+---
+title: "Canonical Change Substrate"
+description: "Use commits, document changes, effects, and tags as the adapter boundary."
+---
+
+Remote editing in Plite starts with committed `DocumentChange` values. Plite
+does not choose the network layer, CRDT, persistence model, or awareness
+protocol. Adapter packages translate between that canonical change law and
+their distributed representation.
+
+## Commit a local edit
+
+```tsx
+import {
+  createEditor,
+  decodeEditorEffect,
+  encodeEditorEffect,
+} from "@platejs/plite";
+
+const editor = createEditor();
+
+editor.update({ tags: ["local-edit", "collab-export"] }, (tx) => {
+  tx.text.insert("!");
+  tx.nodes.insert(
+    { type: "paragraph", children: [{ text: "four" }] },
+    { at: [3] }
+  );
+});
+
+const commit = editor.read.lastCommit();
+```
+
+One update publishes one commit. `commit.changes` maps the before document to
+the after document across every changed root. `commit.inverseChanges` maps it
+back.
+
+## Export a canonical change
+
+```tsx
+const commit = editor.read.lastCommit();
+
+if (commit && !commit.changes.empty) {
+  sendToPeers({
+    change: commit.changes.toJSON(),
+    effects: commit.effects
+      .filter((effect) => effect.type.collab === "shared")
+      .map(encodeEditorEffect),
+    tags: commit.tags,
+  });
+}
+```
+
+Serialize document changes with `toJSON()`. Shared effects use versioned,
+keyed codecs declared by their descriptors. The adapter resolves the key to an
+installed descriptor before calling `decodeEditorEffect`. Runtime ids,
+selections, and DOM state are local unless the adapter defines an explicit
+awareness codec.
+
+## Import a canonical change
+
+```tsx
+import { DocumentChange } from "@platejs/plite";
+import { YjsUpdatePolicy } from "@platejs/yjs";
+
+editor.update(YjsUpdatePolicy.remote, (tx) => {
+  tx.changes.apply(DocumentChange.fromJSON(message.change));
+
+  for (const effect of decodeInstalledSharedEffects(editor, message.effects)) {
+    tx.effects.emit(effect.type, effect.value);
+  }
+});
+```
+
+`decodeInstalledSharedEffects` represents the host adapter's registry lookup:
+unknown keys and codec-version mismatches stay pending until the matching
+descriptor is installed.
+
+Applying a change and its effects in one update keeps multi-root document and
+state transitions atomic. History, React, extension listeners, and selectors
+observe the same final commit.
+
+## Subscribe to commits
+
+```tsx
+const unsubscribe = editor.subscribeCommit((commit) => {
+  saveDocument(editor.read.value());
+
+  if (commit.tags.includes("remote-yjs-import")) return;
+  if (commit.changes.empty) return;
+
+  sendToPeers({
+    change: commit.changes.toJSON(),
+    effects: commit.effects
+      .filter((effect) => effect.type.collab === "shared")
+      .map(encodeEditorEffect),
+    tags: commit.tags,
+  });
+});
+```
+
+Call `unsubscribe()` when the adapter disconnects.
+
+## Commit shape
+
+| Field | Use |
+| --- | --- |
+| `changes` | Canonical root-aware document delta. |
+| `inverseChanges` | Exact inverse used by history and rollback tooling. |
+| `effects` | Typed state and integration effects. |
+| `annotations` | Transaction metadata combined by descriptor policy. |
+| `tags` | Ordered lifecycle labels. |
+| `selectionBefore` / `selectionAfter` | Model selections around the commit. |
+| `changed` | Lazy document, root, range, and runtime-id queries derived from `changes` and retained snapshot indexes. |
+
+Commands and tags can identify the update that produced a commit. Adapters
+still serialize or lower `commit.changes`; there is no parallel replay stream.
+
+## Runtime ids are local
+
+Runtime ids survive local path changes and drive React and DOM projection. They
+are not serialized remote identity. Use the collaboration layer's own relative
+positions and awareness ids for cursors and presence.
+
+## Adapter ownership
+
+| Owner | Responsibilities |
+| --- | --- |
+| Plite | Immutable snapshots, canonical changes, effects, commits, anchors, and transaction boundaries. |
+| Adapter | Transport, concurrency, persistence, awareness, effect codecs, and canonical change translation. |
+| React | Render the committed projection and subscribe through Plite React. |
+
+`@platejs/yjs` is the production Yjs adapter. Applications own providers,
+authentication, room naming, persistence, and server policy.

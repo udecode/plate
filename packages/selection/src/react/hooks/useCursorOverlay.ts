@@ -4,11 +4,7 @@ import type { Range } from '@platejs/plite';
 import { useIsomorphicLayoutEffect } from '@udecode/react-utils';
 import type { UnknownObject } from '@udecode/utils';
 
-import {
-  useEditorRef,
-  usePlateValue,
-  usePluginOption,
-} from '@platejs/core/react';
+import { useEditor, usePlateValue, usePluginOption } from '@platejs/core/react';
 
 import {
   FROZEN_EMPTY_ARRAY,
@@ -46,7 +42,7 @@ export const useCursorOverlay = <TCursorData extends UnknownObject>({
   cursors: CursorOverlayState<TCursorData>[];
   refresh: () => void;
 } => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const containerRef = usePlateValue('containerRef');
 
   const cursorStates = usePluginOption(

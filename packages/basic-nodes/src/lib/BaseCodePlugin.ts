@@ -1,11 +1,14 @@
 import { createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { findHtmlParentElement } from '@udecode/utils';
 
 /** Enables support for code formatting */
 export const BaseCodePlugin = createBasePlugin({
   key: KEYS.code,
-  node: { isLeaf: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
   parsers: {
     html: {
       deserializer: {

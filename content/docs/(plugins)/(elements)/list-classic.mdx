@@ -156,15 +156,15 @@ const editor = createPlateEditor({
       ],
     }),
     BulletedListPlugin.configure({
-      node: { component: BulletedListElement },
+      render: { node: BulletedListElement },
       shortcuts: { toggle: { keys: 'mod+alt+5' } },
     }),
     NumberedListPlugin.configure({
-      node: { component: NumberedListElement },
+      render: { node: NumberedListElement },
       shortcuts: { toggle: { keys: 'mod+alt+6' } },
     }),
     TaskListPlugin.configure({
-      node: { component: TaskListElement },
+      render: { node: TaskListElement },
       shortcuts: { toggle: { keys: 'mod+alt+7' } },
     }),
     ListItemPlugin,
@@ -173,7 +173,7 @@ const editor = createPlateEditor({
 ```
 
 - `inputRules`: Registers the classic markdown entry rules for bulleted, ordered, and task lists.
-- `node.component`: Assigns [`BulletedListElement`](/docs/components/list-classic-node), [`NumberedListElement`](/docs/components/list-classic-node), and [`TaskListElement`](/docs/components/list-classic-node) to render list elements.
+- `render.node`: Assigns [`BulletedListElement`](/docs/components/list-classic-node), [`NumberedListElement`](/docs/components/list-classic-node), and [`TaskListElement`](/docs/components/list-classic-node) to render list elements.
 - `shortcuts.toggle`: Defines keyboard [shortcuts](/docs/plugin-shortcuts) to toggle list types (`mod+alt+5` for bulleted, `mod+alt+6` for numbered, `mod+alt+7` for task lists).
 
 ### Add Toolbar Button
@@ -202,10 +202,13 @@ Contains the following element plugins:
 - `ListItemPlugin`
 - `ListItemContentPlugin`
 
+Options:
+
+- `validLiChildren?: PluginReference[]` — element plugins allowed as direct
+  list-item children. For example,
+  `options: { validLiChildren: [ImagePlugin] }`.
+
 <APIOptions type="object">
-  <APIItem name="validLiChildrenTypes" type="string[]" optional>
-    Valid child node types for list items (besides `p` and `ul`).
-  </APIItem>
   <APIItem name="enableResetOnShiftTab" type="boolean" optional>
     Whether Shift+Tab should reset list indent level.
   </APIItem>

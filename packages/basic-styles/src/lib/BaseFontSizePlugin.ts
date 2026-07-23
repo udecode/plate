@@ -1,8 +1,10 @@
 import { createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 export const BaseFontSizePlugin = createBasePlugin({
   key: KEYS.fontSize,
+  schema: { mark: property.string() },
   inject: {
     nodeProps: {
       nodeKey: 'fontSize',
@@ -11,7 +13,6 @@ export const BaseFontSizePlugin = createBasePlugin({
   parsers: {
     html: {
       deserializer: {
-        isLeaf: true,
         rules: [
           {
             validStyle: {

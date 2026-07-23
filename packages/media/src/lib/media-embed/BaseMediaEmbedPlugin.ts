@@ -1,17 +1,18 @@
 import { type InferConfig, createBasePlugin } from '@platejs/core';
-import { property } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { type NodeInsertNodesOptions, property } from '@platejs/plite';
+import { KEYS, NODES, type TMediaEmbedElement } from '@platejs/utils';
 
 import {
   mediaElementProperties,
   type MediaPluginOptions,
 } from '../media/types';
 
-import { parseIframeUrl } from './parseIframeUrl';
-
-const defaultOptions: MediaPluginOptions = {
-  transformUrl: parseIframeUrl,
-};
+import {
+  parseIframeUrl,
+  parseMediaUrl,
+  parseTwitterUrl,
+  parseVideoUrl,
+} from '../media/parseMediaUrl';
 
 /**
  * Enables support for embeddable media such as YouTube or Vimeo videos,
@@ -30,7 +31,9 @@ export const BaseMediaEmbedPlugin = createBasePlugin({
     },
   },
   type: NODES.mediaEmbed,
-  options: defaultOptions,
+  options: {
+    transformUrl: parseIframeUrl,
+  } as MediaPluginOptions,
   parsers: {
     html: {
       deserializer: {
@@ -52,6 +55,37 @@ export const BaseMediaEmbedPlugin = createBasePlugin({
       },
     },
   },
-});
+}).extendTx<{
+  insert: (
+    url: string,
+    options?: NodeInsertNodesOptions<TMediaEmbedElement>
+  ) => void;
+}>(({ getOptions, type }) => (tx) => ({
+  insert: (url, options = {}) => {
+    if (!tx.selection() && options.at === undefined) return;
+
+    const transformedUrl = getOptions().transformUrl?.(url) ?? url;
+    const normalized = parseMediaUrl(transformedUrl, {
+      urlParsers: [parseTwitterUrl, parseVideoUrl],
+    });
+    const media = {
+      children: [{ text: '' }],
+      ...(normalized?.provider === undefined
+        ? {}
+        : { provider: normalized.provider }),
+      ...(normalized?.sourceUrl === undefined
+        ? {}
+        : { sourceUrl: normalized.sourceUrl }),
+      type,
+      url: normalized?.url ?? transformedUrl,
+    } satisfies TMediaEmbedElement;
+
+    if (options.at === undefined) {
+      tx.blocks.insertAfter(media, options);
+    } else {
+      tx.nodes.insert(media, options);
+    }
+  },
+}));
 
 export type MediaEmbedConfig = InferConfig<typeof BaseMediaEmbedPlugin>;

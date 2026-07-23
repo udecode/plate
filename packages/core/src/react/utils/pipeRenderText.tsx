@@ -1,12 +1,15 @@
 import React from 'react';
 
-import { useEditorReadOnly } from '@platejs/plite-react';
 import clsx from 'clsx';
 
 import type { AnyBasePlugin, EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 
 import { getPluginNodeClass } from '../../lib';
+import {
+  getCompiledPlateModelBinding,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { PlateText } from '../components/plate-nodes';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -35,22 +38,23 @@ export const pipeRenderText = (
   const simpleRenderTextByKey = new Map<string, true>();
   const textPropsPlugins: AnyBasePlugin[] = [];
   const hasInjectNodeProps =
-    editor.runtime.pluginCache.inject.nodeProps.length > 0;
+    getPlateRuntime(editor).pluginCache.inject.nodeProps.length > 0;
 
-  editor.runtime.pluginList.forEach((plugin) => {
-    if (plugin.node.isLeaf && plugin.node.isDecoration === false) {
+  getPlateRuntime(editor).pluginList.forEach((plugin) => {
+    const binding = getCompiledPlateModelBinding(editor, plugin);
+
+    if (binding?.kind === 'mark' && !binding.isDecoration) {
       const canUsePlainText =
         !plugin.render.node &&
-        !plugin.node.component &&
-        !plugin.node.props &&
-        !plugin.node.dangerouslyAllowAttributes?.length;
+        !plugin.render.nodeProps &&
+        !plugin.host.dangerouslyAllowAttributes?.length;
 
       if (canUsePlainText) {
         const entry = {
-          className: getPluginNodeClass(plugin.node.type) || undefined,
+          className: getPluginNodeClass(plugin.type) || undefined,
           plugin,
           tag: (plugin.render?.as ?? 'span') as keyof HTMLElementTagNameMap,
-          textKey: plugin.node.type ?? plugin.key,
+          textKey: plugin.type,
         };
 
         simpleRenderTexts.push(entry);
@@ -58,7 +62,7 @@ export const pipeRenderText = (
       } else {
         const entry = {
           renderText: pluginRenderText(editor, plugin),
-          textKey: plugin.node.type ?? plugin.key,
+          textKey: plugin.type,
         };
 
         renderTexts.push(entry);
@@ -66,7 +70,7 @@ export const pipeRenderText = (
       }
     }
 
-    if (plugin.node.textProps) {
+    if (plugin.render.textProps) {
       textPropsPlugins.push(plugin);
     }
   });
@@ -90,8 +94,7 @@ export const pipeRenderText = (
     !hasInjectNodeProps && !renderTextProp && textPropsPlugins.length === 0;
 
   return function render({ attributes, ...props }) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const readOnly = useEditorReadOnly();
+    const readOnly = editor.read.view.isReadOnly();
     const text = props.text as Record<string, unknown>;
     let hasActiveSimpleRenderText = false;
     let hasActiveRenderText = false;
@@ -135,22 +138,21 @@ export const pipeRenderText = (
     }
 
     textPropsPlugins.forEach((plugin) => {
-      if (props.text[plugin.node.type ?? plugin.key]) {
+      if (props.text[plugin.type]) {
         const pluginTextProps =
-          typeof plugin.node.textProps === 'function'
-            ? plugin.node.textProps(props as any)
-            : (plugin.node.textProps ?? {});
-
-        if (pluginTextProps.className) {
-          pluginTextProps.className = clsx(
-            (props as any).className,
-            pluginTextProps.className
-          );
-        }
+          typeof plugin.render.textProps === 'function'
+            ? plugin.render.textProps(props as any)
+            : (plugin.render.textProps ?? {});
 
         attributes = {
           ...attributes,
           ...pluginTextProps,
+          ...(pluginTextProps.className && {
+            className: clsx(
+              (props as any).className,
+              pluginTextProps.className
+            ),
+          }),
         };
       }
     });

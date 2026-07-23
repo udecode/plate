@@ -43,8 +43,17 @@ type EditableProps = {
   disableDefaultStyles?: boolean;
   id?: string;
   maxLength?: number;
-  domStrategy?: DOMStrategyOptions | null;
-  domStrategyLayout?: EditableDOMStrategyLayout | null;
+  domStrategy?:
+    | { type: "full" }
+    | {
+        type: "virtualized";
+        layout: {
+          pageItems: readonly PageMountItem[];
+          topLevelItems: readonly TopLevelMountItem[];
+          visiblePageItems: readonly PageMountItem[];
+        };
+      }
+    | null;
   onBeforeInput?: React.FormEventHandler<HTMLDivElement>;
   onDOMBeforeInput?: (
     event: InputEvent,
@@ -310,28 +319,39 @@ Use `onKeyDown` for UI hotkeys on one `Editable` instance.
 />
 ```
 
-Use extension `transforms` for model behavior such as `deleteBackward`, `deleteForward`, and `insertBreak`.
-Those handlers run for keyboard input, native input, programmatic transforms, and tests.
+Use extension `commands` for model behavior such as deleting, inserting text,
+and inserting breaks. Those handlers run for keyboard input, native input,
+programmatic commands, and tests.
 Use [Clipboard And Paste](../../concepts/17-clipboard-and-paste) for paste,
 copy, drop, and fragment import ownership.
 
 ```tsx
+import {
+  defineEditorExtension,
+  editorCommands,
+  RangeApi,
+} from "@platejs/plite";
+
 const markdown = defineEditorExtension({
   name: "markdown",
-  transforms: {
-    insertText({ next, text, tx }) {
-      if (text === " ") {
-        const selection = tx.selection();
+  commands: ({ handle }) => [
+    handle(editorCommands.insertText, ({ input, state }) => {
+      const selection = state.selection();
 
-        if (selection) {
-          tx.nodes.set({ type: "code" });
-        }
-        return true;
+      if (
+        input.text !== " " ||
+        !selection ||
+        !RangeApi.isCollapsed(selection)
+      ) {
+        return false;
       }
 
-      return next();
-    },
-  },
+      return state.transaction((tx) => {
+        tx.nodes.set({ type: "code" });
+        tx.text.insert(input.text, input.options);
+      });
+    }),
+  ],
 });
 ```
 
@@ -359,14 +379,34 @@ cross-package projection model.
 Inline, void, selectable, and read-only behavior belongs to the editor schema.
 
 ```tsx
-editor.extend({
-  elements: [
-    {
-      type: "mention",
+import { defineEditorSchema, schema } from "@platejs/plite";
+
+const MentionSchema = defineEditorSchema({
+  elements: {
+    mention: {
       void: "markable-inline",
     },
-  ],
-  name: "mentions",
+    paragraph: {
+      content: schema.content.any(
+        [schema.content.text(), schema.content.type("mention")],
+        { default: "text", min: 1 }
+      ),
+    },
+  },
+  id: "mentions",
+  root: {
+    content: schema.content.type("paragraph", {
+      default: { type: "paragraph" },
+      min: 1,
+    }),
+  },
+  unknown: "reject",
+  version: 1,
+});
+
+const editor = usePliteEditor({
+  extensions: [MentionSchema] as const,
+  initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
 });
 ```
 
@@ -403,9 +443,22 @@ mobile/desktop, IME state, and app version. Virtualized and partial-DOM
 metrics are bounded-surface rows. `staged-warmup` metrics are staged
 materialization rows. Do not mix either bucket with complete full-DOM rows.
 
-Pass `domStrategyLayout` only when the app owns a layout engine that can name
-virtualized top-level or page items. Normal editor surfaces should leave it
-unset.
+When a layout runtime owns page virtualization, pass its immutable mount data
+inside the virtualized strategy. Keeping the data on the discriminated strategy
+prevents full-DOM surfaces from carrying an irrelevant layout contract.
+
+```tsx
+<Editable
+  domStrategy={{
+    type: "virtualized",
+    layout: {
+      pageItems,
+      topLevelItems,
+      visiblePageItems,
+    },
+  }}
+/>
+```
 
 ## DOM Coverage Boundaries
 

@@ -1,12 +1,12 @@
 import {
+  type Descendant,
   NodeApi,
-  type Node,
   type NodeMatch,
   type NodeOf,
   type Path,
 } from '@platejs/plite';
 
-export type ApplyDeepToNodesOptions<N extends Node> = {
+export type ApplyDeepToNodesOptions<N extends Descendant> = {
   // Function to call on each node following the query.
   apply: (
     node: NodeOf<N>,
@@ -21,8 +21,8 @@ export type ApplyDeepToNodesOptions<N extends Node> = {
   path?: Path;
 };
 
-/** Recursively apply an operation to children nodes with a query. */
-export const applyDeepToNodes = <N extends Node>({
+/** Recursively apply a transform to child nodes matching a query. */
+export const applyDeepToNodes = <N extends Descendant>({
   apply,
   match,
   node,

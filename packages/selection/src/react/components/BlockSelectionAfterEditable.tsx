@@ -18,7 +18,7 @@ import {
 } from '../utils';
 
 export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
-  const { api, editor, getOption, getOptions, setOption } =
+  const { api, editor, getOption, getOptions, setOption, update } =
     useEditorPlugin(BlockSelectionPlugin);
 
   const isSelectingSome = usePluginOption(
@@ -27,46 +27,65 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   );
 
   const removeSelectedBlocks = React.useCallback(
-    (options: { selectPrevious?: boolean } = {}) => {
+    (options: { insertText?: string; selectPrevious?: boolean } = {}) => {
       const selectedIds = getOption('selectedIds');
-      const entries = [
-        ...editor.read.nodes.toArray({
+
+      editor.update((tx, { afterCommit }) => {
+        const entries = tx.nodes.toArray({
           at: [],
           match: (node) =>
             ElementApi.isElement(node) &&
             !!node.id &&
             !!selectedIds?.has(node.id as string),
-        }),
-      ];
+        });
 
-      if (entries.length === 0) return null;
+        if (entries.length === 0) return;
 
-      const firstPath = entries[0]![1];
-
-      editor.update((tx) => {
-        for (const [node, path] of [...entries].reverse()) {
+        const firstPath = entries[0]![1];
+        for (const [, path] of [...entries].reverse()) {
           tx.nodes.remove({
             at: path,
           });
-          api.delete(node.id as string);
         }
 
-        if (editor.read.children().length === 0) {
-          editor.api.dom.focus();
-        } else if (options.selectPrevious) {
+        if (options.insertText !== undefined) {
+          tx.nodes.insert(
+            {
+              children: [{ text: options.insertText }],
+              type: editor.getType(KEYS.p),
+            },
+            { at: firstPath, select: true }
+          );
+        }
+
+        const shouldFocus = tx.children().length === 0;
+        const deletedIds = entries.map(([node]) => node.id as string);
+        let previousId: string | null = null;
+
+        if (!shouldFocus && options.selectPrevious) {
           const prevPath = PathApi.previous(firstPath);
 
           if (prevPath) {
-            const prevEntry = editor.read.nodes.block({ at: prevPath });
+            const prevEntry = tx.nodes.block({ at: prevPath });
 
             if (prevEntry) {
-              setOption('selectedIds', new Set([prevEntry[0].id as string]));
+              previousId = prevEntry[0].id as string;
             }
           }
         }
-      });
 
-      return firstPath;
+        afterCommit(() => {
+          for (const id of deletedIds) {
+            api.delete(id);
+          }
+
+          if (options.insertText !== undefined || shouldFocus) {
+            editor.api.dom.focus();
+          } else if (previousId) {
+            setOption('selectedIds', new Set([previousId]));
+          }
+        });
+      });
     },
     [editor, getOption, api, setOption]
   );
@@ -147,7 +166,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       // Mod+D => duplicate selected blocks
       if (isHotkey('mod+d')(e)) {
         e.preventDefault();
-        editor.update.blockSelection.duplicate();
+        update.duplicate();
         return;
       }
       // Only continue if we have "some" selection
@@ -155,26 +174,31 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       // Enter => focus first selected block
       if (isHotkey('enter')(e)) {
         const selectedIds = getOption('selectedIds');
-        const entry = editor.read.nodes.find({
-          at: [],
-          match: (n) =>
-            ElementApi.isElement(n) &&
-            editor.read.schema.isBlock(n) &&
-            !!n.id &&
-            !!selectedIds?.has(n.id as string),
+        let handled = false;
+
+        editor.update((tx, { afterCommit }) => {
+          const entry = tx.nodes.find({
+            at: [],
+            match: (node) =>
+              ElementApi.isElement(node) &&
+              tx.schema.isBlock(node) &&
+              !!node.id &&
+              !!selectedIds?.has(node.id as string),
+          });
+
+          if (!entry) return;
+
+          const [, path] = entry;
+          const end = tx.points.end(path);
+
+          if (!end) return;
+
+          tx.selection.set(end);
+          handled = true;
+          afterCommit(() => editor.api.dom.focus());
         });
 
-        if (entry) {
-          const [, path] = entry;
-          const end = editor.read.points.end(path);
-
-          if (end) {
-            editor.update.selection.set(end);
-          }
-
-          editor.api.dom.focus();
-          e.preventDefault();
-        }
+        if (handled) e.preventDefault();
 
         return;
       }
@@ -211,21 +235,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         !e.altKey
       ) {
         e.preventDefault();
-        const firstPath = removeSelectedBlocks();
-
-        if (firstPath) {
-          editor.update.nodes.insert(
-            { children: [{ text: e.key }], type: editor.getType(KEYS.p) },
-            { at: firstPath }
-          );
-          const end = editor.read.points.end(firstPath);
-
-          if (end) {
-            editor.update.selection.set(end);
-          }
-
-          editor.api.dom.focus();
-        }
+        removeSelectedBlocks({ insertText: e.key });
         return;
       }
     },
@@ -281,7 +291,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   return ReactDOM.createPortal(
     <input
       ref={inputRef}
-      className="slate-shadow-input"
+      className="plite-shadow-input"
       style={{
         left: '-300px',
         opacity: 0,

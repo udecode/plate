@@ -1,31 +1,37 @@
-import type { ExtendPlateEditorExtension } from '@platejs/core';
+import type { BaseEditor, PlateEditorExtension } from '@platejs/core';
 import { ElementApi } from '@platejs/plite';
 
-import type { BaseListConfig } from './BaseListPlugin';
+import type { BaseListPluginOptions } from './BaseListPlugin';
 
 import { normalizeListNotIndented } from './normalizers/normalizeListNotIndented';
 import { normalizeListStart } from './normalizers/normalizeListStart';
 
-export const withNormalizeList: ExtendPlateEditorExtension<BaseListConfig> = ({
+type NormalizeListExtensionContext = {
+  editor: BaseEditor;
+  getOptions: () => BaseListPluginOptions;
+};
+
+export const withNormalizeList = ({
   editor,
   getOptions,
-}) => ({
-  normalizers: {
-    node({ entry, next, tx }) {
-      if (normalizeListNotIndented(editor, tx, entry)) return;
-      if (
-        ElementApi.isElement(entry[0]) &&
-        normalizeListStart(
-          editor,
-          tx,
-          [entry[0], entry[1]],
-          getOptions().getSiblingListOptions
-        )
-      ) {
-        return;
-      }
-
-      next();
+}: NormalizeListExtensionContext): PlateEditorExtension => ({
+  corrections: [
+    {
+      event: 'content',
+      correct({ entry, tx }) {
+        if (normalizeListNotIndented(editor, tx, entry)) return;
+        if (
+          ElementApi.isElement(entry[0]) &&
+          normalizeListStart(
+            editor,
+            tx,
+            [entry[0], entry[1]],
+            getOptions().getSiblingListOptions
+          )
+        ) {
+          return;
+        }
+      },
     },
-  },
+  ],
 });

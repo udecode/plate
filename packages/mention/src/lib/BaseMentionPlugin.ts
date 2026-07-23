@@ -2,8 +2,9 @@ import {
   type TriggerComboboxPluginOptions,
   withTriggerCombobox,
 } from '@platejs/combobox';
-import { type PluginConfig, createBasePlugin } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { type InferConfig, createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
 
 export type InsertMentionOptions = {
   value: string;
@@ -11,37 +12,48 @@ export type InsertMentionOptions = {
   search?: string;
 };
 
-export type MentionConfig = PluginConfig<
-  'mention',
-  {
-    insertSpaceAfterMention?: boolean;
-  } & TriggerComboboxPluginOptions,
-  {}
->;
+type MentionPluginOptions = {
+  insertSpaceAfterMention?: boolean;
+} & TriggerComboboxPluginOptions;
+
+const defaultOptions: MentionPluginOptions = {
+  trigger: '@',
+  triggerPreviousCharPattern: /^\s?$/,
+  createComboboxInput: (trigger) => ({
+    children: [{ text: '' }],
+    trigger,
+    type: NODES.mentionInput,
+  }),
+};
 
 export const BaseMentionInputPlugin = createBasePlugin({
   key: KEYS.mentionInput,
-  node: { isElement: true, isInline: true, isVoid: true },
+  schema: {
+    element: {
+      properties: {
+        trigger: property.string(),
+        userId: property.string(),
+        value: property.string(),
+      },
+      void: 'inline',
+    },
+  },
+  type: NODES.mentionInput,
 });
 
 /** Enables support for autocompleting @mentions. */
-export const BaseMentionPlugin = createBasePlugin<MentionConfig>({
+export const BaseMentionPlugin = createBasePlugin({
   key: KEYS.mention,
-  node: {
-    isElement: true,
-    isInline: true,
-    isMarkableVoid: true,
-    isVoid: true,
+  schema: {
+    element: {
+      properties: {
+        key: property.string(),
+        value: property.string(),
+      },
+      void: 'markable-inline',
+    },
   },
-  options: {
-    trigger: '@',
-    triggerPreviousCharPattern: /^\s?$/,
-    createComboboxInput: (trigger) => ({
-      children: [{ text: '' }],
-      trigger,
-      type: KEYS.mentionInput,
-    }),
-  },
+  options: defaultOptions,
   plugins: [BaseMentionInputPlugin],
 })
   .extendExtension(withTriggerCombobox)
@@ -55,3 +67,5 @@ export const BaseMentionPlugin = createBasePlugin<MentionConfig>({
       });
     },
   }));
+
+export type MentionConfig = InferConfig<typeof BaseMentionPlugin>;

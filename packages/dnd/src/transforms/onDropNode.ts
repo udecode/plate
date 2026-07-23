@@ -140,18 +140,48 @@ export const onDropNode = (
 
   if (!result) return;
 
-  const { dragPath, to } = result;
+  const { direction, dragPath, to } = result;
 
   if (dragItem.editorId === editor.id) {
     // Check if we're dragging multiple nodes
     const draggedIds = Array.isArray(dragItem.id) ? dragItem.id : [dragItem.id];
 
     if (draggedIds.length > 1) {
-      // Handle multi-node drop - get elements by their IDs and sort them
-      editor.update.nodes.move({
-        at: [],
-        to,
-        match: { id: draggedIds },
+      if (draggedIds.includes(element.id as string)) return;
+
+      const entries = draggedIds
+        .map((id) => editor.read.nodes.find<Element>({ at: [], match: { id } }))
+        .filter((entry): entry is NodeEntry<Element> => !!entry)
+        .toSorted(([, a], [, b]) => PathApi.compare(a, b));
+      const insertAfter = direction === 'bottom' || direction === 'right';
+
+      editor.update((tx) => {
+        let target = element;
+
+        for (const [node] of entries) {
+          const path = tx.nodes.path(node);
+          const targetPath = tx.nodes.path(target);
+
+          if (!path || !targetPath) continue;
+
+          const sameParentBefore =
+            PathApi.isBefore(path, targetPath) &&
+            PathApi.isSibling(path, targetPath);
+          const destination = insertAfter
+            ? sameParentBefore
+              ? targetPath
+              : PathApi.next(targetPath)
+            : sameParentBefore
+              ? PathApi.previous(targetPath)
+              : targetPath;
+
+          tx.nodes.move({
+            at: path,
+            to: destination,
+          });
+
+          if (insertAfter) target = node;
+        }
       });
     } else {
       if (!dragPath) return;
@@ -187,7 +217,9 @@ export const onDropNode = (
       // Core's NodeIdPlugin rewrites cross-document ID collisions on insert.
       editor.update.nodes.insert(
         elements.length > 0 ? elements : dragItem.element,
-        { at: to }
+        {
+          at: to,
+        }
       );
 
       if (paths.length > 0) {

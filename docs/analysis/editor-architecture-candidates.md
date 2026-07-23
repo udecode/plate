@@ -137,18 +137,23 @@ This is not "another editor." It is the strongest path toward solving the unsolv
 
 ### Portable Text
 
-Not the engine winner. The strongest spec, schema, and behavior-authoring benchmark in this set.
+Not the engine winner. The strongest spec, schema-applicability, and
+behavior-contract benchmark in this set.
 
 Why it matters:
 
 - It treats structured block content as a portable JSON format with a real specification, not as an editor's private runtime shape.
 - Its editor is headless and schema-driven: styles, lists, decorators, annotations, block objects, inline objects, and nested editable containers all flow from declared schema.
-- Its Behavior API has a clear event/guard/action model with `execute`, `forward`, `raise`, and `effect`, which is a better vocabulary for input and paste customization than ad hoc handler chains.
+- Its Behavior API has a clear event/guard/action vocabulary that is useful for
+  scenario law, tests, and internal dispatch review.
 - Its official testing story uses real-browser behavior specs and compact Portable Text snapshots, which is the right level for editor regression proof.
 
 Take:
 
-Steal the spec discipline, schema-applicability selectors, behavior event/action vocabulary, and scenario-test posture. Do not steal the Portable Text value format as Plite core, the CMS-shaped schema categories as raw Plite law, or its XState actor engine as the runtime backbone.
+Steal the spec discipline, schema-applicability selectors, guard/action
+vocabulary for law and tests, and scenario-test posture. Do not copy the public
+Behavior API or runtime DSL, Portable Text value format, CMS-shaped schema
+categories, or XState actor engine into Plite.
 
 ## Tier 2: Important, But Not the Main Bet
 
@@ -300,8 +305,8 @@ For future architecture work, the real comparison set should be:
 - Lexical
 - Tiptap
 - Pretext + Premirror
-- Portable Text, when the question touches schema profiles, behavior authoring,
-  portability, or test standards
+- Portable Text, when the question touches schema applicability, behavior law,
+  portability, or behavior-test standards
 
 That is the serious shortlist.
 
@@ -338,7 +343,11 @@ Tiptap is the best productization benchmark.
 
 Pretext, especially combined with the `../premirror` direction, is the most important future-facing bet because it attacks the layout and pagination problem that web editors still mostly fake.
 
-Portable Text is the strongest reminder that editor architecture is not only runtime mechanics. A serious editor needs a content specification, schema-derived applicability, behavior customization semantics, and replayable behavior tests. Plite should steal those standards without becoming a Portable Text-only editor.
+Portable Text is the strongest reminder that editor architecture is not only
+runtime mechanics. A serious editor needs a content specification,
+schema-derived applicability, explicit behavior contracts, and replayable
+behavior tests. Plite should steal those standards without copying its public
+Behavior API or becoming a Portable Text-only editor.
 
 The smartest non-editor inspirations are TanStack DB and the VS Code/LSP model.
 

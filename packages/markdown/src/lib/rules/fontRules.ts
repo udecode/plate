@@ -49,11 +49,11 @@ export const fontRules = {
         mdastNode.children,
         {
           ...deco,
-          backgroundColor,
-          color,
-          fontFamily,
-          fontSize,
-          fontWeight,
+          ...(backgroundColor !== undefined && { backgroundColor }),
+          ...(color !== undefined && { color }),
+          ...(fontFamily !== undefined && { fontFamily }),
+          ...(fontSize !== undefined && { fontSize }),
+          ...(fontWeight !== undefined && { fontWeight }),
         },
         options
       );

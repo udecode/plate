@@ -32,9 +32,10 @@ donor checkout as proof after the transplant.
 - Plite stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.
 - Do not make child-count chunking foundational again.
-- Behavior should be composable and inspectable without making ordinary
-  callers learn composition machinery. Named profiles or runtime switching
-  need real reuse or control requirements.
+- Plite supplies typed extension identity, composition, publication, and
+  inspection. It does not supply a behavior-profile DSL. Plate specs define
+  product law; named kits require real reuse, while runtime control is a
+  separate proven job.
 - Layering beats feature buckets: document truth, DOM transport, React runtime,
   browser proof, projections/services, layout, lightweight surfaces, and
   productization need clear owners.

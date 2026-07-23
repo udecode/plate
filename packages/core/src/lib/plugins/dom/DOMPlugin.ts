@@ -1,4 +1,10 @@
-import type { EditorUpdateTransaction, Operation, Point } from '@platejs/plite';
+import {
+  type EditorTransactionChanged,
+  type EditorUpdateTransaction,
+  type Path,
+  PathApi,
+  type Point,
+} from '@platejs/plite';
 import {
   type DOMApi,
   type DOMClipboardApi,
@@ -14,17 +20,19 @@ import { type PluginConfig, createBasePlugin } from '../../plugin';
 
 const AUTO_SCROLL = new WeakMap<object, boolean>();
 
-const AUTO_SCROLL_FIRST_TARGET = new WeakMap<object, Point>();
+const AUTO_SCROLL_FIRST_TARGET = new WeakMap<object, ScrollIntoViewTarget>();
 
-export type AutoScrollOperationsMap = Partial<
-  Record<Operation['type'], boolean>
+export type AutoScrollChangeKind = 'properties' | 'structure' | 'text';
+
+export type AutoScrollChangesMap = Partial<
+  Record<AutoScrollChangeKind, boolean>
 >;
 
-export type ScrollIntoViewTarget = Point;
+export type ScrollIntoViewTarget = Path | Point;
 
 export type AutoScrollOptions = {
   mode?: ScrollMode;
-  operations?: AutoScrollOperationsMap;
+  changes?: AutoScrollChangesMap;
   scrollOptions?: ScrollIntoViewOptions;
 };
 
@@ -39,10 +47,10 @@ export type AutoScrollUpdate<TTx extends object = {}> = (
 export type DomConfig = PluginConfig<
   'dom',
   {
-    /** Choose the first or last matching operation as the scroll target */
+    /** Choose the first or last matching change as the scroll target. */
     scrollMode?: ScrollMode;
-    /** Operations map; true enables scrolling for that operation type. */
-    scrollOperations?: AutoScrollOperationsMap;
+    /** Change map; true enables scrolling for that canonical change kind. */
+    scrollChanges?: AutoScrollChangesMap;
     /** Options passed to scrollIntoView */
     scrollOptions?: ScrollIntoViewOptions;
   },
@@ -58,7 +66,7 @@ export type DomConfig = PluginConfig<
   {}
 >;
 
-/** Mode for picking target op when multiple enabled */
+/** Mode for picking a target when multiple enabled changes are present. */
 export type ScrollMode = 'first' | 'last';
 
 const beginAutoScroll = (editor: BaseEditor, options?: AutoScrollOptions) => {
@@ -79,9 +87,9 @@ const beginAutoScroll = (editor: BaseEditor, options?: AutoScrollOptions) => {
 
     editor.plugin(DOMPluginBase).setOptions({
       ...prevOptions,
-      scrollOperations: {
-        ...prevOptions.scrollOperations,
-        ...omitBy(options.operations ?? {}, isUndefined),
+      scrollChanges: {
+        ...prevOptions.scrollChanges,
+        ...omitBy(options.changes ?? {}, isUndefined),
       },
       scrollOptions,
       ...omitBy(
@@ -106,29 +114,84 @@ const beginAutoScroll = (editor: BaseEditor, options?: AutoScrollOptions) => {
   };
 };
 
-const scrollOperationIntoView = (editor: BaseEditor, operation: Operation) => {
+const scrollChangeIntoView = (
+  editor: BaseEditor,
+  tx: EditorUpdateTransaction,
+  changed: EditorTransactionChanged,
+  root: string | undefined
+) => {
   if (AUTO_SCROLL.get(editor) !== true) return;
 
   const {
     scrollMode,
-    scrollOperations = {},
+    scrollChanges = {},
     scrollOptions,
   } = editor.plugin(DOMPluginBase).getOptions();
 
-  if (scrollOperations[operation.type] !== true) return;
-  if (!('path' in operation)) return;
+  const propertiesChanged = changed.has('properties', root);
+  const structureChanged = changed.has('structure', root);
+  const textChanged = changed.has('text', root);
 
-  const operationTarget = {
-    offset:
-      'offset' in operation && typeof operation.offset === 'number'
-        ? operation.offset
-        : 0,
-    path: operation.path,
-  };
+  if (
+    !(
+      (structureChanged && scrollChanges.structure) ||
+      (textChanged && scrollChanges.text) ||
+      (propertiesChanged && scrollChanges.properties)
+    )
+  ) {
+    return;
+  }
+
+  const shouldScrollNode =
+    (structureChanged && scrollChanges.structure) ||
+    (propertiesChanged && scrollChanges.properties);
+  const changedPaths = changed.paths(root);
+
+  const shallowPaths = shouldScrollNode
+    ? changedPaths.filter(
+        (path, index, paths) =>
+          !paths.some(
+            (candidate, candidateIndex) =>
+              candidateIndex !== index &&
+              candidate.length < path.length &&
+              candidate.every((part, partIndex) => part === path[partIndex])
+          )
+      )
+    : [];
+  const changedPath =
+    scrollMode === 'first' ? shallowPaths[0] : shallowPaths.at(-1);
+  const selectionTarget = tx.selection()?.focus;
+  const selectionTouchesChange =
+    selectionTarget &&
+    changedPaths.some((path) => PathApi.equals(path, selectionTarget.path));
+  const deepestPaths = textChanged
+    ? changedPaths.filter(
+        (path, index, paths) =>
+          !paths.some(
+            (candidate, candidateIndex) =>
+              candidateIndex !== index &&
+              candidate.length > path.length &&
+              path.every((part, partIndex) => part === candidate[partIndex])
+          )
+      )
+    : [];
+  const changedTextPath =
+    scrollMode === 'first' ? deepestPaths[0] : deepestPaths.at(-1);
+
+  const changeTarget: ScrollIntoViewTarget | undefined = changedPath
+    ? [...changedPath]
+    : selectionTouchesChange
+      ? selectionTarget
+      : changedTextPath
+        ? [...changedTextPath]
+        : selectionTarget;
+
+  if (!changeTarget) return;
+
   const target =
     scrollMode === 'first'
-      ? (AUTO_SCROLL_FIRST_TARGET.get(editor) ?? operationTarget)
-      : operationTarget;
+      ? (AUTO_SCROLL_FIRST_TARGET.get(editor) ?? changeTarget)
+      : changeTarget;
 
   if (scrollMode === 'first' && !AUTO_SCROLL_FIRST_TARGET.has(editor)) {
     AUTO_SCROLL_FIRST_TARGET.set(editor, target);
@@ -141,9 +204,9 @@ export const DOMPluginBase = createBasePlugin<DomConfig>({
   key: 'dom',
   options: {
     scrollMode: 'last',
-    scrollOperations: {
-      insert_node: true,
-      insert_text: true,
+    scrollChanges: {
+      structure: true,
+      text: true,
     },
     scrollOptions: {
       scrollMode: 'if-needed',
@@ -151,11 +214,8 @@ export const DOMPluginBase = createBasePlugin<DomConfig>({
   },
 })
   .extendExtension('autoScroll', {
-    operations: {
-      apply({ editor, next, operation }) {
-        next(operation);
-        scrollOperationIntoView(editor, operation);
-      },
+    onTransactionChange({ changed, editor, selectionAfterRoot, tx }) {
+      scrollChangeIntoView(editor, tx, changed, selectionAfterRoot);
     },
   })
   .extendEditorApi(({ editor }) => ({

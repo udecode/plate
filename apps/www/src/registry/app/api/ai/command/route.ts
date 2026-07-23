@@ -16,7 +16,8 @@ import {
   tool,
 } from 'ai';
 import { NextResponse } from 'next/server';
-import { type BaseEditor, createBaseEditor, nanoid } from 'platejs';
+import type { MarkdownEditor } from '@platejs/markdown';
+import { createBaseEditor, nanoid } from 'platejs';
 import { z } from 'zod';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -177,7 +178,7 @@ export async function POST(req: NextRequest) {
 }
 
 const getCommentTool = (
-  editor: BaseEditor,
+  editor: MarkdownEditor,
   {
     messagesRaw,
     model,
@@ -249,7 +250,7 @@ const getCommentTool = (
   });
 
 const getTableTool = (
-  editor: BaseEditor,
+  editor: MarkdownEditor,
   {
     messagesRaw,
     model,

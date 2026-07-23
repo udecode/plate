@@ -3,7 +3,7 @@ import type React from 'react';
 
 import type {
   Element,
-  EditorUpdateTransaction,
+  EditorStateView,
   NodeEntry,
   NodeProps,
   NodeSetNodesOptions,
@@ -13,13 +13,12 @@ import type {
 import type { BaseEditor, PluginConfig } from '@platejs/core';
 import type { TIdElement } from '@platejs/utils';
 
-import { ElementApi, PathApi } from '@platejs/plite';
+import { ElementApi, PathApi, editorCommands } from '@platejs/plite';
 import { createPlatePlugin } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
 import type { PartialSelectionOptions } from '../internal';
 
-import { selectBlocks } from '../internal/transforms/selectBlocks';
 import { BlockMenuPlugin } from './BlockMenuPlugin';
 import { BlockSelectionAfterEditable } from './components/BlockSelectionAfterEditable';
 import { useBlockSelectable } from './hooks/useBlockSelectable';
@@ -36,6 +35,97 @@ import {
   setBlockSelectionTexts,
 } from './transforms/setBlockSelectionNodes';
 
+const BLOCK_SELECTION_PRESERVE_TAG = 'block-selection-preserve';
+const BLOCK_SELECTION_DESELECT_TAG = 'block-selection-deselect';
+
+type BlockSelectionApi = {
+  /** Add block selection when right click on a block. */
+  addOnContextMenu: (options: {
+    element: Element;
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>;
+    disabledWhenFocused?: boolean;
+  }) => void;
+  /** Add a selected table row by selectable id. */
+  addSelectedRow: (
+    id: string,
+    options?: { clear?: boolean; delay?: number }
+  ) => void;
+  /** Set selected block ids */
+  setSelectedIds: (
+    options: Partial<{
+      added: globalThis.Element[];
+      removed: globalThis.Element[];
+    }> & {
+      ids?: string[];
+    }
+  ) => void;
+  /** Add a block to the selection. */
+  add: (id: string[] | string) => void;
+  /** Clear block selection */
+  clear: () => void;
+  /** Delete a block from the selection. */
+  delete: (id: string[] | string) => void;
+  /** Deselect all blocks */
+  deselect: () => void;
+  /** Get the first selected block */
+  first: () => NodeEntry<TIdElement> | null;
+  /** Focus block selection – that differs from the editor focus */
+  focus: () => void;
+  /**
+   * Get selected blocks
+   *
+   * @param options.sort - Sort the nodes by path
+   * @param options.collapseTableRows - If all table rows are selected, return
+   *   the table node with all selected rows instead.
+   */
+  getNodes: (options?: {
+    collapseTableRows?: boolean;
+    /** Use the editor selection when block selection is empty. */
+    selectionFallback?: boolean;
+    sort?: boolean;
+  }) => NodeEntry<TIdElement>[];
+  /** Check if a block is selected. */
+  has: (id: string[] | string) => boolean;
+  /** Check if a block is selectable. */
+  isSelectable: (element: Element, path: Path) => boolean;
+  /** Arrow-based move selection */
+  moveSelection: (direction: 'down' | 'up') => void;
+  /** Select all selectable blocks */
+  selectAll: () => void;
+  /** Set a block to be selected. */
+  set: (id: string[] | string) => void;
+  /** Shift-based expand/shrink selection */
+  shiftSelection: (direction: 'down' | 'up') => void;
+};
+
+type BlockSelectionTx = {
+  blockSelection: {
+    /** Duplicate selected blocks. */
+    duplicate: () => void;
+    /** Insert blocks and select the inserted range. */
+    insertBlocksAndSelect: (
+      nodes: Element[],
+      options: { at: Path; insertedCallback?: () => void }
+    ) => void;
+    /** Remove selected blocks. */
+    removeNodes: () => void;
+    /** Set editor selection from block selection. */
+    select: () => void;
+    /** Set block indent on selected blocks. */
+    setIndent: (indent: number, options?: NodeSetNodesOptions) => void;
+    /** Set props on selected blocks. */
+    setNodes: (
+      props: Partial<NodeProps<Element>>,
+      options?: NodeSetNodesOptions
+    ) => void;
+    /** Set props on selected text nodes. */
+    setTexts: (
+      props: Partial<NodeProps<Text>>,
+      options?: Omit<NodeSetNodesOptions, 'at'>
+    ) => void;
+  };
+};
+
 export type BlockSelectionConfig = PluginConfig<
   'blockSelection',
   {
@@ -43,120 +133,30 @@ export type BlockSelectionConfig = PluginConfig<
     areaOptions?: PartialSelectionOptions;
     editorPaddingRight?: CSSProperties['width'];
     enableContextMenu?: boolean;
-    /**
-     * Disable the plugin's custom selectAll (Cmd+A) behavior.
-     * When true, uses the editor's default selectAll behavior.
-     */
+    /** Disable the plugin's custom select-all behavior. */
     disableSelectAll?: boolean;
     isSelecting?: boolean;
     isSelectionAreaVisible?: boolean;
     rightSelectionAreaClassName?: string;
     selectedIds?: Set<string>;
     shadowInputRef?: React.RefObject<HTMLInputElement | null>;
-    /** Check if a block is selectable */
+    /** Check if a block is selectable. */
     isSelectable?: (element: Element, path: Path) => boolean;
-    onKeyDownSelecting?: (editor: BaseEditor, e: KeyboardEvent) => void;
+    onKeyDownSelecting?: (editor: BaseEditor, event: KeyboardEvent) => void;
   },
+  {},
+  BlockSelectionTx,
   {
-    blockSelection: {
-      /** Add block selection when right click on a block. */
-      addOnContextMenu: (options: {
-        element: Element;
-        event: React.MouseEvent<HTMLDivElement, MouseEvent>;
-        disabledWhenFocused?: boolean;
-      }) => void;
-      /** Add a selected table row by selectable id. */
-      addSelectedRow: (
-        id: string,
-        options?: { clear?: boolean; delay?: number }
-      ) => void;
-      /** Set selected block ids */
-      setSelectedIds: (
-        options: Partial<{
-          added: globalThis.Element[];
-          removed: globalThis.Element[];
-        }> & {
-          ids?: string[];
-        }
-      ) => void;
-      /** Add a block to the selection. */
-      add: (id: string[] | string) => void;
-      /** Clear block selection */
-      clear: () => void;
-      /** Delete a block from the selection. */
-      delete: (id: string[] | string) => void;
-      /** Deselect all blocks */
-      deselect: () => void;
-      /** Get the first selected block */
-      first: () => NodeEntry<TIdElement> | null;
-      /** Focus block selection – that differs from the editor focus */
-      focus: () => void;
-      /**
-       * Get selected blocks
-       *
-       * @param options.sort - Sort the nodes by path
-       * @param options.collapseTableRows - If all table rows are selected,
-       *   return the table node with all selected rows instead, do not return
-       *   the table rows anymore.
-       */
-      getNodes: (options?: {
-        collapseTableRows?: boolean;
-        /**
-         * If no nodes are selected by blockSelection, use the editor's original
-         * selection to get blocks
-         */
-        selectionFallback?: boolean;
-        sort?: boolean;
-      }) => NodeEntry<TIdElement>[];
-      /** Check if a block is selected. */
-      has: (id: string[] | string) => boolean;
-      /** Check if a block is selectable. */
-      isSelectable: (element: Element, path: Path) => boolean;
-      /** Arrow-based move selection */
-      moveSelection: (direction: 'down' | 'up') => void;
-      /** Select all selectable blocks */
-      selectAll: () => void;
-      /** Set a block to be selected. */
-      set: (id: string[] | string) => void;
-      /** Shift-based expand/shrink selection */
-      shiftSelection: (direction: 'down' | 'up') => void;
-    };
-  },
-  {
-    blockSelection: {
-      /** Duplicate selected blocks. */
-      duplicate: () => void;
-      /** Insert blocks and select the inserted range. */
-      insertBlocksAndSelect: (
-        nodes: Element[],
-        options: { at: Path; insertedCallback?: () => void }
-      ) => void;
-      /** Remove selected blocks. */
-      removeNodes: () => void;
-      /** Set editor selection from block selection. */
-      select: () => void;
-      /** Select blocks by path or node. */
-      selectBlocks: (at: Path | TIdElement) => void;
-      /** Set block indent on selected blocks. */
-      setIndent: (indent: number, options?: NodeSetNodesOptions) => void;
-      /** Set props on selected blocks. */
-      setNodes: (
-        props: Partial<NodeProps<Element>>,
-        options?: NodeSetNodesOptions
-      ) => void;
-      /** Set props on selected text nodes. */
-      setTexts: (
-        props: Partial<NodeProps<Text>>,
-        options?: Omit<NodeSetNodesOptions, 'at'>
-      ) => void;
-    };
-  },
-  {
-    /** Check if a block is selected by id */
+    /** Check if a block is selected by id. */
     isSelected?: (id?: string) => boolean;
-    /** Check if any blocks are selected */
+    /** Check if any blocks are selected. */
     isSelectingSome?: () => boolean;
-  }
+  },
+  {},
+  readonly [],
+  readonly [],
+  never,
+  BlockSelectionApi
 >;
 
 export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
@@ -211,7 +211,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
     isSelected: (id?: string) => !!id && getOptions().selectedIds!.has(id),
     isSelectingSome: () => getOptions().selectedIds!.size > 0,
   }))
-  .extendApi<Partial<BlockSelectionConfig['api']['blockSelection']>>(
+  .extendApi<Omit<BlockSelectionConfig['pluginApi'], 'selectAll'>>(
     ({ api, editor, getOption, getOptions, setOption }) => ({
       addOnContextMenu: ({ disabledWhenFocused = true, element, event }) => {
         const { enableContextMenu, selectedIds } = getOptions();
@@ -390,7 +390,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
       },
     })
   )
-  .extendApi<Partial<BlockSelectionConfig['api']['blockSelection']>>(
+  .extendApi<Pick<BlockSelectionConfig['pluginApi'], 'selectAll'>>(
     ({ api, editor, setOption }) => ({
       selectAll: () => {
         const ids = editor.read.nodes
@@ -436,86 +436,118 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
     },
   }))
   .extendExtension(({ api, editor, getOptions }) => {
-    let applyingBlockSelectionTransform = false;
-    const withBlockSelection = (
-      tx: EditorUpdateTransaction,
-      next: () => boolean
-    ) => {
-      const blocks = api.getNodes();
+    const getSelectedEntries = (
+      state: Pick<EditorStateView, 'nodes'>
+    ): NodeEntry<TIdElement>[] => {
+      const selectedIds = getOptions().selectedIds;
 
-      if (blocks.length === 0) return next();
+      if (!selectedIds?.size) return [];
 
-      const range = editor.read.ranges.fromEntries(blocks);
-
-      if (!range) return next();
-
-      applyingBlockSelectionTransform = true;
-
-      try {
-        tx.selection.set(range);
-        const result = next();
-
-        api.set(blocks.map(([node]) => node.id as string));
-
-        return result;
-      } finally {
-        applyingBlockSelectionTransform = false;
-      }
+      return state.nodes.toArray<TIdElement>({
+        at: [],
+        match: (node) =>
+          ElementApi.isElement(node) &&
+          typeof node.id === 'string' &&
+          selectedIds.has(node.id),
+      });
     };
 
     return {
-      transforms: {
-        addMark({ next, tx }) {
+      commands: ({ around }) => [
+        around(editorCommands.addMark, ({ state, next }) => {
           if (!getOptions().selectedIds?.size) return next();
 
-          return withBlockSelection(tx, next);
-        },
-        setNodes({ next, tx }) {
+          const range = state.ranges.fromEntries(getSelectedEntries(state));
+
+          if (!range) return next();
+
+          return next.after(
+            state.transaction((tx) => {
+              tx.tags.add(BLOCK_SELECTION_PRESERVE_TAG);
+              tx.selection.set(range);
+            })
+          );
+        }),
+        around(editorCommands.toggleMark, ({ state, next }) => {
           if (!getOptions().selectedIds?.size) return next();
 
-          return withBlockSelection(tx, next);
-        },
-        select({ next }) {
+          const range = state.ranges.fromEntries(getSelectedEntries(state));
+
+          if (!range) return next();
+
+          return next.after(
+            state.transaction((tx) => {
+              tx.tags.add(BLOCK_SELECTION_PRESERVE_TAG);
+              tx.selection.set(range);
+            })
+          );
+        }),
+        around(editorCommands.setNodes, ({ state, next }) => {
+          if (!getOptions().selectedIds?.size) return next();
+
+          const range = state.ranges.fromEntries(getSelectedEntries(state));
+
+          if (!range) return next();
+
+          return next.after(
+            state.transaction((tx) => {
+              tx.tags.add(BLOCK_SELECTION_PRESERVE_TAG);
+              tx.selection.set(range);
+            })
+          );
+        }),
+        around(editorCommands.select, ({ state, next }) => {
           if (
-            !applyingBlockSelectionTransform &&
-            getOptions().selectedIds!.size > 0 &&
-            !editor.plugin(BlockMenuPlugin).getOption('openId')
+            !getOptions().selectedIds?.size ||
+            editor.plugin(BlockMenuPlugin).getOption('openId')
           ) {
-            api.deselect();
+            return next();
           }
 
-          return next();
-        },
-        setSelection({ next }) {
+          return next.after(
+            state.transaction((tx) => {
+              tx.tags.add(BLOCK_SELECTION_DESELECT_TAG);
+            })
+          );
+        }),
+        around(editorCommands.setSelection, ({ state, next }) => {
           if (
-            !applyingBlockSelectionTransform &&
-            getOptions().selectedIds!.size > 0 &&
-            !editor.plugin(BlockMenuPlugin).getOption('openId')
+            !getOptions().selectedIds?.size ||
+            editor.plugin(BlockMenuPlugin).getOption('openId')
           ) {
-            api.deselect();
+            return next();
           }
 
-          return next();
-        },
-        toggleMark({ next, tx }) {
-          if (!getOptions().selectedIds?.size) return next();
-
-          return withBlockSelection(tx, next);
-        },
+          return next.after(
+            state.transaction((tx) => {
+              tx.tags.add(BLOCK_SELECTION_DESELECT_TAG);
+            })
+          );
+        }),
+      ],
+      onCommit({ commit }) {
+        if (
+          (commit.tags.includes(BLOCK_SELECTION_DESELECT_TAG) ||
+            (commit.selectionChanged &&
+              !commit.tags.includes(BLOCK_SELECTION_PRESERVE_TAG))) &&
+          getOptions().selectedIds!.size > 0 &&
+          !editor.plugin(BlockMenuPlugin).getOption('openId')
+        ) {
+          api.deselect();
+        }
       },
     };
   })
-  .extendTx(({ editor }) => (tx) => ({
-    duplicate: () => duplicateBlockSelectionNodes(editor, tx),
+  .extendTx(({ editor }) => (tx, _editor, context) => ({
+    duplicate: () => duplicateBlockSelectionNodes(editor, tx, context),
     insertBlocksAndSelect: (nodes, { at, insertedCallback }) => {
-      insertBlocksAndSelect(editor, tx, nodes, {
+      insertBlocksAndSelect(editor, tx, context, nodes, {
         at,
         insertedCallback,
       });
     },
     removeNodes: () => removeBlockSelectionNodes(editor, tx),
-    select: () => selectBlockSelectionNodes(editor, tx),
-    selectBlocks: (at) => selectBlocks(editor, at),
+    select: () => selectBlockSelectionNodes(editor, tx, context),
     setIndent: (indent, options) =>
       setBlockSelectionIndent(editor, tx, indent, options),
     setNodes: (props, options) =>

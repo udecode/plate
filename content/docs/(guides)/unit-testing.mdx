@@ -77,7 +77,7 @@ it('should apply bold formatting', () => {
 
   const editor = createPlateEditor({
     plugins: [BoldPlugin],
-    value: input.children,
+    initialValue: input.children,
     selection: input.selection,
   });
 
@@ -112,7 +112,7 @@ it('should collapse selection on backspace', () => {
   ) as any as PlateEditor;
 
   const editor = createPlateEditor({
-    value: input.children,
+    initialValue: input.children,
     selection: input.selection,
   });
 
@@ -130,6 +130,8 @@ it('should collapse selection on backspace', () => {
 When you need to test keyboard handlers directly:
 
 ```typescript
+import { createPlateEditor, createPlatePlugin } from 'platejs/react';
+
 it('should call the onKeyDown handler', () => {
   const input = (
     <editor>
@@ -142,17 +144,17 @@ it('should call the onKeyDown handler', () => {
   // Create a mock handler to verify it's called
   const onKeyDownMock = jest.fn();
 
+  const TestPlugin = createPlatePlugin({
+    key: 'test',
+    handlers: {
+      onKeyDown: onKeyDownMock,
+    },
+  });
+
   const editor = createPlateEditor({
-    value: input.children,
+    initialValue: input.children,
     selection: input.selection,
-    plugins: [
-      {
-        key: 'test',
-        handlers: {
-          onKeyDown: onKeyDownMock,
-        },
-      },
-    ],
+    plugins: [TestPlugin],
   });
 
   // Create the keyboard event
@@ -160,9 +162,11 @@ it('should call the onKeyDown handler', () => {
     key: 'Enter',
   }) as any;
 
-  // Call the handler directly
-  editor.plugins.test.handlers.onKeyDown({
-    ...getBasePlugin(editor, { key: 'test' }),
+  // Resolve the installed descriptor through its typed portal
+  const testPlugin = editor.plugin(TestPlugin);
+
+  testPlugin.plugin.handlers.onKeyDown?.({
+    ...testPlugin,
     event,
   });
 
@@ -213,7 +217,7 @@ describe('Table plugin', () => {
     ) as any as PlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
+      initialValue: input.children,
       selection: input.selection,
       plugins: [TablePlugin],
     });
@@ -262,7 +266,7 @@ describe('when keepSelectedTextOnPaste is disabled', () => {
           },
         }),
       ],
-      value: input,
+      initialValue: input,
     });
 
     editor.api.clipboard.insertData({

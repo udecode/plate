@@ -1,17 +1,29 @@
-import type { ExtendPlateEditorExtension } from '@platejs/core/react';
+import type { BaseEditor } from '@platejs/core';
+import type { PlateEditorExtension } from '@platejs/core/react';
 
-import { ElementApi } from '@platejs/plite';
+import { defineEffect, editorCommands, ElementApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { removeAIMarks } from '../../lib/transforms/removeAIMarks';
-import type { AIChatPluginConfig } from './AIChatPlugin';
+import type { AIChatPluginOptions } from './AIChatPlugin';
 
-export const withAIChat: ExtendPlateEditorExtension<AIChatPluginConfig> = ({
+const aiChatShowEffect = defineEffect({
+  key: 'ai.chat.show',
+});
+
+type AIChatExtensionContext = {
+  api: { show: () => void };
+  editor: BaseEditor;
+  getOptions: () => AIChatPluginOptions;
+  type: string;
+};
+
+export const withAIChat = ({
   api,
   editor,
   getOptions,
   type,
-}) => {
+}: AIChatExtensionContext): PlateEditorExtension => {
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
 
@@ -26,68 +38,65 @@ export const withAIChat: ExtendPlateEditorExtension<AIChatPluginConfig> = ({
   };
 
   return {
-    normalizers: {
-      node({ entry: [node, path], next, tx }) {
-        if (Reflect.get(node, KEYS.ai) && !getOptions().open) {
-          removeAIMarks(editor, tx, { at: path });
-
-          return;
-        }
+    commands: ({ handle }) => [
+      handle(editorCommands.insertText, ({ input, state }) => {
+        const { triggerPreviousCharPattern, triggerQuery } = getOptions();
+        const selection = state.selection();
 
         if (
-          ElementApi.isElement(node) &&
-          node.type === type &&
-          !getOptions().open
+          !selection ||
+          !matchesTrigger(input.text) ||
+          (triggerQuery && !triggerQuery(editor))
         ) {
-          tx.nodes.remove({ at: path });
-
-          return;
+          return false;
         }
 
-        next();
-      },
-    },
-    transforms: {
-      insertText({ next, options, text, tx }) {
-        const { triggerPreviousCharPattern, triggerQuery } = getOptions();
-        const selection = tx.selection();
+        const before = state.points.before(selection);
+        const previousChar = before
+          ? state.text.string({
+              anchor: before,
+              focus: selection.anchor,
+            })
+          : '';
 
-        const fn = () => {
-          if (
-            !selection ||
-            !matchesTrigger(text) ||
-            (triggerQuery && !triggerQuery(editor))
-          ) {
+        if (!triggerPreviousCharPattern?.test(previousChar)) return false;
+
+        const nodeEntry = state.nodes.block({ mode: 'highest' });
+
+        if (!nodeEntry || !state.nodes.isEmpty(nodeEntry[0])) return false;
+
+        return state.transaction((tx) => {
+          tx.effects.emit(aiChatShowEffect, null);
+        });
+      }),
+    ],
+    corrections: [
+      {
+        event: 'content',
+        correct({ entry: [node, path], tx }) {
+          if (Reflect.get(node, KEYS.ai) && !getOptions().open) {
+            removeAIMarks(editor, tx, { at: path });
+
             return;
           }
 
-          // Make sure an input is created at the beginning of line or after a whitespace
-          const before = tx.points.before(selection);
-          const previousChar = before
-            ? tx.text.string({
-                anchor: before,
-                focus: selection.anchor,
-              })
-            : '';
+          if (
+            ElementApi.isElement(node) &&
+            node.type === type &&
+            !getOptions().open
+          ) {
+            tx.nodes.remove({ at: path });
 
-          const matchesPreviousCharPattern =
-            triggerPreviousCharPattern?.test(previousChar);
-
-          if (!matchesPreviousCharPattern) return;
-
-          const nodeEntry = tx.nodes.block({ mode: 'highest' });
-
-          if (!nodeEntry || !tx.nodes.isEmpty(nodeEntry[0])) return;
-
-          api.show();
-
-          return true;
-        };
-
-        if (fn()) return true;
-
-        return next({ options, text });
+            return;
+          }
+        },
       },
+    ],
+    effects: [aiChatShowEffect],
+    onCommit({ commit }) {
+      if (commit.effects.some((effect) => effect.type === aiChatShowEffect)) {
+        api.show();
+      }
     },
   };
 };

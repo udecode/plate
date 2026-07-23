@@ -80,7 +80,7 @@ export function transformDiffDescendants(
       }
 
       case OP_DELETE: {
-        // Check if the next chunk is an insertion, indicating a replace operation
+        // Check if the next chunk is an insertion, indicating a replace intent
         if (i < diff.length - 1 && diff[i + 1][0] === OP_INSERT) {
           // Value of the next chunk (to be inserted)
           const nextVal = diff[i + 1][1];
@@ -108,7 +108,7 @@ export function transformDiffDescendants(
             continue;
           }
 
-          // If not all nodes are text nodes, use diffNodes to generate operations
+          // If not all nodes are text nodes, use diffNodes to generate intents
           const diffResult = diffNodes(nodes, nextNodes, options);
           diffResult.forEach((item: NodeRelatedItem) => {
             if (item.delete) {

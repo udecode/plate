@@ -1,10 +1,13 @@
 import { createBasePlugin, someHtmlElement } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 /** Enables support for underline formatting. */
 export const BaseUnderlinePlugin = createBasePlugin({
   key: KEYS.underline,
-  node: { isLeaf: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
   parsers: {
     html: {
       deserializer: {

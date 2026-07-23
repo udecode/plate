@@ -3,7 +3,7 @@ title: "Plite"
 description: "Use the core editor runtime, document model, transactions, helper APIs, and extensions."
 ---
 
-`@platejs/plite` is the core editor runtime. It owns the document model, operations,
+`@platejs/plite` is the core editor runtime. It owns the document model, canonical changes,
 paths, points, ranges, transactions, state fields, schema extensions, and pure
 node/location helper namespaces.
 
@@ -40,7 +40,7 @@ const info = editor.read((state) => ({
 }));
 ```
 
-Write document, selection, mark, root, state-field, and operation changes inside
+Write document, selection, mark, root, and state-field changes inside
 direct update methods, or inside `editor.update(...)` when one command groups
 related writes into one commit.
 
@@ -59,7 +59,8 @@ Core document and editor shapes include `Editor`, `BaseEditor`, `Value`,
 `InitialValue`, `Selection`, `RootKey`, and `RuntimeId`.
 
 Runtime, view, snapshot, and commit types include `EditorRuntime`,
-`EditorView`, `EditorSnapshot`, `EditorCommit`, `EditorCommitClass`,
+`EditorView`, `EditorSnapshot`, `EditorCommit`, `EditorCommitChanged`,
+`EditorCommitChangeKind`, `EditorCommitRuntimeChangeKind`,
 `SnapshotInput`, and `SnapshotListener`.
 
 Read/update API types include `EditorStateView`, `EditorStateValueApi`,
@@ -67,50 +68,92 @@ Read/update API types include `EditorStateView`, `EditorStateValueApi`,
 `EditorUpdateTransaction`, and `EditorTransactionValueApi`.
 
 Extension and schema types include `EditorExtension`, `EditorExtensionInput`,
-`EditorExtensionSetupContext`, `EditorExtensionSetupOutput`,
-`EditorExtensionRuntimeState`, `EditorExtensionStateGroup`,
+`EditorExtensionActivationContext`, `EditorExtensionCleanupContext`,
+`EditorExtensionConfigurationContext`, `EditorLifecycleError`,
+`EditorLifecycleErrorSink`, `EditorExtensionStateGroup`,
 `EditorExtensionStateGroups`, `EditorExtensionTxGroup`,
-`EditorExtensionTxGroups`, `EditorExtensionOperations`, `EditorElementSpec`,
-`EditorElementBehavior`, `EditorElementContentRootSpec`,
-`EditorElementPropertyDescriptor`, `EditorElementPropertyKind`,
-`EditorElementVoidKind`, `StateFieldDescriptor`, `StateFieldValueInput`, and
-`EditorStateField`.
+`EditorExtensionTxGroups`, `EditorSchemaDefinition`,
+`EditorSchemaContribution`, `EditorSchemaIdentity`,
+`SchemaElement`, `SchemaContent`, `SchemaTarget`, `PropertyValueDescriptor`,
+`ContentSlice`, `EditorStateSliceApi`, `EditorTransactionSliceApi`,
+`StateFieldDescriptor`, `StateFieldValueInput`, `EditorStateField`,
+`EditorValueCodec`, `SerializedEditorValue`, and `SerializedEditorEffect`.
 
-Middleware and debug APIs include the typed transform middleware contexts,
-`EditorTransformMiddlewareArgs`, `EditorTransformMiddlewareContext`,
-`EditorTransformMiddlewareMap`, `EditorQueryGroup`,
+Command, query, and debug APIs include `EditorCommand`,
+`EditorCommandHandler`, `EditorCommandAroundHandler`,
+`EditorCommandContinuation`, `EditorCommandDispatch`,
+`EditorCommandResult`, `TransactionSpec`,
+`EditorQueryGroup`, `EditorQueryMiddlewareArgs`,
 `EditorQueryMiddlewareContext`, `EditorQueryMiddlewareMap`,
-`EditorQueryMiddlewareResult`, `EditorOperationApplyContext`,
-`EditorOperationApplyHandler`, `setDebugValueScrubber`, and
+`EditorQueryMiddlewareResult`, `setDebugValueScrubber`, and
 `DebugValueScrubber`.
+
+Define persisted field and shared-effect values with `defineValueCodec` or the
+strict primitive `valueCodecs`. Adapter authors serialize keyed shared effects
+with `encodeEditorEffect` and decode them against an installed descriptor with
+`decodeEditorEffect`.
 
 ## Extension Authoring
 
 Extensions register schema facts, state groups, transaction groups,
-normalizers, operation middleware, commit listeners, and runtime APIs.
+changed-range corrections, commit listeners, and runtime APIs.
 
 Use `api` for mounted host/runtime services. Use `tx` for feature commands that
 change Plite model state.
 
+Pass statically known extensions to `createEditor`. Use `editor.extend` for a
+dynamic extension; installation produces one atomic configuration commit,
+optionally with a candidate-schema document migration, and its cleanup function
+removes the extension through another configuration commit. Use
+`tx.extensions.reconfigure` when configuration must commit with other document
+changes. A schema replacement that rejects the current document uses the
+optional `migrate` callback; Plite publishes the candidate document and
+configuration together or publishes nothing.
+
+Every API factory resolves against the same detached declarative candidate.
+Its context exposes the candidate schema and statically declared capabilities;
+outputs from other API factories become visible only after every factory has
+resolved. `validateConfiguration` receives that final candidate while the live
+editor keeps its previous configuration. `activate(editor, context)` runs only
+after the validated candidate is published.
+Register reversible resources with `context.onCleanup`. Register work that may
+update the editor with `context.onReady`; ready work runs after commit observers.
+Activation, validation, API factories, and cleanup are synchronous.
+
 ```ts
-import {
-  defineEditorExtension,
-  defineStateField,
-  elementProperty,
-} from "@platejs/plite";
+import { defineEditorExtension } from "@platejs/plite";
+
+const extension = defineEditorExtension({
+  activate(editor, context) {
+    const unsubscribe = subscribeToHostState(refreshHostCache);
+
+    context.onCleanup(() => unsubscribe());
+    context.onReady(() => {
+      editor.update((tx) => {
+        tx.marks.set(null);
+      });
+    });
+  },
+  name: "host-state",
+});
 ```
 
 ## Helper Namespaces
 
-Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`,
-`OperationApi`, `PathApi`, `PathRefApi`, `PointApi`, `PointRefApi`, `RangeApi`,
-`RangeRefApi`, `SpanApi`, and `TextApi`.
+Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`, `PathApi`,
+`PointApi`, `RangeApi`, `SelectionApi`, `SpanApi`, and `TextApi`. These
+namespace objects are frozen; compose or wrap custom helpers instead of
+mutating them.
+Create mapped runtime locations with `editor.anchor` or `tx.anchor`.
 
 Inside a live editor, use `editor.read.<group>.<method>()` and
 `editor.update.<group>.<method>()` for one-shot actions. Use grouped `state.*`
 and `tx.*` APIs when code needs custom logic or extension-owned namespaces. Use
 the helper namespaces when library code needs pure operations on Plite data
 outside an editor transaction.
+
+Use [Schema](../concepts/19-schema) for the complete declaration, validation,
+slice-fitting, identity, and migration contract.
 
 ## Internal Subpath
 

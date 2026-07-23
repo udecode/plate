@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import type { PluginConfig } from '@platejs/core';
+import { getPlateRuntime } from '@platejs/core/internal';
 
 import {
   type DOMHandler,
@@ -18,14 +19,19 @@ export type CursorOverlayConfig = PluginConfig<
   {
     cursors: Record<string, CursorState<CursorData>>;
   },
+  {},
+  {},
+  {},
+  {},
+  readonly [],
+  readonly [],
+  never,
   {
-    cursorOverlay: {
-      addCursor: (
-        id: string,
-        cursor: Omit<CursorState<CursorData>, 'id'>
-      ) => void;
-      removeCursor: (id: (string & {}) | 'drag' | 'selection') => void;
-    };
+    addCursor: (
+      id: string,
+      cursor: Omit<CursorState<CursorData>, 'id'>
+    ) => void;
+    removeCursor: (id: (string & {}) | 'drag' | 'selection') => void;
   }
 >;
 
@@ -42,26 +48,24 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
   },
   options: { cursors: {} },
 })
-  .extendApi<CursorOverlayConfig['api']['cursorOverlay']>(
-    ({ editor, plugin }) => ({
-      addCursor: (id, cursor) => {
-        const newCursors = { ...editor.plugin(plugin).getOptions().cursors };
-        newCursors[id] = {
-          id,
-          ...cursor,
-        };
-        editor.plugin(plugin).setOption('cursors', newCursors);
-      },
-      removeCursor: (id) => {
-        const newCursors = { ...editor.plugin(plugin).getOptions().cursors };
+  .extendApi<CursorOverlayConfig['pluginApi']>(({ editor, plugin }) => ({
+    addCursor: (id, cursor) => {
+      const newCursors = { ...editor.plugin(plugin).getOptions().cursors };
+      newCursors[id] = {
+        id,
+        ...cursor,
+      };
+      editor.plugin(plugin).setOption('cursors', newCursors);
+    },
+    removeCursor: (id) => {
+      const newCursors = { ...editor.plugin(plugin).getOptions().cursors };
 
-        if (!newCursors[id]) return;
+      if (!newCursors[id]) return;
 
-        delete newCursors[id];
-        editor.plugin(plugin).setOption('cursors', newCursors);
-      },
-    })
-  )
+      delete newCursors[id];
+      editor.plugin(plugin).setOption('cursors', newCursors);
+    },
+  }))
   .extendExtension(({ api, editor, getOptions }) => {
     const refreshSelectionCursor = () => {
       if (!getOptions().cursors?.selection) return;
@@ -74,25 +78,12 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
     };
 
     return {
-      transforms: {
-        select({ next }) {
-          const result = next();
-
-          refreshSelectionCursor();
-
-          return result;
-        },
-        setSelection({ next }) {
-          const result = next();
-
-          refreshSelectionCursor();
-
-          return result;
-        },
+      onCommit({ commit }) {
+        if (commit.selectionChanged) refreshSelectionCursor();
       },
     };
   })
-  .extend(() => ({
+  .extend({
     handlers: {
       onBlur: ({ api, editor, event }) => {
         if (!editor.read.selection()) return;
@@ -110,7 +101,7 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
       onDragLeave: getRemoveCursorHandler('drag') as any,
       onDragOver: ({ api, editor, event }) => {
         if (
-          !editor.plugins.dnd ||
+          !getPlateRuntime(editor).plugins.dnd ||
           editor.plugin({ key: KEYS.dnd }).getOptions().isDragging
         ) {
           return;
@@ -142,4 +133,4 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
         }
       }, [isSelecting, setOption, api]);
     },
-  }));
+  });

@@ -28,24 +28,43 @@ umbrella `platejs` package.
 
 ## Key Constants
 
-`KEYS` is the canonical key map used by Plate packages, registry components, and
-plugin configuration.
+`KEYS` contains code-facing plugin identities. `NODES` contains serialized
+element and mark discriminators. Use `editor.getType(KEYS.somePlugin)` when a
+plugin can override its node type.
 
 | Export | Contains | Notes |
 | --- | --- | --- |
-| `NODES` | Element and mark node keys such as `p`, `blockquote`, `codeBlock`, `table`, `bold`, and `link` | `link` maps to the same node type as `a`. |
+| `NODES` | Serialized element and mark types such as `p`, `blockquote`, `code_block`, `table`, `bold`, and `a` | Use in persisted values, fixtures, and static node builders. |
 | `STYLE_KEYS` | Style property keys such as `color`, `fontSize`, `indent`, and `textAlign` | Used by style plugins and registry controls. |
-| `KEYS` | `NODES`, `STYLE_KEYS`, and plugin keys such as `exitBreak`, `normalizeTypes`, `singleBlock`, and `trailingBlock` | Also includes grouped values such as `heading`. |
+| `KEYS` | Plugin identities such as `codeBlock`, `inlineEquation`, `exitBreak`, and `trailingBlock`, plus shared style/action keys | Use for plugin lookup, configuration, injection, and command namespaces. |
 | `NodeKey` | Union of values from `NODES` | Use for node-type values. |
 | `StyleKey` | Union of values from `STYLE_KEYS` | Use for style keys. |
 | `PlateKey` | Union of values from `KEYS` | Includes string values and grouped key arrays. |
 
+Plugin identities and document types intentionally differ for these built-ins:
+
+| Plugin identity | Serialized type |
+| --- | --- |
+| `KEYS.codeBlock` (`codeBlock`) | `NODES.codeBlock` (`code_block`) |
+| `KEYS.codeDrawing` (`codeDrawing`) | `NODES.codeDrawing` (`code_drawing`) |
+| `KEYS.codeLine` (`codeLine`) | `NODES.codeLine` (`code_line`) |
+| `KEYS.codeSyntax` (`codeSyntax`) | `NODES.codeSyntax` (`code_syntax`) |
+| `KEYS.columnGroup` (`columnGroup`) | `NODES.columnGroup` (`column_group`) |
+| `KEYS.emojiInput` (`emojiInput`) | `NODES.emojiInput` (`emoji_input`) |
+| `KEYS.inlineEquation` (`inlineEquation`) | `NODES.inlineEquation` (`inline_equation`) |
+| `KEYS.listTodoClassic` (`listTodoClassic`) | `NODES.listTodoClassic` (`action_item`) |
+| `KEYS.mediaEmbed` (`mediaEmbed`) | `NODES.mediaEmbed` (`media_embed`) |
+| `KEYS.mentionInput` (`mentionInput`) | `NODES.mentionInput` (`mention_input`) |
+| `KEYS.searchHighlight` (`searchHighlight`) | `NODES.searchHighlight` (`search_highlight`) |
+| `KEYS.slashInput` (`slashInput`) | `NODES.slashInput` (`slash_input`) |
+| `KEYS.slashCommand` (`slashCommand`) | No node; behavior-only plugin |
+
 ```ts title="Use Plate keys"
-import { KEYS, TrailingBlockPlugin } from 'platejs';
+import { KEYS, NODES, TrailingBlockPlugin } from 'platejs';
 
 export const trailingBlock = TrailingBlockPlugin.configure({
   options: {
-    type: KEYS.p,
+    type: NODES.p,
   },
 });
 ```

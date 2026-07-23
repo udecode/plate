@@ -153,7 +153,6 @@ const App = () => {
 ```
 
 Hotkeys like `Ctrl+B` belong in `onKeyDown` because they are UI shortcuts.
-Editing behavior that maps to Plite transform names, such as `deleteBackward`,
-`deleteForward`, `insertBreak`, or `insertText`, belongs in extension
-`transforms` so keyboard input, native input, toolbars, programmatic calls, and
-tests use the same behavior.
+Reusable editing behavior such as deleting, inserting breaks, or inserting text
+belongs in extension `commands` so keyboard input, native input, toolbars,
+programmatic calls, and tests use the same behavior.

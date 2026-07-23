@@ -63,7 +63,7 @@ as a specific HTML element.
 
 ### PlateLeaf
 
-Leaf components render marks and decorated text ranges.
+Leaf components render marked and decorated text ranges.
 
 ```tsx title="components/ui/code-node.tsx" showLineNumbers
 'use client';
@@ -83,8 +83,8 @@ export function CodeLeaf({ children, ...props }: PlateLeafProps) {
 }
 ```
 
-`PlateLeaf` renders a `span` by default. Use it for plugins with
-`node.isLeaf: true`.
+`PlateLeaf` renders a `span` by default. Use it for plugins that declare
+`schema.mark`.
 
 ## Register Components
 
@@ -110,12 +110,11 @@ export const plugins = [
 ];
 ```
 
-`.withComponent(Component)` sets both `node.component` and `render.node` for the
-plugin.
+`.withComponent(Component)` writes `render.node` for the plugin.
 
-### node.component
+### render.node
 
-Use `node.component` inside `.configure()` when the same plugin call also owns
+Use `render.node` inside `.configure()` when the same plugin call also owns
 rules, shortcuts, options, or parser behavior.
 
 ```tsx title="components/editor/plugins.tsx" showLineNumbers
@@ -127,13 +126,11 @@ import { CodeLeaf } from '@/components/ui/code-node';
 export const plugins = [
   CodePlugin.configure({
     inputRules: [CodeRules.markdown()],
-    node: { component: CodeLeaf },
+    render: { node: CodeLeaf },
     shortcuts: { toggle: { keys: 'mod+e' } },
   }),
 ];
 ```
-
-During plugin resolution, Plate keeps `node.component` and `render.node` in sync.
 
 ### Editor components
 
@@ -178,13 +175,14 @@ Use `render.as` when the default `PlateElement` or `PlateLeaf` wrapper is enough
 and you only need a different HTML tag.
 
 ```ts title="quote-plugin.ts" showLineNumbers
+import { schema } from 'platejs';
 import { createPlatePlugin } from 'platejs/react';
 
 export const QuotePlugin = createPlatePlugin({
   key: 'quote',
-  node: {
-    isElement: true,
-    type: 'quote',
+  type: 'quote',
+  schema: {
+    element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
   render: {
     as: 'blockquote',
@@ -220,9 +218,9 @@ replace from the registry.
 | API | Use for | Notes |
 | --- | --- | --- |
 | `PlateElement` | Element nodes. | Defaults to `div`; accepts `as`, `className`, `style`, and Plate render props. |
-| `PlateLeaf` | Leaf and mark nodes. | Defaults to `span`; use with plugins where `node.isLeaf` is true. |
-| `plugin.withComponent(Component)` | Simple component attachment. | Sets `node.component` and `render.node`. |
-| `plugin.configure({ node: { component } })` | Component plus plugin config. | Plate syncs `node.component` to `render.node` during resolution. |
+| `PlateLeaf` | Marked and decorated text. | Defaults to `span`; use with plugins that declare `schema.mark`. |
+| `plugin.withComponent(Component)` | Simple component attachment. | Writes `render.node`. |
+| `plugin.configure({ render: { node } })` | Component plus plugin definition. | Keeps rendering under one owner. |
 | `render.as` | Default wrapper with a different tag. | Works when no custom `render.node` component is set. |
 | `components` | Editor-wide component overrides. | Merged into the root plugin's component overrides. |
 | `override.components` | Advanced plugin-level component overrides. | Higher-priority plugins win when a target already has a component. |

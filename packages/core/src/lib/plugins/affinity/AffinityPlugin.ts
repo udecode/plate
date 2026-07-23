@@ -1,7 +1,9 @@
 import {
   type EditorUpdateTransaction,
+  type EditorStateView,
   type Path,
   type Text,
+  editorCommands,
   ElementApi,
   NodeApi,
   RangeApi,
@@ -26,104 +28,118 @@ export type ElementAffinity = {
 export const AffinityPlugin = createBasePlugin({
   key: 'affinity',
 }).extendExtension(({ editor }) => ({
-  transforms: {
-    deleteBackward({ next, tx, unit }) {
-      if (unit !== 'character' || !editor.read.selection.isCollapsed()) {
-        return next();
+  commands: ({ around }) => [
+    around(editorCommands.delete, ({ input, state, next }) => {
+      if (
+        input.direction !== 'backward' ||
+        input.unit !== 'character' ||
+        !state.selection.isCollapsed()
+      ) {
+        return false;
       }
 
-      const [start] = getEdgeNodes(editor) ?? [null];
+      const [start] = getEdgeNodes(editor, state) ?? [null];
       const startText =
         start &&
         (NodeApi.isText(start[0]) ? start[0].text : NodeApi.string(start[0]));
+      const result = next();
 
-      const didDelete = next();
-      const edgeNodes = getEdgeNodes(editor);
+      if (result === false) return false;
 
-      if (
-        edgeNodes &&
-        isNodesAffinity(editor, edgeNodes, 'directional') &&
-        !hasElement(edgeNodes)
-      ) {
-        const affinity =
-          startText && startText.length > 1 ? 'backward' : 'forward';
-        setAffinitySelection(editor, edgeNodes, affinity, tx);
-      }
+      return state.transaction.extend(result, (tx) => {
+        const edgeNodes = getEdgeNodes(editor, tx);
 
-      return didDelete;
-    },
-    insertText({ next, tx }) {
-      applyOutwardAffinity(editor, tx);
+        if (
+          edgeNodes &&
+          isNodesAffinity(editor, edgeNodes, 'directional') &&
+          !hasElement(edgeNodes)
+        ) {
+          const affinity =
+            startText && startText.length > 1 ? 'backward' : 'forward';
 
-      return next();
-    },
-    move({ next, options, tx }) {
+          setAffinitySelection(edgeNodes, affinity, tx);
+        }
+      });
+    }),
+    around(editorCommands.insertText, ({ state, next }) => {
+      const prefix = state.transaction((tx) => {
+        applyOutwardAffinity(editor, state, tx);
+      });
+
+      return next.after(prefix);
+    }),
+    around(editorCommands.move, ({ input, state, next }) => {
       const {
         distance = 1,
         reverse = false,
         unit = 'character',
-      } = options ?? {};
+      } = input.options ?? {};
 
       if (
         unit === 'character' &&
         distance === 1 &&
-        editor.read.selection.isCollapsed()
+        state.selection.isCollapsed()
       ) {
-        const preEdgeNodes = getEdgeNodes(editor);
+        const preEdgeNodes = getEdgeNodes(editor, state);
 
         if (preEdgeNodes && isNodesAffinity(editor, preEdgeNodes, 'hard')) {
           if (
             preEdgeNodes[reverse ? 0 : 1] === null &&
-            getMarkBoundaryAffinity(editor, preEdgeNodes) ===
+            getMarkBoundaryAffinity(editor, preEdgeNodes, state) ===
               (reverse ? 'forward' : 'backward')
           ) {
-            setAffinitySelection(
-              editor,
-              preEdgeNodes,
-              reverse ? 'backward' : 'forward',
-              tx
-            );
-
-            return true;
+            return state.transaction((tx) => {
+              setAffinitySelection(
+                preEdgeNodes,
+                reverse ? 'backward' : 'forward',
+                tx
+              );
+            });
           }
 
-          return next({ options: { ...options, unit: 'offset' } });
+          return next({
+            ...input,
+            options: { ...input.options, unit: 'offset' },
+          });
         }
 
-        const didMove = next();
-        const postEdgeNodes = getEdgeNodes(editor);
+        const result = next();
 
-        if (
-          postEdgeNodes &&
-          isNodesAffinity(editor, postEdgeNodes, 'directional') &&
-          !hasElement(postEdgeNodes)
-        ) {
-          setAffinitySelection(
-            editor,
-            postEdgeNodes,
-            reverse ? 'forward' : 'backward',
-            tx
-          );
-        }
+        if (result === false) return false;
 
-        return didMove;
+        return state.transaction.extend(result, (tx) => {
+          const postEdgeNodes = getEdgeNodes(editor, tx);
+
+          if (
+            postEdgeNodes &&
+            isNodesAffinity(editor, postEdgeNodes, 'directional') &&
+            !hasElement(postEdgeNodes)
+          ) {
+            setAffinitySelection(
+              postEdgeNodes,
+              reverse ? 'forward' : 'backward',
+              tx
+            );
+          }
+        });
       }
 
       return next();
-    },
-  },
+    }),
+  ],
 }));
 
 const applyOutwardAffinity = (
   editor: BaseEditor,
+  state: Pick<EditorStateView, 'nodes' | 'points' | 'selection'>,
   tx: Pick<EditorUpdateTransaction, 'marks'>
 ) => {
-  const selection = editor.read.selection();
+  const selection = state.selection();
 
   if (!selection || RangeApi.isExpanded(selection)) return;
 
   const textPath = selection.focus.path;
-  const textNode = editor.read.nodes.get<Text>(textPath)?.[0];
+  const textNode = state.nodes.get<Text>(textPath)?.[0];
 
   if (!textNode) return;
 
@@ -133,14 +149,11 @@ const applyOutwardAffinity = (
       getPluginByType(editor, type)?.rules.selection?.affinity === 'outward'
   );
 
-  if (
-    !outwardMarks.length ||
-    !editor.read.points.isEnd(selection.focus, textPath)
-  ) {
+  if (!outwardMarks.length || !state.points.isEnd(selection.focus, textPath)) {
     return;
   }
 
-  const nextTextNode = getNextTextNode(editor, textPath);
+  const nextTextNode = getNextTextNode(state, textPath);
   const marksToRemove = outwardMarks.filter(
     (markKey) => textNode[markKey] && !nextTextNode?.[markKey]
   );
@@ -154,12 +167,15 @@ const applyOutwardAffinity = (
   });
 };
 
-const getNextTextNode = (editor: BaseEditor, path: Path) => {
-  const nextPoint = editor.read.points.after(path);
+const getNextTextNode = (
+  state: Pick<EditorStateView, 'nodes' | 'points'>,
+  path: Path
+) => {
+  const nextPoint = state.points.after(path);
 
   if (!nextPoint) return null;
 
-  return editor.read.nodes.get<Text>(nextPoint.path)?.[0] ?? null;
+  return state.nodes.get<Text>(nextPoint.path)?.[0] ?? null;
 };
 
 const hasElement = (edgeNodes: EdgeNodes) => {

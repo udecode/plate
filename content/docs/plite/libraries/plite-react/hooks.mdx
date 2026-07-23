@@ -62,12 +62,12 @@ const selection = useEditorState((state) => state.selection(), {
 });
 ```
 
-Pass `options.deps` when the selector closes over component props.
+Selectors always call the latest render's function, so they can close over
+component props without a dependency list.
 
 ```typescript
 const matchingText = useEditorState(
-  (state) => state.text.string([]).includes(query),
-  { deps: [query] }
+  (state) => state.text.string([]).includes(query)
 );
 ```
 
@@ -112,19 +112,24 @@ The setter writes through `editor.update` and preserves DOM selection by
 default. Pass the editor's typed update policy when the app needs history or
 additional tags; the hook appends its selection-preservation tags.
 
-#### `useEditorSelector<T>(selector, equalityFn?, options?): T`
+#### `useEditorSelector<T>(selector, options?): T`
 
 Subscribe to a low-level derived editor value.
 
 Use `useEditorState` for normal app-level editor reads. Use
-`useEditorSelector` when you intentionally need the editor object or operation
-batch passed to the selector. Prefer node-, text-, decoration-, or
-element-scoped hooks when rendering editor content.
+`useEditorSelector` when you intentionally need the editor object or an
+installed runtime API. Prefer node-, text-, decoration-, or element-scoped
+hooks when rendering editor content.
 
 ```typescript
-const latestOperationCount = useEditorSelector((_editor, operations) => {
-  return operations?.length ?? 0;
-});
+const documentVersion = useEditorSelector(
+  (editor) => editor.read.runtime.snapshot().version,
+  {
+    equalityFn: Object.is,
+    shouldUpdate: (commit) =>
+      commit === undefined || commit.changed.has("document"),
+  }
+);
 ```
 
 #### `usePliteHistory(options?): PliteHistoryController`
@@ -167,10 +172,9 @@ Most app code should use `Plite` directly.
 Subscribe to whole-runtime editor state. The selector runs in a read boundary and
 re-renders only when the selected value changes.
 
-Shared selector options are `deps`, `equalityFn`, `shouldUpdate`, and
-`deferred`. Pass `deps` when the selector closes over props. Use
-`shouldUpdate(change, operations)` to skip commits that cannot affect the
-selected value.
+Shared selector options are `equalityFn`, `shouldUpdate`, and `deferred`.
+Selectors always read the latest render closure. Use `shouldUpdate(commit)`
+with `commit.changed` to skip commits that cannot affect the selected value.
 
 #### `usePliteRootState<T>(root, selector, options?): T`
 
@@ -230,20 +234,37 @@ measurement needs the live root editor.
 Pass `root` to target one root. Pass `deps` for React-style rerun control.
 Omit `deps` when the effect should rerun after every React render.
 
-#### `usePliteCommandCallback(callback, options?): (...args) => result`
+#### `usePliteCommand(command, options?): (input) => boolean`
 
-Create a stable callback that resolves the mounted root editor at call time.
+Bind one typed semantic command to the mounted root editor. Command input
+belongs to the returned dispatcher, so event-time data never becomes hook
+configuration.
 
 ```tsx
-const toggleTitle = usePliteCommandCallback((editor) => {
-  editor.update.text.insert("Title");
+import { editorCommands } from "@platejs/plite";
+import { usePliteCommand } from "@platejs/plite-react";
+
+const insertBreak = usePliteCommand(editorCommands.insertBreak, {
+  focus: "restore-root",
 });
+
+return <button onClick={() => insertBreak()}>New paragraph</button>;
 ```
 
 Pass `focus: 'restore-root'` when the command should move focus back to the
 editor root before running. Pass `focus: 'none'` to leave focus alone. The
 default is `focus: 'preserve'`. Pass `root` when the command should target a
 known root instead of the editable or active root.
+
+For an imperative UI callback that is not a semantic command, use the provider
+editor and React directly. This does not claim replayable command semantics.
+
+```tsx
+const editor = useEditor();
+const insertTitle = React.useCallback(() => {
+  editor.update.text.insert("Title");
+}, [editor]);
+```
 
 ## Element And Node Hooks
 
@@ -369,7 +390,7 @@ absolute document coordinates. Normal editor UI should not need it.
 Use annotation hooks for durable anchored ranges such as comments, suggestions,
 diagnostics, and external review markers.
 
-#### `usePliteAnnotationStore<TData, TProjection>(editor, annotationsOrOptions): PliteAnnotationStore<TData, TProjection>`
+#### `usePliteAnnotationStore<TData, TProjection>(editor, annotations, options?): PliteAnnotationStore<TData, TProjection>`
 
 Create an annotation store for durable anchored ranges such as comments,
 suggestions, diagnostics, or external review markers.
@@ -377,20 +398,22 @@ suggestions, diagnostics, or external review markers.
 Pass the store to `Plite` so `Editable`, sidebars, and widget UI read one
 annotation snapshot.
 
-Pass an array for simple static annotation lists. Pass a projector when
-annotations are derived from React state and should refresh from explicit
-dependencies.
+Pass the current annotation array directly. A new array identity refreshes the
+store automatically. Use `revision` only for an external mutable source that
+changes without producing a new array.
 
 ```tsx
-const annotationStore = usePliteAnnotationStore(editor, {
-  deps: [comments],
-  project: () =>
-    comments.map((comment) => ({
-      anchor: comment.anchor,
-      data: comment,
-      id: comment.id,
-      projection: { tone: comment.tone },
-    })),
+const annotations = comments.map((comment) => ({
+  anchor: comment.anchor,
+  data: comment,
+  id: comment.id,
+  projection: { tone: comment.tone },
+}));
+
+const annotationStore = usePliteAnnotationStore(editor, annotations);
+
+const externalStore = usePliteAnnotationStore(editor, mutableAnnotations, {
+  revision: mutableAnnotationsRevision,
 });
 ```
 
@@ -407,24 +430,24 @@ Read one annotation by id.
 
 Use widget hooks for UI anchored to nodes, selections, or annotations.
 
-#### `usePliteWidgetStore<TWidget, TAnnotation>(editor, widgetsOrOptions, annotationStore?): PliteWidgetStore<TWidget, TAnnotation>`
+#### `usePliteWidgetStore<TWidget, TAnnotation>(editor, widgets, options?): PliteWidgetStore<TWidget, TAnnotation>`
 
 Create a widget store for UI anchored to nodes, selections, or annotations.
 
-Pass an array for simple static widget lists. Pass a projector when widget
-creation depends on React state and should refresh from explicit dependencies.
+Pass the current widget array directly. Use `revision` only when a mutable
+external source changes without producing a new array.
 
 ```tsx
-const widgetStore = usePliteWidgetStore(editor, {
+const widgets = [
+  {
+    anchor: { annotationId: commentId, type: "annotation" },
+    data: { label: "Comment" },
+    id: "comment-widget",
+  },
+];
+
+const widgetStore = usePliteWidgetStore(editor, widgets, {
   annotationStore,
-  deps: [commentId],
-  project: () => [
-    {
-      anchor: { annotationId: commentId, type: "annotation" },
-      data: { label: "Comment" },
-      id: "comment-widget",
-    },
-  ],
 });
 ```
 

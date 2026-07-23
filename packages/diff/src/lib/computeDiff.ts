@@ -58,10 +58,15 @@ export const computeDiff = (
     isInline,
     stringCharMapping,
     getUpdateProps: (node, properties, newProperties) => {
+      const changedKeys = new Set([
+        ...Object.keys(properties),
+        ...Object.keys(newProperties),
+      ]);
+
       // Ignore the update if only ignored props have changed
       if (
         ignoreProps &&
-        Object.keys(newProperties).every((key) => ignoreProps.includes(key))
+        [...changedKeys].every((key) => ignoreProps.includes(key))
       )
         return {};
 
@@ -73,14 +78,14 @@ export const computeDiff = (
 
 export const defaultGetInsertProps = (): DiffProps => ({
   diff: true,
-  diffOperation: {
+  diffIntent: {
     type: 'insert',
   },
 });
 
 export const defaultGetDeleteProps = (): DiffProps => ({
   diff: true,
-  diffOperation: {
+  diffIntent: {
     type: 'delete',
   },
 });
@@ -91,7 +96,7 @@ export const defaultGetUpdateProps = (
   newProperties: DiffProperties
 ): DiffProps => ({
   diff: true,
-  diffOperation: {
+  diffIntent: {
     newProperties,
     properties,
     type: 'update',

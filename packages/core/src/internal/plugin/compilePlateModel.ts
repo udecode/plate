@@ -9,7 +9,6 @@ import {
   schema,
 } from '@platejs/plite';
 import { getCompiledSchemaPropertyId } from '@platejs/plite/internal';
-import merge from 'lodash/merge.js';
 
 import type { BaseEditor, PlateSchemaIdentity } from '../../lib/editor';
 import type {
@@ -29,10 +28,12 @@ import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';
 import {
   freezePluginDescriptorValue,
   isNominalPluginReference,
+  mergePlugins,
 } from '../utils/mergePlugins';
 import {
   clearPlateRuntimeCandidate,
   getPlateRuntimeCandidate,
+  getPlateRuntimeOwner,
   type PlateRuntime,
 } from './plateRuntime';
 
@@ -85,6 +86,9 @@ const EMPTY_MODEL: CompiledPlateModel = Object.freeze({
 
 const PLATE_MODEL_PUBLICATIONS = new WeakMap<Editor, PlateModelPublication>();
 
+const getPlateOwner = (editor: Editor<any, any>) =>
+  getPlateRuntimeOwner(editor) as BaseEditor;
+
 const candidateModels = new WeakMap<BaseEditor, CompiledPlateModel>();
 const candidatePluginApis = new WeakMap<
   BaseEditor,
@@ -119,11 +123,12 @@ const compileResolvedPluginTargetBinding = (
   editor: BaseEditor,
   plugin: Pick<AnyBasePlugin, 'key' | 'targetPluginKeys'>
 ): ResolvedPluginTargetBinding => {
-  let editorBindings = resolvedTargetBindings.get(editor);
+  const owner = getPlateOwner(editor);
+  let editorBindings = resolvedTargetBindings.get(owner);
 
   if (!editorBindings) {
     editorBindings = new WeakMap();
-    resolvedTargetBindings.set(editor, editorBindings);
+    resolvedTargetBindings.set(owner, editorBindings);
   }
 
   const installed = new Map(
@@ -166,7 +171,9 @@ export const getResolvedPluginTargetBinding = (
   editor: BaseEditor,
   plugin: Pick<AnyBasePlugin, 'key' | 'targetPluginKeys'>
 ): ResolvedPluginTargetBinding => {
-  const cached = resolvedTargetBindings.get(editor)?.get(plugin as object);
+  const cached = resolvedTargetBindings
+    .get(getPlateOwner(editor))
+    ?.get(plugin as object);
 
   return cached ?? compileResolvedPluginTargetBinding(editor, plugin);
 };
@@ -204,11 +211,21 @@ const applyResolvedTargetInjection = (
   });
 
   plugin.inject = plugin.inject || {};
-  plugin.inject.plugins = merge(
-    Object.create(null),
-    plugin.inject.plugins,
-    injectedPlugins
-  );
+  const overlays: Record<string, Partial<AnyBasePlugin>> = Object.create(null);
+
+  for (const source of [plugin.inject.plugins, injectedPlugins]) {
+    if (!source) continue;
+
+    for (const key of Object.keys(source)) {
+      const overlay = source[key];
+
+      if (!overlay) continue;
+      overlays[key] = Object.hasOwn(overlays, key)
+        ? mergePlugins(overlays[key], overlay)
+        : mergePlugins({}, overlay);
+    }
+  }
+  plugin.inject.plugins = overlays;
 };
 
 const assertType = (plugin: AnyBasePlugin) => {
@@ -534,16 +551,16 @@ export const attachPlateModelPublication = (
   editor: BaseEditor,
   publication: PlateModelPublication
 ) => {
-  PLATE_MODEL_PUBLICATIONS.set(editor, publication);
+  PLATE_MODEL_PUBLICATIONS.set(getPlateOwner(editor), publication);
   clearPlateRuntimeCandidate(editor);
 };
 
 export const clearPlateModelPublication = (editor: Editor<any, any>) => {
-  PLATE_MODEL_PUBLICATIONS.delete(editor as Editor);
+  PLATE_MODEL_PUBLICATIONS.delete(getPlateOwner(editor));
 };
 
 export const getPlateModelPublication = (editor: Editor<any, any>) =>
-  PLATE_MODEL_PUBLICATIONS.get(editor as Editor);
+  PLATE_MODEL_PUBLICATIONS.get(getPlateOwner(editor));
 
 /** @internal Runtime projection compiled from the installed Plate model. */
 export const getPlateRuntime = (editor: Editor<any, any>): PlateRuntime => {
@@ -562,7 +579,7 @@ export const hasPlateRuntime = (editor: Editor<any, any>) =>
   getPlateModelPublication(editor) !== undefined;
 
 export const getCompiledPlateModel = (editor: BaseEditor) =>
-  candidateModels.get(editor) ??
+  candidateModels.get(getPlateOwner(editor)) ??
   getPlateModelPublication(editor)?.model ??
   EMPTY_MODEL;
 
@@ -572,34 +589,42 @@ export const getCompiledPlateModelBinding = (
 ) => getCompiledPlateModel(editor).byKey[plugin.key];
 
 export const getCompiledPlatePluginList = (editor: BaseEditor) =>
-  candidatePluginSets.get(editor)?.list ?? getPlateRuntime(editor).pluginList;
+  candidatePluginSets.get(getPlateOwner(editor))?.list ??
+  getPlateRuntime(editor).pluginList;
 
 export const hasCompiledPlatePluginCandidate = (editor: BaseEditor) =>
-  candidatePluginSets.has(editor);
+  candidatePluginSets.has(getPlateOwner(editor));
 
-export const getCompiledPlatePlugin = (editor: BaseEditor, key: string) =>
-  candidatePluginSets.has(editor)
-    ? candidatePluginSets.get(editor)!.byKey[key]
+export const getCompiledPlatePlugin = (editor: BaseEditor, key: string) => {
+  const owner = getPlateOwner(editor);
+
+  return candidatePluginSets.has(owner)
+    ? candidatePluginSets.get(owner)!.byKey[key]
     : getPlateRuntime(editor).plugins[key];
+};
 
-export const getCompiledPlatePluginApi = (editor: BaseEditor, key: string) =>
-  candidatePluginApis.has(editor)
-    ? candidatePluginApis.get(editor)![key]
+export const getCompiledPlatePluginApi = (editor: BaseEditor, key: string) => {
+  const owner = getPlateOwner(editor);
+
+  return candidatePluginApis.has(owner)
+    ? candidatePluginApis.get(owner)![key]
     : getPlateModelPublication(editor)?.apiByPlugin[key];
+};
 
 export const hasCompiledPlatePluginApiCandidate = (editor: BaseEditor) =>
-  candidatePluginApis.has(editor);
+  candidatePluginApis.has(getPlateOwner(editor));
 
 export const isResolvingPlatePlugin = (
   editor: BaseEditor,
   plugin: AnyBasePlugin
-) => resolvingPlugins.get(editor) === plugin;
+) => resolvingPlugins.get(getPlateOwner(editor)) === plugin;
 
 export const setCompiledPlatePluginCandidate = (
   editor: BaseEditor,
   plugin: AnyBasePlugin
 ) => {
-  const candidate = candidatePluginSets.get(editor);
+  const owner = getPlateOwner(editor);
+  const candidate = candidatePluginSets.get(owner);
 
   if (!candidate) return;
   const list = [...candidate.list];
@@ -614,7 +639,7 @@ export const setCompiledPlatePluginCandidate = (
   );
 
   candidatePluginSets.set(
-    editor,
+    owner,
     Object.freeze({
       byKey: Object.freeze(byKey),
       list: Object.freeze(list),
@@ -627,14 +652,15 @@ export const withCompiledPlatePluginCandidate = <T>(
   list: readonly AnyBasePlugin[],
   run: () => T
 ): T => {
-  const previous = candidatePluginSets.get(editor);
+  const owner = getPlateOwner(editor);
+  const previous = candidatePluginSets.get(owner);
   const byKey: Record<string, AnyBasePlugin> = Object.create(null);
 
   list.forEach((plugin) => {
     byKey[plugin.key] = plugin;
   });
   candidatePluginSets.set(
-    editor,
+    owner,
     Object.freeze({
       byKey: Object.freeze(byKey),
       list: Object.freeze([...list]),
@@ -643,8 +669,8 @@ export const withCompiledPlatePluginCandidate = <T>(
   try {
     return run();
   } finally {
-    if (previous) candidatePluginSets.set(editor, previous);
-    else candidatePluginSets.delete(editor);
+    if (previous) candidatePluginSets.set(owner, previous);
+    else candidatePluginSets.delete(owner);
   }
 };
 
@@ -653,14 +679,15 @@ export const withCompiledPlateModelCandidate = <T>(
   model: CompiledPlateModel,
   run: () => T
 ): T => {
-  const previous = candidateModels.get(editor);
+  const owner = getPlateOwner(editor);
+  const previous = candidateModels.get(owner);
 
-  candidateModels.set(editor, model);
+  candidateModels.set(owner, model);
   try {
     return run();
   } finally {
-    if (previous) candidateModels.set(editor, previous);
-    else candidateModels.delete(editor);
+    if (previous) candidateModels.set(owner, previous);
+    else candidateModels.delete(owner);
   }
 };
 
@@ -671,14 +698,15 @@ export const withCompiledPlatePluginApiCandidate = <T>(
   >,
   run: () => T
 ): T => {
-  const previous = candidatePluginApis.get(editor);
+  const owner = getPlateOwner(editor);
+  const previous = candidatePluginApis.get(owner);
 
-  candidatePluginApis.set(editor, apiByPlugin);
+  candidatePluginApis.set(owner, apiByPlugin);
   try {
     return run();
   } finally {
-    if (previous) candidatePluginApis.set(editor, previous);
-    else candidatePluginApis.delete(editor);
+    if (previous) candidatePluginApis.set(owner, previous);
+    else candidatePluginApis.delete(owner);
   }
 };
 
@@ -687,13 +715,14 @@ export const withResolvingPlatePlugin = <T>(
   plugin: AnyBasePlugin,
   run: () => T
 ): T => {
-  const previous = resolvingPlugins.get(editor);
+  const owner = getPlateOwner(editor);
+  const previous = resolvingPlugins.get(owner);
 
-  resolvingPlugins.set(editor, plugin);
+  resolvingPlugins.set(owner, plugin);
   try {
     return run();
   } finally {
-    if (previous) resolvingPlugins.set(editor, previous);
-    else resolvingPlugins.delete(editor);
+    if (previous) resolvingPlugins.set(owner, previous);
+    else resolvingPlugins.delete(owner);
   }
 };

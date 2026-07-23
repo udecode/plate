@@ -39,71 +39,38 @@ export const selectColumnAll = (
 
 export const withColumn: ExtendPlateEditorExtension<ColumnConfig> = ({
   editor,
-  type,
 }) => ({
-  normalizers: {
-    node({ entry: [node, path], next, tx }) {
-      const columnGroupType = editor.getType(KEYS.columnGroup);
-
-      if (
-        ElementApi.isElementType<TColumnGroupElement>(node, columnGroupType)
-      ) {
-        const firstChild = node.children[0];
+  corrections: [
+    {
+      event: 'content',
+      correct({ entry: [node, path], tx }) {
+        const columnGroupType = editor.getType(KEYS.columnGroup);
 
         if (
-          node.children.length === 1 &&
-          firstChild?.type === editor.getType(KEYS.p)
+          ElementApi.isElementType<TColumnGroupElement>(node, columnGroupType)
         ) {
-          tx.nodes.unwrap({ at: path });
+          const totalColumns = node.children.length;
+          const widths = node.children.map((column) => {
+            const parsed = Number.parseFloat(column.width);
 
-          return;
-        }
-
-        if (!node.children.some((child) => child.type === type)) {
-          tx.nodes.unwrap({ at: path });
-
-          return;
-        }
-
-        if (node.children.length < 2) {
-          tx.nodes.unwrap({ at: path });
-          tx.nodes.unwrap({ at: path });
-
-          return;
-        }
-
-        const totalColumns = node.children.length;
-        const widths = node.children.map((column) => {
-          const parsed = Number.parseFloat(column.width);
-
-          return Number.isNaN(parsed) ? 0 : parsed;
-        });
-        const sum = widths.reduce((total, width) => total + width, 0);
-
-        if (sum !== 100) {
-          const adjustment = (100 - sum) / totalColumns;
-
-          widths.forEach((width, index) => {
-            tx.nodes.set<TColumnElement>(
-              { width: `${width + adjustment}%` },
-              { at: path.concat([index]) }
-            );
+            return Number.isNaN(parsed) ? 0 : parsed;
           });
+          const sum = widths.reduce((total, width) => total + width, 0);
 
-          return;
+          if (sum !== 100) {
+            const adjustment = (100 - sum) / totalColumns;
+
+            widths.forEach((width, index) => {
+              tx.nodes.set<TColumnElement>(
+                { width: `${width + adjustment}%` },
+                { at: path.concat([index]) }
+              );
+            });
+
+            return;
+          }
         }
-      }
-
-      if (
-        ElementApi.isElementType<TColumnElement>(node, type) &&
-        node.children.length === 0
-      ) {
-        tx.nodes.remove({ at: path });
-
-        return;
-      }
-
-      next();
+      },
     },
-  },
+  ],
 });

@@ -15,7 +15,7 @@ import {
   OutdentIcon,
 } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { useEditorRef } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -49,7 +49,7 @@ export function IndentToolbarButton({
 }: React.ComponentProps<typeof ToolbarButton> & {
   reverse?: boolean;
 }) {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return (
     <ToolbarButton

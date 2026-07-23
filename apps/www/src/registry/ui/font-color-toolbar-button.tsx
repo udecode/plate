@@ -11,11 +11,7 @@ import { useComposedRef } from '@udecode/cn';
 import debounce from 'lodash/debounce.js';
 import { CheckIcon, EraserIcon, PlusIcon } from 'lucide-react';
 import { type Text, TextApi } from 'platejs';
-import {
-  type PlateEditor,
-  useEditorRef,
-  useEditorSelector,
-} from 'platejs/react';
+import { type PlateEditor, useEditor, useEditorSelector } from 'platejs/react';
 
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -83,16 +79,14 @@ export function FontColorToolbarButton({
   nodeType: string;
   tooltip?: string;
 } & DropdownMenuProps) {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   const selectionDefined = useEditorSelector(
-    (editor) => !!editor.read.selection(),
-    []
+    (editor) => !!editor.read.selection()
   );
 
   const color = useEditorSelector(
-    (editor) => editor.read.marks()?.[nodeType] as string,
-    [nodeType]
+    (editor) => editor.read.marks()?.[nodeType] as string
   );
 
   const [selectedColor, setSelectedColor] = React.useState<string>();

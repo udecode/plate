@@ -1,4 +1,4 @@
-import type { Path, PathRef, Point, Range } from '@platejs/plite';
+import type { Anchor, Path, Point, Range } from '@platejs/plite';
 
 import type { PluginConfig } from '../../../lib/plugin';
 
@@ -20,7 +20,7 @@ export type NavigationFeedbackStoredTarget = Omit<
   NavigationFeedbackActiveTarget,
   'path'
 > & {
-  pathRef: PathRef;
+  pathAnchor: Anchor<Path>;
 };
 
 export type NavigationFlashTargetOptions = {

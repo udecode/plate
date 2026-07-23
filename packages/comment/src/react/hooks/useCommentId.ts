@@ -14,4 +14,4 @@ export const useCommentId = () =>
     const [commentLeaf] = commentNode;
 
     return api.nodeId(commentLeaf);
-  }, []);
+  });

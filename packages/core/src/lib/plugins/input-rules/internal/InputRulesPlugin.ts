@@ -1,4 +1,11 @@
-import { ElementApi, RangeApi, type Element } from '@platejs/plite';
+import {
+  type EditorStateView,
+  type Element,
+  editorCommands,
+  ElementApi,
+  NodeApi,
+  RangeApi,
+} from '@platejs/plite';
 
 import type { BaseEditor } from '../../../editor';
 import type {
@@ -9,6 +16,7 @@ import type {
 } from '../types';
 
 import { createBasePlugin } from '../../../plugin';
+import { getPlateRuntime } from '../../../../internal/plugin/compilePlateModel';
 
 const createCachedGetter = <TValue>(compute: () => TValue) => {
   let hasValue = false;
@@ -42,20 +50,23 @@ const dataTransferHasMime = (data: DataTransfer, mimeType: string) => {
 
 const createSelectionContext = ({
   editor,
+  state = editor.read,
 }: {
   editor: BaseEditor;
+  state?: Pick<
+    EditorStateView,
+    'nodes' | 'points' | 'schema' | 'selection' | 'text'
+  >;
 }): Omit<SelectionInputRuleContext, 'pluginKey'> => {
-  const selection = editor.read.selection();
+  const selection = state.selection();
   const isCollapsed = !!selection && RangeApi.isCollapsed(selection);
   const getBlockEntry = createCachedGetter(() =>
     selection
-      ? editor.read((state) =>
-          state.nodes.above<Element>({
-            at: selection.focus,
-            match: (node: unknown) =>
-              ElementApi.isElement(node) && state.schema.isBlock(node),
-          })
-        )
+      ? state.nodes.above<Element>({
+          at: selection.focus,
+          match: (node: unknown) =>
+            ElementApi.isElement(node) && state.schema.isBlock(node),
+        })
       : undefined
   );
   const getBlockStartRange = createCachedGetter(() => {
@@ -63,7 +74,7 @@ const createSelectionContext = ({
 
     if (!selection || !blockEntry) return;
 
-    const anchor = editor.read.points.start(blockEntry[1]);
+    const anchor = state.points.start(blockEntry[1]);
 
     if (!anchor) return;
 
@@ -75,18 +86,18 @@ const createSelectionContext = ({
   const getBlockStartText = createCachedGetter(() => {
     const range = getBlockStartRange();
 
-    return range ? editor.read.text.string(range) : undefined;
+    return range ? state.text.string(range) : undefined;
   });
   const getCharAfter = createCachedGetter(() => {
     if (!selection || !isCollapsed) return;
 
-    const afterPoint = editor.read.points.after(selection, {
+    const afterPoint = state.points.after(selection, {
       distance: 1,
       unit: 'character',
     });
 
     return afterPoint
-      ? editor.read.text.string({
+      ? state.text.string({
           anchor: selection.anchor,
           focus: afterPoint,
         }) || undefined
@@ -95,13 +106,13 @@ const createSelectionContext = ({
   const getCharBefore = createCachedGetter(() => {
     if (!selection || !isCollapsed) return;
 
-    const beforePoint = editor.read.points.before(selection, {
+    const beforePoint = state.points.before(selection, {
       distance: 1,
       unit: 'character',
     });
 
     return beforePoint
-      ? editor.read.text.string({
+      ? state.text.string({
           anchor: beforePoint,
           focus: selection.anchor,
         }) || undefined
@@ -130,10 +141,10 @@ export const InputRulesPlugin = createBasePlugin({
   clipboard: {
     insertData(data, { next, tx }) {
       const text = data.getData('text/plain') || null;
-      const selectionContext = createSelectionContext({ editor });
+      const selectionContext = createSelectionContext({ editor, state: tx });
       let handled = false;
 
-      for (const rule of editor.runtime.inputRules.insertData) {
+      for (const rule of getPlateRuntime(editor).inputRules.insertData) {
         const context: InsertDataInputRuleContext = {
           cause: 'insertData',
           data,
@@ -168,69 +179,101 @@ export const InputRulesPlugin = createBasePlugin({
       return next(data);
     },
   },
-  transforms: {
-    insertBreak({ next, tx }) {
-      const selectionContext = createSelectionContext({ editor });
+  commands: ({ around }) => [
+    around(editorCommands.insertBreak, ({ state, next }) => {
       let handled = false;
+      let continueInsertion = false;
+      const prefix = state.transaction((tx) => {
+        const selectionContext = createSelectionContext({ editor, state: tx });
 
-      for (const rule of editor.runtime.inputRules.insertBreak) {
-        const context: InsertBreakInputRuleContext = {
-          cause: 'insertBreak',
-          insertBreak: () => {
-            next();
-          },
-          pluginKey: rule.pluginKey,
-          tx,
-          ...selectionContext,
-        };
-        if (rule.enabled?.(context) === false) continue;
-        const match = rule.resolve ? rule.resolve(context) : true;
+        for (const rule of getPlateRuntime(editor).inputRules.insertBreak) {
+          const context: InsertBreakInputRuleContext = {
+            cause: 'insertBreak',
+            insertBreak: () => {
+              if (continueInsertion) {
+                throw new Error(
+                  'An input rule cannot continue insertBreak more than once.'
+                );
+              }
 
-        if (match === undefined) continue;
-        if (rule.apply(context, match) !== false) {
-          handled = true;
+              continueInsertion = true;
+            },
+            pluginKey: rule.pluginKey,
+            tx,
+            ...selectionContext,
+          };
+          if (rule.enabled?.(context) === false) continue;
+          const match = rule.resolve ? rule.resolve(context) : true;
 
-          break;
+          if (match === undefined) continue;
+          if (rule.apply(context, match) !== false) {
+            handled = true;
+
+            break;
+          }
         }
-      }
+      });
 
-      if (handled) return true;
+      if (handled && !continueInsertion) return prefix;
 
-      return next();
-    },
-    insertText({ next, options, text, tx }) {
-      const rules = editor.runtime.inputRules.insertText.byTrigger[text] ?? [];
-      const selectionContext = createSelectionContext({ editor });
+      return next.after(prefix);
+    }),
+    around(editorCommands.insertText, ({ input, state, next }) => {
+      const rules =
+        getPlateRuntime(editor).inputRules.insertText.byTrigger[input.text] ??
+        [];
+      const target = input.options?.at;
+      const resolvedTarget = NodeApi.isNode(target)
+        ? state.nodes.path(target)
+        : target;
+
+      if (NodeApi.isNode(target) && !resolvedTarget) return next();
+
+      const commandOptions = input.options
+        ? { ...input.options, at: resolvedTarget }
+        : undefined;
       let handled = false;
+      let continuation: typeof input | undefined;
+      const prefix = state.transaction((tx) => {
+        const selectionContext = createSelectionContext({ editor, state: tx });
 
-      for (const rule of rules) {
-        const context: InsertTextInputRuleContext = {
-          cause: 'insertText',
-          insertText: (nextText, nextOptions) => {
-            next({ options: nextOptions, text: nextText });
-          },
-          options,
-          pluginKey: rule.pluginKey,
-          text,
-          tx,
-          ...selectionContext,
-        };
-        if (!isTriggerMatch(rule.trigger, context.text)) continue;
-        if (rule.enabled?.(context) === false) continue;
+        for (const rule of rules) {
+          const context: InsertTextInputRuleContext = {
+            cause: 'insertText',
+            insertText: (text, options) => {
+              if (continuation) {
+                throw new Error(
+                  'An input rule cannot continue insertText more than once.'
+                );
+              }
 
-        const match = rule.resolve ? rule.resolve(context) : true;
+              continuation = { ...input, options, text };
+            },
+            options: commandOptions,
+            pluginKey: rule.pluginKey,
+            text: input.text,
+            tx,
+            ...selectionContext,
+          };
+          if (!isTriggerMatch(rule.trigger, context.text)) continue;
+          if (rule.enabled?.(context) === false) continue;
 
-        if (match === undefined) continue;
-        if (rule.apply(context, match) !== false) {
-          handled = true;
+          const match = rule.resolve ? rule.resolve(context) : true;
 
-          break;
+          if (match === undefined) continue;
+          if (rule.apply(context, match) !== false) {
+            handled = true;
+
+            break;
+          }
         }
-      }
+      });
 
-      if (handled) return true;
+      if (handled && !continuation) return prefix;
 
-      return next();
-    },
-  },
+      return continuation
+        ? next.after(prefix, continuation)
+        : next.after(prefix);
+    }),
+  ],
 }));

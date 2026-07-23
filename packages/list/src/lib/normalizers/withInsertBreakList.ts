@@ -1,40 +1,38 @@
-import type { ExtendPlateEditorExtension } from '@platejs/core';
-import type { Element } from '@platejs/plite';
+import type { PlateEditorExtension } from '@platejs/core';
+import { editorCommands, type Element } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type { BaseListConfig } from '../BaseListPlugin';
+export const withInsertBreakList = (): PlateEditorExtension => ({
+  commands: ({ around }) => [
+    around(editorCommands.insertBreak, ({ state, next }) => {
+      const nodeEntry = state.nodes.block<Element>();
 
-export const withInsertBreakList: ExtendPlateEditorExtension<
-  BaseListConfig
-> = () => ({
-  priority: 100,
-  transforms: {
-    insertBreak({ next, tx }) {
-      const nodeEntry = tx.nodes.block<Element>();
-
-      if (!nodeEntry) return next();
+      if (!nodeEntry) return false;
 
       const [node, path] = nodeEntry;
-      const selection = tx.selection();
+      const selection = state.selection();
 
       if (
         node[KEYS.listType] !== KEYS.listTodo ||
         !selection ||
-        tx.selection.isExpanded() ||
-        !tx.points.isEnd(selection.focus, path)
+        state.selection.isExpanded() ||
+        !state.points.isEnd(selection.focus, path)
       ) {
-        return next();
+        return false;
       }
 
-      next();
+      const result = next();
 
-      const newEntry = tx.nodes.above<Element>();
+      if (result === false) return false;
 
-      if (newEntry) {
-        tx.nodes.set({ checked: false }, { at: newEntry[1] });
-      }
+      return state.transaction.extend(result, (tx) => {
+        const newEntry = tx.nodes.above<Element>();
 
-      return true;
-    },
-  },
+        if (newEntry) {
+          tx.nodes.set({ checked: false }, { at: newEntry[1] });
+        }
+      });
+    }),
+  ],
+  priority: 100,
 });

@@ -13,7 +13,7 @@ While Plate is typically used as an **uncontrolled** input, there are valid scen
 
 However, keep in mind the warning about **fully controlling** the editor value. Plate strongly prefer an uncontrolled model. If you attempt to replace the editor's internal state too frequently, you can break **selection**, **history**, or cause performance issues. The recommended pattern is to treat the editor as uncontrolled, but still **sync** form data on certain events.
 
-## Approach 1: Sync on `onChange`
+## Approach 1: Sync on `onValueChange`
 
 This is the most straightforward approach: each time the editor changes, update your form field's value. For small documents or infrequent changes, this is usually acceptable.
 
@@ -42,7 +42,7 @@ export function RHFEditorForm() {
 
   // Create/configure the Plate editor
   const editor = usePlateEditor({
-     value: initialValue });
+     initialValue });
 
   // Register the field for react-hook-form
   register('content', { /* validation rules... */ });
@@ -56,7 +56,7 @@ export function RHFEditorForm() {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Plate
         editor={editor}
-        onChange={({ value }) => {
+        onValueChange={({ value }) => {
           // Sync editor changes to the form
           setValue('content', value);
         }}
@@ -73,7 +73,7 @@ export function RHFEditorForm() {
 **Notes**:
 1. **`defaultValues.content`**: your initial editor content.
 2. **`register('content')`**: signals to RHF that the field is tracked.  
-3. **`onChange({ value })`**: calls `setValue('content', value)` each time.
+3. **`onValueChange({ value })`**: calls `setValue('content', value)` each time.
 
 If you expect large documents or fast typing, consider debouncing or switching to an `onBlur` approach to reduce form updates.
 
@@ -126,7 +126,7 @@ export function EditorForm() {
               <FormControl>
                 <Plate
                   editor={editor}
-                  onChange={({ value }) => {
+                  onValueChange={({ value }) => {
                     // Sync to the form
                     field.onChange(value);
                   }}
@@ -209,7 +209,7 @@ function MyForm() {
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <Plate
         editor={editor}
-        onChange={({ value }) => form.setValue('content', value)}
+        onValueChange={({ value }) => form.setValue('content', value)}
       >
         <PlateContent />
       </Plate>
@@ -232,7 +232,7 @@ function MyForm() {
 }
 ```
 
-- **`onChange`** -> updates form state.
+- **`onValueChange`** -> updates form state.
 - **Reset** -> resets the form and replaces the editor value from the reset form
   state.
 
@@ -322,9 +322,9 @@ export function EditorField({
   placeholder = "Type here...",
   ...props
 }: EditorFieldProps) {
-  // We create our editor instance with the provided initial `value`.
+  // We create our editor instance with the provided initial value.
   const editor = usePlateEditor({
-    value: value ?? [
+    initialValue: value ?? [
       { type: "p", children: [{ text: "" }] }, // Default empty paragraph
     ],
   });
@@ -332,7 +332,7 @@ export function EditorField({
   return (
     <Plate
       editor={editor}
-      onChange={({ value }) => {
+      onValueChange={({ value }) => {
         // Sync changes back to the caller via onChange prop
         onChange?.(value);
       }}

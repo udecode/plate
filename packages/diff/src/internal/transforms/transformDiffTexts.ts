@@ -6,23 +6,17 @@
 import {
   type Descendant,
   ElementApi,
-  type Operation,
-  createEditor,
-  PathApi,
   type Text,
   TextApi,
-  type Value,
 } from '@platejs/plite';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
 import { computeDiff } from '../../lib/computeDiff';
 import { dmp } from '../utils/dmp';
-import { getProperties } from '../utils/get-properties';
 import { InlineNodeCharMap } from '../utils/inline-node-char-map';
 import { isEqual } from '../utils/is-equal';
 import { unusedCharGenerator } from '../utils/unused-char-generator';
-import { withChangeTracking } from '../utils/with-change-tracking';
 
 // Main function to transform an array of text nodes into another array of text nodes
 export function transformDiffTexts(
@@ -115,46 +109,7 @@ export function transformDiffTexts(
     .map((n) => inlineNodeCharMap.nodeToText(n))
     .map((text) => encodeLineBreaks(text, insertedLineBreakProxyChar));
 
-  const changeTracking = withChangeTracking(
-    createEditor<Value>({
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
-    }),
-    options
-  );
-  const { editor: nodesEditor } = changeTracking;
-
-  // Start with the first node in the array, assuming all nodes are to be merged into one
-  let node = texts[0];
-
-  nodesEditor.update((tx) => {
-    tx.value.replace({ children: [{ children: texts, type: 'p' }] });
-
-    if (texts.length > 1) {
-      // If there are multiple nodes, merge them into one, adding merge operations
-      for (let i = 1; i < texts.length; i++) {
-        changeTracking.applyOperation(tx, {
-          path: [0, 1],
-          position: 0,
-          properties: {},
-          type: 'merge_node',
-        });
-        // Update the node's text with the merged text (for splitTextNodes)
-        node = { ...node, text: node.text + texts[i].text };
-      }
-    }
-
-    // After merging, apply split operations based on the target state (`nextTexts`)
-    for (const op of splitTextNodes(node, nextTexts, {
-      deletedLineBreakChar: deletedLineBreakProxyChar,
-      insertedLineBreakChar: insertedLineBreakProxyChar,
-    })) {
-      changeTracking.applyOperation(tx, op);
-    }
-
-    changeTracking.commitChangesToDiffs(tx);
-  });
-
-  let diffTexts = nodesEditor.read.children()[0].children as Text[];
+  let diffTexts = diffTextSpans(texts, nextTexts, options);
 
   // Replace line break proxy chars with the actual line break char
   if (hasLineBreakChar) {
@@ -170,11 +125,6 @@ export function transformDiffTexts(
   return diffTexts.flatMap((t) => inlineNodeCharMap.textToNode(t));
 }
 
-type LineBreakCharsOptions = {
-  deletedLineBreakChar?: string;
-  insertedLineBreakChar?: string;
-};
-
 const encodeLineBreaks = (text: Text, lineBreakChar?: string): Text =>
   lineBreakChar === undefined
     ? text
@@ -183,183 +133,201 @@ const encodeLineBreaks = (text: Text, lineBreakChar?: string): Text =>
         text: text.text.replaceAll('\n', lineBreakChar),
       };
 
-// Function to compute the text operations needed to transform string `a` into string `b`
-function slateTextDiff(
-  a: string,
-  b: string,
-  { deletedLineBreakChar, insertedLineBreakChar }: LineBreakCharsOptions
-): Op[] {
-  // Compute the diff between two strings
-  const diff = dmp.diff_main(a, b);
+type TextSpan = {
+  end: number;
+  node: Text;
+};
+
+const getSpans = (texts: Text[]): TextSpan[] => {
+  let offset = 0;
+
+  return texts.map((node) => {
+    offset += node.text.length;
+
+    return { end: offset, node };
+  });
+};
+
+const getNodeProperties = (node: Text): Record<string, unknown> =>
+  Object.fromEntries(
+    Object.entries(node).filter(
+      ([key, value]) => key !== 'text' && value !== undefined
+    )
+  );
+
+const getPropertyChanges = (
+  source: Text,
+  target: Text
+): {
+  newProperties: Record<string, unknown>;
+  properties: Record<string, unknown>;
+} | null => {
+  const sourceProperties = getNodeProperties(source);
+  const targetProperties = getNodeProperties(target);
+  const keys = new Set([
+    ...Object.keys(sourceProperties),
+    ...Object.keys(targetProperties),
+  ]);
+  const properties: Record<string, unknown> = {};
+  const newProperties: Record<string, unknown> = {};
+
+  for (const key of keys) {
+    if (isEqual(sourceProperties[key], targetProperties[key])) continue;
+
+    if (Object.hasOwn(sourceProperties, key)) {
+      properties[key] = sourceProperties[key];
+    }
+    if (Object.hasOwn(targetProperties, key)) {
+      newProperties[key] = targetProperties[key];
+    }
+  }
+
+  return Object.keys(properties).length > 0 ||
+    Object.keys(newProperties).length > 0
+    ? { newProperties, properties }
+    : null;
+};
+
+const appendText = (output: Text[], node: Text) => {
+  if (node.text.length === 0) return;
+
+  const previous = output.at(-1);
+
+  if (
+    previous &&
+    isEqual(getNodeProperties(previous), getNodeProperties(node))
+  ) {
+    output[output.length - 1] = {
+      ...previous,
+      text: previous.text + node.text,
+    };
+  } else {
+    output.push(node);
+  }
+};
+
+const diffTextSpans = (
+  source: Text[],
+  target: Text[],
+  options: ComputeDiffOptions
+): Text[] => {
+  const sourceSpans = getSpans(source);
+  const targetSpans = getSpans(target);
+  const sourceText = source.map((node) => node.text).join('');
+  const targetText = target.map((node) => node.text).join('');
+  const diff = dmp.diff_main(sourceText, targetText);
+
   dmp.diff_cleanupSemantic(diff);
 
-  const operations: Op[] = [];
+  const output: Text[] = [];
+  let sourceOffset = 0;
+  let targetOffset = 0;
+  let sourceIndex = 0;
+  let targetIndex = 0;
 
-  // Initialize an offset to track position within the string
-  let offset = 0;
-  // Initialize an index to iterate through the diff chunks
-  let i = 0;
-
-  while (i < diff.length) {
-    const chunk = diff[i];
-    const op = chunk[0]; // Operation code: -1 = delete, 0 = leave unchanged, 1 = insert
-    const text = chunk[1]; // The text associated with this diff chunk
-
-    switch (op) {
-      case -1: {
-        // For deletions, add a remove_text operation
-        operations.push({
-          offset,
-          text:
-            deletedLineBreakChar === undefined
-              ? text
-              : text.replaceAll('\n', deletedLineBreakChar),
-          type: 'remove_text',
-        });
-
-        break;
-      }
-      case 0: {
-        // For unchanged text, just move the offset forward
-        offset += text.length;
-
-        break;
-      }
-      case 1: {
-        // For insertions, add an insert_text operation
-        operations.push({
-          offset,
-          text:
-            insertedLineBreakChar === undefined
-              ? text
-              : text.replaceAll('\n', insertedLineBreakChar),
-          type: 'insert_text',
-        });
-        // Move the offset forward by the length of the inserted text
-        offset += text.length;
-
-        break;
-      }
-      // No default
+  const advanceSource = () => {
+    while (
+      sourceIndex < sourceSpans.length &&
+      sourceOffset >= sourceSpans[sourceIndex].end
+    ) {
+      sourceIndex++;
     }
+  };
+  const advanceTarget = () => {
+    while (
+      targetIndex < targetSpans.length &&
+      targetOffset >= targetSpans[targetIndex].end
+    ) {
+      targetIndex++;
+    }
+  };
 
-    // Move to the next diff chunk
-    i += 1;
-  }
+  for (const [operation, text] of diff) {
+    let remaining = text.length;
 
-  return operations;
-}
+    while (remaining > 0) {
+      advanceSource();
+      advanceTarget();
 
-/* Accomplish something like this
+      if (operation === -1) {
+        const span = sourceSpans[sourceIndex];
+        const length = Math.min(remaining, span.end - sourceOffset);
 
-node={"text":"xyz A **B** C"} ->
-               split={"text":"A "} {"text":"B","bold":true} {"text":" C"}
+        appendText(output, {
+          ...span.node,
+          ...options.getDeleteProps(span.node),
+          text: sourceText.slice(sourceOffset, sourceOffset + length),
+        });
+        sourceOffset += length;
+        remaining -= length;
+        continue;
+      }
 
-via a combination of remove_text/insert_text as above and split_node
-operations.
-*/
-// Function to split a single text node into multiple nodes based on the desired target state
-function splitTextNodes(
-  node: Text,
-  split: Text[],
-  options: LineBreakCharsOptions
-): Operation[] {
-  if (split.length === 0) {
-    // If there are no target nodes, simply remove the original node
-    return [
-      {
-        node,
-        path: [0, 0],
-        type: 'remove_node',
-      },
-    ];
-  }
+      if (operation === 1) {
+        const span = targetSpans[targetIndex];
+        const length = Math.min(remaining, span.end - targetOffset);
 
-  // Start with the concatenated text of the target state
-  let splitText = '';
+        appendText(output, {
+          ...span.node,
+          ...options.getInsertProps(span.node),
+          text: targetText.slice(targetOffset, targetOffset + length),
+        });
+        targetOffset += length;
+        remaining -= length;
+        continue;
+      }
 
-  for (const { text } of split) {
-    splitText += text;
-  }
+      const sourceSpan = sourceSpans[sourceIndex];
+      const targetSpan = targetSpans[targetIndex];
+      const length = Math.min(
+        remaining,
+        sourceSpan.end - sourceOffset,
+        targetSpan.end - targetOffset
+      );
+      const propertyChanges = getPropertyChanges(
+        sourceSpan.node,
+        targetSpan.node
+      );
+      const targetSlice = {
+        ...targetSpan.node,
+        text: targetText.slice(targetOffset, targetOffset + length),
+      };
 
-  const nodeText = node.text;
-  const operations: Operation[] = [];
-
-  // If the concatenated target text differs from the original, compute the necessary text transformations
-  if (splitText !== nodeText) {
-    // Use diff-match-pach to transform the text in the source node to equal
-    // the text in the sequence of target nodes.  Once we do this transform,
-    // we can then worry about splitting up the resulting source node.
-    for (const op of slateTextDiff(nodeText, splitText, options)) {
-      // TODO: maybe path has to be changed if there are multiple OPS?
-      operations.push({ path: [0, 0], ...op });
+      appendText(
+        output,
+        propertyChanges
+          ? {
+              ...targetSlice,
+              ...options.getUpdateProps(
+                targetSlice,
+                propertyChanges.properties,
+                propertyChanges.newProperties
+              ),
+            }
+          : targetSlice
+      );
+      sourceOffset += length;
+      targetOffset += length;
+      remaining -= length;
     }
   }
 
-  // Adjust properties of the initial node to match the first target node, if necessary
-  const newProperties = getProperties(split[0], node);
+  if (output.length > 0) return output;
 
-  if (getKeysLength(newProperties) > 0) {
-    operations.push({
-      newProperties,
-      path: [0, 0],
-      properties: getProperties(node),
-      type: 'set_node',
-    });
-  }
+  const targetNode = target[0];
+  const sourceNode = source[0];
+  const propertyChanges = getPropertyChanges(sourceNode, targetNode);
 
-  let properties = getProperties(split[0]);
-  // For each segment in the target state, split the node and adjust properties as needed
-  let splitPath = [0, 0];
-
-  for (let i = 0; i < split.length - 1; i++) {
-    const part = split[i];
-    const nextPart = split[i + 1];
-
-    const newProps = getProperties(nextPart);
-
-    Object.keys(properties).forEach((key) => {
-      if (!Object.hasOwn(newProps, key)) {
-        newProps[key] = undefined;
-      }
-    });
-
-    operations.push({
-      path: splitPath,
-      position: part.text.length,
-      properties: newProps,
-      type: 'split_node',
-    });
-
-    splitPath = PathApi.next(splitPath);
-    properties = getProperties(nextPart);
-  }
-
-  return operations;
-}
-
-/*
-NOTE: the set_node api lets you delete properties by setting
-them to null, but the split_node api doesn't (I guess Ian forgot to
-implement that... or there is a good reason).  So if there are any
-property deletes, then we have to also do a set_node... or just be
-ok with undefined values.  For text where values are treated as
-booleans, this is fine and that's what we do.   Maybe the reason
-is just to keep the operations simple and minimal.
-Also setting to undefined / false-ish for a *text* node property
-is equivalent to not having it regarding everything else.
-*/
-
-function getKeysLength(obj: object | null | undefined): number {
-  if (obj == null) {
-    return 0;
-  }
-
-  return Object.keys(obj).length;
-}
-
-type Op = {
-  offset: number;
-  text: string;
-  type: 'insert_text' | 'remove_text';
+  return [
+    propertyChanges
+      ? {
+          ...targetNode,
+          ...options.getUpdateProps(
+            targetNode,
+            propertyChanges.properties,
+            propertyChanges.newProperties
+          ),
+        }
+      : targetNode,
+  ];
 };

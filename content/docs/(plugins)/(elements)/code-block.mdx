@@ -102,7 +102,7 @@ const editor = createPlateEditor({
     // ...otherPlugins,
     CodeBlockPlugin.configure({
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
-      node: { component: CodeBlockElement },
+      render: { node: CodeBlockElement },
       options: { lowlight },
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
@@ -137,7 +137,7 @@ const editor = createPlateEditor({
     // ...otherPlugins,
     CodeBlockPlugin.configure({
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
-      node: { component: CodeBlockElement },
+      render: { node: CodeBlockElement },
       options: {
         lowlight,
         defaultLanguage: 'js', // Set default language (optional)
@@ -150,7 +150,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `node.component`: Assigns [`CodeBlockElement`](/docs/components/code-block-node) to render code block containers.
+- `render.node`: Assigns [`CodeBlockElement`](/docs/components/code-block-node) to render code block containers.
 - `inputRules`: Registers the triple-backtick fence rule. Use `on: 'match'` to commit when the fence becomes complete or `on: 'break'` to commit on `Enter`.
 - `options.lowlight`: Lowlight instance for syntax highlighting.
 - `options.defaultLanguage`: Default language when no language is specified.
@@ -205,12 +205,12 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 Install `CodeBlockPlugin`, then mutate code blocks through its command group.
 
 ```tsx
-editor.update.code_block.insert();
-editor.update.code_block.toggle();
-editor.update.code_block.tab();
-editor.update.code_block.untab();
-editor.update.code_block.resetBlock();
-editor.update.code_block.selectAll();
+editor.update.codeBlock.insert();
+editor.update.codeBlock.toggle();
+editor.update.codeBlock.tab();
+editor.update.codeBlock.untab();
+editor.update.codeBlock.resetBlock();
+editor.update.codeBlock.selectAll();
 ```
 
 - `insert()` converts an empty selected block in place. For non-empty or

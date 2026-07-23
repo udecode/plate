@@ -20,11 +20,9 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   <APIItem name="plugins" type="P[]" optional>
     An array of editor plugins.
   </APIItem>
-  <APIItem name="value" type="V | string | ((editor: PlateEditor) => V | Promise<V>)" optional>
-    Initial value of the editor. Can be:
-    - A static value array
-    - An HTML string to be deserialized
-    - A function that returns a value (can be async)
+  <APIItem name="initialValue" type="V | ((context: { editor: PlateEditor }) => V)" optional>
+    Synchronous initial document. Use the callback when decoding needs the
+    compiled editor model. Load remote data before constructing the editor.
   </APIItem>
   <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
     Select the editor after initialization.
@@ -32,9 +30,6 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
     - `true` | 'end': Select the end of the editor
     - `false`: Do not select anything
     - `'start'`: Select the start of the editor
-  </APIItem>
-  <APIItem name="onReady" type="(ctx: { editor: PlateEditor; isAsync: boolean; value: V }) => void" optional>
-    Callback called when the editor initialization completes. The `isAsync` flag indicates whether the value was loaded asynchronously.
   </APIItem>
   <APIItem name="maxLength" type="number" optional>
     Maximum character count for user-facing text, fragment, and node insertions.
@@ -81,9 +76,9 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
         - **Default:** `'if-needed'`
       </APISubListItem>
       <APISubListItem parent="nodeId" name="reuseId" type="boolean" optional>
-        Reuse IDs on undo/redo and copy/paste.
-        - When `true`: Keeps IDs if they don't exist in document
-        - When `false`: Always generates new IDs (safer across documents)
+        Reuse IDs from clipboard pastes.
+        - When `true`: Keeps source IDs that do not exist in the target document
+        - When `false`: Generates fresh IDs for pasted nodes
         - **Default:** `false`
       </APISubListItem>
       <APISubListItem parent="nodeId" name="allow" type="string[]" optional>
@@ -102,7 +97,7 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
     Initial selection for the editor.
   </APIItem>
   <APIItem name="shouldNormalizeEditor" type="boolean" optional>
-    When `true`, it will normalize the initial `value` passed to the `editor`.
+    When `true`, it normalizes the `initialValue` passed to the editor.
     - **Default:** `false`
   </APIItem>
   <APIItem name="rootPlugin" type="(plugin: AnyPlatePlugin) => AnyPlatePlugin" optional>
@@ -240,15 +235,12 @@ Creates a memoized Plate editor for React components.
 
 <API name="usePlateEditor">
 <APIParameters>
-  <APIItem name="options" type="CreatePlateEditorOptions & { enabled?: boolean; onReady?: (ctx: { editor: PlateEditor; isAsync: boolean; value: V }) => void }" optional>
+  <APIItem name="options" type="CreatePlateEditorOptions & { enabled?: boolean }" optional>
     Configuration options for creating the Plate editor. All options from `createPlateEditor` are supported, plus:
     <APISubList>
       <APISubListItem parent="options" name="enabled" type="boolean" optional>
         Whether the editor should be created. When `false`, returns `null`.
         - **Default:** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="onReady" type="(ctx: { editor: PlateEditor; isAsync: boolean; value: V }) => void" optional>
-        Callback called when the editor initialization completes. The `isAsync` flag indicates whether the value was loaded asynchronously.
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -331,14 +323,17 @@ Get editor and plugin context.
 </APIReturns>
 </API>
 
-### `useEditorRef`
+### `useEditor`
 
-Get the Plate editor reference without re-rendering. The returned editor object is enhanced with a `store` property that provides access to the Plate store.
+Get the active Plate editor without re-rendering. The returned editor includes
+its `store`. The hook throws when no matching editor is active.
 
-<API name="useEditorRef">
+<API name="useEditor">
 <APIParameters>
-  <APIItem name="id" type="string" optional>
-    Editor ID used for accessing nested editors. When not provided, returns the closest editor instance in the React tree. Only use this parameter when working with nested editors to target a specific scope.
+  <APIItem name="options" type="{ id?: string }" optional>
+    Editor ID used for an explicit controller scope. Without an ID, the hook
+    resolves the nearest editor, active controller editor, or first primary
+    controller editor.
   </APIItem>
 </APIParameters>
 
@@ -346,6 +341,12 @@ Get the Plate editor reference without re-rendering. The returned editor object 
   The editor reference with attached store.
 </APIReturns>
 </API>
+
+### `useActiveEditor`
+
+Use `useActiveEditor({ id? })` when no active editor is a valid UI state. It
+returns the same editor-and-store value as `useEditor()`, or `null` while the
+controller has no matching active editor.
 
 ### `useEditorSelector`
 
@@ -355,9 +356,6 @@ Subscribe to a specific property of the editor.
 <APIParameters>
   <APIItem name="selector" type="(editor: PlateEditor<V>, prev?: T) => T">
     The selector function.
-  </APIItem>
-  <APIItem name="deps" type="DependencyList">
-    The dependency list for the selector function.
   </APIItem>
   <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
     Options for the selector function.
@@ -555,37 +553,27 @@ A value derived from the fragment nodes, or undefined if no consistent value is 
 </APIReturns>
 </API>
 
-### `useNodePath`
-
-Returns the path of a node in the editor.
-
-<API name="useNodePath">
-<APIParameters>
-  <APIItem name="node" type="Node">
-    The node to find the path for.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  A memoized Path array representing the location of the node in the editor's tree structure.
-</APIReturns>
-</API>
-
 ### `usePath`
 
-Get the memoized path of the closest element.
+Get the live path of the closest element and throw when the matching provider
+is absent. Pass a plugin descriptor to select an owning element provider.
 
 <API name="usePath">
 <APIParameters>
-  <APIItem name="pluginKey" type="string" optional>
-    The key of the plugin to get the path for.
+  <APIItem name="plugin" type="PlateElementDescriptor" optional>
+    Plugin descriptor whose configured element provider should be used.
   </APIItem>
 </APIParameters>
 
 <APIReturns>
-  The path of the element, or `undefined` if used outside of a node component's context.
+  The current element path.
 </APIReturns>
-</API>  
+</API>
+
+### `useOptionalPath`
+
+Use `useOptionalPath(Plugin)` when the provider is intentionally optional. It
+returns `null` instead of manufacturing a path for an arbitrary node object.
 
 ### `usePluginOption`
 
@@ -670,20 +658,39 @@ const state = useEditorPluginOption(editor, plugin, 'state');
 
 ### `useElement`
 
-Get the element by plugin key.
+Get the current element and throw when the matching provider is absent. Pass a
+plugin descriptor for configured schema inference, or pass the element type as
+a generic in reusable component code.
 
 <API name="useElement">
 <APIParameters>
-  <APIItem name="pluginKey" type="string" optional>
-    The key of the plugin to get the element for.
-    - **Default:** `'element'`
+  <APIItem name="plugin" type="PlateElementDescriptor" optional>
+    Plugin descriptor whose configured element provider and schema type should
+    be inferred.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  The element of type `T extends Element`, or an empty object if used outside of a node component's context.
+<APIReturns type="PlateElementForDescriptor<TPlugin> | TElement">
+  The current element. Throws when used outside the requested element provider.
 </APIReturns>
 </API>
+
+```tsx
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import type { Element } from 'platejs';
+import { useElement } from 'platejs/react';
+
+type MyElement = Element & { type: 'my-element' };
+
+const quote = useElement(BlockquotePlugin);
+const generic = useElement<MyElement>();
+```
+
+### `useOptionalElement`
+
+Use `useOptionalElement(Plugin)` or `useOptionalElement<TElement>()` when the
+provider is intentionally optional. It returns `null` instead of a placeholder
+element.
 
 ## Core plugins
 
@@ -697,9 +704,9 @@ Extend Plate editor behavior on top of Plite.
 
 `ElementStatePlugin` exposes `editor.api.isElementStateEmpty(element)`. It
 checks the element's own props, not its text content. By default, only `type`
-and props claimed by plugins through `node.isMetadataProp` are ignored; any other
-prop means the element carries state. `NodeIdPlugin` uses `node.isMetadataProp` for
-the configured NodeId key.
+and compiled element properties declared with `significant: false` are ignored;
+any other prop means the element carries state. `NodeIdPlugin` declares its
+configured ID property as non-significant.
 
 ```tsx
 editor.api.isElementStateEmpty({
@@ -715,8 +722,14 @@ editor.api.isElementStateEmpty({
 
 const CustomMetadataPlugin = createBasePlugin({
   key: 'customMetadata',
-  node: {
-    isMetadataProp: ({ key }) => key === 'customId',
+  schema: {
+    properties: [
+      schema.elementProperty(
+        'customId',
+        property.string({ significant: false }),
+        { target: target.group('block') }
+      ),
+    ],
   },
 });
 ```
@@ -735,9 +748,6 @@ Handles parsing of content for the editor.
 
 ### `HtmlPlugin`
 Enables HTML serialization and deserialization.
-
-### `AstPlugin`
-Handles Abstract Syntax Tree (AST) operations for the editor.
 
 ### `ParagraphPlugin`
 Provides paragraph formatting functionality.
@@ -782,7 +792,7 @@ Generic component for rendering an element.
     The CSS class to apply to the component.
   </APIItem>
   <APIItem name="editor" type="E">
-    The editor instance. Also available using `useEditorRef` hook.
+    The editor instance. Also available using the strict `useEditor` hook.
   </APIItem>
   <APIItem name="element" type="Element">
     The element node. Also available using `useElement` hook.

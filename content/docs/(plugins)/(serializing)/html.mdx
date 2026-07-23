@@ -4,7 +4,10 @@ description: Convert Plate content to HTML and vice-versa.
 toc: true
 ---
 
-This guide covers converting Plate editor content to HTML (`serializeHtml`) and parsing HTML back into Plate's format (`editor.api.html.deserialize`).
+Use `renderStaticHtml` to render a configured static Plate tree to HTML. Use
+`editor.plugin(HtmlPlugin).api.deserialize(...)` to parse HTML into Plate
+content. Static React rendering and semantic HTML parsing have different
+owners, so this guide treats each direction separately.
 
 <ComponentPreview name="html-demo" />
 
@@ -22,19 +25,19 @@ The fastest way to enable HTML serialization is with the `BaseEditorKit`, which 
 
 ```tsx
 import { createBaseEditor } from 'platejs';
-import { serializeHtml } from 'platejs/static';
+import { renderStaticHtml } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
 const editor = createBaseEditor({
   plugins: BaseEditorKit,
-  value: [
+  initialValue: [
     { type: 'h1', children: [{ text: 'Hello World' }] },
     { type: 'p', children: [{ text: 'This content will be serialized to HTML.' }] },
   ],
 });
 
 // Serialize to HTML
-const html = await serializeHtml(editor);
+const html = await renderStaticHtml(editor);
 ```
 
 ### Example
@@ -52,7 +55,7 @@ Convert Plate editor content (Plate nodes) into an HTML string. This is often do
 [View Server-Side Example](/docs/examples/plate-to-html)
 
 <Callout type="warning" title="Key Server-Side Constraint">
-  When using `serializeHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `@platejs/basic-nodes` instead of `@platejs/basic-nodes/react`).
+  When using `renderStaticHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `@platejs/basic-nodes` instead of `@platejs/basic-nodes/react`).
 
   This means you should use `createBaseEditor` from `platejs` for server-side editor instances, not `usePlateEditor` or `createPlateEditor` from `platejs/react`.
 </Callout>
@@ -65,7 +68,7 @@ Provide a server-side editor instance and configure your Plate components during
 
 ```tsx title="lib/generate-html.ts"
 import { createBaseEditor } from 'platejs';
-import { serializeHtml } from 'platejs/static'; // Static import
+import { renderStaticHtml } from 'platejs/static'; // Static import
 // Import base plugins (NOT from /react paths)
 import { BaseHeadingPlugin } from '@platejs/basic-nodes';
 // Import your STATIC components for rendering
@@ -88,16 +91,14 @@ const editor = createBaseEditor({
     // ... add all other base plugins relevant to your content
   ],
   components,
+  initialValue: [
+    { type: 'h1', children: [{ text: 'My Title' }] },
+    { type: 'p', children: [{ text: 'My content.' }] },
+  ],
 });
 
 async function getMyHtml() {
-  // Example: set some content on the server-side editor
-  editor.children = [
-    { type: 'h1', children: [{text: 'My Title'}] },
-    { type: 'p', children: [{text: 'My content.'}] }
-  ];
-
-  const html = await serializeHtml(editor, {
+  const html = await renderStaticHtml(editor, {
     // Optional: Use a custom wrapper like EditorStatic for styling
     // editorComponent: EditorStatic,
     // props: { variant: 'none', className: 'p-4 m-4 border' },
@@ -109,7 +110,9 @@ async function getMyHtml() {
 
 ### Styling Serialized HTML
 
-`serializeHtml` returns only the HTML for the editor content itself. If you use styled components (like `EditorStatic` or custom static components with specific classes), you must ensure the necessary CSS is available in the final context where the HTML will be displayed.
+`renderStaticHtml` returns only the HTML rendered for the editor content itself.
+If you use styled components such as `EditorStatic` or custom static components
+with classes, include their CSS wherever the HTML is displayed.
 
 This often means wrapping the serialized HTML in a full HTML document that includes your stylesheets:
 
@@ -174,10 +177,11 @@ The HTML deserializer allows you to convert HTML content (strings or DOM element
 
 ### Basic Usage
 
-Use `editor.api.html.deserialize` within a client-side Plate editor context.
+Use the `HtmlPlugin` API within a client-side Plate editor context.
 
 ```tsx title="components/my-html-importer.tsx"
-import { PlateEditor, usePlateEditor } from 'platejs/react'; // React-specific imports for client-side
+import { HtmlPlugin } from 'platejs';
+import { usePlateEditor } from 'platejs/react';
 // Import ALL Plate plugins needed to represent the HTML content
 import { HeadingPlugin } from '@platejs/basic-nodes/react';
 // ... and so on for bold, italic, tables, lists, etc.
@@ -191,7 +195,9 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   });
 
   const handleImport = () => {
-    const slateValue = editor.api.html.deserialize({ element: htmlString });
+    const slateValue = editor
+      .plugin(HtmlPlugin)
+      .api.deserialize({ element: htmlString });
     editor.update((tx) => {
       tx.value.replace({ children: slateValue });
     });
@@ -203,7 +209,9 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 ```
 
 <Callout type="warning" title="Client-Side Operation">
-  HTML deserialization using `editor.api.html.deserialize` is typically a client-side operation as it interacts with a live Plate editor instance configured with React components and plugins.
+  HTML deserialization through `editor.plugin(HtmlPlugin).api.deserialize` is
+  typically a client-side operation because it uses the compiled Plate plugin
+  model.
 </Callout>
 
 ### Plugin Deserialization Rules Overview
@@ -344,29 +352,26 @@ This illustrates how a plugin can completely reinterpret HTML structures into a 
 
 ## API Reference
 
-### `serializeHtml(editor, options)`
+### `renderStaticHtml(editor, options)`
 
 Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML string. This function is typically used server-side.
 
-<API name="serializeHtml">
+<API name="renderStaticHtml">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     A server-side Plate editor instance, created via `createBaseEditor` with components configured.
   </APIItem>
-  <APIItem name="options" type="SerializeHtmlOptions">
-    Options for serialization.
+  <APIItem name="options" type="RenderStaticHtmlOptions" optional>
+    Static React rendering options.
   </APIItem>
 </APIParameters>
-<APIOptions type="SerializeHtmlOptions<P = PlateStaticProps>">
+<APIOptions type="RenderStaticHtmlOptions<P = PlateStaticProps>">
   <APIItem name="editorComponent" type="React.ComponentType<P>" optional>
     A React component to wrap the entire editor content during static rendering. Defaults to `PlateStatic`.
-    The component receives `editor`, `value`, and any `props` passed here.
+    The component receives `editor` and any `props` passed here.
   </APIItem>
   <APIItem name="props" type="Partial<P>" optional>
     Props to pass to the `editorComponent`. `P` defaults to `PlateStaticProps`.
-  </APIItem>
-  <APIItem name="value" type="Descendant[]" optional>
-    Plate nodes to serialize. If not provided, `editor.children` will be used.
   </APIItem>
   <APIItem name="preserveClassNames" type="string[]" optional>
     Class name prefixes to preserve when `stripClassNames` is true. Default preserve list in the stripping helper: `['plite-']`.
@@ -387,7 +392,7 @@ Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML
 
 ---
 
-### `api.html.deserialize(options)`
+### `editor.plugin(HtmlPlugin).api.deserialize(options)`
 
 Parses an HTML string or `HTMLElement` into a Plate `Value` (an array of `Descendant` nodes). This is typically used on the client-side with a fully configured Plate editor.
 

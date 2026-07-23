@@ -8,7 +8,6 @@ import {
 } from 'react';
 
 import { AIChatPlugin, streamInsertChunk } from '@platejs/ai/react';
-import { deserializeMd } from '@platejs/markdown';
 import {
   ChevronFirstIcon,
   ChevronLastIcon,
@@ -389,7 +388,7 @@ export default function MarkdownStreamingDemo() {
 
       output += chunk.chunk;
       editorStatic.update.value.replace({
-        children: deserializeMd(editorStatic, output),
+        children: editorStatic.api.markdown.deserialize(output),
       });
       setActiveIndex((prev) => prev + 1);
       forceUpdate();
@@ -426,7 +425,7 @@ export default function MarkdownStreamingDemo() {
         }
 
         editorStatic.update.value.replace({
-          children: deserializeMd(editorStatic, output),
+          children: editorStatic.api.markdown.deserialize(output),
         });
         setActiveIndex(targetIndex);
         forceUpdate();

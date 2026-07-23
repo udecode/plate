@@ -20,9 +20,9 @@ Plate-owned decisions called out here.
 - Use explicit evidence first.
 - Treat silence as a gap, not as fake agreement.
 - When Typora is explicit and Milkdown is merely compatible, that is enough to
-  lock the `markdown_typora` profile.
+  lock the `markdown_typora` behavior contract.
 - When Typora and Milkdown pull in different directions, push the behavior down
-  into profile-owned policy instead of hard-coding one global default.
+  into plugin- or kit-owned policy instead of hard-coding one global default.
 
 ## Result Labels
 
@@ -102,7 +102,7 @@ Plate-owned decisions called out here.
 | ID                          | Typora                                                                  | Milkdown                                                                         | Audit     | Move                                                                                           |
 | --------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------- |
 | `EDIT-H-ENTER-001`          | heading creation is documented, middle split is not                     | heading input exists, middle split is not tested                                 | `gap`     | keep local policy only after direct tests                                                      |
-| `EDIT-H-ENTER-END-001`      | heading is created by typing `# ...` then `Return`                      | `input/heading.spec.ts` shows `Enter` after heading moves to the next block lane | `partial` | lock for markdown-first profile                                                                |
+| `EDIT-H-ENTER-END-001`      | heading is created by typing `# ...` then `Return`                      | `input/heading.spec.ts` shows `Enter` after heading moves to the next block lane | `partial` | lock for the markdown-first behavior contract                                                  |
 | `EDIT-H-BS-START-001`       | paragraph reset exists as a command, not as `Backspace@start`           | paragraph reset exists as a command, not as `Backspace@start`                    | `gap`     | lock as Plate decision: one `⌫` resets a heading to paragraph before any merge                 |
 | `EDIT-H-BS-START-EMPTY-001` | `Delete Range` implies empty heading blocks are deleted as empty blocks | no direct test                                                                   | `partial` | lock as Plate decision: one `⌫` resets an empty heading to an empty paragraph before any merge |
 
@@ -116,8 +116,8 @@ Plate-owned decisions called out here.
 | `EDIT-LIST-BS-START-001`            | no direct doc                                                                               | list setup uses `Backspace` as a step-down from the current list layer before retyping       | `partial` | lock as Plate decision: non-empty list item removes one list layer before dropping content |
 | `EDIT-LIST-BS-START-EMPTY-001`      | no direct doc                                                                               | list setup uses `Backspace` from the fresh empty item lane before nested re-entry            | `partial` | lock as Plate decision: empty nested list item outdents one list level                     |
 | `EDIT-LIST-BS-START-EMPTY-ROOT-001` | `Delete Range` implies empty blocks delete in place, but does not describe list-root exit   | no direct test                                                                               | `gap`     | lock as Plate decision: empty top-level list item exits to paragraph                       |
-| `EDIT-LIST-TAB-001`                 | `Shortcut Keys` explicitly expose indent, and lists are the clearest fit                    | `shortcut/list.spec.ts` exposes equivalent indent via command shortcut, not `Tab`            | `partial` | lock behavior, keep exact binding profile-owned                                            |
-| `EDIT-LIST-STAB-001`                | `Shortcut Keys` explicitly expose outdent                                                   | `shortcut/list.spec.ts` exposes equivalent outdent via command shortcut, not `Shift+Tab`     | `partial` | lock behavior, keep exact binding profile-owned                                            |
+| `EDIT-LIST-TAB-001`                 | `Shortcut Keys` explicitly expose indent, and lists are the clearest fit                    | `shortcut/list.spec.ts` exposes equivalent indent via command shortcut, not `Tab`            | `partial` | lock behavior, keep exact binding kit-owned                                                |
+| `EDIT-LIST-STAB-001`                | `Shortcut Keys` explicitly expose outdent                                                   | `shortcut/list.spec.ts` exposes equivalent outdent via command shortcut, not `Shift+Tab`     | `partial` | lock behavior, keep exact binding kit-owned                                                |
 
 ### Blockquote
 
@@ -171,11 +171,11 @@ Plate-owned decisions called out here.
 
 ### Toggle
 
-| ID                         | Typora                             | Milkdown                     | Audit | Move                               |
-| -------------------------- | ---------------------------------- | ---------------------------- | ----- | ---------------------------------- |
-| `EDIT-TOGGLE-ENTER-001`    | not a native Typora markdown block | no markdown-native reference | `gap` | defer to non-markdown profile work |
-| `EDIT-TOGGLE-BS-START-001` | not a native Typora markdown block | no markdown-native reference | `gap` | defer to non-markdown profile work |
-| `EDIT-TOGGLE-TAB-001`      | not a native Typora markdown block | no markdown-native reference | `gap` | defer to non-markdown profile work |
+| ID                         | Typora                             | Milkdown                     | Audit | Move                                 |
+| -------------------------- | ---------------------------------- | ---------------------------- | ----- | ------------------------------------ |
+| `EDIT-TOGGLE-ENTER-001`    | not a native Typora markdown block | no markdown-native reference | `gap` | defer to non-markdown app-kit policy |
+| `EDIT-TOGGLE-BS-START-001` | not a native Typora markdown block | no markdown-native reference | `gap` | defer to non-markdown app-kit policy |
+| `EDIT-TOGGLE-TAB-001`      | not a native Typora markdown block | no markdown-native reference | `gap` | defer to non-markdown app-kit policy |
 
 ### Thematic Break And Atomic Blocks
 
@@ -244,9 +244,9 @@ The old inline watchlist lived here.
 
 Now that Typora has a real research layer, use these entrypoints instead:
 
-- [editor-behavior-priority-map.md](docs/research/sources/typora/editor-behavior-priority-map.md)
-- [corpus-overview.md](docs/research/sources/typora/corpus-overview.md)
-- [typora-behavior-map.md](docs/research/systems/typora-behavior-map.md)
+- [editor-behavior-priority-map.md](../research/sources/typora/editor-behavior-priority-map.md)
+- [corpus-overview.md](../research/sources/typora/corpus-overview.md)
+- [typora-behavior-map.md](../research/systems/typora-behavior-map.md)
 - `../raw/typora` for full private raw evidence
 
 Use those pages as drift checks when the readable law or protocol matrix starts
@@ -256,11 +256,11 @@ to feel too static or too anchored to older Typora behavior.
 
 For broader Milkdown repo navigation and source clustering, use:
 
-- [corpus-overview.md](docs/research/sources/milkdown/corpus-overview.md)
-- [editor-behavior-priority-map.md](docs/research/sources/milkdown/editor-behavior-priority-map.md)
-- [behavior-test-lanes.md](docs/research/sources/milkdown/behavior-test-lanes.md)
-- [docs-and-package-surface-map.md](docs/research/sources/milkdown/docs-and-package-surface-map.md)
-- [milkdown-behavior-map.md](docs/research/systems/milkdown-behavior-map.md)
+- [corpus-overview.md](../research/sources/milkdown/corpus-overview.md)
+- [editor-behavior-priority-map.md](../research/sources/milkdown/editor-behavior-priority-map.md)
+- [behavior-test-lanes.md](../research/sources/milkdown/behavior-test-lanes.md)
+- [docs-and-package-surface-map.md](../research/sources/milkdown/docs-and-package-surface-map.md)
+- [milkdown-behavior-map.md](../research/systems/milkdown-behavior-map.md)
 - `../raw/milkdown` for the raw entrypoint and `../raw/milkdown/repo` for the
   upstream source clone
 
@@ -269,12 +269,12 @@ For broader Milkdown repo navigation and source clustering, use:
 For mode architecture, linked-note navigation, and richer markdown-workspace
 search/product chrome, use:
 
-- [obsidian.md](docs/research/entities/obsidian.md)
-- [editing-modes-and-markdown-surface.md](docs/research/sources/obsidian/editing-modes-and-markdown-surface.md)
-- [math-delimiters-and-pair-settings.md](docs/research/sources/obsidian/math-delimiters-and-pair-settings.md)
-- [linking-navigation-and-search.md](docs/research/sources/obsidian/linking-navigation-and-search.md)
-- [footnotes-and-block-links.md](docs/research/sources/obsidian/footnotes-and-block-links.md)
-- [obsidian-behavior-map.md](docs/research/systems/obsidian-behavior-map.md)
+- [obsidian.md](../research/entities/obsidian.md)
+- [editing-modes-and-markdown-surface.md](../research/sources/obsidian/editing-modes-and-markdown-surface.md)
+- [math-delimiters-and-pair-settings.md](../research/sources/obsidian/math-delimiters-and-pair-settings.md)
+- [linking-navigation-and-search.md](../research/sources/obsidian/linking-navigation-and-search.md)
+- [footnotes-and-block-links.md](../research/sources/obsidian/footnotes-and-block-links.md)
+- [obsidian-behavior-map.md](../research/systems/obsidian-behavior-map.md)
 - `../raw/obsidian` for full private raw evidence
 
 Do not force those Obsidian lanes back into the first Typora / Milkdown row
@@ -294,10 +294,10 @@ Do not flatten that into one fake “math trigger winner.”
 
 For markdown-triggered autoformat and shorthand work, use:
 
-- [markdown-shorthand-and-inline-autoformat.md](docs/research/sources/typora/markdown-shorthand-and-inline-autoformat.md)
-- [input-autoformat-lanes.md](docs/research/sources/milkdown/input-autoformat-lanes.md)
-- [autoformat-families-are-profile-adjacent-input-assist-surfaces.md](docs/research/decisions/autoformat-families-are-profile-adjacent-input-assist-surfaces.md)
-- [text-substitution-autoformat-authority.md](docs/research/open-questions/text-substitution-autoformat-authority.md)
+- [markdown-shorthand-and-inline-autoformat.md](../research/sources/typora/markdown-shorthand-and-inline-autoformat.md)
+- [input-autoformat-lanes.md](../research/sources/milkdown/input-autoformat-lanes.md)
+- [autoformat-families-are-input-assist-surfaces.md](../research/decisions/autoformat-families-are-input-assist-surfaces.md)
+- [text-substitution-autoformat-authority.md](../research/open-questions/text-substitution-autoformat-authority.md)
 
 Use those pages for:
 

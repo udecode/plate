@@ -1,5 +1,5 @@
-import { createBasePlugin, getPluginByType } from '@platejs/core';
-import { ElementApi, PathApi, type Node, type Path } from '@platejs/plite';
+import { createBasePlugin } from '@platejs/core';
+import { PathApi, type Element, type Node, type Path } from '@platejs/plite';
 
 import { KEYS } from '../plate-keys';
 
@@ -18,28 +18,31 @@ export const ExitBreakPlugin = createBasePlugin({
   editOnly: true,
 }).extendTxGroup('exitBreak', ({ editor }) => (tx) => {
   const insertExitBreak = ({ match, reverse }: ExitBreakOptions = {}) => {
-    const selection = editor.read.selection();
+    const selection = tx.selection();
 
-    if (!selection || !editor.read.selection.isCollapsed()) return;
+    if (!selection || !tx.selection.isCollapsed()) return;
 
-    const block = editor.read.nodes.block();
+    const block = tx.nodes.block();
 
     if (!block) return;
 
-    const target = editor.read.nodes.above({
+    const paragraphType = editor.getType(KEYS.p);
+
+    const target = tx.nodes.above({
       at: block[1],
-      match: (node, path) =>
-        (path.length === 1 ||
-          (path.length > 1 &&
-            ElementApi.isElement(node) &&
-            !getPluginByType(editor, node.type)?.node.isStrictSiblings)) &&
-        (!match || match(node, path)),
+      match: (node, path) => {
+        if (match && !match(node, path)) return false;
+        if (path.length === 1) return true;
+
+        const parent = tx.nodes.parent<Element>(path);
+
+        return (
+          !!parent && tx.schema.allowsElementType(parent[0].type, paragraphType)
+        );
+      },
     });
     const ancestorPath = target?.[1] ?? block[1];
     const targetPath = reverse ? ancestorPath : PathApi.next(ancestorPath);
-    const paragraphType = editor.plugins[KEYS.p]
-      ? editor.getType(KEYS.p)
-      : KEYS.p;
 
     tx.nodes.insert(
       {

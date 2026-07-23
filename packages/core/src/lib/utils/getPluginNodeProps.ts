@@ -27,15 +27,15 @@ export const getPluginNodeProps = <
 }): TProps & { attributes: AnyObject } => {
   const newProps = { ...props, attributes: { ...props.attributes } };
 
-  if (plugin?.node.props) {
+  if (plugin?.render.nodeProps) {
     // Base and React callbacks share this runtime shape but expose
     // layer-specific plugin context types.
     const pluginNodeProps =
-      (typeof plugin.node.props === 'function'
-        ? (plugin.node.props as (props: TProps) => AnyObject | undefined)(
+      (typeof plugin.render.nodeProps === 'function'
+        ? (plugin.render.nodeProps as (props: TProps) => AnyObject | undefined)(
             newProps
           )
-        : plugin.node.props) ?? {};
+        : plugin.render.nodeProps) ?? {};
 
     newProps.attributes = {
       ...newProps.attributes,
@@ -53,9 +53,9 @@ export const getPluginNodeProps = <
          * application vulnerable to cross-site scripting (XSS) or information
          * exposure attacks.
          *
-         * @see {@link PluginBaseNode.dangerouslyAllowAttributes}
+         * @see {@link PluginBase.host}
          */
-        ...(plugin.node.dangerouslyAllowAttributes ?? []),
+        ...(plugin.host.dangerouslyAllowAttributes ?? []),
         [...(node ? getNodeDataAttributeKeys(node) : [])]
       ),
     };

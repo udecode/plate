@@ -9,12 +9,17 @@ import {
 } from '../utils/mergePlugins';
 import { withResolvingPlatePlugin } from './compilePlateModel';
 
-const normalizeConfiguredInputRules = (config: unknown) => {
-  if (config === undefined) return [];
-  if (Array.isArray(config)) return [...config];
+const assertConfiguredInputRules = (config: unknown) => {
+  if (
+    config === undefined ||
+    typeof config === 'function' ||
+    Array.isArray(config)
+  ) {
+    return;
+  }
 
   throw new Error(
-    'inputRules config must be an array of explicit rule instances.'
+    'inputRules config must be an array of explicit rule instances or a factory.'
   );
 };
 
@@ -26,8 +31,9 @@ const normalizeConfiguredInputRules = (config: unknown) => {
  * Plate editor system by:
  *
  * 1. Cloning the plugin to avoid mutating the original
- * 2. Applying all stored extensions to the plugin
- * 3. Clearing the extensions array after application
+ * 2. Resolving the stored consumer configuration once
+ * 3. Applying extensions against the configured values
+ * 4. Reapplying the captured consumer values as the final override
  *
  * @example
  *   const plugin = createBasePlugin({ key: 'myPlugin', ...otherOptions }).extend(...);
@@ -42,10 +48,11 @@ export const resolvePlugin = <P extends AnyBasePlugin>(
 
   plugin.__resolved = true;
 
-  // Configuration layers are applied in call order. Object overlays and
-  // contextual overlays deliberately share one ordered pipeline so a later
-  // configure call always wins, regardless of which form it uses.
+  // A direct descriptor contributes at most one terminal consumer
+  // configuration. Nested configurePlugin overlays share this internal list.
+  // Capture every result so contextual callbacks execute only once per editor.
   const configurationLayers = [...plugin.__configurationLayers];
+  const resolvedConfigurations: Record<PropertyKey, unknown>[] = [];
 
   for (const layer of configurationLayers) {
     const rawConfigResult =
@@ -54,25 +61,19 @@ export const resolvePlugin = <P extends AnyBasePlugin>(
             layer.value(getEditorPlugin(editor, plugin))
           )
         : layer.value;
-    // Copy before inspecting: descriptor snapshots and callback results can be
+    // Copy before merging: descriptor snapshots and callback results can be
     // reused across editor instances.
-    const { inputRules: configInputRules, ...configResult } =
-      rawConfigResult as any;
+    const configResult = {
+      ...rawConfigResult,
+    } as Record<PropertyKey, unknown>;
 
-    if (configInputRules !== undefined) {
-      const normalizedInputRules =
-        normalizeConfiguredInputRules(configInputRules);
-
-      (plugin as any).__configuredInputRules = [
-        ...normalizeConfiguredInputRules(
-          (plugin as any).__configuredInputRules
-        ),
-        ...normalizedInputRules,
-      ];
+    if (Object.hasOwn(configResult, 'inputRules')) {
+      assertConfiguredInputRules(configResult.inputRules);
     }
 
     plugin = mergePlugins(plugin, configResult);
     plugin.__configurationLayers = configurationLayers;
+    resolvedConfigurations.push(configResult);
   }
   // Apply all stored extensions
   if (plugin.__extensions && plugin.__extensions.length > 0) {
@@ -87,6 +88,12 @@ export const resolvePlugin = <P extends AnyBasePlugin>(
       );
     }
     plugin.__extensions = extensions;
+  }
+  // Extensions read configured values, but the consumer configuration remains
+  // the final override for fields that both layers define.
+  for (const configuration of resolvedConfigurations) {
+    plugin = mergePlugins(plugin, configuration);
+    plugin.__configurationLayers = configurationLayers;
   }
 
   plugin.schema = freezePluginDescriptorValue(plugin.schema);

@@ -107,11 +107,11 @@ export const editor = createPlateEditor({
   plugins: [
     InlineEquationPlugin.configure({
       inputRules: [MathRules.markdown({ variant: '$' })],
-      node: { component: InlineEquationElement },
+      render: { node: InlineEquationElement },
     }),
     EquationPlugin.configure({
       inputRules: [MathRules.markdown({ on: 'break', variant: '$$' })],
-      node: { component: EquationElement },
+      render: { node: EquationElement },
     }),
   ],
 });

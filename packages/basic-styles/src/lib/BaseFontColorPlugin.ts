@@ -1,8 +1,10 @@
 import { createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 export const BaseFontColorPlugin = createBasePlugin({
   key: KEYS.color,
+  schema: { mark: property.string() },
   inject: {
     nodeProps: {
       defaultNodeValue: 'black',
@@ -12,7 +14,6 @@ export const BaseFontColorPlugin = createBasePlugin({
   parsers: {
     html: {
       deserializer: {
-        isLeaf: true,
         rules: [
           {
             validStyle: {

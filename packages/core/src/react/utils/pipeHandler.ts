@@ -6,6 +6,7 @@ import type { AnyEditorPlatePlugin } from '../plugin';
 import type { DOMHandlers } from '../plugin/DOMHandlers';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { getEditorPlugin } from '../plugin/getEditorPlugin';
 
 const convertDomEventToSyntheticEvent = (
@@ -84,7 +85,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
   ) => boolean | void;
 
   const relevantPlugins = (
-    editor.runtime.pluginList as unknown as AnyEditorPlatePlugin[]
+    getPlateRuntime(editor).pluginList as unknown as AnyEditorPlatePlugin[]
   ).filter((plugin) => plugin.handlers?.[handlerKey]);
 
   if (relevantPlugins.length === 0 && !propsHandler) return;

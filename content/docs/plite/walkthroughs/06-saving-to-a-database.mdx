@@ -16,8 +16,8 @@ Create the editor from the saved value, then persist the full document value
 after committed document or state-field changes.
 
 ```tsx
-import { useEffect, useState } from "react";
-import { defineStateField } from "@platejs/plite";
+import { useState } from "react";
+import { defineStateField, valueCodecs } from "@platejs/plite";
 import { Editable, Plite, usePliteEditor } from "@platejs/plite-react";
 
 const STORAGE_KEY = "plite.document";
@@ -25,7 +25,7 @@ const STORAGE_KEY = "plite.document";
 const documentTitle = defineStateField({
   key: "document.title",
   initial: () => "Untitled",
-  persist: true,
+  persist: valueCodecs.string,
 });
 
 const fallbackValue = {
@@ -36,7 +36,7 @@ const fallbackValue = {
     },
   ],
   meta: {
-    [documentTitle.key]: "Untitled",
+    [documentTitle.key]: documentTitle.serialize("Untitled"),
   },
 };
 
@@ -51,22 +51,23 @@ const App = () => {
     initialValue,
   });
 
-  useEffect(() => {
-    return editor.subscribe((_snapshot, change) => {
-      if (!change) return;
-
-      if (!change.childrenChanged && change.dirtyStateKeys.length === 0) {
-        return;
-      }
-
-      const documentValue = editor.read.value();
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(documentValue));
-    });
-  }, [editor]);
-
   return (
-    <Plite editor={editor}>
+    <Plite
+      editor={editor}
+      onCommit={({ commit, editor }) => {
+        if (
+          !commit.changed.has("document") &&
+          commit.dirtyStateKeys.length === 0
+        ) {
+          return;
+        }
+
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(editor.read.value())
+        );
+      }}
+    >
       <Editable />
     </Plite>
   );
@@ -84,20 +85,17 @@ type EditorDocumentValue = {
 ```
 
 That shape includes the primary document, every extra root, and persistent meta
-from state fields. It omits fields declared with `persist: false`.
+from state fields. Fields without a `persist` codec stay local to the runtime.
 
 ## Single-Root Shortcut
 
-The first argument to `<Plite onChange>` is the provider root's block array.
-You can save that value directly for a tiny single-root editor with no
-persistent meta fields.
+The `value` in `<Plite onValueChange>` is the mounted root's block array. Save
+it directly for a tiny single-root editor with no persistent meta fields.
 
 ```tsx
 <Plite
   editor={editor}
-  onChange={(value, change) => {
-    if (!change.valueChanged) return;
-
+  onValueChange={({ value }) => {
     localStorage.setItem("plite.children", JSON.stringify(value));
   }}
 >
@@ -149,7 +147,6 @@ schema and can reconcile every root and every persistent meta field.
 ```tsx
 editor.update.value.replace({
   children: nextDocument.children,
-  marks: null,
   selection: null,
 });
 ```
@@ -170,7 +167,6 @@ editor.update((tx) => {
 
   tx.value.replace({
     children: nextDocument.children,
-    marks: null,
     selection: null,
   });
 
@@ -192,18 +188,23 @@ editor.update((tx) => {
 
   tx.setField(
     documentTitle,
-    nextDocument.meta?.[documentTitle.key] ?? "Untitled"
+    nextDocument.meta?.[documentTitle.key]
+      ? documentTitle.deserialize(nextDocument.meta[documentTitle.key])
+      : "Untitled"
   );
   tx.setField(
     pageSettings,
-    nextDocument.meta?.[pageSettings.key] ?? defaultPageSettings
+    nextDocument.meta?.[pageSettings.key]
+      ? pageSettings.deserialize(nextDocument.meta[pageSettings.key])
+      : defaultPageSettings
   );
 });
 ```
 
-Do not leave registered persistent fields out of the reconciliation. Missing
-fields should be reset to your app defaults, otherwise the next save can mix
-metadata from two documents.
+Do not leave registered persistent fields out of the reconciliation. Decode
+their versioned envelopes before calling `tx.setField`. Missing fields should
+be reset to app defaults so the next save cannot mix metadata from two
+documents.
 
 ## Store Comments Separately
 
@@ -216,5 +217,5 @@ Use [Annotations](../libraries/plite-react/annotations) to render comment
 anchors from that external store.
 
 Persistence uses `editor.read.value()` for the whole document. Use `value` from
-`onChange` only for single-root shortcuts, and keep external app data outside
-the Plite document unless it is part of the document model.
+`onValueChange` only for single-root shortcuts, and keep external app data
+outside the Plite document unless it is part of the document model.

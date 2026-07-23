@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createAtomStore } from '@platejs/core/react';
+import { createAtomStore } from '@platejs/core/react/internal';
 import { useEditorReadOnly } from '@platejs/plite-react';
 import { createPrimitiveComponent } from '@udecode/react-utils';
 import type { Nullable } from '@udecode/utils';

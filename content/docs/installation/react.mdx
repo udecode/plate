@@ -27,7 +27,7 @@ import { Plate, usePlateEditor } from 'platejs/react';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 
 export default function App() {
-  const editor = usePlateEditor(); // Initializes the editor instance
+  const editor = usePlateEditor();
 
   return (
     <Plate editor={editor}>      {/* Provides editor context */}
@@ -96,7 +96,7 @@ const initialValue: Value = [
 export default function App() {
   const editor = usePlateEditor({
     plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin], // Add the mark plugins
-    value: initialValue,         // Set initial content
+    initialValue,
   });
 
   return (
@@ -180,7 +180,7 @@ export default function App() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: initialValue,
+    initialValue,
   });
 
   return (
@@ -280,7 +280,7 @@ export default function App() {
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: () => {
+    initialValue: () => {
       const savedValue = localStorage.getItem('installation-react-demo');
       return savedValue ? JSON.parse(savedValue) : initialValue;
     },
@@ -289,7 +289,7 @@ export default function App() {
   return (
     <Plate
       editor={editor}
-      onChange={({ value }) => {
+      onValueChange={({ value }) => {
         localStorage.setItem('installation-react-demo', JSON.stringify(value));
       }}
     >

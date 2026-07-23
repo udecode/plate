@@ -6,6 +6,18 @@ import { BaseFilePlugin } from './BaseFilePlugin';
 import { BaseVideoPlugin } from './BaseVideoPlugin';
 import { BaseImagePlugin } from './image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
+import { BasePlaceholderPlugin } from './placeholder/BasePlaceholderPlugin';
+
+type AssertFalse<T extends false> = T;
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+type _baseImagePluginNotAny = AssertFalse<IsAny<typeof BaseImagePlugin>>;
+type _baseMediaEmbedPluginNotAny = AssertFalse<
+  IsAny<typeof BaseMediaEmbedPlugin>
+>;
+type _basePlaceholderPluginNotAny = AssertFalse<
+  IsAny<typeof BasePlaceholderPlugin>
+>;
 
 describe('Base media plugin contracts', () => {
   it('configures file nodes as void elements', () => {

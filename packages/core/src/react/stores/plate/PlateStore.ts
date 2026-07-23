@@ -1,11 +1,4 @@
-import type {
-  EditorNodeChangeContext,
-  EditorTextChangeContext,
-  NodeEntry,
-  Range,
-  Selection,
-  ValueOf,
-} from '@platejs/plite';
+import type { NodeEntry, Range } from '@platejs/plite';
 import type { Nullable } from '@udecode/utils';
 
 import type { EditableProps } from '../../../lib';
@@ -30,23 +23,11 @@ export type PlateStoreState<E extends PlateStoreEditor = PlateStoreEditor> =
     renderElement: NonNullable<EditableProps['renderElement']>;
     renderLeaf: NonNullable<EditableProps['renderLeaf']>;
     renderText: NonNullable<EditableProps['renderText']>;
-    /** Controlled callback called when the editor state changes. */
-    onChange: (options: { editor: E; value: ValueOf<E> }) => void;
-    /** Controlled callback called for a canonical node change. */
-    onNodeChange: (options: EditorNodeChangeContext<E>) => void;
-    /** Controlled callback called when the selection changes. */
-    onSelectionChange: (options: { editor: E; selection: Selection }) => void;
-    /** Controlled callback called for a canonical text change. */
-    onTextChange: (options: EditorTextChangeContext<E>) => void;
-    /** Controlled callback called when the value changes. */
-    onValueChange: (options: { editor: E; value: ValueOf<E> }) => void;
   }> & {
     /** A reference to the editor container element. */
     containerRef: React.RefObject<HTMLDivElement | null>;
     /**
      * Plite editor reference.
-     *
-     * @default createPlateFallbackEditor()
      */
     editor: E;
   };

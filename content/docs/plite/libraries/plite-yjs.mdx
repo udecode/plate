@@ -4,7 +4,7 @@ description: "Connect a Plite editor to Yjs document meta, awareness, and provid
 ---
 
 `@platejs/yjs` connects a Plite editor to a Yjs document. Use it when your app
-owns the collaboration transport and wants Plite operations, selection state,
+owns the collaboration transport and wants Plite document changes, selection state,
 awareness, provider lifecycle, and undo/redo coordination to share one Yjs
 source of truth.
 
@@ -58,6 +58,122 @@ editor.update((tx) => {
 });
 ```
 
+## Schema Identity
+
+Each shared root records the compiled schema identity that owns its document.
+An editor joins only when its schema ID, version, and fingerprint match. A
+nonempty Yjs root without schema metadata fails closed instead of guessing how
+to decode its content. The first editor that seeds an empty root records its
+schema identity atomically with the document.
+
+Install the final compiled schema before joining a shared root. A claimed,
+populated room keeps that schema identity for its lifetime; local
+reconfiguration cannot rewrite the room in place. Run an explicit versioned
+document migration before joining a new or offline room, then connect every
+peer with the migrated schema identity. Changing schema semantics without a
+version bump is rejected.
+
+## Shared Effects
+
+State fields declared with `collab: "shared"` synchronize through keyed Yjs
+effects. Their descriptors are registered with the editor extension.
+
+Install standalone shared effects as keyed editor-extension resources so every
+peer can decode the same key and codec version. History and Yjs discover the
+installed descriptors. Shared effect values must encode to JSON-compatible
+data.
+
+```tsx
+import {
+  createEditor,
+  defineEditorExtension,
+  defineEffect,
+  valueCodecs,
+} from "@platejs/plite";
+import { createYjsExtension } from "@platejs/yjs";
+
+const incrementCounter = defineEffect<number>({
+  codec: valueCodecs.number,
+  collab: "shared",
+  collabReplay: "live",
+  key: "counter.increment",
+});
+
+const counterEffects = defineEditorExtension({
+  effects: [incrementCounter],
+  name: "counter-effects",
+});
+
+const editor = createEditor({
+  extensions: [counterEffects, createYjsExtension({ doc })],
+});
+```
+
+Every standalone shared effect declares `collabReplay`. Use `"live"` for an
+event delivered once to active peers. Use `"latest"` only for an absolute,
+idempotent restore value. Shared state-field transitions use `"latest"`
+automatically and checkpoint the field's current absolute value. A `"live"`
+effect must not be the sole source of durable shared state. A custom `"latest"`
+effect must define `collabSnapshot(state)` to capture that absolute value;
+compaction never treats the last event as a state snapshot.
+
+Configure one peer as the effect-log compaction authority when the shared
+document retains a long-running session.
+
+```tsx
+createYjsExtension({
+  doc,
+  sharedEffectCompaction: {
+    authorityId: "collaboration-service",
+    threshold: 256,
+  },
+});
+```
+
+Configure exactly one stable authority identity for each shared Yjs root and
+reuse it when that authority restarts with a new Y.Doc client generation. Each
+`"live"` event records the peers active in its causal Yjs state; durable peer
+acknowledgements preserve an unknown-codec retry across reconnects without
+admitting late joiners. Once every live recipient acknowledges a prefix, the
+authority writes its checkpoint, per-source watermarks, and prefix deletion in
+one Yjs transaction. Late joiners restore `"latest"` values before the remaining
+tail; expired `"live"` events do not replay. Checkpoint restoration is atomic,
+so a missing checkpoint codec keeps the checkpoint and every later event
+pending until the descriptor is installed. Installing the descriptor retries
+the pending checkpoint without waiting for more Yjs traffic.
+
+Compaction preserves delivery rather than guessing that a silent peer is dead.
+Graceful teardown publishes an inactive acknowledgement. When the host knows a
+peer crashed permanently, the authority can retire that Y.Doc client
+generation explicitly:
+
+```tsx
+editor.update((tx) => {
+  tx.yjs.retireSharedEffectPeer(crashedYDocClientId);
+});
+```
+
+The durable tombstone releases only that generation's delivery obligation. A
+returning collaborator joins with a fresh Y.Doc client generation, restores
+`"latest"` state from the checkpoint, and never receives the retired live
+tail. A different stable authority identity is rejected. Intentional ownership
+transfer belongs to an explicit host-fenced document migration.
+
+Document changes and effects produced by one Yjs transaction enter Plite in
+one trusted remote update. Reapplying the same Yjs update does not replay an
+effect twice.
+
+Remote Yjs event batches compile against the synchronized mirror into
+root-scoped `DocumentChange` ranges and apply with `tx.changes.apply(...)`.
+Routine imports decode only touched top-level nodes. Unsupported projected
+content or root metadata takes an explicit traced full-diff fallback.
+
+Outbound commits lower `commit.changes` directly into affected Yjs regions.
+Compatible nodes and uniquely derived relocated subtrees keep their Yjs node
+identities; structural regions use the canonical change as their only
+execution authority. Split undo metadata is derived from classified changed
+paths and the commit snapshots.
+
 ## React Hooks
 
 Use the React subpath for provider state and remote cursors.
@@ -86,7 +202,7 @@ outside the Plite package.
 
 ## Proof
 
-The package is covered by operation, selection, awareness, provider, React, and
+The package is covered by change, selection, awareness, provider, React, and
 structural soak contracts under `packages/yjs/test`. The Hocuspocus
 example is covered by the production soak proof script:
 
@@ -96,6 +212,6 @@ PRODUCTION_SOAK_FAIL_ON_ISSUES=1 bun scripts/proof/yjs-hocuspocus-production-soa
 
 ## Related Docs
 
-- [Operation Replay Substrate](../walkthroughs/07-operation-replay-substrate)
+- [Canonical Change Substrate](../walkthroughs/07-canonical-change-substrate)
 - [Plite History](./plite-history)
 - [Plite React](./plite-react)

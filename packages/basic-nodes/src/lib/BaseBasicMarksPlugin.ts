@@ -9,6 +9,7 @@ import { BaseSuperscriptPlugin } from './BaseSuperscriptPlugin';
 import { BaseUnderlinePlugin } from './BaseUnderlinePlugin';
 
 export const BaseBasicMarksPlugin = createBasePlugin({
+  key: 'basicMarks',
   plugins: [
     BaseBoldPlugin,
     BaseCodePlugin,

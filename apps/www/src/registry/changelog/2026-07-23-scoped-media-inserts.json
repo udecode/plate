@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-23-scoped-media-inserts",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-23-scoped-media-inserts.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use scoped media insert APIs",
+  "targets": [
+    {
+      "name": "transforms",
+      "files": ["apps/www/src/registry/components/editor/transforms.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "transforms-classic",
+      "files": [
+        "apps/www/src/registry/components/editor/transforms-classic.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-23-transforms-scoped-media-insert-apis-c0894bc1",
+      "kind": "wiring",
+      "summary": "Use plugin-scoped media insertion in copied editor transforms.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["transforms", "transforms-classic"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-23",
+          "entry": "2026-07-23-scoped-media-inserts",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,4 +1,4 @@
-import { deserializeMd } from '@platejs/markdown';
+import type { MarkdownEditor } from '@platejs/markdown';
 import { diffToSuggestions } from '@platejs/suggestion';
 import type { Element } from '@platejs/plite';
 import type { PlateEditor } from '@platejs/core/react';
@@ -20,7 +20,7 @@ export type TableCellUpdate = {
  * the cell's children with suggestion-marked nodes.
  */
 export const applyTableCellSuggestion = (
-  editor: PlateEditor,
+  editor: MarkdownEditor<PlateEditor>,
   cellUpdate: TableCellUpdate
 ) => {
   const { content, id } = cellUpdate;
@@ -42,7 +42,7 @@ export const applyTableCellSuggestion = (
   const originalChildren = withoutSuggestionAndComments(cell.children);
 
   // Deserialize AI content to nodes
-  const aiNodes = deserializeMd(editor, content);
+  const aiNodes = editor.api.markdown.deserialize(content);
 
   // Compute diff
   const diffNodes = diffToSuggestions(editor, originalChildren, aiNodes, {

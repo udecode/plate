@@ -1,6 +1,6 @@
 import type { Pluggable, Preset, Settings } from 'unified';
 
-import type { MarkdownProfileResource } from '../MarkdownPlugin';
+import type { NormalizePluginOption } from '@platejs/core';
 
 export const REMARK_MDX_TAG = 'remarkMdx';
 
@@ -16,17 +16,17 @@ export const tagRemarkPlugin = <T extends Callable>(
   return pluginFn;
 };
 
-type ConfiguredPluggable = MarkdownProfileResource['remarkPlugins'][number];
+type ConfiguredPluggable = NormalizePluginOption<Pluggable>;
 type ConfiguredPluginTuple = Extract<ConfiguredPluggable, readonly unknown[]>;
 type PluginTuple = Extract<Pluggable, readonly unknown[]>;
-type MaterializableSettings =
-  | NonNullable<
-      Extract<ConfiguredPluggable, { readonly settings?: object }>['settings']
-    >
-  | Settings;
-type MaterializableUnsafe = NonNullable<
-  MaterializableSettings['unsafe']
->[number];
+type MaterializableUnsafe = NormalizePluginOption<
+  NonNullable<Settings['unsafe']>[number]
+>;
+type MaterializableSettings = Omit<Settings, 'join' | 'unsafe'> &
+  Readonly<{
+    join?: readonly NonNullable<Settings['join']>[number][] | null;
+    unsafe?: readonly MaterializableUnsafe[] | null;
+  }>;
 
 const materializeConstructs = (
   constructs: MaterializableUnsafe['inConstruct']

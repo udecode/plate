@@ -74,7 +74,8 @@ export const normalizeListStart = (
           getListSequenceSiblingOptions(editor, {
             breakOnEqIndentNeqListStyleType: false,
             ...options,
-          })
+          }),
+          tx
         )
       : (previousEntry ?? undefined);
   const expectedListStart = getListExpectedListStart(entry, prevEntry);

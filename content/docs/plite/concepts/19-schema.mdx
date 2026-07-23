@@ -1,0 +1,353 @@
+---
+title: "Schema"
+description: "Declare, compile, validate, fit, and reconfigure Plite document structure."
+---
+
+Plite schema is the immutable contract for element structure, property values,
+roots, and insertion fitting. A declared schema rejects invalid external data
+and unknown vocabulary by default; a raw editor without one stays permissive.
+
+## Choose The Right Surface
+
+| Need                                     | API                                        | Owner                                   |
+| ---------------------------------------- | ------------------------------------------ | --------------------------------------- |
+| Declare the complete document vocabulary | `defineEditorSchema(...)`                  | `@platejs/plite`                        |
+| Add feature-owned schema declarations    | extension `schema` contribution            | `@platejs/plite` or a framework adapter |
+| Inspect compiled behavior                | `editor.read.schema.*`                     | committed editor state                  |
+| Validate a complete persisted document   | `editor.read.schema.validateDocument(...)` | compiled schema                         |
+| Validate closed children                 | `validateFragment(...)`                    | compiled schema                         |
+| Import and canonicalize root content     | `tx.value.replace(...)` or `tx.roots.*`    | transaction fitter                      |
+| Insert closed application content        | `tx.fragment.replace(...)`                 | transaction fitter                      |
+| Preserve open transport boundaries       | `ContentSlice` and `tx.slice.replace(...)` | slice fitter                            |
+| Fit content under a detached parent      | `state.slice.fitContent(...)`              | read-only slice service                 |
+| Replace a schema at runtime              | `tx.extensions.reconfigure(...)`           | atomic extension transaction            |
+
+The declaration builders describe policy. The compiled state API answers
+runtime questions. Transactions fit and publish content.
+
+## Define A Schema
+
+`defineEditorSchema(...)` packages one complete schema as an editor extension.
+The definition names every element, the primary-root grammar, and a stable
+`id` and `version`. It also states whether unknown vocabulary is rejected or
+preserved.
+
+```ts
+import {
+  createEditor,
+  defineEditorSchema,
+  property,
+  schema,
+  target,
+} from "@platejs/plite";
+
+const ArticleSchema = defineEditorSchema({
+  elements: {
+    paragraph: {
+      content: schema.content.text({ default: "text", min: 1 }),
+      properties: {
+        id: property.string(),
+      },
+    },
+    quote: {
+      content: schema.content.group("block", {
+        default: { type: "paragraph" },
+        min: 1,
+      }),
+      slice: { preserveContext: true },
+    },
+  },
+  id: "article",
+  properties: [
+    schema.textProperty("bold", property.boolean(), {
+      target: target.type("paragraph"),
+    }),
+    schema.elementProperty("align", property.string(), {
+      target: target.group("block"),
+      typeChange: "preserve-if-allowed",
+    }),
+  ],
+  root: {
+    content: schema.content.group("block", {
+      default: { type: "paragraph" },
+      min: 1,
+    }),
+  },
+  unknown: "reject",
+  version: 1,
+});
+
+const editor = createEditor({
+  extensions: [ArticleSchema] as const,
+  initialValue: [
+    { type: "paragraph", id: "intro", children: [{ text: "Hello" }] },
+  ],
+});
+```
+
+Element, group, and root declarations are contextual objects. Tagged builders
+such as `property.*`, `schema.content.*`, and `target.*` express policy and
+return deeply frozen, serializable declarations. The extension boundary
+freezes and validates the complete declaration before the compiler resolves it
+into immutable indexes, construction plans, property placement, and slice
+policy. Extension order does not decide defaults or conflict winners.
+
+## Content Grammar
+
+Element and root content use explicit rules.
+
+| Builder                            | Accepts                          |
+| ---------------------------------- | -------------------------------- |
+| `schema.content.text(...)`         | text children                    |
+| `schema.content.type(type, ...)`   | one element type                 |
+| `schema.content.types(types, ...)` | any listed element type          |
+| `schema.content.group(group, ...)` | any element in a compiled group  |
+| `schema.content.any(rules, ...)`   | at least one nested rule         |
+| `schema.content.all(rules, ...)`   | every nested rule                |
+| `schema.content.not(rule, ...)`    | anything outside the nested rule |
+
+`min`, `max`, and `default` define cardinality and construction. A required
+content rule needs a constructable default. `state.schema.createAndFill(type)`
+uses the compiled plan, and `state.schema.findWrapping(parent, child)` uses the
+same grammar.
+
+`schema.content.not(...)` is a true complement. It permits undeclared element
+types when they are outside the excluded rule. Inspect compiled grammar through
+`state.schema.element(type)?.content`; its `allowsUnknownElements` field makes
+that open-world behavior explicit alongside `allowedElementTypes` and
+`allowsText`.
+
+The compiler owns `all`, `element`, `text`, `block`, `inline`, and `textBlock`.
+Non-inline elements join `block`; inline elements join `inline`; compatible
+text containers join `textBlock`. Application groups are transitive: declare
+them as `{ extends: [...] }` and query them with
+`state.schema.isElementTypeInGroup(type, group)`.
+
+## Properties And Targets
+
+Property descriptors define JSON value laws. Use `property.boolean()`,
+`property.string()`, `property.number()`, `property.json()`, or
+`property.set(item)`. All values use structural equality; defaults can be
+omitted canonically with `{ default, omitDefault: true }`.
+
+Element-owned fields live in the element declaration's `properties` map.
+Cross-cut element fields use `schema.elementProperty(...)` with an explicit
+target. Text marks use `schema.textProperty(...)`.
+
+Targets are frozen syntax, not callbacks. Compose `target.type`,
+`target.types`, `target.group`, `target.root`, `target.parent`, `target.and`,
+`target.or`, and `target.not`. Use `schema.key.prefix(...)` only for a real
+namespaced property family.
+
+Custom validation uses a stable property policy.
+
+```ts
+import { definePropertyPolicy, property } from "@platejs/plite";
+
+const Positive = definePropertyPolicy<number>({
+  id: "positive",
+  validate: (value): value is number => typeof value === "number" && value > 0,
+  version: 1,
+});
+
+const Width = property.number({ policy: Positive });
+```
+
+Use `property.json({ policy })` for a validated structured JSON value. The
+policy supplies runtime validation and the property builder infers the
+validated TypeScript type.
+
+```ts
+import { definePropertyPolicy, property } from "@platejs/plite";
+
+type MediaSize = { height: number; width: number };
+
+const MediaSizePolicy = definePropertyPolicy<MediaSize>({
+  id: "media-size",
+  validate: (value): value is MediaSize =>
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as MediaSize).height === "number" &&
+    typeof (value as MediaSize).width === "number",
+  version: 1,
+});
+
+const Size = property.json({ policy: MediaSizePolicy });
+```
+
+The policy `id` and `version` contribute to schema identity. Function identity
+does not. The validator receives untrusted `unknown` input and narrows it to the
+declared property type.
+
+## Unknown Vocabulary
+
+Complete schemas default to `unknown: "reject"`. Use `"preserve"` only when the
+application intentionally carries forward undeclared element types or
+properties.
+
+```ts
+const ForwardCompatibleSchema = defineEditorSchema({
+  elements: {},
+  id: "forward-compatible",
+  root: {
+    content: schema.content.not(schema.content.text()),
+  },
+  unknown: "preserve",
+  version: 1,
+});
+```
+
+Preservation is still grammar-bound. An undeclared element is valid only when
+its parent content rule admits unknown elements; a closed `type`, `types`, or
+`group` rule still rejects it. Compiled content reports that decision through
+`allowsUnknownElements`. Declared elements and properties continue to use
+their compiled validation and lifecycle laws, while undeclared properties are
+kept as JSON values. The unknown policy contributes to schema identity.
+
+## External Validation
+
+`createEditor(...)` snapshots `initialValue`, fits every root through the
+candidate schema, canonicalizes node properties and representation, maps the
+initial selection, and validates the result before publishing the editor.
+Unknown element types, roots, properties, invalid property values, and illegal
+parent/child relationships fail atomically when they cannot be fitted.
+
+Use the compiled read API at other external boundaries:
+
+```ts
+editor.read.schema.validateDocument(decodedDocument);
+editor.read.schema.validateFragment(decodedChildren);
+```
+
+`validateDocument` checks primary children, named roots, and the JSON shape of
+persisted meta.
+`validateFragment` checks a closed fragment without changing it. Do not run a
+separate canonicalization pass before importing content. `tx.value.replace`
+and `tx.roots.create` or `tx.roots.replace` route external root content through
+the same schema fitter used by other ingress paths, then publish the fitted
+document atomically.
+
+`ContentSlice.fromJSON(...)` validates generic JSON shape, immutability, and
+open depths. Schema vocabulary and grammar are checked when the slice is fitted
+against an editor state. See [Clipboard And Paste](17-clipboard-and-paste).
+
+## Fragment And Slice Fitting
+
+Use the smallest surface that preserves the information you have.
+
+```ts
+import { ContentSlice } from "@platejs/plite";
+
+editor.update.fragment.replace([
+  { type: "paragraph", children: [{ text: "Closed content" }] },
+]);
+
+const openSlice = ContentSlice.fromJSON({
+  content: decodedContent,
+  openEnd: 1,
+  openStart: 1,
+});
+
+editor.update.slice.replace(openSlice);
+```
+
+`fragment.replace` is the ordinary closed-content API. `slice.replace` keeps
+open edge context from HTML, clipboard, drag, or another transport. Both fit at
+the actual target and publish at most one canonical transaction.
+
+Use `state.slice.fit(slice, options?)` to build a `TransactionSpec` without
+publishing. Use `state.slice.fitContent(slice, { parent, root? })` when a
+feature such as a table needs grammar-valid children for a detached parent.
+`fitContent` returns frozen children or `null`; it does not mutate the parent or
+editor.
+
+## Schema Deltas
+
+`state.schema.delta()` reports the semantic difference published with the
+current configuration revision. Its sorted, immutable sets name changed
+`elementTypes`, `propertyIds`, `roots`, and `constructionTypes`. React and host
+adapters use those sets with runtime indexes to refresh only affected mounted
+nodes and projected roots. A schema delta is configuration metadata, not a
+document operation, and does not mutate the value.
+
+## Atomic Reconfiguration
+
+Put a replaceable schema in a named extension slot. Reconfiguration compiles
+and validates the candidate before publication. If the current document does
+not satisfy the candidate, provide `migrate` to return one complete document
+for the candidate schema.
+
+```ts
+import {
+  createEditor,
+  defineEditorSchema,
+  defineExtensionSlot,
+  schema,
+} from "@platejs/plite";
+
+const articleSchema = (version: number, type: string) =>
+  defineEditorSchema({
+    elements: {
+      [type]: {
+        content: schema.content.text({ default: "text", min: 1 }),
+      },
+    },
+    id: "article",
+    root: {
+      content: schema.content.type(type, {
+        default: { type },
+        min: 1,
+      }),
+    },
+    unknown: "reject",
+    version,
+  });
+
+const articleSlot = defineExtensionSlot("article-schema");
+const ArticleV1 = articleSchema(1, "paragraph");
+const ArticleV2 = articleSchema(2, "body");
+const editor = createEditor({
+  extensions: [articleSlot.of(ArticleV1)] as const,
+  initialValue: [{ type: "paragraph", children: [{ text: "Draft" }] }],
+});
+
+editor.update.extensions.reconfigure(articleSlot, ArticleV2, {
+  migrate({ document }) {
+    return {
+      ...document,
+      children: document.children.map((node) =>
+        "type" in node && node.type === "paragraph"
+          ? { ...node, type: "body" }
+          : node
+      ),
+    };
+  },
+});
+```
+
+The callback sees the immutable current document and the candidate schema as
+`next`. The returned document, schema, fields, facets, APIs, and configuration
+revision publish in one commit. Compilation, migration, or validation failure
+publishes nothing. Equivalent schema configuration is a no-op.
+
+## Schema Identity And Persistence
+
+`editor.read.schema.identity()` returns `{ id, version, fingerprint }` for a
+declared schema and `null` for a raw editor. The fingerprint is deterministic
+for the compiled semantics. Increment `version` whenever those semantics
+change; a matching ID and version with a different fingerprint is an invalid
+deployment contract.
+
+The document returned by `editor.read.value()` does not embed schema identity.
+Persist it in an application envelope when documents may cross schema versions.
+`@platejs/plite-history` does this in `History.toJSON(editor)` and rejects a
+mismatch in `History.fromJSON(editor, json)` before decoding any batch.
+
+## Related Docs
+
+- [Nodes](02-nodes)
+- [Extensions](08-extensions)
+- [Document Changes](05-document-changes)
+- [Document Meta](14-document-state)
+- [Clipboard And Paste](17-clipboard-and-paste)
+- [History](../libraries/plite-history/history)

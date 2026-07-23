@@ -1,8 +1,8 @@
 import type { createLowlight } from 'lowlight';
 
 import { type PluginConfig, createBasePlugin } from '@platejs/core';
-import { ElementApi } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { ElementApi, property, schema } from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
 
 import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBlock';
 import { isCodeBlockEmpty } from './queries';
@@ -23,7 +23,7 @@ import { withInsertFragmentCodeBlock } from './withInsertFragmentCodeBlock';
 import { withNormalizeCodeBlock } from './withNormalizeCodeBlock';
 
 export type CodeBlockConfig = PluginConfig<
-  'code_block',
+  'codeBlock',
   {
     /**
      * Default language to use when no language is specified. Set to null to
@@ -40,28 +40,43 @@ export type CodeBlockConfig = PluginConfig<
 
 export const BaseCodeLinePlugin = createBasePlugin({
   key: KEYS.codeLine,
-  node: { isElement: true, isStrictSiblings: true },
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      slice: { preserveContext: true },
+      topLevel: false,
+    },
+  },
+  type: NODES.codeLine,
 });
 
 export const BaseCodeSyntaxPlugin = createBasePlugin({
   key: KEYS.codeSyntax,
-  node: { isLeaf: true },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+  type: NODES.codeSyntax,
 });
 
-export const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
+const codeBlockOptions: CodeBlockConfig['options'] = {
+  defaultLanguage: null,
+  lowlight: null,
+};
+
+export const BaseCodeBlockPlugin = createBasePlugin({
   key: KEYS.codeBlock,
   inject: {
     plugins: {
       [KEYS.html]: {
         parser: {
-          query: ({ editor }) => {
-            const selection = editor.read.selection();
+          query: ({ registry, state }) => {
+            const selection = state.selection();
 
             return (
               !selection ||
-              !editor.read.nodes.some({
+              !state.nodes.some({
                 at: selection,
-                match: { type: editor.getType(KEYS.codeLine) },
+                match: { type: registry.getType(KEYS.codeLine) },
               })
             );
           },
@@ -69,13 +84,22 @@ export const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
       },
     },
   },
-  node: {
-    isElement: true,
+  schema: ({ plugins }) => {
+    const codeLineType = plugins.elementType(BaseCodeLinePlugin);
+
+    return {
+      element: {
+        content: schema.content.type(codeLineType, {
+          default: { type: codeLineType },
+          min: 1,
+        }),
+        properties: { lang: property.string() },
+        slice: { preserveContext: true },
+      },
+    };
   },
-  options: {
-    defaultLanguage: null,
-    lowlight: null,
-  },
+  type: NODES.codeBlock,
+  options: codeBlockOptions,
   parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   plugins: [BaseCodeLinePlugin, BaseCodeSyntaxPlugin],
   render: { as: 'pre' },
@@ -108,11 +132,6 @@ export const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
 
     return [];
   },
-  shortcuts: {
-    selectAll: { keys: 'mod+a' },
-    tab: { keys: 'tab' },
-    untab: { keys: 'shift+tab' },
-  },
 })
   .extendExtension(withCodeBlock)
   .extendExtension(withInsertDataCodeBlock)
@@ -122,7 +141,14 @@ export const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
     insert: insertCodeBlock.bind(null, editor, tx),
     resetBlock: () => resetCodeBlock(editor, tx),
     selectAll: () => selectCodeBlock(editor, tx),
-    tab: (options?: { reverse?: boolean }) => tabCodeBlock(editor, tx, options),
+    tab: tabCodeBlock.bind(null, editor, tx),
     toggle: () => toggleCodeBlock(editor, tx),
     untab: () => tabCodeBlock(editor, tx, { reverse: true }),
-  }));
+  }))
+  .extend({
+    shortcuts: {
+      selectAll: { keys: 'mod+a' },
+      tab: { keys: 'tab' },
+      untab: { keys: 'shift+tab' },
+    },
+  });

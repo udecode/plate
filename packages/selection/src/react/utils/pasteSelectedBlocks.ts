@@ -2,21 +2,29 @@ import type { BaseEditor } from '@platejs/core';
 import { PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+import { getBlockSelectionNodes } from '../internal/getBlockSelectionNodes';
 import { selectInsertedBlocks } from './selectInsertedBlocks';
 
 export const pasteSelectedBlocks = (editor: BaseEditor, e: ClipboardEvent) => {
-  const { api } = editor.plugin(BlockSelectionPlugin);
+  const data = e.clipboardData;
+  const selectedIds = editor
+    .plugin(BlockSelectionPlugin)
+    .getOption('selectedIds');
 
-  const entries = api.getNodes();
+  if (!data || !selectedIds?.size) return;
 
-  if (entries.length > 0) {
-    const entry = entries.at(-1)!;
+  editor.update((tx, { afterCommit }) => {
+    const entries = getBlockSelectionNodes(tx, selectedIds);
+    const entry = entries.at(-1);
+
+    if (!entry) return;
+
     const [node, path] = entry;
 
-    if (!editor.read.nodes.isEmpty(node)) {
+    if (!tx.nodes.isEmpty(node)) {
       const at = PathApi.next(path);
 
-      editor.update.nodes.insert(
+      tx.nodes.insert(
         { children: [{ text: '' }], type: editor.getType(KEYS.p) },
         {
           at,
@@ -25,8 +33,8 @@ export const pasteSelectedBlocks = (editor: BaseEditor, e: ClipboardEvent) => {
       );
     }
 
-    editor.api.clipboard.insertData(e.clipboardData!);
+    editor.api.clipboard.insertData(data);
 
-    selectInsertedBlocks(editor);
-  }
+    afterCommit(() => selectInsertedBlocks(editor));
+  });
 };

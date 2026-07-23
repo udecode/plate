@@ -13,7 +13,6 @@ import {
   createAIChatAdapter,
 } from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
-import { deserializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { TablePlugin } from '@platejs/table/react';
 import { type Range, type Value, NodeApi, TextApi } from '@platejs/plite';
@@ -22,6 +21,7 @@ import { KEYS, nanoid } from 'platejs';
 import { type PlateEditor, useEditor, usePluginOption } from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
+import type { MyEditor } from '@/registry/components/editor/editor-kit';
 
 import { discussionPlugin } from './plugins/discussion-kit';
 
@@ -190,7 +190,7 @@ function createChatTransport({
 }
 
 export const useChat = () => {
-  const editor = useEditor();
+  const editor = useEditor<MyEditor>();
   const options = usePluginOption(aiChatPlugin, 'chatOptions');
 
   // remove when you implement the route /api/ai/command
@@ -277,7 +277,8 @@ export const useChat = () => {
           id: discussionId,
           comments: [newComment],
           createdAt: new Date(),
-          documentContent: deserializeMd(editor, aiComment.content)
+          documentContent: editor.api.markdown
+            .deserialize(aiComment.content)
             .map((node) => NodeApi.string(node))
             .join('\n'),
           isResolved: false,

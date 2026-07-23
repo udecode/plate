@@ -17,7 +17,7 @@ export const useTocElementState = () => {
   const { editor, getOptions } = useEditorPlugin(TocPlugin);
   const { topOffset } = getOptions();
 
-  const headingList = useEditorSelector(getHeadingList, []);
+  const headingList = useEditorSelector(getHeadingList);
 
   const container = useEditorScrollElement(editor);
 

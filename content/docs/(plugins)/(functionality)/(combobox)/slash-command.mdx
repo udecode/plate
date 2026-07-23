@@ -81,7 +81,7 @@ const editor = createPlateEditor({
 import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
 import { createPlateEditor } from 'platejs/react';
 import { SlashInputElement } from '@/components/ui/slash-node';
-import { KEYS } from 'platejs';
+import { KEYS, NODES } from 'platejs';
 
 const editor = createPlateEditor({
   plugins: [
@@ -153,7 +153,7 @@ Plugin for slash command functionality. Extends [TriggerComboboxPluginOptions](/
     ```tsx
     () => ({
       children: [{ text: '' }],
-      type: KEYS.slashInput,
+      type: NODES.slashInput,
     });
     ```
   </APIItem>

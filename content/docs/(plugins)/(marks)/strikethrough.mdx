@@ -119,7 +119,7 @@ The package owns the mark. The registry owns shortcut configuration and toolbar 
 | Behavior | Source |
 |----------|--------|
 | Mark key | `KEYS.strikethrough` |
-| Leaf behavior | `node.isLeaf: true` |
+| Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.strikethrough.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `directional` |
 | HTML tags | `s`, `del`, `strike` |

@@ -103,6 +103,8 @@ const isBoolean = (value: unknown): value is boolean =>
   typeof value === 'boolean';
 const isNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
+const isNonnegativeNumber = (value: unknown): value is number =>
+  isNumber(value) && value >= 0;
 const isNonnegativeInteger = (value: unknown): value is number =>
   typeof value === 'number' && Number.isInteger(value) && value >= 0;
 const isString = (value: unknown): value is string => typeof value === 'string';
@@ -120,10 +122,11 @@ const isStringOrStringArray: ValueValidator = (value) =>
 const isOneOf = (...values: readonly string[]): ValueValidator =>
   (value) => typeof value === 'string' && values.includes(value);
 const isOffsetExpectation: ValueValidator = (value) =>
-  isNumber(value) ||
+  isNonnegativeInteger(value) ||
   (Array.isArray(value) &&
     value.length === 2 &&
-    value.every((entry) => isNumber(entry)));
+    value.every((entry) => isNonnegativeInteger(entry)) &&
+    value[0] <= value[1]);
 const isSelectionPoint = (
   value: unknown,
   validateOffset: ValueValidator
@@ -144,7 +147,7 @@ const isSelection = (
     (key) => key === 'anchor' || key === 'focus' || key === 'kind'
   );
 const isSelectionSnapshot: ValueValidator = (value) =>
-  isSelection(value, isNumber);
+  isSelection(value, isNonnegativeInteger);
 const isSelectionExpectation: ValueValidator = (value) =>
   isSelection(value, isOffsetExpectation);
 const isDOMSelectionExpectation: ValueValidator = (value) =>
@@ -163,7 +166,7 @@ const isDOMSelectionExpectation: ValueValidator = (value) =>
   );
 const isCaretExpectation: ValueValidator = (value) =>
   isRecord(value) &&
-  isNumber(value.offset) &&
+  isNonnegativeInteger(value.offset) &&
   isString(value.text) &&
   Object.keys(value).every((key) => key === 'offset' || key === 'text');
 
@@ -182,28 +185,53 @@ const isValidatedRecord = (
   );
 };
 
+const hasOrderedNumberBounds = (value: Record<string, unknown>) =>
+  !Object.hasOwn(value, 'min') ||
+  !Object.hasOwn(value, 'max') ||
+  (isNumber(value.min) && isNumber(value.max) && value.min <= value.max);
+
 const isNullable = (validate: ValueValidator): ValueValidator => (value) =>
   value === null || validate(value);
 const isDOMSelectionLocationExpectation: ValueValidator = (value) =>
   isValidatedRecord(
     value,
     {
-      anchorOffset: isNullable(isNumber),
+      anchorOffset: isNullable(isNonnegativeInteger),
       anchorPath: isPathOrNull,
       anchorText: isNullable(isString),
       isCollapsed: isNullable(isBoolean),
     },
     true
   );
-const isNumberRange: ValueValidator = (value) =>
-  isValidatedRecord(value, { max: isNumber, min: isNumber }, true);
-const isNumberBudget: ValueValidator = (value) =>
-  isNumber(value) ||
+const isNonnegativeIntegerRange: ValueValidator = (value) =>
   isValidatedRecord(
     value,
-    { exact: isNumber, max: isNumber, min: isNumber },
+    { max: isNonnegativeInteger, min: isNonnegativeInteger },
     true
-  );
+  ) && hasOrderedNumberBounds(value);
+const isNumberBudget: ValueValidator = (value) => {
+  if (isNonnegativeInteger(value)) return true;
+  if (
+    !isValidatedRecord(
+      value,
+      {
+        exact: isNonnegativeInteger,
+        max: isNonnegativeInteger,
+        min: isNonnegativeInteger,
+      },
+      true
+    )
+  ) {
+    return false;
+  }
+
+  const hasExact = Object.hasOwn(value, 'exact');
+  const hasRange = Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min');
+
+  return hasExact
+    ? !hasRange
+    : hasRange && hasOrderedNumberBounds(value);
+};
 const renderKinds = [
   'core-time',
   'dom-text-sync',
@@ -234,7 +262,8 @@ const isRenderedDOMShapeExpectation: ValueValidator = (value) =>
     blockIndex: isNonnegativeInteger,
     domSelectionTarget: isDOMSelectionLocationExpectation,
     innerText: isString,
-    lineBoxCount: (entry) => isNumber(entry) || isNumberRange(entry),
+    lineBoxCount: (entry) =>
+      isNonnegativeInteger(entry) || isNonnegativeIntegerRange(entry),
     noUnexpectedZeroWidthBreaks: (entry) => entry === true,
     textContent: isString,
     zeroWidthBreakCount: isNonnegativeInteger,
@@ -465,7 +494,9 @@ const scenarioStepShapes = {
   assertCapturedRuntimeIdPath: {
     required: { name: isString, path: isPathOrNull },
   },
-  assertDOMCaret: { required: { offset: isNumber, text: isString } },
+  assertDOMCaret: {
+    required: { offset: isNonnegativeInteger, text: isString },
+  },
   assertDOMSelection: {
     required: { selection: isDOMSelectionExpectation },
   },
@@ -498,7 +529,9 @@ const scenarioStepShapes = {
       const hasRange =
         Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min');
 
-      return hasCount ? !hasRange : hasRange;
+      return hasCount
+        ? !hasRange
+        : hasRange && hasOrderedNumberBounds(value);
     },
   },
   assertLocatorCss: {
@@ -521,13 +554,15 @@ const scenarioStepShapes = {
     optional: { max: isNumber, min: isNumber },
     required: { afterSelector: isString, beforeSelector: isString },
     validate: (value) =>
-      Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min'),
+      (Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min')) &&
+      hasOrderedNumberBounds(value),
   },
   assertLocatorVerticalOffset: {
     optional: { max: isNumber, min: isNumber },
     required: { innerSelector: isString, selector: isString },
     validate: (value) =>
-      Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min'),
+      (Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min')) &&
+      hasOrderedNumberBounds(value),
   },
   assertModelSelectionExpanded: {},
   assertModelText: { required: { text: isNonemptyString } },
@@ -558,7 +593,9 @@ const scenarioStepShapes = {
   captureRuntimeId: { required: { name: isString, path: isPath } },
   clickSelector: { required: { selector: isString } },
   clickTestId: { required: { testId: isString } },
-  clickTextOffset: { required: { offset: isNumber, path: isPath } },
+  clickTextOffset: {
+    required: { offset: isNonnegativeInteger, path: isPath },
+  },
   composeText: {
     optional: {
       committedText: isString,
@@ -571,7 +608,7 @@ const scenarioStepShapes = {
   deleteForward: {},
   doubleClickTextOffset: {
     optional: { selectedText: isString },
-    required: { offset: isNumber, path: isPath },
+    required: { offset: isNonnegativeInteger, path: isPath },
   },
   dragTextSelection: {
     optional: {
@@ -596,7 +633,7 @@ const scenarioStepShapes = {
     optional: {
       data: isString,
       inputType: isString,
-      selectionOffset: isNumber,
+      selectionOffset: isNonnegativeInteger,
     },
     required: { path: isPath, text: isString },
   },
@@ -612,7 +649,7 @@ const scenarioStepShapes = {
   select: { required: { selection: isSelectionSnapshot } },
   selectAll: {},
   selectDOM: { required: { selection: isSelectionSnapshot } },
-  settle: { optional: { timeoutMs: isNumber } },
+  settle: { optional: { timeoutMs: isNonnegativeNumber } },
   snapshot: { required: { label: isString } },
   type: { required: { text: isString } },
   typeThenUndo: {

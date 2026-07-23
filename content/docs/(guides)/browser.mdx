@@ -17,10 +17,9 @@ The package is subpath-only:
 
 - `@platejs/browser/playwright` for Playwright editor harnesses.
 - `@platejs/browser/core` for pure proof contracts, release-proof artifacts,
-  classifiers, and selection serialization helpers.
+  capability classifiers, and selection serialization helpers.
 - `@platejs/browser/browser` for DOM selection snapshots and zero-width
   placeholder inspection in browser-capable test environments.
-- `@platejs/browser/transports` for device/browser proof-scope descriptors.
 
 Do not import from `@platejs/browser` directly.
 
@@ -73,36 +72,43 @@ check into a fake global guarantee.
 
 ## Low-Level Helpers
 
-Use low-level helpers when a test needs to locate the editable, inspect a
-rendered node by path, or call the mounted browser handle directly.
+Use low-level helpers when a test needs to locate the editable or inspect a
+rendered node by path. Editor actions stay on the curated harness so volatile
+browser-handle method names do not become public API.
 
 ```ts
 import {
-  evaluatePliteBrowserHandle,
   getPliteBrowserEditable,
   locatePliteBrowserBlock,
   locatePliteBrowserText,
 } from "@platejs/browser/playwright";
 ```
 
-| Helper                        | Use                                                            |
-| ----------------------------- | -------------------------------------------------------------- |
-| `getPliteBrowserEditable`     | Locate the first editor root in a page, frame, or scoped area. |
-| `locatePliteBrowserBlock`     | Locate a rendered block by Plite path.                         |
-| `locatePliteBrowserText`      | Locate a rendered text node by Plite path.                     |
-| `evaluatePliteBrowserHandle`  | Call a method exposed by the mounted browser handle.           |
+| Helper                    | Use                                                            |
+| ------------------------- | -------------------------------------------------------------- |
+| `getPliteBrowserEditable` | Locate the first editor root in a page, frame, or scoped area. |
+| `locatePliteBrowserBlock` | Locate a rendered block by Plite path.                         |
+| `locatePliteBrowserText`  | Locate a rendered text node by Plite path.                     |
 
 Prefer the harness methods when they already express the behavior. They keep
 model, DOM, native-selection, and screenshot proof in one place instead of
 spreading selectors through tests.
 
-## Transport Claims
+## Replayable And Imperative Scenarios
 
-`@platejs/browser/transports` classifies proof scope. A Playwright mobile viewport
-does not prove raw-device behavior. Appium descriptors close raw-device lanes
-only when the device gate runs. Proxy browser lanes are useful evidence, but
-they do not claim native mobile clipboard, human soft-keyboard, glide typing,
-or voice input.
+Canonical scenarios contain serializable steps. They can be replayed, reduced,
+and attached to release proof.
+
+Use `scenario.runImperative(...)` only when browser work cannot be represented
+by the canonical step union. The imperative lane preserves one trace for
+interleaved setup and actions, but its result is explicitly non-replayable and
+cannot satisfy replay, reduction, or release gates.
+
+A Playwright mobile viewport does not prove raw-device behavior. Raw-device
+claims require a real device runner and an artifact that records the resolved
+device, OS, and capability scope. Proxy browser lanes remain useful evidence,
+but they do not claim native mobile clipboard, human soft-keyboard, glide
+typing, or voice input.
 
 ## Commands
 

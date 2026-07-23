@@ -20,11 +20,11 @@ import {
 import type { PlateElementProps } from 'platejs/react';
 import {
   PlateElement,
-  useEditorRef,
+  useEditor,
   useEditorSelector,
   useElement,
   useFocusedLast,
-  useNodePath,
+  usePath,
   useEditorReadOnly,
   useElementSelected,
 } from 'platejs/react';
@@ -94,9 +94,9 @@ function createDebouncedCodeDrawingRenderer(
 }
 
 function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const path = useNodePath(element);
+  const path = usePath();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [image, setImage] = React.useState<string>('');
@@ -135,12 +135,12 @@ export function CodeDrawingElement(
 ) {
   const { children } = props;
   const isMobile = useIsMobile();
-  const editor = useEditorRef();
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected();
   const isFocusedLast = useFocusedLast();
   const element = useElement<TCodeDrawingElement>();
-  const path = useNodePath(element);
+  const path = usePath();
   const { removeNode, image, loading } = useCodeDrawingElement({ element });
 
   const handleDownload = React.useCallback(() => {
@@ -203,9 +203,8 @@ export function CodeDrawingElement(
   const drawingType = element.data?.drawingType ?? 'Mermaid';
   const drawingMode = element.data?.drawingMode ?? 'Both';
 
-  const selectionCollapsed = useEditorSelector(
-    (editor) => editor.read.selection.isCollapsed(),
-    []
+  const selectionCollapsed = useEditorSelector((editor) =>
+    editor.read.selection.isCollapsed()
   );
 
   const open = isFocusedLast && !readOnly && selected && selectionCollapsed;
@@ -318,7 +317,9 @@ function CodeDrawingPreview({
 
   return (
     <div
-      className={`flex ${isMobile ? 'flex-col-reverse' : 'flex-col'} group my-4 w-full items-stretch border bg-muted/50 md:flex-row`}
+      className={`flex ${
+        isMobile ? 'flex-col-reverse' : 'flex-col'
+      } group my-4 w-full items-stretch border bg-muted/50 md:flex-row`}
       style={{
         minHeight: `${DEFAULT_MIN_HEIGHT}px`,
       }}

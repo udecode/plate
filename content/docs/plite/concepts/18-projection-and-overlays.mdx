@@ -76,9 +76,9 @@ toolbars, search panels, diagnostics, or other overlay UI.
 
 ```tsx
 const searchSource = usePliteRangeDecorationSource(editor, {
-  deps: [query],
   id: "search",
   read: ({ snapshot }) => findSearchRanges(snapshot, query),
+  revision: query,
 });
 
 return (
@@ -98,16 +98,14 @@ Annotations attach durable ids to ranges. They are the right owner for comments,
 suggestions, external diagnostics, and review markers.
 
 ```tsx
-const annotationStore = usePliteAnnotationStore(editor, {
-  deps: [comments],
-  project: () =>
-    comments.map((comment) => ({
-      anchor: comment.anchor,
-      data: comment,
-      id: comment.id,
-      projection: { tone: comment.tone },
-    })),
-});
+const annotations = comments.map((comment) => ({
+  anchor: comment.anchor,
+  data: comment,
+  id: comment.id,
+  projection: { tone: comment.tone },
+}));
+
+const annotationStore = usePliteAnnotationStore(editor, annotations);
 
 return (
   <Plite annotationStore={annotationStore} editor={editor}>
@@ -128,15 +126,14 @@ useful for comment popovers, inline toolbars, floating action buttons, and
 side-panel rows that need resolved visibility.
 
 ```tsx
-const widgetStore = usePliteWidgetStore(editor, {
+const widgets = comments.map((comment) => ({
+  anchor: { annotationId: comment.id, type: "annotation" },
+  data: { label: comment.label },
+  id: `comment-widget:${comment.id}`,
+}));
+
+const widgetStore = usePliteWidgetStore(editor, widgets, {
   annotationStore,
-  deps: [comments],
-  project: () =>
-    comments.map((comment) => ({
-      anchor: { annotationId: comment.id, type: "annotation" },
-      data: { label: comment.label },
-      id: `comment-widget:${comment.id}`,
-    })),
 });
 ```
 

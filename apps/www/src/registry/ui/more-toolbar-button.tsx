@@ -11,7 +11,7 @@ import {
   SuperscriptIcon,
 } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { useEditorRef } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -24,7 +24,7 @@ import {
 import { ToolbarButton } from './toolbar';
 
 export function MoreToolbarButton(props: DropdownMenuProps) {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
   return (

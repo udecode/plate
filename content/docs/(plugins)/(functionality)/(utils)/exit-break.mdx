@@ -118,7 +118,8 @@ Provides transforms to exit nested block structures automatically. The plugin de
 
 ## How Exit Break Works
 
-Exit break uses the [`isStrictSiblings`](/docs/api/core/plate-plugin#isstrictsiblings) property to determine where to insert new blocks when exiting nested structures.
+Exit break uses the compiled element content grammar to determine where a
+paragraph can be inserted when exiting nested structures.
 
 ### Exit Point Determination
 
@@ -126,7 +127,7 @@ When you trigger exit break:
 
 1. Starts from the current text block (e.g., paragraph inside a table cell)
 2. Traverses up the document tree looking at each ancestor
-3. Finds the first ancestor with `isStrictSiblings: false`
+3. Finds the first ancestor whose parent allows a paragraph child
 4. Inserts a new paragraph as a sibling to that ancestor
 
 ### Examples
@@ -144,9 +145,9 @@ When you trigger exit break:
 // First exit
 <column_group>                           
   <column>                               
-    <table>                              // ← Exit point (isStrictSiblings: false)
-      <tr>                               // isStrictSiblings: true
-        <td>                             // isStrictSiblings: true
+    <table>                              // ← Exit point (column allows blocks)
+      <tr>                               // table allows rows only
+        <td>                             // row allows cells only
           <p>content|</p>                // ← Starting position
         </td>
       </tr>
@@ -156,8 +157,8 @@ When you trigger exit break:
 </column_group>
 
 // Second exit
-<column_group>                           // ← Exit point (isStrictSiblings: false)
-  <column>                               // isStrictSiblings: true
+<column_group>                           // ← Exit point (root allows blocks)
+  <column>                               // group allows columns only
     <table>                              
       <tr>                               
         <td>                             
@@ -173,30 +174,36 @@ When you trigger exit break:
 
 ### Custom Plugin Configuration
 
-Configure [`isStrictSiblings`](/docs/api/core/plate-plugin#isstrictsiblings) for custom plugins:
+Declare each custom element's allowed child content:
 
 ```tsx
+import { schema } from 'platejs';
+
 // Table structure
 const CustomTablePlugin = createBasePlugin({
   key: 'table',
-  node: {
-    isElement: true,
-    // isStrictSiblings: false (default) - allows paragraph siblings
+  schema: {
+    element: {
+      content: schema.content.type('tr', { min: 1 }),
+    },
   },
 });
 
 const CustomTableRowPlugin = createBasePlugin({
   key: 'tr',
-  node: {
-    isElement: true,
-    isStrictSiblings: true, // Only allows tr siblings
+  schema: {
+    element: {
+      content: schema.content.types(['td', 'th'], { min: 1 }),
+    },
   },
 });
 
 const CustomTableCellPlugin = createBasePlugin({
   key: 'td',
-  node: {
-    isElement: true,
-    isStrictSiblings: true, // Only allows td/th siblings
+  schema: {
+    element: {
+      content: schema.content.group('block', { min: 1 }),
+    },
   },
 });
+```

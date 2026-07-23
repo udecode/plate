@@ -1,4 +1,4 @@
-import type { EditorUpdateTransaction, Point } from '@platejs/plite';
+import type { Point } from '@platejs/plite';
 
 import type { BaseEditor } from '../../../../lib/editor';
 import type { NavigationNavigateOptions } from '../types';
@@ -19,7 +19,6 @@ const getScrollTarget = (
 
 export const navigate = (
   editor: BaseEditor,
-  tx: EditorUpdateTransaction,
   {
     flash,
     focus = true,
@@ -31,17 +30,6 @@ export const navigate = (
   refreshDecorations: () => void
 ) => {
   if (!editor.read.nodes.get(target.path)) return false;
-
-  if (select) {
-    if ('focus' in select) {
-      tx.selection.set(select);
-    } else {
-      tx.selection.set({
-        anchor: select,
-        focus: select,
-      });
-    }
-  }
 
   if (focus) {
     editor.api.dom.focus();
@@ -70,8 +58,7 @@ export const navigate = (
         target,
         variant: flash?.variant,
       },
-      refreshDecorations,
-      tx
+      refreshDecorations
     );
   }
 

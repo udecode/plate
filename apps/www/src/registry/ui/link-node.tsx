@@ -5,8 +5,7 @@ import * as React from 'react';
 import type { TLinkElement } from 'platejs';
 import type { StyledPlateElementProps } from 'platejs/react';
 
-import { getLinkAttributes } from '@platejs/link';
-import type { LinkConfig } from '@platejs/link/react';
+import { type LinkConfig, LinkPlugin } from '@platejs/link/react';
 import { PlateElement } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
@@ -25,7 +24,7 @@ export function LinkElement(
       )}
       attributes={{
         ...props.attributes,
-        ...getLinkAttributes(props.editor, props.element),
+        ...props.editor.plugin(LinkPlugin).api.getAttributes(props.element),
         onMouseOver: (e) => {
           e.stopPropagation();
         },

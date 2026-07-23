@@ -5,22 +5,20 @@ import {
   type SchemaElementProperties,
 } from '@platejs/plite';
 
-const mediaWidthPolicy = definePropertyPolicy<number | string>({
-  id: 'plate.media.width',
-  validate: (value): value is number | string =>
-    (typeof value === 'number' && Number.isFinite(value)) ||
-    typeof value === 'string',
-  version: 1,
-});
-
-const mediaWidthProperty = property.json({ policy: mediaWidthPolicy });
-
 export const mediaElementProperties = {
   isUpload: property.boolean(),
   name: property.string(),
   placeholderId: property.string(),
   url: property.string(),
-  width: mediaWidthProperty,
+  width: property.json({
+    policy: definePropertyPolicy<number | string>({
+      id: 'plate.media.width',
+      validate: (value): value is number | string =>
+        (typeof value === 'number' && Number.isFinite(value)) ||
+        typeof value === 'string',
+      version: 1,
+    }),
+  }),
 } satisfies SchemaElementProperties;
 
 export type MediaPluginOptions = {

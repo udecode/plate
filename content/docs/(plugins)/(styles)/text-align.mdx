@@ -36,9 +36,9 @@ Use `AlignKit` for the Plate UI setup. It targets headings, paragraphs, images, 
 <ComponentSource name="align-kit" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createPlateEditor } from "platejs/react";
 
-import { AlignKit } from '@/components/editor/plugins/align-kit';
+import { AlignKit } from "@/components/editor/plugins/align-kit";
 
 export const editor = createPlateEditor({
   plugins: [...AlignKit],
@@ -50,7 +50,7 @@ export const editor = createPlateEditor({
 `AlignToolbarButton` shows left, center, right, and justify controls.
 
 ```tsx
-import { AlignToolbarButton } from '@/components/ui/align-toolbar-button';
+import { AlignToolbarButton } from "@/components/ui/align-toolbar-button";
 
 export function AlignControls() {
   return <AlignToolbarButton />;
@@ -74,28 +74,31 @@ npm install @platejs/basic-styles
 Configure the blocks that can store alignment.
 
 ```tsx
-import { TextAlignPlugin } from '@platejs/basic-styles/react';
-import { KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { HeadingPlugin } from "@platejs/basic-nodes/react";
+import { TextAlignPlugin } from "@platejs/basic-styles/react";
+import { createPlateEditor, ParagraphPlugin } from "platejs/react";
 
 export const editor = createPlateEditor({
   plugins: [
     TextAlignPlugin.configure({
+      targetPluginKeys: [
+        ...HeadingPlugin.plugins.map((plugin) => plugin.key),
+        ParagraphPlugin.key,
+      ],
       inject: {
         nodeProps: {
-          defaultNodeValue: 'start',
-          nodeKey: 'align',
-          styleKey: 'textAlign',
+          defaultNodeValue: "start",
+          nodeKey: "align",
+          styleKey: "textAlign",
           validNodeValues: [
-            'start',
-            'left',
-            'center',
-            'right',
-            'end',
-            'justify',
+            "start",
+            "left",
+            "center",
+            "right",
+            "end",
+            "justify",
           ],
         },
-        targetPlugins: [...KEYS.heading, KEYS.p],
       },
     }),
   ],
@@ -104,53 +107,49 @@ export const editor = createPlateEditor({
 
 ### Set Alignment
 
-Use the bound transform or the headless utility.
+Use the bound update method.
 
 ```tsx
-import { setAlign } from '@platejs/basic-styles';
-
-editor.update((tx) => {
-  tx.textAlign.setNodes('center');
-});
-
-setAlign(editor, 'start', { at: [] });
+editor.update.textAlign.set("center");
+editor.update.textAlign.set("start", { at: [] });
 ```
 
 </Steps>
 
 ## Ownership
 
-| Surface | Owner | What It Does |
-|---------|-------|--------------|
-| `BaseTextAlignPlugin` | `@platejs/basic-styles` | Headless plugin that stores alignment, injects block props, and parses HTML text-align styles. |
-| `TextAlignPlugin` | `@platejs/basic-styles/react` | React wrapper around `BaseTextAlignPlugin`. |
-| `setAlign` | `@platejs/basic-styles` | Sets or clears alignment on matching blocks. |
-| `tx.textAlign.setNodes` | `@platejs/basic-styles` | Bound transform exposed by the plugin. |
-| `BaseAlignKit` | Registry kit | Static/headless setup for headings, paragraphs, images, and media embeds. |
-| `AlignKit` | Registry kit | React setup plus toolbar dependency. |
-| `AlignToolbarButton` | Registry UI | Dropdown that writes alignment through `textAlign.setNodes`. |
+| Surface                       | Owner                         | What It Does                                                                                   |
+| ----------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------- |
+| `BaseTextAlignPlugin`         | `@platejs/basic-styles`       | Headless plugin that stores alignment, injects block props, and parses HTML text-align styles. |
+| `TextAlignPlugin`             | `@platejs/basic-styles/react` | React wrapper around `BaseTextAlignPlugin`.                                                    |
+| `editor.update.textAlign.set` | `@platejs/basic-styles`       | Bound update method exposed by the plugin.                                                     |
+| `BaseAlignKit`                | Registry kit                  | Static/headless setup for headings, paragraphs, images, and media embeds.                      |
+| `AlignKit`                    | Registry kit                  | React setup plus toolbar dependency.                                                           |
+| `AlignToolbarButton`          | Registry UI                   | Dropdown that writes alignment through `textAlign.set`.                                        |
 
 The package owns alignment storage and parsing. The registry owns the dropdown UI.
 
 ## Behavior
 
-| Behavior | Source |
-|----------|--------|
-| Plugin key | `KEYS.textAlign` |
-| Stored property | `align` |
-| Rendered CSS style | `textAlign` |
-| Default target plugins | `[KEYS.p]` |
-| Registry target plugins | `[...KEYS.heading, KEYS.p, KEYS.img, KEYS.mediaEmbed]` |
-| Default value | `start` |
-| Valid values | `start`, `left`, `center`, `right`, `end`, `justify` |
-| HTML parser | Reads `element.style.textAlign`. |
-| Setting a custom value | Sets `{ align: value }` on matching blocks. |
-| Setting `start` | Unsets the stored alignment property. |
-| Non-target blocks | Are ignored by `setAlign`. |
+| Behavior                | Source                                                 |
+| ----------------------- | ------------------------------------------------------ |
+| Plugin key              | `KEYS.textAlign`                                       |
+| Stored property         | `align`                                                |
+| Rendered CSS style      | `textAlign`                                            |
+| Default target plugins  | `[BaseParagraphPlugin]`                                |
+| Registry target plugins | Headings, paragraphs, images, and media embeds         |
+| Default value           | `start`                                                |
+| Valid values            | `start`, `left`, `center`, `right`, `end`, `justify`   |
+| HTML parser             | Reads `element.style.textAlign`.                       |
+| Setting a custom value  | Sets `{ align: value }` on matching blocks.            |
+| Setting `start`         | Unsets the stored alignment property.                  |
+| Non-target blocks       | Are ignored by `textAlign.set`.                        |
 
 ## HTML
 
-The plugin injects an HTML deserializer into each target plugin. Pasted HTML with a `text-align` style becomes an `align` prop on matching blocks.
+`targetPluginKeys` is the schema placement truth. The plugin derives
+its render and HTML-parser injection targets from the same list. Pasted HTML
+with a `text-align` style becomes an `align` property on matching blocks.
 
 ```html
 <p style="text-align: center">Centered text</p>
@@ -158,20 +157,20 @@ The plugin injects an HTML deserializer into each target plugin. Pasted HTML wit
 
 ## API Reference
 
-| API | Package | Use |
-|-----|---------|-----|
-| `TextAlignPlugin` | `@platejs/basic-styles/react` | React alignment plugin. |
-| `BaseTextAlignPlugin` | `@platejs/basic-styles` | Headless alignment plugin. |
-| `tx.textAlign.setNodes(value, options?)` | `@platejs/basic-styles` | Sets or clears alignment on matching blocks. |
-| `setAlign(editor, value, options?)` | `@platejs/basic-styles` | Headless transform behind the bound API. |
+| API                                            | Package                       | Use                                          |
+| ---------------------------------------------- | ----------------------------- | -------------------------------------------- |
+| `TextAlignPlugin`                              | `@platejs/basic-styles/react` | React alignment plugin.                      |
+| `BaseTextAlignPlugin`                          | `@platejs/basic-styles`       | Headless alignment plugin.                   |
+| `editor.update.textAlign.set(value, options?)` | `@platejs/basic-styles`       | Sets or clears alignment on matching blocks. |
+| `tx.textAlign.set(value, options?)`            | `@platejs/basic-styles`       | Transaction form for a larger atomic update. |
 
 ## Options
 
-| Option | Surface | Use |
-|--------|---------|-----|
-| `inject.targetPlugins` | `TextAlignPlugin` | Block types that can keep `align`. |
-| `inject.nodeProps.nodeKey` | `TextAlignPlugin` | Stored block property; registry kits use `align`. |
-| `inject.nodeProps.defaultNodeValue` | `TextAlignPlugin` | Value that clears the stored property when selected. |
-| `inject.nodeProps.styleKey` | `TextAlignPlugin` | CSS property used for rendering. |
-| `inject.nodeProps.validNodeValues` | Registry toolbar | Values exposed to alignment UI. |
-| `object` | `setAlign` | Plite node update options passed to `setNodes` or `unsetNodes`. |
+| Option                              | Surface                       | Use                                                                                             |
+| ----------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------- |
+| `targetPluginKeys`                  | `TextAlignPlugin`             | Element plugin keys whose types can keep `align`; injection is derived from this list.         |
+| `inject.nodeProps.nodeKey`          | `TextAlignPlugin`             | Stored block property; registry kits use `align`.                                               |
+| `inject.nodeProps.defaultNodeValue` | `TextAlignPlugin`             | Value that clears the stored property when selected.                                            |
+| `inject.nodeProps.styleKey`         | `TextAlignPlugin`             | CSS property used for rendering.                                                                |
+| `inject.nodeProps.validNodeValues`  | Registry toolbar              | Values exposed to alignment UI.                                                                 |
+| `options`                           | `editor.update.textAlign.set` | Plite node update options for the target range and matcher.                                     |

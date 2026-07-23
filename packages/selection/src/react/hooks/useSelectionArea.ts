@@ -1,12 +1,44 @@
 import React from 'react';
 
+import type { NormalizePluginOption } from '@platejs/core';
 import { type Element, ElementApi } from '@platejs/plite';
 import { useEditorPlugin } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
 import { SelectionArea } from '../../internal';
+import type { PartialSelectionOptions, Trigger } from '../../internal';
 import { extractSelectableIds } from '../../lib';
 import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
+
+const toMutableSelectionTargets = <T extends HTMLElement | string>(
+  value: T | readonly T[] | undefined
+): T | T[] | undefined =>
+  value === undefined
+    ? undefined
+    : Array.isArray(value)
+      ? [...value]
+      : (value as T);
+
+const toMutableTrigger = (trigger: NormalizePluginOption<Trigger>): Trigger =>
+  typeof trigger === 'number'
+    ? trigger
+    : { ...trigger, modifiers: [...trigger.modifiers] };
+
+const toMutableSelectionAreaOptions = (
+  options: NormalizePluginOption<PartialSelectionOptions> | undefined
+): PartialSelectionOptions => ({
+  ...options,
+  behaviour: options?.behaviour
+    ? {
+        ...options.behaviour,
+        triggers: options.behaviour.triggers?.map(toMutableTrigger),
+      }
+    : undefined,
+  boundaries: toMutableSelectionTargets(options?.boundaries),
+  container: toMutableSelectionTargets(options?.container),
+  selectables: toMutableSelectionTargets(options?.selectables),
+  startAreas: toMutableSelectionTargets(options?.startAreas),
+});
 
 export const useSelectionArea = () => {
   const { api, editor, getOption, getOptions, setOption } =
@@ -40,13 +72,15 @@ export const useSelectionArea = () => {
   };
 
   React.useEffect(() => {
+    const selectionAreaOptions = toMutableSelectionAreaOptions(areaOptions);
     const selection = new SelectionArea({
-      boundaries: `#${editor.id}`,
-      container: `#${editor.id}`,
       document: window.document,
-      selectables: `#${editor.id} .plite-selectable`,
       selectionAreaClass: 'plite-selection-area',
-      ...areaOptions,
+      ...selectionAreaOptions,
+      boundaries: selectionAreaOptions.boundaries ?? `#${editor.id}`,
+      container: selectionAreaOptions.container ?? `#${editor.id}`,
+      selectables:
+        selectionAreaOptions.selectables ?? `#${editor.id} .plite-selectable`,
     })
       .on('beforestart', () => {
         setOption('isSelecting', false);

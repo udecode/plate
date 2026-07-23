@@ -3,9 +3,11 @@ import type { PlateEditor } from '@platejs/core/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import cloneDeep from 'lodash/cloneDeep.js';
 import { PathApi } from '@platejs/plite';
+import { getEditorPlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
-import { AIChatPlugin } from '../AIChatPlugin';
+import type { AIChatPluginConfig } from '../AIChatPlugin';
 import { acceptAISuggestions } from '../utils';
 import { createFormattedBlocks } from './replaceSelectionAIChat';
 
@@ -14,7 +16,10 @@ export const insertBelowAIChat = (
   sourceEditor: PlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
-  const { toolName } = editor.plugin(AIChatPlugin).getOptions();
+  const aiChat = getEditorPlugin<AIChatPluginConfig>(editor, {
+    key: KEYS.aiChat,
+  });
+  const { toolName } = aiChat.getOptions();
 
   if (toolName === 'generate')
     return insertBelowGenerate(editor, sourceEditor, { format });
@@ -39,7 +44,7 @@ export const insertBelowAIChat = (
   });
   acceptAISuggestions(editor);
 
-  editor.plugin(AIChatPlugin).api.hide({ focus: false });
+  aiChat.api.hide({ focus: false });
 };
 
 export const insertBelowGenerate = (
@@ -47,6 +52,9 @@ export const insertBelowGenerate = (
   sourceEditor: PlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
+  const aiChat = getEditorPlugin<AIChatPluginConfig>(editor, {
+    key: KEYS.aiChat,
+  });
   const sourceChildren = [...sourceEditor.read.children()];
 
   if (
@@ -59,7 +67,7 @@ export const insertBelowGenerate = (
   const blockSelection = editor.plugin(BlockSelectionPlugin);
   const isBlockSelecting = blockSelection.getOption('isSelectingSome');
 
-  editor.plugin(AIChatPlugin).api.hide();
+  aiChat.api.hide();
 
   if (isBlockSelecting) {
     const selectedBlocks = blockSelection.api.getNodes({});

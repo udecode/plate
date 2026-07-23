@@ -23,7 +23,7 @@ Set the initial content of the editor:
 
 ```ts
 const editor = createPlateEditor({
-  value: [
+  initialValue: [
     {
       type: 'p',
       children: [{ text: 'Hello, Plate!' }],
@@ -32,37 +32,65 @@ const editor = createPlateEditor({
 });
 ```
 
-You can also initialize the editor with an HTML string and the associated plugins:
+Use a synchronous initializer when decoding requires the compiled plugin model:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [BoldPlugin, ItalicPlugin],
-  value: '<p>This is <b>bold</b> and <i>italic</i> text!</p>',
+  plugins: [HtmlPlugin, BoldPlugin, ItalicPlugin],
+  initialValue: ({ editor }) =>
+    editor.plugin(HtmlPlugin).api.deserialize({
+      element: '<p>This is <b>bold</b> and <i>italic</i> text!</p>',
+    }),
 });
 ```
 
 For a comprehensive list of plugins that support HTML string deserialization, refer to the [Plugin Deserialization Rules](/docs/html#plugin-deserialization-rules) section.
 
-### Async Initial Value
+### Schema Identity
 
-If you need to fetch the initial value asynchronously (e.g., from an API), you can pass an async function directly to the `value` option:
+Plate compiles the document schema from the installed plugins. Omit `schema`
+for ordinary editors. `editor.read.schema.identity()` returns a derived
+identity with the exact compiled fingerprint:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [HeadingPlugin],
+});
+
+editor.read.schema.identity();
+// { kind: 'derived', fingerprint: '...' }
+```
+
+Pass `schema: { id, version }` when a document participates in durable
+persistence, history serialization, schema migration, or collaboration peer
+negotiation. That creates a named lineage while keeping the fingerprint tied
+only to the compiled schema:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [HeadingPlugin],
+  schema: { id: 'acme-document', version: 3 },
+});
+
+editor.read.schema.identity();
+// { kind: 'named', id: 'acme-document', version: 3, fingerprint: '...' }
+```
+
+Bump `version` whenever the named lineage changes schema semantics. Reusing an
+ID and version with a different fingerprint is an identity mismatch.
+
+### Remote Initial Value
+
+Fetch remote content before constructing the editor. The loader owns aborts,
+stale responses, retries, and errors; the editor receives one synchronous
+initial document.
 
 ```tsx
-function AsyncEditor() {
-  const editor = usePlateEditor({
-    value: async () => {
-      // Simulate fetching data from an API
-      const response = await fetch('/api/document');
-      const data = await response.json();
-      return data.content;
-    },
-    autoSelect: 'end',
-    onReady: ({ editor, value }) => {
-      console.info('Editor ready with loaded value:', value);
-    },
-  });
+import type { Value } from 'platejs';
+import { Plate, usePlateEditor } from 'platejs/react';
 
-  if (!editor.children.length) return <div>Loading…</div>;
+function DocumentEditor({ initialValue }: { initialValue: Value }) {
+  const editor = usePlateEditor({ initialValue });
 
   return (
     <Plate editor={editor}>
@@ -73,6 +101,10 @@ function AsyncEditor() {
   );
 }
 ```
+
+Render `DocumentEditor` only after your route or data loader resolves the
+document. See [Controlled Editor Value](/docs/controlled) for an abort-aware
+client loader and explicit replacement patterns.
 
 ### Adding Plugins
 
@@ -131,14 +163,12 @@ const editor = usePlateEditor({
     // Exclude text nodes from getting IDs (default: true)
     filterText: true,
 
-    // Reuse IDs on undo/redo and copy/paste if not in document (default: false)
-    // Set to true if IDs should be stable across such operations.
+    // Reuse source IDs on paste when absent from the target (default: false)
     reuseId: false,
 
     // Control initial-value ID assignment (default: 'if-needed')
     // Use 'always' to fill every missing ID in the initial value.
     initialValueIds: 'always',
-    
     // Prevent overriding IDs when inserting nodes with an existing id (default: false)
     disableInsertOverrides: false,
 
@@ -325,7 +355,7 @@ For more complex editors, you can define your types in a separate file (e.g., `p
 
 ```ts
 import type { Element, Text } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import { type PlateEditor, useEditor } from 'platejs/react';
 
 // Define custom element types
 interface ParagraphElement extends Element {
@@ -354,7 +384,7 @@ export type MyValue = MyRootBlock[];
 // Define the custom editor type
 export type MyEditor = PlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
 
-export const useMyEditorRef = () => useEditorRef<MyEditor>();
+export const useMyEditor = () => useEditor<MyEditor>();
 
 // Usage
 const value: MyValue = [{
@@ -364,12 +394,12 @@ const value: MyValue = [{
 
 const editorInferred = createPlateEditor({
   plugins: [TablePlugin, LinkPlugin],
-  value,
+  initialValue: value,
 });
 
 // or 
 const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>({
   plugins: [TablePlugin, LinkPlugin],
-  value,
+  initialValue: value,
 });
 ```

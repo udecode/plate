@@ -11,21 +11,20 @@ pick the editor hook by how often the component should re-render.
 
 | Need | Use |
 | --- | --- |
-| Read the editor inside callbacks without re-rendering. | `useEditorRef()` |
-| Re-render from one derived value. | `useEditorSelector(selector, deps)` |
-| Re-render on every editor change. | `useEditorState()` |
-| Reach the active editor from outside a `<Plate>` subtree. | `<PlateController>` plus the same hooks. |
+| Read the required editor inside callbacks. | `useEditor()` |
+| Re-render from an editor-derived value. | `useEditorSelector(selector, options?)` |
+| Re-render from immutable state. | `useEditorState(selector, options?)` |
+| Render while a controller may have no editor. | `useActiveEditor()` and handle `null`. |
 
 ```tsx title="components/bold-button.tsx" showLineNumbers
-import { useEditorRef, useEditorSelector } from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 
 export function BoldButton() {
-  const editor = useEditorRef();
-  const hasSelection = useEditorSelector(
-    (editor) => Boolean(editor.selection),
-    []
+  const editor = useEditor();
+  const hasSelection = useEditorSelector((editor) =>
+    Boolean(editor.selection)
   );
 
   return (
@@ -39,13 +38,14 @@ export function BoldButton() {
 }
 ```
 
-### `useEditorRef`
+### `useEditor`
 
-`useEditorRef` returns the stable editor object. Use it for event handlers,
-effects, commands, and reads that should not cause a render.
+`useEditor` returns the required stable editor object. Use it for event
+handlers, effects, commands, and reads that should not cause a render. It
+throws when no matching editor is active.
 
 ```tsx title="components/insert-paragraph-button.tsx"
-const editor = useEditorRef();
+const editor = useEditor();
 
 editor.update((tx) => {
   tx.nodes.insert({
@@ -62,20 +62,19 @@ editor.update((tx) => {
 
 ```tsx title="components/selection-state.tsx"
 const isSelectionExpanded = useEditorSelector(
-  (editor) => editor.api.isExpanded(),
-  []
+  (editor) => editor.api.isExpanded()
 );
 ```
 
 ### `useEditorState`
 
-`useEditorState` subscribes to the whole editor state. Use it only when the UI
-really needs to update on every editor change.
+`useEditorState` reads through the immutable state view and re-renders only
+when the selected result changes.
 
 ```tsx title="components/selection-debug.tsx"
-const editor = useEditorState();
+const selection = useEditorState((state) => state.selection());
 
-return <pre>{JSON.stringify(editor.selection, null, 2)}</pre>;
+return <pre>{JSON.stringify(selection, null, 2)}</pre>;
 ```
 
 ## Outside Plate
@@ -86,7 +85,7 @@ lives outside a single `<Plate>` tree.
 ```tsx title="components/editor-shell.tsx" showLineNumbers
 import type React from 'react';
 
-import { PlateController, useEditorMounted, useEditorRef } from 'platejs/react';
+import { PlateController, useActiveEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 
@@ -100,10 +99,9 @@ export function EditorShell({ children }: { children: React.ReactNode }) {
 }
 
 function ActiveEditorToolbar() {
-  const editor = useEditorRef();
-  const mounted = useEditorMounted();
+  const editor = useActiveEditor();
 
-  if (!mounted || editor.runtime.isFallback) return null;
+  if (!editor) return null;
 
   return (
     <Button onClick={() => editor.api.dom.focus()}>Focus editor</Button>
@@ -112,9 +110,8 @@ function ActiveEditorToolbar() {
 ```
 
 `PlateController` resolves an editor by explicit `id`, focused editor, then
-primary editors. If a controller exists but no editor store is ready, hooks
-return a fallback editor; check `useEditorMounted()` or
-`!editor.runtime.isFallback` before running commands.
+primary editors. `useActiveEditor()` returns `null` while none is active.
+Components that require an editor should use `useEditor()` and fail fast.
 
 ## Editor API and Commands
 
@@ -148,20 +145,22 @@ editor.update((tx) => {
 
 ## Plugin Methods
 
-Plugin helpers let TypeScript infer APIs from the plugin you pass in. Plugin
-commands run through `editor.update`.
+Pass a plugin descriptor to `editor.plugin(plugin)` to open its typed portal.
+The portal owns that plugin's API, one-shot update commands, type, and live
+options.
 
-```ts title="table-methods.ts" showLineNumbers
-import { TablePlugin } from '@platejs/table/react';
+```ts title="html-methods.ts" showLineNumbers
+import { HtmlPlugin } from 'platejs';
 
-const cell = editor.api.create.tableCell();
+const html = editor.plugin(HtmlPlugin);
 
-editor.update((tx) => tx.insert.tableRow());
+const nodes = html.api.deserialize({ element: '<p>Hello</p>' });
 ```
 
 | Method | Use for |
 | --- | --- |
-| `editor.getPlugin(plugin)` | The resolved plugin instance for a key or plugin object. |
+| `editor.plugin(plugin)` | Typed access to one plugin's API, updates, type, and options. |
+| `editor.getPlugin(plugin)` | The resolved plugin instance for a descriptor. |
 | `editor.getType(pluginKey)` | The node type registered for a plugin key. |
 | `editor.getInjectProps(plugin)` | Resolved injected node props for a plugin. |
 
@@ -173,10 +172,10 @@ to re-render from option state.
 
 ```tsx title="components/find-replace-control.tsx" showLineNumbers
 import { FindReplacePlugin } from '@platejs/find-replace';
-import { useEditorRef, usePluginOption } from 'platejs/react';
+import { useEditor, usePluginOption } from 'platejs/react';
 
 export function FindReplaceControl() {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const search = usePluginOption(FindReplacePlugin, 'search');
 
   return (
@@ -209,7 +208,6 @@ editor.plugin(FindReplacePlugin).setOptions((draft) => {
 | `editor.plugin(plugin).setOption(key, value)` | One option update. |
 | `editor.plugin(plugin).setOptions(partial)` | Merge multiple option fields. |
 | `editor.plugin(plugin).setOptions(updater)` | Mutate option state through a draft updater. |
-| `editor.getOptionsStore(plugin)` | Low-level access to the plugin options store. |
 
 ## Next Steps
 

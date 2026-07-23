@@ -1,9 +1,16 @@
+import { schema } from '@platejs/plite';
+
 import { createBasePlugin } from '../../plugin';
 
 export const BaseParagraphPlugin = createBasePlugin({
   key: 'p',
-  node: {
-    isElement: true,
+  schema: {
+    element: {
+      content: schema.content.any(
+        [schema.content.text(), schema.content.group('inline')],
+        { default: 'text', min: 1 }
+      ),
+    },
   },
   parsers: {
     html: {

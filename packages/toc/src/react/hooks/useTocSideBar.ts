@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {
-  useEditorRef,
+  useEditor,
   useEditorScrollElement,
   useEditorSelector,
 } from '@platejs/core/react';
@@ -15,7 +15,7 @@ import { checkIn } from '../utils';
 
 type TocSideBarState = {
   activeContentId: string | null;
-  editor: ReturnType<typeof useEditorRef>;
+  editor: ReturnType<typeof useEditor>;
   headingList: Heading[];
   mouseInToc: boolean;
   onContentScroll: ReturnType<typeof useContentController>['onContentScroll'];
@@ -29,8 +29,8 @@ export const useTocSideBarState = ({
   rootMargin = '0px 0px 0px 0px',
   topOffset = 0,
 }: TocSideBarProps): TocSideBarState => {
-  const editor = useEditorRef();
-  const headingList = useEditorSelector(getHeadingList, []);
+  const editor = useEditor();
+  const headingList = useEditorSelector(getHeadingList);
   const container = useEditorScrollElement(editor);
 
   const tocRef = React.useRef<HTMLElement>(null);

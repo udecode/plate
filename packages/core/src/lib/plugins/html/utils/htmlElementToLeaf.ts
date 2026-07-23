@@ -1,49 +1,9 @@
-import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
-import { jsx } from '@platejs/plite-hyperscript';
-
 import type { BaseEditor } from '../../../editor';
+import { htmlElementToLeafWithParserRuntime } from '../../../../internal/plugin/html-parser-runtime';
+import { withPreparedParserRuntime } from '../../../../internal/plugin/prepareParserRegistry';
 
-import { mergeDeepToNodes } from '../../../utils';
-import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
-import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
-
-/**
- * Deserialize HTML to Descendant[] with marks on Text. Build the leaf from the
- * leaf deserializers of each plugin.
- */
-export const htmlElementToLeaf = (editor: BaseEditor, element: HTMLElement) => {
-  const node = pipeDeserializeHtmlLeaf(editor, element);
-
-  return deserializeHtmlNodeChildren(editor, element).reduce(
-    (arr: Descendant[], child) => {
-      if (!child) return arr;
-      if (ElementApi.isElement(child)) {
-        if (Object.keys(node).length > 0) {
-          mergeDeepToNodes<Descendant>({
-            match: TextApi.isText,
-            node: child,
-            source: node,
-          });
-        }
-
-        arr.push(child);
-      } else {
-        const attributes = { ...node };
-
-        // attributes should not override child attributes
-        if (TextApi.isText(child) && child.text) {
-          Object.keys(attributes).forEach((key) => {
-            if (attributes[key] && child[key]) {
-              attributes[key] = child[key];
-            }
-          });
-        }
-
-        arr.push(jsx('text', attributes, child) as any);
-      }
-
-      return arr;
-    },
-    []
-  ) as Descendant[];
-};
+/** Deserialize HTML through the installed text-mark parsers. */
+export const htmlElementToLeaf = (editor: BaseEditor, element: HTMLElement) =>
+  withPreparedParserRuntime(editor, (runtime) =>
+    htmlElementToLeafWithParserRuntime(runtime, element)
+  );

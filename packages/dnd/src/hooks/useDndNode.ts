@@ -3,7 +3,7 @@ import { getEmptyImage, NativeTypes } from 'react-dnd-html5-backend';
 import type { ConnectDragSource, DropTargetMonitor } from 'react-dnd';
 
 import React from 'react';
-import { type PlateEditor, useEditorRef } from '@platejs/core/react';
+import { type PlateEditor, useEditor } from '@platejs/core/react';
 
 import type { DragItemNode } from '../types';
 
@@ -63,7 +63,7 @@ export const useDndNode = ({
   isDragging: boolean;
   isOver: boolean;
 } => {
-  const editor = useEditorRef();
+  const editor = useEditor();
   const fallbackNodeRef = React.useRef<HTMLElement>(null);
   const resolvedNodeRef = nodeRef ?? fallbackNodeRef;
 

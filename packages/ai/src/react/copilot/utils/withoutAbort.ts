@@ -1,16 +1,13 @@
-import type { PlateEditor } from '@platejs/core/react';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 
-import { KEYS } from '@platejs/utils';
+export const COPILOT_SKIP_ABORT_TAG = 'skip-copilot-abort' as const;
 
-import type { CopilotPluginConfig } from '../CopilotPlugin';
+/** Keep a Copilot-authored transaction from rejecting its own suggestion. */
+export const withoutAbort = <T>(
+  tx: Pick<EditorUpdateTransaction, 'tags'>,
+  fn: () => T
+): T => {
+  tx.tags.add(COPILOT_SKIP_ABORT_TAG);
 
-export const withoutAbort = <T>(editor: PlateEditor, fn: () => T): T => {
-  const copilot = editor.plugin<CopilotPluginConfig>(KEYS.copilot);
-
-  copilot.setOption('shouldAbort', false);
-  try {
-    return fn();
-  } finally {
-    copilot.setOption('shouldAbort', true);
-  }
+  return fn();
 };

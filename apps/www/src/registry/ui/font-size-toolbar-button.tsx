@@ -63,7 +63,7 @@ export function FontSizeToolbarButton() {
     return block.type in FONT_SIZE_MAP
       ? FONT_SIZE_MAP[block.type as keyof typeof FONT_SIZE_MAP]
       : DEFAULT_FONT_SIZE;
-  }, []);
+  });
 
   const handleInputChange = () => {
     const newSize = toUnitLess(inputValue);

@@ -1,12 +1,11 @@
-import { useEditorRef, useEditorSelector } from '@platejs/core/react';
+import { useEditor, useEditorSelector } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
 import { ListPlugin } from '../ListPlugin';
 
 export const useTodoListToolbarButtonState = () => {
-  const pressed = useEditorSelector(
-    (editor) => editor.plugin(ListPlugin).api.isActive(KEYS.listTodo),
-    []
+  const pressed = useEditorSelector((editor) =>
+    editor.plugin(ListPlugin).api.isActive(KEYS.listTodo)
   );
 
   return { pressed };
@@ -15,7 +14,7 @@ export const useTodoListToolbarButtonState = () => {
 export const useTodoListToolbarButton = ({
   pressed,
 }: ReturnType<typeof useTodoListToolbarButtonState>) => {
-  const editor = useEditorRef();
+  const editor = useEditor();
 
   return {
     props: {

@@ -1,3 +1,6 @@
+import type { Editor } from '@platejs/plite';
+import { getEditorRuntimeOwner } from '@platejs/plite/internal';
+
 import type { AnyBasePlugin, EditorShortcut, NodeComponents } from '../../lib';
 import type { ResolvedInputRulesMeta } from '../../lib/plugins/input-rules/types';
 
@@ -59,16 +62,19 @@ export type PlateRuntime = Readonly<{
 
 const CANDIDATE_PLATE_RUNTIMES = new WeakMap<object, PlateRuntime>();
 
+export const getPlateRuntimeOwner = (editor: object) =>
+  getEditorRuntimeOwner(editor as Editor);
+
 export const clearPlateRuntimeCandidate = (editor: object) => {
-  CANDIDATE_PLATE_RUNTIMES.delete(editor);
+  CANDIDATE_PLATE_RUNTIMES.delete(getPlateRuntimeOwner(editor));
 };
 
 export const getPlateRuntimeCandidate = (editor: object) =>
-  CANDIDATE_PLATE_RUNTIMES.get(editor);
+  CANDIDATE_PLATE_RUNTIMES.get(getPlateRuntimeOwner(editor));
 
 export const setPlateRuntimeCandidate = (
   editor: object,
   runtime: PlateRuntime
 ) => {
-  CANDIDATE_PLATE_RUNTIMES.set(editor, runtime);
+  CANDIDATE_PLATE_RUNTIMES.set(getPlateRuntimeOwner(editor), runtime);
 };

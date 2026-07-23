@@ -1,6 +1,6 @@
 ---
 title: "Transforms"
-description: "Write document, selection, mark, root, and operation changes through transaction groups."
+description: "Write document, selection, mark, root, effect, and canonical changes through transaction groups."
 ---
 
 Plite changes the document inside `editor.update(...)`. The callback receives a
@@ -40,16 +40,16 @@ The core transaction groups are:
 - `tx.selection` for changing the model selection
 - `tx.marks` for changing text marks
 - `tx.value` and `tx.roots` for whole-root or whole-document replacement
-- `tx.setField` and `tx.statePatches` for persistent meta fields
-- `tx.operations` for replaying operation batches
+- `tx.setField` and `tx.effects` for typed document meta and integration effects
+- `tx.changes` for applying canonical document changes at adapter boundaries
 
 Commands should stay inside one update when the changes belong to one user
-action. Plite records the operations and publishes one commit when the update
+action. Plite publishes one canonical change and one commit when the update
 finishes.
 
 Use `editor.update.value.repair()` only for an intentional all-root maintenance
-pass over raw data or newly installed normalizers. Normal commands do not
-schedule normalization themselves.
+pass over raw data or newly installed corrections. Normal commands run
+changed-range corrections automatically.
 
 See [Transforms API](../api/transforms) for method options and the complete
 transaction reference.
@@ -204,15 +204,15 @@ editor.update((tx) => {
 });
 ```
 
-## Operations
+## Canonical Changes
 
-Operation replay is still a transaction. Import remote or stored operations
-through `tx.operations.replay(...)` so replay follows the same commit,
-normalization, history, and subscription boundary as local commands.
+Canonical change application is still a transaction. Import remote or stored
+changes through `tx.changes.apply(...)` so replay follows the same correction,
+history, effect, and subscription boundary as local commands.
 
 ```javascript
 editor.update({ tags: "remote-import" }, (tx) => {
-  tx.operations.replay(remoteOperations);
+  tx.changes.apply(DocumentChange.fromJSON(remoteChange));
 });
 ```
 
@@ -296,4 +296,4 @@ editor.update((tx) => {
 ```
 
 Runtime internals may use lower-level helpers, but public document changes and
-operation replay stay inside the transaction boundary.
+change application stay inside the transaction boundary.

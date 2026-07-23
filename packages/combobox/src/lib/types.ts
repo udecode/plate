@@ -1,6 +1,8 @@
 import type { BaseEditor } from '@platejs/core';
 import type { Element } from '@platejs/plite';
 
+export type TriggerComboboxEditor = Pick<BaseEditor, 'getType' | 'read'>;
+
 export type CancelComboboxInputCause =
   | 'arrowLeft'
   | 'arrowRight'
@@ -16,8 +18,8 @@ export type ComboboxInputCursorState = {
 };
 
 export type TriggerComboboxPluginOptions = {
-  trigger?: RegExp | string[] | string;
+  trigger?: readonly string[] | RegExp | string;
   triggerPreviousCharPattern?: RegExp;
   createComboboxInput?: (trigger: string) => Element;
-  triggerQuery?: (editor: BaseEditor) => boolean;
+  triggerQuery?: (editor: TriggerComboboxEditor) => boolean;
 };
