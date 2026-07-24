@@ -1,5 +1,5 @@
 import { type FormEvent, type RefObject, useCallback } from 'react';
-import { PathApi, type Range, RangeApi } from '@platejs/plite';
+import { PathApi, type Range, RangeApi, SelectionApi } from '@platejs/plite';
 import { getSelection, IS_WEBKIT } from '@platejs/plite-dom';
 import type {
   EditableDOMBeforeInputContext,
@@ -47,7 +47,10 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import type { EditableEventRuntime } from './runtime-event-engine';
-import { readRuntimeSelectionRange } from './runtime-selection-state';
+import {
+  readRuntimeSelection,
+  readRuntimeSelectionRange,
+} from './runtime-selection-state';
 import {
   handleWebKitShadowDOMBeforeInput,
   restoreUserSelectionAfterBeforeInput,
@@ -547,6 +550,16 @@ export const useRuntimeBeforeInputEvents = ({
         );
 
         if (!readOnly && editableTarget) {
+          if (
+            event.inputType.startsWith('insert') &&
+            SelectionApi.isNode(readRuntimeSelection(editor))
+          ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            handledDOMBeforeInputRef.current = true;
+            return;
+          }
+
           if (
             profileBeforeInputDuration('beforeinput-without-selection', () =>
               shouldIgnoreDOMBeforeInputWithoutSelection({
@@ -1072,6 +1085,10 @@ export const useRuntimeBeforeInputEvents = ({
 
   const handleReactBeforeInputFallback = useCallback(
     (text: string) => {
+      if (SelectionApi.isNode(readRuntimeSelection(editor))) {
+        return;
+      }
+
       const request = runTrackedEditableCompositionMutation({
         callback: () =>
           applyModelOwnedBeforeInputMutation({

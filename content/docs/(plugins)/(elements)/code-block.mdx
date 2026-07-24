@@ -27,7 +27,7 @@ docs:
 
 ### Installation
 
-The fastest way to add code block functionality is with the `CodeBlockKit`, which includes pre-configured `CodeBlockPlugin`, `CodeLinePlugin`, and `CodeSyntaxPlugin` with syntax highlighting, the shipped triple-backtick input rule, and [Plate UI](/docs/installation/plate-ui) components.
+The fastest way to add code blocks is with `CodeBlockKit`. It composes `CodeBlockPlugin`, its required `CodeLinePlugin`, and the removable `CodeHighlightPlugin` with the shipped triple-backtick input rule and [Plate UI](/docs/installation/plate-ui) components.
 
 <ComponentSource name="code-block-kit" />
 
@@ -65,31 +65,29 @@ npm install @platejs/code-block lowlight
 
 ### Add Plugins
 
-Include the code block plugins in your Plate plugins array when creating the editor.
+Add `CodeBlockPlugin` for code-block editing. It installs `CodeLinePlugin` as a required dependency; add `CodeHighlightPlugin` separately when you want Lowlight syntax highlighting.
 
 ```tsx
-import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
+import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     CodeBlockPlugin,
-    CodeLinePlugin,
-    CodeSyntaxPlugin,
   ],
 });
 ```
 
 ### Configure Plugins
 
-Configure the plugins with syntax highlighting and custom components.
+Configure each capability where it is owned. `CodeBlockPlugin` owns editing, `CodeLinePlugin` owns line rendering, and `CodeHighlightPlugin` owns highlighting.
 
 **Basic Setup with All Languages:**
 
 ```tsx
 import { CodeBlockRules } from '@platejs/code-block';
-import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
+import { CodeBlockPlugin, CodeHighlightPlugin, CodeLinePlugin } from '@platejs/code-block/react';
 import { all, createLowlight } from 'lowlight';
 import { createPlateEditor } from 'platejs/react';
 import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/ui/code-block-node';
@@ -103,11 +101,13 @@ const editor = createPlateEditor({
     CodeBlockPlugin.configure({
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       render: { node: CodeBlockElement },
-      options: { lowlight },
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
     CodeLinePlugin.withComponent(CodeLineElement),
-    CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),
+    CodeHighlightPlugin.configure({
+      options: { lowlight },
+      render: { node: CodeSyntaxLeaf },
+    }),
   ],
 });
 ```
@@ -138,24 +138,37 @@ const editor = createPlateEditor({
     CodeBlockPlugin.configure({
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       render: { node: CodeBlockElement },
+      shortcuts: { toggle: { keys: 'mod+alt+8' } },
+    }),
+    CodeLinePlugin.withComponent(CodeLineElement),
+    CodeHighlightPlugin.configure({
       options: {
         lowlight,
         defaultLanguage: 'js', // Set default language (optional)
       },
-      shortcuts: { toggle: { keys: 'mod+alt+8' } },
+      render: { node: CodeSyntaxLeaf },
     }),
-    CodeLinePlugin.withComponent(CodeLineElement),
-    CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),
   ],
 });
 ```
 
-- `render.node`: Assigns [`CodeBlockElement`](/docs/components/code-block-node) to render code block containers.
+- `CodeBlockPlugin.render.node`: Assigns [`CodeBlockElement`](/docs/components/code-block-node) to render code block containers.
 - `inputRules`: Registers the triple-backtick fence rule. Use `on: 'match'` to commit when the fence becomes complete or `on: 'break'` to commit on `Enter`.
-- `options.lowlight`: Lowlight instance for syntax highlighting.
-- `options.defaultLanguage`: Default language when no language is specified.
+- `CodeHighlightPlugin.options.lowlight`: Lowlight instance for syntax highlighting.
+- `CodeHighlightPlugin.options.defaultLanguage`: Default language when no language is specified.
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
 - `withComponent`: Assigns components for code lines and syntax highlighting.
+
+For plain code blocks, omit `CodeHighlightPlugin`:
+
+```tsx
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [CodeBlockPlugin],
+});
+```
 
 For the runtime model, see [Plugin Input Rules](/docs/plugin-input-rules).
 
@@ -189,7 +202,13 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 
 ### `CodeBlockPlugin`
 
-<API name="CodeBlockPlugin">
+Owns the code-block schema, editing behavior, input rules, shortcuts, and commands. `CodeLinePlugin` is its required dependency.
+
+### `CodeHighlightPlugin`
+
+Owns the `code_syntax` mark, Lowlight decoration pipeline, and highlighted token rendering. Include or omit this descriptor as one ordinary plugin-array entry.
+
+<API name="CodeHighlightPlugin">
 <APIOptions>
   <APIItem name="defaultLanguage" type="string | null" optional>
     Default language to use when no language is specified. Set to null to disable syntax highlighting by default.
@@ -199,6 +218,10 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
   </APIItem>
 </APIOptions>
 </API>
+
+### `CodeLinePlugin`
+
+Required structural dependency for code-block lines. Add it directly only to replace its default configuration or component.
 
 ## Commands
 

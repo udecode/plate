@@ -183,7 +183,7 @@ describe('Plate model publication', () => {
     ]);
   });
 
-  it('publishes canonical dependency and nested plugin identities per editor', () => {
+  it('publishes canonical dependency identities per editor', () => {
     const Dependency = createBasePlugin({
       key: 'canonicalDependency',
       options: { n: 1 },
@@ -193,9 +193,8 @@ describe('Plate model publication', () => {
       options: { n: 1 },
     });
     const Parent = createBasePlugin({
-      dependencies: [Dependency],
+      dependencies: [Dependency, Child],
       key: 'canonicalParent',
-      plugins: [Child],
     });
     const createConfiguredEditor = (dependencyN: number, childN: number) =>
       createBaseEditor({
@@ -215,11 +214,11 @@ describe('Plate model publication', () => {
     const secondChild = second.getPlugin(Child);
 
     expect(firstParent.dependencies[0]).toBe(firstDependency);
-    expect(firstParent.plugins[0]).toBe(firstChild);
+    expect(firstParent.dependencies[1]).toBe(firstChild);
     expect(firstDependency.options.n).toBe(2);
     expect(firstChild.options.n).toBe(3);
     expect(secondParent.dependencies[0]).toBe(secondDependency);
-    expect(secondParent.plugins[0]).toBe(secondChild);
+    expect(secondParent.dependencies[1]).toBe(secondChild);
     expect(secondDependency.options.n).toBe(4);
     expect(secondChild.options.n).toBe(5);
     expect(firstDependency).not.toBe(secondDependency);
@@ -346,6 +345,9 @@ describe('Plate model publication', () => {
     const second = editor.plugin(SecondPlugin);
 
     expect(first.api.firstOwn()).toBe('first-own');
+    expect(editor.api.firstApi.firstOwn()).toBe('first-own');
+    expect(first.api).toBe(editor.api.firstApi);
+    expect(Object.isFrozen(first.api)).toBe(true);
     // @ts-expect-error root editor APIs do not leak into plugin portals
     expect(first.api.firstRoot).toBeUndefined();
     expect(editor.api.firstNested.read()).toBe('first-nested');
@@ -358,12 +360,12 @@ describe('Plate model publication', () => {
     expect(Reflect.get(first.api, 'secondRoot')).toBeUndefined();
     expect(Reflect.get(first.api, 'secondOwn')).toBeUndefined();
     expect(second.api.secondOwn()).toBe('second-own');
+    expect(editor.api.secondApi.secondOwn()).toBe('second-own');
+    expect(second.api).toBe(editor.api.secondApi);
     // @ts-expect-error root editor APIs do not leak into plugin portals
     expect(second.api.secondRoot).toBeUndefined();
     expect(editor.api.firstRoot()).toBe('first-root');
     expect(editor.api.secondRoot()).toBe('second-root');
-    expect(Reflect.get(editor.api, 'firstApi')).toBeUndefined();
-    expect(Reflect.get(editor.api, 'secondApi')).toBeUndefined();
     expect(Reflect.get(second.api, 'firstRoot')).toBeUndefined();
     expect(Reflect.get(second.api, 'firstOwn')).toBeUndefined();
   });

@@ -3,6 +3,7 @@ import type React from 'react';
 import type {
   DecoratedRange,
   Descendant,
+  EditorClipboardMiddlewareMap,
   Element,
   EditorNodeChangeContext,
   EditorTextChangeContext,
@@ -24,7 +25,6 @@ import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type {
   AnyPluginConfig,
-  AnyBasePlugin,
   BaseDeserializer,
   BaseHtmlDeserializer,
   BaseInjectProps,
@@ -32,6 +32,7 @@ import type {
   PluginBaseContext,
   BaseSerializer,
   BaseTransformOptions,
+  BasePluginOverride,
   EditableProps,
   AnyPluginTx,
   GetInjectNodePropsOptions,
@@ -39,7 +40,7 @@ import type {
   HandlerReturnType,
   InferApi,
   InferDependencies,
-  InferNestedPlugins,
+  InferEnabled,
   InferOptions,
   InferPluginBehaviorConfig,
   InferPluginApi,
@@ -53,6 +54,7 @@ import type {
   NodeComponent,
   NodeComponents,
   Parser,
+  PlatePluginExtensionEditor,
   PlatePluginTxGroup,
   PlatePluginTxGroups,
   PluginTx,
@@ -62,7 +64,6 @@ import type {
   PluginSchemaModel,
   PluginShortcutInput,
   BasePlugin,
-  BasePluginConfig,
   WithAnyKey,
 } from '../../lib';
 import type {
@@ -110,14 +111,27 @@ export type ExtendEditorApi<
   EA = {},
 > = (ctx: PlatePluginContext<C>) => EA & Deep2Partial<InferApi<C>>;
 
-export type PlateEditorExtension = Omit<EditorExtension<any, any>, 'name'> & {
-  key?: string;
-  name?: string;
-};
+export type PlateEditorExtension<C extends AnyPluginConfig = PluginConfig> =
+  Omit<EditorExtension<any, any>, 'clipboard' | 'name'> & {
+    clipboard?: EditorClipboardMiddlewareMap<PlateEditor<Value, C>>;
+    key?: string;
+    name?: string;
+  };
 
-export type PlateEditorExtensionInput =
-  | PlateEditorExtension
-  | readonly PlateEditorExtension[];
+export type PlateEditorExtensionInput<
+  C extends AnyPluginConfig = PluginConfig,
+> = PlateEditorExtension<C> | readonly PlateEditorExtension<C>[];
+
+type ContextualPlateEditorExtension<C extends AnyPluginConfig = PluginConfig> =
+  Omit<PlateEditorExtension<C>, 'commands'> & {
+    commands?: EditorExtension<PlatePluginExtensionEditor<C>>['commands'];
+  };
+
+type ContextualPlateEditorExtensionInput<
+  C extends AnyPluginConfig = PluginConfig,
+> =
+  | ContextualPlateEditorExtension<C>
+  | readonly ContextualPlateEditorExtension<C>[];
 
 type ExtensionInputFromArgument<TExtension> = TExtension extends (
   ...args: any[]
@@ -160,7 +174,7 @@ export type ExtendPlateEditorExtension<
   C extends AnyPluginConfig = PluginConfig,
 > = (
   ctx: PlatePluginContext<InferPluginBehaviorConfig<C>>
-) => PlateEditorExtensionInput | undefined;
+) => ContextualPlateEditorExtensionInput<C> | undefined;
 
 export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
   BaseHtmlDeserializer & {
@@ -178,6 +192,14 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
 export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
   parse?: React.FC<PlateElementProps<Element, C> & PlateLeafProps<Text, C>>;
   query?: (options: PlateElementProps) => boolean;
+};
+
+/** Parser-only projection contributed to another installed React plugin. */
+export type PlateParserPluginProjection<
+  C extends AnyPluginConfig = AnyPluginConfig,
+> = {
+  parser?: Nullable<Parser<WithAnyKey<C>>>;
+  parsers?: PlatePlugin<C>['parsers'];
 };
 
 // -----------------------------------------------------------------------------
@@ -307,28 +329,23 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       /** Plugin injection. */
       inject: Nullable<{
         nodeProps?: InjectNodeProps<WithAnyKey<C>>;
-        /**
-         * Property that can be used by a plugin to allow other plugins to
-         * inject code. For example, if multiple plugins have defined
-         * `inject.plugins` for `key=HtmlPlugin.key`,
-         * the insert-data pipeline will call all of these `transformData` for
-         * `HtmlPlugin.key` plugin. Differs from `override.plugins` as this is
-         * not overriding any plugin.
-         */
-        plugins?: Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>;
-        /**
-         * A function that returns a plugin config to be injected into other
-         * plugins `inject.plugins` specified by `targetPluginKeys`.
-         */
-        targetPluginToInject?: (
+        /** Parser projections contributed to installed plugins by key. */
+        parsers?: Record<string, PlateParserPluginProjection>;
+        /** Dynamic parser projection contributed to each targeted plugin. */
+        targetParserToInject?: (
           ctx: PlatePluginContext<C> & { targetPlugin: string }
-        ) => Partial<PlatePlugin<AnyPluginConfig>>;
+        ) => PlateParserPluginProjection;
       }>;
       override: {
         /** Replace plugin {@link NodeComponent} by key. */
         components?: NodeComponents;
-        /** Extend {@link PlatePlugin} by key. */
-        plugins?: Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>;
+        /**
+         * Weakly adapts already-installed foreign plugins by key.
+         *
+         * Missing targets are ignored. Configure an imported target descriptor
+         * directly when exact target inference is required.
+         */
+        plugins?: Record<string, BasePluginOverride>;
       };
       /** @see {@link Parser} */
       parser: Nullable<Parser<WithAnyKey<C>>>;
@@ -354,11 +371,6 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
               serializer?: HtmlReactSerializer<WithAnyKey<C>>;
             }>;
           };
-      /**
-       * Recursive plugin support to allow having multiple plugins in a single
-       * plugin. Plate eventually flattens all the plugins into the editor.
-       */
-      plugins: any[];
       render: Nullable<{
         /**
          * When other plugins' node components are rendered, this function can
@@ -452,9 +464,9 @@ export type ExtendedPlatePluginWithExtension<
     InferSelectors<C>,
     InferState<C> & TExtensionState,
     InferDependencies<C>,
-    InferNestedPlugins<C>,
     InferPluginSchemaModel<C>,
-    InferPluginApi<C>
+    InferPluginApi<C>,
+    InferEnabled<C>
   >
 >;
 
@@ -464,22 +476,24 @@ export type PlatePluginConfig<
   A = {},
   Tx extends AnyPluginTx = {},
   S = {},
-  D extends readonly unknown[] = readonly [],
+  D extends readonly PluginReference[] = readonly [],
   EO = {},
   EA = {},
   ES = {},
-  P extends readonly unknown[] = readonly PluginReference[],
   SchemaModel = never,
   PluginApi = {},
+  Enabled extends boolean = boolean,
 > = Partial<
   Omit<
-    PlatePlugin<PluginConfig<K, O, A, Tx, S, {}, D, P, SchemaModel, PluginApi>>,
+    PlatePlugin<
+      PluginConfig<K, O, A, Tx, S, {}, D, SchemaModel, PluginApi, Enabled>
+    >,
     keyof PlatePluginMethods | 'api' | 'options' | 'schema'
   > & {
     api: EA;
     options: Partial<O> & EO;
     schema: PluginSchema<
-      PluginConfig<K, O, A, Tx, S, {}, D, P, SchemaModel, PluginApi>
+      PluginConfig<K, O, A, Tx, S, {}, D, SchemaModel, PluginApi, Enabled>
     > | null;
     selectors: ES;
   }
@@ -522,32 +536,6 @@ type ResolvedPlatePluginTxGroup<
   ? PlatePluginTxGroup<Extract<InferTx<C>[K], object>, C>
   : TGroup;
 
-type InferPlatePluginInputConfig<P> = P extends {
-  readonly __config: infer C extends AnyPluginConfig;
-}
-  ? C
-  : P extends PlatePlugin<infer C>
-    ? C
-    : P extends BasePlugin<infer C>
-      ? C
-      : InferConfig<P>;
-
-type PluginMethodConfig<P, EO = {}, EA = {}, ES = {}> = BasePluginConfig<
-  any,
-  InferOptions<InferPlatePluginInputConfig<P>>,
-  InferApi<InferPlatePluginInputConfig<P>>,
-  InferTx<InferPlatePluginInputConfig<P>>,
-  InferSelectors<InferPlatePluginInputConfig<P>>,
-  InferState<InferPlatePluginInputConfig<P>>,
-  InferDependencies<InferPlatePluginInputConfig<P>>,
-  EO,
-  EA,
-  ES,
-  InferNestedPlugins<InferPlatePluginInputConfig<P>>,
-  InferPluginSchemaModel<InferPlatePluginInputConfig<P>>,
-  InferPluginApi<InferPlatePluginInputConfig<P>>
->;
-
 type RuntimePlatePluginConfig<
   C extends AnyPluginConfig,
   EO = {},
@@ -564,15 +552,38 @@ type RuntimePlatePluginConfig<
     EO,
     EA,
     ES,
-    InferNestedPlugins<C>,
     InferPluginSchemaModel<C>,
-    InferPluginApi<C>
+    InferPluginApi<C>,
+    InferEnabled<C>
   >,
-  'host' | 'parser' | 'parsers' | 'plugins' | 'render' | 'schema' | 'type'
+  'dependencies' | 'parser' | 'parsers' | 'render' | 'schema' | 'type'
 > & {
-  plugins?: readonly AnyBasePlugin[];
   render?: Omit<NonNullable<PlatePlugin<C>['render']>, 'isDecoration'> | null;
 };
+
+type StaticPlatePluginConfig<
+  C extends AnyPluginConfig,
+  EO = {},
+  EA = {},
+  ES = {},
+  Enabled extends boolean = InferEnabled<C>,
+> = Omit<
+  PlatePluginConfig<
+    C['key'],
+    InferOptions<C>,
+    InferApi<C>,
+    InferTx<C>,
+    InferSelectors<C>,
+    InferDependencies<C>,
+    EO,
+    EA,
+    ES,
+    InferPluginSchemaModel<C>,
+    InferPluginApi<C>,
+    Enabled
+  >,
+  'dependencies'
+>;
 
 type ContextualPlatePluginConfig<C extends AnyPluginConfig> = Pick<
   RuntimePlatePluginConfig<C>,
@@ -595,6 +606,7 @@ export type ExtendedPlatePlugin<
   EO,
   EA,
   ES,
+  Enabled extends boolean = InferEnabled<C>,
 > = PlatePlugin<
   PluginConfig<
     C['key'],
@@ -604,21 +616,19 @@ export type ExtendedPlatePlugin<
     ES & InferSelectors<C>,
     InferState<C>,
     InferDependencies<C>,
-    InferNestedPlugins<C>,
     InferPluginSchemaModel<C>,
-    InferPluginApi<C>
+    InferPluginApi<C>,
+    Enabled
   >
 >;
 
 type PlatePluginAuthoringMethod =
   | 'clone'
   | 'configure'
-  | 'configurePlugin'
   | 'extend'
   | 'extendApi'
   | 'extendEditorApi'
   | 'extendExtension'
-  | 'extendPlugin'
   | 'extendSelectors'
   | 'extendTx'
   | 'extendTxGroup'
@@ -639,6 +649,7 @@ export type ConfiguredPlatePlugin<C extends AnyPluginConfig = PluginConfig> =
 type ConfiguredPlatePluginType<
   C extends AnyPluginConfig,
   TType extends string,
+  Enabled extends boolean = InferEnabled<C>,
 > = ConfiguredPlatePlugin<
   PluginConfig<
     C['key'],
@@ -648,7 +659,6 @@ type ConfiguredPlatePluginType<
     InferSelectors<C>,
     InferState<C>,
     InferDependencies<C>,
-    InferNestedPlugins<C>,
     [InferPluginSchemaModel<C>] extends [never]
       ? PluginSchemaModel<TType, null>
       : InferPluginSchemaModel<C> extends PluginSchemaModel<
@@ -657,7 +667,26 @@ type ConfiguredPlatePluginType<
           >
         ? PluginSchemaModel<TType, TSchema>
         : PluginSchemaModel<TType, null>,
-    InferPluginApi<C>
+    InferPluginApi<C>,
+    Enabled
+  >
+>;
+
+type ConfiguredPlatePluginEnabled<
+  C extends AnyPluginConfig,
+  Enabled extends boolean,
+> = ConfiguredPlatePlugin<
+  PluginConfig<
+    C['key'],
+    InferOptions<C>,
+    InferApi<C>,
+    InferTx<C>,
+    InferSelectors<C>,
+    InferState<C>,
+    InferDependencies<C>,
+    InferPluginSchemaModel<C>,
+    InferPluginApi<C>,
+    Enabled
   >
 >;
 
@@ -679,6 +708,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
    * shortcuts without widening the plugin contract. Extensions read the
    * configured values, while this configuration remains the final override.
    */
+  // biome-ignore lint/style/useUnifiedTypeSignatures: Distinct overloads preserve contextual callback and literal static inference.
   configure<const TShortcuts extends PlateShortcutRecord = {}>(
     config: (
       ctx: PlatePluginContext<C>
@@ -690,111 +720,89 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   ): ConfiguredPlatePlugin<C>;
   configure<
     const TType extends string,
+    const Enabled extends boolean,
     const TShortcuts extends PlateShortcutRecord = {},
   >(
     config: WithValidatedPlateShortcuts<
       C,
-      PlatePluginConfig<
-        C['key'],
-        InferOptions<C>,
-        InferApi<C>,
-        InferTx<C>,
-        InferSelectors<C>,
-        InferDependencies<C>,
-        {},
-        {},
-        {},
-        InferNestedPlugins<C>,
-        InferPluginSchemaModel<C>,
-        InferPluginApi<C>
-      > & { type: TType },
+      StaticPlatePluginConfig<C, {}, {}, {}, Enabled> & {
+        enabled: Enabled;
+        type: TType;
+      },
+      TShortcuts
+    >
+  ): ConfiguredPlatePluginType<C, TType, Enabled>;
+  configure<
+    const TType extends string,
+    const TShortcuts extends PlateShortcutRecord = {},
+  >(
+    config: WithValidatedPlateShortcuts<
+      C,
+      StaticPlatePluginConfig<C> & { type: TType },
       TShortcuts
     >
   ): ConfiguredPlatePluginType<C, TType>;
   configure<
+    const Enabled extends boolean,
     const TShortcuts extends PlateShortcutRecord = {},
-    const TConfiguration extends PlatePluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C>,
-      InferTx<C>,
-      InferSelectors<C>,
-      InferDependencies<C>,
-      {},
-      {},
-      {},
-      InferNestedPlugins<C>,
-      InferPluginSchemaModel<C>,
-      InferPluginApi<C>
-    > = PlatePluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C>,
-      InferTx<C>,
-      InferSelectors<C>,
-      InferDependencies<C>,
-      {},
-      {},
-      {},
-      InferNestedPlugins<C>,
-      InferPluginSchemaModel<C>,
-      InferPluginApi<C>
-    >,
   >(
-    config: WithValidatedPlateShortcuts<C, TConfiguration, TShortcuts>
-  ): TConfiguration extends Readonly<{
-    type: infer TType extends string;
-  }>
-    ? ConfiguredPlatePluginType<C, TType>
-    : ConfiguredPlatePlugin<C>;
-  configurePlugin: <P extends AnyPlatePlugin | AnyBasePlugin | { key: string }>(
-    plugin: P,
-    config: PluginMethodConfig<P>
-  ) => PlatePlugin<C>;
+    config: WithValidatedPlateShortcuts<
+      C,
+      StaticPlatePluginConfig<C, {}, {}, {}, Enabled> & {
+        enabled: Enabled;
+      },
+      TShortcuts
+    >
+  ): ConfiguredPlatePluginEnabled<C, Enabled>;
+  configure<const TShortcuts extends PlateShortcutRecord = {}>(
+    config: WithValidatedPlateShortcuts<
+      C,
+      StaticPlatePluginConfig<C>,
+      TShortcuts
+    >
+  ): ConfiguredPlatePlugin<C>;
   extend<
     EO = {},
     EA = {},
     ES = {},
     const TShortcuts extends PlateShortcutRecord = {},
   >(
-    extendConfig:
-      | ((
-          ctx: PlatePluginContext<C>
-        ) => WithValidatedPlateShortcuts<
-          C,
-          RuntimePlatePluginConfig<C, EO, EA, ES>,
-          TShortcuts
-        >)
-      | WithValidatedPlateShortcuts<
-          PluginConfig<
-            C['key'],
-            InferOptions<C>,
-            EA & InferApi<C>,
-            InferTx<C>,
-            InferSelectors<C>,
-            InferState<C>,
-            InferDependencies<C>,
-            InferNestedPlugins<C>,
-            InferPluginSchemaModel<C>,
-            InferPluginApi<C>
-          >,
-          PlatePluginConfig<
-            C['key'],
-            InferOptions<C>,
-            InferApi<C>,
-            InferTx<C>,
-            InferSelectors<C>,
-            InferDependencies<C>,
-            EO,
-            EA,
-            ES,
-            InferNestedPlugins<C>,
-            InferPluginSchemaModel<C>,
-            InferPluginApi<C>
-          >,
-          TShortcuts
-        >
+    extendConfig: (
+      ctx: PlatePluginContext<C>
+    ) => WithValidatedPlateShortcuts<
+      C,
+      RuntimePlatePluginConfig<C, EO, EA, ES>,
+      TShortcuts
+    >
   ): ExtendedPlatePlugin<C, EO, EA, ES>;
+  extend<
+    EO = {},
+    EA = {},
+    ES = {},
+    const TShortcuts extends PlateShortcutRecord = {},
+    const Enabled extends boolean = InferEnabled<C>,
+  >(
+    extendConfig: WithValidatedPlateShortcuts<
+      PluginConfig<
+        C['key'],
+        InferOptions<C>,
+        EA & InferApi<C>,
+        InferTx<C>,
+        InferSelectors<C>,
+        InferState<C>,
+        InferDependencies<C>,
+        InferPluginSchemaModel<C>,
+        InferPluginApi<C>,
+        Enabled
+      >,
+      StaticPlatePluginConfig<C, EO, EA, ES, Enabled>,
+      TShortcuts
+    >
+  ): ExtendedPlatePlugin<C, EO, EA, ES, Enabled>;
+  /**
+   * Adds feature API methods published at `editor.api[plugin.key]`.
+   * `editor.plugin(plugin).api` exposes the same immutable API for generic code.
+   */
   extendApi: <
     EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
   >(
@@ -808,9 +816,9 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferSelectors<C>,
       InferState<C>,
       InferDependencies<C>,
-      InferNestedPlugins<C>,
       InferPluginSchemaModel<C>,
-      InferPluginApi<C> & EA
+      InferPluginApi<C> & EA,
+      InferEnabled<C>
     >
   >;
   /**
@@ -870,15 +878,39 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferSelectors<C>,
       InferState<C>,
       InferDependencies<C>,
-      InferNestedPlugins<C>,
       InferPluginSchemaModel<C>,
-      InferPluginApi<C>
+      InferPluginApi<C>,
+      InferEnabled<C>
     >
   >;
   extendExtension: {
+    <const TExtension extends ContextualPlateEditorExtensionInput<C>>(
+      extension: (
+        ctx: PlatePluginContext<InferPluginBehaviorConfig<C>>
+      ) => TExtension | undefined
+    ): ExtendedPlatePluginWithExtension<
+      C,
+      ExtensionApiFromArgument<TExtension>,
+      ExtensionTxFromArgument<TExtension>,
+      ExtensionStateFromArgument<TExtension>
+    >;
     <const TExtension>(
       extension: TExtension &
-        (ExtendPlateEditorExtension<C> | PlateEditorExtensionInput)
+        (ExtendPlateEditorExtension<C> | PlateEditorExtensionInput<C>)
+    ): ExtendedPlatePluginWithExtension<
+      C,
+      ExtensionApiFromArgument<TExtension>,
+      ExtensionTxFromArgument<TExtension>,
+      ExtensionStateFromArgument<TExtension>
+    >;
+    <
+      const TKey extends string,
+      const TExtension extends ContextualPlateEditorExtensionInput<C>,
+    >(
+      key: TKey,
+      extension: (
+        ctx: PlatePluginContext<InferPluginBehaviorConfig<C>>
+      ) => TExtension | undefined
     ): ExtendedPlatePluginWithExtension<
       C,
       ExtensionApiFromArgument<TExtension>,
@@ -888,7 +920,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     <const TKey extends string, const TExtension>(
       key: TKey,
       extension: TExtension &
-        (ExtendPlateEditorExtension<C> | PlateEditorExtensionInput)
+        (ExtendPlateEditorExtension<C> | PlateEditorExtensionInput<C>)
     ): ExtendedPlatePluginWithExtension<
       C,
       ExtensionApiFromArgument<TExtension>,
@@ -896,15 +928,6 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ExtensionStateFromArgument<TExtension>
     >;
   };
-  extendPlugin: <
-    P extends AnyPlatePlugin | AnyBasePlugin | { key: string },
-    EO = {},
-    EA = {},
-    ES = {},
-  >(
-    plugin: P,
-    extendConfig: PluginMethodConfig<P, EO, EA, ES>
-  ) => PlatePlugin<C>;
   extendSelectors: <
     ES extends Record<string, (...args: any[]) => any> = Record<string, never>,
   >(
@@ -918,9 +941,9 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ES & InferSelectors<C>,
       InferState<C>,
       InferDependencies<C>,
-      InferNestedPlugins<C>,
       InferPluginSchemaModel<C>,
-      InferPluginApi<C>
+      InferPluginApi<C>,
+      InferEnabled<C>
     >
   >;
   extendTx: {
@@ -940,9 +963,9 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
         InferSelectors<C>,
         InferState<C>,
         InferDependencies<C>,
-        InferNestedPlugins<C>,
         InferPluginSchemaModel<C>,
-        InferPluginApi<C>
+        InferPluginApi<C>,
+        InferEnabled<C>
       >
     >;
   };
@@ -964,9 +987,9 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferSelectors<C>,
       InferState<C>,
       InferDependencies<C>,
-      InferNestedPlugins<C>,
       InferPluginSchemaModel<C>,
-      InferPluginApi<C>
+      InferPluginApi<C>,
+      InferEnabled<C>
     >
   >;
   /** Returns a new instance of the plugin with the component. */

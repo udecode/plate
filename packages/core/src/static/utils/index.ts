@@ -3,7 +3,6 @@
  */
 
 export * from './createStaticString';
-export * from './getNodeDataAttributes';
 export * from './getRenderNodeStaticProps';
 export * from './getSelectedDomFragment';
 export * from './getSelectedDomNode';

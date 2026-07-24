@@ -38,7 +38,6 @@ type BaseCommentContract = PluginConfig<
   {},
   {},
   readonly [],
-  readonly [],
   never,
   {
     has: (options: { id: string }) => boolean;

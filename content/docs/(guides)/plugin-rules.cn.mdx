@@ -304,7 +304,9 @@ const plugins = [
 ### 配置
 
 ```tsx
-HeadingPlugin.configure({
+import { H1Plugin } from '@platejs/basic-nodes/react';
+
+H1Plugin.configure({
   rules: {
     delete: {
       // 在块起始处按下 Backspace 时的操作

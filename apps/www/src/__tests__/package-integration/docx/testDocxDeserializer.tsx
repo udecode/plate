@@ -3,12 +3,21 @@
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
 import { TextIndentPlugin } from '@platejs/basic-styles/react';
 import {
-  BasicBlocksPlugin,
+  BlockquotePlugin,
+  BoldPlugin,
+  CodePlugin,
   H1Plugin,
   H2Plugin,
   H3Plugin,
+  H4Plugin,
+  H5Plugin,
+  H6Plugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
-import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { IndentPlugin } from '@platejs/indent/react';
@@ -24,7 +33,6 @@ import { BaseParagraphPlugin } from 'platejs';
 import { DocxPlugin } from '@platejs/docx';
 import { readTestFile } from './readTestFile';
 import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
-import type { BasePlugin } from '../../../../../../packages/core/src/lib/plugin';
 
 // biome-ignore lint/suspicious/noUnusedExpressions: test
 jsx;
@@ -55,28 +63,35 @@ export const testDocxDeserializer = ({
       </hp>
     </editor>
   ),
-  overridePlugins,
   plugins = [],
 }: {
   expected: any;
   filename: string;
   input?: any;
-  overridePlugins?: BasePlugin['override']['plugins'];
   plugins?: any[];
 }) => {
   it('deserialize', () => {
     const actual = createBaseEditor({
-      override: {
-        plugins: overridePlugins,
-      },
       plugins: [
         ...plugins,
         ImagePlugin,
         HorizontalRulePlugin,
         CodeBlockPlugin,
         LinkPlugin,
-        BasicBlocksPlugin,
-        BasicMarksPlugin,
+        BlockquotePlugin,
+        H1Plugin,
+        H2Plugin,
+        H3Plugin,
+        H4Plugin,
+        H5Plugin,
+        H6Plugin,
+        BoldPlugin,
+        CodePlugin,
+        ItalicPlugin,
+        StrikethroughPlugin,
+        SubscriptPlugin,
+        SuperscriptPlugin,
+        UnderlinePlugin,
         TablePlugin,
         LineHeightPlugin.configure(targetPluginConfig),
         TextAlignPlugin.configure(targetPluginConfig),

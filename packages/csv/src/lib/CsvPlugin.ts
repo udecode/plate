@@ -41,7 +41,7 @@ export const CsvPlugin = createBasePlugin({
       format: 'text/plain',
       deserialize: (context) =>
         deserializeCsvWithParserContext(context, { data: context.data }),
-      schema: [{ kind: 'schema' }],
+      owns: [{ kind: 'schema' }],
     },
   });
 

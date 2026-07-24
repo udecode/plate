@@ -10,7 +10,7 @@ describe('markdown task lists', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         checked: false,
         children: [{ text: 'open' }],

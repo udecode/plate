@@ -2,7 +2,10 @@
 
 import * as React from 'react';
 
-import { KEYS, NormalizeTypesPlugin, normalizeStaticValue } from 'platejs';
+import { CopilotPlugin } from '@platejs/ai/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { ListPlugin } from '@platejs/list/react';
+import { NormalizeTypesPlugin, normalizeStaticValue } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { useLocale } from '@/hooks/useLocale';
@@ -27,18 +30,19 @@ export default function PlaygroundDemo({
 
   const editor = usePlateEditor(
     {
-      override: {
-        enabled: {
-          [KEYS.copilot]: id === 'copilot',
-          [KEYS.indent]: id !== 'listClassic',
-          [KEYS.list]: id !== 'listClassic',
-          [KEYS.listClassic]: id === 'listClassic',
-        },
-      },
       plugins: [
         ...CopilotKit,
         ...EditorKit,
         ...ExcalidrawKit,
+        ...(id === 'copilot'
+          ? []
+          : [CopilotPlugin.configure({ enabled: false })]),
+        ...(id === 'listClassic'
+          ? [
+              IndentPlugin.configure({ enabled: false }),
+              ListPlugin.configure({ enabled: false }),
+            ]
+          : []),
 
         NormalizeTypesPlugin.configure({
           enabled: id === 'forced-layout',

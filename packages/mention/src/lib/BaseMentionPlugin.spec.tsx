@@ -4,8 +4,27 @@ import type { Element } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
+import { MentionInputPlugin, MentionPlugin } from '../react/MentionPlugin';
 
 describe('BaseMentionPlugin', () => {
+  it('declares the input as an exact required Base and React dependency', () => {
+    expect(BaseMentionPlugin.dependencies).toEqual([BaseMentionInputPlugin]);
+    expect(MentionPlugin.dependencies).toEqual([MentionInputPlugin]);
+  });
+
+  it('rejects a disabled required mention-input dependency', () => {
+    expect(() =>
+      createBaseEditor({
+        plugins: [
+          BaseMentionPlugin,
+          BaseMentionInputPlugin.configure({ enabled: false }),
+        ],
+      })
+    ).toThrow(
+      /mention.*disabled.*mentionInput|mentionInput.*disabled.*mention/i
+    );
+  });
+
   it('configures mention defaults and inserts markable void mention nodes', () => {
     const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],

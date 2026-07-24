@@ -8,7 +8,6 @@ import {
   createEditorView,
   defineEditorSchema,
   defineExtensionSlot,
-  definePropertyPolicy,
   property,
   schema,
   target,
@@ -909,8 +908,7 @@ const localityVisits = {
   mainElement: 0,
   mainText: 0,
 };
-const LocalityPolicy = definePropertyPolicy<LocalityTrace>({
-  id: 'schema-validation-locality',
+const localityDescriptor = property.json({
   validate: (value): value is LocalityTrace => {
     if (
       typeof value !== 'object' ||
@@ -931,9 +929,8 @@ const LocalityPolicy = definePropertyPolicy<LocalityTrace>({
 
     return Number.isInteger(value.index) && value.index >= 0;
   },
-  version: 1,
+  validationVersion: 1,
 });
-const localityDescriptor = property.json({ policy: LocalityPolicy });
 const LocalitySchema = defineEditorSchema({
   elements: {
     paragraph: {

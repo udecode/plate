@@ -146,8 +146,7 @@ const BaseLinkPluginDefinition = createBasePlugin({
     },
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   } as BaseLinkOptions,
-  key: KEYS.link,
-  host: { dangerouslyAllowAttributes: ['target'] },
+  key: 'link',
   render: {
     nodeProps: ({ element, getOptions }) => {
       const {
@@ -201,6 +200,7 @@ const BaseLinkPluginDefinition = createBasePlugin({
     normalize: { removeEmpty: true },
     selection: { affinity: 'directional' },
   },
+  type: KEYS.link,
 }).extendApi<BaseLinkApi>(({ getOptions }) => ({
   getAttributes: (link) => {
     const {
@@ -538,7 +538,7 @@ const getAutolinkMatch = (
   if (
     editor.read.nodes.some({
       at: beforeWordRange,
-      match: { type: editor.getType(KEYS.link) },
+      match: { type: editor.getType(BaseLinkPlugin.key) },
     })
   ) {
     return;
@@ -572,7 +572,7 @@ const breakAutolinkRule = createRuleFactory<{}, {}, LinkTextAutolinkMatch>({
     const linkEntry = selection
       ? context.tx.nodes.above({
           at: selection,
-          match: { type: context.editor.getType(KEYS.link) },
+          match: { type: context.editor.getType(BaseLinkPlugin.key) },
         })
       : undefined;
 
@@ -675,7 +675,7 @@ const spaceAutolinkRule = createRuleFactory<{}, {}, LinkTextAutolinkMatch>({
     const linkEntry = selection
       ? context.tx.nodes.above({
           at: selection,
-          match: { type: context.editor.getType(KEYS.link) },
+          match: { type: context.editor.getType(BaseLinkPlugin.key) },
         })
       : undefined;
 
@@ -719,7 +719,10 @@ export const LinkRules = {
         editor.read.nodes.above({
           at: selection,
           match: {
-            type: [editor.getType(KEYS.codeBlock), editor.getType(KEYS.link)],
+            type: [
+              editor.getType(KEYS.codeBlock),
+              editor.getType(BaseLinkPlugin.key),
+            ],
           },
         })
       ) {
@@ -769,7 +772,7 @@ export const LinkRules = {
         const linkEntry = selection
           ? context.tx.nodes.above({
               at: selection,
-              match: { type: context.editor.getType(KEYS.link) },
+              match: { type: context.editor.getType(BaseLinkPlugin.key) },
             })
           : undefined;
 

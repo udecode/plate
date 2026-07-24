@@ -1,11 +1,23 @@
 import { createTestEditor } from '../../__tests__/createTestEditor';
-import { markdownToSlateNodesSafely } from './markdownToSlateNodesSafely';
+import type { DeserializeMdOptions } from '../deserializeMd';
+
+import { markdownToSlateNodesSafelyWithRuntime } from '../../internal/markdownDeserializer';
+import { withMarkdownRuntime } from '../../internal/markdownRuntime';
+
+const parseSafely = (
+  editor: ReturnType<typeof createTestEditor>,
+  data: string,
+  options?: DeserializeMdOptions
+) =>
+  withMarkdownRuntime(editor, (runtime) =>
+    markdownToSlateNodesSafelyWithRuntime(runtime, data, options)
+  );
 
 describe('markdownToSlateNodesSafely', () => {
   it('deserializes normal markdown when there is no incomplete MDX tail', () => {
     const editor = createTestEditor();
 
-    expect(markdownToSlateNodesSafely(editor, 'plain **bold**')).toEqual([
+    expect(parseSafely(editor, 'plain **bold**')).toEqual([
       {
         children: [{ text: 'plain ' }, { bold: true, text: 'bold' }],
         type: 'p',
@@ -16,9 +28,7 @@ describe('markdownToSlateNodesSafely', () => {
   it('appends incomplete inline MDX text to the last non-void block', () => {
     const editor = createTestEditor();
 
-    expect(
-      markdownToSlateNodesSafely(editor, '<callout>ok</callout><callout>')
-    ).toEqual([
+    expect(parseSafely(editor, '<callout>ok</callout><callout>')).toEqual([
       {
         children: [
           {
@@ -35,7 +45,7 @@ describe('markdownToSlateNodesSafely', () => {
   it('keeps incomplete inline MDX text out of the previous marked text leaf', () => {
     const editor = createTestEditor();
 
-    expect(markdownToSlateNodesSafely(editor, '**bold**<u>')).toEqual([
+    expect(parseSafely(editor, '**bold**<u>')).toEqual([
       {
         children: [
           { bold: true, text: 'bold' },
@@ -51,7 +61,7 @@ describe('markdownToSlateNodesSafely', () => {
   it('preserves marked leaves in the incomplete inline MDX fallback tail', () => {
     const editor = createTestEditor();
 
-    expect(markdownToSlateNodesSafely(editor, 'plain <u> **bold**')).toEqual([
+    expect(parseSafely(editor, 'plain <u> **bold**')).toEqual([
       {
         children: [
           { text: 'plain' },
@@ -67,7 +77,7 @@ describe('markdownToSlateNodesSafely', () => {
   it('wraps incomplete inline MDX in a new paragraph when there are no complete blocks', () => {
     const editor = createTestEditor();
 
-    expect(markdownToSlateNodesSafely(editor, '<u>')).toEqual([
+    expect(parseSafely(editor, '<u>')).toEqual([
       {
         children: [{ text: '<u>' }],
         type: 'p',
@@ -78,7 +88,7 @@ describe('markdownToSlateNodesSafely', () => {
   it('falls back to editable text for malformed html-like mdx', () => {
     const editor = createTestEditor();
 
-    expect(markdownToSlateNodesSafely(editor, String.raw`</ph\><`)).toEqual([
+    expect(parseSafely(editor, String.raw`</ph\><`)).toEqual([
       {
         children: [{ text: '</ph><' }],
         type: 'p',
@@ -90,7 +100,7 @@ describe('markdownToSlateNodesSafely', () => {
     const editor = createTestEditor();
 
     expect(
-      markdownToSlateNodesSafely(editor, '<Foo.Bar>ok</Foo.Bar><u>', {
+      parseSafely(editor, '<Foo.Bar>ok</Foo.Bar><u>', {
         rules: {
           'Foo.Bar': {
             deserialize: () => ({
@@ -117,7 +127,7 @@ describe('markdownToSlateNodesSafely', () => {
   it('preserves complete void blocks before appending the fallback paragraph', () => {
     const editor = createTestEditor();
 
-    expect(markdownToSlateNodesSafely(editor, '<hr /><u>')).toEqual([
+    expect(parseSafely(editor, '<hr /><u>')).toEqual([
       {
         children: [{ text: '' }],
         type: 'hr',

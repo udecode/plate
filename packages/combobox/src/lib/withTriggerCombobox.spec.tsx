@@ -5,7 +5,6 @@ import {
   type BasePluginInput,
   createBaseEditor,
   createBasePlugin,
-  type PluginConfig,
 } from '@platejs/core';
 import { type Element, property } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -14,93 +13,87 @@ import type { TriggerComboboxPluginOptions } from './types';
 
 import { withTriggerCombobox } from './withTriggerCombobox';
 
-type ExampleComboboxConfig = PluginConfig<string, TriggerComboboxPluginOptions>;
-
-const ExampleComboboxPlugin = createBasePlugin<ExampleComboboxConfig>({
-  key: 'exampleCombobox',
-  plugins: [
-    createBasePlugin({
-      key: 'mentionInput',
-      schema: {
-        element: {
-          inline: true,
-          properties: {
-            trigger: property.string(),
-            userId: property.string(),
-          },
-          void: 'inline',
-        },
+const ExampleComboboxInputPlugin = createBasePlugin({
+  key: 'mentionInput',
+  schema: {
+    element: {
+      inline: true,
+      properties: {
+        trigger: property.string(),
+        userId: property.string(),
       },
-      type: 'mention_input',
-    }),
-  ],
-}).extendExtension(withTriggerCombobox);
+      void: 'inline',
+    },
+  },
+  type: 'mention_input',
+});
+
+const createExampleComboboxPlugin = <const K extends string>(
+  key: K,
+  options: TriggerComboboxPluginOptions
+) =>
+  createBasePlugin({
+    key,
+    dependencies: [ExampleComboboxInputPlugin],
+    options,
+  }).extendExtension(withTriggerCombobox);
 
 const readonlyTriggers = ['@', '#'] as const;
 
 const plugins = [
   BaseParagraphPlugin,
 
-  ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
-    key: 'exampleCombobox1',
-    options: {
-      trigger: readonlyTriggers,
-      triggerPreviousCharPattern: /^$|^[\s"']$/,
-      createComboboxInput: (trigger: string) => ({
-        children: [{ text: '' }],
-        trigger,
-        type: 'mention_input',
-      }),
-    },
+  createExampleComboboxPlugin('exampleCombobox1', {
+    trigger: readonlyTriggers,
+    triggerPreviousCharPattern: /^$|^[\s"']$/,
+    createComboboxInput: (trigger) => ({
+      children: [{ text: '' }],
+      trigger,
+      type: 'mention_input',
+    }),
   }),
 
-  ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
-    key: 'exampleCombobox2',
-    options: {
+  createExampleComboboxPlugin('exampleCombobox2', {
+    trigger: ':',
+    triggerPreviousCharPattern: /^\s?$/,
+    createComboboxInput: () => ({
+      children: [{ text: '' }],
       trigger: ':',
-      triggerPreviousCharPattern: /^\s?$/,
-      createComboboxInput: () => ({
-        children: [{ text: '' }],
-        trigger: ':',
-        type: 'mention_input',
-      }),
-    },
+      type: 'mention_input',
+    }),
   }),
 ];
 
-const RegexComboboxPlugin =
-  ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
-    key: 'regexCombobox',
-    schema: {
-      element: {
-        inline: true,
-        properties: {
-          trigger: property.string(),
-          userId: property.string(),
-        },
-        void: 'inline',
+const RegexComboboxPlugin = createBasePlugin({
+  key: 'regexCombobox',
+  dependencies: [ExampleComboboxInputPlugin],
+  options: {
+    trigger: /[@#]/,
+    triggerPreviousCharPattern: /^$|^[\s"']$/,
+  },
+  schema: {
+    element: {
+      inline: true,
+      properties: {
+        trigger: property.string(),
+        userId: property.string(),
       },
+      void: 'inline',
     },
-    options: {
-      trigger: /[@#]/,
-      triggerPreviousCharPattern: /^$|^[\s"']$/,
-    },
-  });
+  },
+  type: 'exampleCombobox',
+}).extendExtension(withTriggerCombobox);
 
-const QueryComboboxPlugin =
-  ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
-    key: 'queryCombobox',
-    options: {
-      trigger: '@',
-      triggerPreviousCharPattern: /^$|^[\s"']$/,
-      createComboboxInput: () => ({
-        children: [{ text: '' }],
-        trigger: '@',
-        type: 'mention_input',
-      }),
-      triggerQuery: () => false,
-    },
-  });
+const QueryComboboxPlugin = createExampleComboboxPlugin('queryCombobox', {
+  trigger: '@',
+  triggerPreviousCharPattern: /^$|^[\s"']$/,
+  createComboboxInput: () => ({
+    children: [{ text: '' }],
+    trigger: '@',
+    type: 'mention_input',
+  }),
+  triggerQuery: () => false,
+});
 
 const createEditorWithCombobox = (
   children: Element,

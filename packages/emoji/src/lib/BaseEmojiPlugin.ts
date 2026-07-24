@@ -55,9 +55,9 @@ const emojiPluginOptions: EmojiPluginOptions = {
 
 export const BaseEmojiPlugin = createBasePlugin({
   key: KEYS.emoji,
+  dependencies: [BaseEmojiInputPlugin],
   editOnly: true,
   options: emojiPluginOptions,
-  plugins: [BaseEmojiInputPlugin],
 }).extendExtension(withTriggerCombobox);
 
 export type EmojiInputConfig = InferConfig<typeof BaseEmojiPlugin>;

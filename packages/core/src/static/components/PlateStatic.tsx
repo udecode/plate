@@ -8,6 +8,7 @@ import {
   type Path,
   type Text,
   ElementApi,
+  NodeApi,
   RangeApi,
   TextApi,
 } from '@platejs/plite';
@@ -17,7 +18,7 @@ import {
 } from '@platejs/plite-dom';
 import clsx from 'clsx';
 
-import type { EditableProps, BaseEditor } from '../../lib';
+import type { EditableProps, BaseEditor, RenderElementSlots } from '../../lib';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import type { PliteRenderElementProps } from '../types';
 
@@ -27,17 +28,23 @@ import { pipeRenderTextStatic } from '../pluginRenderTextStatic';
 import { pipeDecorate } from '../utils/pipeDecorate';
 
 function BaseElementStatic({
+  contentRootValues: _contentRootValues,
   decorate,
   decorations,
   editor,
   element = { children: [], type: '' },
   path,
+  rootNodes,
+  rootStack,
 }: {
+  contentRootValues: readonly (readonly Descendant[])[];
   decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: BaseEditor;
   element: Element;
   path: Path;
+  rootNodes: readonly Descendant[];
+  rootStack: readonly string[];
   style?: React.CSSProperties;
 }) {
   const renderElement = pipeRenderElementStatic(editor);
@@ -46,15 +53,56 @@ function BaseElementStatic({
     'data-plite-node': 'element',
   };
 
-  let children: React.ReactNode = (
+  const renderChildren = (range: { from?: number; to?: number } = {}) => (
     <Children
       decorate={decorate}
       decorations={decorations}
       editor={editor}
+      from={range.from}
       nodes={element.children}
       parentPath={path}
+      rootNodes={rootNodes}
+      rootStack={rootStack}
+      to={range.to ?? range.from}
     />
   );
+  let children: React.ReactNode = renderChildren();
+
+  const slots = {
+    children: renderChildren,
+    contentBoundary: ({ children: boundaryChildren, scope }) =>
+      boundaryChildren ??
+      (scope.type === 'self'
+        ? renderChildren()
+        : renderChildren({ from: scope.from, to: scope.to })),
+    contentRoot: (slot) => {
+      const root = editor.read.schema.getElementContentRoots(element)[slot];
+
+      if (!root) {
+        throw new Error(
+          `Element "${element.type}" does not own content root slot "${slot}".`
+        );
+      }
+      if (rootStack.includes(root)) {
+        throw new Error(
+          `Content root "${root}" cannot recursively render itself.`
+        );
+      }
+
+      const nodes = editor.read.root(root);
+
+      return (
+        <Children
+          decorate={decorate}
+          decorations={[]}
+          editor={editor}
+          nodes={nodes}
+          rootNodes={nodes}
+          rootStack={[...rootStack, root]}
+        />
+      );
+    },
+  } satisfies RenderElementSlots;
 
   if (editor.read.schema.isVoid(element)) {
     attributes['data-plite-void'] = true;
@@ -68,13 +116,7 @@ function BaseElementStatic({
         }}
         data-plite-spacer
       >
-        <Children
-          decorate={decorate}
-          decorations={decorations}
-          editor={editor}
-          nodes={element.children}
-          parentPath={path}
-        />
+        {renderChildren()}
       </span>
     );
   }
@@ -82,13 +124,17 @@ function BaseElementStatic({
     attributes['data-plite-inline'] = true;
   }
 
-  return <>{renderElement?.({ attributes, children, element, path })}</>;
+  return <>{renderElement?.({ attributes, children, element, path, slots })}</>;
 }
 
 export const ElementStatic = React.memo(
   BaseElementStatic,
   (prev, next) =>
     prev.element === next.element &&
+    prev.contentRootValues.length === next.contentRootValues.length &&
+    prev.contentRootValues.every(
+      (children, index) => children === next.contentRootValues[index]
+    ) &&
     isElementDecorationsEqual(prev.decorations, next.decorations)
 );
 
@@ -147,23 +193,46 @@ function Children({
   decorate = defaultDecorate,
   decorations = [],
   editor,
+  from,
   nodes = [],
   parentPath = [],
+  rootNodes = nodes,
+  rootStack = [],
+  to,
 }: {
   decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: BaseEditor;
+  from?: number;
   nodes: readonly Descendant[];
   parentPath?: Path;
+  rootNodes?: readonly Descendant[];
+  rootStack?: readonly string[];
+  to?: number;
 }) {
+  const root: Element = {
+    children: rootNodes as Descendant[],
+    type: 'static-root',
+  };
+
   return (
     <>
       {nodes.map((child, i) => {
+        if (from !== undefined && (i < from || i > (to ?? from))) return null;
+
         const p = [...parentPath, i];
 
         let ds: DecoratedRange[] = [];
 
-        const range = editor.read.ranges.get(p);
+        const [first, firstPath] = NodeApi.first(root, p);
+        const [last, lastPath] = NodeApi.last(root, p);
+        const range =
+          TextApi.isText(first) && TextApi.isText(last)
+            ? {
+                anchor: { offset: 0, path: firstPath },
+                focus: { offset: last.text.length, path: lastPath },
+              }
+            : null;
 
         if (range) {
           ds = decorate([child, p]);
@@ -180,11 +249,16 @@ function Children({
         return ElementApi.isElement(child) ? (
           <ElementStatic
             key={i}
+            contentRootValues={Object.values(
+              editor.read.schema.getElementContentRoots(child)
+            ).map((root) => editor.read.root(root))}
             decorate={decorate}
             decorations={ds}
             editor={editor}
             element={child}
             path={p}
+            rootNodes={rootNodes}
+            rootStack={rootStack}
           />
         ) : (
           <LeafStatic
@@ -254,6 +328,8 @@ export function PlateStatic(props: PlateStaticProps) {
         decorations={[]}
         editor={editor}
         nodes={editor.read.children()}
+        rootNodes={editor.read.children()}
+        rootStack={[]}
       />
     </div>
   );

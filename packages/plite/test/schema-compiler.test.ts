@@ -6,7 +6,6 @@ import {
   defineEditorExtension,
   defineEditorSchema,
   defineExtensionSlot,
-  definePropertyPolicy,
   property,
   schema,
   target,
@@ -62,6 +61,130 @@ afterEach(() => {
 });
 
 describe('schema compiler', () => {
+  it('projects targeted content-root ownership into matching element types', () => {
+    const Article = defineEditorSchema({
+      contentRoots: [
+        {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+          slot: 'caption',
+          target: target.types(['image', 'video']),
+        },
+      ],
+      elements: {
+        image: { void: 'block' },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        video: {
+          contentRoots: {
+            preview: schema.content.type('paragraph'),
+          },
+          void: 'block',
+        },
+      },
+      root: { content: schema.content.types(['image', 'video']) },
+      unknown: 'reject',
+    });
+    const editor = createEditor({ extensions: [Article] });
+
+    assert.deepEqual(editor.read.schema.element('image')?.contentRoots, {
+      caption: {
+        content: {
+          allowedElementTypes: ['paragraph'],
+          allowsText: false,
+          allowsUnknownElements: false,
+          default: { type: 'paragraph' },
+          max: null,
+          min: 1,
+        },
+        ownership: 'exclusive',
+      },
+    });
+    assert.equal(
+      editor.read.schema.element('paragraph')?.contentRoots.caption,
+      undefined
+    );
+    assert.equal(
+      editor.read.schema.element('video')?.contentRoots.preview?.ownership,
+      'shared'
+    );
+  });
+
+  it('fingerprints content-root ownership and rejects overlapping slot owners', () => {
+    const compile = (ownership: 'exclusive' | 'shared') =>
+      compileEditorSchemaContributions([
+        record('schema', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+            portal: { void: 'block' },
+          },
+          root: { content: schema.content.type('portal') },
+          unknown: 'reject',
+        }),
+        record('portal-content', {
+          contentRoots: [
+            {
+              content: schema.content.type('paragraph'),
+              ownership,
+              slot: 'body',
+              target: target.type('portal'),
+            },
+          ],
+        }),
+      ]);
+    const shared = compile('shared');
+    const exclusive = compile('exclusive');
+
+    assert.notEqual(
+      shared.identity.fingerprint,
+      exclusive.identity.fingerprint
+    );
+    assert.throws(
+      () =>
+        compileEditorSchemaContributions([
+          record('schema', {
+            elements: {
+              paragraph: { content: schema.content.text() },
+              portal: {
+                contentRoots: {
+                  body: schema.content.type('paragraph'),
+                },
+                void: 'block',
+              },
+            },
+            root: { content: schema.content.type('portal') },
+            unknown: 'reject',
+          }),
+          record('second-owner', {
+            contentRoots: [
+              {
+                content: schema.content.type('paragraph'),
+                ownership: 'exclusive',
+                slot: 'body',
+                target: target.type('portal'),
+              },
+            ],
+          }),
+        ]),
+      (error: unknown) => {
+        assert.ok(error instanceof EditorSchemaCompileError);
+        assert.deepEqual(error.diagnostics[0], {
+          code: 'content-root-slot-conflict',
+          extensions: ['schema', 'second-owner'],
+          message:
+            'Schema content root slot "body" for element type "portal" is declared by both "schema" and "second-owner".',
+          path: 'contentRoots.0',
+        });
+
+        return true;
+      }
+    );
+  });
+
   it('admits contributed inline elements into the derived paragraph', () => {
     const editor = createEditor({
       extensions: [
@@ -199,19 +322,14 @@ describe('schema compiler', () => {
     );
   });
 
-  it('rejects raw property policies outside the nominal builder boundary', () => {
+  it('rejects malformed inline property validation', () => {
     const Article = createBasicSchema();
-    const forged = {
-      id: 'forged',
-      validate: (value: unknown): value is string => typeof value === 'string',
-      version: 1,
-    };
 
     assert.throws(
       () =>
         compileEditorSchemaContributions([
           record(Article.name, Article.schema),
-          record('forged-policy', {
+          record('malformed-validation', {
             properties: [
               {
                 inclusive: true,
@@ -223,7 +341,8 @@ describe('schema compiler', () => {
                 value: {
                   kind: 'json',
                   omitDefault: false,
-                  policy: forged,
+                  validate: (value: unknown): value is string =>
+                    typeof value === 'string',
                 },
               },
             ],
@@ -239,8 +358,8 @@ describe('schema compiler', () => {
           })),
           [
             {
-              code: 'invalid-property-policy',
-              extensions: ['forged-policy'],
+              code: 'invalid-property-validation',
+              extensions: ['malformed-validation'],
               path: 'properties.0',
             },
           ]
@@ -251,9 +370,9 @@ describe('schema compiler', () => {
     );
   });
 
-  it('rejects a partial contribution that tries to supply the primary root', () => {
+  it('recognizes the primary root as the complete-schema discriminator', () => {
     const Article = createBasicSchema();
-    const malformedPartial = {
+    const malformedComplete = {
       root: { content: schema.content.type('paragraph') },
     } as unknown as EditorSchemaContributionRecord['contribution'];
 
@@ -261,17 +380,17 @@ describe('schema compiler', () => {
       () =>
         compileEditorSchemaContributions([
           record(Article.name, Article.schema),
-          record('partial-primary-root', malformedPartial),
+          record('complete-without-unknown', malformedComplete),
         ]),
       (error: unknown) => {
         assert.ok(error instanceof EditorSchemaCompileError);
         assert.deepEqual(error.diagnostics, [
           {
-            code: 'partial-schema-complete-field',
-            extensions: ['partial-primary-root'],
+            code: 'missing-complete-schema-field',
+            extensions: ['complete-without-unknown'],
             message:
-              'Partial schema contribution "partial-primary-root" cannot declare complete schema field "root".',
-            path: 'schema.root',
+              'Complete schema definition "complete-without-unknown" must own schema field "unknown".',
+            path: 'schema.unknown',
           },
         ]);
 
@@ -280,7 +399,7 @@ describe('schema compiler', () => {
     );
   });
 
-  it('requires the complete owner to own every identity and primary-root field', () => {
+  it('requires complete and named schema fields to remain atomic', () => {
     const complete = createBasicSchema().schema;
 
     for (const field of ['id', 'root', 'unknown', 'version'] as const) {
@@ -299,8 +418,8 @@ describe('schema compiler', () => {
           assert.ok(error instanceof EditorSchemaCompileError);
           assert.deepEqual(
             error.diagnostics,
-            field === 'id'
-              ? (['root', 'unknown', 'version'] as const).map(
+            field === 'root'
+              ? (['id', 'unknown', 'version'] as const).map(
                   (completeField) => ({
                     code: 'partial-schema-complete-field',
                     extensions: [`complete-without-${field}`],
@@ -312,7 +431,7 @@ describe('schema compiler', () => {
                   {
                     code: 'missing-complete-schema-field',
                     extensions: [`complete-without-${field}`],
-                    message: `${field === 'version' ? 'Named' : 'Complete'} schema definition "complete-without-${field}" must own schema field "${field}".`,
+                    message: `${field === 'unknown' ? 'Complete' : 'Named'} schema definition "complete-without-${field}" must own schema field "${field}".`,
                     path: `schema.${field}`,
                   },
                 ]
@@ -390,19 +509,21 @@ describe('schema compiler', () => {
     }
   });
 
-  it('compiles one immutable identity and ignores ordering and policy function identity', () => {
-    const create = (validate: (value: unknown) => value is number) => {
-      const Positive = definePropertyPolicy({
-        id: 'positive',
-        validate,
-        version: 2,
-      });
-
-      return defineEditorSchema({
+  it('compiles one immutable identity and ignores validator function identity', () => {
+    const create = (
+      validate: (value: unknown) => value is number,
+      validationVersion = 2
+    ) =>
+      defineEditorSchema({
         elements: {
           paragraph: {
             content: schema.content.text(),
-            properties: { level: property.number({ policy: Positive }) },
+            properties: {
+              level: property.number({
+                validate,
+                validationVersion,
+              }),
+            },
           } as const,
         },
         id: 'article',
@@ -410,7 +531,6 @@ describe('schema compiler', () => {
         unknown: 'reject',
         version: 3,
       });
-    };
     const Comments = {
       properties: [
         schema.textProperty('comment', property.string(), {
@@ -433,6 +553,14 @@ describe('schema compiler', () => {
       [record(second.name, second.schema), record('comments', Comments)],
       { revision: 9 }
     );
+    const changedValidation = create(
+      (value): value is number => typeof value === 'number' && value > 0,
+      3
+    );
+    const changed = compileEditorSchemaContributions([
+      record(changedValidation.name, changedValidation.schema),
+      record('comments', Comments),
+    ]);
 
     assert.deepEqual(left.identity, {
       fingerprint: left.identity.fingerprint,
@@ -441,6 +569,7 @@ describe('schema compiler', () => {
       version: 3,
     });
     assert.equal(left.identity.fingerprint, right.identity.fingerprint);
+    assert.notEqual(left.identity.fingerprint, changed.identity.fingerprint);
     assert.equal(left.revision, 7);
     assert.equal(right.revision, 9);
     assert.equal(Object.isFrozen(left.identity), true);
@@ -1447,18 +1576,17 @@ describe('schema compiler', () => {
 
   it('reuses structural compilation while rebinding changed live schema state', () => {
     const slot = defineExtensionSlot('article-schema');
-    const create = (validate: (value: unknown) => value is string) => {
-      const NonEmpty = definePropertyPolicy<string>({
-        id: 'non-empty',
-        validate,
-        version: 1,
-      });
-
-      return defineEditorSchema({
+    const create = (validate: (value: unknown) => value is string) =>
+      defineEditorSchema({
         elements: {
           paragraph: {
             content: schema.content.text(),
-            properties: { label: property.string({ policy: NonEmpty }) },
+            properties: {
+              label: property.string({
+                validate,
+                validationVersion: 1,
+              }),
+            },
           } as const,
         },
         id: 'article',
@@ -1466,7 +1594,6 @@ describe('schema compiler', () => {
         unknown: 'reject',
         version: 1,
       });
-    };
     const rawEditor = createEditor();
     const events: string[] = [];
     const nonEmpty = (value: unknown): value is string =>
@@ -1474,7 +1601,7 @@ describe('schema compiler', () => {
     const anyString = (value: unknown): value is string =>
       typeof value === 'string';
 
-    assert.equal(rawEditor.read.schema.identity()?.kind, 'derived');
+    assert.equal(rawEditor.read.schema.identity().kind, 'derived');
     (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: {
@@ -1516,31 +1643,30 @@ describe('schema compiler', () => {
     assert.equal(after.identity.fingerprint, before.identity.fingerprint);
     assert.equal(commits, 1);
     assert.equal(
-      before.properties.byId.get(propertyId!)!.descriptor.policy?.validate(''),
+      before.properties.byId.get(propertyId!)!.descriptor.validate?.(''),
       false
     );
     assert.equal(
-      after.properties.byId.get(propertyId!)!.descriptor.policy?.validate(''),
+      after.properties.byId.get(propertyId!)!.descriptor.validate?.(''),
       true
     );
     assert.equal(editor.read.schema.identity(), before.identity);
   });
 
-  it('rebinds a changed live policy nested in a set descriptor', () => {
+  it('rebinds a changed live validator nested in a set descriptor', () => {
     const slot = defineExtensionSlot('article-schema');
-    const create = (validate: (value: unknown) => value is string) => {
-      const Item = definePropertyPolicy<string>({
-        id: 'set-item',
-        validate,
-        version: 1,
-      });
-
-      return defineEditorSchema({
+    const create = (validate: (value: unknown) => value is string) =>
+      defineEditorSchema({
         elements: {
           paragraph: {
             content: schema.content.text(),
             properties: {
-              labels: property.set(property.json({ policy: Item })),
+              labels: property.set(
+                property.json({
+                  validate,
+                  validationVersion: 1,
+                })
+              ),
             },
           } as const,
         },
@@ -1549,7 +1675,6 @@ describe('schema compiler', () => {
         unknown: 'reject',
         version: 1,
       });
-    };
     const editor = createEditor({
       extensions: [
         slot.of(

@@ -3,8 +3,10 @@ import {
   type EditorUpdatePolicyFor,
   type MoveUnit,
   type Point,
+  PointApi,
   type Range,
   RangeApi,
+  SelectionApi,
 } from '@platejs/plite';
 import { Hotkeys } from '@platejs/plite-dom';
 import {
@@ -19,11 +21,16 @@ import {
   type PliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
+import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import {
   getPlainVerticalDOMCoverageExtension,
   getPlainVerticalLargeDocumentExtension,
   shouldModelOwnPlainVerticalLargeDocumentExtension,
 } from './dom-coverage-vertical-selection';
+import {
+  getPathElement,
+  isPointOnVisualBoundaryLine,
+} from './content-root-vertical-geometry';
 import { getDocumentBoundaryKeyboardMove } from './input-controller';
 import type { EditableRepairRequest } from './mutation-controller';
 import {
@@ -34,6 +41,10 @@ import {
   failInvariant,
   toInternalRoot,
 } from './runtime-editor-api';
+import {
+  getKeyboardSelectableAncestorNodeSelection,
+  getKeyboardSelectableNodeSelection,
+} from './selection-void-target';
 
 export type EditableCaretMovementResult = {
   handled: boolean;
@@ -345,6 +356,82 @@ const moveSelectionAndRespectBoundaries = ({
   }
 };
 
+export const getKeyboardSelectableVerticalNavigationTarget = ({
+  editor,
+  event,
+  selection,
+}: {
+  editor: ReactRuntimeEditor;
+  event: Pick<
+    KeyboardEvent<HTMLDivElement>,
+    'altKey' | 'ctrlKey' | 'key' | 'metaKey' | 'shiftKey'
+  >;
+  selection: Range | null;
+}) => {
+  if (
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    (event.key !== 'ArrowDown' && event.key !== 'ArrowUp')
+  ) {
+    return null;
+  }
+
+  if (event.key === 'ArrowDown' && SelectionApi.isNode(selection)) {
+    const nodeSelection = getKeyboardSelectableNodeSelection(
+      editor,
+      selection.path
+    );
+
+    return nodeSelection
+      ? SelectionApi.text({
+          anchor: nodeSelection.anchor,
+          focus: nodeSelection.focus,
+        })
+      : null;
+  }
+
+  if (
+    event.key !== 'ArrowUp' ||
+    !SelectionApi.isText(selection) ||
+    !RangeApi.isCollapsed(selection)
+  ) {
+    return null;
+  }
+
+  const owner = getKeyboardSelectableAncestorNodeSelection(
+    editor,
+    selection.focus
+  );
+
+  if (!owner) return null;
+
+  if (PointApi.equals(selection.focus, owner.start)) {
+    return owner.selection;
+  }
+
+  try {
+    const container = getPathElement(editor, owner.path);
+    const root =
+      selection.focus.root ??
+      toInternalRoot(editor.read((state) => state.view.root()));
+
+    return container &&
+      isPointOnVisualBoundaryLine({
+        container,
+        direction: 'backward',
+        editor,
+        point: selection.focus,
+        root,
+      })
+      ? owner.selection
+      : null;
+  } catch {
+    return null;
+  }
+};
+
 export const applyEditableCaretMovement = ({
   domPhaseScheduler,
   editor,
@@ -361,6 +448,24 @@ export const applyEditableCaretMovement = ({
   selection: Range | null;
 }): EditableCaretMovementResult => {
   const { nativeEvent } = event;
+  const keyboardSelectableTarget =
+    getKeyboardSelectableVerticalNavigationTarget({
+      editor,
+      event,
+      selection,
+    });
+
+  if (keyboardSelectableTarget) {
+    event.preventDefault();
+    writePliteViewSelection(editor, null);
+    getMountedEditableDOMRuntime(editor)?.clearModelSelectionDOMPreference();
+    dispatchCommand(editor, editorCommands.select, {
+      target: keyboardSelectableTarget,
+    });
+
+    return caretMovementHandled();
+  }
+
   const ownerlessViewSelectionRange = measureCaretPhase(
     'caret.ownerless-view-selection-range',
     () => getOwnerlessViewSelectionRange(editor)

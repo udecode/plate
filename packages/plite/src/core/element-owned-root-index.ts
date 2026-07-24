@@ -18,6 +18,7 @@ import type {
   CompiledEditorSchema,
   CompiledSchemaContentProgram,
 } from './schema-compiler';
+import type { SchemaContentRootOwnership } from '../interfaces/schema';
 
 type PersistentMapNode<T> = Readonly<{
   height: number;
@@ -237,6 +238,7 @@ const createPathOriginId = () =>
 export type ElementOwnedRootBinding = Readonly<{
   childRoot: string;
   content: CompiledSchemaContentProgram;
+  ownership: SchemaContentRootOwnership;
   owner: Element;
   ownerRoot: RootKey;
   ownerType: string;
@@ -298,6 +300,7 @@ export const matchesElementOwnedRootDeclaration = (
 type GrammarOwners = Readonly<{
   bindings: PersistentMapNode<ElementOwnedRootBinding>;
   content: CompiledSchemaContentProgram;
+  ownership: SchemaContentRootOwnership;
 }>;
 
 type ChildRootOwners = Readonly<{
@@ -447,7 +450,7 @@ const readOwnerDeclaration = (
     const bindings: OwnerDeclaration['bindings'][number][] = [];
     const issues: ElementOwnedRootIssue[] = [];
 
-    for (const [slot, content] of contentRoots) {
+    for (const [slot, root] of contentRoots) {
       if (!Object.hasOwn(childRoots, slot)) {
         issues.push(Object.freeze({ ...location, kind: 'missing-slot', slot }));
         continue;
@@ -467,12 +470,13 @@ const readOwnerDeclaration = (
           binding: Object.freeze({
             ...location,
             childRoot,
-            content,
+            content: root.content,
+            ownership: root.ownership,
             slot,
           }),
           childRoot,
           key: `${id}:${slot}`,
-          programKey: contentProgramKey(content),
+          programKey: `${root.ownership}:${contentProgramKey(root.content)}`,
         })
       );
     }
@@ -564,6 +568,7 @@ const updateDeclaration = (
       grammars = persistentMapSet(grammars, programKey, {
         bindings,
         content: grammar?.content ?? binding.content,
+        ownership: grammar?.ownership ?? binding.ownership,
       });
     } else {
       grammars = persistentMapDelete(grammars, programKey);
@@ -980,6 +985,7 @@ export const getElementOwnedRootGrammarBindings = (
     [...persistentMapEntries(owners.grammars)].map(([, grammar]) => ({
       content: grammar.content,
       count: mapSize(grammar.bindings),
+      ownership: grammar.ownership,
       owner: persistentMapEntries(grammar.bindings).next().value![1],
     }))
   );

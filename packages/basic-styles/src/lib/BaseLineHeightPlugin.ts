@@ -1,28 +1,52 @@
-import { createBasePlugin, getInjectMatch } from '@platejs/core';
-import type { Element, NodeSetNodesOptions } from '@platejs/plite';
+import {
+  type InferConfig,
+  createBasePlugin,
+  getInjectMatch,
+} from '@platejs/core';
+import {
+  type Element,
+  type NodeSetNodesOptions,
+  property,
+  target,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
+const defaultTargetPluginKeys: readonly string[] = [KEYS.p];
+
 /**
- * Enables support for text alignment, useful to align your content to left,
- * right and center it.
+ * Enables configurable line spacing on targeted block elements.
  */
 export const BaseLineHeightPlugin = createBasePlugin({
   key: KEYS.lineHeight,
+  schema: ({ own, plugins, targetPluginKeys }) => ({
+    properties: [
+      own.elementProperty(
+        property.json({
+          validate: (value): value is number | string =>
+            (typeof value === 'number' && Number.isFinite(value)) ||
+            typeof value === 'string',
+          validationVersion: 1,
+        }),
+        {
+          target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
+    ],
+  }),
   inject: {
     isBlock: true,
     nodeProps: {
       defaultNodeValue: 1.5,
-      nodeKey: 'lineHeight',
     },
-    targetPlugins: [KEYS.p],
-    targetPluginToInject: ({ editor, plugin }) => ({
+    targetParserToInject: ({ type }) => ({
       parsers: {
         html: {
           deserializer: {
             parse: ({ element }) => {
               if (element.style.lineHeight) {
                 return {
-                  [editor.getType(plugin.key)]: element.style.lineHeight,
+                  [type]: element.style.lineHeight,
                 };
               }
             },
@@ -31,13 +55,14 @@ export const BaseLineHeightPlugin = createBasePlugin({
       },
     }),
   },
+  targetPluginKeys: defaultTargetPluginKeys,
 }).extendTx(({ editor, plugin, type }) => (tx) => ({
   set: (value: number, options?: NodeSetNodesOptions<Element>) => {
-    const { defaultNodeValue, nodeKey = type } = editor.getInjectProps(plugin);
+    const { defaultNodeValue } = editor.getInjectProps(plugin);
     const match = getInjectMatch(editor, plugin);
 
     if (value === defaultNodeValue) {
-      tx.nodes.unset(nodeKey, {
+      tx.nodes.unset(type, {
         match,
         ...options,
       });
@@ -45,7 +70,7 @@ export const BaseLineHeightPlugin = createBasePlugin({
     }
 
     tx.nodes.set(
-      { [nodeKey]: value },
+      { [type]: value },
       {
         match,
         ...options,
@@ -53,3 +78,5 @@ export const BaseLineHeightPlugin = createBasePlugin({
     );
   },
 }));
+
+export type LineHeightConfig = InferConfig<typeof BaseLineHeightPlugin>;

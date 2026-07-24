@@ -7,7 +7,7 @@ export const BaseFontWeightPlugin = createBasePlugin({
   schema: { mark: property.string() },
   inject: {
     nodeProps: {
-      nodeKey: 'fontWeight',
+      styleKey: 'fontWeight',
     },
   },
   parsers: {

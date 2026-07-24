@@ -6,6 +6,7 @@ import {
   property,
   schema,
   type EditorSchemaProperty,
+  type SchemaContentRootSlotsFor,
   type SchemaElementFor,
   type SchemaElementInput,
   type SchemaElementPropertiesFor,
@@ -56,6 +57,61 @@ const ArticleSchema = defineEditorSchema({
   unknown: 'reject',
   version: 1,
 });
+
+const ContentRootSchema = defineEditorSchema({
+  contentRoots: [
+    {
+      content: schema.content.type('paragraph'),
+      ownership: 'shared',
+      slot: 'preview',
+      target: target.type('image'),
+    },
+  ],
+  elements: {
+    image: {
+      contentRoots: {
+        caption: {
+          content: schema.content.type('paragraph'),
+          ownership: 'exclusive',
+        },
+      },
+      void: 'block',
+    },
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+  root: { content: schema.content.type('image') },
+  unknown: 'reject',
+});
+
+const contentRootSlot: SchemaContentRootSlotsFor<
+  typeof ContentRootSchema,
+  'image'
+> = 'caption';
+const rootedImage: SchemaElementFor<typeof ContentRootSchema, 'image'> = {
+  childRoots: { caption: 'caption:1', preview: 'preview:1' },
+  children: [{ text: '' }],
+  type: 'image',
+};
+const missingRootedImage: SchemaElementFor<typeof ContentRootSchema, 'image'> =
+  {
+    // @ts-expect-error every inferred content-root slot is required
+    childRoots: { caption: 'caption:1' },
+    children: [{ text: '' }],
+    type: 'image',
+  };
+const unknownRootedImage: SchemaElementFor<typeof ContentRootSchema, 'image'> =
+  {
+    childRoots: {
+      caption: 'caption:1',
+      // @ts-expect-error undeclared content-root slots are rejected
+      notes: 'notes:1',
+      preview: 'preview:1',
+    },
+    children: [{ text: '' }],
+    type: 'image',
+  };
 
 const dynamicTargetGroup: string = 'custom';
 const dynamicTargetType: string = 'heading';
@@ -644,6 +700,7 @@ const preservedWrongKnownProperty: SchemaValue<typeof PreserveSchema> = [
 
 void elementType;
 void builtInGroupName;
+void contentRootSlot;
 void explicitValue;
 void groupName;
 void headingProperties;
@@ -658,6 +715,7 @@ void invalidPropertyId;
 void invalidTextPrefix;
 void invalidTextPropertyValue;
 void invalidType;
+void missingRootedImage;
 void paragraphKey;
 void propertyIds;
 void preservedKnown;
@@ -666,7 +724,9 @@ void preservedWrongKnownProperty;
 void composedCallout;
 void invalidComposedCallout;
 void rootName;
+void rootedImage;
 void siblingHeading;
 void slottedHeading;
 void textKey;
+void unknownRootedImage;
 void value;

@@ -3,7 +3,7 @@
 import { BaseTablePlugin } from './BaseTablePlugin';
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
-import type { Value } from '@platejs/plite';
+import { schema, type Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
 import type {
@@ -64,6 +64,46 @@ describe('table grid queries', () => {
           plugin.configure({ type: 'root' })
         ),
         initialValue,
+      });
+
+      expect(editor.plugin(BaseTablePlugin).getOptions()._cellIndices).toEqual({
+        c11: { col: 0, row: 0 },
+        c12: { col: 1, row: 0 },
+      });
+    });
+
+    it('indexes tables in element-owned content roots', () => {
+      const RootHolderPlugin = createPlatePlugin({
+        key: 'tableRootHolder',
+        schema: {
+          element: {
+            contentRoots: {
+              body: {
+                content: schema.content.type('table', {
+                  default: { type: 'table' },
+                  min: 1,
+                }),
+                ownership: 'exclusive',
+              },
+            },
+            topLevel: true,
+            void: 'block',
+          },
+        },
+      });
+      const editor = createPlateEditor({
+        nodeId: true,
+        plugins: [...getTestTablePlugins(), RootHolderPlugin],
+        initialValue: {
+          children: [
+            {
+              childRoots: { body: 'table-root:1' },
+              children: [{ text: '' }],
+              type: 'tableRootHolder',
+            },
+          ],
+          roots: { 'table-root:1': structuredClone(value) },
+        },
       });
 
       expect(editor.plugin(BaseTablePlugin).getOptions()._cellIndices).toEqual({

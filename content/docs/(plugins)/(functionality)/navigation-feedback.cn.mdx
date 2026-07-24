@@ -36,23 +36,20 @@ description: 在 TOC、脚注、搜索或自定义跳转之后高亮落点目标
 
 ### 配置时长
 
-如果你想调整高亮时长，可以通过根插件配置这个核心插件：
+通过 `navigationFeedback` 编辑器选项调整高亮时长：
 
 ```tsx
-import { createPlateEditor, NavigationFeedbackPlugin } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
-  rootPlugin: (plugin) =>
-    plugin.configurePlugin(NavigationFeedbackPlugin, {
-      options: {
-        duration: 1200,
-      },
-    }),
+  navigationFeedback: {
+    duration: 1200,
+  },
 });
 ```
 
 - `options.duration`：默认高亮时长，单位为毫秒
-  - **默认值：** `800`
+  - **默认值：** `1600`
 
 ### 仅高亮目标
 

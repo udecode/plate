@@ -898,7 +898,7 @@ export const NodeIdPlugin = createBasePlugin({
     };
   })
   .extend({
-    transformInitialValue: ({ editor, getOptions, value }): Value => {
+    transformInitialValue: ({ editor, getOptions, value }) => {
       const options = getOptions();
       const { idKey = 'id' } = options;
       const runtimeOptions = { ...options, idKey };
@@ -910,15 +910,50 @@ export const NodeIdPlugin = createBasePlugin({
 
       // Perf: check if normalization is needed by looking at the first node and last node
       if (initialValueIds === 'if-needed') {
-        const firstNode = value[0];
-        const lastNode = value.at(-1);
+        const roots = [value.children, ...Object.values(value.roots ?? {})];
 
-        if (firstNode?.[idKey] && lastNode?.[idKey]) {
+        if (
+          roots.every(
+            (children) =>
+              children.length === 0 ||
+              (children[0]?.[idKey] && children.at(-1)?.[idKey])
+          )
+        ) {
           return value;
         }
       }
 
-      return normalizeNodeIdWithEditor(editor, value, runtimeOptions);
+      const children = normalizeNodeIdWithEditor(
+        editor,
+        value.children,
+        runtimeOptions
+      );
+      let roots = value.roots;
+
+      if (roots) {
+        const normalizedRoots = Object.fromEntries(
+          Object.entries(roots).map(([root, rootChildren]) => [
+            root,
+            normalizeNodeIdWithEditor(editor, rootChildren, runtimeOptions),
+          ])
+        );
+
+        if (
+          Object.entries(normalizedRoots).some(
+            ([root, rootChildren]) => rootChildren !== roots?.[root]
+          )
+        ) {
+          roots = normalizedRoots;
+        }
+      }
+
+      if (children === value.children && roots === value.roots) return value;
+
+      return {
+        ...value,
+        children,
+        ...(roots ? { roots } : {}),
+      };
     },
   });
 

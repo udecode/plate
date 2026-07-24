@@ -8,6 +8,7 @@ import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBl
 import { isCodeBlockEmpty } from './queries';
 import {
   CODE_LINE_TO_DECORATIONS,
+  resetCodeBlockDecorations,
   setCodeBlockToDecorations,
 } from './setCodeBlockToDecorations';
 import { insertCodeBlock } from './transforms/insertCodeBlock';
@@ -16,27 +17,11 @@ import {
   resetCodeBlock,
   selectCodeBlock,
   tabCodeBlock,
+  getCodeBlockLanguageChange,
   withCodeBlock,
 } from './withCodeBlock';
 import { withInsertDataCodeBlock } from './withInsertDataCodeBlock';
 import { withInsertFragmentCodeBlock } from './withInsertFragmentCodeBlock';
-import { withNormalizeCodeBlock } from './withNormalizeCodeBlock';
-
-export type CodeBlockConfig = PluginConfig<
-  'codeBlock',
-  {
-    /**
-     * Default language to use when no language is specified. Set to null to
-     * disable syntax highlighting by default.
-     */
-    defaultLanguage?: string | null;
-    /**
-     * Lowlight instance to use for highlighting. If not provided, syntax
-     * highlighting will be disabled.
-     */
-    lowlight?: ReturnType<typeof createLowlight> | null;
-  }
->;
 
 export const BaseCodeLinePlugin = createBasePlugin({
   key: KEYS.codeLine,
@@ -50,23 +35,21 @@ export const BaseCodeLinePlugin = createBasePlugin({
   type: NODES.codeLine,
 });
 
-export const BaseCodeSyntaxPlugin = createBasePlugin({
-  key: KEYS.codeSyntax,
-  schema: {
-    mark: property.boolean({ default: false, omitDefault: true }),
-  },
-  type: NODES.codeSyntax,
-});
-
-const codeBlockOptions: CodeBlockConfig['options'] = {
-  defaultLanguage: null,
-  lowlight: null,
-};
+export type CodeBlockConfig = PluginConfig<
+  'codeBlock',
+  {},
+  {},
+  {},
+  {},
+  {},
+  readonly [typeof BaseCodeLinePlugin]
+>;
 
 export const BaseCodeBlockPlugin = createBasePlugin({
   key: KEYS.codeBlock,
+  dependencies: [BaseCodeLinePlugin],
   inject: {
-    plugins: {
+    parsers: {
       [KEYS.html]: {
         parser: {
           query: ({ registry, state }) => {
@@ -99,9 +82,7 @@ export const BaseCodeBlockPlugin = createBasePlugin({
     };
   },
   type: NODES.codeBlock,
-  options: codeBlockOptions,
   parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
-  plugins: [BaseCodeLinePlugin, BaseCodeSyntaxPlugin],
   render: { as: 'pre' },
   rules: {
     delete: {
@@ -111,32 +92,10 @@ export const BaseCodeBlockPlugin = createBasePlugin({
       ['break.empty', 'delete.empty'].includes(rule) &&
       isCodeBlockEmpty(editor),
   },
-  decorate: ({ editor, entry: [node, path], getOptions, type }) => {
-    if (!getOptions().lowlight) return [];
-
-    const codeLineType = editor.getType(KEYS.codeLine);
-
-    // Initialize decorations for the code block, we assume code line decorate will be called next.
-    if (
-      ElementApi.isElement(node) &&
-      node.type === type &&
-      ElementApi.isElement(node.children[0]) &&
-      !CODE_LINE_TO_DECORATIONS.get(node.children[0])
-    ) {
-      setCodeBlockToDecorations(editor, [node, path]);
-    }
-
-    if (ElementApi.isElement(node) && node.type === codeLineType) {
-      return CODE_LINE_TO_DECORATIONS.get(node) || [];
-    }
-
-    return [];
-  },
 })
   .extendExtension(withCodeBlock)
   .extendExtension(withInsertDataCodeBlock)
   .extendExtension(withInsertFragmentCodeBlock)
-  .extendExtension(withNormalizeCodeBlock)
   .extendTx(({ editor }) => (tx) => ({
     insert: insertCodeBlock.bind(null, editor, tx),
     resetBlock: () => resetCodeBlock(editor, tx),
@@ -152,3 +111,84 @@ export const BaseCodeBlockPlugin = createBasePlugin({
       untab: { keys: 'shift+tab' },
     },
   });
+
+export type CodeHighlightConfig = PluginConfig<
+  'codeSyntax',
+  {
+    /**
+     * Default language to use when no language is specified. Set to null to
+     * disable syntax highlighting by default.
+     */
+    defaultLanguage?: string | null;
+    /**
+     * Lowlight instance to use for highlighting. If not provided, syntax
+     * highlighting will be disabled.
+     */
+    lowlight?: ReturnType<typeof createLowlight> | null;
+  },
+  {},
+  {},
+  {},
+  {},
+  readonly [typeof BaseCodeBlockPlugin]
+>;
+
+/** Adds Lowlight syntax highlighting to code blocks. */
+export const BaseCodeHighlightPlugin = createBasePlugin({
+  key: KEYS.codeSyntax,
+  dependencies: [BaseCodeBlockPlugin],
+  options: {
+    defaultLanguage: null as string | null,
+    lowlight: null as ReturnType<typeof createLowlight> | null,
+  },
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+  type: NODES.codeSyntax,
+  decorate: ({ editor, entry: [node, path], getOptions }) => {
+    if (!getOptions().lowlight) return [];
+
+    const codeBlockType = editor.getType(KEYS.codeBlock);
+    const codeLineType = editor.getType(KEYS.codeLine);
+
+    if (
+      ElementApi.isElement(node) &&
+      node.type === codeBlockType &&
+      ElementApi.isElement(node.children[0]) &&
+      !CODE_LINE_TO_DECORATIONS.get(node.children[0])
+    ) {
+      setCodeBlockToDecorations(editor, [node, path]);
+    }
+
+    if (ElementApi.isElement(node) && node.type === codeLineType) {
+      return CODE_LINE_TO_DECORATIONS.get(node) || [];
+    }
+
+    return [];
+  },
+}).extendExtension(({ editor, getOptions }) => ({
+  corrections: [
+    {
+      event: 'content',
+      correct({ entry }) {
+        const [node, path] = entry;
+
+        if (
+          ElementApi.isElement(node) &&
+          node.type === editor.getType(KEYS.codeBlock) &&
+          getOptions().lowlight
+        ) {
+          setCodeBlockToDecorations(editor, [node, path]);
+        }
+      },
+    },
+  ],
+  onTransactionChange(context) {
+    const codeBlock =
+      getOptions().lowlight &&
+      getCodeBlockLanguageChange(context, editor.getType(KEYS.codeBlock))
+        ?.before;
+
+    if (ElementApi.isElement(codeBlock)) resetCodeBlockDecorations(codeBlock);
+  },
+}));

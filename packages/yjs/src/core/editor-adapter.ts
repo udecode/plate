@@ -2,11 +2,14 @@ import type {
   Descendant,
   DocumentChange,
   Editor,
+  EditorDocumentValue,
   EditorEffect,
   EditorUpdatePolicy,
   Element,
+  JsonEditorValue,
   Range,
   TextSelection,
+  Value,
 } from '@platejs/plite';
 import { NodeApi, SelectionApi } from '@platejs/plite';
 import { runTrustedUpdate, toInternalRoot } from '@platejs/plite/internal';
@@ -18,11 +21,14 @@ export type YjsEditorAdapter = {
     readonly selection?: Range | null;
   }) => void;
   readonly canonicalize: (
+    root: string,
     children: readonly Descendant[]
   ) => readonly Descendant[];
-  readonly canonicalizeNode: (node: Descendant) => Descendant;
+  readonly canonicalizeDocument: (value: JsonEditorValue) => JsonEditorValue;
+  readonly canonicalizeNode: (root: string, node: Descendant) => Descendant;
   readonly importing: () => boolean;
-  readonly readChildren: () => readonly Descendant[];
+  readonly readChildren: (root: string) => readonly Descendant[];
+  readonly readValue: () => EditorDocumentValue<Value>;
 };
 
 export const YjsUpdatePolicy = Object.freeze({
@@ -82,9 +88,14 @@ export const createYjsEditorAdapter = (
 ): YjsEditorAdapter => {
   let importing = false;
 
-  const readChildren = (): readonly Descendant[] => editor.read.children();
-  const canonicalizeNode = (node: Descendant): Descendant => {
-    const children = canonicalize([node]);
+  const readValue = (): EditorDocumentValue<Value> => editor.read.value();
+  const readChildren = (root: string): readonly Descendant[] => {
+    const value = readValue();
+
+    return root === 'main' ? value.children : (value.roots?.[root] ?? []);
+  };
+  const canonicalizeNode = (root: string, node: Descendant): Descendant => {
+    const children = canonicalize(root, [node]);
 
     if (children.length !== 1 || children[0] === undefined) {
       throw new Error(
@@ -102,7 +113,10 @@ export const createYjsEditorAdapter = (
   }) => {
     const currentValue = editor.read.value();
     const nextValue = change ? change.apply(currentValue) : currentValue;
-    const editorRoot = toInternalRoot(editor.read.view.root());
+    const editorRoot =
+      selection === undefined || selection === null
+        ? toInternalRoot(editor.read.view.root())
+        : toInternalRoot(selection.anchor.root ?? selection.focus.root);
     const nextChildren =
       editorRoot === 'main'
         ? nextValue.children
@@ -139,8 +153,13 @@ export const createYjsEditorAdapter = (
   return {
     applyRemote,
     canonicalize,
+    canonicalizeDocument: (value) =>
+      editor.read.schema.fitDocument(
+        value as unknown as EditorDocumentValue<Value>
+      ),
     canonicalizeNode,
     importing: () => importing,
     readChildren,
+    readValue,
   };
 };

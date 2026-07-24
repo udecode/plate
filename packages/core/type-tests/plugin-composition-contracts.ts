@@ -1,10 +1,17 @@
-import type { PluginConfig } from '@platejs/core';
+import type { AnyPluginConfig, InferDependencies } from '@platejs/core';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { editorCommands } from '@platejs/plite';
 import {
   createPlateEditor,
   createPlatePlugin,
   toPlatePlugin,
 } from '@platejs/core/react';
+
+type PluginConfigOf<P> = P extends {
+  readonly __config: infer C extends AnyPluginConfig;
+}
+  ? C
+  : never;
 
 export const DeclarationSafeBaseExtensionPlugin = createBasePlugin({
   key: 'declarationSafeBaseExtension',
@@ -38,245 +45,187 @@ export const DeclarationSafeReactExtensionPlugin = createPlatePlugin({
   ],
 }));
 
-type ChildMode = 'edit' | 'view';
-type ChildLabel = `${ChildMode}:${1 | 2}`;
-
-type ChildConfig = PluginConfig<
-  'child',
-  {
-    level: 1 | 2;
-    mode: ChildMode;
-  },
-  {
-    getLabel: () => ChildLabel;
-    getMode: () => ChildMode;
-  },
-  {
-    child: {
-      setMode: (mode: ChildMode) => void;
-    };
-  },
-  {
-    isLevel: (level: 1 | 2) => boolean;
-    isMode: (mode: ChildMode) => boolean;
-  }
->;
-
-const ChildPlugin = createBasePlugin<ChildConfig>({
-  key: 'child',
-  options: {
-    level: 1,
-    mode: 'view',
-  },
+const RequiredLeafPlugin = createBasePlugin({
+  key: 'requiredLeaf',
 })
-  .extendSelectors(({ getOptions }) => ({
-    isLevel: (level: 1 | 2) => getOptions().level === level,
-    isMode: (mode: ChildMode) => getOptions().mode === mode,
-  }))
-  .extendEditorApi(({ getOptions }) => ({
-    getLabel: () => `${getOptions().mode}:${getOptions().level}` as ChildLabel,
-    getMode: () => getOptions().mode,
-  }))
-  .extendTx(({ setOption }) => () => ({
-    setMode: (mode) => {
-      setOption('mode', mode);
-    },
-  }));
-
-const ParentPlugin = createBasePlugin({
-  key: 'parent',
-  plugins: [ChildPlugin],
-}).configurePlugin(ChildPlugin, {
-  options: {
-    level: 2,
-  },
-});
-
-const GrandparentPlugin = createBasePlugin({
-  key: 'grandparent',
-  plugins: [ParentPlugin],
-}).configurePlugin(ChildPlugin, {
-  options: {
-    mode: 'edit',
-  },
-});
-
-const PartialChildOverridePlugin = createBasePlugin({
-  key: 'partialChildOverride',
-  plugins: [ChildPlugin],
-}).configurePlugin(ChildPlugin, {
-  api: {
-    getLabel: () => 'edit:2' as const,
-  },
-  selectors: {
-    isLevel: (level) => level === 2,
-  },
-});
-
-type FormatTone = 'formal' | 'friendly';
-
-const FormatPlugin = createBasePlugin({
-  key: 'format',
-  options: {
-    tone: 'formal' as FormatTone,
-  },
-})
-  .extendEditorApi(({ getOptions }) => ({
-    format: () => getOptions().tone,
-  }))
-  .extendTx(({ setOption }) => () => ({
-    setTone: (tone: FormatTone) => {
-      setOption('tone', tone);
-    },
-  }));
-
-const InspectorPlugin = createBasePlugin({
-  key: 'inspector',
-})
-  .extendEditorApi(() => ({
-    inspect: () => 'inspector' as const,
+  .extendApi(() => ({
+    read: () => 'required' as const,
   }))
   .extendTx(() => () => ({
-    setFriendly: () => undefined,
+    runRequiredLeaf: () => undefined,
   }));
 
-const basePlateEditor = createBaseEditor({
-  plugins: [
-    GrandparentPlugin,
-    PartialChildOverridePlugin,
-    FormatPlugin,
-    InspectorPlugin,
+const RequiredBranchPlugin = createBasePlugin({
+  dependencies: [RequiredLeafPlugin],
+  key: 'requiredBranch',
+}).extendApi(() => ({
+  read: () => 'branch' as const,
+}));
+
+export const DependencyAwareBaseExtensionPlugin = createBasePlugin({
+  dependencies: [RequiredLeafPlugin],
+  key: 'dependencyAwareBaseExtension',
+}).extendExtension(() => ({
+  commands: ({ handle }) => [
+    handle(editorCommands.insertText, ({ state }) =>
+      state.transaction((tx) => {
+        tx.requiredLeaf.runRequiredLeaf();
+      })
+    ),
   ],
-});
+}));
 
-const childLevel: 1 | 2 = basePlateEditor
-  .plugin(ChildPlugin)
-  .getOptions().level;
-const childMode: ChildMode = basePlateEditor
-  .plugin(ChildPlugin)
-  .getOptions().mode;
-const childLabel: ChildLabel = basePlateEditor.api.getLabel();
-const childModeFromPartialApi: ChildMode = basePlateEditor.api.getMode();
-const isLevelTwo: boolean = basePlateEditor
-  .plugin(ChildPlugin)
-  .getOption('isLevel', 2);
-const formatTone: FormatTone = basePlateEditor.api.format();
-const inspected: 'inspector' = basePlateEditor.api.inspect();
-
-basePlateEditor.update((tx) => {
-  tx.child.setMode('view');
-  tx.child.setMode('edit');
-  tx.format.setTone('formal');
-  tx.format.setTone('friendly');
-  tx.inspector.setFriendly();
-});
-basePlateEditor.plugin(ChildPlugin).update.setMode('view');
-
-void childLabel;
-void childLevel;
-void childMode;
-void childModeFromPartialApi;
-void formatTone;
-void inspected;
-void isLevelTwo;
-
-GrandparentPlugin.configurePlugin(ChildPlugin, {
-  options: {
-    // @ts-expect-error invalid nested configured option value
-    mode: 'preview',
-  },
-});
-
-// @ts-expect-error invalid merged selector argument
-basePlateEditor.plugin(ChildPlugin).getOption('isLevel', 3);
-
-basePlateEditor.update((tx) => {
-  // @ts-expect-error invalid nested tx argument
-  tx.child.setMode('preview');
-});
-
-// @ts-expect-error invalid merged editor api
-basePlateEditor.api.missingFormat();
-
-basePlateEditor.update((tx) => {
-  // @ts-expect-error invalid merged tx argument
-  tx.format.setTone('preview');
-});
-
-const DependencyPlugin = createBasePlugin({
-  key: 'dependency',
-})
-  .extendEditorApi(() => ({
-    dependencyValue: () => 'dependency' as const,
-  }))
-  .extendTx(() => () => ({
-    runDependency: () => undefined,
-  }));
-
-const DependentPlugin = createBasePlugin({
-  dependencies: [DependencyPlugin],
-  key: 'dependent',
+export const ParentPlugin = createBasePlugin({
+  dependencies: [RequiredBranchPlugin],
+  key: 'parent',
 }).extendTx(({ editor }) => (tx) => ({
-  runDependent: () => {
-    const dependencyValue: 'dependency' = editor.api.dependencyValue();
+  runParent: () => {
+    const branch: 'branch' = editor.api.requiredBranch.read();
+    const required: 'required' = editor.api.requiredLeaf.read();
 
-    tx.dependency.runDependency();
-    void dependencyValue;
+    tx.requiredLeaf.runRequiredLeaf();
+    void branch;
+    void required;
   },
 }));
 
-const dependencyEditor = createBaseEditor({
-  plugins: [DependentPlugin],
+type ParentConfig = PluginConfigOf<typeof ParentPlugin>;
+const exactParentDependencies: readonly [typeof RequiredBranchPlugin] =
+  ParentPlugin.dependencies;
+const parentDependenciesRoundTrip: InferDependencies<ParentConfig> =
+  exactParentDependencies;
+
+void parentDependenciesRoundTrip;
+
+const baseEditor = createBaseEditor({ plugins: [ParentPlugin] });
+
+const branchValue: 'branch' = baseEditor.api.requiredBranch.read();
+const requiredValue: 'required' = baseEditor.api.requiredLeaf.read();
+
+baseEditor.update((tx) => {
+  tx.parent.runParent();
+  tx.requiredLeaf.runRequiredLeaf();
 });
 
-const dependencyValue: 'dependency' = dependencyEditor.api.dependencyValue();
+void branchValue;
+void requiredValue;
 
-dependencyEditor.update((tx) => {
-  tx.dependency.runDependency();
-  tx.dependent.runDependent();
+const TransitiveParentPlugin = createBasePlugin({
+  dependencies: [ParentPlugin],
+  key: 'transitiveParent',
 });
-
-// @ts-expect-error dependency methods belong to the dependency portal
-dependencyEditor.plugin(DependentPlugin).update.runDependency();
-
-void dependencyValue;
-
-const ReactDependentPlugin = toPlatePlugin(DependentPlugin);
-const dependencyPlateEditor = createPlateEditor({
-  plugins: [ReactDependentPlugin],
-});
-const reactDependencyValue: 'dependency' =
-  dependencyPlateEditor.api.dependencyValue();
-
-dependencyPlateEditor.update((tx) => {
-  tx.dependency.runDependency();
-  tx.dependent.runDependent();
+const transitiveEditor = createBaseEditor({
+  plugins: [TransitiveParentPlugin],
 });
 
-void reactDependencyValue;
+transitiveEditor.api.requiredBranch.read();
+transitiveEditor.api.requiredLeaf.read();
 
-const TransitivePlugin = createBasePlugin({
-  dependencies: [DependentPlugin],
-  key: 'transitive',
-});
-const LeftPlugin = createBasePlugin({
-  dependencies: [DependencyPlugin],
-  key: 'left',
-});
-const RightPlugin = createBasePlugin({
-  dependencies: [DependencyPlugin],
-  key: 'right',
-});
-const DiamondPlugin = createBasePlugin({
-  dependencies: [LeftPlugin, RightPlugin],
-  key: 'diamond',
-});
-const compositionEditor = createPlateEditor({
-  plugins: [toPlatePlugin(TransitivePlugin), toPlatePlugin(DiamondPlugin)],
+ParentPlugin.extend({
+  // @ts-expect-error Relationship membership is fixed at plugin creation.
+  dependencies: [RequiredLeafPlugin],
 });
 
-compositionEditor.api.dependencyValue();
-compositionEditor.update((tx) => {
-  tx.dependency.runDependency();
-  tx.dependent.runDependent();
+ParentPlugin.configure({
+  // @ts-expect-error Relationship membership is fixed at plugin creation.
+  dependencies: [RequiredLeafPlugin],
 });
+
+const DisabledAtCreationPlugin = createBasePlugin({
+  enabled: false,
+  key: 'disabledAtCreation',
+})
+  .extendApi(() => ({
+    read: () => true,
+  }))
+  .withComponent(() => null);
+const disabledAtCreationEditor = createBaseEditor({
+  plugins: [DisabledAtCreationPlugin],
+});
+
+// @ts-expect-error Descriptor-preserving chains retain literal disablement.
+disabledAtCreationEditor.api.disabledAtCreation.read();
+
+const ReplacementLeafPlugin = createBasePlugin({
+  key: 'requiredLeaf',
+}).extendApi(() => ({
+  readReplacement: () => 'replacement' as const,
+}));
+const replacementEditor = createBaseEditor({
+  plugins: [ParentPlugin, ReplacementLeafPlugin],
+});
+
+const replacementValue: 'replacement' =
+  replacementEditor.api.requiredLeaf.readReplacement();
+// @ts-expect-error Whole-descriptor replacement does not leak the dependency default API.
+replacementEditor.api.requiredLeaf.read();
+
+void replacementValue;
+
+const ReactRequiredLeafPlugin = createPlatePlugin({
+  key: 'reactRequiredLeaf',
+})
+  .extendApi(() => ({
+    read: () => 'react-required' as const,
+  }))
+  .extendTx(() => () => ({
+    runReactRequiredLeaf: () => undefined,
+  }));
+export const DependencyAwareReactExtensionPlugin = createPlatePlugin({
+  dependencies: [ReactRequiredLeafPlugin],
+  key: 'dependencyAwareReactExtension',
+}).extendExtension(() => ({
+  commands: ({ handle }) => [
+    handle(editorCommands.insertText, ({ state }) =>
+      state.transaction((tx) => {
+        tx.reactRequiredLeaf.runReactRequiredLeaf();
+      })
+    ),
+  ],
+}));
+export const ReactParentPlugin = createPlatePlugin({
+  dependencies: [ReactRequiredLeafPlugin],
+  key: 'reactParent',
+});
+
+type ReactParentConfig = PluginConfigOf<typeof ReactParentPlugin>;
+const exactReactDependencies: readonly [typeof ReactRequiredLeafPlugin] =
+  ReactParentPlugin.dependencies;
+const reactDependenciesRoundTrip: InferDependencies<ReactParentConfig> =
+  exactReactDependencies;
+
+void reactDependenciesRoundTrip;
+
+const reactEditor = createPlateEditor({ plugins: [ReactParentPlugin] });
+
+reactEditor.api.reactRequiredLeaf.read();
+
+const StaticDependencyPlugin = createPlatePlugin({
+  key: 'staticDependency',
+}).extendApi(() => ({
+  read: () => true,
+}));
+const ConvertedParentPlugin = toPlatePlugin(ParentPlugin, {
+  dependencies: [StaticDependencyPlugin],
+});
+const convertedEditor = createPlateEditor({
+  plugins: [ConvertedParentPlugin],
+});
+
+convertedEditor.api.staticDependency.read();
+// @ts-expect-error Static conversion replaces the Base dependency tuple.
+convertedEditor.api.requiredBranch.read();
+
+toPlatePlugin(
+  ParentPlugin,
+  // @ts-expect-error Runtime conversion callbacks cannot change topology.
+  () => ({ dependencies: [StaticDependencyPlugin] })
+);
+
+const ConvertedDisabledPlugin = toPlatePlugin(DisabledAtCreationPlugin);
+const convertedDisabledEditor = createPlateEditor({
+  plugins: [ConvertedDisabledPlugin],
+});
+
+// @ts-expect-error Base-to-React conversion preserves literal disablement.
+convertedDisabledEditor.api.disabledAtCreation.read();

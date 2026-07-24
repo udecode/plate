@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
-import * as actualPlatejsReact from 'platejs/react';
 
 const useDraggableMock = mock();
 const parseTwitterUrlMock = mock();
@@ -30,11 +29,19 @@ mock.module('@platejs/resizable', () => ({
 }));
 
 mock.module('platejs/react', () => ({
-  ...actualPlatejsReact,
   PlateElement: ({ children }: any) => (
     <div data-testid="plate-element">{children}</div>
   ),
+  useEditor: () => ({
+    read: { selection: () => null },
+  }),
+  useEditorSelector: (selector: (editor: unknown) => unknown) =>
+    selector({
+      read: { selection: () => null },
+    }),
+  useElement: () => ({ children: [{ text: '' }], type: 'video' }),
   useEditorMounted: useEditorMountedMock,
+  useEditorReadOnly: () => false,
   withHOC: (_Provider: any, Component: any) => Component,
 }));
 
@@ -49,11 +56,6 @@ mock.module('react-player', () => ({
 mock.module('@/lib/utils', () => ({
   cn: (...values: Array<string | false | null | undefined>) =>
     values.filter(Boolean).join(' '),
-}));
-
-mock.module('./caption', () => ({
-  Caption: ({ children }: any) => <div data-testid="caption">{children}</div>,
-  CaptionTextarea: () => <div data-testid="caption-textarea" />,
 }));
 
 mock.module('./resize-handle', () => ({
@@ -71,6 +73,7 @@ describe('VideoElement', () => {
         suggestionData: () => null,
       },
     },
+    read: { selection: () => null },
   } as any;
 
   beforeEach(() => {
@@ -111,8 +114,19 @@ describe('VideoElement', () => {
     const view = render(
       <VideoElement
         attributes={{}}
-        element={{ children: [{ text: '' }], type: 'video' } as any}
+        element={
+          {
+            children: [{ text: '' }],
+            type: 'video',
+          } as any
+        }
         editor={editor}
+        path={[0]}
+        slots={
+          {
+            contentBoundary: () => <div data-testid="caption-boundary" />,
+          } as any
+        }
       >
         {null}
       </VideoElement>
@@ -143,8 +157,19 @@ describe('VideoElement', () => {
     const view = render(
       <VideoElement
         attributes={{}}
-        element={{ children: [{ text: '' }], type: 'video' } as any}
+        element={
+          {
+            children: [{ text: '' }],
+            type: 'video',
+          } as any
+        }
         editor={editor}
+        path={[0]}
+        slots={
+          {
+            contentBoundary: () => <div data-testid="caption-boundary" />,
+          } as any
+        }
       >
         {null}
       </VideoElement>
@@ -174,8 +199,19 @@ describe('VideoElement', () => {
     const view = render(
       <VideoElement
         attributes={{}}
-        element={{ children: [{ text: '' }], type: 'video' } as any}
+        element={
+          {
+            children: [{ text: '' }],
+            type: 'video',
+          } as any
+        }
         editor={editor}
+        path={[0]}
+        slots={
+          {
+            contentBoundary: () => <div data-testid="caption-boundary" />,
+          } as any
+        }
       >
         {null}
       </VideoElement>

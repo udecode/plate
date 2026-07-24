@@ -14,7 +14,7 @@ describe('markdown tables', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         type: 'table',
         children: [
@@ -74,7 +74,7 @@ describe('markdown tables', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           {
@@ -121,7 +121,7 @@ describe('markdown tables', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           {
@@ -174,7 +174,7 @@ describe('markdown tables', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           {
@@ -248,7 +248,7 @@ describe('markdown tables', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           {
@@ -325,10 +325,10 @@ describe('markdown tables', () => {
     const expected =
       '| Name           | Value |\n| -------------- | ----- |\n| Alpha<br/>Beta | Gamma |\n';
 
-    const markdown = serializeMd(editor, { value: input });
+    const markdown = serializeMd(editor, { value: { children: input } });
 
     expect(markdown).toBe(expected);
-    expect(deserializeMd(editor, markdown)).toMatchObject([
+    expect(deserializeMd(editor, markdown).children).toMatchObject([
       {
         type: 'table',
         children: [

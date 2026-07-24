@@ -1,13 +1,22 @@
 /** @jsx jsxt */
 
 import {
-  BasicBlocksPlugin,
+  BlockquotePlugin,
+  BoldPlugin,
+  CodePlugin,
   H1Plugin,
   H2Plugin,
   H3Plugin,
+  H4Plugin,
+  H5Plugin,
+  H6Plugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
-import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
 import { LineHeightPlugin } from '@platejs/basic-styles/react';
 import { DocxPlugin } from '@platejs/docx';
@@ -37,6 +46,24 @@ const targetPluginConfig = {
   ],
 };
 
+const basicNodePlugins = [
+  BlockquotePlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  H4Plugin,
+  H5Plugin,
+  H6Plugin,
+  HorizontalRulePlugin,
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
+] as const;
+
 const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   ({
     getData: (format: string) => (format === 'text/html' ? html : rtf),
@@ -61,9 +88,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         HorizontalRulePlugin as BasePluginInput,
         LinkPlugin as BasePluginInput,
         TablePlugin as BasePluginInput,
-        BasicBlocksPlugin as BasePluginInput,
-        BasicMarksPlugin as BasePluginInput,
-        TablePlugin as BasePluginInput,
+        ...basicNodePlugins,
         LineHeightPlugin.configure(targetPluginConfig) as BasePluginInput,
         TextAlignPlugin.configure(targetPluginConfig) as BasePluginInput,
         IndentPlugin.configure(targetPluginConfig) as BasePluginInput,
@@ -152,9 +177,7 @@ describe('when insertData with nested ul inside li', () => {
         HorizontalRulePlugin,
         LinkPlugin,
         TablePlugin,
-        BasicBlocksPlugin,
-        BasicMarksPlugin,
-        TablePlugin,
+        ...basicNodePlugins,
         LineHeightPlugin.configure(targetPluginConfig),
         TextAlignPlugin.configure(targetPluginConfig),
         IndentPlugin.configure(targetPluginConfig),

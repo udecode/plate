@@ -7,6 +7,7 @@ import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import { MAIN_ROOT_KEY } from '../root-key';
 import { readPliteViewSelection } from '../view-selection';
+import { getKeyboardSelectableVerticalNavigationTarget } from './caret-engine';
 import {
   getContentRootNavigationTarget,
   shouldModelOwnContentRootVerticalSelection,
@@ -298,6 +299,13 @@ export const useRuntimeKeyboardEvents = ({
           resolveVerticalGoalX(editor, verticalFocus) ??
           undefined)
         : undefined;
+      const keyboardSelectableVerticalTarget = isPhysicalVerticalMove
+        ? getKeyboardSelectableVerticalNavigationTarget({
+            editor,
+            event,
+            selection: snapshotSelection,
+          })
+        : null;
 
       if (!isPhysicalVerticalMove) {
         verticalNavigation.clearVerticalGoal();
@@ -364,6 +372,7 @@ export const useRuntimeKeyboardEvents = ({
         !event.altKey &&
         !event.ctrlKey &&
         !event.metaKey &&
+        !keyboardSelectableVerticalTarget &&
         !modelOwnsVerticalShift &&
         !modelOwnsContentRootVerticalShift &&
         !modelOwnsContentRootVerticalMove &&

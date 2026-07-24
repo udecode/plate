@@ -106,7 +106,7 @@ describe('writeStaticSelectionClipboardData', () => {
       React.createElement(PlateStatic, { editor })
     );
 
-    const block = document.querySelector('[data-plite-id="block-1"]');
+    const block = document.querySelector('[data-block-id="block-1"]');
 
     expect(block).toBeTruthy();
 

@@ -61,7 +61,6 @@ export const BaseIndentPlugin = createBasePlugin({
   inject: {
     isBlock: true,
     nodeProps: {
-      nodeKey: 'indent',
       styleKey: 'marginLeft',
       transformNodeValue: ({ getOptions, nodeValue }) => {
         const { offset = 24, unit = 'px' } = getOptions();
@@ -81,14 +80,13 @@ export const BaseIndentPlugin = createBasePlugin({
   }),
   targetPluginKeys: defaultTargetPluginKeys,
 })
-  .extendTx(({ editor, plugin }) => (tx) => {
+  .extendTx(({ editor, plugin, type }) => (tx) => {
     const set = ({
       nodes,
       offset = 1,
       setNodeProps,
       unsetNodeProps = [],
     }: IndentChangeOptions = {}) => {
-      const { nodeKey = KEYS.indent } = editor.getInjectProps(plugin);
       const { match, mode = 'lowest', ...nodeOptions } = nodes ?? {};
       const entries = tx.nodes.toArray<Element>({
         ...nodeOptions,
@@ -100,16 +98,16 @@ export const BaseIndentPlugin = createBasePlugin({
       });
 
       for (const [node, path] of entries) {
-        const currentIndent = Number(node[nodeKey] ?? 0);
+        const currentIndent = Number(node[type] ?? 0);
         const nextIndent = currentIndent + offset;
         const props = setNodeProps?.({ indent: nextIndent }) ?? {};
 
         if (nextIndent <= 0) {
-          tx.nodes.unset([nodeKey, ...unsetNodeProps], { at: path });
+          tx.nodes.unset([type, ...unsetNodeProps], { at: path });
           continue;
         }
 
-        tx.nodes.set({ [nodeKey]: nextIndent, ...props }, { at: path });
+        tx.nodes.set({ [type]: nextIndent, ...props }, { at: path });
       }
     };
 
@@ -149,7 +147,7 @@ export const BaseIndentPlugin = createBasePlugin({
 
         if (!match(element, path)) return false;
 
-        if (!element[KEYS.indent]) {
+        if (!element[type]) {
           return !isInsideBlockquote(editor, path);
         }
 
@@ -165,7 +163,7 @@ export const BaseIndentPlugin = createBasePlugin({
       untab: { keys: 'shift+tab' },
     },
   })
-  .extendExtension(({ editor, getOptions, plugin }) => ({
+  .extendExtension(({ getOptions, type }) => ({
     corrections: [
       {
         event: 'properties',
@@ -177,14 +175,13 @@ export const BaseIndentPlugin = createBasePlugin({
           }
 
           const { indentMax } = getOptions();
-          const { nodeKey = KEYS.indent } = editor.getInjectProps(plugin);
-          const indent = node[nodeKey];
+          const indent = node[type];
           if (
             typeof indentMax === 'number' &&
             typeof indent === 'number' &&
             indent > indentMax
           ) {
-            tx.nodes.set({ [nodeKey]: indentMax }, { at: path });
+            tx.nodes.set({ [type]: indentMax }, { at: path });
           }
         },
       },

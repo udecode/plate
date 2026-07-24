@@ -8,8 +8,6 @@ import type {
   PropertyJsonValue,
   PropertyNumberDescriptor,
   PropertyBooleanDescriptor,
-  PropertyPolicy,
-  PropertyPolicyInput,
   PropertySetDescriptor,
   PropertySetOptions,
   PropertyStringDescriptor,
@@ -33,7 +31,6 @@ import type {
   SchemaTextProperty,
   SchemaTextPropertyOptions,
 } from '../interfaces/schema';
-import { isPropertyPolicyToken } from '../interfaces/property-policy';
 import { cloneFrozen } from './clone';
 
 const RESERVED_PRIMARY_ROOT = 'main';
@@ -147,7 +144,6 @@ const cloneFrozenDeclaration = <TValue>(
   ) {
     return value;
   }
-  if (isPropertyPolicyToken(value)) return value;
   if (ancestors.has(value)) throw new Error(`${owner} cannot be cyclic.`);
 
   const prototype = Object.getPrototypeOf(value);
@@ -193,33 +189,53 @@ const cloneFrozenDeclaration = <TValue>(
 
 const structuralKey = (value: unknown) => JSON.stringify(value);
 
-const assertPropertyPolicy = (policy: unknown, owner: string) => {
-  if (!isPropertyPolicyToken(policy)) {
+const assertPropertyValidation = (
+  value: Readonly<{
+    validate?: unknown;
+    validationVersion?: unknown;
+  }>,
+  owner: string
+) => {
+  const hasValidate = Object.hasOwn(value, 'validate');
+  const hasVersion = Object.hasOwn(value, 'validationVersion');
+
+  if (hasValidate !== hasVersion) {
     throw new Error(
-      `${owner} must use a property policy created by definePropertyPolicy.`
+      `${owner} validate and validationVersion must be declared together.`
     );
+  }
+  if (!hasValidate) return;
+  if (typeof value.validate !== 'function') {
+    throw new Error(`${owner} validate must be a function.`);
+  }
+  if (
+    typeof value.validationVersion !== 'number' ||
+    !Number.isSafeInteger(value.validationVersion) ||
+    value.validationVersion < 1
+  ) {
+    throw new Error(`${owner} validationVersion must be a positive integer.`);
   }
 };
 
-const assertPropertyDescriptorPolicies = (
+const assertPropertyDescriptorValidations = (
   descriptor: PropertyValueDescriptor,
   owner: string
 ): void => {
-  if (descriptor.policy) assertPropertyPolicy(descriptor.policy, owner);
+  assertPropertyValidation(descriptor, owner);
   if (descriptor.kind !== 'set') return;
 
   const item = (descriptor as PropertySetDescriptor).item;
 
-  if (item) assertPropertyDescriptorPolicies(item, `${owner} item`);
+  if (item) assertPropertyDescriptorValidations(item, `${owner} item`);
 };
 
-const validatePolicy = (
-  policy: PropertyPolicyInput<unknown> | undefined,
+const validatePropertyValue = (
+  descriptor: PropertyValueDescriptor,
   value: unknown,
   owner: string
 ) => {
-  if (policy && !policy.validate(value)) {
-    throw new Error(`${owner} does not satisfy policy "${policy.id}".`);
+  if (descriptor.validate && !descriptor.validate(value)) {
+    throw new Error(`${owner} does not satisfy custom validation.`);
   }
 };
 
@@ -264,19 +280,38 @@ const cloneDescriptorValue = (
         unique.set(structuralKey(cloned), cloned);
       }
 
-      return Object.freeze(
+      const cloned = Object.freeze(
         [...unique]
           .sort(([left], [right]) => left.localeCompare(right))
           .map(([, item]) => item)
       );
+
+      validatePropertyValue(descriptor, cloned, owner);
+
+      return cloned;
     }
   }
 
   const cloned = cloneFrozenJson(value, owner);
 
-  validatePolicy(descriptor.policy, cloned, owner);
+  validatePropertyValue(descriptor, cloned, owner);
 
   return cloned;
+};
+
+const clonePropertyDescriptor = <TDescriptor extends object>(
+  descriptor: TDescriptor,
+  validate: ((value: unknown) => value is unknown) | undefined,
+  owner: string
+): TDescriptor => {
+  if (validate) {
+    Object.defineProperty(descriptor, 'validate', {
+      enumerable: false,
+      value: validate,
+    });
+  }
+
+  return cloneFrozenDeclaration(descriptor, owner);
 };
 
 const defineValue = <TValue, TKind extends Exclude<PropertyValueKind, 'set'>>(
@@ -285,12 +320,10 @@ const defineValue = <TValue, TKind extends Exclude<PropertyValueKind, 'set'>>(
 ): PropertyValueDescriptor<TValue, TKind> => {
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['default', 'omitDefault', 'policy', 'significant'],
+    ['default', 'omitDefault', 'significant', 'validate', 'validationVersion'],
     `property.${kind}`
   );
-  if (options.policy) {
-    assertPropertyPolicy(options.policy, `property.${kind}`);
-  }
+  assertPropertyValidation(options, `property.${kind}`);
 
   const hasDefault = Object.hasOwn(options, 'default');
 
@@ -303,24 +336,29 @@ const defineValue = <TValue, TKind extends Exclude<PropertyValueKind, 'set'>>(
         {
           kind,
           omitDefault: false,
+          ...(options.validate
+            ? {
+                validate: options.validate,
+                validationVersion: options.validationVersion,
+              }
+            : {}),
         },
         options.default,
         `property.${kind} default`
       ) as TValue)
     : undefined;
 
-  if (hasDefault) {
-    validatePolicy(options.policy, defaultValue, `property.${kind} default`);
-  }
-
-  return cloneFrozenDeclaration(
+  return clonePropertyDescriptor(
     {
       ...(hasDefault ? { default: defaultValue as TValue } : {}),
       kind,
       omitDefault: options.omitDefault ?? false,
-      ...(options.policy ? { policy: options.policy } : {}),
       ...(options.significant === false ? { significant: false } : {}),
+      ...(options.validate
+        ? { validationVersion: options.validationVersion }
+        : {}),
     },
+    options.validate,
     `property.${kind}`
   );
 };
@@ -329,12 +367,13 @@ const defineSet = <TItemDescriptor extends PropertyValueDescriptor>(
   item: TItemDescriptor,
   options: PropertySetOptions<PropertyValueOf<TItemDescriptor>> = {}
 ): PropertySetDescriptor<TItemDescriptor> => {
-  assertPropertyDescriptorPolicies(item, 'property.set');
+  assertPropertyDescriptorValidations(item, 'property.set');
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['default', 'omitDefault', 'significant'],
+    ['default', 'omitDefault', 'significant', 'validate', 'validationVersion'],
     'property.set'
   );
+  assertPropertyValidation(options, 'property.set');
   const hasDefault = Object.hasOwn(options, 'default');
 
   if (options.omitDefault === true && !hasDefault) {
@@ -365,49 +404,68 @@ const defineSet = <TItemDescriptor extends PropertyValueDescriptor>(
         .sort(([left], [right]) => left.localeCompare(right))
         .map(([, value]) => value)
     );
+    validatePropertyValue(
+      {
+        item,
+        kind: 'set',
+        omitDefault: false,
+        ...(options.validate
+          ? {
+              validate: options.validate,
+              validationVersion: options.validationVersion,
+            }
+          : {}),
+      } as PropertySetDescriptor<TItemDescriptor>,
+      defaultValue,
+      'property.set default'
+    );
   }
 
-  return cloneFrozenDeclaration(
+  return clonePropertyDescriptor(
     {
       ...(defaultValue ? { default: defaultValue } : {}),
       item,
       kind: 'set' as const,
       omitDefault: options.omitDefault ?? false,
       ...(options.significant === false ? { significant: false } : {}),
+      ...(options.validate
+        ? { validationVersion: options.validationVersion }
+        : {}),
     },
+    options.validate,
     'property.set'
   ) as PropertySetDescriptor<TItemDescriptor>;
 };
 
-type PropertyJsonOptionsWithoutPolicy<TValue extends PropertyJsonValue> = Omit<
-  PropertyJsonOptions<TValue>,
-  'policy'
-> &
+type PropertyJsonOptionsWithoutValidation<TValue extends PropertyJsonValue> =
   Readonly<{
-    policy?: never;
+    default?: TValue;
+    omitDefault?: boolean;
+    significant?: boolean;
+    validate?: never;
+    validationVersion?: never;
   }>;
 
-type PropertyJsonOptionsWithPolicy<TValue> = Omit<
-  PropertyJsonOptions<TValue>,
-  'default' | 'policy'
-> &
-  Readonly<{
-    default?: NoInfer<TValue>;
-    policy: PropertyPolicy<TValue>;
-  }>;
+type PropertyJsonOptionsWithValidation<TValue> = Readonly<{
+  default?: NoInfer<TValue>;
+  omitDefault?: boolean;
+  significant?: boolean;
+  validate: (value: unknown) => value is TValue;
+  validationVersion: number;
+}>;
 
 function defineJson<TValue extends PropertyJsonValue = PropertyJsonValue>(
-  options?: PropertyJsonOptionsWithoutPolicy<TValue>
+  options?: PropertyJsonOptionsWithoutValidation<TValue>
 ): PropertyJsonDescriptor<TValue>;
 function defineJson<TValue>(
-  options: PropertyJsonOptionsWithPolicy<TValue>
+  options: PropertyJsonOptionsWithValidation<TValue>
 ): PropertyJsonDescriptor<TValue>;
 function defineJson<TValue = PropertyJsonValue>(
   options: PropertyJsonOptions<TValue> = {}
 ): PropertyJsonDescriptor<TValue> {
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['default', 'omitDefault', 'policy', 'significant'],
+    ['default', 'omitDefault', 'significant', 'validate', 'validationVersion'],
     'property.json'
   );
 
@@ -798,19 +856,19 @@ export const normalizeEditorSchemaDeclaration = <
 
 /**
  * Define one complete immutable schema extension and its inferred value
- * vocabulary. Use `identity: 'derived'` for exact semantic matching without
- * application-owned persistence lineage, or `id` and `version` for named
- * History, collaboration, and migration lineage.
+ * vocabulary. Omit `id` and `version` for exact semantic matching without
+ * application-owned persistence lineage, or provide both for named History,
+ * collaboration, and migration lineage.
  */
 export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
   input: TInput &
     Record<
       Exclude<
         keyof TInput,
+        | 'contentRoots'
         | 'elements'
         | 'groups'
         | 'id'
-        | 'identity'
         | 'properties'
         | 'root'
         | 'roots'
@@ -824,10 +882,10 @@ export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
   assertOnlyKeys(
     input as Readonly<Record<string, unknown>>,
     [
+      'contentRoots',
       'elements',
       'groups',
       'id',
-      'identity',
       'properties',
       'root',
       'roots',
@@ -836,13 +894,24 @@ export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
     ],
     'Editor schema'
   );
-  if ('identity' in input) {
-    if (input.identity !== 'derived') {
-      throw new Error('Derived editor schema identity must equal "derived".');
+  let extensionName = 'schema:derived';
+  const named = Object.hasOwn(input, 'id') || Object.hasOwn(input, 'version');
+
+  if (named) {
+    const id = input.id;
+    const version = input.version;
+
+    if (typeof id !== 'string') {
+      throw new Error('Named editor schema must define a non-empty id.');
     }
-  } else {
-    assertNonEmpty(input.id, 'Editor schema id');
-    assertVersion(input.version, `Editor schema "${input.id}"`);
+    assertNonEmpty(id, 'Editor schema id');
+    if (typeof version !== 'number') {
+      throw new Error(
+        `Editor schema "${id}" version must be a positive integer.`
+      );
+    }
+    assertVersion(version, `Editor schema "${id}"`);
+    extensionName = `schema:${id}`;
   }
   if (!['preserve', 'reject'].includes(input.unknown)) {
     throw new Error('Editor schema unknown must be "preserve" or "reject".');
@@ -850,7 +919,7 @@ export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
   const definition = normalizeEditorSchemaDeclaration(input);
 
   return Object.freeze({
-    name: 'identity' in input ? 'schema:derived' : `schema:${input.id}`,
+    name: extensionName,
     schema: definition,
   }) as unknown as EditorSchemaExtension<TInput>;
 };

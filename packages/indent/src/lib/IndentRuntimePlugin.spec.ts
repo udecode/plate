@@ -40,6 +40,32 @@ describe('BaseIndentPlugin Plite runtime', () => {
     ]);
   });
 
+  it('caps the resolved schema property instead of an injected node key', () => {
+    const value: Value = [{ children: [{ text: 'One' }], depth: 4, type: 'p' }];
+
+    const editor = createPlateEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseIndentPlugin.configure({
+          inject: {
+            nodeProps: {
+              nodeKey: 'legacyIndent',
+            },
+          },
+          options: { indentMax: 2 },
+          type: 'depth',
+        }),
+      ],
+      initialValue: value,
+    });
+
+    editor.update.value.repair();
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'One' }], depth: 2, type: 'p' },
+    ]);
+  });
+
   it('rejects indent outside the configured target types', () => {
     const value: Value = [
       { children: [{ text: 'One' }], indent: 2, type: 'quote' },

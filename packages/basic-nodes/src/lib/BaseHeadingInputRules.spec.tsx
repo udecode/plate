@@ -4,7 +4,7 @@ import { createBaseEditor } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import { jsxt } from '@platejs/test-utils';
 
-import { BaseH1Plugin, BaseH2Plugin, BaseH3Plugin } from './BaseHeadingPlugin';
+import { BaseH1Plugin, BaseH2Plugin, BaseH3Plugin } from './BaseHeadingPlugins';
 import { HeadingRules } from './BasicBlockRules';
 
 jsxt;

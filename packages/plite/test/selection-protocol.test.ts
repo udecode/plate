@@ -241,6 +241,49 @@ describe('extensible selection protocol', () => {
     ]);
   });
 
+  it('keeps node selections out of the DOM range protocol', () => {
+    const point = { offset: 0, path: [1, 0] };
+    const selection = SelectionApi.node([1], {
+      anchor: point,
+      focus: point,
+    });
+    const editor = createEditor({
+      initialSelection: selection,
+      initialValue,
+    });
+
+    assert.deepEqual(editor.read.selection(), selection);
+    assert.equal(editor.read.selection.domRange(), null);
+  });
+
+  it('reads a node selection from its named root as one closed exact-owner slice', () => {
+    const point = { offset: 0, path: [0, 0], root: 'header' };
+    const selection = SelectionApi.node([0], {
+      anchor: point,
+      focus: point,
+    });
+    const header = {
+      children: [{ text: 'header' }],
+      type: 'paragraph' as const,
+    };
+    const editor = createEditor({
+      extensions: [selectionMarksSchema],
+      initialSelection: selection,
+      initialValue: {
+        children: [
+          { children: [{ text: 'main' }], type: 'paragraph' as const },
+        ],
+        roots: { header: [header] },
+      },
+    });
+
+    assert.deepEqual(editor.read.slice.get({ at: selection }), {
+      content: [header],
+      openEnd: 0,
+      openStart: 0,
+    });
+  });
+
   it('sets custom selections without collapsing them into text ranges', () => {
     const editor = createEditor({
       extensions: [cellSelectionExtension],

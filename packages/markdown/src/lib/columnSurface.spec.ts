@@ -20,7 +20,7 @@ describe('column package surfaces', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           {

@@ -1,6 +1,7 @@
 import type { Range } from '@platejs/plite';
 
 import { createBaseEditor } from '../../editor';
+import { createBasePlugin } from '../../plugin';
 import { createRuleFactory } from './createRuleFactory';
 import type { BlockStartInputRuleMatch, InsertTextInputRule } from './types';
 
@@ -42,6 +43,29 @@ const resolveInsertTextRule = <TMatch>(
 };
 
 describe('createRuleFactory', () => {
+  it('binds a plugin owner without changing rule factory behavior', () => {
+    const plugin = createBasePlugin({ key: 'blockquote' });
+    const rule = createRuleFactory(plugin)<{}, { marker: string }>({
+      type: 'blockStart',
+      marker: '>',
+      trigger: ' ',
+      match: ({ marker }) => marker,
+    })() as InsertTextInputRule<BlockStartInputRuleMatch>;
+    const range = {
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    };
+
+    expect(
+      resolveInsertTextRule(rule, {
+        blockText: '>',
+        pluginKey: plugin.key,
+        range,
+      })
+    ).toEqual({ range, text: '>' });
+  });
+
   it('passes config defaults into block-start match resolvers when no public options are provided', () => {
     const rule = createRuleFactory<{}, { marker: string }>({
       type: 'blockStart',

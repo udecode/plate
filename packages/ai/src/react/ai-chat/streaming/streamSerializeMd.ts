@@ -1,7 +1,13 @@
 import type { PlateEditor } from '@platejs/core/react';
 
 import type { MarkdownEditor, SerializeMdOptions } from '@platejs/markdown';
-import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
+import {
+  type Descendant,
+  type Element,
+  ElementApi,
+  TextApi,
+  type Value,
+} from '@platejs/plite';
 import { getPluginKey } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
@@ -17,8 +23,8 @@ const STREAM_LINE_BREAK_PLACEHOLDER = '\uE000platejs-stream-line-break\uE000';
 // fixes test: incomplete line breaks
 const trimEndHeading = (
   editor: PlateEditor,
-  value: Descendant[]
-): { trimmedText: string; value: Descendant[] } => {
+  value: Value
+): { trimmedText: string; value: Value } => {
   const headingKeys = new Set<string>([
     KEYS.h1,
     KEYS.h2,
@@ -104,17 +110,27 @@ export const streamSerializeMd = (
   chunk: string
 ) => {
   const { value: optionsValue, ...restOptions } = options;
-  const { value: trimmedValue } = trimEndHeading(
-    editor,
-    optionsValue ?? [...editor.read.children()]
-  );
-  const { hasLineBreaks, value } = escapeEmbeddedTextLineBreaks(trimmedValue);
+  const sourceValue = optionsValue ?? {
+    children: [...editor.read.children()],
+  };
+  const { value: trimmedValue } = trimEndHeading(editor, [
+    ...sourceValue.children,
+  ]);
+  const escapedValue = escapeEmbeddedTextLineBreaks(trimmedValue);
+
+  if (
+    !escapedValue.value.every((node): node is Element =>
+      ElementApi.isElement(node)
+    )
+  ) {
+    throw new Error('Markdown documents must contain block elements.');
+  }
 
   let result = '';
 
   result = editor.api.markdown.serialize({
-    value,
     ...restOptions,
+    value: { ...sourceValue, children: escapedValue.value },
   });
 
   const trimmedChunk = getChunkTrimmed(chunk);
@@ -132,7 +148,7 @@ export const streamSerializeMd = (
   result = result.replace(/&#x200B;/g, ' ');
   result = result.replace(/\u200B/g, '');
 
-  if (hasLineBreaks) {
+  if (escapedValue.hasLineBreaks) {
     result = result.replaceAll(STREAM_LINE_BREAK_PLACEHOLDER, '\n');
   }
 

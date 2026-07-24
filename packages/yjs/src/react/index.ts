@@ -152,7 +152,7 @@ const resolveCursorRect = (
 };
 
 const pointsEqual = (a: Range['anchor'], b: Range['anchor']): boolean =>
-  a.offset === b.offset && pathsEqual(a.path, b.path);
+  a.offset === b.offset && a.root === b.root && pathsEqual(a.path, b.path);
 
 const rangesEqual = (a: Range, b: Range): boolean =>
   pointsEqual(a.anchor, b.anchor) && pointsEqual(a.focus, b.focus);

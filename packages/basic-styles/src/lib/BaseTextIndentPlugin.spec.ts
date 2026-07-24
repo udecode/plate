@@ -103,4 +103,33 @@ describe('BaseTextIndentPlugin', () => {
     editor.update.textIndent.unset({ at: [0] });
     expect(editor.read.children()[0]).not.toHaveProperty(nodeKey);
   });
+
+  it('uses the resolved plugin type as its sole storage key', () => {
+    const TextIndentPlugin = BaseTextIndentPlugin.configure({
+      inject: {
+        nodeProps: {
+          nodeKey: 'legacyTextIndent',
+        },
+      },
+      type: 'firstLineIndent',
+    });
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, TextIndentPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          type: 'p',
+        },
+      ],
+    });
+
+    editor.update.textIndent.set(2, { at: [0] });
+
+    expect(editor.read.children()[0]).toMatchObject({ firstLineIndent: 2 });
+    expect(editor.read.children()[0]).not.toHaveProperty('legacyTextIndent');
+
+    editor.update.textIndent.unset({ at: [0] });
+
+    expect(editor.read.children()[0]).not.toHaveProperty('firstLineIndent');
+  });
 });

@@ -308,7 +308,7 @@ describe('@platejs/yjs canonical change collaboration contract', () => {
     assertPeerTexts(peers, ['alpha!', 'beta', 'gamma']);
   });
 
-  it('keeps non-main root edits out of the collaborative Yjs document', () => {
+  it('publishes non-main root edits through the document controller', () => {
     const peer = createPeer('b');
 
     clearYjsTrace(peer);
@@ -318,6 +318,10 @@ describe('@platejs/yjs canonical change collaboration contract', () => {
     assert.deepEqual(peer.editor.read.root('header'), [paragraph('updated')]);
     assert.deepEqual(readPeerPliteValue(peer), initialValue());
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha', 'beta', 'gamma']);
-    assert.deepEqual(getYjsTrace(peer), []);
+    assert.equal(peer.doc.getMap('@platejs/plite:roots').has('header'), true);
+    assert.equal(
+      getYjsTrace(peer).every((entry) => entry.root === 'header'),
+      true
+    );
   });
 });

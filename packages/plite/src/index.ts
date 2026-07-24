@@ -48,7 +48,6 @@ export {
   schema,
   target,
 } from './core/schema-definition';
-export { definePropertyPolicy } from './interfaces/property-policy';
 export { EditorSchemaValidationError } from './core/schema-validation';
 export { defineFacet } from './core/facet';
 export { setEditorReadOnly } from './core/public-state';
@@ -68,7 +67,11 @@ export {
 } from './core/transaction-values';
 export { txOnly } from './core/tx-only';
 export type { TxOnlyMethod } from './core/tx-only';
-export { createEditor } from './create-editor';
+export {
+  createEditor,
+  type EditorExtensionsFromOptions,
+  type EditorValueFromOptions,
+} from './create-editor';
 export { createEditorRuntime, createEditorView } from './editor-runtime-view';
 export {
   above,

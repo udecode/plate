@@ -56,6 +56,11 @@ describe('pluginRenderElementStatic', () => {
           id: 'block-1',
           type: 'p',
         },
+        slots: {
+          children: () => null,
+          contentBoundary: ({ children }) => children,
+          contentRoot: () => null,
+        },
       } satisfies RenderElementProps)
     );
 

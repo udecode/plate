@@ -1,9 +1,33 @@
 import { createTestEditor } from './__tests__/createTestEditor';
-import { deserializeMd } from './deserializer';
-import { serializeMd } from './serializer';
 
 describe('media package surfaces', () => {
   const createMediaEditor = () => createTestEditor();
+
+  it('round-trips rich MDX media children directly', () => {
+    const editor = createMediaEditor();
+    const input = `<video src="https://example.com/video.mp4">
+Rich **caption**.
+</video>`;
+    const document = editor.api.markdown.deserialize(input);
+    const media = document.children[0];
+
+    expect(media).toMatchObject({
+      children: [
+        { text: 'Rich ' },
+        { bold: true, text: 'caption' },
+        { text: '.' },
+      ],
+      type: 'video',
+      url: 'https://example.com/video.mp4',
+    });
+    expect(document).not.toHaveProperty('roots');
+    expect(editor.api.markdown.serialize({ value: document })).toBe(
+      `<video src="https://example.com/video.mp4">
+  Rich **caption**.
+</video>
+`
+    );
+  });
 
   it.each([
     {
@@ -69,13 +93,11 @@ describe('media package surfaces', () => {
   ])('$title', ({ expected, input, output }) => {
     const editor = createMediaEditor();
 
-    const value = deserializeMd(editor, input);
+    const document = editor.api.markdown.deserialize(input);
+    const value = document.children;
 
     expect(value).toMatchObject(output);
-
-    const markdown = serializeMd(editor, { value });
-
-    expect(markdown).toBe(expected);
-    expect(deserializeMd(editor, markdown)).toMatchObject(value);
+    expect(document).not.toHaveProperty('roots');
+    expect(editor.api.markdown.serialize({ value: document })).toBe(expected);
   });
 });

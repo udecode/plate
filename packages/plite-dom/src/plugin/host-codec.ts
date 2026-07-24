@@ -5,6 +5,7 @@ import type {
   EditorCoreStateView,
   EditorMarks,
   Element,
+  SchemaProperty,
   Value,
 } from '@platejs/plite';
 import {
@@ -22,6 +23,7 @@ import {
   getActiveEditorTransaction,
   getCompiledEditorSchema,
   getCompiledEditorSchemaFromApi,
+  getCompiledSchemaPropertyId,
   getEditorStateView,
   getExtensionRegistry,
   type CompiledEditorSchema,
@@ -90,7 +92,7 @@ export type HostCodecSerializeContext<V extends Value = Value> = Readonly<{
 /** Stable schema ownership claimed by one codec direction and MIME format. */
 export type HostCodecSchemaTarget =
   | Readonly<{ kind: 'element'; type: string }>
-  | Readonly<{ id: string; kind: 'property' }>
+  | SchemaProperty
   | Readonly<{ kind: 'schema' }>;
 
 export type HostCodec<V extends Value = Value> = Readonly<{
@@ -103,7 +105,7 @@ export type HostCodec<V extends Value = Value> = Readonly<{
   /** Return false to skip parsing this payload without reporting an error. */
   query?: (context: HostCodecParseContext<V>) => boolean;
   /** Schema resources owned by this codec and checked atomically. */
-  schema?: readonly HostCodecSchemaTarget[];
+  owns?: readonly HostCodecSchemaTarget[];
   /** Encode the supplied slice, or return null to delegate this format. */
   serialize?: (context: HostCodecSerializeContext<V>) => string | null;
 }>;
@@ -120,9 +122,11 @@ export const defineHostCodec = <V extends Value = Value>(
     );
   }
 
-  const schema = codec.schema?.map((target) => {
-    if (target.kind === 'schema') return Object.freeze({ kind: 'schema' });
-    if (target.kind === 'element') {
+  const owns = codec.owns?.map((target) => {
+    if ('kind' in target && target.kind === 'schema') {
+      return Object.freeze({ kind: 'schema' });
+    }
+    if ('kind' in target && target.kind === 'element') {
       if (!target.type) {
         throw new Error(
           `Host codec "${codec.key}" element type cannot be empty.`
@@ -131,24 +135,21 @@ export const defineHostCodec = <V extends Value = Value>(
 
       return Object.freeze({ kind: 'element', type: target.type });
     }
-    if (target.kind !== 'property') {
+    if (
+      !('placement' in target) ||
+      (target.placement !== 'element' && target.placement !== 'text')
+    ) {
       throw new Error(
-        `Host codec "${codec.key}" has an invalid schema target.`
+        `Host codec "${codec.key}" has an invalid ownership target.`
       );
     }
-    if (!target.id) {
-      throw new Error(`Host codec "${codec.key}" property id cannot be empty.`);
-    }
 
-    return Object.freeze({
-      id: target.id,
-      kind: 'property',
-    });
+    return Object.freeze({ ...target });
   });
 
   const defined: HostCodec<V> = {
     ...codec,
-    ...(schema ? { schema: Object.freeze(schema) } : {}),
+    ...(owns ? { owns: Object.freeze(owns) } : {}),
   };
 
   return Object.freeze(defined);
@@ -352,7 +353,7 @@ const withDefaultHostCodec = <V extends Value>(
 
 type HostCodecDirection = 'parse' | 'serialize';
 
-type ConcreteHostCodecSchemaTarget =
+type ConcreteHostCodecOwnershipTarget =
   | Readonly<{ kind: 'element'; type: string }>
   | Readonly<{
       id: string;
@@ -375,7 +376,7 @@ const assertHostCodecTargetAvailable = <V extends Value>(
   claims: Map<string, HostCodecTargetClaims<V>>,
   registration: HostCodecRegistration<V>,
   direction: HostCodecDirection,
-  target: ConcreteHostCodecSchemaTarget
+  target: ConcreteHostCodecOwnershipTarget
 ) => {
   const { codec } = registration;
   const key = `${direction}:${codec.format}:${target.type}`;
@@ -421,21 +422,21 @@ const propertyTypes = (
     .map(([type]) => type);
 };
 
-const compileHostCodecSchemaTargets = <V extends Value>(
+const compileHostCodecOwnershipTargets = <V extends Value>(
   registration: HostCodecRegistration<V>,
   schema: CompiledEditorSchema | null
-): readonly ConcreteHostCodecSchemaTarget[] => {
+): readonly ConcreteHostCodecOwnershipTarget[] => {
   const { codec } = registration;
 
-  if (!codec.schema?.length) return Object.freeze([]);
+  if (!codec.owns?.length) return Object.freeze([]);
   if (!schema) {
     throw new Error(
-      `Host codec "${registrationName(registration)}" declares schema targets without a compiled editor schema.`
+      `Host codec "${registrationName(registration)}" declares ownership targets without a compiled editor schema.`
     );
   }
 
-  const targets = new Map<string, ConcreteHostCodecSchemaTarget>();
-  const add = (target: ConcreteHostCodecSchemaTarget) => {
+  const targets = new Map<string, ConcreteHostCodecOwnershipTarget>();
+  const add = (target: ConcreteHostCodecOwnershipTarget) => {
     const key =
       target.kind === 'element'
         ? `element:${target.type}`
@@ -454,8 +455,8 @@ const compileHostCodecSchemaTargets = <V extends Value>(
     }
   };
 
-  for (const target of codec.schema) {
-    if (target.kind === 'schema') {
+  for (const target of codec.owns) {
+    if ('kind' in target && target.kind === 'schema') {
       for (const type of schema.elements.byType.keys()) {
         add({ kind: 'element', type });
       }
@@ -464,21 +465,22 @@ const compileHostCodecSchemaTargets = <V extends Value>(
       }
       continue;
     }
-    if (target.kind === 'element') {
+    if ('kind' in target && target.kind === 'element') {
       if (!schema.elements.byType.has(target.type)) {
         throw new Error(
-          `Host codec "${registrationName(registration)}" targets unknown schema element "${target.type}".`
+          `Host codec "${registrationName(registration)}" owns unknown schema element "${target.type}".`
         );
       }
       add(target);
       continue;
     }
 
-    const property = schema.properties.byId.get(target.id);
+    const propertyId = getCompiledSchemaPropertyId(target);
+    const property = schema.properties.byId.get(propertyId);
 
     if (!property) {
       throw new Error(
-        `Host codec "${registrationName(registration)}" targets unknown schema property "${target.id}".`
+        `Host codec "${registrationName(registration)}" owns schema property "${propertyId}" that is not installed.`
       );
     }
     addProperty(property);
@@ -505,7 +507,10 @@ const compileHostCodecs = <V extends Value>(
     }
     byKey.set(codec.key, registration);
 
-    for (const target of compileHostCodecSchemaTargets(registration, schema)) {
+    for (const target of compileHostCodecOwnershipTargets(
+      registration,
+      schema
+    )) {
       if (codec.parse) {
         assertHostCodecTargetAvailable(claims, registration, 'parse', target);
       }

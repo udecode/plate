@@ -1,5 +1,6 @@
 import { act, render } from '@testing-library/react';
 import { useEffect } from 'react';
+import { SelectionApi } from '@platejs/plite';
 import { hasPath as editorHasPath } from '@platejs/plite/internal';
 import {
   createReactEditor,
@@ -13,6 +14,7 @@ import {
 let editor: ReactEditor;
 let latestSelectedById: Record<string, boolean | undefined>;
 let latestCollapsedSelectedById: Record<string, boolean | undefined>;
+let latestNodeSelectedById: Record<string, boolean | undefined>;
 
 const initialValue = () => [
   {
@@ -34,6 +36,7 @@ describe('useElementSelected', () => {
 
       latestSelectedById = {};
       latestCollapsedSelectedById = {};
+      latestNodeSelectedById = {};
 
       const renderElement = ({
         element,
@@ -44,10 +47,13 @@ describe('useElementSelected', () => {
         const selected = useElementSelected();
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const collapsedSelected = useElementSelected({ mode: 'collapsed' });
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const nodeSelected = useElementSelected({ mode: 'node' });
         const { id } = element as any;
 
         latestSelectedById[id] = selected;
         latestCollapsedSelectedById[id] = collapsedSelected;
+        latestNodeSelectedById[id] = nodeSelected;
 
         return <div {...attributes}>{children}</div>;
       };
@@ -69,6 +75,14 @@ describe('useElementSelected', () => {
         '2': false,
       });
       expect(latestCollapsedSelectedById).toEqual({
+        '0': false,
+        '0.0': false,
+        '0.1': false,
+        '0.2': false,
+        '1': false,
+        '2': false,
+      });
+      expect(latestNodeSelectedById).toEqual({
         '0': false,
         '0.0': false,
         '0.1': false,
@@ -165,6 +179,35 @@ describe('useElementSelected', () => {
 
       expect(latestSelectedById['2']).toBe(true);
       expect(latestCollapsedSelectedById['2']).toBe(true);
+    });
+
+    it('matches only the exact NodeSelection path in node mode', async () => {
+      await act(async () => {
+        editor.update((tx) => {
+          tx.selection.set({ path: [2, 0], offset: 0 });
+        });
+      });
+
+      expect(latestSelectedById['2']).toBe(true);
+      expect(latestNodeSelectedById['2']).toBe(false);
+
+      await act(async () => {
+        editor.update((tx) => {
+          const start = tx.points.start([0, 1]);
+
+          expect(start).toBeTruthy();
+          tx.selection.set(
+            SelectionApi.node([0, 1], {
+              anchor: start!,
+              focus: start!,
+            })
+          );
+        });
+      });
+
+      expect(latestNodeSelectedById['0']).toBe(false);
+      expect(latestNodeSelectedById['0.1']).toBe(true);
+      expect(latestNodeSelectedById['0.2']).toBe(false);
     });
   };
 

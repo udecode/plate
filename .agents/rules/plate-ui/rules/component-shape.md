@@ -65,15 +65,34 @@ That drops required renderer props from the passthrough object.
 Prefer the repo’s direct patterns:
 
 ```tsx
-const api = editor.plugin(CommentPlugin).api;
-const update = editor.plugin(CommentPlugin).update;
+// Host-owned app code outside copied registry UI.
+const api = editor.api.comment;
+const update = editor.update.comment;
 ```
 
-Or:
+Copied registry UI and other generic code that owns or requires an exact
+descriptor use its portal:
 
 ```tsx
 const { api, editor } = useEditorPlugin(CommentPlugin);
 ```
+
+If the generic component accepts a legitimately optional descriptor, keep the
+portal and test availability before touching its API, updates, options, or
+installed descriptor:
+
+```tsx
+const comment = editor.plugin(CommentPlugin);
+
+if (comment.installed) {
+  comment.api.open();
+}
+```
+
+Registry UI remains generic even when its current host has a complete inferred
+kit. Do not import an app-specific editor type there, cast a root `editor.api`
+namespace, infer availability from node/schema internals, or catch a
+missing-portal error.
 
 Do **not** invent local wrappers like:
 

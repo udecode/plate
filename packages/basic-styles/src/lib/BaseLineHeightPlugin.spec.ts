@@ -16,7 +16,7 @@ describe('BaseLineHeightPlugin', () => {
 
     expect(plugin.inject.isBlock).toBe(true);
     expect(plugin.targetPluginKeys).toEqual([KEYS.p]);
-    expect(plugin.inject.nodeProps).toMatchObject({
+    expect(editor.getInjectProps(BaseLineHeightPlugin)).toMatchObject({
       defaultNodeValue: 1.5,
       nodeKey: 'lineHeight',
     });
@@ -53,6 +53,24 @@ describe('BaseLineHeightPlugin', () => {
         type: KEYS.p,
       })
     ).toBeNull();
+  });
+
+  it('rejects non-number and non-string line heights', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
+    });
+
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            children: [{ text: 'One' }],
+            lineHeight: true,
+            type: KEYS.p,
+          },
+        ],
+      })
+    ).toThrow(/element property "lineHeight" fails custom property validation/);
   });
 
   it('parses line-height styles through the injected target plugin deserializer', () => {
@@ -94,5 +112,51 @@ describe('BaseLineHeightPlugin', () => {
 
     editor.update.lineHeight.set(1.5);
     expect(editor.read.children()[0]).not.toHaveProperty('lineHeight');
+  });
+
+  it('uses the resolved plugin type as its sole storage key', () => {
+    const LineHeightPlugin = BaseLineHeightPlugin.configure({
+      inject: {
+        nodeProps: {
+          nodeKey: 'legacyLineHeight',
+        },
+      },
+      type: 'leading',
+    });
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, LineHeightPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          type: 'p',
+        },
+      ],
+    });
+
+    expect(
+      editor.plugin(HtmlPlugin).api.deserialize({
+        element: '<p style="line-height: 2">text</p>',
+      })
+    ).toMatchObject([
+      {
+        children: [{ text: 'text' }],
+        leading: '2',
+        type: KEYS.p,
+      },
+    ]);
+
+    editor.update.lineHeight.set(2);
+
+    expect(editor.read.children()[0]).toMatchObject({ leading: 2 });
+    expect(editor.read.children()[0]).not.toHaveProperty('legacyLineHeight');
+
+    editor.update.lineHeight.set(1.5);
+
+    expect(editor.read.children()[0]).not.toHaveProperty('leading');
   });
 });

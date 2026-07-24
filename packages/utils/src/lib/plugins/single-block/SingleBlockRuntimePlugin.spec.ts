@@ -1,7 +1,9 @@
 import { createPlateEditor } from '@platejs/core/react';
+import { getPlateRuntime } from '@platejs/core/internal';
 
 import { SingleBlockPlugin } from './SingleBlockPlugin';
 import { SingleLinePlugin } from './SingleLinePlugin';
+import { TrailingBlockPlugin } from '../trailing-block/TrailingBlockPlugin';
 
 describe('single-block runtime plugins', () => {
   it('routes single-block merging and hard breaks through the Plite runtime', () => {
@@ -58,5 +60,22 @@ describe('single-block runtime plugins', () => {
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'firstsecondthird' }], type: 'p' },
     ]);
+  });
+
+  it.each([
+    [SingleBlockPlugin, 'singleBlock'],
+    [SingleLinePlugin, 'singleLine'],
+  ] as const)('%s weakly disables an installed trailing block in either array order', (plugin, key) => {
+    for (const plugins of [
+      [plugin, TrailingBlockPlugin],
+      [TrailingBlockPlugin, plugin],
+    ]) {
+      const editor = createPlateEditor({ plugins });
+
+      expect(getPlateRuntime(editor).plugins[key]).toBeDefined();
+      expect(
+        getPlateRuntime(editor).plugins[TrailingBlockPlugin.key]
+      ).toBeUndefined();
+    }
   });
 });

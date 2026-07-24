@@ -4,7 +4,7 @@ description: 将Plate内容转换为HTML及反向转换。
 toc: true
 ---
 
-使用 `renderStaticHtml` 把配置好的静态 Plate React tree 渲染为 HTML。使用 `editor.plugin(HtmlPlugin).api.deserialize(...)` 把 HTML 解析为 Plate content。这两个方向由不同的 API 负责。
+使用 `renderStaticHtml` 把配置好的静态 Plate React tree 渲染为 HTML。使用 `editor.api.html.deserialize(...)` 把 HTML 解析为 Plate content。这两个方向由不同的 API 负责。
 
 <ComponentPreview name="html-demo" />
 
@@ -66,8 +66,8 @@ const html = await renderStaticHtml(editor);
 ```tsx title="lib/generate-html.ts"
 import { createBaseEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static'; // 静态导入
-// 导入基础插件（不从/react路径导入）
-import { BaseHeadingPlugin } from '@platejs/basic-nodes';
+// 导入服务端安全的 registry kit（不从 /react 包路径导入）
+import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
 // 导入用于渲染的静态组件
 import { ParagraphElementStatic } from '@/components/ui/paragraph-node-static';
 import { HeadingElementStatic } from '@/components/ui/heading-node-static';
@@ -84,7 +84,7 @@ const components = {
 // 创建带组件的服务端编辑器实例
 const editor = createBaseEditor({
   plugins: [
-    BaseHeadingPlugin,   // 标题基础插件
+    ...BaseBasicBlocksKit, // 段落、标题、引用和分隔线基础插件
     // ... 添加与内容相关的所有其他基础插件
   ],
   components,
@@ -178,13 +178,13 @@ HTML反序列化器允许将HTML内容（字符串或DOM元素）转换回Plate�
 import { HtmlPlugin } from 'platejs';
 import { usePlateEditor } from 'platejs/react';
 // 导入表示HTML内容所需的所有Plate插件
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
 // ... 以及粗体、斜体、表格、列表等的插件
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   const editor = usePlateEditor({
     plugins: [
-      HeadingPlugin,     // 用于<h1>, <h2>等
+      ...BasicBlocksKit, // 用于段落、标题、引用和分隔线
       // ... 包含与预期解析的HTML对应的所有插件
     ],
   });
@@ -204,7 +204,7 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 ```
 
 <Callout type="warning" title="客户端操作">
-  使用 `editor.plugin(HtmlPlugin).api.deserialize` 的HTML反序列化通常是客户端操作，因为它使用已编译的 Plate plugin model。
+  使用 `editor.api.html.deserialize` 的HTML反序列化通常是客户端操作，因为它使用已编译的 Plate plugin model。
 </Callout>
 
 ### 插件反序列化规则概览
@@ -222,7 +222,7 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 | `<code>` (不在`<pre>`中), `font-family: Consolas`         | [`CodePlugin`](/docs/code)            | 转换为`code: true`标记（内联代码）。                             |
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | 转换为`kbd: true`标记。                                            |
 | `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-blocks)       | 转换为段落元素。                                           |
-| `<h1>` - `<h6>`                                            | [`HeadingPlugin`](/docs/heading)         | 转换为对应的标题元素（`h1` - `h6`）。                |
+| `<h1>` - `<h6>`                                            | [`H1Plugin`–`H6Plugin`](/docs/heading)    | 转换为对应的标题元素（`h1` - `h6`）。                |
 | `<ul>`                                                     | [`ListPlugin` (经典)](/docs/list-classic)            | 转换为无序列表（`ul`类型）。项目变为`li`。               |
 | `<ol>`                                                     | [`ListPlugin` (经典)](/docs/list-classic)            | 转换为有序列表（`ol`类型）。项目变为`li`。                 |
 | `<li>` (在`<ul>`或`<ol>`中)                           | [`ListPlugin` (经典)](/docs/list-classic)            | 转换为列表项（`li`类型），带有`lic`（列表项内容）子项。 |
@@ -385,7 +385,7 @@ export const ListPluginConfig = {
 
 ---
 
-### `editor.plugin(HtmlPlugin).api.deserialize(options)`
+### `editor.api.html.deserialize(options)`
 
 将 HTML 字符串或 `HTMLElement` 解析为 Plate `Value`（`Descendant` 节点数组）。这通常在客户端与完全配置的 Plate 编辑器一起使用。
 

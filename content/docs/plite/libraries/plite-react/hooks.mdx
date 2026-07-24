@@ -36,7 +36,7 @@ every rendered node in a large document.
 
 Get whether the current editor is read-only.
 
-#### `useEditorSelection(): Range | null`
+#### `useEditorSelection(): Selection`
 
 Get the current editor selection. This hook re-renders when the selection
 changes, so keep it out of large rendered node trees.
@@ -284,16 +284,17 @@ not mounted.
 #### `useElementSelected(options?: UseElementSelectedOptions): boolean`
 
 Subscribe to whether the current element, or an explicit element path,
-intersects the current selection. Use `{ mode: 'collapsed' }` when selected UI
-should only appear for a collapsed caret inside the element, such as a block
-void image ring. Pass `{ at: path }` when the component needs to watch an
-explicit element path. Use this only when the component actually draws selected
-UI.
+matches the current selection. The default `intersects` mode includes text
+selection inside the element. Use `{ mode: 'collapsed' }` for a collapsed
+selection and `{ mode: 'node' }` only when the selection is a `NodeSelection`
+whose path exactly matches the element. Node-focused asset rings and toolbars
+should use `node`; caption or descendant editing UI should use `intersects`.
+Pass `{ at: path }` to watch an explicit path.
 
 ```ts
 type UseElementSelectedOptions = {
   at?: Path | null;
-  mode?: "intersects" | "collapsed";
+  mode?: "intersects" | "collapsed" | "node";
 };
 ```
 

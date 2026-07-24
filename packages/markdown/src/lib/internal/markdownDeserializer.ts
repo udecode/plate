@@ -3,9 +3,9 @@ import { type Plugin, unified } from 'unified';
 
 import {
   type Descendant,
+  type EditorDocumentValue,
   type Element,
   ElementApi,
-  type Value,
   TextApi,
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
@@ -56,7 +56,7 @@ export const deserializeMdWithRuntime = (
   runtime: MarkdownRuntime,
   data: string,
   options?: DeserializeMdOptions
-): Value => {
+): EditorDocumentValue => {
   let output: Descendant[] | null = null;
 
   try {
@@ -69,16 +69,18 @@ export const deserializeMdWithRuntime = (
     }
   }
 
-  if (!output) return [];
+  if (!output) return { children: [] };
 
-  return output.map((item) =>
-    TextApi.isText(item)
-      ? ({
-          children: [item],
-          type: runtime.registry.getType(KEYS.p),
-        } as Element)
-      : item
-  );
+  return {
+    children: output.map((item) =>
+      TextApi.isText(item)
+        ? ({
+            children: [item],
+            type: runtime.registry.getType(KEYS.p),
+          } as Element)
+        : item
+    ),
+  };
 };
 
 export const deserializeInlineMdWithRuntime = (

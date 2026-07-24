@@ -5,6 +5,7 @@ import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
 import { DEFAULT_EMOJI_LIBRARY } from './constants';
+import { EmojiInputPlugin, EmojiPlugin } from '../react/EmojiPlugin';
 
 describe('BaseEmojiPlugin', () => {
   const fireEmoji: Emoji = {
@@ -33,6 +34,22 @@ describe('BaseEmojiPlugin', () => {
     expect(editor.read.schema.property(value)?.value.kind).toBe('string');
   });
 
+  it('declares the input as an exact required Base and React dependency', () => {
+    expect(BaseEmojiPlugin.dependencies).toEqual([BaseEmojiInputPlugin]);
+    expect(EmojiPlugin.dependencies).toEqual([EmojiInputPlugin]);
+  });
+
+  it('rejects a disabled required emoji-input dependency', () => {
+    expect(() =>
+      createBaseEditor({
+        plugins: [
+          BaseEmojiPlugin,
+          BaseEmojiInputPlugin.configure({ enabled: false }),
+        ],
+      })
+    ).toThrow(/emoji.*disabled.*emojiInput|emojiInput.*disabled.*emoji/i);
+  });
+
   it('ships the default trigger, library, and node builders', () => {
     const editor = createBaseEditor({
       plugins: [BaseEmojiPlugin],
@@ -53,7 +70,7 @@ describe('BaseEmojiPlugin', () => {
     }
 
     expect(plugin.editOnly).toBe(true);
-    expect(plugin.options.data).toBe(DEFAULT_EMOJI_LIBRARY);
+    expect(plugin.options.data).toEqual(DEFAULT_EMOJI_LIBRARY);
     expect(plugin.options.trigger).toBe(':');
     expect(triggerPreviousCharPattern.test('')).toBe(true);
     expect(triggerPreviousCharPattern.test(' ')).toBe(true);
@@ -67,15 +84,11 @@ describe('BaseEmojiPlugin', () => {
     });
   });
 
-  it('includes the nested emoji input plugin', () => {
+  it('installs the required emoji input plugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseEmojiPlugin],
     });
 
-    const plugin = editor.getPlugin(BaseEmojiPlugin);
-
-    expect(plugin.plugins.some((child) => child.key === KEYS.emojiInput)).toBe(
-      true
-    );
+    expect(editor.getPlugin(BaseEmojiInputPlugin).key).toBe(KEYS.emojiInput);
   });
 });

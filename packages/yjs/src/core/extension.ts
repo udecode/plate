@@ -6,7 +6,7 @@ import {
 } from '@platejs/plite';
 import {
   getCompiledEditorSchemaFromApi,
-  toInternalRoot,
+  getEditorRuntimeOwner,
 } from '@platejs/plite/internal';
 
 import { YjsController } from './controller';
@@ -95,11 +95,12 @@ export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
   const activationErrors = new WeakMap<Editor, unknown>();
   const controllers = new WeakMap<Editor, YjsController>();
   const getController = (editor: Editor) => {
-    const controller = controllers.get(editor);
+    const owner = getEditorRuntimeOwner(editor);
+    const controller = controllers.get(owner);
 
     if (controller) return controller;
 
-    const activationError = activationErrors.get(editor);
+    const activationError = activationErrors.get(owner);
 
     if (activationError !== undefined) throw activationError;
 
@@ -108,55 +109,57 @@ export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
 
   return defineEditorExtension({
     activate(editor, context) {
-      const root = toInternalRoot(context.root);
-      const previousActiveController = activeControllers.get(editor);
-      const previousLocalController = controllers.get(editor);
+      const owner = getEditorRuntimeOwner(editor);
+      const previousActiveController = activeControllers.get(owner);
+      const previousLocalController = controllers.get(owner);
       const compiledSchema = getCompiledEditorSchemaFromApi(context.schema);
-      const rootContent =
-        root === 'main'
-          ? compiledSchema?.primaryRoot.content
-          : compiledSchema?.roots.get(root)?.content;
-      const emptyYjsValue: readonly Descendant[] = (() => {
+      const emptyValueFor = (root: string): readonly Descendant[] => {
+        const rootContent =
+          root === 'main'
+            ? compiledSchema?.primaryRoot.content
+            : compiledSchema?.roots.get(root)?.content;
+
         if (!rootContent || rootContent.min === 0) return Object.freeze([]);
 
         const children: Descendant[] = [];
 
         while (children.length < rootContent.min) {
-          const child = context.schema.createDefaultRootChild(context.root);
+          const child = context.schema.createDefaultRootChild(
+            root === 'main' ? undefined : root
+          );
 
           if (!child) {
             throw new Error(
-              `Yjs root "${context.root ?? 'primary'}" requires content but has no schema default.`
+              `Yjs root "${root}" requires content but has no schema default.`
             );
           }
           children.push(child);
         }
 
         return Object.freeze(children);
-      })();
+      };
 
       const controller = (() => {
         try {
           return new YjsController(
-            editor,
+            owner,
             options,
             {
-              canonicalize: (children) =>
-                canonicalizeRootContent(editor, root, children),
-              emptyYjsValue,
-              root,
+              canonicalize: (root, children) =>
+                canonicalizeRootContent(owner, root, children),
+              emptyValueFor,
             },
             previousActiveController
           );
         } catch (error) {
-          activationErrors.set(editor, error);
+          activationErrors.set(owner, error);
           throw error;
         }
       })();
 
-      controllers.set(editor, controller);
-      activeControllers.set(editor, controller);
-      activationErrors.delete(editor);
+      controllers.set(owner, controller);
+      activeControllers.set(owner, controller);
+      activationErrors.delete(owner);
       try {
         controller.initializeCanonicalState();
       } catch (error) {
@@ -164,21 +167,21 @@ export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
           controller.destroy(previousActiveController);
         } finally {
           if (previousLocalController) {
-            controllers.set(editor, previousLocalController);
+            controllers.set(owner, previousLocalController);
           } else {
-            controllers.delete(editor);
+            controllers.delete(owner);
           }
           if (previousActiveController) {
-            activeControllers.set(editor, previousActiveController);
+            activeControllers.set(owner, previousActiveController);
           } else {
-            activeControllers.delete(editor);
+            activeControllers.delete(owner);
           }
-          activationErrors.set(editor, error);
+          activationErrors.set(owner, error);
         }
         throw error;
       }
       context.onCleanup(({ reason }) => {
-        const active = activeControllers.get(editor);
+        const active = activeControllers.get(owner);
         const replacement =
           active === controller
             ? reason === 'rollback'
@@ -187,18 +190,18 @@ export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
             : active;
 
         controller.destroy(replacement);
-        if (controllers.get(editor) === controller) {
+        if (controllers.get(owner) === controller) {
           if (reason === 'rollback' && previousLocalController) {
-            controllers.set(editor, previousLocalController);
+            controllers.set(owner, previousLocalController);
           } else {
-            controllers.delete(editor);
+            controllers.delete(owner);
           }
         }
-        if (activeControllers.get(editor) === controller) {
+        if (activeControllers.get(owner) === controller) {
           if (reason === 'rollback' && previousActiveController) {
-            activeControllers.set(editor, previousActiveController);
+            activeControllers.set(owner, previousActiveController);
           } else {
-            activeControllers.delete(editor);
+            activeControllers.delete(owner);
           }
         }
       });

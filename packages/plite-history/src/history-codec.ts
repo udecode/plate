@@ -28,9 +28,8 @@ export const isHistorySchemaIdentity = (
   readEditorSchemaIdentity(value) !== undefined;
 
 const copyHistorySchemaIdentity = (
-  value: EditorSchemaIdentity | null
-): EditorSchemaIdentity | null => {
-  if (value === null) return null;
+  value: EditorSchemaIdentity
+): EditorSchemaIdentity => {
   const identity = readEditorSchemaIdentity(value);
 
   if (!identity) throw new Error('Invalid history schema identity.');
@@ -58,28 +57,26 @@ const encodeBatch = (editor: Editor, batch: Batch): HistoryBatchJSON => ({
 const isHistoryJSON = (value: unknown): value is HistoryJSON =>
   isObject(value) &&
   value.version === 4 &&
-  (value.schema === null || isHistorySchemaIdentity(value.schema)) &&
+  isHistorySchemaIdentity(value.schema) &&
   Array.isArray(value.redos) &&
   Array.isArray(value.undos);
 
-const describeSchema = (identity: EditorSchemaIdentity | null) =>
-  identity === null
-    ? 'no declared schema'
-    : identity.kind === 'derived'
-      ? `derived schema (${identity.fingerprint})`
-      : `schema "${identity.id}" version ${identity.version}`;
+const describeSchema = (identity: EditorSchemaIdentity) =>
+  identity.kind === 'derived'
+    ? `derived schema (${identity.fingerprint})`
+    : `schema "${identity.id}" version ${identity.version}`;
 
 const assertSchemaIdentity = (
   editor: Editor,
-  persisted: EditorSchemaIdentity | null
+  persisted: EditorSchemaIdentity
 ) => {
   const current = editor.read.schema.identity();
 
   if (areEditorSchemaIdentitiesEqual(current, persisted)) return;
 
   if (
-    current?.kind === 'named' &&
-    persisted?.kind === 'named' &&
+    current.kind === 'named' &&
+    persisted.kind === 'named' &&
     current.id === persisted.id &&
     current.version === persisted.version
   ) {
@@ -218,7 +215,7 @@ export const decodeHistoryValue = <V extends Value>(
 ): History<V> => {
   if (!isHistoryJSON(json)) {
     throw new Error(
-      'Invalid history JSON or unsupported history version; expected version 3.'
+      'Invalid history JSON or unsupported history version; expected version 4.'
     );
   }
 

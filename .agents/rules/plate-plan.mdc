@@ -51,7 +51,7 @@ plan and repair the target before continuing.
 - Plite owns the editor model, operations, reads, updates, transactions,
   selection primitives, DOM/runtime substrate, history, replay, and browser
   proof infrastructure.
-- Plate owns product plugins, feature workflows, kits, registry code,
+- Plate owns product plugins, feature workflows, app/registry kits, registry code,
   app-facing docs/examples, and opinionated UX.
 - When a Plate API duplicates an adequate Plite primitive, Plite wins. Cut or
   rename Plate; do not keep a compatibility alias. When Plate exposes a better

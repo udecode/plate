@@ -45,7 +45,7 @@ describe('commonmark package surfaces', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject(output);
+    expect(value.children).toMatchObject(output);
 
     const markdown = serializeMd(editor, { value });
 
@@ -55,68 +55,72 @@ describe('commonmark package surfaces', () => {
 
   it.each([
     {
+      alt: 'Caption',
       expected: '![Caption](/image.png)\n',
       input: '![Caption](/image.png)',
-      output: [
-        {
-          caption: [{ text: 'Caption' }],
-          children: [{ text: '' }],
-          type: 'img',
-          url: '/image.png',
-        },
-      ],
       title: 'round-trips markdown images without titles',
     },
     {
+      alt: 'Caption',
       expected: '![Caption](/image.png "Image title")\n',
       input: '![Caption](/image.png "Image title")',
-      output: [
-        {
-          caption: [{ text: 'Caption' }],
-          children: [{ text: '' }],
-          title: 'Image title',
-          type: 'img',
-          url: '/image.png',
-        },
-      ],
-      title: 'preserves explicit image titles instead of mirroring the caption',
+      imageTitle: 'Image title',
+      title: 'preserves explicit image titles independently from alt text',
     },
     {
+      alt: '',
       expected: '![](/image.png)\n',
       input: '![](/image.png)',
-      output: [
-        {
-          caption: [{ text: '' }],
-          children: [{ text: '' }],
-          type: 'img',
-          url: '/image.png',
-        },
-      ],
       title: 'round-trips markdown images with empty alt text',
     },
+  ])('$title', ({ alt, expected, imageTitle, input }) => {
+    const editor = createTestEditor();
+    const document = deserializeMd(editor, input);
+    const image = document.children[0];
+
+    expect(image).toMatchObject({
+      alt,
+      children: [{ text: '' }],
+      ...(imageTitle ? { title: imageTitle } : {}),
+      type: 'img',
+      url: '/image.png',
+    });
+    expect(document).not.toHaveProperty('roots');
+
+    expect(serializeMd(editor, { value: document })).toBe(expected);
+  });
+
+  it.each([
     {
-      expected: '![Caption](/image.png)\n',
-      input: '![Caption](/image.png)',
-      output: [
+      alt: 'Screen reader text',
+      caption: 'Visible caption',
+      title: 'distinct alt and caption',
+    },
+    {
+      alt: 'Same text',
+      caption: 'Same text',
+      title: 'textually equal alt and caption',
+    },
+  ])('round-trips $title without conflating their semantics', ({
+    alt,
+    caption,
+  }) => {
+    const editor = createTestEditor();
+    const value = {
+      children: [
         {
-          caption: [{ text: 'Caption' }],
-          children: [{ text: '' }],
+          alt,
+          children: [{ text: caption }],
           type: 'img',
           url: '/image.png',
         },
       ],
-      title: 'ignores width and height when serializing plain markdown images',
-    },
-  ])('$title', ({ expected, input, output }) => {
-    const editor = createTestEditor();
-
-    const value = deserializeMd(editor, input);
-
-    expect(value).toMatchObject(output);
-
+    };
     const markdown = serializeMd(editor, { value });
 
-    expect(markdown).toBe(expected);
+    expect(markdown).toContain('<figure>');
+    expect(markdown).toContain(`<img alt="${alt}" src="/image.png" />`);
+    expect(markdown).toContain('<figcaption>');
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
   });
 
@@ -167,7 +171,7 @@ describe('commonmark package surfaces', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject(output);
+    expect(value.children).toMatchObject(output);
 
     const markdown = serializeMd(editor, { value });
 
@@ -182,7 +186,7 @@ describe('commonmark package surfaces', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [{ text: 'alpha' }, { text: '\n' }, { text: 'beta' }],
         type: 'p',
@@ -197,23 +201,25 @@ describe('commonmark package surfaces', () => {
 
   it('round-trips hard line breaks embedded inside one text leaf', () => {
     const editor = createTestEditor();
-    const value = [
-      {
-        children: [
-          {
-            text: 'Text followed by two empty lines\n\n\nFollowed by more text.',
-          },
-        ],
-        type: 'p',
-      },
-    ];
+    const value = {
+      children: [
+        {
+          children: [
+            {
+              text: 'Text followed by two empty lines\n\n\nFollowed by more text.',
+            },
+          ],
+          type: 'p',
+        },
+      ],
+    };
 
     const markdown = serializeMd(editor, { value });
 
     expect(markdown).toBe(
       'Text followed by two empty lines\\\n\\\n\\\nFollowed by more text.\n'
     );
-    expect(deserializeMd(editor, markdown)).toMatchObject([
+    expect(deserializeMd(editor, markdown).children).toMatchObject([
       {
         children: [
           { text: 'Text followed by two empty lines' },
@@ -232,24 +238,28 @@ describe('commonmark package surfaces', () => {
 
     expect(
       serializeMd(editor, {
-        value: [
-          {
-            children: [{ text: 'alpha\n' }],
-            type: 'p',
-          },
-        ],
+        value: {
+          children: [
+            {
+              children: [{ text: 'alpha\n' }],
+              type: 'p',
+            },
+          ],
+        },
       })
     ).toBe('alpha\n<br />\n');
   });
 
   it('serializes trailing blockquote breaks without losing the final newline', () => {
     const editor = createTestEditor();
-    const value = [
-      {
-        children: [{ text: 'Block quote' }, { text: '\n' }, { text: '\n' }],
-        type: 'blockquote',
-      },
-    ];
+    const value = {
+      children: [
+        {
+          children: [{ text: 'Block quote' }, { text: '\n' }, { text: '\n' }],
+          type: 'blockquote',
+        },
+      ],
+    };
 
     expect(serializeMd(editor, { value })).toBe('> Block quote\\ \n> <br />\n');
   });
@@ -261,7 +271,7 @@ describe('commonmark package surfaces', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           {

@@ -1,4 +1,8 @@
-import { schema, type SchemaContent, type SchemaElement } from '@platejs/plite';
+import {
+  schema,
+  type SchemaContentRootInput,
+  type SchemaElement,
+} from '@platejs/plite';
 
 type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
@@ -22,7 +26,7 @@ type _BooleanIsNotVoidKind = Assert<
 type _ContentRootSpecIsObjectOnly = Assert<
   Equal<
     NonNullable<SchemaElement['contentRoots']>,
-    Readonly<Record<string, SchemaContent>>
+    Readonly<Record<string, SchemaContentRootInput>>
   >
 >;
 

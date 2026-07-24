@@ -6,7 +6,7 @@ export const JuicePlugin = createBasePlugin({
   key: KEYS.juice,
   editOnly: true,
   inject: {
-    plugins: {
+    parsers: {
       [KEYS.html]: {
         parser: {
           transformData: ({ data }) => {

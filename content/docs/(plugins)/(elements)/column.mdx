@@ -60,24 +60,23 @@ npm install @platejs/layout
 
 ### Add Plugins
 
-Include the column plugins in your Plate plugins array when creating the editor.
+Add `ColumnPlugin` to the editor. It installs `ColumnItemPlugin` as the required structural dependency.
 
 ```tsx
-import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
+import { ColumnPlugin } from '@platejs/layout/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     ColumnPlugin,
-    ColumnItemPlugin,
   ],
 });
 ```
 
 ### Configure Plugins
 
-Configure the plugins with custom components to render column layouts.
+Configure the group and add a complete `ColumnItemPlugin` descriptor when you need to replace the dependency's render component.
 
 ```tsx
 import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
@@ -113,11 +112,11 @@ You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-
 
 ### `ColumnPlugin`
 
-Add Column Plugin to your document.
+Owns column groups and requires `ColumnItemPlugin`.
 
 ### `ColumnItemPlugin`
 
-Add Column Item Plugin to your document.
+Owns the structural column item installed by `ColumnPlugin`. Add it directly only to replace its default configuration or component.
 
 ## Types
 

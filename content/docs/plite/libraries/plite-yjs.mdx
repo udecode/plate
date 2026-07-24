@@ -60,18 +60,52 @@ editor.update((tx) => {
 
 ## Schema Identity
 
-Each shared root records the compiled schema identity that owns its document.
-An editor joins only when its schema ID, version, and fingerprint match. A
-nonempty Yjs root without schema metadata fails closed instead of guessing how
-to decode its content. The first editor that seeds an empty root records its
-schema identity atomically with the document.
+Each collaboration document records one non-null compiled schema identity for
+its primary and named roots. An editor joins only when its schema kind,
+fingerprint, and named lineage fields match. A nonempty Yjs document without
+schema metadata fails closed instead of guessing how to decode its content. The
+first editor that seeds an empty document records its derived or named identity
+atomically with the document.
 
-Install the final compiled schema before joining a shared root. A claimed,
+Install the final compiled schema before joining a collaboration document. A claimed,
 populated room keeps that schema identity for its lifetime; local
 reconfiguration cannot rewrite the room in place. Run an explicit versioned
 document migration before joining a new or offline room, then connect every
 peer with the migrated schema identity. Changing schema semantics without a
 version bump is rejected.
+
+## Multi-Root Documents
+
+`rootName` names one collaboration document, not only its primary root. The
+adapter stores primary children at `rootName` and named roots in the associated
+`${rootName}:roots` registry. Create the editor with the complete
+`EditorDocumentValue`; named roots synchronize even when no React root view is
+mounted.
+
+```tsx
+const editor = createEditor({
+  extensions: [
+    history(),
+    createYjsExtension({
+      doc,
+      provider,
+      rootName: "article",
+    }),
+  ],
+  initialValue: {
+    children: [{ type: "paragraph", children: [{ text: "Body" }] }],
+    roots: {
+      header: [{ type: "paragraph", children: [{ text: "Draft" }] }],
+    },
+  },
+});
+```
+
+One Plite commit that changes several roots becomes one Yjs transaction and one
+Yjs-aware undo step. Remote batches fit the complete document through the
+compiled schema, including shared and exclusive content-root ownership.
+Awareness selections carry their root key; ranges whose anchor and focus belong
+to different roots are rejected.
 
 ## Shared Effects
 
@@ -130,7 +164,7 @@ createYjsExtension({
 });
 ```
 
-Configure exactly one stable authority identity for each shared Yjs root and
+Configure exactly one stable authority identity for each collaboration document and
 reuse it when that authority restarts with a new Y.Doc client generation. Each
 `"live"` event records the peers active in its causal Yjs state; durable peer
 acknowledgements preserve an unknown-codec retry across reconnects without

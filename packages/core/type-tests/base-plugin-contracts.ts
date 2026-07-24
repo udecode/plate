@@ -69,11 +69,15 @@ const CalloutPlugin = createBasePlugin<CalloutConfig>({
     dismissible: false,
     variant: 'info',
   },
-}).extendEditorApi(({ setOption }) => ({
-  setVariant: (variant) => {
-    setOption('variant', variant);
-  },
-}));
+})
+  .extendEditorApi(({ setOption }) => ({
+    setVariant: (variant) => {
+      setOption('variant', variant);
+    },
+  }))
+  .extendApi(({ getOptions }) => ({
+    getVariant: () => getOptions().variant,
+  }));
 
 const ConfiguredCalloutPlugin = CalloutPlugin.extend({
   options: {
@@ -294,18 +298,25 @@ const calloutVariant: 'info' | 'warning' = basePlateEditor
 const calloutDismissible: boolean | undefined = basePlateEditor
   .plugin(ConfiguredCalloutPlugin)
   .getOptions().dismissible;
+const calloutPluginVariant: 'info' | 'warning' =
+  basePlateEditor.api.callout.getVariant();
 const overrideLabel: string = overrideEditor.api.overrideLabel();
 const scopedLabel: 'scoped' = overrideEditor.api.scopedLabel();
 const portalPluginScopedLabel: 'plugin-scoped' = getEditorPlugin(
   overrideEditor,
   OriginalOverridePlugin
 ).api.pluginScopedLabel();
+const rootPluginScopedLabel: 'plugin-scoped' =
+  overrideEditor.api.originalOverride.pluginScopedLabel();
+type OverrideEditorApiKeys = keyof typeof overrideEditor.api;
+const originalOverrideApiKey: Extract<
+  OverrideEditorApiKeys,
+  'originalOverride'
+> = 'originalOverride';
 // @ts-expect-error descriptors do not expose an installed plugin portal
 OriginalOverridePlugin.api.pluginScopedLabel();
 // @ts-expect-error plugin-scoped API does not leak into editor.api
 overrideEditor.api.pluginScopedLabel();
-// @ts-expect-error plugin-scoped API is not published under a keyed root namespace
-overrideEditor.api.originalOverride.pluginScopedLabel();
 
 declare const extendedFullConfigApi: ExtendedFullConfig['api'];
 declare const extendedFullConfigOptions: ExtendedFullConfig['options'];
@@ -337,9 +348,12 @@ coreHistoryEditor.update({ history: 'merge' }, () => {});
 void boldEnabled;
 void boldHotkey;
 void calloutDismissible;
+void calloutPluginVariant;
 void calloutVariant;
+void originalOverrideApiKey;
 void overrideLabel;
 void portalPluginScopedLabel;
+void rootPluginScopedLabel;
 void scopedLabel;
 void extendedFullBaseApi;
 void extendedFullBaseOption;

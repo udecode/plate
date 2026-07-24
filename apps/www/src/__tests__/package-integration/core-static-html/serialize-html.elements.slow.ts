@@ -82,6 +82,7 @@ describe('core static renderStaticHtml element rendering', () => {
     const html = await renderStaticHtml(editor);
 
     expect(html).toContain('src="https://example.com/image.jpg"');
+    expect(html).toContain('<figcaption');
   });
 
   it('renders table cell content', async () => {

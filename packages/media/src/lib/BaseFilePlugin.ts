@@ -1,14 +1,22 @@
 import { createBasePlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
-import { mediaElementProperties } from './media/types';
+import {
+  defineMediaPlugin,
+  mediaElementContent,
+  mediaElementProperties,
+} from './media/MediaPlugin.internal';
 
-export const BaseFilePlugin = createBasePlugin({
-  key: KEYS.file,
-  schema: {
-    element: {
-      properties: mediaElementProperties,
-      void: 'block',
+export const BaseFilePlugin = defineMediaPlugin(
+  createBasePlugin({
+    key: KEYS.file,
+    schema: {
+      element: {
+        content: mediaElementContent,
+        isolating: true,
+        keyboardSelectable: true,
+        properties: mediaElementProperties,
+      },
     },
-  },
-});
+  })
+);

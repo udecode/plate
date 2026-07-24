@@ -30,16 +30,17 @@ const ChildPlugin = createBasePlugin<ChildConfig>({
 }));
 
 const ParentPlugin = createBasePlugin({
+  dependencies: [ChildPlugin],
   key: 'parent',
-  plugins: [ChildPlugin],
-}).configurePlugin(ChildPlugin, {
+});
+const ConfiguredChildPlugin = ChildPlugin.configure({
   options: {
     level: 2,
   },
 });
 
 const basePlateEditor = createBaseEditor({
-  plugins: [ParentPlugin],
+  plugins: [ParentPlugin, ConfiguredChildPlugin],
 });
 
 type DisplayConfig = PluginConfig<
@@ -84,7 +85,7 @@ void nestedLevel;
 void plateLabel;
 void plateValue;
 
-ParentPlugin.configurePlugin(ChildPlugin, {
+ChildPlugin.configure({
   options: {
     // @ts-expect-error invalid configured nested option value
     level: 3,

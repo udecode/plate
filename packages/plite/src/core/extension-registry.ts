@@ -469,10 +469,8 @@ export const getExtensionRegistry = <TEditor extends Editor>(
 ): ExtensionRegistry<TEditor> =>
   getExtensionRegistryStore(editor).current as ExtensionRegistry<TEditor>;
 
-/** Canonical compiled schema, or `null` for an intentionally open raw editor. */
-export const getCompiledEditorSchema = (
-  editor: Editor
-): CompiledEditorSchema | null =>
+/** Canonical compiled schema for the current editor configuration. */
+export const getCompiledEditorSchema = (editor: Editor): CompiledEditorSchema =>
   getExtensionRegistry(editor).schemaContributions.compiled;
 
 export const getConfiguredExtensionRegistry = <TEditor extends Editor>(

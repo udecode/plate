@@ -9,16 +9,28 @@ describe('getRenderNodeStaticProps', () => {
       key: 'p',
       type: 'p',
       schema: {
-        element: { content: schema.content.open({ default: 'text', min: 1 }) },
+        element: {
+          content: schema.content.open({ default: 'text', min: 1 }),
+          properties: { attributes: property.json() },
+        },
       },
       render: {
-        nodeProps: ({ editor }) => ({
-          className: 'plugin-class',
-          'data-has-editor': editor ? 'yes' : 'no',
-          title: undefined,
-        }),
+        nodeProps: ({ editor, element }) => {
+          const target =
+            typeof element.attributes === 'object' &&
+            element.attributes !== null &&
+            !Array.isArray(element.attributes)
+              ? Reflect.get(element.attributes, 'target')
+              : undefined;
+
+          return {
+            className: 'plugin-class',
+            'data-has-editor': editor ? 'yes' : 'no',
+            target: typeof target === 'string' ? target : undefined,
+            title: undefined,
+          };
+        },
       },
-      host: { dangerouslyAllowAttributes: ['target'] },
     });
     const AlignPlugin = createBasePlugin({
       targetPluginKeys: ['p'],
@@ -42,6 +54,7 @@ describe('getRenderNodeStaticProps', () => {
       initialValue: [
         {
           align: 'center',
+          attributes: { ignored: 'nope', target: '_blank' },
           children: [{ text: 'hello' }],
           type: 'p',
         },
@@ -54,16 +67,10 @@ describe('getRenderNodeStaticProps', () => {
     }
 
     const result = getRenderNodeStaticProps({
-      attributes: {
-        'data-plite-align': 'center',
-        ignored: 'nope',
-        target: '_blank',
-      },
       editor,
-      node: element,
       plugin: editor.getPlugin(ParagraphPlugin),
       props: {
-        attributes: {},
+        attributes: { 'data-plite-align': 'center' },
         children: null,
         className: 'user-class',
         element,

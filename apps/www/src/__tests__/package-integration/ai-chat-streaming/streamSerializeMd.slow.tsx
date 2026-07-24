@@ -9,7 +9,11 @@ describe('streamSerializeMd', () => {
     const chunk = 'chunk1';
     const input = streamDeserializeMd(editor, chunk);
 
-    const output = streamSerializeMd(editor, { value: input }, chunk);
+    const output = streamSerializeMd(
+      editor,
+      { value: { children: input } },
+      chunk
+    );
 
     expect(output).toBe('chunk1');
   });
@@ -18,7 +22,11 @@ describe('streamSerializeMd', () => {
     const chunk = 'chunk1\nchunk2';
     const input = streamDeserializeMd(editor, chunk);
 
-    const output = streamSerializeMd(editor, { value: input }, chunk);
+    const output = streamSerializeMd(
+      editor,
+      { value: { children: input } },
+      chunk
+    );
 
     expect(output).toBe(chunk);
   });
@@ -27,7 +35,11 @@ describe('streamSerializeMd', () => {
     const chunk = 'chunk1\\\nchunk2';
     const input = streamDeserializeMd(editor, chunk);
 
-    const output = streamSerializeMd(editor, { value: input }, chunk);
+    const output = streamSerializeMd(
+      editor,
+      { value: { children: input } },
+      chunk
+    );
 
     expect(output).toBe(chunk);
   });
@@ -45,7 +57,11 @@ describe('streamSerializeMd', () => {
       },
     ];
 
-    const output = streamSerializeMd(editor, { value: input }, chunk);
+    const output = streamSerializeMd(
+      editor,
+      { value: { children: input } },
+      chunk
+    );
 
     expect(output).toBe(chunk);
   });
@@ -54,7 +70,11 @@ describe('streamSerializeMd', () => {
     const chunk = 'chunk1\n ';
     const input = streamDeserializeMd(editor, chunk);
 
-    const output = streamSerializeMd(editor, { value: input }, chunk);
+    const output = streamSerializeMd(
+      editor,
+      { value: { children: input } },
+      chunk
+    );
 
     expect(output).toBe('chunk1\n ');
   });
@@ -63,7 +83,11 @@ describe('streamSerializeMd', () => {
     const chunk = 'chunk1 \n ';
     const input = streamDeserializeMd(editor, chunk);
 
-    const output = streamSerializeMd(editor, { value: input }, chunk);
+    const output = streamSerializeMd(
+      editor,
+      { value: { children: input } },
+      chunk
+    );
 
     expect(output).toBe(chunk);
   });
@@ -77,7 +101,11 @@ describe('streamSerializeMd', () => {
       },
     ];
 
-    const output = streamSerializeMd(editor, { value: input }, chunk);
+    const output = streamSerializeMd(
+      editor,
+      { value: { children: input } },
+      chunk
+    );
 
     expect(output).toBe(chunk);
   });
@@ -86,7 +114,11 @@ describe('streamSerializeMd', () => {
     const chunk = 'chunk1\n';
     const input = streamDeserializeMd(editor, chunk);
 
-    const output = streamSerializeMd(editor, { value: input }, chunk);
+    const output = streamSerializeMd(
+      editor,
+      { value: { children: input } },
+      chunk
+    );
 
     expect(output).toBe('chunk1\n');
   });
@@ -96,7 +128,11 @@ describe('streamSerializeMd', () => {
 
     const lastBlock = streamDeserializeMd(editor, chunk).at(-1) as any;
 
-    const output = streamSerializeMd(editor, { value: [lastBlock] }, chunk);
+    const output = streamSerializeMd(
+      editor,
+      { value: { children: [lastBlock] } },
+      chunk
+    );
 
     expect(output).toBe('');
   });
@@ -105,7 +141,11 @@ describe('streamSerializeMd', () => {
     const chunk = '## Heading 1\n';
     const input = streamDeserializeMd(editor, chunk);
 
-    const output = streamSerializeMd(editor, { value: input }, chunk);
+    const output = streamSerializeMd(
+      editor,
+      { value: { children: input } },
+      chunk
+    );
 
     expect(output).toBe('## Heading 1\n');
   });
@@ -116,7 +156,11 @@ describe('streamSerializeMd', () => {
 
       const result = streamDeserializeMd(editor, chunk);
 
-      const output = streamSerializeMd(editor, { value: result }, chunk);
+      const output = streamSerializeMd(
+        editor,
+        { value: { children: result } },
+        chunk
+      );
 
       expect(output).toBe(chunk);
     });
@@ -126,7 +170,11 @@ describe('streamSerializeMd', () => {
 
       const result = streamDeserializeMd(editor, chunk);
 
-      const output = streamSerializeMd(editor, { value: result }, chunk);
+      const output = streamSerializeMd(
+        editor,
+        { value: { children: result } },
+        chunk
+      );
 
       expect(output).toBe(chunk);
     });
@@ -136,7 +184,11 @@ describe('streamSerializeMd', () => {
 
       const result = streamDeserializeMd(editor, chunk);
 
-      const output = streamSerializeMd(editor, { value: result }, chunk);
+      const output = streamSerializeMd(
+        editor,
+        { value: { children: result } },
+        chunk
+      );
 
       expect(output).toBe(chunk);
     });
@@ -146,7 +198,11 @@ describe('streamSerializeMd', () => {
 
       const result = streamDeserializeMd(editor, chunk);
 
-      const output = streamSerializeMd(editor, { value: result }, chunk);
+      const output = streamSerializeMd(
+        editor,
+        { value: { children: result } },
+        chunk
+      );
 
       expect(output).toBe(chunk);
     });

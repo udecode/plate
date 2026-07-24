@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/plite';
+import type { EditorDocumentValue, Value } from '@platejs/plite';
 
 import type { NormalizeNodeIdOptions } from './NodeIdPlugin';
 
@@ -39,21 +39,36 @@ const replaceStaticMetadata = (value: unknown, createdAt: number): unknown => {
   return next;
 };
 
-export const normalizeStaticValue = <V extends Value>(
-  value: V,
+export const normalizeStaticValue = <T extends EditorDocumentValue | Value>(
+  value: T,
   options: NormalizeStaticValueOptions = {}
-): V => {
+): T => {
   const {
     createdAt = STATIC_VALUE_CREATED_AT,
     idCreator = createStaticIdFactory(),
     ...normalizeNodeIdOptions
   } = options;
-
-  return replaceStaticMetadata(
-    normalizeNodeId(value, {
+  const normalize = <V extends Value>(children: V) =>
+    normalizeNodeId(children, {
       ...normalizeNodeIdOptions,
       idCreator,
-    }),
-    createdAt
-  ) as V;
+    });
+  const normalized = Array.isArray(value)
+    ? normalize(value)
+    : {
+        ...value,
+        children: normalize(value.children),
+        ...(value.roots
+          ? {
+              roots: Object.fromEntries(
+                Object.entries(value.roots).map(([root, children]) => [
+                  root,
+                  normalize(children),
+                ])
+              ),
+            }
+          : {}),
+      };
+
+  return replaceStaticMetadata(normalized, createdAt) as T;
 };

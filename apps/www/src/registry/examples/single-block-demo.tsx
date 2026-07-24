@@ -2,12 +2,16 @@
 
 import * as React from 'react';
 
-import { SingleBlockPlugin, SingleLinePlugin } from 'platejs';
+import {
+  SingleBlockPlugin,
+  SingleLinePlugin,
+  TrailingBlockPlugin,
+} from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { BasicBlocksKit } from '@/registry/components/editor/plugins/basic-blocks-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export default function SingleBlockDemo() {
@@ -16,7 +20,8 @@ export default function SingleBlockDemo() {
   const editor = usePlateEditor(
     {
       plugins: [
-        ...EditorKit,
+        ...BasicBlocksKit,
+        TrailingBlockPlugin,
         isSingleBlock ? SingleBlockPlugin : SingleLinePlugin,
       ],
       initialValue: [

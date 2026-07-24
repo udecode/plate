@@ -1,4 +1,9 @@
-import { property, schema, target, type Value } from '@platejs/plite';
+import {
+  type EditorDocumentValue,
+  property,
+  schema,
+  target,
+} from '@platejs/plite';
 
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
@@ -12,10 +17,22 @@ describe('pipeNormalizeInitialValue', () => {
     createBasePlugin({
       key,
       transformInitialValue: ({ value: initialValue }: any) =>
-        initialValue.map((node: any) => ({
-          ...node,
-          count: node.count + 1,
-        })),
+        ({
+          ...initialValue,
+          children: initialValue.children.map((node: any) => ({
+            ...node,
+            count: node.count + 1,
+          })),
+          roots: Object.fromEntries(
+            Object.entries(initialValue.roots ?? {}).map(([root, children]) => [
+              root,
+              (children as any[]).map((node) => ({
+                ...node,
+                count: node.count + 1,
+              })),
+            ])
+          ),
+        }) as any,
     });
 
   const CountPlugin = createBasePlugin({
@@ -67,6 +84,36 @@ describe('pipeNormalizeInitialValue', () => {
         { children: [{ text: '' }], count: 2, type: 'p' },
       ]);
     });
+  });
+
+  it('transforms deferred document replacement before schema fitting', () => {
+    const editor = createBaseEditor({
+      plugins,
+      skipInitialization: true,
+    });
+
+    editor.update.value.replace({
+      children: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+    });
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '' }], count: 2, type: 'p' },
+    ]);
+  });
+
+  it('transforms later complete document replacements', () => {
+    const editor = createBaseEditor({
+      plugins,
+      initialValue: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+    });
+
+    editor.update.value.replace({
+      children: [{ children: [{ text: '' }], count: 10, type: 'p' }],
+    });
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '' }], count: 12, type: 'p' },
+    ]);
   });
 
   describe('extendPlateEditor', () => {
@@ -143,23 +190,24 @@ describe('pipeNormalizeInitialValue', () => {
     });
   });
 
-  it('throws when a transformInitialValue hook returns undefined', () => {
+  it('throws when a transformInitialValue hook does not return a document', () => {
     const editor = createBaseEditor({
       plugins: [
         createLoosePlugin({
           key: 'bad',
-          transformInitialValue: () => undefined,
+          transformInitialValue: () => [],
         }),
       ],
       skipInitialization: true,
     });
-    editor.update.value.replace({
-      children: [{ children: [{ text: '' }], type: 'p' }],
-      selection: null,
-    });
 
-    expect(() => pipeNormalizeInitialValue(editor)).toThrow(
-      'Plugin "bad" transformInitialValue must return the next value.'
+    expect(() =>
+      editor.update.value.replace({
+        children: [{ children: [{ text: '' }], type: 'p' }],
+        selection: null,
+      })
+    ).toThrow(
+      'Plugin "bad" transformInitialValue must return an editor document with primary-root children.'
     );
   });
 
@@ -170,7 +218,11 @@ describe('pipeNormalizeInitialValue', () => {
         createLoosePlugin({
           key: 'skip',
           editOnly: { transformInitialValue: true },
-          transformInitialValue: ({ value }: { value: Value }) => {
+          transformInitialValue: ({
+            value,
+          }: {
+            value: EditorDocumentValue;
+          }) => {
             callCount += 1;
 
             return value;

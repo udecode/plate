@@ -872,7 +872,9 @@ Authority:
 Ownership:
 
 - link is an inline non-void span with directional affinity
-- image is a block void media atom in the current editor model
+- image is an isolating non-void keyboard-selectable media owner;
+  `NodeSelection` focuses its asset and `TextSelection` edits its direct caption
+  children
 - image markdown syntax is still a serializer / parser concern, not a direct
   plain-text key owner
 
@@ -1476,13 +1478,20 @@ Authority:
 
 Ownership:
 
-- media blocks are atomic local contracts around selection and deletion
-- caption owns its focus movement only inside the media host relationship
+- media blocks are isolating non-void keyboard-selectable owners around asset
+  selection, direct inline caption editing, and deletion
+- `NodeSelection` at the media path focuses the asset
+- `TextSelection` inside the media children edits the caption
 
 Plugin surface:
 
 - media plugins expose insert and embed/upload surfaces
-- caption behavior is helper behavior layered on top of media hosts
+- media schema and behavior own direct inline caption children; no caption
+  plugin, node type, key, or content root exists
+- renderers keep only the asset chrome non-editable and render the ordinary
+  media child slot as the caption
+- renderers may hide `[{ text: '' }]` until the asset has `NodeSelection`;
+  placeholder visibility does not change the document
 - current markdown/MDX contract keeps supported MDX attributes on round-trip
 - current media embed contract persists one canonical render `url` plus current
   normalized provider metadata:
@@ -1525,7 +1534,8 @@ insert media
 ```
 
 note: media insertion creates the chosen media node shape and preserves MDX
-attributes on markdown round-trip
+attributes on markdown round-trip; it stores direct inline children and uses
+`[{ text: '' }]` when the caption is absent
 
 - `EDIT-MEDIA-*` `locked`
 
@@ -1533,19 +1543,41 @@ attributes on markdown round-trip
 next block start + ⌫ after media
 ```
 
-note: destructive movement selects the media boundary instead of deleting
-through it
+note: destructive movement creates a `NodeSelection` on the media asset instead
+of deleting through it
 
-- `EDIT-CAPTION-*` `locked`
+- `EDIT-CAPTION-NAV-001` `locked`
 
 ```text
-↓ from media host
+↓ from media NodeSelection
 =>
-caption focus
+TextSelection at caption start
 ```
 
-note: caption movement is local contract behavior, not a universal markdown
-rule
+note: `ArrowDown` moves from asset focus into the media element's direct inline
+children
+
+- `EDIT-CAPTION-NAV-002` `locked`
+
+```text
+↑ from caption-start TextSelection
+=>
+media NodeSelection
+```
+
+note: `ArrowUp` at the caption start returns focus to the asset
+
+- `EDIT-CAPTION-EMPTY-001` `locked`
+
+```text
+media children = [{ text: '' }]
+=>
+caption absent; placeholder visible only during asset NodeSelection
+```
+
+note: empty-caption visibility is render state; copy, cut, delete, undo,
+collaboration, and serialization keep the direct children with their media
+owner
 
 ## Styling And Layout
 

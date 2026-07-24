@@ -6,7 +6,7 @@ import { parseMediaUrl, parseVideoUrl } from '../media/parseMediaUrl';
 import { BaseMediaEmbedPlugin } from './BaseMediaEmbedPlugin';
 
 describe('BaseMediaEmbedPlugin', () => {
-  it('configures media embeds as void elements with iframe parsing', () => {
+  it('configures media embeds as direct caption owners with iframe parsing', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
     });
@@ -17,10 +17,14 @@ describe('BaseMediaEmbedPlugin', () => {
     expect(plugin.type).toBe(NODES.mediaEmbed);
     expect(
       editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior.void
+    ).toBe(false);
+    expect(
+      editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior.isolating
     ).toBe(true);
     expect(
-      editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior.voidKind
-    ).toBe('block');
+      editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior
+        .keyboardSelectable
+    ).toBe(true);
     expect(editor.read.schema.element(BaseMediaEmbedPlugin)?.groups).toContain(
       'block'
     );
@@ -61,9 +65,9 @@ describe('BaseMediaEmbedPlugin', () => {
       initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
-    editor
-      .plugin(BaseMediaEmbedPlugin)
-      .update.insert('https://www.youtube.com/watch?v=M7lc1UVf-VE');
+    editor.plugin(BaseMediaEmbedPlugin).update.insert({
+      url: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+    });
 
     const media = editor.read.children()[1];
 
@@ -98,11 +102,9 @@ describe('BaseMediaEmbedPlugin', () => {
       initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
-    editor
-      .plugin(BaseMediaEmbedPlugin)
-      .update.insert(
-        '<iframe src="https://www.youtube.com/watch?v=M7lc1UVf-VE"></iframe>'
-      );
+    editor.plugin(BaseMediaEmbedPlugin).update.insert({
+      url: '<iframe src="https://www.youtube.com/watch?v=M7lc1UVf-VE"></iframe>',
+    });
 
     expect(editor.read.children()[1]).toMatchObject({
       provider: 'youtube',
@@ -120,7 +122,7 @@ describe('BaseMediaEmbedPlugin', () => {
 
     editor
       .plugin(BaseMediaEmbedPlugin)
-      .update.insert('https://platejs.org/embed');
+      .update.insert({ url: 'https://platejs.org/embed' });
 
     expect(editor.read.children()).toHaveLength(1);
   });
@@ -133,7 +135,7 @@ describe('BaseMediaEmbedPlugin', () => {
 
     editor
       .plugin(BaseMediaEmbedPlugin)
-      .update.insert('https://platejs.org/embed', { at: [0] });
+      .update.insert({ url: 'https://platejs.org/embed' }, { at: [0] });
 
     expect(editor.read.children()[0]).toMatchObject({
       type: NODES.mediaEmbed,

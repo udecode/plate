@@ -1,3 +1,8 @@
+import type { Value } from '@platejs/plite';
+
+import type { BaseEditor } from '../../editor';
+import type { InferConfig } from '../../plugin/BasePlugin';
+import type { AnyPluginConfig } from '../../plugin/PluginConfig';
 import type {
   AnyInputRule,
   BlockFenceInputRuleConfig,
@@ -71,34 +76,39 @@ type RuleFactoryConfigBuilder<
 type MarkRuleFactoryConfig<
   TDefaults extends object,
   TRequired extends object,
+  TEditor = BaseEditor,
 > = {
   type: 'mark';
   end?: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     string | undefined
   >;
   mark?: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     string | undefined
   >;
   marks?: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     string[] | undefined
   >;
   start: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     string
   >;
   trim?: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     MarkInputRuleConfig['trim']
   >;
   trigger: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     string
   >;
   enabled?: (
-    input: FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      InsertTextInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => boolean;
   priority?: number;
 };
@@ -107,28 +117,33 @@ type BlockStartRuleFactoryConfig<
   TDefaults extends object,
   TRequired extends object,
   TMatch extends object = {},
+  TEditor = BaseEditor,
 > = {
   type: 'blockStart';
   apply?: BivariantCallback<
     (
-      input: FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+      input: FactoryInput<
+        InsertTextInputRuleContext<TEditor>,
+        TDefaults,
+        TRequired
+      >,
       match: BlockStartInputRuleMatch & TMatch
     ) => boolean | void
   >;
   match: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     RegExp | string | undefined
   >;
   mode?: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     BlockStartInputRuleConfig<TMatch>['mode']
   >;
   node?: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     string | undefined
   >;
   removeMatchedText?: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     boolean | undefined
   >;
   resolveMatch?: (
@@ -137,14 +152,22 @@ type BlockStartRuleFactoryConfig<
       range: BlockStartInputRuleMatch['range'];
       text: string;
     },
-    input: FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      InsertTextInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => TMatch | undefined;
   trigger: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     string
   >;
   enabled?: (
-    input: FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      InsertTextInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => boolean;
   priority?: number;
 };
@@ -153,12 +176,13 @@ type BlockFenceRuleFactoryConfig<
   TDefaults extends object,
   TRequired extends object,
   TMatch,
+  TEditor = BaseEditor,
 > = {
   type: 'blockFence';
   apply: BivariantCallback<
     (
       input: FactoryInput<
-        SelectionInputRuleContext & TransformInputRuleContext,
+        SelectionInputRuleContext<TEditor> & TransformInputRuleContext<TEditor>,
         TDefaults,
         TRequired
       >,
@@ -166,15 +190,15 @@ type BlockFenceRuleFactoryConfig<
     ) => boolean | void
   >;
   block?: FactoryValue<
-    FactoryInput<SelectionInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<SelectionInputRuleContext<TEditor>, TDefaults, TRequired>,
     string | undefined
   >;
   fence: FactoryValue<
-    FactoryInput<SelectionInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<SelectionInputRuleContext<TEditor>, TDefaults, TRequired>,
     string
   >;
   on?: FactoryValue<
-    FactoryInput<SelectionInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<SelectionInputRuleContext<TEditor>, TDefaults, TRequired>,
     BlockFenceInputRuleConfig<TMatch>['on']
   >;
   resolveMatch?: (
@@ -184,11 +208,15 @@ type BlockFenceRuleFactoryConfig<
       range: BlockFenceInputRuleMatch['range'];
       text: string;
     },
-    input: FactoryInput<SelectionInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      SelectionInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => TMatch | undefined;
   enabled?: (
     input: FactoryInput<
-      SelectionInputRuleContext & TransformInputRuleContext,
+      SelectionInputRuleContext<TEditor> & TransformInputRuleContext<TEditor>,
       TDefaults,
       TRequired
     >
@@ -200,23 +228,36 @@ type InsertTextRuleFactoryConfig<
   TDefaults extends object,
   TRequired extends object,
   TMatch,
+  TEditor = BaseEditor,
 > = {
   type: 'insertText';
   apply: BivariantCallback<
     (
-      input: FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+      input: FactoryInput<
+        InsertTextInputRuleContext<TEditor>,
+        TDefaults,
+        TRequired
+      >,
       match: TMatch
     ) => boolean | void
   >;
   resolve?: (
-    input: FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      InsertTextInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => TMatch | undefined;
   trigger: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     InsertTextInputRule<TMatch>['trigger']
   >;
   enabled?: (
-    input: FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      InsertTextInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => boolean;
   priority?: number;
 };
@@ -225,19 +266,32 @@ type InsertBreakRuleFactoryConfig<
   TDefaults extends object,
   TRequired extends object,
   TMatch,
+  TEditor = BaseEditor,
 > = {
   type: 'insertBreak';
   apply: BivariantCallback<
     (
-      input: FactoryInput<InsertBreakInputRuleContext, TDefaults, TRequired>,
+      input: FactoryInput<
+        InsertBreakInputRuleContext<TEditor>,
+        TDefaults,
+        TRequired
+      >,
       match: TMatch
     ) => boolean | void
   >;
   resolve?: (
-    input: FactoryInput<InsertBreakInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      InsertBreakInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => TMatch | undefined;
   enabled?: (
-    input: FactoryInput<InsertBreakInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      InsertBreakInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => boolean;
   priority?: number;
 };
@@ -246,23 +300,36 @@ type InsertDataRuleFactoryConfig<
   TDefaults extends object,
   TRequired extends object,
   TMatch,
+  TEditor = BaseEditor,
 > = {
   type: 'insertData';
   apply: BivariantCallback<
     (
-      input: FactoryInput<InsertDataInputRuleContext, TDefaults, TRequired>,
+      input: FactoryInput<
+        InsertDataInputRuleContext<TEditor>,
+        TDefaults,
+        TRequired
+      >,
       match: TMatch
     ) => boolean | void
   >;
   mimeTypes?: FactoryValue<
-    FactoryInput<InsertDataInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertDataInputRuleContext<TEditor>, TDefaults, TRequired>,
     string[] | undefined
   >;
   resolve?: (
-    input: FactoryInput<InsertDataInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      InsertDataInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => TMatch | undefined;
   enabled?: (
-    input: FactoryInput<InsertDataInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      InsertDataInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => boolean;
   priority?: number;
 };
@@ -270,14 +337,19 @@ type InsertDataRuleFactoryConfig<
 type TextSubstitutionRuleFactoryConfig<
   TDefaults extends object,
   TRequired extends object,
+  TEditor = BaseEditor,
 > = {
   type: 'textSubstitution';
   patterns: FactoryValue<
-    FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>,
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     TextSubstitutionInputRuleConfig['patterns']
   >;
   enabled?: (
-    input: FactoryInput<InsertTextInputRuleContext, TDefaults, TRequired>
+    input: FactoryInput<
+      InsertTextInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired
+    >
   ) => boolean;
   priority?: number;
 };
@@ -286,42 +358,88 @@ type AnyRuleFactoryConfig<
   TDefaults extends object = Record<string, unknown>,
   TRequired extends object = Record<string, unknown>,
   TMatch = unknown,
+  TEditor = BaseEditor,
 > =
-  | MarkRuleFactoryConfig<TDefaults, TRequired>
+  | MarkRuleFactoryConfig<TDefaults, TRequired, TEditor>
   | BlockStartRuleFactoryConfig<
       TDefaults,
       TRequired,
-      TMatch extends object ? TMatch : {}
+      TMatch extends object ? TMatch : {},
+      TEditor
     >
-  | BlockFenceRuleFactoryConfig<TDefaults, TRequired, TMatch>
-  | InsertTextRuleFactoryConfig<TDefaults, TRequired, TMatch>
-  | InsertBreakRuleFactoryConfig<TDefaults, TRequired, TMatch>
-  | InsertDataRuleFactoryConfig<TDefaults, TRequired, TMatch>
-  | TextSubstitutionRuleFactoryConfig<TDefaults, TRequired>;
+  | BlockFenceRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor>
+  | InsertTextRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor>
+  | InsertBreakRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor>
+  | InsertDataRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor>
+  | TextSubstitutionRuleFactoryConfig<TDefaults, TRequired, TEditor>;
 
 type AnyRuleFactoryConfigLoose<
   TDefaults extends object = Record<string, unknown>,
   TRequired extends object = Record<string, unknown>,
+  TEditor = BaseEditor,
 > =
-  | MarkRuleFactoryConfig<TDefaults, TRequired>
-  | BlockStartRuleFactoryConfig<TDefaults, TRequired, {}>
-  | BlockFenceRuleFactoryConfig<TDefaults, TRequired, unknown>
-  | InsertTextRuleFactoryConfig<TDefaults, TRequired, unknown>
-  | InsertBreakRuleFactoryConfig<TDefaults, TRequired, unknown>
-  | InsertDataRuleFactoryConfig<TDefaults, TRequired, unknown>
-  | TextSubstitutionRuleFactoryConfig<TDefaults, TRequired>;
+  | MarkRuleFactoryConfig<TDefaults, TRequired, TEditor>
+  | BlockStartRuleFactoryConfig<TDefaults, TRequired, {}, TEditor>
+  | BlockFenceRuleFactoryConfig<TDefaults, TRequired, unknown, TEditor>
+  | InsertTextRuleFactoryConfig<TDefaults, TRequired, unknown, TEditor>
+  | InsertBreakRuleFactoryConfig<TDefaults, TRequired, unknown, TEditor>
+  | InsertDataRuleFactoryConfig<TDefaults, TRequired, unknown, TEditor>
+  | TextSubstitutionRuleFactoryConfig<TDefaults, TRequired, TEditor>;
 
-type ContextFromFactoryConfig<TConfig> = TConfig extends
-  | MarkRuleFactoryConfig<any, any>
-  | BlockStartRuleFactoryConfig<any, any, any>
-  | InsertTextRuleFactoryConfig<any, any, any>
-  | TextSubstitutionRuleFactoryConfig<any, any>
-  ? InsertTextInputRuleContext
-  : TConfig extends BlockFenceRuleFactoryConfig<any, any, any>
-    ? SelectionInputRuleContext & TransformInputRuleContext
-    : TConfig extends InsertBreakRuleFactoryConfig<any, any, any>
-      ? InsertBreakInputRuleContext
-      : InsertDataInputRuleContext;
+type ContextFromFactoryConfig<TConfig, TEditor> = TConfig extends
+  | MarkRuleFactoryConfig<any, any, any>
+  | BlockStartRuleFactoryConfig<any, any, any, any>
+  | InsertTextRuleFactoryConfig<any, any, any, any>
+  | TextSubstitutionRuleFactoryConfig<any, any, any>
+  ? InsertTextInputRuleContext<TEditor>
+  : TConfig extends BlockFenceRuleFactoryConfig<any, any, any, any>
+    ? SelectionInputRuleContext<TEditor> & TransformInputRuleContext<TEditor>
+    : TConfig extends InsertBreakRuleFactoryConfig<any, any, any, any>
+      ? InsertBreakInputRuleContext<TEditor>
+      : InsertDataInputRuleContext<TEditor>;
+
+type RuleFactoryOwner = {
+  readonly __config: AnyPluginConfig;
+  key: string;
+};
+
+type BoundRuleFactory<TEditor> = {
+  <
+    TRequired extends object = {},
+    TDefaults extends object = {},
+    TMatch = unknown,
+    TConfig extends AnyRuleFactoryConfig<
+      TDefaults,
+      TRequired,
+      TMatch,
+      TEditor
+    > = AnyRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor>,
+  >(
+    config: TConfig & TDefaults
+  ): CreateRuleFactoryReturn<
+    ContextFromFactoryConfig<TConfig, TEditor>,
+    TDefaults,
+    TRequired
+  >;
+  <TRequired extends object = {}, TDefaults extends object = {}>(
+    configBuilder: RuleFactoryConfigBuilder<
+      | SelectionInputRuleContext<TEditor>
+      | InsertTextInputRuleContext<TEditor>
+      | InsertBreakInputRuleContext<TEditor>
+      | InsertDataInputRuleContext<TEditor>,
+      TDefaults,
+      TRequired,
+      AnyRuleFactoryConfigLoose<TDefaults, TRequired, TEditor>
+    >
+  ): CreateRuleFactoryReturn<
+    | SelectionInputRuleContext<TEditor>
+    | InsertTextInputRuleContext<TEditor>
+    | InsertBreakInputRuleContext<TEditor>
+    | InsertDataInputRuleContext<TEditor>,
+    TDefaults,
+    TRequired
+  >;
+};
 
 const getMergedInput = <TContext extends object, TOptions extends object>(
   context: TContext,
@@ -339,6 +457,9 @@ const resolveFactoryValue = <TInput, TValue>(
   return value;
 };
 
+export function createRuleFactory<P extends RuleFactoryOwner>(
+  plugin: P
+): BoundRuleFactory<BaseEditor<Value, InferConfig<P>>>;
 export function createRuleFactory<
   TRequired extends object = {},
   TDefaults extends object = {},
@@ -351,7 +472,7 @@ export function createRuleFactory<
 >(
   config: TConfig & TDefaults
 ): CreateRuleFactoryReturn<
-  ContextFromFactoryConfig<TConfig>,
+  ContextFromFactoryConfig<TConfig, BaseEditor>,
   TDefaults,
   TRequired
 >;
@@ -366,7 +487,7 @@ export function createRuleFactory<
     | InsertDataInputRuleContext,
     TDefaults,
     TRequired,
-    AnyRuleFactoryConfigLoose<TDefaults, TRequired>
+    AnyRuleFactoryConfigLoose<TDefaults, TRequired, BaseEditor>
   >
 ): CreateRuleFactoryReturn<
   | SelectionInputRuleContext
@@ -376,16 +497,16 @@ export function createRuleFactory<
   TDefaults,
   TRequired
 >;
-export function createRuleFactory(
-  configOrBuilder:
-    | Record<string, unknown>
-    | RuleFactoryConfigBuilder<
-        Record<string, unknown>,
-        Record<string, unknown>,
-        Record<string, unknown>,
-        AnyRuleFactoryConfigLoose
-      >
-) {
+export function createRuleFactory(configOrBuilder: unknown): any {
+  if (
+    typeof configOrBuilder === 'object' &&
+    configOrBuilder !== null &&
+    typeof Reflect.get(configOrBuilder, 'configure') === 'function' &&
+    Array.isArray(Reflect.get(configOrBuilder, '__configurationLayers'))
+  ) {
+    return createRuleFactory;
+  }
+
   return (options: Record<string, unknown> = {}) => {
     const factoryOptions =
       typeof configOrBuilder === 'function'
@@ -393,7 +514,11 @@ export function createRuleFactory(
         : { ...(configOrBuilder as Record<string, unknown>), ...options };
     const config =
       typeof configOrBuilder === 'function'
-        ? configOrBuilder(options)
+        ? (
+            configOrBuilder as (
+              options: Record<string, unknown>
+            ) => AnyRuleFactoryConfigLoose
+          )(options)
         : (configOrBuilder as AnyRuleFactoryConfigLoose);
 
     const priority =

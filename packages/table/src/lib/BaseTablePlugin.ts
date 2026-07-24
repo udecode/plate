@@ -23,7 +23,6 @@ import {
 import {
   type Anchor,
   ContentSlice,
-  definePropertyPolicy,
   defineValueCodec,
   type Descendant,
   type Editor,
@@ -2195,14 +2194,9 @@ type TablePluginContract = PluginConfig<
   },
   {},
   readonly [],
-  readonly [],
   never,
   TableApi
 >;
-
-type TableCellAttributes = NonNullable<TTableCellElement['attributes']>;
-
-type TableCellBorders = NonNullable<TTableCellElement['borders']>;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -2214,24 +2208,22 @@ const isTableCellBorder = (value: unknown): value is TTableCellBorder =>
     (typeof value.size === 'number' && Number.isFinite(value.size))) &&
   (!('style' in value) || typeof value.style === 'string');
 
-const tableCellAttributesPolicy = definePropertyPolicy<TableCellAttributes>({
-  id: 'plate.table.cell-attributes',
-  validate: (value): value is TableCellAttributes =>
+const tableCellAttributesProperty = property.json({
+  validate: (value): value is NonNullable<TTableCellElement['attributes']> =>
     isRecord(value) &&
     (!('colspan' in value) || typeof value.colspan === 'string') &&
     (!('rowspan' in value) || typeof value.rowspan === 'string'),
-  version: 1,
+  validationVersion: 1,
 });
 
-const tableCellBordersPolicy = definePropertyPolicy<TableCellBorders>({
-  id: 'plate.table.cell-borders',
-  validate: (value): value is TableCellBorders =>
+const tableCellBordersProperty = property.json({
+  validate: (value): value is NonNullable<TTableCellElement['borders']> =>
     isRecord(value) &&
     (!('bottom' in value) || isTableCellBorder(value.bottom)) &&
     (!('left' in value) || isTableCellBorder(value.left)) &&
     (!('right' in value) || isTableCellBorder(value.right)) &&
     (!('top' in value) || isTableCellBorder(value.top)),
-  version: 1,
+  validationVersion: 1,
 });
 
 const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
@@ -2291,7 +2283,6 @@ export const BaseTableRowPlugin = createBasePlugin({
 
 export const BaseTableCellPlugin = createBasePlugin({
   key: KEYS.td,
-  host: { dangerouslyAllowAttributes: ['colspan', 'rowspan'] },
   render: { nodeProps: ({ element }) => getCellAttributeProps(element) },
   schema: ({ plugins }) => ({
     element: {
@@ -2300,9 +2291,9 @@ export const BaseTableCellPlugin = createBasePlugin({
         min: 1,
       }),
       properties: {
-        attributes: property.json({ policy: tableCellAttributesPolicy }),
+        attributes: tableCellAttributesProperty,
         background: property.string(),
-        borders: property.json({ policy: tableCellBordersPolicy }),
+        borders: tableCellBordersProperty,
         colSpan: property.number(),
         rowSpan: property.number(),
         size: property.number(),
@@ -2326,7 +2317,6 @@ export const BaseTableCellPlugin = createBasePlugin({
 
 export const BaseTableCellHeaderPlugin = createBasePlugin({
   key: KEYS.th,
-  host: { dangerouslyAllowAttributes: ['colspan', 'rowspan'] },
   render: { nodeProps: ({ element }) => getCellAttributeProps(element) },
   schema: ({ plugins }) => ({
     element: {
@@ -2335,9 +2325,9 @@ export const BaseTableCellHeaderPlugin = createBasePlugin({
         min: 1,
       }),
       properties: {
-        attributes: property.json({ policy: tableCellAttributesPolicy }),
+        attributes: tableCellAttributesProperty,
         background: property.string(),
-        borders: property.json({ policy: tableCellBordersPolicy }),
+        borders: tableCellBordersProperty,
         colSpan: property.number(),
         rowSpan: property.number(),
         size: property.number(),
@@ -2362,6 +2352,11 @@ export const BaseTableCellHeaderPlugin = createBasePlugin({
 /** Enables support for tables. */
 export const BaseTablePlugin = createBasePlugin({
   key: KEYS.table,
+  dependencies: [
+    BaseTableRowPlugin,
+    BaseTableCellPlugin,
+    BaseTableCellHeaderPlugin,
+  ],
   schema: ({ plugins }) => {
     const rowType = plugins.elementType(BaseTableRowPlugin);
 
@@ -2373,19 +2368,14 @@ export const BaseTablePlugin = createBasePlugin({
         }),
         properties: {
           colSizes: property.json({
-            policy: definePropertyPolicy<
-              NonNullable<TTableElement['colSizes']>
-            >({
-              id: 'plate.table.column-sizes',
-              validate: (
-                value
-              ): value is NonNullable<TTableElement['colSizes']> =>
-                Array.isArray(value) &&
-                value.every(
-                  (size) => typeof size === 'number' && Number.isFinite(size)
-                ),
-              version: 1,
-            }),
+            validate: (
+              value
+            ): value is NonNullable<TTableElement['colSizes']> =>
+              Array.isArray(value) &&
+              value.every(
+                (size) => typeof size === 'number' && Number.isFinite(size)
+              ),
+            validationVersion: 1,
           }),
           marginLeft: property.number(),
         },
@@ -2395,16 +2385,21 @@ export const BaseTablePlugin = createBasePlugin({
   transformInitialValue: ({ setOption, type, value }) => {
     const cellIndices: Record<string, CellIndices> = {};
 
-    for (const [table, path] of NodeApi.elements({
-      children: value,
-      type: 'root',
-    })) {
-      if (path.length === 0 || table.type !== type) continue;
+    for (const children of [
+      value.children,
+      ...Object.values(value.roots ?? {}),
+    ]) {
+      for (const [table, path] of NodeApi.elements({
+        children,
+        type: 'root',
+      })) {
+        if (path.length === 0 || table.type !== type) continue;
 
-      Object.assign(
-        cellIndices,
-        indexTableCells(table as TTableElement).cellIndices
-      );
+        Object.assign(
+          cellIndices,
+          indexTableCells(table as TTableElement).cellIndices
+        );
+      }
     }
 
     setOption('_cellIndices', cellIndices);
@@ -2425,7 +2420,6 @@ export const BaseTablePlugin = createBasePlugin({
       },
     },
   },
-  plugins: [BaseTableRowPlugin, BaseTableCellPlugin, BaseTableCellHeaderPlugin],
 })
   .extendSelectors<TablePluginContract['selectors']>(
     ({ editor, getOptions }) => ({

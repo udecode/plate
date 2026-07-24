@@ -1,0 +1,308 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-24-compose-markdown-footnotes",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-24-compose-markdown-footnotes.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Compose runtime-neutral Markdown, editor-owned footnotes, and Tabbable shortcuts",
+  "targets": [
+    {
+      "name": "markdown-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/markdown-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-kit",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/editor-kit.tsx",
+        "apps/www/src/registry/components/editor/editor-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-ai",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-ai."
+        }
+      ]
+    },
+    {
+      "name": "editor-base-kit",
+      "files": ["apps/www/src/registry/components/editor/editor-base-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "align-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/align-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "basic-blocks-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/basic-blocks-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "basic-marks-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/basic-marks-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/callout-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/code-block-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/code-drawing-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/column-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/comment-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "date-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/date-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/font-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "line-height-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/line-height-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/link-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/list-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/math-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/media-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/mention-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/suggestion-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/table-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/toc-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toggle-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/toggle-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "tabbable-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/tabbable-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-24-markdown-footnote-preset",
+      "kind": "wiring",
+      "summary": "Configure Markdown parsing without installing a renderer-specific Footnote preset.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["markdown-kit"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-compose-markdown-footnotes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-24-editor-footnote-composition",
+      "kind": "wiring",
+      "summary": "Compose the shared Markdown parser with the matching live or static Footnote renderers exactly once.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-kit", "editor-ai", "editor-base-kit"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-compose-markdown-footnotes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-24-live-base-kit-independence",
+      "kind": "wiring",
+      "summary": "Install only the presets their copied source composes, without unrelated static/base counterparts.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "align-kit",
+        "basic-blocks-kit",
+        "basic-marks-kit",
+        "callout-kit",
+        "code-block-kit",
+        "code-drawing-kit",
+        "column-kit",
+        "comment-kit",
+        "date-kit",
+        "editor-ai",
+        "editor-base-kit",
+        "editor-kit",
+        "font-kit",
+        "line-height-kit",
+        "link-kit",
+        "list-kit",
+        "markdown-kit",
+        "math-kit",
+        "media-kit",
+        "mention-kit",
+        "suggestion-kit",
+        "table-kit",
+        "toc-kit",
+        "toggle-kit"
+      ],
+      "source": {
+        "line": 18,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-compose-markdown-footnotes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-24-tabbable-indent-shortcuts",
+      "kind": "behavior",
+      "summary": "Preserve Indent support while reserving Tab and Shift+Tab navigation for tabbable elements.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["tabbable-kit"],
+      "source": {
+        "line": 20,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-compose-markdown-footnotes",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

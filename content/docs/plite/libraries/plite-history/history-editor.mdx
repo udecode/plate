@@ -84,7 +84,7 @@ import type {
 type History = {
   readonly redos: readonly Batch[];
   readonly revision: number;
-  readonly schema: EditorSchemaIdentity | null;
+  readonly schema: EditorSchemaIdentity;
   readonly undos: readonly Batch[];
 };
 
@@ -102,8 +102,9 @@ Persist the installed stacks with `History.toJSON(editor)`. Decode them with
 `History.fromJSON(editor, json)`, then install the returned value through
 `tx.history.restore(...)`. Custom standalone effects belong to an installed
 extension's `effects` resource so their keyed versioned codecs can decode the
-batch. The version 3 envelope includes the current schema identity and rejects
-mismatched schema semantics before decoding a batch.
+batch. The version 4 envelope requires the current derived or named schema
+identity and rejects `null` or mismatched schema semantics before decoding a
+batch.
 
 Compatible typing and same-node property updates coalesce from canonical
 `DocumentChange` classifications and changed ranges. Grouping fingerprints are

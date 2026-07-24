@@ -30,8 +30,9 @@ Current priorities:
 
 ## Plate Rules
 
-- Keep Plate core unopinionated enough for framework use. Opinionated product
-  behavior belongs in packages, kits, examples, or docs.
+- Keep Plate core unopinionated enough for framework use. Feature capability
+  belongs in its package; product policy belongs in app/registry kits and
+  examples.
 - A behavior, API, or gate change needs an adoption story. "Cleaner" alone is
   not enough.
 - For current Plate features, parity and protocol matter. For deferred
@@ -44,8 +45,9 @@ Current priorities:
 
 ## Plugin And Component Doctrine
 
-- Core stays lean; optional capability should usually ship as packages,
-  plugins, or app-owned components.
+- Core stays lean. Keep invariants in their owner, parameters in `options`, and
+  product policy app- or kit-owned; proven substitutable capabilities use
+  ordinary plugins or packages.
 - Plugin authoring keeps one-owner behavior colocated and inferred. Public
   builders, configuration paths, and contribution namespaces each need a
   distinct user job; current assembly machinery is evidence, not doctrine.
@@ -57,17 +59,73 @@ Current priorities:
   independent proof. Protocol rows, handlers, and extension blocks do not map
   one-to-one to plugins.
 - Plugin identity does not force another file. Keep one-owner descriptors
-  colocated, preserve the complete preset as the common path, and name reusable
-  plugin-array kits only after real reuse.
-- Multiple callers of one plugin operation reuse its scoped API; they do not
-  justify a parallel raw helper. Keep the algorithm in the plugin. Standalone
-  functions need a real cross-plugin, cross-layer, or transaction-composition
-  job that one plugin cannot own honestly.
-- React files follow durable families rather than individual symbols. Keep a
-  component family in one `<Family>.tsx` file and a hook family in one
-  `use<Family>.ts` file; related public primitives and hooks may remain separate
-  exports from that owner. Sibling composition inside one family is not reuse
-  evidence for more files.
+  colocated. Public packages export individual capability descriptors;
+  inseparable multi-plugin structure uses an honest owner with
+  `dependencies`. App and registry source own named plugin-array kits after
+  real reuse; package-local tuples stay private implementation details. A
+  package grouping array is still the wrong owner even when it replaces a fake
+  grouping plugin or saves repeated imports.
+- Plugin relationships stay singular and truthful: required structure or
+  capability uses transitive `dependencies`. Optional capabilities are
+  ordinary plugins included by the consumer; an enhancement may depend on its
+  host, but the host does not bundle the enhancement. Pure grouping, defaults,
+  and product policy use app/registry-owned readonly arrays. Do not add an
+  optional-child field or `{ optional: Plugin }` wrapper; omission from the
+  consumer array already expresses optionality.
+- Base and live consumers do not automatically justify parallel kits. Share
+  one runtime-neutral app/registry policy kit when its descriptors, options,
+  and behavior are identical; each consuming preset composes its own static,
+  React, native, or other renderer-specific peer kits. Split only the owner
+  whose renderer or platform behavior genuinely differs.
+- Configure a target descriptor directly only when the caller owns that
+  target's membership in the final composition. Import access alone does not
+  establish membership ownership. A complete same-key descriptor customizes an
+  installed dependency or framework default. Required dependencies cannot be
+  disabled, and two enabled descriptors still conflict. Optional product
+  membership changes in the owning app/registry array, not through a disabled
+  tombstone.
+- A plugin that does not own another capability's membership in the consumer's
+  final composition may use `override.plugins[KEY]` as a weak peer: adapt only
+  an already-installed target, no-op when absent, never install or mutate
+  topology, never disable a required dependency, and yield to the target's
+  terminal configuration. This applies even when the adapting plugin can
+  import the target. An independently optional plugin or kit must not install
+  another independently optional peer merely to adapt it. Prove adapting-only,
+  target-only, both, and both with explicit target configuration. Bare-key use
+  is intentionally erased; exact target-option inference requires importing
+  the descriptor or config type. Keep component replacement and
+  `inject.parsers` as distinct contribution paths. Do not add a central key
+  registry, ancestor reach-through methods, recursive child registries, or
+  add/replace verbs.
+- Resolve peer conflicts at the smallest behavior surface. Remove or replace
+  one conflicting shortcut, handler, parser, or render contribution instead of
+  disabling its whole plugin. Required dependencies cannot be disabled, and
+  one conflicting member does not become a public plugin without independently
+  passing the capability-promotion bar.
+- A concrete inferred editor exposes every non-empty plugin API through
+  `editor.api.<pluginKey>` for complete autocomplete and agent discovery.
+  Generic package code may use `editor.plugin(Plugin).api`; both paths expose
+  the same immutable plugin-owned API. Keep plugin keys human-readable and
+  split serialized node `type` when needed. Do not duplicate implementations
+  with `extendEditorApi`, add API-key aliases, or move mutations outside
+  `editor.update`.
+- Generic code that accepts an optional descriptor checks
+  `editor.plugin(Plugin).installed` before using that portal. Disabled plugins
+  count as absent. Do not infer plugin availability from root `editor.api`,
+  node types, schema properties, caches, or caught access errors.
+- Multiple callers of one plugin operation reuse its plugin-owned API; they do
+  not justify a parallel raw helper. Keep the algorithm in the plugin.
+  Standalone functions need a real cross-plugin, cross-layer, or
+  transaction-composition job that one plugin cannot own honestly.
+- React files follow durable families rather than individual symbols or
+  implementation kinds. Keep a component family in one `<Family>.tsx` file,
+  including its family-only hooks, store, state, controller, lifecycle,
+  subcomponents, and public primitives. Exporting or documenting those symbols,
+  or importing them from an app wrapper that composes the same family, proves
+  public access rather than independent source ownership. Create a
+  `use<Family>.ts`, provider, or store file only when it has a standalone job
+  meaningful and independently consumed beyond that component family. Sibling
+  composition inside one family is not reuse evidence for more files.
 - Keep feature-package React roots flat by default. A nested component/hook
   directory earns its keep only as a real public subsystem with multiple
   cross-family owners, not as taxonomy or a response to file size.

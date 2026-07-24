@@ -1,4 +1,4 @@
-import { type Value, RangeApi } from '@platejs/plite';
+import { type Value, RangeApi, SelectionApi } from '@platejs/plite';
 import { getSelection } from '@platejs/plite-dom';
 import { IS_FOCUSED } from '@platejs/plite-dom/internal';
 
@@ -24,6 +24,16 @@ const syncPreferredModelSelectionToDOM = <
 
     if (!selection) {
       return false;
+    }
+
+    if (SelectionApi.isNode(selection)) {
+      const root = element.getRootNode() as Document | ShadowRoot;
+
+      IS_FOCUSED.set(editor, true);
+      setEditorFocused(editor, true);
+      element.focus({ preventScroll: true });
+      getSelection(root)?.removeAllRanges();
+      return true;
     }
 
     const domRange =

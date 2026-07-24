@@ -1,4 +1,5 @@
 import { createBaseEditor, HtmlPlugin } from '@platejs/core';
+import { getRenderNodeStaticProps } from '@platejs/core/static/internal';
 import { KEYS } from '@platejs/utils';
 
 import { BaseFontBackgroundColorPlugin } from './BaseFontBackgroundColorPlugin';
@@ -10,8 +11,12 @@ describe('BaseFontBackgroundColorPlugin', () => {
     });
     const plugin = editor.getPlugin(BaseFontBackgroundColorPlugin);
 
-    expect(plugin.inject.nodeProps).toMatchObject({
+    expect(plugin.inject.nodeProps).toEqual({
+      styleKey: 'backgroundColor',
+    });
+    expect(editor.getInjectProps(BaseFontBackgroundColorPlugin)).toMatchObject({
       nodeKey: 'backgroundColor',
+      styleKey: 'backgroundColor',
     });
     expect(
       editor.read.schema.property(BaseFontBackgroundColorPlugin)?.value.kind
@@ -45,5 +50,62 @@ describe('BaseFontBackgroundColorPlugin', () => {
       [KEYS.backgroundColor]: 'yellow',
       text: 'text',
     });
+  });
+
+  it('uses the resolved plugin type as its sole storage and render key', () => {
+    const BackgroundColorPlugin = BaseFontBackgroundColorPlugin.configure({
+      type: 'highlight',
+    });
+    const editor = createBaseEditor({
+      plugins: [BackgroundColorPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+
+    expect(editor.getInjectProps(BackgroundColorPlugin)).toMatchObject({
+      nodeKey: 'highlight',
+      styleKey: 'backgroundColor',
+    });
+    expect(
+      getRenderNodeStaticProps({
+        editor,
+        props: {
+          attributes: {},
+          children: null,
+          text: { backgroundColor: 'red', text: 'text' },
+        },
+      }).attributes.style
+    ).toBeUndefined();
+    expect(
+      getRenderNodeStaticProps({
+        editor,
+        props: {
+          attributes: {},
+          children: null,
+          text: { highlight: 'yellow', text: 'text' },
+        },
+      }).attributes.style
+    ).toEqual({ backgroundColor: 'yellow' });
+
+    const parsed = editor.plugin(HtmlPlugin).api.deserialize({
+      element: '<span style="background-color: red">text</span>',
+    });
+
+    expect(parsed).toMatchObject([{ highlight: 'red', text: 'text' }]);
+    expect(parsed[0]).not.toHaveProperty('backgroundColor');
+
+    editor.update.backgroundColor.set('yellow');
+
+    expect(editor.read.children()[0]?.children[0]).toMatchObject({
+      highlight: 'yellow',
+      text: 'text',
+    });
+    expect(editor.read.children()[0]?.children[0]).not.toHaveProperty(
+      'backgroundColor'
+    );
   });
 });

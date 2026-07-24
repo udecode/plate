@@ -62,13 +62,12 @@ import {
   validateConfiguredExtensionRegistry,
 } from './extension-registry';
 import { registerSchemaContribution } from './schema-contribution-registry';
-import { isPropertyPolicyToken } from '../interfaces/property-policy';
 import { normalizeEditorSchemaDeclaration } from './schema-definition';
 import {
   areEditorSchemaIdentitiesEqual,
   type EditorSchemaContributionRecord,
   getEditorSchemaDeclarationKey,
-  haveEquivalentEditorSchemaRuntimePolicyBindings,
+  haveEquivalentEditorSchemaRuntimeValidationBindings,
 } from './schema-compiler';
 import { EditorSchemaValidationError } from './schema-validation';
 import { toPublicRoot } from './public-root';
@@ -211,7 +210,7 @@ type ExtensionEntry = {
 
 type CanonicalExtensionSchemaResource = Readonly<{
   declarationKey: string;
-  runtimePolicyBindings: readonly EditorSchemaContributionRecord[];
+  runtimeValidationBindings: readonly EditorSchemaContributionRecord[];
 }>;
 
 type CanonicalExtensionResource = Readonly<{
@@ -237,7 +236,7 @@ const createCanonicalExtensionResourceRecord = <
     let schemaResource: CanonicalExtensionSchemaResource | null = null;
 
     if (key === 'schema' && value !== undefined) {
-      const runtimePolicyBindings = Object.freeze([
+      const runtimeValidationBindings = Object.freeze([
         Object.freeze({
           contribution: value as EditorSchemaDeclaration,
           extensionName: extension.name,
@@ -245,8 +244,10 @@ const createCanonicalExtensionResourceRecord = <
       ]);
 
       schemaResource = Object.freeze({
-        declarationKey: getEditorSchemaDeclarationKey(runtimePolicyBindings),
-        runtimePolicyBindings,
+        declarationKey: getEditorSchemaDeclarationKey(
+          runtimeValidationBindings
+        ),
+        runtimeValidationBindings,
       });
     }
     resources.set(key, Object.freeze({ key, schema: schemaResource, value }));
@@ -428,7 +429,6 @@ const cloneFrozenSchemaDeclaration = <T>(
   clones = new WeakMap<object, unknown>()
 ): T => {
   if (!value || typeof value !== 'object') return value;
-  if (isPropertyPolicyToken(value)) return value;
 
   const existing = clones.get(value);
 
@@ -490,10 +490,9 @@ const cloneFrozenExtensionConfig = <T>(
   }
   if (typeof value !== 'object') {
     throw new TypeError(
-      'Editor extension config accepts only plain immutable data and explicit schema tokens. Move functions and runtime resources to options.'
+      'Editor extension config accepts only plain immutable data. Move functions and runtime resources to options.'
     );
   }
-  if (isPropertyPolicyToken(value)) return value;
   if (ancestors.has(value)) {
     throw new TypeError('Editor extension config cannot be cyclic.');
   }
@@ -506,7 +505,7 @@ const cloneFrozenExtensionConfig = <T>(
     prototype !== null
   ) {
     throw new TypeError(
-      'Editor extension config accepts only plain immutable data and explicit schema tokens. Move class instances and runtime resources to options.'
+      'Editor extension config accepts only plain immutable data. Move class instances and runtime resources to options.'
     );
   }
 
@@ -1468,9 +1467,9 @@ const areEquivalentNormalizedExtensionResources = (
       left.schema &&
         right.schema &&
         left.schema.declarationKey === right.schema.declarationKey &&
-        haveEquivalentEditorSchemaRuntimePolicyBindings(
-          left.schema.runtimePolicyBindings,
-          right.schema.runtimePolicyBindings
+        haveEquivalentEditorSchemaRuntimeValidationBindings(
+          left.schema.runtimeValidationBindings,
+          right.schema.runtimeValidationBindings
         )
     );
   }

@@ -3,7 +3,7 @@ title: Plate 插件
 description: Plate 插件的 API 参考文档。
 ---
 
-Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#plugins) 属性的描述符。将同一个描述符传给 `editor.plugin(MyPlugin)`，即可类型安全地访问插件 API、update 命令和实时 options；React 组件通过 `usePluginOption` 或 `usePluginOptions` 订阅变化。
+Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#plugins) 属性的描述符。已安装插件的 API 会按插件 key 推断到 `editor.api`。当通用代码需要精确的插件 API、update 命令、类型或实时 options 时，将描述符传给 `editor.plugin(MyPlugin)`；React 组件通过 `usePluginOption` 或 `usePluginOptions` 订阅变化。
 
 ## 插件属性
 
@@ -14,19 +14,21 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 </APIItem>
 
 <APIItem name="targetPluginKeys" type="readonly string[]">
-插件的 schema 和 host 行为所针对的插件 key。
+插件的 schema 声明和注入行为所针对的插件 key。
 
 - **默认值:** `[]`
 </APIItem>
 
 <APIItem name="api" type="Record<string, Function>">
-插件拥有的 API 函数，通过 `editor.plugin(MyPlugin).api` 访问。只有属于根
-`editor.api` 表面的 API 才使用 `.extendEditorApi()`。
+  插件拥有的 API 函数，可通过 `editor.api[MyPlugin.key]` 和精确的
+  `editor.plugin(MyPlugin).api` portal 访问。两个路径引用同一个不可变 API
+  对象。只有不属于插件 key 命名空间、且确实面向整个编辑器的 API 才使用
+  `.extendEditorApi()`。
 </APIItem>
 
 <APIItem name="tx" type="Record<string, Function>">
-插件提供的事务命令。通过 `editor.plugin(MyPlugin).update.method()` 执行单个命令，
-或在 `editor.update((tx) => tx[key].method())` 中组合命令。
+  插件提供的事务命令。通过 `editor.plugin(MyPlugin).update.method()`
+  执行单个命令， 或在 `editor.update((tx) => tx[key].method())` 中组合命令。
 </APIItem>
 
 <APIItem name="options" type="Record<string, any>">
@@ -50,9 +52,9 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 ```ts
 type OnNodeChange = (
   ctx: PlatePluginContext & {
-  node: Descendant;
-  operation: NodeOperation;
-  prevNode: Descendant;
+    node: Descendant;
+    operation: NodeOperation;
+    prevNode: Descendant;
   }
 ) => HandlerReturnType;
 ```
@@ -72,10 +74,10 @@ type OnNodeChange = (
 ```ts
 type OnTextChange = (
   ctx: PlatePluginContext & {
-  node: Descendant;
-  operation: TextOperation;
-  prevText: string;
-  text: string;
+    node: Descendant;
+    operation: TextOperation;
+    prevText: string;
+    text: string;
   }
 ) => HandlerReturnType;
 ```
@@ -98,16 +100,20 @@ type OnTextChange = (
 Plate 用于向任何节点组件注入 props 的属性。
 </APISubListItem>
 
-
 <APISubListItem parent="inject" name="excludePlugins" type="string[]" optional>
-排除节点属性注入的插件 key 数组。
+  排除节点属性注入的插件 key 数组。
 </APISubListItem>
 
-<APISubListItem parent="inject" name="excludeBelowPlugins" type="string[]" optional>
-插件 key 数组。对于这些插件类型的元素后代节点，将排除节点属性注入。
+<APISubListItem
+  parent="inject"
+  name="excludeBelowPlugins"
+  type="string[]"
+  optional
+>
+  插件 key 数组。对于这些插件类型的元素后代节点，将排除节点属性注入。
 </APISubListItem>
 <APISubListItem parent="inject" name="isBlock" type="boolean" optional>
-如果为 true，仅匹配块级元素。用于限制属性注入到块级节点。
+  如果为 true，仅匹配块级元素。用于限制属性注入到块级节点。
 </APISubListItem>
 
 <APISubListItem parent="inject" name="isElement" type="boolean" optional>
@@ -119,25 +125,29 @@ Plate 用于向任何节点组件注入 props 的属性。
 <APISubListItem parent="inject" name="maxLevel" type="number" optional>
 节点属性注入的最大嵌套层级。超过此层级的节点不会接收注入的 props。
 </APISubListItem>
-<APISubListItem parent="inject" name="plugins" type="Record<string, Partial<PlatePlugin>>" optional>
-允许其他插件注入代码的属性。
+<APISubListItem parent="inject" name="parsers" type="Record<string, ParserPluginProjection>" optional>
+按 key 向已安装插件贡献仅包含 parser 的投影。
 </APISubListItem>
-<APISubListItem parent="inject" name="targetPluginToInject" type="function" optional>
-返回要注入到 `targetPluginKeys` 中每个已安装且已启用的顶层目标的插件配置。
+<APISubListItem parent="inject" name="targetParserToInject" type="function" optional>
+为 `targetPluginKeys` 中每个已安装且已启用的目标返回仅包含 parser 的投影。
 </APISubListItem>
 </APISubList>
 </APIItem>
 
 <APIItem name="type" type="string">
-插件拥有的文档类型或属性 key。
+插件拥有的已解析文档类型或属性 key。通过 `own.elementProperty(...)` 或
+`own.textProperty(...)` 创建的 schema 声明、注入的节点 props 和插件命令都使用
+同一个 key。当存储 key 需要与 `plugin.key` 不同时配置 `type`，不要添加第二个
+存储 key 选项。
 
 - **默认值:** `plugin.key`
 </APIItem>
 
 <APIItem name="schema" type="PluginSchema<C> | null">
-声明插件的 Plite 模型。元素语法使用 `schema.element`，类型化文本属性描述符使用
-`schema.mark`，跨节点属性使用 `schema.properties`。Schema 工厂接收编译时使用的插件
-`options` 快照。
+通过 `element`、`mark`、`properties` 和 `contentRoots` 字段声明插件的 Plite
+模型。工厂通过 `contentRoots: [own.contentRoot(...)]` 声明元素拥有的根。
+Schema 工厂接收已解析的插件 `type`、`options` 快照和已安装插件类型的类型化
+helper。
 布尔文本属性使用 `property.boolean({ default: false, omitDefault: true })`。
 </APIItem>
 
@@ -154,7 +164,9 @@ Plate 用于向任何节点组件注入 props 的属性。
 - `'hard'`: 创建需要两次按键才能跨越的"硬"边缘。使用基于偏移的导航
 
 - **默认值:** `undefined` (Plite 的默认行为)
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="break.empty" type="'default' | 'deleteExit' | 'exit' | 'lift' | 'reset'" optional>
 在空块中按下 Enter 时的动作。参见 [插件规则](/docs/plugin-rules)。
 
@@ -163,14 +175,18 @@ Plate 用于向任何节点组件注入 props 的属性。
 - `'exit'`: 退出当前块
 - `'lift'`: 将当前块从最近匹配的祖先中提升出来
 - `'deleteExit'`: 向后删除然后退出
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="break.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
 在空行末尾按下 Enter 时的动作。通常与 `rules.break.default: 'lineBreak'` 一起使用。参见 [插件规则](/docs/plugin-rules)。
 
 - `'default'`: 默认行为
 - `'exit'`: 退出当前块
 - `'deleteExit'`: 向后删除然后退出
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="break.default" type="'default' | 'deleteExit' | 'exit' | 'lineBreak'" optional>
 按下 Enter 时的默认动作。默认为分割块。参见 [插件规则](/docs/plugin-rules)。
 
@@ -178,7 +194,9 @@ Plate 用于向任何节点组件注入 props 的属性。
 - `'exit'`: 退出当前块
 - `'lineBreak'`: 插入换行符
 - `'deleteExit'`: 向后删除然后退出
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="break.splitReset" type="boolean" optional>
 如果为 true，分割后的新块将被重置为默认类型。参见 [插件规则](/docs/plugin-rules)。
 </APISubListItem>
@@ -188,7 +206,9 @@ Plate 用于向任何节点组件注入 props 的属性。
 - `'default'`: 默认行为
 - `'lift'`: 将当前块从最近匹配的祖先中提升出来
 - `'reset'`: 重置块为默认段落类型
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="delete.empty" type="'default' | 'reset'" optional>
 块为空时按下 Backspace 时的动作。参见 [插件规则](/docs/plugin-rules)。
 
@@ -209,7 +229,9 @@ Plate 用于向任何节点组件注入 props 的属性。
 在合并操作期间是否移除空节点。参见 [插件规则](/docs/plugin-rules)。
 
 - **默认值:** `false`
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="normalize.removeEmpty" type="boolean" optional>
 在规范化期间是否移除空文本节点。参见 [插件规则](/docs/plugin-rules)。
 
@@ -218,29 +240,24 @@ Plate 用于向任何节点组件注入 props 的属性。
 </APISubList>
 </APIItem>
 
-<APIItem name="host" type="object | null">
-定义 DOM 和静态渲染策略。`dangerouslyAllowAttributes` 转发显式属性白名单，
-`toDataAttributes` 将元素投影为 host data attributes。语义声明属于 `schema`。
-</APIItem>
-
 <APIItem name="override" type="object">
-允许按 key 覆盖组件和插件。
+提供组件替换和弱跨包插件适配。
 
 <APISubList>
 <APISubListItem parent="override" name="components" type="Record<string, NodeComponent>" optional>
 按 key 替换插件 `NodeComponent`。
 </APISubListItem>
-<APISubListItem parent="override" name="plugins" type="Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>" optional>
-按 key 扩展 `PlatePlugin`。
-</APISubListItem>
-<APISubListItem parent="override" name="enabled" type="Partial<Record<string, boolean>>" optional>
-启用或禁用插件。
+<APISubListItem parent="override" name="plugins" type="Record<string, BasePluginOverride>" optional>
+按 key 弱适配已安装的外部插件。目标不存在时忽略。值不能定义 `key`、
+`dependencies` 或另一个 `override`。贡献者按 priority 和源顺序解析，目标的直接
+`.configure()` 值优先。当包插件必须禁用已安装的可选对等插件时，使用
+`{ enabled: false }`。
 </APISubListItem>
 </APISubList>
 </APIItem>
 
 <APIItem name="parser" type="Nullable<Parser<WithAnyKey<C>>>">
-定义插件如何解析内容。
+  定义插件如何解析内容。
 </APIItem>
 
 <APIItem name="parsers" type="object">
@@ -294,12 +311,19 @@ HTML React 序列化器配置。
 如果唯一的变更是绑定组件，优先使用 `.withComponent(Component)`，并在
 `.configure()` 之前调用。可复用行为在 `.extend()` 中设置 `render.node`；
 用户同时拥有其他覆盖时，在最终 `.configure()` 中设置。
+
+</APISubListItem>
+<APISubListItem parent="render" name="nodeProps" type="NodeProps" optional>
+在交互和静态渲染中，将模型值显式映射为 element 或 leaf props。只返回当前插件拥有的
+可信 DOM props。
 </APISubListItem>
 <APISubListItem parent="render" name="isDecoration" type="boolean" optional>
 为 `true` 时将标记值渲染为 decorated leaves；为 `false` 时每个文本节点只渲染一次。
 
 - **默认值:** `true`
+
 </APISubListItem>
+
 <APISubListItem parent="render" name="as" type="keyof HTMLElementTagNameMap" optional>
 指定渲染节点组件时使用的 HTML 标签名。仅在插件没有自定义 `render.node` 时使用。
 
@@ -310,19 +334,15 @@ HTML React 序列化器配置。
 </APIItem>
 
 <APIItem name="shortcuts" type="Shortcuts">
-定义插件的键盘快捷键。
+  定义插件的键盘快捷键。
 </APIItem>
 
 <APIItem name="dependencies" type="readonly PluginReference[]">
-必须在当前插件之前安装的插件描述符。直接传入插件对象，以保留依赖身份和类型推断。
+  必须在当前插件之前安装的插件描述符。直接传入插件对象，以保留依赖身份和类型推断。
 </APIItem>
 
 <APIItem name="enabled" type="boolean" optional>
-启用或禁用插件。Plate 使用此属性决定是否使用该插件。
-</APIItem>
-
-<APIItem name="plugins" type="readonly PluginReference[]">
-随当前插件递归安装的嵌套插件描述符。
+  启用或禁用插件。Plate 使用此属性决定是否使用该插件。
 </APIItem>
 
 <APIItem name="priority" type="number">
@@ -332,11 +352,11 @@ HTML React 序列化器配置。
 </APIItem>
 
 <APIItem name="decorate" type="Decorate<WithAnyKey<C>>" optional>
-Plate 用于装饰编辑器范围的属性。
+  Plate 用于装饰编辑器范围的属性。
 </APIItem>
 
 <APIItem name="useHooks" type="() => void" optional>
-编辑器初始化时调用的钩子。
+  编辑器初始化时调用的钩子。
 </APIItem>
 
 <APIItem name="editOnly" type="boolean | EditOnlyConfig" optional>
@@ -346,10 +366,10 @@ Plate 用于装饰编辑器范围的属性。
 
 ```ts
 type EditOnlyConfig = {
-  render?: boolean;      // 默认: true
-  handlers?: boolean;    // 默认: true
-  inject?: boolean;      // 默认: true
-  transformInitialValue?: boolean;  // 默认: false
+  render?: boolean; // 默认: true
+  handlers?: boolean; // 默认: true
+  inject?: boolean; // 默认: true
+  transformInitialValue?: boolean; // 默认: false
 };
 ```
 
@@ -396,15 +416,11 @@ editOnly: {
 `shortcuts`。此前声明的运行时扩展可以读取配置值，重叠字段最终仍以用户配置为准。
 
 ```ts
-HeadingPlugin.configure({
-  options: { levels: [1, 2, 3] },
+H1Plugin.configure({
+  shortcuts: { toggle: { keys: 'mod+alt+1' } },
 });
 ```
 
-</APIItem>
-
-<APIItem name="configurePlugin" type="(plugin: PluginReference | { key: string }, config: PluginMethodConfig) => PlatePlugin">
-配置已有的嵌套插件。找不到目标时，返回原父插件。
 </APIItem>
 
 <APIItem name="extend" type="(config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
@@ -416,18 +432,6 @@ HeadingPlugin.configure({
   extendConfig:
     | Partial<PlatePlugin>
     | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)
-) => PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="extendPlugin" type="(plugin: PluginReference | { key: string }, config: PluginMethodConfig) => PlatePlugin">
-扩展现有嵌套插件或在未找到时添加新插件。支持深层嵌套。
-
-```ts
-(
-  plugin: PluginReference | { key: string },
-  extendConfig: PluginMethodConfig
 ) => PlatePlugin;
 ```
 
@@ -447,9 +451,8 @@ HeadingPlugin.configure({
 安装一个 Plite 编辑器扩展。用于 schema、state、tx、command、correction、query middleware 或运行时服务。
 
 ```ts
-(
-  extension: ExtendPlateEditorExtension<C> | PlateEditorExtensionInput
-) => PlatePlugin<C>;
+(extension: ExtendPlateEditorExtension<C> | PlateEditorExtensionInput) =>
+  PlatePlugin<C>;
 ```
 
 </APIItem>
@@ -510,22 +513,22 @@ HeadingPlugin.configure({
 <API name="Context">
 <APIAttributes>
 <APIItem name="editor" type="PlateEditor">
-当前编辑器实例。
+      当前编辑器实例。
 </APIItem>
 <APIItem name="plugin" type="EditorPlatePlugin<C>">
-当前插件实例。
+      当前插件实例。
 </APIItem>
 <APIItem name="getOption" type="function">
-获取特定选项值的函数。
+      获取特定选项值的函数。
 </APIItem>
 <APIItem name="getOptions" type="function">
-获取插件所有选项的函数。
+      获取插件所有选项的函数。
 </APIItem>
 <APIItem name="setOption" type="function">
-设置特定选项值的函数。
+      设置特定选项值的函数。
 </APIItem>
 <APIItem name="setOptions" type="function">
-设置多个选项的函数。
+      设置多个选项的函数。
 </APIItem>
 </APIAttributes>
 </API>
@@ -537,8 +540,8 @@ HeadingPlugin.configure({
 <API name="GenericTypes">
 <APIAttributes>
 <APIItem name="C" type="AnyPluginConfig = PluginConfig">
-表示插件契约，包括 `key`、`options`、`api`、`tx`、selectors、dependencies、
-嵌套 plugins 和 schema 推断。
+      表示插件契约，包括
+      `key`、`options`、`api`、`tx`、selectors、dependencies 和 schema 推断。
 </APIItem>
 </APIAttributes>
 </API>

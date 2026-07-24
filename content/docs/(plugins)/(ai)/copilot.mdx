@@ -461,22 +461,22 @@ Example Shortcut: `Cmd + →`
 
 ## API
 
-### `editor.plugin(CopilotPlugin).api.reject()`
+### `editor.api.copilot.reject()`
 
 Resets the plugin state to its initial condition:
 Default Shortcut: `Escape`
 
-### `editor.plugin(CopilotPlugin).api.triggerSuggestion()`
+### `editor.api.copilot.triggerSuggestion()`
 
 Triggers a new suggestion request. The request may be debounced based on the plugin configuration.
 
 Example Shortcut: `Ctrl + Space`
 
-### `editor.plugin(CopilotPlugin).api.setBlockSuggestion()`
+### `editor.api.copilot.setBlockSuggestion()`
 
 Sets suggestion text for a block.
 
-<API name="editor.plugin(CopilotPlugin).api.setBlockSuggestion">
+<API name="editor.api.copilot.setBlockSuggestion">
 <APIParameters>
   <APIItem name="options" type="SetBlockSuggestionOptions">
     Options for setting the block suggestion.
@@ -494,7 +494,7 @@ Sets suggestion text for a block.
 </APIOptions>
 </API>
 
-### `editor.plugin(CopilotPlugin).api.stop()`
+### `editor.api.copilot.stop()`
 
 Stops ongoing suggestion requests and cleans up:
 

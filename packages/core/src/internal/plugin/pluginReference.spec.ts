@@ -10,18 +10,12 @@ import {
 
 type NominalPluginOutput = Readonly<{
   key: string;
-  plugins: readonly NominalPluginOutput[];
   type: string;
 }>;
 
 const expectReusableReference = (plugin: NominalPluginOutput) => {
   expect(isNominalPluginDescriptor(plugin)).toBe(true);
   expect(isNominalPluginReference(plugin)).toBe(true);
-};
-
-const expectNominalPluginTree = (plugin: NominalPluginOutput) => {
-  expectReusableReference(plugin);
-  plugin.plugins.forEach(expectNominalPluginTree);
 };
 
 describe('plugin references', () => {
@@ -88,51 +82,6 @@ describe('plugin references', () => {
     ];
 
     [...baseOutputs, ...plateOutputs].forEach(expectReusableReference);
-  });
-
-  it('keeps deep configure, extend, and editor publication trees nominal', () => {
-    const GrandchildPlugin = createBasePlugin({
-      key: 'referenceGrandchild',
-      options: { value: 1 },
-    });
-    const ChildPlugin = createBasePlugin({
-      key: 'referenceChild',
-      plugins: [GrandchildPlugin],
-    });
-    const ParentPlugin = createBasePlugin({
-      key: 'referenceParent',
-      plugins: [ChildPlugin],
-    });
-    const trees = [
-      ParentPlugin.configurePlugin(GrandchildPlugin, {
-        options: { value: 2 },
-      }),
-      ParentPlugin.extendPlugin(GrandchildPlugin, {
-        options: { value: 3 },
-      }),
-      toPlatePlugin(ParentPlugin).configurePlugin(GrandchildPlugin, {
-        options: { value: 4 },
-      }),
-      toPlatePlugin(ParentPlugin).extendPlugin(GrandchildPlugin, {
-        options: { value: 5 },
-      }),
-      createBasePlugin({ key: 'addedReferenceParent' }).extendPlugin(
-        GrandchildPlugin,
-        { options: { value: 6 } }
-      ),
-      createPlatePlugin({ key: 'addedPlateReferenceParent' }).extendPlugin(
-        GrandchildPlugin,
-        { options: { value: 7 } }
-      ),
-    ];
-
-    trees.forEach(expectNominalPluginTree);
-
-    const editor = createBaseEditor({ plugins: [trees[0]] });
-
-    expectNominalPluginTree(editor.getPlugin(ParentPlugin));
-    expectReusableReference(editor.getPlugin(GrandchildPlugin));
-    expectReusableReference(editor.plugin(ParentPlugin).plugin);
   });
 
   it('accepts genuine option references and rejects spread-forged identities', () => {

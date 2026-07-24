@@ -8,7 +8,7 @@ export const BaseFontColorPlugin = createBasePlugin({
   inject: {
     nodeProps: {
       defaultNodeValue: 'black',
-      nodeKey: 'color',
+      styleKey: 'color',
     },
   },
   parsers: {

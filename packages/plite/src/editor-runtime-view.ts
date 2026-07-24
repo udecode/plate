@@ -55,6 +55,7 @@ import type {
   NamedRootKey,
   RootKey,
   Selection,
+  SnapshotInput,
   Value,
 } from './interfaces/editor';
 import { RangeApi } from './interfaces/range';
@@ -457,6 +458,46 @@ const withViewTransaction = <V extends Value>(
 
     return runSelectionMutation(fn);
   };
+  const replaceValue = (input: SnapshotInput<V>) =>
+    runRootTransform(editor, viewState, () => {
+      const value = transaction.value();
+      const selection =
+        input.selection &&
+        input.selection !== 'start' &&
+        input.selection !== 'end' &&
+        viewState.root !== MAIN_ROOT_KEY
+          ? {
+              ...input.selection,
+              anchor: { ...input.selection.anchor, root: viewState.root },
+              focus: { ...input.selection.focus, root: viewState.root },
+            }
+          : input.selection;
+
+      transaction.value.replace({
+        ...(viewState.root === MAIN_ROOT_KEY
+          ? { ...value, children: input.children }
+          : {
+              ...value,
+              roots: {
+                ...(value.roots ?? {}),
+                [viewState.root]: input.children,
+              },
+            }),
+        selection:
+          input.selection === 'start' || input.selection === 'end'
+            ? null
+            : selection,
+      });
+
+      if (input.selection === 'start' || input.selection === 'end') {
+        const point =
+          input.selection === 'start'
+            ? transaction.points.start([])
+            : transaction.points.end([]);
+
+        if (point) transaction.selection.set(point);
+      }
+    });
 
   const viewTransaction = Object.freeze({
     ...state,
@@ -673,6 +714,11 @@ const withViewTransaction = <V extends Value>(
           transaction.text.insert(text, options)
         ),
     }),
+    value: Object.freeze(
+      Object.assign(() => state.value(), {
+        replace: replaceValue,
+      })
+    ),
   }) as EditorUpdateTransaction<V>;
 
   return viewTransaction;

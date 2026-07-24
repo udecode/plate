@@ -4,11 +4,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import {
-  BaseBasicBlocksPlugin,
-  BaseBasicMarksPlugin,
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+  BaseHorizontalRulePlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
+  BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
 import { cleanDocx } from '@platejs/docx';
-import type { BasePlugin, BasePlugins } from '@platejs/core';
+import type { BasePlugins } from '@platejs/core';
 import {
   BaseParagraphPlugin,
   HtmlPlugin,
@@ -26,7 +39,7 @@ import { preprocessMammothHtml } from '../preprocessMammothHtml';
 jsx;
 
 const TestLinkPlugin = createBasePlugin({
-  key: KEYS.link,
+  key: 'link',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -55,6 +68,7 @@ const TestLinkPlugin = createBasePlugin({
       },
     },
   },
+  type: KEYS.link,
 });
 
 const TestTableRowPlugin = createBasePlugin({
@@ -89,6 +103,7 @@ const TestTableCellPlugin = createBasePlugin({
 
 const TestTablePlugin = createBasePlugin({
   key: KEYS.table,
+  dependencies: [TestTableRowPlugin, TestTableCellPlugin],
   schema: ({ plugins }) => {
     const rowType = plugins.elementType(TestTableRowPlugin);
 
@@ -102,7 +117,6 @@ const TestTablePlugin = createBasePlugin({
     };
   },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'TABLE' }] } } },
-  plugins: [TestTableRowPlugin, TestTableCellPlugin],
 });
 
 /** Read .docx file from docx package's __tests__ directory */
@@ -121,23 +135,31 @@ export const getDocxTestName = (name: string) => `when importing docx ${name}`;
 export const testDocxImporter = ({
   expected,
   filename,
-  overridePlugins,
   plugins = [],
 }: {
   expected: TestEditor;
   filename: string;
-  overridePlugins?: BasePlugin['override']['plugins'];
   plugins?: BasePlugins;
 }) => {
   it('import', async () => {
     const editor = createBaseEditor({
-      override: {
-        plugins: overridePlugins,
-      },
       plugins: [
         ...plugins,
-        BaseBasicBlocksPlugin,
-        BaseBasicMarksPlugin,
+        BaseBlockquotePlugin,
+        BaseH1Plugin,
+        BaseH2Plugin,
+        BaseH3Plugin,
+        BaseH4Plugin,
+        BaseH5Plugin,
+        BaseH6Plugin,
+        BaseHorizontalRulePlugin,
+        BaseBoldPlugin,
+        BaseCodePlugin,
+        BaseItalicPlugin,
+        BaseStrikethroughPlugin,
+        BaseSubscriptPlugin,
+        BaseSuperscriptPlugin,
+        BaseUnderlinePlugin,
         TestLinkPlugin,
         TestTablePlugin,
       ],

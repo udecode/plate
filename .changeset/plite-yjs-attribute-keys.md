@@ -12,4 +12,9 @@ directly. Import React cursor and provider-state hooks from
 `@platejs/yjs/react`. Serialized adapter metadata uses `plite:*` keys.
 
 Encode exact derived or named schema identities in Yjs schema metadata format
-2 and reject older room metadata envelopes.
+2, require every claimed room to carry that identity, and reject older room
+metadata envelopes.
+
+Synchronize primary children and named roots as one document, preserve
+root-qualified awareness selections, and group multi-root commits into one Yjs
+transaction and undo step.

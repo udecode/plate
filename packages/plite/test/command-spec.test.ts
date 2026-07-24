@@ -1652,7 +1652,6 @@ describe('pure command transaction specs', () => {
               content: schema.content.text({ default: 'text', min: 1 }),
             } as const,
           },
-          identity: 'derived',
           root: {
             content: schema.content.types(['heading', 'paragraph'], {
               default: { type: 'paragraph' },

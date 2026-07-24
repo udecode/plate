@@ -40,6 +40,7 @@ describe('getEditorPlugin', () => {
     expect(context).toMatchObject({
       api: {},
       editor,
+      installed: true,
       plugin: expect.objectContaining({
         key: 'test',
         type: 'test-type',
@@ -113,9 +114,22 @@ describe('getEditorPlugin', () => {
 
     const context = getEditorPlugin(editor, unresolvedPlugin);
 
+    expect(context.installed).toBe(false);
     expect(() => context.plugin).toThrow(
       'Plate plugin "unresolved" is not installed.'
     );
+  });
+
+  it('reports literal-disabled plugins as not installed', () => {
+    const disabledPlugin = createBasePlugin({
+      enabled: false,
+      key: 'disabled',
+    });
+    const disabledEditor = createBaseEditor({
+      plugins: [disabledPlugin],
+    });
+
+    expect(disabledEditor.plugin(disabledPlugin).installed).toBe(false);
   });
 
   it('splits plugin-owned API from the root editor API', () => {

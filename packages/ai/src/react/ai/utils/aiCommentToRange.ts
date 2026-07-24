@@ -17,7 +17,7 @@ export const aiCommentToRange = (
 ): Range | undefined => {
   const { blockId, content } = aiComment;
 
-  const contentNodes = editor.api.markdown.deserialize(content);
+  const contentNodes = editor.api.markdown.deserialize(content).children;
 
   let firstBlock: NodeEntry<Element> | undefined;
 

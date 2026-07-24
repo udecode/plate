@@ -61,20 +61,23 @@ npm install @platejs/emoji @emoji-mart/data
 
 ### 添加插件
 
+`EmojiPlugin` 会把 `EmojiInputPlugin` 作为必需依赖安装。
+
 ```tsx
-import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
+import { EmojiPlugin } from '@platejs/emoji/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     EmojiPlugin,
-    EmojiInputPlugin,
   ],
 });
 ```
 
 ### 配置插件
+
+需要替换依赖的组件或配置时，把完整的 `EmojiInputPlugin` 描述符加入同一数组。
 
 ```tsx
 import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
@@ -114,7 +117,7 @@ const editor = createPlateEditor({
 
 ### EmojiPlugin
 
-提供表情功能的核心插件。扩展自[TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)。
+提供表情功能的核心插件。扩展自[TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)，并要求安装 `EmojiInputPlugin`。
 
 <API name="EmojiPlugin">
 <APIOptions>
@@ -142,4 +145,4 @@ const editor = createPlateEditor({
 
 ### EmojiInputPlugin
 
-处理表情插入的输入行为。
+处理表情插入的必需输入依赖。仅在替换其组件或配置时直接加入。

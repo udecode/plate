@@ -61,7 +61,7 @@ describe('wrapWithBlockId', () => {
       ];
 
       const result = serializeMd(editor as any, {
-        value: slateNodes,
+        value: { children: slateNodes },
         withBlockId: true,
       });
 
@@ -77,7 +77,7 @@ describe('wrapWithBlockId', () => {
       ];
 
       const result = serializeMd(editor as any, {
-        value: slateNodes,
+        value: { children: slateNodes },
         withBlockId: true,
       });
 
@@ -100,7 +100,7 @@ describe('wrapWithBlockId', () => {
       ];
 
       const result = serializeMd(editor as any, {
-        value: slateNodes,
+        value: { children: slateNodes },
         withBlockId: true,
       });
 
@@ -130,7 +130,7 @@ describe('wrapWithBlockId', () => {
       );
 
       const result = serializeMd(editor as any, {
-        value: [slateNodes],
+        value: { children: [slateNodes] },
         withBlockId: true,
       });
 
@@ -169,7 +169,7 @@ describe('wrapWithBlockId', () => {
       ];
 
       const result = serializeMd(editor as any, {
-        value: slateNodes,
+        value: { children: slateNodes },
         withBlockId: true,
       });
 
@@ -195,7 +195,7 @@ describe('wrapWithBlockId', () => {
       ];
 
       const result = serializeMd(editor as any, {
-        value: slateNodes,
+        value: { children: slateNodes },
         withBlockId: true,
       });
 

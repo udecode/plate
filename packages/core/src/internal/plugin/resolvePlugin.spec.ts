@@ -35,26 +35,6 @@ describe('resolvePlugin', () => {
     expect(plugin.__configurationLayers).toHaveLength(1);
   });
 
-  it('lets the last child-plugin extension win', () => {
-    const child = createBasePlugin({
-      key: 'aa',
-      options: { value: 'base' },
-    });
-
-    const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'a',
-          plugins: [child],
-        })
-          .extendPlugin(child, { options: { value: 'first' } })
-          .extendPlugin(child, { options: { value: 'last' } }),
-      ],
-    });
-
-    expect(editor.getPlugin(child).options.value).toBe('last');
-  });
-
   it('does not mutate configured inputRules reused across editors', () => {
     const configuredRule = defineInputRule({
       apply: () => true,

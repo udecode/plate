@@ -84,13 +84,13 @@ const csvData = `Name,Age,City
 John,30,New York
 Jane,25,Boston`;
 
-const nodes = editor.plugin(CsvPlugin).api.deserialize({ data: csvData });
+const nodes = editor.api.csv.deserialize({ data: csvData });
 ```
 
 某次转换需要局部覆盖时，直接传入 PapaParse 字段：
 
 ```tsx
-const nodes = editor.plugin(CsvPlugin).api.deserialize({
+const nodes = editor.api.csv.deserialize({
   data: csvData,
   delimiter: ';',
   skipEmptyLines: true,
@@ -125,11 +125,11 @@ Plugin for CSV deserialization functionality.
 
 ## API
 
-### `editor.plugin(CsvPlugin).api.deserialize(options)`
+### `editor.api.csv.deserialize(options)`
 
 Takes a CSV (Comma Separated Values) string and converts it into a Plate compatible format. This function uses the `papaparse` library to parse the CSV data.
 
-<API name="editor.plugin(CsvPlugin).api.deserialize">
+<API name="editor.api.csv.deserialize">
 <APIParameters>
   <APIItem name="data" type="string">
     The CSV data string to be deserialized.

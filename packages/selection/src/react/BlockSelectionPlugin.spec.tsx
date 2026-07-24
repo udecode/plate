@@ -8,10 +8,15 @@ import {
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 import { BlockMenuPlugin } from './BlockMenuPlugin';
 
-const createBlockSelectionEditor = () =>
+const createBlockSelectionEditor = ({
+  withBlockMenu = false,
+}: {
+  withBlockMenu?: boolean;
+} = {}) =>
   createPlateEditor({
     plugins: [
       BlockSelectionPlugin,
+      ...(withBlockMenu ? [BlockMenuPlugin] : []),
       TestBoldPlugin,
       TestElementPropertiesPlugin,
     ],
@@ -39,6 +44,12 @@ const runSelectAllShortcut = (
   });
 
 describe('BlockSelectionPlugin', () => {
+  it('does not install the optional block menu', () => {
+    const editor = createBlockSelectionEditor();
+
+    expect(getPlateRuntime(editor).plugins.blockMenu).toBeUndefined();
+  });
+
   it('progresses from the current block to every selectable block', () => {
     const editor = createBlockSelectionEditor();
 
@@ -131,7 +142,7 @@ describe('BlockSelectionPlugin', () => {
   });
 
   it('keeps selected blocks when the block menu is open', () => {
-    const editor = createBlockSelectionEditor();
+    const editor = createBlockSelectionEditor({ withBlockMenu: true });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -147,5 +158,23 @@ describe('BlockSelectionPlugin', () => {
     expect([
       ...editor.plugin(BlockSelectionPlugin).getOption('selectedIds')!,
     ]).toEqual(['block1']);
+  });
+
+  it('clears selected blocks when an explicit block menu is closed', () => {
+    const editor = createBlockSelectionEditor({ withBlockMenu: true });
+
+    editor
+      .plugin(BlockSelectionPlugin)
+      .setOption('selectedIds', new Set(['block1']));
+
+    editor.update.selection.set({
+      kind: 'text',
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 0, path: [1, 0] },
+    });
+
+    expect([
+      ...editor.plugin(BlockSelectionPlugin).getOption('selectedIds')!,
+    ]).toEqual([]);
   });
 });

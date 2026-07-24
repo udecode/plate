@@ -84,20 +84,20 @@ Decoration helpers include `isElementDecorationsEqual`,
 
 ## Host Codecs
 
-Use `defineHostCodec` for schema-aware clipboard formats and install codecs as
-one named extension with `hostCodecs`. Each callback receives an immutable
-`EditorCoreStateView`; parse callbacks also receive a snapshot of the incoming
-host formats and files.
+Install schema-aware clipboard formats as one named extension with
+`hostCodecs`. Keep a codec inline when that extension is its only owner; use
+`defineHostCodec` only when the same codec is reused. Each callback receives an
+immutable `EditorCoreStateView`; parse callbacks also receive a snapshot of the
+incoming host formats and files.
 
 ```ts
 import {
-  ContentSlice,
   defineEditorExtension,
   property,
   schema,
   target,
 } from "@platejs/plite";
-import { defineHostCodec, hostCodecs } from "@platejs/plite-dom";
+import { hostCodecs } from "@platejs/plite-dom";
 import { decodeHtmlSlice, encodeHtmlSlice } from "./html-codec";
 
 const Bold = schema.textProperty("bold", property.boolean(), {
@@ -109,25 +109,22 @@ const DataAttribute = schema.elementProperty(
   { target: target.group("block") }
 );
 
-const appSchema = defineEditorExtension({
-  name: "app-schema",
-  schema: { properties: [Bold, DataAttribute] },
-});
-
-const html = defineHostCodec({
-  format: "text/html",
-  key: "app-html",
-  parse: ({ data, state }) => decodeHtmlSlice(data, state.schema),
-  schema: [
-    { kind: "element", type: "paragraph" },
-    { kind: "property", declaration: Bold },
-    { kind: "property", declaration: DataAttribute },
-  ],
-  serialize: ({ slice, state }) => encodeHtmlSlice(slice, state.schema),
-});
-
 const editor = usePliteEditor({
-  extensions: [appSchema, hostCodecs("app-host-codecs", [html])],
+  extensions: [
+    defineEditorExtension({
+      name: "app-schema",
+      schema: { properties: [Bold, DataAttribute] },
+    }),
+    hostCodecs("app-host-codecs", [
+      {
+        format: "text/html",
+        key: "app-html",
+        owns: [{ kind: "element", type: "paragraph" }, Bold, DataAttribute],
+        parse: ({ data, state }) => decodeHtmlSlice(data, state.schema),
+        serialize: ({ slice, state }) => encodeHtmlSlice(slice, state.schema),
+      },
+    ]),
+  ],
   initialValue,
 });
 ```
@@ -146,16 +143,17 @@ editor, a live `DataTransfer`, a fitter, or a write transaction. `query` is a
 read-only applicability check; parsing only decodes the payload, and the host
 dispatcher owns fitting and insertion.
 
-Schema claims compile against the candidate editor schema before an extension
+Ownership claims compile against the candidate editor schema before an extension
 revision publishes. `{ kind: "schema" }` owns the complete schema. Element
-claims use stable element types. Property claims reuse the exact frozen
-`schema.elementProperty(...)` or `schema.textProperty(...)` declaration that
-the schema contribution installs. The compiler derives one stable identity
-from the declaration's placement, key, and target, so equal keys with disjoint
-targets remain independently claimable. Key-only claims and raw compiled IDs
-are not accepted. Duplicate codec keys, unknown declarations, and overlapping
-claims in the same MIME format and direction reject the complete configuration
-revision. Parse and serialize ownership are independent.
+claims use stable element types. Property claims reuse the same
+`schema.elementProperty(...)` or `schema.textProperty(...)` declaration in the
+schema contribution and codec. Matching is structural, not object-identity
+based. The compiler derives one stable identity from the declaration's
+placement, key, and target, so equal keys with disjoint targets remain
+independently claimable. Key-only claims and raw compiled IDs are not accepted.
+Duplicate codec keys, unknown declarations, and overlapping claims in the same
+MIME format and direction reject the complete configuration revision. Parse
+and serialize ownership are independent.
 
 Codec parsing is a pure decode boundary. Return `false` from `query` or `null`
 from `parse` when a payload does not apply; insertion belongs exclusively to

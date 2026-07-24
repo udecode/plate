@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { registrySchema } from 'shadcn/schema';
 
 import registryShadcnData from '../registry-shadcn.json';
@@ -11,6 +13,7 @@ const ABSOLUTE_URL_REGEX = /^https?:\/\//;
 const EDITOR_COMPONENT_PATH_SEGMENT = 'components/editor/';
 const EDITOR_COMPONENT_TARGET_PREFIX = '@components/editor/';
 const PLATE_PUBLIC_REGISTRY_BASE_URL = 'https://platejs.org/r';
+const IMPORT_SOURCE_REGEX = /from ['"]([^'"]+)['"]/g;
 
 const sourceRegistry = createPlateRegistry('https://platejs.org');
 const normalizedRegistry = registrySchema.parse({
@@ -47,6 +50,18 @@ const shadcnItemsByName = new Map(
 const runtimeItemsByName = new Map(
   registry.items.map((item) => [item.name, item])
 );
+const unbackedBaseKitDependencies: string[] = [];
+const liveKitBaseImports: string[] = [];
+
+function getImportSources(source: string) {
+  return Array.from(source.matchAll(IMPORT_SOURCE_REGEX), (match) => match[1]);
+}
+
+function importsRegistryItem(importSources: string[], itemName: string) {
+  return importSources.some(
+    (specifier) => specifier.split('/').at(-1) === itemName
+  );
+}
 
 for (const item of sourceRegistry.items) {
   for (const dependency of item.registryDependencies ?? []) {
@@ -55,7 +70,52 @@ for (const item of sourceRegistry.items) {
       `Expected source item ${item.name} to use bare shadcn dependency ${dependency.slice('@shadcn/'.length)} instead of ${dependency}`
     );
   }
+
+  const files = (item.files ?? []).map((file) => ({
+    imports: getImportSources(
+      readFileSync(
+        new URL(`../src/registry/${file.path}`, import.meta.url),
+        'utf8'
+      )
+    ),
+    path: file.path,
+  }));
+
+  for (const dependency of item.registryDependencies ?? []) {
+    if (!dependency.endsWith('-base-kit')) continue;
+
+    const dependencyName = dependency.slice('@plate/'.length);
+
+    if (
+      !files.some((file) => importsRegistryItem(file.imports, dependencyName))
+    ) {
+      unbackedBaseKitDependencies.push(`${item.name} -> ${dependency}`);
+    }
+  }
+
+  if (!item.name.endsWith('-kit') || item.name.endsWith('-base-kit')) {
+    continue;
+  }
+
+  for (const file of files) {
+    if (
+      file.imports.some((specifier) =>
+        specifier.split('/').at(-1)?.endsWith('-base-kit')
+      )
+    ) {
+      liveKitBaseImports.push(`${item.name}:${file.path}`);
+    }
+  }
 }
+
+assert(
+  unbackedBaseKitDependencies.length === 0 && liveKitBaseImports.length === 0,
+  [
+    'Expected base-kit registry dependencies to be source-backed and live kits to stay independent from base presets.',
+    ...unbackedBaseKitDependencies,
+    ...liveKitBaseImports,
+  ].join('\n')
+);
 
 function assert(condition: unknown, message: string) {
   if (!condition) {

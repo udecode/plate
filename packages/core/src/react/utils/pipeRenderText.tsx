@@ -44,10 +44,7 @@ export const pipeRenderText = (
     const binding = getCompiledPlateModelBinding(editor, plugin);
 
     if (binding?.kind === 'mark' && !binding.isDecoration) {
-      const canUsePlainText =
-        !plugin.render.node &&
-        !plugin.render.nodeProps &&
-        !plugin.host.dangerouslyAllowAttributes?.length;
+      const canUsePlainText = !plugin.render.node && !plugin.render.nodeProps;
 
       if (canUsePlainText) {
         const entry = {

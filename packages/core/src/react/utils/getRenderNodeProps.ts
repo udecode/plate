@@ -17,9 +17,8 @@ import { getPluginNodeProps } from '../../lib/utils/getPluginNodeProps';
 import { getEditorPlugin } from '../plugin';
 
 /**
- * Override node props with plugin props. Allowed properties in
- * `props.element.attributes` are passed into `props.attributes`. Extend the
- * class name with the node type.
+ * Merge explicitly projected plugin props and extend the class name with the
+ * node type.
  */
 type RenderNodePropsInput = GetInjectNodePropsOptions & {
   attributes: AnyObject;
@@ -29,7 +28,6 @@ type RenderNodePropsInput = GetInjectNodePropsOptions & {
 };
 
 export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
-  attributes: nodeAttributes,
   disableInjectNodeProps,
   editor,
   plugin,
@@ -39,7 +37,6 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
 }: {
   editor: PlateEditor;
   props: TProps;
-  attributes?: AnyObject;
   disableInjectNodeProps?: boolean;
   plugin?: AnyBasePlugin | AnyEditorPlatePlugin;
   pluginContext?: AnyObject;
@@ -49,9 +46,7 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
     !disableInjectNodeProps &&
     getPlateRuntime(editor).pluginCache.inject.nodeProps.length > 0;
   const canSkipPluginNodeProps =
-    !hasInjectNodeProps &&
-    !plugin?.render.nodeProps &&
-    !plugin?.host.dangerouslyAllowAttributes?.length;
+    !hasInjectNodeProps && !plugin?.render.nodeProps;
   const resolvedPluginContext = pluginContext
     ? pluginContext
     : plugin
@@ -95,7 +90,6 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
   }
 
   const pluginProps = getPluginNodeProps({
-    attributes: nodeAttributes,
     plugin,
     props: newProps,
   });

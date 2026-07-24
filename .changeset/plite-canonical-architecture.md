@@ -6,7 +6,8 @@
 - Compile closed schemas from extension `schema` declarations with shared `property.*` laws, structural content fitting, stable identity, and typed element, group, root, and property queries
 - Publish derived schema identities as `{ kind: 'derived', fingerprint }` and application-named lineage as `{ kind: 'named', id, version, fingerprint }`; fingerprints cover compiled semantics only
 - Report schema failures through `EditorSchemaValidationError` with root, path, node, property, and contributor provenance
-- Add immutable `ContentSlice` values with contextual `state.slice` fitting, closed `fragment.replace`, open `slice.replace`, and detached-parent `fitContent`
+- Add immutable `{ content, openStart, openEnd, roots? }` `ContentSlice` values with contextual `state.slice` fitting, closed `fragment.replace`, open `slice.replace`, and detached-parent `fitContent`
+- Carry element-owned named roots through content slices, enforce one owner for exclusive roots, preserve shared aliases, remap copies deterministically, and apply owner/root cleanup, cut, undo, and redo atomically
 - Reconfigure extension slots and install dynamic extensions atomically, requiring an explicit document migration when the candidate schema rejects the current document
 - Define semantic commands with `defineCommand` and register pure `false | TransactionSpec` handlers through extension `commands: ({ handle, around }) => [...]` factories
 - Dispatch command-backed updates through immutable transaction specs, including extension-aware `state.transaction(...)` builders and `tx.command`
@@ -14,9 +15,11 @@
 - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
 - Add document replacement, block-relative insertion, live location targets, property matchers, and explicit selection predicates
+- Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
 - Add explicit document repair and mutually exclusive mark toggles
 - Initialize editors synchronously through `initialValue` or an editor-context callback and publish non-cancellable commit contexts with the resulting immutable snapshot
-- Freeze pure descriptor namespaces and infer serializable JSON properties from `property.json({ policy })`
+- Derive complete raw-schema identity when `id` and `version` are omitted, and expose a non-null derived or named identity from `editor.read.schema.identity()`
+- Freeze pure descriptor namespaces and infer custom property values from inline `validate` predicates paired with a positive-integer `validationVersion`
 
 **Migration:** Replace `@platejs/slate` with `@platejs/plite` and migrate Slate
 transforms and operations to `editor.read`, `editor.update`, or active

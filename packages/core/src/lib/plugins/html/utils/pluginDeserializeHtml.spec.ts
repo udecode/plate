@@ -26,7 +26,7 @@ describe('pluginDeserializeHtml', () => {
     const AlignPlugin = createBasePlugin({
       key: 'align',
       inject: {
-        plugins: {
+        parsers: {
           p: {
             parsers: {
               html: {

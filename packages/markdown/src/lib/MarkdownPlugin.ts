@@ -9,22 +9,23 @@ import {
   createBasePlugin,
   prepareParserPluginContext,
 } from '@platejs/core';
-import type {
-  Descendant,
-  EditorCoreStateView,
-  EditorExtension,
-} from '@platejs/plite';
-import { defineHostCodec, hostCodecs } from '@platejs/plite-dom';
+import type { Descendant, Value } from '@platejs/plite';
+import { ContentSlice, ElementApi } from '@platejs/plite';
+import { type HostCodec, hostCodecs } from '@platejs/plite-dom';
 import { KEYS } from '@platejs/utils';
 import { bindFirst, isUrl } from '@udecode/utils';
 
 import type { MdRules, PlateType } from './types';
+import type { DeserializeMdOptions } from './deserializer';
+import type { SerializeMdOptions } from './serializer';
 
-import { deserializeInlineMd, deserializeMd } from './deserializer';
+import { deserializeInlineMd } from './deserializer';
 import { deserializeMdWithRuntime } from './internal/markdownDeserializer';
 import { serializeMdWithRuntime } from './internal/markdownSerializer';
-import { createMarkdownRuntime } from './internal/markdownRuntime';
-import { serializeMd } from './serializer';
+import {
+  createMarkdownRuntime,
+  withMarkdownRuntime,
+} from './internal/markdownRuntime';
 
 export type AllowNodeConfig = {
   /** Custom filter function for nodes during deserialization. */
@@ -52,22 +53,15 @@ export type MarkdownPluginOptions = {
 
 type MarkdownContract = PluginConfig<'markdown', MarkdownPluginOptions>;
 
-const createMarkdownHostCodecExtension = (
-  createContext: (
-    state: EditorCoreStateView
-  ) => Parameters<typeof createMarkdownRuntime>[0]
-): EditorExtension =>
-  hostCodecs('plate-markdown-host-codec', [
-    defineHostCodec({
-      format: 'text/markdown',
-      key: 'plate:markdown:text/markdown:serialize',
-      schema: [{ kind: 'schema' }],
-      serialize: ({ slice, state }) =>
-        serializeMdWithRuntime(createMarkdownRuntime(createContext(state)), {
-          value: [...slice.content],
-        }),
-    }),
-  ]);
+const shouldParseMarkdown = (
+  data: string,
+  source: { files: { length: number }; getData: (format: string) => string }
+) => {
+  if (source.getData('text/html')) return false;
+  if (source.files.length === 0 && isUrl(data)) return false;
+
+  return true;
+};
 
 export const MarkdownPlugin = createBasePlugin<MarkdownContract>({
   key: KEYS.markdown,
@@ -82,33 +76,82 @@ export const MarkdownPlugin = createBasePlugin<MarkdownContract>({
 })
   .extendEditorApi(({ editor }) => ({
     markdown: {
-      deserialize: bindFirst(deserializeMd, editor),
+      deserialize: (data: string, options?: DeserializeMdOptions) =>
+        withMarkdownRuntime(editor, (runtime) =>
+          deserializeMdWithRuntime(runtime, data, options)
+        ),
       deserializeInline: bindFirst(deserializeInlineMd, editor),
-      serialize: bindFirst(serializeMd, editor),
+      serialize: (options?: SerializeMdOptions) =>
+        withMarkdownRuntime(editor, (runtime) =>
+          serializeMdWithRuntime(runtime, options)
+        ),
     },
   }))
   .extend({
     parser: {
       format: ['text/plain', 'text/markdown'],
-      deserialize: (context) =>
-        deserializeMdWithRuntime(createMarkdownRuntime(context), context.data),
-      schema: [{ kind: 'schema' }],
-      query: ({ data, source }) => {
-        const htmlData = source.getData('text/html');
-
-        if (htmlData) return false;
-
-        const { files } = source;
-
-        if (!files?.length && isUrl(data)) return false;
-
-        return true;
-      },
+      query: ({ data, source }) => shouldParseMarkdown(data, source),
     },
   })
-  .extendExtension('hostCodec', ({ editor, plugin }) =>
-    createMarkdownHostCodecExtension(prepareParserPluginContext(editor, plugin))
-  );
+  .extendExtension('hostCodec', ({ editor, plugin }) => {
+    const createContext = prepareParserPluginContext(editor, plugin);
+    const parse: NonNullable<HostCodec['parse']> = ({ data, state }) => {
+      const document = deserializeMdWithRuntime(
+        createMarkdownRuntime(createContext(state)),
+        data
+      );
+
+      return ContentSlice.fromJSON({
+        content: document.children,
+        openEnd: 0,
+        openStart: 0,
+        ...(document.roots ? { roots: document.roots } : {}),
+      });
+    };
+
+    return hostCodecs('plate-markdown-host-codec', [
+      {
+        format: 'text/markdown',
+        key: 'plate:markdown:text/markdown',
+        owns: [{ kind: 'schema' }],
+        parse,
+        query: ({ data, source }) => shouldParseMarkdown(data, source),
+        serialize: ({ slice, state }) => {
+          const roots: Record<string, Value> = {};
+
+          Object.entries(slice.roots ?? {}).forEach(([root, content]) => {
+            const blocks = content.flatMap((node) =>
+              ElementApi.isElement(node) ? [node] : []
+            );
+
+            if (blocks.length !== content.length) {
+              throw new Error(
+                `Markdown content root "${root}" must contain blocks.`
+              );
+            }
+
+            roots[root] = blocks;
+          });
+
+          return serializeMdWithRuntime(
+            createMarkdownRuntime(createContext(state)),
+            undefined,
+            {
+              children: [...slice.content],
+              ...(Object.keys(roots).length > 0 ? { roots } : {}),
+            }
+          );
+        },
+      },
+      {
+        format: 'text/plain',
+        key: 'plate:markdown:text/plain',
+        owns: [{ kind: 'schema' }],
+        parse,
+        query: ({ data, source }) => shouldParseMarkdown(data, source),
+      },
+    ]);
+  });
 
 export type MarkdownConfig = InferConfig<typeof MarkdownPlugin>;
 

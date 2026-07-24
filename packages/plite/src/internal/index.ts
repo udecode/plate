@@ -112,6 +112,8 @@ export {
 } from '../core/document-change';
 export {
   createInternalClipboardApi,
+  type EditorExtensionsFromOptions,
+  type EditorValueFromOptions,
   initializeEditorExtensions,
 } from '../create-editor';
 export {
@@ -138,7 +140,6 @@ export {
   getInstalledEditorExtension,
   reportEditorLifecycleError,
 } from '../core/editor-extension';
-export { isPropertyPolicyToken } from '../interfaces/property-policy';
 export {
   assertPublicRootKey,
   toInternalRoot,
@@ -183,6 +184,7 @@ export {
   setEditorFocused,
   setEditorMaxLength,
   setEditorReadOnly,
+  setEditorSnapshotInputTransform,
   setCurrentMarks as setEditorMarks,
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,

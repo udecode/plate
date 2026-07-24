@@ -7,7 +7,6 @@ import type {
   NODES,
   PlainText,
   TBasicMarks,
-  TCaptionProps,
   TComboboxInputElement,
   TCommentText,
   TFontMarks,
@@ -83,12 +82,8 @@ export interface MyHrElement extends MyBlockElement {
   type: typeof KEYS.hr;
 }
 
-export interface MyImageElement
-  extends MyBlockElement,
-    TCaptionProps,
-    TImageElement,
-    TResizableProps {
-  children: [EmptyText];
+export interface MyImageElement extends TImageElement, TResizableProps {
+  id?: string;
   type: typeof KEYS.img;
 }
 
@@ -98,11 +93,9 @@ export interface MyLinkElement extends TLinkElement {
 }
 
 export interface MyMediaEmbedElement
-  extends MyBlockElement,
-    TCaptionProps,
-    TMediaEmbedElement,
+  extends TMediaEmbedElement,
     TResizableProps {
-  children: [EmptyText];
+  id?: string;
   type: typeof NODES.mediaEmbed;
 }
 

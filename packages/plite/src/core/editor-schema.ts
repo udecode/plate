@@ -159,6 +159,20 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       options: Readonly<{ parent: Element; root?: RootKey }>
     ) => readonly Descendant[] | null;
     getElementContent: (type: string) => CompiledSchemaContentProgram | null;
+    getElementOwnedRoots: (element: Element) => readonly Readonly<{
+      ownership: import('../interfaces/schema').SchemaContentRootOwnership;
+      root: NamedRootKey;
+      slot: string;
+    }>[];
+    getOrphanedElementOwnedRoots: (
+      input: Readonly<{
+        after: EditorDocumentValue;
+        before: EditorDocumentValue;
+        change: DocumentChange;
+        indexedAfter: ReadonlyMap<string, IndexedDocument>;
+        tracked: ReadonlySet<string>;
+      }>
+    ) => readonly NamedRootKey[];
     indexConstructedRoot: (
       input: Readonly<{
         after: IndexedDocument;
@@ -410,12 +424,9 @@ const validatePropertyValue = (
       }
     }
 
-    if (
-      currentDescriptor.policy &&
-      !currentDescriptor.policy.validate(current)
-    ) {
+    if (currentDescriptor.validate && !currentDescriptor.validate(current)) {
       throw new EditorSchemaValidationError(
-        `${owner} fails property policy "${currentDescriptor.policy.id}".`
+        `${owner} fails custom property validation.`
       );
     }
   };
@@ -1127,9 +1138,12 @@ export const createEditorSchema = <V extends Value = Value>(
       content: element.content ? toPublicContent(element.content) : null,
       contentRoots: Object.freeze(
         Object.fromEntries(
-          [...element.contentRoots].map(([slot, content]) => [
+          [...element.contentRoots].map(([slot, root]) => [
             slot,
-            toPublicContent(content),
+            Object.freeze({
+              content: toPublicContent(root.content),
+              ownership: root.ownership,
+            }),
           ])
         )
       ),
@@ -1485,10 +1499,145 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   };
 
+  const getElementOwnedRoots: InternalEditorSchemaApi['getElementOwnedRoots'] =
+    (element) => {
+      const contentRoots = getCompiledElement(element)?.contentRoots;
+      const childRoots = (element as { childRoots?: unknown }).childRoots;
+
+      if (
+        !contentRoots ||
+        contentRoots.size === 0 ||
+        typeof childRoots !== 'object' ||
+        childRoots === null
+      ) {
+        return Object.freeze([]);
+      }
+
+      return Object.freeze(
+        [...contentRoots].flatMap(([slot, declaration]) => {
+          const root = (childRoots as Readonly<Record<string, unknown>>)[slot];
+
+          return typeof root === 'string' && root.length > 0 && root !== 'main'
+            ? [
+                Object.freeze({
+                  ownership: declaration.ownership,
+                  root: root as NamedRootKey,
+                  slot,
+                }),
+              ]
+            : [];
+        })
+      );
+    };
+
   const hasContentRoots = () =>
     [...(getDeclarativeSchema()?.elements.byType.values() ?? [])].some(
       (element) => element.contentRoots.size > 0
     );
+
+  const getOrphanedElementOwnedRoots: InternalEditorSchemaApi['getOrphanedElementOwnedRoots'] =
+    ({ after, before, change, indexedAfter, tracked }) => {
+      const schema = getDeclarativeSchema();
+
+      if (!schema || !hasContentRoots()) return Object.freeze([]);
+
+      const beforeRoots: Readonly<Record<string, readonly Descendant[]>> = {
+        main: before.children,
+        ...(before.roots ?? {}),
+      };
+      const afterRoots: Readonly<Record<string, readonly Descendant[]>> = {
+        main: after.children,
+        ...(after.roots ?? {}),
+      };
+      const beforeIndexes = new Map(
+        getDocumentOwnershipIndexes(schema, before).map(({ index, root }) => [
+          root,
+          index,
+        ])
+      );
+      const afterIndexes = new Map<RootKey, ElementOwnedRootIndex>();
+      const changedRoots = new Set([
+        ...[...getInternalDocumentChangeEntries(change)].map(([root]) => root),
+        ...change.createRoots,
+        ...change.deleteRoots,
+      ]);
+      const candidates = new Set(tracked);
+
+      for (const [root, children] of Object.entries(afterRoots)) {
+        const beforeDocument = IndexedDocument.fromValue(
+          (beforeRoots[root] ?? []) as readonly JsonNode[]
+        );
+        const afterDocument =
+          indexedAfter.get(root) ??
+          IndexedDocument.fromValue(children as readonly JsonNode[]);
+        const index = changedRoots.has(root)
+          ? rebaseElementOwnedRootIndex(
+              schema,
+              root,
+              getInternalDocumentChangeSet(change, root),
+              beforeDocument,
+              afterDocument
+            )
+          : ensureElementOwnedRootIndex(schema, root, afterDocument);
+
+        afterIndexes.set(root, index);
+        if (changedRoots.has(root)) {
+          for (const childRoot of index.dirtyChildRoots) {
+            candidates.add(childRoot);
+          }
+        }
+      }
+      for (const root of change.deleteRoots) {
+        const beforeDocument = IndexedDocument.fromValue(
+          (beforeRoots[root] ?? []) as readonly JsonNode[]
+        );
+        const index = rebaseElementOwnedRootIndex(
+          schema,
+          root,
+          getInternalDocumentChangeSet(change, root),
+          beforeDocument,
+          EMPTY_INDEXED_DOCUMENT
+        );
+
+        for (const childRoot of index.dirtyChildRoots) {
+          candidates.add(childRoot);
+        }
+      }
+
+      const countOwners = (
+        indexes: ReadonlyMap<RootKey, ElementOwnedRootIndex>,
+        childRoot: string,
+        ownership?: 'exclusive'
+      ) => {
+        let count = 0;
+
+        for (const index of indexes.values()) {
+          for (const binding of getElementOwnedRootGrammarBindings(
+            index,
+            childRoot
+          )) {
+            if (!ownership || binding.ownership === ownership) {
+              count += binding.count;
+            }
+          }
+        }
+
+        return count;
+      };
+
+      return Object.freeze(
+        [...candidates]
+          .filter(
+            (root): root is NamedRootKey =>
+              root !== 'main' &&
+              Object.hasOwn(afterRoots, root) &&
+              countOwners(afterIndexes, root) === 0 &&
+              (tracked.has(root) ||
+                countOwners(beforeIndexes, root, 'exclusive') > 0)
+          )
+          .sort()
+      );
+    };
 
   const getElementSlicePolicy = (element: Element) =>
     getCompiledElement(element)?.slice ??
@@ -5823,6 +5972,8 @@ export const createEditorSchema = <V extends Value = Value>(
     childRoot: string,
     indexes = getDocumentOwnershipIndexes(schema, value)
   ) => {
+    let exclusive = false;
+    let ownerCount = 0;
     let projection:
       | Readonly<{
           content: CompiledSchemaContentProgram;
@@ -5836,6 +5987,8 @@ export const createEditorSchema = <V extends Value = Value>(
         index,
         childRoot
       )) {
+        exclusive ||= grammar.ownership === 'exclusive';
+        ownerCount += grammar.count;
         if (
           projection &&
           !contentProgramsEqual(projection.content, grammar.content)
@@ -5869,6 +6022,20 @@ export const createEditorSchema = <V extends Value = Value>(
           owner: grammar.owner,
         });
       }
+    }
+
+    if (exclusive && ownerCount !== 1 && projection) {
+      const location = elementOwnedRootLocation(
+        value,
+        projection.owner,
+        projection.index
+      );
+
+      throw createEditorSchemaValidationError(
+        'invalid-root',
+        `Exclusive editor content root "${childRoot}" must have exactly one owner; received ${ownerCount}.`,
+        location
+      );
     }
 
     return projection;
@@ -6568,6 +6735,8 @@ export const createEditorSchema = <V extends Value = Value>(
     getElementBehavior,
     getElementContent,
     getElementContentRoots,
+    getOrphanedElementOwnedRoots,
+    getElementOwnedRoots,
     getElementProperty,
     getElementSlicePolicy,
     getRootContent,
@@ -6575,8 +6744,7 @@ export const createEditorSchema = <V extends Value = Value>(
     getTextPropertyAt,
     getVocabulary,
     hasContentRoots,
-    identity: () =>
-      getRegistry().schemaContributions.compiled?.identity ?? null,
+    identity: () => getRegistry().schemaContributions.compiled.identity,
     isAtom: (element: Node) =>
       ElementApi.isElement(element) && getElementBehavior(element).atom,
     isBlock: (element: Node) =>

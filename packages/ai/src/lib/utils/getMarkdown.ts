@@ -1,6 +1,6 @@
 import type { MarkdownEditor } from '@platejs/markdown';
 import { BaseTablePlugin } from '@platejs/table';
-import { type Element, ElementApi } from '@platejs/plite';
+import { type Descendant, type Element, ElementApi } from '@platejs/plite';
 import {
   type TTableCellElement,
   type TTableElement,
@@ -8,6 +8,9 @@ import {
 } from '@platejs/utils';
 
 import type { MarkdownType } from './replacePlaceholders';
+
+const isElement = (node: Descendant): node is Element =>
+  ElementApi.isElement(node);
 
 /**
  * Serialize table cell content to markdown string. Multiple paragraphs are
@@ -20,7 +23,13 @@ const serializeCellContent = (
   const parts: string[] = [];
 
   for (const child of cell.children) {
-    const md = editor.api.markdown.serialize({ value: [child] }).trim();
+    if (!ElementApi.isElement(child)) {
+      throw new Error('Table cells must contain block elements.');
+    }
+
+    const md = editor.api.markdown
+      .serialize({ value: { children: [child] } })
+      .trim();
     if (md) {
       parts.push(md);
     }
@@ -94,9 +103,13 @@ const serializeCellBlocks = (
   const blocks: string[] = [];
 
   for (const { cell, id } of cells) {
+    if (!cell.children.every(isElement)) {
+      throw new Error('Table cells must contain block elements.');
+    }
+
     const content = editor.api.markdown
       .serialize({
-        value: cell.children,
+        value: { children: cell.children },
       })
       .trim();
 
@@ -131,7 +144,7 @@ export const getMarkdown = (
       .map(([node]) => node);
 
     return editor.api.markdown.serialize({
-      value: blocks,
+      value: { children: blocks },
       withBlockId: type === 'blockWithBlockId',
     });
   }
@@ -149,13 +162,17 @@ export const getMarkdown = (
       ];
 
       return editor.api.markdown.serialize({
-        value: modifiedFragment,
+        value: { children: modifiedFragment },
         withBlockId: type === 'blockSelectionWithBlockId',
       });
     }
 
+    if (!fragment.every(isElement)) {
+      throw new Error('Block selections must contain block elements.');
+    }
+
     return editor.api.markdown.serialize({
-      value: fragment,
+      value: { children: fragment },
       withBlockId: type === 'blockSelectionWithBlockId',
     });
   }

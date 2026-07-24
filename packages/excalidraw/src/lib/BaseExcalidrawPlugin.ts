@@ -3,7 +3,6 @@ import {
   type Element,
   type NodeInsertNodesOptions,
   type NodeProps,
-  definePropertyPolicy,
   property,
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
@@ -20,29 +19,26 @@ export interface TExcalidrawElement extends Element {
 
 type ExcalidrawElementData = Exclude<TExcalidrawElement['data'], undefined>;
 
-const excalidrawDataPolicy = definePropertyPolicy<ExcalidrawElementData>({
-  id: 'plate.excalidraw.data',
-  validate: (value): value is ExcalidrawElementData =>
-    value === null ||
-    (typeof value === 'object' &&
-      !Array.isArray(value) &&
-      value !== null &&
-      'elements' in value &&
-      Array.isArray(value.elements) &&
-      'state' in value &&
-      typeof value.state === 'object' &&
-      !Array.isArray(value.state) &&
-      value.state !== null),
-  version: 1,
-});
-
 /** Enables support for Excalidraw drawing tool within a Slate document */
 export const BaseExcalidrawPlugin = createBasePlugin({
   key: KEYS.excalidraw,
   schema: {
     element: {
       properties: {
-        data: property.json({ policy: excalidrawDataPolicy }),
+        data: property.json({
+          validate: (value): value is ExcalidrawElementData =>
+            value === null ||
+            (typeof value === 'object' &&
+              !Array.isArray(value) &&
+              value !== null &&
+              'elements' in value &&
+              Array.isArray(value.elements) &&
+              'state' in value &&
+              typeof value.state === 'object' &&
+              !Array.isArray(value.state) &&
+              value.state !== null),
+          validationVersion: 1,
+        }),
       },
       void: 'block',
     },

@@ -42,13 +42,13 @@ export interface History<V extends Value = Value> {
   readonly revision: number;
   readonly redos: readonly Batch<V>[];
   /** Schema identity that owns every persisted change in this history. */
-  readonly schema: EditorSchemaIdentity | null;
+  readonly schema: EditorSchemaIdentity;
   readonly undos: readonly Batch<V>[];
 }
 
 export type HistoryJSON = Readonly<{
   redos: readonly HistoryBatchJSON[];
-  schema: EditorSchemaIdentity | null;
+  schema: EditorSchemaIdentity;
   undos: readonly HistoryBatchJSON[];
   version: 4;
 }>;
@@ -106,7 +106,7 @@ export const History = {
       (value.revision as number) >= 0 &&
       Array.isArray(value.redos) &&
       value.redos.every(isBatch) &&
-      (value.schema === null || isHistorySchemaIdentity(value.schema)) &&
+      isHistorySchemaIdentity(value.schema) &&
       Array.isArray(value.undos) &&
       value.undos.every(isBatch)
     );

@@ -3,7 +3,6 @@ import { create } from 'mutative';
 import type { BaseEditor } from '../editor';
 import type {
   AnyPluginConfig,
-  InferOwnApi,
   InferOptions,
   WithRequiredKey,
 } from './PluginConfig';
@@ -55,6 +54,9 @@ export function getEditorPlugin(
 
     return plugin;
   };
+  const isInstalled = () =>
+    getCandidate() !== undefined ||
+    getCompiledPlatePlugin(editor, p.key) !== undefined;
   const getStore = () => getPluginOptionsStore(editor, getPlugin().key);
   const replaceStoreState = (
     store: NonNullable<ReturnType<typeof getStore>>,
@@ -74,23 +76,6 @@ export function getEditorPlugin(
 
     return getCompiledPlatePluginApi(editor, plugin.key) ?? {};
   };
-  const api = new Proxy(Object.create(null) as Record<PropertyKey, unknown>, {
-    get(_target, key) {
-      const pluginApi = getRuntimeApi();
-
-      return pluginApi[key as string];
-    },
-    getOwnPropertyDescriptor(_target, key) {
-      return {
-        configurable: true,
-        enumerable: true,
-        value: Reflect.get(api, key),
-      };
-    },
-    ownKeys() {
-      return Reflect.ownKeys(getRuntimeApi());
-    },
-  }) as InferOwnApi<AnyPluginConfig>;
   const createUpdateFacade = (path: readonly PropertyKey[]): unknown =>
     new Proxy(
       (...args: unknown[]) => {
@@ -221,7 +206,8 @@ export function getEditorPlugin(
   } as Record<PropertyKey, unknown>;
 
   Object.defineProperties(context, {
-    api: { enumerable: true, value: api },
+    api: { enumerable: true, get: getRuntimeApi },
+    installed: { enumerable: true, get: isInstalled },
     plugin: { enumerable: true, get: getPlugin },
     type: { enumerable: true, get: () => getPlugin().type },
     update: { enumerable: true, value: update },

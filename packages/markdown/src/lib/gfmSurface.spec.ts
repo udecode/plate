@@ -45,7 +45,7 @@ describe('gfm package surfaces', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject(output);
+    expect(value.children).toMatchObject(output);
 
     const markdown = serializeMd(editor, { value });
 
@@ -55,18 +55,20 @@ describe('gfm package surfaces', () => {
 
   it('respects resourceLink when serializing bare autolink literals', () => {
     const editor = createTestEditor();
-    const value = [
-      {
-        children: [
-          {
-            children: [{ text: 'https://platejs.org' }],
-            type: 'a',
-            url: 'https://platejs.org',
-          },
-        ],
-        type: 'p',
-      },
-    ];
+    const value = {
+      children: [
+        {
+          children: [
+            {
+              children: [{ text: 'https://platejs.org' }],
+              type: 'a',
+              url: 'https://platejs.org',
+            },
+          ],
+          type: 'p',
+        },
+      ],
+    };
 
     expect(
       serializeMd(editor, {
@@ -83,7 +85,7 @@ describe('gfm package surfaces', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           {

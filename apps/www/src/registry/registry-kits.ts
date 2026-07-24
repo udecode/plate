@@ -14,7 +14,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [],
+    dependencies: ['@platejs/basic-nodes'],
     files: [
       {
         path: 'components/editor/plugins/basic-blocks-base-kit.tsx',
@@ -224,7 +224,9 @@ export const registryBaseKits: Registry['items'] = [
     ],
     name: 'media-base-kit',
     registryDependencies: [
+      '@plate/caption',
       '@plate/media-audio-node',
+      '@plate/media-embed-node',
       '@plate/media-file-node',
       '@plate/media-image-node',
       '@plate/media-video-node',
@@ -306,15 +308,15 @@ export const registryBaseKits: Registry['items'] = [
       '@plate/basic-marks-base-kit',
       '@plate/callout-base-kit',
       '@plate/code-block-base-kit',
-      '@plate/code-drawing-base-kit',
       '@plate/column-base-kit',
       '@plate/comment-base-kit',
       '@plate/date-base-kit',
-      '@plate/footnote-base-kit',
       '@plate/font-base-kit',
+      '@plate/footnote-base-kit',
       '@plate/line-height-base-kit',
       '@plate/link-base-kit',
       '@plate/list-base-kit',
+      '@plate/markdown-kit',
       '@plate/math-base-kit',
       '@plate/media-base-kit',
       '@plate/mention-base-kit',
@@ -322,7 +324,6 @@ export const registryBaseKits: Registry['items'] = [
       '@plate/table-base-kit',
       '@plate/toc-base-kit',
       '@plate/toggle-base-kit',
-      '@plate/markdown-kit',
     ],
     type: 'registry:component',
   },
@@ -340,7 +341,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'ai-kit',
     registryDependencies: [
-      '@plate/markdown-kit',
       '@plate/cursor-overlay-kit',
       '@plate/ai-menu',
       '@plate/ai-node',
@@ -358,10 +358,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'align-kit',
-    registryDependencies: [
-      '@plate/align-base-kit',
-      '@plate/align-toolbar-button',
-    ],
+    registryDependencies: ['@plate/align-toolbar-button'],
     type: 'registry:component',
   },
   {
@@ -391,7 +388,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [],
+    dependencies: ['@platejs/basic-nodes'],
     files: [
       {
         path: 'components/editor/plugins/basic-blocks-kit.tsx',
@@ -400,7 +397,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'basic-blocks-kit',
     registryDependencies: [
-      '@plate/basic-blocks-base-kit',
       '@plate/blockquote-node',
       '@plate/heading-node',
       '@plate/hr-node',
@@ -418,7 +414,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'basic-marks-kit',
     registryDependencies: [
-      '@plate/basic-marks-base-kit',
       '@plate/code-node',
       '@plate/highlight-node',
       '@plate/kbd-node',
@@ -485,7 +480,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'callout-kit',
-    registryDependencies: ['@plate/callout-base-kit', '@plate/callout-node'],
+    registryDependencies: ['@plate/callout-node'],
     type: 'registry:component',
   },
   {
@@ -497,10 +492,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'code-block-kit',
-    registryDependencies: [
-      '@plate/code-block-base-kit',
-      '@plate/code-block-node',
-    ],
+    registryDependencies: ['@plate/code-block-node'],
     type: 'registry:component',
   },
   {
@@ -512,10 +504,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'code-drawing-kit',
-    registryDependencies: [
-      '@plate/code-drawing-base-kit',
-      '@plate/code-drawing-node',
-    ],
+    registryDependencies: ['@plate/code-drawing-node'],
     type: 'registry:component',
   },
   {
@@ -527,7 +516,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'column-kit',
-    registryDependencies: ['@plate/column-base-kit', '@plate/column-node'],
+    registryDependencies: ['@plate/column-node'],
     type: 'registry:component',
   },
   {
@@ -540,7 +529,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'comment-kit',
     registryDependencies: [
-      '@plate/comment-base-kit',
       '@plate/comment-node',
       '@plate/comment-toolbar-button',
       '@plate/discussion-kit',
@@ -556,7 +544,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'copilot-kit',
-    registryDependencies: ['@plate/ghost-text', '@plate/markdown-kit'],
+    registryDependencies: ['@plate/ghost-text'],
     type: 'registry:component',
   },
   {
@@ -580,7 +568,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'date-kit',
-    registryDependencies: ['@plate/date-base-kit', '@plate/date-node'],
+    registryDependencies: ['@plate/date-node'],
     type: 'registry:component',
   },
   {
@@ -650,7 +638,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'editor-kit',
     registryDependencies: [
-      '@plate/editor-base-kit',
       '@plate/ai-kit',
       '@plate/align-kit',
       '@plate/autoformat-kit',
@@ -672,8 +659,8 @@ export const registryKits: Registry['items'] = [
       '@plate/exit-break-kit',
       '@plate/fixed-toolbar-kit',
       '@plate/floating-toolbar-kit',
-      '@plate/footnote-kit',
       '@plate/font-kit',
+      '@plate/footnote-kit',
       '@plate/line-height-kit',
       '@plate/link-kit',
       '@plate/list-kit',
@@ -794,7 +781,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'font-kit',
     registryDependencies: [
-      '@plate/font-base-kit',
       '@plate/font-size-toolbar-button',
       '@plate/font-color-toolbar-button',
     ],
@@ -821,10 +807,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'line-height-kit',
-    registryDependencies: [
-      '@plate/line-height-base-kit',
-      '@plate/line-height-toolbar-button',
-    ],
+    registryDependencies: ['@plate/line-height-toolbar-button'],
     type: 'registry:component',
   },
   {
@@ -837,7 +820,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'link-kit',
     registryDependencies: [
-      '@plate/link-base-kit',
       '@plate/link-node',
       '@plate/link-toolbar',
       '@plate/link-toolbar-button',
@@ -870,7 +852,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'list-kit',
     registryDependencies: [
-      '@plate/list-base-kit',
       '@plate/block-list',
       '@plate/list-toolbar-button',
       '@plate/indent-kit',
@@ -879,7 +860,6 @@ export const registryKits: Registry['items'] = [
   },
   {
     dependencies: [
-      '@platejs/footnote',
       '@platejs/markdown',
       'remark-emoji',
       'remark-gfm',
@@ -892,7 +872,6 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'markdown-kit',
-    registryDependencies: [],
     type: 'registry:component',
   },
   {
@@ -905,14 +884,13 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'math-kit',
     registryDependencies: [
-      '@plate/math-base-kit',
       '@plate/equation-toolbar-button',
       '@plate/equation-node',
     ],
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/caption', '@platejs/media'],
+    dependencies: ['@platejs/media'],
     description:
       'Media kit without API (see media-uploadthing-api for reference)',
     files: [
@@ -923,7 +901,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'media-kit',
     registryDependencies: [
-      '@plate/media-base-kit',
       '@plate/media-audio-node',
       '@plate/media-embed-node',
       '@plate/media-file-node',
@@ -954,7 +931,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'mention-kit',
-    registryDependencies: ['@plate/mention-base-kit', '@plate/mention-node'],
+    registryDependencies: ['@plate/mention-node'],
     type: 'registry:component',
   },
   {
@@ -979,7 +956,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'suggestion-kit',
     registryDependencies: [
-      '@plate/suggestion-base-kit',
       '@plate/suggestion-node',
       '@plate/suggestion-toolbar-button',
       '@plate/discussion-kit',
@@ -1006,11 +982,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'table-kit',
-    registryDependencies: [
-      '@plate/table-base-kit',
-      '@plate/table-node',
-      '@plate/table-toolbar-button',
-    ],
+    registryDependencies: ['@plate/table-node', '@plate/table-toolbar-button'],
     type: 'registry:component',
   },
   {
@@ -1022,7 +994,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'toc-kit',
-    registryDependencies: ['@plate/toc-base-kit', '@plate/toc-node'],
+    registryDependencies: ['@plate/toc-node'],
     type: 'registry:component',
   },
   {
@@ -1035,7 +1007,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'toggle-kit',
     registryDependencies: [
-      '@plate/toggle-base-kit',
       '@plate/indent-kit',
       '@plate/toggle-node',
       '@plate/toggle-toolbar-button',

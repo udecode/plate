@@ -148,26 +148,49 @@ const snapshotContentSlice = <V extends Value>(
   const keys = entries.map(([key]) => key).sort();
 
   if (
-    keys.length !== 3 ||
+    (keys.length !== 3 && keys.length !== 4) ||
     keys[0] !== 'content' ||
     keys[1] !== 'openEnd' ||
-    keys[2] !== 'openStart'
+    keys[2] !== 'openStart' ||
+    (keys.length === 4 && keys[3] !== 'roots')
   ) {
     throw new Error(
-      'Content slice must contain only content, openEnd, and openStart.'
+      'Content slice must contain only content, openEnd, openStart, and optional roots.'
     );
   }
 
   const fields = new Map(entries);
   const openStart = fields.get('openStart');
   const openEnd = fields.get('openEnd');
+  const seen = new WeakSet<object>();
 
   assertOpenDepths(openStart, openEnd);
+  const rootsValue = fields.get('roots');
+  let roots: Readonly<Record<string, readonly Descendant[]>> | undefined;
+
+  if (rootsValue !== undefined) {
+    const rootEntries = getEditorJsonRecordEntries(rootsValue) ?? invalidJson();
+
+    roots = Object.freeze(
+      Object.fromEntries(
+        rootEntries.map(([root, content]) => {
+          if (root.length === 0 || root === 'main') {
+            throw new Error(
+              'Content slice roots must use non-empty named root keys.'
+            );
+          }
+
+          return [root, snapshotSliceContent(content, undefined, seen)];
+        })
+      )
+    );
+  }
 
   const result = Object.freeze({
-    content: snapshotSliceContent(fields.get('content')),
+    content: snapshotSliceContent(fields.get('content'), undefined, seen),
     openEnd: openEnd as number,
     openStart: openStart as number,
+    ...(roots && Object.keys(roots).length > 0 ? { roots } : {}),
   }) as ContentSliceValue<V>;
 
   assertOpenDepth(result.content, result.openStart, 'start');
@@ -222,6 +245,8 @@ export const createDetachedContentSlice = <V extends Value>(
   options: Readonly<{
     /** Authority attesting that content is owned, deeply frozen, and canonical. */
     canonicalFor?: object;
+    /** Detached secondary roots referenced by the slice content. */
+    roots?: Readonly<Record<string, readonly DescendantIn<V>[]>>;
   }> = {}
 ): ContentSliceValue<V> => {
   assertOpenDepths(openStart, openEnd);
@@ -241,17 +266,30 @@ export const createDetachedContentSlice = <V extends Value>(
   };
 
   if (options.canonicalFor) {
-    if (!Object.isFrozen(content)) {
-      throw new Error('Canonical content slice nodes must be frozen.');
+    if (
+      !Object.isFrozen(content) ||
+      (options.roots &&
+        (!Object.isFrozen(options.roots) ||
+          Object.values(options.roots).some(
+            (children) => !Object.isFrozen(children)
+          )))
+    ) {
+      throw new Error(
+        'Canonical content slice nodes and roots must be frozen.'
+      );
     }
   } else {
     assertDeeplyFrozen(content);
+    assertDeeplyFrozen(options.roots);
   }
 
   const result = Object.freeze({
     content,
     openEnd,
     openStart,
+    ...(options.roots && Object.keys(options.roots).length > 0
+      ? { roots: options.roots }
+      : {}),
   }) as ContentSliceValue<V>;
 
   assertOpenDepth(result.content, result.openStart, 'start');
@@ -272,15 +310,38 @@ export const getContentSliceCanonicalAuthority = (slice: ContentSliceValue) =>
 export const createContentSliceFromFragment = <V extends Value>(
   content: readonly Descendant[],
   openStart: number,
-  openEnd: number
+  openEnd: number,
+  roots?: Readonly<Record<string, readonly Descendant[]>>
 ): ContentSliceValue<V> => {
   assertOpenDepths(openStart, openEnd);
 
-  if (!content.every((node) => Object.isFrozen(node))) {
-    return snapshot<V>({ content, openEnd, openStart });
+  if (
+    !content.every((node) => Object.isFrozen(node)) ||
+    (roots &&
+      Object.values(roots).some((children) =>
+        children.some((node) => !Object.isFrozen(node))
+      ))
+  ) {
+    return snapshot<V>({
+      content,
+      openEnd,
+      openStart,
+      ...(roots ? { roots } : {}),
+    });
   }
 
   const frozenContent = Object.freeze([...content]);
+  const frozenRoots =
+    roots && Object.keys(roots).length > 0
+      ? Object.freeze(
+          Object.fromEntries(
+            Object.entries(roots).map(([root, children]) => [
+              root,
+              Object.freeze([...children]),
+            ])
+          )
+        )
+      : undefined;
 
   assertOpenDepth(frozenContent, openStart, 'start');
   assertOpenDepth(frozenContent, openEnd, 'end');
@@ -290,6 +351,7 @@ export const createContentSliceFromFragment = <V extends Value>(
       content: frozenContent,
       openEnd,
       openStart,
+      ...(frozenRoots ? { roots: frozenRoots } : {}),
     }) as ContentSliceValue<V>,
     false
   );
@@ -316,6 +378,7 @@ export const ContentSlice = Object.freeze({
       content,
       openEnd: source.openEnd,
       openStart: source.openStart,
+      ...(source.roots ? { roots: source.roots } : {}),
     });
   },
 });
@@ -381,6 +444,7 @@ export const prepareContentSliceVariant = <V extends Value>(
     content: source.content,
     openEnd,
     openStart,
+    ...(source.roots ? { roots: source.roots } : {}),
   }) as ContentSliceValue<V>;
 
   trustedSlices.set(

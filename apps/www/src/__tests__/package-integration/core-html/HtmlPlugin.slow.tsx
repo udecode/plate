@@ -1,6 +1,14 @@
 /** @jsx jsxt */
 
-import { BaseBoldPlugin, BaseHeadingPlugin } from '@platejs/basic-nodes';
+import {
+  BaseBoldPlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+} from '@platejs/basic-nodes';
 import { BaseLinkPlugin } from '@platejs/link';
 import { BaseMediaEmbedPlugin } from '@platejs/media';
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
@@ -57,10 +65,15 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins = [BaseHeadingPlugin];
-
       const editor = createBaseEditor({
-        plugins,
+        plugins: [
+          BaseH1Plugin,
+          BaseH2Plugin,
+          BaseH3Plugin,
+          BaseH4Plugin,
+          BaseH5Plugin,
+          BaseH6Plugin,
+        ],
         selection: input.selection,
         initialValue: input.children,
       });
@@ -90,10 +103,15 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins = [BaseHeadingPlugin];
-
       const editor = createBaseEditor({
-        plugins,
+        plugins: [
+          BaseH1Plugin,
+          BaseH2Plugin,
+          BaseH3Plugin,
+          BaseH4Plugin,
+          BaseH5Plugin,
+          BaseH6Plugin,
+        ],
         selection: input.selection,
         initialValue: input.children,
       });

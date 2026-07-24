@@ -104,7 +104,11 @@ export function streamInsertChunk(
 
       const lastBlockChunks =
         blocks.length > 1
-          ? streamSerializeMd(editor, { value: [lastBlock[0]] }, chunk)
+          ? streamSerializeMd(
+              editor,
+              { value: { children: [lastBlock[0]] } },
+              chunk
+            )
           : chunk;
 
       editor.plugin(AIChatPlugin).setOptions({
@@ -161,7 +165,7 @@ export function streamInsertChunk(
 
             const serializedBlock = streamSerializeMd(
               editor,
-              { value: [updatedBlock[0]] },
+              { value: { children: [updatedBlock[0]] } },
               tempBlockChunks
             );
             const blockText = NodeApi.string(tempBlocks[0]);
@@ -179,7 +183,7 @@ export function streamInsertChunk(
 
               const replacement = streamSerializeMd(
                 editor,
-                { value: [tempBlocks[0]] },
+                { value: { children: [tempBlocks[0]] } },
                 tempBlockChunks
               );
 
@@ -193,7 +197,7 @@ export function streamInsertChunk(
           } else {
             nextBlockChunks = streamSerializeMd(
               editor,
-              { value: [tempBlocks[0]] },
+              { value: { children: [tempBlocks[0]] } },
               tempBlockChunks
             );
             tx.nodes.replace(
@@ -217,7 +221,7 @@ export function streamInsertChunk(
 
         nextBlockChunks = streamSerializeMd(
           editor,
-          { value: [endBlock[0]] },
+          { value: { children: [endBlock[0]] } },
           tempBlockChunks
         );
       };

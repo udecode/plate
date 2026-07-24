@@ -38,10 +38,7 @@ React tree.
 ```ts showLineNumbers title="scripts/process-content.ts"
 import type { Value } from 'platejs';
 
-import {
-  BaseBasicBlocksPlugin,
-  BaseBasicMarksPlugin,
-} from '@platejs/basic-nodes';
+import { BaseBoldPlugin, BaseH1Plugin } from '@platejs/basic-nodes';
 import { createBaseEditor } from 'platejs';
 
 const value: Value = [
@@ -60,7 +57,7 @@ const value: Value = [
 ];
 
 const editor = createBaseEditor({
-  plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin],
+  plugins: [BaseH1Plugin, BaseBoldPlugin],
   initialValue: value,
 });
 
@@ -75,15 +72,12 @@ Add `MarkdownPlugin` when the script needs Markdown conversion. Use the
 editor's `markdown` API for both directions.
 
 ```ts showLineNumbers title="scripts/markdown-io.ts"
-import {
-  BaseBasicBlocksPlugin,
-  BaseBasicMarksPlugin,
-} from '@platejs/basic-nodes';
+import { BaseBoldPlugin, BaseH1Plugin } from '@platejs/basic-nodes';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { createBaseEditor } from 'platejs';
 
 const editor = createBaseEditor({
-  plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
+  plugins: [BaseH1Plugin, BaseBoldPlugin, MarkdownPlugin],
 });
 
 const value = editor.api.markdown.deserialize(
@@ -108,15 +102,16 @@ operation should scan the whole document.
 import type { Value } from 'platejs';
 
 import {
-  BaseBasicBlocksPlugin,
-  BaseBasicMarksPlugin,
+  BaseBoldPlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
 } from '@platejs/basic-nodes';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { createBaseEditor } from 'platejs';
 
 export function normalizeHeadings(value: Value) {
   const editor = createBaseEditor({
-    plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
+    plugins: [BaseH1Plugin, BaseH2Plugin, BaseBoldPlugin, MarkdownPlugin],
     initialValue: value,
   });
 

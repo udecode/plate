@@ -44,6 +44,7 @@ export const BaseMentionInputPlugin = createBasePlugin({
 /** Enables support for autocompleting @mentions. */
 export const BaseMentionPlugin = createBasePlugin({
   key: KEYS.mention,
+  dependencies: [BaseMentionInputPlugin],
   schema: {
     element: {
       properties: {
@@ -54,7 +55,6 @@ export const BaseMentionPlugin = createBasePlugin({
     },
   },
   options: defaultOptions,
-  plugins: [BaseMentionInputPlugin],
 })
   .extendExtension(withTriggerCombobox)
   .extendTx(({ type }) => (tx) => ({

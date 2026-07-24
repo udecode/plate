@@ -69,7 +69,9 @@ docs:
 
 ### 安装
 
-最快捷的媒体支持方式是使用`MediaKit`，它包含预配置的`ImagePlugin`、`VideoPlugin`、`AudioPlugin`、`FilePlugin`、`MediaEmbedPlugin`、`PlaceholderPlugin`和`CaptionPlugin`及其[Plate UI](/docs/installation/plate-ui)组件。
+最快捷的媒体支持方式是使用 `MediaKit`。它包含预配置的 `ImagePlugin`、
+`VideoPlugin`、`AudioPlugin`、`FilePlugin`、`MediaEmbedPlugin` 和
+`PlaceholderPlugin`，以及对应的 [Plate UI](/docs/installation/plate-ui) 组件。
 
 <ComponentSource name="media-kit" />
 
@@ -194,36 +196,78 @@ const editor = createPlateEditor({
 - `options.disableEmptyPlaceholder`: 无文件上传时禁止显示占位符
 - `render.afterEditable`: 在编辑器外部渲染上传进度提示
 
-### 标题支持
+### 标题
 
-要启用媒体标题，添加[Caption Plugin](/docs/caption):
+每个图片、音频、视频、文件和嵌入都是非 void、隔离且可通过键盘选择的元素。
+媒体元素的直接行内 children 就是标题；媒体插件负责 schema 和行为，不需要单独的
+标题插件、节点类型或 content root。
+
+只需配置媒体插件及其渲染组件：
 
 ```tsx
-import { CaptionPlugin } from '@platejs/caption/react';
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  MediaEmbedPlugin,
-  VideoPlugin,
-} from '@platejs/media/react';
+import { ImagePlugin } from '@platejs/media/react';
+import { ImageElement } from '@/components/ui/media-image-node';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...其他插件
-    // ...媒体插件
-    CaptionPlugin.configure({
-      targetPluginKeys: [
-        ImagePlugin.key,
-        VideoPlugin.key,
-        AudioPlugin.key,
-        FilePlugin.key,
-        MediaEmbedPlugin.key,
-      ],
-    }),
+export const MediaKit = [
+  ImagePlugin.withComponent(ImageElement),
+];
+```
+
+让资源 DOM 保持不可编辑，并把媒体元素的普通 children slot 渲染为标题：
+
+```tsx
+<figure>
+  <div contentEditable={false}>{/* 媒体界面 */}</div>
+  <figcaption>{props.children}</figcaption>
+</figure>
+```
+
+通过仅用于构造的 `caption` 字段传入字符串或行内 children：
+
+```tsx
+editor.plugin(ImagePlugin).update.insert({
+  url: 'https://example.com/image.png',
+  caption: 'Plain caption',
+});
+
+editor.plugin(ImagePlugin).update.insert({
+  url: 'https://example.com/diagram.png',
+  caption: [
+    { text: 'Rich ' },
+    { text: 'caption', bold: true },
   ],
 });
 ```
+
+插入命令会把 `caption` 编译成直接 children。文档中只持久化生成的媒体元素：
+
+```ts
+{
+  type: 'img',
+  url: 'https://example.com/image.png',
+  children: [{ text: 'Plain caption' }],
+}
+```
+
+空文本 child 是标题缺失时的规范状态：
+
+```ts
+{
+  type: 'img',
+  url: 'https://example.com/image.png',
+  children: [{ text: '' }],
+}
+```
+
+渲染组件可以在媒体资源未获得焦点时隐藏空标题。占位符是否可见属于 UI 状态，
+不会改变持久化的元素。
+
+资源焦点和标题编辑使用不同的 selection 状态：
+
+| Selection | 行为 |
+| --- | --- |
+| 媒体路径上的 Plite `NodeSelection` | 聚焦资源，显示选中边框和空标题占位符；`ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
+| 媒体 children 内的 Plite `TextSelection` | 编辑标题；光标位于标题开头时，`ArrowUp` 返回资源焦点。 |
 
 ### 自定义上传实现
 
@@ -319,27 +363,42 @@ export function useUploadFile({
 然后将你的自定义上传钩子与媒体组件集成:
 
 ```tsx
+import { KEYS, type TPlaceholderElement } from 'platejs';
+import { type PlateElementProps, useEditor } from 'platejs/react';
+
 import { useUploadFile } from '@/hooks/use-upload-file'; // 你的自定义钩子
 
-// 在你的PlaceholderElement组件中
-export function PlaceholderElement({ className, children, element, ...props }) {
+export function PlaceholderElement({
+  element,
+}: PlateElementProps<TPlaceholderElement>) {
+  const editor = useEditor();
   const { uploadFile, isUploading, progress } = useUploadFile({
     onUploadComplete: (uploadedFile) => {
-      // 将占位符替换为实际媒体元素
-      const { url, type } = uploadedFile;
-      // 上传成功后插入最终媒体节点
-        editor
-          .plugin(PlaceholderPlugin)
-          .update.insert(getMediaType(type), { select: true });
+      const path = editor.read.nodes.path(element);
+
+      if (!path) return;
+
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.nodes.remove({ at: path });
+        tx.nodes.insert(
+          {
+            children: [{ text: '' }],
+            isUpload: true,
+            name: element.mediaType === KEYS.file ? uploadedFile.name : '',
+            placeholderId: element.id as string,
+            type: element.mediaType,
+            url: uploadedFile.url,
+          },
+          { at: path }
+        );
+      });
     },
     onUploadError: (error) => {
       console.error('上传失败:', error);
-      // 处理上传错误，可能显示提示
     },
   });
 
-  // 当文件被拖放或选择时使用uploadFile
-  // 这与PlaceholderPlugin的文件处理集成
+  // 用户拖放或选择文件时调用 uploadFile。
 }
 ```
 
@@ -369,7 +428,7 @@ export function PlaceholderElement({ className, children, element, ...props }) {
 
 ### `ImagePlugin`
 
-用于void图片元素的插件。
+用于非 void、隔离且可通过键盘选择的图片元素。其直接行内 children 存储标题。
 
 <API name="ImagePlugin">
 <APIOptions type="ImagePluginOptions">
@@ -401,19 +460,23 @@ export function PlaceholderElement({ className, children, element, ...props }) {
 
 ### `VideoPlugin`
 
-用于void视频元素的插件。扩展`MediaPluginOptions`。
+用于非 void、隔离且可通过键盘选择的视频元素。其直接行内 children 存储标题。
+扩展 `MediaPluginOptions`。
 
 ### `AudioPlugin`
 
-用于void音频元素的插件。扩展`MediaPluginOptions`。
+用于非 void、隔离且可通过键盘选择的音频元素。其直接行内 children 存储标题。
+扩展 `MediaPluginOptions`。
 
 ### `FilePlugin`
 
-用于void文件元素的插件。扩展`MediaPluginOptions`。
+用于非 void、隔离且可通过键盘选择的文件元素。其直接行内 children 存储标题。
+扩展 `MediaPluginOptions`。
 
 ### `MediaEmbedPlugin`
 
-用于void媒体嵌入元素的插件。扩展`MediaPluginOptions`。
+用于非 void、隔离且可通过键盘选择的媒体嵌入元素。其直接行内 children 存储标题。
+扩展 `MediaPluginOptions`。
 
 ### `PlaceholderPlugin`
 
@@ -440,7 +503,7 @@ export function PlaceholderElement({ className, children, element, ...props }) {
   image: {
     maxFileCount: 3,
     maxFileSize: '4MB',
-    mediaType: KEYS.image,
+    mediaType: KEYS.img,
     minFileCount: 1,
   },
   pdf: {
@@ -500,11 +563,11 @@ export function PlaceholderElement({ className, children, element, ...props }) {
 
 ## API
 
-### `editor.plugin(PlaceholderPlugin).api.addUploadingFile`
+### `editor.api.placeholder.addUploadingFile`
 
 跟踪当前正在上传的文件。
 
-<API name="editor.plugin(PlaceholderPlugin).api.addUploadingFile">
+<API name="editor.api.placeholder.addUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     占位符元素的唯一标识符。
@@ -515,11 +578,11 @@ export function PlaceholderElement({ className, children, element, ...props }) {
 </APIParameters>
 </API>
 
-### `editor.plugin(PlaceholderPlugin).api.getUploadingFile`
+### `editor.api.placeholder.getUploadingFile`
 
 获取当前正在上传的文件。
 
-<API name="editor.plugin(PlaceholderPlugin).api.getUploadingFile">
+<API name="editor.api.placeholder.getUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     占位符元素的唯一标识符。
@@ -533,11 +596,11 @@ export function PlaceholderElement({ className, children, element, ...props }) {
 </APIReturns>
 </API>
 
-### `editor.plugin(PlaceholderPlugin).api.removeUploadingFile`
+### `editor.api.placeholder.removeUploadingFile`
 
 上传完成或失败后从上传跟踪状态中移除文件。
 
-<API name="editor.plugin(PlaceholderPlugin).api.removeUploadingFile">
+<API name="editor.api.placeholder.removeUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     要移除的占位符元素的唯一标识符。
@@ -932,15 +995,21 @@ enum UploadErrorCode {
 ### `TMediaElement`
 
 ```tsx
-export interface TMediaElement extends Element {
+export type TMediaElement = Element & TMediaProps;
+
+export type TMediaProps = {
   url: string;
   id?: string;
-  align?: 'center' | 'left' | 'right';
   isUpload?: boolean;
   name?: string;
   placeholderId?: string;
-}
+  provider?: string;
+  sourceUrl?: string;
+};
 ```
+
+`Element.children` 存储标题的直接行内内容。标题缺失时使用
+`[{ text: '' }]`。
 
 ### `TPlaceholderElement`
 

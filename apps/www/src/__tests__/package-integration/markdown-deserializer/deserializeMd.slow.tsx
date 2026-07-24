@@ -18,7 +18,7 @@ const parseMarkdown = (
   input: string,
   currentEditor = editor,
   options?: Parameters<typeof deserializeMd>[2]
-) => deserializeMd(currentEditor, input, options);
+) => deserializeMd(currentEditor, input, options).children;
 
 describe('deserializeMd', () => {
   describe('inline content', () => {
@@ -230,14 +230,7 @@ Paragraph 2 line 1`,
         output: (
           <fragment>
             <hp>No </hp>
-            <himg
-              caption={
-                <fragment>
-                  <htext>inline</htext>
-                </fragment>
-              }
-              url="https://example.com/example.png"
-            >
+            <himg alt="inline" url="https://example.com/example.png">
               <htext />
             </himg>
             <hp> images</hp>
@@ -475,16 +468,8 @@ Paragraph 2 line 1`,
         parseMarkdown('- ![alt text](https://example.com/image.png)')
       ).toEqual([
         {
-          caption: [
-            {
-              text: 'alt text',
-            },
-          ],
-          children: [
-            {
-              text: '',
-            },
-          ],
+          alt: 'alt text',
+          children: [{ text: '' }],
           indent: 1,
           listStyleType: 'disc',
           type: 'img',

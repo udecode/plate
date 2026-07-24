@@ -1,6 +1,5 @@
 'use client';
 
-import { CaptionPlugin } from '@platejs/caption/react';
 import {
   AudioPlugin,
   FilePlugin,
@@ -9,8 +8,6 @@ import {
   PlaceholderPlugin,
   VideoPlugin,
 } from '@platejs/media/react';
-import { KEYS } from 'platejs';
-
 import { AudioElement } from '@/registry/ui/media-audio-node';
 import { MediaEmbedElement } from '@/registry/ui/media-embed-node';
 import { FileElement } from '@/registry/ui/media-file-node';
@@ -32,14 +29,5 @@ export const MediaKit = [
   PlaceholderPlugin.configure({
     options: { disableEmptyPlaceholder: true },
     render: { afterEditable: MediaUploadToast, node: PlaceholderElement },
-  }),
-  CaptionPlugin.configure({
-    targetPluginKeys: [
-      KEYS.img,
-      KEYS.video,
-      KEYS.audio,
-      KEYS.file,
-      KEYS.mediaEmbed,
-    ],
   }),
 ];

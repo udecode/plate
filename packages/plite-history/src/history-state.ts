@@ -8,7 +8,6 @@ import {
 } from '@platejs/plite';
 import {
   areEditorSchemaIdentitiesEqual,
-  getCompiledEditorSchema,
   getInternalDocumentChangeClassificationEntries,
   MAIN_ROOT_KEY,
   mapSelectionThroughChange,
@@ -42,15 +41,12 @@ type HistoryStore<V extends Value> = Readonly<{
   maxDepth: number;
   redos: HistoryBranch<V> | null;
   revision: number;
-  schema: EditorSchemaIdentity | null;
+  schema: EditorSchemaIdentity;
   snapshot: History<V> | null;
   undos: HistoryBranch<V> | null;
 }>;
 
 const HISTORY = new WeakMap<Editor, HistoryStore<Value>>();
-
-const getSchemaIdentity = (editor: Editor) =>
-  getCompiledEditorSchema(editor)?.identity ?? null;
 
 export const captureHistoryState = (editor: Editor) => HISTORY.get(editor);
 
@@ -66,7 +62,7 @@ const createStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => ({
   maxDepth: 100,
   redos: null,
   revision: 0,
-  schema: getSchemaIdentity(editor),
+  schema: editor.read.schema.identity(),
   snapshot: null,
   undos: null,
 });
@@ -379,7 +375,7 @@ export const configureHistoryState = <V extends Value>(
   maxDepth: number
 ) => {
   const store = getStore(editor);
-  const schema = getSchemaIdentity(editor);
+  const schema = editor.read.schema.identity();
   const schemaChanged = !areEditorSchemaIdentitiesEqual(store.schema, schema);
 
   if (store.maxDepth === maxDepth && !schemaChanged) return false;

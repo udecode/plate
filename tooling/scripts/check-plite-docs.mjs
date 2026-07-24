@@ -25,8 +25,6 @@ const teachingDocs = new Set([
   'content/docs/(plugins)/(elements)/heading.mdx',
   'content/docs/(plugins)/(elements)/toggle.cn.mdx',
   'content/docs/(plugins)/(elements)/toggle.mdx',
-  'content/docs/(plugins)/(functionality)/caption.cn.mdx',
-  'content/docs/(plugins)/(functionality)/caption.mdx',
   'content/docs/(plugins)/(styles)/indent.cn.mdx',
   'content/docs/(plugins)/(styles)/indent.mdx',
   'content/docs/(plugins)/(styles)/line-height.cn.mdx',

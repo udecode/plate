@@ -61,20 +61,23 @@ npm install @platejs/mention
 
 ### 添加插件
 
+`MentionPlugin` 会把 `MentionInputPlugin` 作为必需依赖安装。
+
 ```tsx
-import { MentionPlugin, MentionInputPlugin } from '@platejs/mention/react';
+import { MentionPlugin } from '@platejs/mention/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     MentionPlugin,
-    MentionInputPlugin,
   ],
 });
 ```
 
 ### 配置插件
+
+需要替换依赖的渲染组件或配置时，把完整的 `MentionInputPlugin` 描述符加入同一数组。
 
 ```tsx
 import { MentionPlugin, MentionInputPlugin } from '@platejs/mention/react';
@@ -107,7 +110,7 @@ const editor = createPlateEditor({
 
 ### MentionPlugin
 
-提供提及功能的插件。扩展自 [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)。
+提供提及功能的插件。扩展自 [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)，并要求安装 `MentionInputPlugin`。
 
 <API name="MentionPlugin">
 <APIOptions>
@@ -131,7 +134,7 @@ const editor = createPlateEditor({
 
 ### MentionInputPlugin
 
-提供提及输入功能的插件。
+提供提及输入功能的必需依赖。仅在替换其组件或配置时直接加入。
 
 ## API接口
 

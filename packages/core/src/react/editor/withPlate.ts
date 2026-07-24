@@ -1,20 +1,20 @@
 import type { Editor, Value } from '@platejs/plite';
 import { createReactEditor } from '@platejs/plite-react';
 
-import type { AnyPlatePlugin, PlatePlugin } from '../plugin';
+import type { AnyPlatePlugin } from '../plugin';
 import type { PlateEditor } from './PlateEditor';
 import type { NavigationFeedbackConfig } from '../plugins/navigation-feedback/types';
+import { plateReactCorePlugins } from '../../internal/plugin/resolvePlugins';
 
 import {
   type AnyPluginConfig,
-  type BasePlugin,
   type BasePluginInput,
   type BaseExtendBaseEditorOptions,
   type CorePlugin,
   type ExtendBaseEditorOptions,
   type EditorValueInput,
   type InferConfig,
-  type PluginConfig,
+  type InferPlugins,
   extendBaseEditor,
 } from '../../lib';
 import { getPlateCorePlugins } from './getPlateCorePlugins';
@@ -25,23 +25,11 @@ export type PlateCorePlugin =
 
 type PlatePluginInput = BasePluginInput;
 
-type InferPlateEditorPluginConfig<P> = P extends {
-  readonly __config: infer C extends AnyPluginConfig;
-}
-  ? C
-  : P extends PlatePlugin<infer C>
-    ? C
-    : P extends BasePlugin<infer C>
-      ? C
-      : P extends AnyPluginConfig
-        ? P
-        : PluginConfig;
-
 type InferPlateEditorPlugins<TPlugins extends readonly unknown[]> = [
   TPlugins[number],
 ] extends [never]
   ? PlateCorePlugin
-  : PlateCorePlugin | InferPlateEditorPluginConfig<TPlugins[number]>;
+  : PlateCorePlugin | InferPlugins<TPlugins>;
 
 type InferExistingPlateEditorPlugins<E> =
   E extends PlateEditor<infer _V, infer P extends AnyPluginConfig> ? P : never;
@@ -103,7 +91,6 @@ export type ExtendPlateEditorOptions<
         }) => EditorValueInput<V>)
       | EditorValueInput<V>;
     plugins?: TPlugins;
-    rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
   };
 
 /**
@@ -127,10 +114,10 @@ export const extendPlateEditor = <
   const { navigationFeedback, plugins = [], readOnly, ...rest } = options;
 
   const editor = (extendBaseEditor as any)(e, {
-    navigationFeedback,
     readOnly,
     ...rest,
-    plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
+    [plateReactCorePlugins]: getPlateCorePlugins({ navigationFeedback }),
+    plugins,
   } as unknown as ExtendBaseEditorOptions<V, BasePluginInput>) as PlateEditor<
     V,
     InferExtendedPlateEditorPlugins<E, TPlugins>
@@ -166,7 +153,7 @@ export type CreatePlateEditorOptions<
  *
  * ```ts
  * const editor = createPlateEditor({
- *   plugins: [ParagraphPlugin, HeadingPlugin],
+ *   plugins: [ParagraphPlugin, H1Plugin],
  *   initialValue: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
  * });
  *

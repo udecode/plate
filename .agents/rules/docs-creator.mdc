@@ -563,9 +563,14 @@ Required shape:
    controls.
 7. `## Plugins` for actual plugin objects.
 8. `## API Reference` and `## Transforms` only for real
-   `editor.plugin(Plugin).api.*` and `editor.update.<group>.*` surfaces.
-   Never invent or document `editor.tf`, `editor.transforms`, or a competing
-   root mutation namespace.
+   `editor.api.<pluginKey>.*` and `editor.update.<group>.*` surfaces. Teach
+   `editor.plugin(Plugin).api.*` only when the example is intentionally generic
+   package code or needs exact descriptor ownership. When that descriptor is
+   optional, show `const plugin = editor.plugin(Plugin)` and guard portal access
+   with `plugin.installed`; disabled plugins count as absent. Never teach root
+   API probing, node/schema/cache inference, or caught portal errors as plugin
+   availability checks. Never invent or document `editor.tf`,
+   `editor.transforms`, or a competing root mutation namespace.
 
 Voice moves:
 

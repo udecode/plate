@@ -19,4 +19,22 @@ describe('BaseExcalidrawPlugin', () => {
     );
     expect(editor.getType(KEYS.excalidraw)).toBe(KEYS.excalidraw);
   });
+
+  it('rejects malformed drawing data', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseExcalidrawPlugin],
+    });
+
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            children: [{ text: '' }],
+            data: { elements: [], state: [] },
+            type: KEYS.excalidraw,
+          },
+        ],
+      })
+    ).toThrow(/element property "data" fails custom property validation/);
+  });
 });

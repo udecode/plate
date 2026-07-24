@@ -1,6 +1,9 @@
 ---
 title: 单行/单块限制
+description: 将编辑器限制为一个根块或一行文本。
 ---
+
+单行/单块限制提供两种输入约束：保留软换行的单个根块，或不允许换行的单行文本。每种约束都是独立插件。
 
 <ComponentPreview name="single-block-demo" />
 
@@ -8,52 +11,81 @@ title: 单行/单块限制
 
 ## 功能特性
 
-- **SingleLinePlugin**: 将编辑器限制为单行文本，自动移除所有换行符
-- **SingleBlockPlugin**: 将编辑器限制为单个块，换行符转为软换行
+- `SingleBlockPlugin` 将编辑器限制为一个根块，并把 Enter 转换为软换行
+- `SingleLinePlugin` 将编辑器限制为单行文本，并移除所有换行符
 - 通过标准化处理防止创建多个块
 - 过滤粘贴内容中的换行字符
-- 适用于标题、标签、评论或受限文本输入场景
 
 </PackageInfo>
 
-## 手动使用
+## 用法
 
-<Steps>
-
-### 添加插件
+字段可以包含换行时使用 `SingleBlockPlugin`。
 
 ```tsx
-import { SingleLinePlugin, SingleBlockPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { SingleBlockPlugin } from "platejs";
+import { createPlateEditor } from "platejs/react";
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...其他插件,
-    SingleLinePlugin, // 用于单行文本
-    // 或
-    SingleBlockPlugin, // 用于支持软换行的单块文本
-  ],
+export const editor = createPlateEditor({
+  plugins: [SingleBlockPlugin],
 });
 ```
 
-</Steps>
+字段必须保持一行时使用 `SingleLinePlugin`。
 
-## 插件说明
+```tsx
+import { SingleLinePlugin } from "platejs";
+import { createPlateEditor } from "platejs/react";
 
-### `SingleLinePlugin`
+export const editor = createPlateEditor({
+  plugins: [SingleLinePlugin],
+});
+```
 
-通过移除所有换行符并合并多个块，将编辑器内容限制为单行文本的插件。
+## 与完整编辑器 Kit 组合
 
-**核心行为:**
-- 阻止`insertBreak`和`insertSoftBreak`操作
-- 过滤换行字符
-- 将多个块合并到首个块中（无分隔符）
+`SingleBlockPlugin` 会弱禁用已安装的 `TrailingBlockPlugin`，因此即使包无法控制
+使用者的完整 kit，组合仍然正确：
 
-### `SingleBlockPlugin`
+```tsx
+import { SingleBlockPlugin } from "platejs";
+import { createPlateEditor } from "platejs/react";
 
-在保留换行符的同时，将编辑器内容限制为单个块的插件。
+import { EditorKit } from "@/components/editor/editor-kit";
 
-**核心行为:**
-- 将`insertBreak`转换为`insertSoftBreak`
-- 用`\n`分隔符合并多个块到首个块
-- 保留文本内容中现有的换行字符
+export const editor = createPlateEditor({
+  plugins: [...EditorKit, SingleBlockPlugin],
+});
+```
+
+单行字段使用同样的结构，把 `SingleBlockPlugin` 换成 `SingleLinePlugin`。
+
+弱对等覆盖仅在 Trailing Block 已安装时应用，不会安装目标；目标不存在时不执行任何
+操作。必需依赖仍会拒绝禁用。
+
+## 所有权
+
+| 层                    | 所有者                       | 职责                                                    |
+| --------------------- | ---------------------------- | ------------------------------------------------------- |
+| `SingleBlockPlugin`   | `@platejs/utils`             | 保留文本换行并只允许一个根块。                          |
+| `SingleLinePlugin`    | `@platejs/utils`             | 移除换行字符并只允许一个根块。                          |
+| `TrailingBlockPlugin` | `@platejs/utils`             | 启用时提供尾部块标准化。                                |
+
+这些插件是编辑器约束，不是 schema 验证。它们通过 Plite correction 修复无效的根内容。
+
+## 行为
+
+| 插件                | Enter        | 软换行        | 多个根块                       | 现有文本换行                                    |
+| ------------------- | ------------ | ------------- | ------------------------------ | ----------------------------------------------- |
+| `SingleBlockPlugin` | 插入软换行。 | 保留为 `\n`。 | 用 `\n` 分隔并合并到第一个块。 | 保留。                                          |
+| `SingleLinePlugin`  | 无操作。     | 无操作。      | 不加分隔符并合并到第一个块。   | 移除 `\r`、`\n`、`\r\n`、`\u2028` 和 `\u2029`。 |
+
+需要描述、评论或可换行标题时使用单块模式。需要标签、slug 或短标题时使用单行模式。
+
+## API 参考
+
+| API                                                 | 包                           | 用途                                        |
+| --------------------------------------------------- | ---------------------------- | ------------------------------------------- |
+| `SingleBlockPlugin`                                 | `platejs` / `@platejs/utils` | 保留软换行的单个根块。                      |
+| `SingleLinePlugin`                                  | `platejs` / `@platejs/utils` | 移除所有换行的单个根块。                    |
+| `override.plugins[KEYS.trailingBlock]`              | `@platejs/utils`             | 仅在已安装时弱禁用 Trailing Block。          |

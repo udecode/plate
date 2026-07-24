@@ -4,7 +4,7 @@
 
 Move suggestion queries and mutations to `BaseSuggestionPlugin` and the
 installed editor API, and register suggestion marks and metadata in compiled
-schemas.
+schemas with versioned inline validation.
 
 **Migration:** Read suggestion data and helpers from
 `editor.plugin(BaseSuggestionPlugin).api`. Replace standalone suggestion

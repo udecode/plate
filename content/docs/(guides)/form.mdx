@@ -11,7 +11,7 @@ While Plate is typically used as an **uncontrolled** input, there are valid scen
 - **Validation**: You want to validate the editor's content (e.g., checking if it's empty) at the same time as other form fields.
 - **Form Data Management**: You want to store the editor content in the same store (like `react-hook-form`'s state) as other fields.
 
-However, keep in mind the warning about **fully controlling** the editor value. Plate strongly prefer an uncontrolled model. If you attempt to replace the editor's internal state too frequently, you can break **selection**, **history**, or cause performance issues. The recommended pattern is to treat the editor as uncontrolled, but still **sync** form data on certain events.
+However, keep in mind the warning about **fully controlling** the editor value. Plate strongly prefers an uncontrolled model. If you replace the editor's internal state too frequently, selection, history, and rendering all pay for full-document replacement. Treat the editor as uncontrolled and sync complete document values at deliberate form boundaries.
 
 ## Approach 1: Sync on `onValueChange`
 
@@ -20,36 +20,39 @@ This is the most straightforward approach: each time the editor changes, update 
 ### React Hook Form Example
 
 ```tsx
-import { useForm } from 'react-hook-form';
-import type { Value } from 'platejs';
-import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+import { useForm } from "react-hook-form";
+import { NodeApi, type EditorDocumentValue } from "platejs";
+import { Plate, PlateContent, usePlateEditor } from "platejs/react";
 
 type FormData = {
-  content: Value;
+  content: EditorDocumentValue;
 };
 
 export function RHFEditorForm() {
   const initialValue = [
-    { type: 'p', children: [{ text: 'Hello from react-hook-form!' }] },
-  ]
+    { type: "p", children: [{ text: "Hello from react-hook-form!" }] },
+  ];
 
   // Setup react-hook-form
   const { register, handleSubmit, setValue } = useForm<FormData>({
     defaultValues: {
-      content: initialValue,
+      content: { children: initialValue },
     },
   });
 
   // Create/configure the Plate editor
-  const editor = usePlateEditor({
-     initialValue });
+  const editor = usePlateEditor({ initialValue });
 
   // Register the field for react-hook-form
-  register('content', { /* validation rules... */ });
+  register("content", {
+    validate: (value) =>
+      NodeApi.string({ children: value.children }).trim().length > 0 ||
+      "Content is required",
+  });
 
   const onSubmit = (data: FormData) => {
     // data.content will have final editor content
-    console.info('Submitted:', data.content);
+    console.info("Submitted:", data.content);
   };
 
   return (
@@ -58,7 +61,7 @@ export function RHFEditorForm() {
         editor={editor}
         onValueChange={({ value }) => {
           // Sync editor changes to the form
-          setValue('content', value);
+          setValue("content", value);
         }}
       >
         <PlateContent placeholder="Type here..." />
@@ -71,8 +74,9 @@ export function RHFEditorForm() {
 ```
 
 **Notes**:
+
 1. **`defaultValues.content`**: your initial editor content.
-2. **`register('content')`**: signals to RHF that the field is tracked.  
+2. **`register('content')`**: signals to RHF that the field is tracked.
 3. **`onValueChange({ value })`**: calls `setValue('content', value)` each time.
 
 If you expect large documents or fast typing, consider debouncing or switching to an `onBlur` approach to reduce form updates.
@@ -89,29 +93,34 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import type { EditorDocumentValue } from "platejs";
+import { Plate, PlateContent, usePlateEditor } from "platejs/react";
 
 type FormValues = {
-  content: any;
+  content: EditorDocumentValue;
 };
 
 export function EditorForm() {
   // 1. Create the form
   const form = useForm<FormValues>({
     defaultValues: {
-      content: [
-        { type: 'p', children: [{ text: 'Hello from shadcn/ui Form!' }] },
-      ],
+      content: {
+        children: [
+          { type: "p", children: [{ text: "Hello from shadcn/ui Form!" }] },
+        ],
+      },
     },
   });
 
   // 2. Create the Plate editor
-  const editor = usePlateEditor();
+  const editor = usePlateEditor({
+    initialValue: form.getValues("content"),
+  });
 
   const onSubmit = (data: FormValues) => {
-    console.info('Submitted data:', data.content);
+    console.info("Submitted data:", data.content);
   };
 
   return (
@@ -151,6 +160,7 @@ This approach makes your editor content behave like any other field in the shadc
 ## Approach 2: Sync on Blur (or Another Trigger)
 
 Instead of syncing on every keystroke, you might only need the final value when the user:
+
 - Leaves the editor (`onBlur`),
 - Clicks a “Save” button, or
 - Reaches certain form submission logic.
@@ -160,7 +170,7 @@ Instead of syncing on every keystroke, you might only need the final value when 
   <PlateContent
     onBlur={() => {
       // Only sync on blur
-      setValue('content', editor.children);
+      setValue("content", editor.read.value());
     }}
   />
 </Plate>
@@ -171,14 +181,18 @@ This reduces overhead but your form state won't reflect partial updates while th
 ## Approach 3: Controlled Replacement (Advanced)
 
 If you want the form to be the single source of truth (completely [controlled](/docs/controlled)):
+
 ```ts
 editor.update((tx) => {
-  tx.value.replace({ children: formStateValue });
+  tx.value.replace(formStateValue);
 });
 ```
-But this has known drawbacks:
-- Potentially breaks cursor position and undo/redo.
-- Can cause frequent full re-renders for large docs.
+
+Use this only for an explicit external snapshot. A replacement uses the
+supplied selection or clears it when selection is omitted, records one history
+change, removes omitted roots, and resets omitted persisted meta. Mirroring
+every `onValueChange` back through this API creates a replacement loop and
+full-document rendering work.
 
 **Recommendation**: Stick to a partially uncontrolled model if you can.
 
@@ -187,19 +201,21 @@ But this has known drawbacks:
 Here's a more complete form demonstrating both saving and resetting the editor/form:
 
 ```tsx
-import { useForm } from 'react-hook-form';
-import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+import { useForm } from "react-hook-form";
+import { Plate, PlateContent, usePlateEditor } from "platejs/react";
 
 function MyForm() {
   const form = useForm({
     defaultValues: {
-      content: [
-        { type: 'p', children: [{ text: 'Initial content...' }] },
-      ],
+      content: {
+        children: [{ type: "p", children: [{ text: "Initial content..." }] }],
+      },
     },
   });
 
-  const editor = usePlateEditor();
+  const editor = usePlateEditor({
+    initialValue: form.getValues("content"),
+  });
 
   const onSubmit = (data) => {
     alert(JSON.stringify(data, null, 2));
@@ -209,7 +225,7 @@ function MyForm() {
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <Plate
         editor={editor}
-        onValueChange={({ value }) => form.setValue('content', value)}
+        onValueChange={({ value }) => form.setValue("content", value)}
       >
         <PlateContent />
       </Plate>
@@ -221,7 +237,7 @@ function MyForm() {
         onClick={() => {
           form.reset();
           editor.update((tx) => {
-            tx.value.replace({ children: form.getValues('content') });
+            tx.value.replace(form.getValues("content"));
           });
         }}
       >
@@ -271,12 +287,12 @@ Create a new `EditorField` component:
 "use client";
 
 import * as React from "react";
-import type { Value } from "platejs";
+import type { EditorDocumentValue, Value } from "platejs";
 import { Plate, PlateContent, usePlateEditor } from "platejs/react";
 
 /**
- * A reusable editor component that works like a standard <Textarea>,
- * accepting `value`, `onChange`, and optional placeholder.
+ * A reusable uncontrolled editor field. `initialValue` is read once, while
+ * `onChange` receives the complete document after each change.
  *
  * Usage:
  *
@@ -288,8 +304,11 @@ import { Plate, PlateContent, usePlateEditor } from "platejs/react";
  *       <FormLabel>Bio</FormLabel>
  *       <FormControl>
  *         <EditorField
- *           {...field}
+ *           initialValue={field.value}
+ *           onBlur={field.onBlur}
+ *           onChange={field.onChange}
  *           placeholder="Tell us a bit about yourself"
+ *           ref={field.ref}
  *         />
  *       </FormControl>
  *       <FormDescription>Some helpful description...</FormDescription>
@@ -299,16 +318,16 @@ import { Plate, PlateContent, usePlateEditor } from "platejs/react";
  * />
  */
 export interface EditorFieldProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   /**
-   * The current Plate Value. Should be an array of Plate nodes.
+   * The initial Plate document or primary-root value.
    */
-  value?: Value;
+  initialValue?: EditorDocumentValue | Value;
 
   /**
    * Called when the editor value changes.
    */
-  onChange?: (value: Value) => void;
+  onChange?: (value: EditorDocumentValue) => void;
 
   /**
    * Placeholder text to display when editor is empty.
@@ -316,32 +335,22 @@ export interface EditorFieldProps
   placeholder?: string;
 }
 
-export function EditorField({
-  value,
-  onChange,
-  placeholder = "Type here...",
-  ...props
-}: EditorFieldProps) {
-  // We create our editor instance with the provided initial value.
-  const editor = usePlateEditor({
-    initialValue: value ?? [
-      { type: "p", children: [{ text: "" }] }, // Default empty paragraph
-    ],
-  });
+export const EditorField = React.forwardRef<HTMLDivElement, EditorFieldProps>(
+  function EditorField(
+    { initialValue, onChange, placeholder = "Type here...", ...props },
+    ref
+  ) {
+    const editor = usePlateEditor({
+      initialValue: initialValue ?? [{ type: "p", children: [{ text: "" }] }],
+    });
 
-  return (
-    <Plate
-      editor={editor}
-      onValueChange={({ value }) => {
-        // Sync changes back to the caller via onChange prop
-        onChange?.(value);
-      }}
-      {...props}
-    >
-      <PlateContent placeholder={placeholder} />
-    </Plate>
-  );
-}
+    return (
+      <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)}>
+        <PlateContent {...props} placeholder={placeholder} ref={ref} />
+      </Plate>
+    );
+  }
+);
 ```
 
 3. Replace the `<Textarea>` with a `<EditorField>` block:
@@ -352,6 +361,7 @@ export function EditorField({
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { NodeApi, type EditorDocumentValue } from "platejs";
 
 import {
   Form,
@@ -365,11 +375,17 @@ import {
 import { EditorField } from "./EditorField"; // Import the component above
 
 // 1. Define our validation schema with zod
+const hasDocumentText = (value: unknown): value is EditorDocumentValue =>
+  typeof value === "object" &&
+  value !== null &&
+  "children" in value &&
+  NodeApi.isNodeList(value.children, { deep: true }) &&
+  value.children.some((node) => NodeApi.string(node).trim().length > 0);
+
 const FormSchema = z.object({
-  bio: z
-    .string()
-    .min(10, { message: "Bio must be at least 10 characters." })
-    .max(160, { message: "Bio must not exceed 160 characters." }),
+  bio: z.custom<EditorDocumentValue>(hasDocumentText, {
+    message: "Bio is required.",
+  }),
 });
 
 // 2. Build our main form component
@@ -378,9 +394,9 @@ export function EditorForm() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      // Here "bio" is just a string, but our editor
-      // will interpret it as initial content if you parse it as JSON
-      bio: "",
+      bio: {
+        children: [{ type: "p", children: [{ text: "" }] }],
+      },
     },
   });
 
@@ -400,8 +416,11 @@ export function EditorForm() {
               <FormLabel>Bio</FormLabel>
               <FormControl>
                 <EditorField
-                  {...field}
+                  initialValue={field.value}
+                  onBlur={field.onBlur}
+                  onChange={field.onChange}
                   placeholder="Tell us a bit about yourself..."
+                  ref={field.ref}
                 />
               </FormControl>
               <FormDescription>
@@ -420,14 +439,13 @@ export function EditorForm() {
 }
 ```
 
-- Any existing form validations or error messages remain the same.
-- For default values, ensure `form.defaultValues.bio` is a valid Plate value (array of nodes) instead of a string.
-- For controlled values, use `editor.update(...)` with `tx.value.replace(...)`
-  with moderation.
+- Validate and persist the complete document value.
+- `initialValue` is one-shot. For an explicit external reset, replace the
+  editor document once with `tx.value.replace(...)`.
 
 ## Best Practices
 
-1. **Use an Uncontrolled Editor**: Let Plate manage its own state, updating the form only when necessary.  
-2. **Minimize Replacements**: Avoid calling `tx.value.replace(...)` too often; it can break selection, history, or degrade performance.
-3. **Validate at the Right Time**: Decide if you need instant validation (typing) or upon blur/submit.  
+1. **Use an Uncontrolled Editor**: Let Plate manage its own state, updating the form only when necessary.
+2. **Minimize Replacements**: Each `tx.value.replace(...)` fits the complete document, records one history change, and clears selection when none is supplied.
+3. **Validate at the Right Time**: Decide if you need instant validation (typing) or upon blur/submit.
 4. **Reset Both**: If you reset the form, replace the editor value from the reset form state.

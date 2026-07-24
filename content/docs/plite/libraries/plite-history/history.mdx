@@ -37,7 +37,7 @@ import type {
 export interface History {
   readonly redos: readonly Batch[];
   readonly revision: number;
-  readonly schema: EditorSchemaIdentity | null;
+  readonly schema: EditorSchemaIdentity;
   readonly undos: readonly Batch[];
 }
 
@@ -60,7 +60,7 @@ type guard.
 
 #### `History.toJSON(editor): HistoryJSON`
 
-Encode the installed undo and redo stacks as validated version 3 JSON. The
+Encode the installed undo and redo stacks as validated version 4 JSON. The
 envelope records the editor's schema identity, and each batch stores its
 canonical `DocumentChange`, registered effects, and selection envelopes.
 
@@ -94,9 +94,10 @@ editor.update((tx) => {
 });
 ```
 
-Schema identity, codec versions, effect keys, custom selection kinds, and JSON
-values are validated during decoding. Failed decoding leaves editor state
-untouched.
+Schema identity is always derived or named; `null` is invalid in memory and in
+version 4 JSON. Schema identity, codec versions, effect keys, custom selection
+kinds, and JSON values are validated during decoding. Failed decoding leaves
+editor state untouched.
 
 ## Editor API
 

@@ -120,7 +120,7 @@ describe('serializeMd - mention', () => {
 
     const originalMarkdown = 'Hello [Jane Smith](mention:jane_smith) and @bob!';
     const value = deserializeMd(editor, originalMarkdown);
-    editor.update((tx) => tx.value.replace({ children: value }));
+    editor.update((tx) => tx.value.replace(value));
     const serializedMarkdown = serializeMd(editor);
 
     expect(serializedMarkdown).toBe(

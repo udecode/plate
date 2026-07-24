@@ -7,6 +7,8 @@ import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 
+import { CaptionStatic } from './caption-static';
+
 export function AudioElementStatic(props: PliteElementProps<TAudioElement>) {
   return (
     <PliteElement {...props} className="mb-1">
@@ -14,8 +16,8 @@ export function AudioElementStatic(props: PliteElementProps<TAudioElement>) {
         <div className={cn('h-16 rounded-sm')}>
           <audio className="size-full" src={props.element.url} controls />
         </div>
+        <CaptionStatic element={props.element}>{props.children}</CaptionStatic>
       </figure>
-      {props.children}
     </PliteElement>
   );
 }

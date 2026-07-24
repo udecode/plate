@@ -62,7 +62,6 @@
     "@platejs/basic-styles": "workspace:^",
     "@platejs/browser": "workspace:^",
     "@platejs/callout": "workspace:^",
-    "@platejs/caption": "workspace:^",
     "@platejs/code-block": "workspace:^",
     "@platejs/code-drawing": "workspace:^",
     "@platejs/combobox": "workspace:^",

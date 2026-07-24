@@ -6,7 +6,6 @@ import type { RenderTextProps, AnyBasePlugin, BaseEditor } from '..';
 import { getPlateRuntime } from '../internal/plugin/compilePlateModel';
 
 import { PliteText } from './components';
-import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type PliteRenderText = (
@@ -24,12 +23,8 @@ export const pluginRenderTextStatic = (
       const Component = getPlateRuntime(editor).components[plugin.key] as any;
       const Text = Component ?? PliteText;
 
-      // const dataAttributes = getPluginDataAttributes(editor, plugin, text);
-
       const ctxProps = getRenderNodeStaticProps({
-        attributes: { ...(text.attributes as any) },
         editor,
-        node: text,
         path: nodeProps.path,
         plugin,
         props: nodeProps as any,
@@ -111,19 +106,6 @@ export const pipeRenderTextStatic = (
       props: { attributes, ...props, children } as any,
     }) as any;
 
-    const text = ctxProps.text;
-    const dataAttributes = getNodeDataAttributes(editor, text, {
-      isText: true,
-    });
-
-    return (
-      <PliteText
-        {...ctxProps}
-        attributes={{
-          ...ctxProps.attributes,
-          ...dataAttributes,
-        }}
-      />
-    );
+    return <PliteText {...ctxProps} />;
   };
 };

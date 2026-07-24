@@ -37,24 +37,32 @@ const ConfiguredPlugin = MyPlugin.configure(({ getOptions }) => ({
 - 运行时扩展可以读取已配置的值，重叠字段最终仍以用户配置为准
 - 不返回扩展类型，保持原始插件类型
 
-### .configurePlugin
+### 配置关联插件
 
-`.configurePlugin`方法允许你配置嵌套插件的属性：
+直接配置必需依赖的描述符，并将完整描述符放入同一个应用或 registry 插件数组。具有
+相同 key 的显式描述符会替换依赖定义，无需从父级向下修改。
 
 ```ts
-const TablePlugin = createPlatePlugin({
-  key: 'table',
-  plugins: [TableCellPlugin],
-}).configurePlugin(TableCellPlugin, {
-  options: {
-    cellOption: 'modified',
-  },
+const CellPlugin = createPlatePlugin({
+  key: 'cell',
+  options: { padding: 12 },
 });
+const GridPlugin = createPlatePlugin({
+  key: 'grid',
+  dependencies: [CellPlugin],
+});
+
+export const AppGridPlugins = [
+  GridPlugin,
+  CellPlugin.configure({
+    options: { padding: 8 },
+  }),
+];
 ```
 
-- 用于配置父插件中的嵌套插件
-- 与`.configure`类似，修改现有属性但不添加新属性
-- 适合在不扩展子插件类型的情况下调整其行为
+包作者通过 `dependencies` 声明必需能力。可选能力是应用或 registry 数组中的普通
+插件；增强能力可以依赖宿主，但宿主不会捆绑增强能力。两个具有相同 key 的不同显式
+描述符会报错；数组顺序不是覆盖机制。
 
 ### .extend
 
@@ -86,30 +94,6 @@ const ExtendedPlugin = MyPlugin.extend(({ editor, plugin }) => ({
 - 用于向插件添加新属性或修改现有属性
 - 返回具有扩展类型的新插件实例
 - 支持链式调用，允许多个扩展顺序应用；所有扩展必须位于最终 `.configure()` 之前
-
-### .extendPlugin
-
-`.extendPlugin`方法允许你扩展嵌套插件的配置和功能：
-
-```ts
-const TablePlugin = createPlatePlugin({
-  key: 'table',
-  plugins: [TableCellPlugin],
-}).extendPlugin(TableCellPlugin, {
-  options: {
-    newCellOption: 'added',
-  },
-  handlers: {
-    onKeyDown: () => {
-      // 表格单元格的自定义按键逻辑
-    },
-  },
-});
-```
-
-- 用于扩展父插件中的嵌套插件
-- 可以向嵌套插件添加新属性并修改现有属性
-- 返回包含扩展嵌套插件的新父插件实例
 
 ### .configure与.extend的区别
 
@@ -178,7 +162,7 @@ const ParagraphPlugin = createPlatePlugin({
 
 ## API 和事务命令
 
-插件可以定义自己的 API 方法和事务命令。插件专属 API 通过 `editor.plugin(Plugin).api` 访问，编辑器级 API 位于 `editor.api`；事务命令在 `editor.update((tx) => ...)` 内使用。
+插件可以定义自己的 API 方法和事务命令。具体编辑器会把已安装插件的 API 按 key 推断到 `editor.api`；通用包代码也可以通过 `editor.plugin(Plugin).api` 访问同一个不可变 API 对象。事务命令在 `editor.update((tx) => ...)` 内使用。
 
 ### .extendApi
 
@@ -192,7 +176,7 @@ const MyPlugin = createPlatePlugin({
 }));
 
 // 访问插件的 API
-editor.plugin(MyPlugin).api.pluginMethod();
+editor.api.myPlugin.pluginMethod();
 ```
 
 ### .extendEditorApi
@@ -305,11 +289,14 @@ const MyPlugin = createPlatePlugin({
     },
   }));
 
-editor.plugin(MyPlugin).api.pluginMethod();
+editor.api.myPlugin.pluginMethod();
 editor.api.multiply(3);
 editor.update((tx) => tx.myPlugin.pluginCommand());
 editor.update((tx) => tx.insert.mention());
 ```
+
+当代码只知道插件描述符而不知道完整编辑器 kit 时，使用
+`editor.plugin(MyPlugin).api.pluginMethod()` 访问同一个 API 对象。
 
 ## 将Plite插件转换为Plate插件
 

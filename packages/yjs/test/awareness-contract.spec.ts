@@ -130,7 +130,7 @@ describe('@platejs/yjs awareness contract', () => {
     assert.deepEqual(getYjsRemoteCursors(peer)[0]?.selection, range);
   });
 
-  it('clears main-root awareness when selection moves to another root', () => {
+  it('publishes root-qualified awareness for a named root', () => {
     const { awareness, peer } = createAwarePeer();
     const headerRange: Range = {
       anchor: { path: [0, 0], offset: 1, root: 'header' },
@@ -140,6 +140,28 @@ describe('@platejs/yjs awareness contract', () => {
     peer.editor.update.selection.set(selection([0, 0], 1));
     peer.editor.update.roots.create('header', [paragraph('header')]);
     peer.editor.update.selection.set(headerRange);
+
+    assert.equal(
+      (awareness.getLocalState()?.selection as { root?: unknown } | undefined)
+        ?.root,
+      'header'
+    );
+    awareness.setRemoteState(101, {
+      selection: awareness.getLocalState()?.selection,
+    });
+    assert.deepEqual(getYjsRemoteCursors(peer)[0]?.selection, headerRange);
+  });
+
+  it('rejects selections that span different roots', () => {
+    const { awareness, peer } = createAwarePeer();
+
+    peer.editor.update.roots.create('header', [paragraph('header')]);
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection({
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1, root: 'header' },
+      });
+    });
 
     assert.equal(awareness.getLocalState()?.selection, null);
   });

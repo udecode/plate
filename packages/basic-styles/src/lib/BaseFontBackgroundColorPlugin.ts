@@ -7,7 +7,7 @@ export const BaseFontBackgroundColorPlugin = createBasePlugin({
   schema: { mark: property.string() },
   inject: {
     nodeProps: {
-      nodeKey: 'backgroundColor',
+      styleKey: 'backgroundColor',
     },
   },
   parsers: {

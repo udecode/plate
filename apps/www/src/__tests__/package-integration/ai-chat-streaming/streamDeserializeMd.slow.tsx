@@ -26,7 +26,9 @@ describe('streamDeserializeMd', () => {
 
     expect(result).toEqual(output);
 
-    expect(streamSerializeMd(editor, { value: result }, chunk)).toEqual(chunk);
+    expect(
+      streamSerializeMd(editor, { value: { children: result } }, chunk)
+    ).toEqual(chunk);
   });
 
   it('keeps trailing line breaks inside code blocks', async () => {
@@ -53,7 +55,11 @@ describe('streamDeserializeMd', () => {
 
     const result = streamDeserializeMd(editor, chunk);
 
-    const serialized = streamSerializeMd(editor, { value: result }, chunk);
+    const serialized = streamSerializeMd(
+      editor,
+      { value: { children: result } },
+      chunk
+    );
 
     expect(serialized).toEqual(chunk);
   });
@@ -63,7 +69,11 @@ describe('streamDeserializeMd', () => {
 
     const result = streamDeserializeMd(editor, chunk);
 
-    const serialized = streamSerializeMd(editor, { value: result }, chunk);
+    const serialized = streamSerializeMd(
+      editor,
+      { value: { children: result } },
+      chunk
+    );
 
     expect(serialized).toEqual(chunk);
   });

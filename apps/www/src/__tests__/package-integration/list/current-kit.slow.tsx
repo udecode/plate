@@ -1,4 +1,13 @@
-import { BaseBasicBlocksPlugin } from '@platejs/basic-nodes';
+import {
+  BaseBlockquotePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+  BaseHorizontalRulePlugin,
+} from '@platejs/basic-nodes';
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BaseImagePlugin } from '@platejs/media';
 import { BaseTogglePlugin } from '@platejs/toggle';
@@ -13,7 +22,14 @@ describe('ListKit current contract', () => {
       nodeId: true,
       plugins: [
         BaseParagraphPlugin,
-        BaseBasicBlocksPlugin,
+        BaseBlockquotePlugin,
+        BaseH1Plugin,
+        BaseH2Plugin,
+        BaseH3Plugin,
+        BaseH4Plugin,
+        BaseH5Plugin,
+        BaseH6Plugin,
+        BaseHorizontalRulePlugin,
         BaseCodeBlockPlugin,
         BaseTogglePlugin,
         BaseImagePlugin,

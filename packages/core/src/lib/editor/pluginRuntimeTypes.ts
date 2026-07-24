@@ -11,6 +11,9 @@ import type {
   Element,
   PropertyValueDescriptor,
   PropertyValueOf,
+  SchemaContentRoot,
+  SchemaContentRootContribution,
+  SchemaContentRootSlotsFor,
   SchemaElement,
   SchemaElementFor,
   SchemaElementHandle,
@@ -26,9 +29,11 @@ import type { BasePlugin } from '../plugin/BasePlugin';
 import type {
   AnyPluginConfig,
   InferApi,
+  InferDependencies,
+  InferEnabled,
   InferExactPluginSchemaContribution,
+  InferPluginApi,
   InferPluginDocumentType,
-  InferPluginConfigTree,
   InferState,
   InferTx,
 } from '../plugin/PluginConfig';
@@ -51,12 +56,88 @@ export type InferPluginConfig<P> = P extends {
       ? P
       : never;
 
-export type InferPlugins<T extends readonly unknown[]> =
-  InferPluginConfig<T[number]> extends infer C extends AnyPluginConfig
-    ? InferPluginConfigTree<C>
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+type ExactPluginKey<C extends AnyPluginConfig> =
+  IsAny<C['key']> extends true ? never : C['key'];
+
+type ExplicitPluginKeys<T extends readonly unknown[]> =
+  T[number] extends infer P
+    ? P extends unknown
+      ? InferPluginConfig<P> extends infer C extends AnyPluginConfig
+        ? ExactPluginKey<C>
+        : never
+      : never
     : never;
 
-type IsAny<T> = 0 extends 1 & T ? true : false;
+type DisabledExplicitPluginKeys<T extends readonly unknown[]> =
+  T[number] extends infer P
+    ? P extends unknown
+      ? InferPluginConfig<P> extends infer C extends AnyPluginConfig
+        ? IsLiteralDisabled<C> extends true
+          ? ExactPluginKey<C>
+          : never
+        : never
+      : never
+    : never;
+
+type NextPluginKey<C extends AnyPluginConfig, Seen extends PropertyKey> =
+  | Seen
+  | ExactPluginKey<C>;
+
+type IsLiteralDisabled<C extends AnyPluginConfig> = [InferEnabled<C>] extends [
+  false,
+]
+  ? true
+  : false;
+
+type InferHiddenPlugin<
+  P,
+  ExplicitKeys extends PropertyKey,
+  Seen extends PropertyKey,
+> =
+  InferPluginConfig<P> extends infer C extends AnyPluginConfig
+    ? IsAny<C['key']> extends true
+      ? C
+      : C['key'] extends ExplicitKeys | Seen
+        ? never
+        : IsLiteralDisabled<C> extends true
+          ? never
+          : C | InferHiddenDependencies<C, ExplicitKeys, NextPluginKey<C, Seen>>
+    : never;
+
+type InferHiddenDependencies<
+  C extends AnyPluginConfig,
+  ExplicitKeys extends PropertyKey,
+  Seen extends PropertyKey,
+> = InferDependencies<C>[number] extends infer P
+  ? P extends unknown
+    ? InferHiddenPlugin<P, ExplicitKeys, Seen>
+    : never
+  : never;
+
+type InferExplicitPlugin<
+  P,
+  ExplicitKeys extends PropertyKey,
+  DisabledKeys extends PropertyKey,
+> =
+  InferPluginConfig<P> extends infer C extends AnyPluginConfig
+    ? C['key'] extends DisabledKeys
+      ? never
+      : C | InferHiddenDependencies<C, ExplicitKeys, ExactPluginKey<C>>
+    : never;
+
+/** Installed config union derived tuple-first so explicit descriptors shadow defaults. */
+export type InferPlugins<T extends readonly unknown[]> =
+  T[number] extends infer P
+    ? P extends unknown
+      ? InferExplicitPlugin<
+          P,
+          ExplicitPluginKeys<T>,
+          DisabledExplicitPluginKeys<T>
+        >
+      : never
+    : never;
 
 type IsUnknown<T> =
   IsAny<T> extends true
@@ -141,15 +222,33 @@ type OwnInferencePluginConfig<P> = [KnownPluginConfig<P>] extends [never]
 
 type InferencePluginConfig<P> =
   InferPluginConfig<P> extends infer C
-    ? C extends AnyPluginConfig
-      ? OwnInferencePluginConfig<InferPluginConfigTree<C>>
-      : never
+    ? [C] extends [never]
+      ? never
+      : IsAny<C> extends true
+        ? never
+        : [C] extends [AnyPluginConfig]
+          ? IsUnion<C> extends true
+            ? OwnInferencePluginConfig<C>
+            : OwnInferencePluginConfig<
+                InferPlugins<readonly [Extract<C, AnyPluginConfig>]>
+              >
+          : never
     : never;
 
 type InferApiFromPluginConfig<C> = [C] extends [never]
   ? never
   : C extends AnyPluginConfig
     ? InferApi<C>
+    : never;
+
+type InferPluginApiFromPluginConfig<C> = [C] extends [never]
+  ? never
+  : C extends AnyPluginConfig
+    ? keyof InferPluginApi<C> extends never
+      ? never
+      : {
+          [K in ExactPluginKey<C>]: InferPluginApi<C>;
+        }
     : never;
 
 type InferTxFromPluginConfig<C> = [C] extends [never]
@@ -164,10 +263,14 @@ type InferStateFromPluginConfig<C> = [C] extends [never]
     ? InferState<C>
     : never;
 
+type Materialize<T> = {
+  [K in keyof T]: T[K];
+};
+
 type MergeObjectApi<T> =
   MergeEditorApiUnion<T> extends infer TApi
     ? TApi extends object
-      ? TApi
+      ? Materialize<TApi>
       : {}
     : {};
 
@@ -193,6 +296,13 @@ type SchemaContributionProperty<TContribution> =
     properties?: readonly (infer TProperty)[];
   }>
     ? Extract<TProperty, SchemaProperty>
+    : never;
+
+type SchemaContributionContentRoot<TContribution> =
+  TContribution extends Readonly<{
+    contentRoots?: readonly (infer TContentRoot)[];
+  }>
+    ? Extract<TContentRoot, SchemaContentRootContribution>
     : never;
 
 type SchemaContributionElementProperty<C extends AnyPluginConfig> =
@@ -244,6 +354,22 @@ type PlateRawSchemaSource<P> = EditorSchemaSourceProvider<
   PlateRawSchemaDeclaration<P>
 >;
 
+type PlateContentRootSchemaSource<P> = EditorSchemaSourceProvider<
+  EditorSchemaContribution<
+    MergeObjectIntersection<
+      SchemaContributionElements<
+        ExactSchemaContribution<InferencePluginConfig<P>>
+      >
+    >,
+    readonly [],
+    NonNullable<EditorSchemaContribution['groups']>,
+    NonNullable<EditorSchemaContribution['roots']>,
+    readonly SchemaContributionContentRoot<
+      ExactSchemaContribution<InferencePluginConfig<P>>
+    >[]
+  >
+>;
+
 type PlateElementPropertyValues<
   P,
   TType extends SchemaElementTypes<PlateRawSchemaSource<P>>,
@@ -268,6 +394,15 @@ type PlateElementPropertyDescriptors<
  */
 type PlateSchemaElements<P> = {
   [TType in SchemaElementTypes<PlateRawSchemaSource<P>>]: SchemaElement<{
+    contentRoots: Readonly<
+      Record<
+        SchemaContentRootSlotsFor<
+          PlateContentRootSchemaSource<P>,
+          Extract<TType, SchemaElementTypes<PlateContentRootSchemaSource<P>>>
+        >,
+        SchemaContentRoot
+      >
+    >;
     properties: PlateElementPropertyDescriptors<P, TType>;
   }>;
 };
@@ -421,7 +556,10 @@ type PlateEditorStateSchemaApi<V extends Value, P> = Omit<
 type InstalledPluginApi<P> =
   IsAny<P> extends true
     ? Record<string, any>
-    : MergeObjectApi<InferApiFromPluginConfig<InferencePluginConfig<P>>>;
+    : MergeObjectApi<
+        | InferApiFromPluginConfig<InferencePluginConfig<P>>
+        | InferPluginApiFromPluginConfig<InferencePluginConfig<P>>
+      >;
 
 type InstalledPluginTx<P> =
   IsAny<P> extends true
@@ -441,7 +579,7 @@ type PlateInstalledExtension<P> = {
   name: 'plate';
 } & EditorExtensionTypeProvider<
   () => {
-    api: CorePluginApi & InstalledPluginApi<P>;
+    api: Materialize<CorePluginApi & InstalledPluginApi<P>>;
     state: CorePluginState & InstalledPluginState<P>;
     tx: CorePluginTx & InstalledPluginTx<P>;
   }
@@ -451,11 +589,15 @@ type PlatePluginTransactionExtension<P> = {
   name: 'plate-dependencies';
 } & EditorExtensionTypeProvider<
   () => {
-    api: InstalledPluginApi<P>;
+    api: Materialize<InstalledPluginApi<P>>;
     state: InstalledPluginState<P>;
     tx: InstalledPluginTx<P>;
   }
 >;
+
+/** Dependency capabilities visible while a plugin registers editor behavior. */
+export type PlatePluginExtensionEditor<P extends AnyPluginConfig> =
+  PliteRuntimeBaseEditor<Value, readonly [PlatePluginTransactionExtension<P>]>;
 
 export type PlatePluginTransaction<P extends AnyPluginConfig> =
   EditorUpdateTransaction<Value, readonly [PlatePluginTransactionExtension<P>]>;
@@ -464,8 +606,13 @@ type PlateOwnInstalledExtension<P> = {
   name: 'plate';
 } & EditorExtensionTypeProvider<
   () => {
-    api: CorePluginApi &
-      MergeObjectApi<InferApiFromPluginConfig<OwnInferencePluginConfig<P>>>;
+    api: Materialize<
+      CorePluginApi &
+        MergeObjectApi<
+          | InferApiFromPluginConfig<OwnInferencePluginConfig<P>>
+          | InferPluginApiFromPluginConfig<OwnInferencePluginConfig<P>>
+        >
+    >;
     state: CorePluginState &
       MergeObjectIntersection<
         InferStateFromPluginConfig<OwnInferencePluginConfig<P>>

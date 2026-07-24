@@ -5,13 +5,13 @@
   "sourceInventory": {
     "parser": "@babel/parser",
     "policy": "Every tracked donor file plus every public/private TypeScript declaration site; forwarding declarations map to their owning concept.",
-    "source": "/Users/zbeyens/git/wordgard"
+    "source": "/Users/zbeyens/git/wordgard-v0"
   },
-  "sourceRepo": "/Users/zbeyens/git/wordgard",
+  "sourceRepo": "/Users/zbeyens/git/wordgard-v0",
   "auditReports": [
     "docs/plans/2026-07-23-wordgard-full-architecture-audit.md"
   ],
-  "authority": "Live ../wordgard source plus live Plite/Plate source audits dated 2026-07-23; prior plans and claims excluded as completion evidence.",
+  "authority": "Exact Wordgard commit 1acb231df7067bf5f85e694aaf4646181441e9ab materialized at ../wordgard-v0; this is the audited baseline. The latest ../wordgard delta is owned by latest-delta-manifest.json.",
   "itemPolicy": {
     "publicItems": "Every public AST declaration/export/re-export maps to the atomic concept that owns its behavior or package exposure.",
     "privateItems": "Every private AST declaration/method maps by its live source line to its enclosing architecture mechanism.",

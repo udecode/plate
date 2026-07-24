@@ -167,3 +167,26 @@ createPlatePlugin({
   inject: { nodeProps: { styleKey: 'textAlign' } },
 });
 ```
+
+Classify plugin relationships explicitly:
+
+- Use `dependencies` for required structure and capabilities.
+- Use `plugins` for one direct level of optional defaults with valid fallback
+  behavior.
+- Use readonly plugin arrays for presets and product policy.
+
+Configure a bundled default through the ordinary plugin array:
+
+```tsx
+const plugins = [
+  CodeBlockPlugin,
+  CodeSyntaxPlugin.configure({ enabled: false }),
+];
+```
+
+Remove `configurePlugin`, `extendPlugin`, `rootPlugin`, `override.plugins`, and
+`override.enabled`. Configure complete descriptors directly and omit optional
+descriptors from app-owned arrays when they are not needed.
+
+Rename parser projections from `inject.plugins` to `inject.parsers` and from
+`targetPluginToInject` to `targetParserToInject`.

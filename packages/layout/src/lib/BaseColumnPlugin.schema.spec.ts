@@ -2,8 +2,25 @@ import { createBaseEditor } from '@platejs/core';
 import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from './BaseColumnPlugin';
+import { ColumnItemPlugin, ColumnPlugin } from '../react/ColumnPlugin';
 
 describe('BaseColumnPlugin schema', () => {
+  it('declares the item as an exact required Base and React dependency', () => {
+    expect(BaseColumnPlugin.dependencies).toEqual([BaseColumnItemPlugin]);
+    expect(ColumnPlugin.dependencies).toEqual([ColumnItemPlugin]);
+  });
+
+  it('rejects a disabled required column-item dependency', () => {
+    expect(() =>
+      createBaseEditor({
+        plugins: [
+          BaseColumnPlugin,
+          BaseColumnItemPlugin.configure({ enabled: false }),
+        ],
+      })
+    ).toThrow(/columnGroup.*disabled.*column|column.*disabled.*columnGroup/i);
+  });
+
   it('constructs configured column-group content from plugin-key grammar', () => {
     const editor = createBaseEditor({
       plugins: [BaseColumnPlugin],
@@ -62,5 +79,25 @@ describe('BaseColumnPlugin schema', () => {
         },
       ])
     ).toThrow(/at least 2 children/i);
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            children: [
+              {
+                children: [{ children: [{ text: '' }], type: KEYS.p }],
+                type: KEYS.column,
+              },
+              {
+                children: [{ children: [{ text: '' }], type: KEYS.p }],
+                type: KEYS.column,
+              },
+            ],
+            layout: [50, '50'],
+            type: NODES.columnGroup,
+          },
+        ],
+      })
+    ).toThrow(/element property "layout" fails custom property validation/);
   });
 });

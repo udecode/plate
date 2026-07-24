@@ -16,7 +16,7 @@ export const getSelectedDomFragment = (editor: BaseEditor): Descendant[] => {
   const fragment = range.cloneContents();
 
   const domBlocks = Array.from(
-    fragment.querySelectorAll('[data-plite-node="element"][data-plite-id]')
+    fragment.querySelectorAll('[data-plite-node="element"][data-block-id]')
   );
 
   if (domBlocks.length === 0) return [];
@@ -24,7 +24,7 @@ export const getSelectedDomFragment = (editor: BaseEditor): Descendant[] => {
   const nodes: Descendant[] = [];
 
   domBlocks.forEach((node, index) => {
-    const blockId = (node as HTMLElement).dataset.pliteId;
+    const blockId = (node as HTMLElement).dataset.blockId;
     const block = editor.read((state) =>
       state.nodes.find<PliteElement>({
         at: [],

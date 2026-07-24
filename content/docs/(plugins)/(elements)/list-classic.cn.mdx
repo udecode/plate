@@ -109,20 +109,16 @@ npm install @platejs/list-classic
 
 ### 添加插件
 
-在创建编辑器时，将列表插件包含在您的 Plate 插件数组中。
+将 `ListPlugin` 添加到 Plate 插件数组。它会安装必需的项目符号列表、编号列表、任务列表、列表项和列表项内容描述符。
 
 ```tsx
-import { ListPlugin, BulletedListPlugin, NumberedListPlugin, TaskListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
+import { ListPlugin } from '@platejs/list-classic/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     ListPlugin,
-    BulletedListPlugin,
-    NumberedListPlugin,
-    TaskListPlugin,
-    ListItemPlugin,
   ],
 });
 ```
@@ -137,7 +133,12 @@ import {
   OrderedListRules,
   TaskListRules,
 } from '@platejs/list-classic';
-import { ListPlugin, BulletedListPlugin, NumberedListPlugin, TaskListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
+import {
+  BulletedListPlugin,
+  ListPlugin,
+  NumberedListPlugin,
+  TaskListPlugin,
+} from '@platejs/list-classic/react';
 import { createPlateEditor } from 'platejs/react';
 import { BulletedListElement, NumberedListElement, TaskListElement } from '@/components/ui/list-classic-node';
 
@@ -166,7 +167,6 @@ const editor = createPlateEditor({
       render: { node: TaskListElement },
       shortcuts: { toggle: { keys: 'mod+alt+7' } },
     }),
-    ListItemPlugin,
   ],
 });
 ```
@@ -194,17 +194,12 @@ const editor = createPlateEditor({
 ### `ListPlugin`
 
 <API name="ListPlugin">
-包含以下元素插件：
+安装以下必需的元素插件：
 - `BulletedListPlugin`
 - `NumberedListPlugin`
 - `TaskListPlugin`
 - `ListItemPlugin`
 - `ListItemContentPlugin`
-
-选项：
-
-- `validLiChildren?: PluginReference[]` — 允许作为列表项直接子节点的元素插件。
-  例如：`options: { validLiChildren: [ImagePlugin] }`。
 
 <APIOptions type="object">
   <APIItem name="enableResetOnShiftTab" type="boolean" optional>
@@ -235,7 +230,11 @@ const editor = createPlateEditor({
 
 ### `ListItemPlugin`
 
-用于列表项的插件。
+用于列表项的插件。当其他元素插件可以保留为列表项的直接子节点时，在此处配置 `validLiChildren`：
+
+`ListItemPlugin.configure({ options: { validLiChildren: [ImagePlugin] } })`
+
+将配置后的 `ListItemPlugin` 与 `ListPlugin` 一起放入编辑器插件数组。这个显式描述符会替换键相同的必需默认描述符。
 
 ### `ListItemContentPlugin`
 

@@ -2,15 +2,16 @@
 "@platejs/markdown": major
 ---
 
-- Move Markdown parsing and serialization from `SlateEditor` to `BaseEditor`
-- Return immutable Markdown slices and fit them through the compiled editor schema
-- Configure parser, serializer, and rule behavior through
-  `MarkdownPlugin.options`
-- Keep deserialization state local to each call and hard-cut the public parser/memoization escape hatch
+- Accept `BaseEditor` in exported Markdown helpers
+- Return `EditorDocumentValue` from Markdown deserialization and accept the
+  same document shape for serialization
+- Preserve image alt text and rich MDX media children in caption content roots
+- Configure parser, serializer, and rule behavior through `MarkdownPlugin.options`
+- Remove the public parser and memoization escape hatch
 
-**Migration:** Pass a v54 Plate editor to exported Markdown helpers, install
-`MarkdownPlugin` for editor host-codec parsing and serialization, configure
-Markdown behavior through `options`, and use the editor-level Markdown API:
+**Migration:** Install `MarkdownPlugin`, configure Markdown behavior through
+`options`, and keep `children` and `roots` together when reading, replacing, or
+serializing a document:
 
 ```tsx
 MarkdownPlugin.configure({
@@ -19,6 +20,8 @@ MarkdownPlugin.configure({
   },
 });
 
-editor.api.markdown.serialize();
-editor.api.markdown.deserialize(markdown);
+const document = editor.api.markdown.deserialize(markdown);
+
+editor.update.value.replace(document);
+editor.api.markdown.serialize({ value: document });
 ```

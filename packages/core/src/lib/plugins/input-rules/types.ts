@@ -1,6 +1,7 @@
 import type {
   Element,
   EditorTransactionSpecBuilder,
+  ExtensionsOf,
   NodeEntry,
   Path,
   Point,
@@ -13,55 +14,54 @@ import type { BaseEditor } from '../../editor';
 
 export type InputRuleTarget = 'insertBreak' | 'insertData' | 'insertText';
 
+type InputRuleTransaction<TEditor> = BaseEditor extends TEditor
+  ? EditorTransactionSpecBuilder<ValueOf<TEditor>>
+  : EditorTransactionSpecBuilder<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
+
 type BivariantCallback<TArgs extends unknown[], TResult> = {
   bivarianceHack: (...args: TArgs) => TResult;
 }['bivarianceHack'];
 
-export type SelectionInputRuleContext<TEditor extends BaseEditor = BaseEditor> =
-  {
-    editor: TEditor;
-    getBlockEntry: () => NodeEntry<Element> | undefined;
-    getBlockStartRange: () => Range | undefined;
-    getBlockStartText: () => string | undefined;
-    getBlockTextBeforeSelection: () => string;
-    getCharAfter: () => string | undefined;
-    getCharBefore: () => string | undefined;
-    isCollapsed: boolean;
-    pluginKey: string;
-  };
+export type SelectionInputRuleContext<TEditor = BaseEditor> = {
+  editor: TEditor;
+  getBlockEntry: () => NodeEntry<Element> | undefined;
+  getBlockStartRange: () => Range | undefined;
+  getBlockStartText: () => string | undefined;
+  getBlockTextBeforeSelection: () => string;
+  getCharAfter: () => string | undefined;
+  getCharBefore: () => string | undefined;
+  isCollapsed: boolean;
+  pluginKey: string;
+};
 
-export type TransformInputRuleContext<TEditor extends BaseEditor = BaseEditor> =
-  {
-    tx: EditorTransactionSpecBuilder<ValueOf<TEditor>>;
-  };
+export type TransformInputRuleContext<TEditor = BaseEditor> = {
+  tx: InputRuleTransaction<TEditor>;
+};
 
-export type InsertBreakInputRuleContext<
-  TEditor extends BaseEditor = BaseEditor,
-> = SelectionInputRuleContext<TEditor> &
-  TransformInputRuleContext<TEditor> & {
-    cause: 'insertBreak';
-    insertBreak: () => void;
-  };
+export type InsertBreakInputRuleContext<TEditor = BaseEditor> =
+  SelectionInputRuleContext<TEditor> &
+    TransformInputRuleContext<TEditor> & {
+      cause: 'insertBreak';
+      insertBreak: () => void;
+    };
 
-export type InsertDataInputRuleContext<
-  TEditor extends BaseEditor = BaseEditor,
-> = SelectionInputRuleContext<TEditor> &
-  TransformInputRuleContext<TEditor> & {
-    cause: 'insertData';
-    data: DataTransfer;
-    insertData: (data: DataTransfer) => void;
-    text: string | null;
-  };
+export type InsertDataInputRuleContext<TEditor = BaseEditor> =
+  SelectionInputRuleContext<TEditor> &
+    TransformInputRuleContext<TEditor> & {
+      cause: 'insertData';
+      data: DataTransfer;
+      insertData: (data: DataTransfer) => void;
+      text: string | null;
+    };
 
-export type InsertTextInputRuleContext<
-  TEditor extends BaseEditor = BaseEditor,
-> = SelectionInputRuleContext<TEditor> &
-  TransformInputRuleContext<TEditor> & {
-    cause: 'insertText';
-    insertText: (text: string, options?: TextInsertTextOptions) => void;
-    options?: TextInsertTextOptions;
-    text: string;
-  };
+export type InsertTextInputRuleContext<TEditor = BaseEditor> =
+  SelectionInputRuleContext<TEditor> &
+    TransformInputRuleContext<TEditor> & {
+      cause: 'insertText';
+      insertText: (text: string, options?: TextInsertTextOptions) => void;
+      options?: TextInsertTextOptions;
+      text: string;
+    };
 
 export type BaseInputRule<
   TContext extends SelectionInputRuleContext = SelectionInputRuleContext,

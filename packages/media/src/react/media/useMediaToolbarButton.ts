@@ -5,11 +5,14 @@ import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from '../../lib/media-embed/BaseMediaEmbedPlugin';
+import type { MediaInsertInput } from '../../lib/media/types';
 
 export interface InsertMediaUrlOptions
   extends NodeInsertNodesOptions<TImageElement | TMediaEmbedElement> {
   /** Resolve a URL without showing the default browser prompt. */
   getUrl?: () => Promise<string>;
+  /** Initial caption content compiled into the media element's children. */
+  caption?: MediaInsertInput['caption'];
   type?: string;
 }
 
@@ -17,6 +20,7 @@ export const insertMediaUrl = async (
   editor: PlateEditor,
   {
     at,
+    caption,
     getUrl,
     type = editor.getType(KEYS.img),
     ...options
@@ -52,9 +56,13 @@ export const insertMediaUrl = async (
     };
 
     if (type === editor.getType(KEYS.img)) {
-      editor.plugin(BaseImagePlugin).update.insert(url, insertOptions);
+      editor
+        .plugin(BaseImagePlugin)
+        .update.insert({ caption, url }, insertOptions);
     } else {
-      editor.plugin(BaseMediaEmbedPlugin).update.insert(url, insertOptions);
+      editor
+        .plugin(BaseMediaEmbedPlugin)
+        .update.insert({ caption, url }, insertOptions);
     }
   } finally {
     atAnchor?.release();

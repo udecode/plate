@@ -1,14 +1,23 @@
 import type React from 'react';
 import type { MouseEvent, PointerEvent } from 'react';
 import {
-  type Descendant,
   defineEditorExtension,
+  defineEditorSchema,
   editorCommands,
   type Node,
   NodeApi,
   PathApi,
   PointApi,
+  property,
   RangeApi,
+  type EditorValueFromExtensions,
+  schema,
+  type SchemaDescendant,
+  type SchemaElementFor,
+  type SchemaElementTypes,
+  type SchemaText,
+  type SchemaTextPropertyKeys,
+  target,
   type Element as PliteElement,
   type Text as PliteText,
   TextApi,
@@ -16,6 +25,7 @@ import {
 import { isHotkey, parseDOMClipboardHtml } from '@platejs/plite-dom';
 import {
   Editable,
+  type ReactEditor,
   type RenderElementProps,
   type RenderLeafProps,
   Plite,
@@ -24,31 +34,101 @@ import {
   usePliteEditor,
 } from '@platejs/plite-react';
 import { Button, Icon, Toolbar } from './components';
-import type {
-  CustomEditor,
-  CustomElement,
-  CustomElementType,
-  CustomElementWithAlign,
-  CustomText,
-  CustomTextKey,
-  CustomValue,
-} from './custom-types.d';
-import { isMarkActive, toggleMark } from './mark-utils';
 import { deserialize, isPlainTextClipboardHtml } from './paste-html-import';
 
-const HOTKEYS: Record<string, CustomTextKey> = {
+const TEXT_MARK_TYPES = ['bold', 'italic', 'underline', 'code'] as const;
+type RichTextMark = (typeof TEXT_MARK_TYPES)[number];
+
+const HOTKEYS = {
   'mod+b': 'bold',
   'mod+i': 'italic',
   'mod+u': 'underline',
   'mod+`': 'code',
-};
-const TEXT_MARK_TYPES = Object.values(HOTKEYS);
+} satisfies Record<string, RichTextMark>;
 
 const LIST_TYPES = ['numbered-list', 'bulleted-list'] as const;
 const TEXT_ALIGN_TYPES = ['left', 'center', 'right', 'justify'] as const;
 const HEADING_TYPES = ['heading-one', 'heading-two'] as const;
 const EXIT_ON_ENTER_TYPES = [...HEADING_TYPES, 'block-quote'] as const;
-const RICH_TEXT_HTML_BLOCK_TYPES = new Set<CustomElementType>([
+
+const RichTextSchema = defineEditorSchema({
+  elements: {
+    'block-quote': {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['alignable'],
+      slice: { preserveContext: true },
+    },
+    'bulleted-list': {
+      content: schema.content.type('list-item', {
+        default: { type: 'list-item' },
+        min: 1,
+      }),
+      groups: ['alignable'],
+      slice: { preserveContext: true },
+    },
+    'heading-one': {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['alignable'],
+      slice: { preserveContext: true },
+    },
+    'heading-two': {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['alignable'],
+      slice: { preserveContext: true },
+    },
+    'list-item': {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['alignable'],
+    },
+    'numbered-list': {
+      content: schema.content.type('list-item', {
+        default: { type: 'list-item' },
+        min: 1,
+      }),
+      groups: ['alignable'],
+      properties: { start: property.number() },
+      slice: { preserveContext: true },
+    },
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      groups: ['alignable'],
+    },
+  },
+  groups: {
+    alignable: {},
+  },
+  properties: [
+    schema.elementProperty('align', property.string(), {
+      target: target.group('alignable'),
+    }),
+    ...TEXT_MARK_TYPES.map((mark) =>
+      schema.textProperty(
+        mark,
+        property.boolean({ default: false, omitDefault: true }),
+        { typeChange: 'preserve-if-allowed' }
+      )
+    ),
+  ],
+  root: {
+    content: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+  },
+  unknown: 'reject',
+});
+
+type RichTextValue = EditorValueFromExtensions<
+  readonly [typeof RichTextExtension]
+>;
+type RichTextEditor = ReactEditor<RichTextValue>;
+type RichTextElement = SchemaElementFor<typeof RichTextSchema>;
+type RichTextElementType = SchemaElementTypes<typeof RichTextSchema>;
+type RichTextDescendant = SchemaDescendant<typeof RichTextSchema>;
+type RichTextText = SchemaText<typeof RichTextSchema>;
+type RichTextTextKey = SchemaTextPropertyKeys<typeof RichTextSchema>;
+
+const RICH_TEXT_HTML_BLOCK_TYPES = new Set<RichTextElementType>([
   'block-quote',
   'bulleted-list',
   'heading-one',
@@ -61,10 +141,10 @@ const RICH_TEXT_HTML_BLOCK_TYPES = new Set<CustomElementType>([
 type AlignType = (typeof TEXT_ALIGN_TYPES)[number];
 type ExitOnEnterType = (typeof EXIT_ON_ENTER_TYPES)[number];
 type ListType = (typeof LIST_TYPES)[number];
-type CustomElementFormat = CustomElementType | AlignType | ListType;
+type RichTextElementFormat = RichTextElementType | AlignType | ListType;
 
 const MARK_HOTKEYS = Object.entries(HOTKEYS);
-const BLOCK_HOTKEYS: [string, CustomElementFormat][] = [
+const BLOCK_HOTKEYS: [string, RichTextElementFormat][] = [
   ['mod+alt+0', 'paragraph'],
   ['mod+alt+1', 'heading-one'],
   ['mod+alt+2', 'heading-two'],
@@ -76,44 +156,43 @@ const BLOCK_HOTKEYS: [string, CustomElementFormat][] = [
 const CLEAR_FORMATTING_HOTKEY = 'mod+\\';
 
 const RichTextExample = () => {
-  const initialValue: CustomValue = [
-    {
-      type: 'paragraph',
-      children: [
-        { text: 'This is editable ' },
-        { text: 'rich', bold: true },
-        { text: ' text, ' },
-        { text: 'much', italic: true },
-        { text: ' better than a ' },
-        { text: '<textarea>', code: true },
-        { text: '!' },
-      ],
-    },
-    {
-      type: 'paragraph',
-      children: [
-        {
-          text: "Since it's rich text, you can do things like turn a selection of text ",
-        },
-        { text: 'bold', bold: true },
-        {
-          text: ', or add a semantically rendered block quote in the middle of the page, like this:',
-        },
-      ],
-    },
-    {
-      type: 'block-quote',
-      children: [{ text: 'A wise quote.' }],
-    },
-    {
-      type: 'paragraph',
-      align: 'center',
-      children: [{ text: 'Try it out for yourself!' }],
-    },
-  ];
   const editor = usePliteEditor({
-    extensions: [richText()],
-    initialValue,
+    extensions: [RichTextExtension],
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'This is editable ' },
+          { text: 'rich', bold: true },
+          { text: ' text, ' },
+          { text: 'much', italic: true },
+          { text: ' better than a ' },
+          { text: '<textarea>', code: true },
+          { text: '!' },
+        ],
+      },
+      {
+        type: 'paragraph',
+        children: [
+          {
+            text: "Since it's rich text, you can do things like turn a selection of text ",
+          },
+          { text: 'bold', bold: true },
+          {
+            text: ', or add a semantically rendered block quote in the middle of the page, like this:',
+          },
+        ],
+      },
+      {
+        type: 'block-quote',
+        children: [{ text: 'A wise quote.' }],
+      },
+      {
+        type: 'paragraph',
+        align: 'center',
+        children: [{ text: 'Try it out for yourself!' }],
+      },
+    ],
   });
 
   return (
@@ -146,7 +225,7 @@ const RichTextExample = () => {
   );
 };
 
-const toggleBlock = (editor: CustomEditor, format: CustomElementFormat) => {
+const toggleBlock = (editor: RichTextEditor, format: RichTextElementFormat) => {
   const isActive = isBlockActive(
     editor,
     format,
@@ -193,7 +272,7 @@ const toggleBlock = (editor: CustomEditor, format: CustomElementFormat) => {
     tx.nodes.unwrap({
       match: (n) =>
         NodeApi.isElement(n) &&
-        isListType((n as PliteElement).type as CustomElementFormat),
+        isListType((n as PliteElement).type as RichTextElementFormat),
       split: true,
     });
 
@@ -208,7 +287,7 @@ const toggleBlock = (editor: CustomEditor, format: CustomElementFormat) => {
   });
 };
 
-const clearRichTextFormatting = (editor: CustomEditor) => {
+const clearRichTextFormatting = (editor: RichTextEditor) => {
   editor.update((tx) => {
     for (const mark of TEXT_MARK_TYPES) {
       tx.marks.remove(mark);
@@ -222,7 +301,7 @@ const clearRichTextFormatting = (editor: CustomEditor) => {
 };
 
 const toRichTextLeaf = (node: PliteText) => {
-  const leaf: CustomText = { text: node.text };
+  const leaf: RichTextText = { text: node.text };
 
   for (const mark of TEXT_MARK_TYPES) {
     if (node[mark]) {
@@ -233,10 +312,11 @@ const toRichTextLeaf = (node: PliteText) => {
   return leaf;
 };
 
-const normalizeRichTextHtmlChildren = (children: unknown[]): Descendant[] =>
-  children.flatMap(normalizeRichTextHtmlNode);
+const normalizeRichTextHtmlChildren = (
+  children: unknown[]
+): RichTextDescendant[] => children.flatMap(normalizeRichTextHtmlNode);
 
-const normalizeRichTextHtmlNode = (node: unknown): Descendant[] => {
+const normalizeRichTextHtmlNode = (node: unknown): RichTextDescendant[] => {
   if (typeof node === 'string') {
     return [{ text: node }];
   }
@@ -251,26 +331,28 @@ const normalizeRichTextHtmlNode = (node: unknown): Descendant[] => {
 
   const pliteElement = node as PliteElement;
   const children = normalizeRichTextHtmlChildren(pliteElement.children);
-  if (!RICH_TEXT_HTML_BLOCK_TYPES.has(pliteElement.type as CustomElementType)) {
+  if (
+    !RICH_TEXT_HTML_BLOCK_TYPES.has(pliteElement.type as RichTextElementType)
+  ) {
     return children;
   }
 
-  const element: CustomElement = {
-    type: pliteElement.type as CustomElementType,
+  const element: RichTextElement = {
+    type: pliteElement.type as RichTextElementType,
     children: children.length > 0 ? children : [{ text: '' }],
-  } as CustomElement;
+  } as RichTextElement;
 
-  return isAlignElement(pliteElement)
-    ? [{ ...element, align: pliteElement.align } as CustomElement]
+  return typeof pliteElement.align === 'string'
+    ? [{ ...element, align: pliteElement.align } as RichTextElement]
     : [element];
 };
 
-const normalizeRichTextHtmlFragment = (fragment: unknown): CustomValue => {
+const normalizeRichTextHtmlFragment = (fragment: unknown): RichTextValue => {
   const nodes = Array.isArray(fragment)
     ? normalizeRichTextHtmlChildren(fragment)
     : normalizeRichTextHtmlNode(fragment);
-  const value: CustomValue = [];
-  let inlineChildren: Descendant[] = [];
+  const value: RichTextElement[] = [];
+  let inlineChildren: RichTextDescendant[] = [];
   const flushInlineChildren = () => {
     if (inlineChildren.length === 0) {
       return;
@@ -287,7 +369,7 @@ const normalizeRichTextHtmlFragment = (fragment: unknown): CustomValue => {
     }
 
     flushInlineChildren();
-    value.push(node as CustomElement);
+    value.push(node as RichTextElement);
   }
 
   flushInlineChildren();
@@ -297,90 +379,88 @@ const normalizeRichTextHtmlFragment = (fragment: unknown): CustomValue => {
     : [{ type: 'paragraph', children: [{ text: '' }] }];
 };
 
-const richText = () =>
-  defineEditorExtension<CustomEditor>()({
-    name: 'richtext',
-    clipboard: {
-      insertData(data, { next, tx }) {
-        const html = data.getData('text/html');
+const RichTextExtension = defineEditorExtension({
+  name: 'richtext',
+  clipboard: {
+    insertData(data, { next, tx }) {
+      const html = data.getData('text/html');
 
-        if (!html) {
-          return next();
-        }
+      if (!html) {
+        return next();
+      }
 
-        if (
-          data.getData('application/x-plite-fragment') ||
-          html.includes('data-plite-fragment=')
-        ) {
-          return next();
-        }
+      if (
+        data.getData('application/x-plite-fragment') ||
+        html.includes('data-plite-fragment=')
+      ) {
+        return next();
+      }
 
-        const hasPlainText = Array.from(data.types).includes('text/plain');
-        const text = hasPlainText ? data.getData('text/plain') : '';
+      const hasPlainText = Array.from(data.types).includes('text/plain');
+      const text = hasPlainText ? data.getData('text/plain') : '';
 
-        if (isPlainTextClipboardHtml(html, text)) {
-          return next();
-        }
+      if (isPlainTextClipboardHtml(html, text)) {
+        return next();
+      }
 
-        const parsed = parseDOMClipboardHtml(html);
-        const fragment = normalizeRichTextHtmlFragment(
-          deserialize(parsed.body)
-        );
+      const parsed = parseDOMClipboardHtml(html);
+      const fragment = normalizeRichTextHtmlFragment(deserialize(parsed.body));
 
-        tx.fragment.replace(fragment);
-        return true;
-      },
+      tx.fragment.replace(fragment);
+      return true;
     },
-    commands: ({ around }) => [
-      around(editorCommands.insertBreak, ({ state, next }) => {
-        const selection = state.selection();
+  },
+  commands: ({ around }) => [
+    around(editorCommands.insertBreak, ({ state, next }) => {
+      const selection = state.selection();
 
-        if (selection && RangeApi.isCollapsed(selection)) {
-          const blockEntry = state.nodes.above({
-            at: selection,
-            match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
-          });
+      if (selection && RangeApi.isCollapsed(selection)) {
+        const blockEntry = state.nodes.above({
+          at: selection,
+          match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
+        });
 
-          if (blockEntry) {
-            const [block, blockPath] = blockEntry;
+        if (blockEntry) {
+          const [block, blockPath] = blockEntry;
+
+          if (
+            NodeApi.isElement(block) &&
+            isExitOnEnterType(block.type as RichTextElementType)
+          ) {
+            const blockText = NodeApi.string(block);
+            const end = state.points.end(blockPath);
 
             if (
-              NodeApi.isElement(block) &&
-              isExitOnEnterType(block.type as CustomElementType)
+              blockText === '' ||
+              (end && PointApi.equals(selection.anchor, end))
             ) {
-              const blockText = NodeApi.string(block);
-              const end = state.points.end(blockPath);
+              const paragraphPath = PathApi.next(blockPath);
+              const result = next();
 
-              if (
-                blockText === '' ||
-                (end && PointApi.equals(selection.anchor, end))
-              ) {
-                const paragraphPath = PathApi.next(blockPath);
-                const result = next();
+              if (result === false) return false;
 
-                if (result === false) return false;
-
-                return state.transaction.extend(result, (tx) => {
-                  tx.nodes.set(
-                    { type: 'paragraph' },
-                    {
-                      at: paragraphPath,
-                      match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
-                    }
-                  );
-                });
-              }
+              return state.transaction.extend(result, (tx) => {
+                tx.nodes.set(
+                  { type: 'paragraph' },
+                  {
+                    at: paragraphPath,
+                    match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
+                  }
+                );
+              });
             }
           }
         }
+      }
 
-        return false;
-      }),
-    ],
-  });
+      return false;
+    }),
+  ],
+  schema: RichTextSchema.schema,
+});
 
 const handleRichTextKeyDown = (
-  editor: CustomEditor,
+  editor: RichTextEditor,
   event: React.KeyboardEvent<HTMLDivElement>
 ) => {
   if (isHotkey(CLEAR_FORMATTING_HOTKEY, event)) {
@@ -397,15 +477,15 @@ const handleRichTextKeyDown = (
 
   for (const [hotkey, mark] of MARK_HOTKEYS) {
     if (isHotkey(hotkey, event)) {
-      toggleMark(editor, mark);
+      editor.update.marks.toggle(mark);
       return true;
     }
   }
 };
 
 const isBlockActive = (
-  editor: CustomEditor,
-  format: CustomElementFormat,
+  editor: RichTextEditor,
+  format: RichTextElementFormat,
   blockType: 'type' | 'align' = 'type'
 ) => {
   const selection = editor.read.selection();
@@ -416,7 +496,7 @@ const isBlockActive = (
       at: state.ranges.unhang(selection),
       match: (n) => {
         if (NodeApi.isElement(n)) {
-          if (blockType === 'align' && isAlignElement(n)) {
+          if (blockType === 'align' && typeof n.align === 'string') {
             return n.align === format;
           }
           return n.type === format;
@@ -431,9 +511,9 @@ const Element = ({
   attributes,
   children,
   element,
-}: RenderElementProps<CustomElement>) => {
+}: RenderElementProps<RichTextElement>) => {
   const style: React.CSSProperties = {};
-  if (isAlignElement(element)) {
+  if (element.align) {
     style.textAlign = element.align as AlignType;
   }
   switch (element.type) {
@@ -482,7 +562,11 @@ const Element = ({
   }
 };
 
-const Leaf = ({ attributes, children, leaf }: RenderLeafProps<CustomText>) => {
+const Leaf = ({
+  attributes,
+  children,
+  leaf,
+}: RenderLeafProps<RichTextText>) => {
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -517,13 +601,13 @@ const handleToolbarButtonPointerDown = (
 };
 
 interface BlockButtonProps {
-  format: CustomElementFormat;
+  format: RichTextElementFormat;
   icon: string;
 }
 
 const BlockButton = ({ format, icon }: BlockButtonProps) => {
-  const editor = useEditor<CustomEditor>();
-  const active = useEditorSelector((editor: CustomEditor) =>
+  const editor = useEditor<RichTextEditor>();
+  const active = useEditorSelector<boolean, RichTextEditor>((editor) =>
     isBlockActive(editor, format, isAlignType(format) ? 'align' : 'type')
   );
   const runCommand = () => toggleBlock(editor, format);
@@ -542,7 +626,7 @@ const BlockButton = ({ format, icon }: BlockButtonProps) => {
 };
 
 const ClearFormattingButton = () => {
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor<RichTextEditor>();
   const runCommand = () => clearRichTextFormatting(editor);
 
   return (
@@ -559,16 +643,16 @@ const ClearFormattingButton = () => {
 };
 
 interface MarkButtonProps {
-  format: CustomTextKey;
+  format: RichTextTextKey;
   icon: string;
 }
 
 const MarkButton = ({ format, icon }: MarkButtonProps) => {
-  const editor = useEditor<CustomEditor>();
-  const active = useEditorSelector((editor: CustomEditor) =>
-    isMarkActive(editor, format)
+  const editor = useEditor<RichTextEditor>();
+  const active = useEditorSelector<boolean, RichTextEditor>(
+    (editor) => editor.read.marks()?.[format] === true
   );
-  const runCommand = () => toggleMark(editor, format);
+  const runCommand = () => editor.update.marks.toggle(format);
   return (
     <Button
       active={active}
@@ -583,19 +667,15 @@ const MarkButton = ({ format, icon }: MarkButtonProps) => {
   );
 };
 
-const isAlignType = (format: CustomElementFormat): format is AlignType =>
+const isAlignType = (format: RichTextElementFormat): format is AlignType =>
   TEXT_ALIGN_TYPES.includes(format as AlignType);
 
-const isListType = (format: CustomElementFormat): format is ListType =>
+const isListType = (format: RichTextElementFormat): format is ListType =>
   LIST_TYPES.includes(format as ListType);
 
 const isExitOnEnterType = (
-  format: CustomElementFormat
+  format: RichTextElementFormat
 ): format is ExitOnEnterType =>
   EXIT_ON_ENTER_TYPES.includes(format as ExitOnEnterType);
-
-const isAlignElement = (
-  element: PliteElement
-): element is CustomElementWithAlign => 'align' in element;
 
 export default RichTextExample;

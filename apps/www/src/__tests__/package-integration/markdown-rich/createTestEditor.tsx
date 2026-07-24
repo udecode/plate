@@ -18,8 +18,8 @@ import {
 } from '@platejs/basic-nodes';
 import {
   BaseCodeBlockPlugin,
+  BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
 } from '@platejs/code-block';
 import { BaseListPlugin } from '@platejs/list';
 import { BaseLinkPlugin } from '@platejs/link';
@@ -69,7 +69,7 @@ export const createTestEditor = (plugins: any[] = []) =>
       BaseHorizontalRulePlugin,
       BaseCodeBlockPlugin,
       BaseCodeLinePlugin,
-      BaseCodeSyntaxPlugin,
+      BaseCodeHighlightPlugin,
       BaseTablePlugin,
       BaseTableRowPlugin,
       BaseTableCellPlugin,

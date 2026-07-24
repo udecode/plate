@@ -3,7 +3,7 @@ import * as React from 'react';
 import { cva } from 'class-variance-authority';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { type Value, normalizeStaticValue } from 'platejs';
+import { type EditorDocumentValue, normalizeStaticValue } from 'platejs';
 import { createStaticEditor, renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -39,8 +39,8 @@ const getCachedTailwindCss = React.cache(async () => {
 });
 
 export default async function PlateToHtmlBlock() {
-  const createValue = (): Value =>
-    normalizeStaticValue([
+  const createValue = (): EditorDocumentValue => ({
+    children: normalizeStaticValue([
       ...basicBlocksValue,
       ...basicMarksValue,
       ...tocPlaygroundValue,
@@ -56,8 +56,9 @@ export default async function PlateToHtmlBlock() {
       ...lineHeightValue,
       ...indentValue,
       ...listValue,
-      ...mediaValue,
-    ]);
+      ...mediaValue.children,
+    ]),
+  });
 
   const editor = createStaticEditor({
     plugins: BaseEditorKit,

@@ -28,6 +28,7 @@ import { remarkMdx, remarkMention } from '../plugins';
 
 type TestElementOptions = {
   properties?: Readonly<Record<string, PropertyValueDescriptor>>;
+  inlineContent?: boolean;
   inline?: boolean;
   type?: string;
   void?: boolean;
@@ -37,9 +38,14 @@ const element = (key: string, options: TestElementOptions = {}) => {
   const descriptor: SchemaElement = {
     ...(!options.void
       ? {
-          content: options.inline
-            ? schema.content.text({ default: 'text', min: 1 })
-            : schema.content.open(),
+          content: options.inlineContent
+            ? schema.content.any(
+                [schema.content.text(), schema.content.group('inline')],
+                { default: 'text', min: 1 }
+              )
+            : options.inline
+              ? schema.content.text({ default: 'text', min: 1 })
+              : schema.content.open(),
         }
       : {}),
     ...(options.inline ? { inline: true } : {}),
@@ -62,6 +68,18 @@ const leaf = (key: string, type = key) =>
     },
     type,
   });
+
+const mediaProperties = {
+  alt: property.string(),
+  height: property.json(),
+  isUpload: property.boolean(),
+  name: property.string(),
+  provider: property.string(),
+  sourceUrl: property.string(),
+  title: property.string(),
+  url: property.string(),
+  width: property.json(),
+};
 
 const testSchemaPlugins = [
   createBasePlugin({
@@ -118,11 +136,27 @@ const testSchemaPlugins = [
     type: NODES.inlineEquation,
     void: true,
   }),
-  element(KEYS.file, { void: true }),
-  element(KEYS.audio, { void: true }),
-  element(KEYS.img, { void: true }),
-  element(KEYS.mediaEmbed, { type: NODES.mediaEmbed, void: true }),
-  element(KEYS.video, { void: true }),
+  element(KEYS.file, {
+    inlineContent: true,
+    properties: mediaProperties,
+  }),
+  element(KEYS.audio, {
+    inlineContent: true,
+    properties: mediaProperties,
+  }),
+  element(KEYS.img, {
+    inlineContent: true,
+    properties: mediaProperties,
+  }),
+  element(KEYS.mediaEmbed, {
+    inlineContent: true,
+    properties: mediaProperties,
+    type: NODES.mediaEmbed,
+  }),
+  element(KEYS.video, {
+    inlineContent: true,
+    properties: mediaProperties,
+  }),
   element(KEYS.columnGroup, { type: NODES.columnGroup }),
   element(KEYS.column),
   element(KEYS.table),

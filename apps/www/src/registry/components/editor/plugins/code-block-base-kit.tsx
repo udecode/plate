@@ -1,7 +1,7 @@
 import {
   BaseCodeBlockPlugin,
+  BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
 } from '@platejs/code-block';
 import { all, createLowlight } from 'lowlight';
 
@@ -15,9 +15,11 @@ const lowlight = createLowlight(all);
 
 export const BaseCodeBlockKit = [
   BaseCodeBlockPlugin.configure({
-    options: { lowlight },
     render: { node: CodeBlockElementStatic },
   }),
   BaseCodeLinePlugin.withComponent(CodeLineElementStatic),
-  BaseCodeSyntaxPlugin.withComponent(CodeSyntaxLeafStatic),
+  BaseCodeHighlightPlugin.configure({
+    options: { lowlight },
+    render: { node: CodeSyntaxLeafStatic },
+  }),
 ];

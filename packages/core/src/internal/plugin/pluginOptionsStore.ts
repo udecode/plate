@@ -4,7 +4,6 @@ import type { AnyPluginConfig, InferOptions, InferSelectors } from '../../lib';
 import {
   brandPluginDescriptor,
   isNominalPluginDescriptor,
-  isNominalSchemaConfigToken,
 } from '../utils/mergePlugins';
 import { getPlateRuntimeOwner } from './plateRuntime';
 
@@ -31,7 +30,6 @@ const snapshotPluginOptionValue = (
   context: PluginOptionSnapshotContext
 ): unknown => {
   if (!value || typeof value !== 'object') return value;
-  if (isNominalSchemaConfigToken(value)) return value;
   if (isNominalPluginDescriptor(value)) {
     const canonicalByType = context.canonicalReferences?.get(value.key);
     const canonicalReference = canonicalByType?.get(value.type);

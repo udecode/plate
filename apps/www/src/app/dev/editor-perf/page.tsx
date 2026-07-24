@@ -10,13 +10,16 @@ import {
 import { useHydrateAtoms } from 'jotai/utils';
 import { createStore as createJotaiStore } from 'jotai/vanilla';
 import {
-  BasicBlocksPlugin,
-  BasicMarksPlugin,
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  H4Plugin,
+  H5Plugin,
+  H6Plugin,
   HighlightPlugin,
-  HeadingPlugin,
   HorizontalRulePlugin,
   ItalicPlugin,
   KbdPlugin,
@@ -1669,7 +1672,23 @@ function getCoreMountValue({
 
 function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
   if (plugins === 'basic') {
-    return [BasicBlocksPlugin, BasicMarksPlugin];
+    return [
+      BlockquotePlugin,
+      H1Plugin,
+      H2Plugin,
+      H3Plugin,
+      H4Plugin,
+      H5Plugin,
+      H6Plugin,
+      HorizontalRulePlugin,
+      BoldPlugin,
+      CodePlugin,
+      ItalicPlugin,
+      StrikethroughPlugin,
+      SubscriptPlugin,
+      SuperscriptPlugin,
+      UnderlinePlugin,
+    ];
   }
 
   if (plugins === 'blockquote-only') {
@@ -1689,7 +1708,7 @@ function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
   }
 
   if (plugins === 'heading-only') {
-    return [HeadingPlugin];
+    return [H1Plugin, H2Plugin, H3Plugin, H4Plugin, H5Plugin, H6Plugin];
   }
 
   if (plugins === 'highlight-only') {
@@ -2719,7 +2738,6 @@ function BenchmarkEditableMount({
   const directBoldNodePropsLeafRenderer = React.useCallback(
     ({ attributes, children, leaf, leafPosition, text }: any) => {
       const ctxProps = getRenderNodeProps({
-        attributes,
         editor: editor as any,
         plugin: boldPlugin as any,
         props: {
@@ -3162,7 +3180,6 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-precomputed-no-element-hook') {
         const ctxProps = getRenderNodeProps({
-          attributes: element.attributes as any,
           editor: editor as any,
           plugin: elementPlugin as any,
           props: {
@@ -3195,7 +3212,6 @@ function BenchmarkEditableMount({
           ? editor.plugin(elementPlugin)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
-          attributes: element.attributes as any,
           editor: editor as any,
           plugin: elementPlugin as any,
           pluginContext: pluginContext as any,
@@ -3232,7 +3248,6 @@ function BenchmarkEditableMount({
           ? editor.plugin(elementPlugin)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
-          attributes: element.attributes as any,
           editor: editor as any,
           plugin: elementPlugin as any,
           pluginContext: pluginContext as any,
@@ -3271,7 +3286,6 @@ function BenchmarkEditableMount({
           ? editor.plugin(elementPlugin)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
-          attributes: element.attributes as any,
           editor: editor as any,
           plugin: elementPlugin as any,
           pluginContext: pluginContext as any,
@@ -3309,7 +3323,6 @@ function BenchmarkEditableMount({
           ? editor.plugin(elementPlugin)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
-          attributes: element.attributes as any,
           editor: editor as any,
           plugin: elementPlugin as any,
           pluginContext: pluginContext as any,
@@ -3347,7 +3360,6 @@ function BenchmarkEditableMount({
           ? editor.plugin(elementPlugin)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
-          attributes: element.attributes as any,
           editor: editor as any,
           plugin: elementPlugin as any,
           pluginContext: pluginContext as any,
@@ -3383,7 +3395,6 @@ function BenchmarkEditableMount({
           ? editor.plugin(elementPlugin)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
-          attributes: element.attributes as any,
           editor: editor as any,
           plugin: elementPlugin as any,
           pluginContext: pluginContext as any,
@@ -3422,7 +3433,6 @@ function BenchmarkEditableMount({
           ? editor.plugin(elementPlugin)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
-          attributes: element.attributes as any,
           editor: editor as any,
           plugin: elementPlugin as any,
           pluginContext: pluginContext as any,
@@ -3463,7 +3473,6 @@ function BenchmarkEditableMount({
           ? editor.plugin(elementPlugin)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
-          attributes: element.attributes as any,
           editor: editor as any,
           plugin: elementPlugin as any,
           pluginContext: pluginContext as any,
@@ -3666,7 +3675,6 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-precomputed-prop-effect') {
         const ctxProps = getRenderNodeProps({
-          attributes: element.attributes as any,
           editor: editor as any,
           plugin: elementPlugin as any,
           props: {
@@ -3717,7 +3725,6 @@ function BenchmarkEditableMount({
 
       const plugin = editor.getPlugin({ key: element.type as any });
       const ctxProps = getRenderNodeProps({
-        attributes: element.attributes as any,
         editor: editor as any,
         plugin: plugin as any,
         props: { ...props, path } as any,

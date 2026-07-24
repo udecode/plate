@@ -11,7 +11,7 @@ describe('JuicePlugin', () => {
     const createContext = prepareParserPluginContext(editor, JuicePlugin);
     const context = editor.read((state) => createContext(state));
     const transformData =
-      JuicePlugin.inject?.plugins?.[KEYS.html]?.parser?.transformData;
+      JuicePlugin.inject?.parsers?.[KEYS.html]?.parser?.transformData;
 
     if (!transformData) {
       throw new Error('Missing HTML parser transformData');
@@ -40,7 +40,7 @@ describe('JuicePlugin', () => {
     const createContext = prepareParserPluginContext(editor, JuicePlugin);
     const context = editor.read((state) => createContext(state));
     const transformData =
-      JuicePlugin.inject?.plugins?.[KEYS.html]?.parser?.transformData;
+      JuicePlugin.inject?.parsers?.[KEYS.html]?.parser?.transformData;
 
     if (!transformData) {
       throw new Error('Missing HTML parser transformData');

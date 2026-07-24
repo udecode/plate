@@ -1,6 +1,5 @@
 import {
   defineEditorExtension,
-  definePropertyPolicy,
   editorCommands,
   property,
   schema,
@@ -8,7 +7,6 @@ import {
 } from '@platejs/plite';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import {
   type AnyBasePlugin,
   type PluginConfig,
@@ -45,14 +43,12 @@ describe('createBasePlugin', () => {
     expect(Object.isFrozen(plugin.targetPluginKeys)).toBe(true);
   });
 
-  it('preserves immutable property policies through plugin resolution', () => {
-    const policy = definePropertyPolicy<number>({
-      id: 'plate.test.positive',
+  it('preserves inline property validators through plugin resolution', () => {
+    const width = property.number({
       validate: (value): value is number =>
         typeof value === 'number' && value > 0,
-      version: 1,
+      validationVersion: 1,
     });
-    const width = property.number({ policy });
     const plugin = resolvePluginTest(
       createBasePlugin({
         key: 'policy-node',
@@ -67,12 +63,12 @@ describe('createBasePlugin', () => {
       })
     );
 
-    const resolvedPolicy = plugin.schema.element?.properties?.width.policy;
+    const resolved = plugin.schema.element?.properties?.width;
 
-    expect(resolvedPolicy).toBe(width.policy);
-    expect(typeof resolvedPolicy?.validate).toBe('function');
-    expect(resolvedPolicy?.validate(1)).toBe(true);
-    expect(resolvedPolicy?.validate(-1)).toBe(false);
+    expect(resolved?.validate).toBe(width.validate);
+    expect(typeof resolved?.validate).toBe('function');
+    expect(resolved?.validate?.(1)).toBe(true);
+    expect(resolved?.validate?.(-1)).toBe(false);
   });
 
   it('contextually types schema factories over options', () => {
@@ -166,90 +162,6 @@ describe('createBasePlugin', () => {
       });
     });
 
-    it('can extend nested plugins', () => {
-      const HeadingPlugin = createBasePlugin({
-        key: 'heading',
-        options: {
-          levels: 6,
-        },
-      });
-      const editor = createBaseEditor({
-        plugins: [
-          createBasePlugin({
-            key: 'blocks',
-            plugins: [HeadingPlugin],
-          }).extendPlugin(HeadingPlugin, {
-            options: {
-              levels: 5,
-            },
-          }),
-        ],
-      });
-
-      expect(getPlateRuntime(editor).plugins.heading).toMatchObject({
-        type: 'heading',
-        options: { levels: 5 },
-      });
-    });
-
-    it('extends nested plugin options without inheriting parent options', () => {
-      const childPlugin = createBasePlugin({
-        key: 'child',
-        options: { childOption: 'child' },
-      }).extendEditorApi(() => ({
-        method: () => 'child',
-      }));
-
-      const parentPlugin = createBasePlugin({
-        key: 'parent',
-        options: { parentOption: 'parent' },
-        plugins: [childPlugin],
-      });
-
-      const extendedPlugin = parentPlugin.extendPlugin(childPlugin, {
-        options: {
-          extendedOption: 'extended child',
-        },
-      });
-
-      const editor = createBaseEditor({
-        plugins: [extendedPlugin],
-      });
-
-      expect(editor.plugin(childPlugin).getOptions()).toEqual({
-        childOption: 'child',
-        extendedOption: 'extended child',
-      });
-      expect(editor.plugin(childPlugin).getOptions()).not.toHaveProperty(
-        'parentOption'
-      );
-    });
-
-    it('can add missing nested plugins and update them later', () => {
-      const AAPlugin = createBasePlugin({
-        key: 'aa',
-        options: { value: 'aa' },
-      });
-      const BBPlugin = createBasePlugin({
-        key: 'bb',
-        options: { value: 'bb' },
-      });
-      const editor = createBaseEditor({
-        plugins: [
-          createBasePlugin({
-            key: 'a',
-            plugins: [AAPlugin],
-          })
-            .extendPlugin(BBPlugin, { options: { value: 'bb' } })
-            .extendPlugin(AAPlugin, { options: { value: 'aa1' } })
-            .extendPlugin(BBPlugin, { options: { value: 'bb1' } }),
-        ],
-      });
-
-      expect(editor.plugin(AAPlugin).getOptions().value).toBe('aa1');
-      expect(editor.plugin(BBPlugin).getOptions().value).toBe('bb1');
-    });
-
     it('infers tx groups in later plugin extension contexts', () => {
       createBasePlugin({ key: 'txPlugin' })
         .extendTx(() => () => ({
@@ -267,6 +179,26 @@ describe('createBasePlugin', () => {
 
           return {};
         });
+
+      expect(1).toBe(1);
+    });
+
+    it('infers plugin tx groups in editor extension commands', () => {
+      createBasePlugin({ key: 'txPlugin' })
+        .extendTx(() => () => ({
+          replace: (text: string) => text.length,
+        }))
+        .extendExtension('behavior', () => ({
+          commands: ({ handle }) => [
+            handle(editorCommands.insertText, ({ input, state }) =>
+              state.transaction((tx) => {
+                const length = tx.txPlugin.replace(input.text);
+
+                return length satisfies number;
+              })
+            ),
+          ],
+        }));
 
       expect(1).toBe(1);
     });
@@ -775,91 +707,6 @@ describe('createBasePlugin', () => {
         test: true,
       });
       expect(plugin.parsers.html?.deserializer?.withoutChildren).toBe(true);
-    });
-  });
-
-  describe('configurePlugin', () => {
-    it('configures an existing nested plugin', () => {
-      const child = createBasePlugin({
-        key: 'aa',
-        options: { another: 'b', initialValue: 'aa' },
-      });
-
-      const editor = createBaseEditor({
-        plugins: [
-          createBasePlugin({
-            key: 'a',
-            plugins: [child],
-          }).configurePlugin(child, {
-            options: {
-              initialValue: 'aaa',
-            },
-          }),
-        ],
-      });
-
-      expect(getPlateRuntime(editor).plugins.aa.options).toEqual({
-        another: 'b',
-        initialValue: 'aaa',
-      });
-    });
-
-    it('does not add a plugin when the target is missing', () => {
-      const child = createBasePlugin({
-        key: 'aa',
-        options: { initialValue: 'aa' },
-      });
-
-      const editor = createBaseEditor({
-        plugins: [
-          createBasePlugin({
-            key: 'a',
-            plugins: [child],
-          }).configurePlugin({ key: 'bb' }, { options: { newOption: 'new' } }),
-        ],
-      });
-
-      expect(getPlateRuntime(editor).plugins.aa.options).toEqual({
-        initialValue: 'aa',
-      });
-      expect(getPlateRuntime(editor).plugins.bb).toBeUndefined();
-    });
-
-    it('configures deeply nested plugins', () => {
-      const grandchild = createBasePlugin({
-        key: 'c',
-        options: { a: 1, selectable: true },
-        schema: ({ options }) => ({
-          element: {
-            content: schema.content.open({ default: 'text', min: 1 }),
-            selectable: options.selectable,
-          },
-        }),
-      });
-
-      const child = createBasePlugin({
-        key: 'b',
-        plugins: [grandchild],
-      });
-
-      const editor = createBaseEditor({
-        plugins: [
-          createBasePlugin({
-            key: 'a',
-            plugins: [child],
-          }).configurePlugin(grandchild, {
-            options: { a: 2, selectable: false },
-          }),
-        ],
-      });
-
-      expect(
-        editor.read.schema.isSelectable({
-          children: [{ text: '' }],
-          type: 'c',
-        })
-      ).toBe(false);
-      expect(editor.plugin(grandchild).getOptions().a).toBe(2);
     });
   });
 });

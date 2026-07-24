@@ -62,20 +62,23 @@ npm install @platejs/slash-command
 
 ### Add Plugins
 
+`SlashPlugin` installs `SlashInputPlugin` as a required dependency.
+
 ```tsx
-import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
+import { SlashPlugin } from '@platejs/slash-command/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     SlashPlugin,
-    SlashInputPlugin,
   ],
 });
 ```
 
 ### Configure Plugins
+
+Add a complete `SlashInputPlugin` descriptor beside the owner when you need to replace the dependency's component or configuration.
 
 ```tsx
 import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
@@ -135,7 +138,7 @@ Available options include:
 
 ### SlashPlugin
 
-Plugin for slash command functionality. Extends [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions).
+Plugin for slash command functionality. Extends [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions) and requires `SlashInputPlugin`.
 
 <API name="SlashPlugin">
 <APIOptions>
@@ -165,4 +168,4 @@ Plugin for slash command functionality. Extends [TriggerComboboxPluginOptions](/
 
 ### SlashInputPlugin
 
-Handles the input behavior for slash command insertion.
+Required input dependency for slash command insertion. Add it directly only to replace its component or configuration.

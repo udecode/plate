@@ -10,7 +10,7 @@ describe('math package surfaces', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           { text: 'Inline ' },
@@ -38,7 +38,7 @@ describe('math package surfaces', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [{ text: '' }],
         texExpression: 'x+1',

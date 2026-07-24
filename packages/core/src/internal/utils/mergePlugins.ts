@@ -1,10 +1,6 @@
 import mergeWith from 'lodash/mergeWith.js';
-import { isPropertyPolicyToken } from '@platejs/plite/internal';
 
 import type { BasePlugin } from '../../lib';
-
-export const isNominalSchemaConfigToken = (value: unknown) =>
-  isPropertyPolicyToken(value);
 
 type NominalPluginReference = Readonly<{ key: string; type: string }>;
 
@@ -82,15 +78,7 @@ const collectOpaquePluginHostResources = (
   const inject = getDataProperty(value, 'inject');
 
   if (isObjectReference(inject)) {
-    collectPluginRecord(getDataProperty(inject, 'plugins'));
-  }
-
-  const plugins = getDataProperty(value, 'plugins');
-
-  if (Array.isArray(plugins)) {
-    plugins.forEach((plugin) => {
-      collectOpaquePluginHostResources(plugin, resources, visited);
-    });
+    collectPluginRecord(getDataProperty(inject, 'parsers'));
   }
 
   const configurationLayers = getDataProperty(value, '__configurationLayers');
@@ -145,7 +133,6 @@ const cloneFrozenPluginDescriptor = <T>(
   clones = new WeakMap<object, unknown>()
 ): T => {
   if (!value || typeof value !== 'object') return value;
-  if (isNominalSchemaConfigToken(value)) return value;
 
   const existing = clones.get(value);
 
@@ -234,11 +221,7 @@ export function mergePlugins<T>(basePlugin: T, ...sourcePlugins: any[]): T {
         return srcValue;
       }
 
-      // Plite declarations can carry non-enumerable policy functions. Treat
-      // frozen opaque values as immutable leaves so lodash cannot strip them.
-      if (isNominalSchemaConfigToken(srcValue)) return srcValue;
-
-      // Overwrite array (including plugins) without cloning
+      // Overwrite arrays without cloning.
       if (Array.isArray(srcValue)) {
         return srcValue;
       }

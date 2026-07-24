@@ -73,6 +73,9 @@ export const pliteExampleComponents = {
   'persistent-annotation-anchors': createPliteExampleLoader(
     () => import('./_examples/persistent-annotation-anchors')
   ),
+  'plate-schema-descriptors': createPliteExampleLoader(
+    () => import('./_examples/plate-schema-descriptors')
+  ),
   plaintext: createPliteExampleLoader(() => import('./_examples/plaintext')),
   'read-only': createPliteExampleLoader(() => import('./_examples/read-only')),
   richtext: createPliteExampleLoader(() => import('./_examples/richtext')),

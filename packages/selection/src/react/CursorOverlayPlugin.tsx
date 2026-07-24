@@ -24,7 +24,6 @@ export type CursorOverlayConfig = PluginConfig<
   {},
   {},
   readonly [],
-  readonly [],
   never,
   {
     addCursor: (

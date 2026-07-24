@@ -3,9 +3,11 @@ import {
   createEditor,
   defineEditorExtension,
   type Editor,
+  type EditorExtensionsFromOptions,
   type EditorExtension,
   type EditorExtensionConfigurationContext,
   type EditorExtensionTypeProvider,
+  type EditorValueFromOptions,
   type Value,
 } from '@platejs/plite';
 import type {
@@ -135,6 +137,17 @@ export const react = (options: ReactEditorOptions = {}): ReactExtension => {
 
   return extension as ReactExtension;
 };
+
+export function createReactEditor<
+  const TOptions extends CreateReactEditorOptions<any, readonly unknown[]> & {
+    extensions: readonly unknown[];
+  },
+>(
+  options: TOptions
+): ReactEditor<
+  EditorValueFromOptions<TOptions>,
+  EditorExtensionsFromOptions<TOptions>
+>;
 
 export function createReactEditor<
   V extends Value = Value,

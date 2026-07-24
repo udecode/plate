@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-24-scope-block-draggable-list-api",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-24-scope-block-draggable-list-api.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Use the installed List plugin for list-aware block dragging",
+  "targets": [
+    {
+      "name": "block-draggable",
+      "files": ["apps/www/src/registry/ui/block-draggable.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-24-block-draggable-installed-list-plugin-aware-d5c0d3dd",
+      "kind": "fix",
+      "summary": "Use the installed List plugin for list-aware block dragging",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-draggable"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-scope-block-draggable-list-api",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

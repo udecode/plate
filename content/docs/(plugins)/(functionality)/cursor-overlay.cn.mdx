@@ -134,11 +134,11 @@ export function EditorContainer(props: React.HTMLAttributes<HTMLDivElement>) {
 
 ## API接口
 
-### `editor.plugin(CursorOverlayPlugin).api.addCursor(id, cursor)`
+### `editor.api.cursorOverlay.addCursor(id, cursor)`
 
 添加指定键和状态的光标覆盖层
 
-<API name="editor.plugin(CursorOverlayPlugin).api.addCursor">
+<API name="editor.api.cursorOverlay.addCursor">
 <APIParameters>
   <APIItem name="id" type="string">
     光标的唯一标识符（如'blur'、'drag'、'custom'）
@@ -149,11 +149,11 @@ export function EditorContainer(props: React.HTMLAttributes<HTMLDivElement>) {
 </APIParameters>
 </API>
 
-### `editor.plugin(CursorOverlayPlugin).api.removeCursor(id)`
+### `editor.api.cursorOverlay.removeCursor(id)`
 
 通过键移除光标覆盖层
 
-<API name="editor.plugin(CursorOverlayPlugin).api.removeCursor">
+<API name="editor.api.cursorOverlay.removeCursor">
 <APIParameters>
   <APIItem name="id" type="(string & {}) | 'drag' | 'selection'">
     要移除的光标标识符

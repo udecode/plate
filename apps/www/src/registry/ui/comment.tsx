@@ -589,7 +589,7 @@ export function CommentCreateForm({
       <div className="relative flex grow gap-2">
         <Plate
           onValueChange={({ value }) => {
-            setCommentValue(value);
+            setCommentValue(value.children);
           }}
           editor={commentEditor}
         >

@@ -39,7 +39,8 @@ The core transaction groups are:
 - `tx.break` for inserting block and soft breaks
 - `tx.selection` for changing the model selection
 - `tx.marks` for changing text marks
-- `tx.value` and `tx.roots` for whole-root or whole-document replacement
+- `tx.value` for complete document replacement and `tx.roots` for targeted
+  named-root changes
 - `tx.setField` and `tx.effects` for typed document meta and integration effects
 - `tx.changes` for applying canonical document changes at adapter boundaries
 
@@ -66,8 +67,9 @@ editor.update({ history: "skip" }).value.replace({
 });
 ```
 
-Use the callback form when the same replacement also edits extra roots or
-persistent meta fields.
+Pass `roots` and `meta` in the same input for a complete multi-root document.
+Use the callback form when the replacement composes with other commands in one
+transaction.
 
 ## Selection
 

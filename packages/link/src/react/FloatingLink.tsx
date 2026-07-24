@@ -7,7 +7,6 @@ import {
   usePluginOption,
 } from '@platejs/core/react';
 import type { TLinkElement } from '@platejs/utils';
-import { KEYS } from '@platejs/utils';
 import { createPrimitiveComponent } from '@udecode/react-utils';
 
 import { BaseLinkPlugin } from '../lib';
@@ -130,7 +129,7 @@ export const useLinkOpenButtonState = () => {
 
     return editor.read.nodes.find<TLinkElement>({
       at: selection,
-      match: { type: editor.getType(KEYS.link) },
+      match: { type: editor.getType(LinkPlugin.key) },
     });
   });
 

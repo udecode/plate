@@ -1,6 +1,6 @@
 'use client';
 
-import { type Value, TrailingBlockPlugin } from 'platejs';
+import { type InferPlugins, TrailingBlockPlugin, type Value } from 'platejs';
 import { type PlateEditor, useEditor as usePlateEditor } from 'platejs/react';
 
 import { AIKit } from './plugins/ai-kit';
@@ -25,8 +25,8 @@ import { ExcalidrawKit } from './plugins/excalidraw-kit';
 import { ExitBreakKit } from './plugins/exit-break-kit';
 import { FixedToolbarKit } from './plugins/fixed-toolbar-kit';
 import { FloatingToolbarKit } from './plugins/floating-toolbar-kit';
-import { FootnoteKit } from './plugins/footnote-kit';
 import { FontKit } from './plugins/font-kit';
+import { FootnoteKit } from './plugins/footnote-kit';
 import { LineHeightKit } from './plugins/line-height-kit';
 import { LinkKit } from './plugins/link-kit';
 import { ListKit } from './plugins/list-kit';
@@ -59,6 +59,7 @@ export const EditorKit = [
   ...DateKit,
   ...LinkKit,
   ...MentionKit,
+  ...FootnoteKit,
 
   // Marks
   ...BasicMarksKit,
@@ -86,7 +87,6 @@ export const EditorKit = [
   // Parsers
   ...DocxKit,
   ...MarkdownKit,
-  ...FootnoteKit,
 
   // UI
   ...BlockPlaceholderKit,
@@ -94,6 +94,6 @@ export const EditorKit = [
   ...FloatingToolbarKit,
 ];
 
-export type MyEditor = PlateEditor<Value, (typeof EditorKit)[number]>;
+export type MyEditor = PlateEditor<Value, InferPlugins<typeof EditorKit>>;
 
 export const useEditor = () => usePlateEditor<MyEditor>();

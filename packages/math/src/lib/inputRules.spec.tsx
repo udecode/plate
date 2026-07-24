@@ -27,6 +27,7 @@ const CodeLinePlugin = createBasePlugin({
 
 const CodeBlockPlugin = createBasePlugin({
   key: KEYS.codeBlock,
+  dependencies: [CodeLinePlugin],
   schema: ({ plugins }) => {
     const codeLineType = plugins.elementType(CodeLinePlugin);
 
@@ -40,7 +41,6 @@ const CodeBlockPlugin = createBasePlugin({
     };
   },
   type: NODES.codeBlock,
-  plugins: [CodeLinePlugin],
 });
 
 describe('math input rules', () => {

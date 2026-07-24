@@ -87,7 +87,7 @@ export const InspectPlugin = createPlatePlugin({
 ```
 
 Pressing `Mod+Alt+L` calls
-`editor.plugin(InspectPlugin).api.logText()`.
+`editor.api.inspect.logText()`.
 
 <Callout type="info" title="Disambiguate collisions">
   If an update method and API method share a name, set `target: 'update'` or

@@ -2,7 +2,7 @@ import { createBaseEditor } from '@platejs/core';
 import { BaseParagraphPlugin } from '@platejs/core';
 import { KEYS, NODES } from '@platejs/utils';
 
-import { BaseTodoListPlugin } from './BaseTodoListPlugin';
+import { BaseTodoListPlugin } from './BaseListPlugin';
 
 describe('BaseTodoListPlugin', () => {
   it('inserts a new todo item on line break inside a todo item', () => {
@@ -27,7 +27,9 @@ describe('BaseTodoListPlugin', () => {
     const typedEditor = createBaseEditor({
       plugins: [BaseTodoListPlugin],
     });
-    expect(typeof typedEditor.update.listTodoClassic.toggle).toBe('function');
+    expect(typeof typedEditor.plugin(BaseTodoListPlugin).update.toggle).toBe(
+      'function'
+    );
     expect(typedEditor.read.schema.createAndFill(BaseTodoListPlugin)).toEqual({
       checked: false,
       children: [{ text: '' }],
@@ -83,6 +85,31 @@ describe('BaseTodoListPlugin', () => {
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
+  });
+
+  it('inserts a fresh todo before a break at the start', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseTodoListPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [
+        {
+          checked: true,
+          children: [{ text: 'task' }],
+          type: NODES.listTodoClassic,
+        },
+      ],
+    } as any);
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()).toMatchObject([
+      { checked: false, children: [{ text: '' }] },
+      { checked: true, children: [{ text: 'task' }] },
+    ]);
   });
 
   it('toggles the selected block to the todo list type', () => {

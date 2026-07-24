@@ -7,8 +7,10 @@ import { KEYS } from '../../plate-keys';
 export const SingleBlockPlugin = createBasePlugin({
   key: KEYS.singleBlock,
   override: {
-    enabled: {
-      [KEYS.trailingBlock]: false,
+    plugins: {
+      [KEYS.trailingBlock]: {
+        enabled: false,
+      },
     },
   },
 }).extendExtension({

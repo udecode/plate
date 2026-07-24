@@ -19,7 +19,6 @@ export type BlockMenuConfig = PluginConfig<
   {},
   {},
   readonly [],
-  readonly [],
   never,
   {
     hide: () => void;

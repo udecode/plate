@@ -107,6 +107,15 @@ Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
     If a concrete root-pollution field is in the active package/file scope, do
     not merely score or mention it. Fix it in the owner before closeout, or stop
     with a named Plite/Plate gap and deletion path.
+- On a concrete inferred editor, `editor.api.<pluginKey>` is the canonical
+  discovery path. Keep `editor.plugin(FooPlugin).api` for generic package code
+  and exact descriptor ownership; both paths expose the same immutable API.
+- When a generic caller legitimately accepts an optional descriptor, use
+  `const foo = editor.plugin(FooPlugin)` and check `foo.installed` before any
+  other portal access. Disabled plugins count as absent. Do not cast or probe
+  root `editor.api`, inspect node/schema/cache internals, or catch missing
+  portal errors. Registry code must not import an app-specific editor type just
+  to discover plugin APIs.
 - Scoped plugin portals already own their noun, so redundant owner repetition
   and taxonomy-only nesting are API smells. Use `best-api review` to choose the
   concrete verbs and grouping from real call sites; this migration skill does
@@ -175,25 +184,41 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   to `best-api`; an accepted capability descriptor may remain colocated in the
   same plugin owner file. Do not force another file, and do not keep a real
   capability anonymous merely because it has one source owner.
+- Same-key cleanup across app or registry kits is not mechanical deduplication.
+  Before choosing which descriptor survives, map who owns membership and prove
+  each independently optional kit alone and in combination. Import access does
+  not establish membership ownership. A kit must not install an independently
+  optional peer merely to adapt it; route that public composition fork to
+  `best-api`, whose weak-peer path preserves adapting-only, target-only, both,
+  and explicit-target-configuration behavior.
 - There is no line-count ceiling. Do not split a coherent owner because the
   file is large, crosses a readability threshold, or looks tidier as a folder.
   One large owner is cheaper for humans and agents than a graph of one-use
   files. Extract only for multiple production consumers that cannot reuse the
-  owning public API, a real cross-layer or standalone public owner, a React
-  hook/component boundary, or dedicated proof tooling.
-- React colocation uses the component or hook family as the file owner, not
-  each exported symbol. A component family belongs in one `<Family>.tsx` file
-  and may export its composable primitives while keeping family-only
-  subcomponents, variants, constants, and render helpers inline. A hook family
-  belongs in one `use<Family>.ts` file and may export its related state,
-  behavior, controller, and lifecycle hooks. Sibling use inside the same family
-  is internal composition, not multiple production consumers and not evidence
-  for another file.
+  owning public API, a real cross-layer or standalone public owner, a durable
+  React family boundary with an independent job, or dedicated proof tooling.
+- React colocation uses the durable component family as the default file owner,
+  not each exported symbol or implementation kind. A component family belongs
+  in one `<Family>.tsx` file and may export its composable primitives while
+  keeping family-only subcomponents, hooks, state, stores, controllers,
+  lifecycle behavior, variants, constants, and render helpers inline. Sibling
+  use inside the same family is internal composition, not multiple production
+  consumers and not evidence for another file.
+- A hook family earns one `use<Family>.ts` file only when it has a standalone
+  job beyond one component family, such as use by multiple durable component
+  families or a public lifecycle/controller API meaningful without the
+  component family. A provider or store earns another file only when it owns
+  state or lifecycle independently of that component family. Exporting a hook
+  or store, documenting it, or importing it from an app/registry wrapper that
+  composes the same component family proves public access, not independent
+  source ownership.
 - Do not create a named one-use subcomponent or hook file merely to shorten its
   family owner. Inline the body or keep the private symbol in the family file.
   A separate React file needs reuse across durable families, a genuinely
-  standalone public owner, or an independent provider/store/lifecycle
-  boundary. A public export name alone does not require its own file.
+  standalone public owner, or provider/store/lifecycle state that remains
+  meaningful and independently consumed without the component family. A public
+  export, direct external import, API-doc entry, or distinct implementation
+  kind alone does not require its own file.
 - Keep feature-package React roots flat by default: plugin files, component
   family files, hook family files, and one public root barrel. `components/`,
   `hooks/`, `utils/`, nested family folders, and nested barrels are taxonomy,
@@ -530,8 +555,8 @@ Plate Next means:
 - Plite owns editor substrate: nodes, operations, selection, read/update,
   transactions, schema, history substrate, DOM/runtime primitives, and editor
   extension installation.
-- Plate owns product composition: plugins, UI, registry, kits, product command
-  ergonomics, docs/examples, and app-facing defaults.
+- Plate owns product composition: plugins, UI, app/registry kits, product
+  command ergonomics, docs/examples, and app-facing defaults.
 - Core must not wrap Plite editor APIs under Plate names.
 - Plate product APIs may compose Plite APIs, but they must not mirror Plite
   namespaces or create a second mutation/read layer.
@@ -745,9 +770,11 @@ Rules:
   plugin behavior is colocated in the plugin owner and repeated callers use its
   scoped API; a separate helper needs a real non-plugin, cross-plugin,
   cross-layer, transaction-composition, standalone public, or proof-tooling
-  owner. React rows use the component/hook family as the owner: sibling exports
-  or sibling consumers inside one family do not justify separate files. Line
-  count and readability thresholds never justify extraction.
+  owner. React rows default to the component family owner: sibling exports,
+  family-only hooks/stores, or app-wrapper consumers composing that family do
+  not justify separate files. A separate hook/provider/store row needs a
+  standalone job independently consumed beyond the component family. Line count
+  and readability thresholds never justify extraction.
 - Score `100` means all of these are true:
   - no behavior regression versus `origin/main`;
   - no type regression;

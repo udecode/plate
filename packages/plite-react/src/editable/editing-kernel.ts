@@ -11,6 +11,7 @@ import {
   type Range,
   RangeApi,
   type RootKey,
+  SelectionApi,
 } from '@platejs/plite';
 import { toInternalRoot } from './runtime-editor-api';
 import { Hotkeys } from '@platejs/plite-dom';
@@ -1202,6 +1203,7 @@ export const prepareEditableKeyDownKernel = ({
     : ReactEditor.hasEditableTarget(editor, event.target)
       ? 'editor'
       : 'unknown';
+  const hasModelOnlySelection = SelectionApi.isNode(selectionBefore);
   const shouldPreserveProjectedViewSelection =
     !internalTarget &&
     intent !== 'composition' &&
@@ -1212,7 +1214,9 @@ export const prepareEditableKeyDownKernel = ({
       : intent === 'composition'
         ? 'native-allowed'
         : intent === 'native-selection-move'
-          ? 'native-allowed'
+          ? hasModelOnlySelection
+            ? 'model-owned'
+            : 'native-allowed'
           : intent
             ? 'model-owned'
             : 'no-op';
@@ -1226,6 +1230,7 @@ export const prepareEditableKeyDownKernel = ({
     inputController,
   });
   const shouldPreserveModelSelection =
+    hasModelOnlySelection ||
     intent === 'history' ||
     (authoritativeModelSelection &&
       (ownership === 'model-owned' ||
@@ -1255,6 +1260,7 @@ export const prepareEditableKeyDownKernel = ({
             },
     selectionSourceTransition:
       intent === 'native-selection-move' &&
+      ownership === 'native-allowed' &&
       !shouldPreserveProjectedViewSelection
         ? {
             preferModelSelection: false,

@@ -308,7 +308,7 @@ export const demoExamples: Registry['items'] = (
         },
       ],
       name: 'single-block-demo',
-      registryDependencies: ['@plate/editor-kit'],
+      registryDependencies: ['@plate/basic-blocks-kit'],
       title: 'Single Block',
       type: 'registry:example',
     },

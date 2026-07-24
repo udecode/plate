@@ -17,7 +17,11 @@ import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
 import { NODES } from '@platejs/utils';
 import { createLowlight } from 'lowlight';
 
-import { CodeBlockPlugin } from './CodeBlockPlugin';
+import {
+  CodeBlockPlugin,
+  CodeHighlightPlugin,
+  CodeLinePlugin,
+} from './CodeBlockPlugin';
 import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
 
 jsxt;
@@ -50,6 +54,11 @@ const installRefreshDecorationsProbe = (
 };
 
 describe('CodeBlockPlugin', () => {
+  it('replaces required Base dependencies with exact React descriptors', () => {
+    expect(CodeBlockPlugin.dependencies).toEqual([CodeLinePlugin]);
+    expect(CodeHighlightPlugin.dependencies).toEqual([CodeBlockPlugin]);
+  });
+
   describe('deserialization inside a code line', () => {
     it('disable all deserializers except the ast serializer', () => {
       const input = (
@@ -79,7 +88,7 @@ describe('CodeBlockPlugin', () => {
             key: 'a',
             parser: {
               format: 'text/plain',
-              schema: [{ kind: 'schema' }],
+              owns: [{ kind: 'schema' }],
               deserialize() {
                 return [{ text: 'test' }];
               },
@@ -187,7 +196,8 @@ describe('CodeBlockPlugin operations', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseParagraphPlugin,
-        CodeBlockPlugin.configure({
+        CodeBlockPlugin,
+        CodeHighlightPlugin.configure({
           options: { lowlight: createLowlight() },
         }),
       ],
@@ -213,7 +223,8 @@ describe('CodeBlockPlugin operations', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseParagraphPlugin,
-        CodeBlockPlugin.configure({
+        CodeBlockPlugin,
+        CodeHighlightPlugin.configure({
           options: { lowlight: createLowlight() },
         }),
       ],
@@ -228,6 +239,27 @@ describe('CodeBlockPlugin operations', () => {
     expect(refreshDecorations).toHaveBeenCalledTimes(1);
   });
 
+  it('does not refresh decorations when highlighting is omitted', () => {
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>aa</hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as TestEditor;
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, CodeBlockPlugin],
+      initialValue: input.children,
+    });
+    const refreshDecorations = mock();
+
+    installRefreshDecorationsProbe(editor, refreshDecorations);
+
+    editor.update.nodes.set({ lang: 'json' }, { at: [0] });
+
+    expect(refreshDecorations).not.toHaveBeenCalled();
+  });
+
   it('does not refresh for unrelated code block properties', () => {
     const input = (
       <editor>
@@ -239,7 +271,8 @@ describe('CodeBlockPlugin operations', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseParagraphPlugin,
-        CodeBlockPlugin.configure({
+        CodeBlockPlugin,
+        CodeHighlightPlugin.configure({
           options: { lowlight: createLowlight() },
         }),
         TestCodeBlockPropertyPlugin,
@@ -276,7 +309,8 @@ describe('CodeBlockPlugin operations', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseParagraphPlugin,
-        CodeBlockPlugin.configure({
+        CodeBlockPlugin,
+        CodeHighlightPlugin.configure({
           options: { lowlight: createLowlight() },
         }),
       ],

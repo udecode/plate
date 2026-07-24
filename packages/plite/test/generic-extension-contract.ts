@@ -1,7 +1,6 @@
 import {
   createEditor,
   defineEditorExtension,
-  definePropertyPolicy,
   type DocumentChange,
   type Editor,
   type ValueOf,
@@ -27,12 +26,6 @@ const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: 'paragraph' }] },
 ];
 
-const configPolicy = definePropertyPolicy({
-  id: 'plite-test:immutable-extension-config',
-  validate: (value): value is string => typeof value === 'string',
-  version: 1,
-});
-
 const immutableConfigExtension = defineEditorExtension({
   config: {
     count: 1,
@@ -40,7 +33,6 @@ const immutableConfigExtension = defineEditorExtension({
     label: 'paragraph',
     nullable: null,
     optional: undefined,
-    policy: configPolicy,
     tuple: ['paragraph', 2],
   },
   name: 'immutable-config',
@@ -48,8 +40,6 @@ const immutableConfigExtension = defineEditorExtension({
 const exactConfigCount: 1 = immutableConfigExtension.config.count;
 const exactConfigEnabled: true = immutableConfigExtension.config.enabled;
 const exactConfigLabel: 'paragraph' = immutableConfigExtension.config.label;
-const exactConfigPolicy: typeof configPolicy =
-  immutableConfigExtension.config.policy;
 const exactConfigTuple: readonly ['paragraph', 2] =
   immutableConfigExtension.config.tuple;
 
@@ -108,7 +98,6 @@ void value;
 void exactConfigCount;
 void exactConfigEnabled;
 void exactConfigLabel;
-void exactConfigPolicy;
 void exactConfigTuple;
 void invalidBigintConfig;
 void invalidSymbolConfig;

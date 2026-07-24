@@ -35,7 +35,7 @@ describe('defaultRules', () => {
     );
 
     expect(result).toEqual({
-      caption: [{ text: 'caption alt' }],
+      alt: 'caption alt',
       children: [{ text: '' }],
       title: 'Image title',
       type: 'img',
@@ -59,7 +59,7 @@ describe('defaultRules', () => {
     );
 
     expect(result).toEqual({
-      caption: [{ text: 'fallback alt' }],
+      alt: 'fallback alt',
       children: [{ text: '' }],
       title: 'Image title',
       type: 'img',
@@ -86,7 +86,7 @@ describe('defaultRules', () => {
     );
 
     expect(result).toEqual({
-      caption: [{ text: 'caption alt' }],
+      alt: 'caption alt',
       children: [{ text: '' }],
       height: 180,
       type: 'img',

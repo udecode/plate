@@ -7,6 +7,7 @@ import {
   NodeApi as PliteNode,
   type Range,
   RangeApi,
+  SelectionApi,
   type Value,
 } from '@platejs/plite';
 import {
@@ -325,6 +326,11 @@ export const writeDOMRangeData = <V extends Value>(
   range: Range
 ) => {
   const clipboardFormatKey = getDOMClipboardFormatKey(editor);
+
+  if (SelectionApi.isNode(range)) {
+    writeModelBackedRangeData(editor, data, clipboardFormatKey, range);
+    return;
+  }
 
   const [start, end] = RangeApi.edges(range);
   const startVoid = editorVoid(editor, { at: start.path });

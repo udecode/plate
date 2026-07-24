@@ -13,7 +13,7 @@ describe('deserializeMd - mention link format', () => {
     const markdown = 'Hello [John Doe](mention:john_doe), how are you?';
     const value = deserializeMd(editor, markdown);
 
-    expect(value).toEqual([
+    expect(value.children).toEqual([
       <hp>
         <htext>Hello </htext>
         <hmention key="john_doe" value="John Doe">
@@ -30,7 +30,7 @@ describe('deserializeMd - mention link format', () => {
     const markdown = 'CC: [Jane Smith](mention:jane%20smith)';
     const value = deserializeMd(editor, markdown);
 
-    expect(value).toEqual([
+    expect(value.children).toEqual([
       <hp>
         <htext>CC: </htext>
         <hmention key="jane smith" value="Jane Smith">
@@ -47,7 +47,7 @@ describe('deserializeMd - mention link format', () => {
       '@alice mentioned [Bob Johnson](mention:bob_johnson) and @charlie';
     const value = deserializeMd(editor, markdown);
 
-    expect(value).toEqual([
+    expect(value.children).toEqual([
       <hp>
         <hmention value="alice">
           <htext />
@@ -71,7 +71,7 @@ describe('deserializeMd - mention link format', () => {
       '[Team Lead](mention:team_lead) assigned this to [QA Team](mention:qa_team)';
     const value = deserializeMd(editor, markdown);
 
-    expect(value).toEqual([
+    expect(value.children).toEqual([
       <hp>
         <hmention key="team_lead" value="Team Lead">
           <htext />
@@ -91,7 +91,7 @@ describe('deserializeMd - mention link format', () => {
       '[User 123](mention:user-123) and [Dev Team](mention:dev.team)';
     const value = deserializeMd(editor, markdown);
 
-    expect(value).toEqual([
+    expect(value.children).toEqual([
       <hp>
         <hmention key="user-123" value="User 123">
           <htext />
@@ -110,7 +110,7 @@ describe('deserializeMd - mention link format', () => {
     const markdown = '[@mention](/docs/mention)';
     const value = deserializeMd(editor, markdown);
 
-    expect(value).toEqual([
+    expect(value.children).toEqual([
       <hp>
         <ha url="/docs/mention">
           <htext>@mention</htext>
@@ -126,7 +126,7 @@ describe('deserializeMd - mention link format', () => {
       'Check [@docs](https://docs.com) and [Alice](mention:alice) plus @bob';
     const value = deserializeMd(editor, markdown);
 
-    expect(value).toEqual([
+    expect(value.children).toEqual([
       <hp>
         <htext>Check </htext>
         <ha url="https://docs.com">

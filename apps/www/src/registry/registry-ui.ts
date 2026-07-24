@@ -144,12 +144,15 @@ export const uiComponents: Registry['items'] = [
   },
 
   {
-    dependencies: ['@udecode/cn', '@platejs/caption'],
-    description: 'A text field for adding captions to media elements.',
-    files: [{ path: 'ui/caption.tsx', type: 'registry:ui' }],
+    dependencies: ['@platejs/resizable'],
+    description: 'Inline caption UI for media elements.',
+    files: [
+      { path: 'ui/caption.tsx', type: 'registry:ui' },
+      { path: 'ui/caption-static.tsx', type: 'registry:ui' },
+    ],
     meta: {
       docs: [
-        { route: '/docs/caption' },
+        { route: '/docs/media', title: 'Media' },
         { route: 'https://pro.platejs.org/docs/components/caption' },
       ],
       examples: [
@@ -279,7 +282,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@platejs/dnd', '@platejs/selection'],
+    dependencies: ['@platejs/dnd', '@platejs/list', '@platejs/selection'],
     description: 'A block wrapper with a drag handle for moving editor blocks.',
     files: [{ path: 'ui/block-draggable.tsx', type: 'registry:ui' }],
     meta: {
@@ -1430,7 +1433,10 @@ export const uiNodes: Registry['items'] = [
     ],
     description:
       'A component for embedded media content with resizing and caption support.',
-    files: [{ path: 'ui/media-embed-node.tsx', type: 'registry:ui' }],
+    files: [
+      { path: 'ui/media-embed-node.tsx', type: 'registry:ui' },
+      { path: 'ui/media-embed-node-static.tsx', type: 'registry:ui' },
+    ],
     meta: {
       docs: [
         { route: '/docs/media' },

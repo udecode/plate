@@ -11,10 +11,11 @@ import type {
   Text,
 } from '@platejs/plite';
 import type { BaseEditor, PluginConfig } from '@platejs/core';
+import { getPlateRuntime } from '@platejs/core/internal';
 import type { TIdElement } from '@platejs/utils';
 
 import { ElementApi, PathApi, editorCommands } from '@platejs/plite';
-import { createPlatePlugin } from '@platejs/core/react';
+import { createPlatePlugin, type InferConfig } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
 import type { PartialSelectionOptions } from '../internal';
@@ -37,6 +38,12 @@ import {
 
 const BLOCK_SELECTION_PRESERVE_TAG = 'block-selection-preserve';
 const BLOCK_SELECTION_DESELECT_TAG = 'block-selection-deselect';
+
+const isBlockMenuOpen = (editor: BaseEditor) =>
+  Boolean(
+    getPlateRuntime(editor).plugins[KEYS.blockMenu] &&
+      editor.plugin(BlockMenuPlugin).getOption('openId')
+  );
 
 type BlockSelectionApi = {
   /** Add block selection when right click on a block. */
@@ -154,7 +161,6 @@ export type BlockSelectionConfig = PluginConfig<
   },
   {},
   readonly [],
-  readonly [],
   never,
   BlockSelectionApi
 >;
@@ -170,7 +176,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
       if (
         event.button === 0 &&
         getOptions().selectedIds!.size > 0 &&
-        !editor.plugin(BlockMenuPlugin).getOption('openId')
+        !isBlockMenuOpen(editor)
       ) {
         api.deselect();
       }
@@ -202,7 +208,6 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
     shadowInputRef: { current: null },
     isSelectable: () => true,
   },
-  plugins: [BlockMenuPlugin],
   render: {
     afterEditable: BlockSelectionAfterEditable,
   },
@@ -497,10 +502,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           );
         }),
         around(editorCommands.select, ({ state, next }) => {
-          if (
-            !getOptions().selectedIds?.size ||
-            editor.plugin(BlockMenuPlugin).getOption('openId')
-          ) {
+          if (!getOptions().selectedIds?.size || isBlockMenuOpen(editor)) {
             return next();
           }
 
@@ -511,10 +513,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           );
         }),
         around(editorCommands.setSelection, ({ state, next }) => {
-          if (
-            !getOptions().selectedIds?.size ||
-            editor.plugin(BlockMenuPlugin).getOption('openId')
-          ) {
+          if (!getOptions().selectedIds?.size || isBlockMenuOpen(editor)) {
             return next();
           }
 
@@ -531,7 +530,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
             (commit.selectionChanged &&
               !commit.tags.includes(BLOCK_SELECTION_PRESERVE_TAG))) &&
           getOptions().selectedIds!.size > 0 &&
-          !editor.plugin(BlockMenuPlugin).getOption('openId')
+          !isBlockMenuOpen(editor)
         ) {
           api.deselect();
         }
@@ -555,3 +554,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
     setTexts: (props, options) =>
       setBlockSelectionTexts(editor, tx, props, options),
   }));
+
+export type BlockSelectionPluginConfig = InferConfig<
+  typeof BlockSelectionPlugin
+>;

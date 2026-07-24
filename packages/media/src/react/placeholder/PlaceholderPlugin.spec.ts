@@ -1,7 +1,9 @@
+import { BaseParagraphPlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
 import { KEYS } from '@platejs/utils';
 
+import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
 import { PlaceholderPlugin, UploadErrorCode } from './PlaceholderPlugin';
 
 const createDropEvent = () => {
@@ -120,6 +122,37 @@ describe('PlaceholderPlugin', () => {
       { children: [{ text: '' }], type: KEYS.p },
       { children: [{ text: '' }], type: KEYS.placeholder },
     ]);
+  });
+
+  it('replaces a placeholder with direct media caption children', () => {
+    const editor = createPlateEditor({
+      plugins: [BaseParagraphPlugin, BaseImagePlugin, PlaceholderPlugin],
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          mediaType: KEYS.img,
+          type: KEYS.placeholder,
+        },
+      ],
+    });
+
+    editor.plugin(PlaceholderPlugin).update.replaceMedia(
+      {
+        caption: 'Uploaded image',
+        type: KEYS.img,
+        url: 'https://platejs.org/uploaded.png',
+      },
+      { at: [0] }
+    );
+
+    const image = editor.read.children()[0];
+
+    expect(image).not.toHaveProperty('caption');
+    expect(image).toMatchObject({
+      children: [{ text: 'Uploaded image' }],
+      type: KEYS.img,
+    });
+    expect(editor.read.value()).not.toHaveProperty('roots');
   });
 
   it('removes an uploading file without mutating the published snapshot', () => {

@@ -31,7 +31,7 @@ describe('defaultRules', () => {
       ],
     });
 
-    const result = serializeMd(editor, { value: nodes });
+    const result = serializeMd(editor, { value: { children: nodes } });
     expect(result).toBe('# Heading 1\n\nParagraph\n');
   });
 
@@ -61,7 +61,7 @@ describe('defaultRules', () => {
       ],
     });
 
-    const result = serializeMd(editor, { value: nodes });
+    const result = serializeMd(editor, { value: { children: nodes } });
     expect(result).toBe('Paragraph**text**\n');
   });
 
@@ -89,7 +89,7 @@ describe('defaultRules', () => {
       ],
     });
 
-    const result = deserializeMd(editor, '# Heading 1\nParagraph');
+    const result = deserializeMd(editor, '# Heading 1\nParagraph').children;
     expect(result).toEqual(nodes);
   });
 
@@ -123,7 +123,10 @@ describe('defaultRules', () => {
       ],
     });
 
-    const result = deserializeMd(editor, '# Heading 1\nParagraph**text**');
+    const result = deserializeMd(
+      editor,
+      '# Heading 1\nParagraph**text**'
+    ).children;
     expect(result).toEqual(nodes);
   });
 
@@ -133,7 +136,7 @@ describe('defaultRules', () => {
     const result = deserializeMd(
       editor,
       '| 名称 | 公式 |\n|:-----|:-----|\n| 面积 | $a=b$ |'
-    );
+    ).children;
 
     // 检查结果是一个表格
     expect(result).toHaveLength(1);
@@ -163,7 +166,7 @@ describe('defaultRules', () => {
     const [result] = deserializeMd(
       editor,
       '[^1]: First note\n\n    Second note'
-    );
+    ).children;
 
     expect(result).toMatchObject({
       children: [
@@ -186,10 +189,10 @@ describe('defaultRules', () => {
     const [result] = deserializeMd(
       editor,
       '<img alt="caption alt" src="/from-attr.png" title="Image title" width="320" />'
-    );
+    ).children;
 
     expect(result).toMatchObject({
-      caption: [{ text: 'caption alt' }],
+      alt: 'caption alt',
       children: [{ text: '' }],
       title: 'Image title',
       type: 'img',
@@ -201,16 +204,18 @@ describe('defaultRules', () => {
   it('serializes a trailing blockquote break as html so the newline survives', () => {
     const editor = createTestEditor();
     const result = serializeMd(editor, {
-      value: [
-        {
-          children: [{ text: 'Line one' }, { text: '\n' }],
-          type: 'blockquote',
-        },
-      ],
+      value: {
+        children: [
+          {
+            children: [{ text: 'Line one' }, { text: '\n' }],
+            type: 'blockquote',
+          },
+        ],
+      },
     });
 
     expect(result).toContain('<br />');
-    expect(deserializeMd(editor, result)[0]).toMatchObject({
+    expect(deserializeMd(editor, result).children[0]).toMatchObject({
       type: 'blockquote',
     });
   });

@@ -15,6 +15,7 @@ import { InputRulesPlugin } from '../plugins/input-rules/internal/InputRulesPlug
 import { getContainerTypes } from '../plugin/getBasePlugin';
 import {
   AffinityPlugin,
+  type BaseEditor,
   createBasePlugin,
   createBaseEditor,
   DebugPlugin,
@@ -87,7 +88,7 @@ describe('extendPlateEditor', () => {
       expect(editor.read.view.isReadOnly()).toBe(false);
     });
 
-    it('publishes the Plate schema and empty-root default together', () => {
+    it('publishes the Plate schema and empty-root default before the first user commit', () => {
       const editor = createEditor();
       const observations: Array<{
         children: unknown;
@@ -103,16 +104,28 @@ describe('extendPlateEditor', () => {
 
       extendPlateEditor(editor, {});
 
-      expect(observations.find(({ schema }) => schema !== null)).toEqual({
-        children: [{ children: [{ text: '' }], type: 'p' }],
-        schema: editor.read.schema.identity(),
+      expect(observations).toEqual([]);
+      expect(editor.read.schema.identity()).not.toBeNull();
+      expect(editor.read.children()).toEqual([
+        { children: [{ text: '' }], type: 'p' },
+      ]);
+
+      editor.update.text.insert('x', {
+        at: { offset: 0, path: [0, 0] },
       });
-      expect(
-        observations.some(
-          ({ children, schema }) =>
-            schema !== null && (children as Value).length === 0
-        )
-      ).toBe(false);
+
+      expect(observations).toEqual([
+        {
+          children: [{ children: [{ text: 'x' }], type: 'p' }],
+          schema: editor.read.schema.identity(),
+        },
+      ]);
+
+      editor.update((tx) => tx.history.undo());
+
+      expect(editor.read.children()).toEqual([
+        { children: [{ text: '' }], type: 'p' },
+      ]);
     });
 
     it('rejects an invalid initial root', () => {
@@ -423,13 +436,16 @@ describe('extendPlateEditor', () => {
     });
 
     it('decodes and transforms HTML before fitting its root content', () => {
-      let transformedInput: Value | undefined;
+      let transformedInput: ReturnType<BaseEditor['read']['value']> | undefined;
       const TransformHtmlPlugin = createBasePlugin({
         key: 'transformHtml',
         transformInitialValue: ({ value }) => {
           transformedInput = value;
 
-          return [{ children: [], type: 'p' }];
+          return {
+            ...value,
+            children: [{ children: [], type: 'p' }],
+          };
         },
       });
       const editor = extendBaseEditor(createEditor(), {
@@ -438,9 +454,9 @@ describe('extendPlateEditor', () => {
           editor.plugin(HtmlPlugin).api.deserialize({ element: '<p>html</p>' }),
       });
 
-      expect(transformedInput).toEqual([
-        { children: [{ text: 'html' }], type: 'p' },
-      ]);
+      expect(transformedInput).toEqual({
+        children: [{ children: [{ text: 'html' }], type: 'p' }],
+      });
       expect(editor.read.children()).toEqual([
         { children: [{ text: '' }], type: 'p' },
       ]);
@@ -456,6 +472,88 @@ describe('extendPlateEditor', () => {
       expect(editor.read.children()).toEqual([
         { children: [{ text: 'existing' }], type: 'p' },
       ]);
+    });
+
+    it('initializes and transforms one full multi-root document', () => {
+      const FigurePlugin = createBasePlugin({
+        key: 'figure',
+        schema: {
+          element: {
+            contentRoots: {
+              caption: {
+                content: schema.content.type('p', {
+                  default: { type: 'p' },
+                  min: 1,
+                }),
+                ownership: 'exclusive',
+              },
+            },
+            topLevel: true,
+            void: 'block',
+          },
+        },
+      });
+      const TransformDocumentPlugin = createBasePlugin({
+        key: 'transformDocument',
+        schema: {
+          properties: [
+            schema.elementProperty('transformed', property.boolean(), {
+              target: target.group('element'),
+            }),
+          ],
+        },
+        transformInitialValue: ({ value }) => ({
+          ...value,
+          children: value.children.map((node) => ({
+            ...node,
+            transformed: true,
+          })),
+          roots: Object.fromEntries(
+            Object.entries(value.roots ?? {}).map(([root, children]) => [
+              root,
+              children.map((node) => ({ ...node, transformed: true })),
+            ])
+          ),
+        }),
+      });
+      const editor = createBaseEditor({
+        nodeId: false,
+        plugins: [FigurePlugin, TransformDocumentPlugin],
+        initialValue: () => ({
+          children: [
+            {
+              childRoots: { caption: 'caption:1' },
+              children: [{ text: '' }],
+              type: 'figure',
+            },
+          ],
+          meta: { revision: 7 },
+          roots: {
+            'caption:1': [{ children: [{ text: 'Caption' }], type: 'p' }],
+          },
+        }),
+      });
+
+      expect(editor.read.value()).toEqual({
+        children: [
+          {
+            childRoots: { caption: 'caption:1' },
+            children: [{ text: '' }],
+            transformed: true,
+            type: 'figure',
+          },
+        ],
+        meta: { revision: 7 },
+        roots: {
+          'caption:1': [
+            {
+              children: [{ text: 'Caption' }],
+              transformed: true,
+              type: 'p',
+            },
+          ],
+        },
+      });
     });
 
     it('requires explicit initialValue to contain a root element', () => {
@@ -603,7 +701,6 @@ describe('extendPlateEditor', () => {
       const editor = extendPlateEditor(createEditor(), {
         override: {
           components: {},
-          enabled: {},
         },
         plugins: [customPlugin],
       });
@@ -624,50 +721,6 @@ describe('extendPlateEditor', () => {
       expect(
         getPlateRuntime(editor).pluginList.map((plugin) => plugin.key)
       ).toEqual(coreKeys);
-    });
-  });
-
-  describe('when extending nested plugins', () => {
-    it('correctly merge and extend nested plugins', () => {
-      const parentPlugin = createBasePlugin({
-        key: 'parent',
-        type: 'parentOriginal',
-        plugins: [
-          createBasePlugin({
-            key: 'child',
-            type: 'childOriginal',
-          }),
-        ],
-      });
-
-      const editor = extendPlateEditor(createEditor(), {
-        plugins: [
-          parentPlugin
-            .extend({
-              type: 'parentExtended',
-            })
-            .extendPlugin(
-              { key: 'child' },
-              {
-                type: 'childExtended',
-              }
-            )
-            .extendPlugin(
-              { key: 'newChild' },
-              {
-                type: 'newChildType',
-              }
-            ),
-        ],
-      });
-
-      const parent = editor.getPlugin({ key: 'parent' });
-      const child = editor.getPlugin({ key: 'child' });
-      const newChild = editor.getPlugin({ key: 'newChild' });
-
-      expect(parent.type).toBe('parentExtended');
-      expect(child.type).toBe('childExtended');
-      expect(newChild.type).toBe('newChildType');
     });
   });
 
@@ -718,29 +771,6 @@ describe('extendPlateEditor', () => {
 
       h1Plugin = editor.getPlugin(HeadingPlugin);
       expect(h1Plugin.render.node).toBe(overrideComponent);
-    });
-  });
-
-  describe('when using override.plugins', () => {
-    it('override plugin properties', () => {
-      const CustomPlugin = createBasePlugin({
-        key: 'custom',
-        type: 'originalType',
-      });
-
-      const editor = extendPlateEditor(createEditor(), {
-        override: {
-          plugins: {
-            custom: {
-              type: 'overriddenType',
-            },
-          },
-        },
-        plugins: [CustomPlugin],
-      });
-
-      const customPlugin = editor.getPlugin({ key: 'custom' });
-      expect(customPlugin.type).toBe('overriddenType');
     });
   });
 
@@ -845,65 +875,6 @@ describe('extendPlateEditor', () => {
       expect(
         getPlateRuntime(editor).pluginList.map((plugin) => plugin.key)
       ).not.toContain('custom');
-    });
-  });
-
-  describe('when using override.enabled', () => {
-    it('disable specified core plugins', () => {
-      const editor = extendPlateEditor(createEditor(), {
-        override: {
-          enabled: {
-            eventEditor: false,
-            history: false,
-          },
-        },
-      });
-
-      const pluginCache = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.key
-      );
-      expect(pluginCache).not.toContain('history');
-      expect(pluginCache).not.toContain('eventEditor');
-      expect(pluginCache).toHaveLength(coreKeys.length - 2);
-    });
-
-    it('disable specified custom plugins', () => {
-      const customPlugin1 = createBasePlugin({ key: 'custom1' });
-      const customPlugin2 = createBasePlugin({ key: 'custom2' });
-
-      const editor = extendPlateEditor(createEditor(), {
-        override: {
-          enabled: {
-            custom1: false,
-          },
-        },
-        plugins: [customPlugin1, customPlugin2],
-      });
-
-      const pluginCache = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.key
-      );
-      expect(pluginCache).not.toContain('custom1');
-      expect(pluginCache).toContain('custom2');
-    });
-
-    it('does not affect plugins not specified in override.enabled', () => {
-      const editor = extendPlateEditor(createEditor(), {
-        override: {
-          enabled: {
-            history: false,
-          },
-        },
-      });
-
-      const pluginCache = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.key
-      );
-      coreKeys.forEach((key) => {
-        if (key !== 'history') {
-          expect(pluginCache).toContain(key);
-        }
-      });
     });
   });
 
@@ -1100,8 +1071,16 @@ describe('extendPlateEditor', () => {
     };
     const WrapTextPlugin = createBasePlugin({
       key: 'wrapText',
-      transformInitialValue: ({ value: initialValue }: { value: Value }) =>
-        initialValue.map(wrapCellText) as Value,
+      transformInitialValue: ({ value: initialValue }) => ({
+        ...initialValue,
+        children: initialValue.children.map(wrapCellText) as Value,
+        roots: Object.fromEntries(
+          Object.entries(initialValue.roots ?? {}).map(([root, children]) => [
+            root,
+            children.map(wrapCellText) as Value,
+          ])
+        ),
+      }),
     });
     const TablePlugin = createBasePlugin({
       key: 'table',

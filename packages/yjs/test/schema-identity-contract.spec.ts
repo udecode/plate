@@ -4,7 +4,6 @@ import {
   createEditor,
   defineEditorSchema,
   defineExtensionSlot,
-  definePropertyPolicy,
   ElementApi,
   property,
   schema,
@@ -71,37 +70,33 @@ const policySchema = ({
   label: string;
   mode?: PolicySchemaMode;
   version?: number;
-}) => {
-  const Probe = definePropertyPolicy<PolicyProbe>({
-    id: 'article-policy-probe',
-    validate: (value): value is PolicyProbe => {
-      calls.push(label);
-
-      return (
-        typeof value === 'object' &&
-        value !== null &&
-        'revision' in value &&
-        typeof value.revision === 'number' &&
-        Number.isInteger(value.revision) &&
-        value.revision >= 0
-      );
-    },
-    version: 1,
-  });
-
-  return defineEditorSchema({
+}) =>
+  defineEditorSchema({
     elements: {
       paragraph: {
         content: schema.content.text({ min: 1 }),
-        properties:
-          mode === 'remove'
+        properties: {
+          ...(mode === 'add' ? { extra: property.boolean() } : {}),
+          ...(mode === 'remove'
             ? {}
-            : mode === 'add'
-              ? {
-                  extra: property.boolean(),
-                  payload: property.json({ policy: Probe }),
-                }
-              : { payload: property.json({ policy: Probe }) },
+            : {
+                payload: property.json({
+                  validate: (value): value is PolicyProbe => {
+                    calls.push(label);
+
+                    return (
+                      typeof value === 'object' &&
+                      value !== null &&
+                      'revision' in value &&
+                      typeof value.revision === 'number' &&
+                      Number.isInteger(value.revision) &&
+                      value.revision >= 0
+                    );
+                  },
+                  validationVersion: 1,
+                }),
+              }),
+        },
         readOnly: mode === 'replace',
       },
     },
@@ -110,7 +105,6 @@ const policySchema = ({
     unknown: 'reject',
     version,
   });
-};
 
 const policyParagraph = (text: string, revision: number): Descendant => ({
   children: [{ text }],
@@ -205,6 +199,17 @@ describe('@platejs/yjs schema identity contract', () => {
     assert.match(String(errors[0]), /Invalid Yjs schema metadata envelope/);
     assert.throws(
       () => editor.read.yjs.root(),
+      /Invalid Yjs schema metadata envelope/
+    );
+  });
+
+  it('rejects claimed schema metadata without an identity', () => {
+    const metadata = {
+      get: () => ({ format: 2, identity: null }),
+    } as unknown as Y.Map<unknown>;
+
+    assert.throws(
+      () => readYjsSchemaEnvelope(metadata),
       /Invalid Yjs schema metadata envelope/
     );
   });

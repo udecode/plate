@@ -25,4 +25,22 @@ describe('BaseCodeDrawingPlugin', () => {
       expect(typeof tx.codeDrawing.insert).toBe('function');
     });
   });
+
+  it('rejects unsupported drawing data', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseCodeDrawingPlugin],
+    });
+
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            children: [{ text: '' }],
+            data: { drawingMode: 'unsupported' },
+            type: NODES.codeDrawing,
+          },
+        ],
+      })
+    ).toThrow(/element property "data" fails custom property validation/);
+  });
 });

@@ -79,7 +79,7 @@ export const InspectPlugin = createPlatePlugin({
   });
 ```
 
-按下 `Mod+Alt+L` 会调用 `editor.plugin(InspectPlugin).api.logText()`。
+按下 `Mod+Alt+L` 会调用 `editor.api.inspect.logText()`。
 
 <Callout type="info" title="消除同名方法歧义">
   更新方法和 API 方法同名时，设置 `target: 'update'` 或 `target: 'api'`。插件专属 API 与同一描述符贡献的根编辑器 API 都属于 `api`；如果名称相同，请重命名其中一个或使用自定义 `handler`。

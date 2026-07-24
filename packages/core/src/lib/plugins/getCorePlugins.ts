@@ -10,7 +10,7 @@ import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { type DomConfig, DOMPlugin } from './dom';
 import { type ElementStateConfig, ElementStatePlugin } from './element-state';
-import { HtmlPlugin } from './html';
+import { type HtmlApi, HtmlPlugin } from './html';
 import { InputRulesPlugin } from './input-rules/internal/InputRulesPlugin';
 import { AffinityPlugin } from './affinity';
 import {
@@ -37,7 +37,7 @@ export type CorePluginConfig =
       {},
       HistoryExtensionTypes['state']
     >
-  | PluginConfig<'html'>
+  | PluginConfig<'html', {}, {}, {}, {}, {}, readonly [], never, HtmlApi>
   | PluginConfig<'inputRules'>
   | PluginConfig<'override'>
   | PluginConfig<'parser'>;
@@ -47,14 +47,11 @@ export type GetCorePluginsOptions = {
   affinity?: boolean;
   /** Configure the node id plugin. */
   nodeId?: NodeIdOptions | boolean;
-  /** Override the core plugins using the same key. */
-  plugins?: BasePluginInput[];
 };
 
 export const getCorePlugins = ({
   affinity,
   nodeId,
-  plugins = [],
 }: GetCorePluginsOptions): BasePluginInput[] => {
   const resolvedNodeId =
     process.env.NODE_ENV === 'test' && nodeId === undefined
@@ -64,7 +61,7 @@ export const getCorePlugins = ({
         } satisfies NodeIdOptions)
       : nodeId;
 
-  const corePlugins = [
+  return [
     DebugPlugin as BasePlugin<DebugConfig>,
     ElementStatePlugin,
     DOMPlugin,
@@ -84,34 +81,10 @@ export const getCorePlugins = ({
     AffinityPlugin.configure({ enabled: affinity }),
     BaseParagraphPlugin,
   ];
-
-  // Create a map for quick lookup of custom plugins
-  const customPluginsMap = new Map(
-    plugins.map((plugin) => [plugin.key, plugin])
-  );
-
-  // Replace core plugins with custom plugins if they exist and remove them from plugins
-  const resolvedCorePlugins = corePlugins.map((corePlugin) => {
-    const customPlugin = customPluginsMap.get(corePlugin.key);
-
-    if (customPlugin) {
-      // Remove the custom plugin from the plugins array
-      const index = plugins.findIndex((p) => p.key === corePlugin.key);
-
-      if (index !== -1) {
-        plugins.splice(index, 1);
-      }
-
-      return customPlugin;
-    }
-
-    return corePlugin;
-  });
-
-  return resolvedCorePlugins;
 };
 
 export type CorePluginApi = ElementStateConfig['api'] & {
+  html: HtmlApi;
   react: ReactApi;
 } & DebugConfig['api'] &
   DomConfig['api'] &

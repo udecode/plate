@@ -18,9 +18,19 @@ Primary template:
 docs/plans/templates/plate-next.md
 
 Applied packs:
+
 - none
 
+Post-closeout correction:
+
+- `docs/plans/2026-07-23-plate-next-floating-media-colocation.md` supersedes
+  this plan's FloatingMedia topology verdict. The component, hooks, submit
+  behavior, store, selectors, and spec have one flat component-family owner.
+- The manifest counts and old-path rows below remain the original closure
+  snapshot; they are provenance, not the current FloatingMedia file graph.
+
 Plate Next source:
+
 - prompt / link: user said `go` after selecting `@platejs/media` as the next
   package
 - mode: package review with implementation
@@ -39,6 +49,7 @@ Plate Next source:
   exact source audits, and zero accepted final review findings
 
 First checkpoint:
+
 - Copy every explicit prompt requirement into this plan before implementation:
   target, duration, non-goals, stop condition, proof commands, final handoff,
   and whether the user asked for `sweep`, `all core`, `full-loop`, or an
@@ -50,6 +61,7 @@ First checkpoint:
   implementation. A file checkbox may be checked only when its score is `100`.
 
 Timed checkpoint:
+
 - requested duration: N/A: user set no duration
 - semantics: one-shot completion threshold
 - initial confidence score: N/A: per-file score gate is the metric
@@ -59,6 +71,7 @@ Timed checkpoint:
   at 100
 
 Completion threshold:
+
 - Every baseline and final `packages/media` manifest row is checked at score
   `100`; zero unchecked/deferred rows.
 - Every one-use plugin transform, query, utility, `with*`, parser, command, and
@@ -100,6 +113,7 @@ Completion threshold:
   passes after final evidence is recorded.
 
 Verification surface:
+
 - focused tests / commands: package-local focused tests during implementation
 - package proof: `pnpm turbo typecheck --filter=./packages/media`;
   `pnpm --filter @platejs/media test`; `pnpm --filter @platejs/media build`
@@ -119,6 +133,7 @@ Verification surface:
 - final plan check: `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-23-plate-next-media-full-colocation.md`
 
 Constraints:
+
 - Review mode targets the best Plate v2 shape: clean Plate product layer on top
   of Plite, no legacy compatibility goal.
 - Plate owns product composition; Plite owns editor substrate.
@@ -246,8 +261,8 @@ Constraints:
   `PlatePlugin<Config>` or cast chained plugin results unless the annotation is
   a true external boundary. If inference fails, fix the builder/generic owner.
 - Empty config inference law: do not create `type FooConfig =
-  PluginConfig<'foo'>` only to call `createBasePlugin<FooConfig>({ key:
-  'foo' })`. Manual plugin config types are only for real options, API, tx,
+PluginConfig<'foo'>` only to call `createBasePlugin<FooConfig>({ key:
+'foo' })`. Manual plugin config types are only for real options, API, tx,
   selectors, state, or external public contracts.
 - Plugin editor extension law: plugin-owned editor extension options should be
   returned directly from `extendExtension`. Do not wrap them in
@@ -257,7 +272,7 @@ Constraints:
   only for genuinely separate extension identities.
 - Inferred local type law: do not annotate local variables whose initializer
   should infer the type. Smells like `const entries: NodeEntry<T>[] =
-  editor.read...` or `const value: Value = [...]` hide type regressions at the
+editor.read...` or `const value: Value = [...]` hide type regressions at the
   owner API. Remove the annotation and fix the source API if inference is weak.
   Keep annotations only for uninferrable locals such as empty arrays,
   deliberate narrowing/widening, exported/public signatures, or external
@@ -277,6 +292,7 @@ Constraints:
   should receive a narrow plugin context or required `tx` parameter.
 
 Boundaries:
+
 - allowed edit scope: `packages/media`, its package-local proof, generated
   barrels affected by Media exports, one Media changeset, this plan, source
   rules generated through `pnpm install`, and the exact registry consumers and
@@ -293,6 +309,7 @@ Boundaries:
   current Media/Core change caused them
 
 Output budget strategy:
+
 - For broad Core sweep, use manifest counts and ledger artifacts instead of
   streaming every file path into chat.
 - For named file/API work, use targeted `sed`/`rg` reads and capped output.
@@ -301,12 +318,14 @@ Output budget strategy:
   `node_modules`, coverage, and app build artifacts.
 
 Blocked condition:
+
 - Stop only if the clean owner topology requires an unresolved public API
   decision or missing Core/Plite primitive that cannot be fixed inside the
   smallest allowed owner; record three repeated blocker turns before marking
   the goal blocked.
 
 Current verdict:
+
 - verdict: `merge-existing-owner` / `hard-cut`, reopened after user correction
 - confidence: high; package/app/browser/Core proof and final review are clean
 - next owner: next Plate Next package
@@ -334,6 +353,7 @@ Start Gates:
 | Package review checklist initialized when in scope | yes | 102 baseline rows materialized below before implementation |
 
 Work Checklist:
+
 - [x] First checkpoint complete: every explicit prompt requirement, scope
       boundary, timing constraint, stop condition, deliverable, final handoff
       section, verification surface, and success criterion is copied into this
@@ -455,7 +475,7 @@ Review matrix:
 | Base placeholder transforms | 4 | merge-existing-owner / hard-cut | `BasePlaceholderPlugin` | plugin repeats its noun and four variants; registry repetition is scoped-API reuse, not evidence for raw `tx + resolved type` helpers; `setMediaNode` is test-only | flat scoped `insert(mediaType)`; delete every raw helper and migrate exact consumers |
 | React placeholder upload graph | 5 | merge-existing-owner | `PlaceholderPlugin` | one plugin owns `transforms/`, seven validation utils, public upload types, and all runtime calls; standalone tx helper exists only to ferry context | inline algorithm in `.extendTx`; merge proof; retain one MIME data owner |
 | MIME database taxonomy | 4 | merge-existing-owner | `mimeTypes` data module | six category files plus `mimes` and `utils` are consumed only as one lookup database; 3,700+ data lines justify depth, not taxonomy files | merge mechanically into one data/lookup owner |
-| Floating Media React family | 4 | merge-existing-owner | `FloatingMedia.tsx` + `useFloatingMedia.ts` | namespace component, two subcomponents, three subhooks, submit behavior, and spec are split across six files; store has a real external consumer | merge component and hook families; keep independent store |
+| Floating Media React family | 4 | merge-existing-owner | flat `FloatingMedia.tsx` | component, hooks, submit behavior, store, selectors, and spec form one family; the app wrapper import proves public access, not independent store ownership | merge the entire family; delete the nested folder and barrel |
 | Image Preview React family | 3 | merge-existing-owner | `Image.tsx`, `PreviewImage.tsx`, `useImagePreview.ts` | nested component taxonomy and three hook/behavior files serve one preview family; store has external consumers | flatten family; inline `openImagePreview`; merge hooks |
 | Dead React exports | 4 | hard-cut | none | `mediaStore`, `useMediaController*`, and Placeholder state hooks have no production consumer or current docs owner | delete files/exports/tests |
 | Package tests | 4 | merge-existing-owner | plugin/parser/component/hook families | helper-named specs mirror implementation fragments and contain migrated `any` fixtures | consolidate by durable behavior family |
@@ -489,6 +509,7 @@ Related scoped sweep ledger:
 | Final stale API sweep | Media source, exact registry, and current plugin docs | removed names, nested updates, root options, casts, required reads, normalization | 0 | 0 | 0 | none |
 
 Core drift ledger:
+
 - Applies: no: package mode
 - Manifest command: N/A: named package mode; no broad Core manifest
 - Manifest owner: `packages/core/src/**/*.{ts,tsx,mts,cts}`
@@ -507,6 +528,7 @@ Core file drift rows:
 | N/A | 0 | keep-in-plate | N/A | package mode; no Core source edit planned | N/A |
 
 Package file checklist:
+
 - Applies: yes
 - Package: `@platejs/media`
 - Manifest command:
@@ -689,6 +711,7 @@ Needs your attention:
 | N/A | None | Media source, exact registry callers, and current EN/CN docs are aligned | verification evidence | proceed to the next package after closure |
 
 Findings:
+
 - Baseline manifest is 102 rows: 99 source files plus package metadata and two
   tsconfigs; all 102 score 100. Final manifest is 44 rows: 41 source files plus
   package metadata and two tsconfigs; missing/extra are zero.
@@ -715,6 +738,7 @@ Findings:
   builds fall back to a validated `INIT_CWD`.
 
 Decisions and tradeoffs:
+
 - Plugin mutations survive as flat scoped updates, not public raw helpers.
   Multiple call sites reuse `editor.plugin(Base*Plugin).update.insert(...)`.
 - Keep `insertMediaUrl` only because prompting plus Image/Embed dispatch is a
@@ -735,6 +759,7 @@ Error attempts:
 | Structured review returned actionable findings | 5 correction rounds | Verify each against source, patch only same-owner blockers, rerun focused proof | Owner/API, async target, and custom-upload docs findings fixed; final delta review is clean |
 
 Verification evidence:
+
 - `pnpm --filter @platejs/media typecheck` — pass.
 - `pnpm turbo typecheck --filter=./packages/media` — 13/13 graph tasks pass.
 - `bun test packages/media/src` — 65 pass, 0 fail, 140 assertions.
@@ -757,14 +782,14 @@ Verification evidence:
 - `pnpm check:core` — pass across contracts, 45 reviewed package typechecks
   and lint gates, Core/Plite/reviewed package tests.
 - Structured autoreview command: `.agents/skills/autoreview/scripts/autoreview
-  --mode local --thinking high --stream-engine-output --prompt <Media scope>`;
+--mode local --thinking high --stream-engine-output --prompt <Media scope>`;
   final result: zero findings, patch correct.
 - `node tooling/scripts/generate-ui-changelog-entries.mjs --check` — 27
   changelog events valid.
 - `pnpm install` — pass; regenerated `best-api` and `plate-next` skills from
   repaired source rules.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs
-  docs/plans/2026-07-23-plate-next-media-full-colocation.md` — pass.
+docs/plans/2026-07-23-plate-next-media-full-colocation.md` — pass.
 - Browser proof: fresh `/docs/media` and `/docs/dnd` render the scoped API
   examples, `/docs/media` mounts one editor, deleted names are absent, and both
   routes have zero warning/error logs.
@@ -779,6 +804,7 @@ Phase / pass table:
 | Manifest and handoff | done | 102 baseline plus 8 added rows score 100; final manifest is 44/44 |
 
 Final handoff contract:
+
 - target surface and mode: `@platejs/media`, package review with implementation
 - files/APIs reviewed: every baseline/final Media manifest row; flat Image,
   Embed, headless Placeholder, React Placeholder, Floating Media, and Image
@@ -814,6 +840,7 @@ Reboot status:
 | What have I done? | Closed the original four packets, replaced the rejected insertion packet, migrated exact consumers, and repaired the owning rules |
 
 Timeline:
+
 - 2026-07-23T10:59:47.536Z Goal plan created.
 - 2026-07-23 Media headless and React owner families merged; dead helpers and
   taxonomy folders hard-cut.
@@ -834,4 +861,5 @@ Timeline:
 - 2026-07-23 Mechanical goal-plan checker passes.
 
 Open risks:
+
 - None.

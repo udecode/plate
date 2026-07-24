@@ -31,7 +31,7 @@ describe('emoji shortcode package surfaces', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject(output);
+    expect(value.children).toMatchObject(output);
 
     const markdown = serializeMd(editor, { value });
 

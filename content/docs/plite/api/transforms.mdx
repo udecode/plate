@@ -248,6 +248,8 @@ against the compiled schema at its actual replacement range.
 #### `tx.slice.replace(slice: ContentSlice, options?)`
 
 Fit and atomically replace content at `options.at` or the transaction target.
+The slice's optional `roots` map carries detached transitive secondary roots;
+insertion remaps copied keys deterministically and preserves shared aliases.
 The method returns `false` without mutating when the target cannot be resolved,
 is a protected void, or a well-formed slice cannot fit. Malformed slice shapes
 are programmer errors and throw. The method returns `true` once a fitted
@@ -416,7 +418,7 @@ and tags through `editor.update(policy)` before calling the direct method.
 
 #### `tx.value.replace(input: SnapshotInput)`
 
-Replace the active root or complete snapshot inside a larger transaction.
+Replace the complete serializable document inside a larger transaction.
 
 ```javascript
 editor.update((tx) => {
@@ -427,9 +429,11 @@ editor.update((tx) => {
 });
 ```
 
-Pass `roots` in the input when replacing multiple roots at once, or combine
-`tx.value.replace`, `tx.roots`, and `tx.setField` when the import also updates
-document meta fields.
+The input is complete: omitted named roots are deleted and omitted persisted
+meta fields reset to their declared initial values. Omitted selection is
+cleared. Invalid combined content returns `false` and publishes nothing. Use
+`tx.roots` for a partial named-root change and `tx.setField` for one metadata
+field.
 
 #### `tx.roots.create(root: RootKey, children: Node[])`
 

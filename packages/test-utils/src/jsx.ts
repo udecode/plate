@@ -150,7 +150,7 @@ export const elements = {
   hvideo: { type: 'video' },
 } as const satisfies HyperscriptShorthands;
 
-const createVoidElement =
+const createElementWithDefaultText =
   (type: string) =>
   (
     _tagName: string,
@@ -165,22 +165,22 @@ const createVoidElement =
         : voidChildren.map((child) => ({ ...child })),
   });
 
-const voidElementCreators = {
-  haudio: createVoidElement('audio'),
-  hcodedrawing: createVoidElement('code_drawing'),
-  hdate: createVoidElement('date'),
-  hfile: createVoidElement('file'),
-  himg: createVoidElement('img'),
-  hmediaembed: createVoidElement('media_embed'),
-  hmention: createVoidElement('mention'),
-  hmentioninput: createVoidElement('mention_input'),
-  hplaceholder: createVoidElement('placeholder'),
-  hvideo: createVoidElement('video'),
+const defaultTextElementCreators = {
+  haudio: createElementWithDefaultText('audio'),
+  hcodedrawing: createElementWithDefaultText('code_drawing'),
+  hdate: createElementWithDefaultText('date'),
+  hfile: createElementWithDefaultText('file'),
+  himg: createElementWithDefaultText('img'),
+  hmediaembed: createElementWithDefaultText('media_embed'),
+  hmention: createElementWithDefaultText('mention'),
+  hmentioninput: createElementWithDefaultText('mention_input'),
+  hplaceholder: createElementWithDefaultText('placeholder'),
+  hvideo: createElementWithDefaultText('video'),
 } satisfies HyperscriptCreators<Element>;
 
 const plateHyperscript = createHyperscript({
   creators: {
-    ...voidElementCreators,
+    ...defaultTextElementCreators,
     editor: createEditorFixture,
     htext: createText,
   },

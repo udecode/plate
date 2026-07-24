@@ -1,0 +1,1995 @@
+{
+  "schemaVersion": 1,
+  "kind": "wordgard-latest-delta-manifest",
+  "generatedAt": "2026-07-24T11:09:39.906Z",
+  "authority": {
+    "baselineCheckout": "/Users/zbeyens/git/wordgard-v0",
+    "baselineCommit": "1acb231df7067bf5f85e694aaf4646181441e9ab",
+    "baselineManifest": "docs/plans/artifacts/wordgard-full-architecture-audit/coverage-manifest.json",
+    "latestCheckout": "/Users/zbeyens/git/wordgard",
+    "latestCommit": "8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e",
+    "range": "1acb231df7067bf5f85e694aaf4646181441e9ab..8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e"
+  },
+  "summary": {
+    "commits": 76,
+    "changedFiles": 52,
+    "addedFiles": 1,
+    "removedFiles": 0,
+    "modifiedFiles": 51,
+    "addedLines": 1387,
+    "deletedLines": 585,
+    "publicItemsAdded": 29,
+    "publicItemsRemoved": 10,
+    "reviewCounts": {
+      "excluded-release-history": 1,
+      "reviewed-no-target-change": 35,
+      "material-architecture-delta": 16
+    },
+    "uniqueConceptIds": 138
+  },
+  "validation": {
+    "allChangedFilesClassified": true,
+    "allNonExcludedFilesMapped": true,
+    "baselineCheckoutMatchesCommit": true,
+    "exactRangeCommitCount": true,
+    "exactRangeFileCount": true,
+    "unclassifiedFiles": [],
+    "unmappedFiles": []
+  },
+  "clusters": {
+    "collaboration-corrections": {
+      "summary": "Adds correction-aware client/server transform, locked/open updates, and state-independent correction checks.",
+      "files": [
+        "src/collab/collab.ts",
+        "src/collab/index.ts",
+        "src/state/correction.ts"
+      ]
+    },
+    "document-model-change-codecs": {
+      "summary": "Adds compact validated change/slice JSON, pad/clip, content equality, selectable/config-aware atoms, and parser fixes.",
+      "files": [
+        "src/doc/change.ts",
+        "src/doc/node.ts",
+        "src/doc/parse.ts",
+        "src/doc/shape.ts",
+        "src/doc/slice.ts"
+      ]
+    },
+    "history-readonly": {
+      "summary": "Adds read-only command gating while retaining the same unversioned history architecture.",
+      "files": [
+        "src/history/history.ts"
+      ]
+    },
+    "native-dom-editor-runtime": {
+      "summary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "files": [
+        "src/editor/coords.ts",
+        "src/editor/decoration.ts",
+        "src/editor/dom.ts",
+        "src/editor/domobserver.ts",
+        "src/editor/editor.ts",
+        "src/editor/input.ts",
+        "src/editor/keymap.ts",
+        "src/editor/menubar.ts",
+        "src/editor/panel.ts",
+        "src/editor/selection.ts",
+        "src/editor/theme.ts",
+        "src/editor/tile.ts",
+        "src/editor/tooltip.ts",
+        "src/editor/viewstate.ts"
+      ]
+    },
+    "product-readonly-actions": {
+      "summary": "Makes product commands and controls read-only aware and fixes small action/menu behavior without changing feature ownership.",
+      "files": [
+        "src/command/commands.ts",
+        "src/command/helper.ts",
+        "src/command/menu.ts",
+        "src/schema/block.ts",
+        "src/schema/color.ts",
+        "src/schema/image.ts",
+        "src/schema/link.ts",
+        "src/schema/list.ts"
+      ]
+    },
+    "proof": {
+      "summary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
+      "files": [
+        "test/generate.ts",
+        "test/test-change.ts",
+        "test/test-collab.ts",
+        "test/webtest-commands.ts",
+        "test/webtest-composition.ts",
+        "test/webtest-content.ts",
+        "test/webtest-coords.ts",
+        "test/webtest-dom-changes.ts",
+        "test/webtest-serialize.ts"
+      ]
+    },
+    "release-build-demo": {
+      "summary": "Moves 0.1.0 to 0.3.1, fixes declaration tree-shaking/build behavior, and replaces the diagnostic demo with the real editor demo.",
+      "files": [
+        "CHANGELOG.md",
+        "bin/build.ts",
+        "bin/release.ts",
+        "demo/demo.ts",
+        "package.json"
+      ]
+    },
+    "state-selection-atomicity": {
+      "summary": "Makes atomicity configuration-aware, strengthens selection behavior, and adds transaction listener support.",
+      "files": [
+        "src/state/selection.ts",
+        "src/state/state.ts",
+        "src/state/textblock.ts",
+        "src/state/transaction.ts"
+      ]
+    },
+    "table-readonly-corrections": {
+      "summary": "Removes state dependence from table correction and gates table UI/paste behavior under read-only state.",
+      "files": [
+        "src/table/correct.ts",
+        "src/table/menu.ts",
+        "src/table/tablepaste.ts"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "CHANGELOG.md",
+      "status": "M",
+      "addedLines": 84,
+      "deletedLines": 0,
+      "cluster": "release-build-demo",
+      "clusterSummary": "Moves 0.1.0 to 0.3.1, fixes declaration tree-shaking/build behavior, and replaces the diagnostic demo with the real editor demo.",
+      "review": "excluded-release-history",
+      "conceptIds": [],
+      "baselineConceptIds": [],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 2698,
+        "lines": 89,
+        "sha256": "35e8649e837ae8ebf3765005e9f07014941ae10b43eecd435175a36b1c04a68b"
+      }
+    },
+    {
+      "path": "bin/build.ts",
+      "status": "M",
+      "addedLines": 1,
+      "deletedLines": 1,
+      "cluster": "release-build-demo",
+      "clusterSummary": "Moves 0.1.0 to 0.3.1, fixes declaration tree-shaking/build behavior, and replaces the diagnostic demo with the real editor demo.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "META-002"
+      ],
+      "baselineConceptIds": [
+        "META-002"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 2,
+        "afterCount": 2
+      },
+      "latest": {
+        "bytes": 12674,
+        "lines": 353,
+        "sha256": "92fbcee601ccc200f07b11c025f0a7ed5a99808705bf27d43df9ee3d584fcd69"
+      }
+    },
+    {
+      "path": "bin/release.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 0,
+      "cluster": "release-build-demo",
+      "clusterSummary": "Moves 0.1.0 to 0.3.1, fixes declaration tree-shaking/build behavior, and replaces the diagnostic demo with the real editor demo.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "META-002"
+      ],
+      "baselineConceptIds": [],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 3935,
+        "lines": 97,
+        "sha256": "1493bf172d756386cc5e2e19243eee4c65ad5055f1ccb6204fe82dd7dea64985"
+      }
+    },
+    {
+      "path": "demo/demo.ts",
+      "status": "M",
+      "addedLines": 14,
+      "deletedLines": 52,
+      "cluster": "release-build-demo",
+      "clusterSummary": "Moves 0.1.0 to 0.3.1, fixes declaration tree-shaking/build behavior, and replaces the diagnostic demo with the real editor demo.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "META-002",
+        "META-005"
+      ],
+      "baselineConceptIds": [
+        "META-002",
+        "META-005"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [
+          "variable:correction1"
+        ],
+        "beforeCount": 1,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 378,
+        "lines": 15,
+        "sha256": "efb8de213f7a78ddfd0b39bea191ee763c5e4bbcaa9811fb0b1b86f4d71d247c"
+      }
+    },
+    {
+      "path": "package.json",
+      "status": "M",
+      "addedLines": 1,
+      "deletedLines": 1,
+      "cluster": "release-build-demo",
+      "clusterSummary": "Moves 0.1.0 to 0.3.1, fixes declaration tree-shaking/build behavior, and replaces the diagnostic demo with the real editor demo.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "META-001",
+        "META-002"
+      ],
+      "baselineConceptIds": [
+        "META-001",
+        "META-002"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 1471,
+        "lines": 54,
+        "sha256": "d15765c45391174af18f10edbfc4b096a7b5729215a5313119d50037d712111c"
+      }
+    },
+    {
+      "path": "src/collab/collab.ts",
+      "status": "M",
+      "addedLines": 159,
+      "deletedLines": 62,
+      "cluster": "collaboration-corrections",
+      "clusterSummary": "Adds correction-aware client/server transform, locked/open updates, and state-independent correction checks.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "HC-011",
+        "HC-012",
+        "HC-013",
+        "HC-014",
+        "HC-019",
+        "HC-026"
+      ],
+      "baselineConceptIds": [
+        "HC-011",
+        "HC-012",
+        "HC-013",
+        "HC-014",
+        "HC-019",
+        "HC-026"
+      ],
+      "publicApi": {
+        "added": [
+          "function:collab.hasUnsentUpdate",
+          "function:collab.transformUpdate"
+        ],
+        "removed": [],
+        "beforeCount": 8,
+        "afterCount": 10
+      },
+      "latest": {
+        "bytes": 11323,
+        "lines": 275,
+        "sha256": "6a8fe1f77c8579042084266a593618ae274dd5a867b9f57185f497a827493da0"
+      }
+    },
+    {
+      "path": "src/collab/index.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 2,
+      "cluster": "collaboration-corrections",
+      "clusterSummary": "Adds correction-aware client/server transform, locked/open updates, and state-independent correction checks.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "HC-014"
+      ],
+      "baselineConceptIds": [
+        "HC-014"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 1,
+        "afterCount": 1
+      },
+      "latest": {
+        "bytes": 154,
+        "lines": 4,
+        "sha256": "cb374dca2012e8c043937db1e76221dede516166e57fbbdba0bb24c44a286da0"
+      }
+    },
+    {
+      "path": "src/command/commands.ts",
+      "status": "M",
+      "addedLines": 17,
+      "deletedLines": 4,
+      "cluster": "product-readonly-actions",
+      "clusterSummary": "Makes product commands and controls read-only aware and fixes small action/menu behavior without changing feature ownership.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "PRODUCT-005",
+        "PRODUCT-006",
+        "PRODUCT-007",
+        "PRODUCT-008",
+        "PRODUCT-009",
+        "PRODUCT-010",
+        "PRODUCT-017",
+        "PRODUCT-018",
+        "PRODUCT-019",
+        "PRODUCT-020"
+      ],
+      "baselineConceptIds": [
+        "PRODUCT-005",
+        "PRODUCT-006",
+        "PRODUCT-007",
+        "PRODUCT-008",
+        "PRODUCT-009",
+        "PRODUCT-010",
+        "PRODUCT-017",
+        "PRODUCT-018",
+        "PRODUCT-019",
+        "PRODUCT-020"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 30,
+        "afterCount": 30
+      },
+      "latest": {
+        "bytes": 26924,
+        "lines": 580,
+        "sha256": "56ce6e569067f8add63b90c92ee78f9d10dba16ed9a6c94d160bc6665a8d2823"
+      }
+    },
+    {
+      "path": "src/command/helper.ts",
+      "status": "M",
+      "addedLines": 4,
+      "deletedLines": 4,
+      "cluster": "product-readonly-actions",
+      "clusterSummary": "Makes product commands and controls read-only aware and fixes small action/menu behavior without changing feature ownership.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "PRODUCT-006",
+        "PRODUCT-007",
+        "PRODUCT-008",
+        "PRODUCT-014",
+        "PRODUCT-017",
+        "PRODUCT-019"
+      ],
+      "baselineConceptIds": [
+        "PRODUCT-006",
+        "PRODUCT-007",
+        "PRODUCT-008",
+        "PRODUCT-014",
+        "PRODUCT-017",
+        "PRODUCT-019"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 18,
+        "afterCount": 18
+      },
+      "latest": {
+        "bytes": 25015,
+        "lines": 641,
+        "sha256": "16fa4b1cdc9eb8215045ffd38778ce2779607b9327bda2c79ed65b5f33aa65ee"
+      }
+    },
+    {
+      "path": "src/command/menu.ts",
+      "status": "M",
+      "addedLines": 1,
+      "deletedLines": 0,
+      "cluster": "product-readonly-actions",
+      "clusterSummary": "Makes product commands and controls read-only aware and fixes small action/menu behavior without changing feature ownership.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "PRODUCT-011",
+        "PRODUCT-012",
+        "PRODUCT-013",
+        "PRODUCT-016",
+        "PRODUCT-017"
+      ],
+      "baselineConceptIds": [
+        "PRODUCT-011",
+        "PRODUCT-012",
+        "PRODUCT-013",
+        "PRODUCT-016",
+        "PRODUCT-017"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 64,
+        "afterCount": 64
+      },
+      "latest": {
+        "bytes": 19477,
+        "lines": 488,
+        "sha256": "095c96fe1cd30882c2de2700ee8cc493da7ff0697f0fd15745c62197ab2221d5"
+      }
+    },
+    {
+      "path": "src/doc/change.ts",
+      "status": "M",
+      "addedLines": 77,
+      "deletedLines": 22,
+      "cluster": "document-model-change-codecs",
+      "clusterSummary": "Adds compact validated change/slice JSON, pad/clip, content equality, selectable/config-aware atoms, and parser fixes.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "DOC-014",
+        "DOC-015",
+        "DOC-016",
+        "DOC-017",
+        "DOC-018",
+        "DOC-019",
+        "DOC-020",
+        "DOC-021",
+        "DOC-022",
+        "DOC-023",
+        "DOC-032",
+        "DOC-034"
+      ],
+      "baselineConceptIds": [
+        "DOC-014",
+        "DOC-015",
+        "DOC-016",
+        "DOC-017",
+        "DOC-018",
+        "DOC-019",
+        "DOC-020",
+        "DOC-021",
+        "DOC-022",
+        "DOC-023",
+        "DOC-032",
+        "DOC-034"
+      ],
+      "publicApi": {
+        "added": [
+          "method:ChangeSet.clip",
+          "method:ChangeSet.pad"
+        ],
+        "removed": [],
+        "beforeCount": 32,
+        "afterCount": 34
+      },
+      "latest": {
+        "bytes": 52004,
+        "lines": 1387,
+        "sha256": "5bb1020eaea2c8e1bd237ca544d4bfcd7c67a2ec1556b483bcdf7514fb42b78d"
+      }
+    },
+    {
+      "path": "src/doc/node.ts",
+      "status": "M",
+      "addedLines": 17,
+      "deletedLines": 12,
+      "cluster": "document-model-change-codecs",
+      "clusterSummary": "Adds compact validated change/slice JSON, pad/clip, content equality, selectable/config-aware atoms, and parser fixes.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "DOC-001",
+        "DOC-002",
+        "DOC-004",
+        "DOC-005",
+        "DOC-006",
+        "DOC-008",
+        "DOC-009",
+        "DOC-010",
+        "DOC-012",
+        "DOC-015",
+        "DOC-023",
+        "DOC-029",
+        "DOC-032"
+      ],
+      "baselineConceptIds": [
+        "DOC-001",
+        "DOC-002",
+        "DOC-004",
+        "DOC-005",
+        "DOC-006",
+        "DOC-008",
+        "DOC-009",
+        "DOC-010",
+        "DOC-012",
+        "DOC-015",
+        "DOC-023",
+        "DOC-029",
+        "DOC-032"
+      ],
+      "publicApi": {
+        "added": [
+          "get:BaseType.isSelectable",
+          "method:Plot.contentEq"
+        ],
+        "removed": [
+          "get:Leaf.Type.isSelectable"
+        ],
+        "beforeCount": 156,
+        "afterCount": 157
+      },
+      "latest": {
+        "bytes": 37310,
+        "lines": 992,
+        "sha256": "c18695eabd0326051b5b540da192e24ad527188ffe394b41c859043e45d8e198"
+      }
+    },
+    {
+      "path": "src/doc/parse.ts",
+      "status": "M",
+      "addedLines": 4,
+      "deletedLines": 2,
+      "cluster": "document-model-change-codecs",
+      "clusterSummary": "Adds compact validated change/slice JSON, pad/clip, content equality, selectable/config-aware atoms, and parser fixes.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "DOC-014",
+        "DOC-026",
+        "DOC-027",
+        "DOC-028",
+        "DOC-030",
+        "DOC-031",
+        "DOC-032"
+      ],
+      "baselineConceptIds": [
+        "DOC-014",
+        "DOC-026",
+        "DOC-027",
+        "DOC-028",
+        "DOC-030",
+        "DOC-031",
+        "DOC-032"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 17,
+        "afterCount": 17
+      },
+      "latest": {
+        "bytes": 22957,
+        "lines": 557,
+        "sha256": "160c780d825ff21a7fec8a7ea6aff7617d178b16fa800550561c79b4d5ea02b0"
+      }
+    },
+    {
+      "path": "src/doc/shape.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 2,
+      "cluster": "document-model-change-codecs",
+      "clusterSummary": "Adds compact validated change/slice JSON, pad/clip, content equality, selectable/config-aware atoms, and parser fixes.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "DOC-003",
+        "DOC-029",
+        "DOC-030"
+      ],
+      "baselineConceptIds": [
+        "DOC-003",
+        "DOC-029",
+        "DOC-030"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 42,
+        "afterCount": 42
+      },
+      "latest": {
+        "bytes": 17308,
+        "lines": 469,
+        "sha256": "3356c55ba507af796345ff0ef839b0cfc223d40a7e8302c9850548b4e2041bc6"
+      }
+    },
+    {
+      "path": "src/doc/slice.ts",
+      "status": "M",
+      "addedLines": 7,
+      "deletedLines": 7,
+      "cluster": "document-model-change-codecs",
+      "clusterSummary": "Adds compact validated change/slice JSON, pad/clip, content equality, selectable/config-aware atoms, and parser fixes.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "DOC-013",
+        "DOC-014",
+        "DOC-015",
+        "DOC-023"
+      ],
+      "baselineConceptIds": [
+        "DOC-013",
+        "DOC-014",
+        "DOC-015",
+        "DOC-023"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 19,
+        "afterCount": 19
+      },
+      "latest": {
+        "bytes": 4987,
+        "lines": 148,
+        "sha256": "7061633780d6ddfd107773eac0084c9e913b5c731a84e5bc9ceba61550f980d4"
+      }
+    },
+    {
+      "path": "src/editor/coords.ts",
+      "status": "M",
+      "addedLines": 9,
+      "deletedLines": 8,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-005",
+        "VIEW-007"
+      ],
+      "baselineConceptIds": [
+        "VIEW-005",
+        "VIEW-007"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 1,
+        "afterCount": 1
+      },
+      "latest": {
+        "bytes": 2975,
+        "lines": 63,
+        "sha256": "16bd243f472fc6334ba3391fd992d28addc460c51718c592ab58634fc4f73a11"
+      }
+    },
+    {
+      "path": "src/editor/decoration.ts",
+      "status": "M",
+      "addedLines": 61,
+      "deletedLines": 27,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-018",
+        "VIEW-019",
+        "VIEW-020",
+        "VIEW-024"
+      ],
+      "baselineConceptIds": [
+        "VIEW-018",
+        "VIEW-019",
+        "VIEW-020",
+        "VIEW-024"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 88,
+        "afterCount": 88
+      },
+      "latest": {
+        "bytes": 52588,
+        "lines": 1429,
+        "sha256": "c641df002767437b868844e56015978da25dfff3ad6c9120fc0a9d4ad1db8ff6"
+      }
+    },
+    {
+      "path": "src/editor/dom.ts",
+      "status": "M",
+      "addedLines": 4,
+      "deletedLines": 4,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-005",
+        "VIEW-006",
+        "VIEW-007",
+        "VIEW-013",
+        "VIEW-023"
+      ],
+      "baselineConceptIds": [
+        "VIEW-005",
+        "VIEW-006",
+        "VIEW-007",
+        "VIEW-013",
+        "VIEW-023"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 29,
+        "afterCount": 29
+      },
+      "latest": {
+        "bytes": 11582,
+        "lines": 309,
+        "sha256": "74dea74ee42e59752bf37d6d3c23b5a3175679c60f383f1f2932fff99999164b"
+      }
+    },
+    {
+      "path": "src/editor/domobserver.ts",
+      "status": "M",
+      "addedLines": 23,
+      "deletedLines": 9,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "VIEW-004",
+        "VIEW-006",
+        "VIEW-013"
+      ],
+      "baselineConceptIds": [
+        "VIEW-004",
+        "VIEW-006",
+        "VIEW-013"
+      ],
+      "publicApi": {
+        "added": [
+          "method:DOMObserver.onSelectionChange",
+          "property:DOMObserver.selectionChanged"
+        ],
+        "removed": [],
+        "beforeCount": 28,
+        "afterCount": 30
+      },
+      "latest": {
+        "bytes": 8830,
+        "lines": 258,
+        "sha256": "57ab6281d613119903f491f3fdf8d917e8937deb71898c3ba254b028897bc3ad"
+      }
+    },
+    {
+      "path": "src/editor/editor.ts",
+      "status": "M",
+      "addedLines": 51,
+      "deletedLines": 24,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "VIEW-001",
+        "VIEW-002",
+        "VIEW-003",
+        "VIEW-004",
+        "VIEW-005",
+        "VIEW-006",
+        "VIEW-007",
+        "VIEW-008",
+        "VIEW-009",
+        "VIEW-010",
+        "VIEW-011",
+        "VIEW-012",
+        "VIEW-013",
+        "VIEW-016",
+        "VIEW-023",
+        "VIEW-027"
+      ],
+      "baselineConceptIds": [
+        "VIEW-001",
+        "VIEW-002",
+        "VIEW-003",
+        "VIEW-004",
+        "VIEW-005",
+        "VIEW-006",
+        "VIEW-007",
+        "VIEW-008",
+        "VIEW-009",
+        "VIEW-010",
+        "VIEW-011",
+        "VIEW-012",
+        "VIEW-013",
+        "VIEW-016",
+        "VIEW-023",
+        "VIEW-027"
+      ],
+      "publicApi": {
+        "added": [
+          "get:Wordgard.editable",
+          "get:Wordgard.focusable",
+          "property:Wordgard.transactionListener"
+        ],
+        "removed": [
+          "property:Wordgard.domReaders",
+          "property:Wordgard.domWriters"
+        ],
+        "beforeCount": 98,
+        "afterCount": 99
+      },
+      "latest": {
+        "bytes": 48648,
+        "lines": 1163,
+        "sha256": "c884f589d9af22613f55e11fdd6561f9615f9f9b8cb10c345b5e08a407213a3e"
+      }
+    },
+    {
+      "path": "src/editor/input.ts",
+      "status": "M",
+      "addedLines": 220,
+      "deletedLines": 163,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "VIEW-008",
+        "VIEW-009",
+        "VIEW-010",
+        "VIEW-011",
+        "VIEW-012",
+        "VIEW-013",
+        "VIEW-014",
+        "VIEW-015",
+        "VIEW-023"
+      ],
+      "baselineConceptIds": [
+        "VIEW-008",
+        "VIEW-009",
+        "VIEW-010",
+        "VIEW-011",
+        "VIEW-012",
+        "VIEW-013",
+        "VIEW-014",
+        "VIEW-015",
+        "VIEW-023"
+      ],
+      "publicApi": {
+        "added": [
+          "get:InputState.domMapping",
+          "method:InputState.addDOMChange",
+          "method:InputState.beforeInput",
+          "method:InputState.getDOMPos",
+          "method:InputState.posAtDOM",
+          "property:InputState._domMapping",
+          "property:InputState.domChanges",
+          "property:InputState.domDoc",
+          "property:InputState.domMappingIndex",
+          "property:InputState.pendingInputEvent"
+        ],
+        "removed": [
+          "method:InputState.setSelectionOrigin",
+          "property:InputState.lastSelectionOrigin",
+          "property:InputState.lastSelectionTime",
+          "property:InputState.pendingComposition",
+          "property:InputState.pendingDeletion"
+        ],
+        "beforeCount": 43,
+        "afterCount": 48
+      },
+      "latest": {
+        "bytes": 34045,
+        "lines": 899,
+        "sha256": "0b7b7feedd69577d83bba0af0e30646f7bb2f3c9eedadef8fd7c50a3752e92c0"
+      }
+    },
+    {
+      "path": "src/editor/keymap.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 3,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-009",
+        "VIEW-013",
+        "VIEW-014"
+      ],
+      "baselineConceptIds": [
+        "VIEW-009",
+        "VIEW-013",
+        "VIEW-014"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 9,
+        "afterCount": 9
+      },
+      "latest": {
+        "bytes": 18760,
+        "lines": 379,
+        "sha256": "1250b8b4fb186232f64c730423d4edefd440c595b450c3cc56a45c8a01e69381"
+      }
+    },
+    {
+      "path": "src/editor/menubar.ts",
+      "status": "M",
+      "addedLines": 8,
+      "deletedLines": 8,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-014",
+        "VIEW-025",
+        "VIEW-027"
+      ],
+      "baselineConceptIds": [
+        "VIEW-014",
+        "VIEW-025",
+        "VIEW-027"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 1,
+        "afterCount": 1
+      },
+      "latest": {
+        "bytes": 19160,
+        "lines": 562,
+        "sha256": "075af78b628414f6cc92b1c7d38a60b033c1cf9c944ca0908dc1829ce77d7eae"
+      }
+    },
+    {
+      "path": "src/editor/panel.ts",
+      "status": "M",
+      "addedLines": 3,
+      "deletedLines": 4,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-025",
+        "VIEW-027"
+      ],
+      "baselineConceptIds": [
+        "VIEW-025",
+        "VIEW-027"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 6,
+        "afterCount": 6
+      },
+      "latest": {
+        "bytes": 7011,
+        "lines": 205,
+        "sha256": "2f083aec8d05e8392c77e05cb5630f16edc07ce4af4b73a2b4cab9fa5bb6fab1"
+      }
+    },
+    {
+      "path": "src/editor/selection.ts",
+      "status": "M",
+      "addedLines": 6,
+      "deletedLines": 6,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-006",
+        "VIEW-007"
+      ],
+      "baselineConceptIds": [
+        "VIEW-006",
+        "VIEW-007"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 4,
+        "afterCount": 4
+      },
+      "latest": {
+        "bytes": 6643,
+        "lines": 148,
+        "sha256": "b90b4c7a017fe1fba84189d5d852b31f818f6d56872a3526814c9ce00d73b827"
+      }
+    },
+    {
+      "path": "src/editor/theme.ts",
+      "status": "M",
+      "addedLines": 5,
+      "deletedLines": 1,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-023",
+        "VIEW-024",
+        "VIEW-025",
+        "VIEW-026",
+        "VIEW-027"
+      ],
+      "baselineConceptIds": [
+        "VIEW-023",
+        "VIEW-024",
+        "VIEW-025",
+        "VIEW-026",
+        "VIEW-027"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 8,
+        "afterCount": 8
+      },
+      "latest": {
+        "bytes": 4731,
+        "lines": 195,
+        "sha256": "adeb6f1eb8aed15ad13c71a67552684db31beebc19e37b8fb10b9b5538c9b306"
+      }
+    },
+    {
+      "path": "src/editor/tile.ts",
+      "status": "M",
+      "addedLines": 50,
+      "deletedLines": 17,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "VIEW-004",
+        "VIEW-005",
+        "VIEW-006",
+        "VIEW-007",
+        "VIEW-010",
+        "VIEW-016",
+        "VIEW-017",
+        "VIEW-018",
+        "VIEW-019",
+        "VIEW-020",
+        "VIEW-021"
+      ],
+      "baselineConceptIds": [
+        "VIEW-004",
+        "VIEW-005",
+        "VIEW-006",
+        "VIEW-007",
+        "VIEW-010",
+        "VIEW-016",
+        "VIEW-017",
+        "VIEW-018",
+        "VIEW-019",
+        "VIEW-020",
+        "VIEW-021"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 96,
+        "afterCount": 96
+      },
+      "latest": {
+        "bytes": 44328,
+        "lines": 1220,
+        "sha256": "82cb6ddfed2942f46a14a740c52c597ff5e936768c7e26e141e50d1e9d14fedb"
+      }
+    },
+    {
+      "path": "src/editor/tooltip.ts",
+      "status": "M",
+      "addedLines": 7,
+      "deletedLines": 3,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-007",
+        "VIEW-019",
+        "VIEW-020",
+        "VIEW-026",
+        "VIEW-027"
+      ],
+      "baselineConceptIds": [
+        "VIEW-007",
+        "VIEW-019",
+        "VIEW-020",
+        "VIEW-026",
+        "VIEW-027"
+      ],
+      "publicApi": {
+        "added": [
+          "declaration:Tooltip.get",
+          "declaration:Tooltip.get"
+        ],
+        "removed": [],
+        "beforeCount": 13,
+        "afterCount": 15
+      },
+      "latest": {
+        "bytes": 32228,
+        "lines": 837,
+        "sha256": "c56d02607843af630773f8c60ce6cd94afd151ca39c8870af406461847b8d315"
+      }
+    },
+    {
+      "path": "src/editor/viewstate.ts",
+      "status": "M",
+      "addedLines": 0,
+      "deletedLines": 5,
+      "cluster": "native-dom-editor-runtime",
+      "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-002",
+        "VIEW-003",
+        "VIEW-007"
+      ],
+      "baselineConceptIds": [
+        "VIEW-002",
+        "VIEW-003",
+        "VIEW-007"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [
+          "method:ViewState.mapPosPending"
+        ],
+        "beforeCount": 20,
+        "afterCount": 19
+      },
+      "latest": {
+        "bytes": 3580,
+        "lines": 114,
+        "sha256": "15273be218215d70037bcdc1246d4c406b1090b4edfa9989fd94d140ce15e822"
+      }
+    },
+    {
+      "path": "src/history/history.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 2,
+      "cluster": "history-readonly",
+      "clusterSummary": "Adds read-only command gating while retaining the same unversioned history architecture.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "HC-001",
+        "HC-002",
+        "HC-003",
+        "HC-004",
+        "HC-005",
+        "HC-006",
+        "HC-007",
+        "HC-008",
+        "HC-009",
+        "HC-010",
+        "HC-031"
+      ],
+      "baselineConceptIds": [
+        "HC-001",
+        "HC-002",
+        "HC-003",
+        "HC-004",
+        "HC-005",
+        "HC-006",
+        "HC-007",
+        "HC-008",
+        "HC-009",
+        "HC-010",
+        "HC-031"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 13,
+        "afterCount": 13
+      },
+      "latest": {
+        "bytes": 15221,
+        "lines": 380,
+        "sha256": "82e1b1bbe2b2e33af63b288ec79472c3bd08758f75a2f0f3718f2a5fe77ba5d6"
+      }
+    },
+    {
+      "path": "src/schema/block.ts",
+      "status": "M",
+      "addedLines": 8,
+      "deletedLines": 0,
+      "cluster": "product-readonly-actions",
+      "clusterSummary": "Makes product commands and controls read-only aware and fixes small action/menu behavior without changing feature ownership.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "PRODUCT-011",
+        "PRODUCT-012",
+        "PRODUCT-014",
+        "PRODUCT-015",
+        "PRODUCT-016",
+        "PRODUCT-018",
+        "PRODUCT-020"
+      ],
+      "baselineConceptIds": [
+        "PRODUCT-011",
+        "PRODUCT-012",
+        "PRODUCT-014",
+        "PRODUCT-015",
+        "PRODUCT-016",
+        "PRODUCT-018",
+        "PRODUCT-020"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 40,
+        "afterCount": 40
+      },
+      "latest": {
+        "bytes": 14420,
+        "lines": 364,
+        "sha256": "c303558eb3b95aa3121d198753131fd896960516201d79920042e4b86948869d"
+      }
+    },
+    {
+      "path": "src/schema/color.ts",
+      "status": "M",
+      "addedLines": 3,
+      "deletedLines": 0,
+      "cluster": "product-readonly-actions",
+      "clusterSummary": "Makes product commands and controls read-only aware and fixes small action/menu behavior without changing feature ownership.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "PRODUCT-011",
+        "PRODUCT-013",
+        "PRODUCT-015",
+        "PRODUCT-025",
+        "PRODUCT-026"
+      ],
+      "baselineConceptIds": [
+        "PRODUCT-011",
+        "PRODUCT-013",
+        "PRODUCT-015",
+        "PRODUCT-025",
+        "PRODUCT-026"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 16,
+        "afterCount": 16
+      },
+      "latest": {
+        "bytes": 11773,
+        "lines": 327,
+        "sha256": "3d5db04419ab024cb04f7f9f973c2c7048825d8822ed6b0c8bcb37f8533b2f9d"
+      }
+    },
+    {
+      "path": "src/schema/image.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 1,
+      "cluster": "product-readonly-actions",
+      "clusterSummary": "Makes product commands and controls read-only aware and fixes small action/menu behavior without changing feature ownership.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "PRODUCT-004",
+        "PRODUCT-011",
+        "PRODUCT-015",
+        "PRODUCT-018",
+        "PRODUCT-023",
+        "PRODUCT-024"
+      ],
+      "baselineConceptIds": [
+        "PRODUCT-004",
+        "PRODUCT-011",
+        "PRODUCT-015",
+        "PRODUCT-018",
+        "PRODUCT-023",
+        "PRODUCT-024"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 13,
+        "afterCount": 13
+      },
+      "latest": {
+        "bytes": 9841,
+        "lines": 229,
+        "sha256": "63867d1de48577ef445dca0b113493b20944619a97f848faa006b5bca18bd795"
+      }
+    },
+    {
+      "path": "src/schema/link.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 1,
+      "cluster": "product-readonly-actions",
+      "clusterSummary": "Makes product commands and controls read-only aware and fixes small action/menu behavior without changing feature ownership.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "PRODUCT-011",
+        "PRODUCT-015",
+        "PRODUCT-018",
+        "PRODUCT-021",
+        "PRODUCT-022"
+      ],
+      "baselineConceptIds": [
+        "PRODUCT-011",
+        "PRODUCT-015",
+        "PRODUCT-018",
+        "PRODUCT-021",
+        "PRODUCT-022"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 6,
+        "afterCount": 6
+      },
+      "latest": {
+        "bytes": 6020,
+        "lines": 172,
+        "sha256": "128d2a959b54e17f779b7d3b9d67cdb06143c22214488982e93d2fe984f4a254"
+      }
+    },
+    {
+      "path": "src/schema/list.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 0,
+      "cluster": "product-readonly-actions",
+      "clusterSummary": "Makes product commands and controls read-only aware and fixes small action/menu behavior without changing feature ownership.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "PRODUCT-011",
+        "PRODUCT-015",
+        "PRODUCT-018",
+        "PRODUCT-019"
+      ],
+      "baselineConceptIds": [
+        "PRODUCT-011",
+        "PRODUCT-015",
+        "PRODUCT-018",
+        "PRODUCT-019"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 8,
+        "afterCount": 8
+      },
+      "latest": {
+        "bytes": 3413,
+        "lines": 70,
+        "sha256": "b9c8b32369f8fa3af48112da4728137804cadd43c5b8e28eea87b5c4172bccb0"
+      }
+    },
+    {
+      "path": "src/state/correction.ts",
+      "status": "M",
+      "addedLines": 64,
+      "deletedLines": 40,
+      "cluster": "collaboration-corrections",
+      "clusterSummary": "Adds correction-aware client/server transform, locked/open updates, and state-independent correction checks.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "STATE-008"
+      ],
+      "baselineConceptIds": [
+        "STATE-008"
+      ],
+      "publicApi": {
+        "added": [
+          "method:Correction.check"
+        ],
+        "removed": [],
+        "beforeCount": 7,
+        "afterCount": 8
+      },
+      "latest": {
+        "bytes": 7682,
+        "lines": 191,
+        "sha256": "9bca29640016cef39dcf60c71a4d3e164744ecbb7ccd8e0a16ccb56e418c5006"
+      }
+    },
+    {
+      "path": "src/state/selection.ts",
+      "status": "M",
+      "addedLines": 23,
+      "deletedLines": 21,
+      "cluster": "state-selection-atomicity",
+      "clusterSummary": "Makes atomicity configuration-aware, strengthens selection behavior, and adds transaction listener support.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "STATE-016",
+        "STATE-017",
+        "STATE-018",
+        "STATE-019",
+        "STATE-020"
+      ],
+      "baselineConceptIds": [
+        "STATE-016",
+        "STATE-017",
+        "STATE-018",
+        "STATE-019",
+        "STATE-020"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 60,
+        "afterCount": 60
+      },
+      "latest": {
+        "bytes": 23989,
+        "lines": 576,
+        "sha256": "a72106a2afb9f0751e64418019892a6890a262e859d73e164a0ebf99fd388d03"
+      }
+    },
+    {
+      "path": "src/state/state.ts",
+      "status": "M",
+      "addedLines": 19,
+      "deletedLines": 1,
+      "cluster": "state-selection-atomicity",
+      "clusterSummary": "Makes atomicity configuration-aware, strengthens selection behavior, and adds transaction listener support.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "STATE-001",
+        "STATE-002",
+        "STATE-003",
+        "STATE-009",
+        "STATE-010",
+        "STATE-011",
+        "STATE-012",
+        "STATE-013",
+        "STATE-014",
+        "STATE-016",
+        "STATE-020"
+      ],
+      "baselineConceptIds": [
+        "STATE-001",
+        "STATE-002",
+        "STATE-003",
+        "STATE-009",
+        "STATE-010",
+        "STATE-011",
+        "STATE-012",
+        "STATE-013",
+        "STATE-014",
+        "STATE-016",
+        "STATE-020"
+      ],
+      "publicApi": {
+        "added": [
+          "method:GardState.Configuration.isAtom",
+          "method:GardState.isAtom",
+          "variable:GardState.isAtom"
+        ],
+        "removed": [],
+        "beforeCount": 75,
+        "afterCount": 78
+      },
+      "latest": {
+        "bytes": 46221,
+        "lines": 1100,
+        "sha256": "5e74ca0b5ba15f05d33f73cc3f1cbefa8826b7ac8192b1ab320e137a0abce972"
+      }
+    },
+    {
+      "path": "src/state/textblock.ts",
+      "status": "M",
+      "addedLines": 15,
+      "deletedLines": 12,
+      "cluster": "state-selection-atomicity",
+      "clusterSummary": "Makes atomicity configuration-aware, strengthens selection behavior, and adds transaction listener support.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "STATE-018",
+        "STATE-019",
+        "STATE-020"
+      ],
+      "baselineConceptIds": [
+        "STATE-018",
+        "STATE-019",
+        "STATE-020"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 9,
+        "afterCount": 9
+      },
+      "latest": {
+        "bytes": 9035,
+        "lines": 228,
+        "sha256": "2ba578fdf79c78924942dc33fe34a1561996171ff477af4b246a93408264baa4"
+      }
+    },
+    {
+      "path": "src/state/transaction.ts",
+      "status": "M",
+      "addedLines": 11,
+      "deletedLines": 3,
+      "cluster": "state-selection-atomicity",
+      "clusterSummary": "Makes atomicity configuration-aware, strengthens selection behavior, and adds transaction listener support.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "STATE-003",
+        "STATE-004",
+        "STATE-005",
+        "STATE-006",
+        "STATE-007",
+        "STATE-008",
+        "STATE-009",
+        "STATE-021"
+      ],
+      "baselineConceptIds": [
+        "STATE-003",
+        "STATE-004",
+        "STATE-005",
+        "STATE-006",
+        "STATE-007",
+        "STATE-008",
+        "STATE-009",
+        "STATE-021"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 40,
+        "afterCount": 40
+      },
+      "latest": {
+        "bytes": 18957,
+        "lines": 424,
+        "sha256": "9015cc07ad31cb557bfab2f9e3227e661227d626d14a6c1f6110cfd0c9f04b83"
+      }
+    },
+    {
+      "path": "src/table/correct.ts",
+      "status": "M",
+      "addedLines": 5,
+      "deletedLines": 4,
+      "cluster": "table-readonly-corrections",
+      "clusterSummary": "Removes state dependence from table correction and gates table UI/paste behavior under read-only state.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "TABLE-005",
+        "TABLE-006"
+      ],
+      "baselineConceptIds": [
+        "TABLE-005",
+        "TABLE-006"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 1,
+        "afterCount": 1
+      },
+      "latest": {
+        "bytes": 3040,
+        "lines": 69,
+        "sha256": "14b0be9e1dc1b9b8398b9c3e85fb74090be4bb357f7eef3ded48c0bbcb5e4009"
+      }
+    },
+    {
+      "path": "src/table/menu.ts",
+      "status": "M",
+      "addedLines": 10,
+      "deletedLines": 0,
+      "cluster": "table-readonly-corrections",
+      "clusterSummary": "Removes state dependence from table correction and gates table UI/paste behavior under read-only state.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "TABLE-018",
+        "TABLE-019",
+        "TABLE-020",
+        "TABLE-021",
+        "TABLE-028"
+      ],
+      "baselineConceptIds": [
+        "TABLE-018",
+        "TABLE-019",
+        "TABLE-020",
+        "TABLE-021",
+        "TABLE-028"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 13,
+        "afterCount": 13
+      },
+      "latest": {
+        "bytes": 9979,
+        "lines": 264,
+        "sha256": "49173d0ea4e3dd630ea19d39d2492444e49cab4b0d4a219aa293e2516ec73822"
+      }
+    },
+    {
+      "path": "src/table/tablepaste.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 0,
+      "cluster": "table-readonly-corrections",
+      "clusterSummary": "Removes state dependence from table correction and gates table UI/paste behavior under read-only state.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "TABLE-022",
+        "TABLE-023",
+        "TABLE-024",
+        "TABLE-025",
+        "TABLE-026"
+      ],
+      "baselineConceptIds": [
+        "TABLE-022",
+        "TABLE-023",
+        "TABLE-024",
+        "TABLE-025",
+        "TABLE-026"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 4,
+        "afterCount": 4
+      },
+      "latest": {
+        "bytes": 11579,
+        "lines": 266,
+        "sha256": "3157ef1509dc659153a3ac6b51bd8b4741fd0d7699e85dcae4ea8369fa965f4d"
+      }
+    },
+    {
+      "path": "test/generate.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 2,
+      "cluster": "proof",
+      "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "META-003"
+      ],
+      "baselineConceptIds": [
+        "META-003"
+      ],
+      "publicApi": {
+        "added": [
+          "function:rLetter",
+          "function:rWord"
+        ],
+        "removed": [],
+        "beforeCount": 11,
+        "afterCount": 13
+      },
+      "latest": {
+        "bytes": 6832,
+        "lines": 184,
+        "sha256": "7559556f9de5a513ccc14e9dfb678e2fcd513d0d9413387b71db3b020ac5f8cd"
+      }
+    },
+    {
+      "path": "test/test-change.ts",
+      "status": "M",
+      "addedLines": 31,
+      "deletedLines": 5,
+      "cluster": "proof",
+      "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "DOC-014",
+        "DOC-016",
+        "DOC-017",
+        "DOC-018",
+        "DOC-019",
+        "DOC-020",
+        "DOC-021",
+        "DOC-022",
+        "DOC-033",
+        "META-003"
+      ],
+      "baselineConceptIds": [
+        "DOC-014",
+        "DOC-016",
+        "DOC-017",
+        "DOC-018",
+        "DOC-019",
+        "DOC-020",
+        "DOC-021",
+        "DOC-022",
+        "DOC-033",
+        "META-003"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 22045,
+        "lines": 574,
+        "sha256": "3ccc70c1fb5bb45c2c5c76fea510a519a35ca1d06926199eb5c806c1cfedd524"
+      }
+    },
+    {
+      "path": "test/test-collab.ts",
+      "status": "M",
+      "addedLines": 75,
+      "deletedLines": 28,
+      "cluster": "proof",
+      "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "HC-011",
+        "HC-012",
+        "HC-013",
+        "HC-014",
+        "HC-019",
+        "HC-024",
+        "HC-026",
+        "HC-027",
+        "HC-032"
+      ],
+      "baselineConceptIds": [
+        "HC-011",
+        "HC-012",
+        "HC-013",
+        "HC-014",
+        "HC-019",
+        "HC-024",
+        "HC-026",
+        "HC-027",
+        "HC-032"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 10823,
+        "lines": 368,
+        "sha256": "1e3bc154439ab4fd644660add5e5a01bde5fd54faeae6fbbcbc16415f1ccbc48"
+      }
+    },
+    {
+      "path": "test/webtest-commands.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 2,
+      "cluster": "proof",
+      "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "PRODUCT-007",
+        "PRODUCT-009",
+        "PRODUCT-027",
+        "VIEW-007",
+        "VIEW-009",
+        "VIEW-014",
+        "VIEW-028"
+      ],
+      "baselineConceptIds": [
+        "PRODUCT-007",
+        "PRODUCT-009",
+        "PRODUCT-027",
+        "VIEW-007",
+        "VIEW-009",
+        "VIEW-014",
+        "VIEW-028"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 1236,
+        "lines": 35,
+        "sha256": "815860660057154a3c8653560860b866d0795d96d7391e36cbd1e51281e37c45"
+      }
+    },
+    {
+      "path": "test/webtest-composition.ts",
+      "status": "M",
+      "addedLines": 10,
+      "deletedLines": 5,
+      "cluster": "proof",
+      "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "VIEW-004",
+        "VIEW-008",
+        "VIEW-009",
+        "VIEW-010",
+        "VIEW-016",
+        "VIEW-028"
+      ],
+      "baselineConceptIds": [
+        "VIEW-004",
+        "VIEW-008",
+        "VIEW-009",
+        "VIEW-010",
+        "VIEW-016",
+        "VIEW-028"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 7504,
+        "lines": 187,
+        "sha256": "c07cd29fed1f9fc0f35108b0a09043265ec464b20d9ea41f8f96f01d986aaa6f"
+      }
+    },
+    {
+      "path": "test/webtest-content.ts",
+      "status": "M",
+      "addedLines": 102,
+      "deletedLines": 1,
+      "cluster": "proof",
+      "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-016",
+        "VIEW-017",
+        "VIEW-018",
+        "VIEW-019",
+        "VIEW-020",
+        "VIEW-021",
+        "VIEW-028"
+      ],
+      "baselineConceptIds": [
+        "VIEW-016",
+        "VIEW-017",
+        "VIEW-018",
+        "VIEW-019",
+        "VIEW-020",
+        "VIEW-021",
+        "VIEW-028"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 27043,
+        "lines": 611,
+        "sha256": "d9d33291cf1de11f156a947fb0b2a5b4ce76081d642e0ef39f592bf2ca3e5f1e"
+      }
+    },
+    {
+      "path": "test/webtest-coords.ts",
+      "status": "M",
+      "addedLines": 2,
+      "deletedLines": 2,
+      "cluster": "proof",
+      "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "VIEW-005",
+        "VIEW-006",
+        "VIEW-007",
+        "VIEW-028"
+      ],
+      "baselineConceptIds": [
+        "VIEW-005",
+        "VIEW-006",
+        "VIEW-007",
+        "VIEW-028"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 6500,
+        "lines": 176,
+        "sha256": "3b2ac956ffb50c98e4cfab4e8970eb1eb8bf3609c112e6ba6325b30e2b713f37"
+      }
+    },
+    {
+      "path": "test/webtest-dom-changes.ts",
+      "status": "A",
+      "addedLines": 148,
+      "deletedLines": 0,
+      "cluster": "proof",
+      "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
+      "review": "material-architecture-delta",
+      "conceptIds": [
+        "VIEW-004",
+        "VIEW-005",
+        "VIEW-006",
+        "VIEW-008",
+        "VIEW-010",
+        "VIEW-028"
+      ],
+      "baselineConceptIds": [],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 5405,
+        "lines": 148,
+        "sha256": "498c29edb153c4ec75aa6a031f948feefa966a8906d42d74fef900c621ae9295"
+      }
+    },
+    {
+      "path": "test/webtest-serialize.ts",
+      "status": "M",
+      "addedLines": 6,
+      "deletedLines": 2,
+      "cluster": "proof",
+      "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
+      "review": "reviewed-no-target-change",
+      "conceptIds": [
+        "DOC-027",
+        "DOC-028",
+        "DOC-029",
+        "DOC-030",
+        "DOC-033",
+        "META-004",
+        "VIEW-012",
+        "VIEW-028"
+      ],
+      "baselineConceptIds": [
+        "DOC-027",
+        "DOC-028",
+        "DOC-029",
+        "DOC-030",
+        "DOC-033",
+        "META-004",
+        "VIEW-012",
+        "VIEW-028"
+      ],
+      "publicApi": {
+        "added": [],
+        "removed": [],
+        "beforeCount": 0,
+        "afterCount": 0
+      },
+      "latest": {
+        "bytes": 9481,
+        "lines": 263,
+        "sha256": "314e870d9c9391e122582a56663d94db16422d94d03798c879dae3f31c36ecbe"
+      }
+    }
+  ]
+}

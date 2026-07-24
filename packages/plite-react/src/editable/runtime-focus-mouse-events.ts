@@ -1,4 +1,5 @@
 import { type FocusEvent, type MouseEvent, useCallback, useRef } from 'react';
+import { SelectionApi } from '@platejs/plite';
 import { isDOMNode } from '@platejs/plite-dom';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
@@ -21,6 +22,7 @@ import {
   applyEditableFocus,
   applyEditableMouseDown,
   type EditableSelectionReconcilerState,
+  selectEditableKeyboardSelectableTarget,
   selectEditableVoidTarget,
 } from './selection-reconciler';
 
@@ -259,8 +261,19 @@ export const useRuntimeFocusMouseEvents = ({
         onClick,
         readOnly,
       });
+      if (SelectionApi.isNode(editor.read((state) => state.selection()))) {
+        syncDOMSelectionToEditor();
+      }
     },
-    [domPhaseScheduler, editor, inputController, onClick, readOnly, trace]
+    [
+      domPhaseScheduler,
+      editor,
+      inputController,
+      onClick,
+      readOnly,
+      syncDOMSelectionToEditor,
+      trace,
+    ]
   );
   const onRuntimeClick = useEditableMouseHandler({ handleMouse: handleClick });
 
@@ -273,13 +286,19 @@ export const useRuntimeFocusMouseEvents = ({
         return;
       }
 
-      const selectedVoidPath = selectEditableVoidTarget({
-        editor,
-        inputController,
-        target: event.target,
-      });
+      const selectedPath =
+        selectEditableKeyboardSelectableTarget({
+          editor,
+          inputController,
+          target: event.target,
+        }) ??
+        selectEditableVoidTarget({
+          editor,
+          inputController,
+          target: event.target,
+        });
 
-      if (selectedVoidPath) {
+      if (selectedPath) {
         event.preventDefault();
       }
     },
@@ -340,11 +359,16 @@ export const useRuntimeFocusMouseEvents = ({
       const handled =
         (onMouseUp?.(event) as boolean | void) ?? event.defaultPrevented;
 
+      if (SelectionApi.isNode(editor.read((state) => state.selection()))) {
+        syncDOMSelectionToEditor();
+        return;
+      }
+
       if (!handled) {
         selection.syncDOMSelectionFromRuntime();
       }
     },
-    [editor, onMouseUp, selection]
+    [editor, onMouseUp, selection, syncDOMSelectionToEditor]
   );
   const onRuntimeMouseUp = useEditableMouseHandler({
     handleMouse: handleMouseUp,

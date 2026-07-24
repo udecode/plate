@@ -35,6 +35,11 @@ describe('pipeRenderElementStatic', () => {
           children: [{ text: 'Body' }],
           type: 'p',
         },
+        slots: {
+          children: () => null,
+          contentBoundary: ({ children }) => children,
+          contentRoot: () => null,
+        },
       } satisfies RenderElementProps)
     );
 
@@ -57,6 +62,11 @@ describe('pipeRenderElementStatic', () => {
       element: {
         children: [{ text: 'Body' }],
         type: 'quote',
+      },
+      slots: {
+        children: () => null,
+        contentBoundary: ({ children }) => children,
+        contentRoot: () => null,
       },
     } satisfies RenderElementProps);
 
@@ -87,6 +97,11 @@ describe('pipeRenderElementStatic', () => {
           children: [{ text: 'Body' }],
           id: 'block-1',
           type: 'quote',
+        },
+        slots: {
+          children: () => null,
+          contentBoundary: ({ children }) => children,
+          contentRoot: () => null,
         },
       } satisfies RenderElementProps)
     );

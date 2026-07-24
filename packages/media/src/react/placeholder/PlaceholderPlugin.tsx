@@ -6,8 +6,18 @@ import {
   type Path,
   PathApi,
 } from '@platejs/plite';
-import { KEYS, type TPlaceholderElement } from '@platejs/utils';
+import {
+  KEYS,
+  type TMediaElement,
+  type TPlaceholderElement,
+} from '@platejs/utils';
 
+import type {
+  AlignedMediaInsertInput,
+  ImageInsertInput,
+  MediaInsertInput,
+  ProviderMediaInsertInput,
+} from '../../lib/media/types';
 import {
   type PlaceholderConfig,
   BasePlaceholderPlugin,
@@ -110,6 +120,14 @@ export type PlaceholderApi = {
 
 export type PlaceholderTransforms = {
   insertMedia: (files: File[] | FileList, options?: InsertMediaOptions) => void;
+  replaceMedia: (
+    input:
+      | (AlignedMediaInsertInput & { type: string })
+      | (ImageInsertInput & { type: string })
+      | (MediaInsertInput & { type: string })
+      | (ProviderMediaInsertInput & { type: string }),
+    options: Omit<NodeInsertNodesOptions<TMediaElement>, 'at'> & { at: Path }
+  ) => void;
 };
 
 export type PlaceholderPluginOptions = PlaceholderConfig['options'] & {
@@ -207,7 +225,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
     },
   }))
   .extendTx<PlaceholderTransforms>(
-    ({ api, getOption, setOption, type }) =>
+    ({ api, editor, getOption, setOption, type }) =>
       (tx, _editor, { afterCommit }) => ({
         insertMedia: (files, options) => {
           const uploadConfig = getOption('uploadConfig');
@@ -390,6 +408,34 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
               },
               { ...restOptions, at: currentAt }
             );
+          }
+        },
+        replaceMedia: ({ type: mediaType, ...input }, { at, ...options }) => {
+          const audioType = editor.getType(KEYS.audio);
+          const fileType = editor.getType(KEYS.file);
+          const imageType = editor.getType(KEYS.img);
+          const videoType = editor.getType(KEYS.video);
+
+          if (
+            mediaType !== audioType &&
+            mediaType !== fileType &&
+            mediaType !== imageType &&
+            mediaType !== videoType
+          ) {
+            throw new Error(
+              `Unsupported placeholder media type "${mediaType}".`
+            );
+          }
+
+          tx.nodes.remove({ at });
+          if (mediaType === audioType) {
+            tx.audio.insert(input, { ...options, at });
+          } else if (mediaType === fileType) {
+            tx.file.insert(input, { ...options, at });
+          } else if (mediaType === imageType) {
+            tx.img.insert(input, { ...options, at });
+          } else {
+            tx.video.insert(input, { ...options, at });
           }
         },
       })

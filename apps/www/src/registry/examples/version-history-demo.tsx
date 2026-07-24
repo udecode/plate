@@ -315,7 +315,9 @@ export default function VersionHistoryDemo() {
       <Button onClick={saveRevision}>Save revision</Button>
 
       <VersionHistoryPlate
-        onValueChange={({ value }) => setValue(createVersionSnapshot(value))}
+        onValueChange={({ value }) =>
+          setValue(createVersionSnapshot(value.children))
+        }
         editor={editor}
       />
 

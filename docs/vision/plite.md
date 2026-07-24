@@ -60,6 +60,13 @@ donor checkout as proof after the transplant.
 - The primary document root is implicit in public API and docs. Do not expose a
   public `main` root key, config option, or example. Explicit roots are only for
   additional roots.
+- Structurally owned editable content stays in normal node `children`.
+  Conditional mounting and selection use DOM coverage without changing the
+  persisted model. Selection kinds distinguish owner selection from child-text
+  focus; that distinction alone does not justify a persisted child wrapper.
+  Structural child elements require their own grammar, properties, commands,
+  or multiple real semantic regions. Explicit roots require independent
+  addressing, lifecycle, sharing, or transaction semantics.
 - Primitive editor methods are power/runtime tools, not the final normal
   authoring story.
 - `tx.*` is the current public API authority for normal writes. Primitive

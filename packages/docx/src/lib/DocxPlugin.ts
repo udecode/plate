@@ -1,8 +1,4 @@
-import {
-  type BasePlugin,
-  type HtmlDeserializer,
-  createBasePlugin,
-} from '@platejs/core';
+import { type HtmlDeserializer, createBasePlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { cleanDocx } from './docx-cleaner/cleanDocx';
@@ -42,7 +38,7 @@ export const DocxPlugin = createBasePlugin({
   key: KEYS.docx,
   editOnly: true,
   inject: {
-    plugins: {
+    parsers: {
       [KEYS.html]: {
         parser: {
           transformData: ({ data, source }) => {
@@ -52,10 +48,6 @@ export const DocxPlugin = createBasePlugin({
           },
         },
       },
-    },
-  },
-  override: {
-    plugins: {
       ...Object.fromEntries(
         ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map((key) => [
           key,
@@ -67,7 +59,7 @@ export const DocxPlugin = createBasePlugin({
                 },
               },
             },
-          } satisfies Partial<BasePlugin>,
+          },
         ])
       ),
       img: {
@@ -79,7 +71,7 @@ export const DocxPlugin = createBasePlugin({
             return !isDocxContent(body);
           },
         },
-      } satisfies Partial<BasePlugin>,
+      },
     },
   },
 });

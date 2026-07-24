@@ -11,6 +11,7 @@ mock.module('@platejs/media/react', () => ({
 
 mock.module('@platejs/resizable', () => ({
   ResizableProvider: ({ children }: any) => <>{children}</>,
+  useResizableValue: () => '100%',
 }));
 
 mock.module('platejs/react', () => ({
@@ -23,6 +24,15 @@ mock.module('platejs/react', () => ({
       {children}
     </div>
   ),
+  useEditor: () => ({
+    read: { selection: () => null },
+  }),
+  useEditorSelector: (selector: (editor: unknown) => unknown) =>
+    selector({
+      read: { selection: () => null },
+    }),
+  useElement: () => ({ children: [{ text: '' }], type: 'file' }),
+  useEditorMounted: () => true,
   useEditorReadOnly: () => false,
   withHOC: (_Provider: any, Component: any) => Component,
 }));
@@ -30,13 +40,6 @@ mock.module('platejs/react', () => ({
 mock.module('@/lib/utils', () => ({
   cn: (...values: Array<string | false | null | undefined>) =>
     values.filter(Boolean).join(' '),
-}));
-
-mock.module('./caption', () => ({
-  Caption: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="caption">{children}</div>
-  ),
-  CaptionTextarea: () => <div data-testid="caption-textarea" />,
 }));
 
 describe('FileElement', () => {
@@ -60,10 +63,21 @@ describe('FileElement', () => {
     const view = render(
       <FileElement
         attributes={{}}
-        editor={{}}
-        element={{ children: [{ text: '' }], type: 'file' } as any}
+        editor={{ read: { selection: () => null } } as any}
+        element={
+          {
+            children: [{ text: 'Quarterly report' }],
+            type: 'file',
+          } as any
+        }
+        path={[0]}
+        slots={
+          {
+            contentBoundary: () => <div data-testid="caption-boundary" />,
+          } as any
+        }
       >
-        {null}
+        <span data-testid="caption-content">Quarterly report</span>
       </FileElement>
     );
 
@@ -71,5 +85,9 @@ describe('FileElement', () => {
       'https://cdn.example.com/report.pdf'
     );
     expect(view.container.textContent).toContain('report.pdf');
+    expect(view.getAllByTestId('caption-content')).toHaveLength(1);
+    expect(
+      view.getByTestId('caption-content').closest('figcaption')
+    ).toBeTruthy();
   });
 });

@@ -132,12 +132,29 @@ const migrateLegacySuggestionNode = (node: Descendant): Descendant | null => {
 
 const LegacySuggestionBootstrapPlugin = createBasePlugin({
   key: 'legacySuggestionBootstrap',
-  transformInitialValue: ({ value }) =>
-    value.flatMap((node) => {
-      const migrated = migrateLegacySuggestionNode(node);
+  transformInitialValue: ({ value }) => {
+    const migrate = (children: typeof value.children) =>
+      children.flatMap((node) => {
+        const migrated = migrateLegacySuggestionNode(node);
 
-      return migrated && ElementApi.isElement(migrated) ? [migrated] : [];
-    }),
+        return migrated && ElementApi.isElement(migrated) ? [migrated] : [];
+      });
+
+    return {
+      ...value,
+      children: migrate(value.children),
+      ...(value.roots
+        ? {
+            roots: Object.fromEntries(
+              Object.entries(value.roots).map(([root, children]) => [
+                root,
+                migrate(children),
+              ])
+            ),
+          }
+        : {}),
+    };
+  },
 });
 
 describe('BaseSuggestionPlugin behavior', () => {
@@ -1059,6 +1076,67 @@ describe('normalizeNode', () => {
 });
 
 describe('legacy suggestion bootstrap', () => {
+  it('migrates legacy suggestions in element-owned content roots', () => {
+    const RootHolderPlugin = createBasePlugin({
+      key: 'suggestionRootHolder',
+      schema: {
+        element: {
+          contentRoots: {
+            body: {
+              content: schema.content.type('p', {
+                default: { type: 'p' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          topLevel: true,
+          void: 'block',
+        },
+      },
+    });
+    const editor = createBaseEditor({
+      nodeId: false,
+      plugins: [
+        LegacySuggestionBootstrapPlugin,
+        suggestionPlugin,
+        RootHolderPlugin,
+      ],
+      initialValue: {
+        children: [
+          {
+            childRoots: { body: 'suggestion-root:1' },
+            children: [{ text: '' }],
+            type: 'suggestionRootHolder',
+          },
+        ],
+        roots: {
+          'suggestion-root:1': [
+            {
+              children: [
+                {
+                  suggestion: true,
+                  suggestion_remove: {
+                    createdAt: 1,
+                    id: 'remove',
+                    type: 'remove',
+                    userId: null,
+                  },
+                  text: 'x',
+                },
+              ],
+              type: 'p',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(editor.read.root('suggestion-root:1')).toEqual([
+      { children: [{ text: 'x' }], type: 'p' },
+    ]);
+  });
+
   describe('when an inline remove suggestion has no user id', () => {
     it('migrates away the suggestion metadata but keeps the text', () => {
       const input = (

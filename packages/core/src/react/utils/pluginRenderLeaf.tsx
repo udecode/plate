@@ -75,8 +75,7 @@ export const pluginRenderLeaf = (
       const canUseSimpleLeaf =
         !Component &&
         getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0 &&
-        !plugin.render.nodeProps &&
-        !plugin.host.dangerouslyAllowAttributes?.length;
+        !plugin.render.nodeProps;
 
       if (canUseSimpleLeaf && !plugin.rules.selection?.affinity) {
         const Tag = (plugin.render?.as ??
@@ -120,7 +119,6 @@ export const pluginRenderLeaf = (
       const Leaf = Component ?? PlateLeaf;
 
       const ctxProps = getRenderNodeProps({
-        attributes: leaf.attributes as any,
         editor,
         plugin,
         props: props as any,

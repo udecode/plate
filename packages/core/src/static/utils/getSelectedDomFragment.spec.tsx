@@ -20,9 +20,9 @@ describe('getSelectedDomFragment', () => {
 
   it('returns fully selected top-level blocks without deserializing them again', () => {
     document.body.innerHTML =
-      '<div data-plite-id="block-1" data-plite-node="element">hello</div>';
+      '<div data-block-id="block-1" data-plite-node="element">hello</div>';
     const blockElement = document.querySelector(
-      '[data-plite-id="block-1"]'
+      '[data-block-id="block-1"]'
     ) as HTMLElement;
     const range = document.createRange();
     const selection = window.getSelection()!;
@@ -43,12 +43,12 @@ describe('getSelectedDomFragment', () => {
 
   it('deserializes partial edge blocks for non-void selections', () => {
     document.body.innerHTML = [
-      '<div data-plite-id="block-1" data-plite-node="element">hello world</div>',
-      '<div data-plite-id="block-2" data-plite-node="element">omega</div>',
+      '<div data-block-id="block-1" data-plite-node="element">hello world</div>',
+      '<div data-block-id="block-2" data-plite-node="element">omega</div>',
     ].join('');
 
     selectText(
-      document.querySelector('[data-plite-id="block-1"]')!.firstChild as Text,
+      document.querySelector('[data-block-id="block-1"]')!.firstChild as Text,
       1,
       5
     );
@@ -56,7 +56,7 @@ describe('getSelectedDomFragment', () => {
       .getSelection()!
       .getRangeAt(0)
       .setEnd(
-        document.querySelector('[data-plite-id="block-2"]')!.firstChild as Text,
+        document.querySelector('[data-block-id="block-2"]')!.firstChild as Text,
         5
       );
 

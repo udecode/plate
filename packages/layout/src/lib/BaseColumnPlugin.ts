@@ -3,12 +3,7 @@ import {
   type PluginConfig,
   createBasePlugin,
 } from '@platejs/core';
-import {
-  definePropertyPolicy,
-  property,
-  schema,
-  type NodeEntry,
-} from '@platejs/plite';
+import { property, schema, type NodeEntry } from '@platejs/plite';
 import type { TColumnGroupElement } from '@platejs/utils';
 import { KEYS, NODES } from '@platejs/utils';
 
@@ -45,14 +40,6 @@ export type ColumnConfig = PluginConfig<
   }
 >;
 
-const columnLayoutPolicy = definePropertyPolicy<readonly number[]>({
-  id: 'plate.layout.column-layout',
-  validate: (value): value is readonly number[] =>
-    Array.isArray(value) &&
-    value.every((width) => typeof width === 'number' && Number.isFinite(width)),
-  version: 1,
-});
-
 export const BaseColumnItemPlugin = createBasePlugin({
   key: KEYS.column,
   schema: ({ plugins }) => ({
@@ -79,6 +66,7 @@ export const BaseColumnItemPlugin = createBasePlugin({
 
 export const BaseColumnPlugin = createBasePlugin({
   key: KEYS.columnGroup,
+  dependencies: [BaseColumnItemPlugin],
   schema: ({ plugins }) => {
     const columnType = plugins.elementType(BaseColumnItemPlugin);
 
@@ -88,10 +76,18 @@ export const BaseColumnPlugin = createBasePlugin({
           default: { type: columnType },
           min: 2,
         }),
-        properties: { layout: property.json({ policy: columnLayoutPolicy }) },
+        properties: {
+          layout: property.json({
+            validate: (value): value is readonly number[] =>
+              Array.isArray(value) &&
+              value.every(
+                (width) => typeof width === 'number' && Number.isFinite(width)
+              ),
+            validationVersion: 1,
+          }),
+        },
       },
     };
   },
   type: NODES.columnGroup,
-  plugins: [BaseColumnItemPlugin],
 });

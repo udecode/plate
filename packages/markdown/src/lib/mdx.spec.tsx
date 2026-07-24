@@ -29,39 +29,31 @@ describe('roundTrip', () => {
       </fragment>
     );
 
-    const md = serializeMd(editor, { value: input });
+    const md = serializeMd(editor, { value: { children: input } });
     const slate = deserializeMd(editor, md);
-    expect(slate).toEqual(input);
+    expect(slate.children).toEqual(input);
   });
 
   it('serialize callout correctly', () => {
     const input = (
       <fragment>
-        <hcallout>
-          <hp>
-            <htext>Callout</htext>
-          </hp>
-        </hcallout>
+        <hcallout>Callout</hcallout>
       </fragment>
     );
 
-    const md = serializeMd(editor, { value: input });
+    const md = serializeMd(editor, { value: { children: input } });
     expect(md).toMatchSnapshot();
   });
 
   it('serialize callout with icon attribute', () => {
     const input = (
       <fragment>
-        <hcallout icon="⚠️">
-          <hp>
-            <htext>Callout</htext>
-          </hp>
-        </hcallout>
+        <hcallout icon="⚠️">Callout</hcallout>
       </fragment>
     );
 
-    const md = serializeMd(editor, { value: input });
+    const md = serializeMd(editor, { value: { children: input } });
     const slate = deserializeMd(editor, md);
-    expect(slate).toEqual(input);
+    expect(slate.children).toEqual(input);
   });
 });

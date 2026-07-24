@@ -19,7 +19,6 @@ type BaseToggleContract = PluginConfig<
   },
   {},
   readonly [],
-  readonly [],
   never,
   {
     toggleIds: (ids: string[], force?: boolean | null) => void;

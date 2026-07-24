@@ -83,13 +83,15 @@ import {
 } from './selection-side-effect-policy';
 import { exportTripleClickSelectionToDOM } from './selection-triple-click';
 import {
+  preferModelSelectionForKeyboardSelectableTarget,
   preferModelSelectionForVoidTarget,
   resolveEditableClickTarget,
   resolveEditableVoidClickTarget,
-  selectEditableVoidTarget,
 } from './selection-void-target';
 
 export {
+  selectEditableKeyboardSelectablePath,
+  selectEditableKeyboardSelectableTarget,
   selectEditableVoidPath,
   selectEditableVoidTarget,
 } from './selection-void-target';
@@ -378,13 +380,19 @@ export const applyEditableClick = ({
     return;
   }
 
-  const voidTargetOwnsSelection = preferModelSelectionForVoidTarget({
-    editor,
-    inputController,
-    target: event.target,
-  });
+  const modelTargetOwnsSelection =
+    preferModelSelectionForKeyboardSelectableTarget({
+      editor,
+      inputController,
+      target: event.target,
+    }) ||
+    preferModelSelectionForVoidTarget({
+      editor,
+      inputController,
+      target: event.target,
+    });
 
-  if (!voidTargetOwnsSelection) {
+  if (!modelTargetOwnsSelection) {
     setEditableModelSelectionPreference({
       inputController,
       preferModelSelection: false,
@@ -497,13 +505,19 @@ export const applyEditableMouseDown = ({
     return null;
   }
 
-  const selectedVoidTarget = selectEditableVoidTarget({
-    editor,
-    inputController,
-    target: event.target,
-  });
+  const modelTargetOwnsSelection =
+    preferModelSelectionForKeyboardSelectableTarget({
+      editor,
+      inputController,
+      target: event.target,
+    }) ||
+    preferModelSelectionForVoidTarget({
+      editor,
+      inputController,
+      target: event.target,
+    });
 
-  if (selectedVoidTarget) {
+  if (modelTargetOwnsSelection) {
     event.preventDefault();
   } else {
     inputController.state.modelOwnedTextInputGuard = 0;
@@ -515,7 +529,7 @@ export const applyEditableMouseDown = ({
     inputController.state.selectionChangeOrigin = 'native-user';
   }
   onMouseDown?.(event);
-  return selectedVoidTarget;
+  return modelTargetOwnsSelection;
 };
 
 export const syncSelectionForBeforeInput = ({
@@ -1174,20 +1188,21 @@ export const useEditableSelectionReconciler = ({
 
       let newDomRange: DOMRange | null = null;
 
-      newDomRange = selection
-        ? (readModelSelectionDOMPreference({
-            editor,
-            editorElement,
-            selection,
-          }) ??
-          createFastDOMSelectionRange({
-            editor,
-            editorElement,
-            includeFullDocument: false,
-            selection,
-          }) ??
-          ReactEditor.resolveDOMRange(editor, selection))
-        : null;
+      newDomRange =
+        selection && !SelectionApi.isNode(selection)
+          ? (readModelSelectionDOMPreference({
+              editor,
+              editorElement,
+              selection,
+            }) ??
+            createFastDOMSelectionRange({
+              editor,
+              editorElement,
+              includeFullDocument: false,
+              selection,
+            }) ??
+            ReactEditor.resolveDOMRange(editor, selection))
+          : null;
 
       if (newDomRange) {
         const [startContainer, startOffset] = clampDOMSelectionPoint(
@@ -1231,7 +1246,7 @@ export const useEditableSelectionReconciler = ({
         if (readPliteViewSelection(editor) && !selectionHasDOMCoverage) {
           writePliteViewSelection(editor, null);
         }
-      } else if (!selection) {
+      } else if (!selection || SelectionApi.isNode(selection)) {
         domSelection.removeAllRanges();
       }
 

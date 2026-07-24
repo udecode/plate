@@ -163,7 +163,7 @@ const TextAlignPlugin = createPlatePlugin({
       validNodeValues: ["start", "left", "center", "right", "end", "justify"],
     },
     // This is injected into each installed, enabled target. In this example, ParagraphPlugin can deserialize the `textAlign` style.
-    targetPluginToInject: ({ editor, plugin }) => ({
+    targetParserToInject: ({ editor, plugin }) => ({
       parsers: {
         html: {
           deserializer: {
@@ -211,12 +211,15 @@ const CustomPlugin = createPlatePlugin<CustomConfig>({
   }));
 ```
 
-After the plugin resolves, reads stay on its plugin portal and one-shot writes use the keyed update helper:
+After the plugin resolves, concrete editors infer its reads on the root API and one-shot writes use the keyed update helper:
 
 ```ts
-editor.plugin(CustomPlugin).api.getPrefix();
+editor.api.custom.getPrefix();
 editor.update.custom.insertPrefix();
 ```
+
+Generic package code can reach the same immutable API object through
+`editor.plugin(CustomPlugin).api.getPrefix()`.
 
 ### Install Plite Extensions (Advanced)
 
@@ -315,19 +318,22 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### Nested Plugins
+### Optional Capabilities
 
-Plate supports nested plugins, allowing you to create plugin hierarchies. Use the `plugins` property to define child plugins:
+Keep optional capabilities as ordinary plugins in the consumer's plugin array.
+When an enhancement needs a host, the enhancement depends on the host:
 
 ```ts
-const ParentPlugin = createPlatePlugin({
-  key: "parent",
-  plugins: [
-    createPlatePlugin({ key: "child1" }),
-    createPlatePlugin({ key: "child2" }),
-  ],
+const CodeHighlightPlugin = createPlatePlugin({
+  key: "codeHighlight",
+  dependencies: [CodeBlockPlugin],
 });
+
+const plugins = [CodeBlockPlugin, CodeHighlightPlugin];
 ```
+
+Omit `CodeHighlightPlugin` for plain code blocks. The host does not install
+optional enhancements.
 
 ### Plugin Priority
 

@@ -12,7 +12,6 @@
       "@platejs/basic-nodes/react": ["../../packages/basic-nodes/src/react"],
       "@platejs/basic-styles/react": ["../../packages/basic-styles/src/react"],
       "@platejs/callout/react": ["../../packages/callout/src/react"],
-      "@platejs/caption/react": ["../../packages/caption/src/react"],
       "@platejs/code-block/react": ["../../packages/code-block/src/react"],
       "@platejs/code-drawing/react": ["../../packages/code-drawing/src/react"],
       "@platejs/combobox/react": ["../../packages/combobox/src/react"],

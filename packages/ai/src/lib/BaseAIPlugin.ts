@@ -41,7 +41,6 @@ type BaseAIContract = PluginConfig<
   {},
   {},
   readonly [],
-  readonly [],
   never,
   {
     /** Commit the active preview as one fresh undoable batch. */

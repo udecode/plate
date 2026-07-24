@@ -9,7 +9,7 @@ Plugin methods return new plugin instances, so package authors can keep a base p
 
 - [Method Map](#method-map)
 - [Configure Existing Fields](#configure-existing-fields)
-- [Configure Nested Plugins](#configure-nested-plugins)
+- [Configure Related Plugins](#configure-related-plugins)
 - [Extend The Plugin](#extend-the-plugin)
 - [Selectors](#selectors)
 - [API And Transactions](#api-and-transactions)
@@ -23,12 +23,10 @@ Plugin methods return new plugin instances, so package authors can keep a base p
 | Method | Use it for | Writes to |
 | --- | --- | --- |
 | `.configure()` | Apply one final consumer override without widening the public type. | The current plugin. |
-| `.configurePlugin()` | Change an existing nested plugin. | A child plugin already present in `plugins`. |
 | `.extend()` | Add typed options, handlers, renderers, rules, or runtime hooks. | The current plugin. |
-| `.extendPlugin()` | Extend a nested plugin, or add a keyed nested plugin when missing. | A child plugin under `plugins`. |
 | `.extendExtension()` | Install a Plite extension descriptor or factory. | Plite schema, state, tx, command, correction, query, or service slots. |
 | `.extendSelectors()` | Add computed option selectors. | `getOption()` and `usePluginOption()`. |
-| `.extendApi()` | Add plugin-specific API methods. | `editor.plugin(plugin).api`. |
+| `.extendApi()` | Add plugin-specific API methods. | `editor.api[plugin.key]`; exact generic code can use `editor.plugin(plugin).api`. |
 | `.extendEditorApi()` | Add editor-wide API methods. | `editor.api`. |
 | `.extendTx()` | Add plugin-owned transaction commands. | `editor.update((tx) => tx[plugin.key])`. |
 | `.extendTxGroup()` | Add commands to a named transaction group. | `editor.update((tx) => tx[groupKey])`. |
@@ -83,55 +81,39 @@ or extended again.
   configuration.
 </Callout>
 
-## Configure Nested Plugins
+## Configure Related Plugins
 
-Use `.configurePlugin()` when a parent plugin owns a child plugin and you want to adjust that child without replacing the whole parent.
+Configure a required dependency on its own descriptor and place that complete
+descriptor in the same app or registry plugin array. The explicit same-key
+descriptor replaces the dependency definition without parent reach-through.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { schema } from 'platejs';
 import { createPlatePlugin } from 'platejs/react';
 
 const CellPlugin = createPlatePlugin({
   key: 'cell',
-  options: {
-    padding: 12,
-  },
+  options: { padding: 12 },
 });
-
-export const GridPlugin = createPlatePlugin({
+const GridPlugin = createPlatePlugin({
   key: 'grid',
-  plugins: [CellPlugin],
-}).configurePlugin(CellPlugin, {
-  options: {
-    padding: 8,
-  },
+  dependencies: [CellPlugin],
 });
-```
 
-`.configurePlugin()` searches nested `plugins` recursively. If the target plugin is not found, Plate leaves the parent unchanged.
-
-Use `.extendPlugin()` when the child needs new typed behavior.
-
-```tsx title="plugins.tsx" showLineNumbers
-export const GridWithCellShortcutPlugin = GridPlugin.extendPlugin(CellPlugin, {
-  shortcuts: {
-    insertBelow: {
-      keys: 'mod+enter',
-      handler: ({ event }) => {
-        event.preventDefault();
-
-        return true;
-      },
+export const AppGridPlugins = [
+  GridPlugin,
+  CellPlugin.configure({
+    options: {
+      padding: 8,
     },
-  },
-});
+  }),
+];
 ```
 
-<Callout type="note" title="Missing nested plugins">
-  `.configurePlugin()` does not add a missing child. `.extendPlugin()` does:
-  when the target key is not found, Plate adds a keyed plugin at the top level
-  of the parent's `plugins` array and applies the extension there.
-</Callout>
+Package authors declare required capabilities with `dependencies`. Optional
+capabilities are ordinary app or registry array entries; an enhancement may
+depend on its host, but the host does not bundle the enhancement. Two distinct
+explicit descriptors with one key are an error; array order is not an override
+mechanism.
 
 ## Extend The Plugin
 
@@ -221,7 +203,7 @@ Use API methods for reads and utilities. Use transaction commands for operations
 
 | Method | Access path | Typical use |
 | --- | --- | --- |
-| `.extendApi()` | `editor.plugin(CounterPlugin).api.isEmpty()` | Plugin-specific query or utility. |
+| `.extendApi()` | `editor.api.counter.isEmpty()` | Plugin-specific query or utility. |
 | `.extendEditorApi()` | `editor.api.counterLabel()` | Editor-wide query or utility. |
 | `.extendTx()` | `editor.update((tx) => tx.counter.increment())` | Plugin-specific mutation. |
 | `.extendTxGroup()` | `editor.update((tx) => tx.insert.tableRow())` | Mutation in a shared namespace. |
@@ -270,10 +252,14 @@ export const CounterPlugin = createPlatePlugin<CounterConfig>({
 After the plugin resolves in an editor, call those methods from their resolved surfaces.
 
 ```ts
-editor.plugin(CounterPlugin).api.isEmpty();
+editor.api.counter.isEmpty();
 editor.api.counterLabel();
 editor.update((tx) => tx.counter.insertLabel());
 ```
+
+Concrete editor types infer installed plugin APIs on `editor.api`. Generic
+package code can call the same immutable API object through
+`editor.plugin(CounterPlugin).api.isEmpty()`.
 
 Transaction commands run inside `editor.update`. Keep app services and reads on `editor.api`.
 
@@ -382,12 +368,10 @@ export const MentionPlugin = toPlatePlugin(BaseMentionPlugin, {
 | Method | Accepts | Resolution behavior |
 | --- | --- | --- |
 | `.configure(config)` | One object or callback returning a partial existing plugin config. | Resolves once per descriptor and editor, lets contextual extensions read configured values, and remains the final override. |
-| `.configurePlugin(plugin, config)` | Target plugin and object config. | Recursively configures an existing nested plugin; missing target is ignored. |
 | `.extend(config)` | Object or callback returning a partial plugin config. | Object configs merge immediately; callback configs run during plugin resolution. |
-| `.extendPlugin(plugin, config)` | Target plugin and object extension. | Recursively extends a nested plugin; missing target is added by key. |
 | `.extendExtension(extension)` | Plite extension descriptor or callback; accepts an optional key as the first argument. | Installs the extension when the Plate plugin resolves. |
 | `.extendSelectors(callback)` | Callback returning selector functions. | Extends the plugin option store selectors. |
-| `.extendApi(callback)` | Callback returning functions. | Exposes plugin-owned methods through `editor.plugin(plugin).api`. |
+| `.extendApi(callback)` | Callback returning functions. | Exposes plugin-owned methods through `editor.api[plugin.key]`; exact generic code can use `editor.plugin(plugin).api`. |
 | `.extendEditorApi(callback)` | Callback returning functions or one-level nested function objects. | Exposes editor-wide methods through `editor.api`. |
 | `.extendTx(callback)` | Callback returning a transaction factory. | Merges into `tx[plugin.key]` inside `editor.update`. |
 | `.extendTxGroup(key, callback)` | Named transaction group and transaction factory. | Merges into `tx[key]` inside `editor.update`. |

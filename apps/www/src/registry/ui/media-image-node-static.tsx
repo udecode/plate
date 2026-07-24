@@ -1,18 +1,18 @@
 import * as React from 'react';
 
-import type { TCaptionProps, TImageElement, TResizableProps } from 'platejs';
+import type { TImageElement, TResizableProps } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
 
-import { NodeApi } from 'platejs';
 import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 
+import { CaptionStatic } from './caption-static';
+
 export function ImageElementStatic(
-  props: PliteElementProps<TImageElement & TCaptionProps & TResizableProps>
+  props: PliteElementProps<TImageElement & TResizableProps>
 ) {
-  const { align = 'center', caption, url, width } = props.element;
-  const alt = props.attributes.alt;
+  const { align = 'center', alt, url, width } = props.element;
 
   return (
     <PliteElement {...props} className="py-2.5">
@@ -27,21 +27,15 @@ export function ImageElementStatic(
                 'w-full max-w-full cursor-default object-cover px-0',
                 'rounded-sm'
               )}
-              alt={typeof alt === 'string' ? alt : undefined}
+              alt={alt}
               src={url}
             />
           </div>
-          {caption && (
-            <figcaption
-              className="mx-auto mt-2 h-[24px] max-w-full"
-              style={{ textAlign: 'center' }}
-            >
-              {NodeApi.string(caption[0])}
-            </figcaption>
-          )}
         </div>
+        <CaptionStatic align={align} element={props.element}>
+          {props.children}
+        </CaptionStatic>
       </figure>
-      {props.children}
     </PliteElement>
   );
 }

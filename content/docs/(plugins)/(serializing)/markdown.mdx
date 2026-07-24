@@ -4,7 +4,7 @@ description: Convert Plate content to Markdown and vice-versa.
 toc: true
 ---
 
-The `@platejs/markdown` package provides robust, two-way conversion between Markdown and Plate's content structure.
+`@platejs/markdown` converts Markdown to Plate documents and Plate documents back to Markdown.
 
 <ComponentPreview name="markdown-to-plite-demo" />
 
@@ -46,7 +46,7 @@ While libraries like `react-markdown` render Markdown to React elements, `@plate
 
 ### Installation
 
-The fastest way to add Markdown functionality is with the `MarkdownKit`, which includes pre-configured `MarkdownPlugin` with essential remark plugins for [Plate UI](/docs/installation/plate-ui) compatibility.
+The fastest way to add Markdown functionality is with `MarkdownKit`. It combines the configured `MarkdownPlugin` with the live Footnote plugins and essential remark plugins for [Plate UI](/docs/installation/plate-ui).
 
 <ComponentSource name="markdown-kit" />
 
@@ -138,11 +138,15 @@ const editorWithoutPaste = createPlateEditor({
 
 ### Markdown to Plate (Deserialization)
 
-Use `editor.api.markdown.deserialize` to convert a Markdown string into a Plate `Value` (an array of nodes). This is often used for the editor's initial content.
+Use `editor.api.markdown.deserialize` to convert a Markdown string into an
+`EditorDocumentValue`. Media captions are block children of their media
+element.
 
 ```tsx title="components/my-editor.tsx"
 import { createPlateEditor } from 'platejs/react';
 import { MarkdownPlugin } from '@platejs/markdown';
+import { ItalicPlugin } from '@platejs/basic-nodes/react';
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
 // ... import other necessary Plate plugins for rendering elements
 
 const markdownString = '# Hello, *Plate*!';
@@ -151,7 +155,8 @@ const editor = createPlateEditor({
   plugins: [
     // MarkdownPlugin must be included
     MarkdownPlugin,
-    // ... other plugins needed to render the deserialized elements (e.g., HeadingPlugin, ItalicPlugin)
+    ...BasicBlocksKit,
+    ItalicPlugin,
   ],
   // Use deserialize in the value factory for initial content
   initialValue: ({ editor }) =>
@@ -161,13 +166,13 @@ const editor = createPlateEditor({
 
 <Callout type="warning" title="Plugin Requirements">
   Ensure all Plate plugins required to render the deserialized Markdown (e.g.,
-  `HeadingPlugin` for `#`, `TablePlugin` for tables) are included in your
+  `H1Plugin` for `#`, `TablePlugin` for tables) are included in your
   editor's `plugins` array.
 </Callout>
 
 ### Plate to Markdown (Serialization)
 
-Use `editor.api.markdown.serialize` to convert the current editor content (or a specific array of nodes) into a Markdown string.
+Use `editor.api.markdown.serialize` to convert the current editor document or a specific `EditorDocumentValue` into a Markdown string.
 
 **Serializing Current Editor Content:**
 
@@ -177,7 +182,7 @@ const markdownOutput = editor.api.markdown.serialize();
 console.info(markdownOutput);
 ```
 
-**Serializing Specific Nodes:**
+**Serializing a Specific Document:**
 
 ```tsx
 const specificNodes = [
@@ -187,10 +192,13 @@ const specificNodes = [
 
 // Assuming `editor` is your Plate editor instance
 const partialMarkdownOutput = editor.api.markdown.serialize({
-  value: specificNodes,
+  value: { children: specificNodes },
 });
 console.info(partialMarkdownOutput);
 ```
+
+Markdown image alt text maps to one paragraph child of the image. Rich MDX
+media children map directly to the media element's block children.
 
 ### Round-Trip Serialization with Custom Elements (MDX)
 
@@ -327,7 +335,7 @@ Pass Markdown conversion behavior through `MarkdownPlugin.configure({ options })
 
 ### `editor.api.markdown.deserialize`
 
-Converts a Markdown string into a Plate `Value` (`Descendant[]`).
+Converts a Markdown string into an `EditorDocumentValue`.
 
 <API name="deserialize">
   <APIParameters>
@@ -369,7 +377,9 @@ Converts a Markdown string into a Plate `Value` (`Descendant[]`).
       Receives parser errors before the safe fallback path runs.
     </APIItem>
   </APIOptions>
-  <APIReturns type="Descendant[]">An array of Plate nodes.</APIReturns>
+  <APIReturns type="EditorDocumentValue">
+    A document containing the deserialized block `children`.
+  </APIReturns>
 </API>
 
 ---
@@ -394,7 +404,7 @@ Converts inline Markdown text into Plite children.
 
 ### `editor.api.markdown.serialize`
 
-Converts a Plate `Value` (`Descendant[]`) into a Markdown string.
+Converts an `EditorDocumentValue` into a Markdown string.
 
 <API name="serialize">
   <APIParameters>
@@ -403,8 +413,8 @@ Converts a Plate `Value` (`Descendant[]`) into a Markdown string.
     </APIItem>
   </APIParameters>
   <APIOptions type="SerializeMdOptions">
-    <APIItem name="value" type="Descendant[]" optional>
-      Plate nodes to serialize. Defaults to `editor.children`.
+    <APIItem name="value" type="EditorDocumentValue" optional>
+      Plate document to serialize. Defaults to `editor.read.value()`.
     </APIItem>
     <APIItem name="allowedNodes" type="PlateType[] | null" optional>
       Override plugin `allowedNodes`.
@@ -525,9 +535,9 @@ Visit https://platejs.org
 `;
 
 // Assuming `editor` is your configured Plate editor instance
-const slateValue = editor.api.markdown.deserialize(markdown);
+const document = editor.api.markdown.deserialize(markdown);
 editor.update((tx) => {
-  tx.value.replace({ children: slateValue });
+  tx.value.replace(document);
 });
 
 const markdownOutput = editor.api.markdown.serialize();
@@ -542,7 +552,7 @@ This example shows two approaches: customizing the rendering component (common f
 
 - `@platejs/markdown` converts Markdown fenced code blocks (e.g., \`\`\`js ... \`\`\`) to Plate `code_block` elements with `code_line` children.
 - The Plate `CodeBlockElement` (often from `@platejs/code-block/react`) renders this structure.
-- Syntax highlighting typically occurs within `CodeBlockElement` using a library like `lowlight` (via `CodeBlockPlugin`). See [Code Block Plugin](/docs/code-block) for details.
+- Syntax highlighting comes from `CodeHighlightPlugin` and a library like `lowlight`. See [Code Block Plugin](/docs/code-block) for details.
 
 **Approach 1: Customizing Rendering Component (Recommended for UI)**
 
@@ -552,8 +562,8 @@ To change how code blocks appear, customize the component for the `code_block` p
 import { createPlateEditor } from 'platejs/react';
 import {
   CodeBlockPlugin,
+  CodeHighlightPlugin,
   CodeLinePlugin,
-  CodeSyntaxPlugin,
 } from '@platejs/code-block/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { MyCustomCodeBlockElement } from './my-custom-code-block'; // Your custom component
@@ -562,7 +572,7 @@ const editor = createPlateEditor({
   plugins: [
     CodeBlockPlugin.withComponent(MyCustomCodeBlockElement), // Base plugin for structure/logic
     CodeLinePlugin.withComponent(MyCustomCodeLineElement),
-    CodeSyntaxPlugin.withComponent(MyCustomCodeSyntaxElement),
+    CodeHighlightPlugin.withComponent(MyCustomCodeSyntaxElement),
     MarkdownPlugin, // For Markdown conversion
     // ... other plugins
   ],
@@ -661,10 +671,10 @@ $$
 `;
 
 // Assuming `editor` is your configured Plate editor instance
-const slateValue = editor.api.markdown.deserialize(markdown);
-// slateValue will contain 'inline_equation' and 'equation' nodes.
+const document = editor.api.markdown.deserialize(markdown);
+// document.children contains 'inline_equation' and 'equation' nodes.
 
-const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+const markdownOutput = editor.api.markdown.serialize({ value: document });
 // markdownOutput will contain $...$ and $$...$$ syntax.
 ```
 
@@ -880,7 +890,7 @@ The option examples use `import { MarkdownPlugin } from '@platejs/markdown'`.
 | `children` (string)             | Pass to `editor.api.markdown.deserialize(string)`                                                      | Input for deserialization; often in `createPlateEditor` `initialValue`.                |
 | `remarkPlugins`                 | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] } })`                                                | Operates on mdast.                                                                     |
 | `rehypePlugins`                 | Not part of `MarkdownPlugin`'s conversion pipeline.                                                              | Run any HTML pipeline before passing Markdown or Plate nodes to Plate.                 |
-| `components={{ h1: MyH1 }}`     | `createPlateEditor({ components: { h1: MyH1 } })`                                                                | Configures Plate rendering component. Key depends on `HeadingPlugin` config.           |
+| `components={{ h1: MyH1 }}`     | `createPlateEditor({ components: { h1: MyH1 } })`                                                                | Configures the component for the installed `H1Plugin` key.                             |
 | `components={{ code: MyCode }}` | 1. **Conversion**: `MarkdownPlugin > rules > code`. 2. **Rendering**: `components: { [KEYS.codeBlock]: MyCode }` | `rules` for mdast (`code`) to Plate (`code_block`). `components` for Plate rendering.  |
 | `allowedElements`               | `MarkdownPlugin.configure({ options: { allowedNodes: [...] } })`                                                 | Filters nodes during conversion (mdast/Plate types).                                   |
 | `disallowedElements`            | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] } })`                                              | Filters nodes during conversion.                                                       |
@@ -1054,7 +1064,7 @@ import React, { useEffect } from 'react';
 import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 // Import necessary Plate plugins for common Markdown features
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
 // ... include other plugins like BlockquotePlugin, CodeBlockPlugin, ListPlugin, etc.
 // ... and mark plugins like BoldPlugin, ItalicPlugin, etc.
 
@@ -1072,7 +1082,7 @@ export function PlateMarkdown({
   const editor = usePlateEditor({
     plugins: [
       // Include all plugins needed to render your Markdown
-      HeadingPlugin /* ... other plugins ... */,
+      ...BasicBlocksKit,
       MarkdownPlugin,
     ],
     components, // Pass through component overrides
@@ -1080,9 +1090,7 @@ export function PlateMarkdown({
 
   useEffect(() => {
     editor.update((tx) => {
-      tx.value.replace({
-        children: editor.api.markdown.deserialize(children),
-      });
+      tx.value.replace(editor.api.markdown.deserialize(children));
     });
   }, [children, editor]); // Re-deserialize when the Markdown changes
 

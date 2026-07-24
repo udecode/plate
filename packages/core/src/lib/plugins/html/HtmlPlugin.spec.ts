@@ -7,6 +7,8 @@ describe('HtmlPlugin', () => {
     const editor = createBaseEditor();
 
     expect(editor.getPlugin(HtmlPlugin).parser.format).toBe('text/html');
+    expect(editor.api.html).toBe(editor.plugin(HtmlPlugin).api);
+    expect(Object.isFrozen(editor.api.html)).toBe(true);
   });
 
   it('deserializes the parsed document body without a second fitter', () => {

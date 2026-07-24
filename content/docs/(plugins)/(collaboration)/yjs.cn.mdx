@@ -13,6 +13,7 @@ toc: true
 - **提供者边界：** 应用负责 Hocuspocus、WebSocket、WebRTC、IndexedDB 或自定义传输代码。`@platejs/yjs` 负责把 `Y.Doc`、提供者生命周期、Awareness、选择状态和撤销/重做接入编辑器。
 - **自定义提供者：** 将提供者包包装成 `YjsProviderLike`，然后通过 `YjsPlugin.configure` 配置。
 - **Awareness 与光标：** 集成 Yjs Awareness 协议，用于在用户之间共享光标位置和临时状态。远程光标 UI 使用 [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay)。
+- **多根文档：** 通过同一个编辑器扩展和 Yjs 事务边界同步主 `children`、命名 `roots` 和带根信息的 Awareness。
 - **自定义光标：** 通过 `tx.yjs.sendSelection` 发送光标名称、颜色和其他元数据。
 - **显式命令：** 插件会安装 Plite Yjs 扩展，并添加 `state.yjs` 读取和 `tx.yjs` 命令，用于连接、Awareness、选择、撤销和重做。
 
@@ -44,15 +45,15 @@ npm install y-webrtc
 
 ### 添加插件
 
-同一房间内的所有节点必须使用相同的命名 schema 谱系。下方显式设置的 `id` 和
-`version` 属于房间协商；递增版本前先迁移房间。
+同一房间内的所有节点必须使用相同的编译后 schema 身份。派生 schema 通过指纹匹配。
+持久房间使用显式的 `id` 和 `version` 作为谱系；递增版本前先迁移房间。
 
 ```tsx
 import { YjsPlugin } from "@platejs/yjs/react";
 import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
-  schema: { id: 'yjs-example', version: 1 },
+  schema: { id: "yjs-example", version: 1 },
   plugins: [
     YjsPlugin.configure({
       options: {
@@ -92,8 +93,12 @@ export const yjsPlugin = YjsPlugin.configure({
 
 - `provider`: 应用拥有的传输包装器，类型为 `YjsProviderLike`。
 - `doc`: 共享的 `Y.Doc`。
-- `rootName`: Yjs 文档中的共享根。
+- `rootName`: 协作文档的命名空间。主根和命名根一起同步。
 - 本地选择变化时，通过 `tx.yjs.sendSelection(...)` 发送光标数据。
+
+一次同时修改主根和命名根的 Plate 提交会生成一个 Yjs 事务和一个撤销步骤。
+命名根无需挂载 `PlateContent` 也会同步；远程选区保留其根 key，且一个选区不能跨越
+两个根。
 
 ### 添加编辑器容器
 

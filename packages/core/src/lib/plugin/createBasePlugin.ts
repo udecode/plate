@@ -16,9 +16,9 @@ import type {
   AnyBasePlugin,
   BasePlugin,
   BasePluginContext,
-  BasePlugins,
   EditorShortcut,
   Parser,
+  ParserPluginProjection,
   PlateEditorExtensionInput,
   PluginShortcutInput,
 } from './BasePlugin';
@@ -32,13 +32,13 @@ import {
 
 type PluginInputInject<C extends AnyPluginConfig> = Omit<
   NonNullable<BasePlugin<C>['inject']>,
-  'nodeProps' | 'targetPluginToInject'
+  'nodeProps' | 'targetParserToInject'
 > & {
   nodeProps?: Record<string, any> &
     NonNullable<BasePlugin<C>['inject']>['nodeProps'];
-  targetPluginToInject?: (
+  targetParserToInject?: (
     ctx: BasePluginContext<C> & { targetPlugin: string }
-  ) => Partial<BasePlugin<AnyPluginConfig>>;
+  ) => ParserPluginProjection;
 };
 
 type PluginInputRender<C extends AnyPluginConfig> = NonNullable<
@@ -52,7 +52,6 @@ type ContextualPluginInput<C extends AnyPluginConfig> = {
   extensions?: never;
   handlers?: NoInfer<BasePlugin<C>['handlers']>;
   inject?: NoInfer<PluginInputInject<C> | null>;
-  host?: NoInfer<BasePlugin<C>['host']>;
   inputRules?: NoInfer<BasePlugin<C>['inputRules']>;
   override?: NoInfer<BasePlugin<C>['override']>;
   parser?: NoInfer<Parser<WithAnyKey<C>>>;
@@ -69,9 +68,8 @@ type CreateBasePluginInput<C extends AnyPluginConfig = PluginConfig> =
   ContextualPluginInput<C> & {
     api?: InferApi<C>;
     dependencies?: C['dependencies'];
-    key?: C['key'];
+    key: C['key'];
     options?: InferOptions<C>;
-    plugins?: NonNullable<C['plugins']>;
     schema?: BasePlugin<C>['schema'];
     selectors?: InferSelectors<C>;
     tx?: InferTx<C>;
@@ -89,7 +87,8 @@ type ExplicitTypedBasePluginConfig<C extends AnyPluginConfig> = [C] extends [
   never,
 ]
   ? never
-  : Omit<TypedBasePluginConfig<NoInferConfig<C>>, 'shortcuts'> & {
+  : Omit<TypedBasePluginConfig<NoInferConfig<C>>, 'key' | 'shortcuts'> & {
+      key: C['key'];
       shortcuts?: never;
     };
 
@@ -99,11 +98,15 @@ type InferredPluginSchemaFactory<
   A,
   Tx extends AnyPluginTx,
   S,
-  D extends readonly unknown[],
+  D extends readonly PluginReference[],
+  Enabled extends boolean,
   TType extends string,
   TDeclaration extends PluginSchemaDeclaration,
 > = (
-  context: PluginSchemaContext<PluginConfig<K, O, A, Tx, S, {}, D>, TType>
+  context: PluginSchemaContext<
+    PluginConfig<K, O, A, Tx, S, {}, D, never, {}, Enabled>,
+    TType
+  >
 ) => TDeclaration;
 
 type InferredBaseShortcutRecord = Record<
@@ -117,19 +120,19 @@ type InferredBasePluginInput<
   A,
   Tx extends AnyPluginTx,
   S,
-  P extends readonly unknown[],
-  D extends readonly unknown[],
+  D extends readonly PluginReference[],
+  Enabled extends boolean,
   TType extends string,
   TShortcuts extends InferredBaseShortcutRecord,
 > = Omit<
   ContextualPluginInput<
-    PluginConfig<K, O, A, Tx, S, {}, D, readonly PluginReference[]>
+    PluginConfig<K, O, A, Tx, S, {}, D, never, {}, Enabled>
   >,
   | 'api'
   | 'dependencies'
+  | 'enabled'
   | 'key'
   | 'options'
-  | 'plugins'
   | 'schema'
   | 'selectors'
   | 'shortcuts'
@@ -140,14 +143,14 @@ type InferredBasePluginInput<
   dependencies?: D;
   key: K;
   options?: O;
-  plugins?: P;
   selectors?: S;
   shortcuts?: PluginShortcutInput<
-    PluginConfig<K, O, A, Tx, S, {}, D>,
+    PluginConfig<K, O, A, Tx, S, {}, D, never, {}, Enabled>,
     TShortcuts
   >;
   tx?: Tx;
   type?: TType;
+  enabled?: Enabled;
 };
 
 const extensionArrayKeys = [
@@ -162,9 +165,8 @@ type ExtensionArrayRecord = Partial<Record<ExtensionArrayKey, unknown[]>>;
 
 type MutableBasePlugin = Omit<
   BasePlugin<AnyPluginConfig>,
-  'plugins' | 'targetPluginKeys'
+  'targetPluginKeys'
 > & {
-  plugins: BasePlugins;
   targetPluginKeys: readonly string[];
 };
 
@@ -237,8 +239,35 @@ const assertNoLegacyNode = (configuration: unknown) => {
     Object.hasOwn(configuration, 'node')
   ) {
     throw new Error(
-      'Plate plugin `node` configuration is unsupported. Use top-level `type`, `schema`, `render`, and `host`.'
+      'Plate plugin `node` configuration is unsupported. Use top-level `type`, `schema`, and `render`.'
     );
+  }
+};
+
+const assertNoPluginChildren = (configuration: unknown) => {
+  if (
+    configuration &&
+    typeof configuration === 'object' &&
+    Object.hasOwn(configuration, 'plugins')
+  ) {
+    throw new Error(
+      'Plate plugin descriptors cannot define top-level `plugins`. Use `dependencies` for required capabilities or include optional plugins in the consumer plugin array.'
+    );
+  }
+};
+
+const assertNoRelationshipMutation = (
+  configuration: unknown,
+  kind: 'configure' | 'extend'
+) => {
+  if (!configuration || typeof configuration !== 'object') return;
+
+  for (const key of ['dependencies', 'plugins'] as const) {
+    if (Object.hasOwn(configuration, key)) {
+      throw new Error(
+        `Plate plugin ${kind} cannot define \`${key}\`. Declare relationship membership when creating the plugin or during static Base-to-React conversion.`
+      );
+    }
   }
 };
 
@@ -251,6 +280,7 @@ const assertRuntimeCallback = (
   }
 
   assertNoLegacyNode(value);
+  assertNoRelationshipMutation(value, kind === 'extension' ? 'extend' : kind);
 
   if (kind === 'configure') {
     for (const key of Object.keys(value)) {
@@ -263,7 +293,6 @@ const assertRuntimeCallback = (
   }
 
   for (const key of [
-    'host',
     'parser',
     'parsers',
     'schema',
@@ -293,7 +322,7 @@ const snapshotModelConfiguration = (configuration: any) => {
   assertNoLegacyNode(configuration);
 
   // Snapshot model identity here. The complete descriptor graph is snapshotted
-  // at editor publication, where nominal plugin references and opaque host
+  // at editor publication, where nominal plugin references and opaque extension
   // resources can be preserved instead of cloned as plain data.
   const snapshot = { ...configuration };
 
@@ -347,8 +376,6 @@ const normalizePlateEditorExtensions = (
  *       is called with an editor.
  *   - The `extendExtension` method installs Plite editor extensions.
  *   - The `extend` method adds plugin configuration to be applied later.
- *   - The `extendPlugin` method extends an existing plugin (including nested
- *       plugins) or adds a new one if not found.
  *
  * @example
  *   const myPlugin = createBasePlugin<
@@ -364,11 +391,6 @@ const normalizePlateEditorExtensions = (
  *     options: { anotherOption: false },
  *   });
  *
- *   const pluginWithNestedExtension = extendedPlugin.extendPlugin(
- *     nestedPlugin,
- *     { options: { nestedOption: true } }
- *   );
- *
  * @template K - The literal type of the plugin key.
  * @template O - The type of the plugin options.
  * @template A - The type of the plugin utilities.
@@ -383,8 +405,6 @@ const normalizePlateEditorExtensions = (
  *   - `configure`: A method to create a new plugin instance with updated options.
  *   - `extend`: A method to create a new plugin instance with additional
  *       configuration.
- *   - `extendPlugin`: A method to extend an existing plugin (including nested
- *       plugins) or add a new one if not found.
  */
 export function createBasePlugin<
   const K extends string,
@@ -392,13 +412,23 @@ export function createBasePlugin<
   A = {},
   Tx extends AnyPluginTx = {},
   S = {},
-  const P extends readonly unknown[] = readonly [],
-  const D extends readonly unknown[] = readonly [],
+  const D extends readonly PluginReference[] = readonly [],
+  const Enabled extends boolean = boolean,
   const TType extends string = K,
   const TShortcuts extends InferredBaseShortcutRecord = {},
   const TDeclaration extends PluginSchemaDeclaration = PluginSchemaDeclaration,
 >(
-  config: InferredBasePluginInput<K, O, A, Tx, S, P, D, TType, TShortcuts> & {
+  config: InferredBasePluginInput<
+    K,
+    O,
+    A,
+    Tx,
+    S,
+    D,
+    Enabled,
+    TType,
+    TShortcuts
+  > & {
     schema: InferredPluginSchemaFactory<
       K,
       NoInfer<O>,
@@ -406,6 +436,7 @@ export function createBasePlugin<
       NoInfer<Tx>,
       NoInfer<S>,
       NoInfer<D>,
+      NoInfer<Enabled>,
       TType,
       TDeclaration
     >;
@@ -419,11 +450,22 @@ export function createBasePlugin<
     S,
     {},
     D,
-    P,
     PluginSchemaModel<
       TType,
-      InferredPluginSchemaFactory<K, O, A, Tx, S, D, TType, TDeclaration>
-    >
+      InferredPluginSchemaFactory<
+        K,
+        O,
+        A,
+        Tx,
+        S,
+        D,
+        Enabled,
+        TType,
+        TDeclaration
+      >
+    >,
+    {},
+    Enabled
   >
 >;
 export function createBasePlugin<
@@ -432,17 +474,38 @@ export function createBasePlugin<
   A = {},
   Tx extends AnyPluginTx = {},
   S = {},
-  const P extends readonly unknown[] = readonly [],
-  const D extends readonly unknown[] = readonly [],
+  const D extends readonly PluginReference[] = readonly [],
+  const Enabled extends boolean = boolean,
   const TType extends string = K,
   const TShortcuts extends InferredBaseShortcutRecord = {},
   const TDeclaration extends PluginSchemaDeclaration = PluginSchemaDeclaration,
 >(
-  config: InferredBasePluginInput<K, O, A, Tx, S, P, D, TType, TShortcuts> & {
+  config: InferredBasePluginInput<
+    K,
+    O,
+    A,
+    Tx,
+    S,
+    D,
+    Enabled,
+    TType,
+    TShortcuts
+  > & {
     schema: TDeclaration;
   }
 ): BasePlugin<
-  PluginConfig<K, O, A, Tx, S, {}, D, P, PluginSchemaModel<TType, TDeclaration>>
+  PluginConfig<
+    K,
+    O,
+    A,
+    Tx,
+    S,
+    {},
+    D,
+    PluginSchemaModel<TType, TDeclaration>,
+    {},
+    Enabled
+  >
 >;
 export function createBasePlugin<C extends AnyPluginConfig = never>(
   config: ExplicitTypedBasePluginConfig<C>
@@ -453,24 +516,50 @@ export function createBasePlugin<
   A = {},
   Tx extends AnyPluginTx = {},
   S = {},
-  const P extends readonly unknown[] = readonly [],
-  const D extends readonly unknown[] = readonly [],
+  const D extends readonly PluginReference[] = readonly [],
+  const Enabled extends boolean = boolean,
   const TType extends string = K,
   const TShortcuts extends InferredBaseShortcutRecord = {},
 >(
-  config: InferredBasePluginInput<K, O, A, Tx, S, P, D, TType, TShortcuts> & {
+  config: InferredBasePluginInput<
+    K,
+    O,
+    A,
+    Tx,
+    S,
+    D,
+    Enabled,
+    TType,
+    TShortcuts
+  > & {
     schema?: null;
   }
 ): BasePlugin<
-  PluginConfig<K, O, A, Tx, S, {}, D, P, PluginSchemaModel<TType, null>>
+  PluginConfig<
+    K,
+    O,
+    A,
+    Tx,
+    S,
+    {},
+    D,
+    PluginSchemaModel<TType, null>,
+    {},
+    Enabled
+  >
 >;
-export function createBasePlugin(config: any = {}): any {
+export function createBasePlugin(config: any): any {
   const recreatePlugin = createBasePlugin as (config: any) => any;
   const baseConfig = config as Partial<AnyBasePlugin>;
 
   assertNoLegacyNode(baseConfig);
+  assertNoPluginChildren(baseConfig);
 
-  const key = baseConfig.key ?? '';
+  const key = baseConfig.key;
+
+  if (typeof key !== 'string' || key.length === 0) {
+    throw new Error('Plate plugins require a non-empty `key`.');
+  }
 
   const plugin = mergePlugins(
     {
@@ -485,12 +574,10 @@ export function createBasePlugin(config: any = {}): any {
       dependencies: [],
       handlers: {},
       inject: {},
-      host: {},
       options: {},
       override: {},
       parser: {},
       parsers: {},
-      plugins: [],
       priority: 100,
       render: {},
       rules: {},
@@ -537,6 +624,7 @@ export function createBasePlugin(config: any = {}): any {
 
       return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
     }
+    assertNoRelationshipMutation(config, 'configure');
     if (typeof config.type === 'string') {
       newPlugin.type = config.type;
     }
@@ -550,66 +638,6 @@ export function createBasePlugin(config: any = {}): any {
 
     return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
   };
-
-  plugin.configurePlugin = ((
-    p: BasePlugin<any> | { key: string },
-    config: any
-  ) => {
-    assertAuthoringOpen('configurePlugin');
-    const newPlugin = { ...plugin };
-
-    const configureNestedPlugin = (
-      plugins: readonly AnyBasePlugin[]
-    ): { found: boolean; plugins: BasePlugins } => {
-      let found = false;
-
-      const updatedPlugins = plugins.map((nestedPlugin) => {
-        if (nestedPlugin.key === p.key) {
-          found = true;
-
-          return preserveExtensionArrays(
-            nestedPlugin,
-            recreatePlugin({
-              ...nestedPlugin,
-              __configurationLayers: [
-                ...nestedPlugin.__configurationLayers,
-                Object.freeze({
-                  kind: 'object' as const,
-                  value: snapshotModelConfiguration(config),
-                }),
-              ],
-            } as any)
-          );
-        }
-        if (nestedPlugin.plugins && nestedPlugin.plugins.length > 0) {
-          const result = configureNestedPlugin(nestedPlugin.plugins);
-
-          if (result.found) {
-            found = true;
-
-            return preserveExtensionArrays(
-              nestedPlugin,
-              recreatePlugin({
-                ...nestedPlugin,
-                plugins: result.plugins,
-              })
-            );
-          }
-        }
-
-        return nestedPlugin;
-      });
-
-      return { found, plugins: updatedPlugins as BasePlugins };
-    };
-
-    const result = configureNestedPlugin(newPlugin.plugins as any);
-    newPlugin.plugins = result.plugins as any;
-
-    // We're not adding a new plugin if not found
-
-    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
-  }) as typeof plugin.configurePlugin;
 
   plugin.extendEditorApi = (extension) => {
     assertAuthoringOpen('extendEditorApi');
@@ -695,6 +723,7 @@ export function createBasePlugin(config: any = {}): any {
       ];
     } else {
       assertNoLegacyNode(extendConfig);
+      assertNoRelationshipMutation(extendConfig, 'extend');
       newPlugin = mergePlugins(newPlugin, extendConfig as any);
     }
 
@@ -726,67 +755,6 @@ export function createBasePlugin(config: any = {}): any {
 
     return preserveExtensionArrays(plugin, recreatePlugin({ ...plugin }));
   };
-
-  plugin.extendPlugin = ((p: AnyBasePlugin | { key: string }, extendConfig) => {
-    assertAuthoringOpen('extendPlugin');
-    const newPlugin = { ...plugin };
-
-    const extendNestedPlugin = (
-      plugins: readonly AnyBasePlugin[]
-    ): { found: boolean; plugins: BasePlugins } => {
-      let found = false;
-      const updatedPlugins = plugins.map((nestedPlugin) => {
-        if (nestedPlugin.key === p.key) {
-          found = true;
-
-          return preserveExtensionArrays(
-            nestedPlugin,
-            recreatePlugin({
-              ...nestedPlugin,
-              __extensions: [
-                ...(nestedPlugin.__extensions as any),
-                () => snapshotModelConfiguration(extendConfig),
-              ],
-            } as any)
-          );
-        }
-        if (nestedPlugin.plugins && nestedPlugin.plugins.length > 0) {
-          const result = extendNestedPlugin(nestedPlugin.plugins);
-
-          if (result.found) {
-            found = true;
-
-            return preserveExtensionArrays(
-              nestedPlugin,
-              recreatePlugin({
-                ...nestedPlugin,
-                plugins: result.plugins,
-              })
-            );
-          }
-        }
-
-        return nestedPlugin;
-      });
-
-      return { found, plugins: updatedPlugins as BasePlugins };
-    };
-
-    const result = extendNestedPlugin(newPlugin.plugins as any);
-    newPlugin.plugins = result.plugins as any;
-
-    // If the plugin wasn't found at any level, add it at the top level
-    if (!result.found) {
-      newPlugin.plugins.push(
-        recreatePlugin({
-          key: p.key,
-          __extensions: [() => snapshotModelConfiguration(extendConfig)],
-        } as any)
-      );
-    }
-
-    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
-  }) as typeof plugin.extendPlugin;
 
   plugin.withComponent = (component) => {
     assertAuthoringOpen('withComponent');

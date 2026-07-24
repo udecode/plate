@@ -83,9 +83,6 @@ noSchemaEditor.read.schema.element(NoSchemaPlugin);
 noSchemaEditor.read.schema.createAndFill(NoSchemaPlugin);
 
 const ConfiguredPropertyPlugin = createBasePlugin({
-  host: {
-    dangerouslyAllowAttributes: ['data-owner'],
-  },
   key: 'configuredProperty',
   options: { prefix: 'configured' },
   schema: ({ options, own, plugins, targetPluginKeys, type }) => {
@@ -254,12 +251,8 @@ const editor = createBaseEditor({
 
 const requirePluginReference = <T extends PluginReference>(plugin: T) => plugin;
 const ReferenceChildPlugin = createBasePlugin({
+  dependencies: [TargetPlugin, ElementPropertyPlugin],
   key: 'schemaReferenceChild',
-  plugins: [TargetPlugin, ElementPropertyPlugin],
-});
-const ReferenceParentPlugin = createBasePlugin({
-  key: 'schemaReferenceParent',
-  plugins: [ReferenceChildPlugin],
 });
 const DependencyInferencePlugin = createBasePlugin({
   key: 'schemaDependencyInference',
@@ -276,24 +269,31 @@ const NestedInferencePlugin = createBasePlugin({
   .extendApi(() => ({ readNestedInference: () => 'nested' as const }))
   .extendTx(() => () => ({ writeNestedInference: () => undefined }));
 export const InferenceTreePlugin = createBasePlugin({
-  dependencies: [DependencyInferencePlugin],
+  dependencies: [DependencyInferencePlugin, NestedInferencePlugin],
   key: 'schemaInferenceTree',
-  plugins: [NestedInferencePlugin],
 });
 const ExplicitReferenceParentPlugin = createBasePlugin<
-  PluginConfig<'explicitSchemaReferenceParent'>
+  PluginConfig<
+    'explicitSchemaReferenceParent',
+    {},
+    {},
+    {},
+    {},
+    {},
+    readonly [typeof TargetPlugin]
+  >
 >({
+  dependencies: [TargetPlugin],
   key: 'explicitSchemaReferenceParent',
-  plugins: [TargetPlugin],
 });
 const exactInferredChildPlugin: typeof TargetPlugin =
-  ReferenceChildPlugin.plugins[0];
+  ReferenceChildPlugin.dependencies[0];
 export const exactInferredDependencyPlugin: typeof DependencyInferencePlugin =
   InferenceTreePlugin.dependencies[0];
 export const exactInferredNestedPlugin: typeof NestedInferencePlugin =
-  InferenceTreePlugin.plugins[0];
+  InferenceTreePlugin.dependencies[1];
 const explicitChildReference: PluginReference =
-  ExplicitReferenceParentPlugin.plugins[0];
+  ExplicitReferenceParentPlugin.dependencies[0];
 const explicitParentAtErasedBoundary: AnyBasePlugin =
   ExplicitReferenceParentPlugin;
 const exactEmptyOptionsAtErasedBoundary: AnyBasePlugin = createBasePlugin<
@@ -304,7 +304,7 @@ const erasedCollectionEditor = createBaseEditor({
   plugins: erasedPluginCollection,
 });
 const nestedReferenceEditor = createBaseEditor({
-  plugins: [ReferenceParentPlugin],
+  plugins: [ReferenceChildPlugin],
 });
 export const inferenceTreeEditor = createBaseEditor({
   plugins: [InferenceTreePlugin],
@@ -374,24 +374,8 @@ requirePluginReference(
   })
 );
 requirePluginReference(TargetPlugin.withComponent(() => null));
-requirePluginReference(ReferenceParentPlugin.configurePlugin(TargetPlugin, {}));
-requirePluginReference(ReferenceParentPlugin.extendPlugin(TargetPlugin, {}));
-
-const ConfiguredReferenceTree = ReferenceParentPlugin.configurePlugin(
-  TargetPlugin,
-  {}
-);
-const ExtendedReferenceTree = ReferenceParentPlugin.extendPlugin(
-  TargetPlugin,
-  {}
-);
-const configuredDeepReference: PluginReference<'schemaTarget'> =
-  ConfiguredReferenceTree.plugins[0].plugins[0];
-const extendedDeepReference: PluginReference<'schemaTarget'> =
-  ExtendedReferenceTree.plugins[0].plugins[0];
-
 const PlateTargetPlugin = toPlatePlugin(TargetPlugin);
-const PlateReferenceParentPlugin = toPlatePlugin(ReferenceParentPlugin);
+const PlateReferenceChildPlugin = toPlatePlugin(ReferenceChildPlugin);
 const ExtendedSchemaTargetPlugin = TargetPlugin.extendApi(() => ({
   schemaModelProof: () => true,
 })).extendExtension({
@@ -441,12 +425,7 @@ requirePluginReference(
   })
 );
 requirePluginReference(PlateTargetPlugin.withComponent(() => null));
-requirePluginReference(
-  PlateReferenceParentPlugin.configurePlugin(TargetPlugin, {})
-);
-requirePluginReference(
-  PlateReferenceParentPlugin.extendPlugin(TargetPlugin, {})
-);
+requirePluginReference(PlateReferenceChildPlugin);
 requirePluginReference(editor.getPlugin(TargetPlugin));
 requirePluginReference(editor.plugin(TargetPlugin).plugin);
 
@@ -599,11 +578,9 @@ createBasePlugin({
 void configuredPrefix;
 void configuredProperty;
 void configuredTargetPluginKey;
-void configuredDeepReference;
 void exactInferredChildPlugin;
 void explicitChildReference;
 void extendedSchemaTargetType;
-void extendedDeepReference;
 void handledTarget;
 void plateExtendedSchemaTargetType;
 void targetType;

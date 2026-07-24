@@ -17,6 +17,7 @@ export const TableCellHeaderPlugin = toPlatePlugin(BaseTableCellHeaderPlugin);
 
 /** Enables support for tables with React-specific features. */
 export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
+  dependencies: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
   handlers: {
     onCopy: ({ editor, event }) => {
       if (
@@ -229,5 +230,4 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       }
     },
   },
-  plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
 });

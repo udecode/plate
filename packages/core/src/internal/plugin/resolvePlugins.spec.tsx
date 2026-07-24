@@ -46,20 +46,20 @@ describe('resolvePlugins', () => {
     ).toEqual(['b', 'c', 'a']);
   });
 
-  it('handle nested plugins', () => {
+  it('installs required dependencies', () => {
     const pluginKeys = getSortedKeys([
       createBasePlugin({
-        key: 'parent',
-        plugins: [
-          createBasePlugin({ key: 'child1' }),
-          createBasePlugin({ key: 'child2' }),
+        dependencies: [
+          createBasePlugin({ key: 'dependency1' }),
+          createBasePlugin({ key: 'dependency2' }),
         ],
+        key: 'parent',
       }),
     ]);
 
     expect(pluginKeys).toContain('parent');
-    expect(pluginKeys).toContain('child1');
-    expect(pluginKeys).toContain('child2');
+    expect(pluginKeys).toContain('dependency1');
+    expect(pluginKeys).toContain('dependency2');
   });
 
   it('does not include disabled plugins', () => {
@@ -70,25 +70,6 @@ describe('resolvePlugins', () => {
 
     expect(pluginKeys).toContain('enabled');
     expect(pluginKeys).not.toContain('disabled');
-  });
-
-  it('apply overrides correctly', () => {
-    const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'a',
-          type: 'original',
-          override: {
-            plugins: {
-              b: { type: 'overridden' },
-            },
-          },
-        }),
-        createBasePlugin({ key: 'b', type: 'original' }),
-      ],
-    });
-
-    expect(getPlateRuntime(editor).plugins.b.type).toBe('overridden');
   });
 
   it('merge all plugin APIs into editor.api', () => {
@@ -143,7 +124,7 @@ describe('resolvePlugins', () => {
             schema: {
               mark: property.boolean({ default: false, omitDefault: true }),
             },
-            transformInitialValue: () => [],
+            transformInitialValue: ({ value }) => value,
             render: {
               isDecoration: false,
               leafProps: { 'data-leaf': 'x' } as any,
@@ -433,7 +414,8 @@ describe('resolvePlugins', () => {
     });
 
     expect(editor.plugin({ key: 'pluginApi' }).api.run()).toBe('run');
-    expect(Reflect.get(editor.api, 'pluginApi')).toBeUndefined();
+    expect(editor.api.pluginApi.run()).toBe('run');
+    expect(editor.plugin({ key: 'pluginApi' }).api).toBe(editor.api.pluginApi);
 
     expect(() => resolvePlugins(editor, [])).toThrow(
       'Plate plugins are fixed after model publication. Configure plugin options before creating the editor.'
@@ -500,7 +482,7 @@ describe('resolveAndSortPlugins', () => {
     ).toBe('configured');
   });
 
-  it('keeps editor extensions from distinct same-key descriptors', () => {
+  it('whole-replaces a dependency default without leaking its extensions', () => {
     const dependency = createBasePlugin({
       key: 'extendedDependency',
     }).extendExtension({
@@ -527,7 +509,7 @@ describe('resolveAndSortPlugins', () => {
       plugins: [dependent, explicitDependency],
     });
 
-    expect(editor.api.dependencyExtension.read()).toBe('dependency');
+    expect((editor.api as any).dependencyExtension).toBeUndefined();
     expect(editor.api.explicitExtension.read()).toBe('explicit');
   });
 
@@ -565,17 +547,16 @@ describe('resolveAndSortPlugins', () => {
     }
   });
 
-  it('rejects a disabled required dependency after overrides', () => {
+  it('rejects an explicitly disabled required dependency', () => {
     const dependency = createBasePlugin({ key: 'dependency' });
     const dependent = createBasePlugin({
       dependencies: [dependency],
       key: 'dependent',
-      override: { enabled: { dependency: false } },
     });
 
-    expect(() => getSortedKeys([dependent])).toThrow(
-      'Plugin "dependent" depends on disabled plugin "dependency"'
-    );
+    expect(() =>
+      getSortedKeys([dependent, dependency.configure({ enabled: false })])
+    ).toThrow(/dependent.*requires disabled plugin "dependency"/);
   });
 
   it('omits dependencies owned only by a disabled dependent', () => {
@@ -606,78 +587,12 @@ describe('resolveAndSortPlugins', () => {
     dependent.dependencies = ['missing'] as never;
 
     expect(() => getSortedKeys([dependent])).toThrow(
-      'Pass the plugin object, not its key.'
+      'Pass a plugin descriptor, not its key.'
     );
   });
 });
 
 describe('applyPluginOverrides', () => {
-  it('apply overrides correctly', () => {
-    const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'a',
-          type: 'originalA',
-          override: {
-            plugins: {
-              b: { type: 'overriddenB' },
-            },
-          },
-        }),
-        createBasePlugin({ key: 'b', type: 'originalB' }),
-      ],
-    });
-
-    expect(getPlateRuntime(editor).plugins.a.type).toBe('originalA');
-    expect(getPlateRuntime(editor).plugins.b.type).toBe('overriddenB');
-  });
-
-  it('handle nested overrides', () => {
-    const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'parent',
-          override: {
-            plugins: {
-              child: { type: 'overriddenChild' },
-            },
-          },
-          plugins: [createBasePlugin({ key: 'child', type: 'originalChild' })],
-        }),
-      ],
-    });
-
-    expect(getPlateRuntime(editor).plugins.child.type).toBe('overriddenChild');
-  });
-
-  it('apply multiple overrides in correct order', () => {
-    const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'a',
-          type: 'originalA',
-          override: {
-            plugins: {
-              c: { type: 'overriddenByA' },
-            },
-          },
-        }),
-        createBasePlugin({
-          key: 'b',
-          type: 'originalB',
-          override: {
-            plugins: {
-              c: { type: 'overriddenByB' },
-            },
-          },
-        }),
-        createBasePlugin({ key: 'c', type: 'originalC' }),
-      ],
-    });
-
-    expect(getPlateRuntime(editor).plugins.c.type).toBe('overriddenByB');
-  });
-
   it('override components based on priority only if target plugin has a component', () => {
     const OriginalComponent = () => null;
     const OverrideComponent = () => null;
@@ -749,12 +664,218 @@ describe('applyPluginOverrides', () => {
     );
   });
 
+  describe('weak plugin overrides', () => {
+    it('ignores missing targets without installing them', () => {
+      const Contributor = createBasePlugin({
+        key: 'missingTargetContributor',
+        override: {
+          plugins: {
+            missingTarget: {
+              dependencies: [],
+              enabled: false,
+            } as any,
+          },
+        },
+      });
+      const editor = createBaseEditor({ plugins: [Contributor] });
+
+      expect(
+        getPlateRuntime(editor).pluginList.map((plugin) => plugin.key)
+      ).not.toContain('missingTarget');
+    });
+
+    it('keeps direct target configuration terminal and executes it once', () => {
+      let calls = 0;
+      const Target = createBasePlugin({
+        key: 'strongTarget',
+        options: {
+          peerOnly: 'base',
+          source: 'base',
+        },
+      }).configure(() => {
+        calls++;
+
+        return {
+          options: {
+            source: 'strong',
+          },
+        };
+      });
+      const Contributor = createBasePlugin({
+        key: 'strongTargetContributor',
+        override: {
+          plugins: {
+            [Target.key]: {
+              options: {
+                peerOnly: 'weak',
+                source: 'weak',
+              },
+            },
+          },
+        },
+      });
+      const editor = createBaseEditor({
+        plugins: [Contributor, Target],
+      });
+
+      expect(editor.getPlugin(Target).options).toEqual({
+        peerOnly: 'weak',
+        source: 'strong',
+      });
+      expect(calls).toBe(1);
+    });
+
+    it('uses higher priority, then earlier source order for overlapping fields', () => {
+      const Target = createBasePlugin({
+        key: 'orderedWeakTarget',
+        options: { priorityWinner: 'base', sourceWinner: 'base' },
+      });
+      const Low = createBasePlugin({
+        key: 'lowWeakContributor',
+        override: {
+          plugins: {
+            [Target.key]: {
+              options: { priorityWinner: 'low' },
+            },
+          },
+        },
+        priority: 1,
+      });
+      const High = createBasePlugin({
+        key: 'highWeakContributor',
+        override: {
+          plugins: {
+            [Target.key]: {
+              options: { priorityWinner: 'high' },
+            },
+          },
+        },
+        priority: 2,
+      });
+      const First = createBasePlugin({
+        key: 'firstWeakContributor',
+        override: {
+          plugins: {
+            [Target.key]: {
+              options: { sourceWinner: 'first' },
+            },
+          },
+        },
+        priority: 3,
+      });
+      const Second = createBasePlugin({
+        key: 'secondWeakContributor',
+        override: {
+          plugins: {
+            [Target.key]: {
+              options: { sourceWinner: 'second' },
+            },
+          },
+        },
+        priority: 3,
+      });
+      const editor = createBaseEditor({
+        plugins: [Low, High, First, Second, Target],
+      });
+
+      expect(editor.getPlugin(Target).options).toEqual({
+        priorityWinner: 'high',
+        sourceWinner: 'first',
+      });
+    });
+
+    it('skips disabled contributors', () => {
+      const Target = createBasePlugin({
+        key: 'disabledContributorTarget',
+        options: { source: 'target' },
+      });
+      const Contributor = createBasePlugin({
+        enabled: false,
+        key: 'disabledWeakContributor',
+        override: {
+          plugins: {
+            [Target.key]: {
+              options: { source: 'disabled contributor' },
+            },
+          },
+        },
+      });
+      const editor = createBaseEditor({
+        plugins: [Contributor, Target],
+      });
+
+      expect(editor.getPlugin(Target).options.source).toBe('target');
+    });
+
+    it('rejects topology fields even through erased input', () => {
+      const Target = createBasePlugin({ key: 'topologyTarget' });
+      const Contributor = createBasePlugin({
+        key: 'topologyContributor',
+        override: {
+          plugins: {
+            [Target.key]: {
+              dependencies: [],
+            } as any,
+          },
+        },
+      });
+
+      expect(() =>
+        createBaseEditor({ plugins: [Contributor, Target] })
+      ).toThrow(
+        'weak override for "topologyTarget" cannot define "dependencies"'
+      );
+    });
+
+    it('cannot disable a required dependency', () => {
+      const Dependency = createBasePlugin({ key: 'weakRequiredDependency' });
+      const Dependent = createBasePlugin({
+        dependencies: [Dependency],
+        key: 'weakRequiredDependent',
+      });
+      const Contributor = createBasePlugin({
+        key: 'weakRequiredContributor',
+        override: {
+          plugins: {
+            [Dependency.key]: { enabled: false },
+          },
+        },
+      });
+
+      expect(() =>
+        createBaseEditor({ plugins: [Contributor, Dependent] })
+      ).toThrow(
+        /weakRequiredDependent.*requires disabled plugin "weakRequiredDependency"/
+      );
+    });
+
+    it('cannot beat an explicit target enablement', () => {
+      const Target = createBasePlugin({
+        enabled: false,
+        key: 'strongEnabledTarget',
+      }).configure({ enabled: true });
+      const Contributor = createBasePlugin({
+        key: 'strongEnabledContributor',
+        override: {
+          plugins: {
+            [Target.key]: { enabled: false },
+          },
+        },
+      });
+      const editor = createBaseEditor({
+        plugins: [Contributor, Target],
+      });
+
+      expect(editor.getPlugin(Target).enabled).toBe(true);
+    });
+  });
+
   describe('targetPluginKeys', () => {
     it('preserves __proto__ as an own null-prototype injection key', () => {
       const Target = createBasePlugin({ key: '__proto__' });
       const Injector = createBasePlugin({
         inject: {
-          targetPluginToInject: () => ({
+          targetParserToInject: () => ({
             parser: { format: 'application/x-proto-target' },
           }),
         },
@@ -762,7 +883,7 @@ describe('applyPluginOverrides', () => {
         targetPluginKeys: [Target.key],
       });
       const editor = createBaseEditor({ plugins: [Target, Injector] });
-      const overlays = editor.getPlugin(Injector).inject!.plugins!;
+      const overlays = editor.getPlugin(Injector).inject!.parsers!;
       const [projection] = getInjectedParserPluginProjections(
         editor,
         editor.getPlugin(Target)
@@ -781,7 +902,7 @@ describe('applyPluginOverrides', () => {
         targetPluginKeys: ['plugin1', 'missingPlugin', 'plugin2'],
         key: 'testPlugin',
         inject: {
-          plugins: {
+          parsers: {
             plugin1: {
               parsers: {
                 html: {
@@ -801,7 +922,7 @@ describe('applyPluginOverrides', () => {
               },
             },
           },
-          targetPluginToInject: ({ targetPlugin: _targetPlugin }) => ({
+          targetParserToInject: ({ targetPlugin: _targetPlugin }) => ({
             parsers: {
               html: {
                 deserializer: {
@@ -821,72 +942,40 @@ describe('applyPluginOverrides', () => {
       });
       const resolvedPlugin = editor.getPlugin(Plugin);
 
-      expect(resolvedPlugin.inject?.plugins).toBeDefined();
-      expect(Object.keys(resolvedPlugin.inject!.plugins!)).toEqual([
+      expect(resolvedPlugin.inject?.parsers).toBeDefined();
+      expect(Object.keys(resolvedPlugin.inject!.parsers!)).toEqual([
         'plugin1',
         'plugin3',
         'plugin2',
       ]);
-      expect(resolvedPlugin.inject!.plugins!.missingPlugin).toBeUndefined();
+      expect(resolvedPlugin.inject!.parsers!.missingPlugin).toBeUndefined();
 
       // Check merged result for plugin1
-      expect(resolvedPlugin.inject!.plugins!.plugin1).toHaveProperty(
+      expect(resolvedPlugin.inject!.parsers!.plugin1).toHaveProperty(
         'parsers.html.deserializer.parse'
       );
       expect(
-        resolvedPlugin.inject!.plugins!.plugin1.parsers?.html?.deserializer!
+        resolvedPlugin.inject!.parsers!.plugin1.parsers?.html?.deserializer!
           .parse
       ).toBeDefined();
 
       // Check injected result for plugin2
-      expect(resolvedPlugin.inject!.plugins!.plugin2).toHaveProperty(
+      expect(resolvedPlugin.inject!.parsers!.plugin2).toHaveProperty(
         'parsers.html.deserializer.parse'
       );
       expect(
-        resolvedPlugin.inject!.plugins!.plugin2.parsers?.html?.deserializer!
+        resolvedPlugin.inject!.parsers!.plugin2.parsers?.html?.deserializer!
           .parse
       ).toBeDefined();
 
       // Check existing result for plugin3 is preserved
-      expect(resolvedPlugin.inject!.plugins!.plugin3).toHaveProperty(
+      expect(resolvedPlugin.inject!.parsers!.plugin3).toHaveProperty(
         'parsers.html.deserializer.parse'
       );
       expect(
-        resolvedPlugin.inject!.plugins!.plugin3.parsers?.html?.deserializer!
+        resolvedPlugin.inject!.parsers!.plugin3.parsers?.html?.deserializer!
           .parse
       ).toBeDefined();
-    });
-  });
-
-  it('replace plugins with the same key and merge their APIs', () => {
-    const originalLogger = mock();
-    const replacementLogger = mock();
-
-    const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'a',
-          api: { method: originalLogger },
-        }),
-        // This should replace the previous plugin
-        createBasePlugin({
-          key: 'a',
-          api: { method: replacementLogger },
-        }),
-      ],
-    });
-
-    editor.api.method({
-      level: 'debug',
-      message: 'Test message',
-      type: 'TEST',
-    });
-
-    expect(originalLogger).not.toHaveBeenCalled();
-    expect(replacementLogger).toHaveBeenCalledWith({
-      level: 'debug',
-      message: 'Test message',
-      type: 'TEST',
     });
   });
 
@@ -910,40 +999,6 @@ describe('applyPluginOverrides', () => {
       'TEST',
       undefined
     );
-  });
-
-  it.each([
-    {
-      name: 'overrides.enabled',
-      override: {
-        enabled: {
-          b: false,
-        },
-      },
-    },
-    {
-      name: 'overrides.plugins',
-      override: {
-        plugins: {
-          b: {
-            enabled: false,
-          },
-        },
-      },
-    },
-  ])('does not include plugins disabled through $name', ({ override }) => {
-    const editor = createBaseEditor({
-      override,
-      plugins: [
-        createBasePlugin({ key: 'a' }),
-        createBasePlugin({ key: 'b' }),
-        createBasePlugin({ key: 'c' }),
-      ],
-    });
-
-    expect(getPlateRuntime(editor).plugins).toHaveProperty('a');
-    expect(getPlateRuntime(editor).plugins).not.toHaveProperty('b');
-    expect(getPlateRuntime(editor).plugins).toHaveProperty('c');
   });
 });
 
@@ -1211,65 +1266,5 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     expect(editor.plugin(plugin).getOption('value')).toBe('runtime');
     expect(getPlateRuntime(editor).plugins.test.options.value).toBe('modified');
     expect(plugin.options.value).toBe('original');
-  });
-});
-
-describe('resolvePlugins with keyless plugins', () => {
-  it('does not add a plugin without a key to the editor', () => {
-    const plugins = [
-      createBasePlugin({ type: 'no-key-plugin' } as any), // Simulate a plugin without a key
-      createBasePlugin({ key: 'keyedPlugin', type: 'keyed-type' }),
-    ];
-    const editor = createBaseEditor({
-      plugins: plugins as any,
-    });
-
-    expect(getPlateRuntime(editor).pluginList.map((p) => p.key)).not.toContain(
-      ''
-    );
-    expect(getPlateRuntime(editor).plugins.keyedPlugin).toBeDefined();
-    expect(
-      getPlateRuntime(editor).pluginList.some((p) => p.key === 'keyedPlugin')
-    ).toBe(true);
-    // Exact count depends on core plugins, but it should contain keyedPlugin and not the keyless one.
-  });
-
-  it('process child plugins of a keyless plugin', () => {
-    const plugins = [
-      createBasePlugin({
-        // No key for the parent
-        type: 'parent-no-key',
-        plugins: [
-          createBasePlugin({
-            key: 'childKey1',
-            type: 'child1-type',
-            priority: 2,
-          }),
-          createBasePlugin({
-            key: 'childKey2',
-            type: 'child2-type',
-            priority: 1,
-          }),
-        ],
-      } as any),
-      createBasePlugin({
-        key: 'anotherPlugin',
-        type: 'another-type',
-        priority: 3,
-      }),
-    ];
-    const editor = createBaseEditor({
-      plugins: plugins as any,
-    });
-
-    expect(getPlateRuntime(editor).plugins['parent-no-key']).toBeUndefined();
-    expect(getPlateRuntime(editor).plugins.childKey1).toBeDefined();
-    expect(getPlateRuntime(editor).plugins.childKey2).toBeDefined();
-    expect(getPlateRuntime(editor).plugins.anotherPlugin).toBeDefined();
-
-    const pluginKeys = getPlateRuntime(editor).pluginList.map((p) => p.key);
-    expect(pluginKeys).toContain('childKey1');
-    expect(pluginKeys).toContain('childKey2');
-    expect(pluginKeys).toContain('anotherPlugin');
   });
 });

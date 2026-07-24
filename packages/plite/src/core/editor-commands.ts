@@ -12,7 +12,13 @@ import type {
   Point,
   Range,
 } from '../interfaces';
-import { NodeApi, PathApi, PointApi, RangeApi } from '../interfaces';
+import {
+  NodeApi,
+  PathApi,
+  PointApi,
+  RangeApi,
+  SelectionApi,
+} from '../interfaces';
 import type {
   NodeInsertNodesOptions,
   NodeRemoveNodesOptions,
@@ -516,7 +522,9 @@ export const editorCommands: EditorCommands = Object.freeze({
   delete: defineCommand<DeleteCommand>('content.delete', {
     build: ({ input, state }) => {
       const boundarySpec =
-        input.direction === 'backward' && input.unit === 'character'
+        !SelectionApi.isNode(state.selection()) &&
+        input.direction === 'backward' &&
+        input.unit === 'character'
           ? (getLeadingInlineVoidBoundaryDeleteSpec(state) ??
             getBlockVoidBoundaryDeleteSpec(state))
           : null;

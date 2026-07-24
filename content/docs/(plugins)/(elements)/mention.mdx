@@ -87,7 +87,7 @@ npm install @platejs/mention
 
 ### Add Plugins
 
-Configure the mention plugin with the trigger behavior and render both node types.
+`MentionPlugin` installs `MentionInputPlugin` as a required dependency. Add the complete input descriptor beside it when you need to replace the dependency's render component.
 
 ```tsx
 import { MentionInputPlugin, MentionPlugin } from '@platejs/mention/react';
@@ -203,10 +203,10 @@ Deserialization supports link-style mentions and bare `@alice` text. Normal link
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseMentionPlugin` | `@platejs/mention` | Headless inline markable void mention plugin with trigger-combobox behavior. |
-| `BaseMentionInputPlugin` | `@platejs/mention` | Inline void input node inserted while the combobox is active. |
-| `MentionPlugin` | `@platejs/mention/react` | React mention plugin. |
-| `MentionInputPlugin` | `@platejs/mention/react` | React mention input plugin. |
+| `BaseMentionPlugin` | `@platejs/mention` | Headless inline markable void mention plugin with trigger-combobox behavior and a required `BaseMentionInputPlugin` dependency. |
+| `BaseMentionInputPlugin` | `@platejs/mention` | Required inline void input node inserted while the combobox is active. |
+| `MentionPlugin` | `@platejs/mention/react` | React mention plugin with a required `MentionInputPlugin` dependency. |
+| `MentionInputPlugin` | `@platejs/mention/react` | React mention input dependency; add it directly to replace its component or configuration. |
 | `editor.update((tx) => tx.mention.insert({ key, value }))` | `BaseMentionPlugin` transaction | Inserts the mention node at the current selection. |
 | `getMentionOnSelectItem({ key? })` | `@platejs/mention` | Returns an item handler for mention combobox selection. |
 | `useComboboxInput` | `@platejs/combobox/react` | Handles focus, cancellation, arrow/backspace/escape behavior, and undo/redo forwarding for custom input UI. |

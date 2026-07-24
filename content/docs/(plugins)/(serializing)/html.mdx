@@ -5,7 +5,7 @@ toc: true
 ---
 
 Use `renderStaticHtml` to render a configured static Plate tree to HTML. Use
-`editor.plugin(HtmlPlugin).api.deserialize(...)` to parse HTML into Plate
+`editor.api.html.deserialize(...)` to parse HTML into Plate
 content. Static React rendering and semantic HTML parsing have different
 owners, so this guide treats each direction separately.
 
@@ -69,8 +69,8 @@ Provide a server-side editor instance and configure your Plate components during
 ```tsx title="lib/generate-html.ts"
 import { createBaseEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static'; // Static import
-// Import base plugins (NOT from /react paths)
-import { BaseHeadingPlugin } from '@platejs/basic-nodes';
+// Import a server-safe registry kit (NOT from /react package paths)
+import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
 // Import your STATIC components for rendering
 import { ParagraphElementStatic } from '@/components/ui/paragraph-node-static';
 import { HeadingElementStatic } from '@/components/ui/heading-node-static';
@@ -87,7 +87,7 @@ const components = {
 // Create a server-side editor instance with components
 const editor = createBaseEditor({
   plugins: [
-    BaseHeadingPlugin,   // Base plugin for headings
+    ...BaseBasicBlocksKit, // Paragraph, headings, blockquote, and horizontal rule
     // ... add all other base plugins relevant to your content
   ],
   components,
@@ -183,13 +183,13 @@ Use the `HtmlPlugin` API within a client-side Plate editor context.
 import { HtmlPlugin } from 'platejs';
 import { usePlateEditor } from 'platejs/react';
 // Import ALL Plate plugins needed to represent the HTML content
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
 // ... and so on for bold, italic, tables, lists, etc.
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   const editor = usePlateEditor({
     plugins: [
-      HeadingPlugin,     // For <h1>, <h2>, etc.
+      ...BasicBlocksKit, // Paragraph, headings, blockquote, and horizontal rule
       // ... include all plugins corresponding to the HTML you expect to parse
     ],
   });
@@ -209,7 +209,7 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 ```
 
 <Callout type="warning" title="Client-Side Operation">
-  HTML deserialization through `editor.plugin(HtmlPlugin).api.deserialize` is
+  HTML deserialization through `editor.api.html.deserialize` is
   typically a client-side operation because it uses the compiled Plate plugin
   model.
 </Callout>
@@ -229,7 +229,7 @@ Each Plate plugin can define rules for how it interprets specific HTML tags, sty
 | `<code>` (not in `<pre>`), `font-family: Consolas`         | [`CodePlugin`](/docs/code)            | Converts to `code: true` mark (inline code).                             |
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | Converts to `kbd: true` mark.                                            |
 | `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-blocks)       | Converts to paragraph element.                                           |
-| `<h1>` - `<h6>`                                            | [`HeadingPlugin`](/docs/heading)         | Converts to corresponding heading elements (`h1` - `h6`).                |
+| `<h1>` - `<h6>`                                            | [`H1Plugin`–`H6Plugin`](/docs/heading)    | Converts to corresponding heading elements (`h1` - `h6`).                |
 | `<ul>`                                                     | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to unordered list (`ul` type). Items become `li`.               |
 | `<ol>`                                                     | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to ordered list (`ol` type). Items become `li`.                 |
 | `<li>` (within `<ul>` or `<ol>`)                           | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to list item (`li` type), with `lic` (list item content) child. |
@@ -392,7 +392,7 @@ Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML
 
 ---
 
-### `editor.plugin(HtmlPlugin).api.deserialize(options)`
+### `editor.api.html.deserialize(options)`
 
 Parses an HTML string or `HTMLElement` into a Plate `Value` (an array of `Descendant` nodes). This is typically used on the client-side with a fully configured Plate editor.
 

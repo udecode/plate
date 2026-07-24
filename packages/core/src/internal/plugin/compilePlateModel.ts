@@ -1,6 +1,7 @@
 import {
   type Editor,
   type EditorSchemaContribution,
+  type SchemaContentRootContribution,
   type SchemaElementPropertyOptions,
   type SchemaContentOptions,
   type SchemaElement,
@@ -43,6 +44,7 @@ export type CompiledPlateModelBinding = Readonly<{
   isDecoration: boolean;
   kind: 'element' | 'mark' | 'none';
   pluginKey: string;
+  properties: readonly SchemaProperty[];
   propertyIds: readonly string[];
   referencedPluginKeys: readonly string[];
   textPropertyId: string | null;
@@ -184,26 +186,28 @@ export const getResolvedPluginTargetTypes = (
   plugin: Pick<AnyBasePlugin, 'key' | 'targetPluginKeys'>
 ) => getResolvedPluginTargetBinding(editor, plugin).types;
 
-const applyResolvedTargetInjection = (
+const applyResolvedTargetParserInjection = (
   editor: BaseEditor,
   plugin: AnyBasePlugin
 ) => {
-  const targetPluginToInject = plugin.inject?.targetPluginToInject;
+  const targetParserToInject = plugin.inject?.targetParserToInject;
 
-  if (!targetPluginToInject) return;
+  if (!targetParserToInject) return;
   const binding = getResolvedPluginTargetBinding(editor, plugin);
 
   if (binding.keys.length === 0) return;
-  const injectedPlugins: Record<string, Partial<AnyBasePlugin>> = Object.create(
-    null
-  );
+  type ParserProjectionMap = NonNullable<
+    NonNullable<AnyBasePlugin['inject']>['parsers']
+  >;
+  const injectedParsers: Record<string, ParserProjectionMap[string]> =
+    Object.create(null);
 
   binding.keys.forEach((targetPlugin) => {
-    injectedPlugins[targetPlugin] = withResolvingPlatePlugin(
+    injectedParsers[targetPlugin] = withResolvingPlatePlugin(
       editor,
       plugin,
       () =>
-        targetPluginToInject({
+        targetParserToInject({
           ...getEditorPlugin(editor, plugin),
           targetPlugin,
         })
@@ -211,9 +215,9 @@ const applyResolvedTargetInjection = (
   });
 
   plugin.inject = plugin.inject || {};
-  const overlays: Record<string, Partial<AnyBasePlugin>> = Object.create(null);
+  const overlays: ParserProjectionMap = Object.create(null);
 
-  for (const source of [plugin.inject.plugins, injectedPlugins]) {
+  for (const source of [plugin.inject.parsers, injectedParsers]) {
     if (!source) continue;
 
     for (const key of Object.keys(source)) {
@@ -225,7 +229,7 @@ const applyResolvedTargetInjection = (
         : mergePlugins({}, overlay);
     }
   }
-  plugin.inject.plugins = overlays;
+  plugin.inject.parsers = overlays;
 };
 
 const assertType = (plugin: AnyBasePlugin) => {
@@ -348,6 +352,13 @@ const evaluateDeclaration = <C extends AnyPluginConfig>(
     },
   });
   const own: PluginSchemaOwn = Object.freeze({
+    contentRoot: (content, options) =>
+      Object.freeze({
+        content,
+        ownership: options.ownership,
+        slot: plugin.type,
+        target: options.target,
+      }),
     elementProperty: (value, options: SchemaElementPropertyOptions) =>
       schema.elementProperty(plugin.type, value, options),
     textProperty: (value, options?: SchemaTextPropertyOptions) =>
@@ -390,7 +401,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
     compileResolvedPluginTargetBinding(editor, plugin);
   });
   pluginList.forEach((plugin) => {
-    applyResolvedTargetInjection(editor, plugin);
+    applyResolvedTargetParserInjection(editor, plugin);
   });
   pluginList.forEach((plugin) => {
     declarations.set(
@@ -401,6 +412,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
 
   const elements: Record<string, SchemaElement> = Object.create(null);
   const bindingsByElementType = new Map<string, string>();
+  const contentRoots: SchemaContentRootContribution[] = [];
   const properties: SchemaProperty[] = [];
   const bindings = pluginList.map((plugin) => {
     const declaration = declarations.get(plugin.key) ?? null;
@@ -424,17 +436,21 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
     const declaredProperties = Object.freeze([
       ...(declaration?.properties ?? []),
     ]);
+    const declaredContentRoots = Object.freeze([
+      ...(declaration?.contentRoots ?? []),
+    ]);
     const elementPropertyKeys = Object.freeze(
       Object.keys(element?.properties ?? {})
     );
-    const elementPropertyIds = Object.freeze(
-      elementPropertyKeys.map((key) =>
-        getCompiledSchemaPropertyId({
-          key,
-          placement: 'element',
+    const elementProperties = Object.freeze(
+      Object.entries(element?.properties ?? {}).map(([key, value]) =>
+        schema.elementProperty(key, value, {
           target: Object.freeze({ kind: 'type', type: plugin.type }),
         })
       )
+    );
+    const elementPropertyIds = Object.freeze(
+      elementProperties.map(getCompiledSchemaPropertyId)
     );
     let textProperty: SchemaProperty | null = null;
 
@@ -473,6 +489,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
       properties.push(textProperty);
     }
     properties.push(...declaredProperties);
+    contentRoots.push(...declaredContentRoots);
 
     return Object.freeze({
       elementPropertyKeys: Object.freeze([
@@ -487,6 +504,11 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
       isDecoration: plugin.render.isDecoration ?? true,
       kind: element ? 'element' : mark ? 'mark' : 'none',
       pluginKey: plugin.key,
+      properties: Object.freeze([
+        ...elementProperties,
+        ...declaredProperties,
+        ...(textProperty ? [textProperty] : []),
+      ]),
       propertyIds: Object.freeze([
         ...elementPropertyIds,
         ...declaredProperties.map((property) =>
@@ -537,6 +559,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
     byKey: Object.freeze(byKey),
     byType: Object.freeze(byType),
     contribution: Object.freeze({
+      contentRoots: Object.freeze(contentRoots),
       elements: Object.freeze(elements),
       groups: Object.freeze({
         [PLATE_BLOCK_CONTENT_SCHEMA_GROUP]: Object.freeze({}),

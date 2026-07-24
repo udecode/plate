@@ -21,7 +21,6 @@ type PublicPackageNamedExports = [
   typeof import('@platejs/plite').createEditorRuntime,
   typeof import('@platejs/plite').ContentSlice,
   typeof import('@platejs/plite').defineEditorSchema,
-  typeof import('@platejs/plite').definePropertyPolicy,
   typeof import('@platejs/plite').property,
   typeof import('@platejs/plite').schema,
   typeof import('@platejs/plite').target,
@@ -106,7 +105,7 @@ type PublicPackageNamedTypeExports = [
   import('@platejs/plite').DocumentChange,
   import('@platejs/plite').Path,
   import('@platejs/plite').Point,
-  import('@platejs/plite').PropertyPolicyInput<number>,
+  import('@platejs/plite').PropertyValidation<number>,
   import('@platejs/plite').Range,
   import('@platejs/plite').Text,
   import('@platejs/plite').Value,
@@ -196,7 +195,9 @@ type PublicUnknownPredicateInputs = [
   ExpectTrue<
     IsUnknownPredicateInput<
       FirstArgument<
-        import('@platejs/plite').PropertyPolicyInput<number>['validate']
+        NonNullable<
+          import('@platejs/plite').PropertyValidation<number>['validate']
+        >
       >
     >
   >,

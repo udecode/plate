@@ -70,6 +70,8 @@ npm install @platejs/table
 
 在创建编辑器时将 `TablePlugin` 加入插件数组：
 
+`TablePlugin` 会把 `TableRowPlugin`、`TableCellPlugin` 和 `TableCellHeaderPlugin` 作为必需的结构依赖安装。
+
 ```tsx
 import { TablePlugin } from '@platejs/table/react';
 import { createPlateEditor } from 'platejs/react';
@@ -84,7 +86,7 @@ const editor = createPlateEditor({
 
 ### 插件配置
 
-使用自定义组件和选项配置表格插件：
+配置表格主插件；需要替换依赖的组件或配置时，再加入完整的行或单元格描述符：
 
 ```tsx
 import {
@@ -151,6 +153,8 @@ const editor = createPlateEditor({
 
 ### TablePlugin
 
+负责表格结构和行为，并要求安装行、单元格和表头单元格插件。
+
 <API name="TablePlugin">
 <APIOptions>
   <APIItem name="disableMerge" type="boolean" optional>
@@ -177,19 +181,19 @@ const editor = createPlateEditor({
 
 ### TableRowPlugin
 
-表格行插件
+必需的表格行结构插件。仅在替换其默认配置或组件时直接加入。
 
 ### TableCellPlugin
 
-表格单元格插件
+必需的表格单元格结构插件。仅在替换其默认配置或组件时直接加入。
 
 ### TableCellHeaderPlugin
 
-表头单元格插件
+必需的表头单元格结构插件。仅在替换其默认配置或组件时直接加入。
 
 ## API 参考
 
-### editor.plugin(TablePlugin).api.create
+### editor.api.table.create
 
 <API name="create">
 <APIParameters>
@@ -218,7 +222,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.createCell
+### editor.api.table.createCell
 
 创建表格的空单元格节点
 
@@ -243,7 +247,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.createRow
+### editor.api.table.createRow
 
 创建具有指定列数的空行节点
 
@@ -265,7 +269,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getCellBorders
+### editor.api.table.getCellBorders
 
 获取表格单元格的边框样式，处理首行和首列单元格的特殊情况
 
@@ -314,7 +318,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getCellChildren
+### editor.api.table.getCellChildren
 
 获取表格单元格的子元素
 
@@ -332,7 +336,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getCellSize
+### editor.api.table.getCellSize
 
 获取表格单元格的宽度和最小高度，考虑列跨度和列宽设置
 
@@ -356,7 +360,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getColSpan
+### editor.api.table.getColSpan
 
 获取表格单元格的列跨度
 
@@ -375,7 +379,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>  
 
-### editor.plugin(TablePlugin).api.getRowSpan
+### editor.api.table.getRowSpan
 
 获取表格单元格的行跨度
 
@@ -394,7 +398,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getCellTypes
+### editor.api.table.getCellTypes
 
 获取插件单元格类型
 
@@ -408,7 +412,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getNextCell
+### editor.api.table.getNextCell
 
 获取表格中的下一个单元格
 <API name="getNextCell">
@@ -431,7 +435,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getPreviousCell
+### editor.api.table.getPreviousCell
 
 获取表格中的上一个单元格
 
@@ -455,7 +459,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getColumnCount
+### editor.api.table.getColumnCount
 
 获取表格列数
 
@@ -473,7 +477,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getColumnIndex
+### editor.api.table.getColumnIndex
 
 获取单元格在表格中的列索引
 
@@ -491,7 +495,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getEntries
+### editor.api.table.getEntries
 
 根据当前选区或指定位置获取表格、行和单元格的节点 entry
 
@@ -516,7 +520,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getGridAbove
+### editor.api.table.getGridAbove
 
 根据指定格式（表格或单元格）获取锚点和焦点位置上方的子表格
 
@@ -533,7 +537,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getGridByRange
+### editor.api.table.getGridByRange
 
 获取指定范围内两个单元格路径之间的子表格
 
@@ -553,7 +557,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getRowIndex
+### editor.api.table.getRowIndex
 
 获取单元格在表格中的行索引
 
@@ -571,7 +575,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getTopCell
+### editor.api.table.getTopCell
 
 获取表格中当前单元格上方的单元格
 
@@ -589,7 +593,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.isBorderHidden
+### editor.api.table.isBorderHidden
 
 检查表格单元格或表格本身的指定方向边框是否隐藏
 

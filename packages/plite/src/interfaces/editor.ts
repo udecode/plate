@@ -78,7 +78,6 @@ import type {
   TextUnitAdjustment,
 } from '../types/types';
 import type { TxOnlyMethod } from '../core/tx-only';
-import type { PropertyPolicy } from './schema';
 import type {
   BlockDuplicateOptions,
   NodeInsertNodesOptions,
@@ -984,8 +983,8 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
   getVocabulary: () => EditorSchemaVocabulary;
   /** Whether the schema declares any element-owned document roots. */
   hasContentRoots: () => boolean;
-  /** Stable persisted identity, or `null` for an open raw editor. */
-  identity: () => EditorSchemaIdentity | null;
+  /** Stable persisted identity for the current compiled schema. */
+  identity: () => EditorSchemaIdentity;
   isAtom: (element: Node) => boolean;
   isBlock: (element: Node) => boolean;
   isEditableIsland: (element: Node) => boolean;
@@ -1024,6 +1023,8 @@ export type ContentSlice<V extends Value = Value> = Readonly<{
   content: readonly DescendantIn<V>[];
   openEnd: number;
   openStart: number;
+  /** Detached secondary roots referenced by the slice content. */
+  roots?: Readonly<Record<RootKey, readonly DescendantIn<V>[]>>;
 }>;
 
 export type EditorStateRuntimeApi<V extends Value = Value> = {
@@ -1629,6 +1630,8 @@ export type EditorSnapshot<V extends Value = Value> = {
 
 export type SnapshotInput<V extends Value = Value> = {
   children: V | Descendant[];
+  meta?: Record<string, unknown>;
+  roots?: Record<RootKey, V | Descendant[]>;
   selection?: SnapshotSelectionInput;
 };
 
@@ -1901,7 +1904,7 @@ export type EditorClipboardInsertDataContext<
 > = {
   editor: TEditor;
   next: (data?: DataTransfer) => boolean;
-  tx: EditorUpdateTransaction<ValueOf<TEditor>>;
+  tx: EditorUpdateTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
 };
 
 export type EditorClipboardMiddlewareMap<
@@ -1934,7 +1937,7 @@ export type EditorClipboardInsertDataCapability<
 > = (
   editor: TEditor,
   data: DataTransfer,
-  tx: EditorUpdateTransaction<ValueOf<TEditor>>,
+  tx: EditorUpdateTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>,
   next: (data?: DataTransfer) => boolean
 ) => boolean;
 
@@ -2058,23 +2061,19 @@ export type EditorTextChangeHandler<
 
 export type EditorImmutableConfig<TValue> = TValue extends bigint | symbol
   ? never
-  : TValue extends PropertyPolicy<any>
-    ? TValue
-    : TValue extends (...args: any[]) => any
-      ? never
-      : TValue extends readonly unknown[]
+  : TValue extends (...args: any[]) => any
+    ? never
+    : TValue extends readonly unknown[]
+      ? {
+          readonly [TKey in keyof TValue]: EditorImmutableConfig<TValue[TKey]>;
+        }
+      : TValue extends object
         ? {
             readonly [TKey in keyof TValue]: EditorImmutableConfig<
               TValue[TKey]
             >;
           }
-        : TValue extends object
-          ? {
-              readonly [TKey in keyof TValue]: EditorImmutableConfig<
-                TValue[TKey]
-              >;
-            }
-          : TValue;
+        : TValue;
 
 export type EditorExtensionSchemaFactoryContext<TConfig = unknown> = Readonly<{
   config: EditorImmutableConfig<TConfig>;

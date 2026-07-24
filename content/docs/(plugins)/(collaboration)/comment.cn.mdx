@@ -277,11 +277,11 @@ const editor = createPlateEditor({
 
 ## API
 
-### `editor.plugin(BaseCommentPlugin).api.has`
+### `editor.api.comment.has`
 
 检查编辑器中是否存在指定 ID 的评论。
 
-<API name="editor.plugin(BaseCommentPlugin).api.has">
+<API name="editor.api.comment.has">
   <APIParameters>
     <APIItem name="options" type="{ id: string }">
       包含要检查的评论 ID 的选项。
@@ -290,11 +290,11 @@ const editor = createPlateEditor({
   <APIReturns type="boolean">评论是否存在。</APIReturns>
 </API>
 
-### `editor.plugin(BaseCommentPlugin).api.node`
+### `editor.api.comment.node`
 
 获取评论节点条目。
 
-<API name="editor.plugin(BaseCommentPlugin).api.node">
+<API name="editor.api.comment.node">
   <APIOptions
     type="object & { id?: string; isDraft?: boolean }"
     optional
@@ -306,11 +306,11 @@ const editor = createPlateEditor({
   </APIReturns>
 </API>
 
-### `editor.plugin(BaseCommentPlugin).api.nodeId`
+### `editor.api.comment.nodeId`
 
 从叶子节点获取评论的 ID。
 
-<API name="editor.plugin(BaseCommentPlugin).api.nodeId">
+<API name="editor.api.comment.nodeId">
   <APIParameters>
     <APIItem name="leaf" type="TCommentText">
       评论叶子节点。
@@ -319,11 +319,11 @@ const editor = createPlateEditor({
   <APIReturns type="string | undefined">如果找到则返回评论 ID。</APIReturns>
 </API>
 
-### `editor.plugin(BaseCommentPlugin).api.nodes`
+### `editor.api.comment.nodes`
 
 获取匹配选项的所有评论节点条目。
 
-<API name="editor.plugin(BaseCommentPlugin).api.nodes">
+<API name="editor.api.comment.nodes">
   <APIOptions
     type="object & { id?: string; isDraft?: boolean }"
     optional

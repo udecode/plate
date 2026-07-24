@@ -8,6 +8,10 @@ import type {
   PropertyValueDescriptor,
   SchemaContent,
   SchemaContentOptions,
+  SchemaContentRoot,
+  SchemaContentRootContribution,
+  SchemaContentRootOwnership,
+  SchemaElementTarget,
   SchemaElementProperty,
   SchemaElementPropertyOptions,
   SchemaElement,
@@ -29,16 +33,16 @@ export type AnyPluginConfig = {
   key: any;
   options: any;
   api: any;
+  enabled?: any;
   pluginApi?: any;
   dependencies?: any;
-  plugins?: any;
   state?: any;
   tx: any;
   selectors: any;
   schemaModel?: any;
 };
 
-/** Optional plugin-key allowlist shared by schema and host targeting. */
+/** Optional plugin-key allowlist shared by schema and render targeting. */
 export interface PluginSchemaModel<TType extends string, TSchema> {
   readonly schema: TSchema;
   readonly type: TType;
@@ -86,6 +90,14 @@ type PluginDeclarationProperties<TDeclaration> =
     ? readonly Extract<TProperties[number], SchemaProperty>[]
     : readonly [];
 
+type PluginDeclarationContentRoots<TDeclaration> =
+  TDeclaration extends Readonly<{
+    contentRoots: infer TContentRoots extends
+      readonly SchemaContentRootContribution[];
+  }>
+    ? TContentRoots
+    : readonly [];
+
 type PluginMarkDescriptor<TMark> = TMark extends PropertyValueDescriptor
   ? TMark
   : TMark extends Readonly<{
@@ -125,6 +137,7 @@ type LowerPluginSchemaDeclaration<
     ...PluginDeclarationProperties<TDeclaration>,
     ...PluginMarkProperties<TDeclaration, TType>,
   ];
+  contentRoots: PluginDeclarationContentRoots<TDeclaration>;
 }>;
 
 export type InferExactPluginSchemaContribution<C extends AnyPluginConfig> = [
@@ -225,21 +238,9 @@ export type PluginBase<C extends AnyPluginConfig = PluginConfig> =
       /** Filter nodes with path above this level. */
       maxLevel?: number;
     }>;
-    /** DOM/static host policies. Semantic model declarations belong to `schema`. */
-    host: Nullable<{
-      /** Explicit allowlist of model attributes forwarded to the DOM. */
-      dangerouslyAllowAttributes?: readonly string[];
-      /** Maps an element to host data attributes. */
-      toDataAttributes?: (
-        options: PluginBaseContext<C> & { node: Element }
-      ) => AnyObject | undefined;
-    }>;
     /** Mutable runtime state exposed through the plugin store. */
     options: InferOptions<C>;
-    override: {
-      /** Enable or disable plugins */
-      enabled?: Partial<Record<string, boolean>>;
-    };
+    override: {};
     /**
      * Defines the order in which plugins are registered and executed.
      *
@@ -254,7 +255,7 @@ export type PluginBase<C extends AnyPluginConfig = PluginConfig> =
      * @default 100
      */
     priority: number;
-    /** Plugin keys targeted by this plugin's schema and host behavior. */
+    /** Plugin keys targeted by this plugin's schema and render behavior. */
     readonly targetPluginKeys: readonly string[];
     render: Nullable<{
       /**
@@ -348,7 +349,7 @@ export type PluginBase<C extends AnyPluginConfig = PluginConfig> =
      * Enables or disables the plugin. Used by Plate to determine if the plugin
      * should be used.
      */
-    enabled?: boolean;
+    enabled?: InferEnabled<C>;
   };
 
 export interface PluginReference<
@@ -366,6 +367,21 @@ export type PluginReferenceDocumentType<
 > = TPlugin['type'];
 
 export type PluginSchemaOwn<TType extends string = string> = Readonly<{
+  /** Project this plugin's configured type as an element-owned root slot. */
+  contentRoot: <
+    const TContent extends SchemaContent,
+    const TOptions extends Readonly<{
+      ownership: SchemaContentRootOwnership;
+      target: SchemaElementTarget;
+    }>,
+  >(
+    content: TContent,
+    options: TOptions
+  ) => SchemaContentRootContribution<
+    TType,
+    SchemaContentRoot<TContent, TOptions['ownership']>,
+    TOptions['target']
+  >;
   elementProperty: <
     TDescriptor extends PropertyValueDescriptor,
     const TOptions extends SchemaElementPropertyOptions,
@@ -427,24 +443,35 @@ export type PlateSchemaElement = SchemaElement &
   }>;
 
 type PluginSchemaElement = Readonly<{
+  contentRoots?: readonly SchemaContentRootContribution[];
   element: PlateSchemaElement;
   mark?: never;
   properties?: readonly SchemaProperty[];
 }>;
 
 type PluginSchemaText = Readonly<{
+  contentRoots?: readonly SchemaContentRootContribution[];
   element?: never;
   mark: PluginSchemaMark;
   properties?: readonly SchemaProperty[];
 }>;
 
 type PluginSchemaProperties = Readonly<{
+  contentRoots?: readonly SchemaContentRootContribution[];
   element?: never;
   mark?: never;
   properties: readonly SchemaProperty[];
 }>;
 
+type PluginSchemaContentRoots = Readonly<{
+  contentRoots: readonly SchemaContentRootContribution[];
+  element?: never;
+  mark?: never;
+  properties?: readonly SchemaProperty[];
+}>;
+
 export type PluginSchemaDeclaration =
+  | PluginSchemaContentRoots
   | PluginSchemaElement
   | PluginSchemaProperties
   | PluginSchemaText;
@@ -460,6 +487,8 @@ export type PluginSchema<
 export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
   /** API owned by the current plugin, without the plugin-key namespace wrapper. */
   api: InferOwnApi<C>;
+  /** Whether this plugin is installed and enabled in the target editor. */
+  readonly installed: boolean;
   /** One-shot updates owned by the current plugin, without its key namespace. */
   update: InferOwnTx<C>;
   setOptions: (
@@ -620,6 +649,7 @@ export type ExtendConfig<
   key: C['key'];
   api: C['api'] & EA;
   dependencies?: C['dependencies'];
+  enabled?: C['enabled'];
   options: C['options'] & EO;
   pluginApi: NonNullable<C['pluginApi']> & EPluginApi;
   schemaModel?: C['schemaModel'];
@@ -660,20 +690,18 @@ export type InferPluginApi<P extends AnyPluginConfig> = P extends {
   ? NonNullable<A>
   : {};
 
+export type InferEnabled<P> = P extends { enabled?: infer E }
+  ? IsAny<E> extends true
+    ? boolean
+    : Extract<E, boolean> extends never
+      ? boolean
+      : Extract<E, boolean>
+  : boolean;
+
 export type InferDependencies<P> = P extends {
-  dependencies?: infer D extends readonly unknown[];
+  dependencies?: infer D extends readonly PluginReference[];
 }
   ? D
-  : readonly [];
-
-export type InferNestedPlugins<P> = P extends {
-  plugins?: infer TPlugins;
-}
-  ? IsAny<TPlugins> extends true
-    ? readonly []
-    : TPlugins extends readonly unknown[]
-      ? TPlugins
-      : readonly []
   : readonly [];
 
 type InferDependencyConfig<P> = P extends {
@@ -701,35 +729,13 @@ export type InferDependencyConfigs<
       : never
   : never;
 
-type InferChildPluginConfig<P> = P extends {
-  readonly __config: infer C extends AnyPluginConfig;
-}
-  ? C
-  : P extends AnyPluginConfig
-    ? P
-    : never;
-
-type InferChildPluginConfigs<C extends AnyPluginConfig> =
-  InferChildPluginConfig<
-    | (IsAny<InferDependencies<C>> extends true
-        ? never
-        : InferDependencies<C>[number])
-    | InferNestedPlugins<C>[number]
-  >;
-
 export type InferPluginConfigTree<
   C extends AnyPluginConfig,
   Seen extends PropertyKey = never,
 > = C extends unknown
   ? C['key'] extends Seen
     ? never
-    :
-        | C
-        | (InferChildPluginConfigs<C> extends infer TChild
-            ? TChild extends AnyPluginConfig
-              ? InferPluginConfigTree<TChild, NextSeenPluginKey<C, Seen>>
-              : never
-            : never)
+    : C | InferDependencyConfigs<C, Seen>
   : never;
 
 export type InferOwnApi<P extends AnyPluginConfig> = InferPluginApi<P>;
@@ -764,9 +770,9 @@ export type InferPluginBehaviorConfig<C extends AnyPluginConfig> =
         InferSelectors<C>,
         InferState<C>,
         InferDependencies<C>,
-        readonly PluginReference[],
         never,
-        InferPluginApi<C>
+        InferPluginApi<C>,
+        InferEnabled<C>
       >;
 
 export type InferSelectors<P> = P extends { selectors: infer S } ? S : never;
@@ -823,16 +829,16 @@ export type PluginConfig<
   Tx extends AnyPluginTx = {},
   S = {},
   State = {},
-  D extends readonly unknown[] = readonly [],
-  P extends readonly unknown[] = readonly PluginReference[],
+  D extends readonly PluginReference[] = readonly [],
   SchemaModel = never,
   PluginApi = {},
+  Enabled extends boolean = boolean,
 > = {
   key: K;
   api: A;
   pluginApi: PluginApi;
   dependencies?: D;
-  plugins?: P;
+  enabled?: Enabled;
   options: O;
   /** Exact schema type carried only by the plugin's `__config` type anchor. */
   schemaModel?: SchemaModel;
@@ -852,9 +858,9 @@ export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> =
         InferSelectors<C>,
         InferState<C>,
         InferDependencies<C>,
-        InferNestedPlugins<C>,
         InferPluginSchemaModel<C>,
-        InferPluginApi<C>
+        InferPluginApi<C>,
+        InferEnabled<C>
       >;
 
 export type WithRequiredKey<P = {}> =

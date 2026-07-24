@@ -1004,6 +1004,12 @@ export const applyEditableDOMSelectionChange = ({
     return;
   }
 
+  const currentSelection = readLiveSelection(editor);
+
+  if (SelectionApi.isNode(currentSelection) && domSelection.rangeCount === 0) {
+    return;
+  }
+
   const { anchorNode, focusNode } = domSelection;
 
   const projectedSelection = resolveProjectedDOMSelection({
@@ -1129,8 +1135,6 @@ export const applyEditableDOMSelectionChange = ({
   ) {
     return;
   }
-
-  const currentSelection = readLiveSelection(editor);
 
   if (selectionChangeOrigin === 'native-user' && RangeApi.isRange(range)) {
     const modelSelection = editorGetSelection(editor);
@@ -1382,25 +1386,26 @@ export const syncEditableDOMSelectionToEditor = ({
       options?.preserveScroll || shouldSkipSelectionScroll(editor);
     const viewSelection = readPliteViewSelection(editor);
 
-    if (viewSelection) {
+    if (viewSelection || SelectionApi.isNode(selection)) {
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
       domSelection.removeAllRanges();
       const clearNativeSelection = () => domSelection.removeAllRanges();
+      const label = viewSelection ? 'view-selection' : 'node-selection';
 
       domPhaseScheduler.schedule(
         'selection-repair',
-        'clear-view-selection-microtask',
+        `clear-${label}-microtask`,
         clearNativeSelection,
         { timing: 'microtask' }
       );
       domPhaseScheduler.schedule(
         'selection-repair',
-        'clear-view-selection-frame',
+        `clear-${label}-frame`,
         clearNativeSelection,
         { timing: 'animation-frame' }
       );
-      scheduleClearSelectionUpdate('clear-view-selection-update');
+      scheduleClearSelectionUpdate(`clear-${label}-update`);
       return;
     }
 

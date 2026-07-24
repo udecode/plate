@@ -12,6 +12,7 @@ import {
   materializeMarkdownSettings,
   materializeRemarkPlugins,
 } from '../utils/getRemarkPluginsWithoutMdx';
+import type { MarkdownSerializeDocumentValue } from './markdownDocument';
 import { buildRulesWithRuntime } from './markdownRuntime';
 
 const createConversionContext = (
@@ -31,7 +32,7 @@ export const getMergedOptionsDeserialize = (
   const { allowedNodes, allowNode, disallowedNodes, remarkPlugins, rules } =
     runtime.options;
 
-  return {
+  const context: DeserializeMdContext = {
     allowedNodes:
       options?.allowedNodes ??
       (allowedNodes ? [...allowedNodes] : allowedNodes),
@@ -49,11 +50,14 @@ export const getMergedOptionsDeserialize = (
     },
     splitLineBreaks: options?.splitLineBreaks,
   };
+
+  return context;
 };
 
 export const getMergedOptionsSerialize = (
   runtime: MarkdownRuntime,
-  options?: SerializeMdOptions
+  options?: SerializeMdOptions,
+  documentOverride?: MarkdownSerializeDocumentValue
 ): SerializeMdContext => {
   const {
     allowedNodes,
@@ -65,7 +69,8 @@ export const getMergedOptionsSerialize = (
     rules,
   } = runtime.options;
 
-  return {
+  const document = documentOverride ?? options?.value ?? runtime.state.value();
+  const context: SerializeMdContext = {
     allowedNodes:
       options?.allowedNodes ??
       (allowedNodes ? [...allowedNodes] : allowedNodes),
@@ -90,7 +95,9 @@ export const getMergedOptionsSerialize = (
       ...(options?.rules ?? rules),
     },
     spread: options?.spread,
-    value: options?.value ?? [...runtime.state.children()],
+    value: [...document.children],
     withBlockId: options?.withBlockId ?? false,
   };
+
+  return context;
 };

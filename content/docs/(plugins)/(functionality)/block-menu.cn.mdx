@@ -65,7 +65,7 @@ npm install @platejs/selection
 
 ### 添加插件
 
-块菜单功能需要同时安装 `BlockSelectionPlugin` 和 `BlockMenuPlugin` 才能正常工作。
+块菜单功能需要同时安装 `BlockSelectionPlugin` 和 `BlockMenuPlugin`。它们都是顶层描述符，彼此不会隐式安装。未安装 `BlockMenuPlugin` 时，块选择会将菜单视为关闭状态。
 
 ```tsx
 import { BlockSelectionPlugin, BlockMenuPlugin } from '@platejs/selection/react';
@@ -137,15 +137,15 @@ const editor = createPlateEditor({
 
 ## API 接口
 
-### `editor.plugin(BlockMenuPlugin).api.hide()`
+### `editor.api.blockMenu.hide()`
 
 隐藏块菜单
 
-### `editor.plugin(BlockMenuPlugin).api.show(id, position?)`
+### `editor.api.blockMenu.show(id, position?)`
 
 为指定块显示菜单
 
-<API name="editor.plugin(BlockMenuPlugin).api.show">
+<API name="editor.api.blockMenu.show">
 <APIParameters>
   <APIItem name="id" type="'context' | string">
     要显示菜单的块ID，或使用'context'表示上下文菜单
@@ -156,11 +156,11 @@ const editor = createPlateEditor({
 </APIParameters>
 </API>
 
-### `editor.plugin(BlockMenuPlugin).api.showContextMenu(blockId, position)`
+### `editor.api.blockMenu.showContextMenu(blockId, position)`
 
 为指定块显示上下文菜单并自动选中该块
 
-<API name="editor.plugin(BlockMenuPlugin).api.showContextMenu">
+<API name="editor.api.blockMenu.showContextMenu">
 <APIParameters>
   <APIItem name="blockId" type="string">
     要显示上下文菜单的块ID

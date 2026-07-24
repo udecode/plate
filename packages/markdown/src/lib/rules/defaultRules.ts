@@ -34,6 +34,10 @@ import {
   buildRulesWithRuntime,
   withMarkdownRuntime,
 } from '../internal/markdownRuntime';
+import {
+  readPlainMarkdownInlineContent,
+  toMarkdownCaptionContent,
+} from '../internal/markdownDocument';
 
 import {
   buildSlateNode,
@@ -260,8 +264,29 @@ export const defaultRules = {
   callout: {
     deserialize: (mdastNode, deco, options) => {
       const props = parseAttributes(mdastNode.attributes);
+      const children = convertChildrenDeserialize(
+        mdastNode.children,
+        deco,
+        options
+      );
+      const paragraph = children.length === 1 ? children[0] : undefined;
+
+      if (
+        children.some(
+          (child) => ElementApi.isElement(child) && !options.isInline(child)
+        ) &&
+        (!ElementApi.isElement(paragraph) ||
+          paragraph.type !== getPluginType(options, KEYS.p))
+      ) {
+        throw new Error('Callout children must be inline Markdown content.');
+      }
+
       return {
-        children: convertChildrenDeserialize(mdastNode.children, deco, options),
+        children:
+          ElementApi.isElement(paragraph) &&
+          paragraph.type === getPluginType(options, KEYS.p)
+            ? paragraph.children
+            : children,
         type: getPluginType(options, KEYS.callout),
         ...props,
       };
@@ -270,13 +295,18 @@ export const defaultRules = {
       const { children, type, ...rest } = slateNode;
       const serializedChildren = convertNodesSerialize(children, options);
 
-      if (!serializedChildren.every(isMdFlowContent)) {
-        throw new Error('Callout children must be Markdown flow content.');
+      if (!serializedChildren.every(isMdPhrasingContent)) {
+        throw new Error('Callout children must be inline Markdown content.');
       }
 
       return {
         attributes: propsToAttributes(rest),
-        children: serializedChildren,
+        children: [
+          {
+            children: serializedChildren,
+            type: 'paragraph',
+          },
+        ],
         name: 'callout',
         type: 'mdxJsxFlowElement',
       };
@@ -553,32 +583,89 @@ export const defaultRules = {
   },
   img: {
     deserialize: (mdastNode, _deco, options) => {
-      const { alt, attributes, title, url } = mdastNode;
+      const { alt, attributes, children: mdxChildren, title, url } = mdastNode;
       const {
         alt: altAttr,
         src,
         ...rest
       } = attributes ? parseAttributes(attributes) : {};
+      const resolvedAlt =
+        typeof altAttr === 'string' ? altAttr : (alt ?? undefined);
+      const caption =
+        mdxChildren && mdxChildren.length > 0
+          ? toMarkdownCaptionContent(
+              options,
+              convertChildrenDeserialize(mdxChildren, {}, options)
+            )
+          : [{ text: '' }];
 
       return {
-        caption: [
-          { text: typeof altAttr === 'string' ? altAttr : (alt ?? '') } as Text,
-        ],
-        children: [{ text: '' } as Text],
+        ...(resolvedAlt !== undefined && { alt: resolvedAlt }),
+        children: caption,
         ...(title && { title }),
         type: getPluginType(options, KEYS.img),
         url: typeof src === 'string' ? src : url,
         ...rest,
       };
     },
-    serialize: ({ caption, title, url }) => {
+    serialize: (node, options) => {
+      const { children, type, url, ...rest } = node;
+      const plainCaption = readPlainMarkdownInlineContent(children);
+      const { alt: altProperty, title: titleProperty, ...mdxProperties } = rest;
+      const semanticAlt =
+        typeof altProperty === 'string' ? altProperty : undefined;
+      const title =
+        typeof titleProperty === 'string' ? titleProperty : undefined;
+      const attributes = propsToAttributes({
+        ...(semanticAlt !== undefined && { alt: semanticAlt }),
+        ...mdxProperties,
+        src: url,
+        ...(title !== undefined && { title }),
+      });
+
+      if (plainCaption !== '') {
+        const serializedChildren =
+          plainCaption === null
+            ? convertNodesSerialize(children, options)
+            : [{ type: 'text' as const, value: plainCaption }];
+
+        if (!serializedChildren.every(isMdPhrasingContent)) {
+          throw new Error('Image caption must be Markdown inline content.');
+        }
+
+        return {
+          attributes: [],
+          children: [
+            {
+              attributes,
+              children: [],
+              name: type,
+              type: 'mdxJsxFlowElement',
+            },
+            {
+              attributes: [],
+              children: [{ children: serializedChildren, type: 'paragraph' }],
+              name: 'figcaption',
+              type: 'mdxJsxFlowElement',
+            },
+          ],
+          name: 'figure',
+          type: 'mdxJsxFlowElement',
+        };
+      }
+
+      if (Object.keys(mdxProperties).length > 0) {
+        return {
+          attributes,
+          children: [],
+          name: type,
+          type: 'mdxJsxFlowElement',
+        };
+      }
+
       const image: MdImage = {
-        alt: caption
-          ? caption
-              .map((child) => (TextApi.isText(child) ? child.text : ''))
-              .join('')
-          : undefined,
-        title: typeof title === 'string' ? title : undefined,
+        alt: semanticAlt ?? '',
+        title,
         type: 'image',
         url,
       };

@@ -4,7 +4,7 @@ import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
   BaseCodePlugin,
-  BaseHeadingPlugin,
+  BaseH1Plugin,
   BaseHighlightPlugin,
   BaseItalicPlugin,
   BaseKbdPlugin,
@@ -173,7 +173,7 @@ describe('when deserializing all plugins', () => {
           <hp>ol-li-p</hp>
         </hli>
       </hol>
-      <himg url="https://i.imgur.com/removed.png">
+      <himg alt="" url="https://i.imgur.com/removed.png">
         <htext />
       </himg>
       <htable>
@@ -190,9 +190,7 @@ describe('when deserializing all plugins', () => {
   it('deserializes all configured plugin outputs', () => {
     const plugins: readonly BasePluginInput[] = [
       BaseBlockquotePlugin as BasePluginInput,
-      BaseHeadingPlugin.configure({
-        options: { levels: 1 },
-      }) as BasePluginInput,
+      BaseH1Plugin as BasePluginInput,
       BaseImagePlugin as BasePluginInput,
       BaseLinkPlugin as BasePluginInput,
       BaseListPlugin as BasePluginInput,

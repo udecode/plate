@@ -62,7 +62,7 @@ npm install @platejs/footnote @platejs/markdown remark-gfm
 
 ### Add Plugins
 
-Three plugins ship together: the inline reference, the block definition, and the combobox input. Pair them with `MarkdownPlugin` and `remark-gfm` so `[^1]` round-trips correctly.
+Add the inline reference and block definition. `FootnoteReferencePlugin` installs its combobox input as a required dependency; pair the footnote plugins with `MarkdownPlugin` and `remark-gfm` so `[^1]` round-trips correctly.
 
 ```tsx
 import {
@@ -87,7 +87,7 @@ const editor = createPlateEditor({
 });
 ```
 
-`FootnoteReferencePlugin` pulls in `FootnoteInputPlugin` automatically — that's the inline void rendered while the reader is typing inside the `[^` combobox.
+`FootnoteInputPlugin` is a required dependency of `FootnoteReferencePlugin`. Add a complete input descriptor to the same array only when you need to replace its default component or configuration.
 
 ### Insert a Footnote
 
@@ -185,7 +185,7 @@ The package owns node semantics, identifier allocation, and navigation helpers. 
 
 ### `FootnoteReferencePlugin`
 
-Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, identifier registry, navigation transforms, and query API. Automatically includes `FootnoteInputPlugin`.
+Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, identifier registry, navigation transforms, and query API. Requires `FootnoteInputPlugin`.
 
 <API name="FootnoteReferencePlugin">
 <APIOptions>
@@ -214,7 +214,7 @@ Block node for footnote definitions. Lives at the bottom of the document and car
 
 ### `FootnoteInputPlugin`
 
-Inline void used as the live combobox input while the reader is typing `[^…`. Pulled in automatically by `FootnoteReferencePlugin`; add it directly only if you render the combobox yourself.
+Inline void used as the live combobox input while the reader is typing `[^…`. Installed as a required dependency of `FootnoteReferencePlugin`; add it directly only to replace its default configuration or component.
 
 <API name="FootnoteInputPlugin" />
 

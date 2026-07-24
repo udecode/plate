@@ -141,8 +141,8 @@ const freezeParser = (parser: AnyBasePlugin['parser']) => {
       : parser.format
         ? { format: parser.format }
         : {}),
+    ...(parser.owns ? { owns: Object.freeze([...parser.owns]) } : {}),
     ...(parser.query ? { query: parser.query } : {}),
-    ...(parser.schema ? { schema: Object.freeze([...parser.schema]) } : {}),
     ...(parser.transformData ? { transformData: parser.transformData } : {}),
     ...(parser.transformFragment
       ? { transformFragment: parser.transformFragment }

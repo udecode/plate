@@ -20,7 +20,6 @@ import {
 } from '@platejs/link/react';
 import { cva } from 'class-variance-authority';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
-import { KEYS } from 'platejs';
 import {
   useEditor,
   useEditorSelection,
@@ -176,7 +175,7 @@ function LinkOpenButton() {
   const attributes = React.useMemo(
     () => {
       const entry = editor.read.nodes.find<TLinkElement>({
-        match: { type: editor.getType(KEYS.link) },
+        match: { type: editor.getType(LinkPlugin.key) },
       });
       if (!entry) {
         return {};

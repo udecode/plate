@@ -1,83 +1,148 @@
 # Creation Flow
 
-Use this decision tree before writing a plugin:
+Choose semantic ownership before file topology.
+
+## Contents
+
+- Decision tree
+- Semantic owners
+- File owners
+- False ownership evidence
+- File placement
+- Layer check
 
 ```text
-Need a new plugin?
+Need a plugin or plugin refactor?
 |
 +- Does the behavior matter without React?
 |  |
-|  +- yes -> author `packages/*/src/lib`
-|  |   |
+|  +- yes -> `src/lib`
 |  |   +- `createBasePlugin`
-|  |       +- pass a `PluginConfig` generic only for a real public contract
-|  |   |
-|  |   +- Need a React/Plate layer later?
-|  |       +- yes -> `toPlatePlugin`
-|  |       +- no  -> keep it base-only
+|  |   +- real React job later? -> thin `toPlatePlugin` wrapper
+|  |   +- no React job? -> keep base-only
 |  |
-|  +- no -> stay in `packages/*/src/react`
-|      |
-|      +- Is it a bundle of existing Plate plugins?
-|      |   +- yes -> `createPlatePlugin`
-|      |
-|      +- `createPlatePlugin`
-|          +- pass a `PluginConfig` generic only for a real public contract
+|  +- no -> `src/react`
+|      +- only groups complete plugins? -> app/registry kit array
+|      +- genuinely hook/DOM/component-native? -> `createPlatePlugin`
 |
-+- Need docs?
-   +- hand off to `docs-creator`
++- For every proposed source file:
+|  |
+|  +- exactly one production owner?
+|  |   +- yes -> inline in that plugin/component/test-family owner
+|  |
+|  +- multiple callers can reuse the scoped plugin API?
+|  |   +- yes -> keep implementation inline; callers use the portal
+|  |
+|  +- real cross-plugin, cross-layer, standalone, or proof owner?
+|      +- yes -> separate file with that owner
+|      +- no  -> inline
+|
++- Public call shape or capability identity changes?
+|  +- yes -> `best-api`
+|
++- Missing generic substrate?
+   +- Plite gap -> patch/plan Plite owner
+   +- Plate composition gap -> patch/plan Plate owner
 ```
 
-## Default Paths
+## Semantic Owners
 
 ### Semantic base plugin
 
-Use this for document semantics, update groups, parsers, injected rules, and
-shared behavior contracts.
+Use `createBasePlugin` for document semantics, parsers, normalizers, injected
+rules, update groups, and shared behavior contracts.
 
-Good fits:
-
-- `BaseCommentPlugin`
-- `BaseCodeBlockPlugin`
-- `HtmlPlugin`
+Do not split those implementation kinds into their own files when the plugin is
+their only production owner.
 
 ### Plate/React wrapper
 
-Use this when the semantic base already exists and you only need component
-binding, hooks, or Plate-only wrapper config.
+Use `toPlatePlugin` when the semantic base already exists and the remaining job
+is component binding, hooks, node props, or Plate-only integration.
 
-Good fits:
+The wrapper must stay thin. Do not copy or re-declare base behavior.
 
-- `CommentPlugin`
-- `CodeBlockPlugin`
-- `MentionPlugin`
+### Direct Plate plugin
 
-### React-native exception
+Use `createPlatePlugin` only when:
 
-Use direct Plate authoring only when the plugin has no meaningful semantic
-base.
+1. the plugin is fundamentally hook- or `useHooks`-driven;
+2. the behavior exists only at a DOM/editor surface;
+3. the behavior only exists through React node props or components.
 
-Good fits:
+Grouping already-authored complete plugins is not a plugin. Keep that product
+choice in an app or registry kit array; packages export the descriptors.
 
-- `EventEditorPlugin`
-- `PlaywrightPlugin`
-- `CopilotPlugin`
+### Plite extension
 
-### Bundle plugin
+Use `extendExtension` when the behavior is generic editor substrate. Install the
+narrow command, normalizer, middleware, state, or extension primitive. Do not
+wrap the editor root or hide substrate behavior in Plate event glue.
 
-Use `createPlatePlugin({ plugins: [...] })` when the job is composition, not
-new semantics.
+If several Plate plugins need the same generic primitive, that is evidence for
+a Plite owner, not a shared Plate helper dump.
 
-Good fits:
+## File Owners
 
-- `BasicBlocksPlugin`
+### Plugin owner
 
-## Named Exceptions
+One plugin file may own:
 
-Skipping a semantic base is fine only when one of these is true:
+- plugin declaration and real public contract types;
+- options and schema/parser callbacks;
+- API and tx builders;
+- commands, corrections, decorators, normalizers, matchers, and handlers;
+- plugin-only constants and implementation helpers.
 
-1. The plugin is fundamentally hook-driven or `useHooks`-driven.
-2. The plugin only exists to wire DOM/editor events in the Plate layer.
-3. The plugin is a bundle of already-authored Plate plugins.
-4. The plugin's useful behavior only exists through React node props or
-   components.
+File length is irrelevant. Extract only when another durable owner exists.
+
+### Component family owner
+
+One `<Family>.tsx` may own exported primitives plus family-only subcomponents,
+hooks, state, stores, controllers, variants, constants, and render helpers.
+
+A sibling import within the same family is internal composition, not reuse.
+
+### Hook or state owner
+
+Create `use<Family>.ts`, provider, or store files only when the lifecycle has a
+standalone public job or is independently consumed by multiple durable
+component families.
+
+### Test-family owner
+
+Keep one `<PluginName>.<family>.spec.tsx` for one behavior family. Separate slow
+or integration proof only when measured runtime or an independent proof
+boundary justifies it.
+
+## False Ownership Evidence
+
+None of these justify another source file:
+
+- public export or direct import;
+- documentation entry;
+- old filename or barrel;
+- tests;
+- line count or readability preference;
+- implementation kind such as query, transform, hook, or utility;
+- multiple callers that can use the owning scoped API;
+- hypothetical future reuse.
+
+## File Placement
+
+- Keep feature `src/react` roots flat unless a directory is a durable subsystem
+  with several cross-family owners.
+- Do not create `internal/` merely because code is private. Privacy is not
+  ownership.
+- Do not create taxonomy folders merely to shorten a large owner file.
+- Delete obsolete helper files and regenerate barrels after colocation.
+
+## Layer Check
+
+Before writing code, answer:
+
+1. Which behavior is generic Plite substrate?
+2. Which behavior is Plate plugin/product composition?
+3. Which one file owns each single-owner behavior?
+4. Which proposed extraction has a real independent consumer graph?
+5. Which public shape needs a `best-api` verdict?

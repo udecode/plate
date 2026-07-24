@@ -2,19 +2,26 @@ import { createBasePlugin } from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import { mediaElementProperties } from './media/types';
+import {
+  defineMediaPlugin,
+  mediaElementContent,
+  mediaElementProperties,
+} from './media/MediaPlugin.internal';
 
-export const BaseVideoPlugin = createBasePlugin({
-  key: KEYS.video,
-  host: { dangerouslyAllowAttributes: ['width', 'height'] },
-  schema: {
-    element: {
-      properties: {
-        ...mediaElementProperties,
-        provider: property.string(),
-        sourceUrl: property.string(),
+export const BaseVideoPlugin = defineMediaPlugin(
+  createBasePlugin({
+    key: KEYS.video,
+    schema: {
+      element: {
+        content: mediaElementContent,
+        isolating: true,
+        keyboardSelectable: true,
+        properties: {
+          ...mediaElementProperties,
+          provider: property.string(),
+          sourceUrl: property.string(),
+        },
       },
-      void: 'block',
     },
-  },
-});
+  })
+);

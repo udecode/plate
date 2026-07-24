@@ -13,7 +13,6 @@ import {
   useEditorSelection,
   usePluginOption,
 } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
 import { useHotkeys } from '@udecode/react-hotkeys';
 import { useComposedRef, useOnClickOutside } from '@udecode/react-utils';
 
@@ -164,7 +163,7 @@ export const useFloatingLinkEdit = ({
       editor.read.selection.isCollapsed() &&
       editor.read.nodes.some({
         at: selection,
-        match: { type: editor.getType(KEYS.link) },
+        match: { type: editor.getType(LinkPlugin.key) },
       })
     ) {
       api.show('edit', editor.id);

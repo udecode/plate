@@ -62,20 +62,23 @@ npm install @platejs/slash-command
 
 ### 添加插件
 
+`SlashPlugin` 会把 `SlashInputPlugin` 作为必需依赖安装。
+
 ```tsx
-import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
+import { SlashPlugin } from '@platejs/slash-command/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     SlashPlugin,
-    SlashInputPlugin,
   ],
 });
 ```
 
 ### 配置插件
+
+需要替换依赖的组件或配置时，把完整的 `SlashInputPlugin` 描述符加入同一数组。
 
 ```tsx
 import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
@@ -135,7 +138,7 @@ const editor = createPlateEditor({
 
 ### SlashPlugin
 
-实现斜杠命令功能的插件。扩展自 [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)。
+实现斜杠命令功能的插件。扩展自 [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)，并要求安装 `SlashInputPlugin`。
 
 <API name="SlashPlugin">
 <APIOptions>
@@ -165,4 +168,4 @@ const editor = createPlateEditor({
 
 ### SlashInputPlugin
 
-处理斜杠命令插入的输入行为。
+处理斜杠命令插入的必需输入依赖。仅在替换其组件或配置时直接加入。

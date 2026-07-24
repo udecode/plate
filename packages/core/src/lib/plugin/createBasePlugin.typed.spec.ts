@@ -5,6 +5,7 @@ import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { toPlatePlugin } from '../../react/plugin/toPlatePlugin';
 import { createBaseEditor } from '../editor';
+import type { BasePluginOverride } from './BasePlugin';
 import { createBasePlugin } from './createBasePlugin';
 
 const assertTypedSchemaContributions = () => {
@@ -26,6 +27,55 @@ const assertTypedSchemaContributions = () => {
     key: 'invalidSchema',
     // @ts-expect-error schema callbacks cannot access the editor runtime
     schema: ({ editor }) => ({ editor }),
+  });
+
+  const ParagraphPlugin = createBasePlugin({
+    key: 'typedContentRootParagraph',
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+    },
+  });
+  const ImagePlugin = createBasePlugin({
+    key: 'typedContentRootImage',
+    schema: { element: { void: 'block' } },
+  });
+  const CaptionPlugin = createBasePlugin({
+    key: 'typedCaption',
+    schema: ({ own, plugins }) => ({
+      contentRoots: [
+        own.contentRoot(
+          schema.content.type(plugins.elementType(ParagraphPlugin)),
+          {
+            ownership: 'exclusive',
+            target: target.types(plugins.elementTypes([ImagePlugin])),
+          }
+        ),
+      ],
+    }),
+  });
+  const editor = createBaseEditor({
+    plugins: [ParagraphPlugin, ImagePlugin, CaptionPlugin],
+  });
+  const image = editor.read.schema.createAndFill(ImagePlugin);
+  const captionRoot: string = image.childRoots.typedCaption;
+
+  // @ts-expect-error targeted content-root slots stay exact
+  image.childRoots.notes;
+  void captionRoot;
+
+  createBasePlugin({
+    key: 'invalidContentRootTarget',
+    schema: ({ own }) => ({
+      contentRoots: [
+        own.contentRoot(schema.content.type('paragraph'), {
+          ownership: 'shared',
+          // @ts-expect-error structural content roots cannot depend on root context
+          target: target.root(),
+        }),
+      ],
+    }),
   });
 };
 
@@ -129,11 +179,62 @@ const assertTypedContextualConfiguration = () => {
 
 void assertTypedContextualConfiguration;
 
+const assertTypedWeakPluginOverrides = () => {
+  type TargetConfig = PluginConfig<'typedWeakTarget', { allowed: boolean }>;
+
+  const exactOverride = {
+    options: { allowed: true },
+  } satisfies BasePluginOverride<TargetConfig>;
+
+  createBasePlugin({
+    key: 'typedWeakContributor',
+    override: {
+      plugins: {
+        typedWeakTarget: exactOverride,
+      },
+    },
+  });
+
+  ({
+    options: {
+      // @ts-expect-error exact weak override checking requires the target config
+      missing: true,
+    },
+  }) satisfies BasePluginOverride<TargetConfig>;
+
+  ({
+    // @ts-expect-error weak overrides cannot mutate dependencies
+    dependencies: [],
+  }) satisfies BasePluginOverride<TargetConfig>;
+  ({
+    // @ts-expect-error weak overrides cannot mutate the target key
+    key: 'other',
+  }) satisfies BasePluginOverride<TargetConfig>;
+  ({
+    // @ts-expect-error weak overrides cannot nest another override
+    override: {},
+  }) satisfies BasePluginOverride<TargetConfig>;
+  ({
+    // @ts-expect-error erased weak overrides still cannot mutate the target key
+    key: 'other',
+  }) satisfies BasePluginOverride;
+  ({
+    // @ts-expect-error erased weak overrides still cannot mutate dependencies
+    dependencies: [],
+  }) satisfies BasePluginOverride;
+  ({
+    // @ts-expect-error erased weak overrides still cannot nest another override
+    override: {},
+  }) satisfies BasePluginOverride;
+};
+
+void assertTypedWeakPluginOverrides;
+
 const assertTypedPlateShortcutTargets = () => {
   createPlatePlugin({
     key: 'missingInitialShortcutTarget',
-    // @ts-expect-error initial shortcuts without a command require a handler
     shortcuts: {
+      // @ts-expect-error initial shortcuts without a command require a handler
       missing: { keys: 'mod+m' },
     },
   });
@@ -299,47 +400,6 @@ describe('createBasePlugin', () => {
     expect(editorWithComponent.getPlugin(componentPlugin).render.node).toBe(
       MockComponent
     );
-
-    // Test nested plugins and extendPlugin
-    const nestedPlugin = createBasePlugin<
-      PluginConfig<'nested', { nestedOption: string }>
-    >({
-      key: 'nested',
-      options: { nestedOption: 'initial' },
-    });
-
-    const parentPlugin = createBasePlugin<
-      PluginConfig<'parent', { parentOption: string }>
-    >({
-      key: 'parent',
-      options: { parentOption: 'parent' },
-      plugins: [nestedPlugin],
-    });
-
-    const extendedParentPlugin = parentPlugin.extendPlugin(nestedPlugin, {
-      options: { nestedOption: 'modified' },
-    });
-
-    const resolvedParentEditor = createBaseEditor({
-      plugins: [extendedParentPlugin],
-    });
-    expect(resolvedParentEditor.getPlugin(nestedPlugin).options).toEqual({
-      nestedOption: 'modified',
-    });
-
-    // Test configurePlugin
-    const configuredParentPlugin = parentPlugin.configurePlugin(nestedPlugin, {
-      options: { nestedOption: 'configured' },
-    });
-
-    const resolvedConfiguredParentEditor = createBaseEditor({
-      plugins: [configuredParentPlugin],
-    });
-    expect(
-      resolvedConfiguredParentEditor.getPlugin(nestedPlugin).options
-    ).toEqual({
-      nestedOption: 'configured',
-    });
 
     // Test multiple extensions before the one consumer configuration
     const multiExtendedPlugin = basePlugin

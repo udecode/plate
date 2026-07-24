@@ -3,9 +3,11 @@ import type {
   Editor,
   Value,
 } from '../interfaces/editor';
-import { NodeApi } from '../interfaces/node';
+import { ElementApi } from '../interfaces/element';
+import { type Descendant, NodeApi } from '../interfaces/node';
 import type { Point } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
+import { SelectionApi } from '../interfaces/selection';
 import { ContentSlice, createContentSliceFromFragment } from './content-slice';
 
 const getOpenDepth = (editor: Editor, point: Point) => {
@@ -34,11 +36,46 @@ export const getContentSlice = <V extends Value>(
     return ContentSlice.empty;
   }
 
+  const selectedNode = SelectionApi.isNode(selection)
+    ? (NodeApi.getIf(editor, selection.path) ?? null)
+    : null;
+  const content = selectedNode
+    ? ([selectedNode] as readonly Descendant[])
+    : NodeApi.fragment(editor, selection);
+  const document = editor.read((state) => state.value());
+  const roots: Record<string, readonly Descendant[]> = {};
+  const visitedRoots = new Set<string>();
+  const collect = (children: readonly Descendant[]) => {
+    children.forEach((node) => {
+      if (!ElementApi.isElement(node)) return;
+
+      for (const root of Object.values(
+        editor.read.schema.getElementContentRoots(node)
+      )) {
+        if (visitedRoots.has(root)) continue;
+        const rootContent = document.roots?.[root];
+
+        if (!rootContent) continue;
+        visitedRoots.add(root);
+        roots[root] = rootContent;
+        collect(rootContent);
+      }
+
+      collect(node.children);
+    });
+  };
+  collect(content);
+
+  if (selectedNode) {
+    return createContentSliceFromFragment<V>(content, 0, 0, roots);
+  }
+
   const [start, end] = RangeApi.edges(selection);
 
   return createContentSliceFromFragment<V>(
-    NodeApi.fragment(editor, selection),
+    content,
     getOpenDepth(editor, start),
-    getOpenDepth(editor, end)
+    getOpenDepth(editor, end),
+    roots
   );
 };

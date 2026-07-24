@@ -2,8 +2,11 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
 
-import { MarkdownPlugin } from '@platejs/markdown';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { type MarkdownConfig, MarkdownPlugin } from '@platejs/markdown';
+import {
+  type BlockSelectionPluginConfig,
+  BlockSelectionPlugin,
+} from '@platejs/selection/react';
 import {
   schema,
   type EditorNodesOptions,
@@ -13,15 +16,21 @@ import {
   type Range,
 } from '@platejs/plite';
 import type { OmitFirst } from '@udecode/utils';
-import { type PluginConfig, getPluginType } from '@platejs/core';
+import {
+  type BasePlugin,
+  type NormalizePluginOption,
+  type PluginConfig,
+  type PluginSchemaModel,
+  getPluginType,
+} from '@platejs/core';
 import { type TIdElement, KEYS } from '@platejs/utils';
 import {
-  type InferConfig,
   type PlateEditor,
+  type PlatePlugin,
   createPlatePlugin,
 } from '@platejs/core/react';
 
-import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
+import { type BaseAIPluginConfig, BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import type { AIMode, AIToolName } from '../../lib/types';
 
 import {
@@ -98,7 +107,11 @@ type AIChatApi = {
   stop: () => void;
 };
 
-const dependencies = [BaseAIPlugin, MarkdownPlugin] as const;
+const dependencies: readonly [
+  BasePlugin<BaseAIPluginConfig>,
+  BasePlugin<MarkdownConfig>,
+  PlatePlugin<BlockSelectionPluginConfig>,
+] = [BaseAIPlugin, MarkdownPlugin, BlockSelectionPlugin];
 
 const defaultOptions: AIChatPluginOptions = {
   _blockChunks: '',
@@ -116,20 +129,16 @@ const defaultOptions: AIChatPluginOptions = {
   trigger: ' ',
   triggerPreviousCharPattern: /^\s?$/,
 };
-const AIChatPluginDefinition = createPlatePlugin({
-  key: KEYS.aiChat,
-  dependencies,
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
+
+const aiChatSchema = {
+  element: {
+    content: schema.content.text({ default: 'text', min: 1 }),
   },
-  options: defaultOptions,
-});
+};
 
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
-  AIChatPluginOptions,
+  NormalizePluginOption<AIChatPluginOptions>,
   {},
   {
     aiChat: {
@@ -139,119 +148,127 @@ export type AIChatPluginConfig = PluginConfig<
   {},
   {},
   typeof dependencies,
-  readonly [],
-  NonNullable<InferConfig<typeof AIChatPluginDefinition>['schemaModel']>,
+  PluginSchemaModel<'aiChat', typeof aiChatSchema>,
   AIChatApi
 >;
 
-export const AIChatPlugin = AIChatPluginDefinition.extendTx<
-  AIChatPluginConfig['tx']['aiChat']
->(({ editor }) => (tx) => ({
-  removeAnchor: (options = {}) => removeAnchorAIChat(editor, tx, options),
-}))
-  .extendApi<AIChatPluginConfig['pluginApi']>(
-    ({ editor, getOption, getOptions, setOption, type }) => ({
-      accept: () => acceptAIChat(editor),
-      hide: ({ focus = true, undo = true } = {}) => {
-        resetAIChat(editor, { undo });
-        setOption('open', false);
+const AIChatPluginDefinition = createPlatePlugin<AIChatPluginConfig>({
+  key: KEYS.aiChat,
+  dependencies,
+  schema: aiChatSchema,
+  options: defaultOptions,
+});
 
-        if (focus) {
-          if (
-            editor.plugin(BlockSelectionPlugin).getOption('isSelectingSome')
-          ) {
-            editor.plugin(BlockSelectionPlugin).api.focus();
-          } else {
-            editor.api.dom.focus();
+export const AIChatPlugin: PlatePlugin<AIChatPluginConfig> =
+  AIChatPluginDefinition.extendTx<AIChatPluginConfig['tx']['aiChat']>(
+    ({ editor }) =>
+      (tx) => ({
+        removeAnchor: (options = {}) => removeAnchorAIChat(editor, tx, options),
+      })
+  )
+    .extendApi<AIChatPluginConfig['pluginApi']>(
+      ({ editor, getOption, getOptions, setOption, type }) => ({
+        accept: () => acceptAIChat(editor),
+        hide: ({ focus = true, undo = true } = {}) => {
+          resetAIChat(editor, { undo });
+          setOption('open', false);
+
+          if (focus) {
+            if (
+              editor.plugin(BlockSelectionPlugin).getOption('isSelectingSome')
+            ) {
+              editor.plugin(BlockSelectionPlugin).api.focus();
+            } else {
+              editor.api.dom.focus();
+            }
           }
-        }
 
-        editor.update((tx) => {
-          tx.history.skip();
-          tx.aiChat.removeAnchor();
-        });
-      },
-      insertBelow: (sourceEditor, options) =>
-        insertBelowAIChat(editor, sourceEditor, options),
-      node: (options = {}) => {
-        const { anchor = false, streaming = false, ...rest } = options;
-
-        if (anchor) {
-          return editor.read.nodes.find<Node>({
-            at: [],
-            match: { type },
-            ...rest,
+          editor.update((tx) => {
+            tx.history.skip();
+            tx.aiChat.removeAnchor();
           });
-        }
+        },
+        insertBelow: (sourceEditor, options) =>
+          insertBelowAIChat(editor, sourceEditor, options),
+        node: (options = {}) => {
+          const { anchor = false, streaming = false, ...rest } = options;
 
-        const aiType = getPluginType(editor, KEYS.ai);
+          if (anchor) {
+            return editor.read.nodes.find<Node>({
+              at: [],
+              match: { type },
+              ...rest,
+            });
+          }
 
-        if (streaming) {
-          if (!getOption('streaming')) return;
+          const aiType = getPluginType(editor, KEYS.ai);
 
-          const path = getOption('_blockPath');
-          if (!path) return;
+          if (streaming) {
+            if (!getOption('streaming')) return;
+
+            const path = getOption('_blockPath');
+            if (!path) return;
+
+            return editor.read.nodes.find<Node>({
+              at: [...path],
+              mode: 'lowest',
+              reverse: true,
+              match: (node) => Boolean(Reflect.get(node, aiType)),
+              ...rest,
+            });
+          }
 
           return editor.read.nodes.find<Node>({
-            at: [...path],
-            mode: 'lowest',
-            reverse: true,
             match: (node) => Boolean(Reflect.get(node, aiType)),
             ...rest,
           });
-        }
+        },
+        reload: () => {
+          const { chat, chatNodes, chatSelection } = getOptions();
 
-        return editor.read.nodes.find<Node>({
-          match: (node) => Boolean(Reflect.get(node, aiType)),
-          ...rest,
-        });
-      },
-      reload: () => {
-        const { chat, chatNodes, chatSelection } = getOptions();
+          editor.plugin(BaseAIPlugin).api.undo();
 
-        editor.plugin(BaseAIPlugin).api.undo();
+          if (chatSelection) {
+            editor.update.selection.set(chatSelection);
+          } else {
+            editor
+              .plugin(BlockSelectionPlugin)
+              .api.set(chatNodes.map((node) => node.id));
+          }
 
-        if (chatSelection) {
-          editor.update.selection.set(chatSelection);
-        } else {
-          editor
-            .plugin(BlockSelectionPlugin)
-            .api.set(chatNodes.map((node) => node.id));
-        }
+          const blocks = editor.plugin(BlockSelectionPlugin).api.getNodes({});
+          const selection =
+            blocks.length > 0
+              ? editor.read.ranges.fromEntries(blocks)
+              : editor.read.selection();
 
-        const blocks = editor.plugin(BlockSelectionPlugin).api.getNodes({});
-        const selection =
-          blocks.length > 0
-            ? editor.read.ranges.fromEntries(blocks)
-            : editor.read.selection();
-
-        void chat?.regenerate?.({
-          body: {
-            ctx: {
-              children: editor.read.children(),
-              selection: selection ?? null,
-              toolName: getOption('toolName'),
+          void chat?.regenerate?.({
+            body: {
+              ctx: {
+                children: editor.read.children(),
+                selection: selection ?? null,
+                toolName: getOption('toolName'),
+              },
             },
-          },
-        });
-      },
-      replaceSelection: (sourceEditor, options) =>
-        replaceSelectionAIChat(editor, sourceEditor, options),
-      reset: (options) => resetAIChat(editor, options),
-      show: () => {
-        resetAIChat(editor);
-        setOption('toolName', null);
-        getOptions().chat?.clear();
-        setOption('open', true);
-      },
-      stop: () => {
-        setOption('streaming', false);
-        setOption('_blockChunks', '');
-        setOption('_blockPath', null);
-        setOption('_mdxName', null);
-        getOptions().chat?.stop?.();
-      },
-      submit: (input, options) => submitAIChat(editor, input, options),
-    })
-  )
-  .extendExtension(withAIChat);
+          });
+        },
+        replaceSelection: (sourceEditor, options) =>
+          replaceSelectionAIChat(editor, sourceEditor, options),
+        reset: (options) => resetAIChat(editor, options),
+        show: () => {
+          resetAIChat(editor);
+          setOption('toolName', null);
+          getOptions().chat?.clear();
+          setOption('open', true);
+        },
+        stop: () => {
+          setOption('streaming', false);
+          setOption('_blockChunks', '');
+          setOption('_blockPath', null);
+          setOption('_mdxName', null);
+          getOptions().chat?.stop?.();
+        },
+        submit: (input, options) => submitAIChat(editor, input, options),
+      })
+    )
+    .extendExtension(withAIChat);

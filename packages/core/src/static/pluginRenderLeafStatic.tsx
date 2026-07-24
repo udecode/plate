@@ -6,7 +6,6 @@ import type { RenderLeafProps, AnyBasePlugin, BaseEditor } from '../lib';
 import { getPlateRuntime } from '../internal/plugin/compilePlateModel';
 
 import { PliteLeaf } from './components';
-import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type PliteRenderLeaf = (
@@ -26,9 +25,7 @@ export const pluginRenderLeafStatic = (
       const Leaf = Component ?? PliteLeaf;
 
       const ctxProps = getRenderNodeStaticProps({
-        attributes: { ...(leaf.attributes as any) },
         editor,
-        node: leaf,
         path: props.path,
         plugin,
         props: props as any,
@@ -110,19 +107,6 @@ export const pipeRenderLeafStatic = (
       props: { attributes, ...props, children } as any,
     }) as any;
 
-    const leaf = ctxProps.leaf;
-    const dataAttributes = getNodeDataAttributes(editor, leaf, {
-      isLeaf: true,
-    });
-
-    return (
-      <PliteLeaf
-        {...ctxProps}
-        attributes={{
-          ...ctxProps.attributes,
-          ...dataAttributes,
-        }}
-      />
-    );
+    return <PliteLeaf {...ctxProps} />;
   };
 };

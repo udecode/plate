@@ -39,3 +39,8 @@ Create a text selection from a range and optional affinity or insertion marks.
 #### `SelectionApi.node(path: Path, range: Range) => NodeSelection`
 
 Create a node selection from a node path and range.
+
+In Plite React, node selection is model-only: the editor remains focused while
+the native browser selection has no range. See
+[Keyboard-Selectable Content](../../concepts/16-selection-and-dom#keyboard-selectable-content)
+for asset focus, child-content navigation, and deletion.

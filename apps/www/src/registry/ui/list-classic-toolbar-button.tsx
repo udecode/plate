@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { indentListItems, unindentListItems } from '@platejs/list-classic';
 import {
+  ListPlugin,
   useListToolbarButton,
   useListToolbarButtonState,
 } from '@platejs/list-classic/react';
@@ -55,13 +55,13 @@ export function IndentToolbarButton({
     <ToolbarButton
       {...props}
       onClick={() => {
-        editor.update((tx) => {
-          if (reverse) {
-            unindentListItems(editor, tx);
-          } else {
-            indentListItems(editor, tx);
-          }
-        });
+        const list = editor.plugin(ListPlugin);
+
+        if (reverse) {
+          list.update.outdent();
+        } else {
+          list.update.indent();
+        }
       }}
       tooltip={reverse ? 'Outdent' : 'Indent'}
     >

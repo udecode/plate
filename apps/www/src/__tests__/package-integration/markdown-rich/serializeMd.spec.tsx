@@ -13,7 +13,7 @@ describe('serializeMd', () => {
   it('serializes a simple paragraph', () => {
     const result = serializeMd(editor as any, {
       spread: true,
-      value: testValue,
+      value: { children: testValue },
     });
     expect(result).toMatchSnapshot();
   });
@@ -61,7 +61,9 @@ describe('serializeMd', () => {
           type: 'p',
         },
       ];
-      const result = serializeMd(editor as any, { value: slateNodes });
+      const result = serializeMd(editor as any, {
+        value: { children: slateNodes },
+      });
       expect(result).toMatchSnapshot();
     });
 
@@ -102,7 +104,9 @@ describe('serializeMd', () => {
         },
       ];
 
-      const result = serializeMd(editor as any, { value: slateNodes });
+      const result = serializeMd(editor as any, {
+        value: { children: slateNodes },
+      });
       expect(result).toMatchSnapshot();
     });
 
@@ -122,7 +126,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: slateNodes })
+        serializeMd(editor as any, { value: { children: slateNodes } })
       ).toMatchSnapshot();
     });
 
@@ -139,7 +143,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: slateNodes })
+        serializeMd(editor as any, { value: { children: slateNodes } })
       ).toMatchSnapshot();
     });
 
@@ -157,7 +161,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: slateNodes })
+        serializeMd(editor as any, { value: { children: slateNodes } })
       ).toMatchSnapshot();
     });
 
@@ -174,7 +178,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: slateNodes })
+        serializeMd(editor as any, { value: { children: slateNodes } })
       ).toMatchSnapshot();
     });
 
@@ -192,7 +196,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: slateNodes })
+        serializeMd(editor as any, { value: { children: slateNodes } })
       ).toMatchSnapshot();
     });
 
@@ -204,9 +208,9 @@ describe('serializeMd', () => {
         },
       ];
 
-      expect(serializeMd(editor as any, { value: slateNodes })).toBe(
-        '> Block quote\\ \n> <br />\n'
-      );
+      expect(
+        serializeMd(editor as any, { value: { children: slateNodes } })
+      ).toBe('> Block quote\\ \n> <br />\n');
     });
 
     it(String.raw`serializes three trailing \n in a paragraph as a forced line break and <br />`, () => {
@@ -222,9 +226,9 @@ describe('serializeMd', () => {
         },
       ];
 
-      expect(serializeMd(editor as any, { value: slateNodes })).toBe(
-        'Paragaph with two new Lines\\\n\\ \n<br />\n'
-      );
+      expect(
+        serializeMd(editor as any, { value: { children: slateNodes } })
+      ).toBe('Paragaph with two new Lines\\\n\\ \n<br />\n');
     });
   });
 
@@ -236,7 +240,9 @@ describe('serializeMd', () => {
       },
     ];
 
-    expect(serializeMd(editor as any, { value: slateNodes })).toMatchSnapshot();
+    expect(
+      serializeMd(editor as any, { value: { children: slateNodes } })
+    ).toMatchSnapshot();
   });
 
   it('serializes paragraphs containing only a new line as <br />', () => {
@@ -251,7 +257,9 @@ describe('serializeMd', () => {
       },
     ];
 
-    expect(serializeMd(editor as any, { value: slateNodes })).toMatchSnapshot();
+    expect(
+      serializeMd(editor as any, { value: { children: slateNodes } })
+    ).toMatchSnapshot();
   });
 
   it('serializes lists with spread correctly', () => {
@@ -271,12 +279,14 @@ describe('serializeMd', () => {
       },
     ];
 
-    const resultDefault = serializeMd(editor as any, { value: listFragment });
+    const resultDefault = serializeMd(editor as any, {
+      value: { children: listFragment },
+    });
     expect(resultDefault).toBe('1. 1\n2. 2\n');
 
     const resultWithSpread = serializeMd(editor as any, {
       spread: true,
-      value: listFragment,
+      value: { children: listFragment },
     });
     expect(resultWithSpread).toBe('1. 1\n\n2. 2\n');
   });
@@ -305,7 +315,7 @@ describe('serializeMd', () => {
           },
         },
       },
-      value: slateNodes,
+      value: { children: slateNodes },
     });
     expect(result).toBe('Make text *bold*\n');
   });
@@ -346,7 +356,9 @@ describe('serializeMd', () => {
       },
     ];
 
-    const result = serializeMd(editor as any, { value: slateNodes });
+    const result = serializeMd(editor as any, {
+      value: { children: slateNodes },
+    });
 
     expect(result).toBe(
       '| First paragraph<br/>Second paragraph | Single paragraph |\n| ------------------------------------ | ---------------- |\n'

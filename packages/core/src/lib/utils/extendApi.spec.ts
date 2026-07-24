@@ -356,7 +356,7 @@ describe('extendEditorApi method', () => {
 });
 
 describe('extendApi method', () => {
-  it('keeps descriptor declarations separate from the installed plugin portal', () => {
+  it('rejects a plugin API key that collides with an editor API namespace', () => {
     const testPlugin = createBasePlugin({
       api: {
         rootMethod: () => 'root',
@@ -377,17 +377,12 @@ describe('extendApi method', () => {
     expect(Object.hasOwn(testPlugin, 'api')).toBe(false);
     expect(Reflect.get(testPlugin, 'api')).toBeUndefined();
 
-    const editor = createBaseEditor({ plugins: [testPlugin] });
-
-    expect(editor.api.rootMethod()).toBe('root');
-    expect(editor.api.testPlugin.sameKeyRootMethod()).toBe('same-key-root');
-    expect(editor.plugin(testPlugin).api.pluginMethod()).toBe('plugin');
-    expect(Reflect.get(editor.plugin(testPlugin).api, 'rootMethod')).toBe(
-      undefined
+    expect(() => createBaseEditor({ plugins: [testPlugin] })).toThrow(
+      'Plate API namespace "testPlugin" is declared by both plugin API and editor API owners while resolving plugin "testPlugin".'
     );
   });
 
-  it('extend plugin-specific API without affecting global API', () => {
+  it('publishes one immutable plugin API through root and scoped access', () => {
     const testPlugin = createBasePlugin({
       key: 'testPlugin',
     })
@@ -404,11 +399,78 @@ describe('extendApi method', () => {
 
     expect(editor.api.globalMethod()).toBe('global');
     expect(editor.plugin(testPlugin).api.pluginMethod()).toBe('plugin');
-    expect(Reflect.get(editor.api, 'testPlugin')).toBeUndefined();
+    expect(editor.api.testPlugin.pluginMethod()).toBe('plugin');
+    expect(editor.api.testPlugin).toBe(editor.plugin(testPlugin).api);
+    expect(Object.isFrozen(editor.api.testPlugin)).toBe(true);
 
-    // @ts-expect-error plugin-specific APIs do not leak into editor.api
+    // @ts-expect-error plugin APIs are namespaced by plugin key
     const pluginMethod = editor.api.pluginMethod;
     expect(pluginMethod).toBeUndefined();
+  });
+
+  it('omits empty and disabled plugin API namespaces', () => {
+    const emptyPlugin = createBasePlugin({ key: 'emptyPlugin' });
+    const disabledPlugin = createBasePlugin({
+      enabled: false,
+      key: 'disabledPlugin',
+    }).extendApi(() => ({
+      read: () => true,
+    }));
+    const editor = createBaseEditor({
+      plugins: [emptyPlugin, disabledPlugin],
+    });
+
+    expect(Reflect.has(editor.api, 'emptyPlugin')).toBe(false);
+    expect(Reflect.has(editor.api, 'disabledPlugin')).toBe(false);
+  });
+
+  it('publishes only the explicit same-key replacement API', () => {
+    const defaultPlugin = createBasePlugin({
+      key: 'replaceablePlugin',
+    }).extendApi(() => ({
+      original: () => 'original',
+    }));
+    const parentPlugin = createBasePlugin({
+      dependencies: [defaultPlugin],
+      key: 'replacementParent',
+    });
+    const replacementPlugin = createBasePlugin({
+      key: 'replaceablePlugin',
+    }).extendApi(() => ({
+      replacement: () => 'replacement',
+    }));
+    const editor = createBaseEditor({
+      plugins: [parentPlugin, replacementPlugin],
+    });
+
+    expect(editor.api.replaceablePlugin.replacement()).toBe('replacement');
+    expect(
+      Reflect.get(editor.api.replaceablePlugin, 'original')
+    ).toBeUndefined();
+    expect(editor.api.replaceablePlugin).toBe(
+      editor.plugin(replacementPlugin).api
+    );
+  });
+
+  it('rejects a later editor API that collides with a plugin API namespace', () => {
+    const pluginApiOwner = createBasePlugin({
+      key: 'sharedNamespace',
+    }).extendApi(() => ({
+      read: () => 'plugin',
+    }));
+    const editorApiOwner = createBasePlugin({
+      key: 'editorApiOwner',
+    }).extendEditorApi(() => ({
+      sharedNamespace: {
+        read: () => 'editor',
+      },
+    }));
+
+    expect(() =>
+      createBaseEditor({ plugins: [pluginApiOwner, editorApiOwner] })
+    ).toThrow(
+      'Plate API namespace "sharedNamespace" is declared by both plugin API and editor API owners while resolving plugin "editorApiOwner".'
+    );
   });
 
   it('allow multiple extendApi calls', () => {
@@ -432,6 +494,7 @@ describe('extendApi method', () => {
     expect(editor.plugin(testPlugin).api.method1()).toBe(1);
     expect(editor.plugin(testPlugin).api.method2()).toBe(2);
     expect(editor.plugin(testPlugin).api.method3()).toBe(3);
+    expect(editor.api.testPlugin.method3()).toBe(3);
   });
 
   it('allow access to plugin options in extendApi', () => {
@@ -449,6 +512,7 @@ describe('extendApi method', () => {
     });
 
     expect(editor.plugin(testPlugin).api.getValue()).toBe(10);
+    expect(editor.api.testPlugin.getValue()).toBe(10);
   });
 
   it('allow interaction between global and plugin-specific APIs', () => {
@@ -488,6 +552,8 @@ describe('extendApi method', () => {
 
     expect(editor.plugin(plugin1).api.method()).toBe('plugin1');
     expect(editor.plugin(plugin2).api.method()).toBe('plugin2');
+    expect(editor.api.plugin1.method()).toBe('plugin1');
+    expect(editor.api.plugin2.method()).toBe('plugin2');
   });
 
   it('allow overriding plugin-specific APIs', () => {
@@ -513,6 +579,8 @@ describe('extendApi method', () => {
 
     expect(editor.plugin(basePlugin).api.method()).toBe('base');
     expect(editor.plugin(overridePlugin).api.method()).toBe('override base');
+    expect(editor.api.basePlugin.method()).toBe('base');
+    expect(editor.api.overridePlugin.method()).toBe('override base');
   });
 
   it('handle complex scenarios with both extendEditorApi and extendApi', () => {
@@ -539,6 +607,7 @@ describe('extendApi method', () => {
 
     expect(editor.api.globalMethod()).toBe('global');
     expect(editor.plugin(testPlugin).api.pluginMethod()).toBe(5);
+    expect(editor.api.testPlugin.pluginMethod()).toBe(5);
     expect(editor.api.combinedMethod()).toBe('global-5');
   });
 });

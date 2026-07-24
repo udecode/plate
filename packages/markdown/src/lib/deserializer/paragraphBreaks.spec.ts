@@ -42,7 +42,9 @@ describe('paragraph breaks preservation', () => {
     ];
 
     // Serialize to markdown
-    const serialized = serializeMd(editor, { value: originalValue });
+    const serialized = serializeMd(editor, {
+      value: { children: originalValue },
+    });
 
     // Check that zero-width space is used in serialization
     expect(serialized).toContain('\u200B');
@@ -52,14 +54,14 @@ describe('paragraph breaks preservation', () => {
     const deserialized = deserializeMd(editor, serialized);
 
     // Check that the empty paragraph is preserved
-    expect(deserialized).toHaveLength(4);
-    expect(deserialized[1]).toMatchObject({
+    expect(deserialized.children).toHaveLength(4);
+    expect(deserialized.children[1]).toMatchObject({
       children: [{ text: '' }],
       type: 'p',
     });
 
     // The structure should match the original
-    expect(deserialized).toEqual(originalValue);
+    expect(deserialized.children).toEqual(originalValue);
   });
 
   it('preserve multiple consecutive empty paragraphs', () => {
@@ -82,12 +84,14 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor, { value: originalValue });
+    const serialized = serializeMd(editor, {
+      value: { children: originalValue },
+    });
     const deserialized = deserializeMd(editor, serialized);
 
-    expect(deserialized).toHaveLength(4);
-    expect(deserialized[1].children[0].text).toBe('');
-    expect(deserialized[2].children[0].text).toBe('');
+    expect(deserialized.children).toHaveLength(4);
+    expect(deserialized.children[1].children[0].text).toBe('');
+    expect(deserialized.children[2].children[0].text).toBe('');
   });
 
   it('handle mixed empty and non-empty paragraphs', () => {
@@ -118,14 +122,16 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor, { value: originalValue });
+    const serialized = serializeMd(editor, {
+      value: { children: originalValue },
+    });
     const deserialized = deserializeMd(editor, serialized);
 
-    expect(deserialized).toHaveLength(6);
-    expect(deserialized[0].children[0].text).toBe('');
-    expect(deserialized[2].children[0].text).toBe('');
-    expect(deserialized[3].children[0].text).toBe('');
-    expect(deserialized[5].children[0].text).toBe('');
+    expect(deserialized.children).toHaveLength(6);
+    expect(deserialized.children[0].children[0].text).toBe('');
+    expect(deserialized.children[2].children[0].text).toBe('');
+    expect(deserialized.children[3].children[0].text).toBe('');
+    expect(deserialized.children[5].children[0].text).toBe('');
   });
 
   it('does not affect paragraphs with actual content', () => {
@@ -152,16 +158,18 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor, { value: originalValue });
+    const serialized = serializeMd(editor, {
+      value: { children: originalValue },
+    });
     const deserialized = deserializeMd(editor, serialized);
 
-    expect(deserialized).toHaveLength(3);
-    expect(deserialized[0].children).toHaveLength(3);
-    expect(deserialized[0].children[1]).toMatchObject({
+    expect(deserialized.children).toHaveLength(3);
+    expect(deserialized.children[0].children).toHaveLength(3);
+    expect(deserialized.children[0].children[1]).toMatchObject({
       bold: true,
       text: 'bold',
     });
-    expect(deserialized[2].children[1]).toMatchObject({
+    expect(deserialized.children[2].children[1]).toMatchObject({
       italic: true,
       text: 'italic',
     });
@@ -175,11 +183,13 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor, { value: originalValue });
+    const serialized = serializeMd(editor, {
+      value: { children: originalValue },
+    });
     const deserialized = deserializeMd(editor, serialized);
 
     // The zero-width space in actual text content should be preserved
-    expect(deserialized[0].children[0].text).toBe(
+    expect(deserialized.children[0].children[0].text).toBe(
       'text with \u200B zero-width space'
     );
   });

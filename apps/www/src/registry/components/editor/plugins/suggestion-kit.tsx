@@ -1,8 +1,12 @@
 'use client';
 
-import type { ExtendConfig } from 'platejs';
+import type {
+  BasePluginOverride,
+  ExtendConfig,
+  TrailingBlockConfig,
+} from 'platejs';
 
-import { KEYS, TextApi, TrailingBlockPlugin } from 'platejs';
+import { KEYS, TextApi } from 'platejs';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import type { BaseSuggestionConfig } from '@platejs/suggestion';
 import { toPlatePlugin } from 'platejs/react';
@@ -104,6 +108,17 @@ export const suggestionPlugin = toPlatePlugin<
       transformStyle: () => ({}) as CSSStyleDeclaration,
     },
   },
+  override: {
+    plugins: {
+      [KEYS.trailingBlock]: {
+        options: {
+          insert: (editor, { insert }) => {
+            editor.plugin(BaseSuggestionPlugin).api.untracked(insert);
+          },
+        },
+      } satisfies BasePluginOverride<TrailingBlockConfig>,
+    },
+  },
   render: {
     belowNodes: SuggestionLineBreak,
     belowRootNodes: VoidRemoveSuggestionOverlay,
@@ -112,12 +127,4 @@ export const suggestionPlugin = toPlatePlugin<
   targetPluginKeys: INLINE_SUGGESTION_RENDER_TARGETS,
 });
 
-const trailingBlockPlugin = TrailingBlockPlugin.configure({
-  options: {
-    insert: (editor, { insert }) => {
-      editor.plugin(suggestionPlugin).api.untracked(insert);
-    },
-  },
-});
-
-export const SuggestionKit = [suggestionPlugin, trailingBlockPlugin];
+export const SuggestionKit = [suggestionPlugin];

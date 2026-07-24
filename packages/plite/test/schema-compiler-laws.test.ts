@@ -590,13 +590,14 @@ describe('compiled schema generated laws', () => {
         name: 'omission without a default',
       },
       {
-        code: 'invalid-property-policy',
+        code: 'invalid-property-validation',
         descriptor: {
           kind: 'string',
           omitDefault: false,
-          policy: { id: 'invalid', validate: () => true, version: 0 },
+          validate: () => true,
+          validationVersion: 0,
         },
-        name: 'invalid policy version',
+        name: 'invalid validation version',
       },
     ];
     const base = createBaseSchema().schema;

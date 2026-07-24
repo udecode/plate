@@ -2,8 +2,8 @@
 "@platejs/indent": major
 ---
 
-Move indent commands to `editor.update.indent` and register indentation
-properties in compiled schemas.
+Move indent commands to `editor.update.indent` and register validated
+indentation properties in compiled schemas under each resolved plugin type.
 
 **Migration:** Replace `setIndent`, `indent`, and `outdent` with
 `editor.update.indent.set`, `editor.update.indent.increase`, and

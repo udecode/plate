@@ -244,7 +244,9 @@ const removeEscapeSelection = (editor: MarkdownEditor, text: string) => {
 
     if (!node) return newText;
     if (editor.read.schema.isVoid(node[0])) {
-      const voidString = editor.api.markdown.serialize({ value: [node[0]] });
+      const voidString = editor.api.markdown.serialize({
+        value: { children: [node[0]] },
+      });
 
       const idx = newText.lastIndexOf(voidString);
 

@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import type { Value } from '@platejs/plite';
+import type {
+  EditorExtensionsFromOptions,
+  EditorValueFromOptions,
+  Value,
+} from '@platejs/plite';
 
 import {
   type CreateReactEditorOptions,
@@ -21,13 +25,29 @@ export type UsePliteEditorOptions<
  * editor commands instead of changing props. Use `createReactEditor` when an
  * editor must be created outside React ownership.
  */
-export const usePliteEditor = <
+export function usePliteEditor<
+  const TOptions extends UsePliteEditorOptions<any, readonly unknown[]> & {
+    extensions: readonly unknown[];
+  },
+>(
+  options: TOptions
+): ReactEditor<
+  EditorValueFromOptions<TOptions>,
+  EditorExtensionsFromOptions<TOptions>
+>;
+
+export function usePliteEditor<
+  V extends Value = Value,
+  const TExtensions extends readonly unknown[] = readonly [],
+>(options?: UsePliteEditorOptions<V, TExtensions>): ReactEditor<V, TExtensions>;
+
+export function usePliteEditor<
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
 >(
   options: UsePliteEditorOptions<V, TExtensions> = {}
-): ReactEditor<V, TExtensions> => {
+): ReactEditor<V, TExtensions> {
   const [editor] = useState(() => createReactEditor(options));
 
   return editor;
-};
+}

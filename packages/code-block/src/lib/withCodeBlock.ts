@@ -12,7 +12,6 @@ import {
 import { KEYS } from '@platejs/utils';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
-import { resetCodeBlockDecorations } from './setCodeBlockToDecorations';
 import { indentCodeLine, outdentCodeLine, unwrapCodeBlock } from './transforms';
 
 const NON_WHITESPACE = /\S/;
@@ -155,8 +154,6 @@ export const tabCodeBlock = (
 
 export const withCodeBlock: ExtendPlateEditorExtension<CodeBlockConfig> = ({
   editor,
-  getOptions,
-  type,
 }) => ({
   commands: ({ around, handle }) => [
     handle(editorCommands.delete, ({ input, state }) => {
@@ -287,11 +284,4 @@ export const withCodeBlock: ExtendPlateEditorExtension<CodeBlockConfig> = ({
     }),
   ],
   priority: 10,
-  onTransactionChange(context) {
-    const codeBlock =
-      getOptions().lowlight &&
-      getCodeBlockLanguageChange(context, type)?.before;
-
-    if (ElementApi.isElement(codeBlock)) resetCodeBlockDecorations(codeBlock);
-  },
 });

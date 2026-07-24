@@ -9,7 +9,6 @@ import {
 import { getPlateRuntime } from '../internal/plugin/compilePlateModel';
 
 import { PliteElement } from './components/plite-nodes';
-import { getPluginDataAttributes } from './utils';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type PliteRenderElement = (
@@ -21,23 +20,14 @@ export const pluginRenderElementStatic = (
   plugin: AnyBasePlugin
 ): PliteRenderElement =>
   function render(nodeProps) {
-    const element = nodeProps.element;
-
     const Component = getPlateRuntime(editor).components[plugin.key] as any;
     const Element = Component ?? PliteElement;
 
     let { children } = nodeProps;
 
-    const dataAttributes = getPluginDataAttributes(editor, plugin, element);
-
     // biome-ignore lint/style/noParameterAssign: Intentional props accumulation pattern
     nodeProps = getRenderNodeStaticProps({
-      attributes: {
-        ...(element.attributes as any),
-        ...dataAttributes,
-      },
       editor,
-      node: element,
       path: nodeProps.path,
       plugin,
       props: nodeProps as any,

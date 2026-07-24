@@ -97,4 +97,52 @@ describe('BaseTextAlignPlugin', () => {
     editor.update.textAlign.set('start');
     expect(editor.read.children()[0]).not.toHaveProperty(nodeKey);
   });
+
+  it('uses the resolved plugin type as its sole storage key', () => {
+    const TextAlignPlugin = BaseTextAlignPlugin.configure({
+      inject: {
+        nodeProps: {
+          nodeKey: 'legacyAlign',
+        },
+      },
+      type: 'textAlignment',
+    });
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, TextAlignPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          type: 'p',
+        },
+      ],
+    });
+
+    expect(
+      editor.plugin(HtmlPlugin).api.deserialize({
+        element: '<p style="text-align: center">text</p>',
+      })
+    ).toMatchObject([
+      {
+        children: [{ text: 'text' }],
+        textAlignment: 'center',
+        type: KEYS.p,
+      },
+    ]);
+
+    editor.update.textAlign.set('center');
+
+    expect(editor.read.children()[0]).toMatchObject({
+      textAlignment: 'center',
+    });
+    expect(editor.read.children()[0]).not.toHaveProperty('legacyAlign');
+
+    editor.update.textAlign.set('start');
+
+    expect(editor.read.children()[0]).not.toHaveProperty('textAlignment');
+  });
 });

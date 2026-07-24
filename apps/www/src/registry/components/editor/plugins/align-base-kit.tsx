@@ -6,7 +6,6 @@ export const BaseAlignKit = [
     inject: {
       nodeProps: {
         defaultNodeValue: 'start',
-        nodeKey: 'align',
         styleKey: 'textAlign',
         validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
       },

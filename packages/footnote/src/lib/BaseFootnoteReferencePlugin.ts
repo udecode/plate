@@ -102,13 +102,10 @@ const defaultOptions: TriggerComboboxPluginOptions = {
   trigger: '^',
   triggerPreviousCharPattern: /^\[$/,
 };
-const plugins: readonly [typeof BaseFootnoteInputPlugin] = [
-  BaseFootnoteInputPlugin,
-];
-
 /** Enables support for inline footnote references. */
 export const BaseFootnoteReferencePlugin = createBasePlugin({
   key: KEYS.footnoteReference,
+  dependencies: [BaseFootnoteInputPlugin],
   options: defaultOptions,
   schema: {
     element: {
@@ -116,7 +113,6 @@ export const BaseFootnoteReferencePlugin = createBasePlugin({
       void: 'inline',
     },
   },
-  plugins,
   render: { as: 'sup' },
 })
   .extendExtension(withTriggerCombobox)

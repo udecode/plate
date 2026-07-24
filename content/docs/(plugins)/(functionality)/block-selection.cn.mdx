@@ -37,7 +37,7 @@ docs:
 
 ### 添加 Kit
 
-`BlockSelectionKit` 默认启用上下文菜单，并提供默认的 `isSelectable` 逻辑来排除常见的不可选择块，如代码行和表格单元格。
+`BlockSelectionKit` 默认启用右键选择处理，并提供 `isSelectable` 规则来排除代码行和表格单元格等常见结构块。需要渲染上下文菜单时，请另外添加 [`BlockMenuKit`](/docs/block-menu)。
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
@@ -76,6 +76,8 @@ const editor = createPlateEditor({
   ],
 });
 ```
+
+`BlockSelectionPlugin` 不会安装 `BlockMenuPlugin`。没有菜单插件时，块选择会将菜单视为关闭状态，普通选择变化会清除已选择的块。
 
 将此插件放在任何覆盖 `selectAll` – `Cmd+A` 的其他插件（代码块、表格、列等）之前，以避免冲突。
 
@@ -152,12 +154,12 @@ BlockSelectionPlugin.configure({
 
 ```tsx
 // 1. 直接调用 API
-editor.plugin(BlockSelectionPlugin).api.deselect();
+editor.api.blockSelection.deselect();
 
 // 2. 外部点击处理程序
 const handleClickOutside = (event: MouseEvent) => {
   if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
-    editor.plugin(BlockSelectionPlugin).api.deselect();
+    editor.api.blockSelection.deselect();
   }
 };
 ```
@@ -213,7 +215,7 @@ render: {
 
   </APIItem>
   <APIItem name="enableContextMenu" type="boolean" optional>
-    启用或禁用块选择的上下文菜单。
+    启用右键块选择处理。此选项不会安装或渲染 `BlockMenuPlugin`。
     - **默认值:** `false`
   </APIItem>
   <APIItem name="isSelecting" type="boolean" optional>
@@ -244,11 +246,11 @@ render: {
 
 ## API
 
-### `editor.plugin(BlockSelectionPlugin).api.add(id)`
+### `editor.api.blockSelection.add(id)`
 
 将一个或多个块添加到选择中。
 
-<API name="editor.plugin(BlockSelectionPlugin).api.add">
+<API name="editor.api.blockSelection.add">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       要选择的块的 ID。
@@ -256,15 +258,15 @@ render: {
   </APIParameters>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.clear()`
+### `editor.api.blockSelection.clear()`
 
 将选中的 ID 集合重置为空集合。
 
-### `editor.plugin(BlockSelectionPlugin).api.delete(id)`
+### `editor.api.blockSelection.delete(id)`
 
 从选择中移除一个或多个块。
 
-<API name="editor.plugin(BlockSelectionPlugin).api.delete">
+<API name="editor.api.blockSelection.delete">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       要从选择中移除的块的 ID。
@@ -272,19 +274,19 @@ render: {
   </APIParameters>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.deselect()`
+### `editor.api.blockSelection.deselect()`
 
 取消选择所有块并将 `isSelecting` 标志设置为 false。
 
-### `editor.plugin(BlockSelectionPlugin).api.focus()`
+### `editor.api.blockSelection.focus()`
 
 聚焦块选择的影子输入框。此输入框处理选中块的复制、删除和粘贴事件。
 
-### `editor.plugin(BlockSelectionPlugin).api.getNodes(options?)`
+### `editor.api.blockSelection.getNodes(options?)`
 
 获取编辑器中选中的块。
 
-<API name="editor.plugin(BlockSelectionPlugin).api.getNodes">
+<API name="editor.api.blockSelection.getNodes">
 <APIParameters>
   <APIItem name="options" type="{ selectionFallback?: boolean }" optional>
     获取节点的选项。
@@ -302,11 +304,11 @@ render: {
 </APIReturns>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.has(id)`
+### `editor.api.blockSelection.has(id)`
 
 检查一个或多个块是否被选中。
 
-<API name="editor.plugin(BlockSelectionPlugin).api.has">
+<API name="editor.api.blockSelection.has">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       要检查的块的 ID。
@@ -317,11 +319,11 @@ render: {
   </APIReturns>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.isSelectable(element, path)`
+### `editor.api.blockSelection.isSelectable(element, path)`
 
 根据 `isSelectable` 插件选项检查给定路径的块是否可选择。
 
-<API name="editor.plugin(BlockSelectionPlugin).api.isSelectable">
+<API name="editor.api.blockSelection.isSelectable">
   <APIParameters>
     <APIItem name="element" type="Element">
       要检查的块元素。
@@ -333,7 +335,7 @@ render: {
   <APIReturns type="boolean">块是否可选择。</APIReturns>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.moveSelection(direction)`
+### `editor.api.blockSelection.moveSelection(direction)`
 
 将选择向上或向下移动到下一个可选择的块。
 
@@ -347,7 +349,7 @@ render: {
 - 将其设置为新的锚点
 - 清除之前的选择并仅选择此块
 
-<API name="editor.plugin(BlockSelectionPlugin).api.moveSelection">
+<API name="editor.api.blockSelection.moveSelection">
   <APIParameters>
     <APIItem name="direction" type="'up' | 'down'">
       移动选择的方向。
@@ -355,15 +357,15 @@ render: {
   </APIParameters>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.selectAll()`
+### `editor.api.blockSelection.selectAll()`
 
 选择编辑器中所有可选择的块。
 
-### `editor.plugin(BlockSelectionPlugin).api.set(id)`
+### `editor.api.blockSelection.set(id)`
 
 将选择设置为一个或多个块，清除任何现有选择。
 
-<API name="editor.plugin(BlockSelectionPlugin).api.set">
+<API name="editor.api.blockSelection.set">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       要选择的块的 ID。
@@ -371,7 +373,7 @@ render: {
   </APIParameters>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.shiftSelection(direction)`
+### `editor.api.blockSelection.shiftSelection(direction)`
 
 根据锚点块扩展或收缩选择。
 
@@ -386,7 +388,7 @@ render: {
 - `Shift+ArrowUp` 时为最底部的块
 - `Shift+ArrowDown` 时为最顶部的块
 
-<API name="editor.plugin(BlockSelectionPlugin).api.shiftSelection">
+<API name="editor.api.blockSelection.shiftSelection">
   <APIParameters>
     <APIItem name="direction" type="'up' | 'down'">
       扩展/收缩选择的方向。
@@ -406,7 +408,7 @@ render: {
 
 ### `editor.update.blockSelection.select`
 
-在编辑器中选择由 `editor.plugin(BlockSelectionPlugin).api.getNodes()` 返回的节点并重置选中的 ID。
+在编辑器中选择由 `editor.api.blockSelection.getNodes()` 返回的节点并重置选中的 ID。
 
 ### `editor.update.blockSelection.setNodes`
 

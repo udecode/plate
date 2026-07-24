@@ -1,104 +1,134 @@
 # Plugin Authoring Audit
 
-Real repo examples worth copying, plus a few patterns to treat carefully.
+Use these as bounded examples, never as whole-file authority. Core builders,
+type tests, and this skill outrank package precedent.
 
-## Strong Patterns
+## Contents
 
-### Base plugin + thin Plate wrapper
+- Semantic base and wrapper
+- Base-only plugin
+- Direct React plugin
+- Owner-first production colocation
+- React component-family colocation
+- Scoped API and options
+- Rejected precedent
 
-- [BaseCommentPlugin.ts](packages/comment/src/lib/BaseCommentPlugin.ts)
-- [CommentPlugin.tsx](packages/comment/src/react/CommentPlugin.tsx)
+## Semantic Base And Thin Wrapper
 
-Why it is good:
+- [BaseCommentPlugin.ts](../../../../packages/comment/src/lib/BaseCommentPlugin.ts)
+- [CommentPlugin.tsx](../../../../packages/comment/src/react/CommentPlugin.tsx)
+- [BaseCodeBlockPlugin.ts](../../../../packages/code-block/src/lib/BaseCodeBlockPlugin.ts)
+- [CodeBlockPlugin.tsx](../../../../packages/code-block/src/react/CodeBlockPlugin.tsx)
 
-- semantic core lives in `src/lib`
-- Plate layer is a thin wrapper
-- explicit config type exists because the contract is real
+Copy:
 
-### Base plugin + Plate child wiring
+- document semantics remain in `src/lib`;
+- Plate wrappers add only real React/Plate wiring;
+- explicit contract types exist only where the public contract is meaningful.
 
-- [BaseCodeBlockPlugin.ts](packages/code-block/src/lib/BaseCodeBlockPlugin.ts)
-- [CodeBlockPlugin.tsx](packages/code-block/src/react/CodeBlockPlugin.tsx)
+Do not infer that every base plugin needs a React wrapper.
 
-Why it is good:
+## Base-Only Plugin
 
-- base plugin owns semantic rules and update groups
-- wrapper only adds Plate child plugins
+- [HtmlPlugin.ts](../../../../packages/core/src/lib/plugins/html/HtmlPlugin.ts)
+- [MarkdownPlugin.ts](../../../../packages/markdown/src/lib/MarkdownPlugin.ts)
+- [CsvPlugin.ts](../../../../packages/csv/src/lib/CsvPlugin.ts)
 
-### Base-only plugin stays base-only
+Copy:
 
-- [HtmlPlugin.ts](packages/core/src/lib/plugins/html/HtmlPlugin.ts)
+- no fake React layer;
+- semantic ownership is direct;
+- parsers/codecs and their API remain with the semantic owner.
 
-Why it is good:
+## Direct React Plugin
 
-- no fake React layer
-- semantic ownership is obvious
+- [EventEditorPlugin.ts](../../../../packages/core/src/react/plugins/event-editor/EventEditorPlugin.ts)
+- [CopilotPlugin.tsx](../../../../packages/ai/src/react/copilot/CopilotPlugin.tsx)
+- [BlockSelectionPlugin.tsx](../../../../packages/selection/src/react/BlockSelectionPlugin.tsx)
 
-### Bundle plugin uses direct Plate composition
+Copy direct `createPlatePlugin` only when the behavior is genuinely hook,
+DOM/editor-surface, or React-native. Do not copy explicit types or file
+topology without checking current owner law.
 
-- [BasicBlocksPlugin.tsx](packages/basic-nodes/src/react/BasicBlocksPlugin.tsx)
+## Owner-First Production Colocation
 
-Why it is good:
+- [BaseSuggestionPlugin.ts](../../../../packages/suggestion/src/lib/BaseSuggestionPlugin.ts)
+- [BaseTablePlugin.ts](../../../../packages/table/src/lib/BaseTablePlugin.ts)
+- [BaseMediaEmbedPlugin.ts](../../../../packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts)
+- [BasePlaceholderPlugin.ts](../../../../packages/media/src/lib/placeholder/BasePlaceholderPlugin.ts)
 
-- no fake base plugin theater
-- the job is composition, so `createPlatePlugin` is correct
+Copy:
 
-### Real React-native Plate plugin
+- one semantic plugin file owns related queries, transforms, options, APIs,
+  transaction groups, normalizers, and corrections;
+- file size is not a split signal;
+- callers use scoped plugin APIs/updates instead of parallel helper exports.
 
-- [EventEditorPlugin.ts](packages/core/src/react/plugins/event-editor/EventEditorPlugin.ts)
-- [PlaywrightPlugin.ts](packages/playwright/src/PlaywrightPlugin.ts)
-- [CopilotPlugin.tsx](packages/ai/src/react/copilot/CopilotPlugin.tsx)
+These are topology examples, not permission to copy every local declaration.
+Keep new one-use constants, callbacks, and contract fragments inline when
+builder inference can own them.
 
-Why they are good:
+## React Component-Family Colocation
 
-- they live in the Plate/React layer for real reasons
-- they are not pretending to have platform-independent semantics
+- [FloatingMedia.tsx](../../../../packages/media/src/react/media/FloatingMedia.tsx)
 
-### React-only prop augmentation via `transformProps`
+Copy:
 
-- [BlockSelectionPlugin.tsx](packages/selection/src/react/BlockSelectionPlugin.tsx)
-- [NavigationFeedbackPlugin.ts](packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts)
+- store, state hooks, behavior hooks, primitives, and family namespace share
+  one durable component-family file;
+- family-only hooks and state do not earn `hooks/` or store files merely
+  because they are exported;
+- app wrappers composing that family do not establish another source owner.
 
-Why they are good:
+Do not copy an editor-accepting helper signature from a family file when plugin
+builder context or a scoped API can own the behavior.
 
-- they augment existing rendered nodes instead of replacing semantics
-- they keep hook-driven logic in the Plate layer
-- they avoid fake wrapper components when the real job is prop injection
+## Scoped API And Options
 
-## Patterns To Treat Carefully
+- [MarkdownPlugin.ts](../../../../packages/markdown/src/lib/MarkdownPlugin.ts)
+- [BaseTablePlugin.ts](../../../../packages/table/src/lib/BaseTablePlugin.ts)
 
-### Shared plugin keys should usually come from `KEYS`
+Copy:
 
-- [plate-keys.ts](packages/utils/src/lib/plate-keys.ts)
+- plugin values use `options`;
+- `extendApi` and `extendTx` publish one owner implementation;
+- concrete editors expose `editor.api.<pluginKey>`;
+- generic package code can use `editor.plugin(Plugin).api` / `.update`;
+- optional generic integrations check `.installed` before any other portal
+  access;
+- copied registry UI stays generic and never imports a host editor type;
+- scoped portal methods use direct verbs instead of repeating the plugin noun.
 
-Why it matters:
+## React-Only Prop Augmentation
 
-- most shipped package/plugin code already leans on `KEYS`
-- raw string keys drift across base plugins, wrappers, and tests
-- hardcoded literals are usually fine only for tiny internal plugins or local
-  test fixtures
+- [BlockSelectionPlugin.tsx](../../../../packages/selection/src/react/BlockSelectionPlugin.tsx)
+- [NavigationFeedbackPlugin.ts](../../../../packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts)
 
-### Manual editor callback annotations
+Copy `inject.nodeProps.transformProps` when the exact job is hook-driven prop
+augmentation of an already-rendered node. It does not replace components,
+render behavior, wrappers, or `useHooks`.
 
-- [BaseTextAlignPlugin.ts](packages/basic-styles/src/lib/BaseTextAlignPlugin.ts)
+## Rejected Precedent
 
-Why to be careful:
+Do not copy a current or historical file merely because it compiles.
 
-- it works
-- it is older style
-- it teaches a worse habit than letting plugin context inference do the work
+Reject:
 
-Do not cargo-cult this unless inference genuinely fails and a better typed
-shape is not available.
+- private code defaulted into `internal/`;
+- one file per helper, query, transform, subcomponent, hook, or API method;
+- explicit plugin export types or casts;
+- empty `PluginConfig` aliases;
+- manual callback/local/test annotations hiding weak inference;
+- editor-locked helpers created only to carry `editor`, resolved `type`,
+  options, or `tx`;
+- top-level Plate plugin `config`;
+- root editor option helpers or arbitrary plugin fields;
+- duplicate `extendApi` / `extendEditorApi` implementations;
+- redundant portal nesting such as `table.update.insert.table`;
+- `editor.update.*` inside an active transaction;
+- broad normalization without a named invariant;
+- render subscriptions used only by later callbacks;
+- compatibility aliases and forwarding wrappers after owner colocation.
 
-### Editor-locked helper extraction
-
-- [BaseAIPlugin.ts](packages/ai/src/lib/BaseAIPlugin.ts)
-
-Why to be careful:
-
-- extracting editor-locked command helpers is workable
-- it also encourages editor-threading patterns that the newer callback context
-  APIs often make unnecessary
-
-Prefer context-local helpers or better generic shapes before copying this.
+When an example conflicts with these laws, repair the builder/source owner or
+choose a cleaner example. “Older style” is not a waiver.

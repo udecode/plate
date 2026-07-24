@@ -1,11 +1,13 @@
 import { type InferConfig, createBasePlugin } from '@platejs/core';
-import { type NodeInsertNodesOptions, property } from '@platejs/plite';
-import { KEYS, NODES, type TMediaEmbedElement } from '@platejs/utils';
+import { property } from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
 
 import {
+  defineMediaPlugin,
+  mediaElementContent,
   mediaElementProperties,
   type MediaPluginOptions,
-} from '../media/types';
+} from '../media/MediaPlugin.internal';
 
 import {
   parseIframeUrl,
@@ -18,74 +20,65 @@ import {
  * Enables support for embeddable media such as YouTube or Vimeo videos,
  * Instagram posts and tweets or Google Maps.
  */
-export const BaseMediaEmbedPlugin = createBasePlugin({
-  key: KEYS.mediaEmbed,
-  schema: {
-    element: {
-      properties: {
-        ...mediaElementProperties,
-        provider: property.string(),
-        sourceUrl: property.string(),
-      },
-      void: 'block',
-    },
-  },
-  type: NODES.mediaEmbed,
-  options: {
-    transformUrl: parseIframeUrl,
-  } as MediaPluginOptions,
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          {
-            validNodeName: 'IFRAME',
-          },
-        ],
-        parse: ({ element, type }) => {
-          const url = element.getAttribute('src');
-
-          if (url) {
-            return {
-              type,
-              url,
-            };
-          }
+export const BaseMediaEmbedPlugin = defineMediaPlugin(
+  createBasePlugin({
+    key: KEYS.mediaEmbed,
+    schema: {
+      element: {
+        content: mediaElementContent,
+        isolating: true,
+        keyboardSelectable: true,
+        properties: {
+          ...mediaElementProperties,
+          provider: property.string(),
+          sourceUrl: property.string(),
         },
       },
     },
-  },
-}).extendTx<{
-  insert: (
-    url: string,
-    options?: NodeInsertNodesOptions<TMediaEmbedElement>
-  ) => void;
-}>(({ getOptions, type }) => (tx) => ({
-  insert: (url, options = {}) => {
-    if (!tx.selection() && options.at === undefined) return;
+    type: NODES.mediaEmbed,
+    options: {
+      transformUrl: parseIframeUrl,
+    } as MediaPluginOptions,
+    parsers: {
+      html: {
+        deserializer: {
+          rules: [
+            {
+              validNodeName: 'IFRAME',
+            },
+          ],
+          parse: ({ element, type }) => {
+            const url = element.getAttribute('src');
 
-    const transformedUrl = getOptions().transformUrl?.(url) ?? url;
+            if (url) {
+              return {
+                children: [{ text: '' }],
+                type,
+                url,
+              };
+            }
+          },
+        },
+      },
+    },
+  }),
+  (options, input) => {
+    const transformedUrl = options.transformUrl?.(input.url) ?? input.url;
     const normalized = parseMediaUrl(transformedUrl, {
       urlParsers: [parseTwitterUrl, parseVideoUrl],
     });
-    const media = {
-      children: [{ text: '' }],
+
+    return {
+      ...input,
       ...(normalized?.provider === undefined
         ? {}
         : { provider: normalized.provider }),
       ...(normalized?.sourceUrl === undefined
         ? {}
         : { sourceUrl: normalized.sourceUrl }),
-      type,
       url: normalized?.url ?? transformedUrl,
-    } satisfies TMediaEmbedElement;
-
-    if (options.at === undefined) {
-      tx.blocks.insertAfter(media, options);
-    } else {
-      tx.nodes.insert(media, options);
-    }
-  },
-}));
+    };
+  }
+);
 
 export type MediaEmbedConfig = InferConfig<typeof BaseMediaEmbedPlugin>;

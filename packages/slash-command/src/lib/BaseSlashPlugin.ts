@@ -35,9 +35,9 @@ const slashPluginOptions: SlashPluginOptions = {
 
 export const BaseSlashPlugin = createBasePlugin({
   key: KEYS.slashCommand,
+  dependencies: [BaseSlashInputPlugin],
   editOnly: true,
   options: slashPluginOptions,
-  plugins: [BaseSlashInputPlugin],
 }).extendExtension(withTriggerCombobox);
 
 export type SlashConfig = InferConfig<typeof BaseSlashPlugin>;

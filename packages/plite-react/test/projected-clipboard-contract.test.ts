@@ -8,7 +8,7 @@ import {
   type Point,
   type RootKey,
 } from '@platejs/plite';
-import { defineHostCodec, hostCodecs } from '@platejs/plite-dom';
+import { hostCodecs } from '@platejs/plite-dom';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -51,9 +51,21 @@ const contentRootExtension = defineEditorSchema({
     'content-card': {
       content: schema.content.open(),
       contentRoots: {
-        body: schema.content.not(schema.content.text()),
+        body: {
+          content: schema.content.not(schema.content.text()),
+          ownership: 'shared',
+        },
       },
       void: 'editable-island',
+    },
+    'content-owner': {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      contentRoots: {
+        body: {
+          content: schema.content.not(schema.content.text()),
+          ownership: 'shared',
+        },
+      },
     },
   },
   id: 'projected-clipboard-test',
@@ -65,11 +77,11 @@ const contentRootExtension = defineEditorSchema({
   version: 1,
 });
 const projectedHostCodecs = hostCodecs('projected-clipboard-host', [
-  defineHostCodec({
+  {
     format: 'text/html',
     key: 'projected-html',
     serialize: () => '<article data-projected-host="true">host</article>',
-  }),
+  },
 ]);
 
 const paragraph = (
@@ -90,6 +102,12 @@ const contentCard = (bodyRoot = SHARED_ROOT) => ({
   type: 'content-card',
   childRoots: { body: bodyRoot },
   children: [{ text: '' }],
+});
+
+const contentOwner = (bodyRoot: RootKey) => ({
+  type: 'content-owner',
+  childRoots: { body: bodyRoot },
+  children: [{ text: 'Owner' }],
 });
 
 const sharedOwner = {
@@ -394,6 +412,44 @@ describe('projected clipboard', () => {
       content: [paragraph('side'), paragraph('Between'), paragraph('Insi')],
       openEnd: 1,
       openStart: 1,
+    });
+  });
+
+  it('keeps nested owned roots attached to projected slice segments', () => {
+    const nestedRoot = 'card:nested' as RootKey;
+    const runtime = createEditorRuntime({
+      extensions: [contentRootExtension],
+      initialValue: {
+        children: [contentCard()],
+        roots: {
+          [SHARED_ROOT]: [contentOwner(nestedRoot), paragraph('Tail')],
+          [nestedRoot]: [paragraph('Nested')],
+        },
+      },
+    });
+    const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
+    const graph = createPliteProjectionGraph([
+      { owner: sharedOwner, path: [0], root: SHARED_ROOT },
+      { owner: sharedOwner, path: [1], root: SHARED_ROOT },
+    ]);
+
+    writePliteViewSelection(
+      editor,
+      createPliteViewSelection(graph, {
+        kind: 'text',
+        anchor: {
+          owner: sharedOwner,
+          point: point(SHARED_ROOT, [0, 0], 0),
+        },
+        focus: {
+          owner: sharedOwner,
+          point: point(SHARED_ROOT, [1, 0], 1),
+        },
+      })
+    );
+
+    expect(getProjectedViewSelectionSlice(editor)?.roots).toEqual({
+      [nestedRoot]: [paragraph('Nested')],
     });
   });
 

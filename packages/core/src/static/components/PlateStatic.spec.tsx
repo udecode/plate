@@ -303,4 +303,66 @@ describe('PlateStatic Memoization', () => {
 
     expect(markup).toContain('color:red');
   });
+
+  it('renders and refreshes element-owned content roots through ordinary components', () => {
+    const editor = createBaseEditor({
+      components: {
+        figure: ({ slots }) => (
+          <figure>
+            <figcaption>{slots.contentRoot('caption')}</figcaption>
+          </figure>
+        ),
+        p: ({ children }) => <p data-caption-block>{children}</p>,
+      },
+      nodeId: false,
+      plugins: [
+        createBasePlugin({
+          key: 'figure',
+          schema: {
+            element: {
+              contentRoots: {
+                caption: {
+                  content: schema.content.type('p', {
+                    default: { type: 'p' },
+                    min: 1,
+                  }),
+                  ownership: 'exclusive',
+                },
+              },
+              topLevel: true,
+              void: 'block',
+            },
+          },
+        }),
+      ],
+      initialValue: {
+        children: [
+          {
+            childRoots: { caption: 'caption:1' },
+            children: [{ text: '' }],
+            type: 'figure',
+          },
+        ],
+        roots: {
+          'caption:1': [{ children: [{ text: 'First caption' }], type: 'p' }],
+        },
+      },
+    });
+    const view = render(<PlateStatic editor={editor} />);
+
+    expect(view.getByText('First caption')).toBeInTheDocument();
+    expect(
+      view.getByText('First caption').closest('[data-caption-block]')
+    ).toBeInTheDocument();
+
+    editor.update((tx) => {
+      tx.roots.replace('caption:1', [
+        { children: [{ text: 'Updated caption' }], type: 'p' },
+      ]);
+    });
+    view.rerender(<PlateStatic editor={editor} />);
+
+    expect(view.getByText('Updated caption')).toBeInTheDocument();
+    expect(view.queryByText('First caption')).not.toBeInTheDocument();
+  });
 });

@@ -22,12 +22,6 @@ const output = (
 ) as TestEditor;
 
 describe('SingleLinePlugin', () => {
-  it('disables the trailing block plugin while enabled', () => {
-    expect(SingleLinePlugin.override.enabled).toEqual({
-      trailingBlock: false,
-    });
-  });
-
   it('merge all blocks into the first block', () => {
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],

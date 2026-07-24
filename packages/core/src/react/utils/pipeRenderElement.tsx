@@ -47,12 +47,14 @@ function FastElementWithPath({
   editor,
   element,
   plugin,
+  slots,
 }: {
   attributes: RenderElementProps['attributes'];
   children: React.ReactNode;
   editor: PlateEditor;
   element: Element;
   plugin: AnyBasePlugin;
+  slots: RenderElementProps['slots'];
 }) {
   const path = getRenderedElementPath(editor, element);
 
@@ -69,6 +71,7 @@ function FastElementWithPath({
         element={element}
         path={path}
         plugin={plugin}
+        slots={slots}
       >
         {children}
       </FastElementBody>
@@ -111,6 +114,7 @@ function FastElementBody({
   element,
   path,
   plugin,
+  slots,
 }: {
   attributes: RenderElementProps['attributes'];
   children: React.ReactNode;
@@ -118,6 +122,7 @@ function FastElementBody({
   element: Element;
   path: Path;
   plugin: AnyBasePlugin;
+  slots: RenderElementProps['slots'];
 }) {
   const readOnly = useEditorReadOnly();
   const pluginContext = getEditorPlugin(editor, { key: plugin.key });
@@ -136,6 +141,7 @@ function FastElementBody({
       attributes={injectedAttributes}
       element={element}
       path={path}
+      slots={slots}
     >
       {children}
     </PlateElement>
@@ -151,6 +157,7 @@ function FastIntrinsicElement({
   isVoidTag,
   plugin,
   renderBelowNodes,
+  slots,
   tag,
 }: {
   attributes: RenderElementProps['attributes'];
@@ -161,6 +168,7 @@ function FastIntrinsicElement({
   isVoidTag: boolean;
   plugin: AnyBasePlugin;
   renderBelowNodes: boolean;
+  slots: RenderElementProps['slots'];
   tag: keyof HTMLElementTagNameMap;
 }) {
   const path = getRenderedElementPath(editor, element);
@@ -181,6 +189,7 @@ function FastIntrinsicElement({
         path={path}
         plugin={plugin}
         renderBelowNodes={renderBelowNodes}
+        slots={slots}
         tag={tag}
       >
         {children}
@@ -199,6 +208,7 @@ function FastIntrinsicElementBody({
   path,
   plugin,
   renderBelowNodes,
+  slots,
   tag: Tag,
 }: {
   attributes: RenderElementProps['attributes'];
@@ -210,6 +220,7 @@ function FastIntrinsicElementBody({
   path: Path;
   plugin: AnyBasePlugin;
   renderBelowNodes: boolean;
+  slots: RenderElementProps['slots'];
   tag: keyof HTMLElementTagNameMap;
 }) {
   const readOnly = useEditorReadOnly();
@@ -234,6 +245,7 @@ function FastIntrinsicElementBody({
       children,
       element,
       path,
+      slots,
     };
 
     getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((key) => {
@@ -370,8 +382,7 @@ export const pipeRenderElement = (
         !hasAboveNodes &&
         !hasBelowRootNodes &&
         !plugin.render.node &&
-        !plugin.render.nodeProps &&
-        !plugin.host.dangerouslyAllowAttributes?.length
+        !plugin.render.nodeProps
       ) {
         const readOnly = editor.read.view.isReadOnly();
 
@@ -405,6 +416,7 @@ export const pipeRenderElement = (
               isVoidTag={isVoidTag}
               plugin={plugin}
               renderBelowNodes={false}
+              slots={props.slots}
               tag={Tag}
             >
               {props.children}
@@ -422,6 +434,7 @@ export const pipeRenderElement = (
               isVoidTag={isVoidTag}
               plugin={plugin}
               renderBelowNodes
+              slots={props.slots}
               tag={Tag}
             >
               {props.children}
@@ -436,6 +449,7 @@ export const pipeRenderElement = (
               editor={editor}
               element={props.element}
               plugin={plugin}
+              slots={props.slots}
             >
               {props.children}
             </FastElementWithPath>

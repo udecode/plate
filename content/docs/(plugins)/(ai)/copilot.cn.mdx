@@ -459,22 +459,22 @@ export async function POST(req: NextRequest) {
 
 ## API
 
-### `editor.plugin(CopilotPlugin).api.reject()`
+### `editor.api.copilot.reject()`
 
 将插件状态重置为初始条件：
 默认快捷键: `Escape`
 
-### `editor.plugin(CopilotPlugin).api.triggerSuggestion()`
+### `editor.api.copilot.triggerSuggestion()`
 
 触发新的建议请求。请求可能会根据插件配置进行防抖。
 
 示例快捷键: `Ctrl + Space`
 
-### `editor.plugin(CopilotPlugin).api.setBlockSuggestion()`
+### `editor.api.copilot.setBlockSuggestion()`
 
 为块设置建议文本。
 
-<API name="editor.plugin(CopilotPlugin).api.setBlockSuggestion">
+<API name="editor.api.copilot.setBlockSuggestion">
 <APIParameters>
   <APIItem name="options" type="SetBlockSuggestionOptions">
     设置块建议的选项。
@@ -492,7 +492,7 @@ export async function POST(req: NextRequest) {
 </APIOptions>
 </API>
 
-### `editor.plugin(CopilotPlugin).api.stop()`
+### `editor.api.copilot.stop()`
 
 停止正在进行的建议请求并清理：
 

@@ -57,7 +57,9 @@ export type DeserializeMdContext = Readonly<DeserializeMdOptions> &
   MarkdownConversionContext;
 
 /** Prepared Markdown serialization context supplied to conversion rules. */
-export type SerializeMdContext = Readonly<SerializeMdOptions> &
+export type SerializeMdContext = Readonly<
+  Omit<SerializeMdOptions, 'value'> & { value: Descendant[] }
+> &
   MarkdownConversionContext;
 
 export type MdRules = Partial<{
@@ -229,7 +231,7 @@ type MdNodeMap = {
   equation: MdMath;
   heading: MdHeading;
   hr: MdThematicBreak;
-  img: MdImage & Pick<Partial<MdMdxJsxFlowElement>, 'attributes'>;
+  img: MdImage & Pick<Partial<MdMdxJsxFlowElement>, 'attributes' | 'children'>;
   inline_equation: MdInlineMath;
   p: MdParagraph;
   table: MdTable;

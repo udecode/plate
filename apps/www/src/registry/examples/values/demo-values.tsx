@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash/cloneDeep.js';
-import type { Value } from 'platejs';
+import type { InitialValue } from 'platejs';
 
 import { calloutValue } from '@/registry/examples/values/callout-value';
 import { playgroundValue } from '@/registry/examples/values/playground-value';
@@ -103,14 +103,12 @@ const values = {
   toggle: toggleValue,
 };
 
-export const DEMO_VALUES = Object.entries(values).reduce(
-  (acc, [key, value]) => {
-    const demoKey = key.replace('Value', '');
-    acc[demoKey] = value;
+export const DEMO_VALUES = values;
 
-    return acc;
-  },
-  {} as Record<string, Value>
-);
-
-export const createValue = (id: string) => cloneDeep(DEMO_VALUES[id]);
+export function createValue<const TId extends keyof typeof DEMO_VALUES>(
+  id: TId
+): (typeof DEMO_VALUES)[TId];
+export function createValue(id: string): InitialValue;
+export function createValue(id: string): InitialValue {
+  return cloneDeep(DEMO_VALUES[id as keyof typeof DEMO_VALUES]);
+}

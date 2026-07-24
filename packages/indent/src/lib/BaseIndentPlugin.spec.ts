@@ -170,4 +170,38 @@ describe('BaseIndentPlugin', () => {
     expect(editor.update.indent.untab()).toBe(true);
     expect(editor.read.children()[0]).not.toHaveProperty('indent');
   });
+
+  it('uses the resolved plugin type as its sole storage key', () => {
+    const IndentPlugin = BaseIndentPlugin.configure({
+      inject: {
+        nodeProps: {
+          nodeKey: 'legacyIndent',
+        },
+      },
+      type: 'depth',
+    });
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, IndentPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          depth: 1,
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    editor.update.indent.set();
+
+    expect(editor.read.children()[0]).toMatchObject({ depth: 2 });
+    expect(editor.read.children()[0]).not.toHaveProperty('legacyIndent');
+
+    expect(editor.update.indent.untab()).toBe(true);
+    expect(editor.read.children()[0]).toMatchObject({ depth: 1 });
+  });
 });

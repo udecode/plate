@@ -66,24 +66,24 @@ Public type exports are grouped around:
 
 ```ts
 import { ContentSlice } from '@platejs/plite'
-import { defineHostCodec, hostCodecs } from '@platejs/plite-dom'
+import { hostCodecs } from '@platejs/plite-dom'
 
-const json = defineHostCodec({
-  format: 'application/x-example+json',
-  key: 'example-json',
-  parse: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
-  schema: [{ kind: 'schema' }],
-  serialize: ({ slice }) => JSON.stringify(slice),
-})
-
-const extension = hostCodecs('example-host-codecs', [json])
+const extension = hostCodecs('example-host-codecs', [
+  {
+    format: 'application/x-example+json',
+    key: 'example-json',
+    owns: [{ kind: 'schema' }],
+    parse: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
+    serialize: ({ slice }) => JSON.stringify(slice),
+  },
+])
 ```
 
 Ordinary element and property ownership comes from the host integration's
-compiled schema binding. A property claim has
-`{ kind: 'property', id: bindingPropertyId }`; it never repeats or retains the
-source schema declaration. Low-level integrations should pass the compiler-owned
-ID unchanged instead of reconstructing it from a key or target.
+compiled schema binding. Low-level integrations claim a property with its
+reusable `SchemaProperty` declaration. Ownership resolution is semantic, so an
+equivalent frozen declaration resolves to the same compiled property without
+depending on object identity.
 
 Parse and query callbacks receive `{ data, format, source, state }`.
 Serialization receives `{ format, slice, state }`. `source` is an immutable

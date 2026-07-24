@@ -62,6 +62,17 @@ describe('useMediaState', () => {
     mock.restore();
   });
 
+  it('matches selection only when the media node itself is selected', async () => {
+    const state = await renderMediaState({
+      children: [{ text: 'Caption caret' }],
+      type: actualUtils.NODES.mediaEmbed,
+      url: 'https://platejs.org/embed',
+    });
+
+    expect(useElementSelectedMock).toHaveBeenCalledWith({ mode: 'node' });
+    expect(state.selected).toBe(false);
+  });
+
   it('does not trust serialized provider metadata when the render URL is unsafe', async () => {
     const state = await renderMediaState({
       children: [{ text: '' }],

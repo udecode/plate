@@ -5,7 +5,7 @@ import { createBaseEditor } from '@platejs/core';
 import { ElementApi } from '@platejs/plite';
 import { createLowlight } from 'lowlight';
 
-import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
+import { BaseCodeHighlightPlugin } from './BaseCodeBlockPlugin';
 import {
   CODE_LINE_TO_DECORATIONS,
   codeBlockToDecorations,
@@ -59,7 +59,7 @@ beforeEach(() => {
 
   editor = createBaseEditor({
     plugins: [
-      BaseCodeBlockPlugin.configure({
+      BaseCodeHighlightPlugin.configure({
         options: {
           defaultLanguage: 'javascript',
           lowlight: mockLowlight,

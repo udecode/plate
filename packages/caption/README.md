@@ -1,5 +1,0 @@
-# Caption
-
-## License
-
-[MIT](../../LICENSE)

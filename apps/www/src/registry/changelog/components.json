@@ -1,6 +1,129 @@
 {
   "schemaVersion": 1,
   "components": {
+    "markdown-kit": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-04-23-redesign-blockquotes-container-blocks"
+    ],
+    "editor-kit": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-24-decouple-suggestion-trailing-block",
+      "2026-07-23-explicit-editor-kit-composition",
+      "2026-07-13-use-installed-block-insert-commands",
+      "2026-06-14-fix-shadcn-editor-kit-install-paths",
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2026-01-28-add-code-drawing-node"
+    ],
+    "editor-ai": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-24-decouple-suggestion-trailing-block",
+      "2026-03-28-render-url-videos-media-node"
+    ],
+    "editor-base-kit": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-06-14-fix-shadcn-editor-kit-install-paths",
+      "2026-04-23-redesign-blockquotes-container-blocks"
+    ],
+    "align-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "basic-blocks-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "basic-marks-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "callout-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "code-block-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "code-drawing-kit": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-01-28-add-code-drawing-node"
+    ],
+    "column-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "comment-kit": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions"
+    ],
+    "date-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "font-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "line-height-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "link-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "list-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "math-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "media-kit": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-23-rich-media-caption-children"
+    ],
+    "mention-kit": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-23-terminal-plugin-configure",
+      "2025-12-15-add-option-editor-collaborative-features"
+    ],
+    "suggestion-kit": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-24-decouple-suggestion-trailing-block",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-10-21-add-rejectaisuggestions",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "table-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "toc-kit": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-23-terminal-plugin-configure"
+    ],
+    "toggle-kit": ["2026-07-24-compose-markdown-footnotes"],
+    "tabbable-kit": [
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-23-terminal-plugin-configure",
+      "2025-11-20-biome-ultracite"
+    ],
+    "block-draggable": [
+      "2026-07-24-scope-block-draggable-list-api",
+      "2025-11-20-biome-ultracite"
+    ],
+    "fixed-toolbar-kit": ["2026-07-23-explicit-editor-kit-composition"],
+    "floating-toolbar-kit": ["2026-07-23-explicit-editor-kit-composition"],
+    "list-classic-kit": ["2026-07-23-explicit-editor-kit-composition"],
+    "list-classic-demo": ["2026-07-23-explicit-editor-kit-composition"],
+    "playground-demo": ["2026-07-23-explicit-editor-kit-composition"],
+    "plate-to-html": [
+      "2026-07-23-explicit-editor-kit-composition",
+      "2026-07-23-rich-media-caption-children"
+    ],
+    "single-block-demo": ["2026-07-23-explicit-editor-kit-composition"],
+    "caption": ["2026-07-23-rich-media-caption-children"],
+    "media-base-kit": ["2026-07-23-rich-media-caption-children"],
+    "media-image-node": [
+      "2026-07-23-rich-media-caption-children",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "media-video-node": [
+      "2026-07-23-rich-media-caption-children",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-03-28-render-url-videos-media-node",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "media-audio-node": [
+      "2026-07-23-rich-media-caption-children",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "media-file-node": [
+      "2026-07-23-rich-media-caption-children",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "media-embed-node": [
+      "2026-07-23-rich-media-caption-children",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-11-20-biome-ultracite"
+    ],
+    "media-placeholder-node": [
+      "2026-07-23-rich-media-caption-children",
+      "2025-11-20-biome-ultracite"
+    ],
+    "media-toolbar-button": [
+      "2026-07-23-rich-media-caption-children",
+      "2025-11-20-biome-ultracite"
+    ],
     "transforms": [
       "2026-07-23-scoped-media-inserts",
       "2026-07-13-use-installed-block-insert-commands",
@@ -19,15 +142,6 @@
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2025-11-20-biome-ultracite"
     ],
-    "mention-kit": [
-      "2026-07-23-terminal-plugin-configure",
-      "2025-12-15-add-option-editor-collaborative-features"
-    ],
-    "tabbable-kit": [
-      "2026-07-23-terminal-plugin-configure",
-      "2025-11-20-biome-ultracite"
-    ],
-    "toc-kit": ["2026-07-23-terminal-plugin-configure"],
     "footnote-node": ["2026-07-22-plugin-portal-wiring"],
     "table-node": [
       "2026-07-22-plugin-portal-wiring",
@@ -44,12 +158,6 @@
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
     ],
-    "editor-kit": [
-      "2026-07-13-use-installed-block-insert-commands",
-      "2026-06-14-fix-shadcn-editor-kit-install-paths",
-      "2026-04-23-redesign-blockquotes-container-blocks",
-      "2026-01-28-add-code-drawing-node"
-    ],
     "dnd-kit": ["2026-07-13-use-installed-block-insert-commands"],
     "editor": [
       "2026-06-15-editor-fix-preserved-space-wrapping",
@@ -57,10 +165,6 @@
       "2025-10-17-fix-react-decouple"
     ],
     "editor-static": ["2026-06-15-editor-fix-preserved-space-wrapping"],
-    "editor-base-kit": [
-      "2026-06-14-fix-shadcn-editor-kit-install-paths",
-      "2026-04-23-redesign-blockquotes-container-blocks"
-    ],
     "code-block-node": [
       "2026-06-13-show-code-block-language-labels-read-only-mode",
       "2026-01-20-add-docx-file-import-word-export-support",
@@ -86,15 +190,9 @@
       "2025-11-20-biome-ultracite",
       "2025-10-21-add-rejectaisuggestions"
     ],
-    "comment-kit": ["2026-04-29-codex-fix-discussion-suggestion-regressions"],
     "suggestion": ["2026-04-29-codex-fix-discussion-suggestion-regressions"],
     "suggestion-base-kit": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
-    ],
-    "suggestion-kit": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2025-10-21-add-rejectaisuggestions",
-      "2025-10-17-fix-react-decouple"
     ],
     "suggestion-node": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
@@ -122,30 +220,6 @@
     "excalidraw-node": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
     ],
-    "media-audio-node": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2025-10-17-fix-react-decouple"
-    ],
-    "media-embed-node": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2025-11-20-biome-ultracite"
-    ],
-    "media-file-node": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2025-10-17-fix-react-decouple"
-    ],
-    "media-image-node": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
-    "media-video-node": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-03-28-render-url-videos-media-node",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
     "mention-node": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2026-01-20-add-docx-file-import-word-export-support",
@@ -158,7 +232,6 @@
     ],
     "footnote-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
     "footnote-base-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
-    "markdown-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
     "insert-toolbar-button": [
       "2026-04-23-redesign-blockquotes-container-blocks",
       "2026-01-28-add-code-drawing-node",
@@ -175,7 +248,6 @@
     "autoformat-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
     "table-demo": ["2026-03-31-resolve-merged-border-neighbors"],
     "table-nomerge-demo": ["2026-03-31-resolve-merged-border-neighbors"],
-    "editor-ai": ["2026-03-28-render-url-videos-media-node"],
     "editor-basic": ["2026-03-28-render-url-videos-media-node"],
     "plite-to-html": [
       "2026-03-28-render-url-videos-media-node",
@@ -195,7 +267,6 @@
       "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
       "2025-11-20-biome-ultracite"
     ],
-    "code-drawing-kit": ["2026-01-28-add-code-drawing-node"],
     "code-drawing-base-kit": ["2026-01-28-add-code-drawing-node"],
     "code-drawing-demo": ["2026-01-28-add-code-drawing-node"],
     "block-context-menu": ["2026-01-28-add-code-drawing-node"],
@@ -249,7 +320,6 @@
     "block-placeholder-kit": ["2025-11-20-biome-ultracite"],
     "block-selection-kit": ["2025-11-20-biome-ultracite"],
     "markdown-joiner-transform": ["2025-11-20-biome-ultracite"],
-    "block-draggable": ["2025-11-20-biome-ultracite"],
     "code-node": [
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
@@ -262,10 +332,8 @@
     "link-toolbar": ["2025-11-20-biome-ultracite"],
     "list-classic-node": ["2025-11-20-biome-ultracite"],
     "list-classic-toolbar-button": ["2025-11-20-biome-ultracite"],
-    "media-placeholder-node": ["2025-11-20-biome-ultracite"],
     "media-preview-dialog": ["2025-11-20-biome-ultracite"],
     "media-toolbar": ["2025-11-20-biome-ultracite"],
-    "media-toolbar-button": ["2025-11-20-biome-ultracite"],
     "mode-toolbar-button": ["2025-11-20-biome-ultracite"],
     "remote-cursor-overlay": ["2025-11-20-biome-ultracite"],
     "resize-handle": ["2025-11-20-biome-ultracite"],

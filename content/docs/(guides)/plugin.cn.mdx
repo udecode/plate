@@ -162,7 +162,7 @@ const TextAlignPlugin = createPlatePlugin({
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
     // 这将注入到每个已安装且已启用的目标中。本例中，ParagraphPlugin 能够反序列化 `textAlign` 样式。
-    targetPluginToInject: ({ editor, plugin }) => ({
+    targetParserToInject: ({ editor, plugin }) => ({
       parsers: {
         html: {
           deserializer: {
@@ -312,19 +312,21 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### 嵌套插件
+### 可选能力
 
-Plate支持嵌套插件，允许创建插件层次结构。使用`plugins`属性定义子插件：
+可选能力应作为普通插件直接放在使用者的插件数组中。当增强能力需要宿主时，由增强
+能力依赖宿主：
 
 ```ts
-const ParentPlugin = createPlatePlugin({
-  key: 'parent',
-  plugins: [
-    createPlatePlugin({ key: 'child1' }),
-    createPlatePlugin({ key: 'child2' }),
-  ],
+const CodeHighlightPlugin = createPlatePlugin({
+  key: 'codeHighlight',
+  dependencies: [CodeBlockPlugin],
 });
+
+const plugins = [CodeBlockPlugin, CodeHighlightPlugin];
 ```
+
+需要纯文本代码块时省略 `CodeHighlightPlugin`。宿主不会安装可选增强能力。
 
 ### 插件优先级
 

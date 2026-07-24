@@ -8,10 +8,7 @@ import { stripMarkdown } from '@platejs/markdown';
 
 import { GhostText } from '@/registry/ui/ghost-text';
 
-import { MarkdownKit } from './markdown-kit';
-
 export const CopilotKit = [
-  ...MarkdownKit,
   CopilotPlugin.configure(({ api }) => ({
     options: {
       completeOptions: {
@@ -51,7 +48,7 @@ export const CopilotKit = [
         if (!contextEntry) return '';
 
         const prompt = editor.api.markdown.serialize({
-          value: [contextEntry[0] as Element],
+          value: { children: [contextEntry[0] as Element] },
         });
 
         return `Continue the text up to the next punctuation mark:

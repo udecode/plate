@@ -65,7 +65,7 @@ export function MyEditor() {
 Use `onValueChange` when you only need the document value.
 
 ```tsx title="components/editor.tsx" showLineNumbers {15-19,25}
-import type { Value } from 'platejs';
+import type { EditorDocumentValue, Value } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/ui/editor';
@@ -79,7 +79,7 @@ const initialValue: Value = [
   },
 ];
 
-function saveValue(value: Value) {
+function saveValue(value: EditorDocumentValue) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
 }
 
@@ -102,8 +102,9 @@ export function MyEditor() {
 }
 ```
 
-`onValueChange` receives the canonical commit context plus `value`, including
-the editor instance.
+`onValueChange` receives the canonical commit context and the complete
+serializable document. Persist `value` as one object so primary `children`,
+named `roots`, and persisted `meta` stay together.
 
 ```tsx title="components/editor.tsx"
 <Plate
@@ -168,7 +169,8 @@ export function ReplaceControls() {
 ```
 
 <Callout type="info">
-  `tx.value.replace(...)` replaces nodes at the document root. Use it for
+  `tx.value.replace(...)` replaces the complete serializable document. A
+  children-only input removes named roots and resets persisted meta. Use it for
   explicit outside-editor changes, not for every `onValueChange`.
 </Callout>
 
@@ -226,7 +228,9 @@ export function AsyncEditor() {
 ### Initialize Manually
 
 Use `skipInitialization` when another system owns the startup moment, such as
-collaboration or a multi-step loader.
+collaboration or a multi-step loader. The complete replacement runs each
+plugin's `transformInitialValue` before schema fitting, so feature-owned input
+migrations use the same path as synchronous initialization.
 
 ```tsx title="components/manual-init-editor.tsx" showLineNumbers {8,13-18}
 import * as React from 'react';

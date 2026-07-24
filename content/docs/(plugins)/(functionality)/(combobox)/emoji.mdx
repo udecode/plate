@@ -90,7 +90,7 @@ npm install @platejs/emoji @emoji-mart/data
 
 ### Add Plugins
 
-Use `@emoji-mart/data` when you want the full emoji dataset instead of the package default library.
+`EmojiPlugin` installs `EmojiInputPlugin` as a required dependency. Add the complete input descriptor beside it when you need to replace the dependency's component; use `@emoji-mart/data` when you want the full dataset instead of the package default library.
 
 ```tsx
 import emojiMartData from '@emoji-mart/data';
@@ -196,10 +196,10 @@ Launch 🔥 soon
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseEmojiPlugin` | `@platejs/emoji` | Edit-only trigger plugin with default `:`, emoji data, input creation, and text insertion. |
-| `BaseEmojiInputPlugin` | `@platejs/emoji` | Edit-only inline void `emoji_input` plugin. |
-| `EmojiPlugin` | `@platejs/emoji/react` | React emoji plugin with nested `EmojiInputPlugin`. |
-| `EmojiInputPlugin` | `@platejs/emoji/react` | React input plugin for `EmojiInputElement`. |
+| `BaseEmojiPlugin` | `@platejs/emoji` | Edit-only trigger plugin with default `:`, emoji data, text insertion, and a required `BaseEmojiInputPlugin` dependency. |
+| `BaseEmojiInputPlugin` | `@platejs/emoji` | Required edit-only inline void `emoji_input` plugin. |
+| `EmojiPlugin` | `@platejs/emoji/react` | React emoji plugin with a required `EmojiInputPlugin` dependency. |
+| `EmojiInputPlugin` | `@platejs/emoji/react` | React input dependency for `EmojiInputElement`; add it directly to replace its component or configuration. |
 | `insertEmoji(editor, emoji)` | `@platejs/emoji` | Inserts `createEmojiNode(emoji)`. |
 | `EmojiInlineIndexSearch` | `@platejs/emoji` | Inline search index used by `emoji-node`. |
 | `useEmojiDropdownMenuState(options?)` | `@platejs/emoji/react` | Builds toolbar popover state and picker state. |

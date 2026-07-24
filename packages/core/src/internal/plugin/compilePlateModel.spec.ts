@@ -24,6 +24,66 @@ const createElementPlugin = (key: string, type = key) =>
   });
 
 describe('compilePlateModel', () => {
+  it('projects one plugin-owned content-root slot onto targeted element plugins', () => {
+    const ImagePlugin = createBasePlugin({
+      key: 'contentRootImage',
+      schema: { element: { void: 'block' } },
+    });
+    const VideoPlugin = createBasePlugin({
+      key: 'contentRootVideo',
+      schema: { element: { void: 'block' } },
+    });
+    const CaptionPlugin = createBasePlugin({
+      key: 'caption',
+      schema: ({ own, plugins }) => ({
+        contentRoots: [
+          own.contentRoot(
+            schema.content.all(
+              [schema.content.group('textBlock'), plugins.blockContent()],
+              {
+                default: {
+                  type: plugins.elementType(BaseParagraphPlugin),
+                },
+                min: 1,
+              }
+            ),
+            {
+              ownership: 'exclusive',
+              target: target.types(plugins.elementTypes([ImagePlugin])),
+            }
+          ),
+        ],
+      }),
+    });
+    const editor = createBaseEditor({
+      plugins: [ImagePlugin, VideoPlugin, CaptionPlugin],
+    });
+
+    expect(
+      editor.read.schema.element(ImagePlugin)?.contentRoots.caption
+    ).toMatchObject({
+      ownership: 'exclusive',
+      content: {
+        allowedElementTypes: ['p'],
+        default: { type: 'p' },
+        min: 1,
+      },
+    });
+    expect(
+      editor.read.schema.element(VideoPlugin)?.contentRoots.caption
+    ).toBeUndefined();
+    expect(
+      getPlateModelPublication(editor)?.model.contribution.contentRoots
+    ).toEqual([
+      {
+        content: expect.any(Object),
+        ownership: 'exclusive',
+        slot: 'caption',
+        target: target.types([ImagePlugin.type]),
+      },
+    ]);
+  });
+
   it('derives deterministic identities and changes them only with semantics', () => {
     const first = createBaseEditor();
     const second = createBaseEditor();
@@ -97,6 +157,16 @@ describe('compilePlateModel', () => {
     expect(model.byKey.modelProperty?.elementPropertyKeys).toEqual([
       'model-property',
     ]);
+    expect(model.byKey.modelMark?.properties[0]).toBe(
+      model.contribution.properties?.find(
+        (declaration) => declaration.key === 'model-mark'
+      )
+    );
+    expect(model.byKey.modelProperty?.properties[0]).toBe(
+      model.contribution.properties?.find(
+        (declaration) => declaration.key === 'model-property'
+      )
+    );
     expect(parserByKey.modelBlock).toMatchObject({
       isElement: true,
       isLeaf: false,
@@ -489,7 +559,7 @@ describe('compilePlateModel', () => {
     expect(updated.read.children()).toEqual(updatedValue);
   });
 
-  it('compiles top-level target keys into schema and host bindings', () => {
+  it('compiles top-level target keys into schema bindings', () => {
     const HeadingPlugin = createElementPlugin('configuredHeading', 'heading');
     const PropertyPlugin = createBasePlugin({
       inject: { nodeProps: {} },

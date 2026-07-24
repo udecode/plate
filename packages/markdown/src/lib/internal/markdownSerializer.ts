@@ -6,6 +6,7 @@ import type { MdRoot } from '../mdast';
 import type { SerializeMdOptions } from '../serializer/serializeMd';
 import type { SerializeMdContext } from '../types';
 import type { MarkdownRuntime } from './markdownRuntime';
+import type { MarkdownSerializeDocumentValue } from './markdownDocument';
 
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
 import { convertTextsSerialize } from '../serializer/convertTextsSerialize';
@@ -13,9 +14,10 @@ import { getMergedOptionsSerialize } from './markdownOptions';
 
 export const serializeMdWithRuntime = (
   runtime: MarkdownRuntime,
-  options?: SerializeMdOptions
+  options?: SerializeMdOptions,
+  document?: MarkdownSerializeDocumentValue
 ) => {
-  const mergedOptions = getMergedOptionsSerialize(runtime, options);
+  const mergedOptions = getMergedOptionsSerialize(runtime, options, document);
   const { remarkPlugins, value } = mergedOptions;
   const toRemarkProcessor = unified()
     .use(remarkPlugins ?? [])
@@ -33,7 +35,10 @@ export const serializeInlineMdWithRuntime = (
   runtime: MarkdownRuntime,
   options?: Omit<SerializeMdOptions, 'value'> & { value?: Text[] }
 ) => {
-  const mergedOptions = getMergedOptionsSerialize(runtime, options);
+  const { value = [], ...serializeOptions } = options ?? {};
+  const mergedOptions = getMergedOptionsSerialize(runtime, serializeOptions, {
+    children: value,
+  });
   const toRemarkProcessor = unified()
     .use(mergedOptions.remarkPlugins ?? [])
     .use(remarkStringify, {
@@ -41,10 +46,10 @@ export const serializeInlineMdWithRuntime = (
       ...mergedOptions.remarkStringifyOptions,
     });
 
-  if (options?.value?.length === 0) return '';
+  if (value.length === 0) return '';
 
   return toRemarkProcessor.stringify({
-    children: convertTextsSerialize(options?.value ?? [], mergedOptions),
+    children: convertTextsSerialize(value, mergedOptions),
     type: 'root',
   });
 };

@@ -13,6 +13,7 @@ toc: true
 - **Provider Boundary:** Your app owns Hocuspocus, WebSocket, WebRTC, IndexedDB, or custom transport code. `@platejs/yjs` adapts a `Y.Doc`, provider lifecycle, awareness, selection state, and undo/redo coordination to the editor.
 - **Custom Providers:** Wrap provider packages as `YjsProviderLike` and pass them to `YjsPlugin.configure`.
 - **Awareness & Cursors:** Integrates Yjs Awareness protocol for sharing cursor locations and other ephemeral state between users. Includes [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) for rendering remote cursors.
+- **Multi-Root Documents:** Synchronizes primary children, named roots, and root-qualified awareness through one editor extension and Yjs transaction boundary.
 - **Customizable Cursors:** Send cursor names, colors, and other metadata through `tx.yjs.sendSelection`.
 - **Explicit Commands:** The plugin installs the Plite Yjs extension, including `state.yjs` reads and `tx.yjs` commands for connection, awareness, selection, undo, and redo.
 
@@ -44,16 +45,16 @@ npm install y-webrtc
 
 ### Add The Plugin
 
-Every peer in a room must use the same named schema lineage. The explicit
-`id` and `version` below are part of room negotiation; migrate the room before
-bumping the version.
+Every peer in a room must use the same compiled schema identity. Derived schemas
+match by fingerprint. Use an explicit `id` and `version` for a durable room
+lineage, and migrate the room before bumping the version.
 
 ```tsx
 import { YjsPlugin } from "@platejs/yjs/react";
 import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
-  schema: { id: 'yjs-example', version: 1 },
+  schema: { id: "yjs-example", version: 1 },
   plugins: [
     YjsPlugin.configure({
       options: {
@@ -95,11 +96,17 @@ export const yjsPlugin = YjsPlugin.configure({
 
 - `provider`: A `YjsProviderLike` wrapper around app-owned transport code.
 - `doc`: The shared `Y.Doc`.
-- `rootName`: The shared root inside the Yjs document.
+- `rootName`: The collaboration document namespace. Its primary and named roots
+  synchronize together.
 - Standalone `collab: "shared"` effect descriptors belong to installed editor
   extensions. `YjsPlugin` discovers them from the editor.
 - Cursor data is sent through `tx.yjs.sendSelection(...)` when the local
   selection changes.
+
+One Plate commit that changes primary and named roots becomes one Yjs
+transaction and one undo step. Named roots synchronize without a mounted
+`PlateContent`, and remote selections preserve their root key. A selection
+cannot span two roots.
 
 ### Add Editor Container
 

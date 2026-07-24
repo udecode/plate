@@ -19,12 +19,12 @@ umbrella `platejs` package.
 
 ## Import Paths
 
-| Import | Re-exports | Use |
-| --- | --- | --- |
-| `@platejs/utils` | `plate-keys`, `plate-types`, utility plugins | Shared node keys, Plate element/mark types, and headless utility plugins. |
-| `@platejs/utils/react` | React hooks, `BlockPlaceholderPlugin` | Registry controls and React-only utility behavior. |
-| `platejs` | `@platejs/utils` | App-level imports for headless constants, types, and utility plugins. |
-| `platejs/react` | `@platejs/utils/react` | App-level imports for React hooks and `BlockPlaceholderPlugin`. |
+| Import                 | Re-exports                                   | Use                                                                       |
+| ---------------------- | -------------------------------------------- | ------------------------------------------------------------------------- |
+| `@platejs/utils`       | `plate-keys`, `plate-types`, utility plugins | Shared node keys, Plate element/mark types, and headless utility plugins. |
+| `@platejs/utils/react` | React hooks, `BlockPlaceholderPlugin`        | Registry controls and React-only utility behavior.                        |
+| `platejs`              | `@platejs/utils`                             | App-level imports for headless constants, types, and utility plugins.     |
+| `platejs/react`        | `@platejs/utils/react`                       | App-level imports for React hooks and `BlockPlaceholderPlugin`.           |
 
 ## Key Constants
 
@@ -32,35 +32,35 @@ umbrella `platejs` package.
 element and mark discriminators. Use `editor.getType(KEYS.somePlugin)` when a
 plugin can override its node type.
 
-| Export | Contains | Notes |
-| --- | --- | --- |
-| `NODES` | Serialized element and mark types such as `p`, `blockquote`, `code_block`, `table`, `bold`, and `a` | Use in persisted values, fixtures, and static node builders. |
-| `STYLE_KEYS` | Style property keys such as `color`, `fontSize`, `indent`, and `textAlign` | Used by style plugins and registry controls. |
-| `KEYS` | Plugin identities such as `codeBlock`, `inlineEquation`, `exitBreak`, and `trailingBlock`, plus shared style/action keys | Use for plugin lookup, configuration, injection, and command namespaces. |
-| `NodeKey` | Union of values from `NODES` | Use for node-type values. |
-| `StyleKey` | Union of values from `STYLE_KEYS` | Use for style keys. |
-| `PlateKey` | Union of values from `KEYS` | Includes string values and grouped key arrays. |
+| Export       | Contains                                                                                                                 | Notes                                                                    |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `NODES`      | Serialized element and mark types such as `p`, `blockquote`, `code_block`, `table`, `bold`, and `a`                      | Use in persisted values, fixtures, and static node builders.             |
+| `STYLE_KEYS` | Style property keys such as `color`, `fontSize`, `indent`, and `textAlign`                                               | Used by style plugins and registry controls.                             |
+| `KEYS`       | Plugin identities such as `codeBlock`, `inlineEquation`, `exitBreak`, and `trailingBlock`, plus shared style/action keys | Use for plugin lookup, configuration, injection, and command namespaces. |
+| `NodeKey`    | Union of values from `NODES`                                                                                             | Use for node-type values.                                                |
+| `StyleKey`   | Union of values from `STYLE_KEYS`                                                                                        | Use for style keys.                                                      |
+| `PlateKey`   | Union of values from `KEYS`                                                                                              | Includes string values and grouped key arrays.                           |
 
 Plugin identities and document types intentionally differ for these built-ins:
 
-| Plugin identity | Serialized type |
-| --- | --- |
-| `KEYS.codeBlock` (`codeBlock`) | `NODES.codeBlock` (`code_block`) |
-| `KEYS.codeDrawing` (`codeDrawing`) | `NODES.codeDrawing` (`code_drawing`) |
-| `KEYS.codeLine` (`codeLine`) | `NODES.codeLine` (`code_line`) |
-| `KEYS.codeSyntax` (`codeSyntax`) | `NODES.codeSyntax` (`code_syntax`) |
-| `KEYS.columnGroup` (`columnGroup`) | `NODES.columnGroup` (`column_group`) |
-| `KEYS.emojiInput` (`emojiInput`) | `NODES.emojiInput` (`emoji_input`) |
-| `KEYS.inlineEquation` (`inlineEquation`) | `NODES.inlineEquation` (`inline_equation`) |
-| `KEYS.listTodoClassic` (`listTodoClassic`) | `NODES.listTodoClassic` (`action_item`) |
-| `KEYS.mediaEmbed` (`mediaEmbed`) | `NODES.mediaEmbed` (`media_embed`) |
-| `KEYS.mentionInput` (`mentionInput`) | `NODES.mentionInput` (`mention_input`) |
+| Plugin identity                            | Serialized type                              |
+| ------------------------------------------ | -------------------------------------------- |
+| `KEYS.codeBlock` (`codeBlock`)             | `NODES.codeBlock` (`code_block`)             |
+| `KEYS.codeDrawing` (`codeDrawing`)         | `NODES.codeDrawing` (`code_drawing`)         |
+| `KEYS.codeLine` (`codeLine`)               | `NODES.codeLine` (`code_line`)               |
+| `KEYS.codeSyntax` (`codeSyntax`)           | `NODES.codeSyntax` (`code_syntax`)           |
+| `KEYS.columnGroup` (`columnGroup`)         | `NODES.columnGroup` (`column_group`)         |
+| `KEYS.emojiInput` (`emojiInput`)           | `NODES.emojiInput` (`emoji_input`)           |
+| `KEYS.inlineEquation` (`inlineEquation`)   | `NODES.inlineEquation` (`inline_equation`)   |
+| `KEYS.listTodoClassic` (`listTodoClassic`) | `NODES.listTodoClassic` (`action_item`)      |
+| `KEYS.mediaEmbed` (`mediaEmbed`)           | `NODES.mediaEmbed` (`media_embed`)           |
+| `KEYS.mentionInput` (`mentionInput`)       | `NODES.mentionInput` (`mention_input`)       |
 | `KEYS.searchHighlight` (`searchHighlight`) | `NODES.searchHighlight` (`search_highlight`) |
-| `KEYS.slashInput` (`slashInput`) | `NODES.slashInput` (`slash_input`) |
-| `KEYS.slashCommand` (`slashCommand`) | No node; behavior-only plugin |
+| `KEYS.slashInput` (`slashInput`)           | `NODES.slashInput` (`slash_input`)           |
+| `KEYS.slashCommand` (`slashCommand`)       | No node; behavior-only plugin                |
 
 ```ts title="Use Plate keys"
-import { KEYS, NODES, TrailingBlockPlugin } from 'platejs';
+import { KEYS, NODES, TrailingBlockPlugin } from "platejs";
 
 export const trailingBlock = TrailingBlockPlugin.configure({
   options: {
@@ -74,33 +74,33 @@ export const trailingBlock = TrailingBlockPlugin.configure({
 `plate-types` exports common element, prop, media, list, table, mark, and
 suggestion shapes used across feature packages.
 
-| Type group | Examples | Use |
-| --- | --- | --- |
-| Block elements | `TCalloutElement`, `TCodeBlockElement`, `TColumnElement`, `TDateElement`, `TEquationElement` | Typed element props for feature packages and registry nodes. |
-| Media elements | `TImageElement`, `TAudioElement`, `TFileElement`, `TVideoElement`, `TMediaEmbedElement` | Media nodes with `url`, `id`, upload, provider, and source metadata. |
-| Table elements | `TTableElement`, `TTableRowElement`, `TTableCellElement`, `TTableCellBorder` | Table structure, spans, sizes, backgrounds, and borders. |
-| Shared props | `TIdProps`, `TCaptionProps`, `TIndentProps`, `TResizableProps`, `TListProps` | Reusable node property contracts. |
-| Marks | `TBasicMarks`, `TFontMarks`, `TCommentText`, `TSuggestionText` | Text marks and collaboration text state. |
-| Suggestions | `TSuggestionData`, `TInsertSuggestionData`, `TRemoveSuggestionData`, `TUpdateSuggestionData` | Suggestion metadata stored on elements or text. |
+| Type group     | Examples                                                                                     | Use                                                                  |
+| -------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Block elements | `TCalloutElement`, `TCodeBlockElement`, `TColumnElement`, `TDateElement`, `TEquationElement` | Typed element props for feature packages and registry nodes.         |
+| Media elements | `TImageElement`, `TAudioElement`, `TFileElement`, `TVideoElement`, `TMediaEmbedElement`      | Media nodes with `url`, `id`, upload, provider, and source metadata. |
+| Table elements | `TTableElement`, `TTableRowElement`, `TTableCellElement`, `TTableCellBorder`                 | Table structure, spans, sizes, backgrounds, and borders.             |
+| Shared props   | `TIdProps`, `TIndentProps`, `TResizableProps`, `TListProps`                                  | Reusable node property contracts.                                    |
+| Marks          | `TBasicMarks`, `TFontMarks`, `TCommentText`, `TSuggestionText`                               | Text marks and collaboration text state.                             |
+| Suggestions    | `TSuggestionData`, `TInsertSuggestionData`, `TRemoveSuggestionData`, `TUpdateSuggestionData` | Suggestion metadata stored on elements or text.                      |
 
 ```ts title="Type a media element"
-import type { TImageElement } from 'platejs';
+import type { TImageElement } from "platejs";
 
 export function getImageUrl(element: TImageElement) {
   return element.url;
 }
 ```
 
-## Utility Plugins
+## Utility Plugins And Kits
 
-| Plugin | Key | Behavior |
-| --- | --- | --- |
-| `ExitBreakPlugin` | `KEYS.exitBreak` | Adds transaction commands around `insertExitBreak`. |
-| `NormalizeTypesPlugin` | `KEYS.normalizeTypes` | Normalizes configured root paths to a required `type` or `strictType`. |
-| `SingleBlockPlugin` | `KEYS.singleBlock` | Forces the editor value into one block and turns hard breaks into soft breaks. |
-| `SingleLinePlugin` | `KEYS.singleLine` | Forces one block and strips line-break characters from text nodes. |
-| `TrailingBlockPlugin` | `KEYS.trailingBlock` | Ensures a trailing block exists at the configured level and type. |
-| `withTrailingBlock` | Override editor helper | Implements the trailing block normalization logic used by `TrailingBlockPlugin`. |
+| Export                 | Key                    | Behavior                                                                         |
+| ---------------------- | ---------------------- | -------------------------------------------------------------------------------- |
+| `ExitBreakPlugin`      | `KEYS.exitBreak`       | Adds transaction commands around `insertExitBreak`.                              |
+| `NormalizeTypesPlugin` | `KEYS.normalizeTypes`  | Normalizes configured root paths to a required `type` or `strictType`.           |
+| `SingleBlockPlugin`    | `KEYS.singleBlock`     | Forces the editor value into one block and turns hard breaks into soft breaks.   |
+| `SingleLinePlugin`     | `KEYS.singleLine`      | Forces one block and strips line-break characters from text nodes.               |
+| `TrailingBlockPlugin`  | `KEYS.trailingBlock`   | Ensures a trailing block exists at the configured level and type.                |
+| `withTrailingBlock`    | Override editor helper | Implements the trailing block normalization logic used by `TrailingBlockPlugin`. |
 
 Use the plugin guide pages for options and examples:
 [Exit Break](/docs/exit-break), [Forced Layout](/docs/forced-layout),
@@ -108,25 +108,22 @@ Use the plugin guide pages for options and examples:
 
 ## React Hooks
 
-| Hook | Returns | Use |
-| --- | --- | --- |
-| `useEditorString()` | `string` | Reads `editor.api.string([])` through `useEditorSelector`. |
-| `useFormInputProps(options?)` | `{ props }` | Adds an optional `onKeyDownCapture` handler that prevents Enter from submitting a wrapper form. |
-| `useMarkToolbarButtonState({ nodeType, clear? })` | `{ clear, nodeType, pressed }` | Reads whether a mark is active. |
-| `useMarkToolbarButton(state)` | `{ props }` | Provides `pressed`, `onClick`, and `onMouseDown` props that toggle a mark and focus the editor. |
-| `useRemoveNodeButton({ element })` | `{ props }` | Provides button props that remove an element by path. |
-| `useSelectionCollapsed()` | `boolean` | Selection is collapsed. |
-| `useSelectionExpanded()` | `boolean` | Selection is expanded. |
-| `useSelectionWithinBlock()` | `boolean` | Selection is inside one block. |
-| `useSelectionAcrossBlocks()` | `boolean` | Selection spans blocks. |
-| `useSelectionFragment()` | `Descendant[]` | Reads the selected fragment while unwrapping container types. |
-| `useSelectionFragmentProp(options?)` | `unknown` | Reads a property from the selected fragment. |
+| Hook                                              | Returns                        | Use                                                                                             |
+| ------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `useEditorString()`                               | `string`                       | Reads `editor.api.string([])` through `useEditorSelector`.                                      |
+| `useFormInputProps(options?)`                     | `{ props }`                    | Adds an optional `onKeyDownCapture` handler that prevents Enter from submitting a wrapper form. |
+| `useMarkToolbarButtonState({ nodeType, clear? })` | `{ clear, nodeType, pressed }` | Reads whether a mark is active.                                                                 |
+| `useMarkToolbarButton(state)`                     | `{ props }`                    | Provides `pressed`, `onClick`, and `onMouseDown` props that toggle a mark and focus the editor. |
+| `useRemoveNodeButton({ element })`                | `{ props }`                    | Provides button props that remove an element by path.                                           |
+| `useSelectionCollapsed()`                         | `boolean`                      | Selection is collapsed.                                                                         |
+| `useSelectionExpanded()`                          | `boolean`                      | Selection is expanded.                                                                          |
+| `useSelectionWithinBlock()`                       | `boolean`                      | Selection is inside one block.                                                                  |
+| `useSelectionAcrossBlocks()`                      | `boolean`                      | Selection spans blocks.                                                                         |
+| `useSelectionFragment()`                          | `Descendant[]`                 | Reads the selected fragment while unwrapping container types.                                   |
+| `useSelectionFragmentProp(options?)`              | `unknown`                      | Reads a property from the selected fragment.                                                    |
 
 ```tsx title="registry/ui/mark-toolbar-button.tsx"
-import {
-  useMarkToolbarButton,
-  useMarkToolbarButtonState,
-} from 'platejs/react';
+import { useMarkToolbarButton, useMarkToolbarButtonState } from "platejs/react";
 
 export function MarkToolbarButton({ nodeType }: { nodeType: string }) {
   const state = useMarkToolbarButtonState({ nodeType });
@@ -138,8 +135,8 @@ export function MarkToolbarButton({ nodeType }: { nodeType: string }) {
 
 ## React Plugins
 
-| Plugin | Key | Behavior |
-| --- | --- | --- |
+| Plugin                   | Key                     | Behavior                                                                                                                |
+| ------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `BlockPlaceholderPlugin` | `KEYS.blockPlaceholder` | Tracks the current empty block and injects `placeholder` and optional `className` props into matching block components. |
 
 `BlockPlaceholderPlugin` defaults to paragraph placeholders and only targets a
@@ -147,13 +144,13 @@ focused, editable, collapsed selection. Configure `placeholders` by plugin key
 and `query` by node/path.
 
 ```tsx title="components/editor/plugins/block-placeholder-kit.tsx"
-import { KEYS } from 'platejs';
-import { BlockPlaceholderPlugin } from 'platejs/react';
+import { KEYS } from "platejs";
+import { BlockPlaceholderPlugin } from "platejs/react";
 
 export const blockPlaceholderPlugin = BlockPlaceholderPlugin.configure({
   options: {
     placeholders: {
-      [KEYS.p]: 'Type something...',
+      [KEYS.p]: "Type something...",
     },
     query: ({ path }) => path.length === 1,
   },

@@ -17,7 +17,6 @@ import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
 
 import { useChat } from '../use-chat';
 import { CursorOverlayKit } from './cursor-overlay-kit';
-import { MarkdownKit } from './markdown-kit';
 
 export const aiChatPlugin = AIChatPlugin.extend({
   options: {
@@ -47,7 +46,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           const { startBlock, startInEmptyParagraph } =
             getInsertPreviewStart(editor);
 
-          editor.plugin(AIPlugin).api.beginPreview({
+          editor.api.ai.beginPreview({
             originalBlocks:
               startInEmptyParagraph &&
               startBlock &&
@@ -92,7 +91,6 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
 export const AIKit = [
   ...CursorOverlayKit,
-  ...MarkdownKit,
   AIPlugin.withComponent(AILeaf),
   aiChatPlugin,
 ];

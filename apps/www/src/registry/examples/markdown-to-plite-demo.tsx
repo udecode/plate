@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';
+import { remarkMdx, remarkMention } from '@platejs/markdown';
 import { NodeApi } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 import remarkEmoji from 'remark-emoji';
@@ -86,7 +86,7 @@ left
 </column_group>
 
 PDF embedding makes document referencing simple and intuitive.
-<file name="sample.pdf" align="center" src="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" isUpload="true" />
+<file name="sample.pdf" src="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" isUpload="true" />
 
 Audio players can be embedded directly into documents, supporting online audio resources.
 <audio align="center" src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3" width="80%" />
@@ -112,11 +112,11 @@ export default function MarkdownDemo() {
     },
     []
   );
-  const markdownApi = editor.plugin(MarkdownPlugin).api;
+  const markdownApi = editor.api.markdown;
 
   React.useEffect(() => {
-    editor.update.value.replace({
-      children: markdownApi.deserialize(debouncedMarkdownValue, {
+    editor.update.value.replace(
+      markdownApi.deserialize(debouncedMarkdownValue, {
         remarkPlugins: [
           remarkMath,
           remarkGfm,
@@ -124,8 +124,8 @@ export default function MarkdownDemo() {
           remarkMention,
           remarkEmoji,
         ],
-      }),
-    });
+      })
+    );
   }, [debouncedMarkdownValue, editor, markdownApi]);
 
   return (

@@ -141,70 +141,20 @@ Create a new editor with `initialValue: nextDocument` when the user switches to
 a different saved document. That is the clean path for arbitrary persisted
 state fields.
 
-Use `editor.update` for targeted in-place replacement when the app owns the
-schema and can reconcile every root and every persistent meta field.
+Use `editor.update.value.replace` for an in-place full-document replacement.
 
 ```tsx
 editor.update.value.replace({
-  children: nextDocument.children,
+  ...nextDocument,
   selection: null,
 });
 ```
 
-`editor.update.value.replace` replaces the active root snapshot. Pass
-`selection: "start"` or `selection: "end"` when the imported document should
-place the cursor at a document edge.
-
-For an in-place multi-root replacement, use one transaction: replace the primary
-children with `tx.value.replace`, create, replace, or delete extra roots with
-`tx.roots`, and set or reset every persistent meta field your app registered
-with `tx.setField`. This example assumes your app registered `documentTitle`
-and `pageSettings` fields.
-
-```tsx
-editor.update((tx) => {
-  const nextRoots = nextDocument.roots ?? {};
-
-  tx.value.replace({
-    children: nextDocument.children,
-    selection: null,
-  });
-
-  const currentRoots = tx.value().roots ?? {};
-
-  for (const root of Object.keys(currentRoots)) {
-    if (!Object.hasOwn(nextRoots, root)) {
-      tx.roots.delete(root);
-    }
-  }
-
-  for (const [root, children] of Object.entries(nextRoots)) {
-    if (Object.hasOwn(currentRoots, root)) {
-      tx.roots.replace(root, children);
-    } else {
-      tx.roots.create(root, children);
-    }
-  }
-
-  tx.setField(
-    documentTitle,
-    nextDocument.meta?.[documentTitle.key]
-      ? documentTitle.deserialize(nextDocument.meta[documentTitle.key])
-      : "Untitled"
-  );
-  tx.setField(
-    pageSettings,
-    nextDocument.meta?.[pageSettings.key]
-      ? pageSettings.deserialize(nextDocument.meta[pageSettings.key])
-      : defaultPageSettings
-  );
-});
-```
-
-Do not leave registered persistent fields out of the reconciliation. Decode
-their versioned envelopes before calling `tx.setField`. Missing fields should
-be reset to app defaults so the next save cannot mix metadata from two
-documents.
+The input is complete. Omitted named roots are removed, omitted persistent
+fields return to their declared initial values, and supplied metadata is
+decoded through each field's value codec. Pass `selection: "start"` or
+`selection: "end"` to place the cursor at a document edge. Use `tx.roots` or
+`tx.setField` only for a targeted partial change.
 
 ## Store Comments Separately
 

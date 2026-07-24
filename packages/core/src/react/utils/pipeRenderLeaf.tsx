@@ -103,7 +103,6 @@ export const pipeRenderLeaf = (
         !plugin.render?.leaf &&
         !plugin.render?.node &&
         !plugin.render.nodeProps &&
-        !plugin.host.dangerouslyAllowAttributes?.length &&
         (!plugin.rules.selection?.affinity ||
           plugin.rules.selection?.affinity === 'hard');
 

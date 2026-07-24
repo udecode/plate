@@ -90,9 +90,6 @@ description: \@platejs/core 的 API 参考文档。
     当 `true` 时，将规范化传递给 `editor` 的初始 `value`。
     - **默认值:** `false`
   </APIItem>
-  <APIItem name="rootPlugin" type="(plugin: AnyPlatePlugin) => AnyPlatePlugin" optional>
-    配置根插件的函数。
-  </APIItem>
   <APIItem name="api" type="object" optional>
     编辑器的 API 方法。
   </APIItem>
@@ -109,7 +106,8 @@ description: \@platejs/core 的 API 参考文档。
     编辑器的注入配置。
   </APIItem>
   <APIItem name="transformInitialValue" type="function" optional>
-    在编辑器准备就绪前转换初始值的函数。
+    在 schema 适配前转换完整文档输入。编辑器初始化和
+    `editor.update.value.replace(...)` 加载都会运行该函数。
   </APIItem>
   <APIItem name="options" type="object" optional>
     编辑器的附加选项。
@@ -146,7 +144,7 @@ description: \@platejs/core 的 API 参考文档。
 
 ### `createPlatePlugin`
 
-使用给定配置创建一个新的 Plate 插件，支持扩展、嵌套插件操作和运行时配置。
+使用给定配置创建一个新的 Plate 插件，支持类型安全的依赖、扩展和运行时配置。
 
 <API name="createPlatePlugin">
 <APIParameters>

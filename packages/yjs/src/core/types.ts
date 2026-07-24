@@ -81,6 +81,7 @@ export type YjsProviderLike = {
 export type YjsAwarenessSelection = {
   readonly anchor: unknown;
   readonly focus: unknown;
+  readonly root: string;
 };
 
 export type YjsRemoteCursorData = Readonly<Record<string, unknown>>;
@@ -117,6 +118,8 @@ export type YjsTraceEntry = {
     | 'full-diff-fallback'
     | 'snapshot-change';
   readonly mode: YjsTraceMode;
+  /** Named document root; omitted for the primary root. */
+  readonly root?: string;
   /** Number of disjoint canonical ranges compiled from the Yjs event batch. */
   readonly changedRanges?: number;
   /** Number of top-level Yjs nodes decoded for the import. */

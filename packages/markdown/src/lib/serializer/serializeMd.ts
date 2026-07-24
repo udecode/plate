@@ -1,5 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import type { Descendant } from '@platejs/plite';
+import type { EditorDocumentValue } from '@platejs/plite';
 
 import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Pluggable } from 'unified';
@@ -21,7 +21,7 @@ export type SerializeMdOptions = {
   remarkStringifyOptions?: Readonly<RemarkStringifyOptions> | null;
   rules?: MdRules;
   spread?: boolean;
-  value?: Descendant[];
+  value?: EditorDocumentValue;
   withBlockId?: boolean;
 };
 

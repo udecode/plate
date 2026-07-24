@@ -40,7 +40,6 @@ function ElementContent({
   const Element = Component ?? (PlateElement as any);
 
   props = getRenderNodeProps({
-    attributes: props.element.attributes as any,
     editor,
     plugin: plugin as AnyEditorPlatePlugin,
     pluginContext,

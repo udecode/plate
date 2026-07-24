@@ -414,6 +414,10 @@ Common schema checks include:
 - `state.schema.validateDocument(document)`
 - `state.schema.validateFragment(children)`
 
+`state.schema.identity()` always returns either a derived identity or a named
+identity. Derived schemas omit `id` and `version`; named schemas provide both
+for a durable lineage.
+
 Resolved properties expose their value descriptor, target, placement, and
 lifecycle. Value descriptors provide canonical defaults and structural JSON
 equality. Resolved element content exposes `allowedElementTypes`, `allowsText`,

@@ -5,9 +5,10 @@ import * as React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { exportToDocx } from '@platejs/docx-io';
+import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { createBaseEditor } from 'platejs';
-import { useEditor } from 'platejs/react';
+import { useEditorPlugin } from 'platejs/react';
 import { renderStaticHtml } from 'platejs/static';
 
 import {
@@ -18,16 +19,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
-import type { MyEditor } from '@/registry/components/editor/editor-kit';
+import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-kit';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
-import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-kit';
 
 const siteUrl = 'https://platejs.org';
 
 export function ExportToolbarButton(props: DropdownMenuProps) {
-  const editor = useEditor<MyEditor>();
+  const { editor } = useEditorPlugin(MarkdownPlugin);
   const [open, setOpen] = React.useState(false);
   const markdownApi = editor.api.markdown;
 

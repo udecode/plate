@@ -6,9 +6,41 @@ import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
+  BaseTableRowPlugin,
 } from './BaseTablePlugin';
+import {
+  TableCellHeaderPlugin,
+  TableCellPlugin,
+  TablePlugin,
+  TableRowPlugin,
+} from '../react/TablePlugin';
 
 describe('BaseTablePlugin', () => {
+  it('declares exact required Base and React table dependencies', () => {
+    expect(BaseTablePlugin.dependencies).toEqual([
+      BaseTableRowPlugin,
+      BaseTableCellPlugin,
+      BaseTableCellHeaderPlugin,
+    ]);
+    expect(TablePlugin.dependencies).toEqual([
+      TableRowPlugin,
+      TableCellPlugin,
+      TableCellHeaderPlugin,
+    ]);
+  });
+
+  it.each([
+    ['row', BaseTableRowPlugin.configure({ enabled: false })],
+    ['cell', BaseTableCellPlugin.configure({ enabled: false })],
+    ['header cell', BaseTableCellHeaderPlugin.configure({ enabled: false })],
+  ])('rejects a disabled required %s dependency', (_, dependency) => {
+    expect(() =>
+      createPlateEditor({
+        plugins: [BaseTablePlugin, dependency],
+      })
+    ).toThrow(/table.*disabled|disabled.*table/i);
+  });
+
   it('parses table cell background styles and attribute props', () => {
     const editor = createPlateEditor({
       plugins: [BaseTablePlugin],

@@ -20,30 +20,34 @@ description: Plate 组件的 API 参考。
 <APIItem name="decorate" type="(ctx: BasePluginContext<C>) => Range[]" optional>
 参见 [Plite 文档](https://docs.slatejs.org/concepts/09-rendering#decorations)。
 </APIItem>
-<APIItem name="onChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
-编辑器状态变化时调用的受控回调。
+<APIItem name="onCommit" type="({ commit, editor, snapshot }) => void" optional>
+每次编辑器提交后调用。
 </APIItem>
-<APIItem name="onSelectionChange" type="(selection: Range | null) => void" optional>
-编辑器选区变化时调用的回调。
+<APIItem name="onSelectionChange" type="({ commit, editor, selection, snapshot }) => void" optional>
+主根选区变化时调用。
 </APIItem>
-<APIItem name="onValueChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
-编辑器值变化时调用的回调。
+<APIItem name="onValueChange" type="({ commit, editor, snapshot, value: EditorDocumentValue }) => void" optional>
+可序列化文档发生变化时调用。`value` 包含主 `children`、命名 `roots` 和持久化
+`meta`。
 </APIItem>
 <APIItem name="onNodeChange" type="(options: { editor: PlateEditor; node: Descendant; operation: NodeOperation; prevNode: Descendant }) => void" optional>
 节点操作发生时调用的回调（插入、删除、设置、合并、拆分、移动）。
 
 **参数：**
+
 - `editor`：Plate 编辑器实例
 - `node`：操作后的节点
 - `operation`：发生的节点操作
 - `prevNode`：操作前的节点
 
 **注意：** 对于 `insert_node` 和 `remove_node` 操作，`node` 和 `prevNode` 包含相同的值，以避免空值情况。
+
 </APIItem>
 <APIItem name="onTextChange" type="(options: { editor: PlateEditor; node: Descendant; operation: TextOperation; prevText: string; text: string }) => void" optional>
 文本操作发生时调用的回调（插入或删除文本）。
 
 **参数：**
+
 - `editor`：Plate 编辑器实例
 - `node`：包含已更改文本的父节点（块级或内联元素）
 - `operation`：发生的文本操作（`insert_text` 或 `remove_text`）
@@ -108,5 +112,20 @@ description: Plate 组件的 API 参考。
 `Plate` 为编辑器状态提供一个 store 并渲染其子组件。它使用 `PlateStoreProvider` 使编辑器状态和相关函数对其子组件可用。
 
 元素和叶子节点的渲染逻辑主要由插件系统处理，如果没有找到特定节点类型的插件，`renderElement` 和 `renderLeaf` 属性将作为后备方案。
+
+当 schema 元素拥有命名内容根时，组件通过类型化的
+`slots.contentRoot(slot)` 渲染它。相同组件可用于交互式和静态渲染；Plate 会选择
+可编辑根视图或静态根子节点。
+
+```tsx
+function FigureElement({ attributes, children, slots }) {
+  return (
+    <figure {...attributes}>
+      {children}
+      <figcaption>{slots.contentRoot("caption")}</figcaption>
+    </figure>
+  );
+}
+```
 
 有关创建和配置编辑器的更多详细信息，请参阅[编辑器配置](/docs/editor)指南。

@@ -24,7 +24,6 @@ import {
   PathApi,
   type Range,
   RangeApi,
-  definePropertyPolicy,
   editorCommands,
   type Node,
   type NodeEntry,
@@ -209,10 +208,9 @@ const isInlineSuggestionData = (
   );
 };
 
-const inlineSuggestionDataPolicy = definePropertyPolicy<TInlineSuggestionData>({
-  id: 'plate.suggestion.inline-data',
+const inlineSuggestionDataProperty = property.json({
   validate: isInlineSuggestionData,
-  version: 1,
+  validationVersion: 1,
 });
 
 const BaseSuggestionPluginDefinition = createBasePlugin({
@@ -228,15 +226,12 @@ const BaseSuggestionPluginDefinition = createBasePlugin({
       schema.elementProperty(
         KEYS.suggestion,
         property.json({
-          policy: definePropertyPolicy<TSuggestionElement['suggestion']>({
-            id: 'plate.suggestion.block-data',
-            validate: (value): value is TSuggestionElement['suggestion'] =>
-              hasSuggestionIdentity(value) &&
-              (value.type === 'insert' || value.type === 'remove') &&
-              (!('isLineBreak' in value) ||
-                typeof value.isLineBreak === 'boolean'),
-            version: 1,
-          }),
+          validate: (value): value is TSuggestionElement['suggestion'] =>
+            hasSuggestionIdentity(value) &&
+            (value.type === 'insert' || value.type === 'remove') &&
+            (!('isLineBreak' in value) ||
+              typeof value.isLineBreak === 'boolean'),
+          validationVersion: 1,
         }),
         {
           split: 'preserve',
@@ -262,18 +257,14 @@ const BaseSuggestionPluginDefinition = createBasePlugin({
           typeChange: 'preserve-if-allowed',
         }
       ),
-      schema.elementProperty(
-        'suggestionData',
-        property.json({ policy: inlineSuggestionDataPolicy }),
-        {
-          split: 'preserve',
-          target: target.group('inline'),
-          typeChange: 'preserve-if-allowed',
-        }
-      ),
+      schema.elementProperty('suggestionData', inlineSuggestionDataProperty, {
+        split: 'preserve',
+        target: target.group('inline'),
+        typeChange: 'preserve-if-allowed',
+      }),
       schema.elementProperty(
         schema.key.prefix(`${KEYS.suggestion}_`),
-        property.json({ policy: inlineSuggestionDataPolicy }),
+        inlineSuggestionDataProperty,
         {
           split: 'preserve',
           target: target.group('inline'),
@@ -289,18 +280,14 @@ const BaseSuggestionPluginDefinition = createBasePlugin({
           typeChange: 'preserve-if-allowed',
         }
       ),
-      schema.textProperty(
-        'suggestionData',
-        property.json({ policy: inlineSuggestionDataPolicy }),
-        {
-          split: 'preserve',
-          target: target.group('element'),
-          typeChange: 'preserve-if-allowed',
-        }
-      ),
+      schema.textProperty('suggestionData', inlineSuggestionDataProperty, {
+        split: 'preserve',
+        target: target.group('element'),
+        typeChange: 'preserve-if-allowed',
+      }),
       schema.textProperty(
         schema.key.prefix(`${KEYS.suggestion}_`),
-        property.json({ policy: inlineSuggestionDataPolicy }),
+        inlineSuggestionDataProperty,
         {
           split: 'preserve',
           target: target.group('element'),
@@ -323,7 +310,6 @@ type BaseSuggestionContract = PluginConfig<
   { suggestion: BaseSuggestionTx },
   {},
   {},
-  readonly [],
   readonly [],
   NonNullable<
     InferConfig<typeof BaseSuggestionPluginDefinition>['schemaModel']

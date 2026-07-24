@@ -149,7 +149,6 @@
     "[Block Menu](/docs/block-menu)",
     "[Block Placeholder](/docs/block-placeholder)",
     "[Block Selection](/docs/block-selection)",
-    "[Caption](/docs/caption)",
     "[Combobox](/docs/combobox)",
     "[Emoji](/docs/emoji)",
     "[Slash Command](/docs/slash-command)",
@@ -524,8 +523,8 @@
                     "isElement",
                     "isLeaf",
                     "maxLevel",
-                    "plugins",
-                    "targetPluginToInject",
+                    "parsers",
+                    "targetParserToInject",
                     "type",
                     "schema",
                     "rules",
@@ -542,7 +541,7 @@
                     "host",
                     "override",
                     "components",
-                    "enabled",
+                    "plugins",
                     "parser",
                     "parsers",
                     "html",
@@ -566,9 +565,7 @@
                     "useHooks",
                     "editOnly",
                     "configure",
-                    "configurePlugin",
                     "extend",
-                    "extendPlugin",
                     "extendExtension",
                     "withComponent",
                     "extendApi",
@@ -2026,12 +2023,6 @@
                   "titleCn": "Block Selection"
                 },
                 {
-                  "description": "Add captions to your blocks.",
-                  "href": "/docs/caption",
-                  "title": "Caption",
-                  "titleCn": "Caption"
-                },
-                {
                   "description": "Utilities for adding combobox to your editor.",
                   "href": "/docs/combobox",
                   "items": [
@@ -2568,11 +2559,6 @@
         "description": "Select and manipulate entire text blocks.",
         "title": "Block Selection",
         "titleCn": "Block Selection"
-      },
-      "/docs/caption": {
-        "description": "Add captions to your blocks.",
-        "title": "Caption",
-        "titleCn": "Caption"
       },
       "/docs/combobox": {
         "description": "Utilities for adding combobox to your editor.",

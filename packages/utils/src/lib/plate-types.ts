@@ -1,4 +1,4 @@
-import type { Descendant, Element, Text } from '@platejs/plite';
+import type { Element, Text } from '@platejs/plite';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Elements
@@ -52,6 +52,7 @@ export interface TEquationElement extends Element {
 }
 
 export interface TImageElement extends TMediaElement {
+  alt?: string;
   initialHeight?: number;
   initialWidth?: number;
 }
@@ -152,12 +153,6 @@ export type TMediaProps = {
 };
 
 export type TMediaElement = Element & TMediaProps;
-
-export type TCaptionProps = {
-  caption?: Descendant[];
-};
-
-export type TCaptionElement = Element & TCaptionProps;
 
 export type TIndentProps = {
   indent: number;
@@ -288,13 +283,13 @@ export type NodeMap = {
   h6: Element;
   highlight: Text & { highlight: true };
   hr: Element;
-  img: TImageElement & TCaptionProps;
+  img: TImageElement;
   inline_equation: TEquationElement;
   italic: Text & { italic: true };
   kbd: Text & { kbd: true };
   li: Element;
   lic: Element;
-  media_embed: TMediaEmbedElement & TCaptionProps;
+  media_embed: TMediaEmbedElement;
   mention: TMentionElement;
   mention_input: TComboboxInputElement;
   ol: TListElement;
@@ -314,5 +309,5 @@ export type NodeMap = {
   tr: TTableRowElement;
   ul: TListElement;
   underline: Text & { underline: true };
-  video: TVideoElement & TCaptionProps;
+  video: TVideoElement;
 };

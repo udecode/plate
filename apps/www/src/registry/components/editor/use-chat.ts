@@ -13,15 +13,19 @@ import {
   createAIChatAdapter,
 } from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
+import { MarkdownPlugin } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { TablePlugin } from '@platejs/table/react';
 import { type Range, type Value, NodeApi, TextApi } from '@platejs/plite';
 import { type UIMessage, DefaultChatTransport } from 'ai';
 import { KEYS, nanoid } from 'platejs';
-import { type PlateEditor, useEditor, usePluginOption } from 'platejs/react';
+import {
+  type PlateEditor,
+  useEditorPlugin,
+  usePluginOption,
+} from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
-import type { MyEditor } from '@/registry/components/editor/editor-kit';
 
 import { discussionPlugin } from './plugins/discussion-kit';
 
@@ -190,7 +194,8 @@ function createChatTransport({
 }
 
 export const useChat = () => {
-  const editor = useEditor<MyEditor>();
+  const { editor } = useEditorPlugin(MarkdownPlugin);
+  const markdownApi = editor.api.markdown;
   const options = usePluginOption(aiChatPlugin, 'chatOptions');
 
   // remove when you implement the route /api/ai/command
@@ -277,9 +282,9 @@ export const useChat = () => {
           id: discussionId,
           comments: [newComment],
           createdAt: new Date(),
-          documentContent: editor.api.markdown
+          documentContent: markdownApi
             .deserialize(aiComment.content)
-            .map((node) => NodeApi.string(node))
+            .children.map((node) => NodeApi.string(node))
             .join('\n'),
           isResolved: false,
           userId: editor.plugin(discussionPlugin).getOption('currentUserId'),

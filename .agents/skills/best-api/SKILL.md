@@ -62,7 +62,8 @@ runtime laws are hard constraints. Incidental implementation structure is not.
 ### 1. Ideal target
 
 Ignore migration convenience and design the smallest honest public surface.
-Show concrete call sites before naming abstractions:
+Show concrete call sites, including their real public imports, before naming
+abstractions:
 
 - the normal path;
 - one realistic customization path;
@@ -70,6 +71,12 @@ Show concrete call sites before naming abstractions:
 
 If the normal path needs explanation before it reads naturally, the API is not
 done.
+
+Do not review a call expression in isolation. Resolve where every public noun is
+owned and imported from: runtime/core, feature package, registry, or app. A
+short call site with the wrong owner is still a bad API. In particular, do not
+approve `FooKit` until its import path proves whether it is framework capability
+or consumer policy.
 
 ### 2. Reality check
 
@@ -80,6 +87,36 @@ hybrid when compatibility would make the final API worse.
 Never silently downgrade the target because the current implementation already
 contains a registry, profile, lifecycle, builder, compatibility alias, or
 accepted plan. Say when those should be deleted, hidden, or redesigned.
+
+## Bounded Exhaustiveness Gate
+
+When the question touches colocation, inlining, helper survival, file topology,
+API fragmentation, or "the full list", the first obvious candidate is not an
+answer. Audit the complete bounded owner before recommending or implementing a
+cleanup.
+
+1. Materialize the bounded source manifest: relevant files, top-level
+   declarations, plugin/extension blocks, raw `tx`-accepting helpers, public
+   exports, and representative production consumers.
+2. Count production consumers and classify their ownership. Multiple calls
+   inside one plugin/component family are still one production owner; tests,
+   docs, barrels, exports, historical files, and hypothetical reuse do not
+   establish another owner.
+3. Give every row one decision:
+   - inline/delete in the owner;
+   - keep lexical to one coherent algorithm;
+   - reuse through the owning scoped API/update method;
+   - keep as a standalone public, cross-plugin, cross-layer,
+     transaction-composition, or proof owner;
+   - move to the correct layer or defer with an exact owner gap.
+4. Report expected rows, reviewed rows, exclusions, every removal/localization,
+   and every survivor with its concrete consumer or independent-owner proof.
+
+Do not stop after finding one `toggle*`, `with*`, utility, transform, component,
+or helper that should be inline. Do not call a scan exhaustive from a lexical
+search that omitted constants, nested extension wrappers, render callbacks, or
+transaction helpers. If the bounded manifest cannot be completed, state the
+coverage gap instead of presenting a partial list as complete.
 
 ## Taste
 
@@ -107,6 +144,17 @@ owner contains the honest implementation complexity. If examples, tests, or
 normal customization must punch through that surface into internals, the
 boundary is wrong.
 
+Keep structurally owned editable content in the owning node's ordinary
+`children`. Conditional visibility, selection, copy, or mounting is a
+projection/DOM-coverage job, not a reason to invent another persisted content
+container. Distinct owner selection, child-text focus, rendering, or optional
+empty UI also does not earn a one-child semantic wrapper: use selection kinds,
+schema behavior, and projection. A structural child element earns identity
+only when it owns distinct grammar, properties, commands, or one of several
+real semantic regions. Promote content to a named root only when it has
+genuinely independent addressing, lifecycle, sharing, or transaction
+semantics.
+
 An API is not scalable because it exposes every possible mechanism. It scales
 when future capability can be added without making every caller learn it.
 
@@ -126,6 +174,10 @@ Reject:
 - explicit callback annotations or helper types that compensate for a broken
   owning generic;
 - public composition models copied from current internals;
+- feature-package preset arrays that merely name a list of independently useful
+  plugins;
+- the same convenience name exported from both a package and registry/app
+  owner;
 - debug/profiling concerns embedded in ordinary authoring APIs;
 - abstractions whose explanation is longer than the call site they replace.
 
@@ -149,6 +201,90 @@ still deserve a replaceable owner when legitimate products implement it
 differently. The deciding property is independent substitution, not how common
 the behavior is.
 
+For Plate plugin relationships, classify ownership before choosing a field:
+
+- `dependencies` installs required structure or capability and may remain
+  transitive;
+- optional capabilities are ordinary plugins included directly by the
+  consumer; when an enhancement requires a host capability, the enhancement
+  depends on the host rather than the host bundling the enhancement;
+- app and registry-owned readonly plugin arrays group complete defaults,
+  presets, and product policy.
+
+Do not add a second plugin-descriptor relationship for optional defaults or
+encode optionality with wrappers such as `{ optional: Plugin }`. Optionality is
+ordinary omission from the consumer's plugin array. Keep the descriptor graph
+for invariants; keep product choice visible at the use site.
+
+Public package exports are capabilities, not presets. Packages export
+individual plugin descriptors; inseparable multi-plugin structure uses one
+honest owner with `dependencies`. Keep package-local tuples private when they
+help implementation or tests. Name and export reusable plugin-array kits only
+from app or registry source, where consumers own the product policy.
+
+Do not split one registry kit into `BaseFooKit` and `FooKit` merely because
+base and live consumers both use it. Share one runtime-neutral policy kit when
+its descriptors, options, and behavior are identical; compose static, React,
+native, or other renderer-specific peer kits in the consuming preset. A split
+is honest only when the kit itself owns different platform descriptors,
+renderers, or behavior. If importing an independently optional renderer kit is
+the only reason a neutral kit needs `'use client'` or a base twin, ownership is
+wrong.
+
+An exported array does not become a capability because every item comes from
+one package, the array is convenient, or multiple examples repeat it. Ask what
+breaks when one member is omitted:
+
+- if the owner becomes invalid, encode the required structure as
+  `dependencies` of one honest capability;
+- if the remaining plugins are independently complete, the selection is a
+  preset and belongs to the registry/app;
+- if only package implementation or tests need the tuple, keep it private.
+
+Do not replace a fake grouping plugin with a public package grouping array and
+call the ownership fixed. That changes syntax while preserving the same false
+owner.
+
+Configure a target descriptor directly only when the caller owns that target's
+membership in the final composition. Import access alone does not establish
+membership ownership. A complete same-key descriptor customizes an installed
+dependency or framework default. Required dependencies cannot be disabled, and
+two distinct enabled descriptors still conflict. Optional product membership
+is changed by editing the owning app/registry array, not by installing a
+same-key disabled tombstone.
+
+Bare keys cannot infer another package's option contract without a central key
+registry; do not add that machinery. When a plugin does not own another
+capability's membership in the consumer's final composition, it may use
+`override.plugins[KEY]` as a narrow weak-peer adaptation of an already-installed
+target. This applies even when the adapting plugin can import the target.
+A missing target is a no-op. Weak peers may change runtime configuration or
+enablement, but cannot install the target or mutate its identity, dependencies,
+or nested overrides. Required dependencies cannot be disabled, and the target's
+terminal `.configure()` layer wins.
+
+An independently optional plugin or kit must not install another independently
+optional peer merely to adapt it. Put the adaptation on a plugin descriptor in
+the adapting kit as a weak peer, so either capability remains complete alone
+and the integration activates only when both are installed. Prove the adapting
+capability alone, the target alone, both together, and both with explicit target
+configuration.
+
+This weak path does not replace ordinary typed ownership. When the final
+composition owns the target's membership, configure the target descriptor
+directly. Exact weak target-option inference requires that descriptor or config
+type; a plugin using only `KEYS` intentionally gets the erased weak-peer
+contract. Keep component replacement and `inject.parsers` for their distinct
+jobs. Reject a central key registry, ancestor reach-through methods, recursive
+child registries, and new add/replace verbs.
+
+Resolve peer conflicts at the narrowest behavior surface. If one shortcut,
+handler, parser, or render contribution conflicts, remove or replace that
+member; do not disable the whole plugin. Whole-plugin disablement is valid only
+when absence is itself the intended product state, and it is invalid for a
+required dependency. Do not promote one conflicting member into another public
+plugin unless it independently passes the promotion gates below.
+
 Promote a capability to a public plugin or extension only when all applicable
 gates pass:
 
@@ -168,12 +304,42 @@ one-to-one to plugins. Group rows by user-visible capability, not compiler
 destination. Plugin identity also does not require a file split: keep
 single-owner descriptors colocated until another durable file owner exists.
 
-Repeated callers of plugin behavior reuse the scoped plugin API; they do not
+For a concrete inferred editor, `editor.api` is the canonical API discovery
+surface. Publish every non-empty plugin API under its human-readable plugin
+key, while `editor.plugin(Plugin).api` exposes the same immutable API for
+generic package code and exact descriptor ownership. Do not duplicate one
+implementation through both `extendApi` and `extendEditorApi`, route document
+mutations outside `editor.update`, or add an API-key alias registry. When a
+serialized node type is a bad public namespace, split the plugin's readable
+identity from its `type`.
+
+Generic code integrating an optional descriptor uses its typed portal as the
+single source of truth:
+
+```ts
+const feature = editor.plugin(FeaturePlugin);
+
+if (feature.installed) {
+  feature.api.run();
+}
+```
+
+`installed` is the non-throwing availability check; disabled plugins count as
+absent. Do not infer availability from root `editor.api`, node types, schema
+properties, caches, or caught portal errors. Access plugin-owned API, options,
+updates, and the installed descriptor only after the check when absence is
+valid.
+
+Copied registry UI and reusable package components are generic by definition,
+even when one current host supplies a complete kit. They must not import the
+host's editor type or use its root plugin namespaces.
+
+Repeated callers of plugin behavior reuse that plugin-owned API; they do not
 create a second helper owner. Keep the algorithm inside the plugin and expose
 one inferred API or update method. A standalone function survives only when it
 owns a real cross-plugin, cross-layer, or transaction-composition job that the
-scoped plugin surface cannot express honestly. A raw helper that accepts both
-`tx` and the plugin's resolved `type` is evidence that the plugin boundary is
+plugin surface cannot express honestly. A raw helper that accepts both `tx`
+and the plugin's resolved `type` is evidence that the plugin boundary is
 missing.
 
 Reject promotion when it only creates a name for one implementation fragment,
@@ -189,6 +355,8 @@ one-plugin-per-handler or one-plugin-per-extension-block mappings.
 Ask:
 
 - What is the user trying to say, and does the call site say exactly that?
+- What is the real import path for every noun, and is that layer its honest
+  owner?
 - Can one owner noun be removed from a scoped API?
 - Can nesting become a flat domain verb?
 - Can inference remove a type, cast, helper, or duplicated contract?
@@ -196,9 +364,17 @@ Ask:
 - Is composition about user-visible capability or merely internal fragments?
 - For behavior composition, did invariant, parameter, substitutable capability,
   and app policy get classified before a plugin was proposed?
+- Is a proposed package kit actually one inseparable capability, or just a
+  consumer preset that belongs in registry/app source?
+- For two independently optional capabilities, do adapting-only, target-only,
+  both, and both with explicit target configuration preserve independent
+  membership and deterministic precedence?
 - Does omission or replacement leave a complete owner with an explicit
   fallback, and is there a real caller or hard boundary?
 - Could colocation or inlining remove navigation without hiding reuse?
+- If colocation or helper survival is in scope, did every bounded declaration,
+  extension block, transaction helper, and production consumer receive a
+  decision rather than only the first obvious match?
 - Does the API remain coherent after three plausible future additions?
 - Can an agent find the canonical path from types, JSDoc, and one example?
 - What should be deleted if this target is accepted?
@@ -213,11 +389,11 @@ Lead with one recommendation, not a menu.
 For `design` and `review`, return:
 
 1. verdict;
-2. ideal call sites;
+2. ideal call sites with exact public import paths;
 3. current source and caller evidence;
 4. why this is the simplest truthful model;
 5. machinery or alternatives rejected;
-6. ownership and non-negotiable runtime/safety laws;
+6. ownership by layer and non-negotiable runtime/safety laws;
 7. breaking/adoption impact;
 8. verification performed or explicit N/A;
 9. exact next owner.
@@ -236,6 +412,15 @@ For `audit`, use:
 Rank severity by user and ecosystem cost, not by how interesting a redesign is.
 Ground every row in current source and call sites. Separate implemented debt
 from speculative future ideas.
+
+When the audit includes colocation, inlining, helpers, or file topology, append:
+
+- bounded manifest query or enumeration method;
+- expected, reviewed, removed/localized, kept, and deferred row counts;
+- the complete removed/localized list;
+- the complete survivor list with consumer or independent-owner evidence.
+
+An audit without those coverage facts is partial and must say so.
 
 ## Self-Maintenance
 

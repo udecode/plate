@@ -1,14 +1,15 @@
 import { createBasePlugin } from '@platejs/core';
-import type {
-  Element,
-  NodeInsertNodesOptions,
-  NodeProps,
+import {
+  type Element,
+  type NodeInsertNodesOptions,
+  type NodeProps,
+  property,
 } from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
 
 import type { CodeDrawingData } from './types';
+import { CODE_DRAWING_TYPE_ARRAY, VIEW_MODE_ARRAY } from './constants';
 import { insertCodeDrawing } from './transforms';
-
-export const CODE_DRAWING_KEY = 'code_drawing' as const;
 
 export interface TCodeDrawingElement extends Element {
   data?: CodeDrawingData;
@@ -16,8 +17,39 @@ export interface TCodeDrawingElement extends Element {
 
 /** Enables support for PlantUML, Graphviz, Flowchart, and Mermaid drawings. */
 export const BaseCodeDrawingPlugin = createBasePlugin({
-  key: CODE_DRAWING_KEY,
-  node: { isElement: true, isVoid: true },
+  key: KEYS.codeDrawing,
+  schema: {
+    element: {
+      properties: {
+        data: property.json({
+          validate: (value): value is CodeDrawingData => {
+            if (
+              typeof value !== 'object' ||
+              value === null ||
+              Array.isArray(value)
+            ) {
+              return false;
+            }
+
+            return (
+              (!('code' in value) || typeof value.code === 'string') &&
+              (!('drawingMode' in value) ||
+                VIEW_MODE_ARRAY.some(
+                  ({ value: mode }) => mode === value.drawingMode
+                )) &&
+              (!('drawingType' in value) ||
+                CODE_DRAWING_TYPE_ARRAY.some(
+                  ({ value: type }) => type === value.drawingType
+                ))
+            );
+          },
+          validationVersion: 1,
+        }),
+      },
+      void: 'block',
+    },
+  },
+  type: NODES.codeDrawing,
 }).extendTx(({ type }) => (tx) => ({
   insert: (
     props?: NodeProps<TCodeDrawingElement>,

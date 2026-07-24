@@ -15,7 +15,7 @@ export const getInjectedParserPluginProjections = (
   const projections: InjectedParserPluginProjection[] = [];
 
   [...pluginList].reverse().forEach((source) => {
-    const overlays = source.inject.plugins;
+    const overlays = source.inject.parsers;
 
     if (!overlays || !Object.hasOwn(overlays, plugin.key)) return;
     const overlay = overlays[plugin.key];
@@ -24,8 +24,8 @@ export const getInjectedParserPluginProjections = (
 
     projections.push(
       Object.freeze({
-        inject: overlay.inject === undefined ? plugin.inject : overlay.inject,
-        key: overlay.key ?? plugin.key,
+        inject: plugin.inject,
+        key: plugin.key,
         parser: overlay.parser === undefined ? plugin.parser : overlay.parser,
         parsers:
           overlay.parsers === undefined ? plugin.parsers : overlay.parsers,

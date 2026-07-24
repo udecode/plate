@@ -77,13 +77,14 @@ Initialize a Plite editor instance using `createBaseEditor` with your required p
 
 ```tsx title="lib/plate-static-editor.ts"
 import { createBaseEditor } from 'platejs';
-// Import your desired base plugins (e.g., BaseHeadingPlugin, MarkdownPlugin)
+import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+// Import any other desired base plugins, such as MarkdownPlugin.
 // Ensure you are NOT importing from /react subpaths for server environments.
 
 const editor = createBaseEditor({
   plugins: [
-    // Add your list of base plugins here
-    // Example: BaseHeadingPlugin, MarkdownPlugin.configure({...})
+    ...BaseBasicBlocksKit,
+    // Add other base plugins here.
   ],
   initialValue: [
     {
@@ -135,7 +136,7 @@ Use the `<PlateStatic>` component, providing the `editor` instance configured wi
 ```tsx title="app/my-static-page/page.tsx (RSC Example)"
 import { createBaseEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
-// import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes'; // etc.
+import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
 import { staticComponents } from '@/components/static-components';
 
 export default async function MyStaticPage() {
@@ -146,7 +147,7 @@ export default async function MyStaticPage() {
   ];
 
   const editor = createBaseEditor({
-    plugins: [/* your base plugins */],
+    plugins: [...BaseBasicBlocksKit],
     components: staticComponents,
     initialValue,
   });
@@ -256,8 +257,7 @@ In a Next.js App Router (or similar RSC environment), `<PlateStatic>` can be use
 ```tsx title="app/preview/page.tsx (RSC)"
 import { createBaseEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
-// Example base plugins (ensure non-/react imports)
-// import { BaseHeadingPlugin } from '@platejs/basic-nodes';
+import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
 import { staticComponents } from '@/components/static-components'; // Your static components mapping
 
 export default async function Page() {
@@ -268,8 +268,7 @@ export default async function Page() {
   ];
 
   const editor = createBaseEditor({
-    // plugins: [BaseHeadingPlugin, /* ...other base plugins */],
-    plugins: [], // Add your base plugins
+    plugins: [...BaseBasicBlocksKit],
     components: staticComponents,
     initialValue: serverContent,
   });
@@ -293,12 +292,12 @@ not a semantic HTML codec.
 ```ts title="lib/html-serializer.ts"
 import { createBaseEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
+import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
 import { staticComponents } from '@/components/static-components';
-// import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes';
 
 async function getDocumentAsHtml(value: any[]) {
   const editor = createBaseEditor({
-    plugins: [/* ...your base plugins... */],
+    plugins: [...BaseBasicBlocksKit],
     components: staticComponents,
     initialValue: value,
   });

@@ -182,6 +182,7 @@ describe('when plugin has deserializer.attributeNames', () => {
   const output = (
     <editor>
       <himg
+        alt="removed"
         attributes={{ alt: 'removed' }}
         url="https://i.imgur.com/removed.png"
       >

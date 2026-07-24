@@ -1,0 +1,20 @@
+---
+id: 2026-07-24-compose-markdown-footnotes
+date: 2026-07-24
+status: draft
+kind: wiring
+summary: "Compose runtime-neutral Markdown, editor-owned footnotes, and Tabbable shortcuts"
+change: { "type": "source", "date": "2026-07-24", "commits": [] }
+release: { "status": "unresolved" }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-07-24-markdown-footnote-preset","kind":"wiring","migrationNotes":[]} -->
+
+- **`markdown-kit`**: Configure Markdown parsing without installing a renderer-specific Footnote preset.
+<!-- entry: {"id":"2026-07-24-editor-footnote-composition","kind":"wiring","migrationNotes":[]} -->
+- **`editor-kit`**, **`editor-ai`**, **`editor-base-kit`**: Compose the shared Markdown parser with the matching live or static Footnote renderers exactly once.
+<!-- entry: {"id":"2026-07-24-live-base-kit-independence","kind":"wiring","migrationNotes":[]} -->
+- **`align-kit`**, **`basic-blocks-kit`**, **`basic-marks-kit`**, **`callout-kit`**, **`code-block-kit`**, **`code-drawing-kit`**, **`column-kit`**, **`comment-kit`**, **`date-kit`**, **`editor-ai`**, **`editor-base-kit`**, **`editor-kit`**, **`font-kit`**, **`line-height-kit`**, **`link-kit`**, **`list-kit`**, **`markdown-kit`**, **`math-kit`**, **`media-kit`**, **`mention-kit`**, **`suggestion-kit`**, **`table-kit`**, **`toc-kit`**, **`toggle-kit`**: Install only the presets their copied source composes, without unrelated static/base counterparts.
+<!-- entry: {"id":"2026-07-24-tabbable-indent-shortcuts","kind":"behavior","migrationNotes":[]} -->
+- **`tabbable-kit`**: Preserve Indent support while reserving Tab and Shift+Tab navigation for tabbable elements.

@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { Element as PliteElement } from '@platejs/plite';
 
 import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
-import { expandListItemsWithChildren } from '@platejs/list';
+import { ListPlugin } from '@platejs/list/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
 import { ElementApi, getContainerTypes, isType, KEYS } from 'platejs';
@@ -235,6 +235,7 @@ const DragHandle = React.memo(function DragHandle({
   const { api } = useEditorPlugin(BlockSelectionPlugin);
   const element = useElement();
   const path = usePath();
+  const list = editor.plugin(ListPlugin);
 
   return (
     <Tooltip>
@@ -273,9 +274,13 @@ const DragHandle = React.memo(function DragHandle({
             }
 
             // Process selection nodes to include list children
-            const blocks = expandListItemsWithChildren(
-              editor,
-              selectionNodes
+            const blocks = (
+              list.installed &&
+              selectionNodes.some(
+                ([node]) => typeof node[KEYS.listType] === 'string'
+              )
+                ? list.api.expandItemsWithChildren(selectionNodes)
+                : selectionNodes
             ).map(([node]) => node);
 
             if (blockSelection.length === 0) {
@@ -322,10 +327,13 @@ const DragHandle = React.memo(function DragHandle({
             }
 
             // Process selection to include list children
-            const processedBlocks = expandListItemsWithChildren(
-              editor,
-              selectedBlocks
-            );
+            const processedBlocks =
+              list.installed &&
+              selectedBlocks.some(
+                ([node]) => typeof node[KEYS.listType] === 'string'
+              )
+                ? list.api.expandItemsWithChildren(selectedBlocks)
+                : selectedBlocks;
 
             const ids = processedBlocks.map((block) => block[0].id as string);
 

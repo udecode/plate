@@ -79,8 +79,8 @@ const editor = createPlateEditor({
 可以配置 `TextAlignPlugin` 来指定目标元素和定义对齐选项。
 
 ```tsx
-import { HeadingPlugin } from "@platejs/basic-nodes/react";
 import { TextAlignPlugin } from "@platejs/basic-styles/react";
+import { KEYS } from "platejs";
 import { createPlateEditor, ParagraphPlugin } from "platejs/react";
 
 const editor = createPlateEditor({
@@ -88,12 +88,11 @@ const editor = createPlateEditor({
     // ...其他插件
     TextAlignPlugin.configure({
       targetPluginKeys: [
-        ...HeadingPlugin.plugins.map((plugin) => plugin.key),
+        ...KEYS.heading,
         ParagraphPlugin.key,
       ],
       inject: {
         nodeProps: {
-          nodeKey: "align",
           defaultNodeValue: "start",
           styleKey: "textAlign",
           validNodeValues: [
@@ -111,7 +110,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `inject.nodeProps.nodeKey`: 注入到目标元素的属性名（默认为 `align`）。如需使用其他属性名可设置为 `'textAlign'`
+- `type`: schema 和渲染使用的同一个模型属性 key（默认：`align`）
 - `inject.nodeProps.defaultNodeValue`: 设置默认对齐方式（`start`）
 - `inject.nodeProps.styleKey`: 将注入属性映射到 CSS 的 `textAlign` 属性
 - `inject.nodeProps.validNodeValues`: 定义有效的对齐值用于 UI 控制
@@ -133,8 +132,8 @@ const editor = createPlateEditor({
 
 <API name="TextAlignPlugin">
   <APIOptions type="object">
-    <APIItem name="inject.nodeProps.nodeKey" type="string" optional>
-      注入到目标元素的属性名 - **默认值:** `'align'`
+    <APIItem name="type" type="string" optional>
+      Schema 和渲染使用的已解析模型属性 key - **默认值:** `'align'`
     </APIItem>
     <APIItem name="inject.nodeProps.defaultNodeValue" type="string" optional>
       默认文本对齐值 - **默认值:** `'start'`
@@ -147,7 +146,8 @@ const editor = createPlateEditor({
       'justify']`
     </APIItem>
     <APIItem name="targetPluginKeys" type="string[]" optional>
-      可以保存对齐属性的元素插件键；注入目标由此派生 - **默认值:** `[BaseParagraphPlugin.key]`
+      可以保存对齐属性的元素插件键；注入目标由此派生 - **默认值:**
+      `[BaseParagraphPlugin.key]`
     </APIItem>
   </APIOptions>
 </API>

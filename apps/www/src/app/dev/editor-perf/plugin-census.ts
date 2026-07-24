@@ -64,7 +64,7 @@ export const CORE_PLUGIN_CENSUS_ENTRIES: CorePluginCensusEntry[] = [
       'Cheap structural renderer. Measures the isolated heading path without blockquote or horizontal-rule fan-out.',
     id: 'heading',
     inactiveWorkload: 'huge-paragraph',
-    label: 'HeadingPlugin',
+    label: 'Heading plugins',
     performanceClass: 'cheap structural renderers',
     pluginSet: 'heading-only',
     provisionalMountBudgetMs: 12,

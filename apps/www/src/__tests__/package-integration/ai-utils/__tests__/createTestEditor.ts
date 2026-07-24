@@ -20,8 +20,8 @@ import {
 import { BaseMentionPlugin } from '@platejs/mention';
 import {
   BaseCodeBlockPlugin,
+  BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
 } from '@platejs/code-block';
 import { BaseListPlugin } from '@platejs/list';
 import {
@@ -41,7 +41,7 @@ const BasePlugins = [
   BaseHorizontalRulePlugin,
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
+  BaseCodeHighlightPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
   BaseTableCellPlugin,

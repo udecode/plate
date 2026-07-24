@@ -25,7 +25,7 @@ docs:
 
 ### 安装
 
-最快捷添加代码块功能的方式是使用 `CodeBlockKit`，它包含预配置的 `CodeBlockPlugin`、`CodeLinePlugin` 和 `CodeSyntaxPlugin`，同时带上三反引号 input rule、语法高亮和 [Plate UI](/docs/installation/plate-ui) 组件。
+最快捷添加代码块功能的方式是使用 `CodeBlockKit`。它组合了 `CodeBlockPlugin`、必需的 `CodeLinePlugin`，以及可移除的 `CodeHighlightPlugin`，并带上三反引号 input rule 和 [Plate UI](/docs/installation/plate-ui) 组件。
 
 <ComponentSource name="code-block-kit" />
 
@@ -63,31 +63,29 @@ npm install @platejs/code-block lowlight
 
 ### 添加插件
 
-在创建编辑器时，将代码块插件包含到 Plate 插件数组中。
+加入 `CodeBlockPlugin` 即可获得代码块编辑行为。它会把 `CodeLinePlugin` 作为必需依赖安装；需要 Lowlight 语法高亮时，再单独加入 `CodeHighlightPlugin`。
 
 ```tsx
-import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
+import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     CodeBlockPlugin,
-    CodeLinePlugin,
-    CodeSyntaxPlugin,
   ],
 });
 ```
 
 ### 配置插件
 
-配置带有语法高亮和自定义组件的插件。
+在各自的能力所有者上配置：`CodeBlockPlugin` 负责编辑，`CodeLinePlugin` 负责代码行渲染，`CodeHighlightPlugin` 负责高亮。
 
 **包含所有语言的基础设置：**
 
 ```tsx
 import { CodeBlockRules } from '@platejs/code-block';
-import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
+import { CodeBlockPlugin, CodeHighlightPlugin, CodeLinePlugin } from '@platejs/code-block/react';
 import { all, createLowlight } from 'lowlight';
 import { createPlateEditor } from 'platejs/react';
 import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/ui/code-block-node';
@@ -101,11 +99,13 @@ const editor = createPlateEditor({
     CodeBlockPlugin.configure({
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       render: { node: CodeBlockElement },
-      options: { lowlight },
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
     CodeLinePlugin.withComponent(CodeLineElement),
-    CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),
+    CodeHighlightPlugin.configure({
+      options: { lowlight },
+      render: { node: CodeSyntaxLeaf },
+    }),
   ],
 });
 ```
@@ -136,26 +136,39 @@ const editor = createPlateEditor({
     CodeBlockPlugin.configure({
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       render: { node: CodeBlockElement },
+      shortcuts: { toggle: { keys: 'mod+alt+8' } },
+    }),
+    CodeLinePlugin.withComponent(CodeLineElement),
+    CodeHighlightPlugin.configure({
       options: {
         lowlight,
         defaultLanguage: 'js', // 设置默认语言（可选）
       },
-      shortcuts: { toggle: { keys: 'mod+alt+8' } },
+      render: { node: CodeSyntaxLeaf },
     }),
-    CodeLinePlugin.withComponent(CodeLineElement),
-    CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),
   ],
 });
 ```
 
-- `render.node`: 指定 [`CodeBlockElement`](/docs/components/code-block-node) 来渲染代码块容器
+- `CodeBlockPlugin.render.node`: 指定 [`CodeBlockElement`](/docs/components/code-block-node) 来渲染代码块容器
 - `inputRules`：注册三反引号围栏规则。`on: 'match'` 表示围栏完成时立即提交，`on: 'break'` 表示围栏完成后按 `Enter` 再提交。
-- `options.lowlight`: 用于语法高亮的 lowlight 实例
-- `options.defaultLanguage`: 未指定语言时使用的默认语言
+- `CodeHighlightPlugin.options.lowlight`: 用于语法高亮的 lowlight 实例
+- `CodeHighlightPlugin.options.defaultLanguage`: 未指定语言时使用的默认语言
 - `shortcuts.toggle`: 定义切换代码块的键盘[快捷键](/docs/plugin-shortcuts)
+- `withComponent`: 为代码行和语法高亮指定组件
+
+需要纯文本代码块时，省略 `CodeHighlightPlugin`：
+
+```tsx
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [CodeBlockPlugin],
+});
+```
 
 完整运行时模型请参阅 [Plugin Input Rules](/docs/plugin-input-rules)。
-- `withComponent`: 为代码行和语法高亮指定组件
 
 ### 转换为工具栏按钮
 
@@ -187,7 +200,13 @@ const editor = createPlateEditor({
 
 ### `CodeBlockPlugin`
 
-<API name="CodeBlockPlugin">
+负责代码块 schema、编辑行为、input rule、快捷键和命令。`CodeLinePlugin` 是它的必需依赖。
+
+### `CodeHighlightPlugin`
+
+负责 `code_syntax` mark、Lowlight decoration 流程和高亮 token 渲染。把这个描述符作为普通插件数组的一项加入或省略。
+
+<API name="CodeHighlightPlugin">
 <APIOptions>
   <APIItem name="defaultLanguage" type="string | null" optional>
     未指定语言时使用的默认语言。设为 null 可默认禁用语法高亮。
@@ -197,6 +216,10 @@ const editor = createPlateEditor({
   </APIItem>
 </APIOptions>
 </API>
+
+### `CodeLinePlugin`
+
+代码块行的必需结构依赖。仅在替换其默认配置或组件时直接加入。
 
 ## 命令
 

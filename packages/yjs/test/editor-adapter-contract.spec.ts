@@ -16,17 +16,17 @@ describe('@platejs/yjs editor adapter', () => {
       let reads = 0;
       const editor = {
         read: {
-          children: () => {
+          value: () => {
             reads++;
 
-            return children;
+            return { children, roots: { header: children } };
           },
         },
       } as unknown as Editor;
-      const adapter = createYjsEditorAdapter(editor);
+      const adapter = createYjsEditorAdapter(editor, (_root, value) => value);
 
-      assert.equal(adapter.readChildren(), children);
-      assert.equal(adapter.readChildren(), children);
+      assert.equal(adapter.readChildren('main'), children);
+      assert.equal(adapter.readChildren('header'), children);
       assert.equal(reads, 2);
     }
   });

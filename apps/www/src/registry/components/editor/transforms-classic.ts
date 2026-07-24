@@ -179,15 +179,15 @@ const setBlockMap: Record<string, (editor: PlateEditor, type: string) => void> =
     [KEYS.olClassic]: (editor) =>
       editor
         .plugin(BaseListPlugin)
-        .update.toggle.list({ type: editor.getType(KEYS.olClassic) }),
+        .update.toggle({ type: editor.getType(KEYS.olClassic) }),
     [KEYS.taskList]: (editor) =>
       editor
         .plugin(BaseListPlugin)
-        .update.toggle.list({ type: editor.getType(KEYS.taskList) }),
+        .update.toggle({ type: editor.getType(KEYS.taskList) }),
     [KEYS.ulClassic]: (editor) =>
       editor
         .plugin(BaseListPlugin)
-        .update.toggle.list({ type: editor.getType(KEYS.ulClassic) }),
+        .update.toggle({ type: editor.getType(KEYS.ulClassic) }),
   };
 
 export const setBlockType = (

@@ -443,7 +443,7 @@ describe('Plate', () => {
       </strong>
     );
 
-    const getParagraphPlugin = (dangerouslyAllowAttributes: boolean) =>
+    const getParagraphPlugin = (projectAttributes: boolean) =>
       createPlatePlugin({
         key: 'p',
         schema: {
@@ -452,21 +452,46 @@ describe('Plate', () => {
             properties: { attributes: property.json() },
           },
         },
-        render: { node: ParagraphElement },
-        host: {
-          dangerouslyAllowAttributes: dangerouslyAllowAttributes
-            ? ['data-my-paragraph-attribute']
+        render: {
+          node: ParagraphElement,
+          nodeProps: projectAttributes
+            ? ({ element }) => {
+                const value =
+                  typeof element.attributes === 'object' &&
+                  element.attributes !== null &&
+                  !Array.isArray(element.attributes)
+                    ? Reflect.get(
+                        element.attributes,
+                        'data-my-paragraph-attribute'
+                      )
+                    : undefined;
+
+                return typeof value === 'string'
+                  ? { 'data-my-paragraph-attribute': value }
+                  : {};
+              }
             : undefined,
         },
       });
 
-    const getBoldPlugin = (dangerouslyAllowAttributes: boolean) =>
+    const getBoldPlugin = (projectAttributes: boolean) =>
       createPlatePlugin({
         key: 'bold',
-        render: { node: BoldLeaf },
-        host: {
-          dangerouslyAllowAttributes: dangerouslyAllowAttributes
-            ? ['data-my-bold-attribute']
+        render: {
+          node: BoldLeaf,
+          nodeProps: projectAttributes
+            ? ({ text }) => {
+                const value =
+                  typeof text.attributes === 'object' &&
+                  text.attributes !== null &&
+                  !Array.isArray(text.attributes)
+                    ? Reflect.get(text.attributes, 'data-my-bold-attribute')
+                    : undefined;
+
+                return typeof value === 'string'
+                  ? { 'data-my-bold-attribute': value }
+                  : {};
+              }
             : undefined,
         },
         schema: {
@@ -495,15 +520,11 @@ describe('Plate', () => {
       },
     ];
 
-    const Editor = ({
-      dangerouslyAllowAttributes,
-    }: {
-      dangerouslyAllowAttributes: boolean;
-    }) => {
+    const Editor = ({ projectAttributes }: { projectAttributes: boolean }) => {
       const editor = usePlateEditor({
         plugins: [
-          getParagraphPlugin(dangerouslyAllowAttributes),
-          getBoldPlugin(dangerouslyAllowAttributes),
+          getParagraphPlugin(projectAttributes),
+          getBoldPlugin(projectAttributes),
         ],
         initialValue,
       });
@@ -516,9 +537,7 @@ describe('Plate', () => {
     };
 
     it('renders no user-defined attributes by default', () => {
-      const { getByTestId } = render(
-        <Editor dangerouslyAllowAttributes={false} />
-      );
+      const { getByTestId } = render(<Editor projectAttributes={false} />);
 
       const paragraphEl = getByTestId('paragraph');
       expect(Object.keys(paragraphEl.dataset)).toEqual([
@@ -532,10 +551,8 @@ describe('Plate', () => {
       expect(Object.keys(boldEl.dataset)).toEqual(['testid']);
     });
 
-    it('renders allowed user-defined attributes', () => {
-      const { getByTestId } = render(
-        <Editor dangerouslyAllowAttributes={true} />
-      );
+    it('renders explicitly projected user-defined attributes', () => {
+      const { getByTestId } = render(<Editor projectAttributes />);
 
       const paragraphEl = getByTestId('paragraph');
       expect(Object.keys(paragraphEl.dataset)).toEqual([

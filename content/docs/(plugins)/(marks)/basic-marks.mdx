@@ -110,14 +110,13 @@ export function BoldToolbarButton() {
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BasicMarksPlugin` | `@platejs/basic-nodes/react` | Groups bold, code, italic, strikethrough, subscript, superscript, and underline. |
-| `BaseBasicMarksPlugin` | `@platejs/basic-nodes` | Headless grouping plugin for the same seven marks. |
-| `BasicMarksKit` | Registry | Adds the full mark set, input rules, and client leaf components. |
-| `BaseBasicMarksKit` | Registry | Adds static/base mark plugins with static code, highlight, and kbd leaves. |
+| `BasicMarksKit` | Registry | Configures the full mark set with input rules and client leaf components. |
+| `BaseBasicMarksKit` | Registry | Configures static/base mark plugins with static code, highlight, and kbd leaves. |
 | Individual mark plugins | `@platejs/basic-nodes` | Own mark keys, HTML parsing, render tags, and `toggle` transforms. |
 | `MarkToolbarButton` | Registry UI | Reads mark state and calls the mark toolbar hook. |
 
-`BasicMarksPlugin` is smaller than `BasicMarksKit`: highlight and kbd are separate plugins that the registry kit includes.
+The package exports each mark capability independently. The registry owns the
+editable and static mark presets.
 
 ## Mark Set
 
@@ -185,8 +184,6 @@ Use the individual pages for mark-specific setup and component details.
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BasicMarksPlugin` | `@platejs/basic-nodes/react` | React grouping plugin for seven common marks. |
-| `BaseBasicMarksPlugin` | `@platejs/basic-nodes` | Headless grouping plugin for seven common marks. |
 | `BasicMarksKit` | Registry | Full client kit with highlight, kbd, input rules, and leaves. |
 | `BaseBasicMarksKit` | Registry | Static/base kit for server or static rendering. |
 | `MarkToolbarButton` | Registry UI | Toolbar control for one mark key. |

@@ -1,19 +1,31 @@
 import type {
+  AnyPluginTx,
   BasePluginContext,
   PlateEditorExtensionInput,
   PluginConfig,
+  PluginReference,
 } from '@platejs/core';
 import { editorCommands, type Element } from '@platejs/plite';
 
 import type { TriggerComboboxPluginOptions } from './types';
 
 export const withTriggerCombobox = <
-  C extends PluginConfig<string, TriggerComboboxPluginOptions>,
+  C extends PluginConfig<
+    string,
+    TriggerComboboxPluginOptions,
+    unknown,
+    AnyPluginTx,
+    unknown,
+    unknown,
+    readonly PluginReference[],
+    unknown,
+    unknown
+  >,
 >({
   editor,
   getOptions,
   type,
-}: BasePluginContext<C>): PlateEditorExtensionInput => {
+}: BasePluginContext<C>): PlateEditorExtensionInput<C> => {
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
 

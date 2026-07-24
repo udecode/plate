@@ -51,6 +51,7 @@ export const EXAMPLE_NAMES_AND_PATHS = [
   ['Persistent Annotation Anchors', 'persistent-annotation-anchors'],
   ['Pagination', 'pagination'],
   ['Paste HTML', 'paste-html'],
+  ['Plate Schema Descriptors', 'plate-schema-descriptors'],
   ['Plain Text', 'plaintext'],
   ['Read-only', 'read-only'],
   ['Rendering in iframes', 'iframe'],
@@ -69,6 +70,7 @@ export const HIDDEN_EXAMPLES = [
   'android-tests',
   'decorations-async',
   'dom-coverage-boundaries',
+  'plate-schema-descriptors',
   'persistent-annotation-anchors',
   'schema-reconfiguration',
 ] as const;

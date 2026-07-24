@@ -36,7 +36,8 @@ The editor is still a Plite editor. Plate adds typed plugin access, DOM services
     Operations applied since Plite last flushed the editor.
   </APIItem>
   <APIItem name="api" type="PlateEditor['api'] & CorePluginApi">
-    Core Plite APIs plus APIs contributed by resolved Plate plugins.
+    Core Plite APIs, explicit editor-wide APIs, and installed plugin APIs
+    inferred under their plugin keys.
   </APIItem>
   <APIItem name="update" type="PlateEditor['update']">
     Transaction entrypoint for document, selection, history, and plugin commands.
@@ -70,7 +71,17 @@ React and DOM runtime state is read through Plite runtime APIs. Plate exposes on
 
 ## Plugin Access
 
-Pass the plugin descriptor to `editor.plugin(plugin)` for plugin-owned APIs, update commands, type, and live options. This keeps access typed without exposing Plate's compiled registries.
+Use `editor.api.<pluginKey>` for installed plugin queries and services on a
+concrete editor. Pass the descriptor to `editor.plugin(plugin)` when generic
+code needs the exact plugin API, update commands, type, or live options. The
+root and scoped API paths reference the same immutable object.
+
+```ts title="Plugin API access"
+editor.api.table.getColumnCount();
+
+// Generic package code with an exact descriptor:
+editor.plugin(TablePlugin).api.getColumnCount();
+```
 
 ```ts title="Plugin option access"
 import { FindReplacePlugin } from '@platejs/find-replace';
@@ -83,8 +94,9 @@ findReplace.setOption('search', search.trim());
 
 | Helper | Type | Use it for |
 | --- | --- | --- |
+| `api[pluginKey]` | `InferOwnApi<C>` | Call an installed plugin's queries and services from a concrete inferred editor. |
 | `plugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>` | Open a typed portal to one installed plugin. |
-| `plugin(plugin).api` | `InferOwnApi<C>` | Call plugin-owned queries and services. |
+| `plugin(plugin).api` | `InferOwnApi<C>` | Call the same plugin API from generic or exact-descriptor code. |
 | `plugin(plugin).update` | `InferOwnTx<C>` | Run one plugin-owned update command. |
 | `plugin(plugin).getOption(key, ...args)` | `(key, ...args) => value` | Read one live option or selector result. |
 | `plugin(plugin).getOptions()` | `() => InferOptions<C>` | Read all live options. |
@@ -122,7 +134,7 @@ export function useBasicEditor() {
 | Step | Behavior |
 | --- | --- |
 | Runtime state | Preserves Plite `editor.id` and initializes `runtime.userId`. |
-| Plugin access | Installs descriptor-scoped `plugin(...)` portals plus `getPlugin`, `getType`, and injection helpers. |
+| Plugin access | Publishes installed APIs under `editor.api[pluginKey]` and installs exact `plugin(...)` portals plus `getPlugin`, `getType`, and injection helpers. |
 | Core plugins | Resolves core plugins, replaces core plugins with custom plugins that share the same key, and resolves the root plugin. |
 | Components | Merges `components` into root-plugin component overrides. |
 | Normalization guard | Wraps `normalizeNode` so `editor.api.shouldNormalizeNode(entry)` can skip a normalization pass. |
@@ -150,7 +162,7 @@ These APIs exist on every Plate editor because core plugins are always resolved 
   <APIItem name="editor.api.debug.error" type="(message: unknown, type?: DebugErrorType, details?: any) => void">
     Throw a `PlateError` by default in development. Configure `DebugPlugin` to change logging or `throwErrors`.
   </APIItem>
-  <APIItem name="editor.plugin(HtmlPlugin).api.deserialize" type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredKey }) => Descendant[]">
+  <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredKey }) => Descendant[]">
     Deserialize an HTML element into Plate nodes. The HTML parser plugin calls this for `text/html` paste data.
   </APIItem>
   <APIItem name="editor.api.react.refreshDecorations" type="(options?: PliteProjectionStoreRefreshOptions) => void">
@@ -175,7 +187,8 @@ Mutations run through `editor.update`. Core Plite commands live on the transacti
 <API name="Core transactions">
 <APITransforms>
   <APIItem name="editor.update(policy).value.replace(input)" type="(input: SnapshotInput) => void">
-    Replace the editor value, and optionally the selection, through a configured Plite update.
+    Replace primary children, named roots, persisted meta, and optionally the
+    selection through one configured Plite update.
   </APIItem>
   <APIItem name="editor.update((tx) => tx.nodes.insert(node, options))" type="(node: Node, options?: NodeInsertNodesOptions) => void">
     Insert a node or fragment through the Plite node transaction group.
@@ -210,7 +223,7 @@ Some core behavior is exposed by routing browser/editor events into the Plite tr
 | `ParserPlugin` | Handles paste data and scans plugin parsers in reverse plugin order. Matching parsers transform data, deserialize a fragment, transform the fragment, and insert it. |
 | Plite change events | Emits committed node and text change contexts so Plate handlers can receive previous and next node or text state. |
 | Plite React runtime | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior. |
-| `HtmlPlugin` | Registers the `text/html` parser path and owns HTML element conversion through `editor.plugin(HtmlPlugin).api.deserialize`. |
+| `HtmlPlugin` | Registers the `text/html` parser path and owns HTML element conversion through `editor.api.html.deserialize`. |
 | `BaseParagraphPlugin` | Registers the default paragraph element under key `p` and maps HTML `<p>` elements, excluding code-font paragraphs. |
 
 ## Type Helpers

@@ -39,7 +39,12 @@ selections resolve against the current editor or view root. A root-bound view
 resolves rootless locations against its own root.
 
 Persist roots through the full [Document Meta](14-document-state) value
-instead of saving only one mounted root.
+instead of saving only one mounted root. When an application publishes a
+complete external snapshot, use only `tx.value.replace({ children, roots,
+meta, selection })`. It fits the combined document atomically, removes omitted
+roots, resets omitted persisted meta, and clears selection when `selection` is
+omitted. An invalid combined payload returns `false` and publishes nothing.
+Use `tx.roots.*` only for a targeted named-root change.
 
 ## Reading And Writing Roots
 
@@ -94,10 +99,10 @@ that must run against a specific root.
 
 ## Content Roots
 
-Content roots attach an editable child root to an element in another root. The
-element keeps an empty text child as its model anchor. `element.childRoots[slot]`
-stores the root key, and the editable content lives in
-`editor.read.root(rootKey)`.
+Content roots attach a separately addressed editable root to an element in
+another root. `element.childRoots[slot]` stores the root key, and the detached
+content lives in `editor.read.root(rootKey)`. Keep ordinary structural content
+in the element's `children`.
 
 ```tsx
 import { defineEditorExtension, schema } from "@platejs/plite";
@@ -109,10 +114,13 @@ const syncedBlocks = defineEditorExtension({
       "synced-block": {
         content: schema.content.text({ default: "text", min: 1 }),
         contentRoots: {
-          body: schema.content.group("block", {
-            default: { type: "paragraph" },
-            min: 1,
-          }),
+          body: {
+            content: schema.content.group("block", {
+              default: { type: "paragraph" },
+              min: 1,
+            }),
+            ownership: "shared",
+          },
         },
       },
     },
@@ -140,11 +148,26 @@ editor.update((tx) => {
 });
 ```
 
-Each `contentRoots` entry declares a slot and its child-root grammar.
+Each `contentRoots` entry declares a slot, child-root grammar, and ownership.
 `childRoots[slot]` is the persisted ownership link that survives save/load and
-collaboration. Copy/paste adapters must decide whether to reuse an existing
-child root, clone it into a new root, or serialize and create the child root in
-the paste target.
+collaboration.
+
+Use `ownership: "shared"` when several owners intentionally project the same
+root, as with synced blocks. Shared aliases stay attached to one root; removing
+even the last owner preserves that root. Use `ownership: "exclusive"` for
+a separately mounted document that belongs to exactly one element, such as an
+element-owned annotation surface. Moving an owner preserves its root key.
+Removing, retargeting, or changing the type of an exclusive owner removes the
+root only when it becomes orphaned.
+
+Duplicate and copy/paste clone detached roots. Keys remap deterministically to
+`:copy`, then `:copy:2`, while shared aliases in the copied group continue to
+share one remapped root. Owner-first and root-first creation are both valid
+inside one transaction. `ContentSlice` carries the transitive detached-root
+payload across clipboard and insertion boundaries, including a collapsed
+target. Cut captures that payload before deleting the owner and root in one
+transaction. Undo and redo restore the owner, root content, and root-qualified
+selection together.
 
 Render the child root from `renderElement` with `slots.contentRoot(slot)`.
 

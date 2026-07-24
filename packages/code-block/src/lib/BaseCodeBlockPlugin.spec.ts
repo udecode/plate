@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import { pipeDecorate } from '@platejs/core/static/internal';
-import type { DecoratedRange, Element } from '@platejs/plite';
+import type { DecoratedRange, Element, NodeEntry } from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
 import { KEYS, NODES } from '@platejs/utils';
 import { createLowlight } from 'lowlight';
 
 import {
   BaseCodeBlockPlugin,
+  BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
 } from './BaseCodeBlockPlugin';
 import * as decorationsModule from './setCodeBlockToDecorations';
 
@@ -48,8 +48,10 @@ describe('BaseCodeBlockPlugin', () => {
     expect(BaseCodeBlockPlugin.type).toBe(NODES.codeBlock);
     expect(BaseCodeLinePlugin.key).toBe('codeLine');
     expect(BaseCodeLinePlugin.type).toBe(NODES.codeLine);
-    expect(BaseCodeSyntaxPlugin.key).toBe('codeSyntax');
-    expect(BaseCodeSyntaxPlugin.type).toBe(NODES.codeSyntax);
+    expect(BaseCodeHighlightPlugin.key).toBe('codeSyntax');
+    expect(BaseCodeHighlightPlugin.type).toBe(NODES.codeSyntax);
+    expect(BaseCodeBlockPlugin.dependencies).toEqual([BaseCodeLinePlugin]);
+    expect(BaseCodeHighlightPlugin.dependencies).toEqual([BaseCodeBlockPlugin]);
     expect(
       editorWithCodeLine.read.schema.createAndFill(BaseCodeBlockPlugin)
     ).toEqual({
@@ -63,7 +65,9 @@ describe('BaseCodeBlockPlugin', () => {
       })
     ).toEqual({ preserveContext: true, replaceWhenCovered: false });
     expect(
-      editorWithCodeLine.read.schema.property(BaseCodeSyntaxPlugin)
+      createBaseEditor({
+        plugins: [BaseCodeHighlightPlugin],
+      }).read.schema.property(BaseCodeHighlightPlugin)
     ).toMatchObject({ value: { kind: 'boolean' } });
     expect(
       editorWithCodeLine.read.schema.element(BaseCodeBlockPlugin)?.groups
@@ -109,10 +113,9 @@ describe('BaseCodeBlockPlugin', () => {
     const lowlight = createLowlight();
     const editor = createBaseEditor({
       plugins: [
-        BaseCodeBlockPlugin.configure({
+        BaseCodeHighlightPlugin.configure({
           options: { lowlight },
         }),
-        BaseCodeLinePlugin,
       ],
     });
     const decorate = pipeDecorate(editor);
@@ -142,10 +145,97 @@ describe('BaseCodeBlockPlugin', () => {
     expect(decorate([{ children: [], type: 'p' }, [1]])).toEqual([]);
   });
 
+  it('keeps syntax highlighting absent when only code blocks are installed', () => {
+    const setDecorationsSpy = spyOn(
+      decorationsModule,
+      'setCodeBlockToDecorations'
+    ).mockImplementation(() => {});
+    const editor = createBaseEditor({
+      plugins: [BaseCodeBlockPlugin],
+    });
+    const entry: NodeEntry<Element> = [
+      {
+        children: [{ children: [{ text: 'x' }], type: NODES.codeLine }],
+        type: NODES.codeBlock,
+      },
+      [0],
+    ];
+
+    pipeDecorate(editor)?.(entry);
+
+    expect(() => editor.getPlugin(BaseCodeHighlightPlugin)).toThrow(
+      /not installed/i
+    );
+    expect(setDecorationsSpy).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    {
+      expectedDecorations: false,
+      highlight: BaseCodeHighlightPlugin,
+      name: 'null lowlight',
+      priority: 100,
+    },
+    {
+      expectedDecorations: true,
+      highlight: BaseCodeHighlightPlugin.configure({
+        options: { lowlight: createLowlight() },
+      }),
+      name: 'configured lowlight',
+      priority: 100,
+    },
+    {
+      expectedDecorations: true,
+      highlight: BaseCodeHighlightPlugin.extend({
+        priority: 200,
+      }).configure({
+        options: { lowlight: createLowlight() },
+      }),
+      name: 'same-key replacement',
+      priority: 200,
+    },
+  ])('handles $name', ({ expectedDecorations, highlight, priority }) => {
+    const setDecorationsSpy = spyOn(
+      decorationsModule,
+      'setCodeBlockToDecorations'
+    ).mockImplementation(() => {});
+    const editor = createBaseEditor({
+      plugins: [BaseCodeBlockPlugin, highlight],
+    });
+    const decorate = pipeDecorate(editor);
+
+    if (!decorate) throw new Error('Expected highlighting decorate callback');
+
+    expect(editor.getPlugin(BaseCodeHighlightPlugin).priority).toBe(priority);
+
+    decorate([
+      {
+        children: [{ children: [{ text: 'x' }], type: NODES.codeLine }],
+        type: NODES.codeBlock,
+      },
+      [0],
+    ]);
+
+    expect(setDecorationsSpy).toHaveBeenCalledTimes(
+      expectedDecorations ? 1 : 0
+    );
+  });
+
+  it('rejects a disabled required code-line dependency', () => {
+    expect(() =>
+      createBaseEditor({
+        plugins: [
+          BaseCodeBlockPlugin,
+          BaseCodeLinePlugin.configure({ enabled: false }),
+        ],
+      })
+    ).toThrow(/codeBlock.*disabled.*codeLine|codeLine.*disabled.*codeBlock/i);
+  });
+
   it('refreshes cached decorations when the language changes without React', () => {
     const editor = createBaseEditor({
       plugins: [
-        BaseCodeBlockPlugin.configure({
+        BaseCodeHighlightPlugin.configure({
           options: { lowlight: createLowlight() },
         }),
       ],

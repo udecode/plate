@@ -60,24 +60,23 @@ npm install @platejs/layout
 
 ### 添加插件
 
-在创建编辑器时将分栏插件加入 Plate 插件数组。
+将 `ColumnPlugin` 加入编辑器。它会把 `ColumnItemPlugin` 作为必需的结构依赖安装。
 
 ```tsx
-import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
+import { ColumnPlugin } from '@platejs/layout/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     ColumnPlugin,
-    ColumnItemPlugin,
   ],
 });
 ```
 
 ### 配置插件
 
-通过自定义组件配置插件来渲染分栏布局。
+配置分栏组；需要替换依赖的渲染组件时，再加入完整的 `ColumnItemPlugin` 描述符。
 
 ```tsx
 import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
@@ -113,11 +112,11 @@ const editor = createPlateEditor({
 
 ### `ColumnPlugin`
 
-为文档添加分栏功能。
+负责分栏组，并要求安装 `ColumnItemPlugin`。
 
 ### `ColumnItemPlugin`
 
-为文档添加分栏项功能。
+负责由 `ColumnPlugin` 安装的结构分栏项。仅在替换其默认配置或组件时直接加入。
 
 ## 类型定义
 

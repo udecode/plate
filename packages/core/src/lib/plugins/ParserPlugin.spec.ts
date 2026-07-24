@@ -21,6 +21,7 @@ describe('ParserPlugin', () => {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
+          properties: { tone: property.string() },
         },
       },
       type: 'card',
@@ -78,7 +79,7 @@ describe('ParserPlugin', () => {
       key: 'plain',
       parser: {
         format: 'text/plain',
-        schema: [{ kind: 'schema' }],
+        owns: [{ kind: 'schema' }],
         query: ({ data }) => data === 'hello',
         transformData: ({ data }) => `${data}-world`,
         deserialize: ({ data }) => [createParagraph(data)],
@@ -112,7 +113,7 @@ describe('ParserPlugin', () => {
       key: 'plain',
       parser: {
         format: 'text/plain',
-        schema: [{ kind: 'schema' }],
+        owns: [{ kind: 'schema' }],
         deserialize: () => [],
       },
     });
@@ -139,7 +140,7 @@ describe('ParserPlugin', () => {
       key: 'plain',
       parser: {
         format: 'text/plain',
-        schema: [{ kind: 'schema' }],
+        owns: [{ kind: 'schema' }],
         query: ({ data }) => data === 'hello',
         deserialize: ({ data }) => [createParagraph(data)],
         transformData: ({ data }) => `${data}-world`,
@@ -192,7 +193,7 @@ describe('ParserPlugin', () => {
       key: 'plain',
       parser: {
         format: 'text/plain',
-        schema: [{ kind: 'schema' }],
+        owns: [{ kind: 'schema' }],
         deserialize: () => [createParagraph('parsed')],
       },
     });

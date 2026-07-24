@@ -18,7 +18,7 @@ describe('DocxPlugin', () => {
 
   it('routes html transformData through cleanDocx with rtf input', () => {
     const transformData =
-      DocxPlugin.inject?.plugins?.[KEYS.html]?.parser?.transformData;
+      DocxPlugin.inject?.parsers?.[KEYS.html]?.parser?.transformData;
     const html = '<p class="MsoQuote">Quote</p>';
     const dataTransfer = new DataTransfer();
     dataTransfer.setData('text/rtf', '{\\rtf1}');
@@ -39,7 +39,7 @@ describe('DocxPlugin', () => {
 
   it('parses docx list content into indent and list metadata', () => {
     const parse =
-      DocxPlugin.override.plugins?.p?.parsers?.html?.deserializer?.parse;
+      DocxPlugin.inject?.parsers?.p?.parsers?.html?.deserializer?.parse;
     const element = new DOMParser().parseFromString(
       '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.</span><!--[if !supportLists]--><span>drop</span><!--[endif]-->Item</p>',
       'text/html'
@@ -61,8 +61,8 @@ describe('DocxPlugin', () => {
 
   it('parses paragraph indentation and image query gating', () => {
     const parse =
-      DocxPlugin.override.plugins?.p?.parsers?.html?.deserializer?.parse;
-    const query = DocxPlugin.override.plugins?.img?.parser?.query;
+      DocxPlugin.inject?.parsers?.p?.parsers?.html?.deserializer?.parse;
+    const query = DocxPlugin.inject?.parsers?.img?.parser?.query;
     const element = new DOMParser().parseFromString(
       '<p style="margin-left:72pt;text-indent:36pt">Body</p>',
       'text/html'

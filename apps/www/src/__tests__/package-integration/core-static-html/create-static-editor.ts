@@ -6,9 +6,12 @@ import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 export const createStaticEditor = (
   value: Value,
   options?: Partial<Parameters<typeof createBaseEditor>[0]>
-) =>
-  createBaseEditor({
-    ...options,
-    plugins: BaseEditorKit,
+) => {
+  const { plugins = BaseEditorKit, ...editorOptions } = options ?? {};
+
+  return createBaseEditor({
+    ...editorOptions,
+    plugins,
     initialValue: value,
   });
+};

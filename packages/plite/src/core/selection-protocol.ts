@@ -573,6 +573,7 @@ export const getSelectionDOMRange = (
   selection: Selection
 ): Range | null => {
   if (!selection) return null;
+  if (SelectionApi.isNode(selection)) return null;
 
   return getSelectionSpec(editor, selection).domRange?.(selection) ?? selection;
 };

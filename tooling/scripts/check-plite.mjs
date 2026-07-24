@@ -71,7 +71,6 @@ export const plateAdopterPackages = Object.freeze(
     ['basic-nodes', '@platejs/basic-nodes'],
     ['basic-styles', '@platejs/basic-styles'],
     ['callout', '@platejs/callout'],
-    ['caption', '@platejs/caption'],
     ['code-block', '@platejs/code-block'],
     ['code-drawing', '@platejs/code-drawing'],
     ['combobox', '@platejs/combobox'],

@@ -174,8 +174,13 @@ describe('versioned history persistence', () => {
     });
     const encoded = History.toJSON(editor);
     const liveValidator = () => true;
+    const encodedSchema = encoded.schema;
+
+    assert.equal(encodedSchema.kind, 'named');
+    if (encodedSchema.kind !== 'named')
+      throw new Error('Expected named schema.');
     const pollutedIdentity = {
-      ...encoded.schema!,
+      ...encodedSchema,
       validator: liveValidator,
     };
 
@@ -212,11 +217,11 @@ describe('versioned history persistence', () => {
           get: () => {
             accessorReads++;
 
-            return encoded.schema!.fingerprint;
+            return encodedSchema.fingerprint;
           },
         },
-        id: { enumerable: true, value: encoded.schema!.id },
-        version: { enumerable: true, value: encoded.schema!.version },
+        id: { enumerable: true, value: encodedSchema.id },
+        version: { enumerable: true, value: encodedSchema.version },
       }
     );
 
@@ -714,14 +719,15 @@ describe('versioned history persistence', () => {
     assert.equal(restored.read.getField(counter), 2);
   });
 
-  it('rejects old and unversioned history, unknown effects, and stale field data', () => {
+  it('rejects old, unversioned, schema-less history, unknown effects, and stale field data', () => {
     const editor = createStateEditor([paragraph('body')]);
+    const schemaIdentity = editor.read.schema.identity();
 
     assert.throws(
       () =>
         History.fromJSON(editor, {
           redos: [],
-          schema: null,
+          schema: schemaIdentity,
           undos: [],
           version: 2,
         }),
@@ -731,15 +737,30 @@ describe('versioned history persistence', () => {
       () =>
         History.fromJSON(editor, {
           redos: [],
-          schema: null,
+          schema: schemaIdentity,
           undos: [],
           version: 3,
         }),
       /unsupported history version/i
     );
     assert.throws(
-      () => History.fromJSON(editor, { redos: [], schema: null, undos: [] }),
+      () =>
+        History.fromJSON(editor, {
+          redos: [],
+          schema: schemaIdentity,
+          undos: [],
+        }),
       /unsupported history version/i
+    );
+    assert.throws(
+      () =>
+        History.fromJSON(editor, {
+          redos: [],
+          schema: null,
+          undos: [],
+          version: 4,
+        }),
+      /Invalid history JSON/i
     );
     assert.throws(
       () =>

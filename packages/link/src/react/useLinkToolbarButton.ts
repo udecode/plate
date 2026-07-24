@@ -1,6 +1,5 @@
 import { useEditor, useEditorSelector } from '@platejs/core/react';
 import type { TLinkElement } from '@platejs/utils';
-import { KEYS } from '@platejs/utils';
 
 import { LinkPlugin } from './LinkPlugin';
 
@@ -12,7 +11,7 @@ export const useLinkToolbarButtonState = () => {
       !!selection &&
       editor.read.nodes.some({
         at: selection,
-        match: { type: editor.getType(KEYS.link) },
+        match: { type: editor.getType(LinkPlugin.key) },
       })
     );
   });
@@ -38,7 +37,7 @@ export const useLinkToolbarButton = (
 
           const node = editor.read.nodes.find<TLinkElement>({
             at: selection,
-            match: { type: editor.getType(KEYS.link) },
+            match: { type: editor.getType(LinkPlugin.key) },
           });
 
           if (!node) return;

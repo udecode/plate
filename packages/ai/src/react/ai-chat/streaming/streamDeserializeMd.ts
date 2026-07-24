@@ -29,12 +29,15 @@ export const streamDeserializeMd = (
   let blocks: Value;
 
   try {
-    blocks = editor.api.markdown.deserialize(input, deserializeOptions);
+    blocks = editor.api.markdown.deserialize(
+      input,
+      deserializeOptions
+    ).children;
   } catch {
     blocks = editor.api.markdown.deserialize(input, {
       ...deserializeOptions,
       withoutMdx: true,
-    });
+    }).children;
   }
 
   const trimmedData = getChunkTrimmed(data);

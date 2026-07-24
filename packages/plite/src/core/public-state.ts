@@ -73,7 +73,11 @@ import type {
   TransactionSpec,
   Value,
 } from '../interfaces/editor';
-import type { Element, ElementIn } from '../interfaces/element';
+import type {
+  Element,
+  ElementIn,
+  ElementOrTextIn,
+} from '../interfaces/element';
 import { LocationApi, type Location, type Span } from '../interfaces/location';
 import {
   type Ancestor,
@@ -152,6 +156,7 @@ import {
   getDocumentChangeTopLevelRanges,
   IndexedDocument,
   type JsonEditorValue,
+  type JsonNode,
 } from './document-change';
 import {
   canonicalizeRootChildren,
@@ -216,6 +221,7 @@ import {
   getSelectionReplacementRange,
   mapSelectionThroughChange,
 } from './selection-protocol';
+import { EditorSchemaValidationError } from './schema-validation';
 import {
   advancePathStableSnapshotIndex,
   buildSnapshotIndex,
@@ -283,6 +289,7 @@ type TransactionSnapshot = {
     { type: EditorUpdateAnnotation<any>; value: unknown }
   >;
   childrenRoot: string;
+  contentSliceRoots: Set<string>;
   documentState: Record<string, unknown> | undefined;
   discardedRuntimeIds: Set<RuntimeId>;
   dirtyStateKeys: Set<string>;
@@ -360,6 +367,36 @@ const EDITOR_VIEW_STATE_LISTENERS = new WeakMap<
 >();
 const LAST_COMMIT = new WeakMap<Editor, EditorCommit | null>();
 const SNAPSHOT_CACHE = new WeakMap<Editor, Map<string, EditorSnapshot>>();
+const SNAPSHOT_INPUT_TRANSFORMS = new WeakMap<
+  Editor,
+  (input: SnapshotInput) => SnapshotInput
+>();
+
+/** @internal Install one host-owned transform before external snapshot fitting. */
+export const setEditorSnapshotInputTransform = (
+  editor: Editor,
+  transform: ((input: SnapshotInput) => SnapshotInput) | undefined
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const previous = SNAPSHOT_INPUT_TRANSFORMS.get(owner);
+
+  if (transform) {
+    SNAPSHOT_INPUT_TRANSFORMS.set(owner, transform);
+  } else {
+    SNAPSHOT_INPUT_TRANSFORMS.delete(owner);
+  }
+
+  return () => {
+    if (SNAPSHOT_INPUT_TRANSFORMS.get(owner) !== transform) return;
+
+    if (previous) {
+      SNAPSHOT_INPUT_TRANSFORMS.set(owner, previous);
+    } else {
+      SNAPSHOT_INPUT_TRANSFORMS.delete(owner);
+    }
+  };
+};
+
 type TransactionSpecContext = {
   activeChildrenRoot?: string;
   activeUpdateRoot?: string;
@@ -493,6 +530,14 @@ const TRANSACTION_SPEC_BASE = new WeakMap<
   }>
 >();
 const TRANSACTION_SPEC_PARENT = new WeakMap<TransactionSpec, TransactionSpec>();
+const TRANSACTION_SPEC_DOCUMENT_STATES = new WeakMap<
+  TransactionSpec,
+  Record<string, unknown> | undefined
+>();
+const TRANSACTION_SPEC_CONTENT_SLICE_ROOTS = new WeakMap<
+  TransactionSpec,
+  readonly string[]
+>();
 const PREPARED_TRANSACTION_SPECS = new WeakMap<
   TransactionSpec,
   Readonly<{
@@ -2004,6 +2049,125 @@ export const doesSelectionContain = (
   return !!range && RangeApi.surrounds(selection, range);
 };
 
+const remapContentSliceRoots = <V extends Value>(
+  editor: Editor<V>,
+  slice: import('../interfaces/editor').ContentSlice<V>
+) => {
+  if (!slice.roots || Object.keys(slice.roots).length === 0) return slice;
+
+  const existingRoots = new Set(
+    Object.keys(
+      (getActiveDocumentChangeBuilder(editor).value as EditorDocumentValue)
+        .roots ?? {}
+    )
+  );
+  const remapped = new Map<string, string>();
+
+  for (const root of Object.keys(slice.roots).sort()) {
+    const base = `${root}:copy`;
+    let candidate = base;
+    let suffix = 2;
+
+    while (existingRoots.has(candidate)) {
+      candidate = `${base}:${suffix}`;
+      suffix += 1;
+    }
+    existingRoots.add(candidate);
+    remapped.set(root, candidate);
+  }
+
+  const rewrite = (node: Descendant): Descendant => {
+    if (!NodeApi.isElement(node)) return node;
+    const children = node.children.map(rewrite);
+    const declarations = getEditorSchema(editor).getElementOwnedRoots(node);
+    let childRoots = (node as { childRoots?: unknown }).childRoots;
+
+    for (const declaration of declarations) {
+      const replacement = remapped.get(declaration.root);
+
+      if (!replacement) continue;
+      childRoots = {
+        ...(typeof childRoots === 'object' && childRoots !== null
+          ? childRoots
+          : {}),
+        [declaration.slot]: replacement,
+      };
+    }
+
+    return Object.freeze({
+      ...node,
+      ...(childRoots === undefined ? {} : { childRoots }),
+      children: Object.freeze(children),
+    }) as Descendant;
+  };
+  const roots = Object.freeze(
+    Object.fromEntries(
+      [...remapped].map(([source, target]) => [
+        target,
+        Object.freeze(slice.roots![source]!.map(rewrite)),
+      ])
+    )
+  );
+
+  return ContentSlice.fromJSON<V>({
+    content: slice.content.map(rewrite),
+    openEnd: slice.openEnd,
+    openStart: slice.openStart,
+    roots,
+  });
+};
+
+const materializeContentSliceRoots = (
+  editor: Editor,
+  slice: import('../interfaces/editor').ContentSlice
+) => {
+  if (!slice.roots) return;
+  const payloadRoots = new Set(Object.keys(slice.roots));
+  const pending = new Set<string>();
+  const created = new Set<string>();
+  const collect = (children: readonly Descendant[]) => {
+    const visit = (node: Descendant) => {
+      if (!NodeApi.isElement(node)) return;
+
+      for (const { root } of getEditorSchema(editor).getElementOwnedRoots(
+        node
+      )) {
+        if (payloadRoots.has(root) && !created.has(root)) pending.add(root);
+      }
+      node.children.forEach(visit);
+    };
+
+    children.forEach(visit);
+  };
+  const current = getActiveDocumentChangeBuilder(editor)
+    .value as EditorDocumentValue;
+
+  collect(slice.content);
+  collect(current.children);
+  for (const children of Object.values(current.roots ?? {})) collect(children);
+
+  while (pending.size > 0) {
+    const root = [...pending].sort()[0]!;
+
+    pending.delete(root);
+    if (created.has(root)) continue;
+    const content = slice.roots[root];
+
+    if (!content) continue;
+    applyDocumentChangeStep(
+      editor,
+      getActiveDocumentChangeBuilder(editor).createRoot(
+        root,
+        content as readonly JsonNode[]
+      )
+    );
+    getTransactionSnapshot(editor)?.contentSliceRoots.add(root);
+    created.add(root);
+
+    collect(content);
+  }
+};
+
 const fitSliceIntoActiveDraft = <V extends Value>(
   editor: Editor<V>,
   slice: import('../interfaces/editor').ContentSlice<V>,
@@ -2025,7 +2189,8 @@ const fitSliceIntoActiveDraft = <V extends Value>(
 
   return runWithMutationRoot(editor, root, () => {
     const state = getStateView(editor);
-    const inputSlice = ContentSlice.fromJSON<V>(slice);
+    const sourceSlice = ContentSlice.fromJSON<V>(slice);
+    const inputSlice = remapContentSliceRoots(editor, sourceSlice);
     const limitedSlice = limitSliceInsert(editor, inputSlice, localOptions);
 
     if (limitedSlice.content.length === 0 && inputSlice.content.length > 0) {
@@ -2092,30 +2257,64 @@ const fitSliceIntoActiveDraft = <V extends Value>(
       return false;
     }
 
-    return getEditorSchema(editor).fit(limitedSlice, {
-      apply: (step, selection) =>
-        applyDocumentChangeStep(
-          editor,
-          step,
-          selection
+    const fit = () =>
+      getEditorSchema(editor).fit(limitedSlice, {
+        apply: (step, selection) =>
+          applyDocumentChangeStep(
+            editor,
+            step,
+            selection
+              ? {
+                  selectionAfter: selection,
+                  selectionRoot: range.anchor.root ?? MAIN_ROOT_KEY,
+                }
+              : {}
+          ),
+        builder: getActiveDocumentChangeBuilder(editor),
+        target: {
+          at: range,
+          ...(insertionBoundary
             ? {
-                selectionAfter: selection,
-                selectionRoot: range.anchor.root ?? MAIN_ROOT_KEY,
+                contentBounds: insertionBoundary,
+                exactBounds: insertionBoundary,
               }
-            : {}
-        ),
-      builder: getActiveDocumentChangeBuilder(editor),
-      target: {
-        at: range,
-        ...(insertionBoundary
-          ? {
-              contentBounds: insertionBoundary,
-              exactBounds: insertionBoundary,
-            }
-          : {}),
-        kind: 'range',
-      },
-    });
+            : {}),
+          kind: 'range',
+        },
+      });
+    let fitted: boolean;
+
+    if (limitedSlice.roots) {
+      const rootSpec = createTransactionSpec(editor, () =>
+        materializeContentSliceRoots(editor, limitedSlice)
+      );
+      let continuationFitted = false;
+      const continuation = extendTransactionSpec(editor, rootSpec, () => {
+        continuationFitted = fit();
+      });
+
+      fitted = continuationFitted;
+      if (fitted) {
+        try {
+          getEditorSchema(editor).validateDocument(
+            continuation.changes.apply(
+              getActiveDocumentChangeBuilder(editor)
+                .value as EditorDocumentValue
+            ) as EditorDocumentValue
+          );
+        } catch (error) {
+          if (error instanceof EditorSchemaValidationError) return false;
+          throw error;
+        }
+        applyTransactionSpec(editor, continuation);
+      }
+    } else {
+      fitted = fit();
+    }
+
+    if (!fitted) return false;
+
+    return true;
   });
 };
 
@@ -2195,18 +2394,23 @@ const getStateView = <
     get: (options = {}) => {
       const range = options.at ?? getCurrentSelection(editor);
 
-      if (range && RangeApi.isRange(range) && !hasLocationPath(editor, range)) {
-        return ContentSlice.empty;
-      }
-
       return withOptionsRootRead(
         editor,
         options,
-        () =>
-          getContentSlice(
+        () => {
+          if (
+            range &&
+            RangeApi.isRange(range) &&
+            !hasLocationPath(editor, range)
+          ) {
+            return ContentSlice.empty;
+          }
+
+          return getContentSlice(
             editor,
             range && RangeApi.isRange(range) ? range : null
-          ),
+          );
+        },
         { selectionFallback: options.at === undefined }
       );
     },
@@ -3221,12 +3425,46 @@ const getUpdateView = <
 
     const lastEntry = entries.at(-1)!;
     const insertPath = PathApi.next(lastEntry[1]);
-    const nodesToInsert = entries.map(([node]) => cloneValue(node));
+    const roots: Record<string, readonly Descendant[]> = {};
+    const visited = new Set<string>();
+    const document = getActiveDocumentChangeBuilder(editor)
+      .value as EditorDocumentValue;
+    const collect = (nodes: readonly Descendant[]) => {
+      for (const node of nodes) {
+        if (!NodeApi.isElement(node)) continue;
 
-    txRecord.nodes.insert(nodesToInsert, {
+        for (const { root } of getEditorSchema(editor).getElementOwnedRoots(
+          node
+        )) {
+          if (visited.has(root)) continue;
+          const children = document.roots?.[root];
+
+          if (!children) continue;
+          visited.add(root);
+          roots[root] = children;
+          collect(children);
+        }
+        collect(node.children);
+      }
+    };
+    const source = entries.map(([node]) => node as Descendant);
+
+    collect(source);
+    const slice = remapContentSliceRoots(
+      editor,
+      ContentSlice.fromJSON({
+        content: source,
+        openEnd: 0,
+        openStart: 0,
+        ...(Object.keys(roots).length > 0 ? { roots } : {}),
+      })
+    );
+
+    txRecord.nodes.insert([...slice.content] as ElementOrTextIn<V>[], {
       ...options,
       at: insertPath,
     });
+    materializeContentSliceRoots(editor, slice);
   };
   const duplicateBlocks: EditorTransactionBlocksApi<V>['duplicate'] = ({
     at = state.selection() ?? undefined,
@@ -3980,6 +4218,7 @@ const createTransactionSpecContext = (editor: Editor) => {
     baseSnapshots: {},
     builder,
     childrenRoot: getCurrentChildrenRoot(editor),
+    contentSliceRoots: new Set(),
     dirtyStateKeys: new Set(),
     documentState: copyDocumentState(getDocumentState(editor)),
     discardedRuntimeIds: new Set(),
@@ -4112,6 +4351,37 @@ export const finalizeTransactionRepresentation = (editor: Editor) => {
   return step;
 };
 
+const reconcileExclusiveElementOwnedRoots = (editor: Editor) => {
+  const snapshot = getTransactionSnapshot(editor);
+
+  if (!snapshot) return false;
+  const schema = getEditorSchema(editor);
+  const before = getChangeValue(snapshot.roots) as EditorDocumentValue;
+  const after = snapshot.builder.value as EditorDocumentValue;
+  const change = snapshot.builder.change;
+  const candidates = schema.getOrphanedElementOwnedRoots({
+    after,
+    before,
+    change,
+    indexedAfter: snapshot.builder.indexedAfter(change),
+    tracked: snapshot.contentSliceRoots,
+  });
+
+  let changed = false;
+
+  for (const root of candidates) {
+    applyDocumentChangeStep(editor, snapshot.builder.deleteRoot(root));
+    snapshot.contentSliceRoots.delete(root);
+    changed = true;
+
+    if (getCurrentSelectionRoot(editor) === root) {
+      setCurrentSelection(editor, null, MAIN_ROOT_KEY);
+    }
+  }
+
+  return changed;
+};
+
 const finalizeTransactionSpecContext = (
   editor: Editor,
   context: TransactionSpecContext
@@ -4129,7 +4399,11 @@ const finalizeTransactionSpecContext = (
     getDocumentState(editor)
   );
 
-  if (stateChanged && snapshot.effects.length === 0) {
+  if (
+    stateChanged &&
+    snapshot.effects.length === 0 &&
+    snapshot.reason !== 'replace'
+  ) {
     throw new Error(
       'Transaction spec state changes must be represented by typed effects.'
     );
@@ -4173,6 +4447,18 @@ const finalizeTransactionSpecContext = (
     editor,
     revision: context.baseRevision,
   });
+  if (snapshot.reason === 'replace') {
+    TRANSACTION_SPEC_DOCUMENT_STATES.set(
+      spec,
+      copyDocumentState(getDocumentState(editor))
+    );
+  }
+  if (snapshot.contentSliceRoots.size > 0) {
+    TRANSACTION_SPEC_CONTENT_SLICE_ROOTS.set(
+      spec,
+      Object.freeze([...snapshot.contentSliceRoots])
+    );
+  }
   PREPARED_TRANSACTION_SPECS.set(
     spec,
     Object.freeze({
@@ -4190,6 +4476,27 @@ export const isTransactionSpec = (value: unknown): value is TransactionSpec =>
   typeof value === 'object' &&
   value !== null &&
   TRANSACTION_SPEC_BASE.has(value as TransactionSpec);
+
+/** @internal Materialize one detached spec as the full persisted document. */
+export const applyTransactionSpecToDocument = (
+  editor: Editor,
+  spec: TransactionSpec,
+  value: EditorDocumentValue
+): EditorDocumentValue => {
+  const document = spec.changes.apply(value) as EditorDocumentValue;
+
+  if (!TRANSACTION_SPEC_DOCUMENT_STATES.has(spec)) return document;
+
+  return createEditorDocumentValue({
+    children: document.children,
+    fields: getStateFieldIdentityMap(editor),
+    meta: TRANSACTION_SPEC_DOCUMENT_STATES.get(spec),
+    roots: {
+      [MAIN_ROOT_KEY]: document.children,
+      ...(document.roots ?? {}),
+    },
+  });
+};
 
 const applyPreparedTransactionSpecChange = (
   editor: Editor,
@@ -4256,6 +4563,28 @@ const applyTransactionSpecContents = <V extends Value>(
     const context = getTransactionSpecContext(editor);
 
     if (context) context.selectionWritten = true;
+  }
+
+  if (TRANSACTION_SPEC_DOCUMENT_STATES.has(spec)) {
+    const nextState = TRANSACTION_SPEC_DOCUMENT_STATES.get(spec);
+    const previousState = getDocumentState(editor) ?? {};
+    const next = nextState ?? {};
+
+    for (const key of new Set([
+      ...Object.keys(previousState),
+      ...Object.keys(next),
+    ])) {
+      setStateValueByKey(editor, key, next[key]);
+    }
+    const snapshot = getTransactionSnapshot(editor);
+
+    if (snapshot) snapshot.reason = 'replace';
+  }
+  const contentSliceRoots = TRANSACTION_SPEC_CONTENT_SLICE_ROOTS.get(spec);
+  const snapshot = getTransactionSnapshot(editor);
+
+  if (contentSliceRoots && snapshot) {
+    for (const root of contentSliceRoots) snapshot.contentSliceRoots.add(root);
   }
 
   for (const effect of spec.effects) {
@@ -6200,7 +6529,10 @@ const createEditorUpdateDraftContext = (
   const roots = getEditorDocumentRoots(editor);
   const transactionRoots = profileCoreDuration(
     'transaction-roots-snapshot',
-    () => ({ ...roots, [childrenRoot]: previousSnapshot.children })
+    () =>
+      childrenRoot === MAIN_ROOT_KEY || Object.hasOwn(roots, childrenRoot)
+        ? { ...roots, [childrenRoot]: previousSnapshot.children }
+        : { ...roots }
   );
   const builder = createEditorDocumentChangeBuilder(
     editor,
@@ -6223,6 +6555,7 @@ const createEditorUpdateDraftContext = (
     baseSnapshots,
     builder,
     childrenRoot,
+    contentSliceRoots: new Set(),
     documentState,
     discardedRuntimeIds: new Set(),
     dirtyStateKeys: new Set(),
@@ -6378,7 +6711,11 @@ export const runEditorTransaction = (
 
     assertSynchronousEditorUpdateResult(result);
 
+    reconcileExclusiveElementOwnedRoots(editor);
     finalizeTransactionRepresentation(editor);
+    if (reconcileExclusiveElementOwnedRoots(editor)) {
+      finalizeTransactionRepresentation(editor);
+    }
 
     const snapshot = getTransactionSnapshot(editor);
     const hasDocumentChange = !(snapshot?.activeChange.change.empty ?? true);
@@ -6417,7 +6754,11 @@ export const runEditorTransaction = (
       }
     }
 
+    reconcileExclusiveElementOwnedRoots(editor);
     finalizeTransactionRepresentation(editor);
+    if (reconcileExclusiveElementOwnedRoots(editor)) {
+      finalizeTransactionRepresentation(editor);
+    }
 
     if (snapshot?.extensionReconfigurations.size) {
       const stagedReconfigurations = [
@@ -6467,7 +6808,11 @@ export const runEditorTransaction = (
           snapshot.builder.apply(extensionPublication.documentChange),
           { notifyTransactionListeners: false }
         );
+        reconcileExclusiveElementOwnedRoots(editor);
         finalizeTransactionRepresentation(editor);
+        if (reconcileExclusiveElementOwnedRoots(editor)) {
+          finalizeTransactionRepresentation(editor);
+        }
       }
 
       extensionPublication?.validateDocument(getEditorDocumentValue(editor));
@@ -6749,48 +7094,138 @@ export const replaceSnapshot = (editor: Editor, input: SnapshotInput) => {
   runEditorTransaction(
     editor,
     () => {
+      const snapshotInput =
+        SNAPSHOT_INPUT_TRANSFORMS.get(getEditorRuntimeOwner(editor))?.(input) ??
+        input;
       const transaction = getTransactionSnapshot(editor);
-      const root = getCurrentChildrenRoot(editor);
-      const inputSlice = ContentSlice.closed(input.children);
-      const inputChildren = inputSlice.content as Value;
+      const selectedRoot =
+        getPublicExplicitRangeRoot(snapshotInput.selection) ?? MAIN_ROOT_KEY;
+      const fitted = getEditorSchema(editor).fitDocument({
+        children: snapshotInput.children as Value,
+        ...(snapshotInput.meta === undefined
+          ? {}
+          : { meta: snapshotInput.meta }),
+        ...(snapshotInput.roots === undefined
+          ? {}
+          : { roots: snapshotInput.roots as Record<RootKey, Value> }),
+      });
       const representationSelection =
-        input.selection &&
-        input.selection !== 'start' &&
-        input.selection !== 'end'
-          ? input.selection
+        snapshotInput.selection &&
+        snapshotInput.selection !== 'start' &&
+        snapshotInput.selection !== 'end'
+          ? {
+              ...snapshotInput.selection,
+              anchor: stripLocationRoots(snapshotInput.selection.anchor),
+              focus: stripLocationRoots(snapshotInput.selection.focus),
+            }
           : null;
+      const selectedInputChildren =
+        selectedRoot === MAIN_ROOT_KEY
+          ? snapshotInput.children
+          : snapshotInput.roots?.[selectedRoot];
       const protectedInlineSpacerPaths = representationSelection
-        ? getProtectedInlineSpacerEntries(editor, inputChildren, [
+        ? getProtectedInlineSpacerEntries(editor, selectedInputChildren ?? [], [
             representationSelection.anchor,
             representationSelection.focus,
           ]).map(({ path }) => path)
         : [];
       if (transaction) {
         transaction.protectedInlineSpacerPaths.set(
-          root,
+          selectedRoot,
           protectedInlineSpacerPaths
         );
       }
-      const spec = createRootFitTransactionSpec(
-        editor,
-        root,
-        inputSlice,
-        representationSelection ?? undefined
+
+      const fittedRoots: Record<string, readonly Descendant[]> = {
+        [MAIN_ROOT_KEY]: fitted.children,
+        ...(fitted.roots ?? {}),
+      };
+      const currentRoots = getEditorDocumentRoots(editor);
+
+      for (const root of Object.keys(fittedRoots).sort((left, right) =>
+        left === MAIN_ROOT_KEY
+          ? -1
+          : right === MAIN_ROOT_KEY
+            ? 1
+            : left.localeCompare(right)
+      )) {
+        const selectedSource =
+          root === selectedRoot && selectedInputChildren
+            ? selectedInputChildren
+            : fittedRoots[root]!;
+
+        applyTransactionSpec(
+          editor,
+          createRootFitTransactionSpec(
+            editor,
+            root,
+            ContentSlice.closed(selectedSource),
+            root === selectedRoot
+              ? (representationSelection ?? undefined)
+              : undefined
+          )
+        );
+      }
+
+      for (const root of Object.keys(currentRoots).sort()) {
+        if (
+          root !== MAIN_ROOT_KEY &&
+          !Object.hasOwn(fittedRoots, root) &&
+          Object.hasOwn(getEditorDocumentRoots(editor), root)
+        ) {
+          applyDocumentChangeStep(
+            editor,
+            getActiveDocumentChangeBuilder(editor).deleteRoot(root)
+          );
+        }
+      }
+
+      const fields = getStateFieldIdentityMap(editor);
+      const nextMeta = Object.fromEntries(
+        Object.entries(fitted.meta ?? {}).map(([key, value]) => {
+          const field = fields.get(key);
+
+          if (!field) return [key, cloneFrozen(value)];
+          if (!field.persist) {
+            throw new Error(
+              `State field "${key}" cannot load persisted metadata without a codec.`
+            );
+          }
+
+          return [key, cloneFrozen(field.deserialize(value))];
+        })
       );
+
+      for (const [key, field] of getStateFieldMap(editor)) {
+        if (Object.hasOwn(nextMeta, key)) continue;
+        const initial = resolveStateFieldInitial(field);
+
+        if (initial !== undefined) nextMeta[key] = cloneFrozen(initial);
+      }
+
+      const previousMeta = getDocumentState(editor) ?? {};
+
+      for (const key of new Set([
+        ...Object.keys(previousMeta),
+        ...Object.keys(nextMeta),
+      ])) {
+        setStateValueByKey(editor, key, nextMeta[key]);
+      }
 
       if (transaction) {
         transaction.reason = 'replace';
       }
 
-      applyTransactionSpec(editor, spec);
       const mappedInputSelection = representationSelection
         ? getCurrentSelection(editor)
-        : input.selection;
+        : snapshotInput.selection;
 
-      setCurrentSelection(
-        editor,
-        resolveSnapshotSelection(editor, mappedInputSelection),
-        root
+      withEditorUpdateRootScope(editor, selectedRoot, () =>
+        setCurrentSelection(
+          editor,
+          resolveSnapshotSelection(editor, mappedInputSelection),
+          selectedRoot
+        )
       );
     },
     {

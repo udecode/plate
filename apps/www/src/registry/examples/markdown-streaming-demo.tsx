@@ -387,9 +387,9 @@ export default function MarkdownStreamingDemo() {
       if (sessionId !== streamSessionRef.current) return;
 
       output += chunk.chunk;
-      editorStatic.update.value.replace({
-        children: editorStatic.api.markdown.deserialize(output),
-      });
+      editorStatic.update.value.replace(
+        editorStatic.api.markdown.deserialize(output)
+      );
       setActiveIndex((prev) => prev + 1);
       forceUpdate();
       await new Promise((resolve) =>
@@ -424,9 +424,9 @@ export default function MarkdownStreamingDemo() {
           output += chunk.chunk;
         }
 
-        editorStatic.update.value.replace({
-          children: editorStatic.api.markdown.deserialize(output),
-        });
+        editorStatic.update.value.replace(
+          editorStatic.api.markdown.deserialize(output)
+        );
         setActiveIndex(targetIndex);
         forceUpdate();
       } else {

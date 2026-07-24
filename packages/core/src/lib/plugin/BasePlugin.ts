@@ -3,6 +3,8 @@ import type {
   Descendant,
   Element,
   EditorCommit,
+  EditorClipboardMiddlewareMap,
+  EditorDocumentValue,
   EditorExtension,
   EditorInstalledApiGroups,
   EditorInstalledStateGroups,
@@ -25,6 +27,7 @@ import type {
 } from '../../static';
 import type { BaseEditor } from '../editor';
 import type {
+  PlatePluginExtensionEditor,
   PlatePluginOwnUpdate,
   PlatePluginTransaction,
 } from '../editor/pluginRuntimeTypes';
@@ -46,7 +49,7 @@ import type {
   GetInjectNodePropsReturnType,
   InferApi,
   InferDependencies,
-  InferNestedPlugins,
+  InferEnabled,
   InferOptions,
   InferPluginBehaviorConfig,
   InferPluginApi,
@@ -72,12 +75,10 @@ import type { HandlerReturnType } from './HandlerReturnType';
 type ErasedBasePlugin = BasePlugin<any>;
 type ErasedPluginInject = Omit<
   ErasedBasePlugin['inject'],
-  'nodeProps' | 'targetPluginToInject'
+  'nodeProps' | 'targetParserToInject'
 > & {
   nodeProps?: any;
-  targetPluginToInject?:
-    | ((ctx: any) => Partial<BasePlugin<AnyPluginConfig>>)
-    | null;
+  targetParserToInject?: ((ctx: any) => ParserPluginProjection) | null;
 };
 type ErasedPluginHandlers = {
   onNodeChange?: ((ctx: any) => HandlerReturnType) | null;
@@ -94,23 +95,19 @@ type ErasedPluginInvariantKey =
   | '__txExtensions'
   | 'clone'
   | 'configure'
-  | 'configurePlugin'
   | 'decorate'
   | 'extend'
   | 'extendApi'
   | 'extendEditorApi'
   | 'extendExtension'
-  | 'extendPlugin'
   | 'extendSelectors'
   | 'extendTx'
   | 'extendTxGroup'
   | 'handlers'
-  | 'host'
   | 'inject'
   | 'options'
   | 'parser'
   | 'parsers'
-  | 'plugins'
   | 'render'
   | 'rules'
   | 'schema'
@@ -129,23 +126,19 @@ export type AnyBasePlugin = Omit<ErasedBasePlugin, ErasedPluginInvariantKey> & {
   __txExtensions: ErasedBasePlugin['__txExtensions'];
   clone: any;
   configure: any;
-  configurePlugin: any;
   decorate?: any;
   extend: any;
   extendApi: any;
   extendEditorApi: any;
   extendExtension: any;
-  extendPlugin: any;
   extendSelectors: any;
   extendTx: any;
   extendTxGroup: any;
   handlers: ErasedPluginHandlers;
-  host: any;
   inject: ErasedPluginInject;
   options: any;
   parser: any;
   parsers: any;
-  plugins: ErasedBasePlugin['plugins'];
   render: any;
   rules: any;
   schema: any;
@@ -158,7 +151,6 @@ export type AnyResolvedBasePlugin = Omit<
 > & {
   decorate?: any;
   handlers: ErasedPluginHandlers;
-  host: any;
   inject: ErasedPluginInject;
   options: any;
   parser: any;
@@ -191,17 +183,30 @@ export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
 
 export type ResolvedBasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
   BasePlugin<C>,
-  keyof BasePluginMethods | 'override' | 'plugins'
+  keyof BasePluginMethods | 'override'
 >;
 
-export type PlateEditorExtension = Omit<EditorExtension<any, any>, 'name'> & {
-  key?: string;
-  name?: string;
-};
+export type PlateEditorExtension<C extends AnyPluginConfig = PluginConfig> =
+  Omit<EditorExtension<any, any>, 'clipboard' | 'name'> & {
+    clipboard?: EditorClipboardMiddlewareMap<BaseEditor<Value, C>>;
+    key?: string;
+    name?: string;
+  };
 
-export type PlateEditorExtensionInput =
-  | PlateEditorExtension
-  | readonly PlateEditorExtension[];
+export type PlateEditorExtensionInput<
+  C extends AnyPluginConfig = PluginConfig,
+> = PlateEditorExtension<C> | readonly PlateEditorExtension<C>[];
+
+type ContextualPlateEditorExtension<C extends AnyPluginConfig = PluginConfig> =
+  Omit<PlateEditorExtension<C>, 'commands'> & {
+    commands?: EditorExtension<PlatePluginExtensionEditor<C>>['commands'];
+  };
+
+type ContextualPlateEditorExtensionInput<
+  C extends AnyPluginConfig = PluginConfig,
+> =
+  | ContextualPlateEditorExtension<C>
+  | readonly ContextualPlateEditorExtension<C>[];
 
 type ExtensionInputFromArgument<TExtension> = TExtension extends (
   ...args: any[]
@@ -244,7 +249,7 @@ export type ExtendPlateEditorExtension<
   C extends AnyPluginConfig = PluginConfig,
 > = (
   ctx: BasePluginContext<InferPluginBehaviorConfig<C>>
-) => PlateEditorExtensionInput | undefined;
+) => PlateEditorExtensionInput<C> | undefined;
 
 export type ExtendEditorApi<
   C extends AnyPluginConfig = PluginConfig,
@@ -314,19 +319,28 @@ export type NodeStaticProps<C extends AnyPluginConfig = PluginConfig> =
     ) => AnyObject | undefined)
   | AnyObject;
 
+/**
+ * Transforms a complete document input before schema fitting.
+ *
+ * Runs for editor initialization and every complete
+ * `editor.update.value.replace(...)` load. The transform should be
+ * deterministic and safe to reapply to canonical documents.
+ */
 export type TransformInitialValue<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: BasePluginContext<C> & { value: Value }
-) => Value;
+  ctx: PluginBaseContext<C> & {
+    editor: BaseEditor;
+    value: EditorDocumentValue;
+  }
+) => EditorDocumentValue;
 
 export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   format?: readonly string[] | string;
   deserialize?: (
     options: ParserOptions & ParserPluginContext<C>
   ) => readonly Descendant[] | undefined;
-  query?: (options: ParserOptions & ParserPluginContext<C>) => boolean;
-  /** Stable compiled schema resources owned by this parser. */
   /** Whole-schema ownership for document-level codecs such as HTML/Markdown. */
-  schema?: readonly Readonly<{ kind: 'schema' }>[];
+  owns?: readonly Readonly<{ kind: 'schema' }>[];
+  query?: (options: ParserOptions & ParserPluginContext<C>) => boolean;
   transformData?: (options: ParserOptions & ParserPluginContext<C>) => string;
   transformFragment?: (
     options: ParserOptions &
@@ -334,13 +348,81 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   ) => readonly Descendant[];
 };
 
+/** Parser-only projection contributed to another installed plugin. */
+export type ParserPluginProjection<
+  C extends AnyPluginConfig = AnyPluginConfig,
+> = {
+  parser?: Nullable<Parser<WithAnyKey<C>>>;
+  parsers?: BasePlugin<C>['parsers'];
+};
+
 export type PartialBasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
-  Partial<BasePlugin<C>>,
-  'host' | 'render'
+  Partial<ResolvedBasePlugin<C>>,
+  'render'
 > & {
-  host?: Partial<NonNullable<BasePlugin<C>['host']>>;
   render?: Partial<NonNullable<BasePlugin<C>['render']>>;
 };
+
+/**
+ * Type-erased weak override carried by plugin descriptors.
+ *
+ * Keep this boundary independent from `BasePlugin`: descriptors contain weak
+ * overrides, so deriving their stored value from `BasePlugin` would make the
+ * public generic below recursively expand itself.
+ */
+type ErasedBasePluginOverride = Partial<{
+  decorate: any;
+  editOnly: any;
+  enabled: boolean;
+  handlers: any;
+  inject: any;
+  inputRules: any;
+  options: any;
+  parser: any;
+  parsers: any;
+  priority: number;
+  render: any;
+  rules: any;
+  schema: any;
+  selectors: any;
+  shortcuts: any;
+  targetPluginKeys: readonly string[];
+  transformInitialValue: any;
+  tx: any;
+  type: string;
+}>;
+
+/**
+ * Configuration-only patch for an already-installed foreign plugin.
+ *
+ * The target key cannot provide target-specific inference. Pass the target
+ * config type explicitly when exact option checking is required.
+ */
+export type BasePluginOverride<C extends AnyPluginConfig = any> = Omit<
+  PartialBasePlugin<C>,
+  | '__apiExtensions'
+  | '__config'
+  | '__configurationLayers'
+  | '__editorApi'
+  | '__editorExtensions'
+  | '__extensions'
+  | '__pluginReference'
+  | '__selectorExtensions'
+  | '__txExtensions'
+  | 'clone'
+  | 'configure'
+  | 'dependencies'
+  | 'extend'
+  | 'extendApi'
+  | 'extendEditorApi'
+  | 'extendExtension'
+  | 'extendSelectors'
+  | 'extendTx'
+  | 'extendTxGroup'
+  | 'key'
+  | 'override'
+  | 'withComponent'
+>;
 
 export type RenderStaticNodeWrapper<C extends AnyPluginConfig = any> = (
   props: RenderStaticNodeWrapperProps<C>
@@ -469,14 +551,20 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> =
       }>;
       inject: Nullable<{
         nodeProps?: InjectNodeProps<C>;
-        plugins?: Record<string, PartialBasePlugin<AnyPluginConfig>>;
-        targetPluginToInject?: (
+        parsers?: Record<string, ParserPluginProjection>;
+        targetParserToInject?: (
           ctx: BasePluginContext<C> & { targetPlugin: string }
-        ) => Partial<BasePlugin<AnyPluginConfig>>;
+        ) => ParserPluginProjection;
       }>;
       override: {
         components?: NodeComponents;
-        plugins?: Record<string, PartialBasePlugin<AnyPluginConfig>>;
+        /**
+         * Weakly adapts already-installed foreign plugins by key.
+         *
+         * Missing targets are ignored. Direct target configuration remains the
+         * authoritative, inferred path.
+         */
+        plugins?: Record<string, ErasedBasePluginOverride>;
       };
       parser: Nullable<Parser<WithAnyKey<C>>>;
       parsers:
@@ -493,11 +581,6 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> =
               serializer?: HtmlSerializer<WithAnyKey<C>>;
             }>;
           };
-      /**
-       * Recursive plugin support to allow having multiple plugins in a single
-       * plugin. Plate eventually flattens all the plugins into the editor.
-       */
-      plugins: NonNullable<C['plugins']>;
       render: Nullable<{
         /**
          * When other plugins' `node` components are rendered, this function can
@@ -583,24 +666,24 @@ export type BasePluginConfig<
   Tx extends AnyPluginTx = {},
   S = {},
   State = {},
-  D extends readonly unknown[] = readonly [],
+  D extends readonly PluginReference[] = readonly [],
   EO = {},
   EA = {},
   ES = {},
-  P extends readonly unknown[] = readonly PluginReference[],
   SchemaModel = never,
   PluginApi = {},
+  Enabled extends boolean = boolean,
 > = Partial<
   Omit<
     BasePlugin<
-      PluginConfig<K, O, A, Tx, S, State, D, P, SchemaModel, PluginApi>
+      PluginConfig<K, O, A, Tx, S, State, D, SchemaModel, PluginApi, Enabled>
     >,
     keyof BasePluginMethods | 'api' | 'options' | 'schema' | 'type'
   > & {
     api: Deep2Partial<A> & EA;
     options: Partial<O> & EO;
     schema: PluginSchema<
-      PluginConfig<K, O, A, Tx, S, State, D, P, SchemaModel, PluginApi>
+      PluginConfig<K, O, A, Tx, S, State, D, SchemaModel, PluginApi, Enabled>
     > | null;
     selectors: Partial<S> & ES;
     type: string;
@@ -624,15 +707,39 @@ type RuntimeBasePluginConfig<
     EO,
     EA,
     ES,
-    InferNestedPlugins<C>,
     InferPluginSchemaModel<C>,
-    InferPluginApi<C>
+    InferPluginApi<C>,
+    InferEnabled<C>
   >,
-  'host' | 'parser' | 'parsers' | 'plugins' | 'render' | 'schema' | 'type'
+  'dependencies' | 'parser' | 'parsers' | 'render' | 'schema' | 'type'
 > & {
-  plugins?: readonly AnyBasePlugin[];
   render?: Omit<NonNullable<BasePlugin<C>['render']>, 'isDecoration'> | null;
 };
+
+type StaticBasePluginConfig<
+  C extends AnyPluginConfig,
+  EO = {},
+  EA = {},
+  ES = {},
+  Enabled extends boolean = InferEnabled<C>,
+> = Omit<
+  BasePluginConfig<
+    C['key'],
+    InferOptions<C>,
+    InferApi<C>,
+    InferTx<C>,
+    InferSelectors<C>,
+    InferState<C>,
+    InferDependencies<C>,
+    EO,
+    EA,
+    ES,
+    InferPluginSchemaModel<C>,
+    InferPluginApi<C>,
+    Enabled
+  >,
+  'dependencies'
+>;
 
 type ContextualBasePluginConfig<C extends AnyPluginConfig> = Pick<
   RuntimeBasePluginConfig<C>,
@@ -667,9 +774,9 @@ type PluginConfigurationLayer<C extends AnyPluginConfig> =
         {},
         {},
         {},
-        InferNestedPlugins<C>,
         InferPluginSchemaModel<C>,
-        InferPluginApi<C>
+        InferPluginApi<C>,
+        InferEnabled<C>
       >;
     }>;
 
@@ -679,6 +786,7 @@ export type ExtendedBasePlugin<
   EO,
   EA,
   ES,
+  Enabled extends boolean = InferEnabled<C>,
 > = BasePlugin<
   PluginConfig<
     C['key'],
@@ -688,9 +796,9 @@ export type ExtendedBasePlugin<
     ES & InferSelectors<C>,
     InferState<C>,
     InferDependencies<C>,
-    InferNestedPlugins<C>,
     InferPluginSchemaModel<C>,
-    InferPluginApi<C>
+    InferPluginApi<C>,
+    Enabled
   >
 >;
 
@@ -709,21 +817,19 @@ export type ExtendedBasePluginWithExtension<
     InferSelectors<C>,
     InferState<C> & TExtensionState,
     InferDependencies<C>,
-    InferNestedPlugins<C>,
     InferPluginSchemaModel<C>,
-    InferPluginApi<C>
+    InferPluginApi<C>,
+    InferEnabled<C>
   >
 >;
 
 type PluginAuthoringMethod =
   | 'clone'
   | 'configure'
-  | 'configurePlugin'
   | 'extend'
   | 'extendApi'
   | 'extendEditorApi'
   | 'extendExtension'
-  | 'extendPlugin'
   | 'extendSelectors'
   | 'extendTx'
   | 'extendTxGroup'
@@ -744,6 +850,7 @@ export type ConfiguredBasePlugin<C extends AnyPluginConfig = PluginConfig> =
 type ConfiguredBasePluginType<
   C extends AnyPluginConfig,
   TType extends string,
+  Enabled extends boolean = InferEnabled<C>,
 > = ConfiguredBasePlugin<
   PluginConfig<
     C['key'],
@@ -753,7 +860,6 @@ type ConfiguredBasePluginType<
     InferSelectors<C>,
     InferState<C>,
     InferDependencies<C>,
-    InferNestedPlugins<C>,
     [InferPluginSchemaModel<C>] extends [never]
       ? PluginSchemaModel<TType, null>
       : InferPluginSchemaModel<C> extends PluginSchemaModel<
@@ -762,7 +868,26 @@ type ConfiguredBasePluginType<
           >
         ? PluginSchemaModel<TType, TSchema>
         : PluginSchemaModel<TType, null>,
-    InferPluginApi<C>
+    InferPluginApi<C>,
+    Enabled
+  >
+>;
+
+type ConfiguredBasePluginEnabled<
+  C extends AnyPluginConfig,
+  Enabled extends boolean,
+> = ConfiguredBasePlugin<
+  PluginConfig<
+    C['key'],
+    InferOptions<C>,
+    InferApi<C>,
+    InferTx<C>,
+    InferSelectors<C>,
+    InferState<C>,
+    InferDependencies<C>,
+    InferPluginSchemaModel<C>,
+    InferPluginApi<C>,
+    Enabled
   >
 >;
 
@@ -771,23 +896,6 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> =
     editor: BasePluginContextEditor<C>;
     plugin: BasePlugin<C>;
   };
-
-type BasePluginMethodConfig<
-  C extends AnyPluginConfig,
-  EO = {},
-  EA = {},
-  ES = {},
-> = {
-  api?: Deep2Partial<InferApi<C>> & EA;
-  options?: Partial<InferOptions<C>> & EO;
-  selectors?: Partial<InferSelectors<C>> & ES;
-};
-
-type BasePluginMethodConfigFromPlugin<P, EO = {}, EA = {}, ES = {}> = {
-  api?: Deep2Partial<InferApi<InferConfig<P>>> & EA;
-  options?: Partial<P extends { options: infer O } ? O : {}> & EO;
-  selectors?: Partial<P extends { selectors: infer S } ? S : {}> & ES;
-};
 
 export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __apiExtensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
@@ -807,6 +915,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
    * shortcuts without widening the plugin contract. Extensions read the
    * configured values, while this configuration remains the final override.
    */
+  // biome-ignore lint/style/useUnifiedTypeSignatures: Distinct overloads preserve contextual callback and literal static inference.
   configure<const TShortcuts extends BaseShortcutRecord = {}>(
     config: (
       ctx: BasePluginContext<C>
@@ -818,116 +927,94 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   ): ConfiguredBasePlugin<C>;
   configure<
     const TType extends string,
+    const Enabled extends boolean,
     const TShortcuts extends BaseShortcutRecord = {},
   >(
     config: WithValidatedBaseShortcuts<
       C,
-      BasePluginConfig<
-        C['key'],
-        InferOptions<C>,
-        InferApi<C>,
-        InferTx<C>,
-        InferSelectors<C>,
-        InferState<C>,
-        InferDependencies<C>,
-        {},
-        {},
-        {},
-        InferNestedPlugins<C>,
-        InferPluginSchemaModel<C>,
-        InferPluginApi<C>
-      > & { type: TType },
+      StaticBasePluginConfig<C, {}, {}, {}, Enabled> & {
+        enabled: Enabled;
+        type: TType;
+      },
+      TShortcuts
+    >
+  ): ConfiguredBasePluginType<C, TType, Enabled>;
+  configure<
+    const TType extends string,
+    const TShortcuts extends BaseShortcutRecord = {},
+  >(
+    config: WithValidatedBaseShortcuts<
+      C,
+      StaticBasePluginConfig<C> & { type: TType },
       TShortcuts
     >
   ): ConfiguredBasePluginType<C, TType>;
   configure<
+    const Enabled extends boolean,
     const TShortcuts extends BaseShortcutRecord = {},
-    const TConfiguration extends BasePluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C>,
-      InferTx<C>,
-      InferSelectors<C>,
-      InferState<C>,
-      InferDependencies<C>,
-      {},
-      {},
-      {},
-      InferNestedPlugins<C>,
-      InferPluginSchemaModel<C>,
-      InferPluginApi<C>
-    > = BasePluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C>,
-      InferTx<C>,
-      InferSelectors<C>,
-      InferState<C>,
-      InferDependencies<C>,
-      {},
-      {},
-      {},
-      InferNestedPlugins<C>,
-      InferPluginSchemaModel<C>,
-      InferPluginApi<C>
-    >,
   >(
-    config: WithValidatedBaseShortcuts<C, TConfiguration, TShortcuts>
-  ): TConfiguration extends Readonly<{
-    type: infer TType extends string;
-  }>
-    ? ConfiguredBasePluginType<C, TType>
-    : ConfiguredBasePlugin<C>;
-  configurePlugin<P extends AnyBasePlugin | { key: string }>(
-    plugin: P,
-    config: BasePluginMethodConfigFromPlugin<P>
-  ): BasePlugin<C>;
+    config: WithValidatedBaseShortcuts<
+      C,
+      StaticBasePluginConfig<C, {}, {}, {}, Enabled> & {
+        enabled: Enabled;
+      },
+      TShortcuts
+    >
+  ): ConfiguredBasePluginEnabled<C, Enabled>;
+  configure<const TShortcuts extends BaseShortcutRecord = {}>(
+    config: WithValidatedBaseShortcuts<C, StaticBasePluginConfig<C>, TShortcuts>
+  ): ConfiguredBasePlugin<C>;
   extend<
     EO = {},
     EA = {},
     ES = {},
     const TShortcuts extends BaseShortcutRecord = {},
   >(
-    extendConfig:
-      | ((
-          ctx: BasePluginContext<C>
-        ) => WithValidatedBaseShortcuts<
-          C,
-          RuntimeBasePluginConfig<C, EO, EA, ES>,
-          TShortcuts
-        >)
-      | WithValidatedBaseShortcuts<
-          PluginConfig<
-            C['key'],
-            InferOptions<C>,
-            EA & InferApi<C>,
-            InferTx<C>,
-            InferSelectors<C>,
-            InferState<C>,
-            InferDependencies<C>,
-            InferNestedPlugins<C>,
-            InferPluginSchemaModel<C>,
-            InferPluginApi<C>
-          >,
-          BasePluginConfig<
-            C['key'],
-            InferOptions<C>,
-            InferApi<C>,
-            InferTx<C>,
-            InferSelectors<C>,
-            InferState<C>,
-            InferDependencies<C>,
-            EO,
-            EA,
-            ES,
-            InferNestedPlugins<C>,
-            InferPluginSchemaModel<C>,
-            InferPluginApi<C>
-          >,
-          TShortcuts
-        >
+    extendConfig: (
+      ctx: BasePluginContext<C>
+    ) => WithValidatedBaseShortcuts<
+      C,
+      RuntimeBasePluginConfig<C, EO, EA, ES>,
+      TShortcuts
+    >
   ): ExtendedBasePlugin<C, EO, EA, ES>;
-  extendExtension<const TExtension extends PlateEditorExtensionInput>(
+  extend<
+    EO = {},
+    EA = {},
+    ES = {},
+    const TShortcuts extends BaseShortcutRecord = {},
+    const Enabled extends boolean = InferEnabled<C>,
+  >(
+    extendConfig: WithValidatedBaseShortcuts<
+      PluginConfig<
+        C['key'],
+        InferOptions<C>,
+        EA & InferApi<C>,
+        InferTx<C>,
+        InferSelectors<C>,
+        InferState<C>,
+        InferDependencies<C>,
+        InferPluginSchemaModel<C>,
+        InferPluginApi<C>,
+        Enabled
+      >,
+      StaticBasePluginConfig<C, EO, EA, ES, Enabled>,
+      TShortcuts
+    >
+  ): ExtendedBasePlugin<C, EO, EA, ES, Enabled>;
+  extendExtension<
+    const TExtension extends ContextualPlateEditorExtensionInput<C>,
+  >(
+    extension: (
+      ctx: BasePluginContext<InferPluginBehaviorConfig<C>>
+    ) => TExtension | undefined
+  ): ExtendedBasePluginWithExtension<
+    C,
+    ExtensionApiFromArgument<TExtension>,
+    ExtensionTxFromArgument<TExtension>,
+    ExtensionStateFromArgument<TExtension>
+  >;
+  extendExtension<const TExtension extends PlateEditorExtensionInput<C>>(
     extension:
       | TExtension
       | ((
@@ -941,7 +1028,21 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >;
   extendExtension<
     const TKey extends string,
-    const TExtension extends PlateEditorExtensionInput,
+    const TExtension extends ContextualPlateEditorExtensionInput<C>,
+  >(
+    key: TKey,
+    extension: (
+      ctx: BasePluginContext<InferPluginBehaviorConfig<C>>
+    ) => TExtension | undefined
+  ): ExtendedBasePluginWithExtension<
+    C,
+    ExtensionApiFromArgument<TExtension>,
+    ExtensionTxFromArgument<TExtension>,
+    ExtensionStateFromArgument<TExtension>
+  >;
+  extendExtension<
+    const TKey extends string,
+    const TExtension extends PlateEditorExtensionInput<C>,
   >(
     key: TKey,
     extension:
@@ -955,6 +1056,10 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     ExtensionTxFromArgument<TExtension>,
     ExtensionStateFromArgument<TExtension>
   >;
+  /**
+   * Adds feature API methods published at `editor.api[plugin.key]`.
+   * `editor.plugin(plugin).api` exposes the same immutable API for generic code.
+   */
   extendApi<
     EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
   >(
@@ -968,9 +1073,9 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferSelectors<C>,
       InferState<C>,
       InferDependencies<C>,
-      InferNestedPlugins<C>,
       InferPluginSchemaModel<C>,
-      InferPluginApi<C> & EA
+      InferPluginApi<C> & EA,
+      InferEnabled<C>
     >
   >;
   extendEditorApi<
@@ -997,20 +1102,11 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferSelectors<C>,
       InferState<C>,
       InferDependencies<C>,
-      InferNestedPlugins<C>,
       InferPluginSchemaModel<C>,
-      InferPluginApi<C>
+      InferPluginApi<C>,
+      InferEnabled<C>
     >
   >;
-  extendPlugin<
-    P extends AnyBasePlugin | { key: string },
-    EO = {},
-    EA = {},
-    ES = {},
-  >(
-    plugin: P,
-    extendConfig: BasePluginMethodConfig<InferConfig<P>, EO, EA, ES>
-  ): BasePlugin<C>;
   extendSelectors<
     ES extends Record<string, (...args: any[]) => any> = Record<string, never>,
   >(
@@ -1024,9 +1120,9 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ES & InferSelectors<C>,
       InferState<C>,
       InferDependencies<C>,
-      InferNestedPlugins<C>,
       InferPluginSchemaModel<C>,
-      InferPluginApi<C>
+      InferPluginApi<C>,
+      InferEnabled<C>
     >
   >;
   extendTx(
@@ -1045,9 +1141,9 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferSelectors<C>,
       InferState<C>,
       InferDependencies<C>,
-      InferNestedPlugins<C>,
       InferPluginSchemaModel<C>,
-      InferPluginApi<C>
+      InferPluginApi<C>,
+      InferEnabled<C>
     >
   >;
   extendTxGroup<
@@ -1068,9 +1164,9 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferSelectors<C>,
       InferState<C>,
       InferDependencies<C>,
-      InferNestedPlugins<C>,
       InferPluginSchemaModel<C>,
-      InferPluginApi<C>
+      InferPluginApi<C>,
+      InferEnabled<C>
     >
   >;
   /** Returns a new instance of the plugin with the component. */

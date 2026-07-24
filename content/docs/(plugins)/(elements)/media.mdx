@@ -68,7 +68,10 @@ docs:
 
 ### Installation
 
-The fastest way to add comprehensive media support is with the `MediaKit`, which includes pre-configured `ImagePlugin`, `VideoPlugin`, `AudioPlugin`, `FilePlugin`, `MediaEmbedPlugin`, `PlaceholderPlugin`, and `CaptionPlugin` with their [Plate UI](/docs/installation/plate-ui) components.
+The fastest way to add comprehensive media support is with the `MediaKit`,
+which includes pre-configured `ImagePlugin`, `VideoPlugin`, `AudioPlugin`,
+`FilePlugin`, `MediaEmbedPlugin`, and `PlaceholderPlugin` with their
+[Plate UI](/docs/installation/plate-ui) components.
 
 <ComponentSource name="media-kit" />
 
@@ -197,36 +200,81 @@ const editor = createPlateEditor({
   **Note:** When serialized to Markdown or MDX, embeds persist the canonical `url` and `provider`, plus an optional `sourceUrl` so edits remain reversible. Allowlisted provider snippets (e.g. YouTube, Tweet) are reduced to canonical URLs on paste. Raw `<script>` or custom embed chrome is out of scope — add your own rules if you need to preserve it.
 </Callout>
 
-### Caption Support
+### Captions
 
-To enable media captions, add the [Caption Plugin](/docs/caption):
+Every image, audio, video, file, and embed is a non-void, isolating,
+keyboard-selectable element. Its direct inline children are the caption; the
+media plugin owns the schema and behavior, with no separate caption plugin,
+node type, or content root.
+
+Configure only the media plugin and its renderer:
 
 ```tsx
-import { CaptionPlugin } from '@platejs/caption/react';
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  MediaEmbedPlugin,
-  VideoPlugin,
-} from '@platejs/media/react';
+import { ImagePlugin } from '@platejs/media/react';
+import { ImageElement } from '@/components/ui/media-image-node';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    // ...media plugins,
-    CaptionPlugin.configure({
-      targetPluginKeys: [
-        ImagePlugin.key,
-        VideoPlugin.key,
-        AudioPlugin.key,
-        FilePlugin.key,
-        MediaEmbedPlugin.key,
-      ],
-    }),
+export const MediaKit = [
+  ImagePlugin.withComponent(ImageElement),
+];
+```
+
+Keep the asset DOM non-editable and render the media element's ordinary child
+slot as the caption:
+
+```tsx
+<figure>
+  <div contentEditable={false}>{/* media chrome */}</div>
+  <figcaption>{props.children}</figcaption>
+</figure>
+```
+
+Pass a string or inline children through the construction-only `caption` field:
+
+```tsx
+editor.plugin(ImagePlugin).update.insert({
+  url: 'https://example.com/image.png',
+  caption: 'Plain caption',
+});
+
+editor.plugin(ImagePlugin).update.insert({
+  url: 'https://example.com/diagram.png',
+  caption: [
+    { text: 'Rich ' },
+    { text: 'caption', bold: true },
   ],
 });
 ```
+
+The insert command compiles `caption` into direct children. Persist only the
+resulting media element:
+
+```ts
+{
+  type: 'img',
+  url: 'https://example.com/image.png',
+  children: [{ text: 'Plain caption' }],
+}
+```
+
+An empty text child is the canonical absent-caption state:
+
+```ts
+{
+  type: 'img',
+  url: 'https://example.com/image.png',
+  children: [{ text: '' }],
+}
+```
+
+The renderer can hide that empty caption until the media asset is focused.
+Placeholder visibility is UI state and does not change the persisted element.
+
+Asset focus and caption editing are separate selection states:
+
+| Selection | Behavior |
+| --- | --- |
+| Plite `NodeSelection` at the media path | Focuses the asset, shows its selection ring and empty-caption placeholder, lets `ArrowDown` enter the caption, and lets Delete remove the media node. |
+| Plite `TextSelection` inside the media children | Edits the caption and lets `ArrowUp` at the caption start return focus to the asset. |
 
 ### Custom Upload Implementation
 
@@ -322,27 +370,42 @@ export function useUploadFile({
 Then integrate your custom upload hook with the media components:
 
 ```tsx
+import { KEYS, type TPlaceholderElement } from 'platejs';
+import { type PlateElementProps, useEditor } from 'platejs/react';
+
 import { useUploadFile } from '@/hooks/use-upload-file'; // Your custom hook
 
-// In your PlaceholderElement component
-export function PlaceholderElement({ className, children, element, ...props }) {
+export function PlaceholderElement({
+  element,
+}: PlateElementProps<TPlaceholderElement>) {
+  const editor = useEditor();
   const { uploadFile, isUploading, progress } = useUploadFile({
     onUploadComplete: (uploadedFile) => {
-      // Replace placeholder with actual media element
-      const { url, type } = uploadedFile;
-      // Insert the final media node after upload succeeds.
-        editor
-          .plugin(PlaceholderPlugin)
-          .update.insert(getMediaType(type), { select: true });
+      const path = editor.read.nodes.path(element);
+
+      if (!path) return;
+
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.nodes.remove({ at: path });
+        tx.nodes.insert(
+          {
+            children: [{ text: '' }],
+            isUpload: true,
+            name: element.mediaType === KEYS.file ? uploadedFile.name : '',
+            placeholderId: element.id as string,
+            type: element.mediaType,
+            url: uploadedFile.url,
+          },
+          { at: path }
+        );
+      });
     },
     onUploadError: (error) => {
       console.error('Upload failed:', error);
-      // Handle upload error, maybe show toast
     },
   });
 
-  // Use uploadFile when files are dropped or selected
-  // This integrates with the PlaceholderPlugin's file handling
+  // Call uploadFile when the user drops or selects a file.
 }
 ```
 
@@ -372,7 +435,8 @@ You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-tool
 
 ### `ImagePlugin`
 
-Plugin for void image elements.
+Plugin for non-void, isolating, keyboard-selectable image elements whose direct
+inline children store captions.
 
 <API name="ImagePlugin">
 <APIOptions type="ImagePluginOptions">
@@ -404,19 +468,23 @@ Plugin for void image elements.
 
 ### `VideoPlugin`
 
-Plugin for void video elements. Extends `MediaPluginOptions`.
+Plugin for non-void, isolating, keyboard-selectable video elements whose direct
+inline children store captions. Extends `MediaPluginOptions`.
 
 ### `AudioPlugin`
 
-Plugin for void audio elements. Extends `MediaPluginOptions`.
+Plugin for non-void, isolating, keyboard-selectable audio elements whose direct
+inline children store captions. Extends `MediaPluginOptions`.
 
 ### `FilePlugin`
 
-Plugin for void file elements. Extends `MediaPluginOptions`.
+Plugin for non-void, isolating, keyboard-selectable file elements whose direct
+inline children store captions. Extends `MediaPluginOptions`.
 
 ### `MediaEmbedPlugin`
 
-Plugin for void media embed elements. Extends `MediaPluginOptions`.
+Plugin for non-void, isolating, keyboard-selectable media embed elements whose
+direct inline children store captions. Extends `MediaPluginOptions`.
 
 ### `PlaceholderPlugin`
 
@@ -443,7 +511,7 @@ Configuration for different file types. Default configuration:
   image: {
     maxFileCount: 3,
     maxFileSize: '4MB',
-    mediaType: KEYS.image,
+    mediaType: KEYS.img,
     minFileCount: 1,
   },
   pdf: {
@@ -503,11 +571,11 @@ Allow multiple files of the same type to be uploaded.
 
 ## API
 
-### `editor.plugin(PlaceholderPlugin).api.addUploadingFile`
+### `editor.api.placeholder.addUploadingFile`
 
 Tracks a file that is currently being uploaded.
 
-<API name="editor.plugin(PlaceholderPlugin).api.addUploadingFile">
+<API name="editor.api.placeholder.addUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     Unique identifier for the placeholder element.
@@ -518,11 +586,11 @@ Tracks a file that is currently being uploaded.
 </APIParameters>
 </API>
 
-### `editor.plugin(PlaceholderPlugin).api.getUploadingFile`
+### `editor.api.placeholder.getUploadingFile`
 
 Gets a file that is currently being uploaded.
 
-<API name="editor.plugin(PlaceholderPlugin).api.getUploadingFile">
+<API name="editor.api.placeholder.getUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     Unique identifier for the placeholder element.
@@ -536,11 +604,11 @@ Gets a file that is currently being uploaded.
 </APIReturns>
 </API>
 
-### `editor.plugin(PlaceholderPlugin).api.removeUploadingFile`
+### `editor.api.placeholder.removeUploadingFile`
 
 Removes a file from the uploading tracking state after upload completes or fails.
 
-<API name="editor.plugin(PlaceholderPlugin).api.removeUploadingFile">
+<API name="editor.api.placeholder.removeUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     Unique identifier for the placeholder element to remove.
@@ -937,15 +1005,21 @@ Submits a floating media element.
 ### `TMediaElement`
 
 ```tsx
-export interface TMediaElement extends Element {
+export type TMediaElement = Element & TMediaProps;
+
+export type TMediaProps = {
   url: string;
   id?: string;
-  align?: 'center' | 'left' | 'right';
   isUpload?: boolean;
   name?: string;
   placeholderId?: string;
-}
+  provider?: string;
+  sourceUrl?: string;
+};
 ```
+
+`Element.children` stores the caption's direct inline content. Use
+`[{ text: '' }]` when the caption is absent.
 
 ### `TPlaceholderElement`
 

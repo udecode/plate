@@ -82,9 +82,9 @@ const editor = createPlateEditor({
 为 `IndentPlugin` 和 `TogglePlugin` 配置目标元素和组件分配。
 
 ```tsx
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { IndentPlugin } from '@platejs/indent/react';
 import { TogglePlugin } from '@platejs/toggle/react';
+import { KEYS } from 'platejs';
 import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
 import { ToggleElement } from '@/components/ui/toggle-node';
 
@@ -93,7 +93,7 @@ const editor = createPlateEditor({
     // ...其他插件,
     IndentPlugin.configure({
       targetPluginKeys: [
-        ...HeadingPlugin.plugins.map((plugin) => plugin.key),
+        ...KEYS.heading,
         ParagraphPlugin.key,
         TogglePlugin.key,
       ],
@@ -161,11 +161,11 @@ const editor = createPlateEditor({
 
 ## API接口
 
-### `editor.plugin(TogglePlugin).api.toggleIds`
+### `editor.api.toggle.toggleIds`
 
 切换指定折叠项的展开状态。
 
-<API name="editor.plugin(TogglePlugin).api.toggleIds">
+<API name="editor.api.toggle.toggleIds">
 切换折叠项展开状态
 
 <APIParameters>

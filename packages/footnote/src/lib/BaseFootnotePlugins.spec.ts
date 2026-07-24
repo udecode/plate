@@ -6,8 +6,29 @@ import {
   BaseFootnoteInputPlugin,
   BaseFootnoteReferencePlugin,
 } from './index';
+import { FootnoteInputPlugin, FootnoteReferencePlugin } from '../react';
 
 describe('BaseFootnotePlugins', () => {
+  it('declares the input as an exact required Base and React dependency', () => {
+    expect(BaseFootnoteReferencePlugin.dependencies).toEqual([
+      BaseFootnoteInputPlugin,
+    ]);
+    expect(FootnoteReferencePlugin.dependencies).toEqual([FootnoteInputPlugin]);
+  });
+
+  it('rejects a disabled required footnote-input dependency', () => {
+    expect(() =>
+      createBaseEditor({
+        plugins: [
+          BaseFootnoteReferencePlugin,
+          BaseFootnoteInputPlugin.configure({ enabled: false }),
+        ],
+      })
+    ).toThrow(
+      /footnoteReference.*disabled.*footnoteInput|footnoteInput.*disabled.*footnoteReference/i
+    );
+  });
+
   it('configures footnote reference as an inline void element', () => {
     const editor = createBaseEditor({
       plugins: [BaseFootnoteReferencePlugin],

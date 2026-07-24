@@ -1,7 +1,15 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseImagePlugin } from './BaseImagePlugin';
+
+const TestBoldPlugin = createBasePlugin({
+  key: 'bold',
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+});
 
 describe('BaseImagePlugin clipboard behavior', () => {
   let restoreWarn: (() => void) | undefined;
@@ -32,7 +40,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
 
   const createEditor = () =>
     createBaseEditor({
-      plugins: [BaseImagePlugin],
+      plugins: [BaseImagePlugin, TestBoldPlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 4, path: [0, 0] },
@@ -46,7 +54,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
 
     editor
       .plugin(BaseImagePlugin)
-      .update.insert('https://platejs.org/image.png', { at: [0] });
+      .update.insert({ url: 'https://platejs.org/image.png' }, { at: [0] });
 
     expect(editor.read.children()).toEqual([
       {
@@ -56,6 +64,109 @@ describe('BaseImagePlugin clipboard behavior', () => {
       },
       { children: [{ text: 'test' }], type: KEYS.p },
     ]);
+  });
+
+  it('normalizes direct insertion through the configured URL transform', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseImagePlugin.configure({
+          options: {
+            transformUrl: (url) => `${url}?normalized=image`,
+          },
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'test' }], type: KEYS.p }],
+    });
+
+    editor
+      .plugin(BaseImagePlugin)
+      .update.insert({ url: 'https://platejs.org/image.png' }, { at: [0] });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      type: KEYS.img,
+      url: 'https://platejs.org/image.png?normalized=image',
+    });
+  });
+
+  it('stores caption construction input as canonical child content', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseImagePlugin],
+      initialValue: [{ children: [{ text: 'test' }], type: KEYS.p }],
+    });
+
+    editor.plugin(BaseImagePlugin).update.insert(
+      {
+        caption: 'A rich caption',
+        url: 'https://platejs.org/image.png',
+      },
+      { at: [0] }
+    );
+
+    const image = editor.read.children()[0];
+
+    expect(image).toMatchObject({
+      children: [{ text: 'A rich caption' }],
+      type: KEYS.img,
+      url: 'https://platejs.org/image.png',
+    });
+    expect(image).not.toHaveProperty('caption');
+    expect(editor.read.value()).not.toHaveProperty('roots');
+  });
+
+  it('automatically normalizes legacy persisted captions on load', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseImagePlugin, TestBoldPlugin],
+      initialValue: [
+        {
+          caption: [{ bold: true, text: 'Legacy caption' }],
+          children: [{ text: '' }],
+          type: KEYS.img,
+          url: 'https://platejs.org/legacy.png',
+        },
+      ],
+    });
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ bold: true, text: 'Legacy caption' }],
+        type: KEYS.img,
+        url: 'https://platejs.org/legacy.png',
+      },
+    ]);
+  });
+
+  it('rejects ambiguous mixed legacy and canonical caption content', () => {
+    expect(() =>
+      createBaseEditor({
+        plugins: [BaseImagePlugin],
+        initialValue: [
+          {
+            caption: [{ text: 'Legacy caption' }],
+            children: [{ text: 'Canonical caption' }],
+            type: KEYS.img,
+            url: 'https://platejs.org/conflict.png',
+          },
+        ],
+      })
+    ).toThrow(/multiple non-empty caption sources/);
+  });
+
+  it('uses one plain empty text child for an empty caption input', () => {
+    const editor = createEditor();
+
+    editor.plugin(BaseImagePlugin).update.insert(
+      {
+        caption: [],
+        url: 'https://platejs.org/image.png',
+      },
+      { at: [0] }
+    );
+
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: '' }],
+      type: KEYS.img,
+      url: 'https://platejs.org/image.png',
+    });
   });
 
   it('inserts an image from a pasted URL', () => {

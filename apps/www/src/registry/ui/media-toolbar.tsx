@@ -14,12 +14,10 @@ import { cva } from 'class-variance-authority';
 import { Link, Trash2Icon } from 'lucide-react';
 import {
   useEditor,
-  useEditorSelector,
   useElement,
-  useFocusedLast,
   useEditorReadOnly,
+  useFocusedLast,
   useRemoveNodeButton,
-  useElementSelected,
 } from 'platejs/react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -39,24 +37,17 @@ const inputVariants = cva(
 export function MediaToolbar({
   children,
   plugin,
+  selected,
 }: {
   children: React.ReactNode;
   plugin: WithRequiredKey;
+  selected: boolean;
 }) {
   const editor = useEditor();
-  const readOnly = useEditorReadOnly();
-  const selected = useElementSelected();
   const isFocusedLast = useFocusedLast();
-  const selectionCollapsed = useEditorSelector((editor) =>
-    editor.read.selection.isCollapsed()
-  );
+  const readOnly = useEditorReadOnly();
   const isImagePreviewOpen = useImagePreviewValue('isOpen', editor.id);
-  const open =
-    isFocusedLast &&
-    !readOnly &&
-    selected &&
-    selectionCollapsed &&
-    !isImagePreviewOpen;
+  const open = isFocusedLast && !readOnly && selected && !isImagePreviewOpen;
   const isEditing = useFloatingMediaValue('isEditing');
 
   React.useEffect(() => {

@@ -32,7 +32,6 @@ export const ListKit = [
       TaskListRules.markdown({ checked: true }),
     ],
   }),
-  ListItemPlugin,
   ListItemContentPlugin,
   BulletedListPlugin.configure({
     render: { node: BulletedListElement },

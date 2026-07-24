@@ -83,7 +83,7 @@ const plugins = [
   ParagraphPlugin.withComponent(MyParagraphElement),
   CodeBlockPlugin.withComponent(MyCodeBlockElement),
   CodeLinePlugin.withComponent(MyCodeLineElement),
-  CodeSyntaxPlugin.withComponent(MyCodeSyntaxLeaf),
+  CodeHighlightPlugin.withComponent(MyCodeSyntaxLeaf),
 ]
 ```
 
@@ -112,7 +112,7 @@ const editor = createPlateEditor({
     [ParagraphPlugin.key]: MyParagraphElement,
     [CodeBlockPlugin.key]: MyCodeBlockElement,
     [CodeLinePlugin.key]: MyCodeLineElement,
-    [CodeSyntaxPlugin.key]: MyCodeSyntaxLeaf,
+    [CodeHighlightPlugin.key]: MyCodeSyntaxLeaf,
     // ...其他组件覆盖
   },
 });

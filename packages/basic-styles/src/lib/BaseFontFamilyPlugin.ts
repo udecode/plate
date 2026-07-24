@@ -7,7 +7,7 @@ export const BaseFontFamilyPlugin = createBasePlugin({
   schema: { mark: property.string() },
   inject: {
     nodeProps: {
-      nodeKey: 'fontFamily',
+      styleKey: 'fontFamily',
     },
   },
   parsers: {

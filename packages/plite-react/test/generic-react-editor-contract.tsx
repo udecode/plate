@@ -3,11 +3,15 @@ import {
   type CompatibleEditorCommand,
   defineCommand,
   defineEditorExtension,
+  defineEditorSchema,
   editorCommands,
   type EditorCommit,
   type EditorCommandDescriptor,
   type EditorCommandInput,
+  type EditorValueFromExtensions,
   type Node as PliteNode,
+  property,
+  schema,
   type ValueOf,
 } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
@@ -131,6 +135,42 @@ const customApiReactEditor = createReactEditor({
   extensions: [CustomApiExtension],
   initialValue,
 });
+const InferredSchema = defineEditorSchema({
+  elements: {
+    paragraph: {
+      content: schema.content.text(),
+      properties: { align: property.string() },
+    },
+  },
+  root: { content: schema.content.type('paragraph') },
+  unknown: 'reject',
+});
+type InferredSchemaValue = EditorValueFromExtensions<
+  readonly [typeof InferredSchema]
+>;
+const inferredSchemaReactEditor = createReactEditor({
+  extensions: [InferredSchema],
+  initialValue: [
+    {
+      align: 'center',
+      children: [{ text: 'schema inferred' }],
+      type: 'paragraph',
+    },
+  ],
+});
+const typedInferredSchemaReactEditor: ReactEditor<
+  InferredSchemaValue,
+  readonly [typeof InferredSchema]
+> = inferredSchemaReactEditor;
+const inferredSchemaValue: readonly InferredSchemaValue[number][] =
+  inferredSchemaReactEditor.read((state) => state.children());
+const invalidInferredSchemaValue: ValueOf<typeof inferredSchemaReactEditor> = [
+  {
+    children: [{ text: '' }],
+    // @ts-expect-error installed complete schema rejects unknown element types
+    type: 'heading',
+  },
+];
 
 const baseValue: ValueOf<typeof baseEditor> = [
   { type: 'paragraph', children: [{ text: 'one', bold: true }] },
@@ -299,6 +339,27 @@ const HookProbe = () => {
   return null;
 };
 
+const SchemaHookProbe = () => {
+  const editor = usePliteEditor({
+    extensions: [InferredSchema],
+    initialValue: [
+      { children: [{ text: 'hook inferred' }], type: 'paragraph' },
+    ],
+  });
+  const typedEditor: ReactEditor<
+    InferredSchemaValue,
+    readonly [typeof InferredSchema]
+  > = editor;
+  const value: readonly InferredSchemaValue[number][] = editor.read((state) =>
+    state.children()
+  );
+
+  void typedEditor;
+  void value;
+
+  return null;
+};
+
 const CommandHookProbe = () => {
   const insertText = usePliteCommand(editorCommands.insertText);
   const insertBreak = usePliteCommand(editorCommands.insertBreak);
@@ -404,11 +465,15 @@ void compatibleSpecialCommand;
 void reactValue;
 void specialCommandPayload;
 void customApiResult;
+void inferredSchemaValue;
+void invalidInferredSchemaValue;
+void typedInferredSchemaReactEditor;
 void _placeholderAsSpan;
 void _placeholderAsInput;
 void (null as unknown as EditableHidesDOMStrategyLayout);
 void SelectorProbe;
 void HookProbe;
+void SchemaHookProbe;
 void CommandHookProbe;
 void NoHistoryHookProbe;
 void NamedRootRejectionProbe;

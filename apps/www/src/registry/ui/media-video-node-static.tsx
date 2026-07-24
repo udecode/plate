@@ -1,15 +1,16 @@
 import * as React from 'react';
 
-import type { TCaptionElement, TResizableProps, TVideoElement } from 'platejs';
+import type { TResizableProps, TVideoElement } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
 
-import { NodeApi } from 'platejs';
 import { PliteElement } from 'platejs/static';
 
+import { CaptionStatic } from './caption-static';
+
 export function VideoElementStatic(
-  props: PliteElementProps<TVideoElement & TCaptionElement & TResizableProps>
+  props: PliteElementProps<TVideoElement & TResizableProps>
 ) {
-  const { align = 'center', caption, url, width } = props.element;
+  const { align = 'center', url, width } = props.element;
 
   return (
     <PliteElement className="py-2.5" {...props}>
@@ -25,10 +26,11 @@ export function VideoElementStatic(
               controls
             />
           </div>
-          {caption && <figcaption>{NodeApi.string(caption[0])}</figcaption>}
+          <CaptionStatic align={align} element={props.element}>
+            {props.children}
+          </CaptionStatic>
         </figure>
       </div>
-      {props.children}
     </PliteElement>
   );
 }

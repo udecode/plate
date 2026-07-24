@@ -1,13 +1,8 @@
-import type { Element, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
 import type React from 'react';
 
-import pick from 'lodash/pick.js';
-
 import type { AnyBasePlugin, GetInjectNodePropsOptions } from '../plugin';
 import type { AnyEditorPlatePlugin } from '../../react/plugin';
-
-import { getNodeDataAttributeKeys } from '@platejs/plite-dom/internal';
 
 export const getPluginNodeProps = <
   TProps extends GetInjectNodePropsOptions & {
@@ -15,14 +10,10 @@ export const getPluginNodeProps = <
     children: React.ReactNode;
   },
 >({
-  attributes: nodeAttributes,
-  node,
   plugin,
   props,
 }: {
   props: TProps;
-  attributes?: AnyObject;
-  node?: Element | Text;
   plugin?: AnyBasePlugin | AnyEditorPlatePlugin;
 }): TProps & { attributes: AnyObject } => {
   const newProps = { ...props, attributes: { ...props.attributes } };
@@ -40,24 +31,6 @@ export const getPluginNodeProps = <
     newProps.attributes = {
       ...newProps.attributes,
       ...pluginNodeProps,
-    };
-  }
-  if (nodeAttributes && plugin) {
-    // Add data attributes to attributes if attributes is already set
-    newProps.attributes = {
-      ...newProps.attributes,
-      ...pick(
-        nodeAttributes,
-        /**
-         * WARNING: Improper use of `dangerouslyAllowAttributes` WILL make your
-         * application vulnerable to cross-site scripting (XSS) or information
-         * exposure attacks.
-         *
-         * @see {@link PluginBase.host}
-         */
-        ...(plugin.host.dangerouslyAllowAttributes ?? []),
-        [...(node ? getNodeDataAttributeKeys(node) : [])]
-      ),
     };
   }
 

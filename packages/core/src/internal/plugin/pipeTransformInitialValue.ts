@@ -2,6 +2,7 @@ import type { BaseEditor } from '../../lib/editor';
 import {
   DocumentChange,
   ElementApi,
+  type EditorDocumentValue,
   type Path,
   type Selection,
   type SnapshotIndex,
@@ -78,11 +79,12 @@ const getSharedNodeIndexes = (
   };
 };
 
-/** Apply every enabled plugin transform to a detached initial value. */
+/** Apply every enabled plugin transform to one detached document input. */
 export const transformInitialValue = (
   editor: BaseEditor,
-  initialValue: Value,
-  initialSelection: Selection = null
+  initialValue: EditorDocumentValue,
+  initialSelection: Selection = null,
+  selectionRoot = MAIN_ROOT_KEY
 ) => {
   const wasNormalizing = editor.runtime.isNormalizing;
   let selection = initialSelection;
@@ -109,24 +111,37 @@ export const transformInitialValue = (
         value,
       } as any);
 
-      if (nextValue === undefined) {
+      if (
+        !nextValue ||
+        Array.isArray(nextValue) ||
+        !Array.isArray(nextValue.children)
+      ) {
         throw new Error(
-          `Plugin "${key}" transformInitialValue must return the next value.`
+          `Plugin "${key}" transformInitialValue must return an editor document with primary-root children.`
         );
       }
 
       if (selection) {
+        const beforeChildren =
+          selectionRoot === MAIN_ROOT_KEY
+            ? value.children
+            : (value.roots?.[selectionRoot] ?? []);
+        const afterChildren =
+          selectionRoot === MAIN_ROOT_KEY
+            ? nextValue.children
+            : (nextValue.roots?.[selectionRoot] ?? []);
+
         selection = mapSelectionThroughChange(
           editor,
           selection,
-          DocumentChange.between({ children: value }, { children: nextValue }),
-          { children: value },
-          { children: nextValue },
-          MAIN_ROOT_KEY,
+          DocumentChange.between(value, nextValue),
+          value,
+          nextValue,
+          selectionRoot,
           {
             association: 'backward',
             preferPositionMapping: true,
-            runtimeIndexes: getSharedNodeIndexes(value, nextValue),
+            runtimeIndexes: getSharedNodeIndexes(beforeChildren, afterChildren),
           }
         );
       }
@@ -139,18 +154,12 @@ export const transformInitialValue = (
   }
 };
 
-/** Transform the current value from editor plugins before the editor is ready. */
+/** Reapply every document-input transform to the current document. */
 export const pipeTransformInitialValue = (editor: BaseEditor) => {
-  const transformed = transformInitialValue(
-    editor,
-    [...editor.read.children()],
-    editor.read.selection()
-  );
-
   runTrustedUpdate(editor, (tx) => {
     tx.value.replace({
-      children: transformed.value,
-      selection: transformed.selection,
+      ...editor.read.value(),
+      selection: editor.read.selection(),
     });
   });
 };

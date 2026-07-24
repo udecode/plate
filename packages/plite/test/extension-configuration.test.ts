@@ -10,7 +10,6 @@ import {
   defineEffect,
   defineExtensionSlot,
   defineFacet,
-  definePropertyPolicy,
   defineStateField,
   defineValueCodec,
   ElementApi,
@@ -36,10 +35,10 @@ const paragraph = (text: string) => ({
   type: 'paragraph',
 });
 
-const namedIdentity = (identity: EditorSchemaIdentity | null) => {
-  assert.equal(identity?.kind, 'named');
+const namedIdentity = (identity: EditorSchemaIdentity) => {
+  assert.equal(identity.kind, 'named');
 
-  if (identity?.kind !== 'named') assert.fail('Expected named schema identity');
+  if (identity.kind !== 'named') assert.fail('Expected named schema identity');
 
   return identity;
 };
@@ -52,7 +51,7 @@ describe('transactional extension configuration', () => {
     });
     const derivedEditor = createEditor({ extensions: [imageExtension] });
 
-    assert.equal(derivedEditor.read.schema.identity()?.kind, 'derived');
+    assert.equal(derivedEditor.read.schema.identity().kind, 'derived');
     assert.equal(
       derivedEditor.read.schema.element('image')?.behavior.voidKind,
       'block'
@@ -135,21 +134,20 @@ describe('transactional extension configuration', () => {
   it('restores a failed schema bootstrap and permits one clean retry', () => {
     let allowPublishedDocument = false;
     let editor: ReturnType<typeof createEditor> | undefined;
-    const Guard = definePropertyPolicy({
-      id: 'bootstrap-publication-guard',
-      validate: (value): value is string =>
-        typeof value === 'string' &&
-        (allowPublishedDocument ||
-          !editor ||
-          editor.read.children().length === 0),
-      version: 1,
-    });
     const articleSchema = defineEditorSchema({
       elements: {
         paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
           properties: {
-            guard: property.json({ default: 'valid', policy: Guard }),
+            guard: property.json({
+              default: 'valid',
+              validate: (value): value is string =>
+                typeof value === 'string' &&
+                (allowPublishedDocument ||
+                  !editor ||
+                  editor.read.children().length === 0),
+              validationVersion: 1,
+            }),
           },
         },
       },
@@ -1106,27 +1104,25 @@ describe('transactional extension configuration', () => {
   });
 
   it('rebinds live validators without treating function identity as schema data', () => {
-    const slot = defineExtensionSlot('schema-policy-rebind');
-    const articleSchema = (accepted: string) => {
-      const Tone = definePropertyPolicy({
-        id: 'schema-policy-rebind.tone',
-        validate: (value): value is string => value === accepted,
-        version: 1,
-      });
-
-      return defineEditorSchema({
+    const slot = defineExtensionSlot('schema-validation-rebind');
+    const articleSchema = (accepted: string) =>
+      defineEditorSchema({
         elements: {
           paragraph: {
             content: schema.content.text(),
-            properties: { tone: property.json({ policy: Tone }) },
+            properties: {
+              tone: property.json({
+                validate: (value): value is string => value === accepted,
+                validationVersion: 1,
+              }),
+            },
           },
         },
-        id: 'schema-policy-rebind',
+        id: 'schema-validation-rebind',
         root: { content: schema.content.type('paragraph') },
         unknown: 'reject',
         version: 1,
       });
-    };
     const editor = createEditor({
       extensions: [slot.of(articleSchema('old'))] as const,
       initialValue: [paragraph('same')],
@@ -1170,27 +1166,25 @@ describe('transactional extension configuration', () => {
   });
 
   it('rolls back an equal-schema validator rebind that rejects the document', () => {
-    const slot = defineExtensionSlot('schema-policy-rebind-rollback');
-    const articleSchema = (accepted: string) => {
-      const Tone = definePropertyPolicy({
-        id: 'schema-policy-rebind-rollback.tone',
-        validate: (value): value is string => value === accepted,
-        version: 1,
-      });
-
-      return defineEditorSchema({
+    const slot = defineExtensionSlot('schema-validation-rebind-rollback');
+    const articleSchema = (accepted: string) =>
+      defineEditorSchema({
         elements: {
           paragraph: {
             content: schema.content.text(),
-            properties: { tone: property.json({ policy: Tone }) },
+            properties: {
+              tone: property.json({
+                validate: (value): value is string => value === accepted,
+                validationVersion: 1,
+              }),
+            },
           },
         },
-        id: 'schema-policy-rebind-rollback',
+        id: 'schema-validation-rebind-rollback',
         root: { content: schema.content.type('paragraph') },
         unknown: 'reject',
         version: 1,
       });
-    };
     const editor = createEditor({
       extensions: [slot.of(articleSchema('old'))] as const,
       initialValue: [
@@ -2288,33 +2282,6 @@ describe('transactional extension configuration', () => {
       /cannot contain property accessors/u
     );
     assert.equal(factoryCalls, 0);
-  });
-
-  it('accepts only genuine nominal schema tokens in configuration', () => {
-    const policy = definePropertyPolicy({
-      id: 'nominal-configuration-policy',
-      validate: (value): value is string => typeof value === 'string',
-      version: 1,
-    });
-    const extension = defineEditorExtension({
-      config: { policy },
-      name: 'nominal-configuration-token',
-    });
-    const forged = {
-      [Symbol.for('platejs.plite.editorSchemaConfigToken')]: true,
-      mutable: { value: 1 },
-    };
-
-    assert.equal(extension.config.policy, policy);
-    assert.equal(Object.isFrozen(policy), true);
-    assert.throws(
-      () =>
-        defineEditorExtension({
-          config: { forged },
-          name: 'forged-configuration-token',
-        }),
-      /string-keyed plain data/u
-    );
   });
 
   it('rejects every mutable runtime shape in extension configuration', () => {

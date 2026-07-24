@@ -26,7 +26,7 @@ export const useMediaState = ({
   const editor = useEditor();
   const element = useElement<TMediaElement & TResizableElement>();
   const focused = useEditorFocused();
-  const selected = useElementSelected();
+  const selected = useElementSelected({ mode: 'node' });
   const readOnly = useEditorReadOnly();
 
   const { id, align, isUpload, name, type, url } = element;

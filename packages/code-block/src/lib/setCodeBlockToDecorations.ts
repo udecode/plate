@@ -1,6 +1,6 @@
 import type { createLowlight } from 'lowlight';
 
-import type { BaseEditor } from '@platejs/core';
+import { type BaseEditor, getEditorPlugin } from '@platejs/core';
 import {
   type DecoratedRange,
   type Element,
@@ -8,9 +8,9 @@ import {
   type NodeEntry,
   NodeApi,
 } from '@platejs/plite';
-import { NODES } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
-import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
+import type { CodeHighlightConfig } from './BaseCodeBlockPlugin';
 import { ensureStablePythonGrammar } from './ensureStablePythonGrammar';
 
 type CodeBlockDecoration = DecoratedRange & {
@@ -87,9 +87,12 @@ export function codeBlockToDecorations(
   editor: BaseEditor,
   [block, blockPath]: NodeEntry<Element>
 ): Map<Element, DecoratedRange[]> {
-  const { defaultLanguage, ...options } = editor
-    .plugin(BaseCodeBlockPlugin)
-    .getOptions();
+  const { defaultLanguage, ...options } = getEditorPlugin<CodeHighlightConfig>(
+    editor,
+    {
+      key: KEYS.codeSyntax,
+    }
+  ).getOptions();
   const lowlight = options.lowlight!;
 
   // Get all code lines and combine their text

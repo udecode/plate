@@ -8,6 +8,7 @@ import { writeHostFragmentData } from '@platejs/plite-dom';
 import type { Pluggable, Preset, Settings } from 'unified';
 
 import { MarkdownPlugin } from './MarkdownPlugin';
+import { createTestEditor } from './__tests__/createTestEditor';
 import { remarkMdx } from './plugins';
 import { materializeRemarkPlugins } from './utils/getRemarkPluginsWithoutMdx';
 
@@ -88,14 +89,18 @@ describe('MarkdownPlugin', () => {
     expect(editor.plugin(MarkdownPlugin).getOptions().remarkPlugins?.[0]).toBe(
       remarkPlugin
     );
-    expect(editor.api.markdown.serialize({ value })).toBe('+ Item\n');
+    expect(editor.api.markdown.serialize({ value: { children: value } })).toBe(
+      '+ Item\n'
+    );
     expect(serializeHost()).toBe('+ Item\n');
 
     editor.plugin(MarkdownPlugin).setOptions({
       remarkStringifyOptions: { bullet: '*' },
     });
 
-    expect(editor.api.markdown.serialize({ value })).toBe('* Item\n');
+    expect(editor.api.markdown.serialize({ value: { children: value } })).toBe(
+      '* Item\n'
+    );
     expect(serializeHost()).toBe('* Item\n');
     expect(editor.read.schema.identity()).toEqual(identity);
   });
@@ -174,11 +179,15 @@ describe('MarkdownPlugin', () => {
     expect(typeof editor.api.markdown.deserializeInline).toBe('function');
     expect(typeof editor.api.markdown.serialize).toBe('function');
     expect(plugin.parser.format).toEqual(['text/plain', 'text/markdown']);
-    expect(
-      plugin.parser.deserialize?.({
-        ...createParserContext(editor, createDataTransfer({}), '**bold**'),
-      })
-    ).toEqual(editor.api.markdown.deserialize('**bold**'));
+    expect(plugin.parser.deserialize).toBeUndefined();
+    expect(editor.api.markdown.deserialize('**bold**')).toEqual({
+      children: [
+        {
+          children: [{ bold: true, text: 'bold' }],
+          type: 'p',
+        },
+      ],
+    });
   });
 
   it('skips plain-text parsing when html is present', () => {
@@ -258,9 +267,49 @@ describe('MarkdownPlugin', () => {
     const data = new DataTransfer();
     const fragment = editor.api.markdown.deserialize('**bold**');
 
-    writeHostFragmentData(editor, data, ContentSlice.closed(fragment));
+    writeHostFragmentData(editor, data, ContentSlice.closed(fragment.children));
 
     expect(data.getData('text/markdown')).toBe('**bold**\n');
+  });
+
+  it('round-trips image alt through the Markdown host codec', () => {
+    const source = createTestEditor();
+    const document = source.api.markdown.deserialize('![Caption](/image.png)');
+    const data = new DataTransfer();
+
+    writeHostFragmentData(
+      source,
+      data,
+      ContentSlice.fromJSON({
+        content: document.children,
+        openEnd: 0,
+        openStart: 0,
+      })
+    );
+
+    expect(data.getData('text/markdown')).toBe('![Caption](/image.png)\n');
+
+    const target = createTestEditor();
+    const markdownData = new DataTransfer();
+
+    target.update.value.replace({
+      children: [{ children: [{ text: '' }], type: 'p' }],
+    });
+    target.update.selection.set({ offset: 0, path: [0, 0] });
+    markdownData.setData('text/markdown', data.getData('text/markdown'));
+
+    expect(target.api.clipboard.insertData(markdownData)).toBe(true);
+
+    const value = target.read.value();
+    const image = value.children[0];
+
+    expect(image).toMatchObject({
+      alt: 'Caption',
+      children: [{ text: '' }],
+      type: 'img',
+      url: '/image.png',
+    });
+    expect(value).not.toHaveProperty('roots');
   });
 
   it('deserializes partially styled MDX spans into JSON-compatible content', () => {
@@ -272,13 +321,15 @@ describe('MarkdownPlugin', () => {
       { remarkPlugins: [remarkMdx] }
     );
 
-    expect(value).toEqual([
-      {
-        children: [{ color: '#93C47D', text: 'colored' }],
-        type: 'p',
-      },
-    ]);
-    expect(ContentSlice.closed(value).content).toEqual(value);
+    expect(value).toEqual({
+      children: [
+        {
+          children: [{ color: '#93C47D', text: 'colored' }],
+          type: 'p',
+        },
+      ],
+    });
+    expect(ContentSlice.closed(value.children).content).toEqual(value.children);
   });
 
   it('parses the registered Markdown clipboard format', () => {
@@ -292,7 +343,7 @@ describe('MarkdownPlugin', () => {
 
     expect(editor.api.clipboard.insertData(data)).toBe(true);
     expect(editor.read.children()).toEqual(
-      editor.api.markdown.deserialize('**bold**')
+      editor.api.markdown.deserialize('**bold**').children
     );
   });
 

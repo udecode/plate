@@ -17,7 +17,7 @@ insertion ownership.
 | ---------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
 | One editor instance needs a local paste/drop hook    | `Editable` `onPaste` or `onDrop`                           | `@platejs/plite-react`                              |
 | A reusable package owns paste/drop import policy     | extension `clipboard.insertData`                           | `@platejs/plite`                                    |
-| A host format needs parsing or serialization         | `defineHostCodec` and `hostCodecs`                         | `@platejs/plite-dom`                                |
+| A host format needs parsing or serialization         | Inline a codec in `hostCodecs`                             | `@platejs/plite-dom`                                |
 | Framework code needs to import a `DataTransfer`      | `editor.api.clipboard.insertData(data)`                    | `@platejs/plite-dom` through `@platejs/plite-react` |
 | Parsed or structural content is already decoded      | `tx.slice.replace(slice, options?)`                        | `@platejs/plite`                                    |
 | Decoded content must fit a detached parent           | `state.slice.fitContent(slice, { parent, root? })`         | `@platejs/plite`                                    |
@@ -100,7 +100,9 @@ different keys do not blindly import each other's internal JSON.
 
 Registered host codecs add schema-aware MIME formats without putting DOM types
 in Plite core. A parser returns one intact `ContentSlice`; Plite preserves its
-open edge depths and fits it against the actual paste range. Configuration
+open edge depths and detached secondary roots, then fits the complete slice
+against the actual paste range. Keep a codec inline in `hostCodecs`; use
+`defineHostCodec` only when the same codec is reused. Configuration
 fails for duplicate codec keys, unknown schema targets, and overlapping
 element/text-property claims. A codec rejects invalid external payloads with
 `null`.
@@ -134,10 +136,18 @@ const slice = ContentSlice.fromJSON({
   content: decodedContent,
   openEnd: 1,
   openStart: 1,
+  roots: {
+    "note:1": decodedNote,
+  },
 });
 
 editor.update.slice.replace(slice);
 ```
+
+`ContentSlice` has one transport shape:
+`{ content, openStart, openEnd, roots? }`. `roots` carries the transitive
+detached secondary roots referenced by the slice content. Inserting the slice
+remaps copied keys deterministically and keeps shared aliases together.
 
 Core slice replacement is structural and schema-fitted. Grid-aware table paste,
 spreadsheet mapping, and product-specific merge rules belong in the table or

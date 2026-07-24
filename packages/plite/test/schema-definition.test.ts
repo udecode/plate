@@ -6,11 +6,9 @@ import {
   defineEditorSchema,
   defineEditorExtension,
   defineExtensionSlot,
-  definePropertyPolicy,
   type EditorSchemaContribution,
   type EditorExtension,
   type EditorExtensionInput,
-  type PropertyPolicy,
   type PropertyJsonValue,
   type PropertyValueOf,
   property,
@@ -24,40 +22,50 @@ import {
 const typeOnly = (_callback: () => void) => {};
 
 describe('schema declaration builders', () => {
-  it('defines frozen structural value laws and stable policy identity', () => {
+  it('defines frozen structural value laws and versioned inline validation', () => {
     const input = {
-      id: 'positive',
       validate: (value: unknown): value is number =>
         typeof value === 'number' && value > 0,
-      version: 2,
+      validationVersion: 2,
     };
-    const Positive = definePropertyPolicy<number>(input);
-
-    input.validate = (_value): _value is number => false;
     const Width = property.number({
       default: 12,
       omitDefault: true,
-      policy: Positive,
+      ...input,
     });
 
-    assert.equal(Object.isFrozen(Positive), true);
+    input.validate = (_value): _value is number => false;
+
     assert.equal(Object.isFrozen(Width), true);
     assert.deepEqual(Width, {
       default: 12,
       kind: 'number',
       omitDefault: true,
-      policy: Positive,
+      validationVersion: 2,
     });
-    assert.deepEqual(JSON.parse(JSON.stringify(Width.policy)), {
-      id: 'positive',
-      version: 2,
+    assert.deepEqual(JSON.parse(JSON.stringify(Width)), {
+      default: 12,
+      kind: 'number',
+      omitDefault: true,
+      validationVersion: 2,
     });
-    assert.equal(Positive.validate('1'), false);
-    assert.equal(Positive.validate(1), true);
-    assert.deepEqual(Object.keys(Positive), ['id', 'version']);
+    assert.equal(Width.validate?.('1'), false);
+    assert.equal(Width.validate?.(1), true);
+    assert.deepEqual(Object.keys(Width), [
+      'default',
+      'kind',
+      'omitDefault',
+      'validationVersion',
+    ]);
     assert.throws(
-      () => property.number({ default: -1, policy: Positive }),
-      /does not satisfy policy "positive"/
+      () =>
+        property.number({
+          default: -1,
+          validate: (value): value is number =>
+            typeof value === 'number' && value > 0,
+          validationVersion: 1,
+        }),
+      /does not satisfy custom validation/
     );
     assert.throws(
       () => property.string({ omitDefault: true }),
@@ -76,46 +84,45 @@ describe('schema declaration builders', () => {
     );
   });
 
-  it('accepts only property policies created by definePropertyPolicy', () => {
-    const forged = {
-      id: 'forged',
-      validate: (value: unknown): value is string => typeof value === 'string',
-      version: 1,
-    };
-
+  it('requires a positive validation version with every inline validator', () => {
     assert.throws(
-      () => property.json({ policy: forged as never }),
-      /definePropertyPolicy/
+      () =>
+        property.json({
+          validate: ((value: unknown): value is string =>
+            typeof value === 'string') as never,
+        }),
+      /validate and validationVersion/
     );
     assert.throws(
-      () => property.string({ policy: forged as never }),
-      /definePropertyPolicy/
+      () => property.string({ validationVersion: 1 } as never),
+      /validate and validationVersion/
     );
     assert.throws(
       () =>
-        property.set({
-          kind: 'json',
-          omitDefault: false,
-          policy: forged,
-        } as never),
-      /definePropertyPolicy/
+        property.string({
+          validate: ((value: unknown): value is string =>
+            typeof value === 'string') as never,
+          validationVersion: 0,
+        }),
+      /positive integer/
     );
   });
 
   it('canonicalizes set defaults with structural item identity', () => {
-    const Comment = definePropertyPolicy<{ id: string }>({
-      id: 'comment',
-      validate: (value): value is { id: string } =>
-        typeof value === 'object' &&
-        value !== null &&
-        'id' in value &&
-        typeof value.id === 'string',
-      version: 1,
-    });
-    const Comments = property.set(property.json({ policy: Comment }), {
-      default: [{ id: 'b' }, { id: 'a' }, { id: 'b' }],
-      omitDefault: true,
-    });
+    const Comments = property.set(
+      property.json({
+        validate: (value): value is { id: string } =>
+          typeof value === 'object' &&
+          value !== null &&
+          'id' in value &&
+          typeof value.id === 'string',
+        validationVersion: 1,
+      }),
+      {
+        default: [{ id: 'b' }, { id: 'a' }, { id: 'b' }],
+        omitDefault: true,
+      }
+    );
 
     assert.deepEqual(Comments.default, [{ id: 'a' }, { id: 'b' }]);
     assert.equal(Object.isFrozen(Comments.default), true);
@@ -128,6 +135,16 @@ describe('schema declaration builders', () => {
     });
 
     assert.deepEqual(Nested.default, [['a', 'b']]);
+    assert.throws(
+      () =>
+        property.set(property.string(), {
+          default: ['only'],
+          validate: (value): value is readonly string[] =>
+            Array.isArray(value) && value.length > 1,
+          validationVersion: 1,
+        }),
+      /does not satisfy custom validation/
+    );
   });
 
   it('builds a frozen serializable target AST with an implicit primary root', () => {
@@ -538,13 +555,6 @@ describe('schema declaration builders', () => {
   });
 
   typeOnly(() => {
-    const forgedPolicyInput = {
-      id: 'forged',
-      validate: (value: unknown): value is string => typeof value === 'string',
-      version: 1,
-    };
-    // @ts-expect-error property policies are tokens created by definePropertyPolicy
-    const forgedPolicy: PropertyPolicy<string> = forgedPolicyInput;
     const contribution: EditorSchemaContribution = {
       elements: { paragraph: { content: schema.content.text() } },
     };
@@ -557,20 +567,38 @@ describe('schema declaration builders', () => {
       // @ts-expect-error only the complete schema definition owns the primary root
       root: { content: schema.content.text() },
     };
-    const Payload = definePropertyPolicy<{ id: string }>({
-      id: 'payload',
+    const payload = property.json({
       validate: (value): value is { id: string } =>
         typeof value === 'object' && value !== null && 'id' in value,
-      version: 1,
+      validationVersion: 1,
     });
-    const payload = property.json({ policy: Payload });
     const payloadWithDefault = property.json({
       default: { id: 'default' },
-      policy: Payload,
+      validate: (value): value is { id: string } =>
+        typeof value === 'object' && value !== null && 'id' in value,
+      validationVersion: 1,
     });
     const unconstrained = property.json({ significant: false });
     const explicitJson = property.json<{ id: string }>();
     const inferredJson = property.json({ default: { id: 'json' } });
+    const validatedBoolean = property.boolean({
+      validate: (value): value is boolean => typeof value === 'boolean',
+      validationVersion: 1,
+    });
+    const validatedNumber = property.number({
+      validate: (value): value is number =>
+        typeof value === 'number' && value > 0,
+      validationVersion: 1,
+    });
+    const validatedSet = property.set(property.string(), {
+      validate: (value): value is readonly string[] =>
+        Array.isArray(value) && value.every((item) => typeof item === 'string'),
+      validationVersion: 1,
+    });
+    const validatedString = property.string({
+      validate: (value): value is string => typeof value === 'string',
+      validationVersion: 1,
+    });
     const unconstrainedValue: PropertyValueOf<typeof unconstrained> = {
       id: 'json',
     };
@@ -593,14 +621,15 @@ describe('schema declaration builders', () => {
     // @ts-expect-error default inference cannot widen no-policy JSON to Date
     property.json({ default: new Date(0) });
     property.json({
-      // @ts-expect-error the policy owns TValue; default cannot widen it
+      // @ts-expect-error the validator owns TValue; default cannot widen it
       default: 'wrong',
-      policy: Payload,
+      validate: (value): value is { id: string } =>
+        typeof value === 'object' && value !== null && 'id' in value,
+      validationVersion: 1,
     });
 
     void contribution;
     void explicitJsonValue;
-    void forgedPolicy;
     void inferredJsonValue;
     void invalidContribution;
     void invalidJson;
@@ -610,17 +639,20 @@ describe('schema declaration builders', () => {
     void unconstrainedValue;
     void validPayload;
     void validPayloadWithDefault;
-    definePropertyPolicy<{ id: string }>({
-      id: 'unsafe-property-access',
+    void validatedBoolean;
+    void validatedNumber;
+    void validatedSet;
+    void validatedString;
+    property.json({
       validate: (value): value is { id: string } => {
-        // @ts-expect-error property policies must narrow untrusted values first
+        // @ts-expect-error validators must narrow untrusted values first
         return value.id.length > 0;
       },
-      version: 1,
+      validationVersion: 1,
     });
+    // @ts-expect-error validate requires validationVersion
     property.string({
-      // @ts-expect-error custom validation belongs in definePropertyPolicy
-      validate: (_value: string) => true,
+      validate: (value): value is string => typeof value === 'string',
     });
     property.string({
       // @ts-expect-error arbitrary equality callbacks are not schema vocabulary

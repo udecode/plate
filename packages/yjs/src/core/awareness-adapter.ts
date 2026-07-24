@@ -1,4 +1,5 @@
-import type { Editor, Range } from '@platejs/plite';
+import { RangeApi, type Editor, type Range } from '@platejs/plite';
+import { toInternalRoot } from '@platejs/plite/internal';
 import * as Y from 'yjs';
 
 import {
@@ -24,9 +25,8 @@ type YjsAwarenessAdapterOptions = {
   readonly clientId: number | string;
   readonly doc: Y.Doc;
   readonly editor: Editor;
-  readonly editorRoot: string;
   readonly isConnected: () => boolean;
-  readonly root: Y.XmlElement;
+  readonly rootFor: (root: string) => Y.XmlElement | null;
 };
 
 export type YjsAwarenessAdapter = {
@@ -92,11 +92,14 @@ export const createYjsAwarenessAdapter = ({
   clientId,
   doc,
   editor,
-  editorRoot,
   isConnected,
-  root,
+  rootFor,
 }: YjsAwarenessAdapterOptions): YjsAwarenessAdapter => {
-  const currentSelection = (): Range | null => editor.read.selection.domRange();
+  const currentSelection = (): Range | null => {
+    const selection = editor.read.selection();
+
+    return selection && RangeApi.isRange(selection) ? selection : null;
+  };
 
   const getLocalAwarenessClientId = (): number =>
     awareness?.doc?.clientID ??
@@ -104,9 +107,9 @@ export const createYjsAwarenessAdapter = ({
     (typeof clientId === 'number' ? clientId : doc.clientID);
 
   const isValidYjsSelectionPoint = (point: Range['anchor']): boolean => {
-    if (point.root !== undefined && point.root !== editorRoot) {
-      return false;
-    }
+    const root = rootFor(toInternalRoot(point.root));
+
+    if (root === null) return false;
 
     const node = getYjsNodeIf(root, point.path);
 
@@ -117,11 +120,18 @@ export const createYjsAwarenessAdapter = ({
     );
   };
 
-  const sanitizeYjsSelection = (range: Range): Range | null =>
-    isValidYjsSelectionPoint(range.anchor) &&
-    isValidYjsSelectionPoint(range.focus)
+  const sanitizeYjsSelection = (range: Range): Range | null => {
+    if (
+      toInternalRoot(range.anchor.root) !== toInternalRoot(range.focus.root)
+    ) {
+      return null;
+    }
+
+    return isValidYjsSelectionPoint(range.anchor) &&
+      isValidYjsSelectionPoint(range.focus)
       ? range
       : null;
+  };
 
   const clearSelection = (): void => {
     if (awareness === undefined) {
@@ -167,7 +177,7 @@ export const createYjsAwarenessAdapter = ({
     } = {
       clientId: remoteClientId,
       selection: readYjsAwarenessSelection(
-        root,
+        rootFor,
         state[awarenessSelectionField]
       ),
     };
@@ -276,8 +286,13 @@ export const createYjsAwarenessAdapter = ({
       range === null || range === undefined
         ? null
         : sanitizeYjsSelection(range);
+    const rootKey =
+      nextRange === null ? 'main' : toInternalRoot(nextRange.anchor.root);
+    const root = rootFor(rootKey);
     const nextSelection =
-      nextRange === null ? null : createYjsAwarenessSelection(root, nextRange);
+      nextRange === null || root === null
+        ? null
+        : createYjsAwarenessSelection(root, rootKey, nextRange);
     const currentAwarenessSelection =
       awareness.getLocalState()?.[awarenessSelectionField];
 

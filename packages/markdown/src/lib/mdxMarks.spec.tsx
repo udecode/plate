@@ -52,7 +52,7 @@ describe('mdx mark package surfaces', () => {
   ])('$title', ({ expected, input, output }) => {
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject(output);
+    expect(value.children).toMatchObject(output);
 
     const markdown = serializeMd(editor, { value });
 

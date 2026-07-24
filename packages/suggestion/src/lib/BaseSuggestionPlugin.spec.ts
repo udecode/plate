@@ -216,6 +216,25 @@ describe('BaseSuggestionPlugin', () => {
     });
   });
 
+  it('validates block and inline suggestion payloads', () => {
+    const editor = createEditor();
+    const block = editor.read.schema.property({
+      key: 'suggestion',
+      placement: 'element',
+      type: 'p',
+    })?.value.validate;
+    const inline = editor.read.schema.property({
+      key: 'suggestion_any',
+      placement: 'text',
+      type: 'p',
+    })?.value.validate;
+
+    expect(block?.(blockSuggestion)).toBe(true);
+    expect(block?.({ ...blockSuggestion, createdAt: 'invalid' })).toBe(false);
+    expect(inline?.(inlineSuggestion)).toBe(true);
+    expect(inline?.({ ...inlineSuggestion, userId: null })).toBe(false);
+  });
+
   it('finds inline and block suggestion nodes by id', () => {
     const editor = createEditor();
     const api = editor.plugin(BaseSuggestionPlugin).api;

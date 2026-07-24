@@ -13,7 +13,12 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Element, schema } from '@platejs/plite';
+import {
+  createEditor,
+  type Element,
+  schema,
+  SelectionApi,
+} from '@platejs/plite';
 import { defineTestSchema } from './support/schema';
 
 const paragraph = (text: string): Element => ({
@@ -55,6 +60,86 @@ const table = (): Element => ({
 });
 
 describe('plite delete contract', () => {
+  it('deletes an exact node selection and restores the directional text boundary', () => {
+    for (const direction of ['backward', 'forward'] as const) {
+      const point = { offset: 0, path: [1, 0] };
+      const editor = createEditor({
+        initialSelection: SelectionApi.node([1], {
+          anchor: point,
+          focus: point,
+        }),
+        initialValue: [
+          paragraph('before'),
+          { type: 'media', children: [{ text: 'caption' }] },
+          paragraph('after'),
+        ],
+      });
+
+      if (direction === 'backward') {
+        editorDeleteBackward(editor);
+      } else {
+        editorDeleteForward(editor);
+      }
+
+      assert.deepEqual(editorGetSnapshot(editor).children, [
+        paragraph('before'),
+        paragraph('after'),
+      ]);
+      assert.deepEqual(editorGetSnapshot(editor).selection, {
+        kind: 'text',
+        anchor:
+          direction === 'backward'
+            ? { path: [0, 0], offset: 6 }
+            : { path: [1, 0], offset: 0 },
+        focus:
+          direction === 'backward'
+            ? { path: [0, 0], offset: 6 }
+            : { path: [1, 0], offset: 0 },
+      });
+    }
+  });
+
+  it('deletes a named-root node selection without touching the same main path', () => {
+    const point = { offset: 0, path: [1, 0], root: 'caption' };
+    const main = [
+      paragraph('main before'),
+      paragraph('main same path'),
+      paragraph('main after'),
+    ];
+    const editor = createEditor({
+      initialSelection: SelectionApi.node([1], {
+        anchor: point,
+        focus: point,
+      }),
+      initialValue: {
+        children: main,
+        roots: {
+          caption: [
+            paragraph('root before'),
+            { type: 'media', children: [{ text: 'caption' }] },
+            paragraph('root after'),
+          ],
+        },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.text.deleteBackward();
+    });
+
+    assert.deepEqual(editor.read.value(), {
+      children: main,
+      roots: {
+        caption: [paragraph('root before'), paragraph('root after')],
+      },
+    });
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
+      anchor: { offset: 11, path: [0, 0], root: 'caption' },
+      focus: { offset: 11, path: [0, 0], root: 'caption' },
+    });
+  });
+
   it('keeps the adjacent text boundary when deleting an inline void', () => {
     for (const reverse of [true, false]) {
       const editor = createEditor();

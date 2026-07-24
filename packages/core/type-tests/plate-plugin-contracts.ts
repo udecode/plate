@@ -66,7 +66,6 @@ type ExplicitPluginConfig = PluginConfig<
   {},
   {},
   readonly [],
-  readonly [],
   never,
   {
     isEnabled: () => boolean;
@@ -108,19 +107,28 @@ const ReactFactoryExtensionPlugin = createPlatePlugin({
 
 const DependencyApiPlugin = createPlatePlugin({
   key: 'dependencyApi',
+}).extendApi(() => ({
+  read: () => true,
+}));
+
+const DependencyEditorApiPlugin = createPlatePlugin({
+  key: 'dependencyEditorApi',
 }).extendEditorApi(() => ({
-  dependencyApi: {
+  dependencyEditorApi: {
     read: () => true,
   },
 }));
 
 const DependentHooksPlugin = createPlatePlugin({
-  dependencies: [DependencyApiPlugin],
+  dependencies: [DependencyApiPlugin, DependencyEditorApiPlugin],
   key: 'dependentHooks',
 }).extend({
   useHooks: ({ editor }) => {
     const dependencyValue: boolean = editor.api.dependencyApi.read();
+    const dependencyEditorValue: boolean =
+      editor.api.dependencyEditorApi.read();
 
+    void dependencyEditorValue;
     void dependencyValue;
   },
 });
@@ -138,6 +146,9 @@ const createdPlateEditor = createPlateEditor({
     DependentHooksPlugin,
   ],
 });
+const emptyApiEditor = createPlateEditor({
+  plugins: [createPlatePlugin({ key: 'emptyApi' })],
+});
 
 const floating: boolean = plateEditor.api.toggleFloating();
 const nestedFloating: boolean = plateEditor.api.plugin.isFloating();
@@ -147,6 +158,17 @@ const createdMentionTrigger: '@' = createdPlateEditor.api.getTrigger();
 const explicitPluginPortalEnabled: boolean = createdPlateEditor
   .plugin(ExplicitPlugin)
   .api.isEnabled();
+const explicitPluginRootEnabled: boolean =
+  createdPlateEditor.api.explicitPlugin.isEnabled();
+const dependencyApiValue: boolean = createdPlateEditor.api.dependencyApi.read();
+const htmlValue = createdPlateEditor.api.html.deserialize({
+  element: '<p>HTML</p>',
+});
+type CreatedPlateEditorApiKeys = keyof typeof createdPlateEditor.api;
+const explicitPluginApiKey: Extract<
+  CreatedPlateEditorApiKeys,
+  'explicitPlugin'
+> = 'explicitPlugin';
 const toolbarFloating: boolean = createdPlateEditor
   .plugin(ToolbarPlugin)
   .getOptions().floating;
@@ -157,8 +179,12 @@ const createdMentionOption: '@' = createdPlateEditor
 void createdFloating;
 void createdMentionOption;
 void createdMentionTrigger;
+void dependencyApiValue;
+void explicitPluginApiKey;
 void explicitPluginPortalEnabled;
+void explicitPluginRootEnabled;
 void floating;
+void htmlValue;
 void mentionTrigger;
 void nestedFloating;
 void toolbarFloating;
@@ -169,9 +195,10 @@ plateEditor.api.notReal();
 // @ts-expect-error wrong nested plugin api call
 createdPlateEditor.api.plugin.isFloating(true);
 
+// @ts-expect-error empty plugin APIs do not publish a root namespace
+void emptyApiEditor.api.emptyApi;
+
 const explicitPluginPortalApi = createdPlateEditor.plugin(ExplicitPlugin).api;
-// @ts-expect-error plugin portal APIs do not leak into the root editor API
-createdPlateEditor.api.explicitPlugin.isEnabled();
 // @ts-expect-error plugin portal API is scoped, not wrapped by plugin key
 explicitPluginPortalApi.explicitPlugin.isEnabled();
 

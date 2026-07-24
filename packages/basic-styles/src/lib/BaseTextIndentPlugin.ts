@@ -23,7 +23,6 @@ export const BaseTextIndentPlugin = createBasePlugin({
   inject: {
     isBlock: true,
     nodeProps: {
-      nodeKey: 'textIndent',
       styleKey: 'textIndent',
       transformNodeValue: ({ getOptions, nodeValue }) => {
         const { offset, unit } = getOptions();
@@ -37,16 +36,12 @@ export const BaseTextIndentPlugin = createBasePlugin({
     unit: 'px',
   },
   targetPluginKeys: defaultTargetPluginKeys,
-}).extendTx(({ editor, plugin, type }) => (tx) => ({
+}).extendTx(({ type }) => (tx) => ({
   set: (value: number, options?: NodeSetNodesOptions<Element>) => {
-    const { nodeKey = type } = editor.getInjectProps(plugin);
-
-    tx.nodes.set({ [nodeKey]: value }, options);
+    tx.nodes.set({ [type]: value }, options);
   },
   unset: (options?: NodeUnsetNodesOptions<Element>) => {
-    const { nodeKey = type } = editor.getInjectProps(plugin);
-
-    tx.nodes.unset(nodeKey, options);
+    tx.nodes.unset(type, options);
   },
 }));
 

@@ -140,4 +140,40 @@ describe('BaseTablePlugin schema', () => {
       ])
     ).not.toThrow();
   });
+
+  it('validates table-owned JSON properties', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseTablePlugin],
+      initialValue: [
+        {
+          children: [{ children: [cell(KEYS.td)], type: KEYS.tr }],
+          type: KEYS.table,
+        },
+      ],
+    });
+    const attributes = editor.read.schema.property({
+      key: 'attributes',
+      placement: 'element',
+      type: KEYS.td,
+    })?.value.validate;
+    const borders = editor.read.schema.property({
+      key: 'borders',
+      placement: 'element',
+      type: KEYS.td,
+    })?.value.validate;
+    const colSizes = editor.read.schema.property({
+      key: 'colSizes',
+      placement: 'element',
+      type: KEYS.table,
+    })?.value.validate;
+
+    expect(attributes?.({ colspan: '2', rowspan: '3' })).toBe(true);
+    expect(attributes?.({ colspan: 2 })).toBe(false);
+    expect(borders?.({ bottom: { color: 'red', size: 1 } })).toBe(true);
+    expect(borders?.({ bottom: { size: Number.POSITIVE_INFINITY } })).toBe(
+      false
+    );
+    expect(colSizes?.([40, 60])).toBe(true);
+    expect(colSizes?.([40, Number.NaN])).toBe(false);
+  });
 });

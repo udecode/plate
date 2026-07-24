@@ -2,7 +2,14 @@
 
 import React from 'react';
 
-import { property, schema, target, type Value } from '@platejs/plite';
+import {
+  defineStateField,
+  property,
+  schema,
+  target,
+  type Value,
+  valueCodecs,
+} from '@platejs/plite';
 import { useEditorViewState } from '@platejs/plite-react';
 
 import { act, render, waitFor } from '@testing-library/react';
@@ -24,30 +31,6 @@ const VariantPlugin = createBasePlugin({
         target: target.type('p'),
       }),
     ],
-  },
-});
-
-const AtomicParserAPlugin = createBasePlugin({
-  key: 'atomicParserA',
-  parser: {
-    deserialize: () => [
-      {
-        children: [{ atomicParserA: true, text: 'parsed-a' }],
-        type: 'p',
-      },
-    ],
-    format: 'application/x-plate-atomic-parser',
-  },
-  render: {
-    as: 'mark',
-    abovePlite: ({ children }) => (
-      <div data-testid="plite-renderer-a">{children}</div>
-    ),
-    beforeContainer: () => <span data-testid="container-renderer-a" />,
-    beforeEditable: () => <span data-testid="renderer-a" />,
-  },
-  schema: {
-    mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
 
@@ -74,15 +57,6 @@ const AtomicParserBPlugin = createBasePlugin({
     mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
-
-const AtomicConfigurationPlugin = createBasePlugin({
-  key: 'atomicConfiguration',
-  options: { variant: 'a' as 'a' | 'b' },
-}).extend(({ getOptions }) => ({
-  plugins: [
-    getOptions().variant === 'a' ? AtomicParserAPlugin : AtomicParserBPlugin,
-  ],
-}));
 
 const ReadOnlyProbe = () => {
   const editor = useEditor();
@@ -239,7 +213,7 @@ describe('PlateContent', () => {
     );
     expect(onValueChange).toHaveBeenCalledWith({
       ...valueContext,
-      value: valueContext.snapshot.children,
+      value: editor.read.value(),
     });
     expect(onSelectionChange).not.toHaveBeenCalled();
 
@@ -263,6 +237,101 @@ describe('PlateContent', () => {
       ...selectionContext,
       selection,
     });
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it('publishes named roots and persisted metadata as one document value', () => {
+    const revision = defineStateField({
+      initial: 0,
+      key: 'revision',
+      persist: valueCodecs.number,
+    });
+    const localState = defineStateField({
+      initial: 0,
+      key: 'local-state',
+    });
+    const editor = createPlateEditor({
+      nodeId: false,
+      plugins: [
+        createBasePlugin({
+          key: 'figure',
+          schema: {
+            element: {
+              contentRoots: {
+                caption: {
+                  content: schema.content.type('p', {
+                    default: { type: 'p' },
+                    min: 1,
+                  }),
+                  ownership: 'exclusive',
+                },
+              },
+              topLevel: true,
+              void: 'block',
+            },
+          },
+        }),
+        createBasePlugin({ key: 'documentState' })
+          .extendExtension(revision)
+          .extendExtension(localState),
+      ],
+      initialValue: {
+        children: [
+          {
+            childRoots: { caption: 'caption:1' },
+            children: [{ text: '' }],
+            type: 'figure',
+          },
+        ],
+        roots: {
+          'caption:1': [{ children: [{ text: 'First caption' }], type: 'p' }],
+        },
+      },
+    });
+    const onValueChange = mock();
+
+    render(
+      <Plate editor={editor} onValueChange={onValueChange}>
+        <span>provider only</span>
+      </Plate>
+    );
+
+    act(() => {
+      editor.update((tx) => {
+        tx.roots.replace('caption:1', [
+          { children: [{ text: 'Updated caption' }], type: 'p' },
+        ]);
+      });
+    });
+
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ value: editor.read.value() })
+    );
+    expect(onValueChange.mock.calls.at(-1)?.[0].value.roots).toEqual({
+      'caption:1': [{ children: [{ text: 'Updated caption' }], type: 'p' }],
+    });
+
+    onValueChange.mockClear();
+    act(() => {
+      editor.update((tx) => {
+        tx.setField(revision, 2);
+      });
+    });
+
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ value: editor.read.value() })
+    );
+    expect(onValueChange.mock.calls.at(-1)?.[0].value.meta).toEqual({
+      revision: { value: 2, version: 1 },
+    });
+
+    onValueChange.mockClear();
+    act(() => {
+      editor.update((tx) => {
+        tx.setField(localState, 1);
+      });
+    });
+
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
@@ -378,11 +447,9 @@ describe('PlateContent', () => {
     });
   });
 
-  it('publishes configured options, codecs, and mounted renderers together', async () => {
+  it('publishes the selected parser, codecs, and mounted renderers together', async () => {
     const editor = createPlateEditor({
-      plugins: [
-        AtomicConfigurationPlugin.configure({ options: { variant: 'b' } }),
-      ],
+      plugins: [AtomicParserBPlugin],
       initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
     const { container, getByTestId, queryByTestId } = render(

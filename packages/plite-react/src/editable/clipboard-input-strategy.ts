@@ -1,5 +1,11 @@
 import type { ClipboardEvent, DragEvent } from 'react';
-import { NodeApi, PathApi, type Range, RangeApi } from '@platejs/plite';
+import {
+  NodeApi,
+  PathApi,
+  type Range,
+  RangeApi,
+  SelectionApi,
+} from '@platejs/plite';
 import {
   HAS_BEFORE_INPUT_SUPPORT,
   IS_WEBKIT,
@@ -369,6 +375,28 @@ export const applyEditableCut = ({
     const selection = editor.read((state) => state.selection());
 
     if (selection) {
+      if (SelectionApi.isNode(selection)) {
+        const command: EditableCommand = {
+          direction: 'backward',
+          kind: 'delete',
+        };
+
+        applyEditableCommand({ command, editor });
+
+        return clipboardResult({
+          command,
+          repair: {
+            focus: true,
+            kind: 'sync-selection',
+            selectionSourceTransition: {
+              preferModelSelection: true,
+              reason: 'model-command',
+              selectionSource: 'model-owned',
+            },
+          },
+        });
+      }
+
       if (RangeApi.isExpanded(selection)) {
         const command: EditableCommand = { kind: 'delete-fragment' };
         const inlineEntry = editorAbove(editor, {
@@ -769,6 +797,11 @@ export const applyEditablePaste = ({
   const canHandlePaste =
     ReactEditor.hasEditableTarget(editor, event.target) &&
     !isClipboardEventHandled({ event, handler: onPaste });
+
+  if (canHandlePaste && SelectionApi.isNode(readRuntimeSelection(editor))) {
+    event.preventDefault();
+    return clipboardResult({ command: null });
+  }
 
   if (partialDOMBackedSelection && event.clipboardData && canHandlePaste) {
     event.preventDefault();

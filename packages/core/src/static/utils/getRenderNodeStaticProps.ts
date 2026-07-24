@@ -1,4 +1,4 @@
-import type { Element, Path, Text } from '@platejs/plite';
+import type { Path } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
 import type React from 'react';
 
@@ -27,17 +27,13 @@ type StaticNodePropsInput = Partial<PliteRenderNodeProps> &
   };
 
 export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
-  attributes: nodeAttributes,
   editor,
-  node,
   path,
   plugin,
   props,
 }: {
   editor: BaseEditor;
   props: TProps;
-  attributes?: AnyObject;
-  node?: Element | Text;
   /** Pre-computed path to avoid expensive node path lookup */
   path?: Path;
   plugin?: AnyBasePlugin;
@@ -58,8 +54,6 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   const { className } = props;
 
   const pluginProps = getPluginNodeProps({
-    attributes: nodeAttributes,
-    node,
     plugin,
     props: contextProps,
   });

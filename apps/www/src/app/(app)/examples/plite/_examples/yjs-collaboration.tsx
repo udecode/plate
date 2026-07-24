@@ -7,13 +7,18 @@ import {
   defineEditorSchema,
   defineExtensionSlot,
   type Descendant,
+  type ElementIn,
   type Editor,
   type EditorCommit,
   type EditorSchemaIdentity,
   type EditorUpdateTransaction,
+  type EditorValueFromExtensions,
   NodeApi,
+  property,
   type Range,
   schema,
+  type TextIn,
+  TextApi,
 } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
@@ -21,6 +26,7 @@ import {
   type RenderElementProps,
   type RenderLeafProps,
   Plite,
+  type ReactEditor,
   usePliteEditor,
 } from '@platejs/plite-react';
 import * as Y from 'yjs';
@@ -28,14 +34,6 @@ import * as Y from 'yjs';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/utils/cn';
 
-import type {
-  CustomEditor,
-  CustomElement,
-  CustomText,
-  CustomValue,
-} from './custom-types.d';
-
-type YjsEditor = CustomEditor<readonly [ReturnType<typeof createYjsExtension>]>;
 type NamedSchemaIdentity = Extract<EditorSchemaIdentity, { kind: 'named' }>;
 
 type PeerId = 'a' | 'b' | 'c' | 'd';
@@ -81,7 +79,7 @@ type ExampleNetwork = {
   registerPeerEditor: (peer: ExamplePeer, editor: YjsEditor) => () => void;
   recordLocalChange: (
     peer: ExamplePeer,
-    commit: EditorCommit<CustomValue>
+    commit: EditorCommit<CollaborationValue>
   ) => void;
   runWithoutLocalHistory: (fn: () => void) => void;
   roomSchemaIdentity: NamedSchemaIdentity;
@@ -139,6 +137,12 @@ const createCollaborationSchema = (version: number) =>
       },
     },
     id: 'yjs-collaboration-example',
+    properties: [
+      schema.textProperty(
+        'bold',
+        property.boolean({ default: false, omitDefault: true })
+      ),
+    ],
     root: {
       content: schema.content.types(['block-quote', 'paragraph'], {
         default: { type: 'paragraph' },
@@ -148,6 +152,16 @@ const createCollaborationSchema = (version: number) =>
     unknown: 'preserve',
     version,
   });
+
+type CollaborationValue = EditorValueFromExtensions<
+  readonly [ReturnType<typeof createCollaborationSchema>]
+>;
+type CollaborationElement = ElementIn<CollaborationValue>;
+type CollaborationText = TextIn<CollaborationValue>;
+type YjsEditor = ReactEditor<
+  CollaborationValue,
+  readonly [ReturnType<typeof createYjsExtension>]
+>;
 
 const syncPeerHistoryDepths = (peer: ExamplePeer) => {
   peer.undoDepth = peer.undoGroups.length;
@@ -175,7 +189,7 @@ const recordPeerUndoGroup = (
   syncPeerHistoryDepths(peer);
 };
 
-const INITIAL_VALUE: CustomValue = [
+const INITIAL_VALUE: CollaborationValue = [
   {
     type: 'paragraph',
     children: [{ text: 'Hello world!' }],
@@ -249,7 +263,7 @@ class ExampleAwareness {
   }
 }
 
-const paragraph = (text: string): CustomElement => ({
+const paragraph = (text: string): CollaborationElement => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -420,15 +434,13 @@ const createExampleNetwork = (): ExampleNetwork => {
   return network;
 };
 
-const getEditorValue = (editor: YjsEditor): CustomValue =>
-  cloneValue(editor.read.children()) as CustomValue;
+const getEditorValue = (editor: YjsEditor): CollaborationValue =>
+  cloneValue([...editor.read.children()]);
 
 type TextEntry = {
   path: number[];
   text: string;
 };
-
-const isCustomText = (node: Descendant): node is CustomText => 'text' in node;
 
 const hasDescendantChildren = (
   node: Descendant
@@ -439,7 +451,7 @@ const findFirstTextEntryInNode = (
   node: Descendant,
   path: number[]
 ): TextEntry | null => {
-  if (isCustomText(node)) {
+  if (TextApi.isText(node)) {
     return { path, text: node.text };
   }
 
@@ -468,7 +480,7 @@ const findLastTextEntryInNode = (
   node: Descendant,
   path: number[]
 ): TextEntry | null => {
-  if (isCustomText(node)) {
+  if (TextApi.isText(node)) {
     return { path, text: node.text };
   }
 
@@ -534,7 +546,7 @@ const getTextEntryAtPath = (
       return null;
     }
 
-    if (isCustomText(current)) {
+    if (TextApi.isText(current)) {
       return depth === path.length - 1 ? { path, text: current.text } : null;
     }
 
@@ -545,7 +557,9 @@ const getTextEntryAtPath = (
     children = current.children;
   }
 
-  return current && isCustomText(current) ? { path, text: current.text } : null;
+  return current && TextApi.isText(current)
+    ? { path, text: current.text }
+    : null;
 };
 
 const getFirstBlockTextEntry = (
@@ -579,7 +593,7 @@ const isSamePath = (left: readonly number[], right: readonly number[]) =>
   left.length === right.length &&
   left.every((part, index) => part === right[index]);
 
-const isSelectionAtTextEnd = (value: CustomValue, selection: Range) => {
+const isSelectionAtTextEnd = (value: CollaborationValue, selection: Range) => {
   if (!isCollapsedSelection(selection)) {
     return false;
   }
@@ -589,7 +603,10 @@ const isSelectionAtTextEnd = (value: CustomValue, selection: Range) => {
   return entry ? selection.anchor.offset === entry.text.length : false;
 };
 
-const isSelectionAtDocumentEnd = (value: CustomValue, selection: Range) => {
+const isSelectionAtDocumentEnd = (
+  value: CollaborationValue,
+  selection: Range
+) => {
   if (!isCollapsedSelection(selection)) {
     return false;
   }
@@ -604,7 +621,7 @@ const isSelectionAtDocumentEnd = (value: CustomValue, selection: Range) => {
 };
 
 const normalizeHistorySelection = (
-  value: CustomValue,
+  value: CollaborationValue,
   selection: Range | null,
   options: {
     preferDocumentEnd?: boolean | null;
@@ -672,7 +689,7 @@ const syncPeerSelectionAfterHistory = (
   network: ExampleNetwork,
   peer: ExamplePeer,
   editor: YjsEditor,
-  previousValue: CustomValue,
+  previousValue: CollaborationValue,
   previousSelection: Range | null
 ) => {
   const value = getEditorValue(editor);
@@ -1344,7 +1361,7 @@ const Element = ({
   attributes,
   children,
   element,
-}: RenderElementProps<CustomElement>) => {
+}: RenderElementProps<CollaborationElement>) => {
   switch (element.type) {
     case 'block-quote':
       return (
@@ -1360,7 +1377,11 @@ const Element = ({
   }
 };
 
-const Leaf = ({ attributes, children, leaf }: RenderLeafProps<CustomText>) => {
+const Leaf = ({
+  attributes,
+  children,
+  leaf,
+}: RenderLeafProps<CollaborationText>) => {
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }

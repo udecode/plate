@@ -1,5 +1,3 @@
-import type { Value } from 'platejs';
-
 import { aiValue } from './ai-value';
 import { alignValue } from './align-value';
 import { autoformatValue } from './autoformat-value';
@@ -90,12 +88,4 @@ const values = {
   // upload: uploadValue,
 };
 
-export const DEMO_VALUES = Object.entries(values).reduce(
-  (acc, [key, value]) => {
-    const demoKey = key.replace('Value', '');
-    acc[demoKey] = value;
-
-    return acc;
-  },
-  {} as Record<string, Value>
-);
+export const DEMO_VALUES = values;

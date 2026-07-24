@@ -70,7 +70,14 @@ Copy:
 
 - `useEditorPlugin(plugin)` when the whole file is plugin-centric
 - `editor.plugin(plugin).api` / `editor.plugin(plugin).update` when that is
-  simpler
+  simpler and the descriptor is required
+- `editor.plugin(plugin).installed` before any other portal access when the
+  descriptor is optional
+
+Registry UI is generic by definition, even when its current host has a complete
+inferred kit. Do not copy a host editor type or root
+`editor.api.<pluginKey>` access into it. Root plugin APIs belong to host-owned
+code; registry code gets inference from the descriptor portal.
 
 ## Registry wiring reminders
 

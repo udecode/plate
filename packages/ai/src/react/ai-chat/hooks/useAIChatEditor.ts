@@ -20,16 +20,16 @@ export const useAIChatEditor = (
 ) => {
   const { setOption } = useEditorPlugin(AIChatPlugin);
 
-  const children = useMemo(
+  const document = useMemo(
     () => editor.api.markdown.deserialize(content),
     [content, editor]
   );
   const value = useEditorRuntimeState(editor, (state) => state.children());
 
   useEffect(() => {
-    editor.update({ history: 'skip' }).value.replace({ children });
+    editor.update({ history: 'skip' }).value.replace(document);
     setOption('aiEditor', editor);
-  }, [children, editor, setOption]);
+  }, [document, editor, setOption]);
 
   return value;
 };

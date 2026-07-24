@@ -6,7 +6,6 @@ import {
   createEditor,
   defineEditorExtension,
   defineEditorSchema,
-  definePropertyPolicy,
   DocumentChange,
   ElementApi,
   property,
@@ -1487,12 +1486,6 @@ describe('editor schema', () => {
   });
 
   it('validates schema-backed property kinds and custom predicates', () => {
-    const Tone = definePropertyPolicy<string>({
-      id: 'callout-tone',
-      validate: (value): value is string =>
-        value === 'info' || value === 'warn',
-      version: 1,
-    });
     const editor = createEditor({
       extensions: [
         defineContractSchema('property-validation', {
@@ -1500,7 +1493,11 @@ describe('editor schema', () => {
             content: schema.content.text(),
             properties: {
               count: property.number(),
-              tone: property.string({ policy: Tone }),
+              tone: property.string({
+                validate: (value): value is string =>
+                  value === 'info' || value === 'warn',
+                validationVersion: 1,
+              }),
             },
           } as const,
         }),
@@ -1527,7 +1524,7 @@ describe('editor schema', () => {
             children: [{ text: '' }],
           },
         ]),
-      /tone.*fails property policy/i
+      /tone.*fails custom property validation/i
     );
   });
 

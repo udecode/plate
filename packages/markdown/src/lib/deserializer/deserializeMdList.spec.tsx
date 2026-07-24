@@ -22,7 +22,7 @@ Break between lists.
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [{ text: 'First list item' }],
         indent: 1,
@@ -50,7 +50,7 @@ Break between lists.
       },
     ]);
 
-    editor.update((tx) => tx.value.replace({ children: value }));
+    editor.update((tx) => tx.value.replace(value));
 
     expect(editor.read.value().children).toMatchObject([
       {
@@ -291,7 +291,7 @@ Break between lists.
       },
     ];
 
-    expect(deserializeMd(editor, input)).toEqual(output);
+    expect(deserializeMd(editor, input).children).toEqual(output);
   });
 
   it('deserializes an empty list', () => {
@@ -303,7 +303,7 @@ Break between lists.
     - 
       `;
 
-    expect(deserializeMd(editor, input)).toMatchSnapshot();
+    expect(deserializeMd(editor, input).children).toMatchSnapshot();
   });
 
   it('deserializes a todo list', () => {
@@ -311,6 +311,6 @@ Break between lists.
     - [ ] todo list
     - [x] todo list
     `;
-    expect(deserializeMd(editor, input)).toMatchSnapshot();
+    expect(deserializeMd(editor, input).children).toMatchSnapshot();
   });
 });

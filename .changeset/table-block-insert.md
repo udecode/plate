@@ -3,7 +3,9 @@
 ---
 
 Consolidate table factories, queries, selectors, and updates into the scoped
-`TablePlugin` portal, and register table structure in the compiled schema.
+`TablePlugin` portal, and register validated table structure and properties in
+the compiled schema, including versioned validation for cell attributes,
+borders, and column sizes.
 
 **Migration:** Replace direct table helper imports and root table APIs with
 `editor.plugin(TablePlugin).api.*`. Run mutations through the same portal:
@@ -20,3 +22,6 @@ table.update.merge();
 
 Remove `nextBlock` from insertion options; use `{ at, select }` for exact
 placement and selection.
+
+Install table row, cell, and header descriptors through required plugin
+dependencies.

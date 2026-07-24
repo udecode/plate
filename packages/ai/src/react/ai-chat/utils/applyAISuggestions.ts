@@ -245,7 +245,7 @@ const getDiffNodes = (
   }
 
   const aiNodes = withProps(
-    editor.api.markdown.deserialize(aiContent),
+    editor.api.markdown.deserialize(aiContent).children,
     chatNodes
   );
 

@@ -5,10 +5,11 @@ import * as React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { importDocx } from '@platejs/docx-io';
+import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowUpToLineIcon } from 'lucide-react';
 import { HtmlPlugin } from 'platejs';
+import { useEditorPlugin } from 'platejs/react';
 import { getEditorDOMFromHtmlString } from 'platejs/static';
-import { useEditor } from 'platejs/react';
 import { useFilePicker } from 'use-file-picker';
 
 import {
@@ -20,12 +21,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { ToolbarButton } from './toolbar';
-import type { MyEditor } from '@/registry/components/editor/editor-kit';
 
 type ImportType = 'html' | 'markdown';
 
 export function ImportToolbarButton(props: DropdownMenuProps) {
-  const editor = useEditor<MyEditor>();
+  const { editor } = useEditorPlugin(MarkdownPlugin);
   const [open, setOpen] = React.useState(false);
   const markdownApi = editor.api.markdown;
 
@@ -40,7 +40,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
     }
 
     if (type === 'markdown') {
-      return markdownApi.deserialize(text);
+      return markdownApi.deserialize(text).children;
     }
 
     return [];

@@ -23,12 +23,12 @@ export const registryBlocks: Registry['items'] = [
     name: 'editor-ai',
     registryDependencies: [
       '@plate/copilot-kit',
+      '@plate/editor',
       '@plate/media-uploadthing-api',
       '@plate/plate-types',
       '@plate/settings-dialog',
 
       // editor-kit
-      '@plate/editor-base-kit',
       '@plate/ai-kit',
       '@plate/align-kit',
       '@plate/autoformat-kit',
@@ -49,6 +49,7 @@ export const registryBlocks: Registry['items'] = [
       '@plate/fixed-toolbar-kit',
       '@plate/floating-toolbar-kit',
       '@plate/font-kit',
+      '@plate/footnote-kit',
       '@plate/line-height-kit',
       '@plate/link-kit',
       '@plate/list-kit',

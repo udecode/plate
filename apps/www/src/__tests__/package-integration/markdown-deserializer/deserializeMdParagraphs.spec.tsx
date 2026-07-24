@@ -1,6 +1,14 @@
 /** @jsx jsxt */
 
-import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
+import {
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
+} from '@platejs/basic-nodes/react';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { jsxt } from '@platejs/test-utils';
@@ -25,7 +33,13 @@ const createTestEditor = (plugins: any[] = []) =>
     plugins: [
       markdownPlugin,
       BaseSuggestionPlugin,
-      BasicMarksPlugin,
+      BoldPlugin,
+      CodePlugin,
+      ItalicPlugin,
+      StrikethroughPlugin,
+      SubscriptPlugin,
+      SuperscriptPlugin,
+      UnderlinePlugin,
       ...plugins,
     ],
   });
@@ -47,7 +61,7 @@ Paragaph with two new Lines\\
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual(output);
+    expect(deserializeMd(editor, input)).toEqual({ children: output });
   });
 
   it('deserialize paragraph with two leading linebreaks', () => {
@@ -66,7 +80,7 @@ Paragaph with two new Lines\\
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual(output);
+    expect(deserializeMd(editor, input)).toEqual({ children: output });
   });
 
   it('deserialize paragraph with leading linebreaks in the middle', () => {
@@ -86,7 +100,7 @@ followed by text`;
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual(output);
+    expect(deserializeMd(editor, input)).toEqual({ children: output });
   });
 
   it('deserialize paragraph with leading linebreaks in the middle', () => {
@@ -106,7 +120,7 @@ followed by text`;
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual(output);
+    expect(deserializeMd(editor, input)).toEqual({ children: output });
   });
 
   it('deserialize leading empty paragraphts as <br />', () => {
@@ -129,7 +143,7 @@ Paragaph followed by two empty paragraphts
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual(output);
+    expect(deserializeMd(editor, input)).toEqual({ children: output });
   });
 
   it('collapse leading linebreak - collapsing break', () => {
@@ -146,6 +160,6 @@ Paragaph followed by two empty paragraphts
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual(output);
+    expect(deserializeMd(editor, input)).toEqual({ children: output });
   });
 });

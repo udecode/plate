@@ -2,6 +2,143 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-24-compose-markdown-footnotes",
+      "href": "/registry/changelog/2026-07-24-compose-markdown-footnotes.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Compose runtime-neutral Markdown, editor-owned footnotes, and Tabbable shortcuts",
+      "change": {
+        "type": "source",
+        "date": "2026-07-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "markdown-kit",
+        "editor-kit",
+        "editor-ai",
+        "editor-base-kit",
+        "align-kit",
+        "basic-blocks-kit",
+        "basic-marks-kit",
+        "callout-kit",
+        "code-block-kit",
+        "code-drawing-kit",
+        "column-kit",
+        "comment-kit",
+        "date-kit",
+        "font-kit",
+        "line-height-kit",
+        "link-kit",
+        "list-kit",
+        "math-kit",
+        "media-kit",
+        "mention-kit",
+        "suggestion-kit",
+        "table-kit",
+        "toc-kit",
+        "toggle-kit",
+        "tabbable-kit"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-07-24-decouple-suggestion-trailing-block",
+      "href": "/registry/changelog/2026-07-24-decouple-suggestion-trailing-block.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Keep suggestion and trailing-block capabilities independently composable",
+      "change": {
+        "type": "source",
+        "date": "2026-07-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["suggestion-kit", "editor-kit", "editor-ai"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-07-24-scope-block-draggable-list-api",
+      "href": "/registry/changelog/2026-07-24-scope-block-draggable-list-api.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Use the installed List plugin for list-aware block dragging",
+      "change": {
+        "type": "source",
+        "date": "2026-07-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-draggable"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-07-23-explicit-editor-kit-composition",
+      "href": "/registry/changelog/2026-07-23-explicit-editor-kit-composition.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Compose editor variants with explicit plugin arrays",
+      "change": {
+        "type": "source",
+        "date": "2026-07-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "editor-kit",
+        "fixed-toolbar-kit",
+        "floating-toolbar-kit",
+        "list-classic-kit",
+        "list-classic-demo",
+        "playground-demo",
+        "plate-to-html",
+        "single-block-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-07-23-rich-media-caption-children",
+      "href": "/registry/changelog/2026-07-23-rich-media-caption-children.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Render media captions from direct inline children",
+      "change": {
+        "type": "source",
+        "date": "2026-07-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "caption",
+        "media-base-kit",
+        "media-kit",
+        "media-image-node",
+        "media-video-node",
+        "media-audio-node",
+        "media-file-node",
+        "media-embed-node",
+        "media-placeholder-node",
+        "media-toolbar-button",
+        "plate-to-html"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-23-scoped-media-inserts",
       "href": "/registry/changelog/2026-07-23-scoped-media-inserts.json",
       "status": "draft",

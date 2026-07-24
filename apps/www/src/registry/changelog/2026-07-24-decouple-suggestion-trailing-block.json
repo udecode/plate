@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-24-decouple-suggestion-trailing-block",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-24-decouple-suggestion-trailing-block.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Keep suggestion and trailing-block capabilities independently composable",
+  "targets": [
+    {
+      "name": "suggestion-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/suggestion-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-kit",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/editor-kit.tsx",
+        "apps/www/src/registry/components/editor/editor-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-ai",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-ai."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-24-suggestion-keep-trailing-block-capabilities-0a30ceb4",
+      "kind": "wiring",
+      "summary": "Keep suggestion and trailing-block capabilities independently composable",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["suggestion-kit", "editor-kit", "editor-ai"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-decouple-suggestion-trailing-block",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

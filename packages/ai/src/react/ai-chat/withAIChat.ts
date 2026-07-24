@@ -1,25 +1,23 @@
-import type { BaseEditor } from '@platejs/core';
+import { type BaseEditor, getEditorPlugin } from '@platejs/core';
 import type { PlateEditorExtension } from '@platejs/core/react';
 
 import { defineEffect, editorCommands, ElementApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { removeAIMarks } from '../../lib/transforms/removeAIMarks';
-import type { AIChatPluginOptions } from './AIChatPlugin';
+import type { AIChatPluginConfig, AIChatPluginOptions } from './AIChatPlugin';
 
 const aiChatShowEffect = defineEffect({
   key: 'ai.chat.show',
 });
 
 type AIChatExtensionContext = {
-  api: { show: () => void };
   editor: BaseEditor;
   getOptions: () => AIChatPluginOptions;
   type: string;
 };
 
 export const withAIChat = ({
-  api,
   editor,
   getOptions,
   type,
@@ -95,7 +93,9 @@ export const withAIChat = ({
     effects: [aiChatShowEffect],
     onCommit({ commit }) {
       if (commit.effects.some((effect) => effect.type === aiChatShowEffect)) {
-        api.show();
+        getEditorPlugin<AIChatPluginConfig>(editor, {
+          key: KEYS.aiChat,
+        }).api.show();
       }
     },
   };

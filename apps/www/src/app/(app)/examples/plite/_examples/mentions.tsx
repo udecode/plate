@@ -6,7 +6,16 @@ import {
   useRef,
   useState,
 } from 'react';
-import { defineEditorExtension, type Range, RangeApi } from '@platejs/plite';
+import {
+  defineEditorSchema,
+  property,
+  type Range,
+  RangeApi,
+  schema,
+  type SchemaElementFor,
+  type SchemaText,
+  TextApi,
+} from '@platejs/plite';
 import {
   Editable,
   type RenderElementProps,
@@ -19,14 +28,50 @@ import {
 } from '@platejs/plite-react';
 import { cn } from '@/utils/cn';
 import { Portal } from './components';
-import type {
-  CustomEditor,
-  CustomElement,
-  CustomText,
-  CustomValue,
-  MentionElement,
-  ParagraphElement,
-} from './custom-types.d';
+
+const MentionSchema = defineEditorSchema({
+  elements: {
+    mention: {
+      properties: { character: property.string() },
+      void: 'markable-inline',
+    },
+    paragraph: {
+      content: schema.content.any(
+        [schema.content.text(), schema.content.type('mention')],
+        { default: 'text', min: 1 }
+      ),
+    },
+  },
+  properties: [
+    schema.textProperty(
+      'bold',
+      property.boolean({ default: false, omitDefault: true })
+    ),
+    schema.textProperty(
+      'code',
+      property.boolean({ default: false, omitDefault: true })
+    ),
+    schema.textProperty(
+      'italic',
+      property.boolean({ default: false, omitDefault: true })
+    ),
+    schema.textProperty(
+      'underline',
+      property.boolean({ default: false, omitDefault: true })
+    ),
+  ],
+  root: {
+    content: schema.content.type('paragraph', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+  },
+  unknown: 'reject',
+});
+
+type MentionElement = SchemaElementFor<typeof MentionSchema, 'mention'>;
+type MentionValueElement = SchemaElementFor<typeof MentionSchema>;
+type ParagraphElement = SchemaElementFor<typeof MentionSchema, 'paragraph'>;
 const mentionMenuItemVariants = cva('plite-mentions-menu-item', {
   variants: {
     active: {
@@ -61,59 +106,74 @@ const MentionExample = () => {
   const [target, setTarget] = useState<Range | null>(null);
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
-  const initialValue: CustomValue = [
-    {
-      type: 'paragraph',
-      children: [
-        {
-          text: 'This example shows how you might implement a simple ',
-        },
-        {
-          text: '@-mentions',
-          bold: true,
-        },
-        {
-          text: ' feature that lets users autocomplete mentioning a user by their username. Which, in this case means Star Wars characters. The ',
-        },
-        {
-          text: 'mentions',
-          bold: true,
-        },
-        {
-          text: ' are rendered as ',
-        },
-        {
-          text: 'void inline elements',
-          code: true,
-        },
-        {
-          text: ' inside the document.',
-        },
-      ],
-    },
-    {
-      type: 'paragraph',
-      children: [
-        { text: 'Try mentioning characters, like ' },
-        {
-          type: 'mention',
-          character: 'R2-D2',
-          children: [{ text: '', bold: true }],
-        },
-        { text: ' or ' },
-        {
-          type: 'mention',
-          character: 'Mace Windu',
-          children: [{ text: '' }],
-        },
-        { text: '!' },
-      ],
-    },
-  ];
   const editor = usePliteEditor({
-    extensions: [mention()],
-    initialValue,
+    extensions: [MentionSchema],
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [
+          {
+            text: 'This example shows how you might implement a simple ',
+          },
+          {
+            text: '@-mentions',
+            bold: true,
+          },
+          {
+            text: ' feature that lets users autocomplete mentioning a user by their username. Which, in this case means Star Wars characters. The ',
+          },
+          {
+            text: 'mentions',
+            bold: true,
+          },
+          {
+            text: ' are rendered as ',
+          },
+          {
+            text: 'void inline elements',
+            code: true,
+          },
+          {
+            text: ' inside the document.',
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'Try mentioning characters, like ' },
+          {
+            type: 'mention',
+            character: 'R2-D2',
+            children: [{ text: '', bold: true }],
+          },
+          { text: ' or ' },
+          {
+            type: 'mention',
+            character: 'Mace Windu',
+            children: [{ text: '' }],
+          },
+          { text: '!' },
+        ],
+      },
+    ],
   });
+  const insertMention = useCallback(
+    (character: string, range?: Range | null) => {
+      editor.update((tx) => {
+        if (range) {
+          tx.selection.set(range);
+        }
+        tx.nodes.insert({
+          type: 'mention',
+          character,
+          children: [{ text: '' }],
+        });
+        tx.selection.move();
+      });
+    },
+    [editor]
+  );
 
   const chars = CHARACTERS.filter((c) =>
     c.toLowerCase().startsWith(search.toLowerCase())
@@ -135,7 +195,7 @@ const MentionExample = () => {
           }
           case 'Tab':
           case 'Enter':
-            insertMention(editor, chars[index], target);
+            insertMention(chars[index], target);
             setTarget(null);
             return true;
           case 'Escape':
@@ -144,7 +204,7 @@ const MentionExample = () => {
         }
       }
     },
-    [chars, editor, index, target]
+    [chars, index, insertMention, target]
   );
 
   useEffect(() => {
@@ -229,7 +289,7 @@ const MentionExample = () => {
                 className={cn(mentionMenuItemVariants({ active: i === index }))}
                 key={char}
                 onClick={() => {
-                  insertMention(editor, char, target);
+                  insertMention(char, target);
                   setTarget(null);
                 }}
                 type="button"
@@ -244,13 +304,7 @@ const MentionExample = () => {
   );
 };
 
-const mention = () =>
-  defineEditorExtension<CustomEditor>()({
-    name: 'mention',
-    schema: { elements: { mention: { void: 'markable-inline' } } },
-  });
-
-const renderElement = (props: RenderElementProps<CustomElement>) => {
+const renderElement = (props: RenderElementProps<MentionValueElement>) => {
   switch (props.element.type) {
     case 'paragraph':
       return <Paragraph {...(props as RenderElementProps<ParagraphElement>)} />;
@@ -259,7 +313,7 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
   }
 };
 
-const renderVoid = ({ element }: RenderVoidProps<CustomElement>) => {
+const renderVoid = ({ element }: RenderVoidProps<MentionValueElement>) => {
   switch (element.type) {
     case 'mention':
       return <Mention element={element as MentionElement} />;
@@ -268,27 +322,13 @@ const renderVoid = ({ element }: RenderVoidProps<CustomElement>) => {
   }
 };
 
-const insertMention = (
-  editor: CustomEditor,
-  character: string,
-  target?: Range | null
-) => {
-  editor.update((tx) => {
-    if (target) {
-      tx.selection.set(target);
-    }
-    tx.nodes.insert({
-      type: 'mention',
-      character,
-      children: [{ text: '' }],
-    });
-    tx.selection.move();
-  });
-};
-
 // Borrow mark renderers from the Rich Text example.
 // In a real project you would get these from the same mark/rendering module.
-const Leaf = ({ attributes, children, leaf }: RenderLeafProps<CustomText>) => {
+const Leaf = ({
+  attributes,
+  children,
+  leaf,
+}: RenderLeafProps<SchemaText<typeof MentionSchema>>) => {
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -313,19 +353,21 @@ const Paragraph = ({
 const Mention = ({ element }: RenderVoidProps<MentionElement>) => {
   const focused = useEditorFocused();
   const selected = useElementSelected();
+  const text = TextApi.isText(element.children[0]) ? element.children[0] : null;
+  const character = element.character ?? '';
 
   return (
     <span
       className={cn(
         mentionVariants({
-          bold: Boolean(element.children[0].bold),
-          italic: Boolean(element.children[0].italic),
+          bold: Boolean(text?.bold),
+          italic: Boolean(text?.italic),
           selected: selected && focused,
         })
       )}
-      data-cy={`mention-${element.character.replace(' ', '-')}`}
+      data-cy={`mention-${character.replace(' ', '-')}`}
     >
-      @{element.character}
+      @{character}
     </span>
   );
 };

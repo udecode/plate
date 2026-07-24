@@ -113,6 +113,9 @@ export const getProjectedViewSelectionSlice = (
     const last = slices.at(-1);
 
     if (!first || !last) return null;
+    const roots = Object.fromEntries(
+      slices.flatMap((slice) => Object.entries(slice.roots ?? {}))
+    );
 
     // Projected segments meet at closed root boundaries. Only the two outer
     // document edges carry slice openness into the clipboard envelope.
@@ -120,6 +123,7 @@ export const getProjectedViewSelectionSlice = (
       content: slices.flatMap((slice) => slice.content),
       openEnd: last.openEnd,
       openStart: first.openStart,
+      ...(Object.keys(roots).length > 0 ? { roots } : {}),
     });
   });
 };

@@ -345,9 +345,6 @@ importers:
       '@platejs/callout':
         specifier: workspace:^
         version: link:../../packages/callout
-      '@platejs/caption':
-        specifier: workspace:^
-        version: link:../../packages/caption
       '@platejs/code-block':
         specifier: workspace:^
         version: link:../../packages/code-block
@@ -994,34 +991,6 @@ importers:
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/caption:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/react-utils':
-        specifier: workspace:^
-        version: link:../udecode/react-utils
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
-      react-textarea-autosize:
-        specifier: ^8.5.9
-        version: 8.5.9(@types/react@19.2.7)(react@19.2.4)
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*

@@ -23,12 +23,6 @@ const output = (
 ) as TestEditor;
 
 describe('SingleBlockPlugin', () => {
-  it('disables the trailing block plugin while enabled', () => {
-    expect(SingleBlockPlugin.override.enabled).toEqual({
-      trailingBlock: false,
-    });
-  });
-
   it('merge all blocks into the first block with soft breaks', () => {
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],

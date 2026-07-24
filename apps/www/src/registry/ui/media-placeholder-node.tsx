@@ -5,7 +5,11 @@ import * as React from 'react';
 import type { TPlaceholderElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
-import { PlaceholderPlugin, PlaceholderProvider } from '@platejs/media/react';
+import {
+  PlaceholderPlugin,
+  PlaceholderProvider,
+  type PlaceholderTransforms,
+} from '@platejs/media/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { KEYS } from 'platejs';
 import { PlateElement, useEditorPlugin, usePath, withHOC } from 'platejs/react';
@@ -91,22 +95,23 @@ export const PlaceholderElement = withHOC(
 
       if (!path) return;
 
-      editor.update({ history: 'skip' }, (tx) => {
-        tx.nodes.remove({ at: path });
-
-        const node = {
-          children: [{ text: '' }],
-          initialHeight: imageRef.current?.height,
-          initialWidth: imageRef.current?.width,
-          isUpload: true,
-          name: element.mediaType === KEYS.file ? uploadedFile.name : '',
-          placeholderId: element.id as string,
-          type: element.mediaType!,
-          url: uploadedFile.url,
-        };
-
-        tx.nodes.insert(node, { at: path });
-      });
+      editor.update<{ placeholder: PlaceholderTransforms }>(
+        { history: 'skip' },
+        (tx) => {
+          tx.placeholder.replaceMedia(
+            {
+              initialHeight: imageRef.current?.height,
+              initialWidth: imageRef.current?.width,
+              isUpload: true,
+              name: element.mediaType === KEYS.file ? uploadedFile.name : '',
+              placeholderId: element.id as string,
+              type: element.mediaType!,
+              url: uploadedFile.url,
+            },
+            { at: path }
+          );
+        }
+      );
 
       api.removeUploadingFile(element.id as string);
       // eslint-disable-next-line react-hooks/exhaustive-deps

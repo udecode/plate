@@ -16,7 +16,7 @@ const BaseCommentParserPlugin = createBasePlugin({
   parser: {
     deserialize: () => [{ text: 'comment parser' }],
     format: 'text/plain',
-    schema: [{ kind: 'schema' }],
+    owns: [{ kind: 'schema' }],
   },
 });
 
@@ -215,7 +215,7 @@ describe('when pasting text into a code block', () => {
       parser: {
         deserialize,
         format: 'text/plain',
-        schema: [{ kind: 'schema' }],
+        owns: [{ kind: 'schema' }],
       },
     });
     const editor = createBaseEditor({

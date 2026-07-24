@@ -47,8 +47,7 @@ export const pluginRenderText = (
       const canUsePlainText =
         !node &&
         getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0 &&
-        !plugin.render.nodeProps &&
-        !plugin.host.dangerouslyAllowAttributes?.length;
+        !plugin.render.nodeProps;
 
       if (canUsePlainText) {
         const Tag = (plugin.render?.as ??
@@ -64,7 +63,6 @@ export const pluginRenderText = (
       const Text = node ?? PlateText;
 
       const ctxProps = getRenderNodeProps({
-        attributes: nodeProps.attributes,
         editor,
         plugin,
         props: nodeProps as any,

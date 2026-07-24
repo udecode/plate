@@ -5,6 +5,7 @@ import {
   type Range,
   RangeApi,
   type RootKey,
+  SelectionApi,
 } from '@platejs/plite';
 import {
   getSelection,
@@ -746,6 +747,17 @@ export const applyEditableKeyDown = ({
     const selection = readRuntimeSelection(editor);
     const selectionRoot = getSelectionRoot(selection);
     const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
+
+    if (
+      SelectionApi.isNode(selection) &&
+      (isPlainTextKeyboardInput(nativeEvent) ||
+        Hotkeys.isOpenLine(nativeEvent) ||
+        Hotkeys.isSoftBreak(nativeEvent) ||
+        Hotkeys.isSplitBlock(nativeEvent))
+    ) {
+      event.preventDefault();
+      return keyDownHandled();
+    }
 
     if (
       selectionRoot &&

@@ -40,7 +40,6 @@ const plugins = [
           ? {}
           : { target: '_blank' },
     },
-    host: { dangerouslyAllowAttributes: ['target'] },
   }),
   createBasePlugin({
     key: 'img',
@@ -51,6 +50,7 @@ const plugins = [
         inline: true,
         properties: {
           attributes: property.json(),
+          secret: property.string(),
           url: property.string(),
         },
       },
@@ -107,8 +107,12 @@ describe('static HTML plugin node props', () => {
         {
           children: [
             {
-              attributes: { alt: 'Placeholder' },
+              attributes: {
+                alt: 'Placeholder',
+                onerror: 'window.__plateXss = true',
+              },
               children: [{ text: '' }],
+              secret: 'private',
               type: 'img',
               url: 'https://via.placeholder.com/300',
             },
@@ -121,10 +125,11 @@ describe('static HTML plugin node props', () => {
     const htmlString = await renderStaticHtml(staticEditor, {
       preserveClassNames: [],
       stripClassNames: true,
-      stripDataAttributes: true,
     });
 
     expect(htmlString).toContain(`alt="Placeholder"`);
     expect(htmlString).toContain(`width="300"`);
+    expect(htmlString).not.toContain('data-plite-secret');
+    expect(htmlString).not.toContain('onerror');
   });
 });

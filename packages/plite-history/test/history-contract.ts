@@ -14,7 +14,9 @@ import {
   createEditor,
   createEditorRuntime,
   createEditorView,
+  defineEditorSchema,
   DocumentChange,
+  schema,
   SelectionApi,
 } from '@platejs/plite';
 import {
@@ -50,6 +52,35 @@ const paragraph = (
 const container = (...children: Descendant[]): Descendant => ({
   children,
   type: 'container',
+});
+
+const ContentRootHistorySchema = defineEditorSchema({
+  elements: {
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+    portal: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      contentRoots: {
+        body: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+    },
+  },
+  id: 'content-root-history',
+  root: {
+    content: schema.content.types(['paragraph', 'portal'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+  },
+  unknown: 'reject',
+  version: 1,
 });
 
 const historyTestEditor = () => createEditor({ extensions: [history()] });
@@ -107,6 +138,11 @@ const historyBatch = (): Batch => ({
   effects: [],
   selectionAfter: null,
   selectionBefore: null,
+});
+
+const TEST_SCHEMA_IDENTITY = Object.freeze({
+  fingerprint: 'test-schema',
+  kind: 'derived' as const,
 });
 
 const structuralDocumentChange = (
@@ -181,7 +217,7 @@ describe('plite-history contract', () => {
       History.isHistory({
         redos: [],
         revision: 0,
-        schema: null,
+        schema: TEST_SCHEMA_IDENTITY,
         undos: [],
       }),
       true
@@ -190,10 +226,22 @@ describe('plite-history contract', () => {
       History.isHistory({
         redos: [],
         revision: 1,
-        schema: null,
+        schema: TEST_SCHEMA_IDENTITY,
         undos: [{ ...batch, change: emptyChange }],
       }),
       true
+    );
+  });
+
+  it('rejects in-memory history without a schema identity', () => {
+    assert.equal(
+      History.isHistory({
+        redos: [],
+        revision: 0,
+        schema: null,
+        undos: [],
+      }),
+      false
     );
   });
 
@@ -206,7 +254,7 @@ describe('plite-history contract', () => {
         History.isHistory({
           redos: stack === 'redos' ? [valid, invalid] : [],
           revision: 0,
-          schema: null,
+          schema: TEST_SCHEMA_IDENTITY,
           undos: stack === 'undos' ? [valid, invalid] : [],
         }),
         false
@@ -223,7 +271,7 @@ describe('plite-history contract', () => {
       History.isHistory({
         redos: [],
         revision: 1,
-        schema: null,
+        schema: TEST_SCHEMA_IDENTITY,
         undos: [{ ...batch, change }],
       }),
       true
@@ -253,7 +301,7 @@ describe('plite-history contract', () => {
       History.isHistory({
         redos: [],
         revision: 1,
-        schema: null,
+        schema: TEST_SCHEMA_IDENTITY,
         undos: [{ ...batch, change }],
       }),
       false
@@ -505,14 +553,13 @@ describe('plite-history contract', () => {
   });
 
   it('does not merge adjacent text history batches across roots', () => {
-    const editor = createEditor({
+    const editor = createEditorRuntime({
       extensions: [history()],
       initialValue: {
         children: [paragraph('x')],
         roots: { header: [paragraph('')] },
       },
     });
-
     write(editor, (tx) => {
       tx.text.insert('a', {
         at: { offset: 0, path: [0, 0], root: 'header' },
@@ -766,6 +813,87 @@ describe('plite-history contract', () => {
         roots: { [childRoot]: [paragraph('child')] },
       }
     );
+  });
+
+  it('undoes and redoes exclusive owner duplication and removal atomically', () => {
+    const owner = {
+      childRoots: { body: 'portal:1' },
+      children: [{ text: '' }],
+      type: 'portal',
+    } as Descendant;
+    const editor = createEditorRuntime({
+      extensions: [ContentRootHistorySchema, history()],
+      initialSelection: {
+        anchor: { offset: 3, path: [0, 0], root: 'portal:1' },
+        focus: { offset: 3, path: [0, 0], root: 'portal:1' },
+        kind: 'text',
+      },
+      initialValue: {
+        children: [owner, paragraph('body')],
+        roots: { 'portal:1': [paragraph('caption')] },
+      },
+    });
+    const rootEditor = createEditorView(editor, { root: 'portal:1' });
+
+    write(editor, (tx) => {
+      const entry = tx.nodes.get<Element>([0]);
+
+      assert(entry);
+      tx.nodes.duplicate([entry]);
+    });
+
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      {
+        children: [
+          owner,
+          {
+            ...owner,
+            childRoots: { body: 'portal:1:copy' },
+          },
+          paragraph('body'),
+        ],
+        roots: {
+          'portal:1': [paragraph('caption')],
+          'portal:1:copy': [paragraph('caption')],
+        },
+      }
+    );
+
+    undo(rootEditor);
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      {
+        children: [owner, paragraph('body')],
+        roots: { 'portal:1': [paragraph('caption')] },
+      }
+    );
+
+    redo(rootEditor);
+    assert.deepEqual(editor.read.root('portal:1:copy'), [paragraph('caption')]);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 3, path: [0, 0], root: 'portal:1' },
+      focus: { offset: 3, path: [0, 0], root: 'portal:1' },
+      kind: 'text',
+    });
+
+    write(editor, (tx) => tx.nodes.remove({ at: [0] }));
+
+    assert.deepEqual(editor.read.root('portal:1'), []);
+    assert.equal(editor.read.selection(), null);
+
+    undo(rootEditor);
+
+    assert.deepEqual(editor.read.root('portal:1'), [paragraph('caption')]);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 3, path: [0, 0], root: 'portal:1' },
+      focus: { offset: 3, path: [0, 0], root: 'portal:1' },
+      kind: 'text',
+    });
+
+    redo(rootEditor);
+    assert.deepEqual(editor.read.root('portal:1'), []);
+    assert.equal(editor.read.selection(), null);
   });
 
   it('undoes a full-document selected text replacement as one structural batch', () => {

@@ -15,18 +15,7 @@ export type HtmlApi = {
  * Enables support for deserializing inserted HTML into Plite content.
  */
 export const HtmlPlugin = createBasePlugin<
-  PluginConfig<
-    'html',
-    {},
-    {},
-    {},
-    {},
-    {},
-    readonly [],
-    readonly [],
-    never,
-    HtmlApi
-  >
+  PluginConfig<'html', {}, {}, {}, {}, {}, readonly [], never, HtmlApi>
 >({ key: 'html' })
   .extendApi(({ editor }) => ({
     deserialize: bindFirst(deserializeHtml, editor),
@@ -44,6 +33,6 @@ export const HtmlPlugin = createBasePlugin<
           }
         );
       },
-      schema: [{ kind: 'schema' }],
+      owns: [{ kind: 'schema' }],
     },
   });

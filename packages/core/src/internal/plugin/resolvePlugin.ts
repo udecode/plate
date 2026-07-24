@@ -26,9 +26,9 @@ const assertConfiguredInputRules = (config: unknown) => {
 /**
  * Resolves and finalizes a plugin configuration for use in a Plate editor.
  *
- * This function processes a given plugin configuration, applying any extensions
- * and resolving nested plugins. It prepares the plugin for integration into the
- * Plate editor system by:
+ * This function processes a given plugin configuration and applies its
+ * extensions. It prepares the plugin for integration into the Plate editor
+ * system by:
  *
  * 1. Cloning the plugin to avoid mutating the original
  * 2. Resolving the stored consumer configuration once
@@ -39,20 +39,57 @@ const assertConfiguredInputRules = (config: unknown) => {
  *   const plugin = createBasePlugin({ key: 'myPlugin', ...otherOptions }).extend(...);
  *   const resolvedPlugin = resolvePlugin(editor, plugin);
  */
-export const resolvePlugin = <P extends AnyBasePlugin>(
+export type ResolvedPluginConfiguration = Readonly<
+  Record<PropertyKey, unknown>
+>;
+
+const finalizeResolvedPlugin = <P extends AnyBasePlugin>(
+  editor: BaseEditor,
+  plugin: P
+): P => {
+  plugin.schema = freezePluginDescriptorValue(plugin.schema);
+  (plugin as { targetPluginKeys: readonly string[] }).targetPluginKeys =
+    Object.freeze([...plugin.targetPluginKeys]);
+
+  (validatePlugin as any)(editor, plugin);
+
+  return plugin;
+};
+
+/** Reapply captured terminal configuration without executing callbacks again. */
+export const reapplyResolvedPluginConfigurations = <P extends AnyBasePlugin>(
+  editor: BaseEditor,
+  plugin: P,
+  configurations: readonly ResolvedPluginConfiguration[]
+): P => {
+  const configurationLayers = [...plugin.__configurationLayers];
+  let configured = plugin;
+
+  for (const configuration of configurations) {
+    configured = mergePlugins(configured, configuration);
+    configured.__configurationLayers = configurationLayers;
+  }
+
+  return finalizeResolvedPlugin(editor, configured);
+};
+
+export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
   editor: BaseEditor,
   _plugin: P
-): P => {
+): Readonly<{
+  configurations: readonly ResolvedPluginConfiguration[];
+  plugin: P;
+}> => {
   // Create a deep clone of the plugin
   let plugin = mergePlugins({}, _plugin) as P;
 
   plugin.__resolved = true;
 
   // A direct descriptor contributes at most one terminal consumer
-  // configuration. Nested configurePlugin overlays share this internal list.
-  // Capture every result so contextual callbacks execute only once per editor.
+  // configuration. Capture every result so contextual callbacks execute only
+  // once per editor.
   const configurationLayers = [...plugin.__configurationLayers];
-  const resolvedConfigurations: Record<PropertyKey, unknown>[] = [];
+  const resolvedConfigurations: ResolvedPluginConfiguration[] = [];
 
   for (const layer of configurationLayers) {
     const rawConfigResult =
@@ -91,19 +128,22 @@ export const resolvePlugin = <P extends AnyBasePlugin>(
   }
   // Extensions read configured values, but the consumer configuration remains
   // the final override for fields that both layers define.
-  for (const configuration of resolvedConfigurations) {
-    plugin = mergePlugins(plugin, configuration);
-    plugin.__configurationLayers = configurationLayers;
-  }
+  plugin = reapplyResolvedPluginConfigurations(
+    editor,
+    plugin,
+    resolvedConfigurations
+  );
 
-  plugin.schema = freezePluginDescriptorValue(plugin.schema);
-  (plugin as { targetPluginKeys: readonly string[] }).targetPluginKeys =
-    Object.freeze([...plugin.targetPluginKeys]);
-
-  (validatePlugin as any)(editor, plugin);
-
-  return plugin;
+  return Object.freeze({
+    configurations: Object.freeze(resolvedConfigurations),
+    plugin,
+  });
 };
+
+export const resolvePlugin = <P extends AnyBasePlugin>(
+  editor: BaseEditor,
+  plugin: P
+): P => resolvePluginWithConfigurations(editor, plugin).plugin;
 
 export const validatePlugin = <
   K extends string = any,

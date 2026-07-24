@@ -58,11 +58,21 @@ and registry wiring.
 - Keep `usePath()` only when a descendant must rerender or resynchronize as its
   element moves and no path prop is already available. Account for that
   dependency in the repeated-unit subscription budget.
-- Prefer direct `editor.plugin(plugin).api` / `editor.plugin(plugin).update` or
-  `useEditorPlugin(plugin)` over local wrapper helpers.
+- Prefer direct `editor.api.<pluginKey>` / `editor.update.<group>` in concrete
+  host-owned app code with a complete inferred kit. Copied registry UI is
+  generic by definition: never import its host editor type or use root plugin
+  namespaces there. Use `editor.plugin(plugin)` or `useEditorPlugin(plugin)`.
+  For an optional descriptor, check `editor.plugin(plugin).installed` before
+  accessing its portal. Do not infer optional availability from root
+  `editor.api`, node types, schema properties, or caught access errors. Do not
+  add local wrapper helpers around either path.
 - If a node renderer forwards to `PlateElement` or `SlateElement`, keep the full incoming `props` object intact. Read from `props`, but do not destructure away `editor`, `element`, or other required fields and then spread only a partial object into the renderer.
 - Keep helpers inline when used once.
-- Split static/base and live kits cleanly.
+- Split kits only where the kit itself owns different static/base and live
+  renderers or behavior. Share runtime-neutral policy kits across both
+  consumers, and compose renderer-specific peer kits in the owning editor
+  preset. Do not create a base twin because an unrelated renderer kit was
+  bundled into a neutral owner.
 
 ### React Performance & Effects → [react-performance.md](./rules/react-performance.md)
 
@@ -130,9 +140,19 @@ return (
   </MediaToolbar>
 );
 
-// Good: direct plugin access, no local wrapper layer.
-const api = editor.plugin(CommentPlugin).api;
-const update = editor.plugin(CommentPlugin).update;
+// Good: host-owned app code outside copied registry UI uses its inferred editor.
+const api = editor.api.comment;
+const update = editor.update.comment;
+
+// Good: generic UI code can use an exact descriptor.
+const genericApi = editor.plugin(CommentPlugin).api;
+
+// Good: optional generic integration keeps the typed portal and checks it.
+const optionalComment = editor.plugin(CommentPlugin);
+
+if (optionalComment.installed) {
+  optionalComment.api.open();
+}
 
 // Good: package core owns commands/state, platform UI composes locally.
 const canToggleBold = bridgeState.canToggleBold;
@@ -151,17 +171,18 @@ export const FootnoteKit = [
   FootnoteDefinitionPlugin.withComponent(FootnoteDefinitionElement),
 ];
 
+// Good: runtime-neutral policy is shared by both editor presets.
+export const MarkdownKit = [
+  MarkdownPlugin.configure({ options: { remarkPlugins: [remarkGfm] } }),
+];
+
 // Bad: package hook exists only to feed one shadcn component's local UI.
 const state = useSingleComponentOnlyState();
 return <Popover open={state.open}>...</Popover>;
 
 // Bad: React-only package hook that mainly returns renderer glue.
-const {
-  dialogTitle,
-  menuItems,
-  onOpenChange,
-  popoverOpen,
-} = useToolbarMenuState();
+const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
+  useToolbarMenuState();
 ```
 
 ## Workflow
@@ -179,16 +200,18 @@ const {
    - am I subscribing to more editor state than the UI actually renders?
 6. Build the component as open code first.
 7. Extract only the boundaries that survive the test.
-8. Wire base/live kits and registry deps.
+8. Share runtime-neutral kits; wire base/live renderer kits and registry deps
+   only where the renderer ownership actually differs.
 9. Apply the registry changelog decision:
    - user-visible registry change: add or update a registry changelog entry,
      run the generator, and run the registry changelog check
    - not user-visible: record `N/A: <reason>`
 10. If package exports changed, run `pnpm brl`.
 11. Verify the smallest honest surface:
-   - component spec for UI-only changes
-   - package build/typecheck when package code changed
-   - browser verification when the surface is interactive
+
+- component spec for UI-only changes
+- package build/typecheck when package code changed
+- browser verification when the surface is interactive
 
 ## Audit References
 

@@ -1,4 +1,4 @@
-import { createEditor } from '@platejs/plite';
+import { createEditor, SelectionApi } from '@platejs/plite';
 
 import {
   beginEditableEventFrame,
@@ -538,6 +538,48 @@ test('keyboard structural commands keep model selection after programmatic DOM e
     intent: 'insert-break',
     ownership: 'model-owned',
     selectionPolicy: { kind: 'preserve-model', reason: 'model-owned' },
+    shouldForceDOMImport: false,
+  });
+});
+
+test('keyboard movement keeps DOM-less node selections model-owned', () => {
+  const editor = createEditor({
+    initialSelection: SelectionApi.node([0], {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    }),
+    initialValue: [{ children: [{ text: 'caption' }], type: 'media' }],
+  }) as any;
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
+  });
+  inputController.state.selectionChangeOrigin = null;
+  inputController.state.selectionSource = 'dom-current';
+
+  const decision = prepareEditableKeyDownKernel({
+    editor,
+    event: {
+      nativeEvent: {
+        altKey: false,
+        ctrlKey: false,
+        key: 'ArrowDown',
+        metaKey: false,
+        shiftKey: false,
+        which: 40,
+      },
+      target: null,
+    } as any,
+    inputController,
+    domStrategyRuntime: null,
+  });
+
+  expect(decision).toMatchObject({
+    intent: 'native-selection-move',
+    nativeAllowed: false,
+    ownership: 'model-owned',
+    selectionPolicy: { kind: 'preserve-model', reason: 'model-owned' },
+    selectionSourceTransition: null,
     shouldForceDOMImport: false,
   });
 });

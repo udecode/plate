@@ -7,12 +7,12 @@ import type { PlateElementProps } from 'platejs/react';
 
 import { useDraggable } from '@platejs/dnd';
 import { Image, ImagePlugin, useMediaState } from '@platejs/media/react';
-import { ResizableProvider, useResizableValue } from '@platejs/resizable';
+import { ResizableProvider } from '@platejs/resizable';
 import { PlateElement, withHOC } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
-import { Caption, CaptionTextarea } from './caption';
+import { Caption, useCaptionFocused } from './caption';
 import { MediaToolbar } from './media-toolbar';
 import {
   mediaResizeHandleVariants,
@@ -24,59 +24,56 @@ export const ImageElement = withHOC(
   ResizableProvider,
   function ImageElement(props: PlateElementProps<TImageElement>) {
     const { align = 'center', focused, readOnly, selected } = useMediaState();
-    const width = useResizableValue('width');
-
+    const captionFocused = useCaptionFocused(props.path);
     const { isDragging, handleRef } = useDraggable({
       element: props.element,
     });
 
     return (
-      <MediaToolbar plugin={ImagePlugin}>
+      <MediaToolbar plugin={ImagePlugin} selected={selected}>
         <PlateElement {...props} className="py-2.5">
-          <figure className="group relative m-0" contentEditable={false}>
-            <Resizable
-              align={align}
-              options={{
-                align,
-                readOnly,
-              }}
-            >
-              <ResizeHandle
-                className={mediaResizeHandleVariants({ direction: 'left' })}
-                options={{ direction: 'left' }}
-              />
-              <div>
-                <Image
-                  ref={handleRef}
-                  className={cn(
-                    'block w-full max-w-full cursor-pointer object-cover px-0',
-                    'rounded-sm',
-                    focused && selected && 'ring-2 ring-ring ring-offset-2',
-                    isDragging && 'opacity-50'
-                  )}
-                  alt={props.attributes.alt as string | undefined}
-                />
-              </div>
-              <ResizeHandle
-                className={mediaResizeHandleVariants({
-                  direction: 'right',
-                })}
-                options={{ direction: 'right' }}
-              />
-            </Resizable>
-
-            <Caption style={{ width }} align={align}>
-              <CaptionTextarea
-                readOnly={readOnly}
-                onFocus={(e) => {
-                  e.preventDefault();
+          <figure className="group relative m-0">
+            <div contentEditable={false}>
+              <Resizable
+                align={align}
+                options={{
+                  align,
+                  readOnly,
                 }}
-                placeholder="Write a caption..."
-              />
+              >
+                <ResizeHandle
+                  className={mediaResizeHandleVariants({ direction: 'left' })}
+                  options={{ direction: 'left' }}
+                />
+                <div>
+                  <Image
+                    ref={handleRef}
+                    className={cn(
+                      'block w-full max-w-full cursor-pointer object-cover px-0',
+                      'rounded-sm',
+                      focused && selected && 'ring-2 ring-ring ring-offset-2',
+                      isDragging && 'opacity-50'
+                    )}
+                    alt={props.element.alt}
+                  />
+                </div>
+                <ResizeHandle
+                  className={mediaResizeHandleVariants({
+                    direction: 'right',
+                  })}
+                  options={{ direction: 'right' }}
+                />
+              </Resizable>
+            </div>
+            <Caption
+              active={selected || captionFocused}
+              align={align}
+              element={props.element}
+              slots={props.slots}
+            >
+              {props.children}
             </Caption>
           </figure>
-
-          {props.children}
         </PlateElement>
       </MediaToolbar>
     );

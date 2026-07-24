@@ -14,7 +14,7 @@ function WithPlate({ id, value }: { id: string; value: Value }) {
   const editor = usePlateEditor({
     id,
     // components: PlateUI,
-    // plugins: [BasicBlocksPlugin, BasicMarksPlugin],
+    // plugins: [...BasicBlocksKit, ...BasicMarksKit],
     initialValue: value,
   });
 

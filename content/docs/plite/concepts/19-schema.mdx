@@ -16,7 +16,8 @@ and unknown vocabulary by default; a raw editor without one stays permissive.
 | Inspect compiled behavior                | `editor.read.schema.*`                     | committed editor state                  |
 | Validate a complete persisted document   | `editor.read.schema.validateDocument(...)` | compiled schema                         |
 | Validate closed children                 | `validateFragment(...)`                    | compiled schema                         |
-| Import and canonicalize root content     | `tx.value.replace(...)` or `tx.roots.*`    | transaction fitter                      |
+| Import a complete document snapshot      | `tx.value.replace(...)`                    | transaction fitter                      |
+| Change one named root                    | `tx.roots.*`                               | transaction fitter                      |
 | Insert closed application content        | `tx.fragment.replace(...)`                 | transaction fitter                      |
 | Preserve open transport boundaries       | `ContentSlice` and `tx.slice.replace(...)` | slice fitter                            |
 | Fit content under a detached parent      | `state.slice.fitContent(...)`              | read-only slice service                 |
@@ -28,9 +29,10 @@ runtime questions. Transactions fit and publish content.
 ## Define A Schema
 
 `defineEditorSchema(...)` packages one complete schema as an editor extension.
-The definition names every element, the primary-root grammar, and a stable
-`id` and `version`. It also states whether unknown vocabulary is rejected or
-preserved.
+The definition names every element and the primary-root grammar. Omit `id` and
+`version` for a schema whose identity is derived entirely from its compiled
+semantics. Provide both for a durable named lineage. The definition also states
+whether unknown vocabulary is rejected or preserved.
 
 ```ts
 import {
@@ -123,6 +125,47 @@ text containers join `textBlock`. Application groups are transitive: declare
 them as `{ extends: [...] }` and query them with
 `state.schema.isElementTypeInGroup(type, group)`.
 
+### Detached Element-Owned Roots
+
+Keep structurally owned editable content in an element's normal `children`.
+Declare `contentRoots` only when the content needs a separate root identity,
+mount lifecycle, or shared ownership.
+
+```ts
+const SyncedBlocksSchema = defineEditorSchema({
+  elements: {
+    "synced-block": {
+      content: schema.content.text({ default: "text", min: 1 }),
+      contentRoots: {
+        body: {
+          content: schema.content.type("paragraph", {
+            default: { type: "paragraph" },
+            min: 1,
+          }),
+          ownership: "shared",
+        },
+      },
+    },
+    paragraph: {
+      content: schema.content.text({ default: "text", min: 1 }),
+    },
+  },
+  root: {
+    content: schema.content.types(["synced-block", "paragraph"], {
+      default: { type: "paragraph" },
+      min: 1,
+    }),
+  },
+  unknown: "reject",
+});
+```
+
+The owner stores `childRoots: { body: "synced:1" }`; the detached blocks live
+in `document.roots["synced:1"]`. Use `ownership: "shared"` only when multiple
+owners intentionally project the same root. See
+[Roots](13-roots#content-roots) for rendering, persistence, clipboard, and
+lifecycle behavior.
+
 ## Properties And Targets
 
 Property descriptors define JSON value laws. Use `property.boolean()`,
@@ -139,45 +182,49 @@ Targets are frozen syntax, not callbacks. Compose `target.type`,
 `target.or`, and `target.not`. Use `schema.key.prefix(...)` only for a real
 namespaced property family.
 
-Custom validation uses a stable property policy.
+Put custom validation directly on the property declaration. `validate` and a
+positive-integer `validationVersion` must appear together. Increment the
+version whenever the validator's accepted value set changes.
 
 ```ts
-import { definePropertyPolicy, property } from "@platejs/plite";
-
-const Positive = definePropertyPolicy<number>({
-  id: "positive",
-  validate: (value): value is number => typeof value === "number" && value > 0,
-  version: 1,
+const MediaSchema = defineEditorSchema({
+  elements: {
+    image: {
+      content: schema.content.text({ default: "text", min: 1 }),
+      properties: {
+        size: property.json({
+          validate: (value): value is { height: number; width: number } =>
+            typeof value === "object" &&
+            value !== null &&
+            "height" in value &&
+            typeof value.height === "number" &&
+            "width" in value &&
+            typeof value.width === "number",
+          validationVersion: 1,
+        }),
+        width: property.number({
+          validate: (value): value is number =>
+            typeof value === "number" && value > 0,
+          validationVersion: 1,
+        }),
+      },
+      void: "block",
+    },
+  },
+  root: {
+    content: schema.content.type("image", {
+      default: { type: "image" },
+      min: 1,
+    }),
+  },
+  unknown: "reject",
 });
-
-const Width = property.number({ policy: Positive });
 ```
 
-Use `property.json({ policy })` for a validated structured JSON value. The
-policy supplies runtime validation and the property builder infers the
-validated TypeScript type.
-
-```ts
-import { definePropertyPolicy, property } from "@platejs/plite";
-
-type MediaSize = { height: number; width: number };
-
-const MediaSizePolicy = definePropertyPolicy<MediaSize>({
-  id: "media-size",
-  validate: (value): value is MediaSize =>
-    typeof value === "object" &&
-    value !== null &&
-    typeof (value as MediaSize).height === "number" &&
-    typeof (value as MediaSize).width === "number",
-  version: 1,
-});
-
-const Size = property.json({ policy: MediaSizePolicy });
-```
-
-The policy `id` and `version` contribute to schema identity. Function identity
-does not. The validator receives untrusted `unknown` input and narrows it to the
-declared property type.
+`property.json(...)` infers its structured value from the validator's type
+predicate. The descriptor identity and `validationVersion` contribute to schema
+identity; function identity does not. The validator receives untrusted
+`unknown` input and narrows it to the declared property type.
 
 ## Unknown Vocabulary
 
@@ -222,10 +269,11 @@ editor.read.schema.validateFragment(decodedChildren);
 `validateDocument` checks primary children, named roots, and the JSON shape of
 persisted meta.
 `validateFragment` checks a closed fragment without changing it. Do not run a
-separate canonicalization pass before importing content. `tx.value.replace`
-and `tx.roots.create` or `tx.roots.replace` route external root content through
-the same schema fitter used by other ingress paths, then publish the fitted
-document atomically.
+separate canonicalization pass before importing content. Use
+`tx.value.replace(...)` as the sole complete-document publication boundary.
+Use `tx.roots.create(...)` or `tx.roots.replace(...)` for one targeted named
+root. Every path routes content through the same schema fitter and publishes
+atomically.
 
 `ContentSlice.fromJSON(...)` validates generic JSON shape, immutability, and
 open depths. Schema vocabulary and grammar are checked when the slice is fitted
@@ -330,13 +378,21 @@ The callback sees the immutable current document and the candidate schema as
 revision publish in one commit. Compilation, migration, or validation failure
 publishes nothing. Equivalent schema configuration is a no-op.
 
+The [Schema Reconfiguration example](/examples/plite/schema-reconfiguration)
+isolates this publication and migration lifecycle. The
+[Plate Schema Descriptors example](/examples/plite/plate-schema-descriptors)
+separately demonstrates how Plate plugin declarations compile into the same
+schema model.
+
 ## Schema Identity And Persistence
 
-`editor.read.schema.identity()` returns `{ id, version, fingerprint }` for a
-declared schema and `null` for a raw editor. The fingerprint is deterministic
-for the compiled semantics. Increment `version` whenever those semantics
-change; a matching ID and version with a different fingerprint is an invalid
-deployment contract.
+`editor.read.schema.identity()` always returns a schema identity. A complete
+schema without `id` and `version` returns
+`{ kind: "derived", fingerprint }`. A named lineage returns
+`{ kind: "named", id, version, fingerprint }`. The fingerprint is
+deterministic for the compiled semantics. Increment a named lineage's
+`version` whenever those semantics change; a matching ID and version with a
+different fingerprint is an invalid deployment contract.
 
 The document returned by `editor.read.value()` does not embed schema identity.
 Persist it in an application envelope when documents may cross schema versions.

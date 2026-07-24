@@ -5,7 +5,6 @@ import type {
 } from '@platejs/plite';
 import { defineEditorExtension } from '@platejs/plite';
 import { getCompiledEditorSchemaFromApi } from '@platejs/plite/internal';
-import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createVanillaStore } from 'zustand-x/vanilla';
 
@@ -24,7 +23,6 @@ import {
   brandPluginDescriptor,
   isOpaquePluginRenderKey,
   isNominalPluginDescriptor,
-  isNominalSchemaConfigToken,
   mergePlugins,
 } from '../utils/mergePlugins';
 import type {
@@ -49,7 +47,11 @@ import {
   setPlateRuntimeCandidate,
   type PlatePluginCache,
 } from './plateRuntime';
-import { resolvePlugin } from './resolvePlugin';
+import {
+  reapplyResolvedPluginConfigurations,
+  type ResolvedPluginConfiguration,
+  resolvePluginWithConfigurations,
+} from './resolvePlugin';
 import type {
   AnyInputRule,
   ResolvedInputRule,
@@ -172,7 +174,6 @@ const snapshotPluginDescriptorValue = (
 ): unknown => {
   if (!value || typeof value !== 'object') return value;
   if (isOpaquePluginHostResource(context)) return value;
-  if (isNominalSchemaConfigToken(value)) return value;
   if (isNominalPluginDescriptor(value)) {
     const published = publishedPlugins?.get(value.key);
 
@@ -245,23 +246,70 @@ const snapshotPluginDescriptorValue = (
 };
 
 /** Capture the immutable descriptor graph used by every Plate projection. */
+export type PlatePluginSourceGroups = Readonly<{
+  baseCore?: readonly AnyBasePlugin[];
+  internalRoot?: AnyBasePlugin;
+  reactCore?: readonly AnyBasePlugin[];
+  user?: readonly AnyBasePlugin[];
+}>;
+
+export const plateReactCorePlugins = Symbol('plate.reactCorePlugins');
+
+type NormalizedPlatePluginSourceGroups = Readonly<{
+  baseCore: readonly AnyBasePlugin[];
+  internalRoot?: AnyBasePlugin;
+  reactCore: readonly AnyBasePlugin[];
+  user: readonly AnyBasePlugin[];
+}>;
+
+type PlatePluginSourceInput =
+  | PlatePluginSourceGroups
+  | readonly AnyBasePlugin[];
+
+const normalizePlatePluginSources = (
+  sources: PlatePluginSourceInput
+): NormalizedPlatePluginSourceGroups => {
+  if (Array.isArray(sources)) {
+    return {
+      baseCore: [],
+      reactCore: [],
+      user: sources as readonly AnyBasePlugin[],
+    };
+  }
+
+  const groups = sources as PlatePluginSourceGroups;
+
+  return {
+    baseCore: groups.baseCore ?? [],
+    internalRoot: groups.internalRoot,
+    reactCore: groups.reactCore ?? [],
+    user: groups.user ?? [],
+  };
+};
+
 export const snapshotPlatePluginSources = (
-  plugins: readonly AnyBasePlugin[]
-): readonly AnyBasePlugin[] => {
+  sources: PlatePluginSourceGroups
+): NormalizedPlatePluginSourceGroups => {
+  const normalized = normalizePlatePluginSources(sources);
   const snapshots = new WeakMap<object, unknown>();
   const optionReferences = new WeakMap<object, unknown>();
+  const snapshot = (plugin: AnyBasePlugin) =>
+    snapshotPluginDescriptorValue(
+      plugin,
+      snapshots,
+      { path: [], pluginKey: plugin.key },
+      undefined,
+      optionReferences
+    ) as AnyBasePlugin;
 
-  return Object.freeze(
-    plugins.map((plugin) =>
-      snapshotPluginDescriptorValue(
-        plugin,
-        snapshots,
-        { path: [], pluginKey: plugin.key },
-        undefined,
-        optionReferences
-      )
-    ) as AnyBasePlugin[]
-  );
+  return Object.freeze({
+    baseCore: Object.freeze(normalized.baseCore.map(snapshot)),
+    internalRoot: normalized.internalRoot
+      ? snapshot(normalized.internalRoot)
+      : undefined,
+    reactCore: Object.freeze(normalized.reactCore.map(snapshot)),
+    user: Object.freeze(normalized.user.map(snapshot)),
+  });
 };
 
 const publishPlatePluginDescriptors = (
@@ -293,7 +341,7 @@ const publishPlatePluginDescriptors = (
 
       let value: unknown;
 
-      if (key === 'dependencies' || key === 'plugins') {
+      if (key === 'dependencies') {
         const references = Array.isArray(descriptor.value)
           ? descriptor.value
           : [];
@@ -304,13 +352,9 @@ const publishPlatePluginDescriptors = (
             const installed = publishedByKey.get(reference.key);
 
             if (installed) return [installed];
-            if (key === 'dependencies') {
-              throw new Error(
-                `Plate plugin "${plugin.key}" lost installed dependency "${reference.key}" during publication.`
-              );
-            }
-
-            return [];
+            throw new Error(
+              `Plate plugin "${plugin.key}" lost installed dependency "${reference.key}" during publication.`
+            );
           })
         );
       } else if (key === 'options') {
@@ -353,7 +397,7 @@ const publishPlatePluginDescriptors = (
  */
 export const resolvePlugins = (
   editor: BaseEditor,
-  plugins: readonly AnyBasePlugin[] = []
+  sources: PlatePluginSourceInput = []
 ) => {
   if (getPlateModelPublication(editor)) {
     throw new Error(
@@ -372,7 +416,7 @@ export const resolvePlugins = (
     plugins: Object.create(null),
     shortcuts: Object.create(null),
   });
-  const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
+  const resolvedPlugins = resolveAndSortPlugins(editor, sources);
   const snapshotOptions = createPluginOptionsSnapshot();
 
   resolvedPlugins.forEach((plugin) => {
@@ -727,10 +771,12 @@ export const createPlateRuntimeExtension = (
   pluginList: readonly AnyBasePlugin[]
 ) => {
   const api = {} as Record<string, unknown>;
+  const apiSnapshots = new WeakMap<object, unknown>();
   const apiByPlugin: Record<
     string,
     Readonly<Record<string, unknown>>
   > = Object.create(null);
+  const pluginApiNamespaces = new Set<string>();
   const shortcutApiByPlugin: Record<string, ShortcutApiOwner> =
     Object.create(null);
 
@@ -740,16 +786,38 @@ export const createPlateRuntimeExtension = (
 
       apiByPlugin[plugin.key] = pluginApi;
       const editorApi = resolvePluginApi(editor, plugin, pluginApi);
+      const frozenPluginApi = snapshotApiValue(pluginApi, apiSnapshots);
+      const hasPluginApi = Object.keys(pluginApi).length > 0;
 
-      apiByPlugin[plugin.key] = snapshotApiValue(pluginApi);
+      Object.keys(editorApi).forEach((key) => {
+        if (pluginApiNamespaces.has(key)) {
+          throw new Error(
+            `Plate API namespace "${key}" is declared by both plugin API and editor API owners while resolving plugin "${plugin.key}".`
+          );
+        }
+      });
+      if (
+        hasPluginApi &&
+        (Object.hasOwn(api, plugin.key) || Object.hasOwn(editorApi, plugin.key))
+      ) {
+        throw new Error(
+          `Plate API namespace "${plugin.key}" is declared by both plugin API and editor API owners while resolving plugin "${plugin.key}".`
+        );
+      }
+
+      apiByPlugin[plugin.key] = frozenPluginApi;
       shortcutApiByPlugin[plugin.key] = Object.freeze({
         editor: snapshotApiValue(editorApi),
-        plugin: snapshotApiValue(pluginApi),
+        plugin: frozenPluginApi,
       });
       merge(api, editorApi);
+      if (hasPluginApi) {
+        api[plugin.key] = pluginApi;
+        pluginApiNamespaces.add(plugin.key);
+      }
     });
   });
-  const runtimeApi = snapshotApiValue(api);
+  const runtimeApi = snapshotApiValue(api, apiSnapshots);
   const txRuntime = withCompiledPlatePluginApiCandidate(
     editor,
     apiByPlugin,
@@ -992,216 +1060,707 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
   return resolvedMeta;
 };
 
-const flattenAndResolvePlugins = (
-  editor: BaseEditor,
-  plugins: readonly AnyBasePlugin[]
-): {
-  explicitKeys: Set<string>;
-  pluginMap: Map<string, AnyBasePlugin>;
-} => {
-  const pluginMap = new Map<string, AnyBasePlugin>();
-  const explicitKeys = new Set<string>();
-  const mergeDuplicatePlugin = (
-    existingPlugin: AnyBasePlugin,
-    resolvedPlugin: AnyBasePlugin
-  ) => {
-    const mergedPlugin = mergePlugins(existingPlugin, resolvedPlugin);
+type PluginRootRole = 'baseCore' | 'internalRoot' | 'reactCore' | 'user';
 
-    const mergeExtensions = <T>(current: T[] = [], next: T[] = []) => [
-      ...current,
-      ...next.filter((extension) => !current.includes(extension)),
-    ];
+type PluginRootOrigin = Readonly<{
+  descriptor: AnyBasePlugin;
+  path: string;
+  role: PluginRootRole;
+  sourceIndex: number;
+}>;
 
-    mergedPlugin.__apiExtensions = mergeExtensions(
-      existingPlugin.__apiExtensions,
-      resolvedPlugin.__apiExtensions
+type PluginRelationship = Readonly<{
+  ownerKey: string;
+  path: string;
+  targetKey: string;
+}>;
+
+type PluginGraphNode = {
+  baseResolved?: AnyBasePlugin;
+  configurations: readonly ResolvedPluginConfiguration[];
+  dependencyEdges: PluginRelationship[];
+  descriptor: AnyBasePlugin;
+  expanded: boolean;
+  origin: PluginRootOrigin | Readonly<{ path: string; sourceIndex: number }>;
+  resolved?: AnyBasePlugin;
+};
+
+const rootRolePrecedence: Readonly<Record<PluginRootRole, number>> = {
+  baseCore: 1,
+  internalRoot: 4,
+  reactCore: 2,
+  user: 3,
+};
+
+const getPluginDependencies = (plugin: AnyBasePlugin): readonly unknown[] => {
+  const value = plugin.dependencies;
+
+  return Array.isArray(value) ? value : [];
+};
+
+const assertPluginReference = (
+  reference: unknown,
+  ownerKey: string,
+  path: string
+): AnyBasePlugin => {
+  if (!isNominalPluginDescriptor(reference)) {
+    throw new Error(
+      `Plate plugin "${ownerKey}" has an invalid dependency at "${path}". Pass a plugin descriptor, not its key.`
     );
-    mergedPlugin.__editorExtensions = mergeExtensions(
-      existingPlugin.__editorExtensions,
-      resolvedPlugin.__editorExtensions
+  }
+  if (!reference.key) {
+    throw new Error(
+      `Plate plugin "${ownerKey}" has an empty dependency key at "${path}".`
     );
-    mergedPlugin.__selectorExtensions = mergeExtensions(
-      existingPlugin.__selectorExtensions,
-      resolvedPlugin.__selectorExtensions
+  }
+  if (reference.key === 'root') {
+    throw new Error(
+      `Plate plugin key "root" is reserved for the internal editor root (${path}).`
     );
-    mergedPlugin.__txExtensions = mergeExtensions(
-      existingPlugin.__txExtensions,
-      resolvedPlugin.__txExtensions
+  }
+
+  return reference as AnyBasePlugin;
+};
+
+const assertStaticPluginTopology = (
+  source: AnyBasePlugin,
+  resolved: AnyBasePlugin
+) => {
+  if (resolved.key !== source.key) {
+    throw new Error(
+      `Plate plugin "${source.key}" cannot change its key while being configured.`
     );
+  }
 
-    return mergedPlugin;
-  };
+  const declared = getPluginDependencies(source);
+  const configured = getPluginDependencies(resolved);
 
-  const dependencyObjects = new WeakSet<object>();
-  const resolvedPluginBySource = new WeakMap<object, AnyBasePlugin>();
-  let collectDependencies: (plugin: AnyBasePlugin) => void;
-  const processPlugin = (
-    plugin: AnyBasePlugin,
-    explicit: boolean,
-    dependenciesReady = false
-  ) => {
-    if (!dependenciesReady) collectDependencies(plugin);
-    let resolvedPlugin = resolvedPluginBySource.get(plugin);
-
-    if (!resolvedPlugin) {
-      resolvedPlugin = resolvePlugin(editor, plugin);
-      resolvedPluginBySource.set(plugin, resolvedPlugin);
-    }
-
-    if (resolvedPlugin.key) {
-      if (explicit) explicitKeys.add(resolvedPlugin.key);
-
-      const existingPlugin = pluginMap.get(resolvedPlugin.key);
-      let candidate = resolvedPlugin;
-
-      if (existingPlugin) {
-        candidate = mergeDuplicatePlugin(existingPlugin, resolvedPlugin);
-        pluginMap.set(resolvedPlugin.key, candidate);
-      } else {
-        pluginMap.set(resolvedPlugin.key, resolvedPlugin);
-      }
-      setCompiledPlatePluginCandidate(editor, candidate);
-    } else {
-      // If the plugin has no key, we just just skip it.
-    }
-
-    if (resolvedPlugin.plugins && resolvedPlugin.plugins.length > 0) {
-      const nestedPlugins: readonly AnyBasePlugin[] = resolvedPlugin.plugins;
-
-      nestedPlugins.forEach((nestedPlugin) => {
-        processPlugin(nestedPlugin, explicit);
-      });
-    }
-  };
-
-  collectDependencies = (plugin: AnyBasePlugin) => {
-    for (const dependency of plugin.dependencies) {
-      if (!dependency || typeof dependency !== 'object') {
-        throw new Error(
-          `Plugin "${plugin.key}" has an invalid dependency. Pass the plugin object, not its key.`
-        );
-      }
-      if (dependencyObjects.has(dependency)) continue;
-
-      dependencyObjects.add(dependency);
-      collectDependencies(dependency as AnyBasePlugin);
-      processPlugin(dependency as AnyBasePlugin, false, true);
-    }
-
-    plugin.plugins.forEach(collectDependencies);
-  };
-
-  plugins.forEach(collectDependencies);
-  plugins.forEach((plugin) => {
-    processPlugin(plugin, true);
-  });
-
-  return { explicitKeys, pluginMap };
+  if (
+    declared.length !== configured.length ||
+    declared.some((plugin, index) => plugin !== configured[index])
+  ) {
+    throw new Error(
+      `Plate plugin "${source.key}" cannot change dependencies through configure or extend. Declare dependencies at plugin creation.`
+    );
+  }
 };
 
 const collectPlatePluginSourceCandidates = (
-  plugins: readonly AnyBasePlugin[]
+  sourceInput: PlatePluginSourceInput
 ) => {
-  const candidates = new Map<string, AnyBasePlugin>();
-  const dependencies = new WeakSet<object>();
-  const collectPlugin = (plugin: AnyBasePlugin) => {
-    if (plugin.key) candidates.set(plugin.key, plugin);
-    plugin.plugins.forEach(collectPlugin);
-  };
-  const collectDependencies = (plugin: AnyBasePlugin) => {
-    plugin.dependencies.forEach((dependency: unknown) => {
-      if (!dependency || typeof dependency !== 'object') return;
-      if (dependencies.has(dependency)) return;
+  const sources = normalizePlatePluginSources(sourceInput);
+  const candidates: AnyBasePlugin[] = [];
+  const visited = new WeakSet<object>();
+  const queue: unknown[] = [
+    ...(sources.internalRoot ? [sources.internalRoot] : []),
+    ...sources.baseCore,
+    ...sources.reactCore,
+    ...sources.user,
+  ];
 
-      dependencies.add(dependency);
-      collectDependencies(dependency as AnyBasePlugin);
-      collectPlugin(dependency as AnyBasePlugin);
+  for (const candidate of queue) {
+    if (!candidate || typeof candidate !== 'object' || visited.has(candidate)) {
+      continue;
+    }
+    visited.add(candidate);
+    if (!isNominalPluginDescriptor(candidate)) continue;
+
+    const plugin = candidate as AnyBasePlugin;
+
+    candidates.push(plugin);
+    queue.push(...getPluginDependencies(plugin));
+  }
+
+  return candidates;
+};
+
+const applyComponentOverrides = (
+  plugins: readonly AnyBasePlugin[]
+): BasePlugins => {
+  const componentOverrides: Record<
+    string,
+    { component: unknown; priority: number }
+  > = Object.create(null);
+
+  for (const plugin of plugins) {
+    const components = (plugin.override as { components?: NodeComponents })
+      .components;
+
+    if (!components) continue;
+    Object.entries(components).forEach(([key, component]) => {
+      if (
+        !componentOverrides[key] ||
+        plugin.priority > componentOverrides[key].priority
+      ) {
+        componentOverrides[key] = {
+          component,
+          priority: plugin.priority,
+        };
+      }
     });
-    plugin.plugins.forEach(collectDependencies);
-  };
+  }
 
-  plugins.forEach(collectDependencies);
-  plugins.forEach(collectPlugin);
+  return plugins.map((plugin) => {
+    const override = componentOverrides[plugin.key];
 
-  return [...candidates.values()];
+    if (
+      !override ||
+      (plugin.render.node && override.priority <= plugin.priority)
+    ) {
+      return plugin;
+    }
+
+    return brandPluginDescriptor({
+      ...plugin,
+      render: {
+        ...plugin.render,
+        node: override.component,
+      },
+    }) as AnyBasePlugin;
+  });
+};
+
+const getPresentPluginKeys = (
+  nodes: ReadonlyMap<string, PluginGraphNode>,
+  rootOriginsByKey: ReadonlyMap<string, readonly PluginRootOrigin[]>
+) => {
+  const present = new Set<string>();
+  const queue = [...rootOriginsByKey.keys()];
+
+  for (const key of queue) {
+    if (present.has(key)) continue;
+    present.add(key);
+    const owner = nodes.get(key);
+
+    if (!owner?.resolved || owner.resolved.enabled === false) continue;
+
+    for (const edge of owner.dependencyEdges) {
+      if (!present.has(edge.targetKey)) queue.push(edge.targetKey);
+    }
+  }
+
+  return present;
+};
+
+const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
+  '__apiExtensions',
+  '__config',
+  '__configurationLayers',
+  '__editorApi',
+  '__editorExtensions',
+  '__extensions',
+  '__pluginReference',
+  '__selectorExtensions',
+  '__txExtensions',
+  'clone',
+  'configure',
+  'dependencies',
+  'extend',
+  'extendApi',
+  'extendEditorApi',
+  'extendExtension',
+  'extendSelectors',
+  'extendTx',
+  'extendTxGroup',
+  'key',
+  'override',
+  'plugins',
+  'withComponent',
+]);
+
+const assertWeakPluginOverride = (
+  contributorKey: string,
+  targetKey: string,
+  value: unknown
+): Record<PropertyKey, unknown> => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error(
+      `Plate plugin "${contributorKey}" weak override for "${targetKey}" must be an object.`
+    );
+  }
+
+  for (const key of Reflect.ownKeys(value)) {
+    if (weakPluginOverrideForbiddenKeys.has(key)) {
+      throw new Error(
+        `Plate plugin "${contributorKey}" weak override for "${targetKey}" cannot define "${String(key)}". Weak overrides cannot mutate plugin identity, topology, or authoring state.`
+      );
+    }
+  }
+  if (
+    Object.hasOwn(value, 'enabled') &&
+    typeof Reflect.get(value, 'enabled') !== 'boolean'
+  ) {
+    throw new Error(
+      `Plate plugin "${contributorKey}" weak override for "${targetKey}" must define "enabled" as a boolean.`
+    );
+  }
+
+  return value as Record<PropertyKey, unknown>;
+};
+
+const getWeakOverrideGraphSignature = (
+  nodes: ReadonlyMap<string, PluginGraphNode>,
+  present: ReadonlySet<string>
+) =>
+  [...nodes.entries()]
+    .map(([key, node]) => {
+      const plugin = node.resolved;
+
+      return `${key}:${present.has(key) ? 1 : 0}:${plugin?.enabled === false ? 0 : 1}:${plugin?.priority ?? ''}`;
+    })
+    .join('|');
+
+const applyWeakPluginOverrides = (
+  editor: BaseEditor,
+  nodes: ReadonlyMap<string, PluginGraphNode>,
+  rootOriginsByKey: ReadonlyMap<string, readonly PluginRootOrigin[]>
+) => {
+  let present = getPresentPluginKeys(nodes, rootOriginsByKey);
+  let signature = getWeakOverrideGraphSignature(nodes, present);
+  const seen = new Set([signature]);
+  const maxPasses = Math.max(4, nodes.size * 4);
+
+  for (let pass = 0; pass < maxPasses; pass++) {
+    const patchesByTarget = new Map<string, Record<PropertyKey, unknown>>();
+    const contributors = [...nodes.values()]
+      .filter(
+        (
+          node
+        ): node is PluginGraphNode & {
+          resolved: AnyBasePlugin;
+        } =>
+          !!node.resolved &&
+          present.has(node.resolved.key) &&
+          node.resolved.enabled !== false
+      )
+      // Merge weakest first so higher priority and then earlier source order
+      // remain authoritative for overlapping fields.
+      .sort(
+        (a, b) =>
+          a.resolved.priority - b.resolved.priority ||
+          b.origin.sourceIndex - a.origin.sourceIndex
+      );
+
+    for (const contributor of contributors) {
+      const overrides = contributor.resolved.override?.plugins;
+
+      if (!overrides) continue;
+
+      for (const targetKey of Object.keys(overrides)) {
+        if (targetKey === 'root') {
+          throw new Error(
+            `Plate plugin "${contributor.resolved.key}" cannot weakly override the internal root plugin.`
+          );
+        }
+        if (targetKey === contributor.resolved.key) {
+          throw new Error(
+            `Plate plugin "${contributor.resolved.key}" cannot weakly override itself. Configure the descriptor directly.`
+          );
+        }
+        if (!present.has(targetKey)) continue;
+        const patch = assertWeakPluginOverride(
+          contributor.resolved.key,
+          targetKey,
+          overrides[targetKey]
+        );
+
+        const previous = patchesByTarget.get(targetKey);
+
+        patchesByTarget.set(
+          targetKey,
+          previous ? mergePlugins(previous, patch) : mergePlugins({}, patch)
+        );
+      }
+    }
+
+    nodes.forEach((node, key) => {
+      if (!node.baseResolved) return;
+      const patch = patchesByTarget.get(key);
+
+      if (!patch) {
+        node.resolved = node.baseResolved;
+        return;
+      }
+
+      const patched = mergePlugins(node.baseResolved, patch);
+
+      patched.__configurationLayers = node.baseResolved.__configurationLayers;
+      node.resolved = reapplyResolvedPluginConfigurations(
+        editor,
+        patched,
+        node.configurations
+      );
+      assertStaticPluginTopology(node.descriptor, node.resolved);
+    });
+
+    const nextPresent = getPresentPluginKeys(nodes, rootOriginsByKey);
+    const nextSignature = getWeakOverrideGraphSignature(nodes, nextPresent);
+
+    if (nextSignature === signature) return;
+    if (seen.has(nextSignature)) {
+      throw new Error(
+        'Plate weak plugin overrides contain cyclic enablement. Configure one target descriptor directly.'
+      );
+    }
+
+    seen.add(nextSignature);
+    present = nextPresent;
+    signature = nextSignature;
+  }
+
+  throw new Error(
+    'Plate weak plugin overrides did not reach a stable enablement graph.'
+  );
 };
 
 const resolveAndSortPluginsCandidate = (
   editor: BaseEditor,
-  plugins: readonly AnyBasePlugin[]
+  sourceInput: PlatePluginSourceInput
 ): BasePlugins => {
-  const { explicitKeys, pluginMap: collectedPluginMap } =
-    flattenAndResolvePlugins(editor, plugins);
-  const overriddenPlugins = applyPluginOverrides(
-    Array.from(collectedPluginMap.values()),
-    false
-  );
-  const pluginMap = new Map(
-    overriddenPlugins.map((plugin) => [plugin.key, plugin])
-  );
-  const roots = overriddenPlugins
-    .filter(
-      (plugin) => explicitKeys.has(plugin.key) && plugin.enabled !== false
-    )
-    .sort((a, b) => b.priority - a.priority);
-  const orderedPlugins: BasePlugins = [];
-  const state = new Map<string, 'visited' | 'visiting'>();
-  const stack: string[] = [];
+  const sources = normalizePlatePluginSources(sourceInput);
+  const sourceIndexByDescriptor = new WeakMap<object, number>();
+  const indexed = new WeakSet<object>();
+  let nextSourceIndex = 0;
+  const indexDescriptor = (value: unknown) => {
+    if (!value || typeof value !== 'object' || indexed.has(value)) return;
 
-  const visit = (plugin: AnyBasePlugin) => {
-    if (state.get(plugin.key) === 'visited') return;
-    if (state.get(plugin.key) === 'visiting') {
-      const cycleStart = stack.indexOf(plugin.key);
-      const cycle = [...stack.slice(cycleStart), plugin.key].join(' -> ');
+    indexed.add(value);
+    sourceIndexByDescriptor.set(value, nextSourceIndex++);
+    if (!isNominalPluginDescriptor(value)) return;
 
-      throw new Error(`Circular plugin dependency: ${cycle}`);
+    const plugin = value as AnyBasePlugin;
+
+    getPluginDependencies(plugin).forEach(indexDescriptor);
+  };
+  const rootOriginsByKey = new Map<string, PluginRootOrigin[]>();
+  const addRoot = (
+    descriptor: AnyBasePlugin,
+    role: PluginRootRole,
+    path: string
+  ) => {
+    if (!isNominalPluginDescriptor(descriptor) || !descriptor.key) {
+      throw new Error(`Plate plugin at "${path}" must have a non-empty key.`);
+    }
+    if (descriptor.key === 'root' && role !== 'internalRoot') {
+      throw new Error(
+        `Plate plugin key "root" is reserved for the internal editor root (${path}).`
+      );
+    }
+    if (role === 'internalRoot' && descriptor.key !== 'root') {
+      throw new Error(
+        `The internal editor root must use the reserved plugin key "root".`
+      );
     }
 
-    state.set(plugin.key, 'visiting');
-    stack.push(plugin.key);
+    const origins = rootOriginsByKey.get(descriptor.key) ?? [];
+    const sameDescriptor = origins.find(
+      (origin) => origin.role === role && origin.descriptor === descriptor
+    );
 
-    for (const dependency of plugin.dependencies) {
-      if (!dependency || typeof dependency !== 'object') {
-        throw new Error(
-          `Plugin "${plugin.key}" has an invalid dependency. Pass the plugin object, not its key.`
-        );
-      }
-
-      const dependencyKey = (dependency as AnyBasePlugin).key;
-      const dependencyPlugin = pluginMap.get(dependencyKey);
-
-      if (!dependencyPlugin) {
-        throw new Error(
-          `Plugin "${plugin.key}" depends on missing plugin "${dependencyKey}"`
-        );
-      }
-      if (dependencyPlugin.enabled === false) {
-        throw new Error(
-          `Plugin "${plugin.key}" depends on disabled plugin "${dependencyKey}"`
-        );
-      }
-
-      visit(dependencyPlugin);
+    if (!sameDescriptor) {
+      origins.push({
+        descriptor,
+        path,
+        role,
+        sourceIndex: sourceIndexByDescriptor.get(descriptor)!,
+      });
+      rootOriginsByKey.set(descriptor.key, origins);
     }
-
-    stack.pop();
-    state.set(plugin.key, 'visited');
-    orderedPlugins.push(plugin);
+  };
+  const indexRoots = (
+    plugins: readonly AnyBasePlugin[],
+    role: Exclude<PluginRootRole, 'internalRoot'>
+  ) => {
+    plugins.forEach((plugin, index) => {
+      indexDescriptor(plugin);
+      addRoot(plugin, role, `${role}[${index}].${plugin.key}`);
+    });
   };
 
-  roots.forEach(visit);
+  if (sources.internalRoot) {
+    indexDescriptor(sources.internalRoot);
+    addRoot(sources.internalRoot, 'internalRoot', 'internalRoot.root');
+  }
+  indexRoots(sources.baseCore, 'baseCore');
+  indexRoots(sources.reactCore, 'reactCore');
+  indexRoots(sources.user, 'user');
 
-  return orderedPlugins;
+  const nodes = new Map<string, PluginGraphNode>();
+  const resolvedByDescriptor = new WeakMap<
+    object,
+    Readonly<{
+      configurations: readonly ResolvedPluginConfiguration[];
+      plugin: AnyBasePlugin;
+    }>
+  >();
+  const resolveDescriptor = (descriptor: AnyBasePlugin) => {
+    let resolved = resolvedByDescriptor.get(descriptor);
+
+    if (!resolved) {
+      resolved = resolvePluginWithConfigurations(editor, descriptor);
+      assertStaticPluginTopology(descriptor, resolved.plugin);
+      resolvedByDescriptor.set(descriptor, resolved);
+    }
+
+    return resolved;
+  };
+
+  rootOriginsByKey.forEach((origins, key) => {
+    const highestPrecedence = Math.max(
+      ...origins.map((origin) => rootRolePrecedence[origin.role])
+    );
+    const highestRoleOrigins = origins.filter(
+      (origin) => rootRolePrecedence[origin.role] === highestPrecedence
+    );
+    const disabledOrigins = highestRoleOrigins.filter(
+      (origin) => resolveDescriptor(origin.descriptor).plugin.enabled === false
+    );
+
+    if (highestRoleOrigins.length > 1 && disabledOrigins.length === 0) {
+      throw new Error(
+        `Duplicate Plate plugin "${key}" in ${highestRoleOrigins[0].role}: "${highestRoleOrigins[0].path}" conflicts with "${highestRoleOrigins[1].path}".`
+      );
+    }
+
+    const selected = disabledOrigins[0] ?? highestRoleOrigins[0];
+    const winner = {
+      ...selected,
+      sourceIndex: Math.min(...origins.map((origin) => origin.sourceIndex)),
+    };
+    const resolved = resolveDescriptor(winner.descriptor);
+
+    nodes.set(key, {
+      baseResolved: resolved.plugin,
+      configurations: resolved.configurations,
+      dependencyEdges: [],
+      descriptor: winner.descriptor,
+      expanded: false,
+      origin: winner,
+      resolved: resolved.plugin,
+    });
+  });
+
+  const hiddenByKey = new Map<
+    string,
+    Readonly<{ descriptor: AnyBasePlugin; path: string }>
+  >();
+  const queue = [...nodes.values()];
+  const addRelationship = (
+    owner: PluginGraphNode,
+    reference: unknown,
+    index: number
+  ) => {
+    const ownerPlugin = owner.resolved!;
+    const path = `${owner.origin.path}.dependencies[${index}]`;
+    const descriptor = assertPluginReference(reference, ownerPlugin.key, path);
+    const hidden = hiddenByKey.get(descriptor.key);
+
+    if (hidden && hidden.descriptor !== descriptor) {
+      throw new Error(
+        `Plate plugin "${descriptor.key}" has conflicting dependency descriptors at "${hidden.path}" and "${path}".`
+      );
+    }
+    if (!hidden) {
+      hiddenByKey.set(descriptor.key, { descriptor, path });
+    }
+
+    let target = nodes.get(descriptor.key);
+
+    if (!target) {
+      target = {
+        configurations: [],
+        dependencyEdges: [],
+        descriptor,
+        expanded: false,
+        origin: {
+          path,
+          sourceIndex:
+            sourceIndexByDescriptor.get(descriptor) ?? nextSourceIndex++,
+        },
+      };
+      nodes.set(descriptor.key, target);
+      queue.push(target);
+    } else if (
+      target.origin.sourceIndex >
+      (sourceIndexByDescriptor.get(descriptor) ?? Number.POSITIVE_INFINITY)
+    ) {
+      target.origin = {
+        ...target.origin,
+        sourceIndex: sourceIndexByDescriptor.get(descriptor)!,
+      };
+    }
+
+    const edge: PluginRelationship = {
+      ownerKey: ownerPlugin.key,
+      path,
+      targetKey: descriptor.key,
+    };
+
+    owner.dependencyEdges.push(edge);
+  };
+
+  for (const node of queue) {
+    if (node.expanded) continue;
+    node.expanded = true;
+
+    const resolution = node.baseResolved
+      ? {
+          configurations: node.configurations,
+          plugin: node.baseResolved,
+        }
+      : resolveDescriptor(node.descriptor);
+    const resolved = resolution.plugin;
+
+    node.baseResolved = resolved;
+    node.configurations = resolution.configurations;
+    node.resolved = resolved;
+    setCompiledPlatePluginCandidate(editor, resolved);
+
+    getPluginDependencies(resolved).forEach((dependency, dependencyIndex) => {
+      addRelationship(node, dependency, dependencyIndex);
+    });
+  }
+
+  applyWeakPluginOverrides(editor, nodes, rootOriginsByKey);
+  const presentPluginKeys = getPresentPluginKeys(nodes, rootOriginsByKey);
+  const requiredByTarget = new Map<string, PluginRelationship[]>();
+
+  nodes.forEach((owner, key) => {
+    if (!presentPluginKeys.has(key) || owner.resolved?.enabled === false) {
+      return;
+    }
+
+    owner.dependencyEdges.forEach((edge) => {
+      const edges = requiredByTarget.get(edge.targetKey) ?? [];
+
+      edges.push(edge);
+      requiredByTarget.set(edge.targetKey, edges);
+    });
+  });
+
+  requiredByTarget.forEach((edges, targetKey) => {
+    const target = nodes.get(targetKey)!;
+
+    if (target.resolved?.enabled === false) {
+      const edge = edges[0];
+
+      throw new Error(
+        `Plate plugin "${edge.ownerKey}" requires disabled plugin "${targetKey}" at "${edge.path}".`
+      );
+    }
+  });
+
+  const enabledNodes = [...nodes.values()].filter(
+    (node): node is PluginGraphNode & { resolved: AnyBasePlugin } =>
+      !!node.resolved &&
+      node.resolved.enabled !== false &&
+      presentPluginKeys.has(node.resolved.key)
+  );
+  const enabledByKey = new Map(
+    enabledNodes.map((node) => [node.resolved.key, node])
+  );
+  const dependencyKeysByOwner = new Map<string, Set<string>>();
+  const dependentsByDependency = new Map<string, Set<string>>();
+  const indegree = new Map<string, number>();
+
+  enabledNodes.forEach((node) => {
+    indegree.set(node.resolved.key, 0);
+  });
+  enabledNodes.forEach((node) => {
+    const ownerKey = node.resolved.key;
+    const dependencies = dependencyKeysByOwner.get(ownerKey) ?? new Set();
+
+    node.dependencyEdges.forEach((edge) => {
+      if (
+        !enabledByKey.has(edge.targetKey) ||
+        dependencies.has(edge.targetKey)
+      ) {
+        return;
+      }
+      dependencies.add(edge.targetKey);
+      indegree.set(ownerKey, (indegree.get(ownerKey) ?? 0) + 1);
+      const dependents =
+        dependentsByDependency.get(edge.targetKey) ?? new Set<string>();
+
+      dependents.add(ownerKey);
+      dependentsByDependency.set(edge.targetKey, dependents);
+    });
+    dependencyKeysByOwner.set(ownerKey, dependencies);
+  });
+
+  const compareReady = (
+    a: PluginGraphNode & { resolved: AnyBasePlugin },
+    b: PluginGraphNode & { resolved: AnyBasePlugin }
+  ) =>
+    b.resolved.priority - a.resolved.priority ||
+    a.origin.sourceIndex - b.origin.sourceIndex;
+  const ready = enabledNodes
+    .filter((node) => indegree.get(node.resolved.key) === 0)
+    .sort(compareReady);
+  const ordered: AnyBasePlugin[] = [];
+
+  while (ready.length > 0) {
+    const node = ready.shift()!;
+    const key = node.resolved.key;
+
+    ordered.push(node.resolved);
+    dependentsByDependency.get(key)?.forEach((dependentKey) => {
+      const next = (indegree.get(dependentKey) ?? 0) - 1;
+
+      indegree.set(dependentKey, next);
+      if (next === 0) {
+        ready.push(enabledByKey.get(dependentKey)!);
+        ready.sort(compareReady);
+      }
+    });
+  }
+
+  if (ordered.length !== enabledNodes.length) {
+    const state = new Map<string, 'visited' | 'visiting'>();
+    const stack: string[] = [];
+    let cycle: string[] | undefined;
+    const visit = (key: string) => {
+      if (cycle || state.get(key) === 'visited') return;
+      if (state.get(key) === 'visiting') {
+        const start = stack.indexOf(key);
+
+        cycle = [...stack.slice(start), key];
+        return;
+      }
+
+      state.set(key, 'visiting');
+      stack.push(key);
+      dependencyKeysByOwner.get(key)?.forEach(visit);
+      stack.pop();
+      state.set(key, 'visited');
+    };
+
+    enabledNodes.forEach((node) => {
+      visit(node.resolved.key);
+    });
+
+    throw new Error(
+      `Circular plugin dependency: ${(cycle ?? []).join(' -> ')}`
+    );
+  }
+
+  const finalPlugins = applyComponentOverrides(ordered);
+
+  finalPlugins.forEach((plugin) => {
+    setCompiledPlatePluginCandidate(editor, plugin);
+  });
+
+  return finalPlugins;
 };
 
 export const resolveAndSortPlugins = (
   editor: BaseEditor,
-  plugins: readonly AnyBasePlugin[]
+  sources: PlatePluginSourceInput
 ): BasePlugins =>
   withCompiledPlatePluginCandidate(
     editor,
-    collectPlatePluginSourceCandidates(plugins),
-    () => resolveAndSortPluginsCandidate(editor, plugins)
+    collectPlatePluginSourceCandidates(sources),
+    () => resolveAndSortPluginsCandidate(editor, sources)
   );
 
 const applyPluginsToEditor = (editor: BaseEditor, plugins: BasePlugins) => {
@@ -1217,91 +1776,4 @@ const applyPluginsToEditor = (editor: BaseEditor, plugins: BasePlugins) => {
     pluginList: plugins,
     plugins: pluginsByKey,
   });
-};
-
-const applyPluginOverrides = (
-  plugins: readonly AnyBasePlugin[],
-  filterDisabled = true
-): AnyBasePlugin[] => {
-  let overriddenPlugins = [...plugins];
-
-  const enabledOverrides: Record<string, boolean> = Object.create(null);
-  const componentOverrides: Record<
-    string,
-    { component: any; priority: number }
-  > = Object.create(null);
-  const pluginOverrides: Record<string, Partial<AnyBasePlugin>> = Object.create(
-    null
-  );
-
-  // Collect all overrides
-  for (const plugin of plugins) {
-    if (plugin.override.enabled) {
-      Object.assign(enabledOverrides, plugin.override.enabled);
-    }
-    // TODO react
-    if ((plugin.override as any).components) {
-      Object.entries((plugin.override as any).components).forEach(
-        ([key, component]) => {
-          if (
-            !componentOverrides[key] ||
-            plugin.priority > componentOverrides[key].priority
-          ) {
-            componentOverrides[key] = {
-              component,
-              priority: plugin.priority,
-            };
-          }
-        }
-      );
-    }
-    if (plugin.override.plugins) {
-      Object.entries(plugin.override.plugins).forEach(([key, value]) => {
-        pluginOverrides[key] = mergePlugins(pluginOverrides[key], value);
-
-        if (value.enabled !== undefined) {
-          enabledOverrides[key] = value.enabled;
-        }
-      });
-    }
-  }
-
-  // Apply overrides
-  overriddenPlugins = overriddenPlugins.map((p) => {
-    let updatedPlugin = {
-      ...p,
-      render: { ...p.render },
-    };
-
-    // Apply plugin overrides
-    if (pluginOverrides[p.key]) {
-      updatedPlugin = mergePlugins(updatedPlugin, pluginOverrides[p.key]);
-    }
-    // Apply component overrides
-    // TODO react
-    if (
-      componentOverrides[p.key] &&
-      (!p.render.node || componentOverrides[p.key].priority > p.priority)
-    ) {
-      (updatedPlugin as any).render.node = componentOverrides[p.key].component;
-    }
-
-    // Apply enabled overrides
-    const enabled = enabledOverrides[p.key] ?? updatedPlugin.enabled;
-
-    if (isDefined(enabled)) {
-      updatedPlugin.enabled = enabled;
-    }
-
-    return brandPluginDescriptor(updatedPlugin);
-  });
-
-  return overriddenPlugins
-    .filter((p) => !filterDisabled || p.enabled !== false)
-    .map((plugin) =>
-      brandPluginDescriptor({
-        ...plugin,
-        plugins: applyPluginOverrides(plugin.plugins || [], filterDisabled),
-      })
-    );
 };

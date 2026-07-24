@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
-import { createBaseEditor, type Value } from 'platejs';
+import { createBaseEditor, type EditorDocumentValue } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
@@ -11,7 +11,7 @@ import { AIChatPlugin } from '../../../../../../../packages/ai/src/react/ai-chat
 import { BaseAIPlugin } from '../../../../../../../packages/ai/src/lib/BaseAIPlugin';
 export const defaultPlugins = [...BaseEditorKit, BaseAIPlugin, AIChatPlugin];
 
-export const createTestEditor = (value?: Value) => {
+export const createTestEditor = (value?: EditorDocumentValue) => {
   const input = (
     <editor>
       <hp>
@@ -23,7 +23,7 @@ export const createTestEditor = (value?: Value) => {
   const editor = createBaseEditor({
     plugins: defaultPlugins,
     ...(value ? {} : { selection: input.selection }),
-    initialValue: value ?? input.children,
+    initialValue: value ?? { children: input.children },
   });
 
   return { editor, input };

@@ -25,14 +25,16 @@ describe('serializeMd', () => {
     expect(
       serializeMd(editor, {
         remarkStringifyOptions: { bullet: '+' },
-        value: [
-          {
-            children: [{ text: 'Item' }],
-            indent: 1,
-            listStyleType: 'disc',
-            type: 'p',
-          },
-        ],
+        value: {
+          children: [
+            {
+              children: [{ text: 'Item' }],
+              indent: 1,
+              listStyleType: 'disc',
+              type: 'p',
+            },
+          ],
+        },
       })
     ).toBe('+ Item\n');
   });

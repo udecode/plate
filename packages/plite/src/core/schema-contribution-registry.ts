@@ -8,8 +8,8 @@ import {
   createCompiledEditorSchemaDelta,
   type EditorSchemaContributionRecord,
   getEditorSchemaDeclarationKey,
-  rebindCompiledEditorSchemaRuntimePolicies,
-  stripCompiledEditorSchemaRuntimePolicies,
+  rebindCompiledEditorSchemaRuntimeValidations,
+  stripCompiledEditorSchemaRuntimeValidations,
   type StructuralCompiledEditorSchema,
 } from './schema-compiler';
 
@@ -17,7 +17,7 @@ export type EditorSchemaContributionRegistration =
   EditorSchemaContributionRecord;
 
 export type EditorSchemaContributionRegistry = {
-  compiled: CompiledEditorSchema | null;
+  compiled: CompiledEditorSchema;
   declarationKey: string | null;
   delta: EditorSchemaDelta | null;
   records: Map<string, EditorSchemaContributionRegistration>;
@@ -41,7 +41,7 @@ const cacheSchema = (key: string, compiled: CompiledEditorSchema) => {
   COMPILED_SCHEMA_CACHE.delete(key);
   COMPILED_SCHEMA_CACHE.set(
     key,
-    stripCompiledEditorSchemaRuntimePolicies(compiled)
+    stripCompiledEditorSchemaRuntimeValidations(compiled)
   );
 
   while (COMPILED_SCHEMA_CACHE.size > COMPILED_SCHEMA_CACHE_LIMIT) {
@@ -57,7 +57,7 @@ const EMPTY_SCHEMA_DECLARATION_KEY = getEditorSchemaDeclarationKey([]);
 const getDerivedBaseSchema = (revision: number) => {
   const cached = getCachedSchema(EMPTY_SCHEMA_DECLARATION_KEY);
   const compiled = cached
-    ? rebindCompiledEditorSchemaRuntimePolicies(cached, [], revision)
+    ? rebindCompiledEditorSchemaRuntimeValidations(cached, [], revision)
     : compileEditorSchemaContributions([], { revision });
 
   if (!cached) cacheSchema(EMPTY_SCHEMA_DECLARATION_KEY, compiled);
@@ -172,7 +172,7 @@ export const mergeSchemaContributionRegistries = (
       ? previous.compiled
       : getCachedSchema(declarationKey);
   const compiled = reusable
-    ? rebindCompiledEditorSchemaRuntimePolicies(
+    ? rebindCompiledEditorSchemaRuntimeValidations(
         reusable,
         [...records.values()],
         revision

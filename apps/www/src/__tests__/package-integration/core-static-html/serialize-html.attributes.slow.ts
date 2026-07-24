@@ -1,5 +1,7 @@
+import { BaseItalicPlugin } from '@platejs/basic-nodes';
 import { renderStaticHtml } from 'platejs/static';
 
+import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { createStaticEditor } from './create-static-editor';
 
 describe('core static renderStaticHtml attributes', () => {
@@ -15,24 +17,25 @@ describe('core static renderStaticHtml attributes', () => {
         },
       ],
       {
-        override: {
-          plugins: {
-            italic: {
-              render: {
-                isDecoration: false,
-                nodeProps: {
-                  'data-plite-test': true,
-                },
-                textProps: {
-                  'data-plite-test': 'text',
-                },
-                leafProps: {
-                  'data-plite-test': 'leaf',
-                },
+        plugins: [
+          ...BaseEditorKit.filter(
+            (plugin) => plugin.key !== BaseItalicPlugin.key
+          ),
+          BaseItalicPlugin.configure({
+            render: {
+              isDecoration: false,
+              nodeProps: {
+                'data-plite-test': true,
+              },
+              textProps: {
+                'data-plite-test': 'text',
+              },
+              leafProps: {
+                'data-plite-test': 'leaf',
               },
             },
-          },
-        },
+          }),
+        ],
       }
     );
 

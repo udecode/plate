@@ -75,6 +75,10 @@ export const editor = createPlateEditor({
 
 The menu is UI state, not document state. The document stores block ids and node properties; it does not store whether a menu is open.
 
+`BlockSelectionPlugin` and `BlockMenuPlugin` are ordinary top-level
+descriptors; neither installs the other. When `BlockMenuPlugin` is absent,
+block selection treats the menu as closed.
+
 ## Manual Setup
 
 <Steps>
@@ -177,9 +181,9 @@ The menu focuses block selection after close so keyboard selection remains activ
 |-----|---------|-----|
 | `BLOCK_CONTEXT_MENU_ID` | `@platejs/selection/react` | Built-in open id for the registry context menu. |
 | `BlockMenuPlugin` | `@platejs/selection/react` | Menu state plugin with `openId` and `position` options. |
-| `editor.plugin(BlockMenuPlugin).api.hide()` | `@platejs/selection/react` | Closes the menu and moves its stored position offscreen. |
-| `editor.plugin(BlockMenuPlugin).api.show(id, position?)` | `@platejs/selection/react` | Opens a menu by id and optionally sets pointer coordinates. |
-| `editor.plugin(BlockMenuPlugin).api.showContextMenu(blockId, position)` | `@platejs/selection/react` | Selects one block by id, then opens the context menu at the pointer coordinates. |
+| `editor.api.blockMenu.hide()` | `@platejs/selection/react` | Closes the menu and moves its stored position offscreen. |
+| `editor.api.blockMenu.show(id, position?)` | `@platejs/selection/react` | Opens a menu by id and optionally sets pointer coordinates. |
+| `editor.api.blockMenu.showContextMenu(blockId, position)` | `@platejs/selection/react` | Selects one block by id, then opens the context menu at the pointer coordinates. |
 | `BlockSelectionPlugin.options.enableContextMenu` | `@platejs/selection/react` | Enables block selection from right-click events. |
-| `editor.plugin(BlockSelectionPlugin).api.addOnContextMenu` | `@platejs/selection/react` | Shared right-click handler used by selectable block node props. |
+| `editor.api.blockSelection.addOnContextMenu` | `@platejs/selection/react` | Shared right-click handler used by selectable block node props. |
 | `BlockContextMenu` | Registry UI | Default context menu component used by `BlockMenuKit`. |

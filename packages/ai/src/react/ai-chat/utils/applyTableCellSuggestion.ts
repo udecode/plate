@@ -42,7 +42,7 @@ export const applyTableCellSuggestion = (
   const originalChildren = withoutSuggestionAndComments(cell.children);
 
   // Deserialize AI content to nodes
-  const aiNodes = editor.api.markdown.deserialize(content);
+  const aiNodes = editor.api.markdown.deserialize(content).children;
 
   // Compute diff
   const diffNodes = diffToSuggestions(editor, originalChildren, aiNodes, {

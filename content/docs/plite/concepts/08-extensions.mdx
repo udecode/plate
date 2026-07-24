@@ -257,9 +257,9 @@ const tables = defineEditorExtension({
 });
 ```
 
-When schema semantics depend on configuration, put the immutable value in
-`config` and return the declaration from a pure schema factory. The factory
-receives only the frozen config and extension name.
+When schema semantics depend on extension options, put the immutable value in
+`options` and return the declaration from a pure schema factory. The factory
+receives only the frozen options and extension name.
 
 ```ts
 import {
@@ -271,11 +271,11 @@ import {
 
 const comments = defineEditorExtension({
   name: "comments",
-  config: { prefix: "comment_" },
-  schema: ({ config }) => ({
+  options: { prefix: "comment_" },
+  schema: ({ options }) => ({
     properties: [
       schema.textProperty(
-        schema.key.prefix(config.prefix),
+        schema.key.prefix(options.prefix),
         property.boolean({ default: false, omitDefault: true }),
         {
           split: "preserve",
@@ -290,6 +290,9 @@ const comments = defineEditorExtension({
 
 Elements can describe behavior such as `inline`, `void`, `atom`, `isolating`,
 `keyboardSelectable`, `readOnly`, `selectable`, and `markableVoid`.
+On a non-void element, `keyboardSelectable` gives its non-editable chrome an
+exact `NodeSelection` while keeping child text editable; see
+[Selection And DOM](16-selection-and-dom#keyboard-selectable-content).
 `void: 'editable-island'` keeps the element void for rendering policy while
 allowing Plite cursor projection to enter its text children. `contentRoots`
 maps each owned slot to its content grammar; the root key is stored at

@@ -303,7 +303,9 @@ Controls what happens when users press `Backspace` at specific positions.
 ### Configuration
 
 ```tsx
-HeadingPlugin.configure({
+import { H1Plugin } from '@platejs/basic-nodes/react';
+
+H1Plugin.configure({
   rules: {
     delete: {
       // Action when Backspace is pressed at block start

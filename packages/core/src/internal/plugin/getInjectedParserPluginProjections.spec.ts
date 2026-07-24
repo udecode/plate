@@ -11,7 +11,7 @@ describe('getInjectedParserPluginProjections', () => {
     });
     const SourcePlugin = createBasePlugin({
       inject: {
-        plugins: {
+        parsers: {
           target: {
             parser: { format: 'text/html' },
           },

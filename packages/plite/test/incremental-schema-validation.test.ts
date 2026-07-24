@@ -6,7 +6,6 @@ import fc from 'fast-check';
 import {
   createEditor,
   defineEditorSchema,
-  definePropertyPolicy,
   DocumentChange,
   type EditorDocumentValue,
   type Element,
@@ -239,8 +238,7 @@ describe('incremental schema validation', () => {
       kind: 'element' | 'text';
     }>;
     const visits = { element: 0, text: 0 };
-    const policy = definePropertyPolicy<Trace>({
-      id: 'incremental-validation-locality',
+    const descriptor = property.json({
       validate: (value): value is Trace => {
         if (
           typeof value !== 'object' ||
@@ -255,9 +253,8 @@ describe('incremental schema validation', () => {
 
         return true;
       },
-      version: 1,
+      validationVersion: 1,
     });
-    const descriptor = property.json({ policy });
     const editor = createEditor({
       extensions: [
         defineEditorSchema({

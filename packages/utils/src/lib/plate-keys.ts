@@ -93,7 +93,6 @@ export const KEYS = {
   blockMenu: 'blockMenu',
   blockPlaceholder: 'blockPlaceholder',
   blockSelection: 'blockSelection',
-  caption: 'caption',
   copilot: 'copilot',
   csv: 'csv',
   cursorOverlay: 'cursorOverlay',

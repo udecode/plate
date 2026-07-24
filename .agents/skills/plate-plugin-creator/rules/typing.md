@@ -1,18 +1,49 @@
 # Typing
 
-## Inference First
+## Contents
 
-Default to:
+- Builder inference
+- Owner context
+- Type-owner repair
+- Public contracts and plugin exports
+- Locals, tests, keys, and literals
+- Source hierarchy
 
-- `createBasePlugin`
-- `createPlatePlugin`
+## Builder Inference First
 
-Pass an explicit `PluginConfig` generic only when exported options, API,
-update groups, or selectors define a real public contract.
+Default to inferred plugin chains:
 
-## Use Context, Not Threaded Editors
+```ts
+export const BaseFooPlugin = createBasePlugin({
+  key: KEYS.foo,
+})
+  .extendApi(({ editor, getOptions }) => ({
+    // inferred
+  }))
+  .extendTx(({ editor, getOptions }) => (tx) => ({
+    // inferred
+  }));
+```
 
-Plugin callbacks already receive rich context. Prefer:
+Pass an explicit config generic only when exported options, API, tx, selectors,
+or state define a real public contract.
+
+Do not create:
+
+```ts
+type FooConfig = PluginConfig<"foo">;
+
+export const BaseFooPlugin: BasePlugin<FooConfig> = createBasePlugin<FooConfig>(
+  { key: KEYS.foo }
+);
+```
+
+An empty config alias and an annotated plugin export both hide whether the
+builder inferred correctly.
+
+## Context, Not Ferry Types
+
+Plugin callbacks already expose the typed owner context:
 
 - `editor`
 - `plugin`
@@ -20,69 +51,131 @@ Plugin callbacks already receive rich context. Prefer:
 - `api`
 - `update`
 - `getOptions`
+- `getOption`
 - `setOption`
 - `setOptions`
+- active `tx` where the callback is transaction-backed
 
-Do not teach people to pass `BaseEditor` through callback signatures, helper
-inputs, or public option callbacks when this context is already present.
+Keep one-owner behavior inline and capture those values. Do not move a callback
+into another file by inventing context/config/extension ferry types or threading
+`BaseEditor`, resolved plugin type, options, and `tx` through helper signatures.
 
-## Keys Are Shared Contracts
-
-For shipped/shared plugin surfaces, prefer `KEYS` from
-`packages/utils/src/lib/plate-keys.ts`:
-
-```ts
-key: KEYS.blockSelection
-targetPluginKeys: [KEYS.p]
-editor.getType(KEYS.codeBlock)
-```
-
-This is the default for real package/plugin code because:
-
-- cross-plugin references stay coherent
-- renames have one owner
-- tests and wrappers stop drifting on string literals
-
-Use raw literals only when the plugin is tiny and truly local, or when you are
-in a test fixture that is intentionally not modeling the shared contract.
-
-## Avoid Bad Annotations
-
-These are usually noise, not help:
+Do not add:
 
 ```ts
 extendTx(({ editor }: { editor: BaseEditor }) => (tx) => ...)
-targetPluginToInject: ({ editor }: { editor: BaseEditor }) => ...
+targetParserToInject: ({ editor }: { editor: BaseEditor }) => ...
+const plugin: BasePlugin<FooConfig> = createBasePlugin(...)
+const plugin = createBasePlugin(...) as BasePlugin<FooConfig>
 ```
 
-If inference fails, prefer fixing the plugin config shape with a real exported
-`PluginConfig` alias before spraying manual editor annotations.
+## Repair The Type Owner
 
-## Choose The Right API Lane
+If inference fails:
 
-- `extendApi`
-  Own plugin-specific read and service methods.
-- `extendTx`
-  Own the plugin-keyed update group.
-- `extendTxGroup`
-  Own an explicitly named update group.
-- `extendEditorApi`
-  Add a root `editor.api` capability only when root ownership is intentional.
+1. Identify the builder, source API, test-utils, or external boundary that owns
+   the missing type.
+2. Repair its generic/contextual signature.
+3. Keep the call site inline and inferred.
 
-The distinction is real. Do not blur it because one version is shorter to type.
+Do not “fix” inference with:
 
-## When Explicit Types Are Worth It
+- a decorative `PluginConfig` alias;
+- explicit callback parameter annotations;
+- local variable annotations that repeat the initializer;
+- `Parameters<typeof fn>` plumbing;
+- casts or `as any`;
+- `satisfies` on a builder result;
+- local fixture-shape aliases in tests;
+- an editor-locked helper extraction.
 
-Use explicit plugin config aliases when the plugin exports a meaningful contract
-that callers should understand and TypeScript should preserve.
+## Real Public Contracts
 
-Good fits:
+An explicit type is justified for:
 
-- `BaseCommentConfig`
-- `CodeBlockConfig`
-- `CopilotPluginConfig`
+- exported options/API/tx/selectors/state that callers consume;
+- a recursive type;
+- a contract reused by multiple independent owners;
+- a deliberate external boundary or adapter;
+- an otherwise uninferrable local such as an empty array or deliberate
+  narrowing/widening.
 
-Also keep literal option types stable when they matter:
+For a real API or transaction contract, type the builder:
+
+```ts
+type FooApi = {
+  getValue: () => string;
+};
+
+type FooTx = {
+  insertFoo: (options: InsertFooOptions) => void;
+};
+
+export const BaseFooPlugin = createBasePlugin({
+  key: KEYS.foo,
+})
+  .extendApi<FooApi>(({ editor }) => ({
+    getValue: () => editor.read.string(),
+  }))
+  .extendTx<FooTx>(({ editor }) => (tx) => ({
+    insertFoo: (options) => {
+      // `options` and `tx` are contextual
+    },
+  }));
+```
+
+The `extendTx` generic is the returned command object, not the factory function.
+Omit the generic when the full contract can be inferred.
+
+## Plugin Export Law
+
+The exported plugin value must infer from:
+
+- `createBasePlugin(...)`;
+- `createPlatePlugin(...)`;
+- `toPlatePlugin(...)`;
+- chained `.extend*` calls.
+
+Never annotate or cast that result merely to preserve a desired type. If the
+chain widens, loses dependencies, or drops API/tx capability, repair the owning
+builder generic and add a Core compile-only inference test.
+
+## Locals, Tests, And Examples
+
+Do not annotate locals whose initializer should infer:
+
+```ts
+// Bad
+const entries: NodeEntry<FooElement>[] = editor
+  .plugin(FooPlugin)
+  .api.getEntries();
+
+// Good
+const entries = editor.plugin(FooPlugin).api.getEntries();
+```
+
+The same law applies to tests and examples:
+
+- keep inline editor/plugin construction;
+- do not extract `plugins`, `options`, or wrapper factories to placate types;
+- do not define local `{ children; selection }` fixture aliases;
+- use source-owned test-utils types when an explicit boundary is unavoidable;
+- repair source typing when inline setup fails.
+
+## Keys And Literal Options
+
+Use shared `KEYS` for shipped plugins and cross-plugin contracts:
+
+```ts
+key: KEYS.blockSelection;
+targetPluginKeys: [KEYS.p];
+editor.getType(KEYS.codeBlock);
+```
+
+Raw literals are for genuinely local/internal plugins and deliberate test
+fixtures.
+
+Preserve meaningful literal option types at the option owner:
 
 ```ts
 options: {
@@ -90,12 +183,20 @@ options: {
 }
 ```
 
-## Source Of Truth Hierarchy
+Do not create a separate type solely to ferry the literal elsewhere.
 
-When files disagree, trust them in this order:
+## `any`
 
-1. `packages/core/src/lib/plugin/*`
-2. `packages/core/src/react/plugin/*`
-3. `packages/core/type-tests/*`
-4. current plugin packages that still agree with 1-3
-5. old package precedent
+Forbid `any` in production source. A deliberate, local non-type test escape is
+the only exception. Do not use `any`, `unknown` casts, or structural guards to
+hide a missing typed Plite/Plate API.
+
+## Source Hierarchy
+
+When code disagrees, trust:
+
+1. `packages/core/src/lib/plugin/*`;
+2. `packages/core/src/react/plugin/*`;
+3. `packages/core/type-tests/*`;
+4. current packages that agree with those owners;
+5. old package precedent.

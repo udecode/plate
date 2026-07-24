@@ -75,6 +75,40 @@ describe('ContentSlice', () => {
     assert.deepEqual(slice.content, [section('one')]);
   });
 
+  it('snapshots detached secondary roots with the slice', () => {
+    const input = {
+      content: [
+        {
+          childRoots: { caption: 'caption:1' },
+          children: [{ text: '' }],
+          type: 'image',
+        },
+      ],
+      openEnd: 0,
+      openStart: 0,
+      roots: {
+        'caption:1': [paragraph('caption')],
+      },
+    };
+    const slice = ContentSlice.fromJSON(input);
+
+    input.roots['caption:1'][0]!.children[0] = { text: 'mutated' };
+
+    assert.deepEqual(slice.roots, {
+      'caption:1': [paragraph('caption')],
+    });
+    assert.equal(Object.isFrozen(slice.roots), true);
+    assert.equal(Object.isFrozen(slice.roots!['caption:1']), true);
+    assert.throws(
+      () =>
+        ContentSlice.fromJSON({
+          ...input,
+          roots: { main: [paragraph('invalid')] },
+        }),
+      /named root keys/i
+    );
+  });
+
   it('reuses one prepared encoding for a trusted slice', () => {
     const slice = ContentSlice.fromJSON({
       content: [section('one')],
@@ -262,6 +296,7 @@ describe('ContentSlice', () => {
       content: [section('before')],
       openEnd: 2,
       openStart: 2,
+      roots: { caption: [paragraph('root')] },
     });
     const replacement = [section('after')];
     const preserved = ContentSlice.withContent(source, replacement, {
@@ -280,6 +315,7 @@ describe('ContentSlice', () => {
       content: [section('after')],
       openEnd: 2,
       openStart: 2,
+      roots: { caption: [paragraph('root')] },
     });
     assert.deepEqual(closed, {
       content: [section('after')],

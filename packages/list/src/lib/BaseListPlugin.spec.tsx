@@ -1,14 +1,45 @@
+/** @jsx jsxt */
+
 import {
   BaseParagraphPlugin,
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
-import { DocumentChange, schema } from '@platejs/plite';
+import { BaseIndentPlugin } from '@platejs/indent';
+import { DocumentChange, schema, type Descendant } from '@platejs/plite';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 import ReactDOMServer from 'react-dom/server';
 
 import { KEYS } from '@platejs/utils';
-import { BaseListPlugin } from './BaseListPlugin';
+import {
+  BaseListPlugin,
+  BulletedListRules,
+  isOrderedList,
+  ListStyleType,
+  OrderedListRules,
+  TaskListRules,
+} from './BaseListPlugin';
+
+jsxt;
+
+const FixtureHeadingPlugin = createBasePlugin({
+  key: KEYS.h1,
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+});
+
+const createListEditorFromFixture = (fixture: TestEditor) =>
+  createBaseEditor({
+    plugins: [BaseListPlugin, FixtureHeadingPlugin],
+    initialValue:
+      fixture.children.length > 0
+        ? fixture.children
+        : [{ children: [{ text: '' }], type: KEYS.p }],
+  });
 
 const assertScopedListTypes = () => {
   const editor = createBaseEditor({
@@ -16,6 +47,13 @@ const assertScopedListTypes = () => {
   });
   const list = editor.plugin(BaseListPlugin);
 
+  editor.api.list.expandItemsWithChildren([]);
+  editor.api.list.isActive(['disc', 'circle']);
+  editor.update.list.toggle({ at: [0], listStyleType: 'disc' });
+  editor.update.list.indent({ at: { offset: 0, path: [0, 0] } });
+  editor.update.list.outdent();
+
+  list.api.expandItemsWithChildren([]);
   list.api.isActive(['disc', 'circle']);
   list.update.toggle({ at: [0], listStyleType: 'disc' });
   list.update.indent({ at: { offset: 0, path: [0, 0] } });
@@ -87,10 +125,55 @@ describe('BaseListPlugin', () => {
     expect(editor.getPlugin(BaseListPlugin).targetPluginKeys).toEqual([
       'callout',
     ]);
+    expect(editor.getPlugin(BaseIndentPlugin).targetPluginKeys).toEqual([
+      'callout',
+    ]);
     expect(editor.read.children()[0]).toMatchObject({
       listStyleType: 'disc',
       type: 'note',
     });
+
+    editor.plugin(BaseListPlugin).update.indent({ at: [0] });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      indent: 1,
+      listStyleType: 'disc',
+      type: 'note',
+    });
+    expect(() =>
+      editor.read.schema.validateDocument(editor.read.value())
+    ).not.toThrow();
+    expect(
+      editor.api.html.deserialize({
+        element: '<li aria-level="2">Imported</li>',
+      })
+    ).toEqual([
+      {
+        children: [{ text: 'Imported' }],
+        indent: 2,
+        listStyleType: undefined,
+        type: 'note',
+      },
+    ]);
+    const multiTargetEditor = createBaseEditor({
+      plugins: [
+        CalloutPlugin,
+        BaseListPlugin.configure({
+          targetPluginKeys: ['callout', KEYS.p],
+        }),
+      ],
+    });
+
+    expect(
+      multiTargetEditor.api.html.deserialize({
+        element: '<li>Paragraph list item</li>',
+      })
+    ).toEqual([
+      {
+        children: [{ text: 'Paragraph list item' }],
+        type: KEYS.p,
+      },
+    ]);
     expect(() =>
       editor.read.schema.validateFragment([
         {
@@ -202,7 +285,7 @@ describe('BaseListPlugin', () => {
   });
 
   it('flattens nested lists, block children, and derives indent metadata from html', () => {
-    const transformData = (BaseListPlugin as any).inject.plugins[KEYS.html]
+    const transformData = (BaseListPlugin as any).inject.parsers[KEYS.html]
       .parser.transformData;
     const body = new DOMParser().parseFromString(
       transformData({
@@ -222,7 +305,7 @@ describe('BaseListPlugin', () => {
   });
 
   it('prefers aria-level and inline list styles over derived defaults', () => {
-    const transformData = (BaseListPlugin as any).inject.plugins[KEYS.html]
+    const transformData = (BaseListPlugin as any).inject.parsers[KEYS.html]
       .parser.transformData;
     const item = new DOMParser()
       .parseFromString(
@@ -242,9 +325,7 @@ describe('BaseListPlugin', () => {
       plugins: [BaseListPlugin],
     });
     const plugin = editor.getPlugin(BaseListPlugin);
-    const parse = plugin.parsers.html!.deserializer!.parse! as any;
     const renderBelow = plugin.render.belowNodes as any;
-    const element = document.createElement('li');
     const orderedElement = {
       children: [{ text: 'Item' }],
       listStart: 4,
@@ -277,22 +358,19 @@ describe('BaseListPlugin', () => {
       } as any)
     );
 
-    element.setAttribute('aria-level', '2');
-    element.style.listStyleType = 'circle';
-
     expect(
-      parse({
-        options: plugin.options,
-        element,
-        registry: {
-          getType: (key: string) => editor.getType(key),
-        },
-      } as any)
-    ).toEqual({
-      indent: 2,
-      listStyleType: 'circle',
-      type: editor.getType(KEYS.p),
-    });
+      editor.api.html.deserialize({
+        element:
+          '<li aria-level="2" style="list-style-type: circle">Parsed</li>',
+      })
+    ).toEqual([
+      {
+        children: [{ text: 'Parsed' }],
+        indent: 2,
+        listStyleType: 'circle',
+        type: editor.getType(KEYS.p),
+      },
+    ]);
     expect(markup).toContain('<ol');
     expect(markup).toContain('start="4"');
     expect(markup).toContain('<li>Item</li>');
@@ -304,5 +382,1057 @@ describe('BaseListPlugin', () => {
         element: { children: [{ text: 'Item' }], type: editor.getType(KEYS.p) },
       } as any)
     ).toBeUndefined();
+  });
+});
+
+describe('list input rules', () => {
+  const createEditor = (text: string, offset = text.length) =>
+    createBaseEditor({
+      plugins: [
+        BaseIndentPlugin,
+        BaseListPlugin.configure({
+          inputRules: [
+            BulletedListRules.markdown({ variant: '-' }),
+            OrderedListRules.markdown({ variant: '.' }),
+            TaskListRules.markdown({ checked: false }),
+            TaskListRules.markdown({ checked: true }),
+          ],
+        }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset, path: [0, 0] },
+        focus: { offset, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text }], type: 'p' }],
+    } as any);
+
+  it('creates a bullet list item when markdown group is enabled', () => {
+    const editor = createEditor('-', 1);
+
+    editor.update.text.insert(' ');
+
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [{ text: '' }],
+      indent: 1,
+      listStyleType: 'disc',
+      type: 'p',
+    });
+    expect(editor.read.selection()).toEqual({
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+  });
+
+  it('creates an ordered list item from markdown shorthand', () => {
+    const editor = createEditor('3.', 2);
+
+    editor.update.text.insert(' ');
+
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [{ text: '' }],
+      indent: 1,
+      listStart: 3,
+      listRestartPolite: 3,
+      listStyleType: 'decimal',
+      type: 'p',
+    });
+    expect(editor.read.selection()).toEqual({
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+  });
+
+  it('creates a checked todo item from [x]', () => {
+    const editor = createEditor('[x]', 3);
+
+    editor.update.text.insert(' ');
+
+    expect(editor.read.children()[0]).toMatchObject({
+      checked: true,
+      children: [{ text: '' }],
+      indent: 1,
+      listStyleType: KEYS.listTodo,
+      type: 'p',
+    });
+    expect(editor.read.selection()).toEqual({
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+  });
+});
+
+const InlinePlugin = createBasePlugin({
+  key: 'inline',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
+});
+
+describe('normalizeList', () => {
+  describe('when listStyleType without indent', () => {
+    it('remove listStyleType and listStart props', async () => {
+      const input = (
+        <editor>
+          <hp indent={1} listStyleType="decimal">
+            1
+          </hp>
+          <hp indent={1} listStart={2} listStyleType="decimal">
+            <cursor />
+          </hp>
+          <hp indent={1} listStart={3} listStyleType="decimal">
+            1
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hp indent={1} listStyleType="decimal">
+            1
+          </hp>
+          <hp>
+            <cursor />
+          </hp>
+          <hp indent={1} listStyleType="decimal">
+            1
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        shouldNormalizeEditor: true,
+        initialValue: input.children,
+      });
+
+      editor.update.text.deleteBackward();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+  });
+
+  describe('when deleting backward on empty paragraph between two lists', () => {
+    it('merge and renumber the lists', () => {
+      const input = (
+        <editor>
+          <hp indent={1} listStyleType="decimal">
+            1
+          </hp>
+          <hp indent={1} listStart={2} listStyleType="decimal">
+            2
+          </hp>
+          <hp>
+            <htext />
+            <cursor />
+          </hp>
+          <hp indent={1} listStyleType="decimal">
+            3
+          </hp>
+          <hp indent={1} listStart={2} listStyleType="decimal">
+            4
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hp indent={1} listStyleType="decimal">
+            1
+          </hp>
+          <hp indent={1} listStart={2} listStyleType="decimal">
+            2
+          </hp>
+          <hp indent={1} listStart={3} listStyleType="decimal">
+            3
+          </hp>
+          <hp indent={1} listStart={4} listStyleType="decimal">
+            4
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        shouldNormalizeEditor: true,
+        initialValue: input.children,
+      });
+
+      editor.update.text.deleteBackward();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+  });
+
+  describe('when deleting forward on empty paragraph between two lists', () => {
+    it('merge and renumber the lists', () => {
+      const input = (
+        <editor>
+          <hp indent={1} listStyleType="decimal">
+            1
+          </hp>
+          <hp indent={1} listStart={2} listStyleType="decimal">
+            2
+          </hp>
+          <hp>
+            <htext />
+            <cursor />
+          </hp>
+          <hp indent={1} listStyleType="decimal">
+            3
+          </hp>
+          <hp indent={1} listStart={2} listStyleType="decimal">
+            4
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hp indent={1} listStyleType="decimal">
+            1
+          </hp>
+          <hp indent={1} listStart={2} listStyleType="decimal">
+            2
+          </hp>
+          <hp indent={1} listStart={3} listStyleType="decimal">
+            3
+          </hp>
+          <hp indent={1} listStart={4} listStyleType="decimal">
+            4
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        shouldNormalizeEditor: true,
+        initialValue: input.children,
+      });
+
+      editor.update.text.deleteForward();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+  });
+});
+
+describe('keyboard handling', () => {
+  describe('when Enter on root list and empty', () => {
+    it('exits the list to a plain paragraph', () => {
+      const input = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        initialValue: input.children,
+      });
+
+      editor.update.break.insert();
+
+      expect(editor.read.children()).toEqual(output.children);
+      expect(editor.read.selection()).toEqual(output.selection);
+    });
+  });
+
+  describe('when Enter on indented list and empty', () => {
+    it('outdent', () => {
+      const input = (
+        <editor>
+          <hp indent={2} listStyleType="disc">
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <htext />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        initialValue: input.children,
+      });
+
+      editor.update.break.insert();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+  });
+
+  describe('when Enter on indented and empty but not list', () => {
+    it('does not outdent', () => {
+      const input = (
+        <editor>
+          <hp indent={2}>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp indent={2}>
+            <htext />
+          </hp>
+          <hp indent={2}>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        initialValue: input.children,
+      });
+
+      editor.update.break.insert();
+
+      expect(editor.read.children()).toEqual(output.children);
+    });
+  });
+
+  describe('when Backspace at start of a root list item', () => {
+    it('removes the list layer before touching content', () => {
+      const input = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        initialValue: input.children,
+      });
+
+      editor.update.text.deleteBackward();
+
+      expect(editor.read.children()).toEqual(output.children);
+      expect(editor.read.selection()).toEqual({
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      });
+    });
+  });
+
+  describe('when Backspace at start of an indented list item', () => {
+    it('outdents one level', () => {
+      const input = (
+        <editor>
+          <hp indent={2} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const output = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as TestEditor;
+
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        initialValue: input.children,
+      });
+
+      editor.update.text.deleteBackward();
+
+      expect(editor.read.children()).toEqual(output.children);
+      expect(editor.read.selection()).toEqual({
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      });
+    });
+
+    it('outdents when the cursor starts inside an inline', () => {
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin, InlinePlugin],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 1, 0] },
+          focus: { offset: 0, path: [0, 1, 0] },
+        },
+        initialValue: [
+          {
+            children: [
+              { text: '' },
+              {
+                children: [{ text: 'One' }],
+                type: 'inline',
+              },
+              { text: '' },
+            ],
+            indent: 2,
+            listStyleType: 'disc',
+            type: 'p',
+          },
+        ],
+      });
+
+      editor.update.text.deleteBackward();
+
+      expect(editor.read.children()).toEqual([
+        {
+          children: [
+            { text: '' },
+            {
+              children: [{ text: 'One' }],
+              type: 'inline',
+            },
+            { text: '' },
+          ],
+          indent: 1,
+          listStyleType: 'disc',
+          type: 'p',
+        },
+      ]);
+    });
+  });
+
+  describe('when tabbing list items', () => {
+    it('indents a list item one level on Tab', () => {
+      const input = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp indent={2} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        initialValue: input.children,
+      });
+
+      expect(editor.update.indent.tab()).toBe(true);
+      expect(editor.read.children()).toEqual(output.children);
+      expect(editor.read.selection()).toEqual(output.selection);
+    });
+
+    it('outdents a nested list item one level on Shift+Tab', () => {
+      const input = (
+        <editor>
+          <hp indent={2} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createBaseEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        initialValue: input.children,
+      });
+
+      expect(editor.update.indent.untab()).toBe(true);
+      expect(editor.read.children()).toEqual(output.children);
+      expect(editor.read.selection()).toEqual(output.selection);
+    });
+  });
+});
+
+describe('apply override', () => {
+  it('coerces ambiguous styles across a batched insert', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin, BaseIndentPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'a' }],
+          indent: 1,
+          listStyleType: 'lower-alpha',
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.update.nodes.insert(
+      [
+        {
+          children: [{ text: 'i' }],
+          indent: 1,
+          listStyleType: 'lower-roman',
+          type: 'p',
+        },
+        {
+          children: [{ text: 'ii' }],
+          indent: 1,
+          listStyleType: 'lower-roman',
+          type: 'p',
+        },
+      ] as any,
+      { at: [1] }
+    );
+
+    expect(editor.read.children()).toMatchObject([
+      { listStyleType: 'lower-alpha' },
+      { listStart: 2, listStyleType: 'lower-alpha' },
+      { listStart: 3, listStyleType: 'lower-alpha' },
+    ]);
+  });
+
+  it('coerces lower-roman inserts to lower-alpha when the previous sibling is alpha', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin, BaseIndentPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'a' }],
+          indent: 1,
+          listStyleType: 'lower-alpha',
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.update.nodes.insert({
+      children: [{ text: 'i' }],
+      indent: 1,
+      listStyleType: 'lower-roman',
+      type: 'p',
+    } as any);
+
+    expect((editor.read.children()[1] as any).listStyleType).toBe(
+      'lower-alpha'
+    );
+  });
+
+  it('drops list restart props from split list items', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin, BaseIndentPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      },
+      initialValue: [
+        {
+          children: [{ text: '12' }],
+          indent: 1,
+          listRestart: 5,
+          listRestartPolite: 5,
+          listStyleType: 'decimal',
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.update.nodes.split({ always: true });
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ text: '1' }],
+        indent: 1,
+        listRestart: 5,
+        listRestartPolite: 5,
+        listStart: 5,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: '2' }],
+        indent: 1,
+        listStart: 6,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+    ]);
+  });
+});
+
+describe('withInsertBreakList', () => {
+  it('insert a new todo list line with the same formatting', () => {
+    const input = (
+      <editor>
+        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
+          Todo item
+          <cursor />
+        </hp>
+      </editor>
+    ) as TestEditor;
+
+    const output = (
+      <editor>
+        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
+          Todo item
+        </hp>
+        <hp
+          checked={false}
+          indent={1}
+          listStart={2}
+          listStyleType={KEYS.listTodo}
+        >
+          <cursor />
+        </hp>
+      </editor>
+    ) as TestEditor;
+
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()).toEqual(output.children);
+  });
+
+  it('behave like a normal break if not a todo line', () => {
+    const input = (
+      <editor>
+        <hp indent={1} listStyleType="disc">
+          Disc item
+          <cursor />
+        </hp>
+      </editor>
+    ) as TestEditor;
+
+    const output = (
+      <editor>
+        <hp indent={1} listStyleType="disc">
+          Disc item
+        </hp>
+        <hp indent={1} listStyleType="disc">
+          <cursor />
+        </hp>
+      </editor>
+    ) as TestEditor;
+
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()).toEqual(output.children);
+  });
+
+  it('behave like a normal break if selection is expanded', () => {
+    const input = (
+      <editor>
+        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
+          Todo <anchor />
+          item
+          <focus />
+        </hp>
+      </editor>
+    ) as TestEditor;
+
+    const output = (
+      <editor>
+        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
+          Todo <cursor />
+        </hp>
+        <hp
+          checked={false}
+          indent={1}
+          listStart={2}
+          listStyleType={KEYS.listTodo}
+        >
+          <cursor />
+        </hp>
+      </editor>
+    ) as TestEditor;
+
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()).toEqual(output.children);
+  });
+});
+
+describe('BaseListPlugin expansion', () => {
+  describe('when input contains no list items', () => {
+    it('returns the same blocks unchanged', () => {
+      const input = (
+        <fragment>
+          <hp id="1">
+            paragraph 1<cursor />
+          </hp>
+          <hp id="2">paragraph 2</hp>
+          <hh1 id="3">heading</hh1>
+        </fragment>
+      ) as any as Descendant[];
+
+      const editor = createListEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
+      );
+
+      const entries = [
+        [input[0], [0]],
+        [input[1], [1]],
+        [input[2], [2]],
+      ] as any;
+
+      const result = editor
+        .plugin(BaseListPlugin)
+        .api.expandItemsWithChildren(entries);
+
+      expect(result).toEqual(entries);
+    });
+  });
+
+  describe('when input contains list items without children', () => {
+    it('returns the same list items', () => {
+      const input = (
+        <fragment>
+          <hp id="1" indent={1} listStyleType="disc">
+            item 1
+          </hp>
+          <hp id="2" indent={1} listStyleType="disc">
+            item 2<cursor />
+          </hp>
+          <hp id="3" indent={1} listStyleType="disc">
+            item 3
+          </hp>
+        </fragment>
+      ) as any as Descendant[];
+
+      const editor = createListEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
+      );
+
+      const entries = [
+        [input[0], [0]],
+        [input[1], [1]],
+        [input[2], [2]],
+      ] as any;
+
+      const result = editor
+        .plugin(BaseListPlugin)
+        .api.expandItemsWithChildren(entries);
+
+      expect(result).toEqual(entries);
+    });
+  });
+
+  describe('when input contains list items with children', () => {
+    it('expand single list item to include its children', () => {
+      const input = (
+        <fragment>
+          <hp id="1" indent={1} listStyleType="disc">
+            parent
+            <cursor />
+          </hp>
+          <hp id="2" indent={2} listStyleType="disc">
+            child 1
+          </hp>
+          <hp id="3" indent={2} listStyleType="disc">
+            child 2
+          </hp>
+          <hp id="4" indent={1} listStyleType="disc">
+            sibling
+          </hp>
+        </fragment>
+      ) as any as Descendant[];
+
+      const editor = createListEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
+      );
+
+      // Only pass the parent item
+      const entries = [[input[0], [0]]] as any;
+
+      const result = editor
+        .plugin(BaseListPlugin)
+        .api.expandItemsWithChildren(entries);
+
+      expect(result).toEqual([
+        [input[0], [0]], // parent
+        [input[1], [1]], // child 1
+        [input[2], [2]], // child 2
+      ] as any);
+    });
+
+    it('handle multiple list items with children', () => {
+      const input = (
+        <fragment>
+          <hp id="1" indent={1} listStyleType="disc">
+            parent 1
+          </hp>
+          <hp id="2" indent={2} listStyleType="disc">
+            child 1.1
+          </hp>
+          <hp id="3" indent={1} listStyleType="disc">
+            parent 2<cursor />
+          </hp>
+          <hp id="4" indent={2} listStyleType="disc">
+            child 2.1
+          </hp>
+          <hp id="5" indent={3} listStyleType="disc">
+            grandchild 2.1.1
+          </hp>
+        </fragment>
+      ) as any as Descendant[];
+
+      const editor = createListEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
+      );
+
+      // Pass both parent items
+      const entries = [
+        [input[0], [0]],
+        [input[2], [2]],
+      ] as any;
+
+      const result = editor
+        .plugin(BaseListPlugin)
+        .api.expandItemsWithChildren(entries);
+
+      expect(result).toEqual([
+        [input[0], [0]], // parent 1
+        [input[1], [1]], // child 1.1
+        [input[2], [2]], // parent 2
+        [input[3], [3]], // child 2.1
+        [input[4], [4]], // grandchild 2.1.1
+      ] as any);
+    });
+
+    it('avoid duplicates when children are already in input', () => {
+      const input = (
+        <fragment>
+          <hp id="1" indent={1} listStyleType="disc">
+            parent
+          </hp>
+          <hp id="2" indent={2} listStyleType="disc">
+            child 1<cursor />
+          </hp>
+          <hp id="3" indent={2} listStyleType="disc">
+            child 2
+          </hp>
+        </fragment>
+      ) as any as Descendant[];
+
+      const editor = createListEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
+      );
+
+      // Pass parent and one child (child 1)
+      const entries = [
+        [input[0], [0]],
+        [input[1], [1]],
+      ] as any;
+
+      const result = editor
+        .plugin(BaseListPlugin)
+        .api.expandItemsWithChildren(entries);
+
+      // Should not duplicate child 1, but should add child 2
+      expect(result).toEqual([
+        [input[0], [0]], // parent
+        [input[1], [1]], // child 1 (from input)
+        [input[2], [2]], // child 2 (added)
+      ] as any);
+    });
+  });
+
+  describe('when input contains mixed blocks', () => {
+    it('expand only list items and keep other blocks as-is', () => {
+      const input = (
+        <fragment>
+          <hp id="1">paragraph before</hp>
+          <hp id="2" indent={1} listStyleType="disc">
+            list parent
+            <cursor />
+          </hp>
+          <hp id="3" indent={2} listStyleType="disc">
+            list child
+          </hp>
+          <hh1 id="4">heading after</hh1>
+        </fragment>
+      ) as any as Descendant[];
+
+      const editor = createListEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
+      );
+
+      const entries = [
+        [input[0], [0]], // paragraph
+        [input[1], [1]], // list parent
+        [input[3], [3]], // heading
+      ] as any;
+
+      const result = editor
+        .plugin(BaseListPlugin)
+        .api.expandItemsWithChildren(entries);
+
+      expect(result).toEqual([
+        [input[0], [0]], // paragraph (unchanged)
+        [input[1], [1]], // list parent
+        [input[2], [2]], // list child (added)
+        [input[3], [3]], // heading (unchanged)
+      ] as any);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('handle empty input', () => {
+      const editor = createListEditorFromFixture((<editor />) as TestEditor);
+
+      const result = editor
+        .plugin(BaseListPlugin)
+        .api.expandItemsWithChildren([]);
+
+      expect(result).toEqual([]);
+    });
+
+    it('handle list items at end of document', () => {
+      const input = (
+        <fragment>
+          <hp id="1" indent={1} listStyleType="disc">
+            parent at end
+            <cursor />
+          </hp>
+          <hp id="2" indent={2} listStyleType="disc">
+            child at end
+          </hp>
+        </fragment>
+      ) as any as Descendant[];
+
+      const editor = createListEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
+      );
+
+      const entries = [[input[0], [0]]] as any;
+
+      const result = editor
+        .plugin(BaseListPlugin)
+        .api.expandItemsWithChildren(entries);
+
+      expect(result).toEqual([
+        [input[0], [0]], // parent
+        [input[1], [1]], // child
+      ] as any);
+    });
+
+    it('handle deeply nested lists', () => {
+      const input = (
+        <fragment>
+          <hp id="1" indent={1} listStyleType="disc">
+            level 1<cursor />
+          </hp>
+          <hp id="2" indent={2} listStyleType="disc">
+            level 2
+          </hp>
+          <hp id="3" indent={3} listStyleType="disc">
+            level 3
+          </hp>
+          <hp id="4" indent={4} listStyleType="disc">
+            level 4
+          </hp>
+          <hp id="5" indent={5} listStyleType="disc">
+            level 5
+          </hp>
+        </fragment>
+      ) as any as Descendant[];
+
+      const editor = createListEditorFromFixture(
+        (<editor>{input}</editor>) as TestEditor
+      );
+
+      const entries = [[input[0], [0]]] as any;
+
+      const result = editor
+        .plugin(BaseListPlugin)
+        .api.expandItemsWithChildren(entries);
+
+      expect(result).toEqual([
+        [input[0], [0]], // level 1
+        [input[1], [1]], // level 2
+        [input[2], [2]], // level 3
+        [input[3], [3]], // level 4
+        [input[4], [4]], // level 5
+      ] as any);
+    });
+  });
+});
+
+describe('isOrderedList', () => {
+  it.each([
+    [undefined, false],
+    [ListStyleType.Disc, false],
+    [ListStyleType.Circle, false],
+    [ListStyleType.Decimal, true],
+    [ListStyleType.DecimalLeadingZero, true],
+    [ListStyleType.LowerRoman, true],
+  ])('treats %s as ordered=%s', (listStyleType, expected) => {
+    expect(isOrderedList({ listStyleType } as any)).toBe(expected);
   });
 });

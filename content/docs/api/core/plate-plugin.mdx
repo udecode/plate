@@ -3,7 +3,7 @@ title: Plate Plugin
 description: API reference for Plate plugins.
 ---
 
-Plate plugins are descriptors passed to the `Plate` [plugins](/docs/api/core/plate-components#plugins) prop. Pass the same descriptor to `editor.plugin(MyPlugin)` for typed plugin APIs, update commands, and live options; React components subscribe with `usePluginOption` or `usePluginOptions`.
+Plate plugins are descriptors passed to the `Plate` [plugins](/docs/api/core/plate-components#plugins) prop. Installed plugin APIs are inferred on `editor.api` under the plugin key. Pass the descriptor to `editor.plugin(MyPlugin)` when generic code needs the exact plugin API, update commands, type, or live options; React components subscribe with `usePluginOption` or `usePluginOptions`.
 
 ## Plugin Properties
 
@@ -14,15 +14,16 @@ Unique identifier Plate uses to resolve the descriptor through `editor.plugin(My
 </APIItem>
 
 <APIItem name="targetPluginKeys" type="readonly string[]">
-Plugin keys targeted by the plugin's schema and host behavior.
+Plugin keys targeted by the plugin's schema contributions and injected behavior.
 
 - **Default:** `[]`
 </APIItem>
 
 <APIItem name="api" type="Record<string, Function>">
-  Plugin-owned API functions exposed through
-  `editor.plugin(MyPlugin).api`. Use `.extendEditorApi()` for APIs that belong
-  on the root `editor.api` surface.
+  Plugin-owned API functions exposed through `editor.api[MyPlugin.key]` and the
+  exact `editor.plugin(MyPlugin).api` portal. Both paths reference the same
+  immutable API object. Use `.extendEditorApi()` only for an intentionally
+  editor-wide API that is not owned by the plugin-key namespace.
 </APIItem>
 
 <APIItem name="tx" type="Record<string, Function>">
@@ -53,9 +54,9 @@ Called whenever a node operation occurs (insert, remove, set, merge, split, move
 ```ts
 type OnNodeChange = (
   ctx: PlatePluginContext & {
-  node: Descendant;
-  operation: NodeOperation;
-  prevNode: Descendant;
+    node: Descendant;
+    operation: NodeOperation;
+    prevNode: Descendant;
   }
 ) => HandlerReturnType;
 ```
@@ -75,10 +76,10 @@ Called whenever a text operation occurs (insert or remove text).
 ```ts
 type OnTextChange = (
   ctx: PlatePluginContext & {
-  node: Descendant;
-  operation: TextOperation;
-  prevText: string;
-  text: string;
+    node: Descendant;
+    operation: TextOperation;
+    prevText: string;
+    text: string;
   }
 ) => HandlerReturnType;
 ```
@@ -101,16 +102,22 @@ Defines how the plugin injects functionality into other plugins or the editor.
 Properties used by Plate to inject props into any node component.
 </APISubListItem>
 
-
 <APISubListItem parent="inject" name="excludePlugins" type="string[]" optional>
-An array of plugin keys to exclude from node prop injection.
+  An array of plugin keys to exclude from node prop injection.
 </APISubListItem>
 
-<APISubListItem parent="inject" name="excludeBelowPlugins" type="string[]" optional>
-An array of plugin keys. Node prop injection will be excluded for any nodes that are descendants of elements with these plugin types.
+<APISubListItem
+  parent="inject"
+  name="excludeBelowPlugins"
+  type="string[]"
+  optional
+>
+  An array of plugin keys. Node prop injection will be excluded for any nodes
+  that are descendants of elements with these plugin types.
 </APISubListItem>
 <APISubListItem parent="inject" name="isBlock" type="boolean" optional>
-If true, only matches block elements. Used to restrict prop injection to block-level nodes.
+  If true, only matches block elements. Used to restrict prop injection to
+  block-level nodes.
 </APISubListItem>
 
 <APISubListItem parent="inject" name="isElement" type="boolean" optional>
@@ -122,27 +129,31 @@ If true, only matches leaf nodes. Used to restrict prop injection to leaf nodes.
 <APISubListItem parent="inject" name="maxLevel" type="number" optional>
 Maximum nesting level for node prop injection. Nodes deeper than this level will not receive injected props.
 </APISubListItem>
-<APISubListItem parent="inject" name="plugins" type="Record<string, Partial<PlatePlugin>>" optional>
-Property that can be used by a plugin to allow other plugins to inject code.
+<APISubListItem parent="inject" name="parsers" type="Record<string, ParserPluginProjection>" optional>
+Parser-only projections contributed to installed plugins by key.
 </APISubListItem>
-<APISubListItem parent="inject" name="targetPluginToInject" type="function" optional>
-A function that returns a plugin config for each installed, enabled top-level
+<APISubListItem parent="inject" name="targetParserToInject" type="function" optional>
+A function that returns a parser-only projection for each installed, enabled
 target named by `targetPluginKeys`.
 </APISubListItem>
 </APISubList>
 </APIItem>
 
 <APIItem name="type" type="string">
-Document type or property key owned by this plugin.
+Resolved document type or property key owned by this plugin. Schema declarations
+created through `own.elementProperty(...)` or `own.textProperty(...)`, injected
+node props, and plugin commands use this same key. Configure `type` when storage
+must differ from `plugin.key`; do not add a second storage-key option.
 
 - **Default:** `plugin.key`
 </APIItem>
 
 <APIItem name="schema" type="PluginSchema<C> | null">
-Declares the plugin's Plite model. Use `schema.element` for element grammar,
-`schema.mark` for a typed text-property descriptor, and `schema.properties` for
-cross-node properties. A schema factory receives the plugin `options` snapshot
-used for compilation. Boolean text properties use
+Declares the plugin's Plite model through its `element`, `mark`, `properties`,
+and `contentRoots` fields. A factory declares an element-owned root with
+`contentRoots: [own.contentRoot(...)]`. It receives the resolved plugin `type`,
+its `options` snapshot, and typed helpers for installed plugin types. Boolean
+text properties use
 `property.boolean({ default: false, omitDefault: true })`.
 </APIItem>
 
@@ -159,7 +170,9 @@ Defines the selection behavior at the boundaries of nodes. See [Plugin Rules](/d
 - `'hard'`: Creates a 'hard' edge that requires two key presses to move across. Uses offset-based navigation
 
 - **Default:** `undefined` (Plite's default behavior)
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="break.empty" type="'default' | 'deleteExit' | 'exit' | 'lift' | 'reset'" optional>
 Action when Enter is pressed in an empty block. See [Plugin Rules](/docs/plugin-rules).
 
@@ -168,14 +181,18 @@ Action when Enter is pressed in an empty block. See [Plugin Rules](/docs/plugin-
 - `'exit'`: Exit the current block
 - `'lift'`: Lift the current block out of the nearest matching ancestor
 - `'deleteExit'`: Delete backward then exit
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="break.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
 Action when Enter is pressed at the end of an empty line. This is typically used with `rules.break.default: 'lineBreak'`. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
 - `'exit'`: Exit the current block
 - `'deleteExit'`: Delete backward then exit
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="break.default" type="'default' | 'deleteExit' | 'exit' | 'lineBreak'" optional>
 Default action when Enter is pressed. Defaults to splitting the block. See [Plugin Rules](/docs/plugin-rules).
 
@@ -183,7 +200,9 @@ Default action when Enter is pressed. Defaults to splitting the block. See [Plug
 - `'exit'`: Exit the current block
 - `'lineBreak'`: Insert newline character
 - `'deleteExit'`: Delete backward then exit
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="break.splitReset" type="boolean" optional>
 If true, the new block after splitting will be reset to the default type. See [Plugin Rules](/docs/plugin-rules).
 </APISubListItem>
@@ -193,7 +212,9 @@ Action when Backspace is pressed at the start of the block. This applies whether
 - `'default'`: Default behavior
 - `'lift'`: Lift the current block out of the nearest matching ancestor
 - `'reset'`: Reset block to default paragraph type
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="delete.empty" type="'default' | 'reset'" optional>
 Action when Backspace is pressed and the block is empty. See [Plugin Rules](/docs/plugin-rules).
 
@@ -214,7 +235,9 @@ Example: List plugin sets `match: ({ node }) => !!node.listStyleType` to overrid
 Whether to remove the node when it's empty during merge operations. See [Plugin Rules](/docs/plugin-rules).
 
 - **Default:** `false`
+
 </APISubListItem>
+
 <APISubListItem parent="rules" name="normalize.removeEmpty" type="boolean" optional>
 Whether to remove nodes with empty text during normalization. See [Plugin Rules](/docs/plugin-rules).
 
@@ -223,30 +246,25 @@ Whether to remove nodes with empty text during normalization. See [Plugin Rules]
 </APISubList>
 </APIItem>
 
-<APIItem name="host" type="object | null">
-Defines DOM and static-renderer policies. `dangerouslyAllowAttributes` forwards
-an explicit attribute allowlist, while `toDataAttributes` projects an element
-to host data attributes. Semantic declarations belong to `schema`.
-</APIItem>
-
 <APIItem name="override" type="object">
-Allows overriding components and plugins by key.
+Provides component replacement and weak cross-package plugin adaptation.
 
 <APISubList>
 <APISubListItem parent="override" name="components" type="Record<string, NodeComponent>" optional>
 Replace plugin `NodeComponent` by key.
 </APISubListItem>
-<APISubListItem parent="override" name="plugins" type="Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>" optional>
-Extend `PlatePlugin` by key.
-</APISubListItem>
-<APISubListItem parent="override" name="enabled" type="Partial<Record<string, boolean>>" optional>
-Enable or disable plugins.
+<APISubListItem parent="override" name="plugins" type="Record<string, BasePluginOverride>" optional>
+Weakly adapts an already-installed foreign plugin by key. Missing targets are
+ignored. Values cannot define `key`, `dependencies`, or another `override`.
+Contributors resolve by priority then source order, and direct target
+`.configure()` values remain authoritative. Use `{ enabled: false }` when a
+package plugin must disable an optional installed peer.
 </APISubListItem>
 </APISubList>
 </APIItem>
 
 <APIItem name="parser" type="Nullable<Parser<WithAnyKey<C>>>">
-Defines how the plugin parses content.
+  Defines how the plugin parses content.
 </APIItem>
 
 <APIItem name="parsers" type="object">
@@ -302,13 +320,20 @@ Prefer `.withComponent(Component)` when component attachment is the only
 change, and call it before `.configure()`. Set `render.node` in `.extend()` for
 reusable behavior, or in the final `.configure()` call when the consumer owns
 other overrides too.
+
+</APISubListItem>
+<APISubListItem parent="render" name="nodeProps" type="NodeProps" optional>
+Explicitly maps model values to rendered element or leaf props in interactive
+and static rendering. Return only trusted DOM props owned by the plugin.
 </APISubListItem>
 <APISubListItem parent="render" name="isDecoration" type="boolean" optional>
 Renders marked values as decorated leaves when `true`, or once per text node
 when `false`.
 
 - **Default:** `true`
+
 </APISubListItem>
+
 <APISubListItem parent="render" name="as" type="keyof HTMLElementTagNameMap" optional>
 Specifies the HTML tag name to use when rendering the node component. Only used when no custom `render.node` is provided for the plugin.
 
@@ -319,21 +344,17 @@ Specifies the HTML tag name to use when rendering the node component. Only used 
 </APIItem>
 
 <APIItem name="shortcuts" type="Shortcuts">
-Defines keyboard shortcuts for the plugin.
+  Defines keyboard shortcuts for the plugin.
 </APIItem>
 
 <APIItem name="dependencies" type="readonly PluginReference[]">
-Plugin descriptors that must be installed before this plugin. Pass the plugin
-objects themselves so Plate preserves dependency identity and type inference.
+  Plugin descriptors that must be installed before this plugin. Pass the plugin
+  objects themselves so Plate preserves dependency identity and type inference.
 </APIItem>
 
 <APIItem name="enabled" type="boolean" optional>
   Enables or disables the plugin. Used by Plate to determine if the plugin
   should be used.
-</APIItem>
-
-<APIItem name="plugins" type="readonly PluginReference[]">
-Nested plugin descriptors installed recursively with this plugin.
 </APIItem>
 
 <APIItem name="priority" type="number">
@@ -343,11 +364,11 @@ Defines the order in which plugins are registered and executed.
 </APIItem>
 
 <APIItem name="decorate" type="Decorate<WithAnyKey<C>>" optional>
-Property used by Plate to decorate editor ranges.
+  Property used by Plate to decorate editor ranges.
 </APIItem>
 
 <APIItem name="useHooks" type="() => void" optional>
-Hook called when the editor is initialized.
+  Hook called when the editor is initialized.
 </APIItem>
 
 <APIItem name="editOnly" type="boolean | EditOnlyConfig" optional>
@@ -357,10 +378,10 @@ Can be either a boolean or an object configuration:
 
 ```ts
 type EditOnlyConfig = {
-  render?: boolean;      // default: true
-  handlers?: boolean;    // default: true
-  inject?: boolean;      // default: true
-  transformInitialValue?: boolean;  // default: false
+  render?: boolean; // default: true
+  handlers?: boolean; // default: true
+  inject?: boolean; // default: true
+  transformInitialValue?: boolean; // default: false
 };
 ```
 
@@ -410,15 +431,10 @@ before this call read the configured values, while the configuration remains
 the final override.
 
 ```ts
-HeadingPlugin.configure({
-  options: { levels: [1, 2, 3] },
+H1Plugin.configure({
+  shortcuts: { toggle: { keys: 'mod+alt+1' } },
 });
 ```
-
-</APIItem>
-
-<APIItem name="configurePlugin" type="(plugin: PluginReference | { key: string }, config: PluginMethodConfig) => PlatePlugin">
-Configures an existing nested plugin. If the target is not present, the parent plugin is returned unchanged.
 
 </APIItem>
 
@@ -431,18 +447,6 @@ every `.extend*()` call before applying consumer `.configure()`.
   extendConfig:
     | Partial<PlatePlugin>
     | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)
-) => PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="extendPlugin" type="(plugin: PluginReference | { key: string }, config: PluginMethodConfig) => PlatePlugin">
-Extends an existing nested plugin or adds a new one if not found. Supports deep nesting.
-
-```ts
-(
-  plugin: PluginReference | { key: string },
-  extendConfig: PluginMethodConfig
 ) => PlatePlugin;
 ```
 
@@ -467,6 +471,7 @@ extendExtension(
 ```
 
 The keyed overload gives an unnamed extension fragment a stable name under the plugin.
+
 </APIItem>
 
 <APIItem name="extendApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
@@ -540,22 +545,22 @@ Returns a merged copy of an unconfigured plugin definition.
 <API name="Context">
 <APIAttributes>
 <APIItem name="editor" type="PlateEditor">
-The current editor instance.
+      The current editor instance.
 </APIItem>
 <APIItem name="plugin" type="EditorPlatePlugin<C>">
-The current plugin instance.
+      The current plugin instance.
 </APIItem>
 <APIItem name="getOption" type="function">
-Function to get a specific option value.
+      Function to get a specific option value.
 </APIItem>
 <APIItem name="getOptions" type="function">
-Function to get all options for the plugin.
+      Function to get all options for the plugin.
 </APIItem>
 <APIItem name="setOption" type="function">
-Function to set a specific option value.
+      Function to set a specific option value.
 </APIItem>
 <APIItem name="setOptions" type="function">
-Function to set multiple options.
+      Function to set multiple options.
 </APIItem>
 </APIAttributes>
 </API>
@@ -567,9 +572,8 @@ For more detailed information on specific aspects of Plate plugins, refer to the
 <API name="GenericTypes">
 <APIAttributes>
 <APIItem name="C" type="AnyPluginConfig = PluginConfig">
-Represents the plugin contract, including `key`, `options`, `api`, `tx`,
-selectors, dependencies, nested plugins, and schema
-inference.
+      Represents the plugin contract, including `key`, `options`, `api`, `tx`,
+      selectors, dependencies, and schema inference.
 </APIItem>
 </APIAttributes>
 </API>

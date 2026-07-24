@@ -2,16 +2,22 @@
 
 import * as React from 'react';
 
-import type { VariantProps } from 'class-variance-authority';
-
-import {
-  Caption as CaptionPrimitive,
-  CaptionTextarea as CaptionTextareaPrimitive,
-  useCaptionButton,
-  useCaptionButtonState,
-} from '@platejs/caption/react';
-import { createPrimitiveComponent } from '@udecode/cn';
+import { useResizableValue } from '@platejs/resizable';
 import { cva } from 'class-variance-authority';
+import {
+  NodeApi,
+  PathApi,
+  SelectionApi,
+  type Element,
+  type Path,
+  type TResizableProps,
+} from 'platejs';
+import {
+  type PlateElementProps,
+  useEditor,
+  useEditorSelector,
+  useElement,
+} from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -22,44 +28,103 @@ const captionVariants = cva('max-w-full', {
   },
   variants: {
     align: {
-      center: 'mx-auto',
-      left: 'mr-auto',
-      right: 'ml-auto',
+      center: 'mx-auto text-center',
+      left: 'mr-auto text-left',
+      right: 'ml-auto text-right',
     },
   },
 });
 
-export function Caption({
-  align,
-  className,
-  ...props
-}: React.ComponentProps<typeof CaptionPrimitive> &
-  VariantProps<typeof captionVariants>) {
-  return (
-    <CaptionPrimitive
-      {...props}
-      className={cn(captionVariants({ align }), className)}
-    />
-  );
+export function useCaptionFocused(path: Path) {
+  return useEditorSelector((editor) => {
+    const selection = editor.read.selection();
+
+    return (
+      SelectionApi.isText(selection) &&
+      (PathApi.isDescendant(selection.anchor.path, path) ||
+        PathApi.isDescendant(selection.focus.path, path))
+    );
+  });
 }
 
-export function CaptionTextarea(
-  props: React.ComponentProps<typeof CaptionTextareaPrimitive>
-) {
+export function Caption({
+  active,
+  align,
+  children,
+  className,
+  element,
+  placeholder = 'Write a caption...',
+  slots,
+  style,
+  ...props
+}: React.ComponentProps<'figcaption'> & {
+  active: boolean;
+  align?: TResizableProps['align'];
+  element: Element;
+  placeholder?: string;
+  slots: PlateElementProps['slots'];
+}) {
+  const width = useResizableValue('width');
+  const empty = NodeApi.string(element).length === 0;
+  const hidden = !active && empty;
+
+  if (hidden) {
+    if (element.children.length === 0) return null;
+
+    return slots.contentBoundary({
+      copyPolicy: 'model',
+      mounted: false,
+      reason: 'app-hidden',
+      renderPlaceholder: () => null,
+      scope: {
+        from: 0,
+        to: element.children.length - 1,
+        type: 'children',
+      },
+      selectionPolicy: 'skip',
+    });
+  }
+
   return (
-    <CaptionTextareaPrimitive
+    <figcaption
       {...props}
       className={cn(
-        'mt-2 w-full resize-none border-none bg-inherit p-0 font-[inherit] text-inherit',
-        'focus:outline-none focus:[&::placeholder]:opacity-0',
-        'text-center print:placeholder:text-transparent',
-        props.className
+        captionVariants({ align }),
+        'relative mt-2 min-h-6 w-full bg-inherit p-0 font-[inherit] text-inherit',
+        'before:pointer-events-none before:absolute before:inset-x-0 before:text-muted-foreground before:content-[attr(data-placeholder)]',
+        'print:placeholder:text-transparent',
+        className
       )}
-    />
+      data-placeholder={empty ? placeholder : undefined}
+      style={{ ...style, width }}
+    >
+      {children}
+    </figcaption>
   );
 }
 
-export const CaptionButton = createPrimitiveComponent(Button)({
-  propsHook: useCaptionButton,
-  stateHook: useCaptionButtonState,
-});
+export function CaptionButton({
+  onClick,
+  ...props
+}: React.ComponentProps<typeof Button>) {
+  const editor = useEditor();
+  const element = useElement();
+
+  return (
+    <Button
+      {...props}
+      onClick={(event) => {
+        onClick?.(event);
+
+        if (event.defaultPrevented) return;
+
+        const point = editor.read.points.start(element);
+
+        if (!point) return;
+
+        editor.update.selection.set(point);
+        editor.api.dom.focus();
+      }}
+    />
+  );
+}

@@ -115,7 +115,7 @@ export const EDITOR_PERF_WORKLOADS: WorkloadDefinition[] = [
   },
   {
     description:
-      'Huge bold-only document for mark-side lanes with BoldPlugin or BasicMarksPlugin.',
+      'Huge bold-only document for mark-side lanes with BoldPlugin or the full basic-mark plugin set.',
     id: 'huge-bold',
     label: 'Huge bold',
     scenarioSelectable: false,

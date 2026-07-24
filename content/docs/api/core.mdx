@@ -100,9 +100,6 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
     When `true`, it normalizes the `initialValue` passed to the editor.
     - **Default:** `false`
   </APIItem>
-  <APIItem name="rootPlugin" type="(plugin: AnyPlatePlugin) => AnyPlatePlugin" optional>
-    Function to configure the root plugin.
-  </APIItem>
   <APIItem name="api" type="object" optional>
     API methods for the editor.
   </APIItem>
@@ -119,7 +116,8 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
     Injection configuration for the editor.
   </APIItem>
   <APIItem name="transformInitialValue" type="function" optional>
-    Function to transform the initial value before the editor is ready.
+    Transforms complete document inputs before schema fitting. It runs for
+    editor initialization and `editor.update.value.replace(...)` loads.
   </APIItem>
   <APIItem name="options" type="object" optional>
     Additional options for the editor.
@@ -157,7 +155,8 @@ For more details on editor configuration, refer to the [Editor Configuration](/d
 
 ### `createPlatePlugin`
 
-Creates a new Plate plugin with the given configuration, supporting extension, nested plugin manipulation, and runtime configuration.
+Creates a new Plate plugin with typed dependencies, extensions, and runtime
+configuration.
 
 <API name="createPlatePlugin">
 <APIParameters>

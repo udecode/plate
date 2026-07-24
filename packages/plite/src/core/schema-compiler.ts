@@ -1,4 +1,5 @@
 import type {
+  EditorSchemaDerivedDefinition,
   EditorSchemaDefinition,
   EditorSchemaDeclaration,
   EditorSchemaDelta,
@@ -8,15 +9,19 @@ import type {
   PropertyValueDescriptor,
   PropertyValueKind,
   SchemaContent,
+  SchemaContentRoot,
+  SchemaContentRootContribution,
+  SchemaContentRootInput,
+  SchemaContentRootOwnership,
   SchemaContentRule,
   SchemaElement,
+  SchemaElementTarget,
   SchemaElementProperty,
   SchemaProperty,
   SchemaPropertyKey,
   SchemaTarget,
   SchemaTextProperty,
 } from '../interfaces/schema';
-import { isPropertyPolicyToken } from '../interfaces/property-policy';
 import { profileCoreDuration } from './profiling';
 
 const BUILT_IN_GROUPS = [
@@ -29,10 +34,10 @@ const BUILT_IN_GROUPS = [
 ] as const;
 const BUILT_IN_GROUP_SET = new Set<string>(BUILT_IN_GROUPS);
 const COMPLETE_SCHEMA_COMMON_FIELDS = ['root', 'unknown'] as const;
-const COMPLETE_SCHEMA_IDENTITY_FIELDS = ['id', 'identity', 'version'] as const;
+const COMPLETE_SCHEMA_LINEAGE_FIELDS = ['id', 'version'] as const;
 const COMPLETE_SCHEMA_FIELDS = [
   ...COMPLETE_SCHEMA_COMMON_FIELDS,
-  ...COMPLETE_SCHEMA_IDENTITY_FIELDS,
+  ...COMPLETE_SCHEMA_LINEAGE_FIELDS,
 ] as const;
 const RESERVED_PRIMARY_ROOT = 'main';
 const RESERVED_ELEMENT_KEYS = new Set([
@@ -62,7 +67,6 @@ const DEFAULT_DERIVED_EDITOR_SCHEMA: EditorSchemaDefinition = Object.freeze({
       }),
     }),
   }),
-  identity: 'derived' as const,
   root: Object.freeze({
     content: Object.freeze({
       allowed: Object.freeze({
@@ -85,13 +89,12 @@ const DEFAULT_DERIVED_EDITOR_SCHEMA_RECORD: Readonly<{
 
 const isCompleteSchemaDeclaration = (
   declaration: EditorSchemaDeclaration
-): declaration is EditorSchemaDefinition =>
-  Object.hasOwn(declaration, 'id') || Object.hasOwn(declaration, 'identity');
+): declaration is EditorSchemaDefinition => Object.hasOwn(declaration, 'root');
 
 const isDerivedSchemaDefinition = (
   definition: EditorSchemaDefinition
-): definition is Extract<EditorSchemaDefinition, { identity: 'derived' }> =>
-  Object.hasOwn(definition, 'identity');
+): definition is EditorSchemaDerivedDefinition =>
+  !Object.hasOwn(definition, 'id') && !Object.hasOwn(definition, 'version');
 
 const createDerivedBaseSchemaRecord = (
   explicitRecords: readonly EditorSchemaContributionRecord[]
@@ -156,7 +159,7 @@ export type EditorSchemaContributionRecord = Readonly<{
   extensionName: string;
 }>;
 
-/** @internal Exact equality for nullable published schema identities. */
+/** @internal Exact equality for schema identities, including absent metadata. */
 export const areEditorSchemaIdentitiesEqual = (
   left: EditorSchemaIdentity | null,
   right: EditorSchemaIdentity | null
@@ -289,6 +292,11 @@ export type CompiledSchemaContentProgram = Readonly<{
   min: number;
 }>;
 
+export type CompiledSchemaContentRoot = Readonly<{
+  content: CompiledSchemaContentProgram;
+  ownership: SchemaContentRootOwnership;
+}>;
+
 export type CompiledSchemaElementBehavior = Readonly<{
   atom: boolean;
   editableIsland: boolean;
@@ -305,7 +313,7 @@ export type CompiledSchemaElementBehavior = Readonly<{
 export type CompiledSchemaElement = Readonly<{
   behavior: CompiledSchemaElementBehavior;
   content: CompiledSchemaContentProgram | null;
-  contentRoots: ReadonlyMap<string, CompiledSchemaContentProgram>;
+  contentRoots: ReadonlyMap<string, CompiledSchemaContentRoot>;
   construction: Readonly<{
     defaultPropertyIds: ReadonlySet<string>;
     propertyIds: ReadonlySet<string>;
@@ -394,8 +402,8 @@ export type StructuralPropertyValueDescriptor = Readonly<{
   item?: StructuralPropertyValueDescriptor;
   kind: PropertyValueKind;
   omitDefault: boolean;
-  policy?: Readonly<{ id: string; version: number }>;
   significant: boolean;
+  validationVersion?: number;
 }>;
 
 export type StructuralCompiledSchemaProperty = Omit<
@@ -530,6 +538,7 @@ type Source<TValue> = Readonly<{
 type MutableElement = Readonly<{
   behavior: CompiledSchemaElementBehavior;
   content: SchemaContent;
+  contentRoots: Map<string, Source<SchemaContentRoot>>;
   directGroups: Set<string>;
   input: SchemaElement;
   source: Source<SchemaElement>;
@@ -663,19 +672,10 @@ const assertSchemaDeclarationOwnership = (
           })
         );
       }
-      if (Object.hasOwn(contribution, 'identity')) {
-        for (const field of ['id', 'version'] as const) {
-          if (!Object.hasOwn(contribution, field)) continue;
-          diagnostics.push(
-            Object.freeze({
-              code: 'mixed-schema-identity',
-              extensions: Object.freeze([extensionName]),
-              message: `Derived schema definition "${extensionName}" cannot declare schema field "${field}".`,
-              path: `schema.${field}`,
-            })
-          );
-        }
-      } else {
+      if (
+        Object.hasOwn(contribution, 'id') ||
+        Object.hasOwn(contribution, 'version')
+      ) {
         for (const field of ['id', 'version'] as const) {
           if (Object.hasOwn(contribution, field)) continue;
           diagnostics.push(
@@ -797,24 +797,24 @@ const collectSchemaKeyDiagnostics = (
 
     return record;
   };
-  const visitPolicy = (value: unknown, owner: string, path: string) => {
-    check(value, ['id', 'validate', 'version'], owner, path, {
-      nonEnumerable: ['validate'],
-      symbols: isPropertyPolicyToken(value),
-    });
-  };
   const visitDescriptor = (value: unknown, owner: string, path: string) => {
     const descriptor = check(
       value,
-      ['default', 'item', 'kind', 'omitDefault', 'policy', 'significant'],
+      [
+        'default',
+        'item',
+        'kind',
+        'omitDefault',
+        'significant',
+        'validate',
+        'validationVersion',
+      ],
       owner,
-      path
+      path,
+      { nonEnumerable: ['validate'] }
     );
 
     if (!descriptor) return;
-    if (descriptor.policy !== undefined) {
-      visitPolicy(descriptor.policy, owner, `${path}.policy`);
-    }
     if (descriptor.item !== undefined) {
       visitDescriptor(descriptor.item, owner, `${path}.item`);
     }
@@ -902,6 +902,36 @@ const collectSchemaKeyDiagnostics = (
       check(content.default, ['type'], owner, `${path}.default`);
     }
   };
+  const visitContentRoot = (
+    value: unknown,
+    owner: string,
+    path: string,
+    targeted: boolean
+  ) => {
+    if (
+      !targeted &&
+      typeof value === 'object' &&
+      value !== null &&
+      Object.hasOwn(value, 'allowed')
+    ) {
+      visitContent(value, owner, path);
+      return;
+    }
+    const root = check(
+      value,
+      targeted
+        ? ['content', 'ownership', 'slot', 'target']
+        : ['content', 'ownership'],
+      owner,
+      path
+    );
+
+    if (!root) return;
+    visitContent(root.content, owner, `${path}.content`);
+    if (root.target !== undefined) {
+      visitTarget(root.target, owner, `${path}.target`);
+    }
+  };
 
   for (const { contribution, extensionName } of records) {
     const complete = isCompleteSchemaDeclaration(contribution);
@@ -909,17 +939,17 @@ const collectSchemaKeyDiagnostics = (
       contribution,
       complete
         ? [
+            'contentRoots',
             'elements',
             'groups',
             'id',
-            'identity',
             'properties',
             'root',
             'roots',
             'unknown',
             'version',
           ]
-        : ['elements', 'groups', 'properties', 'roots'],
+        : ['contentRoots', 'elements', 'groups', 'properties', 'roots'],
       extensionName,
       'schema'
     );
@@ -965,8 +995,13 @@ const collectSchemaKeyDiagnostics = (
           ? null
           : object(element.contentRoots, extensionName, `${path}.contentRoots`);
 
-      for (const [slot, content] of Object.entries(contentRoots ?? {})) {
-        visitContent(content, extensionName, `${path}.contentRoots.${slot}`);
+      for (const [slot, contentRoot] of Object.entries(contentRoots ?? {})) {
+        visitContentRoot(
+          contentRoot,
+          extensionName,
+          `${path}.contentRoots.${slot}`,
+          false
+        );
       }
       const properties =
         element.properties === undefined
@@ -1017,6 +1052,13 @@ const collectSchemaKeyDiagnostics = (
 
     for (const [name, value] of Object.entries(roots ?? {})) {
       visitRoot(value, `roots.${name}`);
+    }
+    if (declaration.contentRoots !== undefined) {
+      array(declaration.contentRoots, extensionName, 'contentRoots')?.forEach(
+        (value, index) => {
+          visitContentRoot(value, extensionName, `contentRoots.${index}`, true);
+        }
+      );
     }
     if (declaration.properties !== undefined) {
       array(declaration.properties, extensionName, 'properties')?.forEach(
@@ -1283,38 +1325,29 @@ const canonicalDeclaration = (
           ];
         })
     ) as Record<string, unknown>;
-    const exceptionalKeys = isPropertyPolicyToken(value)
-      ? []
-      : Reflect.ownKeys(record)
-          .filter((property) => {
-            if (typeof property === 'symbol') return true;
-            const descriptor = Object.getOwnPropertyDescriptor(
-              record,
-              property
-            );
+    const exceptionalKeys = Reflect.ownKeys(record)
+      .filter((property) => {
+        if (property === 'validate') return false;
+        if (typeof property === 'symbol') return true;
+        const descriptor = Object.getOwnPropertyDescriptor(record, property);
 
-            return descriptor?.enumerable === false;
-          })
-          .map((property) => {
-            const descriptor = Object.getOwnPropertyDescriptor(
-              record,
-              property
-            );
+        return descriptor?.enumerable === false;
+      })
+      .map((property) => {
+        const descriptor = Object.getOwnPropertyDescriptor(record, property);
 
-            return {
-              key: String(property),
-              kind: typeof property === 'symbol' ? 'symbol' : 'non-enumerable',
-              value:
-                descriptor && Object.hasOwn(descriptor, 'value')
-                  ? canonicalDeclaration(descriptor.value, null, ancestors)
-                  : '[accessor]',
-            };
-          })
-          .sort((left, right) =>
-            `${left.kind}:${left.key}`.localeCompare(
-              `${right.kind}:${right.key}`
-            )
-          );
+        return {
+          key: String(property),
+          kind: typeof property === 'symbol' ? 'symbol' : 'non-enumerable',
+          value:
+            descriptor && Object.hasOwn(descriptor, 'value')
+              ? canonicalDeclaration(descriptor.value, null, ancestors)
+              : '[accessor]',
+        };
+      })
+      .sort((left, right) =>
+        `${left.kind}:${left.key}`.localeCompare(`${right.kind}:${right.key}`)
+      );
 
     if (exceptionalKeys.length > 0) {
       result['\u0000schemaOwnKeys'] = exceptionalKeys;
@@ -1852,6 +1885,44 @@ const cloneTarget = (
   }
 };
 
+const cloneElementTarget = (
+  target: SchemaElementTarget,
+  source: Source<unknown>,
+  elementTypes: ReadonlySet<string>,
+  groups: ReadonlyMap<string, ReadonlySet<string>>,
+  roots: ReadonlySet<string>
+): SchemaElementTarget => {
+  const cloned = cloneTarget(
+    target,
+    source,
+    elementTypes,
+    groups,
+    roots
+  ) as SchemaElementTarget;
+  const hasContextualTarget = (candidate: SchemaTarget): boolean => {
+    if (candidate.kind === 'parent' || candidate.kind === 'root') return true;
+    if (candidate.kind === 'not') {
+      return hasContextualTarget(candidate.target);
+    }
+    if (candidate.kind === 'and' || candidate.kind === 'or') {
+      return candidate.targets.some(hasContextualTarget);
+    }
+
+    return false;
+  };
+
+  if (hasContextualTarget(cloned)) {
+    compileFailure(
+      'invalid-content-root-target',
+      `Schema content root target at ${source.path} must select element types without parent or root context.`,
+      [source],
+      source.path
+    );
+  }
+
+  return cloned;
+};
+
 const canonicalTarget = (target: SchemaTarget | null): string => {
   if (!target) return 'all';
 
@@ -2129,23 +2200,23 @@ const canonicalizePropertyValue = (
     }
   }
 
-  if (descriptor.policy) {
+  if (descriptor.validate) {
     let valid = false;
 
     try {
-      valid = descriptor.policy.validate(canonical);
+      valid = descriptor.validate(canonical);
     } catch (error) {
       compileFailure(
-        'property-policy-failure',
-        `Property policy "${descriptor.policy.id}" threw while validating ${source.path}: ${(error as Error).message}`,
+        'property-validation-failure',
+        `Schema property validation at ${source.path} threw: ${(error as Error).message}`,
         [source],
         source.path
       );
     }
     if (!valid) {
       compileFailure(
-        'property-policy-failure',
-        `Schema property default at ${source.path} fails policy "${descriptor.policy.id}".`,
+        'property-validation-failure',
+        `Schema property default at ${source.path} fails custom validation.`,
         [source],
         source.path
       );
@@ -2157,8 +2228,7 @@ const canonicalizePropertyValue = (
 
 const clonePropertyDescriptor = (
   descriptor: PropertyValueDescriptor,
-  source: Source<unknown>,
-  policyVersions: Map<string, Source<number>>
+  source: Source<unknown>
 ): PropertyValueDescriptor => {
   if (
     !['boolean', 'json', 'number', 'set', 'string'].includes(descriptor.kind) ||
@@ -2174,46 +2244,38 @@ const clonePropertyDescriptor = (
     );
   }
 
-  const policy = descriptor.policy;
+  const hasValidate = Object.hasOwn(descriptor, 'validate');
+  const hasValidationVersion = Object.hasOwn(descriptor, 'validationVersion');
 
-  if (policy) {
-    if (!isPropertyPolicyToken(policy)) {
+  if (hasValidate !== hasValidationVersion) {
+    compileFailure(
+      'invalid-property-validation',
+      `Schema property validation at ${source.path} must declare validate and validationVersion together.`,
+      [source],
+      source.path
+    );
+  }
+  if (hasValidate) {
+    if (typeof descriptor.validate !== 'function') {
       compileFailure(
-        'invalid-property-policy',
-        `Schema property policy at ${source.path} must be created by definePropertyPolicy.`,
+        'invalid-property-validation',
+        `Schema property validation at ${source.path} must provide a validator function.`,
         [source],
         source.path
       );
     }
     if (
-      typeof policy.id !== 'string' ||
-      policy.id.length === 0 ||
-      !Number.isSafeInteger(policy.version) ||
-      policy.version < 1 ||
-      typeof policy.validate !== 'function'
+      typeof descriptor.validationVersion !== 'number' ||
+      !Number.isSafeInteger(descriptor.validationVersion) ||
+      descriptor.validationVersion < 1
     ) {
       compileFailure(
-        'invalid-property-policy',
-        `Schema property policy at ${source.path} must have an ID, positive integer version, and validator.`,
+        'invalid-property-validation',
+        `Schema property validationVersion at ${source.path} must be a positive integer.`,
         [source],
         source.path
       );
     }
-    const known = policyVersions.get(policy.id);
-
-    if (known && known.value !== policy.version) {
-      compileFailure(
-        'property-policy-version-conflict',
-        `Property policy "${policy.id}" uses both version ${known.value} and ${policy.version}.`,
-        [known, source],
-        source.path
-      );
-    }
-    policyVersions.set(policy.id, {
-      extensionName: source.extensionName,
-      path: source.path,
-      value: policy.version,
-    });
   }
 
   let item: PropertyValueDescriptor | undefined;
@@ -2233,15 +2295,7 @@ const clonePropertyDescriptor = (
         source.path
       );
     }
-    item = clonePropertyDescriptor(rawItem!, source, policyVersions);
-    if (descriptor.policy) {
-      compileFailure(
-        'invalid-property-policy',
-        `Set property at ${source.path} cannot attach a policy to the collection; attach it to the item descriptor.`,
-        [source],
-        source.path
-      );
-    }
+    item = clonePropertyDescriptor(rawItem!, source);
   }
 
   const hasDefault = Object.hasOwn(descriptor, 'default');
@@ -2266,32 +2320,25 @@ const clonePropertyDescriptor = (
     );
   }
 
-  const clonedPolicy = policy
-    ? (() => {
-        const value = { id: policy.id, version: policy.version } as {
-          id: string;
-          validate: (value: unknown) => value is unknown;
-          version: number;
-        };
-
-        Object.defineProperty(value, 'validate', {
-          enumerable: false,
-          value: policy.validate.bind(policy),
-        });
-        runtimePolicyBindings.set(value, policy.validate);
-
-        return Object.freeze(value);
-      })()
-    : undefined;
-
-  return Object.freeze({
+  const cloned: Record<PropertyKey, unknown> = {
     ...(hasDefault ? { default: defaultValue } : {}),
     ...(item ? { item } : {}),
     kind: descriptor.kind,
     omitDefault: descriptor.omitDefault,
-    ...(clonedPolicy ? { policy: clonedPolicy } : {}),
     significant: descriptor.significant ?? true,
-  }) as PropertyValueDescriptor;
+    ...(hasValidationVersion
+      ? { validationVersion: descriptor.validationVersion }
+      : {}),
+  };
+
+  if (descriptor.validate) {
+    Object.defineProperty(cloned, 'validate', {
+      enumerable: false,
+      value: descriptor.validate,
+    });
+  }
+
+  return Object.freeze(cloned) as PropertyValueDescriptor;
 };
 
 const propertyKeyLabel = (key: SchemaPropertyKey) =>
@@ -2387,13 +2434,8 @@ const canonicalDescriptor = (descriptor: PropertyValueDescriptor): unknown => ({
     : {}),
   kind: descriptor.kind,
   omitDefault: descriptor.omitDefault,
-  ...(descriptor.policy
-    ? {
-        policy: {
-          id: descriptor.policy.id,
-          version: descriptor.policy.version,
-        },
-      }
+  ...(descriptor.validationVersion
+    ? { validationVersion: descriptor.validationVersion }
     : {}),
   significant: descriptor.significant ?? true,
 });
@@ -2544,16 +2586,7 @@ const compileEditorSchemaInternal = (
 
   const derived = isDerivedSchemaDefinition(definition);
 
-  if (derived) {
-    if (definition.identity !== 'derived') {
-      compileFailure(
-        'invalid-derived-schema-identity',
-        'Derived editor schema identity must equal "derived".',
-        [identitySource],
-        'schema.identity'
-      );
-    }
-  } else {
+  if (!derived) {
     assertName(definition.id, 'Editor schema id', identitySource);
     if (
       typeof definition.version !== 'number' ||
@@ -2714,6 +2747,23 @@ const compileEditorSchemaInternal = (
       mutableElements.set(type, {
         behavior,
         content: elementContent,
+        contentRoots: new Map(
+          Object.entries(input.contentRoots ?? {}).map(
+            ([slot, contentRoot]: [string, SchemaContentRootInput]) => [
+              slot,
+              {
+                extensionName: record.extensionName,
+                path: `${source.path}.contentRoots.${slot}`,
+                value: Object.hasOwn(contentRoot, 'allowed')
+                  ? Object.freeze({
+                      content: contentRoot as SchemaContent,
+                      ownership: 'shared' as const,
+                    })
+                  : (contentRoot as SchemaContentRoot),
+              },
+            ]
+          )
+        ),
         directGroups,
         input,
         source,
@@ -2841,6 +2891,105 @@ const compileEditorSchemaInternal = (
     }
   }
 
+  const rootNames = new Set(rootsByName.keys());
+  const targetSchema = {
+    elements: {
+      byType: mutableElements,
+      groups: mutableGroups,
+    },
+    roots: rootsByName,
+    unknown: unknownPolicy,
+  } as unknown as Pick<CompiledEditorSchema, 'elements' | 'roots' | 'unknown'>;
+  const targetSatisfiabilityCache = new Map<string, boolean>();
+  const assertContentRoot = (
+    root: SchemaContentRoot,
+    source: Source<unknown>
+  ) => {
+    if (root.ownership !== 'exclusive' && root.ownership !== 'shared') {
+      compileFailure(
+        'invalid-content-root-ownership',
+        `Schema content root at ${source.path} ownership must be "exclusive" or "shared".`,
+        [source],
+        `${source.path}.ownership`
+      );
+    }
+  };
+
+  for (const element of mutableElements.values()) {
+    for (const [slot, root] of element.contentRoots) {
+      assertName(slot, 'Schema content root slot', root);
+      assertContentRoot(root.value, root);
+    }
+  }
+  for (const record of records) {
+    for (const [index, contribution] of (
+      record.contribution.contentRoots ?? []
+    ).entries()) {
+      const source: Source<SchemaContentRootContribution> = {
+        extensionName: record.extensionName,
+        path: `contentRoots.${index}`,
+        value: contribution,
+      };
+
+      assertName(contribution.slot, 'Schema content root slot', source);
+      assertContentRoot(contribution, source);
+      const projectedTarget = cloneElementTarget(
+        contribution.target,
+        {
+          ...source,
+          path: `${source.path}.target`,
+        },
+        elementTypes,
+        mutableGroups,
+        rootNames
+      );
+      let matched = false;
+
+      for (const [type, element] of mutableElements) {
+        if (
+          !targetCombinationIsSatisfiable(
+            targetSchema,
+            [projectedTarget],
+            type,
+            targetSatisfiabilityCache
+          )
+        ) {
+          continue;
+        }
+        matched = true;
+        const previous = element.contentRoots.get(contribution.slot);
+
+        if (previous) {
+          compileFailure(
+            'content-root-slot-conflict',
+            `Schema content root slot "${contribution.slot}" for element type "${type}" is declared by both "${previous.extensionName}" and "${record.extensionName}".`,
+            [previous, source],
+            source.path
+          );
+        }
+        element.contentRoots.set(
+          contribution.slot,
+          Object.freeze({
+            extensionName: record.extensionName,
+            path: source.path,
+            value: Object.freeze({
+              content: contribution.content,
+              ownership: contribution.ownership,
+            }),
+          })
+        );
+      }
+      if (!matched) {
+        compileFailure(
+          'unsatisfied-content-root-target',
+          `Schema content root slot "${contribution.slot}" at ${source.path} does not target any element type.`,
+          [source],
+          `${source.path}.target`
+        );
+      }
+    }
+  }
+
   const mutablePrograms = new Map<string, MutableContentProgram>();
 
   for (const element of mutableElements.values()) {
@@ -2921,13 +3070,11 @@ const compileEditorSchemaInternal = (
     }
 
     mutablePrograms.set(`element:${element.type}`, program);
-    for (const [slot, rootContent] of Object.entries(
-      element.input.contentRoots ?? {}
-    )) {
+    for (const [slot, root] of element.contentRoots) {
       const contentSource: Source<SchemaContent> = {
-        extensionName: element.source.extensionName,
-        path: `${element.source.path}.contentRoots.${slot}`,
-        value: rootContent,
+        extensionName: root.extensionName,
+        path: `${root.path}.content`,
+        value: root.value.content,
       };
 
       assertName(slot, 'Schema content root slot', contentSource);
@@ -3009,9 +3156,9 @@ const compileEditorSchemaInternal = (
     }
 
     constructing.push(type);
-    const contentRootProgramIds = Object.keys(
-      mutableElements.get(type)?.input.contentRoots ?? {}
-    ).map((slot) => `contentRoot:${type}:${slot}`);
+    const contentRootProgramIds = [
+      ...(mutableElements.get(type)?.contentRoots.keys() ?? []),
+    ].map((slot) => `contentRoot:${type}:${slot}`);
 
     for (const programId of [`element:${type}`, ...contentRootProgramIds]) {
       const plan = mutablePrograms.get(programId)?.defaultPlan;
@@ -3040,8 +3187,6 @@ const compileEditorSchemaInternal = (
     if (frozen.defaultPlan) defaultPlans.set(id, frozen.defaultPlan);
   }
 
-  const rootNames = new Set(rootsByName.keys());
-  const policyVersions = new Map<string, Source<number>>();
   const mutableProperties: MutableProperty[] = [];
   const addProperty = (
     raw: SchemaProperty | PropertyValueDescriptor,
@@ -3057,8 +3202,7 @@ const compileEditorSchemaInternal = (
       : null;
     const descriptor = clonePropertyDescriptor(
       'value' in raw ? raw.value : raw,
-      source,
-      policyVersions
+      source
     );
 
     mutableProperties.push({
@@ -3157,15 +3301,6 @@ const compileEditorSchemaInternal = (
     }
   }
 
-  const targetSchema = {
-    elements: {
-      byType: mutableElements,
-      groups: mutableGroups,
-    },
-    roots: rootsByName,
-    unknown: unknownPolicy,
-  } as unknown as Pick<CompiledEditorSchema, 'elements' | 'roots' | 'unknown'>;
-  const targetSatisfiabilityCache = new Map<string, boolean>();
   const selectorDiagnostics: EditorSchemaDiagnostic[] = [];
 
   for (let leftIndex = 0; leftIndex < mutableProperties.length; leftIndex++) {
@@ -3278,11 +3413,14 @@ const compileEditorSchemaInternal = (
     );
     const contentRoots = freezeMap(
       new Map(
-        Object.keys(element.input.contentRoots ?? {})
-          .sort((left, right) => left.localeCompare(right))
-          .map((slot) => [
+        [...element.contentRoots]
+          .sort(([left], [right]) => left.localeCompare(right))
+          .map(([slot, root]) => [
             slot,
-            frozenPrograms.get(`contentRoot:${type}:${slot}`)!,
+            Object.freeze({
+              content: frozenPrograms.get(`contentRoot:${type}:${slot}`)!,
+              ownership: root.value.ownership,
+            }),
           ])
       )
     );
@@ -3389,15 +3527,16 @@ const compileEditorSchemaInternal = (
             min: element.content.min,
           }
         : null,
-      contentRoots: [...element.contentRoots].map(([slot, content]) => ({
+      contentRoots: [...element.contentRoots].map(([slot, root]) => ({
         content: {
-          allowedElementTypes: sortedStrings(content.allowedElementTypes),
-          allowsText: content.allowsText,
-          allowsUnknownElements: content.allowsUnknownElements,
-          defaultPlan: content.defaultPlan,
-          max: content.max,
-          min: content.min,
+          allowedElementTypes: sortedStrings(root.content.allowedElementTypes),
+          allowsText: root.content.allowsText,
+          allowsUnknownElements: root.content.allowsUnknownElements,
+          defaultPlan: root.content.defaultPlan,
+          max: root.content.max,
+          min: root.content.min,
         },
+        ownership: root.ownership,
         slot,
       })),
       construction: {
@@ -3563,27 +3702,21 @@ type RuntimeComparablePropertyDescriptor =
   | PropertyValueDescriptor
   | StructuralPropertyValueDescriptor;
 
-const runtimePolicyBindings = new WeakMap<object, Function>();
-
-const getRuntimePolicyBinding = (
+const getRuntimeValidationBinding = (
   descriptor: RuntimeComparablePropertyDescriptor
 ) => {
-  const policy = descriptor.policy;
+  const validate = Reflect.get(descriptor, 'validate');
 
-  if (!policy) return null;
-
-  const validate = Reflect.get(policy, 'validate');
-
-  return typeof validate === 'function'
-    ? (runtimePolicyBindings.get(policy) ?? validate)
-    : policy;
+  return typeof validate === 'function' ? validate : null;
 };
 
-const haveEquivalentRuntimePolicyBindings = (
+const haveEquivalentRuntimeValidationBindings = (
   left: RuntimeComparablePropertyDescriptor,
   right: RuntimeComparablePropertyDescriptor
 ): boolean => {
-  if (getRuntimePolicyBinding(left) !== getRuntimePolicyBinding(right)) {
+  if (
+    getRuntimeValidationBinding(left) !== getRuntimeValidationBinding(right)
+  ) {
     return false;
   }
   if (left.kind !== 'set' || right.kind !== 'set') {
@@ -3604,12 +3737,12 @@ const haveEquivalentRuntimePolicyBindings = (
   return Boolean(
     leftItem &&
       rightItem &&
-      haveEquivalentRuntimePolicyBindings(leftItem, rightItem)
+      haveEquivalentRuntimeValidationBindings(leftItem, rightItem)
   );
 };
 
-/** @internal Compare only live policy bindings; declaration keys own structure. */
-export const haveEquivalentEditorSchemaRuntimePolicyBindings = (
+/** @internal Compare only live validators; declaration keys own structure. */
+export const haveEquivalentEditorSchemaRuntimeValidationBindings = (
   leftRecords: readonly EditorSchemaContributionRecord[],
   rightRecords: readonly EditorSchemaContributionRecord[]
 ) => {
@@ -3623,7 +3756,7 @@ export const haveEquivalentEditorSchemaRuntimePolicyBindings = (
 
       return Boolean(
         candidate &&
-          haveEquivalentRuntimePolicyBindings(
+          haveEquivalentRuntimeValidationBindings(
             property.descriptor,
             candidate.descriptor
           )
@@ -3673,13 +3806,6 @@ const toStructuralPropertyDescriptor = (
           ).item
         )
       : null;
-  const policy = descriptor.policy
-    ? Object.freeze({
-        id: descriptor.policy.id,
-        version: descriptor.policy.version,
-      })
-    : null;
-
   return Object.freeze({
     ...(Object.hasOwn(descriptor, 'default')
       ? { default: descriptor.default }
@@ -3687,13 +3813,15 @@ const toStructuralPropertyDescriptor = (
     ...(item ? { item } : {}),
     kind: descriptor.kind,
     omitDefault: descriptor.omitDefault,
-    ...(policy ? { policy } : {}),
     significant: descriptor.significant ?? true,
+    ...(descriptor.validationVersion
+      ? { validationVersion: descriptor.validationVersion }
+      : {}),
   });
 };
 
 /** @internal Cache only structural schema data, never live validator closures. */
-export const stripCompiledEditorSchemaRuntimePolicies = (
+export const stripCompiledEditorSchemaRuntimeValidations = (
   schema: CompiledEditorSchema
 ): StructuralCompiledEditorSchema => {
   const byId = new Map<string, StructuralCompiledSchemaProperty>();
@@ -3718,7 +3846,7 @@ export const stripCompiledEditorSchemaRuntimePolicies = (
 };
 
 /** @internal Bind one reused structural schema to the current configuration. */
-export const rebindCompiledEditorSchemaRuntimePolicies = (
+export const rebindCompiledEditorSchemaRuntimeValidations = (
   schema: CompiledEditorSchema | StructuralCompiledEditorSchema,
   records: readonly EditorSchemaContributionRecord[],
   revision: number
@@ -3733,7 +3861,7 @@ export const rebindCompiledEditorSchemaRuntimePolicies = (
 
       return Boolean(
         runtime &&
-          haveEquivalentRuntimePolicyBindings(
+          haveEquivalentRuntimeValidationBindings(
             property.descriptor,
             runtime.descriptor
           )
@@ -3743,7 +3871,6 @@ export const rebindCompiledEditorSchemaRuntimePolicies = (
     return schema as CompiledEditorSchema;
   }
 
-  const policyVersions = new Map<string, Source<number>>();
   const descriptors = new Map<string, PropertyValueDescriptor>();
 
   for (const id of schema.properties.byId.keys()) {
@@ -3754,11 +3881,7 @@ export const rebindCompiledEditorSchemaRuntimePolicies = (
     }
     descriptors.set(
       id,
-      clonePropertyDescriptor(
-        runtime.descriptor,
-        runtime.source,
-        policyVersions
-      )
+      clonePropertyDescriptor(runtime.descriptor, runtime.source)
     );
   }
 
@@ -3784,8 +3907,9 @@ const canonicalCompiledElement = (element: CompiledSchemaElement | null) =>
     ? {
         behavior: element.behavior,
         content: canonicalCompiledContent(element.content),
-        contentRoots: [...element.contentRoots].map(([slot, content]) => ({
-          content: canonicalCompiledContent(content),
+        contentRoots: [...element.contentRoots].map(([slot, root]) => ({
+          content: canonicalCompiledContent(root.content),
+          ownership: root.ownership,
           slot,
         })),
         groups: sortedStrings(element.groups),
@@ -3800,8 +3924,9 @@ const canonicalCompiledConstruction = (
   element
     ? {
         content: canonicalCompiledContent(element.content),
-        contentRoots: [...element.contentRoots].map(([slot, content]) => ({
-          content: canonicalCompiledContent(content),
+        contentRoots: [...element.contentRoots].map(([slot, root]) => ({
+          content: canonicalCompiledContent(root.content),
+          ownership: root.ownership,
           slot,
         })),
         defaultPropertyIds: sortedStrings(

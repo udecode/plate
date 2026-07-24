@@ -72,6 +72,8 @@ npm install @platejs/table
 
 Include `TablePlugin` in your Plate plugins array when creating the editor.
 
+`TablePlugin` installs `TableRowPlugin`, `TableCellPlugin`, and `TableCellHeaderPlugin` as required structural dependencies.
+
 ```tsx
 import { TablePlugin } from '@platejs/table/react';
 import { createPlateEditor } from 'platejs/react';
@@ -86,7 +88,7 @@ const editor = createPlateEditor({
 
 ### Configure Plugins
 
-Configure the table plugins with custom components and options.
+Configure the table owner and add complete row or cell descriptors when you need to replace a dependency's component or configuration.
 
 ```tsx
 import {
@@ -153,6 +155,8 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 
 ### TablePlugin
 
+Owns the table schema and behavior. Requires the row, cell, and header-cell plugins.
+
 <API name="TablePlugin">
 <APIOptions>
   <APIItem name="disableMerge" type="boolean" optional>
@@ -179,19 +183,19 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 
 ### TableRowPlugin
 
-Plugin for table rows.
+Required structural plugin for table rows. Add it directly only to replace its default configuration or component.
 
 ### TableCellPlugin
 
-Plugin for table cells.
+Required structural plugin for table cells. Add it directly only to replace its default configuration or component.
 
 ### TableCellHeaderPlugin
 
-Plugin for table header cells.
+Required structural plugin for table header cells. Add it directly only to replace its default configuration or component.
 
 ## API
 
-### editor.plugin(TablePlugin).api.create
+### editor.api.table.create
 
 <API name="create">
 <APIParameters>
@@ -224,7 +228,7 @@ The table node.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.createCell
+### editor.api.table.createCell
 
 Creates an empty cell node for a table.
 
@@ -253,7 +257,7 @@ The cell node.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.createRow
+### editor.api.table.createRow
 
 Creates an empty row node with the specified number of columns.
 
@@ -279,7 +283,7 @@ The row node.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getCellBorders
+### editor.api.table.getCellBorders
 
 Gets the border styles for a table cell, handling special cases for first row and first column cells.
 
@@ -328,7 +332,7 @@ The default border style to use when cell borders are not defined.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getCellChildren
+### editor.api.table.getCellChildren
 
 Gets the children of a table cell.
 
@@ -348,7 +352,7 @@ The children of the table cell.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getCellSize
+### editor.api.table.getCellSize
 
 Gets the width and minimum height of a table cell, taking into account column spans and column sizes.
 
@@ -372,7 +376,7 @@ The minimum height of the cell, derived from the row's size property.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getColSpan
+### editor.api.table.getColSpan
 
 Gets the column span of a table cell.
 
@@ -391,7 +395,7 @@ The table cell element to get the column span for.
 </APIReturns>
 </API>  
 
-### editor.plugin(TablePlugin).api.getRowSpan
+### editor.api.table.getRowSpan
 
 Gets the row span of a table cell.
 
@@ -410,7 +414,7 @@ Gets the row span of a table cell.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getCellTypes
+### editor.api.table.getCellTypes
 
 Get the plugin cell types.
 
@@ -424,7 +428,7 @@ Get the plugin cell types.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getNextCell
+### editor.api.table.getNextCell
 
 Gets the next cell in the table.
 <API name="getNextCell">
@@ -448,7 +452,7 @@ Gets the next cell in the table.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getPreviousCell
+### editor.api.table.getPreviousCell
 
 Gets the previous cell in the table.
 
@@ -473,7 +477,7 @@ Gets the previous cell in the table.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getColumnCount
+### editor.api.table.getColumnCount
 
 Gets the number of columns in a table.
 
@@ -492,7 +496,7 @@ The number of columns in the table.
 </APIItem>
 </APIReturns>
 </API>
-### editor.plugin(TablePlugin).api.getColumnIndex
+### editor.api.table.getColumnIndex
 
 Gets the column index of a cell node within a table.
 
@@ -512,7 +516,7 @@ The column index of the cell node.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getEntries
+### editor.api.table.getEntries
 
 Gets the table, row, and cell node entries based on the current selection or a specified location.
 
@@ -539,7 +543,7 @@ The location where the table cell is located.
 </API>
 
 
-### editor.plugin(TablePlugin).api.getGridAbove
+### editor.api.table.getGridAbove
 
 Gets the sub table above the anchor and focus positions based on the specified format (tables or cells).
 
@@ -557,7 +561,7 @@ The format of the sub table to retrieve.
   <APIItem type="ElementEntry[]">The sub table entries.</APIItem>
 </APIReturns>
 </API>
-### editor.plugin(TablePlugin).api.getGridByRange
+### editor.api.table.getGridByRange
 
 Gets the sub table between two cell paths within a given range.
 
@@ -579,7 +583,7 @@ The format of the output.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getRowIndex
+### editor.api.table.getRowIndex
 
 Gets the row index of a cell node within a table.
 
@@ -599,7 +603,7 @@ The row index of the cell node.
 </APIReturns>
 </API>
 
-### editor.plugin(TablePlugin).api.getTopCell
+### editor.api.table.getTopCell
 
 Gets the cell above the current cell in the table.
 
@@ -619,7 +623,7 @@ The cell node entry.
 </APIItem>
 </APIReturns>
 </API>
-### editor.plugin(TablePlugin).api.isBorderHidden
+### editor.api.table.isBorderHidden
 
 Checks if the border of a table cell or the table itself is hidden based on the specified border direction.
 

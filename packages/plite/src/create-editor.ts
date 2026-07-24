@@ -46,6 +46,7 @@ import {
   getRuntimeId,
   getSnapshot,
   createTransactionSpec,
+  applyTransactionSpecToDocument,
   initializeEditorSchemaSelection,
   initializeEditorSchemaDocument,
   invalidateEditorTransactionSpecs,
@@ -85,7 +86,8 @@ import type { InternalEditorUpdateOptions } from './core/update-policy';
 let nextEditorId = 0;
 const PENDING_SCHEMA_BOOTSTRAP = new WeakSet<Editor>();
 
-type ExtensionsFromOptions<TOptions> = TOptions extends {
+/** Extension tuple inferred from a `createEditor` options object. */
+export type EditorExtensionsFromOptions<TOptions> = TOptions extends {
   extensions: infer TExtensions extends readonly unknown[];
 }
   ? TExtensions
@@ -109,11 +111,12 @@ type InitialValueFromOptions<TOptions> = TOptions extends {
     : Value
   : Value;
 
-type ValueFromOptions<TOptions> = [
-  SchemaExtensionsOf<ExtensionsFromOptions<TOptions>>,
+/** Editor value inferred from installed schema or initial data. */
+export type EditorValueFromOptions<TOptions> = [
+  SchemaExtensionsOf<EditorExtensionsFromOptions<TOptions>>,
 ] extends [never]
   ? InitialValueFromOptions<TOptions>
-  : EditorValueFromExtensions<ExtensionsFromOptions<TOptions>>;
+  : EditorValueFromExtensions<EditorExtensionsFromOptions<TOptions>>;
 
 const createEditorId = () => `plite-editor-${++nextEditorId}`;
 
@@ -272,7 +275,9 @@ const publishInitialEditorExtensions = <TEditor extends Editor>(
           'Editor schema initialization cannot publish effects, annotations, or tags.'
         );
       }
-      const initializedDocument = spec.changes.apply(
+      const initializedDocument = applyTransactionSpecToDocument(
+        editor,
+        spec,
         getEditorDocumentValue(editor)
       );
 
@@ -357,7 +362,10 @@ export function createEditor<
   },
 >(
   options: TOptions
-): Editor<ValueFromOptions<TOptions>, ExtensionsFromOptions<TOptions>>;
+): Editor<
+  EditorValueFromOptions<TOptions>,
+  EditorExtensionsFromOptions<TOptions>
+>;
 
 export function createEditor<
   V extends Value,

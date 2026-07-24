@@ -20,6 +20,7 @@ const BaseCodeLinePlugin = createBasePlugin({
 
 const BaseCodeBlockPlugin = createBasePlugin({
   key: 'codeBlock',
+  dependencies: [BaseCodeLinePlugin],
   schema: ({ plugins }) => {
     const codeLineType = plugins.elementType(BaseCodeLinePlugin);
 
@@ -33,7 +34,6 @@ const BaseCodeBlockPlugin = createBasePlugin({
     };
   },
   type: 'code_block',
-  plugins: [BaseCodeLinePlugin],
 });
 
 const createAutolinkRules = () => [

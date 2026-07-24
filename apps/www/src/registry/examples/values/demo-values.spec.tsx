@@ -37,4 +37,35 @@ describe('createValue', () => {
     expect(sourceHeading).toMatchObject({ bold: true, text: 'Heading' });
     expect(snapshotBHeading).toMatchObject({ bold: true, text: 'Heading' });
   });
+
+  it('stores media captions as direct inline children', () => {
+    const value = DEMO_VALUES.media;
+    const children: unknown[] = value.children;
+    const mediaTypes = new Set([
+      'audio',
+      'file',
+      'img',
+      'media_embed',
+      'video',
+    ]);
+    const media = children.filter(
+      (node): node is { children: unknown[]; type: string } =>
+        typeof node === 'object' &&
+        node !== null &&
+        'type' in node &&
+        typeof node.type === 'string' &&
+        mediaTypes.has(node.type) &&
+        'children' in node &&
+        Array.isArray(node.children)
+    );
+
+    expect(media).toHaveLength(5);
+
+    for (const element of media) {
+      expect(element.children.length).toBeGreaterThan(0);
+      expect(element.children.every((child) => TextApi.isText(child))).toBe(
+        true
+      );
+    }
+  });
 });

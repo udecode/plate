@@ -13,7 +13,7 @@ To create a basic Plate editor, you can use the `createPlateEditor` function, or
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
+  plugins: [H1Plugin],
 });
 ```
 
@@ -32,13 +32,17 @@ const editor = createPlateEditor({
 });
 ```
 
+Pass an `EditorDocumentValue` with `children`, `roots`, and persisted `meta`
+when one editor owns content roots or other named regions. Plate publishes the
+same complete shape through `onValueChange`.
+
 Use a synchronous initializer when decoding requires the compiled plugin model:
 
 ```ts
 const editor = createPlateEditor({
   plugins: [HtmlPlugin, BoldPlugin, ItalicPlugin],
   initialValue: ({ editor }) =>
-    editor.plugin(HtmlPlugin).api.deserialize({
+    editor.api.html.deserialize({
       element: '<p>This is <b>bold</b> and <i>italic</i> text!</p>',
     }),
 });
@@ -54,7 +58,7 @@ identity with the exact compiled fingerprint:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
+  plugins: [H1Plugin],
 });
 
 editor.read.schema.identity();
@@ -68,7 +72,7 @@ only to the compiled schema:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
+  plugins: [H1Plugin],
   schema: { id: 'acme-document', version: 3 },
 });
 
@@ -112,7 +116,7 @@ You can add plugins to your editor by including them in the `plugins` array:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin, ListPlugin],
+  plugins: [H1Plugin, ListPlugin],
 });
 ```
 
@@ -233,8 +237,7 @@ const editor = createPlateEditor({
 
 <Callout type="note">
   The `NavigationFeedbackPlugin` is part of the React editor defaults. Use
-  `navigationFeedback` for normal configuration and keep
-  `rootPlugin.configurePlugin(...)` for advanced escape-hatch work.
+  `navigationFeedback` for its editor-level configuration.
 </Callout>
 
 #### Disabling Navigation Feedback
@@ -275,60 +278,65 @@ Override default components for plugins:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
+  plugins: [H1Plugin],
   components: {
     [ParagraphPlugin.key]: CustomParagraphComponent,
-    [HeadingPlugin.key]: CustomHeadingComponent,
+    [H1Plugin.key]: CustomHeadingComponent,
   },
 });
 ```
 
-### Plugin Overrides
+### Configure Plugins
 
-Override specific plugin configurations:
+When your app imports the target, configure that descriptor directly:
 
 ```ts
+const AppLinkPlugin = LinkPlugin.configure({
+  options: {
+    allowedSchemes: ['http', 'https'],
+  },
+});
+
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
+  plugins: [AppLinkPlugin],
+});
+```
+
+### Weak Peer Overrides
+
+A package plugin may need to adapt another installed package without importing
+it or controlling the consumer's editor kit:
+
+```ts
+const SingleBlockPlugin = createPlatePlugin({
+  key: KEYS.singleBlock,
   override: {
     plugins: {
-      [ParagraphPlugin.key]: {
-        options: {
-          customOption: true,
-        },
+      [KEYS.trailingBlock]: {
+        enabled: false,
       },
     },
   },
 });
 ```
 
-### Disable Plugins
+The override applies only when the target is installed; a missing target is
+ignored. It cannot change `key`, `dependencies`, or nest another `override`.
+Direct target configuration wins.
 
-Disable specific plugins:
+### Replace Dependency Defaults
 
-```ts
-const editor = createPlateEditor({
-  plugins: [HeadingPlugin, ListPlugin],
-  override: {
-    enabled: {
-      [HistoryPlugin.key]: false,
-    },
-  },
-});
-```
-
-### Overriding Plugins
-
-You can override core plugins or previously defined plugins by adding a plugin with the same key. The last plugin with a given key wins:
+A complete explicit descriptor can replace a lower-precedence core or
+dependency definition with the same key. Array order does not choose the
+winner, and two distinct explicit descriptors with the same key are an error.
 
 ```ts
-const CustomParagraphPlugin = createPlatePlugin({
-  key: 'p',
-  // Custom implementation
+const AppParagraphPlugin = ParagraphPlugin.configure({
+  type: 'paragraph',
 });
 
 const editor = createPlateEditor({
-  plugins: [CustomParagraphPlugin],
+  plugins: [AppParagraphPlugin],
 });
 ```
 

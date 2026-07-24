@@ -278,11 +278,11 @@ Plugin for creating and managing text comments with state tracking and discussio
 
 ## API
 
-### `editor.plugin(BaseCommentPlugin).api.has`
+### `editor.api.comment.has`
 
 Checks if a comment with the given ID exists in the editor.
 
-<API name="editor.plugin(BaseCommentPlugin).api.has">
+<API name="editor.api.comment.has">
   <APIParameters>
     <APIItem name="options" type="{ id: string }">
       Options containing the comment ID to check.
@@ -291,11 +291,11 @@ Checks if a comment with the given ID exists in the editor.
   <APIReturns type="boolean">Whether the comment exists.</APIReturns>
 </API>
 
-### `editor.plugin(BaseCommentPlugin).api.node`
+### `editor.api.comment.node`
 
 Gets a comment node entry.
 
-<API name="editor.plugin(BaseCommentPlugin).api.node">
+<API name="editor.api.comment.node">
   <APIOptions
     type="object & { id?: string; isDraft?: boolean }"
     optional
@@ -307,11 +307,11 @@ Gets a comment node entry.
   </APIReturns>
 </API>
 
-### `editor.plugin(BaseCommentPlugin).api.nodeId`
+### `editor.api.comment.nodeId`
 
 Gets the ID of a comment from a leaf node.
 
-<API name="editor.plugin(BaseCommentPlugin).api.nodeId">
+<API name="editor.api.comment.nodeId">
   <APIParameters>
     <APIItem name="leaf" type="TCommentText">
       The comment leaf node.
@@ -320,11 +320,11 @@ Gets the ID of a comment from a leaf node.
   <APIReturns type="string | undefined">The comment ID if found.</APIReturns>
 </API>
 
-### `editor.plugin(BaseCommentPlugin).api.nodes`
+### `editor.api.comment.nodes`
 
 Gets all comment node entries matching the options.
 
-<API name="editor.plugin(BaseCommentPlugin).api.nodes">
+<API name="editor.api.comment.nodes">
   <APIOptions
     type="object & { id?: string; isDraft?: boolean }"
     optional

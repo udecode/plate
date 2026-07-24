@@ -12,7 +12,7 @@ const SCHEMA_METADATA_KEY = 'current';
 
 export type YjsSchemaEnvelope = Readonly<{
   format: 2;
-  identity: EditorSchemaIdentity | null;
+  identity: EditorSchemaIdentity;
 }>;
 
 const readEnvelopeProperties = (
@@ -51,24 +51,22 @@ const readEnvelopeProperties = (
 };
 
 const freezeIdentity = (
-  identity: EditorSchemaIdentity | null
-): EditorSchemaIdentity | null =>
-  identity === null
-    ? null
-    : identity.kind === 'derived'
-      ? Object.freeze({
-          fingerprint: identity.fingerprint,
-          kind: 'derived',
-        })
-      : Object.freeze({
-          fingerprint: identity.fingerprint,
-          id: identity.id,
-          kind: 'named',
-          version: identity.version,
-        });
+  identity: EditorSchemaIdentity
+): EditorSchemaIdentity =>
+  identity.kind === 'derived'
+    ? Object.freeze({
+        fingerprint: identity.fingerprint,
+        kind: 'derived',
+      })
+    : Object.freeze({
+        fingerprint: identity.fingerprint,
+        id: identity.id,
+        kind: 'named',
+        version: identity.version,
+      });
 
 export const createYjsSchemaEnvelope = (
-  identity: EditorSchemaIdentity | null
+  identity: EditorSchemaIdentity
 ): YjsSchemaEnvelope =>
   Object.freeze({
     format: SCHEMA_METADATA_FORMAT,
@@ -86,10 +84,7 @@ export const readYjsSchemaEnvelope = (
   if (value === undefined) return null;
 
   const properties = readEnvelopeProperties(value);
-  const identity =
-    properties?.identity === null
-      ? null
-      : readEditorSchemaIdentity(properties?.identity);
+  const identity = readEditorSchemaIdentity(properties?.identity);
 
   if (properties?.format !== SCHEMA_METADATA_FORMAT || identity === undefined) {
     throw new Error('Invalid Yjs schema metadata envelope.');
@@ -100,29 +95,21 @@ export const readYjsSchemaEnvelope = (
 
 export const writeYjsSchemaEnvelope = (
   metadata: Y.Map<unknown>,
-  identity: EditorSchemaIdentity | null
+  identity: EditorSchemaIdentity
 ): void => {
   metadata.set(SCHEMA_METADATA_KEY, createYjsSchemaEnvelope(identity));
 };
 
-const describeIdentity = (identity: EditorSchemaIdentity | null): string =>
-  identity === null
-    ? 'open schema'
-    : identity.kind === 'derived'
-      ? `derived schema (${identity.fingerprint})`
-      : `schema "${identity.id}" v${identity.version} (${identity.fingerprint})`;
+const describeIdentity = (identity: EditorSchemaIdentity): string =>
+  identity.kind === 'derived'
+    ? `derived schema (${identity.fingerprint})`
+    : `schema "${identity.id}" v${identity.version} (${identity.fingerprint})`;
 
 export const assertYjsSchemaIdentity = (
-  local: EditorSchemaIdentity | null,
-  remote: EditorSchemaIdentity | null
+  local: EditorSchemaIdentity,
+  remote: EditorSchemaIdentity
 ): void => {
   if (areEditorSchemaIdentitiesEqual(local, remote)) return;
-
-  if (local === null || remote === null) {
-    throw new Error(
-      `Yjs schema mismatch: local ${describeIdentity(local)} cannot join room ${describeIdentity(remote)}.`
-    );
-  }
 
   if (local.kind !== remote.kind) {
     throw new Error(

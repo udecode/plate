@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import { useTheme } from 'next-themes';
-import type { Value } from 'platejs';
+import type { InitialValue } from 'platejs';
 import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { Editor, EditorView } from '@/registry/ui/editor';
 
 import { BaseEditorKit } from './editor-base-kit';
+import { FixedToolbarPlugin } from './plugins/fixed-toolbar-kit';
+import { FloatingToolbarPlugin } from './plugins/floating-toolbar-kit';
 
 function useThemedHtml(html: string, serverTheme?: string) {
   const { resolvedTheme } = useTheme();
@@ -83,15 +85,13 @@ export function HtmlIframe({
   return <iframe title="Preview" srcDoc={content} {...props} />;
 }
 
-export function EditorClient({ value }: { value: Value }) {
+export function EditorClient({ value }: { value: InitialValue }) {
   const editor = usePlateEditor({
-    override: {
-      enabled: {
-        'fixed-toolbar': false,
-        'floating-toolbar': false,
-      },
-    },
-    plugins: EditorKit,
+    plugins: [
+      ...EditorKit,
+      FixedToolbarPlugin.configure({ enabled: false }),
+      FloatingToolbarPlugin.configure({ enabled: false }),
+    ],
     initialValue: value,
   });
 
@@ -102,7 +102,7 @@ export function EditorClient({ value }: { value: Value }) {
   );
 }
 
-export const EditorViewClient = ({ value }: { value: Value }) => {
+export const EditorViewClient = ({ value }: { value: InitialValue }) => {
   const editor = usePlateViewEditor({
     plugins: BaseEditorKit,
     initialValue: value,

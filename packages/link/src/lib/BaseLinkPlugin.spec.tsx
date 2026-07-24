@@ -1,7 +1,6 @@
 import { createBaseEditor, HtmlPlugin } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import { NodeApi } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 
@@ -19,12 +18,12 @@ describe('BaseLinkPlugin', () => {
     const link = Array.from(
       NodeApi.elements({ children: fragment, type: 'root' }),
       ([node]) => node
-    ).find((node) => node.type === editor.getType(KEYS.link));
+    ).find((node) => node.type === editor.getType(BaseLinkPlugin.key));
 
     expect(link).toMatchObject({
       children: [{ text: 'Link' }],
       target: '_blank',
-      type: editor.getType(KEYS.link),
+      type: editor.getType(BaseLinkPlugin.key),
       url: 'https://example.com',
     });
   });
@@ -37,7 +36,7 @@ describe('BaseLinkPlugin', () => {
     const hasLink = Array.from(
       NodeApi.elements({ children: fragment, type: 'root' }),
       ([node]) => node
-    ).some((node) => node.type === editor.getType(KEYS.link));
+    ).some((node) => node.type === editor.getType(BaseLinkPlugin.key));
 
     expect(hasLink).toBe(false);
   });
@@ -45,8 +44,8 @@ describe('BaseLinkPlugin', () => {
   it('registers no input rules by default', () => {
     const editor = createEditor();
 
-    expect(getPlateRuntime(editor).inputRules.plugins[KEYS.link].rules).toEqual(
-      []
-    );
+    expect(
+      getPlateRuntime(editor).inputRules.plugins[BaseLinkPlugin.key].rules
+    ).toEqual([]);
   });
 });

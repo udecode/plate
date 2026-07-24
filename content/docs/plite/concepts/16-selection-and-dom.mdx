@@ -23,10 +23,10 @@ Do not close a selection bug with only one layer unless the bug only exists in t
 
 Plite has two selection systems in a React editor:
 
-| Selection        | What it means                                                                   |
-| ---------------- | ------------------------------------------------------------------------------- |
-| Model selection  | The `Range` stored by the Plite editor. Transactions read and write this value. |
-| Native selection | The browser `Selection` visible in the contenteditable DOM.                     |
+| Selection        | What it means                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Model selection  | The serializable `TextSelection`, `NodeSelection`, or `null` stored by the Plite editor.          |
+| Native selection | The browser `Selection` visible in the contenteditable DOM. Only text selection projects to it. |
 
 Most editor code should write the model selection and let Plite export the DOM/native selection. Plite imports the native selection when the browser is the current source of truth, such as user selection movement or native input.
 
@@ -41,11 +41,15 @@ const selection = editor.read((state) => state.selection());
 Write selection inside `editor.update(...)`.
 
 ```tsx
+import { SelectionApi } from "@platejs/plite";
+
 editor.update((tx) => {
-  tx.selection.set({
-    anchor: { path: [0, 0], offset: 0 },
-    focus: { path: [1, 0], offset: 3 },
-  });
+  tx.selection.set(
+    SelectionApi.text({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 3 },
+    })
+  );
 });
 ```
 
@@ -78,6 +82,42 @@ The browser can move native selection through mouse, keyboard, touch, compositio
 Application code should not patch the browser `Selection` directly for normal editor behavior. Use model transactions, `Editable` handlers, or DOM-aware React APIs that preserve Plite's repair path.
 
 Use [React Editor](../libraries/plite-react/react-editor) for DOM translation helpers and [Plite React Event Handling](../libraries/plite-react/event-handling) for browser event hooks.
+
+## Keyboard-Selectable Content
+
+Use a non-void, isolating element with `keyboardSelectable: true` when one
+document node owns both non-editable asset chrome and editable child content.
+The model keeps its focus states distinct:
+
+| State | Behavior |
+| --- | --- |
+| `NodeSelection` at the owner path | Focuses the asset. The native browser selection stays empty. `ArrowDown` enters the owner's text content, and Backspace or Delete removes the owner. |
+| `TextSelection` inside the owner | Edits child content. `ArrowUp` from its leading visual boundary returns to the owner `NodeSelection`. |
+
+Clicking a `contenteditable="false"` descendant of a keyboard-selectable owner
+creates its `NodeSelection`. Clicking editable child text creates a normal
+`TextSelection`.
+
+```tsx
+import { defineEditorExtension, schema } from "@platejs/plite";
+
+const media = defineEditorExtension({
+  name: "media",
+  schema: {
+    elements: {
+      image: {
+        content: schema.content.text({ default: "text", min: 1 }),
+        isolating: true,
+        keyboardSelectable: true,
+      },
+    },
+  },
+});
+```
+
+In React node UI, use `useElementSelected({ mode: "node" })` for the exact
+asset-focused state. The default intersection mode also matches text selection
+inside the element.
 
 ## DOM Phase Order
 

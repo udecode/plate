@@ -103,10 +103,12 @@ const persisted = {
 };
 ```
 
-Declared schemas return `{ id, version, fingerprint }`; raw editors return
-`null`. Treat `version` as the application migration boundary and
-`fingerprint` as a deterministic check that the same ID/version still describes
-the same compiled semantics.
+Every editor returns an identity. A complete schema without `id` and `version`
+returns `{ kind: "derived", fingerprint }`; a named lineage returns
+`{ kind: "named", id, version, fingerprint }`. Treat a named lineage's
+`version` as the application migration boundary and `fingerprint` as a
+deterministic check that the same ID/version still describes the same compiled
+semantics.
 
 `@platejs/plite-history` stores this identity in `History.toJSON(editor)` and
 rejects mismatches in `History.fromJSON(editor, json)` before decoding any

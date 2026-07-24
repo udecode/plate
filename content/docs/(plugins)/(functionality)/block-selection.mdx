@@ -37,7 +37,10 @@ The fastest way to add Block Selection is with the `BlockSelectionKit`, which in
 
 ### Add Kit
 
-The `BlockSelectionKit` enables the context menu by default and provides a default `isSelectable` logic to exclude common non-selectable blocks like code lines and table cells.
+The `BlockSelectionKit` enables right-click selection handling and provides a
+default `isSelectable` rule that excludes common structural blocks such as code
+lines and table cells. Add the separate
+[`BlockMenuKit`](/docs/block-menu) when you want a rendered context menu.
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
@@ -76,6 +79,10 @@ const editor = createPlateEditor({
   ],
 });
 ```
+
+`BlockSelectionPlugin` does not install `BlockMenuPlugin`. Without a menu
+plugin, block selection treats the menu as closed and ordinary selection
+changes clear the selected blocks.
 
 Put this plugin before any other plugins overriding `selectAll` – `Cmd+A` (code block, table, column, etc.) to avoid any conflicts.
 
@@ -152,12 +159,12 @@ To reset the selection when clicking outside selectable areas, you can use a cli
 
 ```tsx
 // 1. Direct API call
-editor.plugin(BlockSelectionPlugin).api.deselect();
+editor.api.blockSelection.deselect();
 
 // 2. Click outside handler
 const handleClickOutside = (event: MouseEvent) => {
   if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
-    editor.plugin(BlockSelectionPlugin).api.deselect();
+    editor.api.blockSelection.deselect();
   }
 };
 ```
@@ -211,7 +218,8 @@ Plugin for block selection functionality.
 ```
   </APIItem>
   <APIItem name="enableContextMenu" type="boolean" optional>
-    Enables or disables the context menu for block selection.
+    Enables right-click block-selection handling. This option does not install
+    or render `BlockMenuPlugin`.
     - **Default:** `false`
   </APIItem>
   <APIItem name="isSelecting" type="boolean" optional>
@@ -242,11 +250,11 @@ Plugin for block selection functionality.
 
 ## API
 
-### `editor.plugin(BlockSelectionPlugin).api.add(id)`
+### `editor.api.blockSelection.add(id)`
 
 Adds one or more blocks to the selection.
 
-<API name="editor.plugin(BlockSelectionPlugin).api.add">
+<API name="editor.api.blockSelection.add">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       The ID(s) of the block(s) to be selected.
@@ -254,15 +262,15 @@ Adds one or more blocks to the selection.
   </APIParameters>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.clear()`
+### `editor.api.blockSelection.clear()`
 
 Resets the set of selected IDs to an empty set.
 
-### `editor.plugin(BlockSelectionPlugin).api.delete(id)`
+### `editor.api.blockSelection.delete(id)`
 
 Removes one or more blocks from the selection.
 
-<API name="editor.plugin(BlockSelectionPlugin).api.delete">
+<API name="editor.api.blockSelection.delete">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       The ID(s) of the block(s) to remove from selection.
@@ -270,19 +278,19 @@ Removes one or more blocks from the selection.
   </APIParameters>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.deselect()`
+### `editor.api.blockSelection.deselect()`
 
 Deselects all blocks and sets the `isSelecting` flag to false.
 
-### `editor.plugin(BlockSelectionPlugin).api.focus()`
+### `editor.api.blockSelection.focus()`
 
 Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
 
-### `editor.plugin(BlockSelectionPlugin).api.getNodes(options?)`
+### `editor.api.blockSelection.getNodes(options?)`
 
 Gets the selected blocks in the editor.
 
-<API name="editor.plugin(BlockSelectionPlugin).api.getNodes">
+<API name="editor.api.blockSelection.getNodes">
 <APIParameters>
   <APIItem name="options" type="{ selectionFallback?: boolean }" optional>
     Options for getting nodes.
@@ -301,11 +309,11 @@ Gets the selected blocks in the editor.
 </APIReturns>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.has(id)`
+### `editor.api.blockSelection.has(id)`
 
 Checks if one or more blocks are selected.
 
-<API name="editor.plugin(BlockSelectionPlugin).api.has">
+<API name="editor.api.blockSelection.has">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       The ID(s) of the block(s) to check.
@@ -316,11 +324,11 @@ Checks if one or more blocks are selected.
   </APIReturns>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.isSelectable(element, path)`
+### `editor.api.blockSelection.isSelectable(element, path)`
 
 Checks if a block at a given path is selectable based on the `isSelectable` plugin option.
 
-<API name="editor.plugin(BlockSelectionPlugin).api.isSelectable">
+<API name="editor.api.blockSelection.isSelectable">
   <APIParameters>
     <APIItem name="element" type="Element">
       Block element to check.
@@ -332,7 +340,7 @@ Checks if a block at a given path is selectable based on the `isSelectable` plug
   <APIReturns type="boolean">Whether the block is selectable.</APIReturns>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.moveSelection(direction)`
+### `editor.api.blockSelection.moveSelection(direction)`
 
 Moves the selection up or down to the next selectable block.
 
@@ -346,7 +354,7 @@ When moving up:
 - Sets it as the new anchor
 - Clears previous selection and selects only this block
 
-<API name="editor.plugin(BlockSelectionPlugin).api.moveSelection">
+<API name="editor.api.blockSelection.moveSelection">
   <APIParameters>
     <APIItem name="direction" type="'up' | 'down'">
       Direction to move selection.
@@ -354,15 +362,15 @@ When moving up:
   </APIParameters>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.selectAll()`
+### `editor.api.blockSelection.selectAll()`
 
 Selects all selectable blocks in the editor.
 
-### `editor.plugin(BlockSelectionPlugin).api.set(id)`
+### `editor.api.blockSelection.set(id)`
 
 Sets the selection to one or more blocks, clearing any existing selection.
 
-<API name="editor.plugin(BlockSelectionPlugin).api.set">
+<API name="editor.api.blockSelection.set">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       The ID(s) of the block(s) to be selected.
@@ -370,7 +378,7 @@ Sets the selection to one or more blocks, clearing any existing selection.
   </APIParameters>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).api.shiftSelection(direction)`
+### `editor.api.blockSelection.shiftSelection(direction)`
 
 Expands or shrinks the selection based on the anchor block.
 
@@ -385,7 +393,7 @@ For `Shift+ArrowDown`:
 - Bottom-most block for `Shift+ArrowUp`
 - Top-most block for `Shift+ArrowDown`
 
-<API name="editor.plugin(BlockSelectionPlugin).api.shiftSelection">
+<API name="editor.api.blockSelection.shiftSelection">
   <APIParameters>
     <APIItem name="direction" type="'up' | 'down'">
       Direction to expand/shrink selection.
@@ -406,7 +414,7 @@ Removes the selected nodes from the editor.
 ### `tx.blockSelection.select`
 
 Selects the nodes returned by
-`editor.plugin(BlockSelectionPlugin).api.getNodes()` in the editor and resets
+`editor.api.blockSelection.getNodes()` in the editor and resets
 selected IDs.
 
 ### `tx.blockSelection.setNodes`

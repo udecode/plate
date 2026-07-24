@@ -108,22 +108,19 @@ The shipped `ListKit` also wires the classic markdown entry rules for bulleted, 
 npm install @platejs/list-classic
 ```
 
-### Add Plugins
+### Add Plugin
 
-Include the list plugins in your Plate plugins array when creating the editor.
+Add `ListPlugin` to your Plate plugin array. It installs the required bulleted,
+numbered, task-list, list-item, and list-item-content descriptors.
 
 ```tsx
-import { ListPlugin, BulletedListPlugin, NumberedListPlugin, TaskListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
+import { ListPlugin } from '@platejs/list-classic/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     ListPlugin,
-    BulletedListPlugin,
-    NumberedListPlugin,
-    TaskListPlugin,
-    ListItemPlugin,
   ],
 });
 ```
@@ -138,7 +135,12 @@ import {
   OrderedListRules,
   TaskListRules,
 } from '@platejs/list-classic';
-import { ListPlugin, BulletedListPlugin, NumberedListPlugin, TaskListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
+import {
+  BulletedListPlugin,
+  ListPlugin,
+  NumberedListPlugin,
+  TaskListPlugin,
+} from '@platejs/list-classic/react';
 import { createPlateEditor } from 'platejs/react';
 import { BulletedListElement, NumberedListElement, TaskListElement } from '@/components/ui/list-classic-node';
 
@@ -167,7 +169,6 @@ const editor = createPlateEditor({
       render: { node: TaskListElement },
       shortcuts: { toggle: { keys: 'mod+alt+7' } },
     }),
-    ListItemPlugin,
   ],
 });
 ```
@@ -195,18 +196,12 @@ When using the `ListPlugin`, use the [`insert-toolbar-classic-button`](/docs/com
 ### `ListPlugin`
 
 <API name="ListPlugin">
-Contains the following element plugins:
+Installs these required element plugins:
 - `BulletedListPlugin`
 - `NumberedListPlugin`
 - `TaskListPlugin`
 - `ListItemPlugin`
 - `ListItemContentPlugin`
-
-Options:
-
-- `validLiChildren?: PluginReference[]` — element plugins allowed as direct
-  list-item children. For example,
-  `options: { validLiChildren: [ImagePlugin] }`.
 
 <APIOptions type="object">
   <APIItem name="enableResetOnShiftTab" type="boolean" optional>
@@ -237,7 +232,13 @@ Plugin for task lists with checkboxes.
 
 ### `ListItemPlugin`
 
-Plugin for list items.
+Plugin for list items. Configure `validLiChildren` here when another element
+plugin may stay as a direct list-item child:
+
+`ListItemPlugin.configure({ options: { validLiChildren: [ImagePlugin] } })`
+
+Add the configured `ListItemPlugin` beside `ListPlugin` in the editor plugin
+array. The explicit descriptor replaces the required default with the same key.
 
 ### `ListItemContentPlugin`
 

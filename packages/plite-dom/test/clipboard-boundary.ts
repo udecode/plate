@@ -10,6 +10,7 @@ import {
   property,
   type Range,
   schema,
+  SelectionApi,
   ElementApi as PliteElement,
 } from '@platejs/plite';
 import {
@@ -38,6 +39,7 @@ import {
   NODE_TO_ELEMENT,
   NODE_TO_INDEX,
   NODE_TO_PARENT,
+  readDOMFragmentData,
 } from '../src/internal';
 
 const editorGetChangedRoots = (editor: Editor) => [
@@ -121,6 +123,36 @@ const permissiveClipboardSchema = defineEditorSchema({
   id: 'clipboard-permissive-test',
   root: { content: schema.content.not(schema.content.text()) },
   unknown: 'preserve',
+  version: 1,
+});
+
+const keyboardSelectableClipboardSchema = defineEditorSchema({
+  elements: {
+    media: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      contentRoots: {
+        details: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+      keyboardSelectable: true,
+    },
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+  id: 'keyboard-selectable-clipboard-test',
+  root: {
+    content: schema.content.types(['media', 'paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+  },
+  unknown: 'reject',
   version: 1,
 });
 
@@ -557,6 +589,87 @@ describe('plite-dom clipboard boundary', () => {
     expect(decodeURIComponent(document.defaultView!.atob(encoded))).toBe(
       '{"slice":{"content":[{"type":"paragraph","children":[{"text":"alpha"}]}],"openEnd":1,"openStart":1},"version":1}'
     );
+  });
+
+  it('round-trips detached secondary roots in the canonical fragment envelope', () => {
+    const data = new FakeDataTransfer();
+    const slice = ContentSlice.fromJSON({
+      content: [
+        {
+          childRoots: { caption: 'caption:1' },
+          children: [{ text: '' }],
+          type: 'image',
+        },
+      ],
+      openEnd: 0,
+      openStart: 0,
+      roots: {
+        'caption:1': [
+          { children: [{ bold: true, text: 'rich' }], type: 'paragraph' },
+        ],
+      },
+    });
+    const encoded = writeDOMFragmentData(data as unknown as DataTransfer, {
+      html: '<figure></figure>',
+      slice,
+    });
+
+    expect(decodeFragmentPayload(document, encoded)).toEqual({
+      slice,
+      version: 1,
+    });
+    expect(
+      readDOMFragmentData(
+        createEditor() as never,
+        data as unknown as DataTransfer
+      )
+    ).toEqual(slice);
+  });
+
+  it('writes a node selection as one closed owner slice with reachable roots', () => {
+    withDom((document) => {
+      const owner = {
+        childRoots: { details: 'media:1:details' },
+        children: [{ text: 'Caption' }],
+        type: 'media' as const,
+      };
+      const details = [
+        { children: [{ text: 'Owned details' }], type: 'paragraph' as const },
+      ];
+      const point = { offset: 0, path: [1, 0] };
+      const editor = createEditor({
+        extensions: [dom(), keyboardSelectableClipboardSchema],
+        initialSelection: SelectionApi.node([1], {
+          anchor: point,
+          focus: point,
+        }),
+        initialValue: {
+          children: [
+            { children: [{ text: 'before' }], type: 'paragraph' as const },
+            owner,
+            { children: [{ text: 'after' }], type: 'paragraph' as const },
+          ],
+          roots: { 'media:1:details': details },
+        },
+      });
+      const clipboard = new FakeDataTransfer();
+
+      editor.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+
+      const encoded = clipboard.getData('application/x-plite-fragment');
+
+      expect(encoded).not.toBe('');
+      expect(decodeFragmentPayload(document, encoded)).toEqual({
+        slice: ContentSlice.fromJSON({
+          content: [owner],
+          openEnd: 0,
+          openStart: 0,
+          roots: { 'media:1:details': details },
+        }),
+        version: 1,
+      });
+      expect(clipboard.getData('text/plain')).toBe('Caption');
+    });
   });
 
   it('snapshots mutable fragment input before producing clipboard payloads', () => {

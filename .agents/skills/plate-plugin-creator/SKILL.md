@@ -1,5 +1,5 @@
 ---
-description: Build new Plate plugins with semantic base-first architecture, sane typing, and explicit React/Plate wrapper boundaries. Use when authoring or refactoring Plate plugin packages, deciding between createBasePlugin and createPlatePlugin, defining plugin APIs/update groups/options, or lifting semantic base plugins into React/Plate wrappers.
+description: Build or refactor Plate plugins with semantic base-first architecture, owner-first colocation, inferred types, options-only configuration, scoped APIs and transactions, and honest React boundaries. Use when choosing createBasePlugin vs createPlatePlugin, shaping plugin packages, merging helpers/components/hooks/tests into durable owners, or defining plugin APIs, update groups, options, dependencies, parsers, normalizers, and Plite extensions.
 name: plate-plugin-creator
 metadata:
   skiller:
@@ -8,225 +8,299 @@ metadata:
 
 # Plate Plugin Creator
 
-Repo-specific companion to Plate's core plugin APIs.
+Build Plate plugins that do not need a later `plate-next` cleanup.
 
-Before shaping a reusable public API, architecture decision, builder/factory
-pattern, naming convention, runtime/service boundary, or perf-sensitive public
-surface, read [vision](../vision/SKILL.md), then use
-[best-api](../best-api/SKILL.md) for the target call shape. This skill is the
-execution companion.
+This skill owns plugin authoring mechanics: semantic layer, durable source
+owners, file topology, contextual typing, options, scoped APIs and
+transactions, React families, and package-local proof.
 
-Use this skill for Plate-specific plugin authorship: semantic ownership,
-authoring order, type-contract fidelity, and React/Plate wrapper boundaries.
+Before changing reusable API shape, naming, builder/factory patterns,
+composition identity, or runtime/perf law, read [vision](../vision/SKILL.md)
+and route the target call shape to [best-api](../best-api/SKILL.md). Use
+`plate-plan` or `plite-plan` only when adoption, runtime law, or layer ownership
+needs a plan. Use [docs-creator](../docs-creator/SKILL.md) for public docs.
 
-Use [docs-creator](../docs-creator/SKILL.md) for public plugin docs.
+## Required Reads
 
-## Vision Gate
+Before authoring or refactoring a plugin, read:
 
-Binary contract:
+1. [creation-flow.md](./rules/creation-flow.md) for semantic and file ownership;
+2. [typing.md](./rules/typing.md) for inference and public contracts;
+3. [composition.md](./rules/composition.md) for options, APIs, transactions,
+   dependencies, Plite primitives, and React behavior.
 
-- If the lane materially changes reusable API shape, builder/factory patterns,
-  or reusable naming, stop and route to
-  [best-api](../best-api/SKILL.md) after reading Vision. Then include:
-  - `VISION.md updated`
-  - or `VISION.md reaffirmed: <section-name>`;
-  - `best-api design/review: <verdict>`.
-- If the lane changes runtime boundaries or perf law, route to the relevant
-  Plate/Plite plan after the API target is clear.
-- If not, continue here for plugin execution mechanics.
+Use [plugin-authoring-audit.md](./references/plugin-authoring-audit.md) only
+for current repo examples. Core builders and type tests outrank precedent.
 
-Owner map:
+## Routing Gate
 
-| Owner | Scope |
-| --- | --- |
-| `vision` | durable doctrine, ownership boundaries, perf law |
-| `best-api` | reusable call shape, naming, composition, DX/AX |
-| `plate-plan` / `plite-plan` | layer adoption, runtime law, rollout, proof |
-| `plate-plugin-creator` | plugin mechanics, typing, wrappers, file placement |
+| Owner                       | Scope                                                    |
+| --------------------------- | -------------------------------------------------------- |
+| `vision`                    | durable doctrine, Plate/Plite ownership, perf law        |
+| `best-api`                  | reusable call shape, naming, composition identity, DX/AX |
+| `plate-plan` / `plite-plan` | runtime/adoption boundary and proof plan                 |
+| `plate-plugin-creator`      | implementation mechanics and owner-first topology        |
 
-Do not restate long-form `vision` law, precedence, or anti-pattern prose
-here. Keep only the routing gate, short derived checklist, and execution
-mechanics.
+Continue here when the public target is already clear. Stop for `best-api` when
+the work invents or materially changes a reusable public shape.
 
-Derived checklist from `vision`:
-
-1. Is the owner/layer explicit?
-2. Is this canonical semantics or local sugar?
-3. Is the config explicit and copyable?
-4. Does the shape add hidden runtime work on the hot path?
-5. Does core own a primitive here instead of feature semantics?
-
-## Repo Surfaces
-
-- `packages/*/src/lib` — semantic base plugins, transforms, parsers, rules
-- `packages/*/src/react` — Plate/React wrappers, hooks, node props, components
-- `packages/core/src/lib/plugin` — semantic base authoring primitives
-- `packages/core/src/react/plugin` — Plate wrapper primitives
-- `packages/core/type-tests` — plugin contract source of truth
-
-## Principles
-
-1. **Start where semantics live.** If the behavior matters without React, start
-   in `src/lib`.
-2. **Use inference before ceremony.** Pass a `PluginConfig` generic only when
-   explicit contract control buys something real.
-3. **Wrap base plugins.** If a semantic base already exists, lift it with
-   `toPlatePlugin` instead of re-authoring it in React.
-4. **Design the API shape on purpose.** Plugin-specific surfaces and merged
-   editor surfaces are different tools.
-5. **Use shared keys.** Shipped plugin keys and cross-plugin references should
-   come from `packages/utils/src/lib/plate-keys.ts`, not random string literals.
-6. **Core contracts beat precedent.** Type tests and core authoring APIs outrank
-   noisy old package examples.
-7. **Keep the lane narrow.** This skill owns plugin authoring, not public docs.
-
-## Critical Rules
-
-### Barrel & File Placement
-
-- Never hand-write or hand-edit `index.ts` / `index.tsx` barrel files. Treat
-  them as generated output only.
-- When adding, moving, renaming, or deleting public files under exported
-  package folders, run `pnpm brl` after the file work and before final
-  verification.
-- If `pnpm brl` produces a broken barrel, fix the barrel generator/config or
-  file placement. Do not patch the generated `index.ts` by hand after `brl`.
-- Any helper, matcher, fallback branch, or possible future fork logic that is
-  not part of the intended public contract should live under an `internal/`
-  directory.
-- Default to `internal/` unless the user-facing API genuinely needs the file to
-  be importable.
-
-### Creation Flow → [creation-flow.md](./rules/creation-flow.md)
-
-- Start with the decision tree before writing code.
-- `createBasePlugin` owns semantic base plugins.
-- `toPlatePlugin` lifts a semantic base into the React/Plate
-  surface.
-- `createPlatePlugin` is for real React/Plate-native
-  plugins or bundles of existing Plate plugins.
-- If you only need to bundle existing Plate plugins, do not invent a fake base
-  plugin first.
-
-### Typing & Context → [typing.md](./rules/typing.md)
-
-- Callback context already provides `editor`, `plugin`, `type`, `api`, `update`,
-  `getOptions`, `setOption`, and friends. Use them.
-- Forbid `any` in source files. The only acceptable exception is non-type test
-  code where the looseness is intentional and local to the test.
-- Do not thread `BaseEditor` through callbacks, options, or helper signatures
-  when plugin context already has the editor.
-- Prefer `KEYS` from `packages/utils/src/lib/plate-keys.ts` for shipped/shared
-  plugin keys and cross-plugin references. Use `editor.getType(KEYS.foo)` when
-  you need the resolved node type.
-- Let `createBasePlugin` and `createPlatePlugin` infer ordinary contracts; pass
-  an explicit `PluginConfig` only when it defines a real public contract.
-- Trust `packages/core/type-tests/*` over stale package precedent.
-
-### Composition & API Shape → [composition.md](./rules/composition.md)
-
-- `extendApi` owns plugin-specific read/service methods.
-- `extendTx` owns the plugin-keyed one-shot update group; `extendTxGroup` owns
-  an explicitly named update group.
-- `extendEditorApi` feeds the merged root `editor.api` only when the capability
-  genuinely belongs at the editor root.
-- Use `configurePlugin` to override nested child plugins instead of cloning
-  their config by hand.
-- Use `extendExtension` when the real ownership is Plite editor behavior.
-  Install the narrow command, normalizer, or operation-middleware hook instead
-  of wrapping the root editor or hiding behavior in event glue.
-- For React-only augmentation of existing rendered nodes, prefer
-  `inject.nodeProps.transformProps` before inventing wrapper components or
-  heavier node plumbing. This is especially right when the augmentation needs
-  hooks.
-
-## Hard Law
+## Semantic Layer
 
 **Semantic base first, Plate second.**
 
-If a plugin has meaningful document semantics without React, author the base in
-`packages/*/src/lib` first. Add the React/Plate layer only when rendering,
-hooks, or Plate-only editor integration is actually needed.
+- If behavior matters without React, author it in `src/lib` with
+  `createBasePlugin`.
+- Lift an existing semantic base with `toPlatePlugin`; do not re-author it with
+  `createPlatePlugin`.
+- Use `createPlatePlugin` directly only for a real React/Plate-native plugin.
+- Pure grouping of complete plugins belongs in an app or registry kit array,
+  never a package bundle plugin.
+- Keep a plugin base-only when no React layer has an independent job.
+- Use shared `KEYS` for shipped plugins and cross-plugin references.
+- Plite owns generic editor substrate: nodes, ranges, selection, reads,
+  updates, transactions, schema, history, DOM/runtime primitives, and editor
+  extensions.
+- Plate owns product composition: plugins, React integration, UI, app/registry
+  kits, product commands, defaults, and docs/examples.
+- Do not wrap Plite APIs under second Plate names. If clean authoring needs
+  missing substrate, name the exact Plite or Plate gap and patch the owner
+  instead of inventing a local bridge.
 
-Named exceptions:
+Named direct-Plate exceptions:
 
-1. React-only hook or `useHooks` plugins
-2. DOM/editor-surface plugins with no meaningful semantic base
-3. Plate-only bundle plugins that just compose existing Plate plugins
-4. React node-prop injection that truly depends on hooks or component context
+1. hook- or `useHooks`-driven plugins;
+2. DOM/editor-surface plugins with no useful semantic base;
+3. React node-prop or component behavior that has no non-React meaning.
 
-## Do Not Copy
+## Owner-First Topology
 
-- Do not start in `src/react` just because the consumer eventually uses React.
-- Do not re-author a base plugin with `createPlatePlugin` just to add a
-  component or small wrapper config.
-- Do not hardcode shipped/shared plugin keys when `KEYS` already owns that
-  contract.
-- Do not cargo-cult explicit `editor` callback annotations when inference
-  already knows the editor type.
-- Do not extract editor-locked helpers just to placate TypeScript.
-- Do not create new public top-level files when `internal/` is enough.
-- Do not treat `transformProps` like a universal replacement for
-  `render.node`, wrapper plugins, or `useHooks`. Use it when the real job is
-  prop augmentation.
-- Do not trust the loudest old plugin file over core APIs and type tests.
+Colocation is the default.
 
-## Key Patterns
+- Put behavior with exactly one production owner inline in that plugin's
+  `create*Plugin` / `.extend*` chain. This includes one-use `with*`,
+  `decorate*`, normalizers, parsers, commands, corrections, matchers, options,
+  APIs, and tx callbacks.
+- A separate helper needs multiple production consumers that cannot reuse the
+  owning scoped API, a real cross-plugin/cross-layer/transaction-composition
+  algorithm, a standalone public owner, or dedicated proof tooling.
+- Tests, barrels, exports, docs, app wrappers, historical filenames, and
+  hypothetical reuse do not count as additional production owners.
+- There is no line-count ceiling. A large coherent owner is cheaper than a
+  graph of one-use files.
+- Do not create `internal/`, `helpers/`, `utils/`, `transforms/`, `queries/`,
+  `components/`, or `hooks/` merely to classify implementation kinds.
+- An `internal/` subsystem is justified only when it has several files and a
+  durable independent boundary. Privacy alone is not file ownership.
+- Keep feature-package React roots flat by default: plugin files, component
+  family files, hook-family files, and one generated public root barrel.
+- One durable component family owns one `<Family>.tsx` file. Keep family-only
+  subcomponents, hooks, stores, controllers, lifecycle, constants, variants,
+  and render helpers in that file.
+- A standalone `use<Family>.ts` file requires use by multiple durable component
+  families or a public lifecycle/controller job meaningful without the
+  component family.
+- A provider/store file requires independently owned state or lifecycle
+  consumed beyond one component family.
+- Public exports and external imports prove access, not independent source
+  ownership.
+- When colocation makes a helper obsolete, delete its file and generated barrel
+  export. Do not preserve aliases, forwarding wrappers, or old filenames by
+  default.
+- Never replace a deleted raw helper with a wrapper around the scoped plugin
+  API. Call the scoped API directly.
 
-```ts
-// Good: semantic base first, thin Plate wrapper second.
-export const BaseCommentPlugin = createBasePlugin<BaseCommentConfig>({
-  key: KEYS.comment,
-}).extendApi(...);
+Colocation controls source ownership, not public composition identity. A real
+independently substitutable capability may remain colocated; route its public
+identity to `best-api`.
 
-export const CommentPlugin = toPlatePlugin(BaseCommentPlugin);
+## Inference Law
 
-// Good: wrapper adds Plate-only child wiring without re-authoring semantics.
-export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
-  plugins: [CodeLinePlugin, CodeSyntaxPlugin],
-});
+Let builders and initializers own contextual typing.
 
-// Good: direct Plate plugin when the job is React/editor integration.
-export const EventEditorPlugin = createPlatePlugin({
-  key: 'eventEditor',
-  handlers: { ... },
-});
+- Infer plugin exports from `createBasePlugin`, `createPlatePlugin`,
+  `toPlatePlugin`, and chained `.extend*` methods.
+- Never annotate or cast an inferred plugin export to `BasePlugin`,
+  `PlatePlugin`, or a config type.
+- Do not create `PluginConfig<'foo'>` aliases with no real options, API, tx,
+  selectors, or state.
+- Keep an explicit config/API/tx type only for a real exported contract,
+  recursive shape, reused contract, or external boundary.
+- Prefer inline one-use constants, config fragments, callback types, and test
+  setup. Do not create ferry types to move an inferred callback into another
+  file.
+- Do not annotate local variables, callbacks, examples, or test fixtures whose
+  initializer/context should infer them.
+- For an existing API/tx contract, pass the method object type to
+  `.extendApi<ApiContract>(...)` or `.extendTx<TxContract>(...)`. Do not append
+  `satisfies`, cast the callback, or annotate every parameter.
+- An `extendTx` generic describes the returned command object, not the
+  transaction-factory function.
+- If contextual inference fails, repair the owning Core builder/generic or
+  source API. A new config alias or explicit `editor`/`tx` annotation is not an
+  inference fix.
+- Forbid `any` in production source. A deliberate local non-type test escape is
+  the only exception.
 
-// Good: bundle existing Plate plugins without fake base-plugin theater.
-export const BasicBlocksPlugin = createPlatePlugin({
-  plugins: [BlockquotePlugin, HeadingPlugin, HorizontalRulePlugin],
-});
-```
+## Options And Extension Law
+
+Plate plugin descriptors have one value bag: `options`.
+
+- Put defaults in `options` and override descriptor values with
+  `.configure({ options })`.
+- Read live values with builder `getOptions` or the scoped plugin portal.
+- Mutate valid runtime values with scoped `setOption` / `setOptions`.
+- Never add a second top-level `config` channel for immutable, compile-time,
+  parser, codec, schema, or host-policy values.
+- Schema factories and parser contexts receive `options`; API, tx, and
+  extension callbacks use inferred `getOptions`.
+- Live option updates do not rebuild compiled schema. Configure schema-affecting
+  values before editor construction.
+- Plite editor extensions may retain their own unrelated `config` contract.
+- `extendExtension` accepts a built extension or raw extension options. Raw
+  options without `name` default to the plugin key; do not wrap them in
+  `defineEditorExtension({ name: pluginKey, ... })`.
+- Use an explicit extension name only for an independently identified secondary
+  or standalone extension.
+
+Root plugin option helpers are forbidden. Use
+`editor.plugin(FooPlugin).getOptions()` / `getOption` / `setOption` /
+`setOptions`. A key-only portal needs a concrete cycle, layer, or decoupling
+reason; plugin-owned callbacks should capture the typed builder context.
+When `FooPlugin` is a valid optional peer, keep the typed portal and check
+`editor.plugin(FooPlugin).installed` before reading its API, updates, options,
+or installed descriptor. Disabled plugins count as absent. Do not probe root
+`editor.api`, node types, schema properties, caches, or caught access errors.
+
+## API And Transaction Law
+
+- `extendApi` owns plugin-specific reads/services. On a concrete inferred
+  editor, consumers discover them through `editor.api.<pluginKey>`; generic
+  package code and exact ownership use `editor.plugin(FooPlugin).api`.
+- Generic code integrating an optional descriptor first checks
+  `editor.plugin(FooPlugin).installed`; required descriptor ownership may
+  access the portal directly.
+- Both discovery paths expose the same plugin-owned API. Do not duplicate the
+  implementation with `extendEditorApi`.
+- Use `extendEditorApi` only for a genuinely unkeyed root editor capability.
+- A scoped portal already owns the plugin noun. Prefer flat, direct verbs such
+  as `table.update.insertTable()` over taxonomy like
+  `table.update.insert.table()`. Route disputed public spelling to `best-api`.
+- `extendTx` owns the plugin's one-shot update group. Use `extendTxGroup` only
+  when an additional named group is itself meaningful.
+- Repeated callers use the scoped API/tx method. They do not justify a parallel
+  exported helper.
+- Transform-backed callbacks receive and mutate through the active `tx`. Do not
+  call `editor.update.*` from inside transform middleware, input rules,
+  corrections, `editor.update(...)`, or `withoutNormalizing`.
+- Do not extract one-owner behavior merely to create
+  `foo(editor, tx, ...)` or paired one-shot/tx wrappers. Inline it where `tx`,
+  `api`, options, editor, and type remain contextually inferred.
+- A surviving transaction helper must own a real cross-plugin or
+  transaction-composition algorithm, require `tx`, and never open a nested
+  update.
+- Group consecutive synchronous mutations that form one user action in the
+  existing transaction, or one `editor.update((tx) => ...)` when no `tx`
+  exists.
+- Never add arbitrary plugin/product fields to the editor root. Use scoped
+  API/options/state, extension state, a React store, a local controller, or a
+  module-local `WeakMap` according to lifecycle.
+
+## Plite Primitive Law
+
+- Prefer direct one-shot reads and writes over one-operation callback wrappers.
+  Use callback form only for shared snapshot/transaction state, branching,
+  loops, or multiple operations.
+- Pass a live node directly to `NodeTarget`/`at` when available. Resolve a path
+  only when the path is the result.
+- Do not rediscover a live node by scanning for its `type` and `id`.
+- Use shallow property matchers for exact metadata. Keep predicates for
+  computed policy, path-dependent logic, content/structure, truthiness, or
+  narrowing consumed by the caller.
+- Use boolean queries for boolean questions; do not materialize entries merely
+  to test existence.
+- Treat unresolved public reads as optional in package source. Do not add
+  `{ required: true }` or non-null assertions without an internal invariant
+  owner.
+- Use current Plite ranges, reads, and updates directly. Do not add compatibility
+  aliases or Plate wrappers around them.
+- Do not replace event-only path resolution with a render subscription.
+  `usePath()` is for reactive render dependence; use renderer `path` or resolve
+  inside the event when appropriate.
+- Explicit normalization must name a real full-root or dirty-path invariant.
+  Do not normalize merely to coalesce leaves, settle a transform, or preserve
+  an old fixture shape. Repair the smallest transform/normalizer owner instead.
+
+## React And Test Ownership
+
+- Hooks/selectors subscribe only to values that affect render. Read
+  callback-only values inside click/key/command/delayed handlers from
+  `editor.read.*` or `editor.api.*`.
+- Keep one colocated `<PluginName>.<family>.spec.tsx` per plugin behavior
+  family. Do not mirror each API method, helper, or deleted filename into a
+  separate spec.
+- React tests live beside the component or standalone hook family owner.
+- Split one `<PluginName>.<family>.slow.tsx` only when profiling proves the
+  repository threshold or the case has an independent blocking proof boundary.
+  Never use `.slow.spec.tsx`.
+- Merge old helper specs into the surviving behavior-family spec when
+  production helpers are merged.
+- Keep editor/plugin construction inline in tests when inference should support
+  it. Do not add local fixture-shape aliases, casts, or setup constants to hide
+  weak source typing; repair the test-utils or builder owner.
+- Assert current behavior, not deleted compatibility paths or incidental text
+  leaf grouping.
+
+## Package And Barrel Law
+
+- Never hand-edit generated `index.ts` / `index.tsx` barrels.
+- After adding, moving, renaming, or deleting exported files, run `pnpm brl`
+  and fix source placement or generator configuration if output is wrong.
+- Package source imports its direct runtime owner (`@platejs/core`,
+  `@platejs/plite`, `@platejs/utils`, and so on), never the `platejs` umbrella.
+- Keep React as a peer when the package exposes React surfaces. Keep only
+  dependencies proven by source/runtime imports or repo tooling convention.
 
 ## Workflow
 
-1. Read [creation-flow.md](./rules/creation-flow.md) before choosing an API.
-2. Search the closest analog in `packages/*/src/lib`, `packages/*/src/react`,
-   and `packages/core/type-tests`.
-3. Decide whether this is:
-   - a semantic base plugin
-   - a Plate/React wrapper
-   - a React-native exception
-   - a bundle plugin
-4. After a `best-api` verdict when the contract is reusable, lock:
-   - options
-   - plugin-specific API/update groups
-   - merged editor API, only when root ownership is intentional
-   - nested child plugins
-5. Apply the typing rules before adding explicit annotations.
-6. Add docs only by handing off to [docs-creator](../docs-creator/SKILL.md).
-7. Verify the smallest honest surface:
-   - package tests for semantic/plugin behavior
-   - type tests or targeted typecheck when public contract changed
-   - React tests only when the wrapper layer changed
+1. Read the three required rule files.
+2. Decide the semantic layer and durable production, React-family, and test
+   owners before creating files.
+3. Search current Core builders/type tests and the closest clean package
+   analog. Do not copy a stale file graph.
+4. Route reusable public forks to `best-api`; otherwise keep the inferred
+   plugin chain inline.
+5. Define options, scoped API/tx methods, relationships, Plite extensions, and
+   React behavior in their durable owners.
+6. Delete superseded helper/component/hook/spec files and regenerate barrels.
+7. Prove the smallest honest surface:
+   - package typecheck and behavior tests;
+   - Core type tests when builder/public inference changes;
+   - React tests when React behavior changes;
+   - `pnpm brl` when exports or public files change.
+8. Audit for stale helper names, root option helpers, nested updates, explicit
+   plugin annotations, empty config aliases, top-level plugin `config`, and
+   one-use file taxonomies.
 
-## Audit References
+## Do Not Copy
 
-- [plugin-authoring-audit.md](./references/plugin-authoring-audit.md) — real
-  repo examples of good patterns and cautionary ones
+- One-use helper files, `internal/` dumping grounds, or folders by implementation
+  kind.
+- Plugin export annotations, empty config aliases, callback ferry types,
+  `satisfies` patches, or `any` casts.
+- Root editor pollution, root option helpers, duplicate Plate wrappers, or
+  local structural guards around typed Plite APIs.
+- Redundant portal nouns or taxonomy-only method nesting.
+- `editor.update.*` inside an active transaction.
+- Broad explicit normalization without a named invariant.
+- Render subscriptions used only to feed later callbacks.
+- Compatibility aliases, forwarding wrappers, or old filenames kept without
+  an accepted API reason.
 
-## Detailed References
+## References
 
-- [creation-flow.md](./rules/creation-flow.md)
-- [typing.md](./rules/typing.md)
-- [composition.md](./rules/composition.md)
+- [creation-flow.md](./rules/creation-flow.md) — semantic and file ownership
+- [typing.md](./rules/typing.md) — contextual inference and contracts
+- [composition.md](./rules/composition.md) — options, APIs, tx, relationships,
+  Plite primitives, and React behavior
+- [plugin-authoring-audit.md](./references/plugin-authoring-audit.md) — current
+  examples and rejected precedent

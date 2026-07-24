@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-23-rich-media-caption-children",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-23-rich-media-caption-children.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Render media captions from direct inline children",
+  "targets": [
+    {
+      "name": "caption",
+      "files": ["apps/www/src/registry/ui/caption.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/media-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/media-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-image-node",
+      "files": ["apps/www/src/registry/ui/media-image-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video-node",
+      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-audio-node",
+      "files": ["apps/www/src/registry/ui/media-audio-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-file-node",
+      "files": ["apps/www/src/registry/ui/media-file-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed-node",
+      "files": ["apps/www/src/registry/ui/media-embed-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-placeholder-node",
+      "files": ["apps/www/src/registry/ui/media-placeholder-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar-button",
+      "files": ["apps/www/src/registry/ui/media-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "plate-to-html",
+      "files": ["apps/www/src/registry/components/editor/plate-to-html.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-23-caption-render-rich-media-caption-children-1ee56347",
+      "kind": "behavior",
+      "summary": "Render direct media caption children, keep an empty caption hidden until asset focus, and separate asset selection from caption editing.",
+      "details": [],
+      "migrationNotes": [
+        "Remove CaptionPlugin from media kits and render each media element's direct children as its caption; use [{ text: '' }] when the caption is absent."
+      ],
+      "targets": [
+        "caption",
+        "media-base-kit",
+        "media-kit",
+        "media-image-node",
+        "media-video-node",
+        "media-audio-node",
+        "media-file-node",
+        "media-embed-node",
+        "media-placeholder-node",
+        "media-toolbar-button",
+        "plate-to-html"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-23",
+          "entry": "2026-07-23-rich-media-caption-children",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

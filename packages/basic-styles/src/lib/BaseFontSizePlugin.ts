@@ -7,7 +7,7 @@ export const BaseFontSizePlugin = createBasePlugin({
   schema: { mark: property.string() },
   inject: {
     nodeProps: {
-      nodeKey: 'fontSize',
+      styleKey: 'fontSize',
     },
   },
   parsers: {

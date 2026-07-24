@@ -2,9 +2,28 @@ import { createBaseEditor } from '@platejs/core';
 import { NODES } from '@platejs/utils';
 
 import { BaseSlashInputPlugin, BaseSlashPlugin } from './BaseSlashPlugin';
+import { SlashInputPlugin, SlashPlugin } from '../react/SlashPlugin';
 
 describe('BaseSlashPlugin', () => {
-  it('ships the slash trigger defaults and nested input plugin', () => {
+  it('declares the input as an exact required Base and React dependency', () => {
+    expect(BaseSlashPlugin.dependencies).toEqual([BaseSlashInputPlugin]);
+    expect(SlashPlugin.dependencies).toEqual([SlashInputPlugin]);
+  });
+
+  it('rejects a disabled required slash-input dependency', () => {
+    expect(() =>
+      createBaseEditor({
+        plugins: [
+          BaseSlashPlugin,
+          BaseSlashInputPlugin.configure({ enabled: false }),
+        ],
+      })
+    ).toThrow(
+      /slashCommand.*disabled.*slashInput|slashInput.*disabled.*slashCommand/i
+    );
+  });
+
+  it('ships the slash trigger defaults and required input plugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseSlashPlugin],
     });

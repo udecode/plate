@@ -10,7 +10,7 @@ describe('markdown date element', () => {
 
     const value = deserializeMd(editor, input);
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           { text: 'Date: ' },
@@ -37,7 +37,7 @@ describe('markdown date element', () => {
     const value = deserializeMd(editor, input);
     const markdown = serializeMd(editor, { value });
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           { text: 'Date: ' },
@@ -60,7 +60,7 @@ describe('markdown date element', () => {
     const value = deserializeMd(editor, input);
     const markdown = serializeMd(editor, { value });
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           { text: 'Date: ' },
@@ -83,7 +83,7 @@ describe('markdown date element', () => {
     const value = deserializeMd(editor, input);
     const markdown = serializeMd(editor, { value });
 
-    expect(value).toMatchObject([
+    expect(value.children).toMatchObject([
       {
         children: [
           { text: 'Date: ' },

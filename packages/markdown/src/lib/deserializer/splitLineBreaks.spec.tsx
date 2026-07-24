@@ -94,8 +94,8 @@ describe('when splitLineBreaks is enabled', () => {
       title: 'preserves consecutive html line break tags as empty paragraphs',
     },
   ])('$title', ({ input, output }) => {
-    expect(deserializeMd(editor, input, { splitLineBreaks: true })).toEqual(
-      output
-    );
+    expect(
+      deserializeMd(editor, input, { splitLineBreaks: true }).children
+    ).toEqual(output);
   });
 });

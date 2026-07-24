@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import type { TCodeBlockElement } from '@platejs/utils';
 
 import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
-import { common, createLowlight } from 'lowlight';
 
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { formatCodeBlock, isLangSupported, isValidSyntax } from './formatter';
@@ -78,14 +77,7 @@ describe('formatter', () => {
 
   it('formats json into separate code lines', () => {
     const editor = createBaseEditor({
-      plugins: [
-        BaseParagraphPlugin,
-        BaseCodeBlockPlugin.configure({
-          options: {
-            lowlight: createLowlight(common),
-          },
-        }),
-      ],
+      plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       initialValue: [
         {
           children: [

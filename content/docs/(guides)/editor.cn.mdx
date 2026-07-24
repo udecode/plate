@@ -13,7 +13,7 @@ description: 学习如何配置和自定义Plate编辑器。
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
+  plugins: [H1Plugin],
 });
 ```
 
@@ -32,13 +32,16 @@ const editor = createPlateEditor({
 });
 ```
 
+当一个编辑器拥有内容根或其他命名区域时，传入包含 `children`、`roots` 和持久化
+`meta` 的 `EditorDocumentValue`。Plate 通过 `onValueChange` 返回同一完整结构。
+
 也可以使用HTML字符串和关联插件初始化编辑器：
 
 ```ts
 const editor = createPlateEditor({
   plugins: [HtmlPlugin, BoldPlugin, ItalicPlugin],
   initialValue: ({ editor }) =>
-    editor.plugin(HtmlPlugin).api.deserialize({
+    editor.api.html.deserialize({
       element: '<p>这是<b>加粗</b>和<i>斜体</i>文本！</p>',
     }),
 });
@@ -53,7 +56,7 @@ Plate 根据已安装插件编译文档 schema。普通编辑器省略 `schema` 
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
+  plugins: [H1Plugin],
 });
 
 editor.read.schema.identity();
@@ -66,7 +69,7 @@ schema：
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
+  plugins: [H1Plugin],
   schema: { id: 'acme-document', version: 3 },
 });
 
@@ -133,7 +136,7 @@ function AsyncEditor() {
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin, ListPlugin],
+  plugins: [H1Plugin, ListPlugin],
 });
 ```
 
@@ -262,60 +265,62 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
+  plugins: [H1Plugin],
   components: {
     [ParagraphPlugin.key]: CustomParagraphComponent,
-    [HeadingPlugin.key]: CustomHeadingComponent,
+    [H1Plugin.key]: CustomHeadingComponent,
   },
 });
 ```
 
-### 插件覆盖
+### 配置插件
 
-覆盖特定插件配置：
+应用直接导入目标插件时，请配置该描述符：
 
 ```ts
+const AppLinkPlugin = LinkPlugin.configure({
+  options: {
+    allowedSchemes: ['http', 'https'],
+  },
+});
+
 const editor = createPlateEditor({
-  plugins: [HeadingPlugin],
+  plugins: [AppLinkPlugin],
+});
+```
+
+### 弱对等覆盖
+
+包插件可能需要适配另一个已安装的包，但不能导入它，也不能控制使用者的编辑器 kit：
+
+```ts
+const SingleBlockPlugin = createPlatePlugin({
+  key: KEYS.singleBlock,
   override: {
     plugins: {
-      [ParagraphPlugin.key]: {
-        options: {
-          customOption: true,
-        },
+      [KEYS.trailingBlock]: {
+        enabled: false,
       },
     },
   },
 });
 ```
 
-### 禁用插件
+仅当目标已安装时才应用覆盖；目标不存在时忽略。它不能修改 `key`、`dependencies`，
+也不能嵌套另一个 `override`。目标描述符的直接配置优先。
 
-禁用特定插件：
+### 替换依赖默认定义
 
-```ts
-const editor = createPlateEditor({
-  plugins: [HeadingPlugin, ListPlugin],
-  override: {
-    enabled: {
-      [HistoryPlugin.key]: false,
-    },
-  },
-});
-```
-
-### 覆盖插件
-
-可以通过添加具有相同键的插件来覆盖核心插件或先前定义的插件。最后一个具有给定键的插件将生效：
+完整的显式描述符可以替换具有相同 key 的低优先级 core 或 dependency 定义。数组
+顺序不决定结果；两个具有相同 key 的不同显式描述符会报错。
 
 ```ts
-const CustomParagraphPlugin = createPlatePlugin({
-  key: 'p',
-  // 自定义实现
+const AppParagraphPlugin = ParagraphPlugin.configure({
+  type: 'paragraph',
 });
 
 const editor = createPlateEditor({
-  plugins: [CustomParagraphPlugin],
+  plugins: [AppParagraphPlugin],
 });
 ```
 

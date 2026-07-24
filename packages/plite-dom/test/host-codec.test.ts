@@ -170,27 +170,6 @@ const createCodecEditor = (
     lifecycleErrorSink,
   });
 
-const hostPropertyIds = (() => {
-  const editor = createCodecEditor([]);
-  const get = (key: string, placement: 'element' | 'text', type: string) => {
-    const compiled = editor.read.schema.property({ key, placement, type });
-
-    if (!compiled) {
-      throw new Error(
-        `Expected compiled ${placement} property "${key}" for "${type}".`
-      );
-    }
-
-    return compiled.id;
-  };
-
-  return Object.freeze({
-    dataAttribute: get('data_owner', 'element', 'paragraph'),
-    headingBold: get('bold', 'text', 'heading'),
-    paragraphBold: get('bold', 'text', 'paragraph'),
-  });
-})();
-
 test('host codecs expose only immutable model and host read capabilities', () => {
   const inspect = mock(
     (context: Parameters<NonNullable<HostCodec['parse']>>[0]) => {
@@ -546,29 +525,11 @@ test('host codec compilation follows configuration revisions and rolls back conf
   expect(write()).toBe('<p>original</p>');
 });
 
-test('host codec claims compile against the candidate schema revision', () => {
+test('host codec ownership resolves declaration semantics against the candidate schema revision', () => {
   const editor = createCodecEditor([]);
   const Italic = schema.textProperty('italic', property.boolean(), {
     target: target.type('paragraph'),
   });
-  const italicSchema = defineEditorExtension({
-    name: 'italic-schema',
-    schema: {
-      properties: [Italic],
-    },
-  });
-  const identityEditor = createEditor({
-    extensions: [hostSchema, italicSchema],
-    initialValue: [paragraph('')],
-  });
-  const italicProperty = identityEditor.read.schema.property({
-    key: 'italic',
-    placement: 'text',
-    type: 'paragraph',
-  });
-
-  if (!italicProperty) throw new Error('Expected compiled italic property.');
-
   const equivalentItalicSchema = defineEditorExtension({
     name: 'equivalent-italic-schema',
     schema: {
@@ -582,12 +543,12 @@ test('host codec claims compile against the candidate schema revision', () => {
   const italic = defineHostCodec({
     format: 'text/html',
     key: 'italic',
-    schema: [{ id: italicProperty.id, kind: 'property' }],
+    owns: [Italic],
     serialize: () => '<em>value</em>',
   });
 
   expect(() => editor.extend(hostCodecs('italic-codec', [italic]))).toThrow(
-    /targets unknown schema property/
+    /owns schema property .* that is not installed/
   );
 
   const cleanup = editor.extend([
@@ -629,12 +590,12 @@ test('schema reconfiguration recompiles codec claims and rolls back atomically',
       dom(),
       slot.of(articleSchema(1, 'paragraph')),
       hostCodecs('schema-revision-codec', [
-        defineHostCodec({
+        {
           format: 'text/html',
           key: 'paragraph-html',
+          owns: [{ kind: 'element', type: 'paragraph' }],
           parse: () => ContentSlice.closed([paragraph('parsed')]),
-          schema: [{ kind: 'element', type: 'paragraph' }],
-        }),
+        },
       ]),
     ] as const,
     initialValue: [paragraph('before')],
@@ -655,7 +616,7 @@ test('schema reconfiguration recompiles codec claims and rolls back atomically',
         };
       },
     })
-  ).toThrow(/targets unknown schema element "paragraph"/);
+  ).toThrow(/owns unknown schema element "paragraph"/);
   expect(editor.read.schema.identity()?.version).toBe(1);
   expect(editor.read.children()).toEqual([paragraph('before')]);
   expect(editor.read.lastCommit()).toBeNull();
@@ -849,12 +810,12 @@ test('host codecs fit detached text properties into the target parent', () => {
 });
 
 test('codec keys and compiled schema ownership conflict atomically', () => {
-  const codec = (key: string, schemaTargets?: HostCodec['schema']) =>
+  const codec = (key: string, ownedTargets?: HostCodec['owns']) =>
     defineHostCodec({
       format: 'text/html',
       key,
+      ...(ownedTargets ? { owns: ownedTargets } : {}),
       parse: () => ContentSlice.closed([paragraph(key)]),
-      ...(schemaTargets ? { schema: schemaTargets } : {}),
     });
   const duplicate = codec('duplicate');
 
@@ -866,98 +827,75 @@ test('codec keys and compiled schema ownership conflict atomically', () => {
   ).not.toThrow();
   expect(() =>
     createCodecEditor([
-      codec('first-bold', [
-        { id: hostPropertyIds.paragraphBold, kind: 'property' },
-      ]),
-      codec('second-bold', [
-        { id: hostPropertyIds.paragraphBold, kind: 'property' },
-      ]),
+      codec('first-bold', [ParagraphBold]),
+      codec('second-bold', [ParagraphBold]),
     ])
   ).toThrow(/both claim parse target/);
   expect(() =>
     createCodecEditor([
       codec('paragraph', [{ kind: 'element', type: 'paragraph' }]),
-      codec('paragraph-bold', [
-        { id: hostPropertyIds.paragraphBold, kind: 'property' },
-      ]),
+      codec('paragraph-bold', [ParagraphBold]),
     ])
   ).toThrow(/both claim parse target/);
   expect(() =>
-    createCodecEditor([
-      codec('data-prefix', [
-        { id: hostPropertyIds.dataAttribute, kind: 'property' },
-      ]),
-    ])
+    createCodecEditor([codec('data-prefix', [DataAttribute])])
   ).not.toThrow();
   expect(() =>
     createCodecEditor([
-      codec('paragraph-bold', [
-        { id: hostPropertyIds.paragraphBold, kind: 'property' },
-      ]),
-      codec('heading-bold', [
-        { id: hostPropertyIds.headingBold, kind: 'property' },
-      ]),
+      codec('paragraph-bold', [ParagraphBold]),
+      codec('heading-bold', [HeadingBold]),
     ])
   ).not.toThrow();
   expect(() =>
     createCodecEditor([
       codec('unknown', [{ kind: 'element', type: 'unknown' }]),
     ])
-  ).toThrow(/targets unknown schema element "unknown"/);
+  ).toThrow(/owns unknown schema element "unknown"/);
   expect(() =>
     createCodecEditor([
       codec('unknown-property', [
-        {
-          id: 'text:unknown@missing',
-          kind: 'property',
-        },
+        schema.textProperty('unknown', property.boolean(), {
+          target: target.type('paragraph'),
+        }),
       ]),
     ])
-  ).toThrow(/targets unknown schema property/);
+  ).toThrow(/owns schema property .* that is not installed/);
 });
 
-test('host codec property claims store compiled semantic ids', () => {
-  expect(() =>
-    defineHostCodec({
-      format: 'text/html',
-      key: 'empty-property-id',
-      parse: () => null,
-      schema: [
-        {
-          id: '',
-          kind: 'property',
-        },
-      ],
-    })
-  ).toThrow(/property id cannot be empty/);
-
+test('host codec property ownership stores normalized declarations', () => {
+  const equivalentParagraphBold = schema.textProperty(
+    'bold',
+    property.boolean(),
+    {
+      target: target.type('paragraph'),
+    }
+  );
   const codec = defineHostCodec({
     format: 'text/html',
     key: 'semantic-property',
+    owns: [equivalentParagraphBold],
     parse: () => null,
-    schema: [{ id: hostPropertyIds.paragraphBold, kind: 'property' }],
   });
 
-  expect(codec.schema?.[0]).toEqual({
-    id: hostPropertyIds.paragraphBold,
-    kind: 'property',
-  });
-  expect(Object.isFrozen(codec.schema?.[0])).toBe(true);
+  expect(codec.owns?.[0]).toEqual(equivalentParagraphBold);
+  expect(codec.owns?.[0]).not.toBe(equivalentParagraphBold);
+  expect(Object.isFrozen(codec.owns?.[0])).toBe(true);
+  expect(() => createCodecEditor([codec])).not.toThrow();
 });
 
-test('parser and serializer schema claims are independent', () => {
+test('parser and serializer ownership claims are independent', () => {
   expect(() =>
     createCodecEditor([
       defineHostCodec({
         format: 'text/html',
         key: 'parse-paragraph',
+        owns: [{ kind: 'element', type: 'paragraph' }],
         parse: () => ContentSlice.closed([paragraph('parse')]),
-        schema: [{ kind: 'element', type: 'paragraph' }],
       }),
       defineHostCodec({
         format: 'text/html',
         key: 'serialize-paragraph',
-        schema: [{ kind: 'element', type: 'paragraph' }],
+        owns: [{ kind: 'element', type: 'paragraph' }],
         serialize: () => '<p>serialize</p>',
       }),
     ])

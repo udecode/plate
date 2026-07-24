@@ -4,6 +4,12 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseVideoPlugin,
+} from '@platejs/media';
 import { PlaceholderPlugin } from '@platejs/media/react';
 import {
   AudioLinesIcon,
@@ -176,12 +182,20 @@ function MediaUrlDialogContent({
     if (!isUrl(url)) return toast.error('Invalid URL');
 
     setOpen(false);
-    editor.update.nodes.insert({
-      children: [{ text: '' }],
+    const input = {
       name: nodeType === KEYS.file ? url.split('/').pop() : undefined,
-      type: nodeType,
       url,
-    });
+    };
+
+    if (nodeType === KEYS.audio) {
+      editor.plugin(BaseAudioPlugin).update.insert(input);
+    } else if (nodeType === KEYS.file) {
+      editor.plugin(BaseFilePlugin).update.insert(input);
+    } else if (nodeType === KEYS.img) {
+      editor.plugin(BaseImagePlugin).update.insert(input);
+    } else if (nodeType === KEYS.video) {
+      editor.plugin(BaseVideoPlugin).update.insert(input);
+    }
   }, [url, editor, nodeType, setOpen]);
 
   return (

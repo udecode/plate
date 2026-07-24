@@ -1,3 +1,5 @@
+import { editorCommands } from '@platejs/plite';
+
 import type { NodeComponent, PluginConfig } from '../../lib';
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { createPlateEditor } from '../editor';
@@ -112,6 +114,26 @@ describe('createPlatePlugin', () => {
 
       return length satisfies number;
     });
+
+    expect(1).toBe(1);
+  });
+
+  it('infers Plate tx groups in editor extension commands', () => {
+    createPlatePlugin({ key: 'txPlugin' })
+      .extendTx(() => () => ({
+        replace: (text: string) => text.length,
+      }))
+      .extendExtension('behavior', () => ({
+        commands: ({ handle }) => [
+          handle(editorCommands.insertText, ({ input, state }) =>
+            state.transaction((tx) => {
+              const length = tx.txPlugin.replace(input.text);
+
+              return length satisfies number;
+            })
+          ),
+        ],
+      }));
 
     expect(1).toBe(1);
   });
